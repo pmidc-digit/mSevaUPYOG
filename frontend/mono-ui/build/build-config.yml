@@ -12,7 +12,7 @@ config:
 -   name: builds/digit-impel-builds/frontend/citizen
     build:
     - work-dir: web/rainmaker/
-      dockerfile: web/rainmaker/docker/citizen/
+      dockerfile: web/rainmaker/docker/citizen
       image-name: citizen
 
 -   name: builds/digit-impel-builds/frontend/employee

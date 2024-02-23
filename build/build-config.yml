@@ -712,7 +712,7 @@ config:
   - name: builds/upyog/frontend/mono-ui/citizen
     build:
       - work-dir: frontend/mono-ui/web/rainmaker/
-        dockerfile: frontend/mono-ui/web/rainmaker/docker/citizen/Dockerfile
+        dockerfile: frontend/mono-ui/web/rainmaker/docker/citizen
         image-name: citizen
 
   - name: builds/upyog/frontend/mono-ui/employee

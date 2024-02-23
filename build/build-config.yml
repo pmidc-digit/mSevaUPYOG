@@ -710,43 +710,43 @@ config:
 # Frontend
 - name: builds/upyog/frontend/citizen
     build:
-      - work-dir: web/rainmaker/
-        dockerfile: web/rainmaker/docker/citizen/Dockerfile
+      - work-dir: frontend/web/rainmaker/
+        dockerfile: frontend/web/rainmaker/docker/citizen/Dockerfile
         image-name: citizen
 
   - name: builds/upyog/frontend/employee
     build:
-      - work-dir: web/rainmaker/
-        dockerfile: web/rainmaker/docker/employee/Dockerfile
+      - work-dir: frontend/web/rainmaker/
+        dockerfile: frontend/web/rainmaker/docker/employee/Dockerfile
         image-name: employee
 
   - name: builds/upyog/frontend/employee-mcs
     build:
-      - work-dir: web/rainmaker/
-        dockerfile: web/rainmaker/docker/employee-mcs/Dockerfile
+      - work-dir: frontend/web/rainmaker/
+        dockerfile: frontend/web/rainmaker/docker/employee-mcs/Dockerfile
         image-name: employee-mcs
 
   - name: builds/upyog/frontend/localization
     build:
-      - work-dir: web/rainmaker/
-        dockerfile: web/rainmaker/docker/localization/Dockerfile
+      - work-dir: frontend/web/rainmaker/
+        dockerfile: frontend/web/rainmaker/docker/localization/Dockerfile
         image-name: ui-localisation
 
   - name: builds/upyog/frontend/ui-uploader
     build:
-      - work-dir: web/ui-uploader/
+      - work-dir: frontend/web/ui-uploader/
         image-name: ui-uploader
 
   - name: builds/upyog/frontend/dss-dashboard
     build:
-      - work-dir: web/dss-dashboard/
-        dockerfile: web/dss-dashboard/docker/Dockerfile
+      - work-dir: frontend/web/dss-dashboard/
+        dockerfile: frontend/web/dss-dashboard/docker/Dockerfile
         image-name: dss-dashboard
 
   - name: builds/upyog/frontend/common-screen
     build:
-      - work-dir: web/egov-common-screen/
-        dockerfile: web/egov-common-screen/docker/Dockerfile
+      - work-dir: frontend/web/egov-common-screen/
+        dockerfile: frontend/web/egov-common-screen/docker/Dockerfile
         image-name: common-screen
 
 

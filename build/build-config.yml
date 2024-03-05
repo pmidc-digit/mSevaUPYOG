@@ -210,7 +210,7 @@ config:
 
   - name: "builds/upyog/core-services/egov-telemetry"
     build:
-      - work-dir: "core-services/egov-telemetry/telemetry"
+      - work-dir: "core-services/egov-telemetry"
         image-name: "egov-telemetry"
         dockerfile: "core-services/egov-telemetry/telemetry/Dockerfile"
 

@@ -209,10 +209,10 @@ config:
         dockerfile: "build/maven/Dockerfile"
         
     - name: "builds/upyog/core-services/egov-telemetry"
-    build:
-      - work-dir: "core-services/egov-telemetry/telemetry"
-        image-name: "egov-telemetry"
-        dockerfile: "Dockerfile"
+      build:
+        - work-dir: "core-services/egov-telemetry/telemetry"
+          image-name: "egov-telemetry"
+          dockerfile: "Dockerfile"
 
    - name: "builds/upyog/core-services/egov-user"
     build:

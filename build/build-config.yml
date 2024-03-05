@@ -212,7 +212,9 @@ config:
     build:
       - work-dir: "core-services/egov-telemetry"
         image-name: "egov-telemetry"
-        dockerfile: "core-services/egov-telemetry/telemetry/Dockerfile"
+        dockerfile: "build/maven/Dockerfile"
+
+
 
   - name: "builds/upyog/core-services/egov-user"
     build:
@@ -315,17 +317,16 @@ config:
       - work-dir: "core-services/pdf-service/migration"
         image-name: "pdf-service-db"
         
-  - name: "builds/upyog/core-services/egov-telemetry/egov-telemetry-kafka-streams"
+  - name: "builds/upyog/core-services/telemetry/egov-telemetry-kafka-streams"
     build:
       - work-dir: "core-services/egov-telemetry/egov-telemetry-kafka-streams"
         image-name: "egov-telemetry-kafka-streams"
-    dockerfile: "core-services/egov-telemetry/egov-telemetry-kafka-streams/Dockerfile"
-    
-  - name: "builds/upyog/core-services/egov-telemetry/egov-telemetry-batch-process"
+
+  - name: "builds/upyog/core-services/telemetry/egov-telemetry-batch-process"
     build:
       - work-dir: "core-services/egov-telemetry/egov-telemetry-batch-process"
         image-name: "egov-telemetry-batch-process"
-        dockerfile: "core-services/egov-telemetry/egov-telemetry-batch-process/Dockerfile"
+        dockerfile: "build/maven/Dockerfile"
   
   - name: "builds/upyog/core-services/egov-url-shortening"
     build:

@@ -214,6 +214,8 @@ config:
         image-name: "egov-telemetry"
         dockerfile: "core-services/egov-telemetry/telemetry/Dockerfile"
 
+
+
   - name: "builds/upyog/core-services/egov-user"
     build:
       - work-dir: "core-services/egov-user"

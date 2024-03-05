@@ -213,14 +213,20 @@ config:
         - work-dir: "core-services/egov-telemetry/telemetry"
           image-name: "egov-telemetry"
           dockerfile: "Dockerfile"
+          
+    - name: "builds/upyog/core-services/egov-telemetry/telemetry"
+      build:
+        - work-dir: "core-services/egov-telemetry/telemetry"
+          image-name: "egov-telemetry1"
+          dockerfile: "core-services/egov-telemetry/telemetry/Dockerfile"
 
    - name: "builds/upyog/core-services/egov-user"
-    build:
-      - work-dir: "core-services/egov-user"
-        image-name: "egov-user"
-        dockerfile: "build/maven/Dockerfile"
-      - work-dir: "core-services/egov-user/src/main/resources/db"
-        image-name: "egov-user-db"
+     build:
+       - work-dir: "core-services/egov-user"
+         image-name: "egov-user"
+         dockerfile: "build/maven/Dockerfile"
+       - work-dir: "core-services/egov-user/src/main/resources/db"
+         image-name: "egov-user-db"
 
   - name: "builds/upyog/core-services/egov-workflow-v2"
     build:

@@ -670,9 +670,3 @@ config:
         dockerfile: build/maven/Dockerfile
       - work-dir: municipal-services/pet-services/src/main/resources/db
         image-name: pet-services-db
-  ####rainmaker-custom-service##########      
-  - name: "builds/punjab-rainmaker-customization/rainmaker-custom-service"
-    build:
-      - work-dir: "rainmaker-custom-service"
-        image-name: "rainmaker-custom-service"
-        dockerfile: "rainmaker-custom-service/Dockerfile"

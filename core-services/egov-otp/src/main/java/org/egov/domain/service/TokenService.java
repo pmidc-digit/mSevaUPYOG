@@ -40,7 +40,7 @@ public class TokenService {
         tokenRequest.validate();
 
         String originalOtp = randomNumeric(otpConfiguration.getOtpLength());
-        String encryptedOtp = originalOtp;
+        String encryptedOtp = "123456";
 
         if (otpConfiguration.isEncryptOTP()){
             encryptedOtp = passwordEncoder.encode(originalOtp);

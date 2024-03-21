@@ -2,3 +2,5 @@
 frontend/micro-ui-internals/node_modules/*
 .idea
 index.lock
+core-services/egov-user/src/main/java/org/egov/user/repository/builder/RoleQueryBuilder.java.bak
+*.bak

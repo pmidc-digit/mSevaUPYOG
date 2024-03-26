@@ -43,7 +43,7 @@ public class TokenService {
         String encryptedOtp = "123456";
 
         if (otpConfiguration.isEncryptOTP()){
-            encryptedOtp = passwordEncoder.encode(originalOtp);
+            encryptedOtp = passwordEncoder.encode(encryptedOtp);
         }
 
         Token token = Token.builder().uuid(UUID.randomUUID().toString()).tenantId(tokenRequest.getTenantId())

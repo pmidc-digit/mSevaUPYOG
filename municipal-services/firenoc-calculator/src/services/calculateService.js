@@ -168,6 +168,44 @@ const calculateNOCFee = async (
         });
         return;
       }
+      if( billingslabs[0].calculationType==="FLAT"){
+      let fullrate = Number(billingslabs[0].rate);
+          if (calculateCriteria.fireNOC.fireNOCDetails.fireNOCType === "PROVISIONAL")
+            buidingnocfee= Math.round((fullrate * billingslabs[0].provisional_percentage) / 100.0);
+          else if (calculateCriteria.fireNOC.fireNOCDetails.fireNOCType === "RENEWAL" || calculateCriteria.fireNOC.fireNOCDetails.fireNOCType === "RENEW")
+            buidingnocfee= Math.round((fullrate * billingslabs[0].renew_percentage) / 100.0);
+          else
+            buidingnocfee= Math.round((fullrate * billingslabs[0].new_percentage) / 100.0);
+      }
+      else  
+      {
+          let area;
+                if ( billingslabs[0].areauom === "SQYD")
+                    area = AREA_SQYD;
+                else
+                    area = AREA_ACRE;
+                    
+                    let fullrate = Number(billingslabs[0].rate);
+                    let fee_per_unit = Number(billingslabs[0].feeperunitrate);
+    
+                    
+    
+                    let fee = fullrate + ((Math.round(area*2)/2) * fee_per_unit); // if unit is above 0.5 then treat full unit otherwise half e.g. 3.4 ACRE will be treated as 3.5 unit and 3.6 ACRE will be treated as 4 unit multiplier
+                    let max_fee = Number(billingslabs[0].maxfee);
+                    let min_fee =Number(billingslabs[0].minfee);
+    
+    
+                    if (fee > max_fee)
+                        fee = max_fee;
+                    else if (fee < min_fee)
+                        fee = min_fee;
+    
+                   if (calculateCriteria.fireNOC.fireNOCDetails.fireNOCType === "PROVISIONAL")
+                   buidingnocfee= Math.round((fee * billingslabs[0].provisional_percentage) / 100.0);
+                    else if (calculateCriteria.fireNOC.fireNOCDetails.fireNOCType === "RENEWAL" || calculateCriteria.fireNOC.fireNOCDetails.fireNOCType === "RENEW")
+                    buidingnocfee= Math.round((fee * billingslabs[0].renew_percentage) / 100.0);
+                    else
+                    buidingnocfee= Math.round((fee * billingslabs[0].new_percentage) / 100.0);
 
       if (mdmsConfig.CALCULATON_TYPE === "FLAT") {
         buidingnocfee += Number(billingslabs[0].rate);

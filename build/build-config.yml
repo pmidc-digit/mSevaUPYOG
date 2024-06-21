@@ -17,7 +17,13 @@
 # -
 # -
 config:
-# Business Services
+
+  - name: "builds/upyog/frontend/m-sewa"
+    build:
+      - work-dir: "m-sewa/"
+        image-name: "maintain"
+        dockerfile: "m-sewa/Dockerfile"
+ # Business Services       
   - name: "builds/upyog/business-services/billing-service"
     build:
       - work-dir: "business-services/billing-service"

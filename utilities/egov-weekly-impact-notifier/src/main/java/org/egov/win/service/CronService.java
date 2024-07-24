@@ -88,7 +88,7 @@ public class CronService {
 		 */
 		List<Map<String, Object>> wsData = new ArrayList<>();
 		enrichHeadersOfTheTable(body);
-		//enrichBodyWithStateWideData(body, wsData);
+			enrichBodyWithStateWideData(body, wsData);
 		enrichBodyWithPGRData(body);
 		enrichBodyWithPTData(body);
 		enrichBodyWithTLData(body);
@@ -367,7 +367,7 @@ public class CronService {
 		Body body = email.getBody();
 		if (body == null) {
 			return false;
-		} else if (body.getStateWide().isStateWideDataEmpty() || body.getFirenoc().isFirenocDataEmpty()
+		} else if ( body.getFirenoc().isFirenocDataEmpty()
 				|| body.getMiscCollections().isMiscCollDataEmpty() || body.getPgr().isPGRDataEmpty()
 				|| body.getPt().isPTDataEmpty() || body.getTl().isTLDataEmpty()
 				|| body.getWaterAndSewerage().isWSDataEmpty()) {

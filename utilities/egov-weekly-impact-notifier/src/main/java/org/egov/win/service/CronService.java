@@ -80,16 +80,20 @@ public class CronService {
 	private Email getDataFromDb() {
 		Body body = new Body();
 		//List<Map<String, Object>> wsData = externalAPIService.getWSData();
+		/*
+		 * List<Map<String, Object>> wsData = new ArrayList<>();
+		 * if(CollectionUtils.isEmpty(wsData)) throw new
+		 * CustomException("EMAILER_DATA_RETREIVAL_FAILED",
+		 * "Failed to retrieve data from WS module");
+		 */
 		List<Map<String, Object>> wsData = new ArrayList<>();
-		if(CollectionUtils.isEmpty(wsData))
-			throw new CustomException("EMAILER_DATA_RETREIVAL_FAILED", "Failed to retrieve data from WS module");
 		enrichHeadersOfTheTable(body);
 		enrichBodyWithStateWideData(body, wsData);
 		enrichBodyWithPGRData(body);
 		enrichBodyWithPTData(body);
 		enrichBodyWithTLData(body);
 		enrichBodyWithMiscCollData(body);
-		enrichBodyWithWSData(body, wsData);
+		//enrichBodyWithWSData(body, wsData);
 		enrichBodyWithFirenocData(body);
 		return Email.builder().body(body).build();
 	}
@@ -374,3 +378,4 @@ public class CronService {
 	}
 
 }
+

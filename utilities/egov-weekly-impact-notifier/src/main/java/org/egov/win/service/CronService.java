@@ -369,8 +369,7 @@ public class CronService {
 			return false;
 		} else if ( body.getFirenoc().isFirenocDataEmpty()
 				|| body.getMiscCollections().isMiscCollDataEmpty() || body.getPgr().isPGRDataEmpty()
-				|| body.getPt().isPTDataEmpty() || body.getTl().isTLDataEmpty()
-				|| body.getWaterAndSewerage().isWSDataEmpty()) {
+				|| body.getPt().isPTDataEmpty() || body.getTl().isTLDataEmpty()) {
 			return false;
 
 		}

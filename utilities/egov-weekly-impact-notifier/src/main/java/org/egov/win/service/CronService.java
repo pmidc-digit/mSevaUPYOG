@@ -88,7 +88,7 @@ public class CronService {
 		 */
 		List<Map<String, Object>> wsData = new ArrayList<>();
 		enrichHeadersOfTheTable(body);
-			enrichBodyWithStateWideData(body, wsData);
+		//enrichBodyWithStateWideData(body, wsData);
 		enrichBodyWithPGRData(body);
 		enrichBodyWithPTData(body);
 		enrichBodyWithTLData(body);

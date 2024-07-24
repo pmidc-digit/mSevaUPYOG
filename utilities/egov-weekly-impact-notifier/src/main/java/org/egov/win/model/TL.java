@@ -25,4 +25,8 @@ public class TL {
 	
 	private List<Map<String, Object>> revenueCollected;
 
+	public boolean isTLDataEmpty() {
+		return ulbCovered.isEmpty() || licenseIssued.isEmpty() || revenueCollected.isEmpty();
+
+	}
 }

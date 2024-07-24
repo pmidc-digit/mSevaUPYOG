@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.velocity.Template;
@@ -22,20 +21,16 @@ import org.egov.win.model.MiscCollections;
 import org.egov.win.model.PGR;
 import org.egov.win.model.PGRChannelBreakup;
 import org.egov.win.model.PT;
-import org.egov.win.model.SearcherRequest;
 import org.egov.win.model.StateWide;
 import org.egov.win.model.TL;
 import org.egov.win.model.WaterAndSewerage;
 import org.egov.win.producer.Producer;
-import org.egov.win.repository.ServiceCallRepository;
 import org.egov.win.utils.CronConstants;
 import org.egov.win.utils.CronUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,8 +65,12 @@ public class CronService {
 	public void fetchData() {
 		try {
 			Email email = getDataFromDb();
-			String content = emailService.formatEmail(email);
-			send(email, content);
+			if (isValidData(email)) {
+				String content = emailService.formatEmail(email);
+				send(email, content);
+			} else {
+				log.info("Email will not be sent, as the data is not valid.");
+			}
 		} catch (Exception e) {
 			log.info("Email will not be sent, ERROR: ", e);
 		}
@@ -80,7 +79,8 @@ public class CronService {
 
 	private Email getDataFromDb() {
 		Body body = new Body();
-		List<Map<String, Object>> wsData = externalAPIService.getWSData();
+		//List<Map<String, Object>> wsData = externalAPIService.getWSData();
+		List<Map<String, Object>> wsData = new ArrayList<>();
 		if(CollectionUtils.isEmpty(wsData))
 			throw new CustomException("EMAILER_DATA_RETREIVAL_FAILED", "Failed to retrieve data from WS module");
 		enrichHeadersOfTheTable(body);
@@ -176,10 +176,12 @@ public class CronService {
 		List<Map<String, Object>> ivr = new ArrayList<>();
 		List<Map<String, Object>> mobiileApp = new ArrayList<>();
 		List<Map<String, Object>> webApp = new ArrayList<>();
+		List<Map<String,Object>>  whatsapp= new ArrayList<>();
 		for (Map<String, Object> record : data) {
 			Map<String, Object> ivrPerWeek = new HashMap<>();
 			Map<String, Object> mobileAppPerWeek = new HashMap<>();
 			Map<String, Object> webAppPerWeek = new HashMap<>();
+			Map<String, Object> whatsappPerWeek = new HashMap<>();
 			String prefix = "Week";
 			Integer noOfWeeks = 6;
 			for (int week = 0; week < noOfWeeks; week++) {
@@ -187,14 +189,16 @@ public class CronService {
 					ivrPerWeek.put("w" + week + "pgrchnlivr", record.get("ivr"));
 					mobileAppPerWeek.put("w" + week + "pgrchnlmapp", record.get("mobileapp"));
 					webAppPerWeek.put("w" + week + "pgrchnlweb", record.get("webapp"));
+					whatsappPerWeek.put("w" + week + "pgrchnlwhatsapp", record.get("whatsapp"));
 				}
 			}
 			ivr.add(ivrPerWeek);
 			mobiileApp.add(mobileAppPerWeek);
 			webApp.add(webAppPerWeek);
+			whatsapp.add(whatsappPerWeek);
 		}
 
-		PGRChannelBreakup channel = PGRChannelBreakup.builder().ivr(ivr).mobileApp(mobiileApp).webApp(webApp).build();
+		PGRChannelBreakup channel = PGRChannelBreakup.builder().ivr(ivr).mobileApp(mobiileApp).webApp(webApp).whatsapp(whatsapp).build();
 		pgr.setChannelBreakup(channel);
 	}
 
@@ -341,6 +345,7 @@ public class CronService {
 			EmailRequest request = EmailRequest.builder().email(email.getTo()).subject(email.getSubject()).isHTML(true)
 					.body(content).build();
 			log.info("Sending email.......");
+			log.info("email......."+email);
 			producer.push(emailTopic, request);
 		}
 	}
@@ -352,6 +357,20 @@ public class CronService {
 		ve.init();
 		Template t = ve.getTemplate("velocity/weeklyimpactflasher.vm");
 		return t;
+	}
+	
+	private boolean isValidData(Email email) {
+		Body body = email.getBody();
+		if (body == null) {
+			return false;
+		} else if (body.getStateWide().isStateWideDataEmpty() || body.getFirenoc().isFirenocDataEmpty()
+				|| body.getMiscCollections().isMiscCollDataEmpty() || body.getPgr().isPGRDataEmpty()
+				|| body.getPt().isPTDataEmpty() || body.getTl().isTLDataEmpty()
+				|| body.getWaterAndSewerage().isWSDataEmpty()) {
+			return false;
+
+		}
+		return true;
 	}
 
 }

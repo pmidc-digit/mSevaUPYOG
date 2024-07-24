@@ -23,5 +23,10 @@ public class PT {
 	private List<Map<String, Object>> revenueCollected; //unit - INR Crs.
 
 	private List<Map<String, Object>> noOfProperties; //unit - thousands
+	
+	public boolean isPTDataEmpty() {
+		return ulbCovered.isEmpty() || revenueCollected.isEmpty() || noOfProperties.isEmpty();
+
+	}
 
 }

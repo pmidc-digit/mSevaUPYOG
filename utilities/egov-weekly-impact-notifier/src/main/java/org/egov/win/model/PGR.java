@@ -25,5 +25,9 @@ public class PGR {
 	private List<Map<String, Object>> redressal; //unit - %
 	
 	private PGRChannelBreakup channelBreakup;
+	
+	public boolean isPGRDataEmpty() {
+		return ulbCovered.isEmpty() || totalComplaints.isEmpty() || redressal.isEmpty() ;
+	}
 
 }

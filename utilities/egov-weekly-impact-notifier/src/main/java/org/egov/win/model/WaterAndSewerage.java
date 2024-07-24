@@ -24,4 +24,8 @@ public class WaterAndSewerage {
 
 	private List<Map<String, Object>> serviceApplied;
 
+	public boolean isWSDataEmpty() {
+		return ulbCovered.isEmpty() || revenueCollected.isEmpty() || serviceApplied.isEmpty();
+
+	}
 }

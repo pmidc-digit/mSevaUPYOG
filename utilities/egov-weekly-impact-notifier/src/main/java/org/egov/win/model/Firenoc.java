@@ -21,4 +21,9 @@ private List<Map<String, Object>> ulbCovered;
 	private List<Map<String, Object>> certificatesIssued;
 	
 	private List<Map<String, Object>> revenueCollected;
+
+	public boolean isFirenocDataEmpty() {
+		return ulbCovered.isEmpty() || certificatesIssued.isEmpty() || revenueCollected.isEmpty();
+
+	}
 }

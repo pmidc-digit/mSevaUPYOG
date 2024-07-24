@@ -22,4 +22,7 @@ public class MiscCollections {
 	
 	private List<Map<String, Object>> revenueCollected;
 
+	public boolean isMiscCollDataEmpty() {
+		return receiptsGenerated.isEmpty() || revenueCollected.isEmpty();
+	}
 }

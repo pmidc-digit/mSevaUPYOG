@@ -23,5 +23,7 @@ public class PGRChannelBreakup {
 	private List<Map<String, Object>> mobileApp; //unit - %
 
 	private List<Map<String, Object>> webApp; //unit - %
+	
+	private List<Map<String,Object>>  whatsapp;
 
 }

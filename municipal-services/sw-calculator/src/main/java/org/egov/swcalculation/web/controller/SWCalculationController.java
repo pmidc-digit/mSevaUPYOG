@@ -15,6 +15,7 @@ import org.egov.swcalculation.web.models.BulkBillReq;
 import org.egov.swcalculation.web.models.Calculation;
 import org.egov.swcalculation.web.models.CalculationReq;
 import org.egov.swcalculation.web.models.CalculationRes;
+import org.egov.swcalculation.web.models.CancelDemand;
 import org.egov.swcalculation.web.models.ConnectionResponse;
 import org.egov.swcalculation.web.models.Demand;
 import org.egov.swcalculation.web.models.DemandResponse;
@@ -125,6 +126,16 @@ public class SWCalculationController {
 		//return "Demand Generated successfully for consumer Code "+bulkBillReq.getBulkBillCriteria().getConsumerCode();
 	}
 	
+	
+	
+	
+	
+	@PostMapping("/cancelDemand")
+	 public CancelDemand cancelDemand(@Valid @RequestBody CancelDemand cancelDemand) {
+//		log.info("cancelDemand::");
+	            
+	            return demandService.cancelDemandForConsumer(cancelDemand);
+	        } 
 
 	@PostMapping("/_applyAdhocTax")
 	public ResponseEntity<CalculationRes> applyAdhocTax(@Valid @RequestBody AdhocTaxReq adhocTaxReq) {

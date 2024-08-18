@@ -216,14 +216,15 @@ params.add("access_code", MERCHANT_ACCESS_CODE);
     }
    private String generateTID() {
     	  // Generate a unique UUID as a transaction ID
-        String tid = UUID.randomUUID().toString();
+     //   String tid = UUID.randomUUID().toString();
         // Get the current timestamp
         long currentTimeMillis = System.currentTimeMillis();
         // Add 24 hours to the current time
         long expirationTimeMillis = currentTimeMillis + (24 * 60 * 60 * 1000);
         // Include expiration time in the TID
-        tid += "|" + expirationTimeMillis;
-        return tid;
+      //  tid += "|" + expirationTimeMillis;
+         String tid = String.valueOf(expirationTimeMillis);
+	   return tid;
 	}
     public static boolean isTIDValid(String tid) {
         // Split the TID to extract expiration time

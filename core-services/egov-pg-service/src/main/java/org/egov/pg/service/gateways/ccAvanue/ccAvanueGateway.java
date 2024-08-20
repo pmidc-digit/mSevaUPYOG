@@ -245,12 +245,8 @@ params.add("access_code", MERCHANT_ACCESS_CODE);
                  String ccaRequest="";         
                  String orderId= currentStatus.getTxnId();
 	         String encResp = params.get("encResp");
-                 String refNo = getRefNo(encResp);
-                 if (refNo != null && !refNo.equalsIgnoreCase("null") && !refNo.isEmpty()) {
-    			 ccaRequest =  "{'reference_no': '"+refNo+"'}";
-                 }else {
-    			 ccaRequest =  "{'order_no': '"+orderId+"'}";
-                 }    	         
+ 		 String encResp = params.get("encResp");
+	         ccaRequest =  "{'order_no': '"+orderId+"'}";
   		String pCommand="orderStatusTracker";
  		String pRequestType="JSON";
  		String pResponseType="JSON";

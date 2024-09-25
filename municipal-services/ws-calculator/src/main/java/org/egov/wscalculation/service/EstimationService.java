@@ -205,7 +205,16 @@ public class EstimationService {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		String billingType = (String) additionalDetail.getOrDefault(WSCalculationConstant.BILLINGTYPE, null);
+		
+		
+		/*
+		 * doing this because in maximum of cases billingtype is missing
+		 */	
+		
+		//	String billingType = (String) additionalDetail.getOrDefault(WSCalculationConstant.BILLINGTYPE, null);
+		
+		String billingType = (String) additionalDetail.getOrDefault(WSCalculationConstant.BILLINGTYPE, "STANDARD");
+	
 		if (waterConnection.getConnectionType().equalsIgnoreCase(WSCalculationConstant.nonMeterdConnection)
 				&& billingType.equalsIgnoreCase(WSCalculationConstant.CUSTOM)) {
 			Integer billingAmountInt  = 0;
@@ -362,9 +371,22 @@ public class EstimationService {
 
 		HashMap<String, Object> additionalDetail = new HashMap<>();
 		additionalDetail = mapper.convertValue(waterConnection.getAdditionalDetails(), HashMap.class);
-		final String waterSubUsageType = (String) additionalDetail
+		 String waterSubUsageType = (String) additionalDetail
 				.getOrDefault(WSCalculationConstant.WATER_SUBUSAGE_TYPE, null);
-
+			/*
+			 * doing this because in many of the cases waterSubUsageType this is missing
+			 */		
+		 if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
+		{
+		if (property.getUsageCategory().equalsIgnoreCase("RESIDENTIAL"))
+			waterSubUsageType="USAGE_DOM_NA";
+		else if (property.getUsageCategory().equalsIgnoreCase("COMMERCIAL"))
+			waterSubUsageType="USAGE_COMM_NA";
+		else if (property.getUsageCategory().equalsIgnoreCase("INDUSTRIAL"))
+			waterSubUsageType="USAGE_COMM_NA";
+		else if (property.getUsageCategory().equalsIgnoreCase("INSTITUTIONAL"))
+			waterSubUsageType="USAGE_COMM_NA";
+		}
 		final String buildingType = WSCalculationConstant.PROPERTY_TYPE_MIXED.equalsIgnoreCase(propertyType)
 				? (String) additionalDetail.getOrDefault(WSCalculationConstant.UNIT_USAGE_TYPE_KEY, null)
 				: propertyType;

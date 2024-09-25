@@ -371,22 +371,23 @@ public class EstimationService {
 
 		HashMap<String, Object> additionalDetail = new HashMap<>();
 		additionalDetail = mapper.convertValue(waterConnection.getAdditionalDetails(), HashMap.class);
-		 String waterSubUsageType = (String) additionalDetail
+		 String waterSubUsageTypes = (String) additionalDetail
 				.getOrDefault(WSCalculationConstant.WATER_SUBUSAGE_TYPE, null);
 			/*
 			 * doing this because in many of the cases waterSubUsageType this is missing
 			 */		
-		 if (waterSubUsageType==null|| waterSubUsageType.isEmpty())
+		 if (waterSubUsageTypes==null|| waterSubUsageTypes.isEmpty())
 		{
 		if (property.getUsageCategory().equalsIgnoreCase("RESIDENTIAL"))
-			waterSubUsageType="USAGE_DOM_NA";
+			waterSubUsageTypes="USAGE_DOM_NA";
 		else if (property.getUsageCategory().equalsIgnoreCase("COMMERCIAL"))
-			waterSubUsageType="USAGE_COMM_NA";
+			waterSubUsageTypes="USAGE_COMM_NA";
 		else if (property.getUsageCategory().equalsIgnoreCase("INDUSTRIAL"))
-			waterSubUsageType="USAGE_COMM_NA";
+			waterSubUsageTypes="USAGE_COMM_NA";
 		else if (property.getUsageCategory().equalsIgnoreCase("INSTITUTIONAL"))
-			waterSubUsageType="USAGE_COMM_NA";
+			waterSubUsageTypes="USAGE_COMM_NA";
 		}
+		final String waterSubUsageType =waterSubUsageTypes;
 		final String buildingType = WSCalculationConstant.PROPERTY_TYPE_MIXED.equalsIgnoreCase(propertyType)
 				? (String) additionalDetail.getOrDefault(WSCalculationConstant.UNIT_USAGE_TYPE_KEY, null)
 				: propertyType;

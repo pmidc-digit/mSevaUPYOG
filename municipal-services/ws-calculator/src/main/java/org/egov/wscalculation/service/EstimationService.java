@@ -253,7 +253,11 @@ public class EstimationService {
 			List<BillingSlab> billingSlabs = getSlabsFiltered(property, waterConnection, mappingBillingSlab, calculationAttribute);
 			
 			if (billingSlabs == null || billingSlabs.isEmpty())
-				throw new CustomException("BILLING_SLAB_NOT_FOUND", "Billing Slab are Empty");
+				{
+				return null;
+				//throw new CustomException("BILLING_SLAB_NOT_FOUND", "Billing Slab are Empty");
+				
+				}
 			/*
 			 * if (billingSlabs.size() > 1) throw new
 			 * CustomException("INVALID_BILLING_SLAB", "More than one billing slab found");

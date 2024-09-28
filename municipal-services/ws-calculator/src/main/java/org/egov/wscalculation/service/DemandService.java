@@ -224,7 +224,7 @@ public class DemandService {
 					else
 //						updateDemands.add(createDemandForNonMeteredInBulk(request.getRequestInfo(), calculation,
 //								masterMap, isForConnectionNo, toDateSearch, toDateSearch));
-						return null;
+						break;
 				}
 			}
 

@@ -75,7 +75,7 @@ public class DemandGenerationConsumer {
 		CalculationReq calculationReq = mapper.convertValue(records.get(0).getPayload(), CalculationReq.class);
 		Map<String, Object> masterMap = mstrDataService.loadMasterData(calculationReq.getRequestInfo(),
 				calculationReq.getCalculationCriteria().get(0).getTenantId());
-	generateDemandInBatch(calculationReq, masterMap, config.getDeadLetterTopicBatch());
+	//generateDemandInBatch(calculationReq, masterMap, config.getDeadLetterTopicBatch());
 		log.info("Number of batch records in the consumer:  " + calculationReq.getCalculationCriteria().size());
 	}
 

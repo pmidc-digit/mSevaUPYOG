@@ -142,7 +142,7 @@ public class DemandGenerationConsumer {
 			StringBuilder str = new StringBuilder("Demand generated Successfully. For records : ")
 					.append(connectionNoStrings);
 			log.info(str.toString());
-			break;
+			
 		} catch (Exception ex) {
 			log.error("Demand generation error: ", ex);
 			producer.push(errorTopic, request);

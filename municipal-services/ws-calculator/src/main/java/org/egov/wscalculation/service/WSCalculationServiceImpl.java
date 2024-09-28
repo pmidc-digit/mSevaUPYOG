@@ -544,7 +544,7 @@ if(category!=null)
 		criteria.setStatus(WSCalculationConstant.INITIATED_CONST);
 
 		List<BillScheduler> billSchedularList = billGeneratorService.getBillGenerationDetails(criteria);
-		if (billSchedularList.isEmpty())
+		if (!billSchedularList.isEmpty())
 			return;
 		log.info("billSchedularList count : " + billSchedularList.size());
 		for (BillScheduler billSchedular : billSchedularList) {

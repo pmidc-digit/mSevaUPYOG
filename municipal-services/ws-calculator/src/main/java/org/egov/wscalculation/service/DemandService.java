@@ -222,8 +222,9 @@ public class DemandService {
 						createDemands.add(createDemandForNonMeteredInBulk(request.getRequestInfo(), calculation,
 								masterMap, isForConnectionNo, fromDateSearch, toDateSearch));
 					else
-						updateDemands.add(createDemandForNonMeteredInBulk(request.getRequestInfo(), calculation,
-								masterMap, isForConnectionNo, toDateSearch, toDateSearch));
+//						updateDemands.add(createDemandForNonMeteredInBulk(request.getRequestInfo(), calculation,
+//								masterMap, isForConnectionNo, toDateSearch, toDateSearch));
+						return null;
 				}
 			}
 
@@ -1585,15 +1586,25 @@ public class DemandService {
                 log.info("Connection Number: {} ", waterConnection.getConnectionNo());
 
                 try {
+                	
                     int generateDemandFromIndex = 0;
+                    
                     Long lastDemandFromDate = waterCalculatorDao
                             .searchLastDemandGenFromDate(waterConnection.getConnectionNo(), tenantId);
 
                     if (lastDemandFromDate != null) {
-                        generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
-                                .filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate())).findFirst()
-                                .getAsInt();
-                        generateDemandFromIndex++; // Move to next quarter demand
+                    	OptionalInt generateDemandFromIndexs = IntStream.range(0, taxPeriods.size())
+                                .filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
+                                .findFirst();
+
+// Check if the value exists
+if (generateDemandFromIndexs.isPresent()) {
+     generateDemandFromIndex = generateDemandFromIndexs.getAsInt();
+     generateDemandFromIndex++; 
+} else {
+    // Handle case where no match is found
+   log.info("No matching tax period found for the given lastDemandFromDate.");
+}
                     }
 
                     log.info("lastDemandFromDate: {} and generateDemandFromIndex: {}", lastDemandFromDate,
@@ -1608,6 +1619,7 @@ public class DemandService {
                                 taxPeriod.getFromDate(), taxPeriod.getToDate());
 
                         if (isConnectionValid) {
+                        	
                             CalculationCriteria calculationCriteria = CalculationCriteria.builder()
                                     .tenantId(tenantId)
                                     .assessmentYear(taxPeriod.getFinancialYear())
@@ -1644,7 +1656,7 @@ public class DemandService {
 
             // Sleep for 15 seconds between batches
             try {
-                log.info("Sleeping for 15 seconds before processing the next batch...");
+               // log.info("Sleeping for 15 seconds before processing the next batch...");
                 Thread.sleep(configs.getSleepvalue() );
                 break;
             } catch (InterruptedException ie) {

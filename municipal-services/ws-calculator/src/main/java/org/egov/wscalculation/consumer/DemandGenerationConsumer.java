@@ -104,7 +104,7 @@ public class DemandGenerationConsumer {
 					try {
 						log.info("Generating Demand for Criteria : " + mapper.writeValueAsString(calcCriteria));
 						// processing single
-						generateDemandInBatch(request, masterMap, config.getDeadLetterTopicSingle());
+						//generateDemandInBatch(request, masterMap, config.getDeadLetterTopicSingle());
 					} catch (final Exception e) {
 						StringBuilder builder = new StringBuilder();
 						try {

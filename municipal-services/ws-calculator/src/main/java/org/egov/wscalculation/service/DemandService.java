@@ -222,9 +222,8 @@ public class DemandService {
 						createDemands.add(createDemandForNonMeteredInBulk(request.getRequestInfo(), calculation,
 								masterMap, isForConnectionNo, fromDateSearch, toDateSearch));
 					else
-//						updateDemands.add(createDemandForNonMeteredInBulk(request.getRequestInfo(), calculation,
-//								masterMap, isForConnectionNo, toDateSearch, toDateSearch));
-						break;
+						updateDemands.add(createDemandForNonMeteredInBulk(request.getRequestInfo(), calculation,
+								masterMap, isForConnectionNo, toDateSearch, toDateSearch));
 				}
 			}
 
@@ -1603,7 +1602,7 @@ if (generateDemandFromIndexs.isPresent()) {
      generateDemandFromIndex++; 
 } else {
     // Handle case where no match is found
-   log.info("No matching tax period found for the given lastDemandFromDate.");
+    System.out.println("No matching tax period found for the given lastDemandFromDate.");
 }
                     }
 

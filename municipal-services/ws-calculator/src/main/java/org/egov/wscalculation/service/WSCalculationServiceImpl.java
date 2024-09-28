@@ -158,15 +158,8 @@ public class WSCalculationServiceImpl implements WSCalculationService {
 	 * @return List of calculation.
 	 */
 	public List<Calculation> bulkDemandGeneration(CalculationReq request, Map<String, Object> masterMap) {
-		
-		List<Calculation> calculations =null;
-		try{ 
-			calculations=getCalculations(request, masterMap);
+		List<Calculation> calculations = getCalculations(request, masterMap);
 		demandService.generateDemandForBillingCycleInBulk(request, calculations, masterMap, true);
-		}
-		catch (Exception e) {
-			log.info("Error in exception");
-		}
 		return calculations;
 	}
 
@@ -544,7 +537,7 @@ if(category!=null)
 		criteria.setStatus(WSCalculationConstant.INITIATED_CONST);
 
 		List<BillScheduler> billSchedularList = billGeneratorService.getBillGenerationDetails(criteria);
-		if (!billSchedularList.isEmpty())
+		if (billSchedularList.isEmpty())
 			return;
 		log.info("billSchedularList count : " + billSchedularList.size());
 		for (BillScheduler billSchedular : billSchedularList) {

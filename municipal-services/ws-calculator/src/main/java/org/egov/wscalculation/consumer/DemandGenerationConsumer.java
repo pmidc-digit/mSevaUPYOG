@@ -75,7 +75,7 @@ public class DemandGenerationConsumer {
 		CalculationReq calculationReq = mapper.convertValue(records.get(0).getPayload(), CalculationReq.class);
 		Map<String, Object> masterMap = mstrDataService.loadMasterData(calculationReq.getRequestInfo(),
 				calculationReq.getCalculationCriteria().get(0).getTenantId());
-	//generateDemandInBatch(calculationReq, masterMap, config.getDeadLetterTopicBatch());
+	generateDemandInBatch(calculationReq, masterMap, config.getDeadLetterTopicBatch());
 		log.info("Number of batch records in the consumer:  " + calculationReq.getCalculationCriteria().size());
 	}
 
@@ -104,7 +104,7 @@ public class DemandGenerationConsumer {
 					try {
 						log.info("Generating Demand for Criteria : " + mapper.writeValueAsString(calcCriteria));
 						// processing single
-						//generateDemandInBatch(request, masterMap, config.getDeadLetterTopicSingle());
+						generateDemandInBatch(request, masterMap, config.getDeadLetterTopicSingle());
 					} catch (final Exception e) {
 						StringBuilder builder = new StringBuilder();
 						try {
@@ -142,7 +142,6 @@ public class DemandGenerationConsumer {
 			StringBuilder str = new StringBuilder("Demand generated Successfully. For records : ")
 					.append(connectionNoStrings);
 			log.info(str.toString());
-			
 		} catch (Exception ex) {
 			log.error("Demand generation error: ", ex);
 			producer.push(errorTopic, request);

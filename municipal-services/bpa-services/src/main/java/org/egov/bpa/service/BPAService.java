@@ -133,7 +133,7 @@ public class BPAService {
 		}
 		enrichmentService.enrichBPACreateRequest(bpaRequest, mdmsData, values);
 		wfIntegrator.callWorkFlow(bpaRequest);
-		nocService.createNocRequest(bpaRequest, mdmsData);
+		//nocService.createNocRequest(bpaRequest, mdmsData);
 		this.addCalculation(applicationType, bpaRequest);
 		repository.save(bpaRequest);
 		return bpaRequest.getBPA();
@@ -172,6 +172,7 @@ public class BPAService {
 			criteria.setEdcrNumber(ocBpas.get(0).getEdcrNumber());
 			ocService.validateAdditionalData(bpaRequest, criteria);
 			bpaRequest.getBPA().setLandInfo(ocBpas.get(0).getLandInfo());
+			
 		}
 	}
 	
@@ -182,11 +183,11 @@ public class BPAService {
 	 */
 	private void addCalculation(String applicationType,BPARequest bpaRequest) {
 		
-		if (bpaRequest.getBPA().getRiskType().equals(BPAConstants.LOW_RISKTYPE) && !applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
-			calculationService.addCalculation(bpaRequest, BPAConstants.LOW_RISK_PERMIT_FEE_KEY);
-		} else {
+//		if (bpaRequest.getBPA().getRiskType().equals(BPAConstants.LOW_RISKTYPE) && !applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN_OC)) {
+//			calculationService.addCalculation(bpaRequest, BPAConstants.LOW_RISK_PERMIT_FEE_KEY);
+//		} else {
 			calculationService.addCalculation(bpaRequest, BPAConstants.APPLICATION_FEE_KEY);
-		}
+//		}
 	}
 
 	/**
@@ -200,6 +201,8 @@ public class BPAService {
 	 * @return List of bpa for the given criteria
 	 */
 	public List<BPA> search(BPASearchCriteria criteria, RequestInfo requestInfo) {
+		log.info("Entering Search function");
+
 		List<BPA> bpas = new LinkedList<>();
 		bpaValidator.validateSearch(requestInfo, criteria);
 		LandSearchCriteria landcriteria = new LandSearchCriteria();
@@ -213,6 +216,8 @@ public class BPAService {
 			for (Role role : requestInfo.getUserInfo().getRoles()) {
 				roles.add(role.getCode());
 			}
+			log.info("Entering Search function1");
+
 			if ((criteria.tenantIdOnly() || criteria.isEmpty()) && roles.contains(BPAConstants.CITIZEN)) {
 				log.debug("loading data of created and by me");
 				bpas =  this.getBPACreatedForByMe(criteria, requestInfo, landcriteria, edcrNos);
@@ -375,6 +380,7 @@ public class BPAService {
 	 */
 	@SuppressWarnings("unchecked")
 	public BPA update(BPARequest bpaRequest) {
+		log.info("Entering Update function");
 		RequestInfo requestInfo = bpaRequest.getRequestInfo();
 		String tenantId = bpaRequest.getBPA().getTenantId().split("\\.")[0];
 		Object mdmsData = util.mDMSCall(requestInfo, tenantId);
@@ -406,6 +412,7 @@ public class BPAService {
 		}
 		
 		this.processOcUpdate(applicationType,  edcrResponse.get(BPAConstants.PERMIT_NO), bpaRequest, requestInfo, additionalDetails);
+		log.debug("OcUpdate done ");
 
 		bpaRequest.getBPA().setAuditDetails(searchResult.get(0).getAuditDetails());
 		
@@ -425,6 +432,7 @@ public class BPAService {
                 if ((businessSrvc.equalsIgnoreCase(BPAConstants.BPA_OC_MODULE_CODE)
                         || businessSrvc.equalsIgnoreCase(BPAConstants.BPA_BUSINESSSERVICE))
                         && state.equalsIgnoreCase(BPAConstants.PENDING_APPROVAL_STATE)) {
+            		log.debug("Entering BPA calculator");
                     calculationService.addCalculation(bpaRequest, BPAConstants.SANCTION_FEE_KEY);
                 }
                 
@@ -456,7 +464,7 @@ public class BPAService {
                  * enrichmentService.skipPayment(bpaRequest); enrichmentService.postStatusEnrichment(bpaRequest); }
                  */
 
-		
+		log.info("hitting consumer for update");
 		repository.update(bpaRequest, workflowService.isStateUpdatable(bpa.getStatus(), businessService));
 		return bpaRequest.getBPA();
 
@@ -524,6 +532,7 @@ public class BPAService {
 			}
 			
 			additionalDetails.put("landId", bpas.get(0).getLandId());
+			additionalDetails.put("riskType", bpas.get(0).getRiskType());
 			criteria.setEdcrNumber(bpas.get(0).getEdcrNumber());
 			ocService.validateAdditionalData(bpaRequest, criteria);
 			bpaRequest.getBPA().setLandInfo(bpas.get(0).getLandInfo());

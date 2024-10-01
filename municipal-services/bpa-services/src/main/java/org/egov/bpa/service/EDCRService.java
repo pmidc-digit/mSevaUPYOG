@@ -151,7 +151,7 @@ public class EDCRService {
                     additionalDetails.put(BPAConstants.PERMIT_NO, permitNumber.get(0));
                 }
 		List<Double> plotAreas = context.read("edcrDetail.*.planDetail.plot.area", typeRef);
-		List<Double> buildingHeights = context.read("edcrDetail.*.planDetail.blocks.*.building.buildingHeight",
+		List<Double> buildingHeights = context.read("edcrDetail.*.planDetail.blocks.*.building.buildingHeightExcludingMP",
 				typeRef);
 
 		if (CollectionUtils.isEmpty(edcrStatus) || !edcrStatus.get(0).equalsIgnoreCase("Accepted")) {
@@ -182,12 +182,23 @@ public class EDCRService {
 															// the list
 			Double plotArea = plotAreas.get(0);
 			List jsonOutput = JsonPath.read(masterData, BPAConstants.RISKTYPE_COMPUTATION);
-			String filterExp = "$.[?((@.fromPlotArea < " + plotArea + " && @.toPlotArea >= " + plotArea
-					+ ") || ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
-					+ buildingHeight + "  ))].riskType";
+//			String filterExp = "$.[?((@.fromPlotArea < " + plotArea + " && @.toPlotArea >= " + plotArea
+//					+ ") || ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
+//					+ buildingHeight + "  ))].riskType";
+//			
+			String filterExp = "$.[?(@.fromBuildingHeight < " + buildingHeight 
+					+ " && @.toBuildingHeight >= " + buildingHeight + ")].riskType";
+
 
 			List<String> riskTypes = JsonPath.read(jsonOutput, filterExp);
 
+			if(CollectionUtils.isEmpty(riskTypes)) {
+				 
+						throw new CustomException(BPAErrorConstants.INVALID_BUILDING_HEIGHT,
+								"Building height should be greater than zero");
+					
+			}
+				
 			if (!CollectionUtils.isEmpty(riskTypes) && OccupancyType.equals(BPAConstants.RESIDENTIAL_OCCUPANCY)) {
 				String expectedRiskType  = riskTypes.get(0);
 
@@ -199,6 +210,7 @@ public class EDCRService {
 						"The OccupancyType " + OccupancyType + " is not supported! ");
 			}
 		}
+			
 	}
 
 	/**

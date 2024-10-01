@@ -12,6 +12,8 @@ public class BPAConstants {
 	public static final String BPA_BusinessService = "BPA";
 
 	public static final String BPA_MODULE_CODE = "BPA";
+	
+	public static final String RISKTYPE = "riskType";
 
 	public static final String BPA_LOW_MODULE_CODE = "BPA_LOW";
 
@@ -112,6 +114,8 @@ public class BPAConstants {
 	public static final String ACTION_APPLY = "APPLY";
 
 	public static final String ACTION_APPROVE = "APPROVE";
+	
+	public static final String ACTION_POST_PAY_APPROVE = "POST_PAYMENT_APPROVE";
 
 	public static final String ACTION_FORWORD = "FORWARD";
 
@@ -126,7 +130,7 @@ public class BPAConstants {
 	public static final String ACTION_NOC_FORWARD = "NOC_FORWARD";
 
 	public static final String ACTION_PENDINGAPPROVAL = "PENDINGAPPROVAL";
-
+	
 	public static final String ACTION_REJECT = "REJECT";
 	public static final String ACTION_REVOCATE = "REVOCATE";
 
@@ -145,12 +149,16 @@ public class BPAConstants {
 	// BPA Status
 
 	public static final String STATUS_INITIATED = "INPROGRESS";
+	
+	public static final String STATUS_CREATE = "INITIATED";
 
 	public static final String STATUS_APPLIED = "INPROGRESS";
 
 	public static final String STATUS_APPROVED = "APPROVED";
 
 	public static final String STATUS_REJECTED = "REJECTED";
+	
+	public static final String STATUS_CITIZENAPPROVAL = "CITIZEN_APPROVAL_PENDING";
 
 	public static final String STATUS_REVOCATED = "PERMIT REVOCATION";
 
@@ -350,7 +358,7 @@ public class BPAConstants {
 
 	public static final String OC_OCCUPANCY = "$.edcrDetail[0].planDetail.planInformation.occupancy";
 
-	public static final String OC_KHATHANO = "$.edcrDetail[0].planDetail.planInformation.khataNo";
+	public static final String OC_KHASRANO = "$.edcrDetail[0].planDetail.planInformation.khasraNo";
 
 	public static final String OC_PLOTNO = "$.edcrDetail[0].planDetail.planInformation.plotNo";
 	

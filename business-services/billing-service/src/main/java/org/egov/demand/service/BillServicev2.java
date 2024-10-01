@@ -42,30 +42,20 @@ package org.egov.demand.service;
 
 import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
 import static org.egov.demand.util.Constants.CONSUMERCODES_REPLACE_TEXT;
-import static org.egov.demand.util.Constants.EG_BS_BILL_NO_DEMANDS_FOUND_KEY;
-import static org.egov.demand.util.Constants.EG_BS_BILL_NO_DEMANDS_FOUND_MSG;
 import static org.egov.demand.util.Constants.TENANTID_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_KEY;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_FOR_DEMAND_UPDATE_MSG;
 import static org.egov.demand.util.Constants.URL_NOT_CONFIGURED_REPLACE_TEXT;
 import static org.egov.demand.util.Constants.URL_PARAMS_FOR_SERVICE_BASED_DEMAND_APIS;
-import static org.egov.demand.util.Constants.BUSINESS_SERVICE_URL_PARAMETER;
 import static org.egov.demand.util.Constants.URL_PARAM_SEPERATOR;
 
 import java.math.BigDecimal;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -74,13 +64,12 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.validation.Valid;
+
 import org.egov.common.contract.request.PlainAccessRequest;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.demand.config.ApplicationProperties;
 import org.egov.demand.model.BillAccountDetailV2;
 import org.egov.demand.model.BillDetailV2;
-import org.egov.demand.model.BillList;
 import org.egov.demand.model.BillSearchCriteria;
 import org.egov.demand.model.BillV2;
 import org.egov.demand.model.BillV2.BillStatus;
@@ -101,7 +90,6 @@ import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.BillResponseV2;
 import org.egov.demand.web.contract.BusinessServiceDetailCriteria;
-import org.egov.demand.web.contract.CancelBillCriteria;
 import org.egov.demand.web.contract.RequestInfoWrapper;
 import org.egov.demand.web.contract.User;
 import org.egov.demand.web.contract.UserResponse;
@@ -109,7 +97,6 @@ import org.egov.demand.web.contract.UserSearchRequest;
 import org.egov.demand.web.contract.factory.ResponseFactory;
 import org.egov.demand.web.validator.BillValidator;
 import org.egov.tracer.model.CustomException;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -118,7 +105,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.HttpClientErrorException.Forbidden;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -186,25 +173,21 @@ public class BillServicev2 {
 	 * @param cancelBillCriteria
 	 * @param requestInfoWrapper
 	 */
-public Integer cancelBill(UpdateBillRequest updateBillRequest) {
+	public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		
 		UpdateBillCriteria cancelBillCriteria = updateBillRequest.getUpdateBillCriteria();
-	
+		billValidator.validateBillSearchRequest(cancelBillCriteria);
+		Set<String> consumerCodes = cancelBillCriteria.getConsumerCodes();
 		cancelBillCriteria.setStatusToBeUpdated(BillStatus.CANCELLED);
-		int result = 0;
-		for(BillList bill : cancelBillCriteria.getBillList()) 
-		{
-			String businessService = bill.getBusinessService();
-			String consumercodes = bill.getConsumerCode();
-			 Set<String> consumerCodeSet = new HashSet<>();
-		        consumerCodeSet.add(consumercodes);	
-		        cancelBillCriteria.setConsumerCodes(consumerCodeSet);
-            
-			 result = billRepository.updateBillStatus(cancelBillCriteria);
+
+		if (!CollectionUtils.isEmpty(consumerCodes) && consumerCodes.size() > 1) {
+			
+			throw new CustomException("EG_BS_CANCEL_BILL_ERROR", "Only one consumer code can be provided in the Cancel request");
+		} else {
+			int result = billRepository.updateBillStatus(cancelBillCriteria);
 			sendNotificationForBillCancellation(updateBillRequest.getRequestInfo(), cancelBillCriteria);
-		
-		}
 			return result;
+		}
 	}
 
 	private void sendNotificationForBillCancellation(RequestInfo requestInfo, UpdateBillCriteria cancelBillCriteria) {
@@ -245,9 +228,7 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		billValidator.validateBillGenRequest(billCriteria, requestInfo);
 		if (CollectionUtils.isEmpty(billCriteria.getConsumerCode()))
 			billCriteria.setConsumerCode(new HashSet<>());
-		BillResponseV2 res = searchActiveBill(billCriteria.toBillSearchCriteria(), requestInfo);
-		log.info("\n\t\t\tResurlt billing query\t"+res);
-		
+		BillResponseV2 res = searchBill(billCriteria.toBillSearchCriteria(), requestInfo);
 		List<BillV2> bills = res.getBill();
 
 		/* 
@@ -256,11 +237,12 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		if (CollectionUtils.isEmpty(bills))
 		{
 			log.info( "If bills are empty" +bills.size());
-			if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
+			//if(!billCriteria.getBusinessService().equalsIgnoreCase("WS") && !billCriteria.getBusinessService().equalsIgnoreCase("SW"))
+			//if(!billCriteria.getBusinessService().equalsIgnoreCase("SW"))
+			if(!billCriteria.getBusinessService().equalsIgnoreCase("BPA.NC_SAN_FEE"))
 			updateDemandsForexpiredBillDetails(billCriteria.getBusinessService(), billCriteria.getConsumerCode(), billCriteria.getTenantId(), requestInfoWrapper);
 			return generateBill(billCriteria, requestInfo);
 		}
-		
 		
 		
 		/*
@@ -305,18 +287,13 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			isBillExpired = false;
 		}
 			
-			
 		log.info("Consumer Code to be expired " + cosnumerCodesToBeExpired);
 		log.info("Consumer code not found in bill " + cosnumerCodesNotFoundInBill);
 		/*
 		 * If none of the billDetails in the bills needs to be updated then return the search result
 		 */
-		if(CollectionUtils.isEmpty(cosnumerCodesToBeExpired) && CollectionUtils.isEmpty(cosnumerCodesNotFoundInBill)) 
-		{
-			BigDecimal roundedTaxAmount = res.getBill().get(0).getTotalAmount().setScale(0, BigDecimal.ROUND_HALF_UP);
-			res.getBill().get(0).setTotalAmount(roundedTaxAmount);
+		if(CollectionUtils.isEmpty(cosnumerCodesToBeExpired) && CollectionUtils.isEmpty(cosnumerCodesNotFoundInBill))
 			return res;
-		}
 		else {
 			
 			billCriteria.getConsumerCode().retainAll(cosnumerCodesToBeExpired);
@@ -376,20 +353,6 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 	 * @param requestInfo
 	 * @return
 	 */
-	public BillResponseV2 searchActiveBill(BillSearchCriteria billCriteria, RequestInfo requestInfo) {
-
-		List<BillV2> bills = billRepository.findBillActive(billCriteria);
-
-		return BillResponseV2.builder().resposneInfo(responseFactory.getResponseInfo(requestInfo, HttpStatus.OK))
-				.bill(bills).build();
-	}
-	/**
-	 * Searches the bills from DB for given criteria and enriches them with TaxAndPayments array
-	 * 
-	 * @param billCriteria
-	 * @param requestInfo
-	 * @return
-	 */
 	public BillResponseV2 searchBill(BillSearchCriteria billCriteria, RequestInfo requestInfo) {
 
 		List<BillV2> bills = billRepository.findBill(billCriteria);
@@ -417,15 +380,13 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			consumerCodes.addAll(billCriteria.getConsumerCode());
 
 		DemandCriteria demandCriteria=new DemandCriteria();
-		if(billCriteria.getBusinessService().equalsIgnoreCase("WS") || billCriteria.getBusinessService().equalsIgnoreCase("SW"))
+		if(billCriteria.getBusinessService().equalsIgnoreCase("WS") || billCriteria.getBusinessService().equalsIgnoreCase("SW") )
 			demandCriteria = DemandCriteria.builder()
 				.status(org.egov.demand.model.Demand.StatusEnum.ACTIVE.toString())
 				.businessService(billCriteria.getBusinessService())
 				.mobileNumber(billCriteria.getMobileNumber())
 				.tenantId(billCriteria.getTenantId())
 				.email(billCriteria.getEmail())
-				.periodFrom(billCriteria.getPeriodFrom())
-			.periodTo(billCriteria.getPeriodTo())
 				.consumerCode(consumerCodes)
 				//.isPaymentCompleted(false)
 				.receiptRequired(false)
@@ -442,25 +403,11 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			.isPaymentCompleted(false)
 			.receiptRequired(false)
 			.demandId(demandIds)
-			.periodFrom(billCriteria.getPeriodFrom())
-			.periodTo(billCriteria.getPeriodTo())
 			.build();
 		
 
 		/* Fetching demands for the given bill search criteria */
-	List<Demand> demandsWithMultipleActive = demandService.getDemands(demandCriteria, requestInfo);
-
-		System.out.println("demandsWithMultipleActive::"+demandsWithMultipleActive.size());
- 		if (demandsWithMultipleActive.isEmpty()) {
-			//throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
- 			return null;
-		}
-		
-		//filter the demands which are fully paid
-		demandsWithMultipleActive = demandsWithMultipleActive.stream().filter(demand -> !demand.getIsPaymentCompleted()).collect(Collectors.toList());
-
-		List<Demand> demands = filterMultipleActiveDemands(demandsWithMultipleActive);
-		//List<Demand> demands = demandService.getDemands(demandCriteria, requestInfo);
+		List<Demand> demands = demandService.getDemands(demandCriteria, requestInfo);
 		
 		List<BillV2> bills;
 
@@ -470,8 +417,7 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 			return getBillResponse(Collections.emptyList());
 
 		BillRequestV2 billRequest = BillRequestV2.builder().bills(bills).requestInfo(requestInfo).build();
-		if (billRequest.getBills().get(0).getBusinessService().equalsIgnoreCase("WS")||billRequest.getBills().get(0).getBusinessService().equalsIgnoreCase("SW"))
-			kafkaTemplate.send(notifTopicName, null, billRequest);
+		//kafkaTemplate.send(notifTopicName, null, billRequest);
 		return create(billRequest);
 	}
 
@@ -505,20 +451,7 @@ public Integer cancelBill(UpdateBillRequest updateBillRequest) {
 		
 		return payer.get(0);
 	}
-private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 
-		Comparator<Demand> comparator = Comparator.comparing(h -> h.getAuditDetails().getCreatedTime());
-		demands.sort(comparator);
-
-		Map<Long, Demand> fromPeriodToDemand = new LinkedHashMap<>();
-
-		demands.forEach(demand -> {
-			fromPeriodToDemand.put(demand.getTaxPeriodFrom(), demand);
-		});
-
-		return new LinkedList<>(fromPeriodToDemand.values());
-
-	}
 	/**
 	 * Prepares the bill object from the list of given demands
 	 * 
@@ -682,22 +615,6 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 	 */
 	private Long getExpiryDateForDemand(Demand demand) {
 
-	Long previousExpiryDate = 0l;
-		
-		BillSearchCriteria criteria = BillSearchCriteria.builder()
-				.consumerCode(Stream.of(demand.getConsumerCode()).collect(Collectors.toSet()))
-				.tenantId(demand.getTenantId())
-				.build();
-		List<BillV2> searchBills = billRepository.findBill(criteria);
-		
-		if (!CollectionUtils.isEmpty(searchBills)) {
-
-			for (BillDetailV2 billDetail : searchBills.get(0).getBillDetails()) {
-				if (previousExpiryDate.compareTo(billDetail.getExpiryDate()) <= 0)
-					previousExpiryDate = billDetail.getExpiryDate();
-			}
-		}
-		
 		Long billExpiryPeriod = demand.getBillExpiryTime();
 		Long fixedBillExpiryDate = demand.getFixedBillExpiryDate();
 		Calendar cal = Calendar.getInstance();
@@ -705,48 +622,13 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 		if (!ObjectUtils.isEmpty(fixedBillExpiryDate) && fixedBillExpiryDate > cal.getTimeInMillis()) {
 			cal.setTimeInMillis(fixedBillExpiryDate);
 		} else if (!ObjectUtils.isEmpty(billExpiryPeriod) && 0 < billExpiryPeriod) {
-	try {				
-			String expireBillingDay = checkBillExpireDay(cal.getTimeInMillis()+billExpiryPeriod);
-			log.info("The Billing expired day is ---"+expireBillingDay);
-      		         if(expireBillingDay.equals("Saturday")){
-				 log.info("If the billing expired day is ---Saturday"+expireBillingDay);
-				billExpiryPeriod = billExpiryPeriod+172800000L;
-				log.info("bill expiry period for saturday "+billExpiryPeriod); 
-				cal.setTimeInMillis(cal.getTimeInMillis() + billExpiryPeriod);
-				log.info("exact day for bill expiry if day is saturday "+cal.getTimeInMillis()); 
-			}else if (expireBillingDay.equals("Sunday")) {
-				 log.info("If the billing expired day is ---Sunday"+expireBillingDay);
-				billExpiryPeriod = billExpiryPeriod+86400000L;
-				log.info("bill expiry period for sunday "+billExpiryPeriod); 
-				cal.setTimeInMillis(cal.getTimeInMillis() + billExpiryPeriod);
-				log.info("exact day for bill expiry if day is sunday "+cal.getTimeInMillis()); 
-			}else {
-				 log.info("If the billing expired day is not saturday or sunday"+expireBillingDay);
-				cal.setTimeInMillis(cal.getTimeInMillis() + billExpiryPeriod);
-				log.info("exact day for bill expiry if day is not saturday or sunday "+cal.getTimeInMillis()); 
-			}
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-					}
+			cal.setTimeInMillis(cal.getTimeInMillis() + billExpiryPeriod);
+		}
 
 		cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DATE), 23, 59, 59);
-		log.info("exact time for bill expiry "+cal.getTimeInMillis()); 
 		return cal.getTimeInMillis();
 	}
 
-	private String checkBillExpireDay(long dateToChek) throws ParseException {
-		  DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-		  String formatted = format.format(dateToChek);
-		  SimpleDateFormat format1 = new SimpleDateFormat("dd/MM/yyyy");
-		  Date dt1 = format1.parse(formatted);
-		  DateFormat format2 = new SimpleDateFormat("EEEE"); 
-		  String finalDay = format2.format(dt1);
-		  System.out.println(finalDay);
-		  return finalDay;
-	}
 	/**
 	 * creates/ updates bill-account details based on the tax-head code in
 	 * taxCodeAccDetailMap
@@ -878,16 +760,6 @@ private List<Demand> filterMultipleActiveDemands(List<Demand> demands) {
 			ownerPlainRequestFieldsList.add("permanentAddress");
 		}
 		return ownerPlainRequestFieldsList;
-	}
-	public void cancelBill( CancelBillCriteria cancelBillCriteria) {
-		try {
-		String billId=billRepository.getLatestActiveBillId(cancelBillCriteria);
-		billRepository.updateBillStatusBYId(billId,BillStatus.CANCELLED.toString());
-		}
-		catch (Exception e) {
-			throw new CustomException("EGBS_CANCEL_BILL_ERROR", e.getMessage());
-		}
-		
 	}
 	
 }

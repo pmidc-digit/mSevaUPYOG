@@ -9,7 +9,6 @@ import org.egov.demand.repository.TaxHeadMasterRepository;
 import org.egov.demand.web.contract.TaxHeadMasterResponse;
 import org.egov.demand.web.contract.factory.ResponseFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +25,6 @@ public class TaxHeadMasterService {
 	@Autowired
 	private TaxHeadMasterRepository taxHeadMasterRepository;
 
-	@Cacheable(value = "taxHeadResponse", key = "{#searchTaxHead}", sync = true)
 	public TaxHeadMasterResponse getTaxHeads(TaxHeadMasterCriteria searchTaxHead, RequestInfo requestInfo) {
 		log.info("TaxHeadMasterService getTaxHeads");
 		List<TaxHeadMaster> taxHeadMaster = taxHeadMasterRepository.getTaxHeadMaster(requestInfo,searchTaxHead);

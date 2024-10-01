@@ -150,7 +150,7 @@ public class DemandValidatorV1 {
 
 			List<DemandDetail> details = demand.getDemandDetails();
 			Map<String, TaxHeadMaster> taxHeadMap = businessTaxCodeMap.get(demand.getBusinessService());
-			//log.info(" the taxhead map : " + taxHeadMap);
+			log.info(" the taxhead map : " + taxHeadMap);
 			detailsForValidation.addAll(details);
 
 			if (isCreate) {
@@ -171,18 +171,10 @@ public class DemandValidatorV1 {
 						taxHeadsNotFound.add(detail.getTaxHeadMasterCode());
 				});
 
-			if(demandRequest.getDemands().get(0).getBusinessService().equalsIgnoreCase("WS") && demandRequest.getDemands().get(0).getAdditionalDetails() !=null && demandRequest.getDemands().get(0).getAdditionalDetails().toString().contains("connectionType")
-			|| (demandRequest.getDemands().get(0).getBusinessService().equalsIgnoreCase("SW") && demandRequest.getDemands().get(0).getAdditionalDetails() !=null && demandRequest.getDemands().get(0).getTenantId().equalsIgnoreCase("pb.amritsar")  && demandRequest.getDemands().get(0).getAdditionalDetails().toString().contains("connectionType")))
-			{
-				log.info("Demand settled for WS metered connection Or SW commercial connection in amrit");
-			}
-			else {
 			validateTaxPeriod(taxPeriodBusinessMap, demand, errorMap, businessServicesWithNoTaxPeriods);
-			log.info("Demand settled for WS non metered connection and all");
-			}
+			
 			// by default demands are being set to active during create but validation should be done for inactive/ cancelled demand in another logic
-			if(demand.getStatus() == null) 
-				demand.setStatus(StatusEnum.ACTIVE);
+			if(demand.getStatus() == null) demand.setStatus(StatusEnum.ACTIVE);
 		}
 
 		/*
@@ -427,17 +419,6 @@ public class DemandValidatorV1 {
 			Boolean isTaxLtZeroAndCollectionNeToZeroAndCollectionGtTax = tax.compareTo(BigDecimal.ZERO) < 0
 					&& collection.compareTo(tax) != 0 && collection.compareTo(BigDecimal.ZERO) != 0;
 			
-			 String taxHeadMasterCode = "WS_CHARGE,WTAXCHARGES,SEWERAGETAX,SWTAXADJUSTMENT,STAXSECURITY,STAXAPPLICATION";
-
-		        String[] substrings = {"WS_CHARGE,WTAXCHARGES,SEWERAGETAX,SWTAXADJUSTMENT,STAXSECURITY,STAXAPPLICATION"};
-
-		     
-		        for (String substring : substrings) {
-		            if (taxHeadMasterCode.contains(substring)) 
-		            {
-				System.out.println("WS Contains");
-			}
-			else {
 			if (isTaxGtZeroAndCollectionGtTaxOrCollectionLtZero) {
 				errors.add(INVALID_DEMAND_DETAIL_ERROR_MSG
 						.replace(INVALID_DEMAND_DETAIL_COLLECTION_TEXT, collection.toString())
@@ -451,12 +432,11 @@ public class DemandValidatorV1 {
 				
 			}
 		}
-			}
 		if (!CollectionUtils.isEmpty(errors))
 			errorMap.put(INVALID_DEMAND_DETAIL_KEY,
 					INVALID_DEMAND_DETAIL_MSG.replace(INVALID_DEMAND_DETAIL_REPLACETEXT, errors.toString()));
 	}
-	}
+	
 
 /*
  * 
@@ -476,7 +456,7 @@ public class DemandValidatorV1 {
 		Map<String, String> errorMap = new HashMap<>();
 		List<Demand> demands = demandRequest.getDemands();
 		String tenantId = demands.get(0).getTenantId();
-		log.info("Inside Validate For Update :  ");
+
 		List<Demand> oldDemands = new ArrayList<>();
 		List<DemandDetail> olddemandDetails = new ArrayList<>();
 		List<Demand> newDemands = new ArrayList<>();
@@ -496,7 +476,6 @@ public class DemandValidatorV1 {
 				newDemandDetails.addAll(demand.getDemandDetails());
 			}
 		}
-		log.info("Going for validation Of Demand Details next after it:  ");
 		validateOldDemands(oldDemands, olddemandDetails, errorMap, tenantId);
 		
 		/*
@@ -555,15 +534,11 @@ public class DemandValidatorV1 {
 		 */
 		for (Demand demand : oldDemands) {
 			Demand dbDemand = demandMap.get(demand.getId());
-			log.info("Old Demand From Db: "+ dbDemand.toString());
-			if (dbDemand == null) {
+			if (dbDemand == null)
 				unFoundDemandIds.add(demand.getId());
-				log.info("Inside If Condition for validation Of Demand Details as demands not found: ");	
-			}
 			else {
 				/* payment completed field information cannot be changed from outside
 				 */
-				log.info("Inside Else Condition for validation Of Demand Details: ");
 				demand.setIsPaymentCompleted(dbDemand.getIsPaymentCompleted());
 				dbDemandDetailMap.putAll(dbDemand.getDemandDetails().stream()
 						.collect(Collectors.toMap(DemandDetail::getId, Function.identity())));

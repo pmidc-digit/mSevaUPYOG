@@ -50,7 +50,6 @@ import org.egov.demand.web.contract.factory.ResponseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -66,7 +65,6 @@ public class TaxPeriodService {
     @Autowired
     private ResponseFactory responseInfoFactory;
 
-    @Cacheable(value = "taxPeriodResponse", key = "{#taxPeriodCriteria}", sync = true)
     public TaxPeriodResponse searchTaxPeriods(final TaxPeriodCriteria taxPeriodCriteria, final RequestInfo requestInfo) {
         LOGGER.info("-- TaxPeriodService searchTaxPeriods -- ");
         final List<TaxPeriod> taxPeriods = taxPeriodRepository.getTaxPeriod(requestInfo,taxPeriodCriteria);

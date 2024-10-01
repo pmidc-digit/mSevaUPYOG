@@ -279,8 +279,7 @@ public class BillService {
 		if (!demands.isEmpty())
 			bills = prepareBill(demands, requestInfo);
 		else
-			 return null;
-			//throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
+			throw new CustomException(EG_BS_BILL_NO_DEMANDS_FOUND_KEY, EG_BS_BILL_NO_DEMANDS_FOUND_MSG);
 
 		BillRequest billRequest = BillRequest.builder().bills(bills).requestInfo(requestInfo).build();
 		kafkaTemplate.send(notifTopicName, null, billRequest);

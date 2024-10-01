@@ -1395,12 +1395,21 @@ public class DemandService {
 					Long lastDemandFromDate = waterCalculatorDao
 							.searchLastDemandGenFromDate(waterConnection.getConnectionNo(), tenantId);
 
-					if (lastDemandFromDate != null) {
-						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
-								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate())).findFirst()
-								.getAsInt();
-						generateDemandFromIndex++;
-					}
+					  if (lastDemandFromDate != null) {
+	                    	OptionalInt generateDemandFromIndexs = IntStream.range(0, taxPeriods.size())
+	                                .filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
+	                                .findFirst();
+
+	// Check if the value exists
+	if (generateDemandFromIndexs.isPresent()) {
+	     generateDemandFromIndex = generateDemandFromIndexs.getAsInt();
+	     generateDemandFromIndex++; 
+	} 
+	                    }
+
+	                    log.info("lastDemandFromDate: {} and generateDemandFromIndex: {}", lastDemandFromDate,
+	                            generateDemandFromIndex);
+
 					for (int taxPeriodIndex = generateDemandFromIndex; generateDemandFromIndex <= generateDemandToIndex; taxPeriodIndex++) {
 						generateDemandFromIndex++;
 						TaxPeriod taxPeriod = taxPeriods.get(taxPeriodIndex);
@@ -1600,11 +1609,7 @@ public class DemandService {
 if (generateDemandFromIndexs.isPresent()) {
      generateDemandFromIndex = generateDemandFromIndexs.getAsInt();
      generateDemandFromIndex++; 
-} else {
-    // Handle case where no match is found
-    System.out.println("No matching tax period found for the given lastDemandFromDate.");
-}
-                    }
+}              }
 
                     log.info("lastDemandFromDate: {} and generateDemandFromIndex: {}", lastDemandFromDate,
                             generateDemandFromIndex);

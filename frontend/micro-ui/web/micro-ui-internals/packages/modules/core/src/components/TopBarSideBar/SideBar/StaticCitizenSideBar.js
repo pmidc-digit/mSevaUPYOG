@@ -19,7 +19,7 @@ import {
   DeathIcon,
   FirenocIcon,
   LoginIcon
-} from "@egovernments/digit-ui-react-components";
+} from "@upyog/digit-ui-react-components";
 import { Link, useLocation } from "react-router-dom";
 import SideBarMenu from "../../../config/sidebar-menu";
 import { useTranslation } from "react-i18next";
@@ -55,7 +55,7 @@ Feature :: Citizen Webview sidebar
 const Profile = ({ info, stateName, t }) => (
   <div className="profile-section">
     <div className="imageloader imageloader-loaded">
-      <img className="img-responsive img-circle img-Profile" src={defaultImage} />
+      <img className="img-responsive img-circle img-Profile" src={info?.photo ? info?. photo : defaultImage} />
     </div>
     <div id="profile-name" className="label-container name-Profile">
       <div className="label-text"> {info?.name} </div>
@@ -128,13 +128,18 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
     // sessionStorage.clear();
     history.push("/digit-ui/citizen/login");
   };
+  const redirectToScrutinyPage = () => {
+    // localStorage.clear();
+    // sessionStorage.clear();
+    history.push("/digit-ui/citizen/core/edcr/scrutiny");
+  };
   const showProfilePage = () => {
     history.push("/digit-ui/citizen/user/profile");
   };
   const tenantId = Digit.ULBService.getCitizenCurrentTenant();
   const filteredTenantContact = storeData?.tenants.filter((e) => e.code === tenantId)[0]?.contactNumber || storeData?.tenants[0]?.contactNumber;
 
-  let menuItems = [...SideBarMenu(t, showProfilePage, redirectToLoginPage, isEmployee, storeData, tenantId)];
+  let menuItems = [...SideBarMenu(t, showProfilePage, redirectToLoginPage, redirectToScrutinyPage,isEmployee, storeData, tenantId)];
 
   menuItems = menuItems.filter((item) => item.element !== "LANGUAGE");
 

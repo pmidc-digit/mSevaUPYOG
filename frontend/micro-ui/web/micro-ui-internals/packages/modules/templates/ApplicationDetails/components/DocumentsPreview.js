@@ -1,28 +1,45 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { CardSubHeader, PDFSvg } from "@egovernments/digit-ui-react-components";
+import { CardSubHeader, PDFSvg } from "@upyog/digit-ui-react-components";
 
 function DocumentsPreview({ documents, svgStyles = {}, isSendBackFlow = false, isHrLine = false, titleStyles }) {
     const { t } = useTranslation();
     const isStakeholderApplication = window.location.href.includes("stakeholder");
 
     return (
-        <div style={{ marginTop: "19px" }}>
+        <div style={{ marginTop: "19px", display:"flex",flexWrap:"wrap", flexDirection:"row",borderRadius: "4px",background: "#FAFAFA", border: "1px solid #D6D5D4", padding: "8px"}}>
             {!isStakeholderApplication && documents?.map((document, index) => (
                 <React.Fragment key={index}>
-                    {document?.title ? <CardSubHeader style={titleStyles ? titleStyles : { marginTop: "32px", marginBottom: "8px", color: "#505A5F", fontSize: "24px" }}>{t(document?.title)}</CardSubHeader> : null}
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-start" }}>
+                    {/* {document?.title ? <CardSubHeader style={titleStyles ? titleStyles : { marginTop: "32px", marginBottom: "8px", color: "#505A5F", fontSize: "24px" }}>{t(document?.title)}</CardSubHeader> : null} */}
                     <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-start" }}>
                         {document?.values && document?.values.length > 0 ? document?.values?.map((value, index) => (
+                            <div style={{width: "180px",}}>
+                            <CardSubHeader style={titleStyles ? titleStyles : { marginTop: "32px", marginBottom: "8px", color: "#505A5F", fontSize: "24px" }}>{t(document?.title)}</CardSubHeader>
                             <a target="_" href={value?.url} style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto", minWidth: "100px" }} key={index}>
-                                <div style={{ display: "flex", justifyContent: "center" }}>
+                                <div style={{ display: "flex", justifyContent: "flex-start" }}>
                                     <PDFSvg />
                                 </div>
-                                <p style={{ marginTop: "8px", fontWeight: "bold", textAlign: "center", color: "#505A5F"  }}>{t(value?.title)}</p>
+                                <p style={{ marginTop: "8px", fontWeight: "bold", textAlign: "start", color: "#505A5F"  }}>{t(value?.title)}</p>
                                 {isSendBackFlow ? value?.documentType?.includes("NOC") ? <p style={{ textAlign: "center" }}>{t(value?.documentType.split(".")[1])}</p> : <p style={{ textAlign: "center" }}>{t(value?.documentType)}</p> : ""}
                             </a>
-                        )) : !(window.location.href.includes("citizen")) && <div><p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p></div>}
+                            </div>
+                        )) : !(window.location.href.includes("citizen")) && <div><p>{t("BPA_NO_DOCUMENTS_UPLOADED_LABEL")}</p>
+                        
+                        <div style={{width: "180px",}}>
+                            <CardSubHeader style={titleStyles ? titleStyles : { marginTop: "32px", marginBottom: "8px", color: "#505A5F", fontSize: "24px" }}></CardSubHeader>
+                            <div   style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto", minWidth: "100px" }} key={index}>
+                                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                                    <PDFSvg />
+                                </div>
+                                <p style={{ marginTop: "8px", fontWeight: "bold", textAlign: "start", color: "#505A5F"  }}></p>
+                                {isSendBackFlow ? value?.documentType?.includes("NOC") ? <p style={{ textAlign: "center" }}></p> : <p style={{ textAlign: "center" }}></p> : ""}
+                            </div>
+                            </div>
+                        </div>}
                     </div>
                     {isHrLine && documents?.length != index + 1 ? <hr style={{ color: "#D6D5D4", backgroundColor: "#D6D5D4", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> : null}
+                    </div>
                 </React.Fragment>
             ))}
             {isStakeholderApplication && documents?.map((document, index) => (

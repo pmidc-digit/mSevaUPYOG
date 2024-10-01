@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Switch, useLocation, Link } from "react-router-dom";
-import { PrivateRoute, BreadCrumb } from "@egovernments/digit-ui-react-components";
+import { PrivateRoute, BreadCrumb } from "@upyog/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import Inbox from "./Inbox";
 // import NewApplication from "./NewApplication";
@@ -156,7 +156,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const ReNewApplication = Digit?.ComponentRegistryService?.getComponent('TLReNewApplication');
   const Response = Digit?.ComponentRegistryService?.getComponent('TLResponse');
   const Search = Digit?.ComponentRegistryService?.getComponent('TLSearch');
-
+  const CommonRedirect = Digit?.ComponentRegistryService?.getComponent('CommonRedirect')
   return (
     <Switch>
       <React.Fragment>
@@ -189,6 +189,7 @@ const EmployeeApp = ({ path, url, userType }) => {
             )}
           />
           <PrivateRoute path={`${path}/new-application`} component={() => <NewApplication parentUrl={url} />} />
+          <PrivateRoute path={`${path}/common`} component={() => <CommonRedirect parentUrl={url} />} />
           <PrivateRoute path={`${path}/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/renew-application-details/:id`} component={(props) => <ReNewApplication {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/edit-application-details/:id`} component={(props) => <ReNewApplication {...props} header={t("TL_ACTION_RESUBMIT")} parentRoute={path} />} />

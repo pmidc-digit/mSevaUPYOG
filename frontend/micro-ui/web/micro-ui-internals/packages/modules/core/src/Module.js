@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { Provider } from "react-redux";
 import { BrowserRouter as Router } from "react-router-dom";
 import { getI18n } from "react-i18next";
-import { Body, Loader } from "@egovernments/digit-ui-react-components";
+import { Body, Loader } from "@upyog/digit-ui-react-components";
 import { DigitApp } from "./App";
 import SelectOtp from "./pages/citizen/Login/SelectOtp";
 import AcknowledgementCF from "./components/AcknowledgementCF";
@@ -12,6 +12,8 @@ import CitizenFeedback from "./components/CitizenFeedback";
 import getStore from "./redux/store";
 import ErrorBoundary from "./components/ErrorBoundaries";
 import { useState } from "react";
+import EDCRAcknowledgement1 from "./pages/citizen/Home/EDCR/EDCRAcknowledgement1";
+import CreateEDCR1 from "./pages/citizen/Home/EDCR";
 
 const DigitUIWrapper = ({ stateCode, enabledModules, moduleReducers }) => {
   const { isLoading, data: initData } = Digit.Hooks.useInitStore(stateCode, enabledModules);
@@ -112,6 +114,9 @@ const componentsToRegister = {
   SelectOtp,
   AcknowledgementCF,
   CitizenFeedback,
+  EDCRAcknowledgement1,
+  CreateEDCR1,
+  
 };
 
 export const initCoreComponents = () => {

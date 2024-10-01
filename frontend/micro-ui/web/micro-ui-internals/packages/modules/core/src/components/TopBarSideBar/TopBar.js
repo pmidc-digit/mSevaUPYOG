@@ -1,4 +1,4 @@
-import { Dropdown, Hamburger, TopBar as TopBarComponent } from "@egovernments/digit-ui-react-components";
+import { Dropdown, Hamburger, TopBar as TopBarComponent } from "@upyog/digit-ui-react-components";
 import React from "react";
 import { useHistory, useLocation } from "react-router-dom";
 import ChangeCity from "../ChangeCity";
@@ -143,7 +143,11 @@ const TopBar = ({
                     profilePic == null ? (
                       <TextToImg name={userDetails?.info?.name || userDetails?.info?.userInfo?.name || "Employee"} />
                     ) : (
+<<<<<<< Updated upstream
                       <img src="https://github.com/dinternationalit/dtm/blob/main/src/images/logo.jpg" style={{ height: "48px", width: "48px", borderRadius: "50%" }} />
+=======
+                      <img src={profilePic} style={{ height: "48px", width: "48px", borderRadius: "50%" }} />
+>>>>>>> Stashed changes
                     )
                   }
                 />

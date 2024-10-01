@@ -1,4 +1,4 @@
-import { CardLabel, FormStep, LinkButton, RadioOrSelect, TextInput } from "@egovernments/digit-ui-react-components";
+import { CardLabel, FormStep, LinkButton, RadioOrSelect, TextInput } from "@upyog/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import GIS from "./GIS";
@@ -16,13 +16,15 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
   const stateId = Digit.ULBService.getStateId();
   const [Pinerror, setPinerror] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [pincode, setPincode] = useState(currPincode || formData?.address?.pincode ||propertyData.address.pincode|| "");
+  const [pincode, setPincode] = useState(currPincode || formData?.address?.pincode ||propertyData?.address?.pincode|| "");
   const [geoLocation, setgeoLocation] = useState(formData?.address?.geoLocation || "")
   const [tenantIdData, setTenantIdData] = useState(formData?.Scrutiny?.[0]?.tenantIdData);
-  const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city  || currCity ||propertyData.address.pincode || null);
-  const [street, setStreet] = useState(formData?.address?.street || propertyData.address.street||"");
-  const [landmark, setLandmark] = useState(formData?.address?.landmark || formData?.address?.Landmark || propertyData.address.landmark|| "");
+  const [selectedCity, setSelectedCity] = useState(() => formData?.address?.city  || currCity ||propertyData?.address?.pincode || null);
+  const [street, setStreet] = useState(formData?.address?.street || propertyData?.address?.street||"");
+  const [landmark, setLandmark] = useState(formData?.address?.landmark || formData?.address?.Landmark || propertyData?.address?.landmark|| "");
   const [placeName, setplaceName] = useState(formData?.address?.placeName || formData?.placeName || "");
+  const [localities, setLocalities] = useState();
+  const [selectedLocality, setSelectedLocality] = useState(propertyData?.address?.locality||formData?.address?.locality ||null);
   //const { isLoading, data: citymodules } = Digit.Hooks.obps.useMDMS(stateId, "tenant", ["citymodule"]);
   let [cities, setcitiesopetions] = useState(allCities);
   let validation = { };
@@ -85,35 +87,39 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
   let isSendBackTOCitizen = window.location.href.includes("sendbacktocitizen");
 
 
-  const [localities, setLocalities] = useState();
-
-  const [selectedLocality, setSelectedLocality] = useState(propertyData.address.locality||formData.address.locality ||null);
 
   useEffect(() => {
-    // if (selectedCity && fetchedLocalities  && !Pinerror) {
-    //   let __localityList = fetchedLocalities;
-    //   let filteredLocalityList = [];
-    //   console.log("fetchedLocalities",fetchedLocalities)
-    //   if (formData?.address?.locality && formData?.address?.locality?.code === selectedLocality?.code) {
-    //     setSelectedLocality(formData.address.locality);
-    //   }
+    if(!propertyData?.address?.locality)
+    {
+      if (selectedCity && fetchedLocalities  && !Pinerror) {
+        let __localityList = fetchedLocalities;
+        let filteredLocalityList = [];
+        console.log("fetchedLocalities",fetchedLocalities)
+        if (formData?.address?.locality && formData?.address?.locality?.code === selectedLocality?.code) {
+          setSelectedLocality(formData.address.locality);
+        }
+  
+        if ((formData?.address?.pincode || pincode) && !Pinerror) {
+          filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == pincode));
+          if (!formData?.address?.locality && filteredLocalityList.length<=0) setSelectedLocality();
+        }
+        if(!localities || (filteredLocalityList.length > 0 && localities.length !== filteredLocalityList.length) || (filteredLocalityList.length <=0 && localities && localities.length !==__localityList.length))
+        {
+          console.log("filteredLocalityList",filteredLocalityList)
+          setLocalities(() => (filteredLocalityList.length > 0 ? filteredLocalityList : __localityList));
+        }
+        if (filteredLocalityList.length === 1 && ((selectedLocality == null) || (selectedLocality && filteredLocalityList[0]?.code !== selectedLocality?.code))) {
+          setSelectedLocality(filteredLocalityList[0]);
+          sessionStorage.setItem("currLocality", JSON.stringify(filteredLocalityList[0]));
+        }
+      }
+  
+    }
+    else {
+      setSelectedLocality(propertyData?.address?.locality)
+    }
+    
 
-    //   if ((formData?.address?.pincode || pincode) && !Pinerror) {
-    //     filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == pincode));
-    //     if (!formData?.address?.locality && filteredLocalityList.length<=0) setSelectedLocality();
-    //   }
-    //   if(!localities || (filteredLocalityList.length > 0 && localities.length !== filteredLocalityList.length) || (filteredLocalityList.length <=0 && localities && localities.length !==__localityList.length))
-    //   {
-    //     console.log("filteredLocalityList",filteredLocalityList)
-    //     setLocalities(() => (filteredLocalityList.length > 0 ? filteredLocalityList : __localityList));
-    //   }
-    //   if (filteredLocalityList.length === 1 && ((selectedLocality == null) || (selectedLocality && filteredLocalityList[0]?.code !== selectedLocality?.code))) {
-    //     setSelectedLocality(filteredLocalityList[0]);
-    //     sessionStorage.setItem("currLocality", JSON.stringify(filteredLocalityList[0]));
-    //   }
-    // }
-
-    setSelectedLocality(propertyData.address.locality)
   }, [selectedCity, formData?.pincode, fetchedLocalities, pincode,geoLocation]);
 
 
@@ -231,7 +237,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
             <div>
               <span>
                 <svg 
-                style={!isMobile ? {position: "relative", left: "515px", bottom: "35px", marginTop: "-20px"} : { float: "right", position: "relative", bottom: "35px", marginTop: "-20px", marginRight: "5px" }} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                style={!isMobile ? {position: "relative", left: "515px", bottom: "25px", marginTop: "-20px"} : { float: "right", position: "relative", bottom: "25px", marginTop: "-20px", marginRight: "5px" }} width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M11 7C8.79 7 7 8.79 7 11C7 13.21 8.79 15 11 15C13.21 15 15 13.21 15 11C15 8.79 13.21 7 11 7ZM19.94 10C19.48 5.83 16.17 2.52 12 2.06V0H10V2.06C5.83 2.52 2.52 5.83 2.06 10H0V12H2.06C2.52 16.17 5.83 19.48 10 19.94V22H12V19.94C16.17 19.48 19.48 16.17 19.94 12H22V10H19.94ZM11 18C7.13 18 4 14.87 4 11C4 7.13 7.13 4 11 4C14.87 4 18 7.13 18 11C18 14.87 14.87 18 11 18Z" fill="#505A5F" />
                 </svg>
               </span>
@@ -251,7 +257,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
         name="pincode"
         onChange={selectPincode}
         value={pincode}
-        disabled={true}
+        disabled={propertyData?.address ? true:false}
       />}
       <CardLabel>{`${t("BPA_CITY_LABEL")}*`}</CardLabel>
       {!isOpen && <RadioOrSelect
@@ -261,24 +267,39 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
         onSelect={selectCity}
         t={t}
         isDependent={true}
-        //labelKey="TENANT_TENANTS"
         disabled={true}
       />}
-      
+            {!isOpen && selectedCity && localities && !propertyData?.address ?(
         <span className={"form-pt-dropdown-only"}>
           <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel>
-          <TextInput
+          <RadioOrSelect
             optionCardStyles={{ maxHeight:"20vmax", overflow:"scroll" }}
             isMandatory={config.isMandatory}
-            //options={}
-            value={propertyData.address.locality.name}
+            options={localities.sort((a, b) => a.name.localeCompare(b.name))}
+            selectedOption={selectedLocality}
             optionKey="i18nkey"
+            onSelect={selectLocality}
             t={t}
             isDependent={true}
             labelKey={`${stringReplaceAll(selectedCity?.code,".","_").toUpperCase()}_REVENUE`}
-          disabled={true}
+          //disabled={isEdit}
           />
         </span>
+      ):  <span className={"form-pt-dropdown-only"}>
+      <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel>
+      <TextInput
+        optionCardStyles={{ maxHeight:"20vmax", overflow:"scroll" }}
+        isMandatory={config.isMandatory}
+        //options={}
+        value={propertyData?.address?.locality?.name}
+        optionKey="i18nkey"
+        t={t}
+        isDependent={true}
+        labelKey={`${stringReplaceAll(selectedCity?.code,".","_").toUpperCase()}_REVENUE`}
+      disabled={propertyData?.address ? true:false}
+      />
+    </span>}
+      
       <CardLabel>{`${t("BPA_DETAILS_SRT_NAME_LABEL")}`}</CardLabel>
       {!isOpen && <TextInput
         style={{ }}
@@ -288,7 +309,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
         name="street"
         onChange={selectStreet}
         value={street}
-        disabled={true}
+        disabled={propertyData?.address ? true:false}
       />}
       <CardLabel>{`${t("ES_NEW_APPLICATION_LOCATION_LANDMARK")}`}</CardLabel>
       {!isOpen && <TextInput
@@ -299,7 +320,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
         name="landmark"
         onChange={selectLandmark}
         value={landmark}
-        disabled={true}
+        disabled={propertyData?.address ? true:false}
       // {...(validation = {
       //     isRequired: true,
       //     pattern: getPattern("Name"),

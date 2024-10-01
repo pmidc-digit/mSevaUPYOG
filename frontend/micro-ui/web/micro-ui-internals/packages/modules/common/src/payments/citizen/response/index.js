@@ -1,4 +1,4 @@
-import { Banner, Card, CardText, Loader, Row, StatusTable, SubmitBar, DownloadPrefixIcon } from "@egovernments/digit-ui-react-components";
+import { Banner, Card, CardText, Loader, Row, StatusTable, SubmitBar, DownloadPrefixIcon } from "@upyog/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
@@ -38,10 +38,19 @@ export const convertEpochToDate = (dateEpoch) => {
   );
   
   const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
+    
     retry: false,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
+  
+  const cities = Digit.Hooks.useTenants();
+  let ulbType=""
+  const loginCity=JSON.parse(sessionStorage.getItem("Digit.User"))?.value?.info?.permanentCity
+  if(cities.data!==undefined){
+    const selectedTenantData = cities.data.find(item => item?.city?.districtTenantCode=== loginCity);
+    ulbType=selectedTenantData?.city?.ulbGrade  
+  }
 
   const { label } = Digit.Hooks.useApplicationsForBusinessServiceSearch({ businessService: business_service }, { enabled: false });
 
@@ -150,8 +159,22 @@ export const convertEpochToDate = (dateEpoch) => {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
     }
   };
+  // const printpetCertificate = async () => {
+  //   // const tenantId = Digit.ULBService.getCurrentTenantId();
+  //   const state = tenantId;
+  //   const applicationDetails = await Digit.PTRService.search({ applicationNumber: consumerCode, tenantId });
+  //   console.log("aplllldetailllin citizen",applicationDetails)
+  //   const generatePdfKeyForPTR = "petservicecertificate";
+
+  //   if (applicationDetails) {
+  //     let response = await Digit.PaymentService.generatePdf(state, { PetRegistrationApplications: applicationDetails?.PetRegistrationApplications }, generatePdfKeyForPTR);
+  //     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
+  //     window.open(fileStore[response.filestoreIds[0]], "_blank");
+  //   }
+  // };
 
   const printReciept = async () => {
+    let generatePdfKeyForWs="ws-onetime-receipt";
     if (printing) return;
     setPrinting(true);
     let paymentArray=[];
@@ -206,10 +229,29 @@ export const convertEpochToDate = (dateEpoch) => {
           }
           payments.Payments[0].additionalDetails=details;
           paymentArray[0]=payments.Payments[0]
-          console.log("paymentArray",paymentArray)
-           response = await Digit.PaymentService.generatePdf(state, { Payments: paymentArray }, generatePdfKey);
+          console.log("generatedpdfkey",generatePdfKey)
+          if(business_service=="WS" || business_service=="SW"){
+            response = await Digit.PaymentService.generatePdf(state, { Payments: [{...paymentData}] }, generatePdfKeyForWs);
+          }
+          else if(paymentData.paymentDetails[0].businessService.includes("BPA")){
+            const designation=(ulbType==="Municipal Corporation") ? "Municipal Commissioner" : "Executive Officer"
+            const updatedpayments={
+              ...paymentData,
+              additionalDetails:{
+                  ...paymentData.additionalDetails,
+                  designation:designation,
+                  ulbType:ulbType
+              }
+            }
+
+            response = await Digit.PaymentService.generatePdf(state, { Payments: [{...updatedpayments}] }, generatePdfKey);
+          }
+          else{
+            response = await Digit.PaymentService.generatePdf(state, { Payments: [{...paymentData}] }, generatePdfKey);
+          }
+          
         }       
-    }  
+    }
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     if (fileStore && fileStore[response.filestoreIds[0]]) {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
@@ -265,7 +307,12 @@ export const convertEpochToDate = (dateEpoch) => {
       setTimeout(() => URL.revokeObjectURL(link.href), 7000);
     }
   };
-
+  // let workflowDetails = Digit.Hooks.useWorkflowDetails({
+  //   tenantId: "pg.citya",
+  //   id: "PG-BP-2024-09-23-001337",
+  //   moduleCode: "OBPS",
+  // });
+  // console.log("workflowDetails",workflowDetails)
   const getPermitOccupancyOrderSearch = async(order, mode="download") => {
     let queryObj = { applicationNo: bpaData?.[0]?.applicationNo };
     let bpaResponse = await Digit.OBPSService.BPASearch(bpaData?.[0]?.tenantId, queryObj);
@@ -276,7 +323,26 @@ export const convertEpochToDate = (dateEpoch) => {
       currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
     );
     let reqData = { ...bpaDataDetails, edcrDetail: [{ ...edcrData }] };
-    console.log("reqData",reqData)
+    const state = Digit.ULBService.getStateId();
+
+    let count=0;
+    reqData.additionalDetails.submissionDate=bpaData?.[0]?.workflowData?.auditDetails?.createdTime;
+    // for(let i=0;i<bpaData?.[0]?.data?.processInstances?.length;i++){
+    //   if((workflowDetails?.data?.processInstances[i]?.action==="POST_PAYMENT_APPLY" ||workflowDetails?.data?.processInstances[i]?.action==="PAY" ) && (workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus==="APPROVAL_INPROGRESS")   && count==0 ){
+    //       reqData.additionalDetails.submissionDate=workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+    //       count=1;
+    //     }
+    // }
+
+    if(reqData?.additionalDetails?.approvedColony=="NO"){
+      reqData.additionalDetails.permitData= "The plot has been officially regularized under No."+reqData?.additionalDetails?.NocNumber +"  dated dd/mm/yyyy, registered in the name of <name as per the NOC>. This regularization falls within the jurisdiction of "+ state +".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
+    }
+    else if(reqData?.additionalDetails?.approvedColony=="YES" ){
+      reqData.additionalDetails.permitData="The building plan falls under approved colony "+reqData?.additionalDetails?.nameofApprovedcolony
+    }
+    else{
+      reqData.additionalDetails.permitData="The building plan falls under Lal Lakir"
+    }
     let response = await Digit.PaymentService.generatePdf(bpaDataDetails?.tenantId, { Bpa: [reqData] }, order);
     const fileStore = await Digit.PaymentService.printReciept(bpaDataDetails?.tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
@@ -471,7 +537,7 @@ export const convertEpochToDate = (dateEpoch) => {
             assessmentYearForReceipt=fromDate+"-"+toDate;
          
           
-      payloadReceiptDetails.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails.map(ele => {
+            payments.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails.map(ele => {
          
         if(ele.taxHeadCode == "PT_TAX")
         {tax=ele.adjustedAmount;
@@ -523,7 +589,7 @@ export const convertEpochToDate = (dateEpoch) => {
       "adhoc_penalty":adhoc_penalty,
       "adhoc_rebate":adhoc_rebate,
       "roundoff":roundoff,
-      "total": payloadReceiptDetails.Payments[0].paymentDetails[0].bill.billDetails[0].amountPaid
+      "total": payments.Payments[0].paymentDetails[0].bill.billDetails[0].amountPaid
   
       };
       taxRow={
@@ -539,7 +605,7 @@ export const convertEpochToDate = (dateEpoch) => {
         "adhoc_penalty":adhoc_penaltyT,
         "adhoc_rebate":adhoc_rebateT,
         "roundoff":roundoffT,
-        "total": payloadReceiptDetails.Payments[0].paymentDetails[0].bill.billDetails[0].amount
+        "total": payments.Payments[0].paymentDetails[0].bill.billDetails[0].amount
       };
       arrearArray.push(arrearRow);
       taxArray.push(taxRow);
@@ -583,7 +649,7 @@ export const convertEpochToDate = (dateEpoch) => {
         applicationNumber={paymentData?.paymentDetails[0].receiptNumber}
         successful={true}
       />
-      <CardText>{t(`${bannerText}_DETAIL`)}</CardText>
+      <CardText></CardText>
       <StatusTable>
         <Row rowContainerStyle={rowContainerStyle} last label={t(label)} text={applicationNo} />
         {/** TODO : move this key and value into the hook based on business Service */}
@@ -592,7 +658,7 @@ export const convertEpochToDate = (dateEpoch) => {
             rowContainerStyle={rowContainerStyle}
             last
             label={t("CS_PAYMENT_BILLING_PERIOD")}
-            text={getBillingPeriod(reciept_data?.paymentDetails[0]?.bill?.billDetails[0])}
+            text={getBillingPeriod(paymentData?.paymentDetails[0]?.bill?.billDetails[0])}
           />
         )}
 
@@ -601,7 +667,7 @@ export const convertEpochToDate = (dateEpoch) => {
             rowContainerStyle={rowContainerStyle}
             last
             label={t("CS_PAYMENT_AMOUNT_PENDING")}
-            text={(reciept_data?.paymentDetails?.[0]?.totalDue && reciept_data?.paymentDetails?.[0]?.totalAmountPaid ) ? `₹ ${reciept_data?.paymentDetails?.[0]?.totalDue - reciept_data?.paymentDetails?.[0]?.totalAmountPaid}` : `₹ ${0}`}
+            text={paymentData?.totalDue-paymentData?.totalAmountPaid || (reciept_data?.paymentDetails?.[0]?.totalDue && reciept_data?.paymentDetails?.[0]?.totalAmountPaid ) ? `₹ ${reciept_data?.paymentDetails?.[0]?.totalDue - reciept_data?.paymentDetails?.[0]?.totalAmountPaid}` : `₹ ${0}`}
           />
         )}
 
@@ -610,7 +676,7 @@ export const convertEpochToDate = (dateEpoch) => {
           rowContainerStyle={rowContainerStyle}
           last
           label={t(ommitRupeeSymbol ? "CS_PAYMENT_AMOUNT_PAID_WITHOUT_SYMBOL" : "CS_PAYMENT_AMOUNT_PAID")}
-          text={reciept_data?.paymentDetails?.[0]?.totalAmountPaid ? ("₹ " +  reciept_data?.paymentDetails?.[0]?.totalAmountPaid) : `₹ 0` }
+          text={paymentData?.totalAmountPaid ||( reciept_data?.paymentDetails?.[0]?.totalAmountPaid ? ("₹ " +  reciept_data?.paymentDetails?.[0]?.totalAmountPaid) : `₹ 0`) }
         />
         {(business_service !== "PT" || workflw) && (
           <Row
@@ -640,6 +706,26 @@ export const convertEpochToDate = (dateEpoch) => {
           {t("TL_CERTIFICATE")}
         </div>
       ) : null}
+      {/*for pett */}
+      {business_service == "pet-services" ? (
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginRight: "20px", marginTop:"15px",marginBottom:"15px" }} onClick={printReciept}>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("PTR_FEE_RECEIPT")}
+        </div>
+      ) : null}
+      {/* {business_service == "pet-services" ? (
+        <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginTop:"15px" }} onClick={printpetCertificate}>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+          </svg>
+          {t("PTR_CERTIFICATE")}
+        </div>
+      ) : null} */}
+      {/*for pett */}
       {bpaData?.[0]?.businessService === "BPA_OC" && (bpaData?.[0]?.status==="APPROVED" || bpaData?.[0]?.status==="PENDING_SANC_FEE_PAYMENT") ? (
         <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={e => getPermitOccupancyOrderSearch("occupancy-certificate")}>
           <DownloadPrefixIcon />
@@ -694,6 +780,11 @@ export const convertEpochToDate = (dateEpoch) => {
         </div>
       )}
       {business_service == "TL" && (
+        <Link to={`/digit-ui/citizen`}>
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+        </Link>
+      )}
+      {business_service == "pet-services" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Banner, Card, CardText, SubmitBar, ActionBar, DownloadPrefixIcon, Loader, Menu } from "@egovernments/digit-ui-react-components";
+import { Banner, Card, CardText, SubmitBar, ActionBar, DownloadPrefixIcon, Loader, Menu } from "@upyog/digit-ui-react-components";
 import { useHistory, useParams, Link, LinkLabel } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
+import { format } from "date-fns";
 
 export const convertEpochToDate = (dateEpoch) => {
   // Returning NA in else case because new Date(null) returns Current date from calender
@@ -31,6 +32,7 @@ export const SuccessfulPayment = (props) => {
 
   props.setLink(combineResponseFSM);
   let { consumerCode, receiptNumber, businessService } = useParams();
+  console.log("consummennene",consumerCode);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   receiptNumber = receiptNumber.replace(/%2F/g, "/");
   const { data = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
@@ -41,6 +43,14 @@ export const SuccessfulPayment = (props) => {
     {},
     { enabled: businessService?.includes("BPA") ? true : false }
   );
+  const cities = Digit.Hooks.useTenants();
+  let ulbType=""
+  const loginCity=JSON.parse(sessionStorage.getItem("Digit.User"))?.value?.info?.tenantId
+  if(cities.data!==undefined){
+    const selectedTenantData = cities.data.find(item => item.city.districtTenantCode=== loginCity);
+    ulbType=selectedTenantData.city.ulbGrade 
+  }
+
   const FSM_EDITOR = Digit.UserService.hasAccess("FSM_EDITOR_EMP") || false;
 
   function onActionSelect(action) {
@@ -110,6 +120,21 @@ export const SuccessfulPayment = (props) => {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
     }
   };
+  
+  // const printpetCertificate = async () => {
+  //   const tenantId = Digit.ULBService.getCurrentTenantId();
+  //   const state = Digit.ULBService.getStateId();
+  //   const applicationpetDetails = await Digit.PTRService.search({ tenantId, applicationNumber: consumerCode });
+  //   console.log("aplllldetailll",consumerCode)
+  //   const generatePdfKeyForPTR = "petservicecertificate";
+
+  //   if (applicationpetDetails) {
+  //     let response = await Digit.PaymentService.generatePdf(state, { PetRegistrationApplications: applicationpetDetails?.PetRegistrationApplications }, generatePdfKeyForPTR);
+  //     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
+  //     window.open(fileStore[response.filestoreIds[0]], "_blank");
+  //   }
+  // };
+  
 
   const convertDateToEpoch = (dateString, dayStartOrEnd = "dayend") => {
     //example input format : "2018-10-02"
@@ -159,7 +184,13 @@ export const SuccessfulPayment = (props) => {
       });
     }
   };
-
+ 
+  let workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: data?.[0]?.tenantId,
+    id: data?.[0]?.applicationNo,
+    moduleCode: "OBPS",
+  });
+  
   const getPermitOccupancyOrderSearch = async (order, mode = "download") => {
     let queryObj = { applicationNo: data?.[0]?.applicationNo };
     let bpaResponse = await Digit.OBPSService.BPASearch(data?.[0]?.tenantId, queryObj);
@@ -171,6 +202,30 @@ export const SuccessfulPayment = (props) => {
       currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
     );
     let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }] };
+    const state = Digit.ULBService.getStateId();
+
+    let count=0;
+    for(let i=0;i<workflowDetails?.data?.processInstances?.length;i++){
+      const newDate=new Date(workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime);
+    const formattedDate=format(newDate, 'dd-MM-yyyy HH:mm:ss');
+    console.log("formatteddate2", formattedDate)
+      if((workflowDetails?.data?.processInstances[i]?.action==="POST_PAYMENT_APPLY" ||workflowDetails?.data?.processInstances[i]?.action==="PAY" ) && (workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus==="APPROVAL_INPROGRESS")   && count==0 ){
+          reqData.additionalDetails.submissionDate=workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+          reqData.additionalDetails.formattedSubmissionDate=formattedDate;
+          count=1;
+        }
+    }
+        
+    if(reqData?.additionalDetails?.approvedColony=="NO"){
+      reqData.additionalDetails.permitData= "The plot has been officially regularized under No."+reqData?.additionalDetails?.NocNumber +"  dated dd/mm/yyyy, registered in the name of <name as per the NOC>. This regularization falls within the jurisdiction of "+ state +".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
+    }
+    else if(reqData?.additionalDetails?.approvedColony=="YES" ){
+      reqData.additionalDetails.permitData="The building plan falls under approved colony "+reqData?.additionalDetails?.nameofApprovedcolony
+    }
+    else{
+      reqData.additionalDetails.permitData="The building plan falls under Lal Lakir"
+    }
+    
     let response = await Digit.PaymentService.generatePdf(bpaData?.tenantId, { Bpa: [reqData] }, order);
     const fileStore = await Digit.PaymentService.printReciept(bpaData?.tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
@@ -221,6 +276,26 @@ export const SuccessfulPayment = (props) => {
             }
             payments.Payments[0].paymentDetails[0].additionalDetails=details; 
             printRecieptNew(payments)
+        }
+        else if(payments.Payments[0].paymentDetails[0].businessService.includes("BPA")){
+          const designation=(ulbType==="Municipal Corporation") ? "Municipal Commissioner" : "Executive Officer"
+          const updatedpayments={
+            ...payments,
+            payments:payments.Payments.map((payment, index)=>{
+              if(index===0){
+                return{
+                  ...payment,
+                  additionalDetails:{
+                    ...payment.additionalDetails,
+                    designation:designation,
+                    ulbType:ulbType
+                  }
+                }
+              }
+              return payment;
+            })
+          }
+          response = await Digit.PaymentService.generatePdf(state, { Payments: updatedpayments.payments }, generatePdfKey);
         }
         else {
           response = await Digit.PaymentService.generatePdf(state, { Payments: payments.Payments }, generatePdfKey);
@@ -347,7 +422,7 @@ export const SuccessfulPayment = (props) => {
             assessmentYearForReceipt=fromDate+"-"+toDate;
          
           
-      payloadReceiptDetails.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails.map(ele => {
+            payments.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails.map(ele => {
          
         if(ele.taxHeadCode == "PT_TAX")
         {tax=ele.adjustedAmount;
@@ -399,7 +474,7 @@ export const SuccessfulPayment = (props) => {
       "adhoc_penalty":adhoc_penalty,
       "adhoc_rebate":adhoc_rebate,
       "roundoff":roundoff,
-      "total": payloadReceiptDetails.Payments[0].paymentDetails[0].bill.billDetails[0].amountPaid
+      "total": payments.Payments[0].paymentDetails[0].bill.billDetails[0].amountPaid
   
       };
       taxRow={
@@ -415,7 +490,7 @@ export const SuccessfulPayment = (props) => {
         "adhoc_penalty":adhoc_penaltyT,
         "adhoc_rebate":adhoc_rebateT,
         "roundoff":roundoffT,
-        "total": payloadReceiptDetails.Payments[0].paymentDetails[0].bill.billDetails[0].amount
+        "total": payments.Payments[0].paymentDetails[0].bill.billDetails[0].amount
       };
       arrearArray.push(arrearRow);
       taxArray.push(taxRow);
@@ -465,6 +540,15 @@ export const SuccessfulPayment = (props) => {
                 {t("CS_COMMON_PRINT_CERTIFICATE")}
               </div>
             ) : null}
+            {/* {businessService == "pet-services" ? (
+              <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printpetCertificate}>
+                <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
+                  <path d="M0 0h24v24H0z" fill="none" />
+                  <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
+                </svg>
+                {t("CS_COMMON_PRINT_CERTIFICATE")}
+              </div>
+            ) : null} */}
             {data?.[0]?.businessService === "BPA_OC" && (data?.[0]?.status === "APPROVED" || data?.[0]?.status === "PENDING_SANC_FEE_PAYMENT") ? (
               <div
                 className="primary-label-btn d-grid"

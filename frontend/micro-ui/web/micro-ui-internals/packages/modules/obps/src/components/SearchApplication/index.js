@@ -11,7 +11,7 @@ import {
   Loader,
   Toast,
   Header
-} from "@egovernments/digit-ui-react-components";
+} from "@upyog/digit-ui-react-components";
 import { convertEpochToDateDMY } from "../../utils";
 import SearchFormFieldsComponent from "./SearchFormFieldsComponent";
 import useSearchApplicationTableConfig from "./useTableConfig";
@@ -31,6 +31,7 @@ const OBPSSearchApplication = ({ tenantId, t, onSubmit, data, error, searchData,
       applicationNo: "",
       mobileNumber: window.location.href.includes("/search/obps-application") ? currentUserPhoneNumber : "",
       // mobileNumber: "",
+      name:"",
       fromDate: "",
       toDate: "",
       status: "",
@@ -80,6 +81,7 @@ const OBPSSearchApplication = ({ tenantId, t, onSubmit, data, error, searchData,
         applicationNo: "",
         // mobileNumber: "",
        mobileNumber: window.location.href.includes("/search/obps-application") ? Digit.UserService.getUser()?.info?.mobileNumber : "",
+       name:"",
         fromDate: "",
         toDate: "",
         status: "",

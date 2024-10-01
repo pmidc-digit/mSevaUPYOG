@@ -5,7 +5,7 @@ import {
     LabelFieldPair,
     MultiUploadWrapper,
     CardSubHeader
-} from "@egovernments/digit-ui-react-components";
+} from "@upyog/digit-ui-react-components";
 import DocumentsPreview from "./DocumentsPreview";
 
 const BPADocuments = ({ t, formData, applicationData, docs, bpaActionsDetails }) => {
@@ -76,10 +76,10 @@ const BPADocuments = ({ t, formData, applicationData, docs, bpaActionsDetails })
     }, [applicationData, bpaActionsDetails])
 
     return (
-        <div>
+        <div style={{display:"flex", flexWrap:"wrap"}}>
             {bpaTaxDocuments?.map((document, index) => {
                 return (
-                    <div>
+                    <div style={{padding:"20px",}}>
                         <SelectDocument
                             key={index}
                             index={index}

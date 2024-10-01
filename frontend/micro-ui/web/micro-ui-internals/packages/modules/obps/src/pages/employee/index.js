@@ -1,4 +1,4 @@
-import { PrivateRoute, BreadCrumb, BackButton } from "@egovernments/digit-ui-react-components";
+import { PrivateRoute, BreadCrumb, BackButton } from "@upyog/digit-ui-react-components";
 import React, { Fragment } from "react";
 import { Switch, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -73,8 +73,10 @@ const EmployeeApp = ({ path }) => {
       <Switch>
         <PrivateRoute path={`${path}/stakeholder-inbox/stakeholder/:id`} component={ApplicationDetail} />
         <PrivateRoute path={`${path}/search/application/stakeholder/:id`} component={ApplicationDetail} />
+        <PrivateRoute path={`${path}/search/application/editApplication/bpa/:id`} component={BpaApplicationDetail} />
         <PrivateRoute path={`${path}/search/application/bpa/:id`} component={BpaApplicationDetail} />
         <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/inbox/editApplication/bpa/:id`} component={BpaApplicationDetail} />
         <PrivateRoute path={`${path}/inbox/bpa/:id`} component={BpaApplicationDetail} />
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/stakeholder-inbox`} component={(props) => <StakeholderInbox {...props} parentRoute={path} />} />

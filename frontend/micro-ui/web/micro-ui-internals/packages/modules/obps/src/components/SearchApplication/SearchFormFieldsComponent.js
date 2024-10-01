@@ -1,5 +1,5 @@
 import React, { Fragment } from "react";
-import { TextInput, SubmitBar, DatePicker, SearchField, Dropdown, CardLabelError, MobileNumber } from "@egovernments/digit-ui-react-components";
+import { TextInput, SubmitBar, DatePicker, SearchField, Dropdown, CardLabelError, MobileNumber } from "@upyog/digit-ui-react-components";
 import { useWatch } from "react-hook-form";
 
 const SearchFormFieldsComponent = ({ formState, Controller, register, control, t, reset, previousPage }) => {
@@ -112,6 +112,10 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
         <label>{t("BPA_SEARCH_APPLICATION_NO_LABEL")}</label>
         <TextInput name="applicationNo" inputRef={register({})} />
       </SearchField>
+      <SearchField>
+        <label>{t("BPA_SEARCH_OWNER_NAME")}</label>
+        <TextInput name="name" inputRef={register({})} />
+      </SearchField>
       {
         !window.location.href.includes("citizen/obps/search/application") &&
         <SearchField>
@@ -190,6 +194,7 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
               applicationNo: "",
               mobileNumber: window.location.href.includes("/search/obps-application") ? currentUserPhoneNumber : "",
               // mobileNumber: "",
+              name:"",
               fromDate: "",
               toDate: "",
               status: "",

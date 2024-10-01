@@ -1663,15 +1663,7 @@ public class DemandService {
                 totalRecordsPushedToKafka += calculationCriteriaList.size();
                 calculationCriteriaList.clear();  // Clear list for the next batch
             }
-            
-            try {
-                 log.info("Sleeping for 2 seconds before processing the next batch...");
-                 Thread.sleep(configs.getSleepvalue() );
-                 break;
-             } catch (InterruptedException ie) {
-                 Thread.currentThread().interrupt(); // Restore interrupted status
-                 log.error("Sleep interrupted", ie);
-             }
+         
         }
 
         log.info("Total records pushed to Kafka: {}", totalRecordsPushedToKafka);

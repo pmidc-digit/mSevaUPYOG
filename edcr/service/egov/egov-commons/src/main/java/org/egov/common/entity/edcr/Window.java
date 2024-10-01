@@ -44,84 +44,56 @@
  *
  *  In case of any queries, you can reach eGovernments Foundation at contact@egovernments.org.
  */
-
 package org.egov.common.entity.edcr;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-public class DcrReportFloorDetail {
-
-    private String floorNo;
-
-    private String occupancy;
-
-    private BigDecimal builtUpArea;
-
-    private BigDecimal builtUpDeductionArea;
-
-    private BigDecimal floorArea;
-
-    private BigDecimal carpetArea;
+public class Window {
+	
+private static final long serialVersionUID = 105L;
     
-
-
-    private BigDecimal totalBuiltUpDeductionArea;
-
-
+    private String name;
     
-    public BigDecimal getTotalBuiltUpDeductionArea() {
-        return totalBuiltUpDeductionArea;
-    }
+    private BigDecimal windowWidth;
+    
+    private BigDecimal windowHeight;
+    
+    private int colorCode;
 
-    public void setTotalBuiltUpDeductionArea(BigDecimal totalBuiltUpDeductionArea) {
-        this.totalBuiltUpDeductionArea = totalBuiltUpDeductionArea;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public String getFloorNo() {
-        return floorNo;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public void setFloorNo(String floorNo) {
-        this.floorNo = floorNo;
-    }
+	public BigDecimal getWindowWidth() {
+		return windowWidth;
+	}
 
-    public String getOccupancy() {
-        return occupancy;
-    }
+	public void setWindowWidth(BigDecimal windowWidth) {
+		this.windowWidth = windowWidth;
+	}
 
-    public void setOccupancy(String occupancy) {
-        this.occupancy = occupancy;
-    }
+	public BigDecimal getWindowHeight() {
+		return windowHeight;
+	}
 
-    public BigDecimal getBuiltUpArea() {
-        return builtUpArea;
-    }
+	public void setWindowHeight(BigDecimal windowHeight) {
+		this.windowHeight = windowHeight;
+	}
 
-    public void setBuiltUpArea(BigDecimal builtUpArea) {
-        this.builtUpArea = builtUpArea;
-    }
+	public int getColorCode() {
+		return colorCode;
+	}
 
-    public BigDecimal getFloorArea() {
-        return floorArea;
-    }
+	public void setColorCode(int colorCode) {
+		this.colorCode = colorCode;
+	}
 
-    public void setFloorArea(BigDecimal floorArea) {
-        this.floorArea = floorArea;
-    }
+	
 
-    public BigDecimal getCarpetArea() {
-        return carpetArea;
-    }
-
-    public void setCarpetArea(BigDecimal carpetArea) {
-        this.carpetArea = carpetArea;
-    }
-
-    public BigDecimal getBuiltUpDeductionArea() {
-        return builtUpDeductionArea;
-    }
-
-    public void setBuiltUpDeductionArea(BigDecimal builtUpDeductionArea) {
-        this.builtUpDeductionArea = builtUpDeductionArea;
-    }
 }

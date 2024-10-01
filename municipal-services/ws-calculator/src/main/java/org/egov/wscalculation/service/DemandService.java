@@ -1584,38 +1584,45 @@ public class DemandService {
         int totalRecordsPushedToKafka = 0;
 
         for (int batchStart = 0; batchStart < connectionNos.size(); batchStart += bulkSaveDemandCount) {
-            // Fetch sublist for the current batch (30 records)
+            // Fetch sublist for the current batch
             List<WaterDetails> currentBatch = connectionNos.subList(batchStart, 
-                                    Math.min(batchStart + bulkSaveDemandCount, connectionNos.size()));
+                                        Math.min(batchStart + bulkSaveDemandCount, connectionNos.size()));
+            
             log.info("Processing batch: {} to {}", batchStart, 
-                                    Math.min(batchStart + bulkSaveDemandCount, connectionNos.size()));
+                                        Math.min(batchStart + bulkSaveDemandCount, connectionNos.size()));
+            log.info("Total connections: {}, Current batch size: {}", connectionNos.size(), currentBatch.size());
+
+            // Check if currentBatch is empty
+            if (currentBatch.isEmpty()) {
+                log.warn("Batch is empty, skipping iteration.");
+                continue;
+            }
 
             for (WaterDetails waterConnection : currentBatch) {
                 log.info("Connection Number: {} ", waterConnection.getConnectionNo());
 
                 try {
-                	
                     int generateDemandFromIndex = 0;
-                    
                     Long lastDemandFromDate = waterCalculatorDao
                             .searchLastDemandGenFromDate(waterConnection.getConnectionNo(), tenantId);
 
                     if (lastDemandFromDate != null) {
-                    	OptionalInt generateDemandFromIndexs = IntStream.range(0, taxPeriods.size())
+                        OptionalInt generateDemandFromIndexs = IntStream.range(0, taxPeriods.size())
                                 .filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
                                 .findFirst();
 
-// Check if the value exists
-if (generateDemandFromIndexs.isPresent()) {
-     generateDemandFromIndex = generateDemandFromIndexs.getAsInt();
-     generateDemandFromIndex++; 
-}              }
+                        if (generateDemandFromIndexs.isPresent()) {
+                            generateDemandFromIndex = generateDemandFromIndexs.getAsInt();
+                            generateDemandFromIndex++;
+                        }
+                    }
 
                     log.info("lastDemandFromDate: {} and generateDemandFromIndex: {}", lastDemandFromDate,
                             generateDemandFromIndex);
 
-                    // Loop through each tax period within the valid range
-                    for (int taxPeriodIndex = generateDemandFromIndex; taxPeriodIndex <= generateDemandToIndex; taxPeriodIndex++) {
+                    for (int taxPeriodIndex = generateDemandFromIndex; 
+                            taxPeriodIndex <= generateDemandToIndex; taxPeriodIndex++) {
+                        
                         TaxPeriod taxPeriod = taxPeriods.get(taxPeriodIndex);
                         log.info("FromPeriod: {} and ToPeriod: {}", taxPeriod.getFromDate(), taxPeriod.getToDate());
 
@@ -1623,7 +1630,6 @@ if (generateDemandFromIndexs.isPresent()) {
                                 taxPeriod.getFromDate(), taxPeriod.getToDate());
 
                         if (isConnectionValid) {
-                        	
                             CalculationCriteria calculationCriteria = CalculationCriteria.builder()
                                     .tenantId(tenantId)
                                     .assessmentYear(taxPeriod.getFinancialYear())
@@ -1657,20 +1663,18 @@ if (generateDemandFromIndexs.isPresent()) {
                 totalRecordsPushedToKafka += calculationCriteriaList.size();
                 calculationCriteriaList.clear();  // Clear list for the next batch
             }
-
-            // Sleep for 15 seconds between batches
+            
             try {
-               // log.info("Sleeping for 15 seconds before processing the next batch...");
-                Thread.sleep(configs.getSleepvalue() );
-                break;
-            } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt(); // Restore interrupted status
-                log.error("Sleep interrupted", ie);
-            }
+                 log.info("Sleeping for 2 seconds before processing the next batch...");
+                 Thread.sleep(configs.getSleepvalue() );
+                 break;
+             } catch (InterruptedException ie) {
+                 Thread.currentThread().interrupt(); // Restore interrupted status
+                 log.error("Sleep interrupted", ie);
+             }
         }
 
         log.info("Total records pushed to Kafka: {}", totalRecordsPushedToKafka);
-
     } catch (Exception e) {
         log.error("Exception occurred while processing demand generation for tenantId: " + tenantId, e);
     }

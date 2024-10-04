@@ -10,7 +10,7 @@ import {
   RemoveableTag,
   Toast,
   Loader,
-} from "@egovernments/digit-ui-react-components";
+} from "@upyog/digit-ui-react-components";
 import React, { useEffect, useState, useMemo } from "react";
 import { render } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -93,10 +93,10 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
       name: "BPA_TABLE_COL_FLOORAREA",
       id: "FloorArea",
     },
-    {
-      name: "BPA_TABLE_COL_CARPETAREA",
-      id: "CarpetArea",
-    },
+    // {
+    //   name: "BPA_TABLE_COL_CARPETAREA",
+    //   id: "CarpetArea",
+    // },
   ];
   const selectOccupancy = (e, data, num) => {
     let blocks = subOccupancyObject;
@@ -234,7 +234,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
           <Row
             className="border-none"
             label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
-            text={<ActionButton label={t("BPA_UPLOADED_PLAN_DXF")} jumpTo={data?.updatedDxfFile} />}
+            text={<ActionButton label={t("Uploaded Plan.pdf")} jumpTo={data?.updatedDxfFile} />}
           ></Row>
           <Row
             className="border-none"
@@ -270,20 +270,30 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
                 : t("NA")
             }
           ></Row>
+          <Row
+            className="border-none"
+            label={t("BPA_SECTION_HEIGHT_EXCLUDING_MUMTY_PARAPET")}
+            text={
+              data?.planDetail?.blocks?.[0]?.building?.buildingHeightExcludingMP
+                ? `${data?.planDetail?.blocks?.[0]?.building?.buildingHeightExcludingMP} ${t("BPA_MTRS_LABEL")}`
+                : t("NA")
+            }
+          ></Row>
         </StatusTable>
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
         {data?.planDetail?.blocks?.map((block, index) => (
           <div key={index} style={{ marginTop: "20px" }}>
-            <CardSubHeader style={{ fontSize: "18px" }}>
+            
+            {/* <CardSubHeader style={{ fontSize: "18px" }}>
               {t("BPA_BLOCK_SUBHEADER")} {index + 1}
-            </CardSubHeader>
-            {!(checkingFlow === "OCBPA") ? (
+            </CardSubHeader> 
+             {!(checkingFlow === "OCBPA") ? (
               <CardSectionHeader style={{ fontWeight: "normal" }} className="card-label-smaller">
                 {t("BPA_SUB_OCCUPANCY_LABEL")}
               </CardSectionHeader>
-            ) : null}
-            {!(checkingFlow === "OCBPA") ? (
+            ) : null} 
+             {!(checkingFlow === "OCBPA") ? (
               <MultiSelectDropdown
                 BlockNumber={block.number}
                 className="form-field"
@@ -298,7 +308,8 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
                 ServerStyle={{ width: "100%", overflowX: "hidden"}}
                 t={t}
               />
-            ) : null}
+            ) : null} */}
+
             {!(checkingFlow === "OCBPA") ? (
               <div className="tag-container">
                 {subOccupancyObject[`Block_${block.number}`] &&

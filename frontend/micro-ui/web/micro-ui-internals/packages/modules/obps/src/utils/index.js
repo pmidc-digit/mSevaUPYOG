@@ -113,6 +113,7 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
     applicationDate: data?.auditDetails?.createdTime,
     applicationType: APIScrutinyDetails?.appliactionType,
     holdingNumber: data?.additionalDetails?.holdingNo,
+    boundaryWallLength:data?.additionalDetails?.boundaryWallLength,
     occupancyType: APIScrutinyDetails?.planDetail?.planInformation?.occupancy,
     registrationDetails: data?.additionalDetails?.registrationDetails,
     riskType: Digit.Utils.obps.calculateRiskType(
@@ -165,31 +166,107 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
   }
 };
 
+// export const getDocumentforBPA = (docs, PrevStateDocs) => {
+//   let document = [];
+//   docs &&
+//   docs.map((ob) => {
+//     console.log("ob",ob);
+//     if (ob.id) {
+//       let docObject = {
+//         documentType: ob.documentType,
+//         fileStoreId: ob.fileStoreId,
+//         fileStore: ob.fileStoreId,
+//         fileName: "",
+//         fileUrl: "",
+//         additionalDetails: {},
+//         id: ob.id,
+//       };
+    
+//       if (ob.documentType === "SITEPHOTOGRAPH.ONE") {
+//         docObject.additionalDetails = {
+//           latitude: ob?.additionalDetails?.latitude,
+//           longitude: ob?.additionalDetails?.longitude,
+//         };
+//       }
+    
+//       document.push(docObject);
+//     } else {
+//       let docObject = {
+//         documentType: ob.documentType,
+//         fileStoreId: ob.fileStoreId,
+//         fileStore: ob.fileStoreId,
+//         fileName: "",
+//         fileUrl: "",
+//         additionalDetails: {},
+//       };
+    
+//       if (ob.documentType === "SITEPHOTOGRAPH.ONE") {
+//         docObject.additionalDetails = {
+//           latitude: ob?.additionalDetails?.latitude,
+//           longitude: ob?.additionalDetails?.longitude,
+//         };
+//       }
+    
+//       document.push(docObject);
+//     }
+//   });
+//   document = [...document, ...(PrevStateDocs ? PrevStateDocs : [])];
+//   return document;
+// };
 export const getDocumentforBPA = (docs, PrevStateDocs) => {
   let document = [];
+
+  const architectConsentForm = {
+    documentType: "ARCHITECT.UNDERTAKING",
+    fileStoreId: sessionStorage.getItem("ArchitectConsentdocFilestoreid"),
+    fileStore: sessionStorage.getItem("ArchitectConsentdocFilestoreid"),
+  };
+
   docs &&
     docs.map((ob) => {
+      console.log("ob", ob);
+      let docObject;
+
       if (ob.id) {
-        document.push({
+        docObject = {
           documentType: ob.documentType,
           fileStoreId: ob.fileStoreId,
           fileStore: ob.fileStoreId,
-          fileName: "",
+          fileName: ob.fileName,
           fileUrl: "",
           additionalDetails: {},
           id: ob.id,
-        });
+        };
+
+        if (ob.documentType === "SITEPHOTOGRAPH.ONE") {
+          docObject.additionalDetails = {
+            latitude: ob?.additionalDetails?.latitude,
+            longitude: ob?.additionalDetails?.longitude,
+          };
+        }
       } else {
-        document.push({
+        docObject = {
           documentType: ob.documentType,
           fileStoreId: ob.fileStoreId,
           fileStore: ob.fileStoreId,
-          fileName: "",
+          fileName: ob.fileName,
           fileUrl: "",
           additionalDetails: {},
-        });
+        };
+
+        if (ob.documentType === "SITEPHOTOGRAPH.ONE") {
+          docObject.additionalDetails = {
+            latitude: ob?.additionalDetails?.latitude,
+            longitude: ob?.additionalDetails?.longitude,
+          };
+        }
       }
+
+      document.push(docObject);
     });
+    
+  document.push(architectConsentForm);
+
   document = [...document, ...(PrevStateDocs ? PrevStateDocs : [])];
   return document;
 };
@@ -406,9 +483,28 @@ export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = 
       auditDetails: data?.auditDetails,
       additionalDetails: {
         ...data?.additionalDetails,
+        OTPverfiedTimeSamp: sessionStorage.getItem("otpVerifiedTimestamp"),
+        otherFeesDiscription:sessionStorage.getItem("otherChargesDisc"),
+        lessAdjustmentFeeFiles:JSON.parse(sessionStorage.getItem("uploadedFileLess")),
+        selfCertificationCharges:{
+          "BPA_MALBA_CHARGES" : sessionStorage.getItem("Malbafees"),
+          "BPA_LABOUR_CESS": sessionStorage.getItem("LabourCess"),
+          "BPA_WATER_CHARGES":sessionStorage.getItem("WaterCharges"),
+          "BPA_GAUSHALA_CHARGES_CESS":sessionStorage.getItem("GaushalaFees"),
+          "BPA_LESS_ADJUSMENT_PLOT":sessionStorage.getItem("lessAdjusment",),
+          "BPA_DEVELOPMENT_CHARGES":sessionStorage.getItem("development"),
+          "BPA_OTHER_CHARGES":sessionStorage.getItem("otherCharges")
+        },
+
         GISPlaceName : data?.address?.placeName,
         holdingNo: data?.data?.holdingNumber ? data?.data?.holdingNumber : data?.additionalDetails?.holdingNo,
+        boundaryWallLength:data?.data?.boundaryWallLength ? data?.data?.boundaryWallLength : data?.additionalDetails?.boundaryWallLength , 
         registrationDetails: data?.data?.registrationDetails ? data?.data?.registrationDetails : data?.additionalDetails?.registrationDetails,
+        architectconsentdocument: {
+          "documentType": "Architect Consent Form",
+          "fileStoreId": sessionStorage.getItem("ArchitectConsentform"),
+          "fileStore": sessionStorage.getItem("ArchitectConsentform"),
+        }
       },
       applicationType: "BUILDING_PLAN_SCRUTINY",
       serviceType: "NEW_CONSTRUCTION",
@@ -442,7 +538,7 @@ export const convertToStakeholderObject = (data) => {
         action: "APPLY",
         tradeLicenseDetail: {
           ...data?.result?.Licenses[0]?.tradeLicenseDetail,
-          additionalDetail: { counsilForArchNo: data?.formData?.LicneseType?.ArchitectNo },
+          additionalDetail: { counsilForArchNo: data?.formData?.LicneseType?.ArchitectNo, isSelfCertificationRequired:data?.formData?.LicneseType?.selfCertification},
           tradeUnits: [
             {
               ...data?.result?.Licenses[0]?.tradeLicenseDetail?.tradeUnits?.[0],
@@ -553,6 +649,7 @@ export const getBPAEditDetails = async (data, APIScrutinyDetails, mdmsData, nocd
     applicationDate: data?.auditDetails?.createdTime,
     applicationType: APIScrutinyDetails?.appliactionType,
     holdingNumber: data?.additionalDetails?.holdingNo,
+    boundaryWallLength: data?.additionalDetails?.boundaryWallLength,
     occupancyType: APIScrutinyDetails?.planDetail?.planInformation?.occupancy,
     registrationDetails: data?.additionalDetails?.registrationDetails,
     riskType: Digit.Utils.obps.calculateRiskType(
@@ -708,8 +805,18 @@ export const printPdf = (blob) => {
   }
 };
 
-export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, mode = "download", pdfKey = "consolidatedreceipt") => {
-  const response = await Digit.OBPSService.receipt_download(bussinessService, consumerCode, tenantId, { pdfKey: pdfKey });
+export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId,payments , mode = "download", pdfKey = "bpa-receipt") => {
+  let response=null;
+  console.log("payments",payments)
+    if (payments[0]?.fileStoreId ) {
+       response = { filestoreIds: [payments[0]?.fileStoreId] };      
+    }
+  else{
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments  }, "bpa-receipt");
+     //response = await Digit.OBPSService.receipt_download(bussinessService, consumerCode, tenantId, { pdfKey: pdfKey });
+  }
+  const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+  window.open(fileStore[response?.filestoreIds[0]], "_blank");
   const responseStatus = parseInt(response.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {
     let fileName =

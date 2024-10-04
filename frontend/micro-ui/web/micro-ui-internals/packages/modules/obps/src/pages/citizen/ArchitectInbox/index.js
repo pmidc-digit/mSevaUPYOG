@@ -1,4 +1,4 @@
-import { Header } from "@egovernments/digit-ui-react-components";
+import { Header } from "@upyog/digit-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import DesktopInbox from "./DesktopInbox";
@@ -49,7 +49,7 @@ const Inbox = ({ tenants, parentRoute }) => {
         applicationStatus: searchParams?.applicationStatus,
         applicationType: searchParams?.applicationType ? searchParams?.applicationType : [],
         locality: [],
-        assignee: "ASSIGNED_TO_ALL"
+       // assignee: "ASSIGNED_TO_ALL"
       }
     },
     config: {},

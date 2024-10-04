@@ -38,7 +38,7 @@ export const newConfig = [
             type: "textarea",
             validation: {},
             name: "registrationDetails"
-          }
+          },
         ]
       },
       {

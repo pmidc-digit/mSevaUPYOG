@@ -1,25 +1,27 @@
-FROM upyogio/alpine-node-builder-14:yarn AS build
-#FROM ghcr.io/egovernments/alpine-node-builder-14:yarn AS build
+FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @egovernments/digit-ui-libraries
-RUN yarn add @upyog/digit-ui-module-pt
-RUN yarn add @upyog/digit-ui-module-fsm
-RUN yarn add @upyog/digit-ui-module-tl
-RUN yarn add @egovernments/digit-ui-module-dss
-RUN yarn add @egovernments/digit-ui-module-mcollect
-RUN yarn add @egovernments/digit-ui-module-pgr
-RUN yarn add @egovernments/digit-ui-module-noc
-RUN yarn add @egovernments/digit-ui-module-engagement
-RUN yarn add @egovernments/digit-ui-module-hrms
-RUN yarn add @egovernments/digit-ui-module-core
-RUN yarn add @upyog/digit-ui-module-obps
-RUN yarn add @egovernments/digit-ui-module-common
-RUN yarn add @upyog/digit-ui-module-ws
-RUN yarn add @egovernments/digit-ui-module-commonpt
+RUN yarn add @upyog/digit-ui-libraries@1.7.0-beta.5
+RUN yarn add @upyog/digit-ui-module-pt@1.7.0-beta.4
+RUN yarn add @upyog/digit-ui-module-fsm@1.7.0-beta.18
+RUN yarn add @upyog/digit-ui-module-tl@1.7.0-beta.9
+RUN yarn add @upyog/digit-ui-module-dss@1.7.0-beta.4
+RUN yarn add @upyog/digit-ui-module-mcollect@1.7.0-beta.4
+RUN yarn add @upyog/digit-ui-module-pgr@1.7.0-beta.6
+RUN yarn add @upyog/digit-ui-module-noc@1.7.0-beta.3
+RUN yarn add @upyog/digit-ui-module-engagement@1.7.0-beta.4
+RUN yarn add @upyog/digit-ui-module-hrms@1.7.0-beta.3
+RUN yarn add @upyog/digit-ui-module-core@1.7.0-beta.3
+RUN yarn add @upyog/digit-ui-module-obps@1.7.0-beta.23
+RUN yarn add @upyog/digit-ui-module-common@1.7.0-beta.5
+RUN yarn add @upyog/digit-ui-module-ws@1.7.0-beta.12
+RUN yarn add @upyog/digit-ui-module-commonpt@1.7.0-beta.4
+RUN yarn add @upyog/digit-ui-module-bills@1.7.0-beta.3
+RUN yarn add @upyog-niua/upyog-ui-module-ptr@1.0.8
+RUN yarn add @upyog/digit-ui-react-components@1.7.0-beta.4
 ARG WORK_DIR
 WORKDIR /app
-ENV NODE_OPTIONS "--max-old-space-size=4096"
+ENV NODE_OPTIONS "--max-old-space-size=8192"
 ENV GENERATE_SOURCEMAP "false"
 
 COPY ${WORK_DIR} .
@@ -28,7 +30,7 @@ RUN ls -lah
 #RUN node web/envs.js
 RUN cd web/ \
     && node envs.js \
-    && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(4096*4096))' \
+    && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(8192*8192))' \
     &&  ./install-deps.sh \
     && yarn install \
     && yarn build 

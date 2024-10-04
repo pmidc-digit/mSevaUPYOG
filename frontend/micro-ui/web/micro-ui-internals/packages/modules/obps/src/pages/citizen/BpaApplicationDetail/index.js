@@ -1,4 +1,4 @@
-import { CardHeader, Header, Toast, Card, StatusTable, Row, Loader, Menu, PDFSvg, SubmitBar, LinkButton, ActionBar, CheckBox, MultiLink, CardText, CardSubHeader } from "@egovernments/digit-ui-react-components";
+import { CardHeader, TextInput, Header, Toast, Card, StatusTable, Row, Loader, Menu, PDFSvg, SubmitBar, LinkButton, ActionBar, CheckBox, MultiLink, CardText, CardSubHeader, CardLabel } from "@upyog/digit-ui-react-components";
 import React, { Fragment, useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { useQueryClient } from "react-query";
@@ -14,6 +14,7 @@ import cloneDeep from "lodash/cloneDeep";
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview";
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails";
 import { Link } from "react-router-dom";
+import CitizenConsent from "./CitizenConsent";
 
 const BpaApplicationDetail = () => {
   const { id } = useParams();
@@ -31,9 +32,15 @@ const BpaApplicationDetail = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [checkBoxVisible, setCheckBoxVisible] = useState(false);
   const [isEnableLoader, setIsEnableLoader] = useState(false);
+  const [viewTimeline, setViewTimeline]=useState(false);
   sessionStorage.removeItem("BPA_SUBMIT_APP");
   sessionStorage.setItem("isEDCRDisable", JSON.stringify(true));
   sessionStorage.setItem("BPA_IS_ALREADY_WENT_OFF_DETAILS", JSON.stringify(false));
+
+  const user = Digit.UserService.getUser();
+ 
+  const citizenmobilenumber = user?.info?.mobileNumber
+
 
   const history = useHistory();
   sessionStorage.setItem("bpaApplicationDetails", false);
@@ -41,6 +48,7 @@ const BpaApplicationDetail = () => {
   const { data: stakeHolderDetails, isLoading: stakeHolderDetailsLoading } = Digit.Hooks.obps.useMDMS(stateCode, "StakeholderRegistraition", "TradeTypetoRoleMapping");
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["DocTypeMapping"]);
   const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
+  console.log("datata",data);
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(tenantId.split(".")[0], "BPA", ["RiskTypeComputation"]);
   const mutation = Digit.Hooks.obps.useObpsAPI(data?.applicationData?.tenantId, false);
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -51,6 +59,103 @@ const BpaApplicationDetail = () => {
       enabled: !!data
     }
   });
+
+  const [agree, setAgree] = useState(false);
+  const setdeclarationhandler = () => {
+    setAgree(!agree);
+  };
+
+  const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [showMobileInput, setShowMobileInput] = useState(false);
+  const [mobileNumber, setMobileNumber] = useState(citizenmobilenumber || "");
+  const [showOTPInput, setShowOTPInput] = useState(false);
+  const [otp, setOTP] = useState('');
+  const [isOTPVerified, setIsOTPVerified] = useState(false);
+  const [otpError, setOTPError] = useState("");
+  const [otpVerifiedTimestamp, setOTPVerifiedTimestamp] = useState(null);
+  
+
+  const handleTermsLinkClick = () => {
+    if (isOTPVerified){
+      setShowTermsPopup(true);
+    }
+    else{
+      alert("Please verify yourself")
+    }
+  }
+
+  const checkLabels = () => {
+    return (
+      <div>
+            {t("I_AGREE_TO_BELOW_UNDERTAKING")}
+            <LinkButton
+              label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")}
+              onClick={handleTermsLinkClick}
+            />
+      </div>
+    );
+  };
+
+  const handleVerifyClick = () => {
+    setShowMobileInput(true);
+  };
+
+  const handleMobileNumberChange = (e) => {
+    setMobileNumber(e.target.value);
+  };
+
+  const handleGetOTPClick = async () => {
+    // Call the Digit.UserService.sendOtp API to send the OTP
+    try {
+      const response = await Digit.UserService.sendOtp({otp:{mobileNumber:mobileNumber, tenantId: user?.info?.tenantId, userType: user?.info?.type , type: "login"}});
+      if (response.isSuccessful) {
+        setShowOTPInput(true);
+      } else {
+        // Handle error case if OTP sending fails
+        console.error("Error sending OTP Response is false:", response.error);
+      }
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+    }
+  };
+
+ 
+
+  const handleOTPChange = (e) => {
+    setOTP(e.target.value);
+  };
+
+  const requestData = {
+    username:mobileNumber,
+    password:otp,
+    tenantId: user?.info?.tenantId,
+    userType: user?.info?.type
+  };
+
+  const handleVerifyOTPClick = async () => {
+    // Call the API to verify the OTP
+    try {
+      const response = await Digit.UserService.authenticate(requestData);
+      if (response.ResponseInfo.status==="Access Token generated successfully") {
+        setIsOTPVerified(true);
+        setOTPError(t("VERIFIED"));
+        const currentTimestamp = new Date();
+        setOTPVerifiedTimestamp(currentTimestamp);
+        sessionStorage.setItem('otpVerifiedTimestampcitizen', currentTimestamp.toString().replace(/GMT.*\((.*)\)/, '').trim());
+      } else {
+        setIsOTPVerified(false);
+        setOTPError(t("WRONG OTP"));
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      setIsOTPVerified(false);
+      setOTPError(t("Error verifying OTP"));
+    }
+  };
+
+  const isValidMobileNumber = mobileNumber.length === 10 && /^[0-9]+$/.test(mobileNumber);
+  const citizenvalidations = sessionStorage.getItem("CitizenConsentdocFilestoreid") ? true : false ;
+
 
   let businessService = [];
 
@@ -86,6 +191,7 @@ const BpaApplicationDetail = () => {
           }
           return obj;
         })
+        
         data.applicationDetails = [...newApplicationDetails];
     }
     }
@@ -107,9 +213,14 @@ const BpaApplicationDetail = () => {
 
 
   async function getRecieptSearch({tenantId, payments, ...params}) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{...payments}] }, "bpa-receipt");
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    let response=null;
+    if (payments?.fileStoreId ) {
+       response = { filestoreIds: [payments?.fileStoreId] };      
+    }
+    else{
+      response = await Digit.PaymentService.generatePdf(stateCode, { Payments: [{...payments}] }, "bpa-receipt");
+    }
+    const fileStore = await Digit.PaymentService.printReciept(stateCode, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
 
@@ -117,6 +228,26 @@ const BpaApplicationDetail = () => {
     let currentDate = new Date();
     data.applicationData.additionalDetails.runDate = convertDateToEpoch(currentDate.getFullYear() + '-' + (currentDate.getMonth() + 1) + '-' + currentDate.getDate());
     let requestData = {...data?.applicationData, edcrDetail:[{...data?.edcrDetails}]}
+    const state = Digit.ULBService.getStateId();
+  
+    let count=0;
+
+    for(let i=0;i<workflowDetails?.data?.processInstances?.length;i++){
+      if((workflowDetails?.data?.processInstances[i]?.action==="POST_PAYMENT_APPLY" ||workflowDetails?.data?.processInstances[i]?.action==="PAY" ) && (workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus==="APPROVAL_INPROGRESS")   && count==0 ){
+          requestData.additionalDetails.submissionDate=workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+          count=1;
+        }
+    }
+    
+    if(requestData?.additionalDetails?.approvedColony=="NO"){
+      requestData.additionalDetails.permitData= "The plot has been officially regularized under No."+requestData?.additionalDetails?.NocNumber +"  dated dd/mm/yyyy, registered in the name of <name as per the NOC>. This regularization falls within the jurisdiction of "+ state +".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
+    }
+    else if(requestData?.additionalDetails?.approvedColony=="YES" ){
+      requestData.additionalDetails.permitData="The building plan falls under approved colony "+requestData?.additionalDetails?.nameofApprovedcolony
+    }
+    else{
+      requestData.additionalDetails.permitData="The building plan falls under Lal Lakir"
+    }
     let response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
@@ -144,6 +275,8 @@ const BpaApplicationDetail = () => {
       case "SEND_TO_ARCHITECT":
       case "APPLY":
       case "SKIP_PAYMENT":
+      case "POST_PAYMENT_APPROVE":
+      case "POST_PAYMENT_APPLY":
         setShowModal(true);
     }
   }, [selectedAction]);
@@ -193,15 +326,82 @@ const BpaApplicationDetail = () => {
     else return false;
   }
 
+  
+
+  // const submitAction = (workflow) => {
+  //   setIsEnableLoader(true);
+  //   mutation.mutate(
+  //     { BPA: { ...data?.applicationData, workflow } },
+  //     {
+  //       onError: (error, variables) => {
+  //         setIsEnableLoader(false);
+  //         setShowModal(false);
+  //         setShowToast({ key: "error", action: error?.response?.data?.Errors[0]?.message ? error?.response?.data?.Errors[0]?.message : error });
+  //         setTimeout(closeToast, 5000);
+  //       },
+  //       onSuccess: (data, variables) => {
+  //         setIsEnableLoader(false);
+  //         history.replace(`/digit-ui/citizen/obps/response`, { data: data });
+  //         setShowModal(false);
+  //         setShowToast({ key: "success", action: selectedAction });
+  //         setTimeout(closeToast, 5000);
+  //         queryClient.invalidateQueries("BPA_DETAILS_PAGE");
+  //         queryClient.invalidateQueries("workFlowDetails");
+  //       },
+  //     }
+  //   );
+  // }
+
+  
+
   const submitAction = (workflow) => {
     setIsEnableLoader(true);
+  
+    // Check if "CITIZEN.UNDERTAKING" document already exists
+    const citizenUndertakingExists = data?.applicationData?.documents?.some(
+      (doc) => doc.documentType === "CITIZEN.UNDERTAKING"
+    );
+  
+    // Create a new array with the existing documents and the new Citizenconsentform (if it doesn't exist)
+    const updatedDocuments = [
+      ...data?.applicationData?.documents.filter(
+        (doc) => doc.documentType !== "CITIZEN.UNDERTAKING"
+      ),
+      ...(citizenUndertakingExists
+        ? data?.applicationData?.documents.filter(
+            (doc) => doc.documentType === "CITIZEN.UNDERTAKING"
+          )
+        : [
+            {
+              documentType: "CITIZEN.UNDERTAKING",
+              fileStoreId: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
+              fileStore: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
+            },
+          ]),
+    ];
+  
+    // Update the applicationData object with the new documents array
+    const updatedApplicationData = {
+      ...data?.applicationData,
+      documents: updatedDocuments,
+      additionalDetails: {
+        ...data?.applicationData?.additionalDetails,
+        otpVerifiedTimestampcitizen:sessionStorage.getItem("otpVerifiedTimestampcitizen")
+      }
+    };
+  
     mutation.mutate(
-      { BPA: { ...data?.applicationData, workflow } },
+      { BPA: { ...updatedApplicationData, workflow } },
       {
         onError: (error, variables) => {
           setIsEnableLoader(false);
           setShowModal(false);
-          setShowToast({ key: "error", action: error?.response?.data?.Errors[0]?.message ? error?.response?.data?.Errors[0]?.message : error });
+          setShowToast({
+            key: "error",
+            action: error?.response?.data?.Errors[0]?.message
+              ? error?.response?.data?.Errors[0]?.message
+              : error,
+          });
           setTimeout(closeToast, 5000);
         },
         onSuccess: (data, variables) => {
@@ -215,7 +415,7 @@ const BpaApplicationDetail = () => {
         },
       }
     );
-  }
+  };
 
   if (workflowDetails?.data?.nextActions?.length > 0 && data?.applicationData?.status == "CITIZEN_APPROVAL_INPROCESS") {
     const userInfo = Digit.UserService.getUser();
@@ -380,6 +580,13 @@ const BpaApplicationDetail = () => {
       </div>
     )
   }
+  const handleViewTimeline=()=>{ 
+    const timelineSection=document.getElementById('timeline');
+      if(timelineSection){
+        timelineSection.scrollIntoView({behavior: 'smooth'});
+      } 
+      setViewTimeline(true);   
+  };
 
   const results = data?.applicationDetails?.filter(element => {
     if (Object.keys(element).length !== 0) {
@@ -391,21 +598,30 @@ const BpaApplicationDetail = () => {
   if (results?.length > 0) {
     data.applicationDetails = results;
   }
-  
+
+ 
 
   return (
     <Fragment>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{fontSize: "32px", marginLeft: "10px"}}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
+        <div >
         {dowloadOptions && dowloadOptions.length > 0 && <MultiLink
           className="multilinkWrapper"
           onHeadClick={() => setShowOptions(!showOptions)}
           displayOptions={showOptions}
           options={dowloadOptions}
-
         />}
+        <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
+        </div>
+        
       </div>
+
+     
+      
+
       {data?.applicationDetails?.filter((ob) => Object.keys(ob).length > 0).map((detail, index, arr) => {
+       
 
         return (
           <div>
@@ -464,6 +680,11 @@ const BpaApplicationDetail = () => {
                   </div>
                 )}
 
+                
+
+                
+                
+
                 {/* to get FieldInspection values */}
                 {(detail?.isFieldInspection && data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0) ? <InspectionReport isCitizen={true} fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending} /> : null}
 
@@ -493,15 +714,23 @@ const BpaApplicationDetail = () => {
 
                 {/* to get Fee values */}
                 {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]}/>}
-
+                 {/*blocking reason*/}
+                {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (workflowDetails?.data?.actionState?.nextActions?.[0]?.state=="POST_PAYMENT_CITIZEN_APPROVAL_PENDING"|| workflowDetails?.data?.actionState?.state=="POST_PAYMENT_CITIZEN_APPROVAL_PENDING" || workflowDetails?.data?.actionState?.state=="POST_PAYMENT_INPROGRESS") &&
+                <div style={ { marginTop: "19px", background: "#FAFAFA", border: "1px solid #D6D5D4", borderRadius: "4px", padding: "8px", lineHeight: "19px", maxWidth: "950px", minWidth: "280px"} }>
+                  <Row className="border-none" label={t(`BLOCKING_REASON`)} labelStyle={{fontSize: "15px"}} text={data?.applicationData.additionalDetails.blockingReason || "NA"}> </Row>
+                </div>
+                }
               </StatusTable>
               </div>
             </Card> : null }
+
+            
 
             {/* to get Timeline values */}
             {index === arr.length - 1 && (
               <Card>
                 <Fragment>
+                  <div id="timeline">
                   <BPAApplicationTimeline application={data?.applicationData} id={id} />
                   {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 0 && !isFromSendBack && checkBoxVisible && (
                     <CheckBox
@@ -512,6 +741,7 @@ const BpaApplicationDetail = () => {
                       onChange={() => { setIsTocAccepted(!isTocAccepted); isTocAccepted ? setDisplayMenu(!isTocAccepted) : "" }}
                     />
                   )}
+                  </div>
                   {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 1 && (
                     //removed this styles to fix the action button in application details UM-5347
                     <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/>
@@ -525,7 +755,7 @@ const BpaApplicationDetail = () => {
                             onSelect={onActionSelect}
                           />
                         ) : null}
-                        <SubmitBar /*style={{ width: "100%" }}*/ disabled={checkForSubmitDisable(isFromSendBack, isTocAccepted)} label={t("ES_COMMON_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+                        <SubmitBar /*style={{ width: "100%" }}*/ disabled={checkForSubmitDisable(isFromSendBack, isTocAccepted) || (workflowDetails?.data?.actionState?.state ==="CITIZEN_APPROVAL_PENDING" ? (!agree || !isOTPVerified || !citizenvalidations) : false )} label={t("ES_COMMON_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
                       </div>
                     </ActionBar>
                   )}
@@ -551,6 +781,86 @@ const BpaApplicationDetail = () => {
           </div>
         )
       })}
+
+      
+
+      
+     
+
+      {workflowDetails?.data?.actionState?.state ==="CITIZEN_APPROVAL_PENDING" && (
+
+      <div>
+        <Card>
+        <React.Fragment>
+              <div>
+            <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
+            <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} />
+            <br></br>
+            {showMobileInput && (
+              <React.Fragment>
+                <br></br>
+              <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
+              <TextInput
+                t={t}
+                type="tel"
+                isMandatory={true}
+                optionKey="i18nKey"
+                name="mobileNumber"
+                value={mobileNumber}
+                onChange={handleMobileNumberChange}
+                {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t('CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID') }}
+              />
+        
+              <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
+              </React.Fragment>
+              )}
+              {showOTPInput && (
+                <React.Fragment>
+                  <br></br>
+                  <CardLabel>{t('BPA_OTP')}</CardLabel>
+                  <TextInput
+                    t={t}
+                    type="text"
+                    isMandatory={true}
+                    optionKey="i18nKey"
+                    name="otp"
+                    value={otp}
+                    onChange={handleOTPChange}
+                    {...{ required: true, pattern: "[0-9]{6}", type: "tel", title: t('BPA_INVALID_OTP') }}
+                  />
+
+                  <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
+                  {otpError && <CardLabel style={{ color: 'red' }}>{otpError}</CardLabel>}
+                </React.Fragment>
+              )}
+          </div>
+          <br></br>
+
+          
+          <div>
+          <CheckBox
+              label={checkLabels()}
+              onChange={setdeclarationhandler}
+              styles={{ height: "auto" }}
+              //disabled={!agree}
+            />
+            
+            {showTermsPopup && (
+            <CitizenConsent
+              showTermsPopup={showTermsPopup}
+              setShowTermsPopup={setShowTermsPopup}
+              otpVerifiedTimestamp={otpVerifiedTimestamp} // Pass timestamp as a prop
+            />
+          )}
+          </div>
+
+        </React.Fragment>
+        </Card>
+      </div>
+        
+
+      )}
+
       {showTermsModal ? (
         <ActionModal
           t={t}

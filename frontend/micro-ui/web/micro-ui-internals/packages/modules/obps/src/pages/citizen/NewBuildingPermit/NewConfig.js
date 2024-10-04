@@ -5,6 +5,17 @@ export const newConfig1=[
         "key": "data",
         "nextStep": "basic-details"
     },
+    // {
+    //     "route": "noc-number",
+    //     "component": "NOCNumber",
+    //     "nextStep": "basic-details",
+    //     "key": "nocnumber",
+    //     "texts": {
+    //         "headerCaption": "BPA_NOC_NUMBER_DETAILS",
+    //         "header": "",
+    //         "submitBarLabel": "CS_COMMON_NEXT"
+    //     }
+    // },
     {
         "route": "basic-details",
         "component": "BasicDetails",
@@ -21,27 +32,137 @@ export const newConfig1=[
             "header": "BPA_PLOT_DETAILS_TITLE",
             "cardText": "",
             "submitBarLabel": "CS_COMMON_NEXT",
-            "skipText": "CORE_COMMON_SKIP_CONTINUE"
+            //"skipText": "CORE_COMMON_SKIP_CONTINUE"
         },
         "inputs": [
-            {
-                "label": "BPA_HOLDING_NUMBER_LABEL",
-                "type": "text",
-                "validation": {},
-                "name": "holdingNumber"
-            },
             {
                 "label": "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL",
                 "type": "textarea",
                 "validation": {},
                 "name": "registrationDetails"
-            }
+            },
+            {
+                "label": "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
+                "type": "text",
+                "validation": {
+                    "pattern":"^[0-9]*$",
+                    "title": "Enter in Numbers[0-9]",
+                    "required": true
+                },
+                "name": "boundaryWallLength"
+            },
+            {
+                "label": "BPA_WARD_NUMBER_LABEL",
+                "type": "text",
+                "validation": {
+                    "pattern": "^[a-zA-Z0-9 ]*$",
+                    "title": "Special Character are not allowed",
+                    "required": true
+                  },
+                "name": "wardnumber"
+            },
+            {
+                "label": "BPA_ZONE_NUMBER_LABEL",
+                "type": "text",
+                "validation": {
+                    "pattern": "^[a-zA-Z0-9 ]*$",
+                    "required": false},
+                "name": "zonenumber"
+            },
+            {
+                "label": "BPA_KHASRA_NUMBER_LABEL",
+                "type": "text",
+                "validation": {
+                    "pattern": "^[a-zA-Z0-9/]*$",
+                    "required": true},
+                "name": "khasraNumber"
+            },
+            {
+                "label": "BPA_ARCHITECT_ID",
+                "type": "text",
+                "validation": {
+                    "pattern": "^[a-zA-Z0-9/]*$",
+                    "required": true},
+                "name": "architectid"
+            },
+            {
+                "label": "BPA_PROPERTY_UID",
+                "type": "text",
+                "validation": {},
+                "name": "propertyuid"
+            },
+            {
+                "label": "BPA_NUMBER_OF_BATHS",
+                "type": "text",
+                "validation": {
+                    "pattern": "^[0-9]*$",
+                    "required": false
+                },
+                "name": "bathnumber"
+            },
+            {
+                "label": "BPA_NUMBER_OF_KITCHENS",
+                "type": "text",
+                "validation": {"pattern": "^[0-9]*$",
+                    "required": false},
+                "name": "kitchenNumber"
+            },
+            {
+                "label": "BPA_APPROX_INHABITANTS_FOR_ACCOMODATION",
+                "type": "text",
+                "validation": {"pattern": "^[0-9]*$",
+                    "required": false},
+                "name": "approxinhabitants"
+            },
+            {
+                "label": "BPA_DISTANCE_FROM_SEWER",
+                "type": "text",
+                "validation": {"pattern": "^[0-9]*$",
+                    "required": false},
+                "name": "distancefromsewer"
+            },
+            {
+                "label": "BPA_SOURCE_OF_WATER",
+                "type": "text",
+                "validation": {"pattern": "^[a-zA-Z]*$",
+                    "required": false},
+                "name": "sourceofwater"
+            },
+            {
+                "label": "BPA_NUMBER_OF_WATER_CLOSETS",
+                "type": "text",
+                "validation": {"pattern": "^[0-9]*$",
+                    "required": false},
+                "name": "watercloset"
+            },
+            {
+                "label": "BPA_MATERIAL_TO-BE_USED_IN_WALLS",
+                "type": "text",
+                "validation": {"pattern": "^[a-zA-Z]*$",
+                    "required": false},
+                "name": "materialused"
+            },
+            {
+                "label": "BPA_MATERIAL_TO-BE_USED_IN_FLOOR",
+                "type": "text",
+               "validation": {"pattern": "^[a-zA-Z]*$",
+                    "required": false},
+                "name": "materialusedinfloor"
+            },
+            {
+                "label": "BPA_MATERIAL_TO-BE_USED_IN_ROOFS",
+                "type": "text",
+                "validation": {"pattern": "^[a-zA-Z]*$",
+                    "required": false},
+                "name": "materialusedinroofs"
+            },
+
         ]
     },
     {
         "route": "scrutiny-details",
         "component": "ScrutinyDetails",
-        "nextStep": "search-property",
+        "nextStep": "location",
         "hideInEmployee": true,
         "key": "subOccupancy",
         "texts": {
@@ -95,7 +216,7 @@ export const newConfig1=[
     {
         "route": "location",
         "component": "LocationDetails",
-        "nextStep": "owner-details",
+        "nextStep": "additional-building-details",
         "hideInEmployee": true,
         "key": "address",
         "texts": {
@@ -104,6 +225,16 @@ export const newConfig1=[
             "cardText": "",
             "submitBarLabel": "CS_COMMON_NEXT",
             "skipAndContinueText": ""
+        }
+    },
+    {
+        "route": "additional-building-details",
+        "component": "BPANewBuildingdetails",
+        "nextStep": "owner-details",
+        "key": "owners",
+        "texts": {
+            "header": "BPA_ADDITIONAL_BUILDING_DETAILS",
+            "submitBarLabel": "CS_COMMON_NEXT"
         }
     },
     {
@@ -120,7 +251,7 @@ export const newConfig1=[
     {
         "route": "document-details",
         "component": "DocumentDetails",
-        "nextStep": "noc-details",
+        "nextStep": null,
         "key": "documents",
         "texts": {
             "headerCaption": "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
@@ -128,16 +259,16 @@ export const newConfig1=[
             "submitBarLabel": "CS_COMMON_NEXT"
         }
     },
-    {
-        "route": "noc-details",
-        "component": "NOCDetails",
-        "nextStep": null,
-        "key": "nocDocuments",
-        "texts": {
-            "headerCaption": "BPA_NOC_DETAILS_SUMMARY",
-            "header": "",
-            "submitBarLabel": "CS_COMMON_NEXT",
-            "skipText": "CORE_COMMON_SKIP_CONTINUE"
-        }
-    }
+    // {
+    //     "route": "noc-details",
+    //     "component": "NOCDetails",
+    //     "nextStep": null,
+    //     "key": "nocDocuments",
+    //     "texts": {
+    //         "headerCaption": "BPA_NOC_DETAILS_SUMMARY",
+    //         "header": "",
+    //         "submitBarLabel": "CS_COMMON_NEXT",
+    //         "skipText": "CORE_COMMON_SKIP_CONTINUE"
+    //     }
+    // }
 ]

@@ -45,6 +45,7 @@ const CreateEDCR = ({ parentRoute }) => {
     };
 
     const applicantName = data?.applicantName;
+    const coreArea = data?.coreArea?.code;
     const file = data?.file;
     const tenantId = data?.tenantId?.code;
     const transactionNumber = uuidv4();
@@ -54,6 +55,7 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, tenantId };
     edcrRequest = { ...edcrRequest, transactionNumber };
     edcrRequest = { ...edcrRequest, applicantName };
+    edcrRequest = { ...edcrRequest, coreArea };
     edcrRequest = { ...edcrRequest, appliactionType };
     edcrRequest = { ...edcrRequest, applicationSubType };
 
@@ -65,6 +67,8 @@ const CreateEDCR = ({ parentRoute }) => {
       .then((result, err) => {
         setIsSubmitBtnDisable(false);
         if (result?.data?.edcrDetail) {
+          console.log("result?.data",result?.data)
+          sessionStorage.setItem("plotArea",result?.data?.edcrDetail[0].planDetail?.plot?.area  || 0)
           setParams(result?.data?.edcrDetail);
           history.replace(
             `/digit-ui/citizen/obps/edcrscrutiny/apply/acknowledgement`, ///${result?.data?.edcrDetail?.[0]?.edcrNumber}
@@ -94,7 +98,6 @@ const CreateEDCR = ({ parentRoute }) => {
   config.indexRoute = "home";
 
   const EDCRAcknowledgement = Digit?.ComponentRegistryService?.getComponent('EDCRAcknowledgement') ;
-
   return (
     <Switch>
       {config.map((routeObj, index) => {

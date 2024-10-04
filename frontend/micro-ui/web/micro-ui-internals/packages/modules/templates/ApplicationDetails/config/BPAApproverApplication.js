@@ -1,4 +1,4 @@
-import { Dropdown, UploadFile } from "@egovernments/digit-ui-react-components";
+import { Dropdown, UploadFile } from "@upyog/digit-ui-react-components";
 import React from "react";
 
 export const configBPAApproverApplication = ({
@@ -7,12 +7,15 @@ export const configBPAApproverApplication = ({
   approvers,
   selectedApprover,
   setSelectedApprover,
+  selectedBlockReason,
+  setBlockReason,
   selectFile,
   uploadedFile,
   setUploadedFile,
   assigneeLabel,
   businessService,
-  error
+  error,
+  blockReasonFiltered
 }) => {
   let isRejectOrRevocate = false;
   if(action?.action == "REVOCATE" || action?.action == "REJECT" || action.action == "SKIP_PAYMENT" || action?.action == "SEND_BACK_TO_CITIZEN" || action?.action == "APPROVE") {
@@ -34,9 +37,9 @@ export const configBPAApproverApplication = ({
       {
         body: [
           {
-            label: action.isTerminateState || isRejectOrRevocate ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`),
+            label: action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK" && action?.state?.state=="PENDINGAPPROVAL")|| (action?.action=="FORWARD" && action?.state?.state=="FIELDINSPECTION_PENDING") ? null : t(assigneeLabel || `WF_ROLE_${action.assigneeRoles?.[0]}`),
             type: "dropdown",
-            populators: action.isTerminateState || isRejectOrRevocate ? null : (
+            populators: (action.isTerminateState || isRejectOrRevocate || (action?.action=="BLOCK" && action?.state?.state=="PENDINGAPPROVAL")|| (action?.action=="FORWARD" && action?.state?.state=="FIELDINSPECTION_PENDING")) ? null : (
               <Dropdown
                 option={approvers}
                 autoComplete="off"
@@ -46,6 +49,21 @@ export const configBPAApproverApplication = ({
                 selected={selectedApprover}
               />
             ),
+          },
+          {
+            label: (action?.action=="BLOCK" &&  action?.state?.state=="PENDINGAPPROVAL") ? t(`BLOCK_REASON`):null  ,
+            type: "dropdown",
+            populators: (action?.action=="BLOCK" && action?.state?.state=="PENDINGAPPROVAL") ?  (
+              <Dropdown
+                option={blockReasonFiltered}
+                autoComplete="off"
+                optionKey="name"
+                id="fieldInspector"
+                select={setBlockReason}
+                selected={selectedBlockReason}
+                isMandatory={true}
+              />
+            ):null ,
           },
           {
             label: t("WF_COMMON_COMMENTS"),

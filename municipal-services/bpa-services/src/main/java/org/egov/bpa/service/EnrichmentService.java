@@ -93,15 +93,25 @@ public class EnrichmentService {
 		AuditDetails auditDetails = bpaUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
 		bpaRequest.getBPA().setAuditDetails(auditDetails);
 		bpaRequest.getBPA().setId(UUID.randomUUID().toString());
+        Map<String, String> additionalDetails = bpaRequest.getBPA().getAdditionalDetails() != null
+                ? (Map<String, String>) bpaRequest.getBPA().getAdditionalDetails()
+                : new HashMap<String, String>();
 
 		bpaRequest.getBPA().setAccountId(bpaRequest.getBPA().getAuditDetails().getCreatedBy());
 		String applicationType = values.get(BPAConstants.APPLICATIONTYPE);
 		if (applicationType.equalsIgnoreCase(BPAConstants.BUILDING_PLAN)) {
-			if (!bpaRequest.getBPA().getRiskType().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE)) {
-				bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_MODULE_CODE);
-			} else {
-				bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_LOW_MODULE_CODE);
-			}
+//			if (!bpaRequest.getBPA().getRiskType().equalsIgnoreCase(BPAConstants.LOW_RISKTYPE)) {
+
+//			bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_MODULE_CODE);
+
+//		} else {
+
+//			bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_LOW_MODULE_CODE);
+
+//		}
+
+		bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_MODULE_CODE);
+
 		} else {
 			bpaRequest.getBPA().setBusinessService(BPAConstants.BPA_OC_MODULE_CODE);
 			bpaRequest.getBPA().setLandId(values.get("landId"));
@@ -109,7 +119,11 @@ public class EnrichmentService {
 		if (bpaRequest.getBPA().getLandInfo() != null) {
 			bpaRequest.getBPA().setLandId(bpaRequest.getBPA().getLandInfo().getId());
 		}
-		// BPA Documents
+        if (bpaRequest.getBPA().getRiskType() != null) {
+            additionalDetails.put(BPAConstants.RISKTYPE, bpaRequest.getBPA().getRiskType());
+        }
+
+//		 BPA Documents
 		if (!CollectionUtils.isEmpty(bpaRequest.getBPA().getDocuments()))
 			bpaRequest.getBPA().getDocuments().forEach(document -> {
 				if (document.getId() == null) {
@@ -169,7 +183,7 @@ public class EnrichmentService {
 	 * @param businessService
 	 */
 	public void enrichBPAUpdateRequest(BPARequest bpaRequest, BusinessService businessService) {
-
+		log.debug("Entred BPA UPDATE Request ");
 		RequestInfo requestInfo = bpaRequest.getRequestInfo();
 		AuditDetails auditDetails = bpaUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), false);
 		auditDetails.setCreatedBy(bpaRequest.getBPA().getAuditDetails().getCreatedBy());
@@ -244,14 +258,17 @@ public class EnrichmentService {
 				DocumentContext context = JsonPath.using(Configuration.defaultConfiguration()).parse(jsonString);
 				Object plot = context.read("edcrDetail[0].planDetail.planInformation.plotArea");
 				Double	plotArea = Double.valueOf(String.valueOf(plot));
-				Object bldgHgt = context.read("edcrDetail[0].planDetail.blocks[0].building.buildingHeight");
+				Object bldgHgt = context.read("edcrDetail[0].planDetail.blocks[0].building.buildingHeightExcludingMP");
 				Double	buildingHeight = Double.valueOf(String.valueOf(bldgHgt));
 
 			
 				List jsonOutput = JsonPath.read(masterData, BPAConstants.RISKTYPE_COMPUTATION);
-				String filterExp = "$.[?((@.fromPlotArea < " + plotArea + " && @.toPlotArea >= " + plotArea
-						+ ") || ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
-						+ buildingHeight + "  ))].riskType";
+//				String filterExp = "$.[?((@.fromPlotArea < " + plotArea + " && @.toPlotArea >= " + plotArea
+//						+ ") || ( @.fromBuildingHeight < " + buildingHeight + "  &&  @.toBuildingHeight >= "
+//						+ buildingHeight + "  ))].riskType";
+//				
+				String filterExp = "$.[?(@.fromBuildingHeight < " + buildingHeight + ""
+						+ " && @.toBuildingHeight >= " + buildingHeight + ")].riskType";
 
 				List<String> riskTypes = JsonPath.read(jsonOutput, filterExp);
 				                                                                                     
@@ -384,7 +401,7 @@ public class EnrichmentService {
 
 		} else if (wf != null && (wf.getAction().equalsIgnoreCase(BPAConstants.ACTION_SEND_TO_ARCHITECT)
 				|| (bpa.getStatus().equalsIgnoreCase(BPAConstants.STATUS_CITIZEN_APPROVAL_INPROCESS)
-						&& wf.getAction().equalsIgnoreCase(BPAConstants.ACTION_APPROVE)))) {
+						&& (wf.getAction().equalsIgnoreCase(BPAConstants.ACTION_APPROVE) || wf.getAction().equalsIgnoreCase(BPAConstants.ACTION_POST_PAY_APPROVE) ) ))) {
 			// Adding creator of BPA(Licensee)
 			if (bpa.getAccountId() != null)
 				assignes.add(bpa.getAccountId());

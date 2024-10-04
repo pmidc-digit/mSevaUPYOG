@@ -299,6 +299,7 @@ export const OBPSService = {
       })
     });
 
+
     let fileDetails = {};
     if (appDocumentFileStoreIds?.length > 0) {
       fileDetails =  await UploadServices.Filefetch(appDocumentFileStoreIds, Digit.ULBService.getStateId());
@@ -350,7 +351,7 @@ export const OBPSService = {
         { title: "BPA_STATUS_LABEL", value: `${fetchBillRes?.Bill?.[0]?.totalAmount == 0 ? "Paid" : "Unpaid"}` }
       )
     }
-    totalAmount > 0 && collectionBillArray.push({ title: "BPA_TOT_AMT_PAID", value: `₹${totalAmount}` });
+    //totalAmount > 0 && collectionBillArray.push({ title: "BPA_TOT_AMT_PAID", value: `₹${totalAmount}` });
     
     const billDetails = {
       title: "BPA_FEE_DETAILS_LABEL",
@@ -523,7 +524,7 @@ export const OBPSService = {
         { title: "BPA_BASIC_DETAILS_SERVICE_TYPE_LABEL", value: edcr?.applicationSubType },
         { title: "BPA_BASIC_DETAILS_OCCUPANCY_LABEL", value: edcr?.planDetail?.planInformation?.occupancy },
         { title: "BPA_BASIC_DETAILS_RISK_TYPE_LABEL", value: `WF_BPA_${riskType}`, isInsert: true, },
-        { title: "BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL", value: edcr?.planDetail?.planInformation?.applicantName },
+        // { title: "BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL", value: edcr?.planDetail?.planInformation?.applicantName },
       ]
     };
 
@@ -532,13 +533,49 @@ export const OBPSService = {
       asSectionHeader: true,
       isCommon: true,
       values: [
-        { title: "BPA_BOUNDARY_PLOT_AREA_LABEL", value: `${edcr?.planDetail?.planInformation?.plotArea}`, isNotTranslated: true, isUnit: "BPA_SQ_FT_LABEL" },
+        { title: "BPA_BOUNDARY_PLOT_AREA_LABEL", value: `${edcr?.planDetail?.planInformation?.plotArea}`, isNotTranslated: true, isUnit: "BPA_SQ_MTRS_LABEL" },
         { title: "BPA_PLOT_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.plotNo || "NA", isNotTranslated: true  },
         { title: "BPA_KHATHA_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.khataNo || "NA", isNotTranslated: true  },
-        { title: "BPA_HOLDING_NUMBER_LABEL", value: BPA?.additionalDetails?.holdingNo || "NA", isNotTranslated: true  },
-        { title: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL", value: BPA?.additionalDetails?.registrationDetails || "NA", isNotTranslated: true }
+        { title: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL", value: BPA?.additionalDetails?.registrationDetails || "NA", isNotTranslated: true },
+        { title: "BPA_BOUNDARY_WALL_LENGTH_LABEL", value: BPA?.additionalDetails?.boundaryWallLength || "NA", isNotTranslated: true },
+        { title: "BPA_KHASRA_NUMBER_LABEL", value: BPA?.additionalDetails?.khasraNumber || "NA", isNotTranslated: true },
+        { title: "BPA_WARD_NUMBER_LABEL", value: BPA?.additionalDetails?.wardnumber || "NA", isNotTranslated: true }
       ]
     };
+
+    const additionalPlotDetails = {
+      title: "BPA_ADDITIONAL_BUILDING_DETAILS",
+      asSectionHeader: true,
+      isCommon: true,
+      values: [
+        { title: "BPA_APPROVED_COLONY_LABEL", value: BPA?.additionalDetails?.approvedColony, isNotTranslated: true },
+        { title: "BPA_ULB_TYPE_LABEL", value: BPA?.additionalDetails?.Ulblisttype || "NA", isNotTranslated: true  },
+        { title: "BPA_ULB_NAME_LABEL", value: BPA?.additionalDetails?.UlbName || "NA", isNotTranslated: true  },
+        { title: "BPA_DISTRICT_LABEL", value: BPA?.additionalDetails?.District || "NA", isNotTranslated: true  },
+        { title: "BPA_BUILDING_STATUS_LABEL", value: BPA?.additionalDetails?.buildingStatus || "NA", isNotTranslated: true },
+        { title: "BPA_CORE_AREA_LABEL", value: edcr?.planDetail?.coreArea || "NA", isNotTranslated: true },
+        { title: "BPA_PROPOSED_SITE_LABEL", value: BPA?.additionalDetails?.proposedSite, isNotTranslated: true},
+        { title: "BPA_SCHEME_TYPE_LABEL", value: BPA?.additionalDetails?.schemesselection || "NA", isNotTranslated: true  },
+        { title: "BPA_SCHEME_NAME_LABEL", value: BPA?.additionalDetails?.schemeName || "NA", isNotTranslated: true  },
+        { title: "BPA_TRANFERRED_SCHEME_LABEL", value: BPA?.additionalDetails?.transferredscheme || "NA", isNotTranslated: true  },
+        { title: "BPA_PURCHASED_FAR_LABEL", value: BPA?.additionalDetails?.purchasedFAR || "NA", isNotTranslated: true },
+        { title: "BPA_MASTER_PLAN_LABEL", value: BPA?.additionalDetails?.masterPlan || "NA", isNotTranslated: true },
+        { title: "BPA_GREEN_BUILDING_LABEL", value: BPA?.additionalDetails?.greenbuilding || "NA", isNotTranslated: true }
+      ]
+    };
+
+    const architectDetails = {
+      title: "BPA_ARCHITECT_DETAILS",
+      asSectionHeader: true,
+      isCommon: true,
+      values: [
+        { title: "BPA_ARCHITECT_NAME", value: BPA?.additionalDetails?.architectName, isNotTranslated: true },
+        { title: "BPA_ARCHITECT_MOBILE_NUMBER", value: BPA?.additionalDetails?.architectMobileNumber || "NA", isNotTranslated: true  },
+        { title: "BPA_ARCHITECT_ID", value: BPA?.additionalDetails?.architectid || "NA", isNotTranslated: true  },
+        { title: "BPA_ARCHITECT_TYPE", value: BPA?.additionalDetails?.typeOfArchitect || "NA", isNotTranslated: true  },
+
+      ]
+    }
 
     const scrutinyDetails = {
       title: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
@@ -550,11 +587,13 @@ export const OBPSService = {
           { title: BPA?.businessService !== "BPA_OC" ? "BPA_EDCR_NO_LABEL" : "BPA_OC_EDCR_NO_LABEL", value: BPA?.edcrNumber || "NA" },
         ],
         scruntinyDetails: [
-          { title: "BPA_UPLOADED_PLAN_DIAGRAM", value: edcr?.updatedDxfFile, text: "BPA_UPLOADED_PLAN_DXF" },
+          { title: "BPA_UPLOADED_PLAN_DIAGRAM", value: edcr?.updatedDxfFile, text: "Uploaded Plan.pdf" },
           { title: "BPA_SCRUNTINY_REPORT_OUTPUT", value: edcr?.planReport, text: "BPA_SCRUTINY_REPORT_PDF" },
         ]
       }
     };
+
+    
 
     const buildingExtractionDetails = {
       title: "",
@@ -570,6 +609,8 @@ export const OBPSService = {
         scruntinyDetails: []
       }
     };
+
+    
 
     const demolitionAreaDetails = {
       title: "",
@@ -629,6 +670,7 @@ export const OBPSService = {
               { title: "CORE_COMMON_NAME", value: owner?.name },
               { title: "BPA_APPLICANT_GENDER_LABEL", value: owner?.gender },
               { title: "CORE_COMMON_MOBILE_NUMBER", value: owner?.mobileNumber },
+              { title: "CORE_COMMON_EMAIL_ID", value: owner?.emailId },
               { title: "BPA_IS_PRIMARY_OWNER_LABEL", value: owner?.isPrimaryOwner, isNotTranslated: false }
             ],
           };
@@ -715,9 +757,9 @@ export const OBPSService = {
     }
 
     if(BPA?.businessService !== "BPA_OC") {
-      details = [...details, applicationDetailsInfo, basicDetails, plotDetails, scrutinyDetails, buildingExtractionDetails, subOccupancyTableDetails, demolitionAreaDetails,addressDetails, ownerDetails, documentDetails, fiReports, ...nocDetails, approvalChecksDetails, PermitConditions]
+      details = [...details, applicationDetailsInfo, basicDetails, plotDetails,additionalPlotDetails, architectDetails, scrutinyDetails, buildingExtractionDetails, subOccupancyTableDetails, demolitionAreaDetails,addressDetails, ownerDetails, documentDetails, fiReports, ...nocDetails, approvalChecksDetails, PermitConditions]
     } else {
-      details = [...details, applicationDetailsInfo, basicDetails, plotDetails, scrutinyDetails, buildingExtractionDetails, subOccupancyTableDetails, demolitionAreaDetails, documentDetails, fiReports, ...nocDetails, PermitConditions]
+      details = [...details, applicationDetailsInfo, basicDetails, plotDetails, additionalPlotDetails, architectDetails, scrutinyDetails, buildingExtractionDetails, subOccupancyTableDetails, demolitionAreaDetails, documentDetails, fiReports, ...nocDetails, PermitConditions]
     }
 
     if (billDetails?.additionalDetails?.values?.length) {

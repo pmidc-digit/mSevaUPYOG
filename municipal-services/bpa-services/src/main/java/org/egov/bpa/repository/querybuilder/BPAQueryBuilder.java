@@ -1,5 +1,6 @@
 package org.egov.bpa.repository.querybuilder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
@@ -23,7 +24,21 @@ public class BPAQueryBuilder {
             + "bpa_createdTime,bpa.additionalDetails,bpa.landId as bpa_landId, bpadoc.id as bpa_doc_id, bpadoc.additionalDetails as doc_details, bpadoc.documenttype as bpa_doc_documenttype,bpadoc.filestoreid as bpa_doc_filestore"
             + " FROM eg_bpa_buildingplan bpa"
             + LEFT_OUTER_JOIN_STRING
-            + "eg_bpa_document bpadoc ON bpadoc.buildingplanid = bpa.id";;
+            + "eg_bpa_document bpadoc ON bpadoc.buildingplanid = bpa.id";
+    
+    
+    private static final String QUERY_NAME = "SELECT bpa.*,bpadoc.*,bpa.id as bpa_id,bpa.tenantid as bpa_tenantId,bpa.lastModifiedTime as "
+            + "bpa_lastModifiedTime,bpa.createdBy as bpa_createdBy,bpa.lastModifiedBy as bpa_lastModifiedBy,bpa.createdTime as "
+            + "bpa_createdTime,bpa.additionalDetails,bpa.landId as bpa_landId, bpadoc.id as bpa_doc_id, bpadoc.additionalDetails as doc_details, bpadoc.documenttype as bpa_doc_documenttype,bpadoc.filestoreid as bpa_doc_filestore"
+            + " FROM eg_bpa_buildingplan bpa"
+            + LEFT_OUTER_JOIN_STRING
+            + "eg_bpa_document bpadoc ON bpadoc.buildingplanid = bpa.id"
+            + LEFT_OUTER_JOIN_STRING
+            + "eg_land_landInfo ON bpa.landId = landinfo.id"
+            + LEFT_OUTER_JOIN_STRING
+            + "eg_land_ownerInfo ownerinfo ON landinfo.id = ownerinfo.landInfoId"
+            + LEFT_OUTER_JOIN_STRING
+            + "eg_user user ON ownerinfo.uuid=user.uuid";;
 
     private final String paginationWrapper = "SELECT * FROM "
             + "(SELECT *, DENSE_RANK() OVER (ORDER BY bpa_lastModifiedTime DESC) offset_ FROM " + "({})"
@@ -41,7 +56,7 @@ public class BPAQueryBuilder {
     public String getBPASearchQuery(BPASearchCriteria criteria, List<Object> preparedStmtList, List<String> edcrNos, boolean isCount) {
 
         StringBuilder builder = new StringBuilder(QUERY);
-
+      
         if (criteria.getTenantId() != null) {
             if (criteria.getTenantId().split("\\.").length == 1) {
 
@@ -53,6 +68,16 @@ public class BPAQueryBuilder {
                 builder.append(" bpa.tenantid=? ");
                 preparedStmtList.add(criteria.getTenantId());
             }
+        }
+        
+        if (criteria.getName() != null) {
+          
+            addClauseIfRequired(preparedStmtList, builder);
+            
+            builder.append(" lower(bpa.additionaldetails ->>'ownerName') LIKE ?");
+            preparedStmtList.add('%' + criteria.getName().toLowerCase()+ '%');
+
+            
         }
 
         List<String> ids = criteria.getIds();
@@ -72,10 +97,19 @@ public class BPAQueryBuilder {
 
         String applicationNo = criteria.getApplicationNo();
         if (applicationNo != null) {
-            List<String> applicationNos = Arrays.asList(applicationNo.split(","));
-            addClauseIfRequired(preparedStmtList, builder);
-            builder.append(" bpa.applicationNo IN (").append(createQuery(applicationNos)).append(")");
-            addToPreparedStatement(preparedStmtList, applicationNos);
+        	List<String> applicationNos=new ArrayList<String>();
+        	if(applicationNo.contains(",")) {
+        		applicationNos = Arrays.asList(applicationNo.split(","));
+                addClauseIfRequired(preparedStmtList, builder);
+                builder.append(" bpa.applicationNo IN (").append(createQuery(applicationNos)).append(")");
+                addToPreparedStatement(preparedStmtList, applicationNos);
+        	}
+        	else
+        	{
+        		addClauseIfRequired(preparedStmtList, builder);
+                builder.append(" bpa.applicationNo LIKE ?");
+                preparedStmtList.add('%' + applicationNo + '%');
+        	}
         }
 
         String approvalNo = criteria.getApprovalNo();

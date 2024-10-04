@@ -1,4 +1,4 @@
-import { Card, DetailsCard, FilterAction, Loader, PopUp, SearchAction } from "@egovernments/digit-ui-react-components";
+import { Card, DetailsCard, FilterAction, Loader, PopUp, SearchAction } from "@upyog/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import Filter from "./Filter";
@@ -117,7 +117,7 @@ const ApplicationCard = ({
           )}
           {type === "SORT" && (
             <div className="popup-module w-fullwidth">
-              {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} type="mobile" onSort={onSort} />}
+              {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose}  onSort={onSort} />}
             </div>
           )}
         </PopUp>

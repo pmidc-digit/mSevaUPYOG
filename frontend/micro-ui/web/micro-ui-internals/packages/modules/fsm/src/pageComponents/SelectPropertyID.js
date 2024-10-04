@@ -1,9 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { TextArea, LabelFieldPair, CardLabel, TextInput } from "@egovernments/digit-ui-react-components";
+import { TextArea, LabelFieldPair, CardLabel, TextInput } from "@upyog/digit-ui-react-components";
 import FormStep from "../../../../react-components/src/molecules/FormStep"
 import Timeline from "../components/TLTimelineInFSM";
 const SelectPropertyID = ({ t, config, onSelect, formData, userType, setError: setFormError, clearErrors: clearFormErrors }) => {
+<<<<<<< Updated upstream
 const [propertyID, setPropertyID] = useState(formData?.propertyID?.propertyID|| "");
+=======
+const [propertyID, setPropertyID] = useState(formData?.propertyID?.propertyID ||"");
+const [disable,setDisable]=useState(false)
+>>>>>>> Stashed changes
 const [error, setError] = useState("");
 const inputs = [
   {

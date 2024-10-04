@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
 import cloneDeep from "lodash/cloneDeep";
 import { useParams } from "react-router-dom";
-import { Header,MultiLink } from "@egovernments/digit-ui-react-components";
+import { Header,MultiLink, LinkButton } from "@upyog/digit-ui-react-components";
 import get from "lodash/get";
 import orderBy from "lodash/orderBy";
 import getPDFData from "../../utils/getTLAcknowledgementData"
@@ -20,6 +20,7 @@ const ApplicationDetails = () => {
   const [numberOfApplications, setNumberOfApplications] = useState([]);
   const [allowedToNextYear, setAllowedToNextYear] = useState(false);
   const [oldRenewalAppNo, setoldRenewalAppNo] = useState("");
+  const [viewTimeline, setViewTimeline]=useState(false);
   const [latestRenewalYearofAPP, setlatestRenewalYearofAPP] = useState("");
   sessionStorage.setItem("applicationNumber", applicationNumber)
   const { renewalPending: renewalPending } = Digit.Hooks.useQueryParams();
@@ -51,6 +52,7 @@ const ApplicationDetails = () => {
     setShowToast(null);
   };
 
+  const { data: paymentsHistory } = Digit.Hooks.tl.useTLPaymentHistory(tenantId, applicationDetails?.applicationData?.applicationNumber);
   useEffect(() => {
     if (applicationDetails?.numOfApplications?.length > 0) {
       let financialYear = cloneDeep(applicationDetails?.applicationData?.financialYear);
@@ -215,17 +217,46 @@ const ApplicationDetails = () => {
       Digit.Utils.pdf.generate(data);
       setIsDisplayDownloadMenu(false)
     };
-
+    
+    const handleViewTimeline=()=>{
+      setViewTimeline(true);
+        const timelineSection=document.getElementById('timeline');
+        if(timelineSection){
+          timelineSection.scrollIntoView({behavior: 'smooth'});
+        } 
+    };
+  // const printReciept = async (businessService="TL", consumerCode=applicationDetails?.applicationData?.applicationNumber) => {
+  //   await Digit.Utils.downloadReceipt(consumerCode, businessService, 'tradelicense-receipt');
+  //   setIsDisplayDownloadMenu(false)
+  // };
   const printReciept = async (businessService="TL", consumerCode=applicationDetails?.applicationData?.applicationNumber) => {
-    await Digit.Utils.downloadReceipt(consumerCode, businessService, 'tradelicense-receipt');
-    setIsDisplayDownloadMenu(false)
+    const receiptFile = { filestoreIds: [paymentsHistory.Payments[0]?.fileStoreId] };
+    if(receiptFile.filestoreIds[0]!==null){
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: receiptFile.filestoreIds[0] });
+      window.open(fileStore[receiptFile.filestoreIds[0]], "_blank"); 
+    }
+    else{
+      const newResponse = await Digit.PaymentService.generatePdf(tenantId, { Payments: [paymentsHistory.Payments[0]] }, "tradelicense-receipt");
+      const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: newResponse.filestoreIds[0] });
+      window.open(fileStore[newResponse.filestoreIds[0]], "_blank");
+    }
   };
-
+  const fetchDigiLockerDocuments  = async (file) => {
+   
+          let TokenReq = {
+            pdfUrl:file,
+            redirectUrl:""
+          }
+          const res1 = await Digit.DigiLockerService.pdfUrl({TokenReq})
+          console.log("res1res1res1res1res1",res1)
+          window.location.href=res1
+}
   const printCertificate = async () => {
      let res = await Digit.TLService.TLsearch({ tenantId: applicationDetails?.tenantId, filters: { applicationNumber:applicationDetails?.applicationData?.applicationNumber } });
      const TLcertificatefile = await Digit.PaymentService.generatePdf(tenantId, { Licenses: res?.Licenses }, "tlcertificate");
      const receiptFile = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: TLcertificatefile.filestoreIds[0] });
-     window.open(receiptFile[TLcertificatefile.filestoreIds[0]], "_blank");
+     fetchDigiLockerDocuments(receiptFile[TLcertificatefile.filestoreIds[0]])
+     //window.open(receiptFile[TLcertificatefile.filestoreIds[0]], "_blank");
      setIsDisplayDownloadMenu(false)
   }
   const [isDisplayDownloadMenu, setIsDisplayDownloadMenu] = useState(false);
@@ -258,8 +289,10 @@ const ApplicationDetails = () => {
     <div className={"employee-main-application-details"} >
       <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
         <Header>{(applicationDetails?.applicationData?.workflowCode == "NewTL" && applicationDetails?.applicationData?.status !== "APPROVED") ? t("TL_TRADE_APPLICATION_DETAILS_LABEL") : t("TL_TRADE_LICENSE_DETAILS_LABEL")}</Header>
+        <div >
+        <div style={{zIndex: "10",  position: "relative"}}>
         <MultiLink
-                className="multilinkWrapper employee-mulitlink-main-div"
+                className="multilinkWrapper"
                 onHeadClick={() => setIsDisplayDownloadMenu(!isDisplayDownloadMenu)}
                 displayOptions={isDisplayDownloadMenu}
                 options={dowloadOptions}
@@ -267,6 +300,9 @@ const ApplicationDetails = () => {
                 optionsClassName={"employee-options-btn-className"}
                 optionStyle={{padding: "10px"}}
         />
+        </div>
+        <LinkButton label={t("VIEW_TIMELINE")} style={{color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
+        </div>        
       </div>
       <ApplicationDetailsTemplate
         applicationDetails={applicationDetails}
@@ -274,6 +310,7 @@ const ApplicationDetails = () => {
         isDataLoading={isLoading}
         applicationData={applicationDetails?.applicationData}
         mutate={mutate}
+        id={"timeline"}
         workflowDetails={workflowDetails}
         businessService={businessService}
         moduleCode="TL"

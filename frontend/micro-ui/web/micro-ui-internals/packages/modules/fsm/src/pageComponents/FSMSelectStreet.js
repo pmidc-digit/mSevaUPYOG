@@ -216,12 +216,7 @@ if (property !== "undefined")
         _defaultValues={{ street: property.propertyDetails.address.street, doorNo: property.propertyDetails.address.doorNo }}
         onChange={handleSkip}
         onSelect={(data) => onSelect(config.key, data)}
-<<<<<<< Updated upstream
-        onSkip={onSkip}
-        isDisabled={doorNo || street ? false : true}
-=======
         isDisabled={doorNo && street ? false : true}
->>>>>>> Stashed changes
         t={t}
       />
     </React.Fragment>

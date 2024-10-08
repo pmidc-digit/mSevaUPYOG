@@ -70,8 +70,6 @@ export const configCompleteApplication = ({ t, vehicle, vehicleCapacity, noOfTri
           hideInEmployee: true,
         },
         {
-<<<<<<< Updated upstream
-=======
           type: "component",
           route: "search-results",
           isMandatory: true,
@@ -151,7 +149,6 @@ export const configCompleteApplication = ({ t, vehicle, vehicleCapacity, noOfTri
           disable: false,
         },
         {
->>>>>>> Stashed changes
           label: "ES_NEW_APPLICATION_PROPERTY_TYPE",
           isMandatory: true,
           type: "component",

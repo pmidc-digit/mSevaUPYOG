@@ -276,18 +276,21 @@ public class DemandService {
 					.status(StatusEnum.valueOf("ACTIVE")).billExpiryTime(expiryDate).additionalDetails(additionalDetailsMap).build());
 		}
 
-		String billingcycle = calculatorUtils.getBillingCycle(masterMap);
-		DemandNotificationObj notificationObj = DemandNotificationObj.builder()
-				.requestInfo(calculationReq.getRequestInfo())
-				.tenantId(calculations.get(0).getTenantId())
-				.sewerageConnetionIds(sewerageConnectionIds)
-				.billingCycle(billingcycle)
-				.build();
-		List<Demand> demandRes = demandRepository.saveDemand(calculationReq.getRequestInfo(), demands,notificationObj);
-		if(calculationReq.getIsReconnectionRequest())
-			fetchBillForReconnect(demandRes, calculationReq.getRequestInfo(), masterMap);
-		else if(isForConnectionNO && !calculationReq.getIsReconnectionRequest())
-			fetchBill(demandRes, calculationReq.getRequestInfo(),masterMap);
+		
+		// commenting down the below UPYOG code as its giving error  date 09-10-2024
+//		String billingcycle = calculatorUtils.getBillingCycle(masterMap);
+//		DemandNotificationObj notificationObj = DemandNotificationObj.builder()
+//				.requestInfo(calculationReq.getRequestInfo())
+//				.tenantId(calculations.get(0).getTenantId())
+//				.sewerageConnetionIds(sewerageConnectionIds)
+//				.billingCycle(billingcycle)
+//				.build();
+		//List<Demand> demandRes = demandRepository.saveDemand(calculationReq.getRequestInfo(), demands,notificationObj);
+		List<Demand> demandRes = demandRepository.saveDemand(calculationReq.getRequestInfo(), demands);
+//		if(calculationReq.getIsReconnectionRequest())
+//			fetchBillForReconnect(demandRes, calculationReq.getRequestInfo(), masterMap);
+//		else if(isForConnectionNO && !calculationReq.getIsReconnectionRequest())
+//			fetchBill(demandRes, calculationReq.getRequestInfo(),masterMap);
 		return demandRes;
 	}
 

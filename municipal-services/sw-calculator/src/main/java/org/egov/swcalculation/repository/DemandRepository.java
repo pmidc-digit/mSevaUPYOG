@@ -52,25 +52,43 @@ public class DemandRepository {
 	     * @param demands The demands to be created
 	     * @return The list of demand created
 	     */
-	    public List<Demand> saveDemand(RequestInfo requestInfo, List<Demand> demands, DemandNotificationObj notificationObj){
+		
+		//comenting down below upyog code as its giving error.
+//	    public List<Demand> saveDemand(RequestInfo requestInfo, List<Demand> demands, DemandNotificationObj notificationObj){
+//	        StringBuilder url = new StringBuilder(config.getBillingServiceHost());
+//	        url.append(config.getDemandCreateEndPoint());
+//	        DemandRequest request = new DemandRequest(requestInfo,demands);
+//	        try{
+//				Object result = serviceRequestRepository.fetchResult(url, request);
+//				List<Demand>  demandList =  mapper.convertValue(result,DemandResponse.class).getDemands();
+//				if(!CollectionUtils.isEmpty(demandList)) {
+//					notificationObj.setSuccess(true);
+//					swCalculationProducer.push(config.getOnDemandSuccess(), notificationObj);
+//				}
+//				return demandList;
+//	        }
+//	        catch(IllegalArgumentException e){
+//				notificationObj.setSuccess(false);
+//				swCalculationProducer.push(config.getOnDemandFailed(), notificationObj);
+//				throw new CustomException("EG_SW_PARSING_ERROR","Failed to parse response of create demand");
+//	        }
+//	    }
+	    
+	    
+	    
+	    public List<Demand> saveDemand(RequestInfo requestInfo, List<Demand> demands){
 	        StringBuilder url = new StringBuilder(config.getBillingServiceHost());
 	        url.append(config.getDemandCreateEndPoint());
 	        DemandRequest request = new DemandRequest(requestInfo,demands);
+	        Object result = serviceRequestRepository.fetchResult(url, request);
 	        try{
-				Object result = serviceRequestRepository.fetchResult(url, request);
-				List<Demand>  demandList =  mapper.convertValue(result,DemandResponse.class).getDemands();
-				if(!CollectionUtils.isEmpty(demandList)) {
-					notificationObj.setSuccess(true);
-					swCalculationProducer.push(config.getOnDemandSuccess(), notificationObj);
-				}
-				return demandList;
+	           return  mapper.convertValue(result,DemandResponse.class).getDemands();
 	        }
 	        catch(IllegalArgumentException e){
-				notificationObj.setSuccess(false);
-				swCalculationProducer.push(config.getOnDemandFailed(), notificationObj);
-				throw new CustomException("EG_SW_PARSING_ERROR","Failed to parse response of create demand");
+	            throw new CustomException("PARSING_ERROR","Failed to parse response of create demand");
 	        }
 	    }
+	    
 	    
 	    /**
 	     * Updates the demand

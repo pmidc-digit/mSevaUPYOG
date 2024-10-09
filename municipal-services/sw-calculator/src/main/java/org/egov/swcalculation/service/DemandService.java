@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -1237,11 +1238,13 @@ public class DemandService {
 					int generateDemandFromIndex = 0;
 					Long lastDemandFromDate = sewerageCalculatorDao.searchLastDemandGenFromDate(sewConnDetails.getConnectionNo(), tenantId);
 					if(lastDemandFromDate != null) {
-						generateDemandFromIndex = IntStream.range(0, taxPeriods.size())
-								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate()))
-								.findFirst().getAsInt();
-						//Increased one index to generate the next quarter demand
-						generateDemandFromIndex++;
+						OptionalInt generateDemandFromIndexs = IntStream.range(0, taxPeriods.size())
+								.filter(p -> lastDemandFromDate.equals(taxPeriods.get(p).getFromDate())).findFirst();
+
+						if (generateDemandFromIndexs.isPresent()) {
+							generateDemandFromIndex = generateDemandFromIndexs.getAsInt();
+							generateDemandFromIndex++;
+						}
 					}
 
 					for (int taxPeriodIndex = generateDemandFromIndex; generateDemandFromIndex <= generateDemandToIndex; taxPeriodIndex++) {

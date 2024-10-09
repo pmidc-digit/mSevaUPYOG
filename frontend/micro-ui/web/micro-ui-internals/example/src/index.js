@@ -7,33 +7,18 @@ import { PTModule, PTLinks, PTComponents } from "@upyog/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@upyog/digit-ui-module-mcollect";
 // import { TLModule, TLLinks } from "@upyog/digit-ui-module-tl";
 import { initFSMComponents } from "@upyog/digit-ui-module-fsm";
-<<<<<<< Updated upstream
-import { initPGRComponents } from "@egovernments/digit-ui-module-pgr";
-import { initDSSComponents } from "@egovernments/digit-ui-module-dss";
-//import { initHRMSComponents } from "@egovernments/digit-ui-module-hrms";
-import { initReceiptsComponents, ReceiptsModule } from "@egovernments/digit-ui-module-receipts";
-=======
 import { initPGRComponents } from "@upyog/digit-ui-module-pgr";
 import { initDSSComponents } from "@upyog/digit-ui-module-dss";
 import { initHRMSComponents } from "@upyog/digit-ui-module-hrms";
 import { initReceiptsComponents, ReceiptsModule } from "@upyog/digit-ui-module-receipts";
->>>>>>> Stashed changes
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 import { initMCollectComponents } from "@upyog/digit-ui-module-mcollect";
 import { initTLComponents } from "@upyog/digit-ui-module-tl";
-<<<<<<< Updated upstream
-import { PaymentModule, PaymentLinks, paymentConfigs } from "@egovernments/digit-ui-module-common";
-//import { HRMSModule } from "@egovernments/digit-ui-module-hrms";
-//import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
-import { initEngagementComponents } from "@egovernments/digit-ui-module-engagement";
-import { initNOCComponents } from "@egovernments/digit-ui-module-noc";
-=======
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@upyog/digit-ui-module-common";
 import { HRMSModule } from "@upyog/digit-ui-module-hrms";
 import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
 import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
 import { initNOCComponents } from "@upyog/digit-ui-module-noc";
->>>>>>> Stashed changes
 import { initWSComponents } from "@upyog/digit-ui-module-ws";
 import { DigitUI } from "@upyog/digit-ui-module-core";
 import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
@@ -63,9 +48,11 @@ const enabledModules = [
   "QuickPayLinks",
   "DSS",
   "MCollect",
+  "HRMS",
   "TL",
   "Receipts",
   "Reports",
+  "OBPS",
   "Engagement",
   "NOC",
   "WS",
@@ -118,7 +105,7 @@ const initDigitUI = () => {
     ...PTComponents,
     MCollectLinks,
     MCollectModule,
-    //HRMSModule,
+    HRMSModule,
     ReceiptsModule,
     BillsModule,
     PTRModule,
@@ -132,11 +119,11 @@ const initDigitUI = () => {
   initPGRComponents();
   initDSSComponents();
   initMCollectComponents();
- // initHRMSComponents();
+  initHRMSComponents();
   initTLComponents();
   initReceiptsComponents();
   // initReportsComponents();
-  //initOBPSComponents();
+  initOBPSComponents();
   initEngagementComponents();
   initNOCComponents();
   initWSComponents();

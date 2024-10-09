@@ -70,11 +70,6 @@ const FileComplaint = ({ parentRoute }) => {
     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
   });
 
-<<<<<<< Updated upstream
-  configs = [...config]
-  configs.indexRoute = "select-trip-number";
-
-=======
   
 let newConfig=[ 
         {
@@ -386,7 +381,6 @@ let newConfig=[
 configs = [...newConfig]
   configs.indexRoute = "select-trip-number";
 console.log("newConfig",newConfig)
->>>>>>> Stashed changes
   return (
     <Switch>
       {configs.map((routeObj, index) => {

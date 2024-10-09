@@ -202,12 +202,7 @@ const SelectStreet = ({ t, config, onSelect, userType, formData, formState, setE
         _defaultValues={{ street: formData?.address.street, doorNo: formData?.address.doorNo }}
         onChange={handleSkip}
         onSelect={(data) => onSelect(config.key, data)}
-<<<<<<< Updated upstream
-        onSkip={onSkip}
-        isDisabled={doorNo || street ? false : true}
-=======
         isDisabled={doorNo && street ? false : true}
->>>>>>> Stashed changes
         t={t}
       />
     </React.Fragment>

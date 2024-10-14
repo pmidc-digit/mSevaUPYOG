@@ -64,7 +64,6 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
   }, [error]);
 
   useEffect(() => {
-    debugger
     if (!user) {
       return;
     }
@@ -106,7 +105,6 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
   };
 
   const selectMobileNumber = async (mobileNumber) => {
-    debugger
     setCanSubmitNo(false);
     setParmas({ ...params, ...mobileNumber });
     const data = {

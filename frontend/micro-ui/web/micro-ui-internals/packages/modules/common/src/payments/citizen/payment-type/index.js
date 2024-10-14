@@ -60,6 +60,7 @@ export const SelectPaymentType = (props) => {
         tenantId: billDetails?.tenantId,
         txnAmount: paymentAmount || billDetails.totalAmount,
         module: businessService,
+        businessService:businessService,
         billId: billDetails.id,
         consumerCode: consumerCode,
         productInfo: "Common Payment",

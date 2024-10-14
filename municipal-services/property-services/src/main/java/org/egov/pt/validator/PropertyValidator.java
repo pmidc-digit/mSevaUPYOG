@@ -570,11 +570,11 @@ List<String> allowedParams = null;
 		String userType = user.getType();
 		Boolean isUserCitizen = "CITIZEN".equalsIgnoreCase(userType);
 		
-		if(propertyUtil.isPropertySearchOpen(user)) {
-			
-			if(StringUtils.isEmpty(criteria.getLocality()))
-					throw new CustomException("EG_PT_INVALID_SEARCH"," locality is mandatory for open search");
-		}
+//		if(propertyUtil.isPropertySearchOpen(user)) {
+//			
+//			if(StringUtils.isEmpty(criteria.getLocality()))
+//					throw new CustomException("EG_PT_INVALID_SEARCH"," locality is mandatory for open search");
+//		}
 		
 		
 		Boolean isCriteriaEmpty = CollectionUtils.isEmpty(criteria.getOldpropertyids())

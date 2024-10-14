@@ -31,8 +31,6 @@ export const UserService = {
     });
   },
   getType: () => {
-    debugger
-    console.log("shdshvd"+Storage.get("userType"))
     return Storage.get("userType") || "citizen";
   },
   setType: (userType) => {

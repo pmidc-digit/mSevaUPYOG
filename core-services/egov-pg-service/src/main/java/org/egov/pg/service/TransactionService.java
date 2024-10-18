@@ -146,6 +146,8 @@ public class TransactionService {
 
         Transaction newTxn = null;
 
+	try
+	{
 	if(currentTxnStatus.getGateway().contentEquals("CCAVANUE")) {     	 
       		 if(validator.skipGateway(currentTxnStatus)) {
                newTxn = currentTxnStatus;
@@ -185,7 +187,11 @@ public class TransactionService {
 
         producer.push(appProperties.getUpdateTxnTopic(), new org.egov.pg.models.TransactionRequest(requestInfo, newTxn));
         producer.push(appProperties.getUpdateTxnDumpTopic(), new TransactionDumpRequest(requestInfo, dump));
-
+	}
+	catch(Exception ex)
+	{
+	     log.debug("Exception occurred in update Transaction: "+ex.toString());	
+	}
         return Collections.singletonList(newTxn);
     }
 

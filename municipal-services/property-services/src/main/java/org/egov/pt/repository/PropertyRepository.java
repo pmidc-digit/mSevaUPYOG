@@ -3,6 +3,7 @@ package org.egov.pt.repository;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -187,7 +188,15 @@ public class PropertyRepository {
 
 		UserDetailResponse userDetailResponse = userService.getUser(userSearchRequest);
 		util.enrichOwner(userDetailResponse, properties, isOpenSearch);
-		return properties;
+		  
+		
+		Property latestProperty = properties.stream()
+		            .max(Comparator.comparing(property -> 
+		                property.getAuditDetails().getCreatedTime(), 
+		                Comparator.nullsLast(Comparator.naturalOrder())))
+		            .orElse(null); 
+
+		    return latestProperty != null ? Collections.singletonList(latestProperty) : Collections.emptyList();
 	}
 	
 	private List<Property> getPropertyAudit(PropertyCriteria criteria) {

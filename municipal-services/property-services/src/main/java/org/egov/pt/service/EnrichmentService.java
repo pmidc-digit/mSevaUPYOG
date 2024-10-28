@@ -13,6 +13,7 @@ import org.egov.pt.models.Institution;
 import org.egov.pt.models.OwnerInfo;
 import org.egov.pt.models.Property;
 import org.egov.pt.models.PropertyCriteria;
+import org.egov.pt.models.enums.CreationReason;
 import org.egov.pt.models.enums.Status;
 import org.egov.pt.models.user.User;
 import org.egov.pt.util.PTConstants;
@@ -131,8 +132,13 @@ public class EnrichmentService {
 		{
 				enrichPropertyForNewWf(requestInfo, property, false);	
 		}
-		
-		
+		 if (request.getProperty().getCreationReason().equals(CreationReason.CREATE)
+					&& (request.getProperty().getWorkflow().getAction().equalsIgnoreCase("APPROVE") || request.getProperty().getWorkflow().getAction().equalsIgnoreCase("REJECT"))
+					)
+			{
+			 property.setCreationReason(CreationReason.UPDATE);
+			}
+			
 		if (!CollectionUtils.isEmpty(property.getDocuments()))
 			property.getDocuments().forEach(doc -> {
 

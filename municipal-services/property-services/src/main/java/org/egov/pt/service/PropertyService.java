@@ -284,12 +284,7 @@ public class PropertyService {
 //			request.getProperty().setCreationReason(CreationReason.UPDATE);
 //		}
 		
-		 if (request.getProperty().getCreationReason().equals(CreationReason.CREATE)
-				&& request.getProperty().getWorkflow().getAction().equalsIgnoreCase("APPROVE") 
-				)
-		{
-log.info("Setting Update");			request.getProperty().setCreationReason(CreationReason.UPDATE);
-		}
+	
 
 		enrichmentService.enrichAssignes(request.getProperty());
 		enrichmentService.enrichUpdateRequest(request, propertyFromSearch);

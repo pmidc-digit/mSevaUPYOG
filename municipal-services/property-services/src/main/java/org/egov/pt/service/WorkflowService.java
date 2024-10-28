@@ -147,8 +147,11 @@ public class WorkflowService {
 		}
 
 		else
+		{
 			request.getProperty().setStatus(Status.fromValue(state.getApplicationStatus()));
-		request.getProperty().getWorkflow().setState(state);
+			request.getProperty().setCreationReason(CreationReason.UPDATE);
+		}
+			request.getProperty().getWorkflow().setState(state);
 		return state;
 	}
 

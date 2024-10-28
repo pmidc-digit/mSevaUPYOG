@@ -259,6 +259,7 @@ public class PropertyService {
 		enrichmentService.enrichUpdateRequest(request, propertyFromSearch);
 		util.mergeAdditionalDetails(request, propertyFromSearch);
 		producer.push(config.getUpdatePropertyTopic(), request);
+
 	}
 
 	/**
@@ -282,6 +283,14 @@ public class PropertyService {
 //		if (request.getProperty().getStatus().equals(Status.ACTIVE)) {
 //			request.getProperty().setCreationReason(CreationReason.UPDATE);
 //		}
+		
+		 if (request.getProperty().getCreationReason().equals(CreationReason.CREATE)
+				&& request.getProperty().getWorkflow().getAction().equalsIgnoreCase("APPROVE") 
+				)
+		{
+log.info("Setting Update");			request.getProperty().setCreationReason(CreationReason.UPDATE);
+		}
+
 		enrichmentService.enrichAssignes(request.getProperty());
 		enrichmentService.enrichUpdateRequest(request, propertyFromSearch);
 

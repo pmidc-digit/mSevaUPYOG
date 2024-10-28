@@ -145,9 +145,7 @@ public class WorkflowService {
 			//request.getProperty().setCreationReason(CreationReason.UPDATE);
 			
 		}
-		else if (request.getProperty().getCreationReason().equals(CreationReason.CREATE)
-				&& request.getProperty().getWorkflow().getAction().equalsIgnoreCase("APPROVE") 
-				)
+		 if (request.getProperty().getWorkflow().getAction().equalsIgnoreCase("APPROVE") ||		request.getProperty().getWorkflow().getAction().equalsIgnoreCase("REJECT") )
 		{
 
 			request.getProperty().setCreationReason(CreationReason.UPDATE);

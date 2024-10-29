@@ -132,13 +132,7 @@ public class EnrichmentService {
 		{
 				enrichPropertyForNewWf(requestInfo, property, false);	
 		}
-		 if (request.getProperty().getCreationReason().equals(CreationReason.CREATE)
-					&& (request.getProperty().getWorkflow().getAction().equalsIgnoreCase("APPROVE") || request.getProperty().getWorkflow().getAction().equalsIgnoreCase("REJECT"))
-					)
-			{
-			 property.setCreationReason(CreationReason.UPDATE);
-			}
-			
+		
 		if (!CollectionUtils.isEmpty(property.getDocuments()))
 			property.getDocuments().forEach(doc -> {
 

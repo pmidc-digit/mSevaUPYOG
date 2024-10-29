@@ -167,7 +167,7 @@ public class PropertyRepository {
 	 */
 	public List<Property> getPropertiesWithOwnerInfo(PropertyCriteria criteria, RequestInfo requestInfo, Boolean isInternal) {
 
-		List<Property> properties;
+			List<Property> properties;
 		
 		Boolean isOpenSearch = isInternal ? false : util.isPropertySearchOpen(requestInfo.getUserInfo());
 
@@ -188,15 +188,7 @@ public class PropertyRepository {
 
 		UserDetailResponse userDetailResponse = userService.getUser(userSearchRequest);
 		util.enrichOwner(userDetailResponse, properties, isOpenSearch);
-		  
-		
-		Property latestProperty = properties.stream()
-		            .max(Comparator.comparing(property -> 
-		                property.getAuditDetails().getCreatedTime(), 
-		                Comparator.nullsLast(Comparator.naturalOrder())))
-		            .orElse(null); 
-
-		    return latestProperty != null ? Collections.singletonList(latestProperty) : Collections.emptyList();
+		return properties;
 	}
 	
 	private List<Property> getPropertyAudit(PropertyCriteria criteria) {

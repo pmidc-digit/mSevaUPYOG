@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -168,50 +167,36 @@ public class PropertyRepository {
 	 */
 	public List<Property> getPropertiesWithOwnerInfo(PropertyCriteria criteria, RequestInfo requestInfo, Boolean isInternal) {
 
-		   List<Property> properties;
+		List<Property> properties;
+		
+		Boolean isOpenSearch = isInternal ? false : util.isPropertySearchOpen(requestInfo.getUserInfo());
 
-		    Boolean isOpenSearch = isInternal ? false : util.isPropertySearchOpen(requestInfo.getUserInfo());
+		if (criteria.isAudit() && !isOpenSearch) {
+			properties = getPropertyAudit(criteria);
+		} else {
 
-		    if (criteria.isAudit() && !isOpenSearch) {
-		        properties = getPropertyAudit(criteria);
-		    } else {
-		        properties = getProperties(criteria, isOpenSearch, false);
-		    }
+			properties = getProperties(criteria, isOpenSearch, false);
+		}
+		if (CollectionUtils.isEmpty(properties))
+			return Collections.emptyList();
 
-		    if (CollectionUtils.isEmpty(properties)) {
-		        return Collections.emptyList();
-		    }
+		Set<String> ownerIds = properties.stream().map(Property::getOwners).flatMap(List::stream)
+				.map(OwnerInfo::getUuid).collect(Collectors.toSet());
 
-		    Map<String, Long> maxCreatedTimeMap = properties.stream()
-		            .collect(Collectors.toMap(
-		                    Property::getPropertyId,
-		                    property -> property.getAuditDetails().getCreatedTime(),
-		                    Math::max 
-		            ));
+		UserSearchRequest userSearchRequest = userService.getBaseUserSearchRequest(criteria.getTenantId(), requestInfo);
+		userSearchRequest.setUuid(ownerIds);
 
-		   
-		    List<Property> latestProperties = properties.stream()
-		            .filter(property -> {
-		                Long maxCreatedTime = maxCreatedTimeMap.get(property.getPropertyId());
-		                return maxCreatedTime != null && maxCreatedTime.equals(property.getAuditDetails().getCreatedTime());
-		            })
-		            .collect(Collectors.toList());
+		UserDetailResponse userDetailResponse = userService.getUser(userSearchRequest);
+		util.enrichOwner(userDetailResponse, properties, isOpenSearch);
+		  
+		
+		Property latestProperty = properties.stream()
+		            .max(Comparator.comparing(property -> 
+		                property.getAuditDetails().getCreatedTime(), 
+		                Comparator.nullsLast(Comparator.naturalOrder())))
+		            .orElse(null); 
 
-		    Set<String> ownerIds = latestProperties.stream()
-		            .map(Property::getOwners)
-		            .flatMap(List::stream)
-		            .map(OwnerInfo::getUuid)
-		            .collect(Collectors.toSet());
-
-		    UserSearchRequest userSearchRequest = userService.getBaseUserSearchRequest(criteria.getTenantId(), requestInfo);
-		    userSearchRequest.setUuid(ownerIds);
-
-		    UserDetailResponse userDetailResponse = userService.getUser(userSearchRequest);
-		    util.enrichOwner(userDetailResponse, latestProperties, isOpenSearch);
-
-		    return latestProperties;
-		    
-	
+		    return latestProperty != null ? Collections.singletonList(latestProperty) : Collections.emptyList();
 	}
 	
 	private List<Property> getPropertyAudit(PropertyCriteria criteria) {

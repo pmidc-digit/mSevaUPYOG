@@ -138,8 +138,9 @@ public class PaymentService {
 				}
 				}
 			
-		
+			else
 			businessservice = paymentSearchCriteria.getBusinessService();
+			
 			if (businessservice.equals("WS")|| businessservice.equals("SW") || businessservice.equals("WS.ONE_TIME_FEE") || businessservice.equals("SW.ONE_TIME_FEE")) 
 			{
 				

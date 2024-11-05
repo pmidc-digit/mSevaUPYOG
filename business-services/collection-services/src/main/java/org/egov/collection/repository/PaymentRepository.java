@@ -328,6 +328,7 @@ public class PaymentRepository {
         Map<String, Object> preparedStatementValues = new HashMap<>();
         String query = paymentQueryBuilder.getIdQuery(paymentSearchCriteria, preparedStatementValues);
         log.info(query);
+        log.info(preparedStatementValues.toString());
         return namedParameterJdbcTemplate.query(query, preparedStatementValues, new SingleColumnRowMapper<>(String.class));
 	}
 

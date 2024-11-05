@@ -99,7 +99,7 @@ public class PaymentRepository {
         Map<String, Object> preparedStatementValues = new HashMap<>();
 
         
-        if (!paymentSearchCriteria.getBusinessService().isEmpty() && (paymentSearchCriteria.getBusinessService().equalsIgnoreCase("WS.ONE_TIME_FEE")
+        if (paymentSearchCriteria.getBusinessService()!=null && (paymentSearchCriteria.getBusinessService().equalsIgnoreCase("WS.ONE_TIME_FEE")
         		|| paymentSearchCriteria.getBusinessService().equalsIgnoreCase("SW.ONE_TIME_FEE")
         		))
         {

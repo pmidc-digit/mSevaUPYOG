@@ -105,7 +105,7 @@ public class PaymentService {
 			if (businessservice.equals("WS")|| businessservice.equals("SW") || businessservice.equals("WS.ONE_TIME_FEE") || businessservice.equals("SW.ONE_TIME_FEE")) 
 			{
 				
-				if ((businessservice.equals("WS.ONE_TIME_FEE")||businessservice.equals("SW.ONE_TIME_FEE")) && !paymentSearchCriteria.getConsumerCodes().isEmpty()  && !paymentSearchCriteria.getApplicationNo().isEmpty() )
+				if ((businessservice.equals("WS.ONE_TIME_FEE")||businessservice.equals("SW.ONE_TIME_FEE")) && paymentSearchCriteria.getConsumerCodes()!=null  && paymentSearchCriteria.getConsumerCodes()!=null )
 				{
 					paymentSearchCriteria.setConsumerCodes(null);
 				}

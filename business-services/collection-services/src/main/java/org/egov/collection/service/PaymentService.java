@@ -127,12 +127,17 @@ public class PaymentService {
 					// Create a Set to hold the application number
 					Set<String> applicationNumbers = new HashSet<>();
 
-					if (consumercode.get(0).equals("WS_AP") || consumercode.get(0).equals("SW_AP")) {
+					if (consumercode.get(0).equals("WS_AP") || consumercode.get(0).equals("SW_AP"))
+					{
+						
 					    applicationNumbers.add(consumercode.get(0)); // Add the string to the Set
+					    log.info("final consumercode "+applicationNumbers);
 					    paymentSearchCriteria.setApplicationNo(applicationNumbers); // Pass the Set to the method
 					}
 					else
 					{
+					    applicationNumbers.add(consumercode.get(0)); // Add the string to the Set
+
 						paymentSearchCriteria.setConsumerCodes(applicationNumbers);
 					}
 				}

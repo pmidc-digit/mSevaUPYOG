@@ -94,17 +94,20 @@ public class PaymentService {
 		 */
 
 		List<Payment> payments = paymentRepository.fetchPayments(paymentSearchCriteria);
+		
+		
 		if (payments != null && !payments.isEmpty()) {
 			Collections.sort(payments.get(0).getPaymentDetails().get(0).getBill().getBillDetails(),
 					(b1, b2) -> b2.getFromPeriod().compareTo(b1.getFromPeriod()));
 		}
-		if (null != paymentSearchCriteria.getBusinessService() && null != paymentSearchCriteria.getConsumerCodes()
-				&& payments != null && !payments.isEmpty())
+		
+		
+		if ((null != paymentSearchCriteria.getBusinessService() ||null != paymentSearchCriteria.getReceiptNumbers()  && payments != null && !payments.isEmpty()))
 		{
 			String businessservice =null;
 			
 			
-			if (null != paymentSearchCriteria.getReceiptNumbers() && payments != null && !payments.isEmpty()) 
+			if (null != paymentSearchCriteria.getReceiptNumbers()) 
 				
 			{
 				String receiptnumber = null;

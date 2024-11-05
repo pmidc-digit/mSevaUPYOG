@@ -101,7 +101,42 @@ public class PaymentService {
 		if (null != paymentSearchCriteria.getBusinessService() && null != paymentSearchCriteria.getConsumerCodes()
 				&& payments != null && !payments.isEmpty())
 		{
-			String businessservice = paymentSearchCriteria.getBusinessService();
+			String businessservice =null;
+			
+			
+			if (null != paymentSearchCriteria.getReceiptNumbers() && payments != null && !payments.isEmpty()) 
+				
+			{
+				String receiptnumber = null;
+				Iterator<String> iterate = paymentSearchCriteria.getReceiptNumbers().iterator();
+				while (iterate.hasNext()) {
+					receiptnumber = iterate.next();
+				}
+				String receipts[] = receiptnumber.split("/");
+
+				String businessservices[] = receipts[0].split("_");
+				businessservice=businessservices[0];
+				if (businessservices[0].equals("WS") || businessservices[0].equals("SW")) 
+				{
+
+					List<String> consumercode = paymentRepository.fetchConsumerCodeByReceiptNumber(receiptnumber);
+
+					// Create a Set to hold the application number
+					Set<String> applicationNumbers = new HashSet<>();
+
+					if (consumercode.get(0).equals("WS_AP") || consumercode.get(0).equals("SW_AP")) {
+					    applicationNumbers.add(consumercode.get(0)); // Add the string to the Set
+					    paymentSearchCriteria.setApplicationNo(applicationNumbers); // Pass the Set to the method
+					}
+					else
+					{
+						paymentSearchCriteria.setConsumerCodes(applicationNumbers);
+					}
+				}
+				}
+			
+		
+			businessservice = paymentSearchCriteria.getBusinessService();
 			if (businessservice.equals("WS")|| businessservice.equals("SW") || businessservice.equals("WS.ONE_TIME_FEE") || businessservice.equals("SW.ONE_TIME_FEE")) 
 			{
 				
@@ -203,33 +238,6 @@ public class PaymentService {
 			
 			return payments;
 		}
-		
-		
-		
-		
-		else if (null != paymentSearchCriteria.getReceiptNumbers() && payments != null && !payments.isEmpty()) 
-		
-		{
-			String receiptnumber = null;
-			Iterator<String> iterate = paymentSearchCriteria.getReceiptNumbers().iterator();
-			while (iterate.hasNext()) {
-				receiptnumber = iterate.next();
-			}
-			String receipts[] = receiptnumber.split("/");
-
-			String businessservice[] = receipts[0].split("_");
-			if (businessservice[0].equals("WS") || businessservice[0].equals("SW")) {
-
-				setPropertyData(receiptnumber, payments, businessservice[0]);
-			}
-
-			return payments;
-
-		} 
-		
-		
-		
-		
 		else {
 			return payments;
 		}

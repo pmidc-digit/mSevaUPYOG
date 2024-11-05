@@ -102,7 +102,7 @@ public class PaymentService {
 		}
 		
 		
-		if ((null != paymentSearchCriteria.getBusinessService() ||null != paymentSearchCriteria.getReceiptNumbers()  && payments != null && !payments.isEmpty()))
+		if ((null != paymentSearchCriteria.getBusinessService() ||null != paymentSearchCriteria.getReceiptNumbers())  && payments != null && !payments.isEmpty())
 		{
 			String businessservice =null;
 			
@@ -121,7 +121,6 @@ public class PaymentService {
 				businessservice=businessservices[0];
 				if (businessservices[0].equals("WS") || businessservices[0].equals("SW")) 
 				{
-
 					List<String> consumercode = paymentRepository.fetchConsumerCodeByReceiptNumber(receiptnumber);
 
 					// Create a Set to hold the application number
@@ -141,7 +140,9 @@ public class PaymentService {
 						paymentSearchCriteria.setConsumerCodes(applicationNumbers);
 					}
 				}
-				}
+				
+			}
+				
 			
 			else
 			businessservice = paymentSearchCriteria.getBusinessService();
@@ -246,7 +247,9 @@ public class PaymentService {
 			}
 			
 			return payments;
-		}
+		
+			}
+			
 		else {
 			return payments;
 		}

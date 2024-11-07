@@ -3,6 +3,7 @@ package org.egov.pt.repository;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -166,7 +167,7 @@ public class PropertyRepository {
 	 */
 	public List<Property> getPropertiesWithOwnerInfo(PropertyCriteria criteria, RequestInfo requestInfo, Boolean isInternal) {
 
-		List<Property> properties;
+			List<Property> properties;
 		
 		Boolean isOpenSearch = isInternal ? false : util.isPropertySearchOpen(requestInfo.getUserInfo());
 

@@ -193,7 +193,7 @@ public class PropertyRepository {
 			    List<Property> latestProperties = properties.stream()
 			            .filter(property -> {
 			                Long maxModifiedTime = maxModifiedTimeMap.get(property.getPropertyId());
-			                return maxModifiedTime != null && maxModifiedTime.equals(property.getAuditDetails().getModifiedTime());
+			                return maxModifiedTime != null && maxModifiedTime.equals(property.getAuditDetails().getLastModifiedTime());
 			            })
 			            .collect(Collectors.toList());
 

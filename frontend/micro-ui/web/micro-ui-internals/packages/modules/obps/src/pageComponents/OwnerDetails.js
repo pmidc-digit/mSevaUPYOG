@@ -425,11 +425,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                 }).join("; ");
                 payload.additionalDetails.stakeholderRegistrationNumber=JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"));
                 payload.additionalDetails.stakeholderAddress=JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS"))
-                let isSelfCertificationRequired=sessionStorage.getItem("isSelfCertificationRequired");
-                if(isSelfCertificationRequired==="undefined"){
-                    isSelfCertificationRequired="false";
-                }
-                payload.additionalDetails.isSelfCertificationRequired = isSelfCertificationRequired.toString();
+                let isSelfCertificationRequired="true"
+                // sessionStorage.getItem("isSelfCertificationRequired");
+                // if(isSelfCertificationRequired==="undefined"){
+                //     isSelfCertificationRequired="false";
+                // }
+                payload.additionalDetails.isSelfCertificationRequired = isSelfCertificationRequired
+                // .toString();
                 // create BPA call
                 // if(isSelfCertificationRequired===true && formData?.data.occupancyType==="Residential" && (parsedArchitectName=="ARCHITECT" || parsedArchitectName=="ENGINEER"|| parsedArchitectName=="DESIGNER" || parsedArchitectName=="SUPERVISOR")){
                 //     if(formData?.data.edcrDetails.planDetail.blocks[0].building.buildingHeight > 15){

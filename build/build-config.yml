@@ -410,7 +410,7 @@ config:
       - work-dir: "core-services/xstate-chatbot/nodejs/db"
         image-name: "xstate-chatbot-db"
 
-  - name: "builds/digit-dev/core-services/xstate-webchat"
+  - name: "builds/Development/core-services/xstate-webchat"
     build:
       - work-dir: "core-services/xstate-webchat/nodejs"
         image-name: "xstate-webchat"
@@ -771,9 +771,9 @@ config:
         
   - name: builds/Development/frontend/Development-ui
     build:
-      - work-dir: frontend/Development-ui/
-        dockerfile: frontend/Development-ui/web/docker/Dockerfile
-        image-name: Development-ui        
+      - work-dir: frontend/upyog-ui/
+        dockerfile: frontend/upyog-ui/web/docker/Dockerfile
+        image-name: upyog-ui        
 
   - name: builds/Development/frontend/micro-ui/storybook
     build:

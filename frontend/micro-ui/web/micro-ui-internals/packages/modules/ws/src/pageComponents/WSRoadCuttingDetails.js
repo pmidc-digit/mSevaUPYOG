@@ -25,7 +25,6 @@ const WSRoadCuttingDetails = ({ config, onSelect, userType, formData, setError, 
   
   const [roadCuttingDetails, setRoadCuttingDetails] = useState(formData?.roadCuttingDetails || [createRoadCuttingDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-
   const addroadCutt = () => {
     const newRoadCutting = createRoadCuttingDetails();
     setRoadCuttingDetails((prev) => [...prev, newRoadCutting]);
@@ -65,7 +64,7 @@ const WSRoadCuttingDetails = ({ config, onSelect, userType, formData, setError, 
       {roadCuttingDetails.filter((o) => o.status !== "INACTIVE").map((roadCutt, index) => (
         <RoadCuttForm key={roadCutt.key} index={index} roadCutt={roadCutt} {...commonProps} />
       ))}
-      <LinkButton label={t("WS_ADD_ROAD_TYPE")} onClick={addroadCutt} style={{ color: "orange", display: "inline-block" }} /> 
+      <LinkButton label={t("WS_ADD_ROAD_TYPE_LABEL")} onClick={addroadCutt} style={{ color: "orange", display: "inline-block" }} />
     </React.Fragment>
   );
 };
@@ -148,13 +147,13 @@ const RoadCuttForm = (_props) => {
 
           <div style={allRoadCuttingDetails?.filter((o) => o.status !== "INACTIVE").length == 1 ? {} : {marginTop: "40px"}}>
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("WS_ROAD_TYPE") + " *"}</CardLabel>
+              <CardLabel className="card-label-smaller">{t("WS_ADDN_DETAIL_ROAD_TYPE")}</CardLabel>
               <Controller
                 control={control}
                 name={"roadType"}
                 defaultValue={roadCutt?.roadType}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                isMandatory={true}
+                //rules={{ required: t("REQUIRED_FIELD") }}
+                isMandatory={false}
                 render={(props) => (
                     <Dropdown
                         className="form-field"
@@ -176,14 +175,14 @@ const RoadCuttForm = (_props) => {
               {localFormState.touched?.roadType ? errors?.roadType?.message : ""}
             </CardLabelError>
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("WS_AREA_SQ_FT") + " *"}</CardLabel>
+              <CardLabel className="card-label-smaller">{t("WS_ADDN_DETAILS_AREA_LABEL")}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
                   name={"area"}
                   defaultValue={roadCutt?.area}
                   rules={{
-                    required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                    //required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                     validate: {
                       pattern: (e) => (/^[0-9]{1,10}$/i.test(e) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
                     },

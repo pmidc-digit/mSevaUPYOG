@@ -16,10 +16,11 @@
     "packages/modules/obps",
     "packages/modules/br",
     "packages/modules/pgr",
-    "packages/modules/mCollect"
-  
-
-
+    "packages/modules/mCollect",
+    "packages/modules/pgr",
+    "packages/modules/sample",
+    "packages/modules/hrms",
+    "packages/modules/ws"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",
@@ -37,27 +38,26 @@
     "dev:libraries": "cd packages/libraries && yarn start",
     "dev:components": "cd packages/react-components && yarn start",
     "dev:common": "cd packages/modules/common && yarn start",
-    "dev:pt": "cd packages/modules/pt && yarn start",
     "dev:commonPt": "cd packages/modules/commonPt && yarn start",
     "dev:core": "cd packages/modules/core && yarn start",
-    "dev:pgr": "cd packages/modules/pgr && yarn start",
-    "dev:fsm": "cd packages/modules/fsm && yarn start",
     "dev:dss": "cd packages/modules/dss && yarn start",
-    "dev:mcollect": "cd packages/modules/mCollect && yarn start",
     "dev:receipts": "cd packages/modules/receipts && yarn start",
-    "dev:tl": "cd packages/modules/tl && yarn start",
     "dev:hrms": "cd packages/modules/hrms && yarn start",
-    "dev:obps": "cd packages/modules/obps && yarn start",
-    "dev:engagement": "cd packages/modules/engagement && yarn start",
-    "dev:noc": "cd packages/modules/noc && yarn start",
     "dev:ws": "cd packages/modules/ws && yarn start",
     "dev:bills": "cd packages/modules/bills && yarn start",
     "dev:reports": "cd packages/modules/reports && yarn start",
     "dev:example": "cd example && yarn start",
+    "dev:sample": "cd packages/modules/sample && yarn start",
+    "dev:mcollect": "cd packages/modules/mCollect && yarn start",
+    "dev:pt": "cd packages/modules/pt && yarn start",
+    "dev:pgr": "cd packages/modules/pgr && yarn start",
+    "dev:fsm": "cd packages/modules/fsm && yarn start",
+    "dev:tl": "cd packages/modules/tl && yarn start",
+    "dev:obps": "cd packages/modules/obps && yarn start",
+    "dev:engagement": "cd packages/modules/engagement && yarn start",
+    "dev:noc": "cd packages/modules/noc && yarn start",
     "dev:ptr": "cd packages/modules/ptr && yarn start",
-
     "dev:br": "cd packages/modules/br && yarn start",
-
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
     "build:components": "cd packages/react-components && yarn build",
@@ -79,10 +79,9 @@
     "buildD:ws": "cd packages/modules/ws && yarn build",
     "buildD:bills": "cd packages/modules/bills && yarn build",
     "buildR:reports": "cd packages/modules/reports && yarn build",
-
     "build:br": "cd packages/modules/br && yarn build",
-
-    "deploy:jenkins": "./scripts/jenkins.sh"
+    "deploy:jenkins": "./scripts/jenkins.sh",
+    "build:sample": "cd packages/modules/sample && yarn build"
   },
   "devDependencies": {
     "husky": "7.0.4",

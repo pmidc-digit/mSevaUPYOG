@@ -90,7 +90,7 @@ const SearchFields = ({ register, control, reset, tenantId, t,businessService })
             />
         </SearchField>
         <SearchField>
-            <label>{t("CONSUMER_MOBILE_NUMBER")}</label>
+            <label>{t("WS_HOME_SEARCH_RESULTS_OWN_MOB_LABEL")}</label>
             <MobileNumber name="mobileNumber" type="number" inputRef={register({})} {...propsForMobileNumber} />
         </SearchField>
         {applicationTypesLoading ? <Loader /> : <SearchField>

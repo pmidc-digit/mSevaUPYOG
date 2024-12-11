@@ -12,7 +12,7 @@ const WSAdditonalDetails = ({ wsAdditionalDetails, oldValue }) => {
   let filters = getQueryStringParams(location.search);
   const isModify = filters?.mode;
 
-  var { connectionDetails, plumberDetails, roadCuttingDetails, activationDetails } = wsAdditionalDetails?.additionalDetails || {connectionDetails:[], plumberDetails: []};
+  var { connectionDetails, plumberDetails, roadCuttingDetails, roadCuttingAddlDetails,activationDetails } = wsAdditionalDetails?.additionalDetails || {connectionDetails:[], plumberDetails: [], roadCuttingAddlDetails: []};
     
   return (
     <Fragment>
@@ -25,7 +25,12 @@ const WSAdditonalDetails = ({ wsAdditionalDetails, oldValue }) => {
                 {connectionDetails?.map((value, index) => {
                   return (
                     <div>
-                      <Row className="border-none" key={`${value.title}`} label={`${t(`${value.title}`)}`} text={value?.oldValue ? value?.oldValue: value?.value ? value?.value : ""} />
+                      <Row
+                        className="border-none"
+                        key={`${value.title}`}
+                        label={`${t(`${value.title}`)}`}
+                        text={value?.oldValue ? value?.oldValue : value?.value ? value?.value : ""}
+                      />
                     </div>
                   );
                 })}
@@ -38,9 +43,16 @@ const WSAdditonalDetails = ({ wsAdditionalDetails, oldValue }) => {
             <CardSubHeader style={cardSubHeaderStyles()}>{t("WS_COMMON_PLUMBER_DETAILS")}</CardSubHeader>
             <div>
               <div className="plumber-details-new-value-wrapper">
-
                 {plumberDetails?.map((value, index) => {
-                  return <Row className="border-none" key={`${value.title}`} label={`${t(`${value.title}`)}`} text={value?.oldValue ? value?.oldValue: value?.value ? value?.value : ""} privacy={value.privacy} />;
+                  return (
+                    <Row
+                      className="border-none"
+                      key={`${value.title}`}
+                      label={`${t(`${value.title}`)}`}
+                      text={value?.oldValue ? value?.oldValue : value?.value ? value?.value : ""}
+                      privacy={value.privacy}
+                    />
+                  );
                 })}
               </div>
             </div>
@@ -48,13 +60,14 @@ const WSAdditonalDetails = ({ wsAdditionalDetails, oldValue }) => {
         )}
         {wsAdditionalDetails?.additionalDetails?.roadCuttingDetails && isModify != "MODIFY" && (
           <StatusTable>
-            <CardSubHeader style={cardSubHeaderStyles()}>{t("WS_ROAD_CUTTING_DETAILS")}</CardSubHeader>
+            <CardSubHeader style={cardSubHeaderStyles()}>{t("WS_COMMON_ROAD_CUTTING_DETAILS")}</CardSubHeader>
             <div>
-              <div className="plumber-details-new-value-wrapper">
+              <div className="road-cutting-details-new-value-wrapper">
                 {roadCuttingDetails?.map((value) => {
                   return (
                     <div
-                      style={ roadCuttingDetails?.length > 1
+                      style={
+                        roadCuttingDetails?.length > 1
                           ? {
                               border: "1px solid #D6D5D4",
                               background: "#FAFAFA",
@@ -70,14 +83,33 @@ const WSAdditonalDetails = ({ wsAdditionalDetails, oldValue }) => {
                           className="border-none"
                           key={`${roadValue.title}`}
                           label={`${t(`${roadValue.title}`)}`}
-                          text={roadValue?.oldValue ? roadValue?.oldValue: roadValue?.value ? roadValue?.value : ""}
+                          text={roadValue?.oldValue ? roadValue?.oldValue : roadValue?.value ? roadValue?.value : ""}
                         />
                       ))}
                     </div>
                   );
                 })}
-              </div>             
+              </div>
             </div>
+            {wsAdditionalDetails?.additionalDetails?.roadCuttingAddlDetails && (
+              <div>
+                <br></br>
+                <div className="road-cutting-addl-details-new-value-wrapper">
+                  {roadCuttingAddlDetails?.map((value, index) => {
+                    return (
+                      <div>
+                        <Row
+                          className="border-none"
+                          key={`${value.title}`}
+                          label={`${t(`${value.title}`)}`}
+                          text={value?.oldValue ? value?.oldValue : value?.value ? value?.value : ""}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </StatusTable>
         )}
         {wsAdditionalDetails?.additionalDetails?.activationDetails && (
@@ -87,10 +119,15 @@ const WSAdditonalDetails = ({ wsAdditionalDetails, oldValue }) => {
               <div className="plumber-details-new-value-wrapper">
                 {activationDetails?.map((value, index) => {
                   return (
-                    <Row className="border-none" key={`${value.title}`} label={`${t(`${value.title}`)}`} text={value?.oldValue ? value?.oldValue: value?.value ? value?.value : ""} />
+                    <Row
+                      className="border-none"
+                      key={`${value.title}`}
+                      label={`${t(`${value.title}`)}`}
+                      text={value?.oldValue ? value?.oldValue : value?.value ? value?.value : ""}
+                    />
                   );
                 })}
-              </div>              
+              </div>
             </div>
           </StatusTable>
         )}

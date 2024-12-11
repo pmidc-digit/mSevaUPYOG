@@ -1,7 +1,7 @@
 export const config = [
     {
       texts: {
-        header: "WS_SEARCH_CONNECTION",
+        header: "WS_SEARCH_CONNECTIONS",
         submitBarLabel: "WS_SEARCH_LABEL",
         cardText: "",
       },

@@ -21,12 +21,18 @@ import EditEmployee from "./pages/EditEmployee/index";
 import Details from "./pages/EmployeeDetails";
 import Inbox from "./pages/Inbox";
 import Response from "./pages/Response";
+//
+import SelectEmployeeGuardianName from "./components/pageComponents/SelectEmployeeGuardianName";
+import SelectEmployeeGuardianRelationship from "./components/pageComponents/SelectEmployeeGuardianRelationship";
+import SelectEmploymentStatus from "./components/pageComponents/SelectEmploymentStatus";
+import HRMSEmployeewiseReport from "./pages/HRMSEmployeewiseReport";
+import SelectULB from "./components/pageComponents/SelectULB";
 
 export const HRMSModule = ({ stateCode, userType, tenants }) => {
-  const moduleCode = "HR";
+  const moduleCode = "HRMS";
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
-
+  console.log("Tenants: ", tenants);
   Digit.SessionStorage.set("HRMS_TENANTS", tenants);
   const { path, url } = useRouteMatch();
   if (!Digit.Utils.hrmsAccess()) {
@@ -59,9 +65,15 @@ const componentsToRegister = {
   HRCreateEmployee: CreateEmployee,
   HRInbox: Inbox,
   HRMS_INBOX_FILTER: (props) => <InboxFilter {...props} />,
+  SelectEmployeeGuardianName,
+  SelectEmployeeGuardianRelationship,
+  SelectEmploymentStatus,
+  HRMSEmployeewiseReport,
+  SelectULB,
 };
 
 export const initHRMSComponents = () => {
+  console.log("In initHRMSComponents");
   Object.entries(componentsToRegister).forEach(([key, value]) => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });

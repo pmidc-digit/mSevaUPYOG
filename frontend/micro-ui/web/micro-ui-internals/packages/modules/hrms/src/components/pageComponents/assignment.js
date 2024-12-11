@@ -1,4 +1,4 @@
-import { CardLabel, CheckBox, DatePicker, Dropdown, LabelFieldPair, Loader } from "@upyog/digit-ui-react-components";
+import { CardLabel, CheckBox, DatePicker, Dropdown, LabelFieldPair, Loader, TextInput } from "@upyog/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import cleanup from "../Utils/cleanup";
 import { convertEpochToDate } from "../Utils/index";
@@ -272,6 +272,32 @@ function Assignment({
             optionKey={"i18key"}
             t={t}
           />
+        </LabelFieldPair>
+
+        <LabelFieldPair>
+          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller"}>{`${t("HR_REPORTING_TO_LABEL")}`}</CardLabel>
+
+          <TextInput
+          // key={input.name}
+          // value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
+          // onChange={(e) => setValue(e.target.value, input.name)}
+          // disable={false}
+          // defaultValue={undefined}
+          // {...input.validation}
+          />
+        </LabelFieldPair>
+
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller" style={{ color: "white" }}>
+            .
+          </CardLabel>
+          <div className="field">
+            <CheckBox
+              //onChange={(e) => onAssignmentChange(e.target.checked)}
+              //checked={assignment?.isCurrentAssignment}
+              label={t("HR_HEAD_OF_DEPARTMENT_SWITCH_LABEL")}
+            />
+          </div>
         </LabelFieldPair>
       </div>
     </div>

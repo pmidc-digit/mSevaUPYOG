@@ -273,10 +273,50 @@ export const createPayloadOfWS = async (data) => {
     noOfTaps: null,
     noOfWaterClosets: null,
     noOfToilets: null,
+    connectionType: data?.ConnectionDetails?.[0]?.connectionType?.code,
+    waterSource: data?.ConnectionDetails?.[0]?.waterSource?.code,
+    connectionExecutionDate: data?.ActivationDetails?.connectionExecutionDate,
+    meterId:data?.ActivationDetails?.meterId,
+    //,//meterInstallationDate,
+    plumberInfo:
+      data?.plumberDetails?.[0]?.detailsProvidedBy?.code === "ULB"
+        ? [
+            {
+              //id: "1e6df2a2-2c6d-44a8-a8f7-60de5d6fdc51",
+              name: data?.plumberDetails?.[0]?.plumberName,
+              licenseNo: data?.plumberDetails?.[0]?.plumberLicenseNo,
+              mobileNumber: data?.plumberDetails?.[0]?.plumberMobileNo,
+              gender: null,
+              fatherOrHusbandName: null,
+              correspondenceAddress: null,
+              relationship: null,
+              additionalDetails: null,
+              auditDetails: {
+                createdBy: null,
+                //lastModifiedBy: "120ee55c-ab07-4e62-8317-5e5700f86597",
+                createdTime: null,
+                //lastModifiedTime: 1733136478714
+              },
+            },
+          ]
+        : null,
     additionalDetails: {
-      initialMeterReading: null,
+      initialMeterReading: data?.ActivationDetails?.meterInitialReading,
       detailsProvidedBy: "",
       locality: data?.cpt?.details?.address?.locality?.code,
+      connectionCategory: data?.ConnectionDetails?.[0]?.connectionCategory?.code,
+      billingType: data?.ConnectionDetails?.[0]?.billingType?.code,
+      billingAmount: data?.ConnectionDetails?.[0]?.billingAmount,
+      waterSubUsageType: data?.ConnectionDetails?.[0]?.subUsageType?.code,
+      //,//ledgerIdOrArea,
+      //,//group,
+      //
+      compositionFee: data?.roadCuttingAddlDetails?.compositionFee,
+      userCharges: data?.roadCuttingAddlDetails?.userCharges,
+      othersFee: data?.roadCuttingAddlDetails?.regularizationFee,
+      //
+      meterMake: data?.ActivationDetails?.meterMake,
+      avarageMeterReading: data?.ActivationDetails?.averageMeterReading,
     },
     tenantId: data?.cpt?.details?.address?.tenantId,
     processInstance: {

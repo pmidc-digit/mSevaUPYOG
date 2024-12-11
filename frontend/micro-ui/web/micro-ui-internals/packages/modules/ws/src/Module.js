@@ -20,6 +20,7 @@ import WSConnectionDetails from "./pageComponents/WSConnectionDetails";
 import WSDocumentsRequired from "./pageComponents/WSDocumentsRequired";
 import WSPlumberDetails from "./pageComponents/WSPlumberDetails";
 import WSRoadCuttingDetails from "./pageComponents/WSRoadCuttingDetails";
+import WSRoadCuttingAddlDetails from "./pageComponents/WSRoadCuttingAddlDetails";
 import WSPropertyDetails from "./pageComponents/WSPropertyDetails";
 import WSConnectionHolderDetails from "./pageComponents/WSConnectionHolderDetails";
 import WSActivationConnectionDetails from "./pageComponents/WSActivationConnectionDetails";
@@ -174,6 +175,7 @@ const componentsToRegister = {
   WSDocumentsRequired,
   WSPlumberDetails,
   WSRoadCuttingDetails,
+  WSRoadCuttingAddlDetails,
   WSPropertyDetails,
   WSConnectionHolderDetails,
   WSActivationConnectionDetails,

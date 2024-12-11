@@ -38,16 +38,47 @@ const WSSearchMdmsTypes = {
         ),
       {
         select: (data) => {
+          console.log("In useWSServicesMasters select:", data);
           const wsDocsData = type ? type : "Documents";
-          data?.["ws-services-masters"]?.[wsDocsData]?.forEach(type => {
+          console.log("Before data processing: ", data);
+          data?.["ws-services-masters"]?.[wsDocsData]?.forEach((type) => {
             type.code = type.code;
-            type.i18nKey = type.code ? type.code.replaceAll('.', '_') : "";
-            type.dropdownData.forEach(value => {
-              value.i18nKey = value.code ? value.code.replaceAll('.', '_') : "";
-            })
-          })
-          return data?.["ws-services-masters"] ? data?.["ws-services-masters"] : []
-        }
+            type.i18nKey = type.code ? type.code.replaceAll(".", "_") : "";
+            if (Array.isArray(type.dropdownData)) {
+              type.dropdownData.forEach((value) => {
+                value.i18nKey = value.code ? value.code.replaceAll(".", "_") : "";
+              });
+            }
+          });
+          console.log("After data processing: ", data);
+          return data?.["ws-services-masters"] ? data?.["ws-services-masters"] : [];
+        },
+        // select: (data) => {
+        //   console.log("In useWSServicesMasters select:", data);
+        //   const wsDocsData = type ? type : "Documents";
+        //   console.log("Before data processing: ", data, data["ws-services-masters"]);
+        //   let processedData = [];
+        //   if (data?.["ws-services-masters"]?.[wsDocsData]) {
+        //     processedData = data["ws-services-masters"][wsDocsData].map((type) => {
+        //       const newType = { ...type };
+        //       newType.i18nKey = newType.code ? newType.code.replaceAll(".", "_") : "";
+        //       if (newType.dropdownData) {
+        //         newType.dropdownData = newType.dropdownData.map((value) => {
+        //           return {
+        //             ...value,
+        //             i18nKey: value.code ? value.code.replaceAll(".", "_") : "",
+        //           };
+        //         });
+        //       }
+        //       return newType;
+        //     });
+        //     console.log("Processed data: ", processedData);
+        //   } else {
+        //     console.log("Data structure is invalid");
+        //   }
+        //   console.log("Before return: ", data, data["ws-services-masters"]);
+        //   return processedData.length > 0 ? { [wsDocsData]: processedData } : [];
+        // },
       }
     ),
 

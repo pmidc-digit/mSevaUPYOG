@@ -471,6 +471,8 @@ const ApplicationDetails = () => {
     return a.order - b.order;
   });
 
+  console.log("WS Application Details: \n",applicationDetails);
+
   return (
     <Fragment>
       <div className={"employee-main-application-details"}>

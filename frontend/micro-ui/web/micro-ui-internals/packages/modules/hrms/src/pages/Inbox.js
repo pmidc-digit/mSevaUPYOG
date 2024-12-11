@@ -114,14 +114,14 @@ const Inbox = ({ parentRoute, businessService = "HRMS", initialStates = {}, filt
           searchParams={searchParams}
           sortParams={sortParams}
           totalRecords={totalRecords}
-          linkPrefix={'/digit-ui/employee/hrms/details/'}
+          linkPrefix={"/digit-ui/employee/hrms/details/"}
           filterComponent={filterComponent}
         />
         // <div></div>
       );
     } else {
       return (
-        <div>
+        <div style={{ overflowX: "auto" }}>
           {isInbox && <Header>{t("HR_HOME_SEARCH_RESULTS_HEADING")}</Header>}
           <DesktopInbox
             businessService={businessService}

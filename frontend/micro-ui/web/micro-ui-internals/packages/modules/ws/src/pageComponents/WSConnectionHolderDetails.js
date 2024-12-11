@@ -300,7 +300,7 @@ const ConnectionDetails = (_props) => {
           isMandatory={true}
           render={(props) => (
             <CheckBox
-              label={t("WS_SAME_AS_PROPERTY_OWNERS")}
+              label={t("WS_CONN_HOLDER_SAME_AS_OWNER_DETAILS")}
               name={"sameAsOwnerDetails"}
               autoFocus={focusIndex.index === connectionHolderDetail?.key && focusIndex.type === "sameAsOwnerDetails"}
               errorStyle={localFormState.touched.sameAsOwnerDetails && errors?.sameAsOwnerDetails?.message ? true : false}
@@ -682,7 +682,7 @@ const ConnectionDetails = (_props) => {
           <CardLabelError style={errorStyle}>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t(
-              "WS_CORRESPONDANCE_ADDRESS_LABEL"
+              "WS_CONN_HOLDER_OWN_DETAIL_CROSADD"
             )}*`}</CardLabel>
             <div className="field">
               <Controller
@@ -756,7 +756,7 @@ const ConnectionDetails = (_props) => {
           <CardLabelError style={errorStyle}>{localFormState.touched.address ? errors?.address?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t(
-              "WS_OWNER_SPECIAL_CATEGORY"
+              "WS_CONN_HOLDER_OWN_DETAIL_SPECIAL_APPLICANT_LABEL"
             )}*`}</CardLabel>
             <div className="field">
               <Controller
@@ -824,7 +824,7 @@ const ConnectionDetails = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.touched.ownerType ? errors?.ownerType?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t("WS_EMAIL_ID")}`}</CardLabel>
+            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t("WS_OWNER_DETAILS_EMAIL_LABEL")}`}</CardLabel>
             <div className="field">
               <Controller
                 control={control}

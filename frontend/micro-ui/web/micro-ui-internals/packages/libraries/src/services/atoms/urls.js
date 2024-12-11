@@ -110,6 +110,7 @@ const Urls = {
     count: "/egov-hrms/employees/_count",
     create: "/egov-hrms/employees/_create",
     update: "/egov-hrms/employees/_update",
+    employee_wise_report: "/report/rainmaker-hrms/_get",
   },
   tl: {
     create: "/tl-services/v1/_create",
@@ -140,7 +141,7 @@ const Urls = {
     edcrreportdownload: "/bpa-services/v1/bpa/_permitorderedcr",
     getSearchDetails: "/inbox/v1/dss/_search",
   },
-  ptr: {  
+  ptr: {
     
     create:"/pet-services/pet-registration/_create",
     search:"/pet-services/pet-registration/_search",
@@ -200,10 +201,10 @@ digiLocker:{
   token:"/requester-services-dx/user/token",
   issueDoc:"/requester-services-dx/user/issuedfiles",
   uri:"/requester-services-dx/user/file"
-},
+  },
 eSign:{
 pdfUrl:"/requester-services-dx/eSign/process"
-},
+  },
   engagement: {
     document: {
       search: "/egov-document-uploader/egov-du/document/_search",

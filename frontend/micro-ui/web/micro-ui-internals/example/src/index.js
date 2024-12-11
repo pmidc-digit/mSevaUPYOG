@@ -7,15 +7,14 @@ import { PTModule, PTLinks, PTComponents } from "@upyog/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@upyog/digit-ui-module-mcollect";
 // import { TLModule, TLLinks } from "@upyog/digit-ui-module-tl";
 import { initFSMComponents } from "@upyog/digit-ui-module-fsm";
-import { initPGRComponents } from "@upyog/digit-ui-module-pgr";
+import { initPGRComponents, PGRModule, PGRLinks } from "@upyog/digit-ui-module-pgr";
 import { initDSSComponents } from "@upyog/digit-ui-module-dss";
-import { initHRMSComponents } from "@upyog/digit-ui-module-hrms";
+import { HRMSModule, initHRMSComponents } from "@upyog/digit-ui-module-hrms";
 import { initReceiptsComponents, ReceiptsModule } from "@upyog/digit-ui-module-receipts";
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 import { initMCollectComponents } from "@upyog/digit-ui-module-mcollect";
 import { initTLComponents } from "@upyog/digit-ui-module-tl";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@upyog/digit-ui-module-common";
-import { HRMSModule } from "@upyog/digit-ui-module-hrms";
 import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
 import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
 import { initNOCComponents } from "@upyog/digit-ui-module-noc";
@@ -25,7 +24,7 @@ import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@upyog/digit-ui-module-bills";
 
 import { PTRModule, PTRLinks, PTRComponents } from "@upyog-niua/upyog-ui-module-ptr";
-
+import { BRModule, initBRComponents, BRLinks } from "@upyog-niua/upyog-ui-module-sample";
 //  import { BRModule, initBRComponents ,BRLinks} from "@upyog-niua/upyog-ui-module-br";
 import {  initBRComponents} from "@upyog-niua/upyog-ui-module-br";
 // import {initCustomisationComponents} from "./customisations";
@@ -66,16 +65,17 @@ const enabledModules = [
   "FireNoc",
   "Birth",
   "Death",
-  "PTR"
+  "PTR",
+  "BR",
 ];
 
 const initTokens = (stateCode) => {
   const userType = window.sessionStorage.getItem("userType") || process.env.REACT_APP_USER_TYPE || "CITIZEN";
 
-  const token = window.localStorage.getItem("token")|| process.env[`REACT_APP_${userType}_TOKEN`];
- 
-  const citizenInfo = window.localStorage.getItem("Citizen.user-info")
- 
+  const token = window.localStorage.getItem("token") || process.env[`REACT_APP_${userType}_TOKEN`];
+
+  const citizenInfo = window.localStorage.getItem("Citizen.user-info");
+
   const citizenTenantId = window.localStorage.getItem("Citizen.tenant-id") || stateCode;
 
   const employeeInfo = window.localStorage.getItem("Employee.user-info");
@@ -118,6 +118,10 @@ const initDigitUI = () => {
     ...PTRComponents
     // TLModule,
     // TLLinks,
+    BRModule,
+    BRLinks,
+    PGRModule,
+    PGRLinks,
   });
    initBRComponents();
   initFSMComponents();
@@ -134,8 +138,8 @@ const initDigitUI = () => {
   initWSComponents();
   initCommonPTComponents();
   initBillsComponents();
-
   // initCustomisationComponents();
+  initBRComponents();
 
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),

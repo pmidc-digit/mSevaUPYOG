@@ -24,5 +24,16 @@ export const ReportsService = {
             reqTimestamp: true,
             data: { reportName: reportName, tenantId: tenantId, searchParams },
         })
-    }
+    },
+    fetchReportsData1: ({ moduleName, reportName, tenantId, searchParams }) => {
+      return Request({
+        url: `${Urls.reports.reportSearch}${moduleName}/_get`,
+        params: {},
+        method: "POST",
+        auth: true,
+        userService: true,
+        reqTimestamp: true,
+        data: { reportName: reportName, tenantId: tenantId, searchParams },
+      });
+    },
 }

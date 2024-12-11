@@ -19,6 +19,9 @@ const EmployeeApp = ({ path, url, userType }) => {
   const Inbox = Digit?.ComponentRegistryService?.getComponent("HRInbox");
   const CreateEmployee = Digit?.ComponentRegistryService?.getComponent("HRCreateEmployee");
   const EditEmpolyee = Digit?.ComponentRegistryService?.getComponent("HREditEmpolyee");
+  const HRMSEmployeewiseReport = Digit?.ComponentRegistryService?.getComponent("HRMSEmployeewiseReport");
+
+  console.log("Path in hrms: ", path);
   return (
     <Switch>
       <React.Fragment>
@@ -39,6 +42,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/response`} component={(props) => <HRMSResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/details/:tenantId/:id`} component={() => <HRMSDetails />} />
           <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />
+          <PrivateRoute path={`${path}/report/rainmaker-hrms/HRMSEmployeewiseReport`} component={() => <HRMSEmployeewiseReport />} />
         </div>
       </React.Fragment>
     </Switch>

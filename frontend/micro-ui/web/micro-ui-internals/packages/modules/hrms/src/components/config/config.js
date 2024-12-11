@@ -16,6 +16,18 @@ export const newConfig = [
       },
       {
         type: "component",
+        component: "SelectEmployeeGuardianName",
+        key: "SelectEmployeeGuardianName",
+        withoutLabel: true,
+      },
+      {
+        type: "component",
+        component: "SelectEmployeeGuardianRelationship",
+        key: "SelectEmployeeGuardianRelationship",
+        withoutLabel: true,
+      },
+      {
+        type: "component",
         component: "SelectEmployeeGender",
         key: "SelectEmployeeGender",
         withoutLabel: true,
@@ -59,6 +71,12 @@ export const newConfig = [
         type: "component",
         component: "SelectEmployeeId",
         key: "SelectEmployeeId",
+        withoutLabel: true,
+      },
+      {
+        type: "component",
+        component: "SelectEmploymentStatus",
+        key: "SelectEmploymentStatus",
         withoutLabel: true,
       },
 

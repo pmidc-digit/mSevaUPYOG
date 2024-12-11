@@ -192,6 +192,13 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
         },
       },
       {
+        Header: t("WS_HOME_SEARCH_RESULTS_OWN_MOB_LABEL"),
+        disableSortBy: true,
+        accessor: (row) => {
+          return GetCell()
+        },
+      },
+      {
         Header: t("WS_COMMON_TABLE_COL_APPLICATION_STATUS_LABEL"),
         accessor: (row) => GetCell(t(row?.applicationStatus || "NA")),
         disableSortBy: true,
@@ -205,6 +212,7 @@ const SearchApplication = ({ tenantId, onSubmit, data, count, resultOk, business
     []
   );
   
+  console.log("Response Data in Search WS applications: \n",data);
   return (
     <>
       <Header styles={{ fontSize: "32px" }}>{businessService === "WS" ? t("WS_WATER_SEARCH_APPLICATION_SUB_HEADER") : t("WS_SEWERAGE_SEARCH_APPLICATION_SUB_HEADER")}</Header>

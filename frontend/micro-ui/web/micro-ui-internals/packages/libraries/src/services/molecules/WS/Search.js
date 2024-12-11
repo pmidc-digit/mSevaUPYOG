@@ -288,9 +288,9 @@ export const WSSearch = {
         serviceType == "WATER"
           ? [
               { title: "PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL", value: wsDataDetails?.applicationNo || t("NA") },
-              { title: "WS_SERVICE_NAME_LABEL", value:  t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType ? wsDataDetails?.applicationType : wsDataDetails?.serviceType}`) },
-              { title: "WS_NO_OF_CONNECTIONS_PROPOSED_LABEL", value: wsDataDetails?.proposedTaps || t("NA") },
-              { title: "WS_PROPOSED_PIPE_SIZE", value: wsDataDetails?.proposedPipeSize || t("NA") },
+              { title: "WS_APPLICATION_TYPE_LABEL", value:  t(`WS_${wsDataDetails?.applicationType ? wsDataDetails?.applicationType : wsDataDetails?.serviceType}`) },
+              // { title: "WS_NO_OF_CONNECTIONS_PROPOSED_LABEL", value: wsDataDetails?.proposedTaps || t("NA") },
+              // { title: "WS_PROPOSED_PIPE_SIZE", value: wsDataDetails?.proposedPipeSize || t("NA") },
             ]
           : [
               { title: "PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL", value: wsDataDetails?.applicationNo || t("NA") },
@@ -346,7 +346,7 @@ export const WSSearch = {
       values: [
         { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
         { title: "WS_COMMON_OWNER_NAME_LABEL", value: getOwnerNames(propertyDataDetails) },
-        { title: "WS_PROPERTY_ADDRESS_LABEL", value: getAddress(propertyDataDetails?.address, t), isNotTranslated: true, privacy: { uuid: propertyDataDetails?.owners?.[0]?.uuid, fieldName: ["doorNo", "street", "landmark"], model: "Property",showValue: true,
+        { title: "PROPERTY_ADDRESS", value: getAddress(propertyDataDetails?.address, t), isNotTranslated: true, privacy: { uuid: propertyDataDetails?.owners?.[0]?.uuid, fieldName: ["doorNo", "street", "landmark"], model: "Property",showValue: true,
         loadData: {
           serviceName: "/property-services/property/_search",
           requestBody: {},
@@ -362,7 +362,7 @@ export const WSSearch = {
      
       additionalDetails: {
         redirectUrl: {
-          title: t("WS_VIEW_PROPERTY_DETAILS"),
+          title: t("CPT_COMPLETE_PROPERTY_DETAILS"),
           url: `/digit-ui/employee/pt/property-details/${propertyDataDetails?.propertyId}?from=WS_APPLICATION_DETAILS_HEADER`,
         },
       },
@@ -475,6 +475,8 @@ export const WSSearch = {
       },
     };
 
+
+    console.log("wsDataDetails: ",wsDataDetails);
     const AdditionalDetailsByWS = {
       title: "",
       isWaterConnectionDetails: true,
@@ -484,6 +486,10 @@ export const WSSearch = {
           serviceType == "WATER"
             ? [
                 {
+                  title: "WS_OLD_CONSUMER_NO",
+                  value: "",
+                },
+                {
                   title: "WS_SERV_DETAIL_CONN_TYPE",
                   value: wsDataDetails?.connectionType
                     ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.connectionType?.toUpperCase(), " ", "_")}`)
@@ -491,15 +497,41 @@ export const WSSearch = {
                 },
                 { title: "WS_SERV_DETAIL_NO_OF_TAPS", value: wsDataDetails?.noOfTaps || t("NA") },
                 {
+                  title: "WS_ADDN_DETAILS_BILLING_TYPE",
+                  value: wsDataDetails?.additionalDetails?.billingType
+                  ? t(`WS_SERVICES_MASTERS_BILLINGTYPE_${stringReplaceAll(wsDataDetails?.additionalDetails?.billingType?.toUpperCase(), " ", "_")}`)
+                  : t("NA"),
+                },
+                {
+                  title: "WS_SERV_CONNECTION_CATEGORY",
+                  value: wsDataDetails?.additionalDetails?.connectionCategory
+                  ? t(`WS_SERVICES_MASTERS_CONNECTIONCATEGORY_${stringReplaceAll(wsDataDetails?.additionalDetails?.connectionCategory?.toUpperCase(), " ", "_")}`)
+                  : t("NA"),
+                },
+                {
+                  title: "WS_SERV_DETAIL_LEDGER_ID",
+                  value: wsDataDetails?.additionalDetails?.ledgerId || t("NA"),
+                },
+                {
+                  title: "WS_GROUP",
+                  value: "",
+                },
+                {
                   title: "WS_SERV_DETAIL_WATER_SOURCE",
                   value: wsDataDetails?.waterSource
                     ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[0]}`)
                     : t("NA"),
                 },
-                { title: "WS_PIPE_SIZE_IN_INCHES_LABEL", value: wsDataDetails?.pipeSize || t("NA") },
+                { title: "WS_SERV_DETAIL_PIPE_SIZE", value: wsDataDetails?.pipeSize || t("NA") },
+                // {
+                //   title: "WS_SERV_DETAIL_WATER_SUB_SOURCE",
+                //   value: wsDataDetails?.waterSource ? t(`${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[1]}`) : t("NA"),
+                // },
                 {
-                  title: "WS_SERV_DETAIL_WATER_SUB_SOURCE",
-                  value: wsDataDetails?.waterSource ? t(`${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[1]}`) : t("NA"),
+                  title: "WS_SERV_DETAIL_SUB_USAGE_TYPE",
+                  value: wsDataDetails?.additionalDetails?.waterSubUsageType
+                  ? t(`${stringReplaceAll(wsDataDetails?.additionalDetails?.waterSubUsageType?.toUpperCase(), " ", "_")}`)
+                  : t("NA"),
                 },
               ]
             : [
@@ -523,17 +555,27 @@ export const WSSearch = {
                 },
                 { title: "WS_ADDN_DETAILS_PLUMBER_LICENCE_NO_LABEL", value: wsDataDetails?.plumberInfo?.[0]?.licenseNo || t("NA") },
                 { title: "WS_ADDN_DETAILS_PLUMBER_NAME_LABEL", value: wsDataDetails?.plumberInfo?.[0]?.name || t("NA") },
-              {
-    title: "WS_PLUMBER_MOBILE_NO_LABEL", value: wsDataDetails?.plumberInfo?.[0]?.mobileNumber || t("NA"), privacy: { uuid: wsDataDetails?.applicationNo, fieldName: ["plumberInfoMobileNumber"], model: "WnSConnectionPlumber",showValue: false,
-    loadData: {
-      serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
-      requestBody: {},
-      requestParam: { tenantId, applicationNumber },
-      jsonPath: serviceType === "WATER" ? "WaterConnection[0].plumberInfo[0].mobileNumber" : "SewerageConnections[0].plumberInfo[0].mobileNumber",
-      isArray: false,
-    }, },
-                //privacy:{} 
-              },
+                {
+                  title: "WS_ADDN_DETAILS_PLUMBER_MOB_NO_LABEL",
+                  value: wsDataDetails?.plumberInfo?.[0]?.mobileNumber || t("NA"),
+                  privacy: {
+                    uuid: wsDataDetails?.applicationNo,
+                    fieldName: ["plumberInfoMobileNumber"],
+                    model: "WnSConnectionPlumber",
+                    showValue: false,
+                    loadData: {
+                      serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
+                      requestBody: {},
+                      requestParam: { tenantId, applicationNumber },
+                      jsonPath:
+                        serviceType === "WATER"
+                          ? "WaterConnection[0].plumberInfo[0].mobileNumber"
+                          : "SewerageConnections[0].plumberInfo[0].mobileNumber",
+                      isArray: false,
+                    },
+                  },
+                  //privacy:{}
+                },
               ]
             : [
                 {
@@ -544,43 +586,68 @@ export const WSSearch = {
                 },
               ],
         roadCuttingDetails: wsDataDetails?.roadCuttingInfo
-          ? wsDataDetails?.roadCuttingInfo?.filter((e) => e?.status !== "INACTIVE")?.map((info, index) => {
-              return {
-                title: "WS_ROAD_CUTTING_DETAIL",
-                values: [
-                  { title: "WS_ADDN_DETAIL_ROAD_TYPE", value: t(`WS_ROADTYPE_${info?.roadType}`) },
-                  { title: "WS_ROAD_CUTTING_AREA_LABEL", value: info?.roadCuttingArea },
-                ],
-              };
-            })
+          ? wsDataDetails?.roadCuttingInfo
+              ?.filter((e) => e?.status !== "INACTIVE")
+              ?.map((info, index) => {
+                return {
+                  title: "WS_ROAD_CUTTING_DETAIL",
+                  values: [
+                    { title: "WS_ADDN_DETAIL_ROAD_TYPE", value: t(`WS_ROADTYPE_${info?.roadType}`) },
+                    { title: "WS_ADDN_DETAILS_AREA_LABEL", value: info?.roadCuttingArea },
+                  ],
+                };
+              })
           : [
               {
                 title: "WS_ROAD_CUTTING_DETAIL",
                 values: [
                   { title: "WS_ADDN_DETAIL_ROAD_TYPE", value: t("NA") },
-                  { title: "WS_ROAD_CUTTING_AREA_LABEL", value: t("NA") },
+                  { title: "WS_ADDN_DETAILS_AREA_LABEL", value: t("NA") },
                 ],
               },
             ],
+        roadCuttingAddlDetails: [
+          {
+            title: "WS_ADDN_DETAILS_COMPOSITION_LABEL",
+            value: wsDataDetails?.additionalDetails?.compositionFee || t("NA"),
+          },
+          {
+            title: "WS_ADDN_USER_CHARGES_LABEL",
+            value: wsDataDetails?.additionalDetails?.userCharges || t("NA"),
+          },
+          {
+            title: "WS_OTHER_FEE",
+            value: wsDataDetails?.additionalDetails?.othersFee || t("NA"),
+          },
+        ],
         activationDetails:
           wsDataDetails?.connectionType == "Metered"
             ? [
-                { title: "WS_SERV_DETAIL_METER_ID", value: wsDataDetails?.meterId || t("NA") },
-                { title: "WS_INITIAL_METER_READING_LABEL", value: wsDataDetails?.additionalDetails?.initialMeterReading || t("NA") },
-                {
-                  title: "WS_INSTALLATION_DATE_LABEL",
-                  value: wsDataDetails?.meterInstallationDate ? convertEpochToDate(wsDataDetails?.meterInstallationDate) : t("NA"),
-                },
                 {
                   title: "WS_SERV_DETAIL_CONN_EXECUTION_DATE",
                   value: wsDataDetails?.connectionExecutionDate ? convertEpochToDate(wsDataDetails?.connectionExecutionDate) : t("NA"),
-                }
+                },
+                { title: "WS_SERV_DETAIL_METER_ID", value: wsDataDetails?.meterId || t("NA") },
+                {
+                  title: "WS_ADDN_DETAIL_METER_INSTALL_DATE",
+                  value: wsDataDetails?.meterInstallationDate ? convertEpochToDate(wsDataDetails?.meterInstallationDate) : t("NA"),
+                },
+                { title: "WS_ADDN_DETAILS_INITIAL_METER_READING", value: wsDataDetails?.additionalDetails?.initialMeterReading || t("NA") },
+
+                {
+                  title: "WS_ADDN_DETAILS_INITIAL_METER_MAKE",
+                  value: wsDataDetails?.additionalDetails?.meterMake || t("NA")
+                },
+                {
+                  title: "WS_ADDN_DETAILS_INITIAL_AVERAGE_MAKE",
+                  value: wsDataDetails?.additionalDetails?.avarageMeterReading || t("NA")
+                },
               ]
             : [
                 {
                   title: "WS_SERV_DETAIL_CONN_EXECUTION_DATE",
                   value: wsDataDetails?.connectionExecutionDate ? convertEpochToDate(wsDataDetails?.connectionExecutionDate) : t("NA"),
-                }
+                },
               ],
       },
     };
@@ -1208,7 +1275,7 @@ export const WSSearch = {
             ] : null
           },
           {
-            title: "WS_INITIAL_METER_READING_LABEL",
+            title: "WS_ADDN_DETAILS_INITIAL_METER_READING",
             value: wsDataDetails?.additionalDetails?.initialMeterReading || t("NA"),
             oldValue: wsDataDetails?.additionalDetails?.initialMeterReading != wsOldData?.additionalDetails?.initialMeterReading ? [
               {
@@ -1221,7 +1288,7 @@ export const WSSearch = {
             ] : null
           },
           {
-            title: "WS_INSTALLATION_DATE_LABEL",
+            title: "WS_ADDN_DETAIL_METER_INSTALL_DATE",
             value: wsDataDetails?.meterInstallationDate ? convertEpochToDate(wsDataDetails?.meterInstallationDate) : t("NA"),
             oldValue: wsDataDetails?.meterInstallationDate != wsOldData?.meterInstallationDate ? [
               {
@@ -1567,10 +1634,10 @@ export const WSSearch = {
               },
               { title: "WS_SERV_DETAIL_METER_ID", value: wsDataDetails?.meterId || t("NA") },
               {
-                title: "WS_INSTALLATION_DATE_LABEL",
+                title: "WS_ADDN_DETAIL_METER_INSTALL_DATE",
                 value: wsDataDetails?.meterInstallationDate ? convertEpochToDate(wsDataDetails?.meterInstallationDate) : t("NA"),
               },
-              { title: "WS_INITIAL_METER_READING_LABEL", value: wsDataDetails?.additionalDetails?.initialMeterReading || t("NA") },
+              { title: "WS_ADDN_DETAILS_INITIAL_METER_READING", value: wsDataDetails?.additionalDetails?.initialMeterReading || t("NA") },
               {
                 title: "WS_VIEW_CONSUMPTION_DETAIL",
                 to: `/digit-ui/employee/ws/consumption-details?applicationNo=${wsDataDetails?.connectionNo}&tenantId=${wsDataDetails?.tenantId}&service=${serviceType}&from=${window.location.href.includes("bill-details") ? "ABG_BILL_DETAILS_HEADER" : "WS_COMMON_CONNECTION_DETAIL"}`,
@@ -1998,7 +2065,7 @@ export const WSSearch = {
             },
             { title: "WS_ADDN_DETAILS_PLUMBER_LICENCE_NO_LABEL", value: wsDataDetails?.plumberInfo?.[0]?.licenseNo || t("NA") },
             { title: "WS_ADDN_DETAILS_PLUMBER_NAME_LABEL", value: wsDataDetails?.plumberInfo?.[0]?.name || t("NA") },
-            { title: "WS_PLUMBER_MOBILE_NO_LABEL", value: wsDataDetails?.plumberInfo?.[0]?.mobileNumber || t("NA"),privacy: { uuid: wsDataDetails?.applicationNo, fieldName: ["plumberInfoMobileNumber"], model: "WnSConnectionPlumber",showValue: false,
+            { title: "WS_ADDN_DETAILS_PLUMBER_MOB_NO_LABEL", value: wsDataDetails?.plumberInfo?.[0]?.mobileNumber || t("NA"),privacy: { uuid: wsDataDetails?.applicationNo, fieldName: ["plumberInfoMobileNumber"], model: "WnSConnectionPlumber",showValue: false,
             loadData: {
               serviceName: serviceType === "WATER" ? "/ws-services/wc/_search" : "/sw-services/swc/_search",
               requestBody: {},

@@ -8,6 +8,7 @@ import {
   Loader,
   CardHeader,
   CardSectionHeader,
+  Card,
 } from "@upyog/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
 
@@ -222,42 +223,41 @@ function SelectDocument({
     if (isHidden) setUploadedFile(null);
   }, [isHidden]);
 
+  console.log("Document Label in WSDocumentsEmployee: ",t(doc?.i18nKey));
+
   return (
-    <div style={{ marginBottom: "24px" }}>
+    <Card style={{ marginBottom: "24px", backgroundColor: "#F5F5F5" }}>
+      <CardLabel style={{ fontWeight: "700" }}>{doc?.required ? `${t(doc?.i18nKey)}*:` : `${t(doc?.i18nKey)}:`}</CardLabel>
       {doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel style={{fontWeight: "700" }}>{doc?.required ? `${t(doc?.i18nKey)}*` : `${t(doc?.i18nKey)}`}</CardLabel>
-          <Dropdown
-            id={`doc-${doc?.code}`}
-            key={`doc-${doc?.code}`}
-            className="form-field"
-            selected={selectedDocument ? selectedDocument : filteredDocument ? filteredDocument : selectedDocument}
-            option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
-            select={handleSelectDocument}
-            optionKey="i18nKey"
-            t={t}
-          />
-        </LabelFieldPair>
-      ) : null}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller"></CardLabel>
-        <div className="field">
-          <UploadFile
-            onUpload={selectfile}
-            onDelete={() => {
-              setUploadedFile(null);
-            }}
-            id={id}
-            message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-            textStyles={{ width: "100%" }}
-            inputStyles={{ width: "280px" }}
-            buttonType="button"
-            error={!uploadedFile}
-            accept= "image/*, .pdf, .png, .jpeg, .jpg"
-          />
-        </div>
-      </LabelFieldPair>
-    </div>
+        // <LabelFieldPair>
+        <Dropdown
+          id={`doc-${doc?.code}`}
+          key={`doc-${doc?.code}`}
+          className="form-field"
+          selected={selectedDocument ? selectedDocument : filteredDocument ? filteredDocument : selectedDocument}
+          option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
+          select={handleSelectDocument}
+          optionKey="i18nKey"
+          t={t}
+        />
+      ) : // </LabelFieldPair>
+      null}
+      <div style={{ maxWidth: "450px" }}>
+        <UploadFile
+          onUpload={selectfile}
+          onDelete={() => {
+            setUploadedFile(null);
+          }}
+          id={id}
+          message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+          textStyles={{ width: "100%" }}
+          inputStyles={{ width: "280px" }}
+          buttonType="button"
+          error={!uploadedFile}
+          accept="image/*, .pdf, .png, .jpeg, .jpg"
+        />
+      </div>
+    </Card>
   );
 }
 

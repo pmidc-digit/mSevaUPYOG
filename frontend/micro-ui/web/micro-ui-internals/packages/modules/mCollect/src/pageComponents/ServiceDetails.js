@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, MobileNumber, DatePicker, Loader, CardSectionHeader } from "@upyog/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, MobileNumber, DatePicker, Loader, CardSectionHeader,TextArea } from "@upyog/digit-ui-react-components";
 import { useForm, Controller, useWatch } from "react-hook-form";
 import * as func from "../pages/employee/Utils/Category";
 import { sortDropdownNames } from "../pages/employee/Utils/Sortbyname";
@@ -157,6 +157,7 @@ const OwnerForm1 = (_props) => {
   const TaxHeadMasterFields = Digit.Hooks.mcollect.useMCollectTaxHeads(selectedCategoryType,categoriesandTypes);
   const selectedPincode = useWatch({control: control, name: "pincode", defaultValue:""});
 
+  console.log("tax Master Fields", TaxHeadMasterFields)
   useEffect(() => {
     if(!isEdit)
     setValue("categoryType","");
@@ -233,7 +234,7 @@ const OwnerForm1 = (_props) => {
     }
   }, [formValue]);
 
-
+console.log("consumerDetail",consumerdetail)
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
       setError(config.key, { type: errors });
@@ -369,11 +370,11 @@ const OwnerForm1 = (_props) => {
                 )}
               />
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> 
           {TaxHeadMasterFields && TaxHeadMasterFields.length>0 && TaxHeadMasterFields.map((tax) => 
           <div>
           <LabelFieldPair>
-            <CardLabel className={isMobile?"card-label-APK":"card-label-smaller"}>{`${t(stringReplaceAll(tax?.name,".","_"))} * `}</CardLabel>
+            <CardLabel className={isMobile?"card-label-APK":"card-label-smaller"}>{`${t(stringReplaceAll(tax?.name,".","_"))}`}{tax.isRequired?'*':''}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -407,6 +408,34 @@ const OwnerForm1 = (_props) => {
             </div>
           </LabelFieldPair> 
           </div>)}
+         
+          <LabelFieldPair>
+            <CardLabel className={isMobile?"card-label-APK":"card-label-smaller"}>{`${t("UC_COMMENT_LABEL")}`}</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"Comment"}
+                defaultValue={consumerdetail?.Comment}
+                // rules={{  validate: { pattern: (val) => (/^[a-zA-Z ]*$/.test(val) ? true : t("CS_ADDCOMPLAINT_NAME_ERROR")) } }}
+                render={(props) => (
+                  <TextArea
+                    value={props.value}
+                    autoFocus={focusIndex.index === consumerdetail?.key && focusIndex.type === "name"}
+                    errorStyle={(localFormState.touched.Comment && errors?.Comment?.message) ? true : false}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      //setFocusIndex({ index: consumerdetail.key, type: "ConsumerName" });
+                    }}
+                    onBlur={(e) => {
+                      setFocusIndex({ index: -1 });
+                      props.onBlur(e);
+                    }}
+                    disable={isEdit}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
         </div>
     </div>
     </div>

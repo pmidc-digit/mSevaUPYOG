@@ -592,6 +592,7 @@ const CreateChallen = ({ ChallanData }) => {
           },
           // {
           //   label: t("UC_COMMENT_LABEL"),
+         
           //   isMandatory: false,
           //   type: "textarea",
           //   populators: {

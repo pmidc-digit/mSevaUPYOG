@@ -29,6 +29,8 @@ module.exports = function (app) {
     "/pg-service",
     "/vehicle",
     "/vendor",
+    //added this new rainmaker-pgr
+    "/rainmaker-pgr", 
     "/property-services",
     "/fsm-calculator/v1/billingSlab/_search",
     "/pt-calculator-v2",

@@ -15,7 +15,8 @@ const useMcollectFormConfig = {
               tenantId: tenantId,
               moduleDetails: [
                 {
-                  moduleName: "mCollect",
+                   moduleName: "mCollect",
+                  //moduleName: "MCollect",
                   masterDetails: [
                     {
                       name: "CreateFieldsConfig",
@@ -27,7 +28,7 @@ const useMcollectFormConfig = {
           },
           "mCollect"
         ),
-      { select: (d) => d.mCollect.CreateFieldsConfig, ...config }
+      { select: (d) => d.mCollect?.CreateFieldsConfig, ...config }
     ),
 };
 

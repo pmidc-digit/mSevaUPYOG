@@ -42,7 +42,8 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
     }
     return str;
   };
-
+console.log("Inbox data",data)
+console.log("Inbox props",props)
   const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
   const inboxColumns = () => [
     {

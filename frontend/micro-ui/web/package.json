@@ -12,7 +12,11 @@
     "micro-ui-internals/packages/modules/dss",
     "micro-ui-internals/packages/modules/pt",
     "micro-ui-internals/packages/modules/tl",
-    "micro-ui-internals/packages/modules/obps"
+    "micro-ui-internals/packages/modules/obps",
+     "micro-ui-internals/packages/modules/br",
+     
+     "micro-ui-internals/packages/modules/pgr",
+      "micro-ui-internals/packages/modules/mCollect"
 
 
   ],
@@ -40,6 +44,7 @@
     "@upyog/digit-ui-module-ws": "1.7.0-beta.12",
     "@upyog/digit-ui-react-components": "1.7.0-beta.4",
     "@upyog-niua/upyog-ui-module-ptr": "1.0.8",
+    "@upyog-niua/upyog-ui-module-br": "1.0.0",
     "babel-loader": "8.1.0",
     "qrcode": "^1.5.3",
     "react": "17.0.2",
@@ -67,7 +72,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app"
+      "react-app" 
     ]
   },
   "browserslist": [

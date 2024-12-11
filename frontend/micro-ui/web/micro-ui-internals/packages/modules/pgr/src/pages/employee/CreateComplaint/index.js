@@ -298,8 +298,8 @@ const [description, setDescription] = useState("")
           type: "text",
           populators: {
             name: "pincode",
-            validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
-            error: t("CORE_COMMON_PINCODE_INVALID"),
+          //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
+            //error: t("CORE_COMMON_PINCODE_INVALID"),
             onChange: handlePincode,
           },
         },

@@ -13,7 +13,12 @@
     "packages/modules/dss",
     "packages/modules/pt",
     "packages/modules/tl",
-    "packages/modules/obps"
+    "packages/modules/obps",
+    "packages/modules/br",
+    "packages/modules/pgr",
+    "packages/modules/mCollect"
+  
+
 
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
@@ -50,6 +55,9 @@
     "dev:reports": "cd packages/modules/reports && yarn start",
     "dev:example": "cd example && yarn start",
     "dev:ptr": "cd packages/modules/ptr && yarn start",
+
+    "dev:br": "cd packages/modules/br && yarn start",
+
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
     "build:components": "cd packages/react-components && yarn build",
@@ -71,6 +79,9 @@
     "buildD:ws": "cd packages/modules/ws && yarn build",
     "buildD:bills": "cd packages/modules/bills && yarn build",
     "buildR:reports": "cd packages/modules/reports && yarn build",
+
+    "build:br": "cd packages/modules/br && yarn build",
+
     "deploy:jenkins": "./scripts/jenkins.sh"
   },
   "devDependencies": {

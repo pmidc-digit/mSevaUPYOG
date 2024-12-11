@@ -326,17 +326,17 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.touched.pincode ? errors?.pincode?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel  style={{paddingTop:"10px"}} className="card-label-smaller">{`${t("UC_MOHALLA_LABEL")} * `}</CardLabel>
+            <CardLabel  style={{paddingTop:"10px"}} className="card-label-smaller">{`${t("UC_MOHALLA_LABEL")}`}</CardLabel>
             <Controller
               name="mohalla"
-              rules={{ required: t("REQUIRED_FIELD") }}
+            
               defaultValue={consumerdetail?.mohalla}
               control={control}
               render={(props) => (
                 <Dropdown
                   className="form-field"
                   selected={props.value}
-                  isMandatory={true}
+                  //isMandatory={true}
                   //errorStyle={(localFormState.touched.financialYear && errors?.financialYear?.message) ? true : false}
                   // disable={financialYearOptions?.length === 1}
                   option={localities}

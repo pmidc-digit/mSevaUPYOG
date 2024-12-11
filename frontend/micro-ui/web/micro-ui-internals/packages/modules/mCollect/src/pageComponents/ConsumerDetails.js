@@ -174,7 +174,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.touched.ConsumerName ? errors?.ConsumerName?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel style={{paddingTop:"10px"}} className="card-label-smaller">{`${t("UC_MOBILE_NUMBER")} * `}</CardLabel>
+            <CardLabel style={{paddingTop:"10px"}} className="card-label-smaller">{`${t("UC_MOBILE_NUMBER")}`}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -197,10 +197,11 @@ const OwnerForm1 = (_props) => {
                   />
                 )}
               />
+
             </div>
           </LabelFieldPair>  
           <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
-          <LabelFieldPair>  
+          {/* <LabelFieldPair>  
           <CardLabel style={{paddingTop:"10px"}} className="card-label-smaller">{`${t("UC_EMAIL_ID")}`}</CardLabel>
           <div className="field">
           <Controller
@@ -221,7 +222,7 @@ const OwnerForm1 = (_props) => {
             )}
             />
             </div>
-            </LabelFieldPair>  
+            </LabelFieldPair>   */} 
       </div>
       </div>
     </React.Fragment>

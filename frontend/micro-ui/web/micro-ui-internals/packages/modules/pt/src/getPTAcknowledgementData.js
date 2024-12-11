@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom/cjs/react-router-dom.min";
 import {
   getFixedFilename,
   getPropertyTypeLocale,
@@ -10,6 +11,8 @@ import {
   pdfDownloadLink,
   getCityLocale,
 } from "./utils";
+import { LinkLabel } from "@upyog/digit-ui-react-components";
+import { values } from "lodash";
 
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
@@ -94,37 +97,53 @@ const getAssessmentInfo = (application, t) => {
     { title: t("PT_ASSESMENT_INFO_NO_OF_FLOOR"), value: t(application?.noOfFloors) || t("CS_NA") },
     { title: t("PT_ASSESMENT_INFO_ELECTRICITY_ID"), value: t(application?.additionalDetails?.electricity) || t("CS_NA") },
     { title: t("PT_ASSESMENT_INFO_ELECTRICITY_UID"), value: t(application?.additionalDetails?.uid) || t("CS_NA") },
-    { title:  t("PT_FORM2_PROPERTY_TYPE"),value: t(application?.additionalDetails?.structureType.i18nKey) || t("CS_NA")},
-     {title:  t("PT_FORM2_AGE_OF_PROPERTY"),value: t(application?.additionalDetails?.ageOfProperty.code)|| t("CS_NA")},
+
+    { title: t("PT_ASSESMENT_INFO_VASIKA_NO"), value: t(application?.additionalDetails?.vasikaNo) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_VASIKA_DATE"), value: t(application?.additionalDetails?.vasikaDate) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_ALLOTMENT_NO"), value: t(application?.additionalDetails?.allotmentNo) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_ALLOTMENT_DATE"), value: t(application?.additionalDetails?.allotmentDate) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_REMARKS"), value: t(application?.additionalDetails?.remarks) || t("CS_NA") },
+    { title: t("PT_ASSESMENT_INFO_BUSINESS_NAME"), value: t(application?.businessName) || t("CS_NA") },
+
+
+    // { title:  t("PT_FORM2_PROPERTY_TYPE"),value: t(application?.additionalDetails?.structureType.i18nKey) || t("CS_NA")},
+    { title:  t("PT_FORM2_PROPERTY_TYPE"),value: t(application?.propertyType) || t("CS_NA")},
+  
+    {title:  t("PT_FORM2_AGE_OF_PROPERTY"),value: t(application?.landArea)|| t("CS_NA")},
+    // {title:  t("PT_FORM2_AGE_OF_PROPERTY"),value: t(application?.additionalDetails?.ageOfProperty.code)|| t("CS_NA")},
   ];
   application.units = application?.units?.filter((unit) => unit.active == true) || [];
   let flrno,
     i = 0;
   flrno = application.units && application.units[0]?.floorNo;
+  console.log("flrno" ,flrno)
   application.units.map((unit) => {
+    console.log("unit",unit.floorNo)
+    console.log((flrno !== unit?.floorNo ? (i = 1) : (i = i + 1)) && i === 1 ? t(`PROPERTYTAX_FLOOR_${unit?.floorNo}`) : "")
     let doc = [
       {
-        title: (flrno !== unit?.floorNo ? (i = 1) : (i = i + 1)) && i === 1 ? t(`PROPERTYTAX_FLOOR_${unit?.floorNo}`) : "",
+        title: (flrno !== unit?.floorNo ? (i = 1) : (i = i + 1)) && i === 1 ? t(`PROPERTYTAX_FLOOR_${unit?.floorNo}`) : t(`PROPERTYTAX_FLOOR_${unit?.floorNo}`)
+        
       },
-      {
-        title: t(""),
-      },
-      {
-        title: t(""),
-      },
-      {
-        title: t(""),
-      },
-      { title: t("PT_UNIT")+" "+ i },
-      {
-        title: t(""),
-      },
-      {
-        title: t(""),
-      },
-      {
-        title: t(""),
-      },
+      // {
+      //   title: t("PT_ASSESSMENT_UNIT_USAGE_TYPE"),value: t(unit.usageCategory)||t("CS_NA"),       
+      // },
+      // {
+      //   title: t("PT_ASSESMENT_INFO_OCCUPLANCY"),value: t(unit.occupancyType)||t("CS_NA"),
+      // },
+      // {
+      //   title: t("PT_FORM2_BUILT_AREA"),value: t(unit?.constructionDetail?.builtUpArea)||t("CS_NA"),
+      // },
+      // { title: t("PT_UNIT")+" "+ i },
+      // {
+      //   title: t(""),
+      // },
+      // {
+      //   title: t(""),
+      // },
+      // {
+      //   title: t(""),
+      // },
       {
         title: (flrno = unit?.floorNo) > -3 ? t("PT_ASSESSMENT_UNIT_USAGE_TYPE") : "",
         value: (flrno = unit?.floorNo) > -3 ? t(getPropertySubUsageTypeLocale(unit?.usageCategory)) || t("CS_NA") : "",
@@ -137,6 +156,10 @@ const getAssessmentInfo = (application, t) => {
         title: (flrno = unit?.floorNo) > -3 ? t("PT_FORM2_BUILT_AREA") : "",
         value: (flrno = unit?.floorNo) > -3 ? t(unit?.constructionDetail?.builtUpArea) || t("CS_NA") : "",
       },
+
+    ];
+   if( (flrno = unit?.floorNo) > -3 && t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented" ){
+    doc.push(
       {
         title:
           (flrno = unit?.floorNo) > -3
@@ -150,8 +173,11 @@ const getAssessmentInfo = (application, t) => {
               ? (unit?.arv && `₹${t(unit?.arv)}`) || "NA"
               : t("")
             : "",
-      },
-      {
+      }
+    )
+   }
+   if( (flrno = unit?.floorNo) > -3 && t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented"){
+    doc.push( {
       title:
         (flrno = unit?.floorNo) > -3
           ? t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented"
@@ -164,8 +190,10 @@ const getAssessmentInfo = (application, t) => {
             ? (application?.additionalDetails?.unit[0]?.rentedMonths ) || t("CS_NA")
             : t("")
           : "",
-    },
-    {
+    })
+   }
+   if( (flrno = unit?.floorNo) > -3 && t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented"){
+    doc.push({
       title:
         (flrno = unit?.floorNo) > -3
           ? t(getPropertyOccupancyTypeLocale(unit?.occupancyType)) === "Rented"
@@ -178,11 +206,11 @@ const getAssessmentInfo = (application, t) => {
             ? (application?.additionalDetails?.unit[0]?.nonRentedMonthsUsage ) || t("CS_NA")
             : t("")
           : "",
-    },
-    ];
-
+    })
+   }
     values.push(...doc);
   });
+  console.log("values  ",values)
   return {
     title: t("PT_ASSESMENT_INFO_SUB_HEADER"),
     values: values,
@@ -274,6 +302,8 @@ const getPTAcknowledgementData = async (application, tenantInfo, t) => {
       ],
     };
   }
+  
+  console.log("application in acknowledgement form",application);
 
   return {
     t: t,
@@ -307,8 +337,16 @@ const getPTAcknowledgementData = async (application, tenantInfo, t) => {
           },
           { title: t("PT_PROPERTY_ADDRESS_STREET_NAME"), value: application?.address?.street || t("CS_NA") },
           { title: t("PT_PROPERTY_ADDRESS_HOUSE_NO"), value: application?.address?.doorNo || t("CS_NA") },
-          application?.channel === "CITIZEN" ? { title: t("PT_PROPERTY_ADDRESS_LANDMARK"), value: application?.address?.landmark || t("CS_NA") }: {},
-        ],
+
+          { title: t("PT_PROPERTY_ADDRESS_BUILD NO/NAME /COLONY_NO/NAME"), value: application?.address?.buildingName || t("CS_NA") },
+          { title: t("PT_PROPERTY_SURVEY_ID"), value: application?.surveyId || t("CS_NA") },
+          { title: t("PT_PROPERTY_EXISTING_PROPERTY_ID"), value: application?.existingPropertyId || t("CS_NA") },
+
+         // application?.channel === "CITIZEN" && { title: t("PT_PROPERTY_ADDRESS_LANDMARK"), value: application?.address?.landmark || t("CS_NA") },
+        ]
+        (application?.channel === "CITIZEN")&&
+          values.push({ title: t("PT_PROPERTY_ADDRESS_LANDMARK"), value: application?.address?.landmark || t("CS_NA") })
+        
       },
       {
         title: t("PT_COMMON_DOCS"),
@@ -316,9 +354,13 @@ const getPTAcknowledgementData = async (application, tenantInfo, t) => {
         application.documents && application.documents.length > 0
             ? application.documents.map((document, index) => {
                 let documentLink = pdfDownloadLink(res?.data, document?.fileStoreId);
+             //   let documentName= pdfDocumentName(documentLink, index)
+              console.log("doc link",documentLink);
+               
                 return {
                   title: t(document?.documentType || t("CS_NA")),
-                  value: pdfDocumentName(documentLink, index) || t("CS_NA"),
+                   value: pdfDocumentName(documentLink, index)|| t("CS_NA"),
+                
                 };
               })
             : {

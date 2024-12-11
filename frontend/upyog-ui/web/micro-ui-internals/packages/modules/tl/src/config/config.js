@@ -131,7 +131,7 @@ export const newConfig = [
                     // }
                 },
                 {
-                    "label": "TL_LOCALIZATION_BUILDING_NO",
+                    "label": "TL_LOCALIZATION_BUILDING_NOYYYY",
                     "type": "text",
                     "name": "doorNo",
                     "disable": "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",

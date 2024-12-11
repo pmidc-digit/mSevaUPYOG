@@ -21,13 +21,13 @@ const PTSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
       type: "text",
       name: "pincode",
       disable: isEditProperty,
-      validation: {
-        minlength: 6,
-        maxlength: 7,
-        pattern: "[0-9]+",
-        max: "9999999",
-        title: t("PT_PROPERTY_ADDRESS_PINCODE_INVALID"),
-      },
+      // validation: {
+      //   minlength: 6,
+      //   maxlength: 7,
+      //   pattern: "[0-9]+",
+      //   max: "9999999",
+      //   title: t("PT_PROPERTY_ADDRESS_PINCODE_INVALID"),
+      // },
     },
   ];
   const [pincodeServicability, setPincodeServicability] = useState(null);
@@ -48,8 +48,8 @@ const PTSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
     if (userType === "employee") {
       if (e.target.value && !validPincode) setLocalError(t("ERR_DEFAULT_INPUT_FIELD_MSG"));
       if (validPincode) {
-        const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === e.target.value));
-        if (!foundValue) setLocalError(t("PT_COMMON_PINCODE_NOT_SERVICABLE"));
+        // const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === e.target.value));
+        // if (!foundValue) setLocalError(t("PT_COMMON_PINCODE_NOT_SERVICABLE"));
       }
       onSelect(config.key, { ...formData.address, pincode: e.target.value });
     }
@@ -93,7 +93,7 @@ const PTSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
       forcedError={t(pincodeServicability)}
       isDisabled={!pincode || isEditProperty}
     ></FormStep>
-            </React.Fragment>
+    </React.Fragment>
   );
 };
 

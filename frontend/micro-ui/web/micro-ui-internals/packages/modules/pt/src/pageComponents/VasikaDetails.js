@@ -1,66 +1,49 @@
-import { CardLabel, FormStep, LabelFieldPair, TextInput ,CardLabelError} from "@upyog/digit-ui-react-components";
+import { CardLabel, FormStep, LabelFieldPair, TextInput ,CardLabelError, DatePicker} from "@upyog/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import Timeline from "../components/TLTimeline";
+//import Timeline from "../components/TLTimeline";
 
-const PTSelectStreet = ({ t, config, onSelect, userType, formData, formState, setError, clearErrors }) => {
+const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, setError, clearErrors }) => {
   const onSkip = () => onSelect();
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
 
-  const [buildingName, setBuildingName]=useState(formData?.address?.buildingName || "")
-  const [street,setStreet]=useState(formData?.address?.street || "")
-  const [doorNo,setDoorNo]=useState(formData?.address?.doorNo ||"" )
+  const[vasikaNo, setVasikaNo]=useState(formData?.additionalDetails?.vasikaNo || "")
+  const [vasikaDate,setVasikaDate]=useState(formData?.additionalDetails?.vasikaDate || "")
+  
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
-  const checkLocation = window.location.href.includes("tl/new-application") || window.location.href.includes("tl/renew-application-details");
-  const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("tl/renew-application-details");
+  const checkLocation = window.location.href.includes("pt/new-application") || window.location.href.includes("pt/renew-application-details");
+  const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("pt/renew-application-details");
   let validation = {};
-  let inputs;
-  if (window.location.href.includes("tl")) {
-    inputs = config.inputs;
-    config.inputs[0].disable = window.location.href.includes("edit-application");
-    config.inputs[1].disable = window.location.href.includes("edit-application");
-  } else {
-    inputs = [
-      {
-        label: "PT_PROPERTY_ADDRESS_HOUSE_NO",
-        type: "text",
-        name: "doorNo",
-        //isMandatory:"true",
-        // validation: {
-        //   pattern: "[a-zA-Z0-9 !@#$%^&*()_+\-={};':\\\\|,.<>/?]{1,64}",
-        //   isRequired: true,
-        //   title: t("CORE_COMMON_DOOR_INVALID"),
-        // },
-      },
-      {
-        label: "PT_PROPERTY_ADDRESS_BUILDING_NAME",
-        type: "text",
-        name: "buildingName",
-        // isMandatory:"true",
-        // validation: {
-        //   pattern: "[a-zA-Z0-9 !@#$%^&*()_+\-={};':\\\\|,.<>/?]{1,64}",
-        //   isRequired: true,
-        //   title: t("CORE_COMMON_STREET_INVALID"),
-        // },
-      },
-      {
-        label: "PT_PROPERTY_ADDRESS_STREET_NAME",
-        type: "text",
-        name: "street",
-        // isMandatory:"true",
-        // validation: {
-        //   pattern: "[a-zA-Z0-9 !@#$%^&*()_+\-={};':\\\\|,.<>/?]{1,64}",
-        //   isRequired: true,
-        //   title: t("CORE_COMMON_STREET_INVALID"),
-        // },
-      },
-      
-    ];
-  }
+ 
+  let inputs = [
+    {
+      label: "PT_PROPERTY_ADDRESS_VASIKA_NO",
+      type: "text",
+      name: "vasikaNo",
+      //isMandatory:"true",
+      // validation: {
+      //   pattern: "[a-zA-Z0-9 !@#$%^&*()_+\-={};':\\\\|,.<>/?]{1,64}",
+      //   isRequired: true,
+      //   title: t("CORE_COMMON_DOOR_INVALID"),
+      // },
+    },
+    {
+      label: "PT_PROPERTY_ADDRESS_VASIKA_DATE",
+      type: "date",
+      name: "vasikaDate",
+      // isMandatory:"true",
+      // validation: {
+      //   pattern: "[a-zA-Z0-9 !@#$%^&*()_+\-={};':\\\\|,.<>/?]{1,64}",
+      //   isRequired: true,
+      //   title: t("CORE_COMMON_STREET_INVALID"),
+      // },
+    },
+    
+  ];
 
   const convertValidationToRules = ({ validation, name, messages }) => {
     if (validation) {
@@ -82,7 +65,7 @@ const PTSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
     return {};
   };
 const setData=(config,data)=>{
-  let dataNew ={street,doorNo,buildingName}
+  let dataNew ={vasikaNo,vasikaDate}
   onSelect(config, dataNew)
 }
   useEffect(() => {
@@ -115,15 +98,13 @@ const setData=(config,data)=>{
     } 
     console.log("formValue",formValue,formData)
   }, [formValue]);
-  function selectStreet(e) {
-    setFocusIndex({ index:1 });
+  function selectVasikaNo(e) {
+    setFocusIndex({ index:0});
     setStreet(e.target.value);
   }
-  function selectDoorNo(e) {
-    setDoorNo(e.target.value);
-  }
-  function selectBuildingName(e) {
-    setBuildingName(e.target.value);
+  function selectVasikaDate(e) {
+    setFocusIndex({ index:1 });
+    setVasikaDate(e.target.value);
   }
 
 
@@ -133,13 +114,13 @@ const setData=(config,data)=>{
         <div>
         <LabelFieldPair key={0}>
           <CardLabel className="card-label-smaller">
-            {!checkLocation ? t(inputs[0].label) : `${t(inputs[0].label)}:`}
-            {config.isMandatory ? " * " : ""}
+            {`${t(inputs[0].label)}`}
+            {config.isMandatory ? " *" : ""}
           </CardLabel>
           <div className="field">
             <Controller
               control={control}
-              defaultValue={formData?.address?.[inputs[0].name]}
+              defaultValue={formData?.additionalDetails?.[inputs[0].name]}
               name={inputs[0].name}
               rules={{ validate: convertValidationToRules(inputs[0]) }}
               type={"text"}
@@ -174,38 +155,28 @@ const setData=(config,data)=>{
 
         <LabelFieldPair key={1}>
           <CardLabel className="card-label-smaller">
-            {!checkLocation ? t(inputs[1].label) : `${t(inputs[1].label)}:`}
+            {`${t(inputs[1].label)}`}
             {config.isMandatory ? " * " : ""}
           </CardLabel>
           <div className="field">
             <Controller
               control={control}
-              defaultValue={formData?.address?.[inputs[1].name]}
+              defaultValue={formData?.additionalDetails?.[inputs[1].name]}
               name={inputs[1].name}
-              rules={{ validate: convertValidationToRules(inputs[1]) }}
-              type={"text"}
+              //rules={{ validate: convertValidationToRules(inputs[1]) }}
+              type={"date"}
               render={(_props) => (
-          
-                <TextInput
-                  id={inputs[1].name}
-                  key={inputs[1].name}
-                  value={_props.value}
-                  type={"text"}
-                  onChange={(e) => {
-                    setFocusIndex({ index:1 });
-                    _props.onChange(e.target.value);
-                  }}
-                  onBlur={_props.onBlur}
-                  disable={isRenewal}
-                  autoFocus={focusIndex?.index == 1}
-                  {...inputs[1].validation}
-                  
-                />
-                
-               
+                <DatePicker
+                    date={_props.value} 
+                    name="VasikaDate"
+                    onChange={(e) => {
+                        setFocusIndex({ index:1 });
+                        _props.onChange(e);
+                    }}
+                    disabled={isRenewal}
+                  />                 
               )}
             />
-           
           </div>
         </LabelFieldPair>
         {formState.touched[config.key] ? (
@@ -213,48 +184,6 @@ const setData=(config,data)=>{
               {formState.errors?.[config.key]?.message}
             </CardLabelError>
           ) : null}
-
-          <LabelFieldPair key={2}>
-          <CardLabel className="card-label-smaller">
-            {!checkLocation ? t(inputs[2].label) : `${t(inputs[2].label)}:`}
-            {config.isMandatory ? " * " : ""}
-          </CardLabel>
-          <div className="field">
-            <Controller
-              control={control}
-              defaultValue={formData?.address?.[inputs[2].name]}
-              name={inputs[2].name}
-              rules={{ validate: convertValidationToRules(inputs[2]) }}
-              type={"text"}
-              render={(_props) => (
-                
-                <TextInput
-                  id={inputs[2].name}
-                  key={inputs[2].name}
-                  value={_props.value}
-                  type={"text"}
-                  onChange={(e) => {
-                    setFocusIndex({ index:2  });
-                    _props.onChange(e.target.value);
-                  }}
-                  onBlur={_props.onBlur}
-                  disable={isRenewal}
-                  autoFocus={focusIndex?.index == 2}
-                  {...inputs[2].validation}
-                />
-                
-         
-              )}
-            />
-           
-          </div>
-        </LabelFieldPair>
-        {formState.touched[config.key] ? (
-            <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
-              {formState.errors?.[config.key]?.message}
-            </CardLabelError>
-          ) : null}
-
 
         </div>
       );
@@ -262,7 +191,7 @@ const setData=(config,data)=>{
   }
   return (
     <React.Fragment>
-    {window.location.href.includes("/citizen") ? <Timeline currentStep={1}/> : null}
+    {/* {window.location.href.includes("/citizen") ? <Timeline currentStep={1}/> : null}
     <FormStep
       config={{ ...config }}
       onSelect={(data) => {setData(config.key,data)}}
@@ -277,21 +206,21 @@ const setData=(config,data)=>{
             type={"text"}
             optionKey="i18nKey"
             name="street"
-            onChange={selectStreet}
+            onChange={selectVasikaNo}
             value={street}
             errorStyle={true}
             autoFocus={focusIndex?.index == 1}
           />
 
-         <CardLabel>{`${t("PT_PROPERTY_ADDRESS_BUILDING_NAME")}*`}</CardLabel>
+         <CardLabel>{`${t("PT_PROPERTY_ADDRESS_BUILD/COLONY_NAME")}*`}</CardLabel>
           <TextInput
             t={t}
             //isMandatory={true}
             type={"text"}
             optionKey="i18nKey"
-            name="buildingName"
-            onChange={selectBuildingName}
-            value={buildingName}
+            name="buildingNo"
+            onChange={selectVasikaDate}
+            value={buildingNo}
             errorStyle={true}
             autoFocus={focusIndex?.index == 1}
           />
@@ -310,9 +239,9 @@ const setData=(config,data)=>{
             autoFocus={focusIndex?.index == 1}
            
           />
-      </FormStep>
+      </FormStep> */}
     </React.Fragment>
   );
 };
 
-export default PTSelectStreet;
+export default VasikaDetails;

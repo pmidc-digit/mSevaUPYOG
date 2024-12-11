@@ -9,12 +9,14 @@ import {
   MobileNumber,
   CardSectionHeader,
   TextInput,
+  DatePicker
 } from "@upyog/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
+import { convertEpochToDate } from "../Utils/index";
 
 const createOwnerDetails = () => ({
   name: "",
@@ -31,6 +33,8 @@ const createOwnerDetails = () => ({
   subOwnerShipCategory:"",
   correspondenceAddress: "",
   key: Date.now(),
+  panNumber:"",
+  dateOfBirth: ""
 });
 
 const OwnerForm = (_props) => {
@@ -114,6 +118,9 @@ const OwnerForm = (_props) => {
         setValue("altContactNumber",owner?.altContactNumber);
         setValue("emailId",owner?.emailId);
         setValue("emailId",owner?.emailId); 
+        setValue("dateOfBirth", owner?.dateOfBirth);
+        setValue("gender",owner?.gender);
+        setValue("permanentAddress",owner?.permanentAddress);
       }
       else
       {
@@ -125,6 +132,8 @@ const OwnerForm = (_props) => {
         setValue("emailId",owner?.emailId);
         setValue("ownerType",owner?.ownerType);
         setValue("permanentAddress",owner?.permanentAddress);
+        setValue("panNumber",owner?.panNumber);
+        setValue("dateOfBirth", owner?.dateOfBirth);
       }
     }
   }, [formData?.cpt?.details?.propertyId, formData?.cptId?.Id, formData]);
@@ -280,13 +289,13 @@ const OwnerForm = (_props) => {
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.name ? errors?.name?.message : ""}</CardLabelError>
                 <LabelFieldPair>
-                  <CardLabel>{`${t("TL_NEW_OWNER_DESIG_LABEL")}`}</CardLabel>
+                  <CardLabel>{`${t("TL_NEW_OWNER_DESIG_LABEL")}*`}</CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
                       name={"designation"}
                       defaultValue={owner?.designation}
-                      rules={{ /* required: t("REQUIRED_FIELD"), */ validate: { pattern: (val) => (/^[a-zA-Z ]*$/.test(val) ? true : t("TL_NAME_ERROR_MESSAGE")) } }}
+                      rules={{  required: t("REQUIRED_FIELD"),  /* validate: { pattern: (val) => (/^[a-zA-Z ]*$/.test(val) ? true : t("TL_NAME_ERROR_MESSAGE")) }*/ }}
                       render={(props)=>(
                         <TextInput
                           t={t}
@@ -309,6 +318,119 @@ const OwnerForm = (_props) => {
                   </div>
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.designation ? errors?.designation?.message : ""}</CardLabelError>
+
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")} * `}</CardLabel>
+                  <Controller
+                    control={control}
+                    name={"gender"}
+                    defaultValue={owner?.gender}
+                    rules={{ required: t("REQUIRED_FIELD") }}
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value}
+                        disable={isSameAsPropertyOwner}
+                        errorStyle={localFormState.touched.gender && errors?.gender?.message ? true : false}
+                        select={(e) => {
+                          if (e?.code != owner?.gender?.code && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                          props.onChange(e);
+                        }}
+                        onBlur={props.onBlur}
+                        option={genderTypeMenu}
+                        optionKey="i18nKey"
+                        t={t}
+                      />
+                    )}
+                  />
+                </LabelFieldPair>
+                <CardLabelError style={errorStyle}>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
+
+                <LabelFieldPair>
+               <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_DOB")} * `}</CardLabel>
+               <div className="field">
+                <Controller
+                name="dateOfBirth"
+                rules={{ required: t("REQUIRED_FIELD") }}
+                defaultValue={owner?.dateOfBirth}
+                control={control}
+                render={(props) => (
+                  <DatePicker
+                    date={props.value}
+                     //date={dateOfBirth} 
+                    name="dateOfBirth"
+                    max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear()))}
+                    onChange={props.onChange}
+                    //disabled={isRenewal}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.touched.dateOfBirth ? errors?.dateOfBirth?.message : ""}</CardLabelError>
+                
+      
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{`${t("TL_GUARDIAN_S_NAME_LABEL")} * `}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={"fatherOrHusbandName"}
+                      defaultValue={owner?.fatherOrHusbandName}
+                      rules={{ required: "NAME_REQUIRED", validate: { pattern: (val) => (/^\w+( +\w+)*$/.test(val) ? true : t("INVALID_NAME")) } }}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          autoFocus={focusIndex.index === owner?.key && focusIndex.type === "fatherOrHusbandName"}
+                          errorStyle={localFormState.touched.fatherOrHusbandName && errors?.fatherOrHusbandName?.message ? true : false}
+                          onChange={(e) => {
+                            if (e.target.value != owner?.fatherOrHusbandName && isRenewal)
+                              setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                            props.onChange(e.target.value);
+                            // props.onChange(e);
+                            setFocusIndex({ index: owner.key, type: "fatherOrHusbandName" });
+                          }}
+                          disable={isSameAsPropertyOwner}
+                          onBlur={props.onBlur}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+                <CardLabelError style={errorStyle}>
+                  {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}{" "}
+                </CardLabelError>
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{`${t("TL_RELATIONSHIP_WITH_GUARDIAN_LABEL")} * `}</CardLabel>
+                  <Controller
+                    control={control}
+                    name={"relationship"}
+                    defaultValue={owner?.relationship}
+                    rules={{ required: "RelationShip Required" }}
+                    render={(props) => (
+                      <Dropdown
+                        className="form-field"
+                        selected={props.value}
+                        errorStyle={localFormState.touched.relationship && errors?.relationship?.message ? true : false}
+                        select={(e) => {
+                          if (e?.code != owner?.relationship?.code && isRenewal)
+                            setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                          props.onChange(e);
+                        }}
+                        onBlur={props.onBlur}
+                        disable={isSameAsPropertyOwner}
+                        option={[
+                          { i18nKey: "COMMON_RELATION_FATHER", code: "FATHER" },
+                          { i18nKey: "COMMON_RELATION_HUSBAND", code: "HUSBAND" },
+                        ]}
+                        optionKey="i18nKey"
+                        t={t}
+                      />
+                    )}
+                  />
+                </LabelFieldPair>
+                <CardLabelError style={errorStyle}>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
+
                 <LabelFieldPair>
                   <CardLabel>{`${t("TL_MOBILE_NUMBER_LABEL")}*`}</CardLabel>
                   <div className="field">
@@ -346,7 +468,7 @@ const OwnerForm = (_props) => {
                      control={control}
                      name={"altContactNumber"}
                      defaultValue={owner?.altContactNumber}
-                     //rules={{ /* required: t("REQUIRED_FIELD"), */ validate: { pattern: (val) => (/^$|^[0][1-9][0-9]{9}$|^[1-9][0-9]{9}$/.test(val) ? false : t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID")) } }}
+                     rules={{ /* required: t("REQUIRED_FIELD"), */ validate: { pattern: (val) => (/^$|^[0][1-9][0-9]{9}$|^[1-9][0-9]{9}$/.test(val) ? false : t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID")) } }}
                      render={(props)=>(
                       <MobileNumber
                         type={"text"}
@@ -399,6 +521,37 @@ const OwnerForm = (_props) => {
                   </div>
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
+
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_ADDR_LABEL")}* `}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={"permanentAddress"}
+                      defaultValue={owner?.permanentAddress}
+                      rules={{ required: t("REQUIRED_FIELD")}}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          autoFocus={focusIndex.index === owner?.key && focusIndex.type === "permanentAddress"}
+                          errorStyle={localFormState.touched.permanentAddress && errors?.permanentAddress?.message ? true : false}
+                          onChange={(e) => {
+                            if (e.target.value != owner?.permanentAddress && isRenewal)
+                              setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                            props.onChange(e.target.value);
+                            setFocusIndex({ index: owner.key, type: "permanentAddress" });
+                          }}
+                          onBlur={props.onBlur}
+                          disable={isSameAsPropertyOwner}
+                          style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+                <CardLabelError style={errorStyle}>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+
+              
               </React.Fragment>
             )}
             {typeOfOwner !== "INSTITUTIONAL" && (
@@ -552,6 +705,31 @@ const OwnerForm = (_props) => {
                   />
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
+                
+                <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_DOB")} * `}</CardLabel>
+            <div className="field">
+              <Controller
+                name="dateOfBirth"
+                rules={{ required: t("REQUIRED_FIELD") }}
+                defaultValue={owner?.dateOfBirth}
+                control={control}
+                render={(props) => (
+                  <DatePicker
+                    date={props.value}
+                     //date={dateOfBirth} 
+                    name="dateOfBirth"
+                    max={convertEpochToDate(new Date().setFullYear(new Date().getFullYear()))}
+                    onChange={props.onChange}
+                    //disabled={isRenewal}
+                  />
+                )}
+              />
+            </div>
+                </LabelFieldPair>
+                <CardLabelError style={errorStyle}>{localFormState.touched.dateOfBirth ? errors?.dateOfBirth?.message : ""}</CardLabelError>
+
+
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")} `}</CardLabel>
                   <div className="field">
@@ -581,6 +759,64 @@ const OwnerForm = (_props) => {
                   </div>
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
+
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_PAN_NO")} `}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={"panNumber"}
+                      defaultValue={owner?.panNumber}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          autoFocus={focusIndex.index === owner?.key && focusIndex.type === "panNumber"}
+                          errorStyle={localFormState.touched.panNumber && errors?.panNumber?.message ? true : false}
+                          onChange={(e) => {
+                            if (e.target.value != owner?.panNumber && isRenewal)
+                              setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                            props.onChange(e.target.value);
+                            setFocusIndex({ index: owner.key, type: "panNumber" });
+                          }}
+                          onBlur={props.onBlur}
+                          disable={isSameAsPropertyOwner}
+                          style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+                <CardLabelError style={errorStyle}>{localFormState.touched.panNumber ? errors?.panNumber?.message : ""}</CardLabelError>
+
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_ADDR_LABEL")}* `}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={"permanentAddress"}
+                      defaultValue={owner?.permanentAddress}
+                      rules={{ required: t("REQUIRED_FIELD")}}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          autoFocus={focusIndex.index === owner?.key && focusIndex.type === "permanentAddress"}
+                          errorStyle={localFormState.touched.permanentAddress && errors?.permanentAddress?.message ? true : false}
+                          onChange={(e) => {
+                            if (e.target.value != owner?.permanentAddress && isRenewal)
+                              setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                            props.onChange(e.target.value);
+                            setFocusIndex({ index: owner.key, type: "permanentAddress" });
+                          }}
+                          onBlur={props.onBlur}
+                          disable={isSameAsPropertyOwner}
+                          style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+                <CardLabelError style={errorStyle}>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">{`${t("TL_OWNER_SPECIAL_CATEGORY")} `}</CardLabel>
                   <Controller
@@ -609,33 +845,7 @@ const OwnerForm = (_props) => {
                   />
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.ownerType ? errors?.ownerType?.message : ""}</CardLabelError>
-                <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_ADDR_LABEL")} `}</CardLabel>
-                  <div className="field">
-                    <Controller
-                      control={control}
-                      name={"permanentAddress"}
-                      defaultValue={owner?.permanentAddress}
-                      render={(props) => (
-                        <TextInput
-                          value={props.value}
-                          autoFocus={focusIndex.index === owner?.key && focusIndex.type === "permanentAddress"}
-                          errorStyle={localFormState.touched.permanentAddress && errors?.permanentAddress?.message ? true : false}
-                          onChange={(e) => {
-                            if (e.target.value != owner?.permanentAddress && isRenewal)
-                              setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
-                            props.onChange(e.target.value);
-                            setFocusIndex({ index: owner.key, type: "permanentAddress" });
-                          }}
-                          onBlur={props.onBlur}
-                          disable={isSameAsPropertyOwner}
-                          style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
-                        />
-                      )}
-                    />
-                  </div>
-                </LabelFieldPair>
-                <CardLabelError style={errorStyle}>{localFormState.touched.permanentAddress ? errors?.permanentAddress?.message : ""}</CardLabelError>
+                           
               </React.Fragment>
             )}
             </div>

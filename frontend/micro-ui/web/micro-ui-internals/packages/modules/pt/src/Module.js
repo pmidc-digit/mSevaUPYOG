@@ -4,6 +4,14 @@ import { useTranslation } from "react-i18next";
 import { useRouteMatch } from "react-router-dom";
 import Area from "./pageComponents/Area";
 import Electricity from "./pageComponents/Electricity";
+import Remarks from "./pageComponents/Remarks";
+import VasikaDetails from "./pageComponents/VasikaDetails";
+import AllotmentDetails from "./pageComponents/AllotmentDetails";
+import BusinessName from "./pageComponents/BusinessName";
+import ExistingPropertyId from "./pageComponents/ExistingPropertyId";
+import YearOfCreation from "./pageComponents/YearOfCreation";
+import SurveyId from "./pageComponents/SurveyId";
+
 import UID from "./pageComponents/UID";
 import PTLandArea from "./pageComponents/PTLandArea";
 import GroundFloorDetails from "./pageComponents/GroundFloorDetails";
@@ -124,6 +132,13 @@ const componentsToRegister = {
   Area,
   UID,
   Electricity,
+  Remarks,
+  VasikaDetails,
+  AllotmentDetails,
+  BusinessName,
+  ExistingPropertyId,
+  YearOfCreation,
+  SurveyId,
   PropertyStructureDetails,
   IsResidential,
   PropertyType,

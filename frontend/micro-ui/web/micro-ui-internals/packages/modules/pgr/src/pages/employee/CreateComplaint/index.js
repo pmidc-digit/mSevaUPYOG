@@ -297,16 +297,16 @@ const [description, setDescription] = useState("")
     {
       head: t("CS_ADDCOMPLAINT_LOCATION"),
       body: [
-        // {
-        //   label: t("CORE_COMMON_PINCODE"),
-        //   type: "text",
-        //   populators: {
-        //     name: "pincode",
-        //     validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
-        //     error: t("CORE_COMMON_PINCODE_INVALID"),
-        //     onChange: handlePincode,
-        //   },
-        // },
+        {
+          label: t("CORE_COMMON_PINCODE"),
+          type: "text",
+          populators: {
+            name: "pincode",
+          //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
+            //error: t("CORE_COMMON_PINCODE_INVALID"),
+            onChange: handlePincode,
+          },
+        },
         {
           label: t("CS_COMPLAINT_DETAILS_CITY"),
           isMandatory: true,

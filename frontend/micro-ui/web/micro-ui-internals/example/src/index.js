@@ -26,7 +26,8 @@ import { initBillsComponents, BillsModule } from "@upyog/digit-ui-module-bills";
 
 import { PTRModule, PTRLinks, PTRComponents } from "@upyog-niua/upyog-ui-module-ptr";
 
-
+//  import { BRModule, initBRComponents ,BRLinks} from "@upyog-niua/upyog-ui-module-br";
+import {  initBRComponents} from "@upyog-niua/upyog-ui-module-br";
 // import {initCustomisationComponents} from "./customisations";
 
 // import { PGRModule, PGRLinks } from "@egovernments/digit-ui-module-pgr";
@@ -41,6 +42,7 @@ import { pgrCustomizations, pgrComponents } from "./pgr";
 var Digit = window.Digit || {};
 
 const enabledModules = [
+   "BR",
   "PGR",
   "FSM",
   "Payment",
@@ -110,11 +112,14 @@ const initDigitUI = () => {
     BillsModule,
     PTRModule,
     PTRLinks,
+    // BRModule,
+    // BRLinks,
+
     ...PTRComponents
     // TLModule,
     // TLLinks,
   });
-
+   initBRComponents();
   initFSMComponents();
   initPGRComponents();
   initDSSComponents();

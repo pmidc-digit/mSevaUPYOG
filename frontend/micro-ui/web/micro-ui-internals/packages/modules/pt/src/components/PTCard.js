@@ -35,7 +35,7 @@ const PTCard = () => {
     {
       label: t("ES_TITLE_NEW_REGISTRATION"),
       link: `/digit-ui/employee/pt/new-application`,
-      role: "PT_CEMP"
+      // role: "PT_CEMP"
     },
     {
       label: t("SEARCH_PROPERTY"),

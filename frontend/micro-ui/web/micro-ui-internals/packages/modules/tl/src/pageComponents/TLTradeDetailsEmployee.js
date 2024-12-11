@@ -28,6 +28,7 @@ const createTradeDetailsDetails = () => ({
   gstNo: "",
   operationalArea: "",
   noOfEmployees: "",
+  oldReceiptNo:"",
   key: Date.now()
 });
 
@@ -532,6 +533,35 @@ const OwnerForm1 = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.touched.noOfEmployees ? errors?.noOfEmployees?.message : ""}</CardLabelError>
+          
+        
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("TL_OLD_RECEIPT_NUMBER")} `}</CardLabel>
+            <div className="field">
+              <Controller
+                name="oldReceiptNo"
+                rules={{ validate: (e) => ((e && getPattern("OldLicenceNo").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
+                defaultValue={tradedetail?.oldReceiptNo}
+                control={control}
+                render={(props) => (
+                  <TextInput
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      setFocusIndex({ index: tradedetail?.key, type: "oldReceiptNo" });
+                    }}
+                    value={props.value}
+                    autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "oldReceiptNo"}
+                    errorStyle={(localFormState.touched.oldReceiptNo && errors?.oldReceiptNo?.message) ? true : false}
+                    onBlur={props.onBlur}
+                    disable={isRenewal}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.touched.oldReceiptNo ? errors?.oldReceiptNo?.message : ""}</CardLabelError>
+
+
         </div>
       </div>
     </React.Fragment>

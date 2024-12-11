@@ -99,8 +99,50 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
       label: "PT_PLOT_SIZE_SQUARE_FEET_LABEL",
       type: "text",
       name: "area",
-      validation: {},
+      isMandatory:"true",
+      validation: {
+          pattern: "^[0-9]+(\\.[0-9]+)?$",
+          isRequired: true,
+          title: t("T_PLOT_SIZE_SQUARE_FEET_LABEL"),
+       },
     },
+    // {
+    //   label: "PT_PLOT_VASIKA_NO",
+    //   type: "text",
+    //   name: "vasikaNo",
+    //   validation: {},
+    // },
+    // {
+    //   label: "PT_PLOT_VASIKA_DATE",
+    //   type: "text",
+    //   name: "vasikaDate",
+    //   validation: {},
+    // },
+    // {
+    //   label: "PT_PLOT_ALLOTMENT_NO",
+    //   type: "text",
+    //   name: "allotmentNo",
+    //   validation: {},
+    // },
+    // {
+    //   label: "PT_PLOT_ALLOTMENT_DATE",
+    //   type: "text",
+    //   name: "allotmentDate",
+    //   validation: {},
+    // },
+    // {
+    //   label: "PT_PLOT_BUSINESS_NAME",
+    //   type: "text",
+    //   name: "businessName",
+    //   isMandatory:"true",
+    //   validation: {},
+    // },
+    // {
+    //   label: "PT_PLOT_REMARKS",
+    //   type: "text",
+    //   name: "remarks",
+    //   validation: {},
+    // },
   ];
 
   if (userType === "employee") {
@@ -108,7 +150,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
       return (
         <React.Fragment>
           <LabelFieldPair key={index}>
-            <CardLabel className="card-label-smaller">{t(input.label) + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t(input.label)} {input.isMandatory ? " * " : ""}</CardLabel>
             <div className="field">
               <TextInput
                 key={input.name}

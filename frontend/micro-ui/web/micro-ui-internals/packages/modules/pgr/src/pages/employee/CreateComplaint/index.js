@@ -136,6 +136,7 @@ const [description, setDescription] = useState("")
   const wrapperSubmit = (data) => {
     if (!canSubmit) return;
     setSubmitted(true);
+    console.log(data);
     !submitted && onSubmit(data);
   };
   //On SUbmit
@@ -192,10 +193,12 @@ const [description, setDescription] = useState("")
 
   const config = [
     {
-      head: t("ES_CREATECOMPLAINT_PROVIDE_COMPLAINANT_DETAILS"),
+      // head: t("ES_CREATECOMPLAINT_PROVIDE_COMPLAINANT_DETAILS"),
+      head: t("Mujib Alam Complaints"),
       body: [
         {
-          label: t("ES_CREATECOMPLAINT_MOBILE_NUMBER"),
+          // label: t("ES_CREATECOMPLAINT_MOBILE_NUMBER"),
+          label: t("Mujib"),
           isMandatory: true,
           type: "text",
           value:mobileNumber,
@@ -244,7 +247,8 @@ const [description, setDescription] = useState("")
       ],
     },
     {
-      head: t("CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS"),
+      // head: t("CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS"),
+      head: t("Mujib Complaint Details"),
       body: [
         {
           label: t("CS_COMPLAINT_DETAILS_COMPLAINT_TYPE"),
@@ -342,6 +346,13 @@ const [description, setDescription] = useState("")
       head: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
       body: [
         {
+          label: t("Remarks"),
+          type: "textarea",
+          populators: {
+            name: "remarks",
+          },
+        },,
+        {
           label: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
           type: "textarea",
           onChange: handleDescription,
@@ -351,6 +362,124 @@ const [description, setDescription] = useState("")
             onChange: handleDescription,
           },
         },
+      ],
+    },
+  ];
+
+  const myConfig = [
+    {
+      // head: t("ES_CREATECOMPLAINT_PROVIDE_COMPLAINANT_DETAILS"),
+      head: t("Mujib Alam Complaints"),
+      body: [
+        {
+          // label: t("ES_CREATECOMPLAINT_MOBILE_NUMBER"),
+          label: t("Mujib"),
+          isMandatory: true,
+          type: "text",
+          value:mobileNumber,
+          onChange: handleMobileNumber,
+          populators: {
+            name: "mobileNumber",
+            onChange: handleMobileNumber,
+            validation: {
+              required: true,
+              pattern: /^[6-9]\d{9}$/,  
+            },
+            componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
+            error: t("CORE_COMMON_MOBILE_ERROR"),
+          },
+        },
+        {
+          label: t("Complaint Name"),
+          isMandatory: true,
+          type: "text",
+          value:fullName,
+          populators: {
+            name: "name",
+            onChange: handleName,
+            validation: {
+              required: true,
+              pattern: /^[A-Za-z]/,
+            },
+            error: t("CS_ADDCOMPLAINT_NAME_ERROR"),
+          },
+        },
+        {
+          label: t("ES_MAIL_ID"),
+          isMandatory: false,
+          type: "text",
+          value:emailId,
+          populators: {
+            name: "emailId",
+            onChange: handleEmail,
+            validation: {
+              //required: true,
+              pattern: /[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
+            },
+            error: t("CS_ADDCOMPLAINT_EMAIL_ERROR"),
+          },
+        },
+      ],
+    },
+    {
+      // head: t("CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS"),
+      head: t("Mujib Complaint Details"),
+      body: [
+        {
+          label: t("CS_COMPLAINT_DETAILS_COMPLAINT_TYPE"),
+          isMandatory: true,
+          type: "dropdown",
+          populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} />,
+        },
+        {
+          label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
+          isMandatory: true,
+          type: "dropdown",
+          menu: { ...subTypeMenu },
+          populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
+        },
+        {
+          
+         label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
+            isMandatory: true,
+            type: "dropdown",
+            populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
+          
+        },
+        {
+          //label: t("WS_COMMON_PROPERTY_DETAILS"),
+          "isEditConnection": true,
+          "isCreateConnection": true,
+          "isModifyConnection": true,
+          "isEditByConfigConnection": true,
+          "isProperty":subType?.key?.includes("Property")?true:false,
+          component: "CPTPropertySearchNSummary",
+          key: "cpt",
+          type: "component",
+          "body": [
+              {
+                  "component": "CPTPropertySearchNSummary",
+                  "withoutLabel": true,
+                  "key": "cpt",
+                  "type": "component",
+                  "hideInCitizen": true
+              }
+          ]
+        }
+     
+      ],
+    },
+    
+    {
+      head: t("Additional Details"),
+      body: [
+        {
+          label: t("Remarks"),
+          type: "textarea",
+          populators: {
+            name: "remarks",
+          },
+        },, 
       ],
     },
   ];
@@ -382,12 +511,22 @@ const [description, setDescription] = useState("")
    
   },[propertyId])
   return (
+    // <FormComposer
+    //   // heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
+    //   heading={t("Complaints of Mujib")}
+    //   config={config}
+    //   onSubmit={wrapperSubmit}
+    //   isDisabled={!canSubmit && !submitted}
+    //   label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
+    // />
+
     <FormComposer
-      heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
-      config={config}
-      onSubmit={wrapperSubmit}
-      isDisabled={!canSubmit && !submitted}
-      label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
+      // heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
+      heading={t("Complaints of Mujib")}
+      config={myConfig}
+      // onSubmit={wrapperSubmit}
+      // isDisabled={!canSubmit && !submitted}
+      // label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
     />
   );
 };

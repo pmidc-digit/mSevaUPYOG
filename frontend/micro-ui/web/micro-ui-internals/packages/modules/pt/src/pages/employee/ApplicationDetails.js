@@ -179,12 +179,14 @@ const ApplicationDetails = () => {
 
     const data = await getPTAcknowledgementData(Property, tenantInfo, t);
     Digit.Utils.pdf.generate(data);
+    setShowOptions(false);
   };
 
   const propertyDetailsPDF = {
     order: 1,
     label: t("PT_APPLICATION"),
-    onClick: () => handleDownloadPdf(),
+    // onClick: () => handleDownloadPdf(),
+    onClick:  handleDownloadPdf,
   };
   let dowloadOptions = [propertyDetailsPDF];
   const handleViewTimeline=()=>{

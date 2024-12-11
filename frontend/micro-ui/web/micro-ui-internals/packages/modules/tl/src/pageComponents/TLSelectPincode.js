@@ -40,14 +40,14 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
     setPincode(e.target.value);
     setPincodeServicability(null);
     if (userType === "employee") {
-      const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === e.target.value));
-      if (foundValue) {
-        const city = tenants.filter((obj) => obj.pincode?.find((item) => item == e.target.value))[0];
-        onSelect(config.key, { ...formData.address, city, pincode: e.target.value, slum: null });
-      } else {
-        onSelect(config.key, { ...formData.address, pincode: e.target.value });
-        setPincodeServicability("TL_COMMON_PINCODE_NOT_SERVICABLE");
-      }
+      // const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === e.target.value));
+      // if (foundValue) {
+      //   const city = tenants.filter((obj) => obj.pincode?.find((item) => item == e.target.value))[0];
+      //   onSelect(config.key, { ...formData.address, city, pincode: e.target.value, slum: null });
+      // } else {
+      //   onSelect(config.key, { ...formData.address, pincode: e.target.value });
+      //   setPincodeServicability("TL_COMMON_PINCODE_NOT_SERVICABLE");
+      // }
     }
   }
 
@@ -64,7 +64,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
     return inputs?.map((input, index) => {
       return (
         <LabelFieldPair key={index}>
-          <CardLabel className="card-label-smaller">{`${t(input.label)}`}</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t(input.label)}*`}</CardLabel>
           <div className="field">
             <TextInput 
               key={input.name} 
@@ -73,6 +73,11 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
               disable={formData?.cpt?.details || isRenewal}
               {...input.validation} 
               autoFocus={presentInModifyApplication} 
+              isMandatory={true}
+              // ValidationRequired={true}
+              // validation={type="number"}
+              
+
             />
           </div>
         </LabelFieldPair>

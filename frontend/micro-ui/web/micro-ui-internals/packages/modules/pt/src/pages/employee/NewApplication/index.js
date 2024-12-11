@@ -62,7 +62,8 @@ const NewApplication = () => {
       address: {
         ...data?.address,
         city: data?.address?.city?.name,
-        locality: { code: data?.address?.locality?.code, area: data?.address?.locality?.area },
+        locality: { code: data?.address?.locality?.code,
+                    area: data?.address?.locality?.area },
       },
       usageCategory: data?.usageCategoryMajor.code,
       usageCategoryMajor: data?.usageCategoryMajor?.code.split(".")[0],
@@ -77,9 +78,11 @@ const NewApplication = () => {
       //NonRentedMonthsUsage: data?.units[0]?.NonRentedMonthsUsage,
        ageOfProperty:data?.propertyStructureDetails?.ageOfProperty,
        structureType:data?.propertyStructureDetails?.structureType,
-      electricity:data?.electricity,
-      uid:data?.uid
+       electricity:data?.electricity,
+       uid:data?.uid,
       },
+      surveyId: data?.surveyId,
+      existingPropertyId: data?.existingPropertyId,
       owners: data?.owners.map((owner,index) => {
         let {
           name,
@@ -128,7 +131,15 @@ const NewApplication = () => {
         }
         return _owner;
       }),
-
+      additionalDetails:{
+       vasikaNo: data?.vasikaDetails?.vasikaNo,
+       vasikaDate: data?.vasikaDetails?.vasikaDate,
+       allotmentNo: data?.allottmentDetails?.allotmentNo,
+       allotmentDate: data?.allottmentDetails?.allotmentDate,
+       businessName: data?.businessName,
+       //yearConstruction: data?.yearOfCreation,
+       remarks: data?.remarks
+      },
       channel: "CFC_COUNTER", // required
       creationReason: "CREATE", // required
       source: "MUNICIPAL_RECORDS", // required
@@ -136,6 +147,7 @@ const NewApplication = () => {
       documents: data?.documents?.documents,
       applicationStatus: "CREATE",
     };
+    
     let tempObject={
       "mobileNumber":formData.owners?.[0].mobileNumber,
       "name":formData.owners?.[0].name,
@@ -153,7 +165,9 @@ const NewApplication = () => {
         tenantId: Digit.ULBService.getCurrentTenantId(),
       };
     }
+  console.log("formData Filled by user",formData)
   setFormData(formData)
+  console.log("formDataPayload",formData)
   setSearchData({ city: Digit.ULBService.getCurrentTenantId(), filters: tempObject });
   };
  
@@ -258,8 +272,29 @@ let conf =[
                   "cardText": "PT_STREET_TEXT",
                   "submitBarLabel": "PT_COMMON_NEXT"
               },
-              "nextStep": "landmark"
+              "nextStep": "existingPropertyId",
           },
+          {
+            "type": "component",
+            "isMandatory": true,
+            "component": "ExistingPropertyId",
+            "key": "existingPropertyId",
+            "withoutLabel": true,
+          },
+          {
+            "type": "component",
+            "isMandatory": true,
+            "component": "SurveyId",
+            "key": "surveyId",
+            "withoutLabel": true,
+          },
+          // {
+          //   "type": "component",
+          //   "isMandatory": true,
+          //   "component": "YearOfCreation",
+          //   "key": "yearOfCreation",
+          //   "withoutLabel": true,
+          // },
           {
               "type": "component",
               "route": "landmark",
@@ -391,25 +426,57 @@ let conf =[
               "withoutLabel": true
           },
           {
+            "type": "component",
+            "key": "address",
+            // "isMandatory": true,
+            "component": "VasikaDetails",
+            "key": "vasikaDetails",
+            "withoutLabel": true,
+          },
+          {
+            "type": "component",
+            // "isMandatory": true,
+            "component": "AllotmentDetails",
+            "key": "allottmentDetails",
+            "withoutLabel": true,
+          },
+          {
+            "type": "component",
+            "isMandatory": true,
+            "component": "BusinessName",
+            "key": "businessName",
+            "withoutLabel": true,
+          },
+          {
+            "type": "component",
+            //"isMandatory": true,
+            "component": "Remarks",
+            "key": "remarks",
+            "withoutLabel": true,
+          },
+          {
               "type": "component",
               "isMandatory": true,
               "component": "Electricity",
               "key": "electricity",
-              "withoutLabel": true
+              "withoutLabel": true,
+              "hideInEmployee": true
           },
           {
               "type": "component",
               "isMandatory": true,
               "component": "UID",
               "key": "uid",
-              "withoutLabel": true
+              "withoutLabel": true,
+              "hideInEmployee": true
           },
-                      {
+         {
               "type": "component",
               "isMandatory": true,
               "component": "PropertyStructureDetails",
               "key": "propertyStructureDetails",
-              "withoutLabel": true
+              "withoutLabel": true,
+              "hideInEmployee": true
           },
           {
               "type": "component",

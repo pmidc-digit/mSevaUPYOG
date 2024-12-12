@@ -24,7 +24,7 @@ import EditApplication from "./pages/employee/EditApplication";
 
 export const PGRReducers = getRootReducer;
 
-const PGRModule = ({ stateCode, userType, tenants }) => {
+export const PGRModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "PGR";
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
@@ -42,7 +42,7 @@ const PGRModule = ({ stateCode, userType, tenants }) => {
   }
 };
 
-const PGRLinks = ({ matchPath }) => {
+export const PGRLinks = ({ matchPath }) => {
   const { t } = useTranslation();
   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(PGR_CITIZEN_CREATE_COMPLAINT, {});
 

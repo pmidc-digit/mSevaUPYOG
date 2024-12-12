@@ -22,18 +22,12 @@ import { initWSComponents } from "@upyog/digit-ui-module-ws";
 import { DigitUI } from "@upyog/digit-ui-module-core";
 import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@upyog/digit-ui-module-bills";
-
 import { PTRModule, PTRLinks, PTRComponents } from "@upyog-niua/upyog-ui-module-ptr";
-import { BRModule, initBRComponents, BRLinks } from "@upyog-niua/upyog-ui-module-sample";
-//  import { BRModule, initBRComponents ,BRLinks} from "@upyog-niua/upyog-ui-module-br";
-import {  initBRComponents} from "@upyog-niua/upyog-ui-module-br";
 // import {initCustomisationComponents} from "./customisations";
-
 // import { PGRModule, PGRLinks } from "@egovernments/digit-ui-module-pgr";
 // import { Body, TopBar } from "@upyog/digit-ui-react-components";
 import "@upyog-niua/upyog-css/example/index.css";
 // import * as comps from "@upyog/digit-ui-react-components";
-
 // import { subFormRegistry } from "@upyog/digit-ui-libraries";
 
 import { pgrCustomizations, pgrComponents } from "./pgr";
@@ -41,7 +35,6 @@ import { pgrCustomizations, pgrComponents } from "./pgr";
 var Digit = window.Digit || {};
 
 const enabledModules = [
-   "BR",
   "PGR",
   "FSM",
   "Payment",
@@ -66,7 +59,6 @@ const enabledModules = [
   "Birth",
   "Death",
   "PTR",
-  "BR",
 ];
 
 const initTokens = (stateCode) => {
@@ -112,18 +104,12 @@ const initDigitUI = () => {
     BillsModule,
     PTRModule,
     PTRLinks,
-    // BRModule,
-    // BRLinks,
-
-    ...PTRComponents
+    ...PTRComponents,
     // TLModule,
     // TLLinks,
-    BRModule,
-    BRLinks,
     PGRModule,
     PGRLinks,
   });
-   initBRComponents();
   initFSMComponents();
   initPGRComponents();
   initDSSComponents();
@@ -139,7 +125,6 @@ const initDigitUI = () => {
   initCommonPTComponents();
   initBillsComponents();
   // initCustomisationComponents();
-  initBRComponents();
 
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),

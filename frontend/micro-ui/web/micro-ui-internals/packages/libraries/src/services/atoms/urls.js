@@ -110,6 +110,7 @@ const Urls = {
     count: "/egov-hrms/employees/_count",
     create: "/egov-hrms/employees/_create",
     update: "/egov-hrms/employees/_update",
+    sso_authenticate_user:"/egov-hrms/employees/sso/authenticate-user"
   },
   tl: {
     create: "/tl-services/v1/_create",

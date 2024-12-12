@@ -71,9 +71,14 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
       <Route path="/digit-ui/citizen">
         <CitizenApp {...commonProps} />
       </Route>
+      <Route path="/unauthorized" component={UnauthorizedPage} />
+      <Route path="/service-not-found" component={ServiceNotFoundPage} />
       <Route>
         <Redirect to="/digit-ui/citizen" />
       </Route>
     </Switch>
   );
 };
+
+const UnauthorizedPage = () => <div>Unauthorized</div>;
+const ServiceNotFoundPage = () => <div>Service code not valid/ not found</div>;

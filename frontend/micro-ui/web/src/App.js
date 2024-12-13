@@ -39,19 +39,11 @@ import { initWSComponents } from "@upyog/digit-ui-module-ws";
 import { initCustomisationComponents } from "./Customisations";
 import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
 import { initBillsComponents } from "@upyog/digit-ui-module-bills";
-//import { BRModule ,initBRComponents ,BRLinks} from "@upyog-niua/upyog-ui-module-br";
-import { initBRComponents } from "@upyog-niua/upyog-ui-module-br";
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
-import {
-  BRModule,
-  initBRComponents,
-  BRLinks,
-} from "@upyog-niua/upyog-ui-module-sample";
 
 initLibraries();
 
 const enabledModules = [
- "BR",
   "PGR",
   "FSM",
   "Payment",
@@ -75,7 +67,6 @@ const enabledModules = [
   "FireNoc",
   "Birth",
   "Death",
-  "BR",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -92,15 +83,10 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ReceiptsModule,
   PTRModule,
   PTRLinks,
-//  BRModule,
- // BRLinks,
   ...PTRComponents,
-  BRModule,
-  BRLinks,
   PGRModule,
   PGRLinks,
 });
-initBRComponents();
 initPGRComponents();
 initFSMComponents();
 initDSSComponents();
@@ -116,7 +102,6 @@ initCommonPTComponents();
 initBillsComponents();
 // initReportsComponents();
 initCustomisationComponents();
-initBRComponents();
 initCommonPTComponents();
 
 const moduleReducers = (initData) => ({

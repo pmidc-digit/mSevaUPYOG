@@ -32,8 +32,8 @@ RUN cd web/ \
     && node envs.js \
     && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(8192*8192))' \
     &&  ./install-deps.sh \
-    && yarn install
-RUN cd micro-ui-internals \
+    && yarn install  \
+    cd micro-ui-internals/ \
     && yarn install \
     && yarn build
     

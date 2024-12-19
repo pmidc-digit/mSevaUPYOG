@@ -34,7 +34,7 @@ RUN cd web/ \
     &&  ./install-deps.sh \
     && yarn install
 RUN cd micro-ui-internals \
-    && yarn install
+    && yarn install \
     && yarn build
     
 

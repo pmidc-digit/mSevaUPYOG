@@ -33,7 +33,9 @@ RUN cd web/ \
     && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(8192*8192))' \
     &&  ./install-deps.sh \
     && yarn install \
-    && yarn build 
+    cd web/micro-ui-internals/ \
+    && yarn install
+    && yarn build
     
 
 FROM nginx:mainline-alpine

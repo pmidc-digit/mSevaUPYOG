@@ -1,16 +1,25 @@
+
 .loginFormStyleEmployee {
-  z-index: 10;
-  margin-top: 15px;
+
   .employeeCard {
+   margin-top: 0px;
+ 
     .submit-bar {
       @apply w-full;
+  
       height: 2rem !important;
+     
+      padding-top: 14px;
+      padding-bottom: 14px;
+      padding-left: 32px;
+      padding-right: 32px;
     }
     .employeeCard 
       .submit-bar .submit-bar header
       {
         line-height: 2rem !important;
         font-size: 16px;
+        background-color: #2947A3;
         
       }
   }
@@ -29,7 +38,7 @@
 }
 @screen dt {
   .employeeForgotPassword .employeeCard .field .field-container .component-in-front {
-    border: 1px solid black;
+    
     border-right: none;
     height: 32px !important;
     margin-top: -16px !important;
@@ -40,7 +49,10 @@
  .loginFormStyleEmployee .employeeCard, .banner .bannerCard{
     min-width: 270px !important;
    
-    background-color: #ffffffd6 !important
+    background-color: #ffffffff !important;
+
+
+    
   }
   .employeeForgotPassword .employeeCard, .employeeChangePassword .employeeCard{
     max-width: 270px !important;
@@ -75,6 +87,7 @@
 .submit-bar {
   .submit-bar {
     @apply w-full;
+   
   }
 }
 .loginFormStyleEmployee .bannerHeader p,
@@ -86,26 +99,33 @@
   font-size: 24px;
 }
 .loginFormStyleEmployee .employeeCard .card-label, .employeeForgotPassword .employeeCard .card-label{
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  line-height: 10px !important;
-  color: #0B0C0C;
+  font-weight: 400 !important;
+  font-size: 16px !important;
+  line-height: 21px !important;
+  color: #232323;
   z-index: 10 !important;
+  font-family: "Noto sans, sans-serif";
+
+
+ 
+  
 }
 .banner .bannerHeader {
   margin-bottom: 20px;
 }
 .employeeCard .card-label{
-  font-weight: normal;
+  font-weight: 400;
   font-size: 16px;
-  line-height: 19px;
-  color: #0B0C0C;
+  line-height: 21.7px;
+  color: #232323;
+  font-family: "Noto sans, sans-serif";
 }
 .profile-label-margin{
    margin-top: 10px;
 }
 .loginFormStyleEmployee .primary-label-btn{
   font-size: 12px;
+
 }
 .employeeForgotPassword .employeeCard .card-label-desc {
   font-weight: normal;
@@ -120,10 +140,11 @@
   color: #505a5f;
 }
 .employeeCard .card-label{
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  line-height: 10px !important;
-  color: #0b0c0c;
+  font-weight: 400 !important;
+  font-size: 16px !important;
+  line-height: 21.7px !important;
+  color: #232323;
+  font-family: "Noto Sans,sans-serif";
   
 }
 @media screen and (max-width: 768px) {
@@ -168,10 +189,14 @@
     z-index: 10 !important;
   }
   .loginFormStyleEmployee .employeeCard, .banner .bannerCard{
-    min-width: 270px !important;
+   min-width: 270px !important;
     z-index: 10 !important;
-    background-color: #ffffffd6 !important;
+    background-color: #ffffffff !important;
     margin-top: 0 !important;
+
+
+   
+
   }
   .employeeForgotPassword .employeeCard, .employeeChangePassword .employeeCard{
     max-width: 250px !important;
@@ -198,7 +223,17 @@ background-color: white !important;
   }
 }
 .banner .bannerCard, .loginFormStyleEmployee .employeeCard{
-  background-color: transparent;
+  background-color: #FFFFFF;
+
+  margin-top: 0px;
+  margin-left: 418px;
+  height: 400px;
+  width: 400px;
+  padding-top: 56px;
+  padding-bottom: 56px;
+  padding-left: 48px;
+  padding-right: 48px;
+  border-radius: 8px;
 }
 
 @media screen and (max-width: 768px){
@@ -258,3 +293,162 @@ background-color: white !important;
 .employeeForgotPassword{
   z-index: 2;
 }
+
+
+.employeenew{
+ 
+ 
+
+}
+.loginnew{
+ 
+  background-color: #FFFFFF;
+}
+.appbar{
+  width: 100%; /* Full-width */
+  background-color: blue; /* Dark-grey background */
+  overflow: auto;
+  box-sizing: border-box;
+ height: 50px; 
+}
+.loginpic{
+  margin-top: 50px;
+  height: '300px';
+  width: 100%;
+  
+  position: absolute; 
+
+} 
+.loginContainernew{
+  height: 100px;
+  width: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  margin-top: 10px;
+}
+.loginFormStyleEmployeeNew {
+  box-sizing: border-box;
+  box-shadow: 2px 2px 2px #505a5f;
+ padding: 20px;
+ background-color: #FFFFFF;
+ border-radius: 8px;
+margin-top: 50px;
+
+}
+.employeeCardNew{
+  box-sizing: border-box;
+  margin-bottom: 0px;
+  width: 400px;
+  margin-left: 0px;
+ 
+  background-color: #FFFFFF;
+}
+.headerStyle{
+  font-family: 'Roboto';
+  font-weight: 600;
+  text-align: left;
+  font-size: 24px;
+  line-height: 42px;
+}
+.descStyle{
+ font-family: 'Roboto';
+ font-weight: 300;
+ color: #8F8F8F;
+ text-align: left;
+ line-height: 21.09px;
+}
+.labelStyle{
+  font-family: 'Roboto';
+  font-weight: 400;
+  font-size: 18px;
+  color: #232323;
+  line-height: 21.79px;
+}
+.footer{
+  display: -webkit-box;
+  box-sizing: border-box;
+  width: '100%';
+  position: 'fixed';
+  bottom: 0;
+  background-color:"#152265";
+  text-align:"center";
+  color:white;
+  margin-top: 170px;
+  border:1px solid black
+}
+.footerText{
+  display: 'flex';
+   justify-content: 'center';
+    color:"white" ;
+  background-color: #152265;
+  width: 100%;
+    text-align: center;
+}
+.footerContainer{
+  box-sizing: border-box;
+  height: 200px;
+  background-color: #294A97;
+  width:100%;
+  border-top: 2px solid #294A97;
+    text-align:'center';
+    color: 'white';
+    margin-top: 0px;
+   
+
+}
+.cityCss{
+  border-radius: 8px;
+}
+.fieldNew{
+  border-radius: 8px;
+}
+.submitButtonNew{
+  background-color: #2947A3;
+  height: 2.5rem;
+  text-align: center;
+  outline: 2px solid transparent;
+    outline-offset: 2px;
+    max-width: 100%;
+    width: 330px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    padding-left: 32px;
+    padding-right: 32px;
+    box-sizing: content-box;
+    height: 20px;
+    border-radius: 8px;
+    color: white; 
+}
+
+.body-container-new{
+  background-color: white;
+}
+.background-login{
+  position: absolute;
+    height: 100%;
+    width: 100%;
+  
+}
+.footerLinks{
+  box-sizing: border-box;
+  background-color: #F5FBFF;
+  height: 40px;
+  width:100%;
+  justify-content: space-between;
+  display: -webkit-box;
+  padding-top: 30px ;
+  padding-left: 164px ;
+  padding-right: 164px;
+  padding-bottom: 60px;
+} 
+.footerCont{
+  box-sizing: border-box;
+  height: auto;
+  width:100%;
+  display: -webkit-box;
+  background-color: #294A97;
+  border-top: 2px solid #294A97;
+}
+
+
+ 

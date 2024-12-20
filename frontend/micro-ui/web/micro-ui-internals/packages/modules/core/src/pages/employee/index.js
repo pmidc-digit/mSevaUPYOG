@@ -44,7 +44,7 @@ const EmployeeApp = ({
   const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf"
 
   return (
-    <div className="employee">
+    <div className="employeenew">
       <Switch>
         <Route path={`${path}/user`}>
           {isUserProfile && (
@@ -61,32 +61,44 @@ const EmployeeApp = ({
               showLanguageChange={!showLanguageChange}
             />
           )}
-          <div
-            className={isUserProfile ? "grounded-container" : "loginContainer"}
+          <div className="appbar">
+
+          </div>
+      
+            <div className="loginnew">
+              {/* <picture>
+              <source media="(min-width: 760px)" src="https://i.postimg.cc/wxnnKGtG/Banner-18-10-22-1.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
+                <source media="(min-width: 400px)" srcset="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
+                </picture> */}
+                 {/* <div className="login-logo-wrapper">
+              <div className="logoNiua">
+                
+                </div>
+                </div> */}
+                <div
+            className={isUserProfile ? "grounded-container" : "loginContainernew"}
             style={
               isUserProfile
                 ? { padding: 0, paddingTop: "80px", marginLeft: mobileView ? "" : "64px" }
                 : { "--banner-url": `url(${stateInfo?.bannerUrl})`, padding: "0px" }
             }
           >
-            <div className="loginnn">
-              {/* <picture>
-              <source media="(min-width: 760px)" src="https://i.postimg.cc/wxnnKGtG/Banner-18-10-22-1.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
-                <source media="(min-width: 400px)" srcset="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
-                </picture> */}
-                 <div className="login-logo-wrapper">
-              <div className="logoNiua">
-                
-                </div>
-                </div>
-              <picture>
-                <source id="backgroung-login" media="(min-width: 950px)" srcset="https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+(1920x1080).jpg" style={{"position":"absolute","height":"100%","width":"100%"}} />
-                  <source media="(min-width: 250px)" srcset="https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+%28500x900%29.jpg" />
-                    <img src="https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+(1920x1080).jpg" alt="imagealttext" style={{"position":"absolute","height":"100%","width":"100%","zIndex":"1","display":window.location.href.includes("user/profile")?"none":""}}/>
+              <picture >
+                <source 
+                id="backgroung-login"
+                className="background-login"
+                 media="(min-width: 950px)" srcset="https://s3-alpha-sig.figma.com/img/edaf/850b/1cace0150346b2e2f5989aaaf63b8e26?Expires=1735516800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=d89hIYsKp1kboLhYWF9fkAZxw6dAZtlioUx-eFhuk9ImwE~M3vzlR5aZFcney8JNMXyDHIBQVEVQnE5R~-Fv4JFE7If7OKQc8u8K8vhFigRxxaBbpEFX1TnGrYDL-cnkFNBZlf9KFupXC-HWacEAJj6z1mG7HcCeFXPw0M0IAw5lH~Ng~V~ZWVKEoH1KSkzSvfsMVg7hGQ-Xl1w34WQvOZ-TTYOZAaSBQZAVy5eak5-Y~8Gr-JE1RZsPwsjz72IX4KXBjdRm-8XacUwY9ksLVM8qCQO9e6hqymPJQhqwt7F0OqwSyNXKLrbRDo26grWb2jPJhcL5nwYI4mzapEU2Jw__"
+                 style={{"position":"absolute","height":"100%","width":"100%"}} />
+                  <source media="(min-width: 250px)" srcset="https://s3-alpha-sig.figma.com/img/edaf/850b/1cace0150346b2e2f5989aaaf63b8e26?Expires=1735516800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=d89hIYsKp1kboLhYWF9fkAZxw6dAZtlioUx-eFhuk9ImwE~M3vzlR5aZFcney8JNMXyDHIBQVEVQnE5R~-Fv4JFE7If7OKQc8u8K8vhFigRxxaBbpEFX1TnGrYDL-cnkFNBZlf9KFupXC-HWacEAJj6z1mG7HcCeFXPw0M0IAw5lH~Ng~V~ZWVKEoH1KSkzSvfsMVg7hGQ-Xl1w34WQvOZ-TTYOZAaSBQZAVy5eak5-Y~8Gr-JE1RZsPwsjz72IX4KXBjdRm-8XacUwY9ksLVM8qCQO9e6hqymPJQhqwt7F0OqwSyNXKLrbRDo26grWb2jPJhcL5nwYI4mzapEU2Jw__" />
+                    <img className="loginpic" src="https://s3-alpha-sig.figma.com/img/edaf/850b/1cace0150346b2e2f5989aaaf63b8e26?Expires=1735516800&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=d89hIYsKp1kboLhYWF9fkAZxw6dAZtlioUx-eFhuk9ImwE~M3vzlR5aZFcney8JNMXyDHIBQVEVQnE5R~-Fv4JFE7If7OKQc8u8K8vhFigRxxaBbpEFX1TnGrYDL-cnkFNBZlf9KFupXC-HWacEAJj6z1mG7HcCeFXPw0M0IAw5lH~Ng~V~ZWVKEoH1KSkzSvfsMVg7hGQ-Xl1w34WQvOZ-TTYOZAaSBQZAVy5eak5-Y~8Gr-JE1RZsPwsjz72IX4KXBjdRm-8XacUwY9ksLVM8qCQO9e6hqymPJQhqwt7F0OqwSyNXKLrbRDo26grWb2jPJhcL5nwYI4mzapEU2Jw__" 
+                    alt="imagealttext"
+                    // style={{"position":"absolute","height":"100%","width":"100%","zIndex":"1","display":window.location.href.includes("user/profile")?"none":""}}
+                     />
                     </picture>
               {/* <img class="image" id="main-img" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" /> */}
               {/* <img class="image" id="main-img" src="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" /> */}
                 {/* <img id="backgroung-login" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" style={{"position":"absolute","height":"100%","width":"100%"}}></img> */}
+           </div>
             <Switch>
               <Route path={`${path}/user/login`}>
                 <EmployeeLogin />
@@ -115,8 +127,29 @@ const EmployeeApp = ({
                 <Redirect to={`${path}/user/language-selection`} />
               </Route>
             </Switch>
+            
             </div>
+            <div className="footerLinks" >
+
+      </div>
+      <div className="footerContainer">
+      <div className="footer">
+        <div className="footerText">
+          <span style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('https://www.digit.org/', '_blank').focus();}} >Powered by DIGIT</span>
+          <span style={{ margin: "0 10px" ,fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px"}}>|</span>
+          <a style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
+
+          <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize:"12px" }} >|</span>
+          <span  className="upyog-copyright-footer" style={{ cursor: "pointer",fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('https://niua.in/', '_blank').focus();}} >Copyright © 2022 National Institute of Urban Affairs</span>
+          
+           <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
+
+        </div>
+        <div className="upyog-copyright-footer-web">
+          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"14px":"16px", fontWeight: "400"}} onClick={() => { window.open('https://niua.in/', '_blank').focus();}} >Copyright © 2022 National Institute of Urban Affairs</span>
           </div>
+      </div>
+      </div>
         </Route>
         <Route>
           <TopBarSideBar

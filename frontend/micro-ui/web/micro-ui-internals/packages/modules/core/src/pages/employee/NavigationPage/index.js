@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { useLocation, useHistory } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Loader, Toast } from "@upyog/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import { serviceMappings } from "../../../config/ssoConfig";
 
 const setEmployeeDetail = (userObject, token) => {
   let locale = JSON.parse(sessionStorage.getItem("Digit.locale"))?.value || "en_IN";
   localStorage.setItem("Employee.tenant-id", userObject?.tenantId);
   localStorage.setItem("tenant-id", userObject?.tenantId);
-  //localStorage.setItem("citizen.userRequestObject", JSON.stringify(userObject));
   localStorage.setItem("locale", locale);
   localStorage.setItem("Employee.locale", locale);
   localStorage.setItem("token", token);
@@ -18,11 +18,8 @@ const setEmployeeDetail = (userObject, token) => {
 
 const NavigationApp = () => {
   const { t } = useTranslation();
-  const [isLoading, setIsLoading] = useState(true);
-
   const location = useLocation();
-  //const history = useHistory();
-
+  const [isLoading, setIsLoading] = useState(true);
   const [userName, setUserName] = useState("");
   const [tokenName, setTokenName] = useState("");
   const [serviceName, setServiceName] = useState("");
@@ -50,31 +47,37 @@ const NavigationApp = () => {
       tokenName: tokenName,
     };
     Digit.HRMSService.ssoAuthenticateUser(payload)
-      .then((result) => {
-        if (result.trim() === "Authentication Failed. Employee not found in Eseva") {
+      .then((response) => {
+        if (response.status === true) {
+          if (typeof response?.result?.url == "string") {
+            setNavigateToUrl(response.result.url);
+            callOauthTokenApi(response);
+          } else {
+            setIsLoading(false);
+            setShowToast("Something went wrong");
+            setTimeout(closeToast, 5000);
+          }
+        } else {
           setIsLoading(false);
-          setShowToast("Authentication Failed. Employee not found in Eseva");
+          setShowToast(response.message);
           setTimeout(closeToast, 5000);
-          return;
         }
-        setNavigateToUrl(result);
-        callOauthTokenApi(result);
       })
       .catch((err) => {
         setIsLoading(false);
-        console.log("Error in HRMSService.ssoAuthenticateUser: ", err.response);
-        setShowToast("Something went wrong");
+        console.log("Error in Digit.HRMSService.ssoAuthenticateUser: ", err.response);
+        setShowToast(err?.response?.data?.Errors?.[0]?.message || "Something went wrong");
         setTimeout(closeToast, 5000);
       });
   };
 
   const callOauthTokenApi = async (data) => {
     const payload = {
-      username: "DeepakTest", //userName,
-      password: "eGov@123", // tokenName,
-      tenantId: "pb.testing", //user?.info?.tenantId,
-      userType: "EMPLOYEE", //user?.info?.type
-      //thirdPartyName: "eSewa",
+      username: userName,
+      password: tokenName,
+      tenantId: data.result.tenantId,
+      userType: data.result.employeeType,
+      thirdPartyName: "eSewa",
     };
 
     try {
@@ -83,7 +86,7 @@ const NavigationApp = () => {
       setUser({ info, ...tokens });
     } catch (err) {
       setIsLoading(false);
-      console.log("Error calling Digit.UserService.authenticate: ", err.response);
+      console.log("Error in Digit.UserService.authenticate: ", err.response);
       setShowToast(err?.response?.data?.error_description || "Invalid login credentials");
       setTimeout(closeToast, 5000);
     }
@@ -91,7 +94,6 @@ const NavigationApp = () => {
 
   useEffect(() => {
     if (user) {
-      //Digit.SessionStorage.set("citizen.userRequestObject", user);
       const filteredRoles = user?.info?.roles?.filter((role) => role.tenantId === Digit.SessionStorage.get("Employee.tenantId"));
       if (user?.info?.roles?.length > 0) user.info.roles = filteredRoles;
       Digit.UserService.setUser(user);
@@ -101,10 +103,6 @@ const NavigationApp = () => {
       setIsLoading(false);
     }
   }, [user]);
-
-  const closeToast = () => {
-    setShowToast(null);
-  };
 
   const handleServiceRedirection = () => {
     const servicePath = fetchServicePath(serviceName);
@@ -118,26 +116,20 @@ const NavigationApp = () => {
   };
 
   const fetchServicePath = (serviceName) => {
-    switch(serviceName){
-      case "wns-search":
-        return "wns/search";
-      case "pt-search":
-        return "pt-mutation/propertySearch";
-      case "tl-search":
-        return "tradelicence/search";
-      default:
-        return ""; 
-    }
+    const servicePath = serviceMappings.find((item) => item.serviceName === serviceName)?.path;
+    return servicePath || "";
+  };
+
+  const closeToast = () => {
+    setShowToast(null);
   };
 
   return (
     <div>
       {isLoading && <Loader />}
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} />}
+      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={"true"} />}
     </div>
   );
 };
 
 export default NavigationApp;
-
-

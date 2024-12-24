@@ -26,19 +26,38 @@ const NavigationApp = () => {
   const [navigateToUrl, setNavigateToUrl] = useState("");
   const [user, setUser] = useState(null);
   const [showToast, setShowToast] = useState(null);
+  const [showSuccessToast, setShowSuccessToast] = useState(null);
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    setUserName(queryParams.get("userName"));
-    setTokenName(queryParams.get("token"));
-    setServiceName(queryParams.get("serviceName"));
+    const expectedParams = ["userName", "token", "serviceName"];
+    const actualParams = Array.from(queryParams.keys());
+    const areParamsCorrect = expectedParams.every((param) => actualParams.includes(param)) && expectedParams.length === actualParams.length;
+    if (!areParamsCorrect) {
+      // Display a toast message
+      setIsLoading(false);
+      setShowToast("Incorrect query parameters");
+      setTimeout(closeToast, 5000);
+      return;
+    }
+    const userName = queryParams.get("userName");
+    const token = queryParams.get("token");
+    const serviceName = queryParams.get("serviceName");
+    if (userName && token && serviceName) {
+      setUserName(userName);
+      setTokenName(token);
+      setServiceName(serviceName);
+    } else {
+      setIsLoading(false);
+      setShowToast("Missing query parameters");
+      setTimeout(closeToast, 5000);
+    }
   }, []);
 
   useEffect(() => {
     if (userName && tokenName) {
       callSsoAuthenticateUserApi();
     }
-    setIsLoading(false);
   }, [userName, tokenName]);
 
   const callSsoAuthenticateUserApi = () => {
@@ -52,6 +71,8 @@ const NavigationApp = () => {
           if (typeof response?.result?.url == "string") {
             setNavigateToUrl(response.result.url);
             callOauthTokenApi(response);
+            setShowSuccessToast(response.message);
+            setTimeout(closeSuccessToast, 2000);
           } else {
             setIsLoading(false);
             setShowToast("Something went wrong");
@@ -99,8 +120,6 @@ const NavigationApp = () => {
       Digit.UserService.setUser(user);
       setEmployeeDetail(user?.info, user?.access_token);
       handleServiceRedirection();
-    } else {
-      setIsLoading(false);
     }
   }, [user]);
 
@@ -124,10 +143,15 @@ const NavigationApp = () => {
     setShowToast(null);
   };
 
+  const closeSuccessToast = () => {
+    setShowSuccessToast(null);
+  };
+
   return (
     <div>
       {isLoading && <Loader />}
       {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={"true"} />}
+      {showSuccessToast && <Toast label={t(showSuccessToast)} onClose={closeSuccessToast} isDleteBtn={"true"} />}
     </div>
   );
 };

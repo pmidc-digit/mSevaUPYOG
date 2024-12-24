@@ -1,14 +1,18 @@
 export const serviceMappings = [
-    {
-      serviceName: "wns-search",
-      path: "wns/search",
-    },
-    {
-      serviceName: "pt-search",
-      path: "pt-mutation/propertySearch",
-    },
-    {
-      serviceName: "tl-search",
-      path: "tradelicence/search",
-    },
-  ];
+  {
+    serviceName: "wns",
+    path: "wns/search",
+  },
+  {
+    serviceName: "pt-mutation",
+    path: "pt-mutation/propertySearch",
+  },
+  {
+    serviceName: "tradelicence",
+    path: "tradelicence/search",
+  },
+  {
+    serviceName: "fire-noc",
+    path: "fire-noc/search",
+  },
+];

@@ -1,3 +1,4 @@
+ALTER TABLE eg_user ADD PRIMARY KEY (id); 
 alter table  eg_user DROP CONSTRAINT IF  EXISTS eg_user_user_name_tenant;
 alter table  eg_user ADD CONSTRAINT  eg_user_user_name_tenant UNIQUE (username, type, tenantid);
 

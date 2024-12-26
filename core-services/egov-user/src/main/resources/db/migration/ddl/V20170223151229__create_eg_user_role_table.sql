@@ -1,3 +1,4 @@
+ALTER TABLE eg_user ADD PRIMARY KEY (id); 
 CREATE TABLE IF NOT EXISTS eg_userrole (
     roleid bigint NOT NULL references eg_role(id),
     userid bigint NOT NULL references eg_user(id)

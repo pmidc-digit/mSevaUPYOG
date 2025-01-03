@@ -539,7 +539,7 @@ const ConnectionDetails = (_props) => {
           <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t(
-              "WS_OWN_DETAIL_GUARDIAN_LABEL"
+              "WS_CONN_HOLDER_COMMON_FATHER_OR_HUSBAND_NAME"
             )}*`}</CardLabel>
             <div className="field">
               <Controller

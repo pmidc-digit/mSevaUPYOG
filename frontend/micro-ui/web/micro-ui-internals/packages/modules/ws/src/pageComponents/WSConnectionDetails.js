@@ -12,14 +12,13 @@ import {constants} from "../constants/constants";
 const createConnectionDetails = () => ({
   water: true,
   sewerage: false,
-
+  //For water
   proposedPipeSize: "",
   proposedTaps: "",
-
-
+  //For sewerage
   proposedToilets: "",
   proposedWaterClosets: "",
-  //
+  //Common for water & sewerage (Confirm once)
   connectionType:"",
   waterSource:"",
   billingType:"",
@@ -254,6 +253,14 @@ const ConnectionDetails = (_props) => {
     }
   }, [isConnectionTypeMetered,billingTypeList]);
 
+  useEffect(() => {
+    console.log("isBillingTypeCustom: ", isBillingTypeCustom);
+    if (!isBillingTypeCustom) {
+      console.log("!isBillingTypeCustom");
+      setValue("billingAmount", "");
+    }
+  }, [isBillingTypeCustom]);
+
   return (
     <div>
       {/* {window.location.href.includes("/ws/new") ?  <div style={titleStyle}>{t("WS_CONNECTION_DETAILS_HEADER_SUB_TEXT_LABEL")}</div> : null} */}
@@ -486,7 +493,7 @@ const ConnectionDetails = (_props) => {
                 <Controller
                   control={control}
                   name="billingAmount"
-                  defaultValue={connectionDetail?.billingAmount}
+                  //defaultValue={connectionDetail?.billingAmount}
                   // rules={{
                   //   validate: (e) => ((parseInt(e) > 0 && e && getPattern("WSOnlyNumbers").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
                   //   required: t("REQUIRED_FIELD"),
@@ -496,12 +503,13 @@ const ConnectionDetails = (_props) => {
                   render={(props) => (
                     <TextInput
                       //type="number"
-                      value={props.value}
+                      value={props.value} //{getValues("billingAmount")}
                       labelStyle={{ marginTop: "unset" }}
                       onBlur={props.onBlur}
                       // autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "proposedTaps"}
                       errorStyle={localFormState.touched.billingAmount && errors?.billingAmount?.message ? true : false}
                       onChange={(e) => {
+                        //setValue("billingAmount",e.target.value);
                         props.onChange(e.target.value);
                         //setFocusIndex({ index: connectionDetail?.key, type: "" });
                       }}
@@ -646,7 +654,7 @@ const ConnectionDetails = (_props) => {
               <CardLabel
                 style={isMobile && isEmployee ? { fontWeight: "700", width: "100%" } : { marginTop: "-5px", fontWeight: "700" }}
                 className="card-label-smaller"
-              >{`${t("WS_PROPOSED_WATER_CLOSETS_LABEL")}*`}</CardLabel>
+              >{`${t("WS_CONN_DETAIL_NO_OF_WATER_CLOSETS")}*`}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -682,7 +690,7 @@ const ConnectionDetails = (_props) => {
               <CardLabel
                 style={isMobile && isEmployee ? { fontWeight: "700", width: "100%" } : { marginTop: "-5px", fontWeight: "700" }}
                 className="card-label-smaller"
-              >{`${t("WS_PROPOSED_WATER_TOILETS_LABEL")}*`}</CardLabel>
+              >{`${t("WS_ADDN_DETAILS_NO_OF_TOILETS")}*`}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}

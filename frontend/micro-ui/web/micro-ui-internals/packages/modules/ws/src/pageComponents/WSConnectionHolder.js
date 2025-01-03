@@ -209,7 +209,7 @@ const reversedOwners= Array.isArray(formData?.cpt?.details?.owners) ? formData?.
               //disable={mobileNumber && !isOpenLinkFlow ? true : false}
               {...{ required: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
             />
-            <CardLabel>{`${t("WS_OWN_DETAIL_GUARDIAN_LABEL")}*`}</CardLabel>
+            <CardLabel>{`${t("WS_CONN_HOLDER_COMMON_FATHER_OR_HUSBAND_NAME")}*`}</CardLabel>
             <TextInput
               t={t}
               type={"text"}

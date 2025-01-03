@@ -2,7 +2,9 @@ import { FormComposer, Toast, Loader, Header } from "@upyog/digit-ui-react-compo
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+//
 import { newConfig } from "../components/config/config";
+import { onSubmit } from "../utils/onSubmitCreateEmployee";
 
 const CreateEmployee = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -73,6 +75,7 @@ const CreateEmployee = () => {
   };
 
   const onFormValueChange = (setValue = true, formData) => {
+    console.log("onFormValueChange: ", formData);
     if (formData?.SelectEmployeePhoneNumber?.mobileNumber) {
       setMobileNumber(formData?.SelectEmployeePhoneNumber?.mobileNumber);
     } else {
@@ -121,77 +124,10 @@ const CreateEmployee = () => {
     }
   };
 
-  const navigateToAcknowledgement = (Employees) => {
-    history.replace("/digit-ui/employee/hrms/response", { Employees, key: "CREATE", action: "CREATE" });
-  };
+  const handleSubmit = (data) => {
+    onSubmit(data, tenantId, setShowToast, history);
+  }; 
 
-  const onSubmit = (data) => {
-    console.log("onSubmit create employee: ", data);
-    if (data.Jurisdictions.filter((juris) => juris.tenantId == tenantId).length == 0) {
-      setShowToast({ key: true, label: "ERR_BASE_TENANT_MANDATORY" });
-      return;
-    }
-    if (
-      !Object.values(
-        data.Jurisdictions.reduce((acc, sum) => {
-          if (sum && sum?.tenantId) {
-            acc[sum.tenantId] = acc[sum.tenantId] ? acc[sum.tenantId] + 1 : 1;
-          }
-          return acc;
-        }, {})
-      ).every((s) => s == 1)
-    ) {
-      setShowToast({ key: true, label: "ERR_INVALID_JURISDICTION" });
-      return;
-    }
-    let roles = data?.Jurisdictions?.map((ele) => {
-      return ele.roles?.map((item) => {
-        item["tenantId"] = ele.boundary;
-        return item;
-      });
-    });
-
-    const mappedroles = [].concat.apply([], roles);
-    let Employees = [
-      {
-        tenantId: tenantId,
-        employeeStatus: "EMPLOYED",
-        assignments: data?.Assignments,
-        code: data?.SelectEmployeeId?.code ? data?.SelectEmployeeId?.code : undefined,
-        dateOfAppointment: new Date(data?.SelectDateofEmployment?.dateOfAppointment).getTime(),
-        employeeType: data?.SelectEmployeeType?.code,
-        jurisdictions: data?.Jurisdictions,
-        user: {
-          mobileNumber: data?.SelectEmployeePhoneNumber?.mobileNumber,
-          name: data?.SelectEmployeeName?.employeeName,
-          correspondenceAddress: data?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress,
-          emailId: data?.SelectEmployeeEmailId?.emailId ? data?.SelectEmployeeEmailId?.emailId : undefined,
-          gender: data?.SelectEmployeeGender?.gender.code,
-          dob: new Date(data?.SelectDateofBirthEmployment?.dob).getTime(),
-          roles: mappedroles,
-          tenantId: tenantId,
-        },
-        serviceHistory: [],
-        education: [],
-        tests: [],
-      },
-    ];
-    /* use customiseCreateFormData hook to make some chnages to the Employee object */
-    Employees = Digit?.Customizations?.HRMS?.customiseCreateFormData ? Digit.Customizations.HRMS.customiseCreateFormData(data, Employees) : Employees;
-
-    if (data?.SelectEmployeeId?.code && data?.SelectEmployeeId?.code?.trim().length > 0) {
-      Digit.HRMSService.search(tenantId, null, { codes: data?.SelectEmployeeId?.code }).then((result, err) => {
-        if (result.Employees.length > 0) {
-          setShowToast({ key: true, label: "ERR_HRMS_USER_EXIST_ID" });
-          return;
-        } else {
-          navigateToAcknowledgement(Employees);
-        }
-      });
-    } else {
-      navigateToAcknowledgement(Employees);
-    }
-  };
   if (isLoading) {
     return <Loader />;
   }
@@ -213,7 +149,7 @@ const CreateEmployee = () => {
         defaultValues={defaultValues}
         heading={t("")}
         config={config}
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
         onFormValueChange={onFormValueChange}
         isDisabled={!canSubmit}
         label={t("HR_COMMON_BUTTON_SUBMIT")}
@@ -225,6 +161,7 @@ const CreateEmployee = () => {
           onClose={() => {
             setShowToast(null);
           }}
+          isDleteBtn={"true"}
         />
       )}
     </div>

@@ -23,7 +23,7 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
   }, [employeeType]);
   const inputs = [
     {
-      label: "HR_GUARDIAN_RELATIONSHIP_LABEL",
+      label: "HR_RELATIONSHIP_LABEL",
       type: "text",
       name: "guardianRelationship",
       validation: {

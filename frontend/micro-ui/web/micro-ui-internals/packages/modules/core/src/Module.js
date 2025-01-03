@@ -1,4 +1,4 @@
-import React from "react";
+import React, { StrictMode } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { Provider } from "react-redux";
 import { BrowserRouter as Router } from "react-router-dom";
@@ -23,19 +23,21 @@ const DigitUIWrapper = ({ stateCode, enabledModules, moduleReducers }) => {
 
   const i18n = getI18n();
   return (
-    <Provider store={getStore(initData, moduleReducers(initData))}>
-      <Router>
-        <Body>
-          <DigitApp
-            initData={initData}
-            stateCode={stateCode}
-            modules={initData?.modules}
-            appTenants={initData.tenants}
-            logoUrl={initData?.stateInfo?.logoUrl}
-          />
-        </Body>
-      </Router>
-    </Provider>
+    <StrictMode>
+      <Provider store={getStore(initData, moduleReducers(initData))}>
+        <Router>
+          <Body>
+            <DigitApp
+              initData={initData}
+              stateCode={stateCode}
+              modules={initData?.modules}
+              appTenants={initData.tenants}
+              logoUrl={initData?.stateInfo?.logoUrl}
+            />
+          </Body>
+        </Router>
+      </Provider>
+    </StrictMode>
   );
 };
 

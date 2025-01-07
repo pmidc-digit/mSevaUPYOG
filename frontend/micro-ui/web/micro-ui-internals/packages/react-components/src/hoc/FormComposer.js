@@ -335,6 +335,11 @@ export const FormComposer = (props) => {
         {props.text && <CardText className="labelStyle">{props.text}</CardText>}
         {formFields}
         {props.childrenAtTheBottom && props.children}
+        {props.secondaryActionLabel && (
+          <div className="primary-label-btn text-align-right" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
+            {props.secondaryActionLabel}
+          </div>
+        )}
         {props.submitInForm && (
           <SubmitBar label={t(props.label)} 
           //style={{ ...props?.buttonStyle }}
@@ -343,11 +348,7 @@ export const FormComposer = (props) => {
          // className="submitButton" 
           />
         )}
-        {props.secondaryActionLabel && (
-          <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
-            {props.secondaryActionLabel}
-          </div>
-        )}
+        
         {!props.submitInForm && props.label && (
           <ActionBar>
             <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />

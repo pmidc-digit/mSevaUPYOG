@@ -32,7 +32,7 @@
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
-
+      margin-top: -23px !important;
       @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
     }
 
@@ -53,13 +53,15 @@
   .select-active {
     @apply relative block w-full h-10 border-2 border-solid border-primary-main;
     height: 2 rem !important;
-    border: 1px solid black;
+    padding: 1.5rem 1rem;
+    border-radius: 8px;
+    border: 1px solid #b4b4b4;
     background-color: white;
 
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
-
+      margin-top: -23px;
       @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
     }
 
@@ -157,7 +159,7 @@
     input[type="text"] {
       width: calc(100% - 32px);
       background-color: transparent;
-
+      margin-top: -23px;
       @apply absolute z-10 w-full h-full outline-none text-text-primary text-form-field pl-sm;
     }
 
@@ -195,5 +197,5 @@
 }
 
 .employee-select-wrap .select img, .employee-select-wrap .select svg{
-  margin-top: 2px;
+  margin-top: -10px;
 }

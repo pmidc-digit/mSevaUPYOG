@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 
 const SubmitBar = forwardRef((props, ref) => {
   return (
+ 
     <button
       ref={ref}
       disabled={props.disabled ? true : false}
@@ -13,7 +14,7 @@ const SubmitBar = forwardRef((props, ref) => {
       onClick={props.onSubmit}
       {... props.form ? {form: props.form} : {}}
     >
-      <header>{props.label}</header>
+      {props.label}
     </button>
   );
 });

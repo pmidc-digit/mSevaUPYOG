@@ -12,7 +12,7 @@ import {
   getCityLocale,
 } from "./utils";
 import { LinkLabel } from "@upyog/digit-ui-react-components";
-import { values } from "lodash";
+
 
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");

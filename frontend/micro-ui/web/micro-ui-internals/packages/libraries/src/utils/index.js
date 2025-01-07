@@ -112,6 +112,8 @@ const routeSubscription = (pathname) => {
 const didEmployeeHasRole = (role) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.UserService.getUser();
+
+
   const rolearray = userInfo?.info?.roles.filter((item) => {
     if (item.code == role && item.tenantId === tenantId) return true;
   });

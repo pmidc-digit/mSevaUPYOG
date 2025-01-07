@@ -1,16 +1,25 @@
+
 .loginFormStyleEmployee {
-  z-index: 10;
-  margin-top: 15px;
+
   .employeeCard {
+   margin-top: 0px;
+ 
     .submit-bar {
       @apply w-full;
+  
       height: 2rem !important;
+     
+      padding-top: 14px;
+      padding-bottom: 14px;
+      padding-left: 32px;
+      padding-right: 32px;
     }
     .employeeCard 
       .submit-bar .submit-bar header
       {
         line-height: 2rem !important;
         font-size: 16px;
+        background-color: #2947A3;
         
       }
   }
@@ -29,7 +38,7 @@
 }
 @screen dt {
   .employeeForgotPassword .employeeCard .field .field-container .component-in-front {
-    border: 1px solid black;
+    
     border-right: none;
     height: 32px !important;
     margin-top: -16px !important;
@@ -40,7 +49,10 @@
  .loginFormStyleEmployee .employeeCard, .banner .bannerCard{
     min-width: 270px !important;
    
-    background-color: #ffffffd6 !important
+    background-color: #ffffffff !important;
+
+
+    
   }
   .employeeForgotPassword .employeeCard, .employeeChangePassword .employeeCard{
     max-width: 270px !important;
@@ -75,6 +87,7 @@
 .submit-bar {
   .submit-bar {
     @apply w-full;
+   
   }
 }
 .loginFormStyleEmployee .bannerHeader p,
@@ -86,26 +99,31 @@
   font-size: 24px;
 }
 .loginFormStyleEmployee .employeeCard .card-label, .employeeForgotPassword .employeeCard .card-label{
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  line-height: 10px !important;
-  color: #0B0C0C;
+  font-weight: 400 !important;
+  font-size: 16px !important;
+  line-height: 21px !important;
+  color: #232323;
   z-index: 10 !important;
+   font-family: "Roboto", serif;;
+
+
+ 
+  
 }
-.banner .bannerHeader {
-  margin-bottom: 20px;
-}
+
 .employeeCard .card-label{
-  font-weight: normal;
+  font-weight: 400;
   font-size: 16px;
-  line-height: 19px;
-  color: #0B0C0C;
+  line-height: 21.7px;
+  color: #232323;
+   font-family: "Roboto", serif;;
 }
 .profile-label-margin{
    margin-top: 10px;
 }
 .loginFormStyleEmployee .primary-label-btn{
   font-size: 12px;
+
 }
 .employeeForgotPassword .employeeCard .card-label-desc {
   font-weight: normal;
@@ -120,10 +138,11 @@
   color: #505a5f;
 }
 .employeeCard .card-label{
-  font-weight: 600 !important;
-  font-size: 14px !important;
-  line-height: 10px !important;
-  color: #0b0c0c;
+  font-weight: 400 !important;
+  font-size: 16px !important;
+  line-height: 21.7px !important;
+  color: #232323;
+  font-family: "Noto Sans,sans-serif";
   
 }
 @media screen and (max-width: 768px) {
@@ -168,10 +187,14 @@
     z-index: 10 !important;
   }
   .loginFormStyleEmployee .employeeCard, .banner .bannerCard{
-    min-width: 270px !important;
+   min-width: 270px !important;
     z-index: 10 !important;
-    background-color: #ffffffd6 !important;
+    background-color: #ffffffff !important;
     margin-top: 0 !important;
+
+
+   
+
   }
   .employeeForgotPassword .employeeCard, .employeeChangePassword .employeeCard{
     max-width: 250px !important;
@@ -188,9 +211,11 @@
   display: none;
 }
 .employee-select-wrap .select{
-height: 2.0rem !important;
-background-color: white !important;
-
+  height: 2.0rem !important;
+  background-color: white !important;
+  padding: 1.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #b4b4b4;
 }
 .employee-select-wrap.login-city-dd {
   .options-card{
@@ -198,9 +223,23 @@ background-color: white !important;
   }
 }
 .banner .bannerCard, .loginFormStyleEmployee .employeeCard{
-  background-color: transparent;
-}
+  background-color: #FFFFFF;
 
+  margin-top: 0px;
+  margin-left: 418px;
+  height: 400px;
+  width: 400px;
+  padding-top: 56px;
+  padding-bottom: 56px;
+  padding-left: 48px;
+  padding-right: 48px;
+  border-radius: 8px;
+}
+.langSelection{
+    width: 30% !important;
+    margin: auto;
+    padding:2rem;
+}
 @media screen and (max-width: 768px){
   .employeeBackbuttonAlign{
     display: block;
@@ -258,3 +297,268 @@ background-color: white !important;
 .employeeForgotPassword{
   z-index: 2;
 }
+
+
+.loginnew{
+  margin-top: -288px;
+  background-color: #FFFFFF;
+}
+.appbar{
+  display: flex;
+  width: 100%; /* Full-width */
+  background-color: #294A97; /* Dark-grey background */
+  overflow: none;
+  box-sizing: border-box;
+}
+.appbar-container{
+  display: flex;
+  width: 1300px;
+  max-width: 100%;
+  flex-direction: row;
+  align-items: flex-start;
+  margin: auto;
+  padding: 0.8rem; 
+  color: #FFF;
+}
+.appbar-box-left{
+  display: flex;
+  width: 50%;
+  margin: auto;
+  padding: 0px;
+}
+.appbar-box-right{
+  display: flex;
+  width: 50%;
+  margin: auto;
+  padding: 0px;
+}
+
+@media screen and (max-width :768px) {
+  .appbar-container{
+    flex-direction: column;
+  }
+  .appbar-box-right{
+    display: none;
+  }
+}
+
+
+
+
+.topHeader{
+  display: flex;
+  width: 100%; /* Full-width */
+  background-color: #FFF; /* Dark-grey background */
+  overflow: none;
+  box-sizing: border-box;
+}
+.topHeader-container{
+  display: flex;
+  width: 1300px;
+  max-width: 100%;
+  flex-direction: row;
+  margin: auto;
+  padding: 2rem 0; 
+  color: #000;
+}
+.topHeader-box-left{
+  width: 30%;
+  display: flex;
+  align-items:flex-start;
+  justify-content: flex-start;
+}
+.topHeader-box-center{
+  width: 30%;
+  display: flex;
+  align-items:center;
+  justify-content: center;
+  font-family: "Inter", serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+
+  ul li{
+    display: inline;
+    padding: 0.75rem 1rem;
+
+  }
+}
+.topHeader-box-right{
+  width: 30%;
+  display: flex;
+  align-items:flex-end;
+  justify-content: flex-end;
+}
+.heroSection{
+  width: 100%;
+  max-height: 508px;
+  margin: auto;
+  padding: 0;
+  background: #294A9733;
+  img{
+    width: 100%;
+    object-fit: cover;
+    opacity: 0.75;
+    max-height: 508px;
+  }
+}
+.loginpic{
+  margin-top: 50px;
+  height: '300px';
+  width: 100%;
+  
+  position: absolute; 
+
+} 
+.loginContainernew{
+  height: 100px;
+  width: 100%;
+  overflow: auto;
+  box-sizing: border-box;
+  /* margin-top: 10px; */
+  display: flex;
+}
+.loginFormStyleEmployeeNew {
+  box-shadow: 0 1px 4px 0 #505a5f60;
+  width :40%;
+  background-color: #fff;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 3rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: absolute;
+  top: -90px;
+}
+@media screen and (max-width : 1024px) and (min-width:468px) {
+  .loginFormStyleEmployeeNew{
+    width: 60%;
+    padding: 2rem;
+
+  }
+}
+@media screen and (max-width : 467px) {
+  .loginFormStyleEmployeeNew{
+    width: 80%;
+    padding: 1rem;
+
+  }
+}
+.employeeCardNew{
+  box-sizing: border-box;
+  margin-bottom: 0px;
+  width: 100%;
+  margin-left: 0px;
+ 
+  background-color: #FFFFFF;
+}
+.headerStyle{
+  font-family: "Roboto", serif;
+  font-weight: 700;
+  text-align: left;
+  font-size: 36px;
+  line-height: 42px;
+}
+.descStyle{
+ font-family: 'Roboto';
+ font-weight: 400;
+ color: #8F8F8F;
+ text-align: left;
+ line-height: 21.09px;
+ padding: 0.5rem 0rem 2rem 0rem;
+}
+.labelStyle{
+  font-family: 'Roboto';
+  font-weight: 400;
+  font-size: 18px;
+  color: #232323;
+  line-height: 21.79px;
+}
+.footer{
+  display: -webkit-box;
+  box-sizing: border-box;
+  width: '100%';
+  position: 'fixed';
+  bottom: 0;
+  background-color:"#152265";
+  text-align:"center";
+  color:white;
+  margin-top: 170px;
+  border:1px solid black
+}
+.footerText{
+  display: 'flex';
+   justify-content: 'center';
+    color:"white" ;
+  background-color: #152265;
+  width: 100%;
+    text-align: center;
+}
+.footerContainer{
+  box-sizing: border-box;
+  height: 200px;
+  background-color: #294A97;
+  width:100%;
+  border-top: 2px solid #294A97;
+    text-align:'center';
+    color: 'white';
+    margin-top: 0px;
+   
+
+}
+.cityCss{
+  border-radius: 8px;
+}
+.fieldNew{
+  border-radius: 8px;
+}
+.submitButtonNew{
+  background-color: #2947A3;
+  height: 3rem;
+  text-align: center;
+  outline: 2px solid transparent;
+    outline-offset: 2px;
+    width: 100%;
+   /* width: 330px; */
+   padding: 0.8rem 0rem;
+    box-sizing: content-box;
+    height: 20px;
+    border-radius: 8px;
+    color: #FFFFFF; 
+}
+
+.body-container-new{
+  background-color: white;
+}
+.background-login{
+  position: absolute;
+    height: 100%;
+    width: 100%;
+  
+}
+.footerLinks{
+  box-sizing: border-box;
+  background-color: #F5FBFF;
+  height: 40px;
+  width:100%;
+  justify-content: space-between;
+  display: -webkit-box;
+  padding-top: 30px ;
+  padding-left: 164px ;
+  padding-right: 164px;
+  padding-bottom: 60px;
+} 
+.footerCont{
+  box-sizing: border-box;
+  height: auto;
+  width:100%;
+  display: -webkit-box;
+  background-color: #294A97;
+  border-top: 2px solid #294A97;
+}
+
+
+ 

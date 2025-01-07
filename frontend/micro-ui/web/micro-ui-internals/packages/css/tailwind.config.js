@@ -1,9 +1,27 @@
 module.exports = {
-  future: {
-    removeDeprecatedGapUtilities: true,
-    purgeLayersByDefault: true,
-  },
-  purge: { enabled: true, content: ["./example/index.html"] },
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "./public/index.html",
+    "../**/**/**/*.{html,js,ts,jsx,tsx}",
+    "../modules/**/*.{html,js,ts,jsx,tsx}",
+    "../modules/*.{html,js,ts,jsx,tsx}",
+    "../modules/**/**/*.{html,js,ts,jsx,tsx}",
+    "../react-components/*.{html,js,ts,jsx,tsx}",
+    "../react-components/**/*.{html,js,ts,jsx,tsx}",
+    "../react-components/**/**/*.{html,js,ts,jsx,tsx}",
+    "../**/*.{html,js,ts,jsx,tsx}",
+    "../modules/**/**/**/*.{html,js,ts,jsx,tsx}",
+        "../modules/core/src/pages/*.{html,js,ts,jsx,tsx}",
+        "../modules/core/src/components/*.{html,js,ts,jsx,tsx}",
+        "../react-components/src/atoms/*.{html,js,ts,jsx,tsx}",
+        "../react-components/src/hoc/*.{html,js,ts,jsx,tsx}"
+
+  ],
+  // future: {
+  //   removeDeprecatedGapUtilities: true,
+  //   purgeLayersByDefault: true,
+  // },
+  //purge: { enabled: true, content: ["./example/index.html"] },
   theme: {
     screens: {
       dt: "780px",
@@ -38,7 +56,8 @@ module.exports = {
       white: "#FFFFFF",
     },
     fontFamily: {
-      sans: ["Roboto", "sans-serif"],
+      sans: ["Noto Sans", "sans-serif"],
+      // sans: ["Roboto", "sans-serif"],
       rc: ['"Roboto Condensed"', "sans-serif"],
     },
     fontSize: {

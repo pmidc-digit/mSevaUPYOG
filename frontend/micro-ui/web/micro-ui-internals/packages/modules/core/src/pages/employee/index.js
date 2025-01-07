@@ -10,9 +10,9 @@ import LanguageSelection from "./LanguageSelection";
 import EmployeeLogin from "./Login";
 import UserProfile from "../citizen/Home/UserProfile";
 import ErrorComponent from "../../components/ErrorComponent";
-import { PrivateRoute } from "@upyog/digit-ui-react-components";
-import NavigationPage from "./NavigationPage";
-
+import {PrivateRoute } from "@upyog/digit-ui-react-components";
+//import NavigationPage from "./NavigationPage";
+import Header from "../../components/Header";
 const userScreensExempted = ["user/profile", "user/error"];
 
 const EmployeeApp = ({
@@ -43,12 +43,13 @@ const EmployeeApp = ({
   }, []);
   sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
   const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf"
-
+  console.log("isUserProfile"+isUserProfile)
   return (
     <div className="employee">
+      
       <Switch>
         <Route path={`${path}/user`}>
-          {isUserProfile && (
+          {isUserProfile  ? (
             <TopBarSideBar
               t={t}
               stateInfo={stateInfo}
@@ -61,7 +62,10 @@ const EmployeeApp = ({
               showSidebar={isUserProfile ? true : false}
               showLanguageChange={!showLanguageChange}
             />
-          )}
+           ) : (
+              <Header />
+           )
+        }
           <div
             className={isUserProfile ? "grounded-container" : "loginContainer"}
             style={
@@ -71,23 +75,7 @@ const EmployeeApp = ({
             }
           >
             <div className="loginnn">
-              {/* <picture>
-              <source media="(min-width: 760px)" src="https://i.postimg.cc/wxnnKGtG/Banner-18-10-22-1.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
-                <source media="(min-width: 400px)" srcset="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
-                </picture> */}
-                 <div className="login-logo-wrapper">
-              <div className="logoNiua">
-                
-                </div>
-                </div>
-              <picture>
-                <source id="backgroung-login" media="(min-width: 950px)" srcset="https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+(1920x1080).jpg" style={{"position":"absolute","height":"100%","width":"100%"}} />
-                  <source media="(min-width: 250px)" srcset="https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+%28500x900%29.jpg" />
-                    <img src="https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+(1920x1080).jpg" alt="imagealttext" style={{"position":"absolute","height":"100%","width":"100%","zIndex":"1","display":window.location.href.includes("user/profile")?"none":""}}/>
-                    </picture>
-              {/* <img class="image" id="main-img" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" /> */}
-              {/* <img class="image" id="main-img" src="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" /> */}
-                {/* <img id="backgroung-login" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" style={{"position":"absolute","height":"100%","width":"100%"}}></img> */}
+            
             <Switch>
               <Route path={`${path}/user/login`}>
                 <EmployeeLogin />
@@ -122,7 +110,8 @@ const EmployeeApp = ({
         <Route path={`${path}/sso`}>
           <Switch>
             <Route path={`${path}/sso/login`}>
-              <NavigationPage />
+              {//  <NavigationPage />
+              } 
             </Route>
           </Switch>
         </Route>

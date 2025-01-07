@@ -3,16 +3,18 @@ import PropTypes from "prop-types";
 
 const SubmitBar = forwardRef((props, ref) => {
   return (
+ 
     <button
       ref={ref}
       disabled={props.disabled ? true : false}
-      className={`${props.disabled ? "submit-bar-disabled" : "submit-bar"} ${props.className ? props.className : ""}`}
+     // className={`${props.disabled ? "submit-bar-disabled" : "submit-bar"} ${props.className ? props.className : ""}`}
       type={props.submit ? "submit" : "button"}
-      style={{ ...props.style }}
+     className={`${props.disabled ? "submit-bar-disabled" :props.className}`}
+      // style={{ ...props.style }}
       onClick={props.onSubmit}
       {... props.form ? {form: props.form} : {}}
     >
-      <header>{props.label}</header>
+      {props.label}
     </button>
   );
 });

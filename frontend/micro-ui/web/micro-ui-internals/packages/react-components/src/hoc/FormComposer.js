@@ -80,7 +80,8 @@ export const FormComposer = (props) => {
               <span className={`component-in-front ${disable && "disabled"}`}>{populators.componentInFront}</span>
             ) : null}
             <TextInput
-              className="field"
+              // className="field"
+               className="fieldNew"
               {...populators}
               inputRef={register(populators.validation)}
               isRequired={isMandatory}
@@ -93,7 +94,8 @@ export const FormComposer = (props) => {
       case "textarea":
         // if (populators.defaultValue) setTimeout(setValue(populators?.name, populators.defaultValue));
         return (
-          <TextArea className="field" name={populators?.name || ""} {...populators} inputRef={register(populators.validation)} disable={disable} />
+          <TextArea 
+          className="field" name={populators?.name || ""} {...populators} inputRef={register(populators.validation)} disable={disable} />
         );
       case "mobileNumber":
         return (
@@ -317,47 +319,36 @@ export const FormComposer = (props) => {
       e.preventDefault();
     }
   };
-
-  const buttonStyle = {
-    next: {
-      backgroundColor: "#3f51b5",
-      color: "white",
-      border: "none",
-      padding: "10px 20px",
-      cursor: "pointer",
-      marginLeft: "10px",
-    },
-    back: {
-      backgroundColor: "transparent",
-      color: "#3f51b5",
-      border: "1px solid #3f51b5",
-      padding: "10px 10px",
-      margin:"10px",
-      cursor: "pointer",
-    },
-  };
-
-  const handleBackClick = () => {
-    props.onBackClick && props.onBackClick(formData);
-  };
-
+  console.log(props)
   return (
     <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)} id={props.formId} className={props.className}>
-      <Card style={getCardStyles()} className={props?.cardClassName ? props.cardClassName : ""}>
+      <Card 
+      // style={getCardStyles()} 
+      // className={props?.cardClassName ? props.cardClassName : ""}
+      >
         {!props.childrenAtTheBottom && props.children}
-        {props.heading && <CardSubHeader style={{ ...props.headingStyle }}> {props.heading} </CardSubHeader>}
-        {props.description && <CardLabelDesc className={"repos"}> {props.description} </CardLabelDesc>}
-        {props.text && <CardText>{props.text}</CardText>}
+        {props.heading && <CardSubHeader 
+        className="headerStyle"
+        // style={{ ...props.headingStyle }}
+        > {props.heading} </CardSubHeader>}
+        {props.description && <CardLabelDesc className="descStyle"> {props.description} </CardLabelDesc>}
+        {props.text && <CardText className="labelStyle">{props.text}</CardText>}
         {formFields}
         {props.childrenAtTheBottom && props.children}
-        {props.submitInForm && (
-          <SubmitBar label={t(props.label)} style={{ ...props?.buttonStyle }} submit="submit" disabled={isDisabled} className="w-full" />
-        )}
         {props.secondaryActionLabel && (
-          <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
+          <div className="primary-label-btn text-align-right" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
             {props.secondaryActionLabel}
           </div>
         )}
+        {props.submitInForm && (
+          <SubmitBar label={t(props.label)} 
+          style={{ ...props?.buttonStyle }}
+           submit="submit" disabled={isDisabled} 
+           className="submitButtonNew"
+          //className="submitButton" 
+          />
+        )}
+        
         {!props.submitInForm && props.label && (
           <ActionBar>
             {props.currentStep > 1 && (

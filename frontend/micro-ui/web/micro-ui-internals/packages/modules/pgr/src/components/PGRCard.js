@@ -9,7 +9,9 @@ const PGRCard = () => {
 
   const allLinks = [
     { text: t("ES_PGR_INBOX"), link: "/digit-ui/employee/pgr/inbox" },
-    { text: t("ES_PGR_NEW_COMPLAINT"), link: "/digit-ui/employee/pgr/complaint/create", accessTo: ["CSR"] },
+    { text: t("ES_PGR_NEW_COMPLAINT"), link: "/digit-ui/employee/pgr/complaint/create" , accessTo: ["CSR"] 
+      // have to change in roleactions
+     },
   ];
 
   if (!Digit.Utils.pgrAccess()) {
@@ -25,10 +27,13 @@ const PGRCard = () => {
     {
       label: t("ES_PGR_NEW_COMPLAINT"),
       link: `/digit-ui/employee/pgr/complaint/create`,
-      role: "CSR"
+       role: "CSR" 
+      // have to change in roleactions
+      //   role: "PGR-ADMIN"
     }
   ]
-
+  
+  console.log("PGR role access",propsForCSR.filter(link => link.role && Digit.Utils.didEmployeeHasRole(link.role) ))
   propsForCSR = propsForCSR.filter(link => link.role && Digit.Utils.didEmployeeHasRole(link.role) );
 
   const propsForModuleCard = {

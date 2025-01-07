@@ -88,6 +88,7 @@
     "*.{js,css,md}": "prettier --write"
   },
   "dependencies": {
+    "@fontsource/noto-sans": "^5.1.0",
     "lodash": "4.17.21",
     "microbundle-crl": "^0.13.11",
     "qrcode": "^1.5.3"

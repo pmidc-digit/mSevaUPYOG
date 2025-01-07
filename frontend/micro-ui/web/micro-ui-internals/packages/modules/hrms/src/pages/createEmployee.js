@@ -6,6 +6,7 @@ import { useHistory } from "react-router-dom";
 import { newConfig } from "../components/config/config";
 import { onSubmit } from "../utils/onSubmitCreateEmployee";
 
+import {useSelector} from "react-redux"
 const CreateEmployee = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [canSubmit, setSubmitValve] = useState(false);
@@ -41,7 +42,9 @@ const CreateEmployee = () => {
     const name = formData?.SelectEmployeeName?.employeeName || "";
     const address = formData?.SelectEmployeeCorrespondenceAddress?.correspondenceAddress || "";
     const validEmail = email.length == 0 ? true : email.match(Digit.Utils.getPattern("Email"));
+    
     return validEmail && name.match(Digit.Utils.getPattern("Name")) && address.match(Digit.Utils.getPattern("Address"));
+
   };
   useEffect(() => {
     if (mobileNumber && mobileNumber.length == 10 && mobileNumber.match(Digit.Utils.getPattern("MobileNo"))) {

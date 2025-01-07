@@ -235,7 +235,11 @@
   padding-right: 48px;
   border-radius: 8px;
 }
-
+.langSelection{
+    width: 30% !important;
+    margin: auto;
+    padding:2rem;
+}
 @media screen and (max-width: 768px){
   .employeeBackbuttonAlign{
     display: block;
@@ -416,16 +420,32 @@
 }
 .loginFormStyleEmployeeNew {
   box-shadow: 0 1px 4px 0 #505a5f60;
-  width: 738px;
+  width :40%;
   background-color: #fff;
   border-radius: 8px;
   align-items: center;
   justify-content: center;
-  min-height: 822px;
+  min-height: 400px;
   padding: 3rem;
   display: flex;
   align-items: flex-start;
   justify-content: center;
+  position: absolute;
+  top: -90px;
+}
+@media screen and (max-width : 1024px) and (min-width:468px) {
+  .loginFormStyleEmployeeNew{
+    width: 60%;
+    padding: 2rem;
+
+  }
+}
+@media screen and (max-width : 467px) {
+  .loginFormStyleEmployeeNew{
+    width: 80%;
+    padding: 1rem;
+
+  }
 }
 .employeeCardNew{
   box-sizing: border-box;
@@ -501,12 +521,9 @@
   text-align: center;
   outline: 2px solid transparent;
     outline-offset: 2px;
-    width: 90%;
+    width: 100%;
    /* width: 330px; */
-    padding-top: 14px;
-    padding-bottom: 14px;
-    padding-left: 32px;
-    padding-right: 32px;
+   padding: 0.8rem 0rem;
     box-sizing: content-box;
     height: 20px;
     border-radius: 8px;

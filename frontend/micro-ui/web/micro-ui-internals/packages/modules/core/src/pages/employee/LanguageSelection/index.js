@@ -26,7 +26,7 @@ const LanguageSelection = () => {
 
   return (
     <Background>
-      <Card className="bannerCard removeBottomMargin">
+      <Card className="langSelection">
        
         <div className="language-selector" style={{ justifyContent: "space-around", marginBottom: "24px", padding: "0 5%" }}>
           {languages.map((language, index) => (

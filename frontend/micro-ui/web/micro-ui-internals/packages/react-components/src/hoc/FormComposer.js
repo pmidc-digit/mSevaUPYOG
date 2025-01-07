@@ -342,10 +342,10 @@ export const FormComposer = (props) => {
         )}
         {props.submitInForm && (
           <SubmitBar label={t(props.label)} 
-          //style={{ ...props?.buttonStyle }}
+          style={{ ...props?.buttonStyle }}
            submit="submit" disabled={isDisabled} 
            className="submitButtonNew"
-         // className="submitButton" 
+          //className="submitButton" 
           />
         )}
         

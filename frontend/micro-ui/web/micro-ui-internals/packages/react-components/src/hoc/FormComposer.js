@@ -320,6 +320,30 @@ export const FormComposer = (props) => {
     }
   };
   console.log(props)
+  
+  const buttonStyle = {
+    next: {
+      backgroundColor: "#3f51b5",
+      color: "white",
+      border: "none",
+      padding: "10px 20px",
+      cursor: "pointer",
+      marginLeft: "10px",
+    },
+    back: {
+      backgroundColor: "transparent",
+      color: "#3f51b5",
+      border: "1px solid #3f51b5",
+      padding: "10px 10px",
+      margin:"10px",
+      cursor: "pointer",
+    },
+  };
+
+  const handleBackClick = () => {
+    props.onBackClick && props.onBackClick(formData);
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)} id={props.formId} className={props.className}>
       <Card 

@@ -275,9 +275,9 @@ export const createPayloadOfWS = async (data) => {
     noOfToilets: null,
     connectionType: data?.ConnectionDetails?.[0]?.connectionType?.code,
     waterSource: data?.ConnectionDetails?.[0]?.waterSource?.code,
-    connectionExecutionDate: data?.ActivationDetails?.connectionExecutionDate,
+    connectionExecutionDate: convertDateToEpoch(data?.ActivationDetails?.connectionExecutionDate),
     meterId:data?.ActivationDetails?.meterId,
-    //,//meterInstallationDate,
+    meterInstallationDate: convertDateToEpoch(data?.ActivationDetails?.meterInstallationDate),
     plumberInfo:
       data?.plumberDetails?.[0]?.detailsProvidedBy?.code === "ULB"
         ? [

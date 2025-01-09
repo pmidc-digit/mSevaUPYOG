@@ -1,6 +1,7 @@
 export const newConfig = [
   {
     head: "Personal Details",
+    stepNumber: 1,
     body: [
       {
         type: "component",
@@ -53,12 +54,13 @@ export const newConfig = [
     ],
   },
   {
-    head: "HR_NEW_EMPLOYEE_FORM_HEADER",
+    head: "HR_PROFESSIONAL_DETAILS_FORM_HEADER",
+    stepNumber: 1,
     body: [
       {
         type: "component",
-        component: "SelectEmployeeType",
-        key: "SelectEmployeeType",
+        component: "SelectEmployeeId",
+        key: "SelectEmployeeId",
         withoutLabel: true,
       },
       {
@@ -69,8 +71,8 @@ export const newConfig = [
       },
       {
         type: "component",
-        component: "SelectEmployeeId",
-        key: "SelectEmployeeId",
+        component: "SelectEmployeeType",
+        key: "SelectEmployeeType",
         withoutLabel: true,
       },
       {
@@ -94,6 +96,7 @@ export const newConfig = [
   },
   {
     head: "HR_JURISDICTION_DETAILS_HEADER",
+    stepNumber: 2,
     body: [
       {
         type: "component",
@@ -107,6 +110,7 @@ export const newConfig = [
 
   {
     head: "HR_ASSIGN_DET_HEADER",
+    stepNumber: 2,
     body: [
       {
         type: "component",

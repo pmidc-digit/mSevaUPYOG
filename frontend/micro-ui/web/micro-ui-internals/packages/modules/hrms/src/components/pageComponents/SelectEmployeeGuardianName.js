@@ -6,7 +6,7 @@ const SelectEmployeeGuardianName = ({ t, config, onSelect, formData = {}, userTy
   const { pathname: url } = useLocation();
   const inputs = [
     {
-      label: "HR_EMP_GUARDIAN_NAME_LABEL",
+      label: "HR_GUARDIAN_NAME_LABEL",
       type: "text",
       name: "employeeGuardianName",
       validation: {

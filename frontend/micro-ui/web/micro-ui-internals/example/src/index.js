@@ -3,6 +3,8 @@ import ReactDOM from "react-dom";
 
 import { initLibraries } from "@upyog/digit-ui-libraries";
 import { PGRReducers } from "@upyog/digit-ui-module-pgr";
+import { HRMSReducers } from "@upyog/digit-ui-module-hrms";
+
 import { PTModule, PTLinks, PTComponents } from "@upyog/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@upyog/digit-ui-module-mcollect";
 // import { TLModule, TLLinks } from "@upyog/digit-ui-module-tl";
@@ -128,6 +130,7 @@ const initDigitUI = () => {
 
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),
+    hrms: HRMSReducers(initData)
   });
 
   window.Digit.Customizations = {

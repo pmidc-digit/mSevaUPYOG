@@ -17,6 +17,7 @@ import SelectEmployeeName from "./components/pageComponents/SelectEmployeeName";
 import SelectEmployeeType from "./components/pageComponents/SelectEmployeeType";
 import EmployeeApp from "./pages";
 import CreateEmployee from "./pages/createEmployee";
+import CreateEmployeeStepForm from "./pages/CreateEmployeeStepForm";
 import EditEmployee from "./pages/EditEmployee/index";
 import Details from "./pages/EmployeeDetails";
 import Inbox from "./pages/Inbox";
@@ -27,9 +28,16 @@ import SelectEmployeeGuardianRelationship from "./components/pageComponents/Sele
 import SelectEmploymentStatus from "./components/pageComponents/SelectEmploymentStatus";
 import HRMSEmployeewiseReport from "./pages/HRMSEmployeewiseReport";
 import SelectULB from "./components/pageComponents/SelectULB";
+import EmployeeDetails from "./components/pageComponents/employeeCreationSubForms/EmployeeDetails";
+import AdministrativeDetails from "./components/pageComponents/employeeCreationSubForms/AdministrativeDetails";
+import Summary from "./components/pageComponents/employeeCreationSubForms/Summary";
+//
+import getRootReducer from "./redux/reducers";
+
+export const HRMSReducers = getRootReducer;
 
 export const HRMSModule = ({ stateCode, userType, tenants }) => {
-  const moduleCode = "HRMS";
+  const moduleCode = "HR";
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
   console.log("Tenants: ", tenants);
@@ -63,6 +71,7 @@ const componentsToRegister = {
   HRMSResponse: Response,
   HREditEmpolyee: EditEmployee,
   HRCreateEmployee: CreateEmployee,
+  HRCreateEmployeeStepForm: CreateEmployeeStepForm,
   HRInbox: Inbox,
   HRMS_INBOX_FILTER: (props) => <InboxFilter {...props} />,
   SelectEmployeeGuardianName,
@@ -70,6 +79,9 @@ const componentsToRegister = {
   SelectEmploymentStatus,
   HRMSEmployeewiseReport,
   SelectULB,
+  EmployeeDetails,
+  AdministrativeDetails,
+  Summary
 };
 
 export const initHRMSComponents = () => {

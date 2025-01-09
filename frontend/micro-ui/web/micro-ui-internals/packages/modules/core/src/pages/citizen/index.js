@@ -25,6 +25,7 @@ import EDCRScrutiny from "./Home/EdcrScrutiny";
 import { newConfig as newConfigEDCR  } from "../../config/edcrConfig";
 import CreateEDCR1 from "./Home/EDCR";
 import EDCRAcknowledgement1 from "./Home/EDCR/EDCRAcknowledgement1";
+import NavigationPage from "./NavigationPage";
 const sidebarHiddenFor = [
   "digit-ui/citizen/register/name",
   "/digit-ui/citizen/select-language",
@@ -182,7 +183,7 @@ const Home = ({
           <Route exact path={`${path}/select-language`}>
             <LanguageSelection />
           </Route>
-          
+
           <Route exact path={`${path}/select-location`}>
             <LocationSelection />
           </Route>
@@ -221,14 +222,14 @@ const Home = ({
             <Search/>
           </Route>
           <Route path={`${path}/payment/verification`}>
-         <QRCode></QRCode>
+            <QRCode></QRCode>
           </Route>
           <Route path={`${path}/challan/details`}>
-         <ChallanQRCode></ChallanQRCode>
+            <ChallanQRCode></ChallanQRCode>
           </Route>
           <Route path={`${path}/acknowledgement/details`}>
-         <AcknowledgementQRCode></AcknowledgementQRCode>
-         </Route>
+            <AcknowledgementQRCode></AcknowledgementQRCode>
+          </Route>
           <Route path={`/digit-ui/citizen/core/edcr/scrutiny`}>
             {/* <EDCRScrutiny config={newConfigEDCR} isSubmitBtnDisable={false}/>
             
@@ -236,8 +237,10 @@ const Home = ({
               <CreateEDCR1/>
           </Route>
           <Route path={`/digit-ui/citizen/core/edcr/scrutiny/acknowledgement`}>
-           
-              <EDCRAcknowledgement1/>
+            <EDCRAcknowledgement1 />
+          </Route>
+          <Route path={`${path}/sso/login`}>
+            <NavigationPage />
           </Route>
           <ErrorBoundary initData={initData}>
             {appRoutes}
@@ -254,13 +257,13 @@ const Home = ({
 
           <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px" }} >|</span>
           <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('https://niua.in/', '_blank').focus();}} >Copyright © 2022 National Institute of Urban Affairs</span>
-          
+
           {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
 
         </div>
         <div className="upyog-copyright-footer-web">
           <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('https://niua.in/', '_blank').focus();}} >Copyright © 2022 National Institute of Urban Affairs</span>
-          </div>
+        </div>
       </div>
     </div>
   );

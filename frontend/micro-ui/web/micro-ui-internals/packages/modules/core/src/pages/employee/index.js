@@ -75,56 +75,52 @@ const EmployeeApp = ({
               <source media="(min-width: 760px)" src="https://i.postimg.cc/wxnnKGtG/Banner-18-10-22-1.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
                 <source media="(min-width: 400px)" srcset="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" style={{"position":"absolute","height":"100%","width":"100%"}}/>
                 </picture> */}
-                 <div className="login-logo-wrapper">
+              <div className="login-logo-wrapper">
               <div className="logoNiua">
                 
                 </div>
-                </div>
+              </div>
               <picture>
                 <source id="backgroung-login" media="(min-width: 950px)" srcset="https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+(1920x1080).jpg" style={{"position":"absolute","height":"100%","width":"100%"}} />
                   <source media="(min-width: 250px)" srcset="https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+%28500x900%29.jpg" />
                     <img src="https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+(1920x1080).jpg" alt="imagealttext" style={{"position":"absolute","height":"100%","width":"100%","zIndex":"1","display":window.location.href.includes("user/profile")?"none":""}}/>
-                    </picture>
+              </picture>
               {/* <img class="image" id="main-img" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" /> */}
               {/* <img class="image" id="main-img" src="https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png" /> */}
-                {/* <img id="backgroung-login" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" style={{"position":"absolute","height":"100%","width":"100%"}}></img> */}
-            <Switch>
-              <Route path={`${path}/user/login`}>
-                <EmployeeLogin />
-              </Route>
-              <Route path={`${path}/user/forgot-password`}>
-                <ForgotPassword />
-              </Route>
-              <Route path={`${path}/user/change-password`}>
-                <ChangePassword />
-              </Route>
-              <PrivateRoute path={`${path}/user/profile`}>
-                <UserProfile stateCode={stateCode} userType={"employee"} cityDetails={cityDetails} />
-              </PrivateRoute>
-              <Route path={`${path}/user/error`}>
-                <ErrorComponent
-                  initData={initData}
-                  goToHome={() => {
-                    history.push("/digit-ui/employee");
-                  }}
-                />
-              </Route>
-              <Route path={`${path}/user/language-selection`}>
-                <LanguageSelection />
-              </Route>
-              <Route>
-                <Redirect to={`${path}/user/language-selection`} />
-              </Route>
-            </Switch>
+              {/* <img id="backgroung-login" src="https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png" style={{"position":"absolute","height":"100%","width":"100%"}}></img> */}
+              <Switch>
+                <Route path={`${path}/user/login`}>
+                  <EmployeeLogin />
+                </Route>
+                <Route path={`${path}/user/forgot-password`}>
+                  <ForgotPassword />
+                </Route>
+                <Route path={`${path}/user/change-password`}>
+                  <ChangePassword />
+                </Route>
+                <PrivateRoute path={`${path}/user/profile`}>
+                  <UserProfile stateCode={stateCode} userType={"employee"} cityDetails={cityDetails} />
+                </PrivateRoute>
+                <Route path={`${path}/user/error`}>
+                  <ErrorComponent
+                    initData={initData}
+                    goToHome={() => {
+                      history.push("/digit-ui/employee");
+                    }}
+                  />
+                </Route>
+                <Route path={`${path}/user/language-selection`}>
+                  <LanguageSelection />
+                </Route>
+                <Route>
+                  <Redirect to={`${path}/user/language-selection`} />
+                </Route>
+              </Switch>
             </div>
           </div>
         </Route>
-        <Route path={`${path}/sso`}>
-          <Switch>
-            <Route path={`${path}/sso/login`}>
-              <NavigationPage />
-            </Route>
-          </Switch>
+        <Route path={`${path}/sso/login`}>
+          <NavigationPage />
         </Route>
         <Route>
           <TopBarSideBar
@@ -163,13 +159,13 @@ const EmployeeApp = ({
 
           <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px" }} >|</span>
           <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('https://niua.in/', '_blank').focus();}} >Copyright © 2022 National Institute of Urban Affairs</span>
-          
-          {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
-        </div>
-        <div className="upyog-copyright-footer-web">
+
+                {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
+              </div>
+              <div className="upyog-copyright-footer-web">
           <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('https://niua.in/', '_blank').focus();}} >Copyright © 2022 National Institute of Urban Affairs</span>
-          </div>
-      </div>
+              </div>
+            </div>
           </div>
         </Route>
         <Route>

@@ -38,7 +38,7 @@ const Header = () => {
             </div>
          </div>
         <div className="heroSection"> 
-            <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"
+            <img src="https://s3-alpha-sig.figma.com/img/edaf/850b/1cace0150346b2e2f5989aaaf63b8e26?Expires=1737331200&Key-Pair-Id=APKAQ4GOSFWCVNEHN3O4&Signature=WYPvQJ9~Ss01sRPmILdD3Vvi910Suin6VisIj5H4usV-NWPfgn9U1C4sG4ULFcRBcuWwsWVBMMhWjoG2aitBdP4sZEreQ8xCWOM-YI-wMbUbQnyQcU7DcvGhesHhEtrlA3DSVJ3glxEERKPtdZrFXw8w1P5cpctl3Ox4efJ7z77XGtyOIN7eEqCzuDg8iRmHCYSEbxD~q0YL7AEeAgqB9Eb0YVYFvJz7FZaoPA3fR94JAZ~Ay9dXo5XsqDO1R8TKX2kM5ADNozJJh2TLsr2CNXtYSpfOmUkbwuUj8t24rP-qvNhEoaJEG7iUYgt2OYuLyEGuliw4I2kRKbH~kRLyEA__"
               alt="banner Image" />
         </div>
     </div>

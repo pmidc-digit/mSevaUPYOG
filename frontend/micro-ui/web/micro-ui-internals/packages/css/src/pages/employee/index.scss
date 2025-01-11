@@ -226,12 +226,13 @@
       align-items: center;
       padding: 20px;
       font-size: 14px;
+      border-left: 4px solid #294A97;
+      border-radius: 0px 10px 10px 0px;
       &.active {
-        color: #a82227 !important;
-
-        border-right: 4px solid #a82227;
+        color: #0D43A7 !important;
+        background-color: #ffffff;
         svg {
-          fill: #a82227 !important;
+          fill: #0D43A7 !important;
         }
       }
       .employee-search-input {
@@ -264,7 +265,7 @@
 
         cursor: pointer;
         svg {
-          fill: #FFF !important;
+          fill: #0D43A7 !important;
         } 
       }
       .search-icon-wrapper {
@@ -622,7 +623,5 @@
 {
 .employee .card-home{
 height: 220px;
-box-shadow: #32325d14 0px 50px 100px -20px, rgb(0 0 0 / 18%) 0px 30px 60px -30px, #0a254038 0px -2px 6px 0px inset;
-border-radius: 12px;
 }
 }

@@ -16,6 +16,8 @@ import {
 } from "@upyog/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
+//
+import Header from "../../../../react-components/src/customComponents/Header"
 
 /* 
 Feature :: Citizen All service screen cards
@@ -83,6 +85,17 @@ const iconSelector = (code) => {
       return <PTIcon className="fill-path-primary-main" />;
   }
 };
+
+const Card = ({ titleKey, content }) => {
+  const { t } = useTranslation();
+  return (
+    <div className="card dashboardCardTypeOne">
+      <header className="dashboardCardTypeOneHeader">{t(titleKey)}</header>
+    </div>
+  );
+};
+
+
 const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => {
   const paymentModule = modules.filter(({ code }) => code === "Payment")[0];
   const moduleArr = modules.filter(({ code }) => code !== "Payment");
@@ -131,15 +144,25 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
 };
 
 const EmployeeHome = ({ modules }) => {
-  console.log("modules: ",modules)
+  const { t } = useTranslation();
+  //console.log("modules: ",modules)
   if(window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM",{})
   return (
     <div className="employee-app-container">
-      <div className="ground-container moduleCardWrapper gridModuleWrapper">
-        {modules.map(({ code }, index) => {
-          const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
-          return <Card key={index} />;
-        })}
+      <div class="grid grid-cols-3 gap-6">
+        <Card titleKey="APPLICATION_STATUS_HEADER" content="<p>Content for card 1</p><p>More content for card 1</p>" />
+        <Card titleKey="NOTIFICATIONS_HEADER" content="<p>Content for card 2</p><p>More content for card 2</p>" />
+        <Card titleKey="EVENTS_HEADER" content="<p>Content for card 3</p><p>More content for card 3</p>" />
+      </div>
+      <br></br>
+      <div>
+        <Header>{t("QUICK_SERVICES_HEADER")}</Header>
+        <div className="ground-container moduleCardWrapper gridModuleWrapper">
+          {modules.map(({ code }, index) => {
+            const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
+            return <Card key={index} />;
+          })}
+        </div>
       </div>
     </div>
   );

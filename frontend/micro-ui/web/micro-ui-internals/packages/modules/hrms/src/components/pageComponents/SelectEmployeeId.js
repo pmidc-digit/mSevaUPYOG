@@ -11,8 +11,10 @@ const SelectEmployeeId = ({ t, config, onSelect, formData = {}, userType, regist
       type: "text",
       name: "code",
       validation: {
+        isRequired: true,
         title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
       },
+      isMandatory: true,
     },
   ];
 

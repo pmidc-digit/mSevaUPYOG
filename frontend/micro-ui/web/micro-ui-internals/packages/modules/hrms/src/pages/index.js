@@ -39,8 +39,8 @@ const EmployeeApp = ({ path, url, userType }) => {
               <Inbox parentRoute={path} businessService="hrms" filterComponent="HRMS_INBOX_FILTER" initialStates={inboxInitialState} isInbox={true} />
             )}
           />
-          <PrivateRoute path={`${path}/create`} component={() => <CreateEmployee />} />
-          <PrivateRoute path={`${path}/create-step-form`} component={() => <CreateEmployeeStepForm />} />
+          <PrivateRoute path={`${path}/create1`} component={() => <CreateEmployee />} />
+          <PrivateRoute path={`${path}/create`} component={() => <CreateEmployeeStepForm />} />
           <PrivateRoute path={`${path}/response`} component={(props) => <HRMSResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/details/:tenantId/:id`} component={() => <HRMSDetails />} />
           <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />

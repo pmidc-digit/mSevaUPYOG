@@ -27,9 +27,9 @@ const SelectEmployeeGuardianRelationship = ({ t, config, onSelect, formData = {}
       type: "text",
       name: "guardianRelationship",
       validation: {
-        isRequired: true,
+        //isRequired: true,
       },
-      isMandatory: true,
+      //isMandatory: true,
     },
   ];
 

@@ -18,8 +18,10 @@
       .submit-bar .submit-bar header
       {
         line-height: 2rem !important;
-        font-size: 16px;
+        font-size: 16px; 
         background-color: #2947A3;
+        border-radius: 8px;
+        align-content: center;
         
       }
   }
@@ -50,6 +52,7 @@
     min-width: 270px !important;
    
     background-color: #ffffffff !important;
+    
 
 
     
@@ -104,21 +107,19 @@
   line-height: 21px !important;
   color: #232323;
   z-index: 10 !important;
-  font-family: "Noto sans, sans-serif";
+   font-family: "Roboto", serif;;
 
 
  
   
 }
-.banner .bannerHeader {
-  margin-bottom: 20px;
-}
+
 .employeeCard .card-label{
   font-weight: 400;
   font-size: 16px;
   line-height: 21.7px;
   color: #232323;
-  font-family: "Noto sans, sans-serif";
+   font-family: "Roboto", serif;;
 }
 .profile-label-margin{
    margin-top: 10px;
@@ -213,9 +214,11 @@
   display: none;
 }
 .employee-select-wrap .select{
-height: 2.0rem !important;
-background-color: white !important;
-
+  height: 2.0rem !important;
+  background-color: white !important;
+  padding: 1.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #b4b4b4;
 }
 .employee-select-wrap.login-city-dd {
   .options-card{
@@ -234,6 +237,12 @@ background-color: white !important;
   padding-left: 48px;
   padding-right: 48px;
   border-radius: 8px;
+}
+
+.langSelection{
+    width: 30% !important;
+  margin: 0px;
+    padding:2rem;
 }
 
 @media screen and (max-width: 768px){
@@ -295,21 +304,108 @@ background-color: white !important;
 }
 
 
-.employeenew{
- 
- 
-
-}
 .loginnew{
- 
+  margin-top: -288px;
   background-color: #FFFFFF;
 }
 .appbar{
+  display: flex;
   width: 100%; /* Full-width */
-  background-color: blue; /* Dark-grey background */
-  overflow: auto;
+  background-color: #294A97; /* Dark-grey background */
+  overflow: none;
   box-sizing: border-box;
- height: 50px; 
+}
+.appbar-container{
+  display: flex;
+  width: 1300px;
+  max-width: 100%;
+  flex-direction: row;
+  align-items: flex-start;
+  margin: auto;
+  padding: 0.8rem; 
+  color: #FFF;
+}
+.appbar-box-left{
+  display: flex;
+  width: 50%;
+  margin: auto;
+  padding: 0px;
+}
+.appbar-box-right{
+  display: flex;
+  width: 50%;
+  margin: auto;
+  padding: 0px;
+}
+
+@media screen and (max-width :768px) {
+  .appbar-container{
+    flex-direction: column;
+  }
+  .appbar-box-right{
+    display: none;
+  }
+}
+
+
+
+
+.topHeader{
+  display: flex;
+  width: 100%; /* Full-width */
+  background-color: #FFF; /* Dark-grey background */
+  overflow: none;
+  box-sizing: border-box;
+}
+.topHeader-container{
+  display: flex;
+  width: 1300px;
+  max-width: 100%;
+  flex-direction: row;
+  margin: auto;
+  padding: 2rem 0; 
+  color: #000;
+}
+.topHeader-box-left{
+  width: 30%;
+  display: flex;
+  align-items:flex-start;
+  justify-content: flex-start;
+}
+.topHeader-box-center{
+  width: 30%;
+  display: flex;
+  align-items:center;
+  justify-content: center;
+  font-family: "Inter", serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+
+  ul li{
+    display: inline;
+    padding: 0.75rem 1rem;
+
+  }
+}
+.topHeader-box-right{
+  width: 30%;
+  display: flex;
+  align-items:flex-end;
+  justify-content: flex-end;
+}
+.heroSection{
+  width: 100%;
+  max-height: 508px;
+  margin: auto;
+  padding: 0;
+  background: #294A9733;
+  img{
+    width: 100%;
+    object-fit: cover;
+    opacity: 0.75;
+    max-height: 508px;
+  }
 }
 .loginpic{
   margin-top: 50px;
@@ -324,38 +420,60 @@ background-color: white !important;
   width: 100%;
   overflow: auto;
   box-sizing: border-box;
-  margin-top: 10px;
+  /* margin-top: 10px; */
+  display: flex;
 }
 .loginFormStyleEmployeeNew {
-  box-sizing: border-box;
-  box-shadow: 2px 2px 2px #505a5f;
- padding: 20px;
- background-color: #FFFFFF;
- border-radius: 8px;
-margin-top: 50px;
+  box-shadow: 0 1px 4px 0 #505a5f60;
+  width :40%;
+  background-color: #fff;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  padding: 3rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  position: absolute;
+  top: -90px;
+}
+@media screen and (max-width : 1024px) and (min-width:468px) {
+  .loginFormStyleEmployeeNew{
+    width: 60%;
+    padding: 2rem;
 
+  }
+}
+@media screen and (max-width : 467px) {
+  .loginFormStyleEmployeeNew{
+    width: 80%;
+    padding: 1rem;
+
+  }
 }
 .employeeCardNew{
   box-sizing: border-box;
   margin-bottom: 0px;
-  width: 400px;
+  width: 100%;
   margin-left: 0px;
  
   background-color: #FFFFFF;
 }
 .headerStyle{
-  font-family: 'Roboto';
-  font-weight: 600;
+  font-family: "Roboto", serif;
+  font-weight: 700;
   text-align: left;
-  font-size: 24px;
+  font-size: 36px;
   line-height: 42px;
 }
 .descStyle{
  font-family: 'Roboto';
- font-weight: 300;
+ font-weight: 400;
  color: #8F8F8F;
  text-align: left;
  line-height: 21.09px;
+ padding: 0.5rem 0rem 2rem 0rem;
 }
 .labelStyle{
   font-family: 'Roboto';
@@ -404,20 +522,17 @@ margin-top: 50px;
 }
 .submitButtonNew{
   background-color: #2947A3;
-  height: 2.5rem;
+  height: 3rem;
   text-align: center;
   outline: 2px solid transparent;
     outline-offset: 2px;
-    max-width: 100%;
-    width: 330px;
-    padding-top: 14px;
-    padding-bottom: 14px;
-    padding-left: 32px;
-    padding-right: 32px;
+    width: 100%;
+   /* width: 330px; */
+   padding: 0.8rem 0rem;
     box-sizing: content-box;
     height: 20px;
     border-radius: 8px;
-    color: white; 
+    color: #FFFFFF; 
 }
 
 .body-container-new{
@@ -449,6 +564,7 @@ margin-top: 50px;
   background-color: #294A97;
   border-top: 2px solid #294A97;
 }
+
 
 
  

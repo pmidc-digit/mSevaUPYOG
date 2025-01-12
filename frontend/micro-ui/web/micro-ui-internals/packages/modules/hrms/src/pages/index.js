@@ -18,6 +18,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const HRMSDetails = Digit?.ComponentRegistryService?.getComponent("HRMSDetails");
   const Inbox = Digit?.ComponentRegistryService?.getComponent("HRInbox");
   const CreateEmployee = Digit?.ComponentRegistryService?.getComponent("HRCreateEmployee");
+  const CreateEmployeeStepForm= Digit?.ComponentRegistryService?.getComponent("HRCreateEmployeeStepForm");
   const EditEmpolyee = Digit?.ComponentRegistryService?.getComponent("HREditEmpolyee");
   const HRMSEmployeewiseReport = Digit?.ComponentRegistryService?.getComponent("HRMSEmployeewiseReport");
 
@@ -28,7 +29,7 @@ const EmployeeApp = ({ path, url, userType }) => {
         <div className="ground-container">
           <p className="breadcrumb" style={{ marginLeft: mobileView ? "1vw" : "15px" }}>
             <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
-              {t("HR_COMMON_BUTTON_HOME")}
+              {t("ES_COMMON_HOME")}
             </Link>{" "}
             / <span>{location.pathname === "/digit-ui/employee/hrms/inbox" ? t("HR_COMMON_HEADER") : t("HR_COMMON_HEADER")}</span>
           </p>
@@ -39,6 +40,7 @@ const EmployeeApp = ({ path, url, userType }) => {
             )}
           />
           <PrivateRoute path={`${path}/create`} component={() => <CreateEmployee />} />
+          <PrivateRoute path={`${path}/create-step-form`} component={() => <CreateEmployeeStepForm />} />
           <PrivateRoute path={`${path}/response`} component={(props) => <HRMSResponse {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/details/:tenantId/:id`} component={() => <HRMSDetails />} />
           <PrivateRoute path={`${path}/edit/:tenantId/:id`} component={() => <EditEmpolyee />} />

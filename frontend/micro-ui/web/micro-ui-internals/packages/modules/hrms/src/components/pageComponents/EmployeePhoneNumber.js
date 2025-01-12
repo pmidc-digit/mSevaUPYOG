@@ -59,7 +59,7 @@ const SelectEmployeePhoneNumber = ({ t, config, onSelect, formData = {}, userTyp
                   background: "none",
                   justifyContent: "start"
                 }}>
-                  {t("HR_MOBILE_NO_CHECK")}
+                  {/* {t("ERR_HRMS_INVALID_MOB_NO")} */}
                 </span>}</div>
               </div>
             </div>

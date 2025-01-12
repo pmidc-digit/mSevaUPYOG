@@ -111,6 +111,7 @@ const Urls = {
     create: "/egov-hrms/employees/_create",
     update: "/egov-hrms/employees/_update",
     employee_wise_report: "/report/rainmaker-hrms/_get",
+    sso_authenticate_user:"/egov-hrms/employees/sso/authenticate-user"
   },
   tl: {
     create: "/tl-services/v1/_create",

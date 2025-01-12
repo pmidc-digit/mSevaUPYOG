@@ -305,7 +305,7 @@ const ConnectionDetails = (_props) => {
                 {connectionDetail?.serviceName !== "WATER" && (
                     <div>
                         <LabelFieldPair>
-                            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t("WS_PROPOSED_WATER_CLOSETS_LABEL")}*`}</CardLabel>
+                            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t("WS_CONN_DETAIL_NO_OF_WATER_CLOSETS")}*`}</CardLabel>
                             <div className="field">
                                 <Controller
                                     control={control}
@@ -333,7 +333,7 @@ const ConnectionDetails = (_props) => {
                         </LabelFieldPair>
                         <CardLabelError style={errorStyle}>{localFormState.touched.proposedWaterClosets ? errors?.proposedWaterClosets?.message : ""}</CardLabelError>
                         <LabelFieldPair>
-                            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t("WS_PROPOSED_WATER_TOILETS_LABEL")}*`}</CardLabel>
+                            <CardLabel style={isMobile && isEmployee ? {fontWeight: "700", width:"100%"} : { marginTop: "-5px", fontWeight: "700" }} className="card-label-smaller">{`${t("WS_ADDN_DETAILS_NO_OF_TOILETS")}*`}</CardLabel>
                             <div className="field">
                                 <Controller
                                     control={control}

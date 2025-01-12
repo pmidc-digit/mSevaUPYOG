@@ -16,6 +16,8 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
         isCurrentAssignment: false,
         department: null,
         designation: null,
+        reportingTo: "",
+        isHOD: false,
       },
     ]
   );
@@ -33,6 +35,8 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
         isCurrentAssignment: false,
         department: null,
         designation: null,
+        reportingTo: "",
+        isHOD: false
       },
     ]);
   };
@@ -59,6 +63,8 @@ const Assignments = ({ t, config, onSelect, userType, formData }) => {
           isCurrentAssignment: assignment?.isCurrentAssignment,
           department: assignment?.department?.code,
           designation: assignment?.designation?.code,
+          reportingTo: assignment?.reportingTo,
+          isHOD: assignment?.isHOD
         })
         : [];
     });
@@ -173,6 +179,11 @@ function Assignment({
       setCurrentAssiginmentDate(null);
     }
   };
+
+  const handleReportingToChange=(value)=>{
+    setassignments((pre) => pre.map((item) => (item.key === assignment.key ? { ...item, reportingTo: value } : item)));
+  }
+
   const onIsHODchange = (value) => {
     setassignments((pre) => pre.map((item) => (item.key === assignment.key ? { ...item, isHOD: value } : item)));
   };
@@ -275,12 +286,12 @@ function Assignment({
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller"}>{`${t("HR_REPORTING_TO_LABEL")}`}</CardLabel>
+          <CardLabel className={assignment?.id ? "card-label-smaller disabled" : "card-label-smaller"}>{`${t("HR_REP_TO_LABEL")}`}</CardLabel>
 
           <TextInput
           // key={input.name}
-          // value={formData && formData[config.key] ? formData[config.key][input.name] : undefined}
-          // onChange={(e) => setValue(e.target.value, input.name)}
+          value={assignment?.reportingTo}
+          onChange={(e) => handleReportingToChange(e.target.value)}
           // disable={false}
           // defaultValue={undefined}
           // {...input.validation}
@@ -293,9 +304,9 @@ function Assignment({
           </CardLabel>
           <div className="field">
             <CheckBox
-              //onChange={(e) => onAssignmentChange(e.target.checked)}
-              //checked={assignment?.isCurrentAssignment}
-              label={t("HR_HEAD_OF_DEPARTMENT_SWITCH_LABEL")}
+              onChange={(e) => onIsHODchange(e.target.checked)}
+              checked={assignment?.isHOD}
+              label={t("HR_HOD_SWITCH_LABEL")}
             />
           </div>
         </LabelFieldPair>

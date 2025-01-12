@@ -68,8 +68,13 @@
   }
 
 .submit-bar header{
-  height: 2rem !important;
+  height: 55px !important;
   line-height: 2rem !important;
+  background-color: #2947A3;
+  border-radius: 8px;
+  border: transparent;
+  align-content: center;
+
 } 
 
   .loginContainer {
@@ -196,9 +201,10 @@
     white-space: nowrap;
     height: calc(100vh - 36px);
     padding-bottom: 5rem;
-    background-image: url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-green-card.png), url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-red-card.png);
+    background: linear-gradient(to bottom right, #3765CA, #294A97);
+   /* background-image: url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-green-card.png), url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-red-card.png);
     background-blend-mode: lighten;
-    background-size: cover;
+    background-size: cover;*/
 
 
     .actions {
@@ -256,13 +262,15 @@
       }
 
       &:hover {
-        color: #a82227 !important;
-        background-color: #486480;
+        color: #0D43A7 !important;
+        background-color: #FFF;
+        border-radius: 8px;
+        padding: 1rem 0.2rem;
 
         cursor: pointer;
         svg {
-          fill: #a82227 !important;
-        }
+          fill: #FFF !important;
+        } 
       }
       .search-icon-wrapper {
         svg {
@@ -295,7 +303,7 @@
         fill: #ffffff;
       }
       &:hover {
-        color: #fe7a51 !important;
+       /* color: #fe7a51 !important;
         background-color: #486480;
         cursor: pointer;
         svg {
@@ -303,12 +311,12 @@
         }
       }
       &.active {
-        color: #a82227 !important;
+        /* color: #a82227 !important;
 
         border-right: 4px solid #a82227;
         svg {
           fill: #a82227 !important;
-        }
+        } */
       }
     }
     span {
@@ -619,7 +627,7 @@
 {
 .employee .card-home{
 height: 220px;
-box-shadow: #32325d14 0px 50px 100px -20px, rgb(0 0 0 / 18%) 0px 30px 60px -30px, #0a254038 0px -2px 6px 0px inset;
+
 border-radius: 12px;
 }
 }

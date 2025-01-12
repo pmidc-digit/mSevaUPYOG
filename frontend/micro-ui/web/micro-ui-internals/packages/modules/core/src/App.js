@@ -81,3 +81,4 @@ export const DigitApp = ({ stateCode, modules, appTenants, logoUrl, initData }) 
     </Switch>
   );
 };
+

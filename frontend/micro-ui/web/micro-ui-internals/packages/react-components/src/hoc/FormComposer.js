@@ -320,6 +320,30 @@ export const FormComposer = (props) => {
     }
   };
   console.log(props)
+  
+  const buttonStyle = {
+    next: {
+      backgroundColor: "#3f51b5",
+      color: "white",
+      border: "none",
+      padding: "10px 20px",
+      cursor: "pointer",
+      marginLeft: "10px",
+    },
+    back: {
+      backgroundColor: "transparent",
+      color: "#3f51b5",
+      border: "1px solid #3f51b5",
+      padding: "10px 10px",
+      margin:"10px",
+      cursor: "pointer",
+    },
+  };
+
+  const handleBackClick = () => {
+    props.onBackClick && props.onBackClick(formData);
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)} id={props.formId} className={props.className}>
       <Card 
@@ -335,21 +359,29 @@ export const FormComposer = (props) => {
         {props.text && <CardText className="labelStyle">{props.text}</CardText>}
         {formFields}
         {props.childrenAtTheBottom && props.children}
-        {props.submitInForm && (
-          <SubmitBar label={t(props.label)} 
-          //style={{ ...props?.buttonStyle }}
-           submit="submit" disabled={isDisabled} 
-           className="submitButtonNew"
-         // className="submitButton" 
-          />
-        )}
         {props.secondaryActionLabel && (
-          <div className="primary-label-btn" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
+          <div className="primary-label-btn text-align-right" style={{ margin: "20px auto 0 auto" }} onClick={onSecondayActionClick}>
             {props.secondaryActionLabel}
           </div>
         )}
+        {props.submitInForm && (
+          <SubmitBar label={t(props.label)} 
+          style={{ ...props?.buttonStyle }}
+           submit="submit" disabled={isDisabled} 
+           className="submitButtonNew"
+          //className="submitButton" 
+          />
+        )}
+        
         {!props.submitInForm && props.label && (
           <ActionBar>
+            {props.currentStep > 1 && (
+              <button style={buttonStyle.back} 
+               onClick={handleBackClick}
+              >
+                {t("COMMON_BACK")}
+              </button>
+            )}
             <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />
             {props.onSkip && props.showSkip && <LinkButton style={props?.skipStyle} label={t(`CS_SKIP_CONTINUE`)} onClick={props.onSkip} />}
           </ActionBar>

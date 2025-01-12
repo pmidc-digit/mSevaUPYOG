@@ -41,6 +41,16 @@ const HrmsService = {
       userService: true,
       params: { tenantId },
     }),
+   ssoAuthenticateUser: (data)=>
+    Request({
+      url: Urls.hrms.sso_authenticate_user,
+      method: "POST",
+      data: data
+      //useCache: false,
+      // auth: true,
+      // userService: true,
+      // params: { tenantId },
+    }),
 };
 
 export default HrmsService;

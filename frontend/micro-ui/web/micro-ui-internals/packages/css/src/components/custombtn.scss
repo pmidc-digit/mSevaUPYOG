@@ -3,9 +3,14 @@
   margin: 0px 4.65% 0px 0px;
   height: 30px;
   line-height: 30px;
+  border: transparent;
+  background-color: transparent;
 }
-
+ 
 .customBtn-selected {
   @extend .customBtn;
   @apply bg-primary-main text-white font-medium;
+  background-color: #2947A3;
+  border:0px solid;
 }
+ 

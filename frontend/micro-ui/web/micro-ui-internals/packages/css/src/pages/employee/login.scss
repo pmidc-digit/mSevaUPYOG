@@ -18,8 +18,10 @@
       .submit-bar .submit-bar header
       {
         line-height: 2rem !important;
-        font-size: 16px;
+        font-size: 16px; 
         background-color: #2947A3;
+        border-radius: 8px;
+        align-content: center;
         
       }
   }
@@ -50,6 +52,7 @@
     min-width: 270px !important;
    
     background-color: #ffffffff !important;
+    
 
 
     
@@ -235,11 +238,13 @@
   padding-right: 48px;
   border-radius: 8px;
 }
+
 .langSelection{
     width: 30% !important;
-    margin: auto;
+  margin: 0px;
     padding:2rem;
 }
+
 @media screen and (max-width: 768px){
   .employeeBackbuttonAlign{
     display: block;
@@ -559,6 +564,7 @@
   background-color: #294A97;
   border-top: 2px solid #294A97;
 }
+
 
 
  

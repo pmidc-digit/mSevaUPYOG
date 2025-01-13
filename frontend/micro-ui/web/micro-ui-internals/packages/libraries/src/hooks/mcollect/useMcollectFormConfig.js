@@ -16,7 +16,6 @@ const useMcollectFormConfig = {
               moduleDetails: [
                 {
                    moduleName: "mCollect",
-                  //moduleName: "MCollect",
                   masterDetails: [
                     {
                       name: "CreateFieldsConfig",

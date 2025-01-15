@@ -1,8 +1,6 @@
 import React from "react";
 
 import {
-  PGRModule,
-  PGRLinks,
   initPGRComponents,
   PGRReducers,
 } from "@upyog/digit-ui-module-pgr";
@@ -84,8 +82,6 @@ window.Digit.ComponentRegistryService.setupRegistry({
   PTRModule,
   PTRLinks,
   ...PTRComponents,
-  PGRModule,
-  PGRLinks,
 });
 initPGRComponents();
 initFSMComponents();
@@ -102,7 +98,6 @@ initCommonPTComponents();
 initBillsComponents();
 // initReportsComponents();
 initCustomisationComponents();
-initCommonPTComponents();
 
 const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),

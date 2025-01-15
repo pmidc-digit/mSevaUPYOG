@@ -14,6 +14,7 @@ import {PrivateRoute } from "@upyog/digit-ui-react-components";
 //import NavigationPage from "./NavigationPage";
 import Header from "../../components/Header";
 import FAQ from "../../FAQ";
+import Footer from "../../components/Footer";
 const userScreensExempted = ["user/profile", "user/error"];
 
 const EmployeeApp = ({
@@ -73,7 +74,8 @@ const EmployeeApp = ({
             style={
               isUserProfile
                 ? { padding: 0, paddingTop: "80px", marginLeft: mobileView ? "" : "64px" }
-                : { "--banner-url": `url(${stateInfo?.bannerUrl})`, padding: "0px" }
+                : { "--banner-url": `url(${stateInfo?.bannerUrl})`, padding: "0px" ,
+              }
             }
           >
             <div className="loginnn">
@@ -108,6 +110,9 @@ const EmployeeApp = ({
             </Switch>
             </div>
           </div>
+
+          <div className="footer"> <Footer/></div>
+         
         </Route>
         <Route path={`${path}/sso`}>
           <Switch>

@@ -1,12 +1,13 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Loader } from "@upyog/digit-ui-react-components"
-
+import { Redirect, Route, Switch, useLocation, useRouteMatch, useHistory } from "react-router-dom";
 const Header = () => {
   const { data: storeData, isLoading } = Digit.Hooks.useStore.getInitData();
+  const { path } = useRouteMatch();
   const { stateInfo } = storeData || {};
   const { t } = useTranslation()
-
+ console.log("header path",path)
   if (isLoading) return <Loader/>;
 
   return (
@@ -28,8 +29,9 @@ const Header = () => {
                   <ul>
                     <li>Home</li>
                     <li>Quick Pay</li>
-                    <li>FAQ</li>
+                   
                     <li>Contact</li>
+                    <li><a href={`/digit-ui/faqss`} >FAQ</a></li>
                   </ul>
               </div>
               <div className="topHeader-box-right">

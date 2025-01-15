@@ -25,6 +25,8 @@ import EDCRScrutiny from "./Home/EdcrScrutiny";
 import { newConfig as newConfigEDCR  } from "../../config/edcrConfig";
 import CreateEDCR1 from "./Home/EDCR";
 import EDCRAcknowledgement1 from "./Home/EDCR/EDCRAcknowledgement1";
+import FAQ from "../../FAQ";
+import FAQS from "../citizen/FAQs/FAQs";
 const sidebarHiddenFor = [
   "digit-ui/citizen/register/name",
   "/digit-ui/citizen/select-language",
@@ -239,6 +241,11 @@ const Home = ({
            
               <EDCRAcknowledgement1/>
           </Route>
+
+          <Route path={`${path}/faqss`}>
+             <FAQ />
+          </Route>
+      
           <ErrorBoundary initData={initData}>
             {appRoutes}
             {ModuleLevelLinkHomePages}

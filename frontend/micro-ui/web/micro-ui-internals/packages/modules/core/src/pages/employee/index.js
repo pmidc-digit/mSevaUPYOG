@@ -13,6 +13,7 @@ import ErrorComponent from "../../components/ErrorComponent";
 import {PrivateRoute } from "@upyog/digit-ui-react-components";
 //import NavigationPage from "./NavigationPage";
 import Header from "../../components/Header";
+import FAQ from "../../FAQ";
 const userScreensExempted = ["user/profile", "user/error"];
 
 const EmployeeApp = ({
@@ -44,6 +45,7 @@ const EmployeeApp = ({
   sourceUrl = "https://s3.ap-south-1.amazonaws.com/egov-qa-assets";
   const pdfUrl = "https://pg-egov-assets.s3.ap-south-1.amazonaws.com/Upyog+Code+and+Copyright+License_v1.pdf"
   console.log("isUserProfile"+isUserProfile)
+  console.log("employee index path",path)
   return (
     <div className="employee">
       
@@ -115,6 +117,9 @@ const EmployeeApp = ({
             </Route>
           </Switch>
         </Route>
+        <Route path={`/digit-ui/faqss`}>
+             <FAQ />
+          </Route> 
         <Route>
           <TopBarSideBar
             t={t}

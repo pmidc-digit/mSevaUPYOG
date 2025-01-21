@@ -114,7 +114,7 @@ const EmployeeApp = ({
           <div className="footer"> <Footer/></div>
          
         </Route>
-        <Route path={`${path}/sso/login}>
+        <Route path={`${path}/sso/login`}>
                 <NavigationPage />
         </Route>
         <Route path={`/digit-ui/faqss`}>

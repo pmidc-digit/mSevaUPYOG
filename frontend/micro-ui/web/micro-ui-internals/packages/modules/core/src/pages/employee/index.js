@@ -11,7 +11,7 @@ import EmployeeLogin from "./Login";
 import UserProfile from "../citizen/Home/UserProfile";
 import ErrorComponent from "../../components/ErrorComponent";
 import {PrivateRoute } from "@upyog/digit-ui-react-components";
-//import NavigationPage from "./NavigationPage";
+import NavigationPage from "./NavigationPage";
 import Header from "../../components/Header";
 import FAQ from "../../FAQ";
 import Footer from "../../components/Footer";
@@ -114,13 +114,8 @@ const EmployeeApp = ({
           <div className="footer"> <Footer/></div>
          
         </Route>
-        <Route path={`${path}/sso`}>
-          <Switch>
-            <Route path={`${path}/sso/login`}>
-              {//  <NavigationPage />
-              } 
-            </Route>
-          </Switch>
+        <Route path={`${path}/sso/login}>
+                <NavigationPage />
         </Route>
         <Route path={`/digit-ui/faqss`}>
              <FAQ />

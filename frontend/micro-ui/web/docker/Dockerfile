@@ -1,7 +1,6 @@
 FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @upyog-niua/upyog-css
 RUN yarn add @upyog/digit-ui-libraries
 RUN yarn add @upyog/digit-ui-module-pt
 RUN yarn add @upyog/digit-ui-module-fsm
@@ -18,7 +17,6 @@ RUN yarn add @upyog/digit-ui-module-common
 RUN yarn add @upyog/digit-ui-module-ws
 RUN yarn add @upyog/digit-ui-module-commonpt
 RUN yarn add @upyog/digit-ui-module-bills
-RUN yarn add @upyog/digit-ui-react-components
 RUN yarn add @upyog-niua/upyog-ui-module-ptr
 
 ARG WORK_DIR

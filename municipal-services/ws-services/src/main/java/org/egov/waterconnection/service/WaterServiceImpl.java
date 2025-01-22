@@ -171,7 +171,17 @@ Boolean isMigration=false;
 		/* encrypt here for connection holder details */
 		// waterConnectionRequest.setWaterConnection(encryptConnectionHolderDetails(waterConnectionRequest.getWaterConnection()));
 
+		if(waterConnectionRequest.isDisconnectRequest()) {
+			List<WaterConnection> previousConnectionsList = getAllWaterApplications(waterConnectionRequest);
+			if (previousConnectionsList.size() > 0) {
+				for (WaterConnection previousConnectionsListObj : previousConnectionsList) {
+					waterDaoImpl.updateWaterApplicationStatus(previousConnectionsListObj.getId(),
+							WCConstants.INACTIVE_STATUS);
+				}
+			}
+		}
 		waterDao.saveWaterConnection(waterConnectionRequest);
+		
 
 		/* decrypt here */
 		// waterConnectionRequest.setWaterConnection(encryptionDecryptionUtil.decryptObject(waterConnectionRequest.getWaterConnection(),

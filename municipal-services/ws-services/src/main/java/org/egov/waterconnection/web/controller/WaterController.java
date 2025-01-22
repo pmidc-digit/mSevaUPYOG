@@ -66,6 +66,19 @@ public class WaterController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 	
+	@RequestMapping(value = "/connection/_disconnect", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<WaterConnectionResponse> createWaterDisConnection(
+			@Valid @RequestBody WaterConnectionRequest waterConnectionRequest) {
+//		waterConnectionRequest.setCreateCall(true);
+		waterConnectionRequest.setDisconnectRequest(true);
+		List<WaterConnection> waterConnection = waterService.createWaterConnection(waterConnectionRequest);
+		WaterConnectionResponse response = WaterConnectionResponse.builder().waterConnection(waterConnection)
+				.responseInfo(responseInfoFactory
+						.createResponseInfoFromRequestInfo(waterConnectionRequest.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
 	@RequestMapping(value = "/_createMigration", method = RequestMethod.POST, produces = "application/json")
 	public ResponseEntity<WaterConnectionResponse> createWaterConnectionForMigration(
 			@Valid @RequestBody WaterConnectionRequest waterConnectionRequest, @RequestParam(required = true) boolean isMigration) {

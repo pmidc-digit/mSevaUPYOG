@@ -63,6 +63,23 @@ public class SewarageController {
 				.build();
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+	
+	@RequestMapping(value = "/_create/disconnection", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<SewerageConnectionResponse> createWaterDisConnection(
+			@Valid @RequestBody SewerageConnectionRequest sewerageConnectionRequest, @RequestParam(required = false) boolean isMigration) {
+		if(sewerageConnectionRequest.getSewerageConnection().getAdditionalDetails().toString().contains("isMigrated"))
+		{
+			isMigration=true;
+		}
+		sewerageConnectionRequest.setDisconnectRequest(true);
+		List<SewerageConnection> sewerageConnection = sewarageService.createSewerageDisConnection(sewerageConnectionRequest);
+		SewerageConnectionResponse response = SewerageConnectionResponse.builder().sewerageConnections(sewerageConnection)
+				.responseInfo(responseInfoFactory
+						.createResponseInfoFromRequestInfo(sewerageConnectionRequest.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+	
 
 	@RequestMapping(value = "/_search", method = RequestMethod.POST)
 	public ResponseEntity<SewerageConnectionResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,

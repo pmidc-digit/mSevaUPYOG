@@ -178,6 +178,85 @@ public class SewerageServiceImpl implements SewerageService {
 
 		return Arrays.asList(sewerageConnectionRequest.getSewerageConnection());
 	}
+	
+	public List<SewerageConnection> createSewerageDisConnection(SewerageConnectionRequest sewerageConnectionRequest) {
+		int reqType = SWConstants.CREATE_APPLICATION;
+
+		Boolean isMigration=false;
+
+
+		if (sewerageConnectionRequest.isDisconnectRequest()) {
+			reqType = SWConstants.DISCONNECT_CONNECTION;
+			validateDisconnectionRequest(sewerageConnectionRequest);
+		}
+		
+		if(sewerageConnectionRequest.getSewerageConnection().getAdditionalDetails().toString().contains("isMigrated"))
+		{
+			isMigration=true;
+		}
+		else if (sewerageConnectionRequest.isReconnectRequest()) {
+			reqType = SWConstants.RECONNECTION;
+			validateReconnectionRequest(sewerageConnectionRequest);
+		}
+	//	else if (sewerageServicesUtil.isModifyConnectionRequest(sewerageConnectionRequest)&& !isMigration) {
+//			List<SewerageConnection> prevSewerageConnectionList = getAllSewerageApplications(sewerageConnectionRequest);
+//			if (prevSewerageConnectionList.size() > 0) {
+//				for (SewerageConnection previousConnectionsListObj : prevSewerageConnectionList) {
+//					sewerageDaoImpl.updateSewerageApplicationStatus(previousConnectionsListObj.getId(),
+//							SWConstants.INACTIVE_STATUS);
+//				}
+//			}
+//			// Validate any process Instance exists with WF
+//			if (!CollectionUtils.isEmpty(prevSewerageConnectionList)) {
+//				workflowService.validateInProgressWF(prevSewerageConnectionList, sewerageConnectionRequest.getRequestInfo(),
+//						sewerageConnectionRequest.getSewerageConnection().getTenantId());
+//				sewerageConnectionValidator.validateConnectionStatus(prevSewerageConnectionList, sewerageConnectionRequest,
+//						reqType);
+//			}
+//			swapConnHolders(sewerageConnectionRequest, prevSewerageConnectionList);
+//
+//			//Swap masked Plumber info with unmasked plumberInfo from previous applications
+//			if(!ObjectUtils.isEmpty(prevSewerageConnectionList.get(0).getPlumberInfo()))
+//				unmaskingUtil.getUnmaskedPlumberInfo(sewerageConnectionRequest.getSewerageConnection().getPlumberInfo(), prevSewerageConnectionList.get(0).getPlumberInfo());
+//
+//			if (!CollectionUtils.isEmpty(prevSewerageConnectionList)) {
+//				workflowService.validateInProgressWF(prevSewerageConnectionList, sewerageConnectionRequest.getRequestInfo(),
+//						sewerageConnectionRequest.getSewerageConnection().getTenantId());
+//			}
+//			reqType = SWConstants.MODIFY_CONNECTION;
+		//}
+		sewerageConnectionValidator.validateSewerageConnection(sewerageConnectionRequest, reqType);
+		Property property = validateProperty.getOrValidateProperty(sewerageConnectionRequest);
+		validateProperty.validatePropertyFields(property,sewerageConnectionRequest.getRequestInfo());
+		mDMSValidator.validateMasterForCreateRequest(sewerageConnectionRequest);
+		enrichmentService.enrichSewerageConnection(sewerageConnectionRequest, reqType);
+		enrichmentService.enrichUpdateSewerageConnection(sewerageConnectionRequest);
+		userService.createUser(sewerageConnectionRequest);
+		// call work-flow
+		if (!isMigration)
+		{
+		if (config.getIsExternalWorkFlowEnabled())
+			wfIntegrator.callWorkFlow(sewerageConnectionRequest, property);
+		}
+		/* encrypt here */
+		sewerageConnectionRequest.setSewerageConnection(encryptConnectionDetails(sewerageConnectionRequest.getSewerageConnection()));
+		/* encrypt here for connection holder details */
+		sewerageConnectionRequest.setSewerageConnection(encryptConnectionHolderDetails(sewerageConnectionRequest.getSewerageConnection()));
+
+		if(sewerageConnectionRequest.isDisconnectRequest()) {
+			List<SewerageConnection> previousConnectionsList = getAllSewerageApplications(sewerageConnectionRequest);
+			if (previousConnectionsList.size() > 0) {
+				for (SewerageConnection previousConnectionsListObj : previousConnectionsList) {
+					sewerageDaoImpl.updateSewerageApplicationStatus(previousConnectionsListObj.getId(),
+							SWConstants.INACTIVE_STATUS);
+				}
+			}
+		}
+		sewerageDao.saveSewerageConnection(sewerageConnectionRequest);
+		
+		return Arrays.asList(sewerageConnectionRequest.getSewerageConnection());
+	}
+
 
 	private void validateDisconnectionRequest(SewerageConnectionRequest sewerageConnectionRequest) {
 		if (!sewerageConnectionRequest.getSewerageConnection().getStatus().toString().equalsIgnoreCase(SWConstants.ACTIVE)) {

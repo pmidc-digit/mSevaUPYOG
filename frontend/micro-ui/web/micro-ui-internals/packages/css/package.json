@@ -1,6 +1,6 @@
 {
   "name": "@pmidc/upyog-css",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "dist/index.css",
   "engines": {
@@ -24,7 +24,8 @@
     "node-sass": "4.14.1",
     "normalize.css": "8.0.1",
     "postcss-scss": "3.0.5",
-    "tailwindcss": "^1.9.6"
+    "tailwindcss": "^1.9.6",
+    "yarn": "^1.22.22"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.4",

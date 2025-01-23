@@ -32,7 +32,13 @@ const sidebarHiddenFor = [
   "/digit-ui/citizen/select-location",
   "/digit-ui/citizen/login",
   "/digit-ui/citizen/register/otp",
+  "/digit-ui/citizen/sso/login",
 ];
+
+const topSidebarHiddenFor=[
+  "/digit-ui/citizen/sso/login"
+]
+
 
 const getTenants = (codes, tenants) => {
   return tenants.filter((tenant) => codes.map((item) => item.code).includes(tenant.code));
@@ -89,6 +95,7 @@ const Home = ({
   let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(stateId, []);
   newConfig = newConfig?.EdcrConfig ? newConfig?.EdcrConfig : newConfigEDCR;
   const hideSidebar = sidebarHiddenFor.some((e) => window.location.href.includes(e));
+  const hideTopSidebar = topSidebarHiddenFor.some((e) => window.location.href.includes(e));
   const appRoutes = modules.map(({ code, tenants }, index) => {
     const Module = Digit.ComponentRegistryService.getComponent(`${code}Module`);
     return Module ? (
@@ -151,19 +158,21 @@ const Home = ({
 
   return (
     <div className={classname}>
-      <TopBarSideBar
-        t={t}
-        stateInfo={stateInfo}
-        userDetails={userDetails}
-        CITIZEN={CITIZEN}
-        cityDetails={cityDetails}
-        mobileView={mobileView}
-        handleUserDropdownSelection={handleUserDropdownSelection}
-        logoUrl={logoUrl}
-        showSidebar={true}
-        linkData={linkData}
-        islinkDataLoading={islinkDataLoading}
-      />
+      {hideTopSidebar ? null : (
+        <TopBarSideBar
+          t={t}
+          stateInfo={stateInfo}
+          userDetails={userDetails}
+          CITIZEN={CITIZEN}
+          cityDetails={cityDetails}
+          mobileView={mobileView}
+          handleUserDropdownSelection={handleUserDropdownSelection}
+          logoUrl={logoUrl}
+          showSidebar={true}
+          linkData={linkData}
+          islinkDataLoading={islinkDataLoading}
+        />
+      )}
 
       <div className={`main center-container citizen-home-container mb-25`}>
         {hideSidebar ? null : (
@@ -240,7 +249,7 @@ const Home = ({
             <EDCRAcknowledgement1 />
           </Route>
           <Route path={`${path}/sso/login`}>
-            <NavigationPage />
+            <NavigationPage stateCode={stateCode} />
           </Route>
           <ErrorBoundary initData={initData}>
             {appRoutes}

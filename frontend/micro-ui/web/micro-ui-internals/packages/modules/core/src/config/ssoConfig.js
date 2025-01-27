@@ -30,10 +30,10 @@ export const citizenServiceMappings = [
   },
   {
     serviceName: "BF_TL",
-    path: "tradelicence/search",
+    path: "tradelicense-citizen/home",
   },
   {
     serviceName: "BF_FFL",
-    path: "fire-noc/search",
+    path: "fire-noc/home",
   },
 ];

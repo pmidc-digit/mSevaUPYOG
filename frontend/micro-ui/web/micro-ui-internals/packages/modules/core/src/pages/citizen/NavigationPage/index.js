@@ -33,7 +33,7 @@ const setCitizenDetail = (userObject, token) => {
 };
 
 const NavigationApp = ({ stateCode }) => {
-  const history = useHistory();
+  // const history = useHistory();
   const { t } = useTranslation();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
@@ -195,16 +195,17 @@ const NavigationApp = ({ stateCode }) => {
 
   const handleServiceRedirection = () => {
     const servicePath = fetchServicePath(userDetails.serviceName);
-
     // Check if the service path is found
     if (!servicePath) {
       showToast(SERVICE_NOT_FOUND, true);
       return;
     }
 
-    // Redirect to the service path:
-    const newPath = `/citizen/${servicePath}`;
-    history.replace(newPath);
+    //Redirect to the service path:
+    //const newPath = `/citizen/${servicePath}`;
+    //history.replace(newPath);
+    const domain = window.location.hostname;
+    window.location.href= `${domain}+/citizen/+${servicePath}`;
     showToast(`${REDIRECTING_TO} ${servicePath}`, false);
   };
 

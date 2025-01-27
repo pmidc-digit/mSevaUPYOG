@@ -1,12 +1,5 @@
 import React from 'react';
-//import Call_Icon from "../Images/Call_Icon.png";
-// import Call_Icon from "../Images/call_icon.png"
-// import Call_Icon from "../assets/call_icon.png";
-//import CallIcon from "../assets/call_icon.png";
-
-
-//import { FaPhone, FaWhatsapp, FaEnvelope } from 'react-icons/fa';
-//import './HelpSection.css';
+import callIcon from '../assets/call_icon.png'
 
 
 const HelpSection = () => {
@@ -19,8 +12,13 @@ const HelpSection = () => {
           {/* <FaPhone className="help-section-icon"/> */}
           {/* <div clssName="image" ><img src="../Images/Call_Icon.png" alt="Call Icon" /></div> */}
           <div className="help-section-text-container">
-            <span className="help-section-medium">Toll Free</span>
-            <span className="help-section-contact-no">187678890</span>
+            <div className="help-section-medium">
+                <div className='help-section-icon'><img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/call.png" alt='call' /></div>
+                <div>
+                  <p>Toll Free</p>
+                  <p>1800 1800 0172</p>
+                </div>
+            </div>
           </div>
         </button>
         <button className="help-section-button">

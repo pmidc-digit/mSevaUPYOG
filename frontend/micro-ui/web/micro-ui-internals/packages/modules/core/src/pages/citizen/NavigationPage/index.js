@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { citizenServiceMappings } from "../../../config/ssoConfig";
 
 const THIRD_PARTY_NAME = "EODB";
-const THIRD_PARTY_ROLE_CODE = "EODB";
 const USER_TYPE = "CITIZEN";
 const TYPE_REGISTER = "register";
 const CITIZEN_ROLE_CODE = "CITIZEN";
@@ -166,7 +165,7 @@ const NavigationApp = ({ stateCode }) => {
   const processUser = (userResponse) => {
     const { UserRequest: info, ...tokens } = userResponse;
     const isAuthorized =
-      info.roles.some((userRole) => userRole.code === CITIZEN_ROLE_CODE) && info.roles.some((userRole) => userRole.code === THIRD_PARTY_ROLE_CODE);
+      info.roles.some((userRole) => userRole.code === CITIZEN_ROLE_CODE) && info.roles.some((userRole) => userRole.code === THIRD_PARTY_NAME);
     if (!isAuthorized) {
       showToast(ES_ERROR_USER_NOT_PERMITTED, true);
       return;
@@ -179,33 +178,34 @@ const NavigationApp = ({ stateCode }) => {
 
   useEffect(() => {
     if (user) {
+      const servicePath = fetchServicePath(userDetails.serviceName);
+      // Check if the service path is found
+      if (!servicePath) {
+        showToast(SERVICE_NOT_FOUND, true);
+        return;
+      }
+
+      const city = getCity(userDetails.ULBName);
+      if (!city) {
+        showToast(ULB_NOT_FOUND, true);
+        return;
+      }
+
+      Digit.SessionStorage.set("CITIZEN.COMMON.HOME.CITY", city);
       Digit.SessionStorage.set("citizen.userRequestObject", user);
       Digit.UserService.setUser(user);
       setCitizenDetail(user?.info, user?.access_token);
-
-      const city = getCity(userDetails.ULBName);
-      if (city) {
-        Digit.SessionStorage.set("CITIZEN.COMMON.HOME.CITY", city);
-        handleServiceRedirection();
-      } else {
-        showToast(ULB_NOT_FOUND, true);
-      }
+      handleServiceRedirection(servicePath);
     }
   }, [user]);
 
-  const handleServiceRedirection = () => {
-    const servicePath = fetchServicePath(userDetails.serviceName);
-    // Check if the service path is found
-    if (!servicePath) {
-      showToast(SERVICE_NOT_FOUND, true);
-      return;
-    }
-
+  const handleServiceRedirection = (servicePath) => {
     //Redirect to the service path:
     //const newPath = `/citizen/${servicePath}`;
     //history.replace(newPath);
-    const domain = window.location.hostname;
-    window.location.href= `${domain}+/citizen/+${servicePath}`;
+    const domain = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
+    const newURL=`${domain}/citizen/${servicePath}`;
+    window.location.href=newURL;
     showToast(`${REDIRECTING_TO} ${servicePath}`, false);
   };
 

@@ -94,10 +94,21 @@ import ResubmitDisconnection from "./pages/employee/EditDisconnectionApplication
 //import IntegratedBill from "./pages/employee/SearchWaterConnectionIntegrated";
 import SearchWaterConnectionIntegrated from "./pages/employee/SearchWaterConnectionIntegrated";
 import SearchIntegrated from "./pages/employee/SearchIntegrated";
-import SearchWaterConnectionViewIntegrated
- from "./pages/employee/SearchWaterConnection/SearchWaterConnectionViewIntegrated";
- import BulkBillGeneration from "./pages/employee/BulkBillGeneration"
-
+import SearchWaterConnectionViewIntegrated from "./pages/employee/SearchWaterConnection/SearchWaterConnectionViewIntegrated";
+import BulkBillGeneration from "./pages/employee/BulkBillGeneration";
+//
+import NewApplicationStepForm from "./pages/employee/NewApplicationStepForm";
+//New application form steps
+import WSConnectionDetailsStep from "./components/newWSApplicationFormSteps/ConnectionDetails";
+import WSDocumentsStep from "./components/newWSApplicationFormSteps/Documents";
+import WSAdditionalDetailsStep from "./components/newWSApplicationFormSteps/AdditionalDetails";
+import WSSummaryStep from "./components/newWSApplicationFormSteps/Summary";
+//New application step/page components
+import WSApplyingFor from "./pageComponents/newApplicationComponents/WSApplyingFor";
+import WSConnectionDetailsSingleInstance from "./pageComponents/newApplicationComponents/WSConnectionDetailsSingleInstance";
+//
+import getRootReducer from "./redux/reducers";
+export const WSReducers = getRootReducer;
 
 const WSModule = ({ stateCode, userType, tenants }) => {
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
@@ -228,6 +239,7 @@ const componentsToRegister = {
   WSApplicationBillAmendment: ApplicationBillAmendment,
   WSRequiredDocuments: RequiredDocuments,
   WSNewApplication: NewApplication,
+  WSNewApplicationStepForm: NewApplicationStepForm,
   WSApplicationDetails: ApplicationDetails,
   WSGetConnectionDetails: GetConnectionDetails,
   WSActivateConnection: ActivateConnection,
@@ -249,7 +261,14 @@ const componentsToRegister = {
   WSSearchWaterConnectionIntegrated:SearchWaterConnectionIntegrated,
   WSSearchIntegrated:SearchIntegrated,
   WSSearchWaterConnectionViewIntegrated :SearchWaterConnectionViewIntegrated,
-  WSBulkBillGeneration:BulkBillGeneration
+  WSBulkBillGeneration:BulkBillGeneration,
+  //
+  WSConnectionDetailsStep,
+  WSDocumentsStep,
+  WSAdditionalDetailsStep,
+  WSSummaryStep,
+  WSApplyingFor,
+  WSConnectionDetailsSingleInstance
 };
 
 export const initWSComponents = () => {

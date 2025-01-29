@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-//
-import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
-import { updateEmployeeForm } from "../../../redux/actions/employeeFormActions";
 import { Toast } from "@upyog/digit-ui-react-components";
+//
+import { FormComposer } from "../../../../../react-components/src/hoc/FormComposer";
+import { updateEmployeeForm } from "../../redux/actions/employeeFormActions";
+import CardHeader from "../../../../../react-components/src/atoms/CardHeader"
 
 const EmployeeDetails = ({ config, onGoNext, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);
@@ -75,6 +76,7 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
 
   return (
     <React.Fragment>
+      <CardHeader divider={true}>{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</CardHeader>
       <FormComposer
         defaultValues={currentStepData}
         //heading={t("")}

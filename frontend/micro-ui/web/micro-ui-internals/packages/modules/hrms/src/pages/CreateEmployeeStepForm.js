@@ -9,12 +9,13 @@ import { newConfig } from "../components/config/config";
 import Toast from "../../../../react-components/src/atoms/Toast";
 import { setEmployeeStep } from "../redux/actions/employeeFormActions";
 import { onSubmit } from "../utils/onSubmitCreateEmployee";
+import CardHeader from "../../../../react-components/src/atoms/CardHeader";
 
 //Config for steps
 const createEmployeeConfig = [
   {
     head: "HR_EMPLOYEE_DETAILS",
-    stepLabel: "HR_EMPLOYEE_DETAILS_STEP_LABEL",
+    stepLabel: "HR_NEW_EMPLOYEE_FORM_HEADER",//"HR_EMPLOYEE_DETAILS_STEP_LABEL",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -84,7 +85,8 @@ const CreateEmployeeStepForm = () => {
 
   console.log("formState: ",formState);
   return (
-    <div>
+    <div class="pageCard">
+      <CardHeader divider={true}>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast

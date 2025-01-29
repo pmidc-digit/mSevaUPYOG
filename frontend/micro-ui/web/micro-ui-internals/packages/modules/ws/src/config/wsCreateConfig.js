@@ -164,207 +164,129 @@ export const newConfig = [
     hideInCitizen: true,
     body: [
       {
-        // For UM-4418 changes
-        head: "",
-        isCreateConnection: true,
-        // isModifyConnection: true,
-        // isEditConnection: true,
-        // isEditByConfigConnection: true,
-        body: [
-          {
-            type: "component",
-            key: "InfoLabel",
-            component: "WSInfoLabel",
-            withoutLabel: true,
-          },
-        ],
-      },
-      {
         head: "WS_COMMON_PROPERTY_DETAILS",
+        stepNumber: 1,
         isCreateConnection: true,
         // isEditConnection: true,
         // isModifyConnection: true,
         // isEditByConfigConnection: true,
         body: [
           {
-            component: "CPTPropertySearchNSummary",
-            withoutLabel: true,
-            key: "cpt",
             type: "component",
-            hideInCitizen: true,
+            component: "CPTPropertySearchNSummary",
+            key: "cpt",
+            withoutLabel: true,
           },
         ],
       },
       {
         head: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER",
+        stepNumber: 1,
         isCreateConnection: true,
-        // isEditConnection: true,
-        // isModifyConnection: true,
-        // isEditByConfigConnection: true,
         body: [
           {
             type: "component",
-            key: "ConnectionHolderDetails",
             component: "WSConnectionHolderDetails",
+            key: "ConnectionHolderDetails",
             withoutLabel: true,
           },
         ],
       },
       {
         head: "WS_COMMON_CONNECTION_DETAIL",
-        //subHead: "WS_CONNECTION_DETAILS_HEADER_SUB_TEXT_LABEL",
+        stepNumber: 1,
         isCreateConnection: true,
-        // isEditConnection: false,
         body: [
           {
             type: "component",
-            key: "ConnectionDetails",
-            component: "WSConnectionDetails",
+            component: "WSApplyingFor",
+            key: "ApplyingFor",
             withoutLabel: true,
           },
         ],
       },
       {
         head: "WS_COMMON_DOCS",
+        stepNumber: 2,
         isCreateConnection: true,
-        // isEditConnection: true,
-        // isModifyConnection: true,
-        // isEditByConfigConnection: true,
         body: [
           {
             type: "component",
-            key: "DocumentsRequired",
             component: "WSDocumentsEmployee",
+            key: "DocumentsRequired",
+            withoutLabel: true,
+          },
+        ],
+      },
+      // {
+      //   head: "WS_COMMON_CONNECTION_DETAIL",
+      //   //subHead: "WS_CONNECTION_DETAILS_HEADER_SUB_TEXT_LABEL",
+      //   stepNumber: 3,
+      //   isCreateConnection: true,
+      //   body: [
+      //     {
+      //       type: "component",
+      //       component: "WSConnectionDetailsSingleInstance",
+      //       key: "ConnectionDetails",
+      //       withoutLabel: true,
+      //     },
+      //   ],
+      // },
+      {
+        head: "WS_COMMON_CONNECTION_DETAIL",
+        //subHead: "WS_CONNECTION_DETAILS_HEADER_SUB_TEXT_LABEL",
+        stepNumber: 3,
+        isCreateConnection: true,
+        body: [
+          {
+            type: "component",
+            component: "WSConnectionDetails",
+            key: "ConnectionDetails",
             withoutLabel: true,
           },
         ],
       },
       {
         head: "WS_COMMON_PLUMBER_DETAILS",
+        stepNumber: 3,
         isCreateConnection: true,
-        //isEditByConfigConnection: true,
         body: [
           {
             type: "component",
-            key: "plumberDetails",
             component: "WSPlumberDetails",
+            key: "plumberDetails",
             withoutLabel: true,
           },
         ],
       },
       {
         head: "WS_COMMON_ROAD_CUTTING_DETAILS",
+        stepNumber: 3,
         isCreateConnection: true,
-        //isEditByConfigConnection: true,
         body: [
           {
             type: "component",
-            key: "roadCuttingDetails",
             component: "WSRoadCuttingDetails",
+            key: "roadCuttingDetails",
             withoutLabel: true,
           },
           {
             type: "component",
-            key: "roadCuttingAddlDetails",
             component: "WSRoadCuttingAddlDetails",
+            key: "roadCuttingAddlDetails",
             withoutLabel: true,
           },
         ],
       },
       {
         head: "WS_ACTIVATION_DETAILS",
+        stepNumber: 3,
         isCreateConnection: true,
-        //isEditConnection: false,
-        //isModifyConnection: true,
         body: [
           {
             type: "component",
-            key: "ActivationDetails",
             component: "WSActivationDetails",
-            withoutLabel: true,
-          },
-        ],
-      },
-      // {
-      //   head: "WSWaterConnectionDetails",
-      //   isCreateConnection: true,
-      //   //isEditConnection: false,
-      //   //isModifyConnection: true,
-      //   body: [
-      //     {
-      //       type: "component",
-      //       key: "wsWaterConnectionDetails",
-      //       component: "WSWaterConnectionDetails",
-      //       withoutLabel: true,
-      //     },
-      //   ],
-      // },
-      //
-      {
-        head: "",
-        isCreateConnection: false,
-        // isEditConnection: true,
-        // isModifyConnection: true,
-        // isEditByConfigConnection: true,
-        body: [
-          {
-            component: "WSEditConnectionDetails",
-            withoutLabel: true,
-            key: "ConnectionDetails",
-            type: "component",
-            hideInCitizen: true,
-          },
-        ],
-      },
-      {
-        head: "WS_COMMON_CONNECTION_DETAIL",
-        isCreateConnection: false,
-        // isEditConnection: false,
-        // isModifyConnection: true,
-        body: [
-          {
-            type: "component",
-            key: "connectionDetails",
-            component: "WSActivationConnectionDetails",
-            withoutLabel: true,
-          },
-        ],
-      },
-      {
-        head: "WS_COMMON_CONNECTION_DETAIL",
-        // isEditByConfigConnection: true,
-        body: [
-          {
-            type: "component",
-            key: "connectionDetails",
-            component: "WSActivationConnectionDetails",
-            withoutLabel: true,
-          },
-        ],
-      },
-      {
-        head: "WS_COMMON_PLUMBER_DETAILS",
-         //isCreateConnection: true,
-        isEditByConfigConnection: true,
-        body: [
-          {
-            type: "component",
-            key: "plumberDetails",
-            component: "WSActivationPlumberDetails",
-            withoutLabel: true,
-          },
-        ],
-      },
-      {
-        head: "WS_ACTIVATION_DETAILS",
-        isCreateConnection: false,
-        //isEditConnection: false,
-        //isModifyConnection: true,
-        body: [
-          {
-            type: "component",
-            key: "activationDetails",
-            component: "WSActivationPageDetails",
+            key: "ActivationDetails",
             withoutLabel: true,
           },
         ],

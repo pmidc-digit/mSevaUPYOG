@@ -19,7 +19,7 @@ import {
 } from "@upyog/digit-ui-module-common";
 import { DigitUI } from "@upyog/digit-ui-module-core";
 import { initLibraries } from "@upyog/digit-ui-libraries";
-import { HRMSModule, initHRMSComponents } from "@upyog/digit-ui-module-hrms";
+import { HRMSModule, initHRMSComponents, HRMSReducers } from "@upyog/digit-ui-module-hrms";
 import { TLModule, TLLinks, initTLComponents } from "@upyog/digit-ui-module-tl";
 import {
   PTRModule,
@@ -33,7 +33,7 @@ import {
 import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
 import { initNOCComponents } from "@upyog/digit-ui-module-noc";
 import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
-import { initWSComponents } from "@upyog/digit-ui-module-ws";
+import { initWSComponents, WSReducers } from "@upyog/digit-ui-module-ws";
 import { initCustomisationComponents } from "./Customisations";
 import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
 import { initBillsComponents } from "@upyog/digit-ui-module-bills";
@@ -101,6 +101,8 @@ initCustomisationComponents();
 
 const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
+  hrms:  HRMSReducers(initData),
+  ws: WSReducers(initData)
 });
 
 function App() {

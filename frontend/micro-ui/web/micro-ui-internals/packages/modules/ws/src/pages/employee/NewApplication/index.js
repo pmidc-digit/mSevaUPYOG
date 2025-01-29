@@ -261,19 +261,30 @@ const NewApplication = () => {
 
   return (
     <React.Fragment>
-      <div style={{ marginLeft: "15px" }}>
-        <Header>{t(config.head)}</Header>
+      <div className="pageCard">
+        <div style={{ marginLeft: "15px" }}>
+          <Header>{t(config.head)}</Header>
+        </div>
+        <FormComposer
+          config={config.body}
+          userType={"employee"}
+          onFormValueChange={onFormValueChange}
+          // isDisabled={!canSubmit}
+          label={t("CS_COMMON_SUBMIT")}
+          onSubmit={onSubmit}
+          defaultValues={sessionFormData}
+        />
       </div>
-      <FormComposer
-        config={config.body}
-        userType={"employee"}
-        onFormValueChange={onFormValueChange}
-        // isDisabled={!canSubmit}
-        label={t("CS_COMMON_SUBMIT")}
-        onSubmit={onSubmit}
-        defaultValues={sessionFormData}
-      ></FormComposer>
-      {showToast && <Toast isDleteBtn={true} error={showToast?.key === "error" ? true : false} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} isWarning={showToast?.isWarning}/>}
+      {showToast && (
+        <Toast
+          isDleteBtn={true}
+          error={showToast?.key === "error" ? true : false}
+          warning={showToast?.warning}
+          label={t(showToast?.message)}
+          onClose={closeToast}
+          isWarning={showToast?.isWarning}
+        />
+      )}
       {/* {showToast && <Toast error={showToast.key} label={t(showToast?.message)} onClose={closeToast} />} */}
     </React.Fragment>
   );

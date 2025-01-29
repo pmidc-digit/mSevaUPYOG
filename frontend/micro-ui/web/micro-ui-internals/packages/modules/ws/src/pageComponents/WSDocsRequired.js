@@ -80,7 +80,7 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
   }
 
   const printDiv = () => {
-    let content = document.getElementById("documents-div").innerHTML;
+    const content = `<h1>${t("WS_SERVICES_MASTERS_REQ_DOCS_HEADER")}</h1>` + document.getElementById("documents-div").innerHTML;
     //APK button to print required docs
     if (window.mSewaApp && window.mSewaApp.isMsewaApp()) {
       window.mSewaApp.downloadBase64File(window.btoa(content), t("WS_REQ_DOCS"));
@@ -94,7 +94,7 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
   };
 
   return (
-    <div style={{ margin: "16px" }}>
+    <div className="pageCard">
       <div>
         <Header styles={{ fontSize: "32px", marginLeft: "18px", display: "flex", justifyContent: "space-between", marginRight: "12px" }}>
           <div>{t("WS_SERVICES_MASTERS_REQ_DOCS_HEADER")}</div>
@@ -115,14 +115,14 @@ const WSDocsRequired = ({ onSelect, userType, onSkip, config }) => {
                   {t(doc?.code.replace(".", "_"))}
                 </CardSectionHeader>
                 {doc.dropdownData && doc.dropdownData.length > 1 && (
-                  <p style={{ lineHeight: "24px", fontSize: "16px" }}>{t(`${doc?.code.replace(".", "_")}_DESCRIPTION`)}</p>
+                  <p style={{ lineHeight: "24px", fontSize: "16px" }}>{t("ONE_OF_THESE_DOC_NEEDED")}</p>
                 )}
                 <div style={{ margin: "16px 0", lineHeight: "18px", fontSize: "16px" }}>
                   {doc?.dropdownData?.map((value, idx) => (
                     <p style={{ fontWeight: "bold", lineHeight: "32px" }}>{`${idx + 1}. ${t(value?.i18nKey)}`}</p>
                   ))}
                 </div>
-                <p style={{ fontSize: "16px" }}>{t(`${doc?.code.replace(".", "_")}_BELOW_DESCRIPTION`)}</p>
+                <p style={{ fontSize: "16px" }}>{t(`WS_SERVICES_MASTERS_${doc?.description.replaceAll(".", "_")}_NOTE`)}</p>
               </div>
             ))}
           </div>

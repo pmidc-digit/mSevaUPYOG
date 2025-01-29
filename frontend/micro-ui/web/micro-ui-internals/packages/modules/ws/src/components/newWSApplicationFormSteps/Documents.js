@@ -1,10 +1,10 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
-import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
-import { updateEmployeeForm } from "../../../redux/actions/employeeFormActions";
+import { FormComposer } from "../../../../../react-components/src/hoc/FormComposer";
+import { updateWSNewApplicationForm } from "../../redux/actions/newWSApplicationFormActions";
 
-const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
+const Documents = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
@@ -15,16 +15,16 @@ const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
+    console.log("onFormValueChange data in Documents: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
-      dispatch(updateEmployeeForm(config.key, data));
+      dispatch(updateWSNewApplicationForm(config.key, data));
     }
   };
 
-  const currentStepData = useSelector((state) => state.hrms.employeeForm.formData?.[config.key] ?? {});
+  const currentStepData = useSelector((state) => state.ws.newWSApplicationForm.formData?.[config.key] ?? {});
   const dispatch = useDispatch();
 
-  console.log("currentStepData in  Administrative details: ", currentStepData);
+  console.log("currentStepData in Documents: ", currentStepData);
 
   return (
     <React.Fragment>
@@ -43,4 +43,4 @@ const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export default AdministrativeDetails;
+export default Documents;

@@ -12,7 +12,9 @@
     "micro-ui-internals/packages/modules/dss",
     "micro-ui-internals/packages/modules/pt",
     "micro-ui-internals/packages/modules/tl",
-    "micro-ui-internals/packages/modules/obps"
+    "micro-ui-internals/packages/modules/obps",
+    "micro-ui-internals/packages/modules/hrms",
+    "micro-ui-internals/packages/modules/ws"
   ],
   "engines": {
     "node": ">=14"

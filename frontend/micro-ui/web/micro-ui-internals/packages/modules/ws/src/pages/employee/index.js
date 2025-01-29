@@ -262,6 +262,7 @@ const App = ({ path }) => {
   const WSApplicationBillAmendment = Digit?.ComponentRegistryService?.getComponent("WSApplicationBillAmendment");
   const WSRequiredDocuments = Digit?.ComponentRegistryService?.getComponent("WSRequiredDocuments");
   const WSNewApplication = Digit?.ComponentRegistryService?.getComponent("WSNewApplication");
+  const WSNewApplicationStepForm = Digit?.ComponentRegistryService?.getComponent("WSNewApplicationStepForm");
   const WSApplicationDetails = Digit?.ComponentRegistryService?.getComponent("WSApplicationDetails");
   const WSGetConnectionDetails = Digit?.ComponentRegistryService?.getComponent("WSGetConnectionDetails");
   const WSActivateConnection = Digit?.ComponentRegistryService?.getComponent("WSActivateConnection");
@@ -283,6 +284,7 @@ const App = ({ path }) => {
   const WSResubmitDisconnection = Digit?.ComponentRegistryService?.getComponent("WSResubmitDisconnection");
   const WSSearchIntegrated = Digit?.ComponentRegistryService?.getComponent("WSSearchIntegrated");
   const WSBulkBillGeneration = Digit?.ComponentRegistryService?.getComponent("WSBulkBillGeneration");
+
 
   const locationCheck =
     window.location.href.includes("/employee/ws/new-application") ||
@@ -312,7 +314,8 @@ const App = ({ path }) => {
           </div>
 
           <PrivateRoute path={`${path}/create-application`} component={WSDocsRequired} />
-          <PrivateRoute path={`${path}/new-application`} component={WSNewApplication} />
+          {/* <PrivateRoute path={`${path}/new-application`} component={WSNewApplication} /> */}
+          <PrivateRoute path={`${path}/new-application`} component={WSNewApplicationStepForm} />
           <PrivateRoute path={`${path}/edit-application`} component={WSEditApplication} />
           <PrivateRoute path={`${path}/edit-disconnection-application`} component={WSEditDisconnectionApplication} />
           <PrivateRoute path={`${path}/resubmit-disconnection-application`} component={WSResubmitDisconnection} />

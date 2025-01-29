@@ -1,3 +1,4 @@
+//For employee:
 export const serviceMappings = [
   {
     serviceName: "wns",
@@ -14,5 +15,25 @@ export const serviceMappings = [
   {
     serviceName: "fire-noc",
     path: "fire-noc/search",
+  },
+];
+
+//For citizen:
+export const citizenServiceMappings = [
+  {
+    serviceName: "BF_LG_WC",
+    path: "wns/search",
+  },
+  {
+    serviceName: "BF_PT",
+    path: "pt-mutation/propertySearch",
+  },
+  {
+    serviceName: "BF_TL",
+    path: "tradelicense-citizen/home",
+  },
+  {
+    serviceName: "BF_FFL",
+    path: "fire-noc/home",
   },
 ];

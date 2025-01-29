@@ -4,6 +4,8 @@ import AboutSection from './components/AboutSection';
 import HelpSection from './components/HelpSection';
 import MiddleSection from './components/MiddleSection';
 import TopSection from './components/TopSection';
+import Header from './components/Header'
+import Footer from './components/Footer'
 
 const LandingPage = () => {
   const history = useHistory();
@@ -28,9 +30,11 @@ const LandingPage = () => {
       {/* <h1>This is our Landing Page</h1> */}
      
       {/* <TopSection/> */}
+      <Header />
       <MiddleSection/>
       <HelpSection/>
       <AboutSection/>
+      <Footer />
     </div>
   );
 };

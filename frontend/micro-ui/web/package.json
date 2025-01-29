@@ -20,7 +20,7 @@
     "node": ">=14"
   },
   "dependencies": {
-    "@upyog-niua/upyog-css": "1.0.10",
+   "@pmidc/upyog-css": "1.0.0",
     "@upyog/digit-ui-libraries": "1.7.0-beta.5",
     "@upyog/digit-ui-module-bills": "1.7.0-beta.3",
     "@upyog/digit-ui-module-common": "1.7.0-beta.5",

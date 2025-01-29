@@ -2,7 +2,7 @@ import React from 'react'
 
 const Footer = () => {
   return (
-    <div className="footer-body" style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"#152265",textAlign:"center" }}>
+    <div className="footer-body" style={{ width: '100%', position: 'relative', bottom: 0,backgroundColor:"#152265",textAlign:"center" }}>
     <div style={{backgroundColor:'#F5FBFF', width:'100%',minHeight:'100px'}}></div>
     {/* <div style={{backgroundColor:'#294A97', width:'100%',minHeight:'200px'}}></div> */}
       <div style={{ display: 'flex', justifyContent: 'center', color:"white" }}>

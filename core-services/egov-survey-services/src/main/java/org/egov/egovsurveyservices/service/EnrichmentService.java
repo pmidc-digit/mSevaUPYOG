@@ -1,27 +1,12 @@
 package org.egov.egovsurveyservices.service;
 
 import java.util.*;
-import java.util.stream.Collectors;
-
-import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.contract.request.Role;
-import org.egov.common.contract.request.User;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.egovsurveyservices.web.models.enums.Status;
-import org.egov.mdms.model.MasterDetail;
-import org.egov.mdms.model.MdmsCriteria;
-import org.egov.mdms.model.MdmsCriteriaReq;
-import org.egov.mdms.model.ModuleDetail;
-import org.egov.tracer.model.CustomException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestTemplate;
 
 import static org.egov.egovsurveyservices.utils.SurveyServiceConstants.*;
 

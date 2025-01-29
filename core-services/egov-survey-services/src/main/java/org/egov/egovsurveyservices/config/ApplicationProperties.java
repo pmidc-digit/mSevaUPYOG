@@ -52,4 +52,10 @@ public class ApplicationProperties {
     @Value("${egov.ss.survey.save.answer}")
     private String saveAnswerTopic ;
 
+    @Value("${egov.ss.category.save}")
+    private String saveCategoryTopic ;
+
+    @Value("${egov.ss.category.update}")
+    private String updateCategoryTopic ;
+
 }

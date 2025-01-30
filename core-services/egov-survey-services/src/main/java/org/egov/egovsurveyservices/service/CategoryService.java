@@ -16,10 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.validation.Valid;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -125,7 +122,7 @@ public class CategoryService {
                 .build();
         category.setId(UUID.randomUUID().toString());
         category.setAuditDetails(auditDetails);
-        category.setIsActive(category.getIsActive() == null);
+        category.setIsActive(Optional.ofNullable(category.getIsActive()).orElse(true));
     }
 
 }

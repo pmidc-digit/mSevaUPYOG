@@ -54,7 +54,7 @@ public class CategoryQueryBuilder {
     }
 
     public String getCheckDuplicateCategory() {
-        return "SELECT COUNT(*) FROM eg_ss_category WHERE label = ? AND tenantId = ? AND id != ?";
+        return "SELECT COUNT(*) FROM eg_ss_category WHERE label = ? AND tenantid = ? AND id != ?";
     }
 
     public String getIsUniqueCategorySql(){

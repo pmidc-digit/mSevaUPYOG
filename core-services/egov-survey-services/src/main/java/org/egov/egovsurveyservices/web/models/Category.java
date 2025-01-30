@@ -3,6 +3,8 @@ package org.egov.egovsurveyservices.web.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.Objects;
 
 @Getter
@@ -16,13 +18,16 @@ public class Category {
     @JsonProperty("id")
     private String id;
 
+    @NotBlank(message = "Category label cannot be blank")
     @JsonProperty("label")
+    @Size(max = 140, message = "Category label must be at most 140 characters")
     private String label;
 
     @JsonProperty("isActive")
     private Boolean isActive;
 
     @JsonProperty("tenantId")
+    @NotBlank(message = "Tenant Id cannot be blank")
     private String tenantId;
 
     @JsonProperty("auditDetails")

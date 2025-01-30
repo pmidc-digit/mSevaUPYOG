@@ -2,6 +2,7 @@ package org.egov.egovsurveyservices.validators;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.egov.egovsurveyservices.repository.CategoryRepository;
 import org.egov.egovsurveyservices.web.models.Category;
 import org.egov.egovsurveyservices.web.models.CategoryRequest;
 import org.egov.tracer.model.CustomException;
@@ -14,25 +15,14 @@ import org.springframework.util.CollectionUtils;
 @Component
 public class CategoryValidator {
 
-    public void validateLabel(Category category){
-        if(StringUtils.isBlank(category.getLabel())){
-            throw new CustomException("EG_SS_NO_CATEGORY_LABEL_ERR","label is not valid for "+category.getId());
-        }
-    }
-
-    public void validateTenantId(Category category){
-        if(StringUtils.isBlank(category.getTenantId())){
-            throw new CustomException("EG_SS_NO_CATEGORY_TENANTID_ERR","tenantId is not valid for "+category.getId());
-        }
-    }
+    @Autowired
+    CategoryRepository categoryRepository;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public boolean isCategoryUnique(String label, String tenantid) {
-        String sql = "SELECT COUNT(*) FROM eg_ss_category WHERE label = ? AND tenantid = ? and isactive = true";
-        log.info("query for uuids search: " + sql + " params: " + label + " + " + tenantid);
-        int count = jdbcTemplate.queryForObject(sql, Integer.class, label, tenantid);
+    public boolean isCategoryUnique(Category category) {
+        int count = categoryRepository.isCategoryUnique(category);
         return count == 0;
     }
 

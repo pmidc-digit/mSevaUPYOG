@@ -41,11 +41,12 @@ public class CategoryQueryBuilder {
             addClauseIfRequired(query, preparedStmtList);
             query.append(" category.isactive = ? ");
             preparedStmtList.add(criteria.getIsActive());
-        }else {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" category.isactive = ? ");
-            preparedStmtList.add(true);
         }
+//        else {
+//            addClauseIfRequired(query, preparedStmtList);
+//            query.append(" category.isactive = ? ");
+//            preparedStmtList.add(true);
+//        }
         query.append(" ORDER BY category.createdtime DESC ");
         int offset = (criteria.getPageNumber() - 1) * criteria.getSize();
         query.append(" LIMIT ").append(criteria.getSize()).append(" OFFSET ").append(offset);
@@ -54,6 +55,10 @@ public class CategoryQueryBuilder {
 
     public String getCheckDuplicateCategory() {
         return "SELECT COUNT(*) FROM eg_ss_category WHERE label = ? AND tenantId = ? AND id != ?";
+    }
+
+    public String getIsUniqueCategorySql(){
+        return "SELECT COUNT(*) FROM eg_ss_category WHERE label = ? AND tenantid = ?";
     }
 
     private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList) {

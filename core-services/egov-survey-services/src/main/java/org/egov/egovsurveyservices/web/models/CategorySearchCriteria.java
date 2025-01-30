@@ -22,7 +22,7 @@ public class CategorySearchCriteria {
     private String label;
 
     @JsonProperty("isActive")
-    private Boolean isActive = true;
+    private Boolean isActive;
 
     @JsonProperty("createdBy")
     private String createdBy;

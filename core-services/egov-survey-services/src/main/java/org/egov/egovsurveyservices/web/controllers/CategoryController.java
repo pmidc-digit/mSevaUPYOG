@@ -22,7 +22,7 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @RequestMapping(value="/category/_create", method = RequestMethod.POST)
-    public ResponseEntity<CategoryResponse> create(@RequestBody CategoryRequest categoryRequest) {
+    public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest categoryRequest) {
         CategoryResponse categoryResponse = categoryService.createCategory(categoryRequest);
         return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
     }

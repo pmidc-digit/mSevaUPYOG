@@ -30,9 +30,6 @@ public class CategoryService{
     CategoryRepository categoryRepository;
 
     @Autowired
-    ResponseInfoFactory factory;
-
-    @Autowired
     private Producer producer;
 
     @Autowired
@@ -40,15 +37,14 @@ public class CategoryService{
 
     public CategoryResponse createCategory(CategoryRequest categoryRequest) {
         RequestInfo requestInfo = categoryRequest.getRequestInfo();
-        Map<String, String> pwdMap = new HashMap<>();
         categoryRequest.getCategories().forEach(category -> {
-            enrichCreateRequest(category,requestInfo);
             categoryValidator.validateLabel(category);
             categoryValidator.validateTenantId(category);
             boolean categoryUnique = categoryValidator.isCategoryUnique(category.getLabel(), category.getTenantId());
             if(!categoryUnique){
                 throw new CustomException("EG_SS_NO_UNIQUE_CATEGORY_FOR_TENANT","Category label not unique for tenantid.");
             }
+            enrichCreateRequest(category,requestInfo);
         });
         producer.push(applicationProperties.getSaveCategoryTopic(),categoryRequest);
         return generateResponse(categoryRequest);
@@ -64,12 +60,11 @@ public class CategoryService{
                 .build();
         category.setId(UUID.randomUUID().toString());
         category.setAuditDetails(auditDetails);
-//        category.setIsActive(true);
     }
 
     private CategoryResponse generateResponse(CategoryRequest categoryRequest) {
         return CategoryResponse.builder()
-                .responseInfo(factory.createResponseInfoFromRequestInfo(categoryRequest.getRequestInfo(), true))
+                .responseInfo(ResponseInfoFactory.createResponseInfoFromRequestInfo(categoryRequest.getRequestInfo(), true))
                 .categories(categoryRequest.getCategories()).build();
     }
 

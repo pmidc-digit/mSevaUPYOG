@@ -23,7 +23,7 @@ export const WSService = {
     }),
   search: ({ tenantId, filters, businessService }) =>
     Request({
-      url: businessService === "WS" ? Urls.ws.water_search : Urls.ws.sewarage_search,
+      url: businessService === ("WS"||"WATER") ? Urls.ws.water_search : Urls.ws.sewarage_search,
       useCache: false,
       method: "POST",
       auth: filters?.locality ? false : true,
@@ -236,4 +236,55 @@ export const WSService = {
       userService: false,
       params: { tenantId, ...filters },
     }),
+
+    wsGenerateBill: (data) =>
+      Request({
+        url: Urls.ws.ws_billgenerate_create,
+        useCache: false,
+        method: "POST",
+        auth: true,
+        userService: true,
+        data: data,
+        params: {},
+        // params: { ...filters },
+        //userDownload: true,
+      }),
+
+      wsInboxSearch: (filters) =>
+        Request({
+          url: Urls.ws.sewarage_search,
+          useCache: false,
+          method: "POST",
+          auth: true,
+          userService: true,
+         // data: data,
+        
+           params: { ...filters},
+          //userDownload: true,
+        }),
+        wsInboxWaterSearch: (filters) =>
+          Request({
+            url: Urls.ws.water_search,
+            useCache: false,
+            method: "POST",
+            auth: true,
+            userService: true,
+           // data: data,
+          
+             params: { ...filters},
+            //userDownload: true,
+          }),
+          wsModifyApplDetails: (tenantId, applicationNumber) =>
+            Request({
+              url: Urls.ws.sewarage_search,
+              useCache: false,
+              method: "POST",
+              auth: true,
+              userService: true,
+              //data: {tenantId, applicationNumber},
+            
+               params: {tenantId, applicationNumber},
+              //userDownload: true,
+            }),
 };
+

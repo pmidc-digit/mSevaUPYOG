@@ -149,7 +149,7 @@ const EmployeeHome = ({ modules }) => {
   if(window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM",{})
   return (
     <div className="employee-app-container">
-      <div class="grid grid-cols-3 gap-6">
+      <div class="cardGrid"> 
         <Card titleKey="APPLICATION_STATUS_HEADER" content="<p>Content for card 1</p><p>More content for card 1</p>" />
         <Card titleKey="NOTIFICATIONS_HEADER" content="<p>Content for card 2</p><p>More content for card 2</p>" />
         <Card titleKey="EVENTS_HEADER" content="<p>Content for card 3</p><p>More content for card 3</p>" />

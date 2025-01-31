@@ -5,6 +5,7 @@ import { Link, Switch, useLocation } from "react-router-dom";
 import DownloadBillInbox from "./DownloadBill";
 
 import GroupBillInbox from "./GroupBill/index";
+import BillInbox from "./SearchBill/BillInbox";
 
 import ResponseCancelBill from "./ResponseCancelBill";
 import BillDetailsv1 from "./BillDetailsv1";
@@ -77,8 +78,8 @@ const EmployeeApp = ({ path, url, userType }) => {
   filterServiceType?.forEach((element) => {
     businessServiceList.push(element.code);
   });
-  const BillInbox = Digit.ComponentRegistryService.getComponent("BillInbox");
-
+  //const BillInbox = Digit.ComponentRegistryService.getComponent("BillInbox");
+console.log("path",path)
   return (
     <Switch>
       <React.Fragment>
@@ -129,6 +130,10 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute
             path={`${path}/bill-details`}
             component={() => <BillDetailsv1 parentRoute={path} />}
+          />
+                    <PrivateRoute
+            path={`${path}/bill-genie`}
+            component={() => <BillInbox parentRoute={path} />}
           />
         </div>
       </React.Fragment>

@@ -14,32 +14,156 @@ const Search = ({ path }) => {
   const checkPathName = getUrlPathName.includes("water/search-application");
   const businessServ = checkPathName ? "WS" : "SW";
   const [showToast, setShowToast] = useState(null);
-
+  const [table,setTable]=useState([])
+  let arr=[]
+  let count=[]
   function onSubmit(_data) {
+    console.log("data in application inbox",_data);
     if(_data.applicationNumber==="" && _data.connectionNumber==="" && _data.mobileNumber==="" && !_data.applicationType && !_data.applicationStatus && !_data.fromDate && !_data.toDate ){
       setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS" });
       setTimeout(() => {
         setShowToast(false);
       }, 3000);
-      return
+      return 
     }
-    const index = applicationTypes.indexOf(_data.applicationType?.code);
-    var fromDate = new Date(_data?.fromDate);
-    fromDate?.setSeconds(fromDate?.getSeconds() - 19800);
-    var toDate = new Date(_data?.toDate);
-    toDate?.setSeconds(toDate?.getSeconds() + 86399 - 19800);
-    const data = {
-      ..._data,
-      ...(_data.toDate ? { toDate: toDate?.getTime() } : {}),
-      ...(_data.fromDate ? { fromDate: fromDate?.getTime() } : {}),
-    };
-    setPayload(
-      Object.keys(data)
-        .filter((k) => data[k])
-        .reduce((acc, key) => ({ ...acc, [key]: typeof data[key] === "object" ? data[key].code : data[key] }), {})
-    );
-  }
+    const payload={
+      isConnectionSearch:true
+    }
+    if(_data.connectionNumber!==""){
+      payload.connectionNumber=_data.connectionNumber
+    }
+    if(_data.applicationNumber!==""){
+      payload.applicationNumber=_data.applicationNumber
+    }
+    if(_data.mobileNumber!==""){
+      payload.mobileNumber=_data.mobileNumber
+    }
+    if(_data.applicationType!==undefined){
+      payload.applicationType=_data.applicationType?.code
+    }
+    if(_data.applicationStatus!==undefined){
+      payload.applicationStatus=_data.applicationStatus?.code
+    }
+    if(_data.fromDate!==undefined){
+      payload.fromDate=_data.fromDate
+    }
+    if(_data.toDate!==undefined){
+      payload.toDate=_data.toDate
+    }
+  
+       //sewerage search
+       Digit.WSService.wsInboxSearch(payload)
 
+       .then((response) => {
+         console.log("response", response)
+         console.log("response", response?.SewerageConnections)
+         if (response?.ResponseInfo?.status === "200 OK" || response?.ResponseInfo?.status === "201 OK" || response?.ResponseInfo?.status === "successful") {
+           if ((response?.SewerageConnections)?.length===0) {
+             alert("No Records found");
+           
+            //  return;
+           }
+        else{
+          count=response?.TotalCount
+           response?.SewerageConnections.forEach((item) => {
+            let res={}
+           res.connectionNo=item?.connectionNo;
+           res.applicationNo=item?.applicationNo
+           res.applicationType=item?.applicationType 
+           res.mobileNumber=item?.connectionHolders?.mobileNumber || ""
+           res.applicationStatus=item?.applicationStatus ||""
+           res.ownerName=item?.connectionHolders?.name ||""
+           res.address=item?.connectionHolders?.correspondenceAddress || ""
+          
+           console.log("res",res)
+           arr.push(res)
+           })
+
+           console.log("arr",arr)
+           setTable(arr)
+          // onSearchData(response?.Bills)
+ 
+           alert("Bill generated")
+          }
+         }
+         else {
+           // alert(response?.Errors?.message)
+           console.log(response?.Errors?.message)
+           //onSearch({ key: true, label: response?.Errors?.message });
+         }
+ 
+       })
+       .catch((err) => {
+ 
+         //onSearch({ key: true, label: err });
+         console.log("Error in Digit.HRMSService.ssoAuthenticateUser: ", err.response);
+ 
+       });
+ 
+ 
+       //water search
+ 
+       Digit.WSService.wsInboxWaterSearch(payload)
+ 
+       .then((response) => {
+         console.log("response", response)
+         console.log("response", response?.WaterConnection)
+         if (response?.ResponseInfo?.status === "200 OK" || response?.ResponseInfo?.status === "201 OK" || response?.ResponseInfo?.status === "successful") {
+           if ((response?.WaterConnection)?.length===0) {
+             alert("No Records found")
+             return;
+           }
+ 
+          // onSearchData(response?.Bills)
+          response.WaterConnection.forEach((item) => {
+            let res={}
+           res.connectionNo=item?.connectionNo;
+           res.applicationNo=item?.applicationNo
+           res.applicationType=item?.applicationType 
+           res.mobileNumber=item?.connectionHolders?.mobileNumber || ""
+           res.applicationStatus=item?.applicationStatus ||""
+           res.ownerName=item?.connectionHolders?.[0]?.name ||""
+           res.address=item?.connectionHolders?.correspondenceAddress || ""
+          
+         
+           arr.push(res)
+           })
+           console.log("arr",arr)
+           setTable(arr)
+           alert("Bill generated")
+         }
+         else {
+           // alert(response?.Errors?.message)
+           console.log(response?.Errors?.message)
+           //onSearch({ key: true, label: response?.Errors?.message });
+         }
+ 
+       })
+       .catch((err) => {
+ 
+         //onSearch({ key: true, label: err });
+         console.log("Error in Digit.HRMSService.ssoAuthenticateUser: ", err.response);
+ 
+       });
+
+     //  setTable(arr)
+    // const index = applicationTypes.indexOf(_data.applicationType?.code);
+    // var fromDate = new Date(_data?.fromDate);
+    // fromDate?.setSeconds(fromDate?.getSeconds() - 19800);
+    // var toDate = new Date(_data?.toDate);
+    // toDate?.setSeconds(toDate?.getSeconds() + 86399 - 19800);
+    // const data = {
+    //   ..._data,
+    //   ...(_data.toDate ? { toDate: toDate?.getTime() } : {}),
+    //   ...(_data.fromDate ? { fromDate: fromDate?.getTime() } : {}),
+    // };
+    // setPayload(
+    //   Object.keys(data)
+    //     .filter((k) => data[k])
+    //     .reduce((acc, key) => ({ ...acc, [key]: typeof data[key] === "object" ? data[key].code : data[key] }), {})
+    // );
+  }
+ console.log("table",table)
   const config = {
     enabled: !!(payload && Object.keys(payload).length > 0),
   };
@@ -62,8 +186,11 @@ const Search = ({ path }) => {
     }
   }
 
+  // const isResultsOk = () => {
+  //   return result?.data?.length > 0 ? true : false;
+  // }
   const isResultsOk = () => {
-    return result?.data?.length > 0 ? true : false;
+    return table?.length > 0 ? true : false;
   }
 
 
@@ -73,8 +200,8 @@ const Search = ({ path }) => {
         t={t}
         tenantId={tenantId}
         onSubmit={onSubmit}
-        data={getData()}
-        count={result?.count}
+        data={table}
+        count={count}
         resultOk={isResultsOk()}
         businessService={businessServ}
         isLoading={result?.isLoading}

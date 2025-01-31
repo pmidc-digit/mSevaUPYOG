@@ -13,6 +13,7 @@ import ApplicationDetailsActionBar from "./components/ApplicationDetailsActionBa
 import ApplicationDetailsWarningPopup from "./components/ApplicationDetailsWarningPopup";
 
 const ApplicationDetails = (props) => {
+  console.log("props",props)
   let isEditApplication=window.location.href.includes("editApplication") && window.location.href.includes("bpa") ;
     const tenantId = Digit.ULBService.getCurrentTenantId();
   const state = Digit.ULBService.getStateId();
@@ -28,6 +29,9 @@ const ApplicationDetails = (props) => {
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(state, "BPA", ["RiskTypeComputation"]);
   const {
     applicationDetails,
+    demandData,
+    totalDemandTax,
+    totalBalanceTax,
     showToast,
     setShowToast,
     isLoading,
@@ -57,7 +61,7 @@ const ApplicationDetails = (props) => {
       workflowDetails.revalidate();
     }
   }, [showToast]);
-
+ 
   function onActionSelect(action) {
     if (action) {
       if(action?.action=="EDIT PAY 2" && window.location.href.includes("bpa")){
@@ -235,10 +239,13 @@ const ApplicationDetails = (props) => {
         <React.Fragment>
           <ApplicationDetailsContent
             applicationDetails={applicationDetails}
+            demandData={demandData}
             id={id}
             workflowDetails={workflowDetails}
             isDataLoading={isDataLoading}
             applicationData={applicationData}
+            totalDemandTax={totalDemandTax}
+            totalBalanceTax={totalBalanceTax}
             businessService={businessService}
             timelineStatusPrefix={timelineStatusPrefix}
             statusAttribute={statusAttribute}

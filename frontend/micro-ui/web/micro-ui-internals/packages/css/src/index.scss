@@ -663,6 +663,31 @@ input[type="number"] {
   }
 }
 
+.ws-button{
+  border:1px solid grey;
+  display:block;
+   background-color:grey;
+   height:50%;
+   width:80%;
+   text-align:'center';
+   margin-top:6%;
+   color:'white';
+}
+.ws-search-button{
+  border:1px solid black;
+  display:block;
+  
+   height:50%;
+   width:80%;
+   text-align:'center';
+   margin-top:6%;
+   color: 'white';
+  
+ 
+}
+.button{
+  color:'white'
+}
 .plumber-details-new-value-wrapper {
   flex: 2 1 auto;
 }

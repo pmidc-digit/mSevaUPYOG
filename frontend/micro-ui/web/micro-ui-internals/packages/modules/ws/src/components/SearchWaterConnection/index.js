@@ -9,12 +9,18 @@ import { useHistory } from "react-router-dom";
 const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, businessService, isLoading }) => {
   const history = useHistory()
   const [result,setResult]=  useState([])
+  const tenant = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
+  const allCities = Digit.Hooks.ws.usewsTenants();;
+  const cities = allCities.filter((city) => city.code === tenantId)
+  const [cityValue,setCityValue]=useState(cities[0])
+  const [locality,setLocality]=useState([]);
   const replaceUnderscore = (str) => {
     str = str.replace(/_/g, " ");
     return str;
   };
 
+ 
   const convertEpochToDate = (dateEpoch) => {
     if (dateEpoch == null || dateEpoch == undefined || dateEpoch == "") {
       return "NA";
@@ -45,6 +51,7 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
       sortOrder: "DESC",
       searchType: "CONNECTION",
     },
+  
   });
 
   useEffect(() => {
@@ -82,6 +89,7 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
   }
   //need to get from workflow
   const GetCell = (value) => <span className="cell-text">{value}</span>;
+  console.log("data",data)
   const columns = useMemo(
     () => [
       {
@@ -94,8 +102,11 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
               {row.original["connectionNo"] ? (
                 <span className={"link"}>
                   <Link
+                    // to={`/digit-ui/employee/ws/connection-details?applicationNumber=${row.original["connectionNo"]}&tenantId=${tenantId}&service=${
+                    //   row.original?.["service"]
+                    //   }&connectionType=${row.original?.["connectionType"]}&due=${row.original?.due || 0}&from=WS_SEWERAGE_CONNECTION_SEARCH_LABEL`}
                     to={`/digit-ui/employee/ws/connection-details?applicationNumber=${row.original["connectionNo"]}&tenantId=${tenantId}&service=${
-                      row.original?.["service"]
+                     businessService
                       }&connectionType=${row.original?.["connectionType"]}&due=${row.original?.due || 0}&from=WS_SEWERAGE_CONNECTION_SEARCH_LABEL`}
                   >
                     {row.original["connectionNo"] || "NA"}
@@ -112,7 +123,7 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
         Header: t("WS_COMMON_TABLE_COL_SERVICE_LABEL"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          return GetCell(t(`WS_${row.original?.["service"]}`));
+          return GetCell(businessService==="WS"?"WATER":"SEWARAGE");
         },
       },
 
@@ -120,7 +131,16 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
         Header: t("WS_COMMON_TABLE_COL_OWN_NAME_LABEL"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          return GetCell(row?.original?.connectionHolders?.map((owner) => owner?.name).join(",") ? row?.original?.connectionHolders?.map((owner) => owner?.name).join(",") : `${row.original?.["ownerNames"] || "NA"}`);
+          console.log("row data",row)
+          // return GetCell(row?.original?.connectionHolders?.map((owner) => owner?.name).join(",") ? row?.original?.connectionHolders?.map((owner) => owner?.name).join(",") : `${row.original?.["ownerNames"] || "NA"}`);
+          return GetCell(row?.original?.additionalDetails?.ownerName?row?.original?.additionalDetails?.ownerName:"-")
+        },
+      },
+      {
+        Header: "Mobile Number",
+        disableSortBy: true,
+        Cell: ({ row }) => {
+          return GetCell(row?.original?.mobileNumber);
         },
       },
       {
@@ -148,7 +168,7 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
         Header: t("WS_COMMON_TABLE_COL_ADDRESS"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          return GetCell(`${row.original?.["address"] || "NA"}`);
+          return GetCell(`${row.original?.address|| "NA"}`);
         },
       },
       {
@@ -302,7 +322,7 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
         {window.location.href.includes("water") ? t("WS_WATER_SEARCH_CONNECTION_SUB_HEADER") : t("WS_SEWERAGE_SEARCH_CONNECTION_SUB_HEADER")}
       </Header>
       {window.location.href.includes("search-demand")?"":<SearchForm className="ws-custom-wrapper" onSubmit={onSubmit} handleSubmit={handleSubmit}>
-        <SearchFields {...{ register, control, reset, tenantId, t }} />
+        <SearchFields cityValue={cityValue} locality={locality} setCityValue={setCityValue} setLocality={setLocality} {...{ register, control, reset, tenantId, t }} />
       </SearchForm>}
       { isLoading ? <Loader /> : null } 
       {data?.display && !resultOk ? (

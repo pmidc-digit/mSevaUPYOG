@@ -10,6 +10,7 @@ import { ifUserRoleExists } from "../../utils";
 
 const ModifyApplicationDetails = () => {
   const { t } = useTranslation();
+
   const userInfo = Digit.UserService.getUser();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
@@ -23,6 +24,9 @@ const ModifyApplicationDetails = () => {
   let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSModifyDetailsPage(t, tenantId, applicationNumber, serviceType, userInfo, { privacy: Digit.Utils.getPrivacyObject() });
   const { isServicesMasterLoading, data: servicesMasterData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-masters", ["WSEditApplicationByConfigUser"]);
 
+  console.log("application details in modify application details",applicationDetails)
+  console.log("servicesMasterData in modify application details",servicesMasterData)
+
   let workflowDetails = Digit.Hooks.useWorkflowDetails(
     {
       tenantId: tenantId,
@@ -34,7 +38,7 @@ const ModifyApplicationDetails = () => {
       }
     },
   );
-
+console.log("workflow det",workflowDetails)
   const {
     isLoading: updatingApplication,
     isError: updateApplicationError,
@@ -97,7 +101,7 @@ const ModifyApplicationDetails = () => {
         state: {
           applicationDetails: applicationDetails,
           action: "RESUBMIT_APPLICATION"
-        },
+        },oldResponse
       };
     }
     if (action?.action === "SUBMIT_APPLICATION") {

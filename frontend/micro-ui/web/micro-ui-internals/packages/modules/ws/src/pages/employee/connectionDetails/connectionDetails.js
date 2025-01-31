@@ -22,20 +22,141 @@ const GetConnectionDetails = () => {
   const connectionType = filters?.connectionType;
   const [showOptions, setShowOptions] = useState(false);
   const stateCode = Digit.ULBService.getStateId();
-  const actionConfig = ["MODIFY_CONNECTION_BUTTON", "BILL_AMENDMENT_BUTTON", "DISCONNECTION_BUTTON"];
-  const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useConnectionDetail(t, tenantId, applicationNumber, serviceType, {
+  console.log("serviceType",serviceType)
+  const actionConfig = ["COLLECT","SINGLE DEMAND","CANCEL DEMAND","MODIFY CONNECTION"];
+  const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useConnectionDetail(t, tenantId, applicationNumber, serviceType===("WS"||"WATER")?"WATER":serviceType===("SW"||"SEWARAGE")?"SEWARAGE":"", {
     privacy: Digit.Utils.getPrivacyObject(),
   });
+  console.log("application Details",applicationDetails)
   const menuRef = useRef();
   const actionMenuRef = useRef();
   sessionStorage.removeItem("IsDetailsExists");
   Digit.SessionStorage.del("PT_CREATE_EMP_WS_NEW_FORM");
 
   const { isLoading: isLoadingDemand, data: demandData } = Digit.Hooks.useDemandSearch(
-    { consumerCode: applicationDetails?.applicationData?.connectionNo, businessService: serviceType === "WATER" ? "WS" : "SW", tenantId },
+    { consumerCode: applicationDetails?.applicationData?.connectionNo, businessService: (serviceType === "WATER" || serviceType ==="WS") ? "WS" : (serviceType === "SEWARAGE" || serviceType ==="SW")? "SW":"", tenantId },
     { enabled: !!applicationDetails?.applicationData?.applicationNo }
   );
+  console.log("service type in connection.js",serviceType)
+console.log("Demand data",demandData)
+const [demandDetails,setDemandDetails]=useState([])
+let arr=[]
+const dateFormat=(dateString)=>{
+// Convert the timestamp to a Date object
+const date = new Date(dateString);
 
+// Extract the day, month, and year
+const day = String(date.getDate()).padStart(2, '0');
+const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+const year = date.getFullYear();
+
+// Format the date as DD/MM/YYYY
+const formattedDate = `${day}/${month}/${year}`;
+return formattedDate;
+}
+const[totalDemandTax,setTotalDemandTax]=useState(0)
+const [totalBalanceTax,setTotalBalanceTax]=useState(0)
+useEffect(() => {
+ 
+  if (demandData?.Demands?.length > 0) {
+   
+   let td=0;
+   let tb=0;
+    demandData.Demands.map((item)=>{
+      let obj={}
+     console.log("item",item)
+     obj.taxPeriodFrom =dateFormat(item.taxPeriodFrom)
+     obj.taxPeriodTo =dateFormat(item.taxPeriodTo)
+     console.log("obj",obj)
+
+     if(item.demandDetails[0].taxHeadMasterCode==="WS_CHARGE"||item.demandDetails[0].taxHeadMasterCode==="SW_CHARGE"||item.demandDetails[0].taxHeadMasterCode==="SW_DISCHARGE_CHARGE"){
+    
+      obj.demandTax=item.demandDetails[0].taxAmount
+      obj.collectionTax=item.demandDetails[0].collectionAmount
+      obj.demandPenality=0.0
+      obj.demandInterest=0.0
+      obj.collectionPenality=0.0
+      obj.collectionInterest=0.0
+      obj.balanceTax= (item.demandDetails[0].taxAmount-item.demandDetails[0].collectionAmount)
+      obj.balancePenality= 0.0
+      obj.balanceInterest=0.0
+      obj.advance=0.0
+      td+=item.demandDetails[0].taxAmount
+      tb+=(item.demandDetails[0].taxAmount-item.demandDetails[0].collectionAmount)
+      arr.push(obj)
+     }
+
+     if(item.demandDetails[0].taxHeadMasterCode==="WS_INTEREST"||item.demandDetails[0].taxHeadMasterCode==="SW_INTEREST"||item.demandDetails[0].taxHeadMasterCode==="WS_TIME_INTEREST"||item.demandDetails[0].taxHeadMasterCode==="SW_TIME_INTEREST"){
+      obj.demandTax=0.0
+      obj.collectionTax=0.0
+      obj.demandPenality=0.0
+      obj.demandInterest=item.demandDetails[0].taxAmount
+      obj.collectionPenality=0.0
+      obj.collectionInterest=item.collectionAmount
+      obj.balanceTax= (item.demandDetails[0].taxAmount-item.demandDetails[0].collectionAmount)
+      obj.balancePenality= 0.0
+      obj.balanceInterest=0.0
+      obj.advance=0.0
+      tb+=(item.demandDetails[0].taxAmount-item.demandDetails[0].collectionAmount)
+      arr.push(obj)
+     }
+
+
+     if(item.demandDetails[0].taxHeadMasterCode==="WS_PENALITY"||item.demandDetails[0].taxHeadMasterCode==="SW_PENALITY"||item.demandDetails[0].taxHeadMasterCode==="WS_TIME_PENALITY"||item.demandDetails[0].taxHeadMasterCode==="SW_TIME_PENALITY"){
+      obj.demandTax=0.0
+      obj.collectionTax=0.0
+      obj.demandPenality=item.demandDetails[0].taxAmount
+      obj.demandInterest=0.0
+      obj.collectionPenality=item.collectionAmount
+      obj.collectionInterest=0.0
+      obj.balanceTax= (item.demandDetails[0].taxAmount-item.demandDetails[0].collectionAmount)
+      obj.balancePenality= 0.0
+      obj.balanceInterest=0.0
+      obj.advance=0.0
+      tb+=(item.demandDetails[0].taxAmount-item.demandDetails[0].collectionAmount)
+      arr.push(obj)
+     }
+
+     if(item.demandDetails[0].taxHeadMasterCode==="SW_ADVANCE_CARRYFORWARD"||item.demandDetails[0].taxHeadMasterCode==="SW_ADVANCE_CARRYFORWARD"){
+      obj.demandTax=0.0
+      obj.collectionTax=0.0
+      obj.demandPenality=0.0
+      obj.demandInterest=0.0
+      obj.collectionPenality=0.0
+      obj.collectionInterest=0.0
+      obj.balanceTax= 0.0
+      obj.balancePenality= 0.0
+      obj.balanceInterest=0.0
+      obj.advance=item.advance
+      
+      arr.push(obj)
+     }
+    })
+  
+    setDemandDetails(arr)
+    setTotalBalanceTax(tb)
+    setTotalDemandTax(td)
+  }
+  else{
+    let obj={}
+    obj.taxPeriodFrom =0.0
+     obj.taxPeriodTo =0.0
+    obj.demandTax=0.0
+    obj.collectionTax=0.0
+    obj.demandPenality=0.0
+    obj.demandInterest=0.0
+    obj.collectionPenality=0.0
+    obj.collectionInterest=0.0
+    obj.balanceTax= 0.0
+    obj.balancePenality= 0.0
+    obj.balanceInterest=0.0
+    obj.advance=0.0
+    arr.push(obj)
+    setDemandDetails(arr)
+  }
+},[demandData])
+console.log("arr",arr)
+console.log("arr",demandDetails)
   const [showModal, setshowModal] = useState(false);
   const [billData, setBilldata] = useState([]);
   const [showActionToast, setshowActionToast] = useState(null);
@@ -105,7 +226,9 @@ const GetConnectionDetails = () => {
       });
       return;
     }
-    if (applicationDetails?.fetchBillsData[0]?.totalAmount > 0) {
+    console.log("checkappstatus",checkApplicationStatus)
+    console.log("get modidy application det",applicationDetails)
+    if (applicationDetails?.fetchBillsData !== undefined && applicationDetails?.fetchBillsData?.[0]?.totalAmount > 0) {
       setshowActionToast({
         key: "error",
         label: "WS_DUE_AMOUNT_SHOULD_BE_ZERO",
@@ -200,7 +323,7 @@ const GetConnectionDetails = () => {
     }
   }; 
   function onActionSelect(action) {
-    if (action === "MODIFY_CONNECTION_BUTTON") {
+    if (action === "MODIFY CONNECTION") {
       getModifyConnectionButton();
     } else if (action === "BILL_AMENDMENT_BUTTON") {
       getBillAmendmentButton();
@@ -299,15 +422,20 @@ const showActionRestoration = ["RESTORATION_BUTTON"]
           isLoading={isLoading}
           isDataLoading={isLoading}
           applicationData={applicationDetails?.applicationData}
+          demandData={demandData?.Demands?.length===0?[]:demandDetails}
           mutate={mutate}
           businessService={applicationDetails?.processInstancesDetails?.[0]?.businessService}
           moduleCode="WS"
           showToast={showToast}
           setShowToast={setShowToast}
           closeToast={closeToast}
+          totalDemandTax={totalDemandTax}
+          totalBalanceTax={totalBalanceTax}
           isInfoLabel={checkifPrivacyenabled}
           labelComponent={<WSInfoLabel t={t} />}
         />
+
+
         {ifUserRoleExists("WS_CEMP") && checkApplicationStatus && !applicationDetails?.isDisconnectionDone ? (
           <ActionBar>
             {displayMenu ? <Menu options={showAction} localeKeyPrefix={"WS"} t={t} onSelect={onActionSelect} /> : null}

@@ -35,6 +35,9 @@ const App = ({ path }) => {
   const WSReSubmitDisconnectionApplication = Digit?.ComponentRegistryService?.getComponent("WSReSubmitDisconnectionApplication");
   const WSMyConnections = Digit?.ComponentRegistryService?.getComponent("WSMyConnections");
   const WNSMyBillsComponent = Digit?.ComponentRegistryService?.getComponent("WNSMyBillsComponent");
+
+  const WSBillGeneration = Digit?.ComponentRegistryService?.getComponent("WSBillGeneration");
+
   return (
     <React.Fragment>
       <div className="ws-citizen-wrapper">
@@ -61,6 +64,8 @@ const App = ({ path }) => {
           <PrivateRoute path={`${path}/consumption/details`} component={WSCitizenConsumptionDetails} />
           <PrivateRoute path={`${path}/edit-application/:tenantId`} component={WSCitizenEditApplication} />
           <PrivateRoute path={`${path}/modify-connection/:tenantId`} component={WSCitizenEditApplication} />
+
+            <PrivateRoute path={`${path}/water/bill-generation`} component={(props) => <WSBillGeneration {...props} parentRoute={path} />} />
         </Switch>
       </div>
     </React.Fragment>

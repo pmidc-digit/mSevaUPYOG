@@ -9,6 +9,9 @@ import ResponseBillAmend from "./ResponseBillAmend";
 import WSDisconnectionResponse from "./DisconnectionApplication/WSDisconnectionResponse";
 import WSRestorationResponse from "./RestorationApplication/WSRestorationResponse";
 
+import BillInbox from "../../../../bills/src/pages/employee/SearchBill/BillInbox";
+
+
 const BILLSBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
 
@@ -284,6 +287,8 @@ const App = ({ path }) => {
   const WSSearchIntegrated = Digit?.ComponentRegistryService?.getComponent("WSSearchIntegrated");
   const WSBulkBillGeneration = Digit?.ComponentRegistryService?.getComponent("WSBulkBillGeneration");
 
+  const WSBillGeneration = Digit?.ComponentRegistryService?.getComponent("WSBillGeneration");
+
   const locationCheck =
     window.location.href.includes("/employee/ws/new-application") ||
     window.location.href.includes("/employee/ws/modify-application") ||
@@ -354,6 +359,11 @@ const App = ({ path }) => {
           <PrivateRoute path={`${path}/water/wns-search`} component={(props) => <WSSearchIntegrated {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/water/bulk-bill`} component={(props) => <WSBulkBillGeneration {...props} parentRoute={path} />} />
 
+
+          <PrivateRoute path={`${path}/water/bill-generation`} component={(props) => <WSBillGeneration {...props} parentRoute={path} />} />
+
+          <PrivateRoute path={`${path}/water/bill-genie`} component={(props) => <BillInbox {...props} parentRoute={path} />} />
+          {/* <Route path={`${path}/search`} component={SearchConnectionComponent} />
           {/* <Route path={`${path}/search`} component={SearchConnectionComponent} />
           <Route path={`${path}/search-results`} component={SearchResultsComponent} /> */}
         </div>

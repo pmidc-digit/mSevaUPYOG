@@ -6,6 +6,8 @@ import { WorkflowService } from "../../elements/WorkFlow";
 import cloneDeep from "lodash/cloneDeep";
 import _ from "lodash";
 import React from "react";
+import axios from "axios";
+import Urls from "../../atoms/urls";
 
 const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
   if (searcher == "") return str;
@@ -69,9 +71,17 @@ const checkFeeEstimateVisible = async (wsDatas) => {
 
 export const WSSearch = {
   application: async (tenantId, filters = {}, serviceType) => {
-    const response = await WSService.search({ tenantId, filters: { ...filters }, businessService: serviceType === "WATER" ? "WS" : "SW" });
-    return response;
-  },
+   const response = await WSService.search({ tenantId, filters: { ...filters }, businessService: serviceType === "WATER" ? "WS" : "SW" });
+   console.log("application")
+   // Create a URLSearchParams object
+//const params = new URLSearchParams(filters);
+//console.log("params",params)
+// console.log("filetrs",filters)
+// // Extract the applicationNumber
+// const applicationNumber = "WS_AP/107/2024-25/227097";
+//     const response = await WSService.search({ tenantId, filters});
+     return response;
+   },  
 
   property: async (tenantId, propertyfilter = {}) => {
     const response = await PTService.search({ tenantId, filters: propertyfilter, auth: true });
@@ -684,22 +694,37 @@ export const WSSearch = {
   modifyApplicationDetails: async (t, tenantId, applicationNumber, serviceType = "WATER", userInfo, config = {}) => {
 
     const filters = { applicationNumber };
-
+    console.log("application no",applicationNumber)
     let propertyids = "",
       consumercodes = "",
       businessIds = "";
 
-    const response = await WSSearch.application(tenantId, filters, serviceType);
+    // const response = await WSSearch.application(tenantId, filters, serviceType);
+    const response = await WSSearch.application(tenantId, `${applicationNumber}`);
+    /* Search Service Request */
+   // const response = axios.post(`${Urls.ws.water_search}?tenantId=${tenantId}&applicationNumber=${applicationNumber}`, {RequestInfo: Digit.UserService.getUser()?.info })
+   // .then(response => {
+    //  console.log('Post created: ', response.data);
+      // Optionally update state or do other tasks after successful post
+   // }) 
+  //  .catch(error => {
+   //   console.error('Error creating post: ', error);
+      // Handle error
+  //  });
 
+
+    //console.log("response in modify",response)
     const wsData = cloneDeep(serviceType == "WATER" ? response?.WaterConnection : response?.SewerageConnections);
+ 
+    console.log("wsData",wsData)
+    //const oldFilters = { connectionNumber: wsData?.[0]?.connectionNo, isConnectionSearch: true };
 
-    const oldFilters = { connectionNumber: wsData?.[0]?.connectionNo, isConnectionSearch: true };
-
-    const oldResponse = await WSSearch.application(tenantId, oldFilters, serviceType);
+   // const oldResponse = await WSService.wsModifyApplDetails(tenantId, oldFilters, serviceType);
+    const oldResponse = await WSService.wsModifyApplDetails(tenantId, `${applicationNumber}`);
 
     const wsOldDetails = cloneDeep(serviceType == "WATER" ? oldResponse?.WaterConnection?.[1] : oldResponse?.SewerageConnections?.[1]);
 
-
+    console.log("wsOldDetails",wsOldDetails)
     wsData?.forEach((item) => {
       propertyids = propertyids + item?.propertyId + ",";
       consumercodes = consumercodes + item?.applicationNo + ",";
@@ -729,6 +754,7 @@ export const WSSearch = {
     let oldPropertyDetails = cloneDeep(oldProperties?.Properties?.[0]);
     const wsOldData = cloneDeep(wsOldDetails);
 
+    console.log("wsDataDetails",wsDataDetails)
     const applicationHeaderDetails = {
       title: " ",
       asSectionHeader: true,
@@ -1133,8 +1159,30 @@ export const WSSearch = {
     const connectionDetails = {
       title: "WS_COMMON_CONNECTION_DETAIL",
       asSectionHeader: true,
-      values: serviceType == "WATER"
+      values: (serviceType == "WATER"||"WS")
         ? [
+
+          // {
+          //   title: "Connection Category",
+          //   value: wsDataDetails?.connectionCategory
+          //     ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.connectionCategory?.toUpperCase(), " ", "_")}`)
+          //     : t("NA"),
+          //   oldValue: wsDataDetails?.connectionCategory != wsOldData?.connectionCategory ? [
+          //     {
+          //       value: wsDataDetails?.connectionCategory
+          //         ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.connectionCategory?.toUpperCase(), " ", "_")}`)
+          //         : t("NA"), className: "newValue", style: { display: "inline" }
+          //     }, 
+          //     {
+          //       value: `${t("WS_OLD_LABEL_NAME")} ${wsOldData?.connectionCategory
+          //         ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsOldData?.connectionCategory?.toUpperCase(), " ", "_")}`)
+          //         : t("NA")}`,
+          //       style: { color: 'gray', paddingLeft: "10px", display: "inline", fontSize: "13px" }, className: "oldValue"
+          //     }
+          //   ] : null
+          // },
+
+
           {
             title: "WS_SERV_DETAIL_CONN_TYPE",
             value: wsDataDetails?.connectionType
@@ -1557,9 +1605,9 @@ export const WSSearch = {
       businessIds = [];
 
     const response = await WSSearch.application(tenantId, filters, serviceType);
-
+   console.log("response in search",response)
     const wsData = cloneDeep(serviceType == "WATER" ? response?.WaterConnection : response?.SewerageConnections);
-
+   console.log("wsData in search",wsData)
     wsData?.forEach((item) => {
       propertyids = propertyids + item?.propertyId + ",";
       consumercodes = consumercodes + item?.connectionNo + ",";
@@ -1611,6 +1659,12 @@ export const WSSearch = {
               { title: "PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL", value: wsDataDetails?.connectionNo || t("NA") },
               { title: "WS_SERVICE_NAME_LABEL", value: t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType? wsDataDetails?.applicationType : wsDataDetails?.serviceType}`) },
               {
+                title: "Connection Category",
+                value: wsDataDetails?.connectionCategory
+                  ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.connectionCategory?.toUpperCase(), " ", "_")}`)
+                  : t("NA"),
+              },
+              {
                 title: "WS_SERV_DETAIL_CONN_TYPE",
                 value: wsDataDetails?.connectionType
                   ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.connectionType?.toUpperCase(), " ", "_")}`)
@@ -1618,6 +1672,12 @@ export const WSSearch = {
               },
               { title: "WS_SERV_DETAIL_NO_OF_TAPS", value: wsDataDetails?.noOfTaps || t("NA") },
               { title: "WS_PIPE_SIZE_IN_INCHES_LABEL", value: wsDataDetails?.pipeSize || t("NA") },
+              {
+                title: "Group",
+                value: wsDataDetails?.group
+                  ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.group?.toUpperCase(), " ", "_")}`)
+                  : t("NA"),
+              },
               {
                 title: "WS_SERV_DETAIL_WATER_SOURCE",
                 value: wsDataDetails?.waterSource
@@ -1627,6 +1687,12 @@ export const WSSearch = {
               {
                 title: "WS_SERV_DETAIL_WATER_SUB_SOURCE",
                 value: wsDataDetails?.waterSource ? t(`${wsDataDetails?.waterSource?.toUpperCase()?.split(".")[1]}`) : t("NA"),
+              },
+              {
+                title: "Old Consumer No",
+                value: wsDataDetails?.oldConnectionNumber
+                  ? t(`WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(wsDataDetails?.oldConnectionNumber?.toUpperCase(), " ", "_")}`)
+                  : t("NA"),
               },
               {
                 title: "WS_SERV_DETAIL_CONN_EXECUTION_DATE",
@@ -1827,7 +1893,7 @@ export const WSSearch = {
             ]
           : [{ title: "WS_CONN_HOLDER_SAME_AS_OWNER_DETAILS", value: t("SCORE_YES") }],
     };
-
+ 
     const isApplicationApproved =  workFlowDataDetails?.ProcessInstances?.[0]?.state.isTerminateState  
     const isLabelShow = {
       title: "",
@@ -2109,7 +2175,7 @@ export const WSSearch = {
     wsDataDetails.serviceType = serviceDataType;
     //for unmasking of plumber mobilenumber in FI/DV edit disconnection
     sessionStorage.removeItem("IsDetailsExists");
-
+   console.log("details",details)
     return {
       applicationData: wsDataDetails,
       applicationDetails: details,

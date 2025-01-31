@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation, useHistory } from "react-router-dom";
 import * as func from "../../../utils";
 import _ from "lodash";
-import { newConfig as newConfigLocal } from "../../../config/wsCreateConfig";
+import { newConfig  } from "../../../config/wsCreateConfig";
 import { convertApplicationData, convertModifyApplicationDetails, updatePayloadOfWS } from "../../../utils";
 import cloneDeep from "lodash/cloneDeep";
 
@@ -27,7 +27,7 @@ const ModifyApplication = () => {
   const serviceType = filters?.service;
 
   const stateId = Digit.ULBService.getStateId();
-  let { data: newConfig, isLoading: isConfigLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSCreateConfig(stateId, {});
+  //let { data: newConfig, isLoading: isConfigLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSCreateConfig(stateId, {});
 
   let details = cloneDeep(state?.data);
   let { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useWSDetailsPage(t, tenantId, details?.applicationNo, details?.applicationData?.serviceType,{privacy : Digit.Utils.getPrivacyObject() });
@@ -42,7 +42,7 @@ const ModifyApplication = () => {
   );
 
   useEffect(() => {
-   if (!isConfigLoading) {
+  //  if (!isConfigLoading) {
      // const config = newConfigLocal.find((conf) => conf.hideInCitizen && conf.isModify);
      const config = newConfig.find((conf) => conf.hideInCitizen && conf.isModify);
      config.head = "WS_WATER_AND_SEWERAGE_MODIFY_CONNECTION_LABEL";
@@ -51,7 +51,7 @@ const ModifyApplication = () => {
      bodyDetails.forEach(bdyData => { if (bdyData?.head == "WS_COMMON_PROPERTY_DETAILS") bdyData.head = ""; })
      config.body = bodyDetails;
      setConfig(config);
-   }
+  //  }
   }, [newConfig]);
 
   useEffect(() => {
@@ -215,7 +215,7 @@ const ModifyApplication = () => {
     setShowToast(null);
   };
 
-  if (enabledLoader || isEnableLoader || isConfigLoading) {
+  if (enabledLoader || isEnableLoader) {
     return <Loader />;
   }
 

@@ -6,6 +6,7 @@ const Urls = {
   location: {
     localities: `/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=ADMIN&boundaryType=Locality`,
     revenue_localities: `/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=REVENUE&boundaryType=Locality`,
+    revenue_blocks:`/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=REVENUE&boundaryType=Block`
   },
 
   pgr_search: `/pgr-services/v2/request/_search`,
@@ -194,7 +195,9 @@ const Urls = {
     sewerage_applyAdhocTax: "/sw-calculator/sewerageCalculator/_applyAdhocTax",
     getSearchDetails: "/inbox/v1/dss/_search",
     disconnection_notice: "/pdf-service/v1/_createnosave",
-    meter_search:"/ws-calculator/meterConnection/_search"
+    meter_search:"/ws-calculator/meterConnection/_search",
+     ws_billgenerate_create:"/sw-calculator/seweragecharges/scheduler/_create?",
+     swc_inbox_search:"/sw-services/swc/_search?"
   },
 digiLocker:{
   authorization:"/requester-services-dx/user/authorization/url",

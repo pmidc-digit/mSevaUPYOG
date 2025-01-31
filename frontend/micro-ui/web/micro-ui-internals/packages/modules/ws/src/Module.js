@@ -38,6 +38,8 @@ import WSDisconnectAcknowledgement from "./pageComponents/WSDisconnectAcknowledg
 import WSRestorationAcknowledgement from "./pageComponents/WSRestorationAcknowledgement";
 import WSDisconnectionAppDetails from "./pageComponents/WSDisconnectionAppDetails";
 
+
+
 //Components
 import WSInbox from "./components/WSInbox";
 import BillAmendmentCard from "./components/BillAmendmentCard";
@@ -97,6 +99,10 @@ import SearchIntegrated from "./pages/employee/SearchIntegrated";
 import SearchWaterConnectionViewIntegrated
  from "./pages/employee/SearchWaterConnection/SearchWaterConnectionViewIntegrated";
  import BulkBillGeneration from "./pages/employee/BulkBillGeneration"
+
+
+ import BillGeneration from "./pages/employee/BillGeneration";
+import BillSearch from "./components/SearchWaterConnection/BillSearch";
 
 
 const WSModule = ({ stateCode, userType, tenants }) => {
@@ -249,7 +255,10 @@ const componentsToRegister = {
   WSSearchWaterConnectionIntegrated:SearchWaterConnectionIntegrated,
   WSSearchIntegrated:SearchIntegrated,
   WSSearchWaterConnectionViewIntegrated :SearchWaterConnectionViewIntegrated,
-  WSBulkBillGeneration:BulkBillGeneration
+  WSBulkBillGeneration:BulkBillGeneration,
+
+  WSBillGeneration: BillGeneration,
+  WSBillSearch: BillSearch
 };
 
 export const initWSComponents = () => {

@@ -19,4 +19,13 @@ export const LocationService = {
     });
     return response;
   },
+  getRevenueBlocks: async (data) => {
+    const response = await ServiceRequest({
+      serviceName: "getRevenueBlocks",
+      url: Urls.location.revenue_blocks,
+      params: data ,
+      useCache: true,
+    });
+    return response;
+  },
 };

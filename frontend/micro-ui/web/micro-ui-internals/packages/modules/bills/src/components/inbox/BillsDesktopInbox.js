@@ -1,4 +1,4 @@
-import { Card, Loader } from "@upyog/digit-ui-react-components";
+import { Card, Header, Loader } from "@upyog/digit-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
@@ -272,6 +272,7 @@ const BillsDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
         </div>
       )}
       <div style={{ flex: 1 }}>
+      
         <SearchApplication
           defaultSearchParams={props.defaultSearchParams}
           onSearch={props.onSearch}
@@ -280,6 +281,7 @@ const BillsDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
           searchFields={props.searchFields}
           isInboxPage={!props?.isSearch}
           searchParams={props.searchParams}
+          onSearchData={props.onSearchData}
         />
         <div className="result" style={{ marginLeft: !props?.isSearch ? "24px" : "", flex: 1 }}>
           {result}

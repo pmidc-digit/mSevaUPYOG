@@ -1,8 +1,27 @@
 import React, { Fragment } from "react";
+import {useState } from "react";
 import { Controller, useWatch } from "react-hook-form";
-import { TextInput, SubmitBar, DatePicker, SearchField, Dropdown, Loader, MobileNumber } from "@upyog/digit-ui-react-components";
+import { TextInput, SubmitBar, DatePicker, SearchField, Dropdown, Loader, MobileNumber ,Localities} from "@upyog/digit-ui-react-components";
 
-const SearchFields = ({ register, control, reset, tenantId, t }) => {
+const SearchFields = ({ register, control, reset, tenantId, t ,cityValue,locality,setCityValue,setLocality}) => {
+    const allCities = Digit.Hooks.ws.usewsTenants();;
+    const cities = allCities.filter((city) => city.code === tenantId)
+  //   const { data: tenantlocalties, isLoading } =Digit.Hooks.useBoundaryLocalities(tenantId, "revenue", { enabled: true }, t);
+  //   if (isLoading && !false) {
+  //     return <Loader />;
+  //   }
+  //  console.log("tl",tenantlocalties);
+   
+  function selectLocality(value) {
+    setLocality(value)
+      }
+     
+     
+       const [selectedCity, setSelectedCity] = useState()
+    
+       const handleCityChange =(value)=>{
+         setCityValue(value)
+       }
   const propsForMobileNumber = {
     maxlength: 10,
     pattern: "[6-9][0-9]{9}",
@@ -17,7 +36,23 @@ const SearchFields = ({ register, control, reset, tenantId, t }) => {
   let validation = {}
   return (
     <>
-      <SearchField>
+    <SearchField >
+    <label>{"City"}</label>
+                  <Dropdown
+                    //className="form-field"
+                    name="city"
+                    selected={cityValue}
+                   // disable={true}
+                    option={allCities}
+                    id="city"
+                   ref={register({})} 
+                    select={handleCityChange}
+                    optionKey="name"
+                    //onBlur={props.onBlur}
+                    t={t}
+                  />
+    </SearchField>
+      <SearchField >
         <label>{t("WS_MYCONNECTIONS_CONSUMER_NO")}</label>
         <TextInput 
           name="connectionNumber" 
@@ -30,17 +65,56 @@ const SearchFields = ({ register, control, reset, tenantId, t }) => {
           })}
           />
       </SearchField>
-      <SearchField>
+      <SearchField >
         <label>{t("WS_SEARCH_CONNNECTION_OLD_CONSUMER_LABEL")}</label>
         <TextInput name="oldConnectionNumber" inputRef={register({})} {...propsForOldConnectionNumberNpropertyId} />
       </SearchField>
-      <SearchField>
+      <SearchField >
         <label>{t("WS_PROPERTY_ID_LABEL")}</label>
         <TextInput name="propertyId" inputRef={register({})} {...propsForOldConnectionNumberNpropertyId} />
       </SearchField>
       <SearchField>
         <label>{t("WS_HOME_SEARCH_RESULTS_OWN_MOB_LABEL")}</label>
         <MobileNumber name="mobileNumber" inputRef={register({})} {...propsForMobileNumber} />
+      </SearchField>
+      <SearchField >
+      <label>{"Locality/Mohalla"}</label>
+        <Localities
+              selectLocality={selectLocality}
+              tenantId={tenantId}
+              boundaryType="revenue"
+              keepNull={false}
+              optionCardStyles={{ height: "600px", overflow: "auto", zIndex: "10" }}
+              selected={locality}
+              name="locality"
+           
+              disableLoader={false}
+            />
+             {/* <Dropdown
+                            
+                            name="locality"
+                            selected={locality}
+                           // disable={true}
+                            option={tenantlocalties}
+                           
+                           ref={register({})} 
+                            select={handleCityChange}
+                            optionKey="name"
+                            //onBlur={props.onBlur}
+                            t={t} */}
+      </SearchField>
+      <SearchField >
+        <label>{"Owner Name"}</label>
+                <TextInput 
+                  name="ownername" 
+                  inputRef={register({})} 
+                  {...(validation = {
+                    isRequired: false,
+                    pattern: "^[A-Za-z\s]+$",
+                    type: "text",
+                    title: t("ERR_INVALID_OWNER_NMAE"),
+                  })}
+                  />
       </SearchField>
       <SearchField className="submit">
         <SubmitBar label={t("WS_SEARCH_CONNECTION_SEARCH_BUTTON")} submit />
@@ -56,6 +130,10 @@ const SearchFields = ({ register, control, reset, tenantId, t }) => {
               propertyId: "",
               connectionNumber: "",
               oldConnectionNumber: "",
+              ownerName:"",
+              cityValue:"",
+              locality:"",
+
             });
           }}
         >

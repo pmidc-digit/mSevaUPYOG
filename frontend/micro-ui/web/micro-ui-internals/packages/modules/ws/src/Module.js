@@ -96,10 +96,21 @@ import ResubmitDisconnection from "./pages/employee/EditDisconnectionApplication
 //import IntegratedBill from "./pages/employee/SearchWaterConnectionIntegrated";
 import SearchWaterConnectionIntegrated from "./pages/employee/SearchWaterConnectionIntegrated";
 import SearchIntegrated from "./pages/employee/SearchIntegrated";
-import SearchWaterConnectionViewIntegrated
- from "./pages/employee/SearchWaterConnection/SearchWaterConnectionViewIntegrated";
- import BulkBillGeneration from "./pages/employee/BulkBillGeneration"
-
+import SearchWaterConnectionViewIntegrated from "./pages/employee/SearchWaterConnection/SearchWaterConnectionViewIntegrated";
+import BulkBillGeneration from "./pages/employee/BulkBillGeneration";
+//
+import NewApplicationStepForm from "./pages/employee/NewApplicationStepForm";
+//New application form steps
+import WSConnectionDetailsStep from "./components/newWSApplicationFormSteps/ConnectionDetails";
+import WSDocumentsStep from "./components/newWSApplicationFormSteps/Documents";
+import WSAdditionalDetailsStep from "./components/newWSApplicationFormSteps/AdditionalDetails";
+import WSSummaryStep from "./components/newWSApplicationFormSteps/Summary";
+//New application step/page components
+import WSApplyingFor from "./pageComponents/newApplicationComponents/WSApplyingFor";
+import WSConnectionDetailsSingleInstance from "./pageComponents/newApplicationComponents/WSConnectionDetailsSingleInstance";
+//
+import getRootReducer from "./redux/reducers";
+export const WSReducers = getRootReducer;
 
  import BillGeneration from "./pages/employee/BillGeneration";
 import BillSearch from "./components/SearchWaterConnection/BillSearch";
@@ -234,6 +245,7 @@ const componentsToRegister = {
   WSApplicationBillAmendment: ApplicationBillAmendment,
   WSRequiredDocuments: RequiredDocuments,
   WSNewApplication: NewApplication,
+  WSNewApplicationStepForm: NewApplicationStepForm,
   WSApplicationDetails: ApplicationDetails,
   WSGetConnectionDetails: GetConnectionDetails,
   WSActivateConnection: ActivateConnection,
@@ -258,7 +270,14 @@ const componentsToRegister = {
   WSBulkBillGeneration:BulkBillGeneration,
 
   WSBillGeneration: BillGeneration,
-  WSBillSearch: BillSearch
+  WSBillSearch: BillSearch,
+  //
+  WSConnectionDetailsStep,
+  WSDocumentsStep,
+  WSAdditionalDetailsStep,
+  WSSummaryStep,
+  WSApplyingFor,
+  WSConnectionDetailsSingleInstance
 };
 
 export const initWSComponents = () => {

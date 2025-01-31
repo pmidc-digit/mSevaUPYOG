@@ -60,6 +60,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
     onSelect("cpt", { details: propertyDetails?.Properties[0] });
     sessionStorage.setItem("Digit_FSM_PT",JSON.stringify(propertyDetails?.Properties[0]))
     localStorage.setItem("pgrProperty",JSON.stringify(propertyDetails?.Properties[0]))
+    sessionStorage.setItem("wsProperty", JSON.stringify(propertyDetails?.Properties[0]))
   }, [propertyDetails, pathname]);
 
   const searchProperty = () => {

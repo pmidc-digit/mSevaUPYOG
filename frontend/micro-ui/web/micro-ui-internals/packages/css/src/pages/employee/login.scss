@@ -3,7 +3,6 @@
 
   .employeeCard {
    margin-top: 0px;
- 
     .submit-bar {
       @apply w-full;
   
@@ -25,6 +24,9 @@
         
       }
   }
+}
+.employeeCard{
+  width:100% !important;
 }
 .banner .bannerCard{
   min-width: 420px !important;
@@ -492,7 +494,6 @@
   text-align:"center";
   color:white;
   margin-top: 170px;
-  border:1px solid black
 }
 .footerText{
   display: 'flex';

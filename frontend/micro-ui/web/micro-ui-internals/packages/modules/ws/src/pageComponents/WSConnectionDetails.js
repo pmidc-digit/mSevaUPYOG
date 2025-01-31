@@ -3,11 +3,9 @@ import React, { useEffect, useState } from "react";
 import { getPattern, stringReplaceAll } from "../utils";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router-dom";
-import _, { keys } from "lodash";
 import cloneDeep from "lodash/cloneDeep";
-import * as func from "../utils";
-import {constants} from "../constants/constants";
+import { constants } from "../constants/constants";
+import { useSelector } from "react-redux";
 
 const createConnectionDetails = () => ({
   water: true,
@@ -19,68 +17,71 @@ const createConnectionDetails = () => ({
   proposedToilets: "",
   proposedWaterClosets: "",
   //Common for water & sewerage (Confirm once)
-  connectionType:"",
-  waterSource:"",
-  billingType:"",
-  connectionCategory:"",
-  subUsageType:"",
-  ledgerIdOrArea:"",
-  billingAmount:"",
-  group:""
+  connectionType: "",
+  waterSource: "",
+  billingType: "",
+  connectionCategory: "",
+  subUsageType: "",
+  ledgerIdOrArea: "",
+  billingAmount: "",
+  group: "",
 });
 
-
-const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
-
-
+const WSConnectionDetails = ({ config, onSelect, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
-  const { pathname } = useLocation();
-  const [connectionDetails, setConnectionDetails] = useState(formData?.ConnectionDetails ? [formData?.ConnectionDetails?.[0]] : [createConnectionDetails()]);
-  const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-  const stateCode = Digit.ULBService.getStateId();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  //For form
+  const [connectionDetails, setConnectionDetails] = useState(
+    formData?.ConnectionDetails ? [formData?.ConnectionDetails?.[0]] : [createConnectionDetails()]
+  );
   const [isErrors, setIsErrors] = useState(false);
-  const [waterSewarageSelection, setWaterSewarageSelection] = useState({ water: true, sewerage: false });
-
+  const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
+  //For dropdowns
   const [pipeSizeList, setPipesizeList] = useState([]);
-  const [connectionTypeList,setConnectionTypeList]=useState([]);
+  const [connectionTypeList, setConnectionTypeList] = useState([]);
   const [waterSourceList, setWaterSourceList] = useState([]);
-  const [billingTypeList,setBillingTypeList]=useState([]);
-  const [connectionCategoryList,setConnectionCategoryList]=useState([]);
-  const [subUsageTypeList,setSubUsageTypeList]=useState([]);
-  const [groupList,setGroupList]=useState([]);
+  const [billingTypeList, setBillingTypeList] = useState([]);
+  const [connectionCategoryList, setConnectionCategoryList] = useState([]);
+  const [subUsageTypeList, setSubUsageTypeList] = useState([]);
+  const [groupList, setGroupList] = useState([]);
 
-  const { isWSServicesCalculationLoading, data: wsServicesCalculationData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-calculation", ["PipeSize"]);
-  const { isMdmsLoading, data: mdmsData } = Digit.Hooks.ws.useMDMS(stateCode, "ws-services-masters", ["connectionType", "waterSource","billingType","connectionCategory"]);
-
-  useEffect(() => {
-    console.log("connectionDetails in WSConnectionDetails:",connectionDetails);
-    const data = connectionDetails.map((e) => {
-      return e;
-    });
-    onSelect(config?.key, data);
-  }, [connectionDetails]);
-
+  const { isWSServicesCalculationLoading, data: wsServicesCalculationData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-calculation", [
+    "PipeSize",
+  ]);
+  const { isMdmsLoading, data: mdmsData } = Digit.Hooks.ws.useMDMS(tenantId, "ws-services-masters", [
+    "connectionType",
+    "waterSource",
+    "billingType",
+    "connectionCategory",
+    "subUsageType",
+    "groups",
+  ]);
 
   useEffect(() => {
     const list = wsServicesCalculationData?.["ws-services-calculation"]?.PipeSize || [];
-    list?.forEach(data => data.i18nKey = data.size);
+    list?.forEach((data) => (data.i18nKey = data.size));
     setPipesizeList(list);
 
     const connectionTypes = mdmsData?.["ws-services-masters"]?.connectionType || [];
     connectionTypes?.forEach((data) => (data.i18nKey = `WS_CONNECTIONTYPE_${stringReplaceAll(data?.code?.toUpperCase(), " ", "_")}`));
     setConnectionTypeList(connectionTypes);
 
-    const waterSource = mdmsData?.["ws-services-masters"]?.waterSource && cloneDeep(mdmsData?.["ws-services-masters"]?.waterSource) || [];
-    waterSource?.forEach(data => data.i18nKey = `WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(data?.code?.split('.')[0]?.toUpperCase(), " ", "_")}`);
-    var flags = [], waterSourceOutput = [], l = waterSource.length, i;
+    const waterSource = (mdmsData?.["ws-services-masters"]?.waterSource && cloneDeep(mdmsData?.["ws-services-masters"]?.waterSource)) || [];
+    waterSource?.forEach(
+      (data) => (data.i18nKey = `WS_SERVICES_MASTERS_WATERSOURCE_${stringReplaceAll(data?.code?.split(".")[0]?.toUpperCase(), " ", "_")}`)
+    );
+    var flags = [],
+      waterSourceOutput = [],
+      l = waterSource.length,
+      i;
     for (i = 0; i < l; i++) {
-        if (flags[waterSource[i].i18nKey]) continue;
-        flags[waterSource[i].i18nKey] = true;
-        waterSourceOutput.push({
-            i18nKey: waterSource?.[i]?.i18nKey,
-            code: waterSource?.[i]?.code,
-            // waterSubSource: waterSource?.[i]?.code?.split(".")[0]
-        });
+      if (flags[waterSource[i].i18nKey]) continue;
+      flags[waterSource[i].i18nKey] = true;
+      waterSourceOutput.push({
+        i18nKey: waterSource?.[i]?.i18nKey,
+        code: waterSource?.[i]?.code,
+        // waterSubSource: waterSource?.[i]?.code?.split(".")[0]
+      });
     }
     setWaterSourceList(waterSourceOutput);
 
@@ -92,24 +93,49 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
     connectionCategories?.forEach((data) => (data.i18nKey = `WS_CONNECTIONCATEGORY_${stringReplaceAll(data?.code?.toUpperCase(), " ", "_")}`));
     setConnectionCategoryList(connectionCategories);
 
-  }, [wsServicesCalculationData,mdmsData]);
+    const propertyDetails = JSON.parse(sessionStorage.getItem("wsProperty"));
+    const subUsageType = mdmsData?.["ws-services-masters"]?.subUsageType || [];
+    subUsageType?.forEach((data) => (data.i18nKey = data?.code?.toUpperCase()));
+    const parentUsageType = propertyDetails?.usageCategory;
+    const subUsageTypeList = subUsageType.filter((item) => item.parentUsageType === parentUsageType);
+    console.log("subUsageTypeList", subUsageType, parentUsageType, propertyDetails);
+    setSubUsageTypeList(subUsageTypeList);
+
+    const groups = mdmsData?.["ws-services-masters"]?.groups || [];
+    groups?.forEach((data) => (data.i18nKey = data?.code?.toUpperCase()));
+    setGroupList(groups);
+  }, [wsServicesCalculationData, mdmsData]);
 
   useEffect(() => {
-    if (userType === "employee") {
-      onSelect(config.key, { ...formData[config.key], ...connectionDetails });
-    }
-    if (connectionDetails?.[0]?.water) setWaterSewarageSelection({ water: true, sewerage: false })
-
-    if (connectionDetails?.[0]?.sewerage) setWaterSewarageSelection({ water: false, sewerage: true })
+    console.log("connectionDetails in WSConnectionDetails:", connectionDetails);
+    onSelect(config?.key, connectionDetails);
   }, [connectionDetails]);
 
-  useEffect(() => {
-    if (!formData?.ConnectionDetails) {
-      setConnectionDetails([createConnectionDetails()]);
-    }
-  }, [formData?.ConnectionDetails]);
+  const allStepsData = useSelector((state) => state.ws.newWSApplicationForm.formData);
 
-  if (isWSServicesCalculationLoading) return <Loader />
+  useEffect(() => {
+    const applyingFor = allStepsData.connectionDetails.ApplyingFor;
+    const currApplyingFor = { water: connectionDetails?.[0]?.water, sewerage: connectionDetails?.[0]?.sewerage };
+    console.log("1)allStepsData: ", allStepsData, applyingFor, currApplyingFor);
+    if (!_.isEqual(applyingFor, currApplyingFor)) {
+      console.log("2)allStepsData: ", allStepsData, applyingFor, currApplyingFor);
+      setConnectionDetails((prevDetails) => {
+        const updatedDetails = [...prevDetails];
+        updatedDetails[0] = {
+          ...updatedDetails[0],
+          water: applyingFor.water,
+          sewerage: applyingFor.sewerage,
+          proposedPipeSize: applyingFor.water ? updatedDetails[0].proposedPipeSize : "",
+          proposedTaps: applyingFor.water ? updatedDetails[0].proposedTaps : "",
+          proposedToilets: applyingFor.sewerage ? updatedDetails[0].proposedToilets : "",
+          proposedWaterClosets: applyingFor.sewerage ? updatedDetails[0].proposedWaterClosets : "",
+        };
+        return updatedDetails;
+      });
+    }
+  }, [allStepsData]);
+
+  if (isWSServicesCalculationLoading || isMdmsLoading) return <Loader />;
 
   const commonProps = {
     focusIndex,
@@ -131,9 +157,7 @@ const WSConnectionDetails = ({ config, onSelect, userType, formData, setError, f
     connectionCategoryList,
     subUsageTypeList,
     groupList,
-    wsServicesCalculationData,
-    waterSewarageSelection,
-    formData
+    formData,
   };
 
   console.log("Billing details translation: ", t("WS_SERV_DETAIL_BILLING_TYPE"));
@@ -165,14 +189,21 @@ const ConnectionDetails = (_props) => {
     subUsageTypeList,
     groupList,
     setConnectionDetails,
-    wsServicesCalculationData,
     pipeSizeList,
     connectionDetails,
-    waterSewarageSelection,
-    formData
+    formData,
   } = _props;
 
-  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
+  const {
+    control,
+    formState: localFormState,
+    watch,
+    setError: setLocalError,
+    clearErrors: clearLocalErrors,
+    setValue,
+    trigger,
+    getValues,
+  } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
 
@@ -187,9 +218,9 @@ const ConnectionDetails = (_props) => {
       keys.forEach((key) => (part[key] = connectionDetail[key]));
       if (!_.isEqual(formValue, part)) {
         let isErrorsFound = true;
-        Object.keys(formValue).map(data => {
+        Object.keys(formValue).map((data) => {
           if (!formValue[data] && isErrorsFound) {
-            isErrorsFound = false
+            isErrorsFound = false;
             setIsErrors(false);
           }
         });
@@ -203,55 +234,55 @@ const ConnectionDetails = (_props) => {
 
   useEffect(() => {
     let isClear = true;
-    Object.keys(connectionDetails?.[0])?.map(data => {
-      if (!connectionDetails[0][data] && connectionDetails[0][data] != false && isClear) isClear = false
-    })
+    Object.keys(connectionDetails?.[0])?.map((data) => {
+      if (!connectionDetails[0][data] && connectionDetails[0][data] != false && isClear) isClear = false;
+    });
     if (isClear && Object.keys(connectionDetails?.[0])?.length > 1) {
       clearErrors("ConnectionDetails");
     }
 
     if (!connectionDetails?.[0]?.sewerage) {
-      clearErrors(config.key, { type: "proposedToilets" })
-      clearErrors(config.key, { type: "proposedWaterClosets" })
+      clearErrors(config.key, { type: "proposedToilets" });
+      clearErrors(config.key, { type: "proposedWaterClosets" });
     }
 
     if (!connectionDetails?.[0]?.water) {
-      clearErrors(config.key, { type: "proposedPipeSize" })
-      clearErrors(config.key, { type: "proposedTaps" })
+      clearErrors(config.key, { type: "proposedPipeSize" });
+      clearErrors(config.key, { type: "proposedTaps" });
     }
     trigger();
-  }, [connectionDetails, waterSewarageSelection, formData?.DocumentsRequired?.documents]);
-
+  }, [connectionDetails, formData?.DocumentsRequired?.documents]);
 
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
       setError(config.key, { type: errors });
-    }
-    else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
+    } else if (!Object.keys(errors).length && formState.errors[config.key] && isErrors) {
       clearErrors(config.key);
     }
   }, [errors]);
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const isEmployee = window.location.href.includes("/employee")
-  const titleStyle = isMobile ? { marginBottom: "40px", color: "#505A5F", fontWeight: "700", fontSize: "16px"}  :{marginTop: "-40px", marginBottom: "40px", color: "#505A5F", fontWeight: "700", fontSize: "16px"}
+  const isEmployee = window.location.href.includes("/employee");
+  const titleStyle = isMobile
+    ? { marginBottom: "40px", color: "#505A5F", fontWeight: "700", fontSize: "16px" }
+    : { marginTop: "-40px", marginBottom: "40px", color: "#505A5F", fontWeight: "700", fontSize: "16px" };
 
-  const isConnectionTypeMetered=getValues("connectionType")?.code?.toUpperCase()===constants.WS_CONNECTION_TYPE_METERED_CODE.toUpperCase();
-  const isBillingTypeCustom=getValues("billingType")?.code?.toUpperCase()===constants.WS_BILLING_TYPE_CUSTOM_CODE.toUpperCase();
-  const displayBillingAmount=(!isConnectionTypeMetered) && (isBillingTypeCustom);
-  const disableBillingType=isConnectionTypeMetered;
+  const isConnectionTypeMetered = getValues("connectionType")?.code?.toUpperCase() === constants.WS_CONNECTION_TYPE_METERED_CODE.toUpperCase();
+  const isBillingTypeCustom = getValues("billingType")?.code?.toUpperCase() === constants.WS_BILLING_TYPE_CUSTOM_CODE.toUpperCase();
+  const displayBillingAmount = !isConnectionTypeMetered && isBillingTypeCustom;
+  const disableBillingType = isConnectionTypeMetered;
   //console.log(getValues("connectionType"));
   useEffect(() => {
     console.log("Inside useEffect");
     if (isConnectionTypeMetered && billingTypeList.length > 0) {
-      console.log("Inside useEffect if condition. Billing Type List: ",billingTypeList);
+      console.log("Inside useEffect if condition. Billing Type List: ", billingTypeList);
       setValue(
         "billingType",
         billingTypeList.find((item) => item?.code?.toUpperCase() === constants.WS_BILLING_TYPE_STANDARD_CODE.toUpperCase())
       );
     }
-  }, [isConnectionTypeMetered,billingTypeList]);
+  }, [isConnectionTypeMetered, billingTypeList]);
 
   useEffect(() => {
     console.log("isBillingTypeCustom: ", isBillingTypeCustom);
@@ -265,56 +296,6 @@ const ConnectionDetails = (_props) => {
     <div>
       {/* {window.location.href.includes("/ws/new") ?  <div style={titleStyle}>{t("WS_CONNECTION_DETAILS_HEADER_SUB_TEXT_LABEL")}</div> : null} */}
       <div style={{ marginBottom: "16px" }}>
-        <CardLabel style={{ fontWeight: "700" }}>{`${t("WS_APPLY_FOR")}*`}</CardLabel>
-        <div style={{ display: "flex", gap: "0 3rem" }}>
-          <Controller
-            control={control}
-            name="water"
-            defaultValue={connectionDetail?.water}
-            isMandatory={true}
-            render={(props) => (
-              <CheckBox
-                label={t("WATER_CONNECTION")}
-                name={"water"}
-                autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "water"}
-                errorStyle={localFormState.touched.water && errors?.water?.message ? true : false}
-                onChange={(e) => {
-                  if (e.target.checked || connectionDetail?.sewerage) {
-                    props.onChange(e.target.checked);
-                    setFocusIndex({ index: connectionDetail?.key, type: "water" });
-                  }
-                }}
-                checked={connectionDetail?.water}
-                style={{ paddingBottom: "10px", paddingTop: "3px" }}
-                onBlur={props.onBlur}
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name="sewerage"
-            defaultValue={connectionDetail?.sewerage}
-            type="number"
-            isMandatory={true}
-            render={(props) => (
-              <CheckBox
-                label={t("SEWERAGE_CONNECTION")}
-                name={"sewerage"}
-                autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "sewerage"}
-                errorStyle={localFormState.touched.sewerage && errors?.sewerage?.message ? true : false}
-                onChange={(e) => {
-                  if (e.target.checked || connectionDetail?.water) {
-                    props.onChange(e.target.checked);
-                    setFocusIndex({ index: connectionDetail?.key, type: "sewerage" });
-                  }
-                }}
-                checked={connectionDetail?.sewerage}
-                style={{ paddingBottom: "10px", paddingTop: "3px" }}
-                onBlur={props.onBlur}
-              />
-            )}
-          />
-        </div>
         {connectionDetail?.water && (
           <div>
             <LabelFieldPair>
@@ -371,6 +352,7 @@ const ConnectionDetails = (_props) => {
                     errorStyle={localFormState.touched.proposedPipeSize && errors?.proposedPipeSize?.message ? true : false}
                     select={(e) => {
                       props.onChange(e);
+                      setFocusIndex({ index: connectionDetail?.key, type: "proposedPipeSize" });
                     }}
                     optionKey="i18nKey"
                     onBlur={props.onBlur}
@@ -401,6 +383,7 @@ const ConnectionDetails = (_props) => {
                     errorStyle={localFormState.touched.connectionType && errors?.connectionType?.message ? true : false}
                     select={(e) => {
                       props.onChange(e);
+                      setFocusIndex({ index: connectionDetail?.key, type: "connectionType" });
                     }}
                     optionKey="i18nKey"
                     onBlur={props.onBlur}
@@ -440,6 +423,7 @@ const ConnectionDetails = (_props) => {
                       // const listOfSubSource = waterSubSourceData?.filter((data) => e?.code?.split(".")[0] == data?.code?.split(".")[0]);
                       // setWaterSubSourceList(listOfSubSource);
                       props.onChange(e);
+                      setFocusIndex({ index: connectionDetail?.key, type: "waterSource" });
                     }}
                     optionKey="i18nKey"
                     onBlur={props.onBlur}
@@ -472,6 +456,7 @@ const ConnectionDetails = (_props) => {
                 errorStyle={localFormState.touched.billingType && errors?.billingType?.message ? true : false}
                 select={(e) => {
                   props.onChange(e);
+                  setFocusIndex({ index: connectionDetail?.key, type: "billingType" });
                 }}
                 optionKey="i18nKey"
                 onBlur={props.onBlur}
@@ -506,12 +491,12 @@ const ConnectionDetails = (_props) => {
                       value={props.value} //{getValues("billingAmount")}
                       labelStyle={{ marginTop: "unset" }}
                       onBlur={props.onBlur}
-                      // autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "proposedTaps"}
+                      autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "billingAmount"}
                       errorStyle={localFormState.touched.billingAmount && errors?.billingAmount?.message ? true : false}
                       onChange={(e) => {
                         //setValue("billingAmount",e.target.value);
                         props.onChange(e.target.value);
-                        //setFocusIndex({ index: connectionDetail?.key, type: "" });
+                        setFocusIndex({ index: connectionDetail?.key, type: "billingAmount" });
                       }}
                     />
                   )}
@@ -542,6 +527,7 @@ const ConnectionDetails = (_props) => {
                 errorStyle={localFormState.touched.connectionCategory && errors?.connectionCategory?.message ? true : false}
                 select={(e) => {
                   props.onChange(e);
+                  setFocusIndex({ index: connectionDetail?.key, type: "connectionCategory" });
                 }}
                 optionKey="i18nKey"
                 onBlur={props.onBlur}
@@ -574,11 +560,11 @@ const ConnectionDetails = (_props) => {
                   value={props.value}
                   labelStyle={{ marginTop: "unset" }}
                   onBlur={props.onBlur}
-                  // autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "proposedTaps"}
+                  autoFocus={focusIndex.index === connectionDetail?.key && focusIndex.type === "ledgerIdOrArea"}
                   errorStyle={localFormState.touched.ledgerIdOrArea && errors?.ledgerIdOrArea?.message ? true : false}
                   onChange={(e) => {
                     props.onChange(e.target.value);
-                    //setFocusIndex({ index: connectionDetail?.key, type: "" });
+                    setFocusIndex({ index: connectionDetail?.key, type: "ledgerIdOrArea" });
                   }}
                 />
               )}
@@ -608,6 +594,7 @@ const ConnectionDetails = (_props) => {
                 errorStyle={localFormState.touched.subUsageType && errors?.subUsageType?.message ? true : false}
                 select={(e) => {
                   props.onChange(e);
+                  setFocusIndex({ index: connectionDetail?.key, type: "subUsageType" });
                 }}
                 optionKey="i18nKey"
                 onBlur={props.onBlur}
@@ -638,6 +625,7 @@ const ConnectionDetails = (_props) => {
                 errorStyle={localFormState.touched.group && errors?.group?.message ? true : false}
                 select={(e) => {
                   props.onChange(e);
+                  setFocusIndex({ index: connectionDetail?.key, type: "group" });
                 }}
                 optionKey="i18nKey"
                 onBlur={props.onBlur}
@@ -726,6 +714,5 @@ const ConnectionDetails = (_props) => {
     </div>
   );
 };
-
 
 export default WSConnectionDetails;

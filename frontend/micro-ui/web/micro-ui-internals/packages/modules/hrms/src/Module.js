@@ -28,9 +28,9 @@ import SelectEmployeeGuardianRelationship from "./components/pageComponents/Sele
 import SelectEmploymentStatus from "./components/pageComponents/SelectEmploymentStatus";
 import HRMSEmployeewiseReport from "./pages/HRMSEmployeewiseReport";
 import SelectULB from "./components/pageComponents/SelectULB";
-import EmployeeDetails from "./components/pageComponents/employeeCreationSubForms/EmployeeDetails";
-import AdministrativeDetails from "./components/pageComponents/employeeCreationSubForms/AdministrativeDetails";
-import Summary from "./components/pageComponents/employeeCreationSubForms/Summary";
+import EmployeeDetails from "./components/employeeCreationFormSteps/EmployeeDetails";
+import AdministrativeDetails from "./components/employeeCreationFormSteps/AdministrativeDetails";
+import Summary from "./components/employeeCreationFormSteps/Summary";
 //
 import getRootReducer from "./redux/reducers";
 

@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import { initLibraries } from "@upyog/digit-ui-libraries";
 import { PGRReducers } from "@upyog/digit-ui-module-pgr";
 import { HRMSReducers } from "@upyog/digit-ui-module-hrms";
+import { HRMSModule, initHRMSComponents } from "@upyog/digit-ui-module-hrms";
 
 import { PTModule, PTLinks, PTComponents } from "@upyog/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@upyog/digit-ui-module-mcollect";
@@ -11,7 +12,6 @@ import { MCollectModule, MCollectLinks } from "@upyog/digit-ui-module-mcollect";
 import { initFSMComponents } from "@upyog/digit-ui-module-fsm";
 import { initPGRComponents } from "@upyog/digit-ui-module-pgr";
 import { initDSSComponents } from "@upyog/digit-ui-module-dss";
-import { HRMSModule, initHRMSComponents } from "@upyog/digit-ui-module-hrms";
 import { initReceiptsComponents, ReceiptsModule } from "@upyog/digit-ui-module-receipts";
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 import { initMCollectComponents } from "@upyog/digit-ui-module-mcollect";
@@ -20,7 +20,7 @@ import { PaymentModule, PaymentLinks, paymentConfigs } from "@upyog/digit-ui-mod
 import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
 import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
 import { initNOCComponents } from "@upyog/digit-ui-module-noc";
-import { initWSComponents } from "@upyog/digit-ui-module-ws";
+import { initWSComponents, WSReducers } from "@upyog/digit-ui-module-ws";
 import { DigitUI } from "@upyog/digit-ui-module-core";
 import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@upyog/digit-ui-module-bills";
@@ -28,7 +28,8 @@ import { PTRModule, PTRLinks, PTRComponents } from "@upyog-niua/upyog-ui-module-
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@egovernments/digit-ui-module-pgr";
 // import { Body, TopBar } from "@upyog/digit-ui-react-components";
-import "@upyog-niua/upyog-css/example/index.css";
+//import "@upyog-niua/upyog-css/example/index.css";
+import "@pmidc/upyog-css";
 // import * as comps from "@upyog/digit-ui-react-components";
 // import { subFormRegistry } from "@upyog/digit-ui-libraries";
 
@@ -128,7 +129,8 @@ const initDigitUI = () => {
 
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),
-    hrms: HRMSReducers(initData)
+    hrms: HRMSReducers(initData),
+    ws: WSReducers(initData)
   });
 
   window.Digit.Customizations = {

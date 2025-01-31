@@ -1,5 +1,6 @@
 package org.egov.egovsurveyservices.web.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -13,6 +14,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @Builder
 @ToString
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Category {
 
     @JsonProperty("id")

@@ -92,7 +92,7 @@ public class CategoryService {
     public CategoryResponse searchCategory(@Valid CategorySearchCriteria criteria) {
 
         if (StringUtils.isBlank(criteria.getId()) && StringUtils.isBlank(criteria.getTenantId())) {
-            throw new CustomException("EG_SS_TENANT_ID_REQUIRED_CATEGORY_SEARCH", "tenant id is mandatory.");
+            throw new CustomException("EG_SS_TENANT_ID_REQUIRED_CATEGORY_SEARCH", "either an id or a tenant id is required");
         }
         if (criteria.getPageNumber() < 1) {
             throw new IllegalArgumentException("Page number must be greater than or equal to 1");

@@ -7,7 +7,6 @@ import org.egov.egovsurveyservices.web.models.Category;
 import org.egov.egovsurveyservices.web.models.CategoryRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
@@ -17,9 +16,6 @@ public class CategoryValidator {
 
     @Autowired
     CategoryRepository categoryRepository;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
 
     public boolean isCategoryUnique(Category category) {
         int count = categoryRepository.isCategoryUnique(category);

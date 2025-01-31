@@ -58,4 +58,10 @@ public class ApplicationProperties {
     @Value("${egov.ss.category.update}")
     private String updateCategoryTopic ;
 
+    @Value("${egov.ss.question.save}")
+    private String saveQuestionTopic ;
+
+    @Value("${egov.ss.question.update}")
+    private String updateQuestionTopic ;
+
 }

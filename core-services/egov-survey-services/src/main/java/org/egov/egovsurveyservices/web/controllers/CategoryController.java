@@ -24,7 +24,7 @@ public class CategoryController {
     @RequestMapping(value="/category/_create", method = RequestMethod.POST)
     public ResponseEntity<CategoryResponse> create(@Valid @RequestBody CategoryRequest categoryRequest) {
         CategoryResponse categoryResponse = categoryService.createCategory(categoryRequest);
-        return new ResponseEntity<>(categoryResponse, HttpStatus.OK);
+        return new ResponseEntity<>(categoryResponse, HttpStatus.CREATED);
     }
 
     @RequestMapping(value="/category/_update", method = RequestMethod.PUT)

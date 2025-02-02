@@ -29,9 +29,6 @@ public class QuestionService {
     QuestionRepository questionRepository;
 
     @Autowired
-    ResponseInfoFactory factory;
-
-    @Autowired
     private Producer producer;
 
     @Autowired
@@ -39,9 +36,7 @@ public class QuestionService {
 
     public QuestionResponse createQuestion(QuestionRequest questionRequest) {
         RequestInfo requestInfo = questionRequest.getRequestInfo();
-        questionRequest.getQuestions().forEach(question -> {
-            enrichCreateRequest(question,requestInfo);
-        });
+        questionRequest.getQuestions().forEach(question -> enrichCreateRequest(question,requestInfo));
         producer.push(applicationProperties.getSaveQuestionTopic(), questionRequest);
         return generateResponse(questionRequest);
     }
@@ -92,9 +87,7 @@ public class QuestionService {
     }
 
     private QuestionResponse generateResponse(QuestionRequest questionRequest) {
-        return QuestionResponse.builder()
-                .responseInfo(ResponseInfoFactory.createResponseInfoFromRequestInfo(questionRequest.getRequestInfo(), true))
-                .questions(questionRequest.getQuestions()).build();
+        return QuestionResponse.builder().responseInfo(ResponseInfoFactory.createResponseInfoFromRequestInfo(questionRequest.getRequestInfo(), true)).questions(questionRequest.getQuestions()).build();
     }
 
     public QuestionResponse searchQuestion(QuestionSearchCriteria criteria) {

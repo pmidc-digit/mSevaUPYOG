@@ -42,11 +42,7 @@ public class CategoryQueryBuilder {
             query.append(" category.isactive = ? ");
             preparedStmtList.add(criteria.getIsActive());
         }
-//        else {
-//            addClauseIfRequired(query, preparedStmtList);
-//            query.append(" category.isactive = ? ");
-//            preparedStmtList.add(true);
-//        }
+
         query.append(" ORDER BY category.createdtime DESC ");
         int offset = (criteria.getPageNumber() - 1) * criteria.getSize();
         query.append(" LIMIT ").append(criteria.getSize()).append(" OFFSET ").append(offset);

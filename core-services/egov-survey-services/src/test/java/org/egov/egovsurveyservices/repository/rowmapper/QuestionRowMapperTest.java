@@ -1,8 +1,5 @@
 package org.egov.egovsurveyservices.repository.rowmapper;
 
-import org.checkerframework.checker.units.qual.A;
-import org.egov.egovsurveyservices.web.models.AuditDetails;
-import org.egov.egovsurveyservices.web.models.Category;
 import org.egov.egovsurveyservices.web.models.Question;
 import org.egov.egovsurveyservices.web.models.enums.Status;
 import org.egov.egovsurveyservices.web.models.enums.Type;
@@ -14,7 +11,6 @@ import org.springframework.dao.DataAccessException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

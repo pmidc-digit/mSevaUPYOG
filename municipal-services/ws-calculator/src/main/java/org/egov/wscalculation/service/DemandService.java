@@ -1371,9 +1371,6 @@ public class DemandService {
 	    if (!allDemandLists.isEmpty()) {
 	        for (Canceldemandsearch cancelDetails : allDemandLists) {
 	            try {
-	                // Set businessService to 'WS' before pushing to Kafka
-	                cancelDetails.setBusinessservice("WS");
-
 	                log.info("Pushing calculation request to Kafka topic with cancel details: {}", cancelDetails);
 	                kafkaTemplate.send(configs.getCancelDemand(), cancelDetails);
 	            } catch (Exception e) {

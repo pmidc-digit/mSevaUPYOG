@@ -29,16 +29,8 @@ public class SWCalculatorQueryBuilder {
 			+ " inner join eg_pt_property pt on conn.property_id= pt.propertyid ";
 	
 	
-	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode from egbs_demand_v1 d INNER JOIN egbs_demanddetail_v1 dd ON dd.demandid = d.id  ";
-	private static final String connectionNoListQueryUpdate = "UPDATE egbs_demand_v1 set ";
+	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode,d.businessservice,d.tenantid,d.taxperiodfrom,d.taxPeriodTo from egbs_demand_v1 d WHERE  ";
 	
-	private static final String connectionNoListQuerybill = "UPDATE egbs_bill_v1 " +
-            "SET status = 'EXPIRED' " +
-            "FROM egbs_billdetail_v1 ";
-	
-	
-      private static final String connectionNoBill =  " select distinct(bill.id) from egbs_bill_v1 bill, egbs_billdetail_v1 bd  ";
-      private static final String connectionNoBills =  " select distinct(consumercode) from egbs_billdetail_v1 bd  ";
 	private static final String distinctTenantIdsCriteria = "SELECT distinct(tenantid) FROM eg_sw_connection sw";
 
 	private  static final String countQuery = "select count(*) from eg_sw_connection";
@@ -574,222 +566,58 @@ public class SWCalculatorQueryBuilder {
 	
 /* CANCEL BILL */
 	
-	public String getCancelBill(String businessService, String tenantId, String consumerCode, Long taxPeriodTo, Long taxperiodfrom,
-			List<Object> preparedStatement) {
+	public String getActiveDemand(String tenantId, String demandId, String businessService, String consumerCode,
+            Long taxPeriodFrom, Long taxPeriodTo, List<Object> preparedStatement) {
+if (tenantId == null || tenantId.isEmpty()) {
+throw new IllegalArgumentException("tenantId must not be null or empty.");
+}
+
 StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
-		
-		
-		// Add connection type
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" d.businessservice = ? ");
-		preparedStatement.add(businessService);
-		
-		//Add Businessservice
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" d.tenantId = ? ");
-		preparedStatement.add(tenantId);
-		
-		
-		//Add TenantId
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" d.consumercode = ? ");
-		preparedStatement.add(consumerCode);
-		
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" d.status = 'ACTIVE' ");
-		
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" d.ispaymentcompleted = 'false' ");
-				
-		//Add taxperiodfrom
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" d.taxperiodfrom >= ? ") ;
-		preparedStatement.add(taxperiodfrom);
-		
-		//Add taxperiodto
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" d.taxperiodto <= ? ");
-		preparedStatement.add(taxPeriodTo);
-		return query.toString();
-	}
-	
-	// alternative id pick 
-	
-	
-		public String getCancelBills(String tenantId, String demandid,
-				List<Object> preparedStatement) {
-	StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
-					
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" d.tenantId = ? ");
-			preparedStatement.add(tenantId);
-			
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" d.id = ? ");
-			preparedStatement.add(demandid);
-			
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" d.status = 'ACTIVE' ");
-			
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" d.ispaymentcompleted = 'false' ");
-					
-			return query.toString();
-		}
-	
-	// DEMAND CANCELLED //
-	
-	public String getUpdateDemand(List<Canceldemandsearch> demandList, List<Object> preparedStatement) {
-StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);     
-       query.append("status='CANCELLED' ");     
-       addClauseIfRequired(preparedStatement, query);
-       // Add the IN clause with placeholders
-       query.append(" id IN (");
-       
-       // Use StringJoiner to build the placeholders string
-       StringJoiner placeholders = new StringJoiner(", ");
-       for (Canceldemandsearch demand : demandList) {
-           placeholders.add("?");
-           preparedStatement.add(demand.getDemandid());
-       }
-       query.append(placeholders.toString());
-       query.append(")");
-		return query.toString();
-	}
-	
-	
-	public String getUpdateDemands(List<Canceldemandsearch> demandLists, List<Object> preparedStatement) {
-	    StringBuilder query = new StringBuilder(connectionNoListQueryUpdate);
-	    query.append("status='CANCELLED' ");
-	    addClauseIfRequired(preparedStatement, query);
+boolean isFirstCondition = true; // To handle 'AND' properly
 
-	    if (demandLists.isEmpty()) {
-	        // Add a condition that matches nothing
-	        query.append(" id IN (NULL) ");
-	    } else {
-	        // Add the IN clause with placeholders
-	        query.append(" id IN (");
+// TenantId (Mandatory)
+query.append(" d.tenantId = ? ");
+preparedStatement.add(tenantId);
+isFirstCondition = false;
 
-	        // Use StringJoiner to build the placeholders string
-	        StringJoiner placeholders = new StringJoiner(", ");
-	        for (Canceldemandsearch demand : demandLists) {
-	            placeholders.add("?");
-	            preparedStatement.add(demand.getDemandid());
-	        }
-	        query.append(placeholders.toString());
-	        query.append(")");
-	    }
+// DemandId (If Present)
+if (demandId != null && !demandId.isEmpty()) {
+query.append(" AND d.id = ? ");
+preparedStatement.add(demandId);
+}
 
-	    return query.toString();
-	}
-	
-	
-	
-	
-	// BILL EXPIRY//
-	
-	
-	public String getBillid(String consumercode, String businessService, List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoBill);	
+// ConsumerCode (If Present)
+if (consumerCode != null && !consumerCode.isEmpty()) {
+query.append(" AND d.consumerCode = ? ");
+preparedStatement.add(consumerCode);
+}
+
+// BusinessService (If Present)
+if (businessService != null && !businessService.isEmpty()) {
+query.append(" AND d.businessService = ? ");
+preparedStatement.add(businessService);
+}
+
+// TaxPeriodFrom (If Present)
+if (taxPeriodFrom != null) {
+query.append(" AND d.taxPeriodFrom >= ? ");
+preparedStatement.add(taxPeriodFrom);
+}
+
+// TaxPeriodTo (If Present)
+if (taxPeriodTo != null) {
+query.append(" AND d.taxPeriodTo <= ? ");
+preparedStatement.add(taxPeriodTo);
+}
+
+// Common Conditions
+query.append(" AND d.status = 'ACTIVE' ");
+query.append(" AND d.ispaymentcompleted = 'false' ");
+
+return query.toString();
+}
+
 		
-		
-		
-		
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" bd.consumercode = ? ");
-		preparedStatement.add(consumercode);
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" bd.billid=bill.id");
-				//Add Businessservice
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" bd.businessService = ? ");
-		preparedStatement.add(businessService);
-		
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" bill.status='ACTIVE'");
-		
-        return query.toString();
-	}
-	
-	public String getBillidss(String tenantid, String demandid, List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoBills);	
-		
-		
-		
-		
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" bd.tenantid = ? ");
-		preparedStatement.add(tenantid);
-//		addClauseIfRequired(preparedStatement, query);
-//		query.append(" bd.billid=bill.id");
-		
-		addClauseIfRequired(preparedStatement, query);
-		query.append(" bd.demandid = ? ");
-		preparedStatement.add(demandid);
-		
-//		addClauseIfRequired(preparedStatement, query);
-//		query.append(" bill.status='ACTIVE'");
-		
-        return query.toString();
-	}
-	
-	
-	
-	public String getBillDemand(List<BillSearch> BillSearch, List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoListQuerybill);	
-		
-		
-		addClauseIfRequired(preparedStatement, query);
-		
-		query.append("  egbs_billdetail_v1.billid IN (");
-	        
-	        // Use StringJoiner to build the placeholders string
-	        StringJoiner placeholders = new StringJoiner(", ");
-	        for (BillSearch billSearch : BillSearch) {
-	            placeholders.add("?");
-	            preparedStatement.add(billSearch.getId());
-	        }
-	        query.append(placeholders.toString());
-	        query.append(")");
-	        
-	        
-	        
-	        
-	        addClauseIfRequired(preparedStatement, query);
-			query.append(" status = 'ACTIVE' ");
-			
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" egbs_bill_v1.id = egbs_billdetail_v1.billid");
-			
-	        return query.toString();
-}	
-	
-	public String getBillDemands(List<BillSearchs> billSearchsss, List<Object> preparedStatement) {
-		StringBuilder query = new StringBuilder(connectionNoListQuerybill);	
-		
-		
-		addClauseIfRequired(preparedStatement, query);
-	
-		query.append("  egbs_billdetail_v1.consumercode IN (");
-		
-	        // Use StringJoiner to build the placeholders string
-	        StringJoiner placeholders = new StringJoiner(", ");
-	        for (BillSearchs billSearchs : billSearchsss) {
-	            placeholders.add("?");
-	            preparedStatement.add(billSearchs.getConsumercode());
-	        }
-	        query.append(placeholders.toString());
-	        query.append(")");
-	            
-	        addClauseIfRequired(preparedStatement, query);
-			query.append(" status = 'ACTIVE' ");
-			
-			addClauseIfRequired(preparedStatement, query);
-			query.append(" egbs_bill_v1.id = egbs_billdetail_v1.billid");
-			
-	        return query.toString();
-}	
-	
 	
 	public String getLocalityListWithBatch(String tenantId, String batchCode, List<Object> preparedStatement) {
 		StringBuilder query = new StringBuilder(LocalityListAsPerBatchQuery);

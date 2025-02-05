@@ -2,7 +2,9 @@ package org.egov.swcalculation.config;
 
 import java.math.BigDecimal;
 
+import org.egov.swcalculation.web.models.CancelDemand;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
@@ -154,6 +156,11 @@ public class SWCalculationConfiguration {
 
 	@Value("${egov.seweragecalculatorservice.createdemand.topic}")
 	private String createDemand;
+	
+	@Value("${egov.seweragecalculatorservice.cancelDemand.topic}")
+	private String cancelDemand;
+
+
 	
     @Value("${persister.demand.based.dead.letter.topic.batch}")
     private String deadLetterTopicBatch;

@@ -27,6 +27,7 @@ import org.egov.wscalculation.validator.WSCalculationWorkflowValidator;
 import org.egov.wscalculation.web.models.*;
 import org.egov.wscalculation.web.models.Demand.StatusEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.*;
 
@@ -76,6 +77,9 @@ public class DemandService {
 
 	@Autowired
 	private CalculatorUtil calculatorUtils;
+	
+	@Autowired
+	private KafkaTemplate kafkaTemplate;
 
 	@Autowired
 	private EstimationService estimationService;
@@ -1316,33 +1320,82 @@ public class DemandService {
 	/*
 	 * CANCEL BILL
 	 */
-	public CancelDemand cancelDemandForConsumer(CancelDemand cancelDemand) {	
-		  for (CancelList cancelList : cancelDemand.getCancelList()) {
-		        String tenantId = cancelList.gettenantId();
-		        String demandid = cancelList.getdemandid();
+	public Map<String, Object> cancelDemandForConsumer(CancelDemand cancelDemand) {    
+	    Map<String, Object> response = new HashMap<>();
+	    List<Canceldemandsearch> allDemandLists = new ArrayList<>();
+	    List<Map<String, String>> failedRequests = new ArrayList<>();
 
-		        List<Canceldemandsearch> demandlists = waterCalculatorDao.getConnectionCancels(tenantId, demandid);
+	    for (CancelList cancelList : cancelDemand.getCancelList()) {
+	        String tenantId = cancelList.gettenantId();
+	        String demandId = cancelList.getdemandid();
+	        String businessService = cancelList.getBusinessService();
+	        String consumerCode = cancelList.getConsumerCode();
+	        Long taxPeriodFrom = cancelList.getTaxPeriodFrom();
+	        Long taxPeriodTo = cancelList.getTaxPeriodTo();
 
-		        if (demandlists.isEmpty()) {
-		            throw new CustomException("Demand not found", "No matching demands found for the given criteria.");
-		        }
+	        // TenantId is mandatory in all cases
+	        if (tenantId == null || tenantId.isEmpty()) {
+	            Map<String, String> failureReason = new HashMap<>();
+	            failureReason.put("error", "tenantId must not be null or empty.");
+	            failedRequests.add(failureReason);
+	            continue;
+	        }
 
-		        Boolean cancels = waterCalculatorDao.getUpdates(demandlists);
+	        // Validation Logic
+	        if (demandId != null && !demandId.isEmpty()) {
+	            // If demandId is present, only tenantId is required (already checked)
+	        	
+	        } else {
+	            // If demandId is absent, validate all required fields
+	            if (consumerCode == null || consumerCode.isEmpty() || 
+	                taxPeriodFrom == null || taxPeriodTo == null) {
 
-		        if (!cancels) {
-		            throw new CustomException("Update failed", "Failed to update demand records.");
-		        }
+	                Map<String, String> failureReason = new HashMap<>();
+	                failureReason.put("tenantId", tenantId);
+	                failureReason.put("consumerCode", consumerCode);
+	                failureReason.put("businessService", businessService);
+	                failureReason.put("taxPeriodFrom", taxPeriodFrom != null ? taxPeriodFrom.toString() : "null");
+	                failureReason.put("taxPeriodTo", taxPeriodTo != null ? taxPeriodTo.toString() : "null");
+	                failureReason.put("error", "Either demandId must be provided, or all of businessService, consumerCode, taxPeriodFrom, and taxPeriodTo must be present.");
+	                failedRequests.add(failureReason);
+	                continue;
+	            }
+	        }
 
-		        List<BillSearchs> billSearchsss = waterCalculatorDao.getBillss(tenantId, demandid);
-		        boolean billCancelled = waterCalculatorDao.getexpiryBills(billSearchsss);
+	        // Fetch active demands if validation passes
+	        List<Canceldemandsearch> demandlists = waterCalculatorDao.getActiveDemand(tenantId, demandId, businessService, consumerCode, taxPeriodFrom, taxPeriodTo);
+	        allDemandLists.addAll(demandlists);
+	    }
 
-		        if (!billCancelled) {
-		            throw new CustomException("Bill Cancellation Failed", "Failed to cancel bills for the given demand.");
-		        }
-		    }
+	    // Process valid demand lists
+	    if (!allDemandLists.isEmpty()) {
+	        for (Canceldemandsearch cancelDetails : allDemandLists) {
+	            try {
+	                // Set businessService to 'WS' before pushing to Kafka
+	                cancelDetails.setBusinessservice("WS");
 
-		    return cancelDemand;
-		}
+	                log.info("Pushing calculation request to Kafka topic with cancel details: {}", cancelDetails);
+	                kafkaTemplate.send(configs.getCancelDemand(), cancelDetails);
+	            } catch (Exception e) {
+	                log.error("Error sending cancel details to Kafka: {}", e.getMessage());
+	            }
+	        }
+	        response.put("status", "Success");
+	        response.put("message", "Cancel demand and bill successfully.");
+	    } else {
+	        response.put("status", "Failed");
+	        response.put("message", "No valid demands found for processing.");
+	    }
+
+	    if (!failedRequests.isEmpty()) {
+	        response.put("failedRequests", failedRequests);
+	    }
+
+	    return response;
+	}
+
+
+
 
 
 	public String generateDemandForSingle(Map<String, Object> master, SingleDemand singleDemand, String tenantId,

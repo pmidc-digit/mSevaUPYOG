@@ -178,93 +178,16 @@ public class SewerageCalculatorDaoImpl implements SewerageCalculatorDao {
 	
 	
 	/* DEMAND ID PICK */
-	public List<Canceldemandsearch> getConnectionCancel(String businessService, String tenantId, String consumerCode,  Long taxPeriodFrom,
-			Long taxPeriodTo ) {
-		
-			List<Object> preparedStatement = new ArrayList<>();
-			String query = queryBuilder.getCancelBill(businessService ,tenantId , consumerCode , taxPeriodTo,  taxPeriodFrom, preparedStatement);
-			log.info("preparedStatement: " + preparedStatement + " connection type: " + 
-					 " connection list : " + query);
-			return jdbcTemplate.query(query, preparedStatement.toArray(), demandcancelwrapper);
-		
-	}
+
 	
-	
-	public List<Canceldemandsearch> getConnectionCancels(String tenantId, String demandid) {
+	public List<Canceldemandsearch> getActiveDemand(String tenantId, String demandId, String businessService, String consumerCode,Long taxPeriodFrom, Long taxPeriodTo) {
 		
 		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getCancelBills( tenantId,demandid, preparedStatement);
+		String query = queryBuilder.getActiveDemand( tenantId,demandId, businessService, consumerCode, taxPeriodFrom, taxPeriodTo ,preparedStatement);
 		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
 				 " connection list : " + query);
 		return jdbcTemplate.query(query, preparedStatement.toArray(), demandcancelwrapper);
 	
-}
-	
-	/* UPDATE */
-	
-	
-	public Boolean getUpdate(List demandlist) {		
-			List<Object> preparedStatement = new ArrayList<>();
-			String query = queryBuilder.getUpdateDemand(demandlist,preparedStatement);
-			log.info("preparedStatement: " + preparedStatement + " connection type: " + 
-					 " connection list : " + query);
-			jdbcTemplate.update(query, preparedStatement.toArray());	
-			return true;
-	}
-	
-	public Boolean getUpdates(List demandlists) {		
-		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getUpdateDemands(demandlists,preparedStatement);
-		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
-				 " connection list : " + query);
-		jdbcTemplate.update(query, preparedStatement.toArray());	
-		return true;
-}
-	
-	
-	
-	
-	public List<BillSearch> getBill(String consumercode,String businessService) {
-		
-		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getBillid(consumercode,businessService,preparedStatement);
-		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
-				 " connection list : " + query);
-		return jdbcTemplate.query(query, preparedStatement.toArray(),billsearchMapper);
-	
-}
-	
-	public List<BillSearchs> getBillss(String tenantId, String demandid) {
-		
-		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getBillidss(tenantId,demandid,preparedStatement);
-		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
-				 " connection list : " + query);
-		return jdbcTemplate.query(query, preparedStatement.toArray(),billsearchMappers);
-
-	}
-
-
-	
-	
-	public Boolean getexpiryBill(List billSearch) {
-		
-		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getBillDemand(billSearch,preparedStatement);
-		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
-				 " connection list : " + query);
-		jdbcTemplate.update(query, preparedStatement.toArray());	
-		return true;
-}
-	
-public Boolean getexpiryBills(List billSearchsss) {
-		
-		List<Object> preparedStatement = new ArrayList<>();
-		String query = queryBuilder.getBillDemands(billSearchsss,preparedStatement);
-		log.info("preparedStatement: " + preparedStatement + " connection type: " + 
-				 " connection list : " + query);
-		jdbcTemplate.update(query, preparedStatement.toArray());	
-		return true;
 }
 	
 	

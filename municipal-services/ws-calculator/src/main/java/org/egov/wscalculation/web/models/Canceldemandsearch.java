@@ -20,4 +20,16 @@ public class Canceldemandsearch {
 	@JsonProperty("consumercode")
 	private String consumercode = null;
 	
+	@JsonProperty("businessservice")
+	private String businessservice = null;
+	
+	@JsonProperty("tenantId")
+	private String tenantId = null;
+	
+	@JsonProperty("taxPeriodFrom")
+	private String taxPeriodFrom = null;
+	
+	@JsonProperty("taxPeriodTo")
+	private String taxPeriodTo = null;
+	
 }

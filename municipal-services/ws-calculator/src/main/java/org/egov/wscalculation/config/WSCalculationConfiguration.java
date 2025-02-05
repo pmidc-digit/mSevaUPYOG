@@ -1,8 +1,9 @@
 package org.egov.wscalculation.config;
 
 import java.math.BigDecimal;
-
+import org.egov.wscalculation.web.models.CancelDemand;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import lombok.AllArgsConstructor;
@@ -173,6 +174,9 @@ public class WSCalculationConfiguration {
 	
 	@Value("${egov.watercalculatorservice.createdemand.topic}")
 	private String createDemand;
+	
+	@Value("${egov.watercalculatorservice.cancelDemand.topic}")
+	private String cancelDemand;
 	
     	@Value("${ws.demand.based.batch.size}")
     	private Integer batchSize;

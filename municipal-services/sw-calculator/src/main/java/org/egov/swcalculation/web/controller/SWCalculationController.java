@@ -169,15 +169,9 @@ public class SWCalculationController {
 	    log.info("cancelDemand::");
 
 	    try {
-	        CancelDemand result = demandService.cancelDemandForConsumer(cancelDemand);
+	        Map<String, Object> result = demandService.cancelDemandForConsumer(cancelDemand);
 
-	        response.put("status", "Success");
-	        response.put("message", "Cancel demand and bill successfully.");
-	        return new ResponseEntity<>(response, HttpStatus.OK);
-	    } catch (CustomException e) {
-	        response.put("status", "Failed");
-	        response.put("message", e.getMessage());
-	        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+	        return new ResponseEntity<>(result, HttpStatus.OK);
 	    } catch (Exception e) {
 	        log.error("Error while processing cancel demand: ", e);
 	        response.put("status", "Failed");
@@ -185,7 +179,6 @@ public class SWCalculationController {
 	        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
 	}
-	
 
 	@PostMapping("/_applyAdhocTax")
 	public ResponseEntity<CalculationRes> applyAdhocTax(@Valid @RequestBody AdhocTaxReq adhocTaxReq) {

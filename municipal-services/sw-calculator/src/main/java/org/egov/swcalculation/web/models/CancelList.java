@@ -12,11 +12,14 @@ public class CancelList {
 	
 	
 	
-	
-	@JsonProperty("consumerCode")
+
+	@JsonProperty("consumercode")
 	private String consumerCode;
-	@JsonProperty("businessService")
+
+	@JsonProperty("businessservice")
 	private String businessService;
+	
+	
 	public String getBusinessService() {
 		
 		return businessService;
@@ -26,13 +29,14 @@ public class CancelList {
 		return consumerCode;
 	}
 	
-	
+	@NotNull
 	@JsonProperty("tenantId")
 	private String tenantId;
+    
 
 	@JsonProperty("demandid")
 	private String demandid;
-
+     
 	public String gettenantId() {
 		
 		return tenantId;
@@ -42,5 +46,29 @@ public class CancelList {
 		
 		return demandid;
 	}
+	
+	// New fields added for taxPeriodFrom and taxPeriodTo
+    @JsonProperty("taxPeriodFrom")
+    private Long taxPeriodFrom;
+
+    @JsonProperty("taxPeriodTo")
+    private Long taxPeriodTo;
+
+    // Getter and Setter methods for taxPeriodFrom and taxPeriodTo
+    public Long getTaxPeriodFrom() {
+        return taxPeriodFrom;
+    }
+
+    public void setTaxPeriodFrom(Long taxPeriodFrom) {
+        this.taxPeriodFrom = taxPeriodFrom;
+    }
+
+    public Long getTaxPeriodTo() {
+        return taxPeriodTo;
+    }
+
+    public void setTaxPeriodTo(Long taxPeriodTo) {
+        this.taxPeriodTo = taxPeriodTo;
+    }
 	
 }

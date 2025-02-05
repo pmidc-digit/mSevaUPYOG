@@ -53,21 +53,7 @@ public interface WSCalculationDao {
 	List<String> fetchSewConnection(String consumerCodes); 
 	void updateBillStatus(List<String> consumerCodes, String string, String string2);
 	
-//	public List<Canceldemandsearch> getConnectionCancel( String businessService, String tenantId, String consumerCode,  Long taxPeriodFrom,
-//			Long taxPeriodTo );
-	public List<Canceldemandsearch> getConnectionCancels( String tenantId, String demandid);
-	
-	public Boolean getUpdates(List demandlists);
-	
-	
-	public List<BillSearchs> getBillss (String tenantId, String demandid);
-
-
-	
-	public Boolean getexpiryBill(List billSearch);
-	
-	public Boolean getexpiryBills(List billSearchsss);
-
+	public List<Canceldemandsearch> getActiveDemand( String tenantId, String demandId , String businessService, String consumerCode,Long taxPeriodFrom, Long taxPeriodTo);
 
 	List<String> getConnectionsNoByGroups(String tenantId, String connectionType, String groups);
 

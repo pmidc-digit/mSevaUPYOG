@@ -31,26 +31,9 @@ public interface SewerageCalculatorDao {
 	
 	List<String> getLocalityList(String tenantId, String batchCode); 
 	
-	
-	public List<Canceldemandsearch> getConnectionCancel( String businessService, String tenantId, String consumerCode,  Long taxPeriodFrom,
-			Long taxPeriodTo );
-	
-	public List<Canceldemandsearch> getConnectionCancels( String tenantId, String demandid);
-	
-	
-	public Boolean getUpdate(List demandlist);
-	
-	public Boolean getUpdates(List demandlists);
 
+	public List<Canceldemandsearch> getActiveDemand( String tenantId, String demandId , String businessService, String consumerCode,Long taxPeriodFrom, Long taxPeriodTo);
 	
-	public List<BillSearch> getBill (String businessService, String consumercode);
-	
-	public List<BillSearchs> getBillss (String tenantId, String demandid);
-
-	
-	public Boolean getexpiryBill(List billSearch);
-	
-	public Boolean getexpiryBills(List billSearchsss);
 
 	
 }

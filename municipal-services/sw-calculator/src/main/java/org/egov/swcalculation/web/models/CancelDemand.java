@@ -16,14 +16,17 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class CancelDemand {
+	
 	@JsonProperty("RequestInfo")
 	@NotNull
 	private RequestInfo requestInfo;
 	
 	private List<CancelList> CancelList = new ArrayList<>();
+
 	@JsonProperty("tenantId")
+	
     private String tenantId;
-    // Getters and setters
+	
     public String getTenantId() {
         return tenantId;
     }
@@ -34,7 +37,7 @@ public class CancelDemand {
     
     @JsonProperty("taxPeriodFrom")
     private Long taxPeriodFrom;
-    // Getters and setters
+ 
     public Long gettaxPeriodFrom() {
         return taxPeriodFrom;
     }
@@ -45,7 +48,7 @@ public class CancelDemand {
     
     @JsonProperty("taxPeriodTo")
     private Long taxPeriodTo;
-    // Getters and setters
+  
     public Long gettaxPeriodTo() {
         return taxPeriodTo;
     }

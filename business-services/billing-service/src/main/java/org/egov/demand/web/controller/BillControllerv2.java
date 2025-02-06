@@ -11,10 +11,12 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.demand.helper.BillHelperV2;
 import org.egov.demand.model.BillSearchCriteria;
+import org.egov.demand.model.CancelDemand;
 import org.egov.demand.model.GenerateBillCriteria;
 import org.egov.demand.model.UpdateBillCriteria;
 import org.egov.demand.model.UpdateBillRequest;
 import org.egov.demand.service.BillServicev2;
+import org.egov.demand.service.DemandService;
 import org.egov.demand.util.Constants;
 import org.egov.demand.web.contract.BillRequestV2;
 import org.egov.demand.web.contract.BillResponseV2;
@@ -55,6 +57,9 @@ public class BillControllerv2 {
 	
 	@Autowired
 	private BillHelperV2 billHelper;
+	
+	@Autowired
+	private DemandService demandService;
 	
 	@PostMapping("_search")
 	@ResponseBody
@@ -144,4 +149,21 @@ public class BillControllerv2 {
 		responseMap.put(Constants.MESSAGE_STRING, responseMsg);
 		return new ResponseEntity<>(responseMap, status);
 	}
+	
+	
+    @PostMapping("/cancelDemand")
+    public ResponseEntity<Map<String, Object>> cancelDemand(@Valid @RequestBody CancelDemand cancelDemand) {
+        log.info("Received request to cancel demand: {}", cancelDemand);
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            Map<String, Object> result = demandService.cancelDemandForConsumer(cancelDemand);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("Error while processing cancel demand", e);
+            response.put("status", "Failed");
+            response.put("message", "An error occurred while processing cancel demand.");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
 }

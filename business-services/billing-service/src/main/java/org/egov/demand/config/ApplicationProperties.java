@@ -207,5 +207,8 @@ public class ApplicationProperties {
 
     @Value("${egov.shortener.host}")
    	private String shortenerHost;
+       
+    @Value("${kafka.topic.cancelDemand.topic}") // Fetch value from application.properties or application.yml
+    private String cancelDemand;
     
 }

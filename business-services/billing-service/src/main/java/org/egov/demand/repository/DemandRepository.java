@@ -50,12 +50,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.egov.demand.model.AuditDetails;
+import org.egov.demand.model.Canceldemandsearch;
 import org.egov.demand.model.Demand;
 import org.egov.demand.model.DemandCriteria;
 import org.egov.demand.model.DemandDetail;
 import org.egov.demand.model.PaymentBackUpdateAudit;
 import org.egov.demand.repository.querybuilder.DemandQueryBuilder;
 import org.egov.demand.repository.rowmapper.DemandRowMapper;
+import org.egov.demand.repository.rowmapper.Demandcancelwrapper;
 import org.egov.demand.util.Util;
 import org.egov.demand.web.contract.DemandRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +82,9 @@ public class DemandRepository {
 	
 	@Autowired
 	private DemandRowMapper demandRowMapper;
+	
+	@Autowired
+	private Demandcancelwrapper demandcancelwrapper;
 	
 	@Autowired
 	private Util util;
@@ -398,5 +403,18 @@ public class DemandRepository {
 		}
 
 		return paymentId;
+	}
+	
+	
+	/* DEMAND ID PICK */
+	
+	public List<Canceldemandsearch> getActiveDemand(String tenantId, String demandId, String businessService, String consumerCode,Long taxPeriodFrom, Long taxPeriodTo) {
+			
+			List<Object> preparedStatement = new ArrayList<>();
+			String query = demandQueryBuilder.getActiveDemand( tenantId,demandId, businessService, consumerCode, taxPeriodFrom, taxPeriodTo ,preparedStatement);
+			log.info("preparedStatement: " + preparedStatement + " connection type: " + 
+					 " connection list : " + query);
+			return jdbcTemplate.query(query, preparedStatement.toArray(), demandcancelwrapper);
+		
 	}
 }

@@ -120,6 +120,9 @@ public class DemandQueryBuilder {
 	public static final String DEMAND_UPDATE_CONSUMERCODE_QUERY="UPDATE egbs_demand_v1 SET consumercode=?, lastmodifiedby=?, lastmodifiedtime=? "
 			+ " WHERE tenantid=? AND id IN (";
 	
+	private static final String connectionNoListQueryCancel = "SELECT  distinct d.id, d.consumercode,d.businessservice,d.tenantid,d.taxperiodfrom,d.taxPeriodTo from egbs_demand_v1 d WHERE  ";
+
+	
 
 	public String getDemandQueryForConsumerCodes(Map<String,Set<String>> businessConsumercodeMap,List<Object> preparedStmtList, String tenantId){
 		
@@ -261,4 +264,58 @@ public class DemandQueryBuilder {
 	{
 		ids.forEach(id ->{ preparedStmtList.add(id);});
 	}
+	
+	
+	
+	public String getActiveDemand(String tenantId, String demandId, String businessService, String consumerCode,
+            Long taxPeriodFrom, Long taxPeriodTo, List<Object> preparedStatement) {
+if (tenantId == null || tenantId.isEmpty()) {
+throw new IllegalArgumentException("tenantId must not be null or empty.");
+}
+
+StringBuilder query = new StringBuilder(connectionNoListQueryCancel);
+boolean isFirstCondition = true; // To handle 'AND' properly
+
+// TenantId (Mandatory)
+query.append(" d.tenantId = ? ");
+preparedStatement.add(tenantId);
+isFirstCondition = false;
+
+// DemandId (If Present)
+if (demandId != null && !demandId.isEmpty()) {
+query.append(" AND d.id = ? ");
+preparedStatement.add(demandId);
+}
+
+// ConsumerCode (If Present)
+if (consumerCode != null && !consumerCode.isEmpty()) {
+query.append(" AND d.consumerCode = ? ");
+preparedStatement.add(consumerCode);
+}
+
+// BusinessService (If Present)
+if (businessService != null && !businessService.isEmpty()) {
+query.append(" AND d.businessService = ? ");
+preparedStatement.add(businessService);
+}
+
+// TaxPeriodFrom (If Present)
+if (taxPeriodFrom != null) {
+query.append(" AND d.taxPeriodFrom >= ? ");
+preparedStatement.add(taxPeriodFrom);
+}
+
+// TaxPeriodTo (If Present)
+if (taxPeriodTo != null) {
+query.append(" AND d.taxPeriodTo <= ? ");
+preparedStatement.add(taxPeriodTo);
+}
+
+// Common Conditions
+query.append(" AND d.status = 'ACTIVE' ");
+query.append(" AND d.ispaymentcompleted = 'false' ");
+
+return query.toString();
+}
+
 }

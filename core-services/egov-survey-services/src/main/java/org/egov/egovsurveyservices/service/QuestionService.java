@@ -22,7 +22,6 @@ import java.util.*;
 @Service
 public class QuestionService {
 
-    private static final int MAX_QUESTIONS_PER_REQUEST = 100;
     @Autowired
     QuestionValidator questionValidator;
 

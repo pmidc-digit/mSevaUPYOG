@@ -3,19 +3,27 @@ package org.egov.egovsurveyservices.service;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.*;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
+import org.egov.egovsurveyservices.repository.CategoryRepository;
 import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.utils.ResponseInfoFactory;
 import org.egov.egovsurveyservices.validators.QuestionValidator;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.egovsurveyservices.web.models.enums.Status;
+import org.egov.egovsurveyservices.web.models.enums.Type;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 
 @Slf4j
@@ -29,6 +37,9 @@ public class QuestionService {
     QuestionRepository questionRepository;
 
     @Autowired
+    CategoryRepository categoryRepository;
+
+    @Autowired
     private Producer producer;
 
     @Autowired
@@ -36,7 +47,10 @@ public class QuestionService {
 
     public QuestionResponse createQuestion(QuestionRequest questionRequest) {
         RequestInfo requestInfo = questionRequest.getRequestInfo();
-        questionRequest.getQuestions().forEach(question -> enrichCreateRequest(question,requestInfo));
+        questionRequest.getQuestions().forEach(question -> {
+            categoryExistsById(question.getCategoryId());
+            enrichCreateRequest(question,requestInfo);
+        });
         producer.push(applicationProperties.getSaveQuestionTopic(), questionRequest);
         return generateResponse(questionRequest);
     }
@@ -102,6 +116,88 @@ public class QuestionService {
         QuestionRequest questionRequest = new QuestionRequest();
         questionRequest.setQuestions(questionRepository.fetchQuestions(criteria));
         return generateResponse(questionRequest);
+    }
+
+    public void uploadQuestions(RequestInfoWrapper requestInfoWrapper, MultipartFile file) throws IOException {
+        List<Question> questions = parseExcel(requestInfoWrapper,file);
+        QuestionRequest questionRequest = QuestionRequest.builder().requestInfo(requestInfoWrapper.getRequestInfo())
+                .questions(questions).build();
+        createQuestion(questionRequest);
+    }
+
+    public void categoryExistsById(String id){
+        if (categoryRepository.existsById(id) == 0) {
+            throw new CustomException("CATEGORY_DOES_NOT_EXIST","Category with ID " + id + " does not exist.");
+        }
+    }
+
+    private List<Question> parseExcel(RequestInfoWrapper requestInfoWrapper, MultipartFile file) throws IOException {
+        List<Question> questions = new ArrayList<>();
+        String tenantId = requestInfoWrapper.getRequestInfo().getUserInfo().getTenantId();
+        try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
+            Sheet sheet = workbook.getSheetAt(0);
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row != null) {
+                    String tenantCellValue = getCellValueAsString(row.getCell(0));
+                    String tenant = tenantCellValue ==null?tenantId: tenantCellValue;
+                    String type = getCellValueAsString(row.getCell(1));
+                    String categoryId = getCellValueAsString(row.getCell(2));
+                    String questionStatement = getCellValueAsString(row.getCell(3));
+                    String optionsString = getCellValueAsString(row.getCell(4));
+                    String required = getCellValueAsString(row.getCell(5));
+                    String status = getCellValueAsString(row.getCell(6));
+                    String surveyId = getCellValueAsString(row.getCell(7));
+
+                    Type typeFromCellValue = Type.fromValue(type);
+                    if (typeFromCellValue == null){
+                        throw new CustomException("INVALID_TYPE","question type cannot be null or invalid.");
+                    }
+                    if (StringUtils.isBlank(categoryId)){
+                        throw new CustomException("CATEGORY_ID_MISSING","question category id cannot be null or invalid.");
+                    }
+                    Question question = new Question();
+                    question.setTenantId(tenant);
+                    question.setCategoryId(categoryId);
+                    question.setRequired(Boolean.valueOf(required));
+                    question.setStatus(Status.fromValue(status));
+                    question.setQuestionStatement(questionStatement);
+                    question.setOptions(Arrays.asList(optionsString.split(","))); // Assuming options are comma-separated
+                    question.setType(typeFromCellValue); // Assuming Type is an enum
+                    question.setSurveyId(surveyId);
+                    questions.add(question);
+                }
+            }
+        }
+        return questions;
+    }
+
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return null;
+        }
+    }
+
+    public byte[] downloadTemplate() throws IOException {
+        ClassPathResource resource = new ClassPathResource("question_template.xlsx");
+        InputStream inputStream = resource.getInputStream();
+
+        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            return outputStream.toByteArray();
+        }
     }
 
 }

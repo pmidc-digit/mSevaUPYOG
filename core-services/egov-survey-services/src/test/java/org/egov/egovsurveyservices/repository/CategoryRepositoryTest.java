@@ -137,4 +137,17 @@ public class CategoryRepositoryTest {
         verify(categoryQueryBuilder).getIsUniqueCategorySql();
         verify(jdbcTemplate).queryForObject(query, preparedStmtList.toArray(), Integer.class);
     }
+
+    @Test
+    public void testIsCategoryExists() {
+        String query = "exists by id";
+        when(categoryQueryBuilder.existById()).thenReturn(query);
+        when(jdbcTemplate.queryForObject(anyString(), eq(Integer.class),anyString())).thenReturn(1);
+
+        Integer exists = categoryRepository.existsById("123");
+
+        assertNotEquals(0, (int) exists);
+        verify(categoryQueryBuilder).existById();
+        verify(jdbcTemplate).queryForObject(query,Integer.class,"123");
+    }
 }

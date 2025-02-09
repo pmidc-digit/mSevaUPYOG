@@ -19,7 +19,6 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Question {
 

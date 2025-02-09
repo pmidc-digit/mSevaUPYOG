@@ -1,14 +1,20 @@
 package org.egov.egovsurveyservices.service;
 
 import com.google.gson.Gson;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
+import org.egov.egovsurveyservices.repository.CategoryRepository;
 import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.validators.QuestionValidator;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.egovsurveyservices.web.models.enums.Status;
+import org.egov.egovsurveyservices.web.models.enums.Type;
 import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,7 +22,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,12 +35,16 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class QuestionServiceTest {
     @InjectMocks
     private QuestionService questionService;
+
+    @Mock
+    private CategoryRepository categoryRepository;
 
     @Mock
     private QuestionRepository questionRepository;
@@ -58,12 +73,14 @@ class QuestionServiceTest {
     public void testCreateQuestionSuccess() {
         Question question = Question.builder()
                 .questionStatement("Test Question")
+                .categoryId("1")
                 .build();
         List<Question> questions = Collections.singletonList(question);
         QuestionRequest questionRequest = QuestionRequest.builder()
                 .requestInfo(requestInfo)
                 .questions(questions)
                 .build();
+        when(categoryRepository.existsById(anyString())).thenReturn(1);
         when(applicationProperties.getSaveQuestionTopic()).thenReturn("test-topic");
         QuestionResponse response = questionService.createQuestion(questionRequest);
 
@@ -79,22 +96,40 @@ class QuestionServiceTest {
         Question question = Question.builder()
                 .questionStatement("Test Question")
                 .options(Arrays.asList("Option 1", "Option 2"))
+                .categoryId("123")
                 .build();
         List<Question> questions = Collections.singletonList(question);
         QuestionRequest questionRequest = QuestionRequest.builder()
                 .requestInfo(requestInfo)
                 .questions(questions)
                 .build();
-
+        when(categoryRepository.existsById(anyString())).thenReturn(1);
         when(applicationProperties.getSaveQuestionTopic()).thenReturn("test-topic");
         QuestionResponse response = questionService.createQuestion(questionRequest);
         assertEquals(Arrays.asList("Option 1", "Option 2"), response.getQuestions().get(0).getOptions());
     }
 
     @Test
+    public void testCreateQuestionCategoryInvalid() {
+        Question question = Question.builder()
+                .questionStatement("Test Question")
+                .options(Arrays.asList("Option 1", "Option 2"))
+                .categoryId("123")
+                .build();
+        List<Question> questions = Collections.singletonList(question);
+        QuestionRequest questionRequest = QuestionRequest.builder()
+                .requestInfo(requestInfo)
+                .questions(questions)
+                .build();
+        when(categoryRepository.existsById(anyString())).thenReturn(0);
+        assertThrows(CustomException.class, () -> questionService.createQuestion(questionRequest));
+    }
+
+    @Test
     public void testCreateQuestionWithOptionsEmptyList() {
         Question question = Question.builder()
                 .questionStatement("Test Question")
+                .categoryId("1")
                 .options(Collections.emptyList())
                 .build();
         List<Question> questions = Collections.singletonList(question);
@@ -103,6 +138,7 @@ class QuestionServiceTest {
                 .questions(questions)
                 .build();
 
+        when(categoryRepository.existsById(anyString())).thenReturn(1);
         when(applicationProperties.getSaveQuestionTopic()).thenReturn("test-topic");
         QuestionResponse response = questionService.createQuestion(questionRequest);
         assertEquals(Collections.singletonList("NA"), response.getQuestions().get(0).getOptions());
@@ -110,7 +146,7 @@ class QuestionServiceTest {
 
     @Test
     public void testUpdateQuestionSuccess() {
-        AuditDetails auditDetails= AuditDetails.builder()
+        AuditDetails auditDetails = AuditDetails.builder()
                 .createdTime(System.currentTimeMillis())
                 .lastModifiedTime(System.currentTimeMillis())
                 .createdBy("creator")
@@ -195,8 +231,8 @@ class QuestionServiceTest {
                 .questions(Collections.singletonList(Question.builder().uuid("123").build()))
                 .build();
         RuntimeException thrown = assertThrows(CustomException.class, () -> questionService.updateQuestion(questionRequest));
-        assertEquals("question not found",thrown.getMessage());
-        assertEquals(CustomException.class,thrown.getClass());
+        assertEquals("question not found", thrown.getMessage());
+        assertEquals(CustomException.class, thrown.getClass());
     }
 
     @Test
@@ -210,7 +246,7 @@ class QuestionServiceTest {
                 .size(10)
                 .build();
 
-        List<Question> list=new ArrayList<>();
+        List<Question> list = new ArrayList<>();
         list.add(question);
         when(questionRepository.fetchQuestions(criteria)).thenReturn(list);
         QuestionResponse response = questionService.searchQuestion(criteria);
@@ -253,7 +289,7 @@ class QuestionServiceTest {
                 .build();
 
         RuntimeException thrown = assertThrows(CustomException.class, () -> questionService.searchQuestion(criteria));
-        assertEquals(thrown.getMessage(),"either a (uuid) or a (tenant id and category id) is required.");
+        assertEquals(thrown.getMessage(), "either a (uuid) or a (tenant id and category id) is required.");
     }
 
     @Test
@@ -265,4 +301,233 @@ class QuestionServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> questionService.searchQuestion(criteria));
     }
+
+
+    private MockMultipartFile createExcelFile() throws Exception {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Tenant Id");
+        headerRow.createCell(1).setCellValue("Type");
+        headerRow.createCell(2).setCellValue("Category Id");
+        headerRow.createCell(3).setCellValue("Question Statement");
+        headerRow.createCell(4).setCellValue("Options");
+        headerRow.createCell(5).setCellValue("Required");
+        headerRow.createCell(6).setCellValue("Status");
+        headerRow.createCell(7).setCellValue("Survey Id");
+
+        Row dataRow = sheet.createRow(1);
+        dataRow.createCell(0).setCellValue("default");
+        dataRow.createCell(1).setCellValue(Type.MULTIPLE_ANSWER_TYPE.toString());
+        dataRow.createCell(2).setCellValue("1");
+        dataRow.createCell(3).setCellValue("question 1");
+        dataRow.createCell(4).setCellValue("option 1, option 2");
+        dataRow.createCell(5).setCellValue(true);
+        dataRow.createCell(6).setCellValue(Status.ACTIVE.toString());
+        dataRow.createCell(7).setCellValue("101");
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        workbook.write(bos);
+        workbook.close();
+
+        byte[] excelBytes = bos.toByteArray();
+
+        return new MockMultipartFile("file", "sample.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelBytes);
+    }
+
+    @Test
+    public void testUploadQuestions() throws Exception {
+        RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+        MockMultipartFile file = createExcelFile();
+        when(categoryRepository.existsById(anyString())).thenReturn(1);
+        requestInfo.getUserInfo().setTenantId("default");
+        requestInfoWrapper.setRequestInfo(requestInfo);
+        questionService.uploadQuestions(requestInfoWrapper, file);
+    }
+
+    private MockMultipartFile createExcelFile_TenantNull() throws Exception {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Tenant Id");
+        headerRow.createCell(1).setCellValue("Type");
+        headerRow.createCell(2).setCellValue("Category Id");
+        headerRow.createCell(3).setCellValue("Question Statement");
+        headerRow.createCell(4).setCellValue("Options");
+
+        Row dataRow = sheet.createRow(1);
+        dataRow.createCell(1).setCellValue(Type.MULTIPLE_ANSWER_TYPE.toString());
+        dataRow.createCell(2).setCellValue("1");
+        dataRow.createCell(3).setCellValue("question 1");
+        dataRow.createCell(4).setCellValue("option 1, option 2");
+        dataRow.createCell(6).setCellValue(1);
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        workbook.write(bos);
+        workbook.close();
+
+        byte[] excelBytes = bos.toByteArray();
+
+        return new MockMultipartFile("file", "sample.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelBytes);
+    }
+
+    @Test
+    public void testUploadQuestions_tenantNullInExcel() throws Exception {
+        RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+        MockMultipartFile file = createExcelFile_TenantNull();
+        when(categoryRepository.existsById(anyString())).thenReturn(1);
+        requestInfo.getUserInfo().setTenantId("default");
+        requestInfoWrapper.setRequestInfo(requestInfo);
+        questionService.uploadQuestions(requestInfoWrapper, file);
+    }
+
+    private MockMultipartFile createExcelFile_noRows() throws Exception {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Tenant Id");
+        headerRow.createCell(1).setCellValue("Type");
+        headerRow.createCell(2).setCellValue("Category Id");
+        headerRow.createCell(3).setCellValue("Question Statement");
+        headerRow.createCell(4).setCellValue("Options");
+
+        Row dataRow = sheet.createRow(2);
+        dataRow.createCell(1).setCellValue(Type.MULTIPLE_ANSWER_TYPE.toString());
+        dataRow.createCell(2).setCellValue("1");
+        dataRow.createCell(3).setCellValue("question 1");
+        dataRow.createCell(4).setCellValue("option 1, option 2");
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        workbook.write(bos);
+        workbook.close();
+
+        byte[] excelBytes = bos.toByteArray();
+
+        return new MockMultipartFile("file", "sample.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelBytes);
+    }
+
+    @Test
+    public void testUploadQuestions_noRows() throws Exception {
+        RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+        MockMultipartFile file = createExcelFile_noRows();
+        requestInfo.getUserInfo().setTenantId("default");
+        requestInfoWrapper.setRequestInfo(requestInfo);
+        when(categoryRepository.existsById(anyString())).thenReturn(1);
+        questionService.uploadQuestions(requestInfoWrapper, file);
+    }
+
+    private MockMultipartFile createExcelFile_TypeValueNull() throws Exception {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Tenant Id");
+        headerRow.createCell(1).setCellValue("Type");
+        headerRow.createCell(2).setCellValue("Category Id");
+        headerRow.createCell(3).setCellValue("Question Statement");
+        headerRow.createCell(4).setCellValue("Options");
+
+        Row dataRow = sheet.createRow(1);
+        dataRow.createCell(1).setCellValue("ABC");
+        dataRow.createCell(2).setCellValue("1");
+        dataRow.createCell(3).setCellValue("question 1");
+        dataRow.createCell(4).setCellValue("option 1, option 2");
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        workbook.write(bos);
+        workbook.close();
+
+        byte[] excelBytes = bos.toByteArray();
+
+        return new MockMultipartFile("file", "sample.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelBytes);
+    }
+
+    @Test
+    public void testUploadQuestions_TypeValue_Error() throws Exception {
+        RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+        MockMultipartFile file = createExcelFile_TypeValueNull();
+        requestInfo.getUserInfo().setTenantId("default");
+        requestInfoWrapper.setRequestInfo(requestInfo);
+        assertThrows(CustomException.class, () -> questionService.uploadQuestions(requestInfoWrapper, file));
+    }
+
+    private MockMultipartFile createExcelFile_CategoryId_Missing() throws Exception {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Sheet1");
+
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Tenant Id");
+        headerRow.createCell(1).setCellValue("Type");
+        headerRow.createCell(2).setCellValue("Category Id");
+        headerRow.createCell(3).setCellValue("Question Statement");
+        headerRow.createCell(4).setCellValue("Options");
+
+        Row dataRow = sheet.createRow(1);
+        dataRow.createCell(1).setCellValue(Type.MULTIPLE_ANSWER_TYPE.toString());
+        dataRow.createCell(3).setCellValue("question 1");
+        dataRow.createCell(4).setCellValue("option 1, option 2");
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        workbook.write(bos);
+        workbook.close();
+
+        byte[] excelBytes = bos.toByteArray();
+
+        return new MockMultipartFile("file", "sample.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", excelBytes);
+    }
+
+    @Test
+    public void testUploadQuestions_CategoryId_missing() throws Exception {
+        RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+        MockMultipartFile file = createExcelFile_CategoryId_Missing();
+        requestInfo.getUserInfo().setTenantId("default");
+        requestInfoWrapper.setRequestInfo(requestInfo);
+        assertThrows(CustomException.class, () -> questionService.uploadQuestions(requestInfoWrapper, file));
+    }
+
+    @Test
+    public void testUploadQuestions_IOException() throws Exception {
+        RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "filename.txt", "text/plain", "file content".getBytes());
+        requestInfo.getUserInfo().setTenantId("default");
+        requestInfoWrapper.setRequestInfo(requestInfo);
+        assertThrows(IOException.class, () -> questionService.uploadQuestions(requestInfoWrapper, file));
+    }
+
+    @Test
+    public void testUploadQuestions_categoryId_doesNotExist() throws Exception {
+        RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+        MockMultipartFile file = createExcelFile_noRows();
+        requestInfo.getUserInfo().setTenantId("default");
+        requestInfoWrapper.setRequestInfo(requestInfo);
+        assertThrows(CustomException.class, () -> questionService.uploadQuestions(requestInfoWrapper, file));
+    }
+
+    @Test
+    public void testCategoryExistsById() {
+        when(categoryRepository.existsById("1")).thenReturn(1);
+        questionService.categoryExistsById("1");
+        verify(categoryRepository, times(1)).existsById("1");
+    }
+
+    @Test
+    public void testCategoryExistsByIdThrowsException() {
+        when(categoryRepository.existsById("1")).thenReturn(0);
+        assertThrows(CustomException.class, () -> questionService.categoryExistsById("1"));
+    }
+
+    @Test
+    public void testDownloadTemplate() throws Exception {
+        questionService.downloadTemplate();
+    }
+
 }

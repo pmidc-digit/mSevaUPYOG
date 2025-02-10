@@ -71,6 +71,7 @@ class QuestionServiceTest {
 
     @Test
     public void testCreateQuestionSuccess() {
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
         Question question = Question.builder()
                 .questionStatement("Test Question")
                 .categoryId("1")
@@ -93,6 +94,7 @@ class QuestionServiceTest {
 
     @Test
     public void testCreateQuestionWithOptions() {
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
         Question question = Question.builder()
                 .questionStatement("Test Question")
                 .options(Arrays.asList("Option 1", "Option 2"))
@@ -137,6 +139,7 @@ class QuestionServiceTest {
                 .requestInfo(requestInfo)
                 .questions(questions)
                 .build();
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
 
         when(categoryRepository.existsById(anyString())).thenReturn(1);
         when(applicationProperties.getSaveQuestionTopic()).thenReturn("test-topic");
@@ -300,6 +303,50 @@ class QuestionServiceTest {
                 .build();
 
         assertThrows(IllegalArgumentException.class, () -> questionService.searchQuestion(criteria));
+    }
+
+    @Test
+    public void testCreateQuestions_Success_WithinLimit() {
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
+        List<Question> questions = createQuestions(5);
+        QuestionRequest request = QuestionRequest.builder().questions(questions).requestInfo(requestInfo).build();
+        QuestionResponse questionResponse = questionService.createQuestion(request);
+
+        List<Question> questionsList = questionResponse.getQuestions();
+        assertEquals(questions.size(), questionsList.size());
+        for (int i = 0; i < questions.size(); i++) {
+            assertEquals(questions.get(i).getUuid(), questionsList.get(i).getUuid());
+        }
+    }
+
+    @Test
+    public void testCreateQuestions_Failure_ExceedsLimit() {
+        List<Question> questions = createQuestions(6);
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
+        QuestionRequest request = QuestionRequest.builder().questions(questions).requestInfo(requestInfo).build();
+        assertThrows(IllegalArgumentException.class, () -> questionService.createQuestion(request));
+    }
+
+    private List<Question> createQuestions(int count) {
+        List<Question> questions = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            questions.add(createQuestion("question" + i, "category" + i));
+        }
+        return questions;
+    }
+
+    private Question createQuestion(String uuid, String categoryId) {
+        return Question.builder()
+                .uuid(uuid)
+                .tenantId("default")
+                .surveyId("survey123")
+                .questionStatement("Test Question")
+                .status(Status.ACTIVE)
+                .options(Arrays.asList("Option 1", "Option 2"))
+                .type(Type.MULTIPLE_ANSWER_TYPE)
+                .required(true)
+                .categoryId(categoryId)
+                .build();
     }
 
 

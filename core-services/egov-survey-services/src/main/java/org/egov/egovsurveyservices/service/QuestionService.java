@@ -47,6 +47,9 @@ public class QuestionService {
 
     public QuestionResponse createQuestion(QuestionRequest questionRequest) {
         RequestInfo requestInfo = questionRequest.getRequestInfo();
+        if (questionRequest.getQuestions().size() > applicationProperties.getMaxCreateLimit()) {
+            throw new IllegalArgumentException("Maximum " + applicationProperties.getMaxCreateLimit() + " questions allowed per request.");
+        }
         questionRequest.getQuestions().forEach(question -> {
             categoryExistsById(question.getCategoryId());
             enrichCreateRequest(question,requestInfo);

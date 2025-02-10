@@ -64,4 +64,7 @@ public class ApplicationProperties {
     @Value("${egov.ss.question.update}")
     private String updateQuestionTopic ;
 
+    @Value("${egov.ss.max.create.limit}")
+    private Integer maxCreateLimit ;
+
 }

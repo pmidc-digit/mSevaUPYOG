@@ -113,6 +113,7 @@ class QuestionServiceTest {
 
     @Test
     public void testCreateQuestionCategoryInvalid() {
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
         Question question = Question.builder()
                 .questionStatement("Test Question")
                 .options(Arrays.asList("Option 1", "Option 2"))
@@ -308,6 +309,7 @@ class QuestionServiceTest {
     @Test
     public void testCreateQuestions_Success_WithinLimit() {
         when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
+        when(categoryRepository.existsById(anyString())).thenReturn(1);
         List<Question> questions = createQuestions(5);
         QuestionRequest request = QuestionRequest.builder().questions(questions).requestInfo(requestInfo).build();
         QuestionResponse questionResponse = questionService.createQuestion(request);
@@ -386,6 +388,7 @@ class QuestionServiceTest {
 
     @Test
     public void testUploadQuestions() throws Exception {
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
         RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
         MockMultipartFile file = createExcelFile();
         when(categoryRepository.existsById(anyString())).thenReturn(1);
@@ -424,6 +427,7 @@ class QuestionServiceTest {
 
     @Test
     public void testUploadQuestions_tenantNullInExcel() throws Exception {
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
         RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
         MockMultipartFile file = createExcelFile_TenantNull();
         when(categoryRepository.existsById(anyString())).thenReturn(1);
@@ -461,6 +465,7 @@ class QuestionServiceTest {
 
     @Test
     public void testUploadQuestions_noRows() throws Exception {
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
         RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
         MockMultipartFile file = createExcelFile_noRows();
         requestInfo.getUserInfo().setTenantId("default");
@@ -553,6 +558,7 @@ class QuestionServiceTest {
     @Test
     public void testUploadQuestions_categoryId_doesNotExist() throws Exception {
         RequestInfoWrapper requestInfoWrapper = new RequestInfoWrapper();
+        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
         MockMultipartFile file = createExcelFile_noRows();
         requestInfo.getUserInfo().setTenantId("default");
         requestInfoWrapper.setRequestInfo(requestInfo);

@@ -43,6 +43,36 @@ public class EnrichmentService {
         }
     }
 
+    public void enrichScorecardSurveyEntity(ScorecardSurveyRequest surveyRequest) {
+        ScorecardSurveyEntity
+                surveyEntity = surveyRequest.getSurveyEntity();
+        surveyEntity.setStatus(ACTIVE);
+        surveyEntity.setActive(Boolean.TRUE);
+        surveyEntity.setAuditDetails(AuditDetails.builder()
+                .createdBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
+                .lastModifiedBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
+                .createdTime(System.currentTimeMillis())
+                .lastModifiedTime(System.currentTimeMillis())
+                .build());
+        surveyEntity.setPostedBy(surveyRequest.getRequestInfo().getUserInfo().getName());
+
+        //fix this
+        for(int i = 0; i < surveyEntity.getQuestions().size(); i++) {
+            Question question = surveyEntity.getQuestions().get(i);
+            question.setQorder((long)i+1);
+            question.setUuid(UUID.randomUUID().toString());
+            question.setSurveyId(surveyEntity.getUuid());
+            if(ObjectUtils.isEmpty(question.getStatus()))
+                question.setStatus(Status.ACTIVE);
+            question.setAuditDetails(AuditDetails.builder()
+                    .createdBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
+                    .lastModifiedBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
+                    .createdTime(System.currentTimeMillis())
+                    .lastModifiedTime(System.currentTimeMillis())
+                    .build());
+        }
+    }
+
     public void enrichAnswerEntity(AnswerRequest answerRequest) {
         RequestInfo requestInfo = answerRequest.getRequestInfo();
         AnswerEntity answerEntity = answerRequest.getAnswerEntity();

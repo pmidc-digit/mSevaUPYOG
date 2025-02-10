@@ -67,4 +67,6 @@ public class ApplicationProperties {
     @Value("${egov.ss.max.create.limit}")
     private Integer maxCreateLimit ;
 
+
+
 }

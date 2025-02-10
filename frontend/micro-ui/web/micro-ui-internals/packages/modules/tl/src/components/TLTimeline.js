@@ -10,8 +10,8 @@ const getAction = (flow) => {
       break;
     default: actions = [
       'TL_COMMON_TR_DETAILS',
-      'TL_LOCATION_AND_OWNER_DETAILS',
-      'TL_DOCUMENT_DETAIL',
+      'TL_NEW_TRADE_DETAILS_HEADER_TRADE_LOC_DETAILS',
+      'TL_COMMON_DOCS',
       'TL_COMMON_SUMMARY',
     ]
   }

@@ -16,9 +16,9 @@ const TradeLicense = ({ t, config, onSelect, userType, formData }) => {
   return (
     <React.Fragment>
       <Card>
-        <CardHeader>{t("TL_DOC_REQ_SCREEN_HEADER")}</CardHeader>
+        <CardHeader>{t("TRADELICENSE_REQ_DOCS_HEADER")}</CardHeader>
         <div>
-          <CardText>{t("TL_DOC_REQ_SCREEN_TEXT")}</CardText>
+          <CardText>{t("TRADELICENSE_OWNER_OWNERIDPROOF_OWNERIDPROOF_DESCRIPTION_NOTE")}</CardText>
           <div>
             {isLoading && <Loader />}
             {Array.isArray(docs)

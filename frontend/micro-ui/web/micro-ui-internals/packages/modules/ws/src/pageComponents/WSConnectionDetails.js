@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import cloneDeep from "lodash/cloneDeep";
 import { constants } from "../constants/constants";
 import { useSelector } from "react-redux";
+import { TENANT_IDS } from "../../../../constants/constants";
 
 const createConnectionDetails = () => ({
   water: true,
@@ -109,6 +110,7 @@ const WSConnectionDetails = ({ config, onSelect, formData, setError, formState, 
   useEffect(() => {
     console.log("connectionDetails in WSConnectionDetails:", connectionDetails);
     onSelect(config?.key, connectionDetails);
+    //onSelect(config.key, { ...formData[config.key], ...connectionDetails });
   }, [connectionDetails]);
 
   const allStepsData = useSelector((state) => state.ws.newWSApplicationForm.formData);
@@ -158,6 +160,7 @@ const WSConnectionDetails = ({ config, onSelect, formData, setError, formState, 
     subUsageTypeList,
     groupList,
     formData,
+    tenantId
   };
 
   console.log("Billing details translation: ", t("WS_SERV_DETAIL_BILLING_TYPE"));
@@ -192,6 +195,7 @@ const ConnectionDetails = (_props) => {
     pipeSizeList,
     connectionDetails,
     formData,
+    tenantId
   } = _props;
 
   const {
@@ -291,6 +295,8 @@ const ConnectionDetails = (_props) => {
       setValue("billingAmount", "");
     }
   }, [isBillingTypeCustom]);
+
+  const isTenantPatiala=(tenantId===TENANT_IDS.PATIALA);
 
   return (
     <div>
@@ -609,13 +615,13 @@ const ConnectionDetails = (_props) => {
           <CardLabel
             style={isMobile && isEmployee ? { fontWeight: "700", width: "100%", paddingTop: "10px" } : { marginTop: "-5px", fontWeight: "700" }}
             className="card-label-smaller"
-          >{`${t("WS_GROUP_LABEL")}`}</CardLabel>
+          >{`${t("WS_GROUP_LABEL")}`}{isTenantPatiala?"*":""}</CardLabel>
           <Controller
             control={control}
             name={"group"}
             defaultValue={connectionDetail?.group}
             //rules={{ required: t("REQUIRED_FIELD") }}
-            isMandatory={false}
+            isMandatory={isTenantPatiala}
             render={(props) => (
               <Dropdown
                 className="form-field"

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast } from "@upyog/digit-ui-react-components";
+import { Toast } from "@mseva/digit-ui-react-components";
 //
 import { FormComposer } from "../../../../../react-components/src/hoc/FormComposer";
 import { updateEmployeeForm } from "../../redux/actions/employeeFormActions";

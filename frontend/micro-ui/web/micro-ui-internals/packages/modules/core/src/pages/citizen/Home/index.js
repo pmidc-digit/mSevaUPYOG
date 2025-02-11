@@ -15,7 +15,7 @@ import {
   OBPSIcon,
   WSICon,
   PTRIcon
-} from "@upyog/digit-ui-react-components";
+} from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/CitizenSideBar";

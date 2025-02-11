@@ -1,4 +1,4 @@
-// import { CardLabel, Dropdown, LabelFieldPair, TextInput } from "@upyog/digit-ui-react-components";
+// import { CardLabel, Dropdown, LabelFieldPair, TextInput } from "@mseva/digit-ui-react-components";
 // import React from "react";
 
 // const WSPlumberDetails = ({ t, config, userType, formData }) => {
@@ -71,7 +71,7 @@
 
 // export default WSPlumberDetails;
 
-import { CardLabel, Dropdown, LabelFieldPair, TextInput, CardLabelError,WrapUnMaskComponent } from "@upyog/digit-ui-react-components";
+import { CardLabel, Dropdown, LabelFieldPair, TextInput, CardLabelError,WrapUnMaskComponent } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import * as func from "../utils";
 import { useForm, Controller } from "react-hook-form";

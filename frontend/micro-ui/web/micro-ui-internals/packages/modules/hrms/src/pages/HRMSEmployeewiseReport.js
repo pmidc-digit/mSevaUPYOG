@@ -1,4 +1,4 @@
-// import { Header } from "@upyog/digit-ui-react-components";
+// import { Header } from "@mseva/digit-ui-react-components";
 // import React from "react";
 // import { useTranslation } from "react-i18next";
 // //import SearchApplication from "../components/inbox/search";
@@ -40,9 +40,9 @@
 
 // export default HRMSEmployeewiseReport;
 
-// import { Header} from "@upyog/digit-ui-react-components";
+// import { Header} from "@mseva/digit-ui-react-components";
 // import React, { useState, useEffect } from "react";
-// import { Dropdown, SubmitBar, Table, Card } from "@upyog/digit-ui-react-components";
+// import { Dropdown, SubmitBar, Table, Card } from "@mseva/digit-ui-react-components";
 // import { useTranslation } from "react-i18next";
 // // import { saveAs } from "file-saver";
 // // import XLSX from "xlsx";
@@ -147,9 +147,9 @@
 // export default HRMSEmployeewiseReport;
 
 // import React, { useState } from "react";
-// import { CardLabel, Dropdown, Header, LabelFieldPair, SearchField, SubmitBar } from "@upyog/digit-ui-react-components";
+// import { CardLabel, Dropdown, Header, LabelFieldPair, SearchField, SubmitBar } from "@mseva/digit-ui-react-components";
 // import { useTranslation } from "react-i18next";
-// import { SearchForm } from "@upyog/digit-ui-react-components";
+// import { SearchForm } from "@mseva/digit-ui-react-components";
 
 // const HRMSEmployeewiseReport = () => {
 //   const { t } = useTranslation();
@@ -201,7 +201,7 @@
 // export default HRMSEmployeewiseReport;
 
 // import React, { useState, useEffect } from "react";
-// import { Dropdown, Button, Table, SearchForm, Header, SearchField, SubmitBar } from "@upyog/digit-ui-react-components";
+// import { Dropdown, Button, Table, SearchForm, Header, SearchField, SubmitBar } from "@mseva/digit-ui-react-components";
 // import { useTranslation } from "react-i18next";
 // import { useForm } from "react-hook-form";
 
@@ -398,7 +398,7 @@
 // export default HRMSEmployeewiseReport;
 
 // import React, { useState, useEffect } from "react";
-// import { Dropdown, Button, Table, SearchForm, Header, SearchField, SubmitBar } from "@upyog/digit-ui-react-components";
+// import { Dropdown, Button, Table, SearchForm, Header, SearchField, SubmitBar } from "@mseva/digit-ui-react-components";
 // import { useTranslation } from "react-i18next";
 // import { useForm } from "react-hook-form";
 
@@ -529,7 +529,7 @@
 // export default HRMSEmployeewiseReport;
 
 import React, { useState, useEffect } from "react";
-import { Dropdown, Button, Table, SearchForm, Header, SearchField, SubmitBar, Loader } from "@upyog/digit-ui-react-components";
+import { Dropdown, Button, Table, SearchForm, Header, SearchField, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 

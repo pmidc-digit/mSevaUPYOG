@@ -11,7 +11,7 @@ import {
   pdfDownloadLink,
   getCityLocale,
 } from "./utils";
-import { LinkLabel } from "@upyog/digit-ui-react-components";
+import { LinkLabel } from "@mseva/digit-ui-react-components";
 
 
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);

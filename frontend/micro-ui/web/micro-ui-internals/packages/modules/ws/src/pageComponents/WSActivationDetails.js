@@ -1,4 +1,4 @@
-import { CardLabel, DatePicker, LabelFieldPair, TextInput } from "@upyog/digit-ui-react-components";
+import { CardLabel, DatePicker, LabelFieldPair, TextInput } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { constants } from "../constants/constants";
 

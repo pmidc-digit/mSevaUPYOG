@@ -13,7 +13,7 @@ import {
   WSICon,
   PTRIcon
   
-} from "@upyog/digit-ui-react-components";
+} from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 //

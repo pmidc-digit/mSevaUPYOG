@@ -1,4 +1,4 @@
-import { CardHeader, TextInput, Header, Toast, Card, StatusTable, Row, Loader, Menu, PDFSvg, SubmitBar, LinkButton, ActionBar, CheckBox, MultiLink, CardText, CardSubHeader, CardLabel } from "@upyog/digit-ui-react-components";
+import { CardHeader, TextInput, Header, Toast, Card, StatusTable, Row, Loader, Menu, PDFSvg, SubmitBar, LinkButton, ActionBar, CheckBox, MultiLink, CardText, CardSubHeader, CardLabel } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import { useQueryClient } from "react-query";

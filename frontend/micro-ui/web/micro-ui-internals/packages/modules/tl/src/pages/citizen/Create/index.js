@@ -20,6 +20,7 @@ const CreateTradeLicence = ({ parentRoute }) => {
   let { data: newConfig, isLoading } = Digit.Hooks.tl.useMDMS.getFormConfig(stateId, {});
 
   const goNext = (skipStep, index, isAddMultiple, key, isPTCreateSkip) => {
+    //debugger;
     let currentPath = pathname.split("/").pop(),
       nextPage;
     let { nextStep = {} } = config.find((routeObj) => routeObj.route === currentPath);
@@ -117,6 +118,7 @@ const CreateTradeLicence = ({ parentRoute }) => {
 
   const onSuccess = () => {
     sessionStorage.removeItem("CurrentFinancialYear");
+    //debugger;
     queryClient.invalidateQueries("TL_CREATE_TRADE");
   };
 

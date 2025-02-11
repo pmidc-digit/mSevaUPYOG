@@ -175,4 +175,9 @@ public class CategoryQueryBuilderTest {
     public void testGetIsUniqueCategorySql() {
         assertEquals("SELECT COUNT(*) FROM eg_ss_category WHERE label = ? AND tenantid = ?", queryBuilder.getIsUniqueCategorySql());
     }
+
+    @Test
+    public void testExistsById() {
+        assertEquals("SELECT COUNT(*) FROM eg_ss_category WHERE id = ?", queryBuilder.existById());
+    }
 }

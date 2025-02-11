@@ -5,6 +5,7 @@ import org.egov.egovsurveyservices.repository.querybuilder.CategoryQueryBuilder;
 import org.egov.egovsurveyservices.repository.rowmapper.CategoryRowMapper;
 import org.egov.egovsurveyservices.web.models.Category;
 import org.egov.egovsurveyservices.web.models.CategorySearchCriteria;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -59,4 +60,9 @@ public class CategoryRepository {
         log.info("query for search: " + query + " params: " + preparedStmtList);
         return jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
     }
+
+    public Integer existsById(String id) {
+        return jdbcTemplate.queryForObject(categoryQueryBuilder.existById(), Integer.class, id);
+    }
+
 }

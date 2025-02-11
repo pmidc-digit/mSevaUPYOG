@@ -58,7 +58,7 @@ public class ScorecardSurveyService {
             surveyEntity.setTenantId(listOfTenantIds.get(i));
 
             // Enrich survey entity
-            enrichmentService.enrichSurveyEntity(surveyRequest);
+            enrichmentService.enrichScorecardSurveyEntity(surveyRequest);
 
             log.info(surveyRequest.getSurveyEntity().toString());
             producer.push(applicationProperties.getSaveSurveyTopic(), surveyRequest);

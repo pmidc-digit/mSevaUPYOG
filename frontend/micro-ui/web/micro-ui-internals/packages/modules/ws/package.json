@@ -1,6 +1,6 @@
 {
-  "name": "@upyog/digit-ui-module-ws",
-  "version": "1.7.0-beta.12",
+  "name": "@mseva/digit-ui-module-ws",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",

@@ -1,6 +1,6 @@
 {
-  "name": "@upyog/digit-ui-module-receipts",
-  "version": "1.7.0-beta.3",
+  "name": "@mseva/digit-ui-module-receipts",
+  "version": "1.0.0",
   "description": "RECEIPTS",
   "license": "MIT",
   "main": "dist/index.js",

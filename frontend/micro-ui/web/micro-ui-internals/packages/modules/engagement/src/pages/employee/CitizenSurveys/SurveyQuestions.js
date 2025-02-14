@@ -1,5 +1,5 @@
 import React,{ Fragment, useEffect, useState }  from 'react';
-import { Card,CardText,CardHeader, TextInput,Header,ActionBar,SubmitBar} from "@upyog/digit-ui-react-components";
+import { Card,CardText,CardHeader, TextInput,Header,ActionBar,SubmitBar} from "@mseva/digit-ui-react-components";
 import { useForm, Controller,FormProvider } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import SurveyFormsMaker from '../../../components/Surveys/SurveyForms/SurveyFormsMaker';

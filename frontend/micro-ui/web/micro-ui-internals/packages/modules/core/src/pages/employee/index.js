@@ -15,6 +15,7 @@ import NavigationPage from "./NavigationPage";
 import Header from "../../components/Header";
 import FAQ from "../../FAQ";
 import Footer from "../../components/Footer";
+import EmployeeServices from "../../components/EmployeeServices";
 const userScreensExempted = ["user/profile", "user/error"];
 
 const EmployeeApp = ({
@@ -49,10 +50,9 @@ const EmployeeApp = ({
   console.log("employee index path",path)
   return (
     <div className="employee">
-      
       <Switch>
         <Route path={`${path}/user`}>
-          {isUserProfile  ? (
+          {isUserProfile ? (
             <TopBarSideBar
               t={t}
               stateInfo={stateInfo}
@@ -65,61 +65,74 @@ const EmployeeApp = ({
               showSidebar={isUserProfile ? true : false}
               showLanguageChange={!showLanguageChange}
             />
-           ) : (
-              <Header />
-           )
-        }
+          ) : (
+            <Header />
+          )}
           <div
             className={isUserProfile ? "grounded-container" : "loginContainer"}
             style={
               isUserProfile
                 ? { padding: 0, paddingTop: "80px", marginLeft: mobileView ? "" : "64px" }
-                : { "--banner-url": `url(${stateInfo?.bannerUrl})`, padding: "0px" ,
-              }
+                : { "--banner-url": `url(${stateInfo?.bannerUrl})`, padding: "0px" }
             }
           >
             <div className="loginnn">
-            
-            <Switch>
-              <Route path={`${path}/user/login`}>
-                <EmployeeLogin />
-              </Route>
-              <Route path={`${path}/user/forgot-password`}>
-                <ForgotPassword />
-              </Route>
-              <Route path={`${path}/user/change-password`}>
-                <ChangePassword />
-              </Route>
-              <PrivateRoute path={`${path}/user/profile`}>
-                <UserProfile stateCode={stateCode} userType={"employee"} cityDetails={cityDetails} />
-              </PrivateRoute>
-              <Route path={`${path}/user/error`}>
-                <ErrorComponent
-                  initData={initData}
-                  goToHome={() => {
-                    history.push("/digit-ui/employee");
-                  }}
-                />
-              </Route>
-              <Route path={`${path}/user/language-selection`}>
-                <LanguageSelection />
-              </Route>
-              <Route>
-                <Redirect to={`${path}/user/language-selection`} />
-              </Route>
-            </Switch>
+              <Switch>
+                <Route path={`${path}/user/login`}>
+                  <EmployeeLogin />
+                </Route>
+                <Route path={`${path}/user/forgot-password`}>
+                  <ForgotPassword />
+                </Route>
+                <Route path={`${path}/user/change-password`}>
+                  <ChangePassword />
+                </Route>
+                <PrivateRoute path={`${path}/user/profile`}>
+                  <UserProfile stateCode={stateCode} userType={"employee"} cityDetails={cityDetails} />
+                </PrivateRoute>
+                <Route path={`${path}/user/error`}>
+                  <ErrorComponent
+                    initData={initData}
+                    goToHome={() => {
+                      history.push("/digit-ui/employee");
+                    }}
+                  />
+                </Route>
+                <Route path={`${path}/user/language-selection`}>
+                  <LanguageSelection />
+                </Route>
+                <Route>
+                  <Redirect to={`${path}/user/language-selection`} />
+                </Route>
+              </Switch>
             </div>
           </div>
 
-          <div className="footer"> <Footer/></div>
-         
+          <div className="footer">
+            {" "}
+            <Footer />
+          </div>
         </Route>
         <Route path={`${path}/sso/login`}>
-                <NavigationPage />
+          <NavigationPage />
         </Route>
         <Route path={`/digit-ui/faqss`}>
-             <FAQ />
-          </Route> 
+          <FAQ />
+        </Route>
+        <Route path={`${path}/services`}>
+          <TopBarSideBar
+            t={t}
+            stateInfo={stateInfo}
+            userDetails={userDetails}
+            CITIZEN={CITIZEN}
+            cityDetails={cityDetails}
+            mobileView={mobileView}
+            handleUserDropdownSelection={handleUserDropdownSelection}
+            logoUrl={logoUrl}
+            modules={modules}
+          />
+          <EmployeeServices />
+        </Route>
         <Route>
           <TopBarSideBar
             t={t}

@@ -4,10 +4,10 @@ import ReactDOM from "react-dom";
 import { initLibraries } from "@upyog/digit-ui-libraries";
 import { PGRReducers } from "@upyog/digit-ui-module-pgr";
 import { HRMSReducers } from "@upyog/digit-ui-module-hrms";
-import { HRMSModule, initHRMSComponents } from "@upyog/digit-ui-module-hrms";
 
+import { HRMSModule, initHRMSComponents } from "@upyog/digit-ui-module-hrms";
+import { MCollectModule,MCollectLinks } from "@upyog/digit-ui-module-mcollect";
 import { PTModule, PTLinks, PTComponents } from "@upyog/digit-ui-module-pt";
-import { MCollectModule, MCollectLinks } from "@upyog/digit-ui-module-mcollect";
 // import { TLModule, TLLinks } from "@upyog/digit-ui-module-tl";
 import { initFSMComponents } from "@upyog/digit-ui-module-fsm";
 import { initPGRComponents } from "@upyog/digit-ui-module-pgr";
@@ -18,7 +18,7 @@ import { initMCollectComponents } from "@upyog/digit-ui-module-mcollect";
 import { initTLComponents } from "@upyog/digit-ui-module-tl";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@upyog/digit-ui-module-common";
 import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
-import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
+import { initEngagementComponents,SurveyReducers } from "@upyog/digit-ui-module-engagement";
 import { initNOCComponents } from "@upyog/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@upyog/digit-ui-module-ws";
 import { DigitUI } from "@upyog/digit-ui-module-core";
@@ -108,6 +108,8 @@ const initDigitUI = () => {
     PTRModule,
     PTRLinks,
     ...PTRComponents,
+  
+
     // TLModule,
     // TLLinks,
   });
@@ -130,7 +132,8 @@ const initDigitUI = () => {
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),
     hrms: HRMSReducers(initData),
-    ws: WSReducers(initData)
+    ws: WSReducers(initData),
+    engagement: SurveyReducers(initData)
   });
 
   window.Digit.Customizations = {

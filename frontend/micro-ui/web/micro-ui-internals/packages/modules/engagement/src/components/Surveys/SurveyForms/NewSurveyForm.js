@@ -50,7 +50,11 @@ const NewSurveyForm = ({ t, index, questionStatement, type, uuid, qorder, requir
       value:  "TIME_ANSWER_TYPE",
     },
   ];
-
+ const categoryOptions=[
+{  title: t("Product Quality"),
+  i18Key: "Product_Quality",
+  value: "Product_Quality"}
+ ]
 
   const selectedType = dropdownOptions.filter(option => option?.value === (typeof type === "object" ? type.value : type))
   const isInputDisabled = window.location.href.includes("/employee/engagement/")
@@ -183,7 +187,20 @@ const NewSurveyForm = ({ t, index, questionStatement, type, uuid, qorder, requir
     <div className="newSurveyForm_wrapper">
       <span className="newSurveyForm_quesno">{`${t("CS_COMMON_QUESTION")} ${index + 1} `}</span>
       <span className="newSurveyForm_mainsection">
+      <Dropdown
+          t={t}
+            option={categoryOptions}
+            select={(ev) => {
+              setSurveyQuestionConfig((prevState) => ({ ...prevState, type: {title:ev.title,i18Key:ev.i18Key,value:ev.value} }));
+            }}
+            placeholder={"Select Category"}
+            //selected={surveyQuestionConfig.type || {title: "Short Answer",value: "SHORT_ANSWER_TYPE"}}
+            optionKey="i18Key"
+            disable={disableInputs}
+            selected={""}
+          />
         <div className="newSurveyForm_questions">
+     
           <div style={{width: "75%"}}>
             <TextInput
               placeholder={t("CS_COMMON_TYPE_QUESTION")}

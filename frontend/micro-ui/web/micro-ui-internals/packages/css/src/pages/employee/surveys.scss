@@ -270,3 +270,35 @@ border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
   padding: 0;
   background: none;
 }
+
+
+
+.survey-grid-container {
+  display: grid;
+  gap: 16px;
+}
+.survey-grid-container-input {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+@media (min-width: 320px) {
+  .survey-grid-container {
+      grid-template-columns: repeat(1, 1fr);
+  }
+}
+@media (min-width: 480px) {
+ .survey-grid-container {
+      grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (min-width: 768px) {
+  .survey-grid-container  {
+      grid-template-columns: repeat(3, 1fr);
+  }
+}
+@media (min-width: 1024px) {
+  .survey-grid-container  {
+      grid-template-columns: repeat(4, 1fr);
+  }
+}

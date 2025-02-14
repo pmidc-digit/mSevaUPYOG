@@ -116,7 +116,7 @@ const componentsToRegister = {
   TLSelectGeolocation,
   TLSelectAddress,
   TLSelectPincode,
-  Proof,
+  TLProof:Proof,
   SelectOwnerShipDetails,
   SelectOwnerDetails,
   SelectOwnerAddress,

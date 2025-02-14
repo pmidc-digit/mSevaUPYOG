@@ -57,7 +57,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
     }
   }, [error, propertyDetails]);
   useEffect(() => {
-    onSelect("cpt", { details: propertyDetails?.Properties[0] });
+    onSelect(config.key, { ...formData[config.key], details: propertyDetails?.Properties[0] });
     sessionStorage.setItem("Digit_FSM_PT",JSON.stringify(propertyDetails?.Properties[0]))
     localStorage.setItem("pgrProperty",JSON.stringify(propertyDetails?.Properties[0]))
     sessionStorage.setItem("wsProperty", JSON.stringify(propertyDetails?.Properties[0]))
@@ -76,6 +76,8 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
     
     else if (window.location.pathname.includes("/ws/new-application"))
       history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`)
+      const scrollConst =  460; 
+      setTimeout(() => window.scrollTo(0, scrollConst), 0);
   };
 
   if (isEditScreen) {
@@ -103,21 +105,49 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
 
   let clns = "";
   if (window.location.href.includes("/ws/")) clns = ":"
+
+  const isPropertyIdMandatory=window.location.pathname.includes("/ws/new-application");
+
+
+  const propertyIdInput = {
+      label: "PROPERTY_ID",
+      type: "text",
+      name: "id",
+      validation: {
+        isRequired: true,
+        // pattern: Digit.Utils.getPattern('Name'),
+        // title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
+      },
+      isMandatory: isPropertyIdMandatory,
+    };
+
+    function setValue(value, input) {
+      onSelect(config.key, { ...formData[config.key], [input]: value });
+    }
+
+    function getValue(input){
+      return formData && formData[config.key] ? formData[config.key][input] : undefined
+    }
+
+
   return (
     <React.Fragment>
      {(window.location.href.includes("/tl/") ? (!(formData?.tradedetils?.[0]?.structureType?.code === "MOVABLE") && (isEmpNewApplication || isEmpRenewLicense) ) : true) && <div>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={getInputStyles()}>{`${t(`PROPERTY_ID`)}`}</CardLabel>
+        <CardLabel className="card-label-smaller" style={getInputStyles()}>{`${t(propertyIdInput.label)}`}{propertyIdInput.isMandatory?"*":null}</CardLabel>
         <div className="field" style={{ marginTop: "20px", display: "flex" }}>
           <TextInput
-            key={config.key}
-            value={propertyId}
-            //isMandatory={true}
+            key={propertyIdInput.name}
+            value= {getValue(propertyIdInput.name)}//{propertyId}
             onChange={(e) => {
               setPropertyId(e.target.value);
-              onSelect(config.key, { id: e.target.value });
+              // onSelect(config.key, { id: e.target.value });
+              setValue(e.target.value, propertyIdInput.name);
             }}
+            disable={false}
+            defaultValue={undefined}
             style={{ width: "80%", float: "left", marginRight: "20px" }}
+            {...propertyIdInput.validation}
           />
           <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
             {`${t("PT_SEARCH")}`}

@@ -7,8 +7,8 @@ const SelectStructureType = ({ t, config, onSelect, userType, formData }) => {
   const [StructureType, setStructureType] = useState(formData?.TradeDetails?.StructureType);
   const isEdit = window.location.href.includes("/edit-application/")||window.location.href.includes("renew-trade");
   const menu = [
-    { i18nKey: "TL_COMMON_YES", code: "IMMOVABLE" },
-    { i18nKey: "TL_COMMON_NO", code: "MOVABLE" },
+    { i18nKey: "COMMON_MASTERS_STRUCTURETYPE_IMMOVABLE", code: "IMMOVABLE" },
+    { i18nKey: "COMMON_MASTERS_STRUCTURETYPE_MOVABLE", code: "MOVABLE" },
   ];
 
   const onSkip = () => onSelect();

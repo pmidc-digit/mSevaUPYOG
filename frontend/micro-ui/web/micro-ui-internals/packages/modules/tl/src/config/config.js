@@ -66,7 +66,7 @@ export const newConfig = [
             route: "map",
             component: "TLSelectGeolocation",
             nextStep: "pincode",
-           
+            hideInEmployee: true,
             key: "address",
             withoutLabel: true,
             texts: {
@@ -214,7 +214,7 @@ export const newConfig = [
         {
             type: "component",
             route: "proof",
-            component: "Proof",
+            component: "TLProof",
             withoutLabel: true,
             texts: {
                 headerCaption: "TL_OWNERS_DETAILS",
@@ -244,8 +244,8 @@ export const newConfig = [
         component: "SelectTradeName",
         texts: {
           headerCaption: "",
-          header: "TL_TRADE_NAME_HEADER",
-          cardText: "TL_TARDE_NAME_TEXT",
+          header: "TL_COMMON_TR_DETAILS",
+          cardText: "TL_NEW_TRADE_DETAILS_TRADE_NAME_LABEL",
           submitBarLabel: "CS_COMMON_NEXT",
           skipText: "",
         },
@@ -263,7 +263,7 @@ export const newConfig = [
         texts: {
           headerCaption: "TL_STRUCTURE_TYPE",
           header: "TL_STRUCTURE_TYPE_HEADER",
-          cardText: "TL_STRUCTURE_TYPE_TEXT",
+          cardText: "TL_NEW_TRADE_DETAILS_STRUCT_TYPE_LABEL",
           submitBarLabel: "CS_COMMON_NEXT",
         },
         key: "TradeDetails",
@@ -271,8 +271,8 @@ export const newConfig = [
         hideInEmployee: true,
         //nextStep: "property-usage-type",
         nextStep: {
-          "TL_COMMON_YES": "Building-type",
-          "TL_COMMON_NO": "vehicle-type",
+          "COMMON_MASTERS_STRUCTURETYPE_IMMOVABLE": "Building-type",
+          "COMMON_MASTERS_STRUCTURETYPE_MOVABLE": "vehicle-type",
         },
       },
       {
@@ -283,7 +283,7 @@ export const newConfig = [
         texts: {
           headerCaption: "TL_STRUCTURE_SUBTYPE_CAPTION",
           header: "TL_VEHICLE_TYPE_HEADER",
-          cardText: "TL_VEHICLE_TYPE_TEXT",
+          cardText: "COMMON-MASTERS_STRUCTURESUBTYPE_LABEL",
           submitBarLabel: "CS_COMMON_NEXT",
         },
         key: "TradeDetails",
@@ -300,7 +300,7 @@ export const newConfig = [
         texts: {
           headerCaption: "TL_STRUCTURE_SUBTYPE_CAPTION",
           header: "TL_BUILDING_TYPE_HEADER",
-          cardText: "TL_BUILDING_TYPE_TEXT",
+          cardText: "COMMON-MASTERS_STRUCTURESUBTYPE_LABEL",
           submitBarLabel: "CS_COMMON_NEXT",
         },
         key: "TradeDetails",
@@ -392,7 +392,7 @@ export const newConfig = [
           skipText: "CORE_COMMON_SKIP_CONTINUE"
         },
         withoutLabel: true,
-        nextStep: "know-your-property",
+        nextStep: "owner-ship-details",
         hideInEmployee: true,
       },
     ],
@@ -485,7 +485,7 @@ export const newConfig = [
         },
         key: "owners",
         withoutLabel: true,
-        nextStep: "proof",
+        nextStep: null,
         hideInEmployee: true,
       },
       {

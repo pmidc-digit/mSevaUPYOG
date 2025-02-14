@@ -85,7 +85,6 @@ const componentsToRegister = {
 };
 
 export const initHRMSComponents = () => {
-  console.log("In initHRMSComponents");
   Object.entries(componentsToRegister).forEach(([key, value]) => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });

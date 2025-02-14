@@ -21,19 +21,19 @@ export const serviceMappings = [
 //For citizen:
 export const citizenServiceMappings = [
   {
-    serviceName: "BF_LG_WC",
+    serviceName: "WS",
     path: "wns/search",
   },
   {
-    serviceName: "BF_PT",
+    serviceName: "PT",
     path: "pt-mutation/propertySearch",
   },
   {
-    serviceName: "BF_TL",
+    serviceName: "TL",
     path: "tradelicense-citizen/home",
   },
   {
-    serviceName: "BF_FFL",
+    serviceName: "FNC",
     path: "fire-noc/home",
   },
 ];

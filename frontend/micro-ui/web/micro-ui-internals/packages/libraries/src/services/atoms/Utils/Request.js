@@ -194,7 +194,6 @@ export const ServiceRequest = async ({
 }) => {
   const preHookName = `${serviceName}Pre`;
   const postHookName = `${serviceName}Post`;
-  console.log("resDataresData",preHookName,postHookName)
   let reqParams = params;
   let reqData = data;
   if (window[preHookName] && typeof window[preHookName] === "function") {
@@ -207,6 +206,5 @@ export const ServiceRequest = async ({
   if (window[postHookName] && typeof window[postHookName] === "function") {
     return await window[postHookName](resData);
   }
-  console.log("resData",resData)
   return resData;
 };

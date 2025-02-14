@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-hrms",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Digit HRMS Module",
   "license": "MIT",
   "main": "dist/index.js",
@@ -15,7 +15,7 @@
     "prepublish": "yarn build"
   },
   "dependencies": {
-    "@mseva/digit-ui-react-components" : "1.0.0",
+    "@mseva/digit-ui-react-components": "1.0.0",
     "microbundle-crl": "^0.13.11",
     "react": "17.0.2",
     "react-dom": "17.0.2",
@@ -27,5 +27,7 @@
     "rooks": "^4.4.0",
     "redux": "4.1.2",
     "redux-thunk": "2.4.1"
-  }
+  },
+  "devDependencies": {},
+  "author": ""
 }

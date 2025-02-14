@@ -16,18 +16,25 @@ const Summary = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in Summary: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
+    console.log("onFormValueChange data in Summary: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(updateWSNewApplicationForm(config.key, data));
     }
   };
 
-  const currentStepData = useSelector((state) => state.ws.newWSApplicationForm.formData?.[config.key] ?? {});
+  var currentStepData = useSelector(function (state) {
+    return state.ws &&
+      state.ws.newWSApplicationForm &&
+      state.ws.newWSApplicationForm.formData &&
+      state.ws.newWSApplicationForm.formData[config.key]
+      ? state.ws.newWSApplicationForm.formData[config.key]
+      : {};
+  });
   const dispatch = useDispatch();
 
   console.log("currentStepData in Summary: ", currentStepData);
 
-  const updatedFullConfig=fullConfig.find((conf) => conf.hideInCitizen && conf.isCreate)?.body;
+  const updatedFullConfig = fullConfig.find((conf) => conf.hideInCitizen && conf.isCreate)?.body;
 
   return (
     <React.Fragment>

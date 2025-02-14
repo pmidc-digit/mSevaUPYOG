@@ -3,7 +3,7 @@ import ReactDOM from "react-dom";
 
 import { initLibraries } from "@mseva/digit-ui-libraries";
 import { PGRReducers } from "@mseva/digit-ui-module-pgr";
-//import { HRMSReducers } from "@upyog/digit-ui-module-hrms";
+import { HRMSReducers } from "@mseva/digit-ui-module-hrms";
 import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 
 import { PTModule, PTLinks, PTComponents } from "@mseva/digit-ui-module-pt";
@@ -20,7 +20,7 @@ import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-mod
 import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents } from "@mseva/digit-ui-module-engagement";
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
-//import { initWSComponents, WSReducers } from "@upyog/digit-ui-module-ws";
+import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
@@ -122,15 +122,15 @@ const initDigitUI = () => {
   initOBPSComponents();
   initEngagementComponents();
   initNOCComponents();
-  //initWSComponents();
+  initWSComponents();
   initCommonPTComponents();
   initBillsComponents();
   // initCustomisationComponents();
 
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),
-   // hrms: HRMSReducers(initData),
-   // ws: WSReducers(initData)
+    hrms: HRMSReducers(initData),
+    ws: WSReducers(initData)
   });
 
   window.Digit.Customizations = {

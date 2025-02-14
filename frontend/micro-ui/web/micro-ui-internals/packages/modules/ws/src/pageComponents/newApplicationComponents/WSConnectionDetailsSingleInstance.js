@@ -216,7 +216,13 @@ const WSConnectionDetails = (props) => {
 
   console.log("In WSConnectionDetailsSingleInstance: \n formData: ", formData, "\n formState: ", formState);
 
-  const allStepsData = useSelector((state) => state.ws.newWSApplicationForm.formData);
+  var allStepsData = useSelector(function (state) {
+    return state.ws &&
+      state.ws.newWSApplicationForm &&
+      state.ws.newWSApplicationForm.formData
+      ? state.ws.newWSApplicationForm.formData
+      : undefined;
+  });
 
   useEffect(() => {
     const applyingFor = allStepsData.connectionDetails.ApplyingFor;

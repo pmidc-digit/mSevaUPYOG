@@ -21,7 +21,14 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
     }
   };
 
-  const currentStepData = useSelector((state) => state.hrms.employeeForm.formData?.[config.key] ?? {});
+  var currentStepData = useSelector(function (state) {
+    return state.hrms &&
+           state.hrms.employeeForm &&
+           state.hrms.employeeForm.formData &&
+           state.hrms.employeeForm.formData[config.key] !== undefined
+        ? state.hrms.employeeForm.formData[config.key] 
+        : {};
+});
   const dispatch = useDispatch();
   console.log("currentStepData in EmployeeDetails: ", currentStepData);
 

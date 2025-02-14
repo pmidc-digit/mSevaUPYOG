@@ -1,6 +1,6 @@
 {
-  "name": "@upyog/digit-ui-libraries",
-  "version": "1.7.0-beta.5",
+  "name": "@mseva/digit-ui-libraries",
+  "version": "1.0.0",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.js",
@@ -46,5 +46,7 @@
     "**/@babel/core": "7.16.0",
     "**/@babel/preset-env": "7.16.0",
     "**/@babel/plugin-transform-modules-commonjs": "7.16.0"
-  }
+  },
+  "description": "> Made with @egovernments/create-ui-library",
+  "author": "ANUJ SINGH"
 }

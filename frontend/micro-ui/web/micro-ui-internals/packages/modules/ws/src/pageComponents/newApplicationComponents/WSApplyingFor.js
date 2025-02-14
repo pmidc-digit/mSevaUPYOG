@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { CardLabel, CheckBox } from "@upyog/digit-ui-react-components";
+import { CardLabel, CheckBox } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
 

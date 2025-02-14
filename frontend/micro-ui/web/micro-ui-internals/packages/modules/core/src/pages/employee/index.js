@@ -10,7 +10,7 @@ import LanguageSelection from "./LanguageSelection";
 import EmployeeLogin from "./Login";
 import UserProfile from "../citizen/Home/UserProfile";
 import ErrorComponent from "../../components/ErrorComponent";
-import {PrivateRoute } from "@upyog/digit-ui-react-components";
+import {PrivateRoute } from "@mseva/digit-ui-react-components";
 import NavigationPage from "./NavigationPage";
 import Header from "../../components/Header";
 import FAQ from "../../FAQ";

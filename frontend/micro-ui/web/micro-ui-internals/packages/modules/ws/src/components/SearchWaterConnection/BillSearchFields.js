@@ -1,6 +1,6 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { Controller, useWatch } from "react-hook-form";
-import { TextInput, SubmitBar, SearchField, Localities, Dropdown,Loader } from "@upyog/digit-ui-react-components";
+import { TextInput, SubmitBar, SearchField, Localities, Dropdown,Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 const BillSearchFields = ({ register, control, reset, tenantId, t, setValue, OnresData,handleResSubmit,onSearch }) => {
   //const { t } = useTranslation();

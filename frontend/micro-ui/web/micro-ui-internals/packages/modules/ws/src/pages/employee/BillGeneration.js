@@ -1,6 +1,6 @@
 import React, { useState, Fragment, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { FormComposer, Card, CardHeader, Header, SearchField, CardText, SearchForm,Toast } from "@upyog/digit-ui-react-components";
+import { FormComposer, Card, CardHeader, Header, SearchField, CardText, SearchForm,Toast } from "@mseva/digit-ui-react-components";
 import { wsBillGeneratedResponseConfig } from "../../config/wsBillGeneratedResponseConfig";
 const BillGeneration = () => {
     const { t } = useTranslation();

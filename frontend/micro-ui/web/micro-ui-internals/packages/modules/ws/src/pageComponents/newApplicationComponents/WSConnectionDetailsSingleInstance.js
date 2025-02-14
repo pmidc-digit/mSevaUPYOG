@@ -1,4 +1,4 @@
-import { CardLabel, Dropdown, LabelFieldPair, Loader, TextInput, CardLabelError, CheckBox } from "@upyog/digit-ui-react-components";
+import { CardLabel, Dropdown, LabelFieldPair, Loader, TextInput, CardLabelError, CheckBox } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -216,7 +216,13 @@ const WSConnectionDetails = (props) => {
 
   console.log("In WSConnectionDetailsSingleInstance: \n formData: ", formData, "\n formState: ", formState);
 
-  const allStepsData = useSelector((state) => state.ws.newWSApplicationForm.formData);
+  var allStepsData = useSelector(function (state) {
+    return state.ws &&
+      state.ws.newWSApplicationForm &&
+      state.ws.newWSApplicationForm.formData
+      ? state.ws.newWSApplicationForm.formData
+      : undefined;
+  });
 
   useEffect(() => {
     const applyingFor = allStepsData.connectionDetails.ApplyingFor;

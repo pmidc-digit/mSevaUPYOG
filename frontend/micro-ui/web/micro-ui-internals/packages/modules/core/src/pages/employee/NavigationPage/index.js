@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Loader, Toast } from "@upyog/digit-ui-react-components";
+import { Loader, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { serviceMappings } from "../../../config/ssoConfig";
 

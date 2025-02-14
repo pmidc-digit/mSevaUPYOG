@@ -21,7 +21,14 @@ const AdditionalDetails = ({ config, onGoNext, onBackClick, t }) => {
     }
   };
 
-  const currentStepData = useSelector((state) => state.ws.newWSApplicationForm.formData?.[config.key] ?? {});
+  var currentStepData = useSelector(function (state) {
+    return state.ws &&
+           state.ws.newWSApplicationForm &&
+           state.ws.newWSApplicationForm.formData &&
+           state.ws.newWSApplicationForm.formData[config.key] !== undefined
+        ? state.ws.newWSApplicationForm.formData[config.key] 
+        : {};
+});
   const dispatch = useDispatch();
 
   console.log("currentStepData in AdditionalDetails: ", currentStepData);

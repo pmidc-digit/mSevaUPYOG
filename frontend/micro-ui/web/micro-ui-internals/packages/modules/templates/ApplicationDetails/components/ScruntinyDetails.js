@@ -1,4 +1,4 @@
-import { StatusTable, Row, PDFSvg, CardLabel, CardSubHeader,TextInput,TextArea,UploadFile } from "@upyog/digit-ui-react-components";
+import { StatusTable, Row, PDFSvg, CardLabel, CardSubHeader,TextInput,TextArea,UploadFile } from "@mseva/digit-ui-react-components";
 import React, { Fragment,useEffect,useState } from "react";
 import { useTranslation } from "react-i18next";
 

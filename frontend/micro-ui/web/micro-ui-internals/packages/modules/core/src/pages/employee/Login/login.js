@@ -1,4 +1,4 @@
-import { BackButton, Dropdown, Loader, Toast } from "@upyog/digit-ui-react-components";
+import { BackButton, Dropdown, Loader, Toast } from "@mseva/digit-ui-react-components";
 import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
 import PropTypes from "prop-types";
 import React, { useEffect, useState } from "react";

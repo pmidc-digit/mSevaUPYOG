@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Row, CardHeader, StatusTable, Loader } from "@upyog/digit-ui-react-components";
+import { Card, Row, CardHeader, StatusTable, Loader } from "@mseva/digit-ui-react-components";
 import { stringReplaceAll } from "../../../../tl/src/utils";
 import { useTranslation } from "react-i18next";
 const AcknowledgementQRCode = ({ path }) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Loader } from "@upyog/digit-ui-react-components";
-import { Dropdown, LabelFieldPair, CardLabel } from "@upyog/digit-ui-react-components";
+import { Loader } from "@mseva/digit-ui-react-components";
+import { Dropdown, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
 
 const SelectEmploymentStatus = ({ t, config, onSelect, formData = {}, userType }) => {
   const { data: EmployeeStatusData=[], isLoading } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "egov-hrms", [{ name: "EmployeeStatus" }], {

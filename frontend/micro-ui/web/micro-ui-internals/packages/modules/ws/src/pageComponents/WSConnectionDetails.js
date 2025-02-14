@@ -1,4 +1,4 @@
-import { CardLabel, Dropdown, LabelFieldPair, Loader, TextInput, CardLabelError, CheckBox } from "@upyog/digit-ui-react-components";
+import { CardLabel, Dropdown, LabelFieldPair, Loader, TextInput, CardLabelError, CheckBox } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { getPattern, stringReplaceAll } from "../utils";
 import { useForm, Controller } from "react-hook-form";
@@ -113,7 +113,13 @@ const WSConnectionDetails = ({ config, onSelect, formData, setError, formState, 
     //onSelect(config.key, { ...formData[config.key], ...connectionDetails });
   }, [connectionDetails]);
 
-  const allStepsData = useSelector((state) => state.ws.newWSApplicationForm.formData);
+  var allStepsData = useSelector(function (state) {
+    return state.ws &&
+      state.ws.newWSApplicationForm &&
+      state.ws.newWSApplicationForm.formData
+      ? state.ws.newWSApplicationForm.formData
+      : undefined;
+  });
 
   useEffect(() => {
     const applyingFor = allStepsData.connectionDetails.ApplyingFor;
@@ -296,7 +302,7 @@ const ConnectionDetails = (_props) => {
     }
   }, [isBillingTypeCustom]);
 
-  const isTenantPatiala=(tenantId===TENANT_IDS.PATIALA);
+  const isTenantPatiala = (tenantId === TENANT_IDS.PATIALA);
 
   return (
     <div>
@@ -615,7 +621,7 @@ const ConnectionDetails = (_props) => {
           <CardLabel
             style={isMobile && isEmployee ? { fontWeight: "700", width: "100%", paddingTop: "10px" } : { marginTop: "-5px", fontWeight: "700" }}
             className="card-label-smaller"
-          >{`${t("WS_GROUP_LABEL")}`}{isTenantPatiala?"*":""}</CardLabel>
+          >{`${t("WS_GROUP_LABEL")}`}{isTenantPatiala ? "*" : ""}</CardLabel>
           <Controller
             control={control}
             name={"group"}

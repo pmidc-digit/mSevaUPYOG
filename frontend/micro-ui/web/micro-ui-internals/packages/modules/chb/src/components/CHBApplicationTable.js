@@ -1,5 +1,5 @@
 import React from "react";
-import { Table } from "@nudmcdgnpm/digit-ui-react-components";
+import { Table } from "@mseva/digit-ui-react-components";
 
 const CHBApplicationTable = ({
   t,

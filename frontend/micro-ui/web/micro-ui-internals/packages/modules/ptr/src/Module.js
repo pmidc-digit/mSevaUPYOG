@@ -1,4 +1,4 @@
-import { Header, CitizenHomeCard, PTRIcon } from "@upyog/digit-ui-react-components";
+import { Header, CitizenHomeCard, PTRIcon } from "@mseva/digit-ui-react-components";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouteMatch } from "react-router-dom";
@@ -30,8 +30,8 @@ import NewApplication from "./pages/employee/NewApplication";
 import ApplicationDetails from "./pages/employee/ApplicationDetails";
 import Response from "./pages/Response";
 import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
-import CitizenFeedback from "@upyog/digit-ui-module-core/src/components/CitizenFeedback";
-import AcknowledgementCF from "@upyog/digit-ui-module-core/src/components/AcknowledgementCF";
+import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
+import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
 
 
 

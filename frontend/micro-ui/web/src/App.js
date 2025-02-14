@@ -3,40 +3,40 @@ import React from "react";
 import {
   initPGRComponents,
   PGRReducers,
-} from "@upyog/digit-ui-module-pgr";
-import { initFSMComponents } from "@upyog/digit-ui-module-fsm";
-import { PTModule, PTLinks, PTComponents } from "@upyog/digit-ui-module-pt";
+} from "@mseva/digit-ui-module-pgr";
+import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
+import { PTModule, PTLinks, PTComponents } from "@mseva/digit-ui-module-pt";
 import {
   MCollectModule,
   MCollectLinks,
   initMCollectComponents,
-} from "@upyog/digit-ui-module-mcollect";
-import { initDSSComponents } from "@upyog/digit-ui-module-dss";
+} from "@mseva/digit-ui-module-mcollect";
+import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import {
   PaymentModule,
   PaymentLinks,
   paymentConfigs,
-} from "@upyog/digit-ui-module-common";
-import { DigitUI } from "@upyog/digit-ui-module-core";
-import { initLibraries } from "@upyog/digit-ui-libraries";
-import { HRMSModule, initHRMSComponents, HRMSReducers } from "@upyog/digit-ui-module-hrms";
-import { TLModule, TLLinks, initTLComponents } from "@upyog/digit-ui-module-tl";
+} from "@mseva/digit-ui-module-common";
+import { DigitUI } from "@mseva/digit-ui-module-core";
+import { initLibraries } from "@mseva/digit-ui-libraries";
+import { HRMSModule, initHRMSComponents, HRMSReducers } from "@mseva/digit-ui-module-hrms";
+import { TLModule, TLLinks, initTLComponents } from "@mseva/digit-ui-module-tl";
 import {
   PTRModule,
   PTRLinks,
   PTRComponents,
-} from "@upyog-niua/upyog-ui-module-ptr";
+} from "@mseva/upyog-ui-module-ptr";
 import {
   initReceiptsComponents,
   ReceiptsModule,
-} from "@upyog/digit-ui-module-receipts";
-import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
-import { initNOCComponents } from "@upyog/digit-ui-module-noc";
-import { initEngagementComponents,SurveyReducers } from "@upyog/digit-ui-module-engagement";
-import { initWSComponents, WSReducers } from "@upyog/digit-ui-module-ws";
+} from "@mseva/digit-ui-module-receipts";
+import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
+import { initNOCComponents } from "@mseva/digit-ui-module-noc";
+import { initEngagementComponents,SurveyReducers } from "@mseva/digit-ui-module-engagement";
+import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { initCustomisationComponents } from "./Customisations";
-import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
-import { initBillsComponents } from "@upyog/digit-ui-module-bills";
+import { initCommonPTComponents } from "@mseva/digit-ui-module-commonpt";
+import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
 initLibraries();

@@ -10,7 +10,9 @@ const defaultFormsConfig = {
   uuid : "",
   qorder : null,
 };
-
+console.log("disable Inputs",disableInputs)
+console.log("partially enabled",isPartiallyEnabled)
+console.log("forms disable",formDisabled)
 const initialSurveyFormState = [defaultFormsConfig];
 
 const surveyFormReducer = (state, { type, payload }) => {

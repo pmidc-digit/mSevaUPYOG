@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Loader } from "@upyog/digit-ui-react-components"
+import { Loader } from "@mseva/digit-ui-react-components"
 import { Redirect, Route, Switch, useLocation, useRouteMatch, useHistory } from "react-router-dom";
 const Header = () => {
   const { data: storeData, isLoading } = Digit.Hooks.useStore.getInitData();

@@ -1,5 +1,5 @@
 import React, { Fragment, useState } from "react";
-import { SearchForm, Table, Card, CardText, Loader, Header, Toast, DownloadBtnCommon, UploadFile, SubmitBar, Modal } from "@upyog/digit-ui-react-components";
+import { SearchForm, Table, Card, CardText, Loader, Header, Toast, DownloadBtnCommon, UploadFile, SubmitBar, Modal } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import BillSearchFields from "./BillSearchFields";
 import { useTranslation } from "react-i18next";

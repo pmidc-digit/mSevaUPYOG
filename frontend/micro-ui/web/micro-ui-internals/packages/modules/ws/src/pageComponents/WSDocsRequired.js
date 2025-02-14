@@ -15,7 +15,7 @@ import {
   CardCaption,
   ActionBar,
   PrintBtnCommon,
-} from "@upyog/digit-ui-react-components";
+} from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 

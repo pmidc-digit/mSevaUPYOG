@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { Card, Loader } from "@upyog/digit-ui-react-components";
+import { Card, Loader } from "@mseva/digit-ui-react-components";
 import ComplaintsLink from "./inbox/ComplaintLinks";
 import ComplaintTable from "./inbox/ComplaintTable";
 import Filter from "./inbox/Filter";
@@ -75,8 +75,8 @@ const DesktopInbox = ({
   let result;
   if (isLoading) {
     result = <Loader />;
-  } else if (data && data.length === 0) {
-    result = (
+  } else if (data && data?.length === 0) {
+    result = ( 
       <Card style={{ marginTop: 20 }}>
         {t(LOCALE.NO_COMPLAINTS_EMPLOYEE)
           .split("\\n")
@@ -87,11 +87,11 @@ const DesktopInbox = ({
           ))}
       </Card>
     );
-  } else if (data.length > 0) {
+  } else if (data?.length > 0) {
     result = (
       <ComplaintTable
         t={t}
-        data={data}
+        data={data} 
         columns={columns}
         getCellProps={(cellInfo) => {
           return {

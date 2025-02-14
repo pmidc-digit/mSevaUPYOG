@@ -1,7 +1,7 @@
 import {
   Card, CardHeader, CardSubHeader, CardText,TextInput,CardLabel,CheckBox, LabelFieldPair, UploadFile,
   CitizenInfoLabel, Header, LinkButton, Row, StatusTable, SubmitBar, Table, CardSectionHeader, EditIcon, PDFSvg, Loader,TextArea
-} from "@upyog/digit-ui-react-components";
+} from "@mseva/digit-ui-react-components";
 import React,{ useEffect, useMemo, useState }  from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";

@@ -1,36 +1,36 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import { initLibraries } from "@upyog/digit-ui-libraries";
-import { PGRReducers } from "@upyog/digit-ui-module-pgr";
-import { HRMSReducers } from "@upyog/digit-ui-module-hrms";
-import { HRMSModule, initHRMSComponents } from "@upyog/digit-ui-module-hrms";
+import { initLibraries } from "@mseva/digit-ui-libraries";
+import { PGRReducers } from "@mseva/digit-ui-module-pgr";
+import { HRMSReducers } from "@mseva/digit-ui-module-hrms";
+import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 
-import { PTModule, PTLinks, PTComponents } from "@upyog/digit-ui-module-pt";
-import { MCollectModule, MCollectLinks } from "@upyog/digit-ui-module-mcollect";
+import { PTModule, PTLinks, PTComponents } from "@mseva/digit-ui-module-pt";
+import { MCollectModule, MCollectLinks } from "@mseva/digit-ui-module-mcollect";
 // import { TLModule, TLLinks } from "@upyog/digit-ui-module-tl";
-import { initFSMComponents } from "@upyog/digit-ui-module-fsm";
-import { initPGRComponents } from "@upyog/digit-ui-module-pgr";
-import { initDSSComponents } from "@upyog/digit-ui-module-dss";
-import { initReceiptsComponents, ReceiptsModule } from "@upyog/digit-ui-module-receipts";
+import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
+import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
+import { initDSSComponents } from "@mseva/digit-ui-module-dss";
+import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-receipts";
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
-import { initMCollectComponents } from "@upyog/digit-ui-module-mcollect";
-import { initTLComponents } from "@upyog/digit-ui-module-tl";
-import { PaymentModule, PaymentLinks, paymentConfigs } from "@upyog/digit-ui-module-common";
-import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
-import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
-import { initNOCComponents } from "@upyog/digit-ui-module-noc";
-import { initWSComponents, WSReducers } from "@upyog/digit-ui-module-ws";
-import { DigitUI } from "@upyog/digit-ui-module-core";
-import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
-import { initBillsComponents, BillsModule } from "@upyog/digit-ui-module-bills";
-import { PTRModule, PTRLinks, PTRComponents } from "@upyog-niua/upyog-ui-module-ptr";
+import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
+import { initTLComponents } from "@mseva/digit-ui-module-tl";
+import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
+import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
+import { initEngagementComponents,SurveyReducers } from "@mseva/digit-ui-module-engagement";
+import { initNOCComponents } from "@mseva/digit-ui-module-noc";
+import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
+import { DigitUI } from "@mseva/digit-ui-module-core";
+import { initCommonPTComponents } from "@mseva/digit-ui-module-commonpt";
+import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
+import { PTRModule, PTRLinks, PTRComponents } from "@mseva/upyog-ui-module-ptr";
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@egovernments/digit-ui-module-pgr";
-// import { Body, TopBar } from "@upyog/digit-ui-react-components";
+// import { Body, TopBar } from "@mseva/digit-ui-react-components";
 //import "@upyog-niua/upyog-css/example/index.css";
 import "@pmidc/upyog-css";
-// import * as comps from "@upyog/digit-ui-react-components";
+// import * as comps from "@mseva/digit-ui-react-components";
 // import { subFormRegistry } from "@upyog/digit-ui-libraries";
 
 import { pgrCustomizations, pgrComponents } from "./pgr";
@@ -108,6 +108,8 @@ const initDigitUI = () => {
     PTRModule,
     PTRLinks,
     ...PTRComponents,
+  
+
     // TLModule,
     // TLLinks,
   });
@@ -130,7 +132,8 @@ const initDigitUI = () => {
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),
     hrms: HRMSReducers(initData),
-    ws: WSReducers(initData)
+    ws: WSReducers(initData),
+    engagement: SurveyReducers(initData)
   });
 
   window.Digit.Customizations = {

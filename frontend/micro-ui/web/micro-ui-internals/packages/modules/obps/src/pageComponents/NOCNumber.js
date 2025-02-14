@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from "react";
-import { FormStep,SearchIcon,TextInput } from "@upyog/digit-ui-react-components";
+import { FormStep,SearchIcon,TextInput } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 
 const NOCNumber = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {

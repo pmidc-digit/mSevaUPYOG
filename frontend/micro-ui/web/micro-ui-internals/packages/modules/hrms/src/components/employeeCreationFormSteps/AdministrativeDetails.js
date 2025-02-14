@@ -21,7 +21,11 @@ const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
     }
   };
 
-  const currentStepData = useSelector((state) => state.hrms.employeeForm.formData?.[config.key] ?? {});
+  const currentStepData = useSelector(function (state) {
+    return state.hrms.employeeForm.formData && state.hrms.employeeForm.formData[config.key] 
+        ? state.hrms.employeeForm.formData[config.key] 
+        : {};
+});
   const dispatch = useDispatch();
 
  // console.log("currentStepData in  Administrative details: ", currentStepData);

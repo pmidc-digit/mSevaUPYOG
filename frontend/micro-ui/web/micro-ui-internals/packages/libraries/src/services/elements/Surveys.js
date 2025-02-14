@@ -1,3 +1,4 @@
+import { de } from "date-fns/locale";
 import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
 
@@ -58,4 +59,35 @@ export const Surveys = {
             auth: true,
             params:{surveyId:details.surveyId}
         }),
+    createCategory: (details) =>
+        Request({
+                url: Urls.engagement.surveys.createCategory,
+                data: details,
+                useCache: true,
+                userService: true,
+                method: "POST",
+                auth: true,
+                locale: true
+        }),
+        deleteCategory: (details) =>
+            Request({
+                    url: Urls.engagement.surveys.deleteCategory,
+                    data: details,
+                    useCache: true,
+                    userService: true,
+                    method: "PUT",
+                    auth: true,
+                    locale: true
+            }),
+
+            searchCategory: (details) =>
+                Request({
+                        url: Urls.engagement.surveys.searchCategory,
+                       params:{...details},
+                        useCache: true,
+                        userService: true,
+                        method: "GET",
+                        auth: true,
+                        locale: true
+                }),
 };

@@ -18,7 +18,7 @@
   import React, { useState, useEffect } from 'react';
   import Modal from 'react-modal';
   import { useLocation } from "react-router-dom";
-  import { SubmitBar } from '@upyog/digit-ui-react-components';
+  import { SubmitBar } from '@mseva/digit-ui-react-components';
   import { useTranslation } from "react-i18next";
   
 

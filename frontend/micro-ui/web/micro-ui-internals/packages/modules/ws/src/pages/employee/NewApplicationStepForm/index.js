@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory, useLocation } from "react-router-dom";
-//import { Toast } from "@upyog/digit-ui-react-components";
+//import { Toast } from "@mseva/digit-ui-react-components";
 import cloneDeep from "lodash/cloneDeep";
-import { Loader } from "@upyog/digit-ui-react-components";
+import { Loader } from "@mseva/digit-ui-react-components";
 //
 import Stepper from "../../../../../../react-components/src/customComponents/Stepper";
 import { newConfig as fullConfig } from "../../../config/wsCreateConfig";

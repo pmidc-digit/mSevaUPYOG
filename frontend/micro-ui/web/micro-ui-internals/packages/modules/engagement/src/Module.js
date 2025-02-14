@@ -1,4 +1,4 @@
-import { Loader, BreadCrumb } from "@upyog/digit-ui-react-components";
+import { Loader, BreadCrumb } from "@mseva/digit-ui-react-components";
 import React, {Fragment} from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, useLocation, useRouteMatch, Route } from "react-router-dom";
@@ -38,8 +38,17 @@ import Surveys from "./pages/employee/CitizenSurveys";
 import FillSurvey from './pages/citizen/CitizenSurvey/FillSurvey'
 import CitizenSurveyForm from './components/Surveys/CitizenSurveyForm';
 import ShowSurvey from './pages/citizen/CitizenSurvey/ShowSurvey'
- 
+import SurveyCategory from "./pages/employee/CitizenSurveys/SurveyCategory";
 import SurveyResults from "./pages/employee/CitizenSurveys/SurveyResults";
+import SearchCategory from "./pages/employee/CitizenSurveys/SearchCategory";
+import SurveyQuestions from "./pages/employee/CitizenSurveys/SurveyQuestions";
+import SurveyForm from "./components/Surveys/SurveyForms/SurveyForm";
+import SurveyFormPage from "./components/Surveys/SurveyFormPage";
+import getRootReducer from "./redux/reducers"
+import CreateSurveyForm from "./components/Surveys/SurveyForms/CreateSurveyForm";
+
+export const SurveyReducers = getRootReducer;
+
 const EventsBreadCrumb = ({ location }) => {
   const { t } = useTranslation();
   const crumbs = [
@@ -178,6 +187,26 @@ const EventsBreadCrumb = ({ location }) => {
       content: t("ES_EVENT_NEW_EVENT_RESPONSE"),
       show: location.pathname.includes("/engagement/survey/create-response") ? true : false,
     },
+    {
+      path: "/digit-ui/employee/engagement/surveys/create-category",
+      content: t("Survey Category"),
+      show: location.pathname.includes("/engagement/surveys/create-category") ? true : false,
+    }, 
+    {
+      path: "/digit-ui/employee/engagement/surveys/search-category",
+      content: t("Search Category"),
+      show: location.pathname.includes("/engagement/surveys/search-category") ? true : false,
+    }, 
+    {
+      path: "/digit-ui/employee/engagement/surveys/create-questions",
+      content: t("Create Questions"),
+      show: location.pathname.includes("/engagement/surveys/create-questions") ? true : false,
+    }, 
+    {
+      path: "/digit-ui/employee/engagement/surveys/search-questions",
+      content: t("Search Questions"),
+      show: location.pathname.includes("/engagement/surveys/search-questions") ? true : false,
+    }, 
   ];
 
   return <BreadCrumb crumbs={crumbs} />;
@@ -185,6 +214,7 @@ const EventsBreadCrumb = ({ location }) => {
 
 const EmployeeApp = ({ path, url, userType, tenants }) => {
   const location = useLocation();
+ 
 
   return (
     // <div className="ground-container">
@@ -218,6 +248,10 @@ const EmployeeApp = ({ path, url, userType, tenants }) => {
         <Route path={`${path}/documents/inbox`} component={(props) => <DocumentNotification tenants={tenants} />} />
         <Route path={`${path}/messages`} component={(props) => <Messages {...props} tenants={tenants} parentRoute={path} />} />
         <Route path={`${path}/surveys`} component={(props)=><Surveys {...props} tenants={tenants} parentRoute={path} />} />
+       
+        {/* <Route path={`${path}/abc/create-category`} >
+        <MySurveyCateogory/>
+        </Route> */}
         {/* documents/update-response */}
         {/* <Redirect to={`${path}/docs`} /> */}
       </Switch>
@@ -227,15 +261,19 @@ const EmployeeApp = ({ path, url, userType, tenants }) => {
 };
 
 const EngagementModule = ({ stateCode, userType, tenants }) => {
+
   const moduleCode = "Engagement";
   const { path, url } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();
+
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
 
+console.log("path",path)
   if (isLoading) {
     return <Loader />;
   }
   Digit.SessionStorage.set("ENGAGEMENT_TENANTS", tenants);
+  console.log("userType",userType)
 
   if (userType === "citizen") {
     return <CitizenApp path={path} url={url} userType={userType} tenants={tenants} />;
@@ -296,9 +334,15 @@ const componentsToRegister = {
   SelectToDate,
   SurveyList,
   FillSurvey,
-  CitizenSurveyForm,
-  ShowSurvey,
-  SurveyResults
+  CitizenSurveyForm, 
+  ShowSurvey, 
+  SurveyResults,
+  SurveyCategory,
+  SearchCategory,
+  SurveyCategory,
+  SurveyForm,
+  SurveyFormPage,
+  CreateSurveyForm
 };
 
 export const initEngagementComponents = () => {

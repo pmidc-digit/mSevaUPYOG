@@ -29,7 +29,7 @@ import {
     CitizenInfoLabel,
     SubmitBar,
     SearchIcon
-} from "@upyog/digit-ui-react-components";
+} from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview";
 import { stringReplaceAll } from "../utils";

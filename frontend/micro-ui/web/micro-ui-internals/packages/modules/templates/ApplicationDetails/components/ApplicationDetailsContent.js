@@ -9,7 +9,7 @@ import {
   Row,
   StatusTable,
   LinkButton
-} from "@upyog/digit-ui-react-components";
+} from "@mseva/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useEffect,useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -258,14 +258,14 @@ console.log("appl", applicationDetails)
     setShowAllTimeline((prev)=>!prev);
   }
   console.log("demand Data arr",demandData)
-  const totalDemandInterest = demandData.reduce((sum, item) => sum + item.demandInterest, 0);
-  const totalDemandPenality= demandData.reduce((sum, item) => sum + item.demandPenality, 0);
-  const totalCollectionTax= demandData.reduce((sum, item) => sum + item.collectionTax, 0);
-  const totalCollectionInterest = demandData.reduce((sum, item) => sum + item.collectionInterest, 0);
-  const totalCollectionPenality= demandData.reduce((sum, item) => sum + item.collectionPenality, 0);
-  const totalBalanceTax= demandData.reduce((sum, item) => sum + item.balanceTax, 0);
-  const totalBalanceInterest = demandData.reduce((sum, item) => sum + item.balanceInterest, 0);
-  const totalBalancePenality= demandData.reduce((sum, item) => sum + item.balancePenality, 0);
+  const totalDemandInterest = demandData?.reduce((sum, item) => sum + item.demandInterest, 0);
+  const totalDemandPenality= demandData?.reduce((sum, item) => sum + item.demandPenality, 0);
+  const totalCollectionTax= demandData?.reduce((sum, item) => sum + item.collectionTax, 0);
+  const totalCollectionInterest = demandData?.reduce((sum, item) => sum + item.collectionInterest, 0);
+  const totalCollectionPenality= demandData?.reduce((sum, item) => sum + item.collectionPenality, 0);
+  const totalBalanceTax= demandData?.reduce((sum, item) => sum + item.balanceTax, 0);
+  const totalBalanceInterest = demandData?.reduce((sum, item) => sum + item.balanceInterest, 0);
+  const totalBalancePenality= demandData?.reduce((sum, item) => sum + item.balancePenality, 0);
 
   // console.log("applicationDetails?.applicationDetails",applicationDetails?.applicationDetails)
   return (

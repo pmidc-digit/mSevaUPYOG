@@ -739,14 +739,4 @@ background-size: cover
   
   }
   }
-@media (min-width: 1069px) {
-.cardGrid{
-  display: flex;
-  column-gap: 10px;
-}
-@media (max-width: 1070px) {
-  .cardGrid{
-   margin-left: 10px;
-  }
-}
-}
+  

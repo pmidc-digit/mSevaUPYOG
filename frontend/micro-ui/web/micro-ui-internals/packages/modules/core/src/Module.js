@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { Provider } from "react-redux";
 import { BrowserRouter as Router } from "react-router-dom";
 import { getI18n } from "react-i18next";
-import { Body, Loader } from "@upyog/digit-ui-react-components";
+import { Body, Loader } from "@mseva/digit-ui-react-components";
 import { DigitApp } from "./App";
 import SelectOtp from "./pages/citizen/Login/SelectOtp";
 import AcknowledgementCF from "./components/AcknowledgementCF";
@@ -20,7 +20,7 @@ const DigitUIWrapper = ({ stateCode, enabledModules, moduleReducers }) => {
   if (isLoading) {
     return <Loader page={true} />;
   }
-
+console.log("initdata",initData)
   const i18n = getI18n();
   return (
     <StrictMode>

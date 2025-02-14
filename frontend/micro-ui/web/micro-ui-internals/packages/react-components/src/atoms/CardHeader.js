@@ -5,7 +5,7 @@ const CardHeader = (props) => {
   return (
     <div className="card-header" style={props.styles ? {...props.styles, marginBottom:"30px"} : {marginBottom:"30px"}}>
       {props.children}
-      {props.divider && <hr style={{ border: "1px solid #bbb", marginTop: "10px" }} />}
+      {props.divider && <hr style={{ border: "1px solid #DFE0E2", marginTop: "10px" }} />}
     </div>
   );
 };

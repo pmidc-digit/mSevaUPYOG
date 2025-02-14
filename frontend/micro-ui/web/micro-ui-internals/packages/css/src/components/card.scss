@@ -235,8 +235,9 @@
     }
 
     .card-section-header {
-      margin-bottom: 40px;
-      @apply text-heading-m-dt;
+      margin-bottom: 20px;
+      color: #0D43A7;
+      @apply text-heading-m-dt font-medium;
     }
 
     .card-section-sub-text{

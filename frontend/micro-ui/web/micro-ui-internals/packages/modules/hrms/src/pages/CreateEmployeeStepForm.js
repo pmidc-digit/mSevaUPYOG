@@ -27,8 +27,8 @@ const createEmployeeConfig = [
     },
   },
   {
-    head: "HR_ADMINISTRATIVE_DETAILS",
-    stepLabel: "HR_ADMINISTRATIVE_DETAILS_STEP_LABEL",
+    head: "ADMIN_DETAILS",
+    stepLabel: "ADMIN_DETAILS",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
@@ -85,8 +85,8 @@ const CreateEmployeeStepForm = () => {
 
   console.log("formState: ",formState);
   return (
-    <div class="pageCard">
-      <CardHeader divider={true}>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</CardHeader>
+    <div className="pageCard">
+      <CardHeader styles={{fontSize:"28px" ,fontWeight:"400", color: "#1C1D1F"}} divider={true}>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast

@@ -24,7 +24,7 @@ const AdministrativeDetails = ({ config, onGoNext, onBackClick, t }) => {
   const currentStepData = useSelector((state) => state.hrms.employeeForm.formData?.[config.key] ?? {});
   const dispatch = useDispatch();
 
-  console.log("currentStepData in  Administrative details: ", currentStepData);
+ // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>

@@ -6,12 +6,18 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
   const { t } = useTranslation();
   const stepStyle = (isActive) => ({
     display: "flex",
-    flexDirection: "column",
+    //flexDirection: "column",
     alignItems: "center",
+    justifyContent: "flex-end",
     flex: 1,
-    position: "relative",
+   // position: "relative",
     color: isActive ? "#3f51b5" : "#ccc",
+    padding: "10px 10px",
+   // margin:"25px",
+
   });
+
+
 
   // const circleStyle = (isActive) => ({
   //   width: "30px",
@@ -28,12 +34,12 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
 
   const circleStyle = (stepNumber) => {
     let backgroundColor;
-    if (stepNumber < currentStep) {
-      backgroundColor = "#2db92d"; // Completed steps
-    } else if (stepNumber === currentStep) {
-      backgroundColor = "#e69500"; // Current step
+    if (stepNumber <= currentStep) {
+      backgroundColor = "#0D43A7"; // Completed steps
+    // } else if (stepNumber === currentStep) {
+    //   backgroundColor = "#e69500"; // Current step
     } else {
-      backgroundColor = "#ccc"; // Incomplete steps
+      backgroundColor = "#FFFFFF"; // Incomplete steps
     }
 
     return {
@@ -47,18 +53,20 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
       justifyContent: "center",
       marginBottom: "5px",
       fontWeight: "normal",
+      border: stepNumber > currentStep ? "1px solid black": ""
     };
   };
 
   const labelStyle = {
-    fontSize: "14px",
-    color: "black",
-    fontWeight: "bold",
+    fontSize: "18px",
+    color: "#1E1E1E",
+    fontWeight: "500",
   };
 
   const stepNumberStyle = {
-    fontSize: "13px",
-    color: "black",
+    fontSize: "16px",
+    color: "#263238",
+    fontWeight: "400"
   };
 
   const buttonStyle = {
@@ -92,23 +100,30 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
   const isMobile = window.Digit.Utils.browser.isMobile();
   const totalSteps = stepsList.length;
   return (
-    <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <div className="stepper"  style={{ width: "100%", display: "flex", flexDirection: "row", alignItems: "top", justifyContent:"flex-start" }}>
       <div
+        className="stepper-navigation-bar"
         style={{
           display: "flex",
+          flexDirection: "column",
           justifyContent: "space-between",
-          width: "100%",
-          maxWidth: "1500px",
-          minWidth: "650px",
+          width: "30%",
+          height:"50%",
+          //maxWidth: "1500px",
+          //minWidth: "650px",
           marginRight: "auto",
           marginBottom: "20px",
         }}
       >
         {[...Array(totalSteps)].map((_, index) => (
-          <div key={index} style={stepStyle(index + 1 <= currentStep)}>
-            <div style={circleStyle(index + 1)}>{index < currentStep - 1 ? <TickMark /> : index + 1}</div>
-            <div style={stepNumberStyle}>Step {index + 1}</div>
-            <div style={labelStyle}>{t(stepsList[index].stepLabel)}</div>
+          <div className="step-content" key={index} style={stepStyle(index + 1 <= currentStep, index === totalSteps- 1)}>
+            <div className="step-sub-content" style={{display:"flex", flexDirection:"column", alignItems:"flex-end", margin:"10px"}}>
+            <div className="step-number" style={stepNumberStyle}>Step {index + 1}</div>
+            <div className="step-label" style={labelStyle}>{t(stepsList[index].stepLabel)}</div>
+            </div>
+
+            <div className="step-circle" style={circleStyle(index + 1)}>{index + 1}</div>   
+
             {/* {index < totalSteps - 1 && <div style={lineStyle}></div>} */}
           </div>
         ))}
@@ -125,8 +140,9 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
         ))}
       </div> */}
       <div
+        className="stepper-body"
         style={{
-          width: "100%",
+          width: "70%",
           //maxWidth: "1500px",
           marginBottom: "20px",
         }}

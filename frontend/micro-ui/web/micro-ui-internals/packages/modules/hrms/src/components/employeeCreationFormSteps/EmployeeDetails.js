@@ -76,7 +76,7 @@ const EmployeeDetails = ({ config, onGoNext, t }) => {
 
   return (
     <React.Fragment>
-      <CardHeader divider={true}>{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</CardHeader>
+      {/* <CardHeader divider={true}>{t("HR_NEW_EMPLOYEE_FORM_HEADER")}</CardHeader> */}
       <FormComposer
         defaultValues={currentStepData}
         //heading={t("")}

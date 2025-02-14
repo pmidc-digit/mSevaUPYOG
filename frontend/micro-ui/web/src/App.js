@@ -32,7 +32,7 @@ import {
 } from "@upyog/digit-ui-module-receipts";
 import { initOBPSComponents } from "@upyog/digit-ui-module-obps";
 import { initNOCComponents } from "@upyog/digit-ui-module-noc";
-import { initEngagementComponents } from "@upyog/digit-ui-module-engagement";
+import { initEngagementComponents,SurveyReducers } from "@upyog/digit-ui-module-engagement";
 import { initWSComponents, WSReducers } from "@upyog/digit-ui-module-ws";
 import { initCustomisationComponents } from "./Customisations";
 import { initCommonPTComponents } from "@upyog/digit-ui-module-commonpt";
@@ -102,7 +102,8 @@ initCustomisationComponents();
 const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
   hrms:  HRMSReducers(initData),
-  ws: WSReducers(initData)
+  ws: WSReducers(initData),
+  engagement: SurveyReducers(initData)
 });
 
 function App() {

@@ -40,6 +40,8 @@ const Inbox = ({ parentRoute }) => {
   }
 
   function formReducer(state, payload) {
+    console.log("state",state)
+    console.log("payload",payload)
     switch (payload.action) {
       case "mutateSearchForm":
         Digit.SessionStorage.set("CITIZENSURVEY.INBOX", { ...state, searchForm: payload.data })
@@ -84,14 +86,54 @@ const Inbox = ({ parentRoute }) => {
 
   
   const { data: { Surveys, TotalCount } = {}, isLoading: isInboxLoading, } = Digit.Hooks.survey.useSurveyInbox(formState)
-
+console.log("isinbox",isInboxLoading)
   const PropsForInboxLinks = {
     logoIcon: <DocumentIcon />,
     headerText: "CS_COMMON_SURVEYS",
-    links: [{
+    links: [
+      {
       text: t("CS_COMMON_NEW_SURVEY"),
       link: "/digit-ui/employee/engagement/surveys/inbox/create",
-    }]
+    
+    },
+    {
+     
+      text: t("Create Category"),
+      link: "/digit-ui/employee/engagement/surveys/create-category",
+    },
+    {
+     
+      text: t("Search Category"),
+      link: "/digit-ui/employee/engagement/surveys/search-category",
+    },
+    {
+     
+      text: t("Create Questions"),
+      link: "/digit-ui/employee/engagement/surveys/create-questions",
+    },
+    {
+     
+      text: t("Search Questions"),
+      link: "/digit-ui/employee/engagement/surveys/search-questions",
+    }
+  ]
+  }
+
+  const PropsForSurveyCategoryLinks = {
+    logoIcon: <DocumentIcon />,
+    headerText: "Survey Category",
+    links: [
+      {
+     
+      text: t("Create Category"),
+      link: "/digit-ui/employee/engagement/surveys/create-category",
+    },
+    // {
+     
+    //   text: t("Search Category"),
+    //   link: "/digit-ui/employee/engagement/surveys/search-category",
+    // }
+  ]
   }
 
   const SearchFormFields = useCallback(({ registerRef, searchFormState, controlSearchForm }) => <SearchFormFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} />, [])

@@ -1648,7 +1648,8 @@ export const WSSearch = {
     const collectionNumber = wsDataDetails?.connectionNo;
     const colletionOFData = await WSSearch.colletionData({tenantId, serviceTypeOfData, collectionNumber}, {});
     const fetchBills = await WSSearch.fetchBillData({ tenantId, serviceTypeOfData, collectionNumber});
-
+console.log("wsDataDetails",propertyDataDetails?.owners)
+console.log("propertyDataDetails",propertyDataDetails?.owners.length)
 
     const applicationHeaderDetails = {
       title: "WS_COMMON_SERV_DETAIL",
@@ -1727,15 +1728,18 @@ export const WSSearch = {
       title: "WS_COMMON_PROPERTY_DETAILS",
       asSectionHeader: true,
       values: [
+        { title: "WS_PROPERTY_TYPE_LABEL", value: propertyDataDetails?.propertyType },
+        { title: "WS_PROPERTY_USAGE_TYPE", value: propertyDataDetails?.usageCategory },
+        { title: "PLOT SIZE", value: propertyDataDetails?.landArea },
         { title: "WS_PROPERTY_ID_LABEL", value: propertyDataDetails?.propertyId },
-        { title: "WS_COMMON_OWNER_NAME_LABEL", 
-          value: getOwnerNames(propertyDataDetails),
-          privacy: {
-            uuid: propertyDataDetails?.owners?.[0]?.uuid, 
-            fieldName: "name", 
-            model: "User"
-          }
-        },
+       { title: "City", value: propertyDataDetails?.address?.city },
+       { title: "Plot/House/Survey No", value: propertyDataDetails?.address?.doorNo },
+       { title: "Building / Colony Name", value: propertyDataDetails?.address?.buildingName},
+       { title: "Street", value: propertyDataDetails?.address?.street},
+       { title: "Locality", value: propertyDataDetails?.address?.locality?.name},
+       { title: "Pincode", value: propertyDataDetails?.address?.pincode},
+       { title: "Location on Map", value: propertyDataDetails?.address?.geoLocation},
+      
         { title: "WS_PROPERTY_ADDRESS_LABEL",
           value: getAddress(propertyDataDetails?.address, t),
           privacy: {
@@ -1763,7 +1767,29 @@ export const WSSearch = {
         },
       ],
     };
-
+   const ownerDetails = {
+    title: "Owner Details",
+    asSectionHeader: true,
+    values:
+    propertyDataDetails?.owners != null && propertyDataDetails?.owners.length > 0
+        ? [
+    { title: "WS_COMMON_OWNER_NAME_LABEL", 
+      value: getOwnerNames(propertyDataDetails),
+      privacy: {
+        uuid: propertyDataDetails?.owners?.[0]?.uuid, 
+        fieldName: "name", 
+        model: "User"
+      }
+    },
+    { title: "Mobile Number", value: propertyDataDetails?.owners?.[0]?.mobileNumber },
+    { title: "Gender", value: propertyDataDetails?.owners?.[0]?.gender },
+    { title: "Guardian", value: propertyDataDetails?.owners?.[0]?.relationship },
+    { title: "Guardian Name", value: propertyDataDetails?.owners?.[0]?.fatherOrHusbandName},
+    { title: "Owner Category", value: propertyDataDetails?.owners?.[0]?.ownerType },
+    { title: "Email", value: propertyDataDetails?.owners?.[0]?.emailId},
+    { title: "Correspondence Address", value: propertyDataDetails?.owners?.[0]?.correspondenceAddress    },
+  ]:null
+   }
     const connectionHolderDetails = {
       title: "WS_COMMON_CONNECTION_HOLDER_DETAILS_HEADER",
       asSectionHeader: true,
@@ -1903,7 +1929,7 @@ export const WSSearch = {
     };
 
     let details = [];
-    details = [...details, isLabelShow, applicationHeaderDetails, propertyDetails, connectionHolderDetails];
+    details = [...details, isLabelShow, applicationHeaderDetails, propertyDetails, ownerDetails, connectionHolderDetails];
     wsDataDetails.serviceType = serviceDataType;
     wsDataDetails.property = propertyDataDetails;
     return {

@@ -48,21 +48,34 @@ public class ScorecardSurveyService {
         surveyValidator.validateQuestionsAndSections(surveyEntity);
 
         // Persist survey if it passes all validations
-        List<String> listOfTenantIds = new ArrayList<>(surveyEntity.getTenantIds());
-        Integer countOfSurveyEntities = listOfTenantIds.size();
-        List<String> listOfSurveyIds = surveyUtil.getIdList(surveyRequest.getRequestInfo(), listOfTenantIds.get(0), "ss.surveyid", "SY-[cy:yyyy-MM-dd]-[SEQ_EG_DOC_ID]", countOfSurveyEntities);
+        System.out.println("surveyEntity: " + surveyEntity);
+//        List<String> listOfTenantIds = new ArrayList<>(surveyEntity.getTenantIds());
+        String tenantId = surveyEntity.getTenantId();
+//        Integer countOfSurveyEntities = listOfTenantIds.size();
+        Integer countOfSurveyEntities = 1;
+        List<String> listOfSurveyIds = surveyUtil.getIdList(surveyRequest.getRequestInfo(), tenantId, "ss.surveyid", "SY-[cy:yyyy-MM-dd]-[SEQ_EG_DOC_ID]", countOfSurveyEntities);
         log.info(listOfSurveyIds.toString());
+        
+        surveyEntity.setUuid(listOfSurveyIds.get(0));
+        surveyEntity.setTenantId(tenantId);
+        // Enrich survey entity
+        enrichmentService.enrichScorecardSurveyEntity(surveyRequest);
+        log.info(surveyRequest.getSurveyEntity().toString());
+        System.out.println(surveyRequest.getSurveyEntity().toString());
+        producer.push(applicationProperties.getCreateScorecardSurveyTopic(), surveyRequest);
 
-        for (int i = 0; i < countOfSurveyEntities; i++) {
-            surveyEntity.setUuid(listOfSurveyIds.get(i));
-            surveyEntity.setTenantId(listOfTenantIds.get(i));
-
-            // Enrich survey entity
-            enrichmentService.enrichSurveyEntity(surveyRequest);
-
-            log.info(surveyRequest.getSurveyEntity().toString());
-            producer.push(applicationProperties.getSaveSurveyTopic(), surveyRequest);
-        }
+//        for (int i = 0; i < countOfSurveyEntities; i++) {
+//            surveyEntity.setUuid(listOfSurveyIds.get(i));
+////            surveyEntity.setTenantId(listOfTenantIds.get(i));
+//            surveyEntity.setTenantId(tenantId);
+//
+//            // Enrich survey entity
+//            enrichmentService.enrichScorecardSurveyEntity(surveyRequest);
+//
+//            log.info(surveyRequest.getSurveyEntity().toString());
+//            System.out.println(surveyRequest.getSurveyEntity().toString());
+//            producer.push(applicationProperties.getCreateScorecardSurveyTopic(), surveyRequest);
+//        }
 
         return surveyEntity;
     }

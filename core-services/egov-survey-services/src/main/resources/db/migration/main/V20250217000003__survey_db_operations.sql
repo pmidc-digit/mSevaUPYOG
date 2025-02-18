@@ -33,5 +33,5 @@ CREATE TABLE IF NOT EXISTS public.eg_ss_question_weightage
     weightage integer,
     qorder integer,
     CONSTRAINT eg_ss_question_weightage_pkey PRIMARY KEY (questionuuid, sectionuuid),
-    CONSTRAINT eg_ss_question_weightage_sectionuuid_fkey FOREIGN KEY (sectionuuid) REFERENCES public.eg_survey_section (uuid)
+    CONSTRAINT eg_ss_question_weightage_sectionuuid_fkey FOREIGN KEY (sectionuuid) REFERENCES public.eg_ss_survey_section (uuid)
 );

@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS public.eg_ss_survey_section
     surveyuuid character varying(128) COLLATE pg_catalog."default",
     title character varying(128) COLLATE pg_catalog."default",
     weightage integer,
-    CONSTRAINT eg_survey_section_pkey PRIMARY KEY (uuid),
-    CONSTRAINT eg_survey_section_surveyuuid_fkey FOREIGN KEY (surveyuuid) REFERENCES public.eg_ss_survey_entity (uuid)
+    CONSTRAINT eg_ss_survey_section_pkey PRIMARY KEY (uuid),
+    CONSTRAINT eg_ss_survey_section_surveyuuid_fkey FOREIGN KEY (surveyuuid) REFERENCES public.eg_ss_survey_entity (uuid)
 );
 
 CREATE TABLE IF NOT EXISTS public.eg_ss_question_weightage
@@ -32,6 +32,6 @@ CREATE TABLE IF NOT EXISTS public.eg_ss_question_weightage
     sectionuuid character varying(128) COLLATE pg_catalog."default" NOT NULL,
     weightage integer,
     qorder integer,
-    CONSTRAINT eg_question_weightage_pkey PRIMARY KEY (questionuuid, sectionuuid),
-    CONSTRAINT eg_question_weightage_sectionuuid_fkey FOREIGN KEY (sectionuuid) REFERENCES public.eg_survey_section (uuid)
+    CONSTRAINT eg_ss_question_weightage_pkey PRIMARY KEY (questionuuid, sectionuuid),
+    CONSTRAINT eg_ss_question_weightage_sectionuuid_fkey FOREIGN KEY (sectionuuid) REFERENCES public.eg_survey_section (uuid)
 );

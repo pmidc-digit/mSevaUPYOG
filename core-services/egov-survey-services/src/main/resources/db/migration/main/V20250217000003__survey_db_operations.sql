@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS public.eg_survey_entity
+CREATE TABLE IF NOT EXISTS public.eg_ss_survey_entity
 (
     uuid character varying(128) COLLATE pg_catalog."default" NOT NULL,
     tenantid character varying(128) COLLATE pg_catalog."default" NOT NULL,
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS public.eg_survey_entity
     CONSTRAINT eg_survey_entity_pkey PRIMARY KEY (uuid)
 );
 
-CREATE TABLE IF NOT EXISTS public.eg_survey_section
+CREATE TABLE IF NOT EXISTS public.eg_ss_survey_section
 (
     uuid character varying(128) COLLATE pg_catalog."default" NOT NULL,
     surveyuuid character varying(128) COLLATE pg_catalog."default",
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.eg_survey_section
     CONSTRAINT eg_survey_section_surveyuuid_fkey FOREIGN KEY (surveyuuid) REFERENCES public.eg_survey_entity (uuid)
 );
 
-CREATE TABLE IF NOT EXISTS public.eg_question_weightage
+CREATE TABLE IF NOT EXISTS public.eg_ss_question_weightage
 (
     questionuuid character varying(128) COLLATE pg_catalog."default" NOT NULL,
     sectionuuid character varying(128) COLLATE pg_catalog."default" NOT NULL,

@@ -1,8 +1,10 @@
 package org.egov.egovsurveyservices.web.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.ArrayList;
@@ -18,11 +20,7 @@ import java.util.List;
 public class ScorecardSurveyEntity {
     @Size(max = 128)
     @JsonProperty("uuid")
-    private String uuid; 
-
-//    @NotNull
-//    @JsonProperty("tenantIds")
-//    private List<String> tenantIds;
+    private String uuid;
     
     @Size(max = 128)
     @JsonProperty("tenantId")
@@ -44,12 +42,11 @@ public class ScorecardSurveyEntity {
     @JsonProperty("sections")
     private List<Section> sections;
 
-//    @JsonProperty("insertSectionsForUpdate")
-//    private List<Section> insertSectionsForUpdate;
-
+    @NotBlank
     @JsonProperty("startDate")
     private Long startDate;
 
+    @NotBlank
     @JsonProperty("endDate")
     private Long endDate;
 
@@ -59,10 +56,6 @@ public class ScorecardSurveyEntity {
 
     @JsonProperty("auditDetails")
     private AuditDetails auditDetails;
-
-//    @Size(max = 128)
-//    @JsonProperty("tenantId")
-//    private String tenantId;
 
     @JsonProperty("active")
     private Boolean active;
@@ -80,32 +73,5 @@ public class ScorecardSurveyEntity {
         if (null != sectionItem) this.sections.add(sectionItem);
         return this;
     }
-    
-
-//    public ScorecardSurveyEntity addInsertSectionsForUpdateItem(Section sectionItem) {
-//        if (this.insertSectionsForUpdate == null) {
-//            this.insertSectionsForUpdate = new ArrayList<>();
-//        }
-//        if (null != sectionItem) this.insertSectionsForUpdate.add(sectionItem);
-//        return this;
-//    }
-	
-//	public List<Question> getQuestions() {
-//	    if (sections == null || sections.isEmpty()) {
-//	        return Collections.emptyList();
-//	    }
-//
-//	    List<Question> questions = new ArrayList<>();
-//	    for (Section section : sections) {
-//	        if (section.getQuestions() != null) {
-//	            for (QuestionWeightage qw : section.getQuestions()) {
-//	                if (qw.getQuestion() != null) {
-//	                    questions.add(qw.getQuestion()); // Get Question from QuestionWeightage add into questions
-//	                }
-//	            }
-//	        }
-//	    }
-//	    return questions;
-//	}
 
 }

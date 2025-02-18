@@ -76,7 +76,6 @@ public class EnrichmentService {
     
     public void enrichScorecardSurveyEntity(ScorecardSurveyRequest surveyRequest) {
         ScorecardSurveyEntity surveyEntity = surveyRequest.getSurveyEntity();
-//        surveyEntity.setStatus(ACTIVE);
         surveyEntity.setActive(Boolean.TRUE);
         surveyEntity.setAuditDetails(AuditDetails.builder()
                 .createdBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())

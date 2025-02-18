@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.egov.egovsurveyservices.web.models.*;
 
 @RestController
-@RequestMapping("/surveys")
+@RequestMapping("/egov-ss")
 public class ScorecardSurveyController {
 
     @Autowired

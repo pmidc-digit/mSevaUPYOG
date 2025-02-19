@@ -11,12 +11,12 @@ module.exports = {
     colors: {
       primary: {
         light: "#F18F5E",
-        main: "#a82227",
+        main: "#2947A3",
         dark: "#C8602B",
       },
       secondary: "#22394D",
       text: {
-        primary: "#0B0C0C",
+        primary: "#0d43a7",
         secondary: "#505A5F",
       },
       link: {
@@ -25,9 +25,9 @@ module.exports = {
       },
       border: "#D6D5D4",
       "input-border": "#464646",
-      focus: "#a82227",
+      focus: "#1359C8",
       error: "#D4351C",
-      success: "#00703C",
+      success: "#05A660",
       black: "#000000",
       grey: {
         dark: "#9E9E9E",
@@ -75,6 +75,7 @@ module.exports = {
       md: "16px",
       lg: "24px",
       xl: "36px",
+      xxl: "48px"
     },
     margin: {
       xs: "4px",

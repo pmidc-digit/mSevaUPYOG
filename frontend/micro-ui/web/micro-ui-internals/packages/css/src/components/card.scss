@@ -62,8 +62,8 @@
 }
 
 .employeeCard {
-  @apply bg-white  p-md mb-xl;
-  border-radius: 4px;
+  @apply bg-white  p-xxl mb-xl;
+  border-radius: 24px;
 
   .card-header {
     @apply text-text-primary text-heading-xl font-bold font-rc align-middle text-left mb-md;
@@ -75,7 +75,7 @@
   }
 
   .card-section-header {
-    @apply text-text-primary text-heading-m font-bold;
+    @apply text-text-primary text-heading-m font-medium;
   }
 
   .card-section-sub-text{

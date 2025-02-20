@@ -85,19 +85,19 @@ public class ScorecardSurveyRepository {
         return jdbcTemplate.query(sql,new Object[]{sectionUuid}, questionWeightageRowMapper);
     }
 
-    public List<SurveyEntity> fetchSurveys(SurveySearchCriteria criteria){
-
-        List<Object> preparedStmtList = new ArrayList<>();
-
-        if(CollectionUtils.isEmpty(criteria.getTenantIds()) && ObjectUtils.isEmpty(criteria.getUuid()))
-            return new ArrayList<>();
-
-        String query = surveyQueryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
-        log.info("query for search: " + query + " params: " + preparedStmtList);
-
-        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-
-    }
+//    public List<SurveyEntity> fetchSurveys(SurveySearchCriteria criteria){
+//
+//        List<Object> preparedStmtList = new ArrayList<>();
+//
+//        if(CollectionUtils.isEmpty(criteria.getTenantIds()) && ObjectUtils.isEmpty(criteria.getUuid()))
+//            return new ArrayList<>();
+//
+//        String query = surveyQueryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
+//        log.info("query for search: " + query + " params: " + preparedStmtList);
+//
+//        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+//
+//    }
 
 
 }

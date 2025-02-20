@@ -105,7 +105,11 @@ public class ScorecardSurveyService {
 
     public ScorecardAnswerResponse submitResponse(AnswerRequest answerRequest) {
         AnswerEntity answerEntity = answerRequest.getAnswerEntity();
-
+        RequestInfo requestInfo = answerRequest.getRequestInfo();
+        surveyValidator.validateUserTypeForAnsweringSurvey(requestInfo);
+        String uuid = requestInfo.getUserInfo().getUuid();
+        surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, uuid);
+        surveyValidator.validateAnswers(answerEntity);
         // Collect answers to enrich SurveyResponse
         List<ScorecardSectionResponse> enrichedSectionResponses = answerEntity.getAnswers().stream()
                 .collect(Collectors.groupingBy(Answer::getSectionUuid)).entrySet().stream()
@@ -145,11 +149,11 @@ public class ScorecardSurveyService {
 
         ScorecardAnswerResponse surveyResponse = ScorecardAnswerResponse.builder()
                 .surveyUuid(answerEntity.getSurveyId())
-                .citizenId(answerRequest.getRequestInfo().getUserInfo().getUuid())
+                .citizenId(uuid)
                 .sectionResponses(enrichedSectionResponses)
                 .auditDetails(AuditDetails.builder()
-                        .createdBy(answerRequest.getRequestInfo().getUserInfo().getUuid())
-                        .lastModifiedBy(answerRequest.getRequestInfo().getUserInfo().getUuid())
+                        .createdBy(uuid)
+                        .lastModifiedBy(uuid)
                         .createdTime(System.currentTimeMillis())
                         .lastModifiedTime(System.currentTimeMillis())
                         .build())

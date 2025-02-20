@@ -38,7 +38,9 @@ public class ScorecardSurveyController {
     public ResponseEntity<ScorecardAnswerResponse> responseSubmit(@Valid @RequestBody AnswerRequest answerRequest) {
         ScorecardAnswerResponse answerResponse = surveyService.submitResponse(answerRequest);
         ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(answerRequest.getRequestInfo(), true);
-        ScorecardAnswerResponse response = ScorecardAnswerResponse.builder().responseInfo(responseInfo).answers(answerRequest.getAnswerEntity().getAnswers()).build();
+        ScorecardAnswerResponse response = ScorecardAnswerResponse.builder().responseInfo(responseInfo).surveyUuid(answerResponse.getSurveyUuid())
+                .citizenId(answerResponse.getCitizenId()).sectionResponses(answerResponse.getSectionResponses())
+                .auditDetails(answerResponse.getAuditDetails()).build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

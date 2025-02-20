@@ -41,7 +41,7 @@ public class QuestionRepository {
     }
 
     public String findQuestionStatementByUuid(String questionUuid) {
-        String sql = "SELECT questionStatement FROM public.eg_ss_question WHERE uuid = ?";
+        String sql = "SELECT questionstatement FROM public.eg_ss_question WHERE uuid = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{questionUuid}, String.class);
     }
 }

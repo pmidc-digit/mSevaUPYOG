@@ -1,0 +1,34 @@
+package org.egov.egovsurveyservices.web.models;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
+import org.egov.common.contract.response.ResponseInfo;
+
+import javax.validation.constraints.NotNull;
+import java.util.List;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@ToString
+public class ScorecardAnswerResponse {
+
+    @JsonProperty("ResponseInfo")
+    private ResponseInfo responseInfo = null;
+
+    @NotNull
+    @JsonProperty("surveyUuid")
+    private String surveyUuid;
+
+    @NotNull
+    @JsonProperty("citizenId")
+    private String citizenId;
+
+    @JsonProperty("sectionResponses")
+    private List<ScorecardSectionResponse> sectionResponses;
+
+    @JsonProperty("auditDetails")
+    private AuditDetails auditDetails;
+}

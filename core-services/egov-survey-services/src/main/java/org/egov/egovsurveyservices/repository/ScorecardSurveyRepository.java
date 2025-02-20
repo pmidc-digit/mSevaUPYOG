@@ -4,14 +4,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.egovsurveyservices.repository.querybuilder.ScorecardQueryBuilder;
 import org.egov.egovsurveyservices.repository.querybuilder.SurveyQueryBuilder;
 import org.egov.egovsurveyservices.repository.rowmapper.*;
-import org.egov.egovsurveyservices.web.models.Question;
-import org.egov.egovsurveyservices.web.models.QuestionWeightage;
-import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
-import org.egov.egovsurveyservices.web.models.Section;
+import org.egov.egovsurveyservices.web.models.*;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
@@ -85,6 +83,20 @@ public class ScorecardSurveyRepository {
     private List<QuestionWeightage> fetchQuestionsBySectionUuid(String sectionUuid) {
         String sql = surveyQueryBuilder.fetchQuestionsBySectionUuid(sectionUuid);
         return jdbcTemplate.query(sql,new Object[]{sectionUuid}, questionWeightageRowMapper);
+    }
+
+    public List<SurveyEntity> fetchSurveys(SurveySearchCriteria criteria){
+
+        List<Object> preparedStmtList = new ArrayList<>();
+
+        if(CollectionUtils.isEmpty(criteria.getTenantIds()) && ObjectUtils.isEmpty(criteria.getUuid()))
+            return new ArrayList<>();
+
+        String query = surveyQueryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
+        log.info("query for search: " + query + " params: " + preparedStmtList);
+
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+
     }
 
 

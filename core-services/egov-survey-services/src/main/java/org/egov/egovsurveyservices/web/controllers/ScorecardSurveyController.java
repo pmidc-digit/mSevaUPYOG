@@ -35,10 +35,10 @@ public class ScorecardSurveyController {
 
 
     @RequestMapping(value="/csc/response/submit", method = RequestMethod.POST)
-    public ResponseEntity<AnswerResponse> responseSubmit(@Valid @RequestBody AnswerRequest answerRequest) {
-        surveyService.submitResponse(answerRequest);
+    public ResponseEntity<ScorecardAnswerResponse> responseSubmit(@Valid @RequestBody AnswerRequest answerRequest) {
+        ScorecardAnswerResponse answerResponse = surveyService.submitResponse(answerRequest);
         ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(answerRequest.getRequestInfo(), true);
-        AnswerResponse response = AnswerResponse.builder().responseInfo(responseInfo).answers(answerRequest.getAnswerEntity().getAnswers()).build();
+        ScorecardAnswerResponse response = ScorecardAnswerResponse.builder().responseInfo(responseInfo).answers(answerRequest.getAnswerEntity().getAnswers()).build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }

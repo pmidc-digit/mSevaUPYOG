@@ -36,7 +36,7 @@ public class QuestionController {
     }
 
 
-    @RequestMapping(value="/question/_search", method = RequestMethod.GET)
+    @PostMapping("/question/_search")
     public ResponseEntity<QuestionResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
                                                    @ModelAttribute QuestionSearchCriteria criteria) {
 

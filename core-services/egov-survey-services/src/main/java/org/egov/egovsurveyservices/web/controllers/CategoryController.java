@@ -34,7 +34,7 @@ public class CategoryController {
     }
 
 
-    @RequestMapping(value="/category/_search", method = RequestMethod.GET)
+    @PostMapping("/category/_search")
     public ResponseEntity<CategoryResponse> search(@RequestBody RequestInfoWrapper requestInfoWrapper,
                                                    @ModelAttribute CategorySearchCriteria criteria) {
 

@@ -233,7 +233,7 @@
         @apply bg-white;
         svg {
           path {
-            fill: #a82227;
+            fill: #1359C8;
           }
         }
       }
@@ -405,8 +405,8 @@
 }
 
 .sla-cell-error {
-  color: #d4351c;
-  background-color: rgba(212, 53, 28, 0.12);
+  color: #2947A3;
+  background-color: #F5FBFF;
   padding: 0 24px;
   border-radius: 11px;
 }
@@ -563,7 +563,7 @@
   margin: 0 !important;
 }
 .complaint-links-container .body .link{
-  color: #a82227 !important;
+  color: #2947A3 !important;
 }
 
 .employee .customEmployeeCard:nth-child(odd){

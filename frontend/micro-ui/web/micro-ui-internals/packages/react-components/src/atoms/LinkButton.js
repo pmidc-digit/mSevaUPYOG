@@ -26,15 +26,15 @@ LinkButton.propTypes = {
 LinkButton.defaultProps = {
 
   style: {
-    color: "#FFFFFF !important",
-    backgroundColor: "#2947A3 !important",
-    border: "none !important",
-    borderRadius: "6px !important",
-    cursor: "pointer !important",
-    padding: "8px 24px !important",
-    display: "inline-block !important",
-    height: "45px !important",
-    fontSize: "18px !important",
+    color: "#FFFFFF",
+    backgroundColor: "#2947A3",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    padding: "8px 24px",
+    display: "inline-block",
+    height: "45px",
+    fontSize: "18px",
   },
 
 };

@@ -27,4 +27,10 @@ public class QuestionWeightage {
     @NotNull
     @JsonProperty("weightage")
     private Integer weightage;
+    
+    public QuestionWeightage(String questionUuid, Question question, int weightage) {
+        this.questionUuid = questionUuid;
+        this.question = question;
+        this.weightage = weightage;
+    }
 }

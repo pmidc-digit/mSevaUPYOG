@@ -47,7 +47,7 @@ export const mapQuestions = (questions =[],initialData) =>{
  
 }
 
-const NewSurveys = () => {
+const NewSurveys = ({readOnly}) => {
   const { t } = useTranslation();
   const history = useHistory();
   const [showToast, setShowToast] = useState(null);
@@ -60,6 +60,7 @@ const NewSurveys = () => {
   }, 10000);
   
   const onSubmit = (data) => {
+    console.log("data",data)
     const { collectCitizenInfo, title, description, tenantIds, fromDate, toDate, fromTime, toTime, questions } = data;
     const mappedQuestions = mapQuestions(questions);
     const details = {
@@ -116,7 +117,7 @@ const NewSurveys = () => {
       {/* <Header>{t("CS_COMMON_SURVEYS")}</Header> */}
       <Header>{t("CREATE_NEW_SURVEY")}</Header>
       <div style={stylesForForm}>
-        <CreateNewSurvey t={t} onSubmit={onSubmit} initialFormValues={defaultValues} />
+        <CreateNewSurvey t={t} onSubmit={onSubmit} initialFormValues={defaultValues} readOnly={readOnly}/>
       </div>
       {showToast && <Toast error={showToast.key} label={t(showToast.label)} onClose={closeToast} />}
     </Fragment>

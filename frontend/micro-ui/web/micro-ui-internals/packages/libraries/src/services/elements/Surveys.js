@@ -86,8 +86,43 @@ export const Surveys = {
                        params:{...details},
                         useCache: true,
                         userService: true,
-                        method: "GET",
+                        method: "POST",
                         auth: true,
                         locale: true
                 }),
+
+                createSurvey: (details) =>
+                    Request({
+                        url: Urls.engagement.surveys.createSurvey,
+                        data: details,
+                        useCache: true,
+                        userService: true,
+                        method: "POST",
+                        auth: true,
+                        locale: true
+                    }),
+
+                    searchQuestions: (details) =>
+                        Request({
+                          url: Urls.engagement.surveys.searchQuestions,
+                          params: details,
+                          data:{QuestionSearchCriteria:{details}},
+                          useCache: false,
+                          userService: true,
+                          method: "POST",
+                          auth: true,
+                          locale: true,
+                        }),
+                     
+                      createQuestions: (details) =>
+                        Request({
+                          url: Urls.engagement.surveys.createQuestions,
+                          data: details,
+                          params: {},
+                          useCache: false,
+                          userService: true,
+                          method: "POST",
+                          auth: true,
+                          locale: true,
+                        }),
 };

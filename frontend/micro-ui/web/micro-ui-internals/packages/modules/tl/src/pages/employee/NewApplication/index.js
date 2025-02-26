@@ -293,11 +293,13 @@ const NewApplication = () => {
 
   return (
     <div>
-      <div style={{ marginLeft: "15px" }}>
+      
+      {/* <div style={{ marginLeft: "15px" }}>
         <Header>{t("ES_TITLE_NEW_TRADE_LICESE_APPLICATION")}</Header>
-      </div>
+      </div> */}
+      
       <FormComposer
-        heading={t("")}
+        heading={t("TL_COMMON_APPL_NEW_LICENSE_YEAR")}
         isDisabled={!canSubmit}
         label={t("ES_COMMON_APPLICATION_SUBMIT")}
         config={configs.map((config) => {

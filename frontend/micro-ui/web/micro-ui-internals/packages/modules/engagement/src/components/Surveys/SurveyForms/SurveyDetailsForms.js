@@ -1,15 +1,21 @@
 import { CardLabelError, Dropdown, RemoveableTag, TextInput, MultiSelectDropdown } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useMemo } from "react";
 import { Controller } from "react-hook-form";
-
+import { useSelector, useDispatch } from 'react-redux';
 import { alphabeticalSortFunctionForTenantsBasedOnName } from "../../../utils/index";
-const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState, surveyFormData, disableInputs, enableDescriptionOnly }) => {
+
+import { fieldChange} from '../../../redux/actions/surveyFormActions';
+const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState, surveyFormData, disableInputs, enableDescriptionOnly,readOnly }) => {
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.UserService.getUser().info;
+   const dispatch = useDispatch();
+  const surveyDetails = useSelector(state => state.engagement.surveyForm.surveyDetails[0]);
   const userUlbs = ulbs
     .filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code))
     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
+
+    console.log("userulbs",userUlbs)
   const selectedTenat = useMemo(() => {
     const filtered = ulbs.filter((item) => item.code === tenantId);
     return filtered;
@@ -27,18 +33,33 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
     //inactive survey editing
     return false
   }
+  const handleULBChange=(e,name)=>{
+    console.log("eeee",e,name)
+    const temp=   surveyFormData("tenantIds")?.filter?.((f) => e.code !== f?.code) || [];
+    console.log("temp",temp)
+     const value=  surveyFormData("tenantIds")?.filter?.((f) => e.code !== f?.code) || []
+     dispatch(fieldChange(surveyDetails.id,{[name]:value}))
+     }
 
-
+       const handleFieldChange = (e) => {
+         const { name, value } = e.target;
+         dispatch(fieldChange(surveyDetails.id, { [name]: value }));
+       };
+     console.log("survey deta",surveyDetails)
+console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
   return (
     <div className="surveydetailsform-wrapper">
       <span className="surveyformfield">
         <label>{`${t("LABEL_FOR_ULB")} * `}</label>
         <Controller
-          name="tenantIds"
+          name="ulb"
           control={controlSurveyForm}
-          defaultValue={selectedTenat}
+          // defaultValue={selectedTenat}
+          defaultValue={surveyDetails.ulb||[]}
           rules={{ required: true }}
           render={(props) => {
+            console.log("props render",props)
+            
             const renderRemovableTokens = useMemo(
               () =>
                 props?.value?.map((ulb, index) => {
@@ -55,6 +76,7 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
                 }),
               [props?.value]
             );
+         console.log("prop",props?.value)
             return (
               <div style={{ display: "grid", gridAutoFlow: "row" }}>
                  {/* <Dropdown
@@ -64,10 +86,13 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
                   placeholder={t("ES_COMMON_USER_ULBS")}
                   select={(e) => {
                     props.onChange([...(surveyFormData("tenantIds")?.filter?.((f) => e.code !== f?.code) || []), e]);
+                  
                   }}
                   selected={props?.value}
+                
                   keepNull={true}
                   disable={disableInputs}
+                 
                   t={t}
                 />  */}
                 <MultiSelectDropdown
@@ -77,11 +102,17 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
                   props={props}
                   isPropsNeeded={true}
                   onSelect={(e) => {
-                    props.onChange([...(surveyFormData("tenantIds")?.filter?.((f) => e.code !== f?.code) || []), e]);
+                    // props.onChange([...(surveyFormData("tenantIds")?.filter?.((f) => e.code !== f?.code) || []), e]);
+                    handleULBChange(e,"ulb")
                   }}
-                  selected={props?.value}
+                  name="ulb"
+                 //  selected={props?.value}
+                 
+                  selected={surveyDetails.ulb?.city?.name||[]}
                   defaultLabel={t("ES_COMMON_USER_ULBS")}
                   defaultUnit={t("CS_SELECTED_TEXT")}
+                  readOnly={readOnly||false}
+                  disable={readOnly||false}
                 />
                 {/* <div className="tag-container">{renderRemovableTokens}</div> */}
               </div>
@@ -94,7 +125,7 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
       <span className="surveyformfield">
         <label>{`${t("CS_SURVEY_NAME")} * `}</label>
         <TextInput
-          name="title"
+          name="name"
           type="text"
           inputRef={registerRef({
             required: t("ES_ERROR_REQUIRED"),
@@ -107,7 +138,11 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
               message: t("ES_SURVEY_DONT_START_WITH_NUMBER")
             }
           })}
-          disable={disableInputs}
+          readOnly={readOnly||false}
+          value={surveyDetails.name}
+          onChange={handleFieldChange}
+          // disable={disableInputs}
+          disable={readOnly||false}
         />
         {surveyFormState?.errors?.title && <CardLabelError>{surveyFormState?.errors?.["title"]?.message}</CardLabelError>}
       </span>
@@ -127,7 +162,11 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
               message: t("ES_SURVEY_DONT_START_WITH_NUMBER")
             }
           })}
-          disable={enableDescriptionOnly ?  !enableDescriptionOnly : disableInputs}
+          readOnly={readOnly||false}
+          value={surveyDetails.description}
+          onChange={handleFieldChange}
+          // disable={enableDescriptionOnly ?  !enableDescriptionOnly : disableInputs}
+          disable={readOnly||false}
         />
         {surveyFormState?.errors?.description && <CardLabelError>{surveyFormState?.errors?.["description"]?.message}</CardLabelError>}
       </span>

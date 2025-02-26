@@ -6,7 +6,7 @@ const Urls = {
   location: {
     localities: `/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=ADMIN&boundaryType=Locality`,
     revenue_localities: `/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=REVENUE&boundaryType=Locality`,
-    revenue_blocks:`/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=REVENUE&boundaryType=Block`
+    revenue_blocks: `/egov-location/location/v11/boundarys/_search?hierarchyTypeCode=REVENUE&boundaryType=Block`,
   },
 
   pgr_search: `/pgr-services/v2/request/_search`,
@@ -77,16 +77,15 @@ const Urls = {
     update: "/property-services/property/_update",
     pt_calculation_estimate: "/pt-calculator-v2/propertytax/v2/_estimate",
     assessment_create: "/property-services/assessment/_create",
-    assessment_createUlb:"/pt-calculator-v2/assessment/_jobscheduler",
+    assessment_createUlb: "/pt-calculator-v2/assessment/_jobscheduler",
     assessment_search: "/property-services/assessment/_search",
     payment_search: "/collection-services/payments/PT/_search",
     pt_calculate_mutation: "/pt-calculator-v2/propertytax/mutation/_calculate",
     cfcreate: "/service-request/service/v1/_create",
     cfdefinitionsearch: "/service-request/service/definition/v1/_search",
     cfsearch: "/service-request/service/v1/_search",
-    defaulterNotice:"/egov-pdf/download/PT/ptdefaulternotice",
-    getDefaulterNoticeStatus:"/pdf-service/v1/_getBulkDefaulterNoticeRecordsDetails"
-    
+    defaulterNotice: "/egov-pdf/download/PT/ptdefaulternotice",
+    getDefaulterNoticeStatus: "/pdf-service/v1/_getBulkDefaulterNoticeRecordsDetails",
   },
 
   dss: {
@@ -112,7 +111,7 @@ const Urls = {
     create: "/egov-hrms/employees/_create",
     update: "/egov-hrms/employees/_update",
     employee_wise_report: "/report/rainmaker-hrms/_get",
-    sso_authenticate_user:"/egov-hrms/employees/sso/authenticate-user"
+    sso_authenticate_user: "/egov-hrms/employees/sso/authenticate-user",
   },
   tl: {
     create: "/tl-services/v1/_create",
@@ -144,13 +143,11 @@ const Urls = {
     getSearchDetails: "/inbox/v1/dss/_search",
   },
   ptr: {
-    
-    create:"/pet-services/pet-registration/_create",
-    search:"/pet-services/pet-registration/_search",
-    update:"/pet-services/pet-registration/_update",
+    create: "/pet-services/pet-registration/_create",
+    search: "/pet-services/pet-registration/_search",
+    update: "/pet-services/pet-registration/_update",
     fetch_payment_details: "/billing-service/bill/v2/_fetchbill",
     payment_search: "/collection-services/payments/pet-services/_search",
-    
   },
 
   edcr: {
@@ -195,19 +192,19 @@ const Urls = {
     sewerage_applyAdhocTax: "/sw-calculator/sewerageCalculator/_applyAdhocTax",
     getSearchDetails: "/inbox/v1/dss/_search",
     disconnection_notice: "/pdf-service/v1/_createnosave",
-    meter_search:"/ws-calculator/meterConnection/_search",
-     ws_billgenerate_create:"/sw-calculator/seweragecharges/scheduler/_create?",
-     swc_inbox_search:"/sw-services/swc/_search?"
+    meter_search: "/ws-calculator/meterConnection/_search",
+    ws_billgenerate_create: "/sw-calculator/seweragecharges/scheduler/_create?",
+    swc_inbox_search: "/sw-services/swc/_search?",
   },
-digiLocker:{
-  authorization:"/requester-services-dx/user/authorization/url",
-  register :"/requester-services-dx/user/authorization/url/citizen",
-  token:"/requester-services-dx/user/token",
-  issueDoc:"/requester-services-dx/user/issuedfiles",
-  uri:"/requester-services-dx/user/file"
+  digiLocker: {
+    authorization: "/requester-services-dx/user/authorization/url",
+    register: "/requester-services-dx/user/authorization/url/citizen",
+    token: "/requester-services-dx/user/token",
+    issueDoc: "/requester-services-dx/user/issuedfiles",
+    uri: "/requester-services-dx/user/file",
   },
-eSign:{
-pdfUrl:"/requester-services-dx/eSign/process"
+  eSign: {
+    pdfUrl: "/requester-services-dx/eSign/process",
   },
   engagement: {
     document: {
@@ -223,12 +220,14 @@ pdfUrl:"/requester-services-dx/eSign/process"
       delete: "/egov-survey-services/egov-ss/survey/_delete",
       submitResponse: "/egov-survey-services/egov-ss/survey/response/_submit",
       showResults: "/egov-survey-services/egov-ss/survey/response/_results",
-      createCategory:"/egov-survey-services/egov-ss/category/_create",
-      updateCategory:"/egov-survey-services/egov-ss/category/_update",
-      searchCategory:"/egov-survey-services/egov-ss/category/_search",
+      createCategory: "/egov-survey-services/egov-ss/category/_create",
+      updateCategory: "/egov-survey-services/egov-ss/category/_update",
+      searchCategory: "/egov-survey-services/egov-ss/category/_search",
       createQuestions: "/egov-survey-services/egov-ss/question/_create",
       updateQuestions: "/egov-survey-services/egov-ss/question/_update",
       searchQuestions: "/egov-survey-services/egov-ss/question/_search",
+      createSurvey: "/egov-survey-services/egov-ss/csc/create",
+      searchSurvey: "/egov-survey-services/egov-ss/csc/_search",
     },
   },
 

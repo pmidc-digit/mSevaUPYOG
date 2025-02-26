@@ -124,4 +124,15 @@ export const Surveys = {
       auth: true,
       locale: true,
     }),
+
+  createSurvey: (details) =>
+    Request({
+      url: Urls.engagement.surveys.createSurvey,
+      data: details,
+      useCache: true,
+      userService: true,
+      method: "POST",
+      auth: true,
+      locale: true,
+    }),
 };

@@ -1,0 +1,86 @@
+import React from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { FormComposer } from "@mseva/digit-ui-react-components";
+//
+import { updateSurveyForm ,goPrev,goNext} from "../../../../redux/actions/surveyFormActions";
+
+
+const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
+  const dispatch = useDispatch();
+       const categories = useSelector(state => state.engagement.surveyForm.categories);
+    function goNext(data) {
+        console.log("data in go next",categories)
+        let f=0;
+        // let alertMsg=""
+        // let index=1
+        categories.map((category)=>{
+            // if(category.questions.length===0){
+            //   alert("Please select fetch questions by cliccking on Go button and select at least one question for each category");
+            //   return;
+            // } 
+            if(category.selectedQuestions.length===0){
+             
+              //alertMsg+=`${index} Please select at least one question for each category\n"
+              f=1;
+              return;
+            }
+          })
+          if(f===1){
+            alert("Please select at least one question for each category");
+            return;
+          }
+        const totalWeightage = categories.reduce((sum, category) => sum + parseInt(category.weightage), 0);
+        if (totalWeightage > 100) {
+          alert('The total weightage of categories should not exceed 100.');
+          return;
+        }
+        if (totalWeightage < 100) {
+            alert('The total weightage of categories should sum upto 100.');
+            return;
+          }
+      //  dispatch(nextStep());
+       //goNext()
+        console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+        onGoNext();
+    }
+   //const state = useSelector(state => state.engagement.surveyForm);
+    function onGoBack(data) {
+        onBackClick(config.key, data);
+          dispatch(goPrev())
+        
+    }
+
+    const onFormValueChange = (setValue = true, data) => {
+        console.log("onFormValueChange data in SurveyFormCategoryDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+        if (!_.isEqual(data, currentStepData)) {
+            dispatch(updateSurveyForm(config.key, data));
+        }
+    };
+
+    const currentStepData = useSelector(function (state) {
+        return state.engagement.surveyForm.formData && state.engagement.surveyForm.formData[config.key]
+            ? state.engagement.surveyForm.formData[config.key]
+            : {};
+    });
+    
+
+    // console.log("currentStepData in  Administrative details: ", currentStepData);
+
+    return (
+        <React.Fragment>
+            <FormComposer
+                defaultValues={currentStepData}
+                //heading={t("")}
+                config={config.currStepConfig}
+                onSubmit={goNext}
+                onFormValueChange={onFormValueChange}
+                //isDisabled={!canSubmit}
+                label={t(`${config.texts.submitBarLabel}`)}
+                currentStep={config.currStepNumber}
+                onBackClick={onGoBack}
+            />
+        </React.Fragment>
+    );
+};
+
+export default SurveyFormCategoryDetails;

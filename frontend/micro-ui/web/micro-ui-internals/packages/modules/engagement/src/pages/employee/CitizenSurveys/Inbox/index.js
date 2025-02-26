@@ -93,7 +93,7 @@ const Inbox = ({ parentRoute }) => {
     links: [
       {
         text: t("CS_COMMON_NEW_SURVEY"),
-        link: "/digit-ui/employee/engagement/surveys/inbox/create",
+        link: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
       },
       {
         text: t("Create Category"),

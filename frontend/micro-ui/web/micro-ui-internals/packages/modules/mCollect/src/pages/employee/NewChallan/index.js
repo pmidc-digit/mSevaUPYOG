@@ -227,12 +227,12 @@ const NewChallan = ({ChallanData}) => {
 
   return (
     <div>
-      <div style={isMobile?{}:{ marginLeft: "15px" }}>
+      {/* <div style={isMobile?{}:{ marginLeft: "15px" }}>
         <Header>{isEdit ? t("UC_UPDATE_CHALLAN"):t("UC_COMMON_HEADER")}</Header>
-      </div>
+      </div> */}
       {isEdit && !(JSON.parse(sessionStorage.getItem("mcollectEditObject"))) && !defaultUpdatedValue ? <Loader />
        :<FormComposer
-        heading={t("")}
+        heading={isEdit ? t("UC_UPDATE_CHALLAN"):t("UC_COMMON_HEADER")}
         //isDisabled={!canSubmit}
         label={t("ES_COMMON_APPLICATION_SUBMIT")}
         config={configs.map((config) => {

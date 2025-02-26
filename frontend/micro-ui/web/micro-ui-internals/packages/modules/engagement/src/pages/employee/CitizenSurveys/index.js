@@ -15,10 +15,9 @@ import CreateSurveyQuestions from "./CreateSurveyQuestions";
 import SearchQuestions from "./SearchQuestions";
 import SurveyForm from "../../../components/Surveys/SurveyForms/SurveyForm";
 import CreateSurveyStepForm from "../../../components/Surveys/CreateSurveyStepForm";
+import CreateSurveyForm from "../../../components/Surveys/SurveyForms/CreateSurveyForm"
 
 const Surveys = ({ match: { path } = {}, tenants, parentRoute }) => {
-  console.log("ushdsgdsv");
-
   return (
     <Switch>
       <PrivateRoute path={`${path}/inbox/create`} component={(props) => <NewSurvey {...props} />} />
@@ -35,6 +34,7 @@ const Surveys = ({ match: { path } = {}, tenants, parentRoute }) => {
       <PrivateRoute path={`${path}/search-questions`} component={(props) => <SearchQuestions {...props} />} />
       <PrivateRoute path={`${path}/create-survey`} component={(props) => <SurveyForm {...props} />} />
       <PrivateRoute path={`${path}/create-survey-step-form`} component={(props) => <CreateSurveyStepForm {...props} />} />
+      <PrivateRoute path={`${path}/create-survey-form`} component={(props) => <CreateSurveyForm {...props} />} />
     </Switch>
   );
 };

@@ -10,7 +10,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -92,5 +96,49 @@ public class EnrichmentServiceTest {
         assertEquals("12345", answerEntity.getAnswers().get(0).getAuditDetails().getLastModifiedBy());
         assertNotNull(answerEntity.getAnswers().get(0).getAuditDetails().getCreatedTime());
         assertNotNull(answerEntity.getAnswers().get(0).getAuditDetails().getLastModifiedTime());
+    }
+    
+    @Test
+    void testEnrichScorecardSurveyEntity_InvalidSectionWeightage_ShouldThrowException() {
+        // Arrange
+        ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
+        surveyEntity.setUuid("survey-001");
+        surveyEntity.setSections(Arrays.asList(
+            new Section("section-001", "Section 1", 60, new ArrayList<>()),
+            new Section("section-002", "Section 2", 50, new ArrayList<>()) // Total = 110 (Invalid)
+        ));
+
+        ScorecardSurveyRequest request = new ScorecardSurveyRequest();
+        request.setSurveyEntity(surveyEntity);
+        request.setRequestInfo(requestInfo);
+
+        // Act & Assert
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, 
+            () -> enrichmentService.enrichScorecardSurveyEntity(request));
+        
+        assertEquals("Total section weightage in survey survey-001 is not 100, found: 110", thrown.getMessage());
+    }
+
+    @Test
+    void testEnrichScorecardSurveyEntity_InvalidQuestionWeightage_ShouldThrowException() {
+        // Arrange
+        Section section = new Section("section-001", "Section 1", 100, Arrays.asList(
+            new QuestionWeightage("q-001", new Question(), 40),
+            new QuestionWeightage("q-002", new Question(), 70) // Total = 110 (Invalid)
+        ));
+
+        ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
+        surveyEntity.setUuid("survey-001");
+        surveyEntity.setSections(Collections.singletonList(section));
+
+        ScorecardSurveyRequest request = new ScorecardSurveyRequest();
+        request.setSurveyEntity(surveyEntity);
+        request.setRequestInfo(requestInfo);
+
+        // Act & Assert
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, 
+            () -> enrichmentService.enrichScorecardSurveyEntity(request));
+        
+        assertTrue(thrown.getMessage().contains("Total question weightage in section"));
     }
 }

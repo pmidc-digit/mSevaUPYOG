@@ -22,8 +22,8 @@ public class ScorecardSurveyResponse {
     @JsonProperty("ResponseInfo")
     private ResponseInfo responseInfo = null;
 
-//    @JsonProperty("TotalCount")
-//    private Integer totalCount;
+    @JsonProperty("TotalCount")
+    private Integer totalCount;
 
     @JsonProperty("Surveys")
     @Valid

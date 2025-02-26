@@ -49,6 +49,10 @@ public class ScorecardSurveyEntity {
     @NotBlank
     @JsonProperty("endDate")
     private Long endDate;
+    
+    @Size(max = 128)
+    @JsonProperty("status")
+    private String status;
 
     @Size(max = 128)
     @JsonProperty("postedBy")
@@ -65,6 +69,12 @@ public class ScorecardSurveyEntity {
 
     @JsonProperty("hasResponded")
     private Boolean hasResponded;
+    
+    @JsonProperty("createdTime")
+    private Long createdTime;
+    
+    @JsonProperty("lastModifiedTime")
+    private Long lastModifiedTime;
 
     public ScorecardSurveyEntity addSectionsItem(Section sectionItem) {
         if (this.sections == null) {

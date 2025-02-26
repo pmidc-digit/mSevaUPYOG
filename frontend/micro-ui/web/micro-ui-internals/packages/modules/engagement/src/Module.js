@@ -38,10 +38,10 @@ import Surveys from "./pages/employee/CitizenSurveys";
 import FillSurvey from './pages/citizen/CitizenSurvey/FillSurvey'
 import CitizenSurveyForm from './components/Surveys/CitizenSurveyForm';
 import ShowSurvey from './pages/citizen/CitizenSurvey/ShowSurvey'
-import SurveyCategory from "./pages/employee/CitizenSurveys/SurveyCategory";
+import CreateSurveyCategory from "./pages/employee/CitizenSurveys/CreateSurveyCategory";
 import SurveyResults from "./pages/employee/CitizenSurveys/SurveyResults";
 import SearchCategory from "./pages/employee/CitizenSurveys/SearchCategory";
-import SurveyQuestions from "./pages/employee/CitizenSurveys/SurveyQuestions";
+import CreateSurveyQuestions from "./pages/employee/CitizenSurveys/CreateSurveyQuestions";
 import SurveyForm from "./components/Surveys/SurveyForms/SurveyForm";
 import SurveyFormPage from "./components/Surveys/SurveyFormPage";
 import getRootReducer from "./redux/reducers"
@@ -337,9 +337,8 @@ const componentsToRegister = {
   CitizenSurveyForm, 
   ShowSurvey, 
   SurveyResults,
-  SurveyCategory,
+  CreateSurveyCategory,
   SearchCategory,
-  SurveyCategory,
   SurveyForm,
   SurveyFormPage,
   CreateSurveyForm

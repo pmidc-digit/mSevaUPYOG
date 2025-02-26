@@ -1,87 +1,85 @@
-import { DatePicker, Dropdown, CheckBox, TextArea, TextInput, CardLabelError } from "@mseva/digit-ui-react-components";
-import { DustbinIcon } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import { CardLabelError, CheckBox, DatePicker, Dropdown, DustbinIcon, TextArea, TextInput } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useRef, useState } from "react";
 import { useFormContext } from "react-hook-form";
-import TimePicker from "react-time-picker";
 import Checkboxes from "./AnswerTypes/Checkboxes";
 import MultipleChoice from "./AnswerTypes/MultipleChoice";
+import { Controller } from "react-hook-form";
 
-// const answerTypeEnum = {
-//   "Short Answer": "SHORT_ANSWER_TYPE",
-//   Paragraph: "LONG_ANSWER_TYPE",
-//   "Multiple Choice": "MULTIPLE_ANSWER_TYPE",
-//   "Check Boxes": "CHECKBOX_ANSWER_TYPE",
-//   Date: "DATE_ANSWER_TYPE",
-//   Time: "TIME_ANSWER_TYPE",
-// };
+// Main component for the survey form
+const NewSurveyForm = ({
+  t, // Translation function
+  index, // Index of the question
+  questionStatement, // The question text
+  category,
+  type, // Type of the question (e.g., short answer, multiple choice)
+  uuid, // Unique identifier for the question
+  qorder, // Order of the question
+  required, // Whether the question is required
+  options, // Options for multiple choice or checkbox questions
+  disableInputs, // Whether inputs should be disabled
+  dispatch, // Function to dispatch actions
+  isPartiallyEnabled, // Whether partial inputs are enabled
+  addOption, // Function to add an option
+  formDisabled, // Whether the form is disabled
+  controlSurveyForm, // Function to control the survey form
+}) => {
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // Options for the answer type dropdown
+  const { data: AnswerTypeData = {}, isLoading } = Digit.Hooks.engagement.useMDMS(tenantId, "common-masters", "questionType") || {};
+  const answerTypeOptions =
+    AnswerTypeData?.["common-masters"]?.questionType
+      ?.filter((item) => item.active)
+      ?.map((item) => {
+        return { title: t(item.title), i18Key: item.code, value: item.code };
+      }) ?? [];
 
-
-const NewSurveyForm = ({ t, index, questionStatement, type, uuid, qorder, required, options, disableInputs, dispatch, isPartiallyEnabled, addOption, formDisabled, controlSurveyForm }) => {
-  
-  const dropdownOptions = [
-    {
-      title: t("Surveys_Short_Answer"),
-      i18Key: "SHORT_ANSWER_TYPE",
-      value: "SHORT_ANSWER_TYPE",
-    },
-    {
-      title: t("Surveys_Multiple_Choice"),
-      i18Key: "MULTIPLE_ANSWER_TYPE",
-      value:  "MULTIPLE_ANSWER_TYPE",
-    },
-    {
-      title: t("Surveys_Check_Boxes"),
-      i18Key: "CHECKBOX_ANSWER_TYPE",
-      value:  "CHECKBOX_ANSWER_TYPE",
-    },
-    {
-      title: t("Surveys_Paragraph"),
-      i18Key: "LONG_ANSWER_TYPE",
-      value:  "LONG_ANSWER_TYPE",
-    },
-    {
-      title: t("Surveys_Date"),
-      i18Key: "DATE_ANSWER_TYPE",
-      value:  "DATE_ANSWER_TYPE",
-    },
-    {
-      title: t("Surveys_Time"),
-      i18Key: "TIME_ANSWER_TYPE",
-      value:  "TIME_ANSWER_TYPE",
-    },
-  ];
- const categoryOptions=[
-{  title: t("Product Quality"),
-  i18Key: "Product_Quality",
-  value: "Product_Quality"}
- ]
-
-  const selectedType = dropdownOptions.filter(option => option?.value === (typeof type === "object" ? type.value : type))
-  const isInputDisabled = window.location.href.includes("/employee/engagement/")
-  
-  const [surveyQuestionConfig, setSurveyQuestionConfig] = useState({
-    questionStatement, type: type ? selectedType?.[0]  : {
-      title: t("SHORT_ANSWER_TYPE"),
-      i18Key: "SHORT_ANSWER_TYPE",
-      value: "SHORT_ANSWER_TYPE",
-    }, required, options:options?.length>0?options:[`${t("CMN_OPTION")} 1`],uuid:uuid, qorder });
-  const { register, formState  } = useFormContext();
-
+  // Options for the category dropdown
+  const [categoryOptions, setCategoryOptions] = useState([]);
   useEffect(() => {
-    setSurveyQuestionConfig({
-      questionStatement, type: type ? selectedType?.[0]  : {
-        title: t("SHORT_ANSWER_TYPE"),
-        i18Key: "SHORT_ANSWER_TYPE",
-        value: "SHORT_ANSWER_TYPE",
-      }, required, options:options?.length>0?options:[`${t("CMN_OPTION")} 1`],uuid:uuid, qorder })
-  },[questionStatement])
+    fetchCategories();
+  }, [tenantId]);
 
+  function fetchCategories() {
+    const payload = { tenantId: tenantId };
+    Digit.Surveys.searchCategory(payload)
+      .then((response) => {
+        //console.log("Category Options: ", response);
+        const categoryOptions = response?.Categories?.filter((item) => item.isActive)?.map((item) => {
+          return { title: t(item.label), i18Key: item.label, value: item.id };
+        });
+        setCategoryOptions(categoryOptions);
+      })
+      .catch((error) => {
+        console.error("Failed to fetch categories:", error);
+      });
+  }
+
+  // Determine the selected type based on the provided type
+  const selectedType = answerTypeOptions.filter((option) => option?.value === (typeof type === "object" ? type.value : type));
+  const isInputDisabled = window.location.href.includes("/employee/engagement/");
+
+  // State to manage the survey question configuration
+  const [surveyQuestionConfig, setSurveyQuestionConfig] = useState({
+    category,
+    questionStatement,
+    type: type ? selectedType?.[0] : { title: t("MULTIPLE_ANSWER_TYPE"), i18Key: "MULTIPLE_ANSWER_TYPE", value: "MULTIPLE_ANSWER_TYPE" },
+    options: options?.length > 0 ? options : [`${t("CMN_OPTION")} 1`],
+    required,
+    uuid,
+    qorder,
+  });
+
+  const { register, formState } = useFormContext();
+
+  // Function to add a new option
   const handleAddOption = () =>
     setSurveyQuestionConfig((prevState) => {
       const updatedState = { ...prevState };
       updatedState.options.push(`${t("CMN_OPTION")} ${updatedState.options.length + 1}`);
       return updatedState;
     });
+
+  // Function to update an existing option
   const handleUpdateOption = ({ value, id }) => {
     setSurveyQuestionConfig((prevState) => {
       const updatedState = { ...prevState };
@@ -89,6 +87,8 @@ const NewSurveyForm = ({ t, index, questionStatement, type, uuid, qorder, requir
       return updatedState;
     });
   };
+
+  // Function to remove an option
   const handleRemoveOption = (id) => {
     if (surveyQuestionConfig.options.length === 1 || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)) return;
     setSurveyQuestionConfig((prevState) => {
@@ -98,171 +98,249 @@ const NewSurveyForm = ({ t, index, questionStatement, type, uuid, qorder, requir
     });
   };
 
+  // Dispatch the updated survey question configuration
   useEffect(() => {
     dispatch({ type: "updateForm", payload: { index: index, formConfig: surveyQuestionConfig } });
   }, [surveyQuestionConfig]);
+
+  // Function to render the appropriate answer component based on the question type
   const renderAnswerComponent = (type) => {
     switch (type?.value) {
       case "LONG_ANSWER_TYPE":
-        return <div>
-          <TextArea 
-            placeholder={t("LONG_ANSWER_TYPE")}
-            disabled={isInputDisabled}
-            name={"longAnsDescription"}
-            inputRef={register({
-              maxLength: {
-                value: 500,
-                message: t("EXCEEDS_500_CHAR_LIMIT"),
-              }
-            })}
-              />
-          {formState?.errors && <CardLabelError>{formState?.errors?.longAnsDescription?.message}</CardLabelError>}
-              </div>;
+        return (
+          <div>
+            <TextArea
+              placeholder={t("LONG_ANSWER_TYPE")}
+              disabled={isInputDisabled}
+              name={"longAnsDescription"}
+              inputRef={register({
+                maxLength: { value: 500, message: t("EXCEEDS_500_CHAR_LIMIT") },
+              })}
+            />
+            {formState?.errors && <CardLabelError>{formState?.errors?.longAnsDescription?.message}</CardLabelError>}
+          </div>
+        );
       case "DATE_ANSWER_TYPE":
-        return <DatePicker stylesForInput={{ width: "calc(100% - 290px)" }} style={{width:"202px"}} disabled={isInputDisabled}/>;
+        return <DatePicker stylesForInput={{ width: "calc(100% - 290px)" }} style={{ width: "202px" }} disabled={isInputDisabled} />;
       case "TIME_ANSWER_TYPE":
-        return <TextInput type="time" textInputStyle={{width:"202px"}} disable={isInputDisabled}/>;
+        return <TextInput type="time" textInputStyle={{ width: "202px" }} disable={isInputDisabled} />;
       case "MULTIPLE_ANSWER_TYPE":
         return (
-          <MultipleChoice
-            maxLength={60}
-            titleHover={t("MAX_LENGTH_60")}
-            t={t}
-            addOption={handleAddOption}
-            updateOption={handleUpdateOption}
-            removeOption={handleRemoveOption}
-            options={surveyQuestionConfig?.options}
-            createNewSurvey={addOption}
-            isInputDisabled={isInputDisabled}
-            isPartiallyEnabled={isPartiallyEnabled}
-            formDisabled={formDisabled}
+          <Controller
+            rules={{ required: true }}
+            defaultValue={[]}
+            // render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
+            name={`OPTIONS_${index}`}
+            control={controlSurveyForm}
+            render={(props) => (
+              <MultipleChoice
+                maxLength={60}
+                titleHover={t("MAX_LENGTH_60")}
+                t={t}
+                addOption={() => {
+                  handleAddOption();
+                  props.onChange(surveyQuestionConfig?.options);
+                }}
+                updateOption={handleUpdateOption}
+                removeOption={handleRemoveOption}
+                options={surveyQuestionConfig?.options}
+                createNewSurvey={addOption}
+                isInputDisabled={isInputDisabled}
+                isPartiallyEnabled={isPartiallyEnabled}
+                formDisabled={formDisabled}
+              />
+            )}
           />
         );
       case "CHECKBOX_ANSWER_TYPE":
         return (
           <div>
-          <Checkboxes
-            t={t}
-            addOption={handleAddOption}
-            updateOption={handleUpdateOption}
-            removeOption={handleRemoveOption}
-            options={surveyQuestionConfig?.options}
-            isInputDisabled={isInputDisabled}
-            isPartiallyEnabled={isPartiallyEnabled}
-            createNewSurvey={addOption}
-            formDisabled={formDisabled}
-            maxLength={60}
-            titleHover={t("MAX_LENGTH_60")}
-            labelstyle={{marginLeft:"-20px"}}
-            // name={"checkBoxDesc"}
-            // inputRef={register({
-            //     maxLength: {
-            //       value: 10,
-            //       message: t("EXCEEDS_10_CHAR_LIMIT"),
-            //     }
-            //   })}
-          />
-            {/* {formState?.errors && <CardLabelError>{formState?.errors?.checkBoxDesc?.message}</CardLabelError>} */}
+            <Controller
+              rules={{ required: true }}
+              defaultValue={[]}
+              // render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
+              name={`OPTIONS_${index}`}
+              control={controlSurveyForm}
+              render={(props) => (
+                <Checkboxes
+                  t={t}
+                  addOption={() => {
+                    handleAddOption();
+                    props.onChange(surveyQuestionConfig?.options);
+                  }}
+                  updateOption={handleUpdateOption}
+                  removeOption={handleRemoveOption}
+                  options={surveyQuestionConfig?.options}
+                  isInputDisabled={isInputDisabled}
+                  isPartiallyEnabled={isPartiallyEnabled}
+                  createNewSurvey={addOption}
+                  formDisabled={formDisabled}
+                  maxLength={60}
+                  titleHover={t("MAX_LENGTH_60")}
+                  labelstyle={{ marginLeft: "-20px" }}
+                />
+              )}
+            />
           </div>
         );
       default:
-        return<div> 
-                <TextInput 
-                placeholder={t("SHORT_ANSWER_TYPE")} 
-                name={"shortAnsDescription"}
-                disabled={isInputDisabled}
-                inputRef={register({
-                  maxLength: {
-                    value: 200,
-                    message: t("EXCEEDS_200_CHAR_LIMIT"),
-                  }
-                })}
-                />
-                {formState?.errors && <CardLabelError>{formState?.errors?.shortAnsDescription?.message}</CardLabelError>}
-              </div>;
+        return (
+          <div>
+            <TextInput
+              placeholder={t("SHORT_ANSWER_TYPE")}
+              name={"shortAnsDescription"}
+              disabled={isInputDisabled}
+              inputRef={register({
+                maxLength: { value: 200, message: t("EXCEEDS_200_CHAR_LIMIT") },
+              })}
+            />
+            {formState?.errors && <CardLabelError>{formState?.errors?.shortAnsDescription?.message}</CardLabelError>}
+          </div>
+        );
     }
   };
-  
+
+  //onChange functions:
+  const handleSelectCategory = (ev) => {
+    setSurveyQuestionConfig((prevState) => ({
+      ...prevState,
+      category: ev ? { title: ev.title, i18Key: ev.i18Key, value: ev.value } : null,
+    }));
+  };
+
+  const handleQuestionStatementChange = (ev) => {
+    setSurveyQuestionConfig((prevState) => ({ ...prevState, questionStatement: ev.target.value }));
+  };
+
+  const handleSelectType = (ev) => {
+    setSurveyQuestionConfig((prevState) => ({
+      ...prevState,
+      type: ev ? { title: ev.title, i18Key: ev.i18Key, value: ev.value } : null,
+    }));
+  };
+
+  //const categoryRef=useRef(null);
+
   return (
     <div className="newSurveyForm_wrapper">
       <span className="newSurveyForm_quesno">{`${t("CS_COMMON_QUESTION")} ${index + 1} `}</span>
       <span className="newSurveyForm_mainsection">
-      <Dropdown
-          t={t}
-            option={categoryOptions}
-            select={(ev) => {
-              setSurveyQuestionConfig((prevState) => ({ ...prevState, type: {title:ev.title,i18Key:ev.i18Key,value:ev.value} }));
-            }}
-            placeholder={"Select Category"}
-            //selected={surveyQuestionConfig.type || {title: "Short Answer",value: "SHORT_ANSWER_TYPE"}}
-            optionKey="i18Key"
-            disable={disableInputs}
-            selected={""}
-          />
-        <div className="newSurveyForm_questions">
-     
-          <div style={{width: "75%"}}>
-            <TextInput
-              placeholder={t("CS_COMMON_TYPE_QUESTION")}
-              //value={t(Digit.Utils.locale.getTransformedLocale(surveyQuestionConfig.questionStatement))}
-              value={surveyQuestionConfig.questionStatement}
-              onChange={(ev) => {
-                setSurveyQuestionConfig((prevState) => ({ ...prevState, questionStatement: ev.target.value }));
+        <Controller
+          rules={{ required: true }}
+          defaultValue={""}
+          // render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
+          name={`CATEGORY_SURVEY_${index}`}
+          control={controlSurveyForm}
+          render={(props) => (
+            <Dropdown
+              t={t}
+              option={categoryOptions}
+              placeholder={"Select Category"}
+              optionKey="i18Key"
+              selected={props.value}
+              select={(e) => {
+                props.onChange(e);
+                handleSelectCategory(e);
               }}
-              textInputStyle={{width: "100%"}}
-              name={`QUESTION_SURVEY_${index}`}
+              //select={handleSelectCategory}
+              //selected={surveyQuestionConfig?.category || null}
               disable={disableInputs}
-              inputRef={register({
-                required: t("ES_ERROR_REQUIRED"),
-                maxLength: {
-                  value: 100,
-                  message: t("EXCEEDS_100_CHAR_LIMIT"),
-                },
-                pattern:{
-                  value: /^[A-Za-z_-][A-Za-z0-9_\ -?]*$/,
-                  message: t("ES_SURVEY_DONT_START_WITH_NUMBER")
-                }
-              })}
+              // inputRef={categoryRef}
+              // inputRef={register({
+              //   required: t("ES_ERROR_REQUIRED"),
+              // })}
             />
-            {formState?.errors && <CardLabelError>{formState?.errors?.[`QUESTION_SURVEY_${index}`]?.message}</CardLabelError>}
-          </div>
-          <Dropdown
-          t={t}
-            option={dropdownOptions}
-            select={(ev) => {
-              setSurveyQuestionConfig((prevState) => ({ ...prevState, type: {title:ev.title,i18Key:ev.i18Key,value:ev.value} }));
-            }}
-            //placeholder={"Short Answer"}
-            //selected={surveyQuestionConfig.type || {title: "Short Answer",value: "SHORT_ANSWER_TYPE"}}
-            optionKey="i18Key"
-            disable={disableInputs}
-            selected={surveyQuestionConfig?.type}
-          />
-        </div>
+          )}
+        />
+        {formState?.errors && <CardLabelError>{formState?.errors?.[`CATEGORY_SURVEY_${index}`]?.message}</CardLabelError>}
+
+        <TextInput
+          placeholder={t("CS_COMMON_TYPE_QUESTION")}
+          //value={t(Digit.Utils.locale.getTransformedLocale(surveyQuestionConfig.questionStatement))}
+          value={surveyQuestionConfig.questionStatement}
+          onChange={handleQuestionStatementChange}
+          textInputStyle={{ width: "100%" }}
+          name={`QUESTION_SURVEY_${index}`}
+          disable={disableInputs}
+          inputRef={register({
+            required: t("ES_ERROR_REQUIRED"),
+            maxLength: {
+              value: 100,
+              message: t("EXCEEDS_100_CHAR_LIMIT"),
+            },
+            pattern: {
+              value: /^[A-Za-z_-][A-Za-z0-9_\ -?]*$/,
+              message: t("ES_SURVEY_DONT_START_WITH_NUMBER"),
+            },
+          })}
+        />
+        {formState?.errors && <CardLabelError>{formState?.errors?.[`QUESTION_SURVEY_${index}`]?.message}</CardLabelError>}
+
+        <Controller
+          rules={{ required: true }}
+          defaultValue={""}
+          // render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
+          name={`ANSWER_TYPE_SURVEY_${index}`}
+          control={controlSurveyForm}
+          render={(props) => (
+            <Dropdown
+              t={t}
+              option={answerTypeOptions}
+              placeholder={"Select Answer Type"}
+              optionKey="i18Key"
+              selected={props.value}
+              select={(e) => {
+                props.onChange(e);
+                handleSelectType(e);
+              }}
+              //selected={surveyQuestionConfig?.type || null}
+              //select={handleSelectType}
+              disable={disableInputs}
+              // inputRef={categoryRef}
+              // inputRef={register({
+              //   required: t("ES_ERROR_REQUIRED"),
+              // })}
+            />
+          )}
+        />
+        {formState?.errors && <CardLabelError>{formState?.errors?.[`ANSWER_TYPE_SURVEY_${index}`]?.message}</CardLabelError>}
+
         <div className="newSurveyForm_answer">{renderAnswerComponent(surveyQuestionConfig?.type)}</div>
         <div className="newSurveyForm_actions">
           <div>
-            <CheckBox
-              onChange={(e) => setSurveyQuestionConfig((prevState) => ({ ...prevState, required: !prevState.required }))}
-              checked={surveyQuestionConfig.required}
-              label={t("CS_COMMON_REQUIRED")}
-              pageType={"employee"}
-              disable={disableInputs}
-              style={{marginTop:"2px"}}
+            <Controller
+              rules={{ required: false }}
+              defaultValue={false}
+              name={`REQUIRED_QUESTION_${index}`}
+              control={controlSurveyForm}
+              render={(props) => (
+                <CheckBox
+                  // onChange={(e) => setSurveyQuestionConfig((prevState) => ({ ...prevState, required: !prevState.required }))}
+                  // checked={surveyQuestionConfig.required}
+                  onChange={(e) => props.onChange(e.target.checked)}
+                  checked={props.value}
+                  label={t("CS_COMMON_REQUIRED")}
+                  pageType={"employee"}
+                  disable={disableInputs}
+                  style={{ marginTop: "2px" }}
+                />
+              )}
             />
           </div>
-          {index!==0 && <div className="newSurveyForm_seprator" />}
-          {index!==0 && <div className={`pointer ${disableInputs ? 'disabled-btn':''}`} onClick={() => dispatch({ type: "removeForm", payload: { index } })}>
-          <div className="tooltip" /* style={{position:"relative"}} */>
-              <div style={{display: "flex", /* alignItems: "center", */ gap: "0 4px"}}>
-            <DustbinIcon />
-            <span className="tooltiptext" style={{ position:"absolute",width:"100px", marginLeft:"50%", fontSize:"medium" }}>
-              {t("CS_INFO_DELETE")}
-              </span>
+          {index !== 0 && <div className="newSurveyForm_seprator" />}
+          {index !== 0 && (
+            <div className={`pointer ${disableInputs ? "disabled-btn" : ""}`} onClick={() => dispatch({ type: "removeForm", payload: { index } })}>
+              <div className="tooltip" /* style={{position:"relative"}} */>
+                <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
+                  <DustbinIcon />
+                  <span className="tooltiptext" style={{ position: "absolute", width: "100px", marginLeft: "50%", fontSize: "medium" }}>
+                    {t("CS_INFO_DELETE")}
+                  </span>
+                </div>
               </div>
-              </div>
-          </div>}
-          </div>
+            </div>
+          )}
+        </div>
       </span>
     </div>
   );

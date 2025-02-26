@@ -86,6 +86,8 @@
   .filter-card {
     @apply bg-white min-h-full;
     padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 24px;
 
     .heading {
       justify-content: unset;

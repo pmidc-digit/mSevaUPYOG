@@ -2,8 +2,9 @@
   box-shadow: rgba(0, 0, 0, 0.16) 0 -2px 8px;
   max-width: 480px;
   z-index: 100;
+  height: 80px;
 
-  @apply left-0 bottom-0 w-full bg-white py-sm px-sm fixed text-right;
+  @apply left-0 bottom-0 w-full bg-white py-lg px-xxl fixed text-right;
 
   div {
     @apply w-full;
@@ -32,7 +33,7 @@
     max-width: none;
     z-index: 999;
 
-    @apply fixed bottom-0 bg-white py-sm pr-lg text-right;
+    @apply fixed bottom-0 bg-white py-lg pr-lg text-right;
 
     div {
       width: calc(100% - 16px);

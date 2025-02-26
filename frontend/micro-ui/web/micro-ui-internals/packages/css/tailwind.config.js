@@ -33,7 +33,7 @@ module.exports = {
         dark: "#9E9E9E",
         mid: "#EEEEEE",
         light: "#FAFAFA",
-        bg: "#E3E3E3",
+        bg: "#F5F7FA",
       },
       white: "#FFFFFF",
     },
@@ -92,7 +92,7 @@ module.exports = {
       10: "10px",
     },
     boxShadow: {
-      card: "0 1px 2px 0 rgba(0, 0, 0, 0.16)",
+      card: "0px 0px 5px 0px #22222270",
       radiobtn: "0 0 0 5px #a82227",
     },
     inset: {

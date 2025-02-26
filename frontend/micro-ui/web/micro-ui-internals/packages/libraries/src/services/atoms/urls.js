@@ -225,7 +225,11 @@ pdfUrl:"/requester-services-dx/eSign/process"
       showResults: "/egov-survey-services/egov-ss/survey/response/_results",
       createCategory:"/egov-survey-services/egov-ss/category/_create",
       deleteCategory:"/egov-survey-services/egov-ss/category/_update",
-      searchCategory:"/egov-survey-services/egov-ss/category/_search"
+      searchCategory:"/egov-survey-services/egov-ss/category/_search",
+      createSurvey:"/egov-survey-services/egov-ss/csc/create",
+      searchQuestions: "/egov-survey-services/egov-ss/question/_search",
+      createQuestions: "/egov-survey-services/egov-ss/question/_create",
+      searchSurvey:"/egov-survey-services/egov-ss/csc/_search"
     },
   },
 

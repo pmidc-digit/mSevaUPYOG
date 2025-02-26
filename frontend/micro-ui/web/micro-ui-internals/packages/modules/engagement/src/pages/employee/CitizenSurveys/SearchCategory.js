@@ -1,4 +1,4 @@
-import React ,{Fragment, useCallback,useMemo,useReducer, useState}from 'react'
+import React ,{Fragment, useCallback,useEffect,useMemo,useReducer, useState}from 'react'
 import { InboxComposer, DocumentIcon,Toast } from "@upyog/digit-ui-react-components";
 import useCategoryInboxMobileCardsData from './Inbox/useCategoryInboxMobileDataCard'
 import useCategoryInboxTableConfig from './Inbox/useCategoryInboxTableConfig'
@@ -40,6 +40,26 @@ const SearchCategory = ({parentRoute}) => {
   const onPageSizeChange = (e) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } })
   }
+  useEffect(()=>{
+    try{
+ 
+      Digit.Surveys.searchCategory(filters).then((response) => {
+        if(response?.Categories?.length>0)
+        {
+         
+          setShowToast({ key: true, label: "Category sucessfully retrieved" });
+        }
+        else
+        {
+          setShowToast({ key: true, label: `${response?.Errors?.message}` });
+        }
+      })
+    }
+    catch(error)
+    {
+      console.log(error);
+    }
+  },[])
   const onSearchFormSubmit = (data) => {
     //setting the offset to 0(In case searched from page other than 1)
    console.log('search data',data)

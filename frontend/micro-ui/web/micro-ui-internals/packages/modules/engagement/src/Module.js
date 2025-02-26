@@ -43,10 +43,15 @@ import SurveyResults from "./pages/employee/CitizenSurveys/SurveyResults";
 import SearchCategory from "./pages/employee/CitizenSurveys/SearchCategory";
 import SurveyQuestions from "./pages/employee/CitizenSurveys/SurveyQuestions";
 import SurveyForm from "./components/Surveys/SurveyForms/SurveyForm";
-import SurveyFormPage from "./components/Surveys/SurveyFormPage";
+//import SurveyFormPage from "./components/Surveys/SurveyFormPage";
 import getRootReducer from "./redux/reducers"
 import CreateSurveyForm from "./components/Surveys/SurveyForms/CreateSurveyForm";
-
+import SurveyFormDetails from "./components/Surveys/SurveyForms/NewSurveyFormSteps/SurveyFormDetails";
+import SurveyFormCategoryDetails from "./components/Surveys/SurveyForms/NewSurveyFormSteps/SurveyFormCategoryDetails";
+import SurveryFormSummary from "./components/Surveys/SurveyForms/NewSurveyFormSteps/SurveryFormSummary";
+import NewSurveys from "./pages/employee/CitizenSurveys/NewSurvey";
+import SurveyCreationPage from "./components/Surveys/SurveyForms/SurveyCreationPage";
+import SurveySummary from "./components/Surveys/SurveyForms/SurveySummary";
 export const SurveyReducers = getRootReducer;
 
 const EventsBreadCrumb = ({ location }) => {
@@ -341,8 +346,14 @@ const componentsToRegister = {
   SearchCategory,
   SurveyCategory,
   SurveyForm,
-  SurveyFormPage,
-  CreateSurveyForm
+ // SurveyFormPage,
+  CreateSurveyForm,
+  SurveyFormDetails,
+  SurveyFormCategoryDetails,
+  SurveryFormSummary,
+  NewSurveys,
+  SurveyCreationPage,
+  SurveySummary
 };
 
 export const initEngagementComponents = () => {

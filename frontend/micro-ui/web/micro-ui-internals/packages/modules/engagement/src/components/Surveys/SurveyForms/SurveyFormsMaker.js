@@ -10,6 +10,7 @@ const defaultFormsConfig = {
   uuid : "",
   qorder : null,
 };
+console.log("setSurveyConfig",setSurveyConfig)
 console.log("disable Inputs",disableInputs)
 console.log("partially enabled",isPartiallyEnabled)
 console.log("forms disable",formDisabled)

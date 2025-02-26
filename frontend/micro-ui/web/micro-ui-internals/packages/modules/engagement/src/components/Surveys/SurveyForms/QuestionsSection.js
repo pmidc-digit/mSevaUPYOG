@@ -1,5 +1,5 @@
 import React from 'react'
-import { DatePicker, Dropdown, CheckBox, TextArea, TextInput, CardLabelError } from "@upyog/digit-ui-react-components";
+import { DatePicker, Dropdown, CheckBox, TextArea, TextInput, CardLabelError } from "@mseva/digit-ui-react-components";
 const QuestionsSection = ({t,QuestionOptions,setSurveyQuestionConfig,disableInputs,dropdownOptions,surveyQuestionConfig}) => {
   return (
      <div>

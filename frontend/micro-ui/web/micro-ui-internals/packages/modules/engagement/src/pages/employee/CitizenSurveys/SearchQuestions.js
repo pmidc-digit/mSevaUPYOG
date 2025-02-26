@@ -1,5 +1,5 @@
 import React ,{Fragment, useCallback,useMemo,useReducer, useState}from 'react'
-import { InboxComposer, DocumentIcon,Toast } from "@upyog/digit-ui-react-components";
+import { InboxComposer, DocumentIcon,Toast } from "@mseva/digit-ui-react-components";
 import useCategoryInboxMobileCardsData from './Inbox/useCategoryInboxMobileDataCard'
 import useQuestionsInboxTableConfig from './Inbox/Questions/useQuestionsInboxTableConfig'
 import SearchQuestionsFieldsComponents from './Inbox/Questions/SearchQuestionsFieldsComponents'

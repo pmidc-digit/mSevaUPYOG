@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast } from "@upyog/digit-ui-react-components";
+import { Toast } from "@mseva/digit-ui-react-components";
 //
 import { FormComposer } from "../../../../../react-components/src/hoc/FormComposer";
 import { updateSurveyForm } from "../../redux/actions/surveyFormActions";
@@ -21,7 +21,15 @@ const SurveyFormPage = ({ config, onGoNext, t }) => {
     }
   };
 
-  const currentStepData = useSelector((state) => state.engagement.surveyForm.formData?.[config.key] ?? {});
+  var currentStepData = useSelector(function (state) {
+    return state.engagement &&
+           state.engagement.surveyForm &&
+           state.engagement.surveyForm.formData &&
+           state.engagement.surveyForm.formData[config.key] !== undefined
+        ? state.engagement.surveyForm.formData[config.key] 
+        : {};
+});
+
   const dispatch = useDispatch();
   console.log("currentStepData in EmployeeDetails: ", currentStepData);
 

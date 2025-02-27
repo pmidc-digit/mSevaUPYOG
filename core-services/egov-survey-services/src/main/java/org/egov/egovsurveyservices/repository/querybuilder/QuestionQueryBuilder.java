@@ -52,7 +52,7 @@ public class QuestionQueryBuilder {
         if (null!=(criteria.getStatus())) {
             addClauseIfRequired(query, preparedStmtList);
             query.append(" question.status = ? ");
-            preparedStmtList.add(criteria.getStatus());
+            preparedStmtList.add(criteria.getStatus().toString());
         }
 
         if (null!=(criteria.getCategoryId())) {

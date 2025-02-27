@@ -44,7 +44,6 @@ public class ScorecardSurveyRowMapperTest {
         when(resultSet.getBoolean("hasresponded")).thenReturn(false);
         when(resultSet.getLong("createdtime")).thenReturn(1672531200000L);
         when(resultSet.getLong("lastmodifiedtime")).thenReturn(1675219600000L);
-        when(resultSet.getString("status")).thenReturn("ACTIVE");
 
         // Call mapRow method
         ScorecardSurveyEntity surveyEntity = rowMapper.mapRow(resultSet, 1);
@@ -63,7 +62,6 @@ public class ScorecardSurveyRowMapperTest {
         assertEquals(false, surveyEntity.getHasResponded());
         assertEquals(1672531200000L, surveyEntity.getCreatedTime());
         assertEquals(1675219600000L, surveyEntity.getLastModifiedTime());
-        assertEquals("ACTIVE", surveyEntity.getStatus());
 
         // Verify ResultSet interactions
         verify(resultSet, times(1)).getString("uuid");
@@ -79,7 +77,6 @@ public class ScorecardSurveyRowMapperTest {
         verify(resultSet, times(1)).getBoolean("hasresponded");
         verify(resultSet, times(1)).getLong("createdtime");
         verify(resultSet, times(1)).getLong("lastmodifiedtime");
-        verify(resultSet, times(1)).getString("status");
     }
 }
 

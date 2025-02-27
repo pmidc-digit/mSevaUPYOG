@@ -63,11 +63,10 @@ public class ScorecardSurveyService {
         }
 
         String tenantId = surveyEntity.getTenantId();
-        //List<String> listOfSurveyIds = surveyUtil.getIdList(surveyRequest.getRequestInfo(), tenantId, "ss.surveyid", "SY-[cy:yyyy-MM-dd]-[SEQ_EG_DOC_ID]", 1);
-        //log.info(listOfSurveyIds.toString());
+        List<String> listOfSurveyIds = surveyUtil.getIdList(surveyRequest.getRequestInfo(), tenantId, "ss.surveyid", "SY-[cy:yyyy-MM-dd]-[SEQ_EG_DOC_ID]", 1);
+        log.info(listOfSurveyIds.toString());
 
-        //surveyEntity.setUuid(listOfSurveyIds.get(0));
-        surveyEntity.setUuid("SS-1012/2024-25/000142");       
+        surveyEntity.setUuid(listOfSurveyIds.get(0));      
         surveyEntity.setTenantId(tenantId);
         
         enrichmentService.enrichScorecardSurveyEntity(surveyRequest);

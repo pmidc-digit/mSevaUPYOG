@@ -34,7 +34,6 @@ public class ScorecardSurveyRowMapper implements RowMapper<ScorecardSurveyEntity
                 .hasResponded(rs.getBoolean("hasresponded"))
                 .createdTime(rs.getLong("createdtime"))
                 .lastModifiedTime(rs.getLong("lastmodifiedtime"))
-                .status(rs.getString("status"))
                 .build();
     }
 }

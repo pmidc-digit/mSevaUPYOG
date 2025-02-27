@@ -7,12 +7,12 @@ const useSearch = (filters, config) => {
   const { status } = filterForm;
   const validTenantId = typeof tenantIds === "object" ? tenantIds.code : tenantIds;
 
-  const finalFilters = {
+  var finalFilters = {
     tenantId: validTenantId,
-    id: categoryName?.value ?? "",
-    isActive: status?.bool ?? null,
-    //isActive: isActive?.id ?? ""
-  };
+    id: (categoryName && categoryName.value) ? categoryName.value : "",
+    isActive: (status && status.bool) ? status.bool : null
+    // isActive: (isActive && isActive.id) ? isActive.id : ""
+};
 
   //clearing out empty string params from payload
   Object.keys(finalFilters).forEach((key) => {

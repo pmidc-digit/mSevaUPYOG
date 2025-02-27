@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-common",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "description": "Digit Common Payment Module",
   "main": "dist/index.js",
@@ -15,8 +15,8 @@
     "prepublish": "yarn build"
   },
   "dependencies": {
-    "@mseva/digit-ui-libraries": "1.0.0",
-    "@mseva/digit-ui-react-components" : "1.0.0",
+    "@mseva/digit-ui-libraries": "1.0.1",
+    "@mseva/digit-ui-react-components": "1.0.0",
     "microbundle-crl": "^0.13.11",
     "react": "17.0.2",
     "react-dom": "17.0.2",
@@ -30,5 +30,7 @@
     "redux-thunk": "2.4.1",
     "rooks": "4.11.2",
     "jquery": "3.6.0"
-  }
+  },
+  "devDependencies": {},
+  "author": ""
 }

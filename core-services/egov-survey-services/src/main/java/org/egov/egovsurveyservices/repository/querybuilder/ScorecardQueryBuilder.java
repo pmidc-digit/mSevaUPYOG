@@ -10,25 +10,23 @@ public class ScorecardQueryBuilder {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    public String fetchSectionListBasedOnSurveyId() {
+        return "SELECT uuid, surveyuuid, title, weightage FROM eg_ss_survey_section WHERE surveyuuid = ?";
+    }
+
     public String getCitizenResponseExistsQuery() {
         return " SELECT EXISTS(SELECT uuid FROM eg_ss_answer WHERE surveyuuid = ? AND citizenid = ? ) ";
     }
 
-    public String getQuestionsBasedOnSurveyIdsQuery() {
-        return " SELECT uuid, surveyuuid, questionstatement, options, status, type, required, createdby, lastmodifiedby, createdtime, lastmodifiedtime FROM eg_ss_question WHERE surveyuuid = ? ";
-    }
-
-    public String fetchSurveyByUuid(String surveyUuid) {
-        return "SELECT * FROM eg_ss_survey_entity WHERE uuid = ?";
-    }
-
-    public String fetchSectionsBySurveyUuid(String surveyUuid) {
-        return "SELECT * FROM eg_ss_section WHERE surveyUuid = ?";
-    }
-
-    public String fetchQuestionsBySectionUuid(String sectionUuid) {
-        return "SELECT qw.*, q.* FROM eg_ss_question_weightage qw " +
-                "JOIN eg_ss_question q ON qw.questionUuid = q.uuid " +
-                "WHERE qw.sectionUuid = ?";
+    public String fetchQuestionsWeightageListBySurveyAndSection() {
+        return "SELECT q.uuid as uuid, q.questionstatement as questionstatement, q.options as options, " +
+                "q.status as status, q.type as type, q.required as required, " +
+                "q.createdby as createdby, q.lastmodifiedby as lastmodifiedby, q.createdtime as createdtime, " +
+                "q.lastmodifiedtime as lastmodifiedtime,qw.questionuuid as questionuuid,qw.sectionuuid as sectionuuid ," +
+                "qw.weightage as weightage,qw.qorder as qorder " +
+                "FROM eg_ss_question q " +
+                "JOIN eg_ss_question_weightage qw ON q.uuid = qw.questionuuid " +
+                "JOIN eg_ss_survey_section ss ON qw.sectionuuid = ss.uuid " +
+                "WHERE ss.surveyuuid = ? AND ss.uuid = ?";
     }
 }

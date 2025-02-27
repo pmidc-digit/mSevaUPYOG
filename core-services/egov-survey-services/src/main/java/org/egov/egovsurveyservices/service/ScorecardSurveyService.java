@@ -1,14 +1,12 @@
 package org.egov.egovsurveyservices.service;
 
 import lombok.extern.slf4j.Slf4j;
+import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
-import org.egov.egovsurveyservices.repository.AnswerRepository;
 import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
-import org.egov.egovsurveyservices.repository.SurveyRepository;
-import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.tracer.model.CustomException;
@@ -35,16 +33,10 @@ public class ScorecardSurveyService {
     private QuestionRepository questionRepository;
 
     @Autowired
-    private AnswerRepository answerRepository;
-
-    @Autowired
     private EnrichmentService enrichmentService;
 
     @Autowired
     private ScorecardSurveyRepository surveyRepository;
-
-    @Autowired
-    private ScorecardSurveyUtil surveyUtil;
 
     @Autowired
     private ApplicationProperties applicationProperties;
@@ -59,9 +51,6 @@ public class ScorecardSurveyService {
         surveyValidator.validateQuestionsAndSections(surveyEntity);
 
         String tenantId = surveyEntity.getTenantId();
-//        Integer countOfSurveyEntities = 1;
-//        List<String> listOfSurveyIds = surveyUtil.getIdList(surveyRequest.getRequestInfo(), tenantId, "ss.surveyid", "SY-[cy:yyyy-MM-dd]-[SEQ_EG_DOC_ID]", countOfSurveyEntities);
-//        log.info(listOfSurveyIds.toString());
 
         surveyEntity.setUuid(UUID.randomUUID().toString());
         surveyEntity.setTenantId(tenantId);
@@ -73,36 +62,6 @@ public class ScorecardSurveyService {
         return surveyEntity;
     }
 
-//    @Autowired
-//    private AnswerRepository answerRepository;
-//
-//    public SurveyResponse saveSurveyResponse(SurveyResponse surveyResponse) {
-//        surveyResponse.setAuditDetails(AuditDetails.builder()
-//                .createdBy(surveyResponse.getCitizenId())
-//                .lastModifiedBy(surveyResponse.getCitizenId())
-//                .createdTime(System.currentTimeMillis())
-//                .lastModifiedTime(System.currentTimeMillis())
-//                .build());
-//
-//        for (SectionResponse sectionResponse : surveyResponse.getSectionResponses()) {
-//            for (QuestionResponse questionResponse : sectionResponse.getQuestionResponses()) {
-//                Answer answer = Answer.builder()
-//                        .uuid(UUID.randomUUID().toString())
-//                        .surveyUuid(surveyResponse.getSurveyUuid())
-//                        .sectionUuid(sectionResponse.getSectionUuid())
-//                        .questionUuid(questionResponse.getQuestionUuid())
-//                        .answer(questionResponse.getAnswer())
-//                        .comments(questionResponse.getComments())
-//                        .auditDetails(surveyResponse.getAuditDetails())
-//                        .citizenId(surveyResponse.getCitizenId())
-//                        .build();
-//
-//                answerRepository.saveAnswer(answer);
-//            }
-//        }
-//        return null;
-//    }
-
     public ScorecardAnswerResponse submitResponse(AnswerRequest answerRequest) {
         AnswerEntity answerEntity = answerRequest.getAnswerEntity();
         RequestInfo requestInfo = answerRequest.getRequestInfo();
@@ -110,28 +69,27 @@ public class ScorecardSurveyService {
         String uuid = requestInfo.getUserInfo().getUuid();
         surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, uuid);
         surveyValidator.validateAnswers(answerEntity);
-        // Collect answers to enrich SurveyResponse
+
+        AuditDetails auditDetails = AuditDetails.builder()
+                .createdBy(uuid)
+                .lastModifiedBy(uuid)
+                .createdTime(System.currentTimeMillis())
+                .lastModifiedTime(System.currentTimeMillis())
+                .build();
         List<ScorecardSectionResponse> enrichedSectionResponses = answerEntity.getAnswers().stream()
                 .collect(Collectors.groupingBy(Answer::getSectionUuid)).entrySet().stream()
                 .map(entry -> {
                     List<ScorecardQuestionResponse> enrichedQuestionResponses = entry.getValue().stream()
                             .map(answer -> {
-                                // Fetch question statement from repository
                                 String questionStatement = questionRepository.findQuestionStatementByUuid(answer.getQuestionUuid());
-                                //add validation for question existence
 
-                                Answer enrichedAnswer = Answer.builder()
-                                        .uuid(UUID.randomUUID().toString())
-                                        .surveyUuid(answerEntity.getSurveyId())
-                                        .sectionUuid(answer.getSectionUuid())
-                                        .questionUuid(answer.getQuestionUuid())
-                                        .answer(answer.getAnswer())
-                                        .comments(answer.getComments())
-                                        .auditDetails(answer.getAuditDetails())
-                                        .citizenId(answer.getCitizenId())
-                                        .build();
-
-                                answerRepository.saveAnswer(enrichedAnswer);
+                                if(StringUtils.isBlank(questionStatement)){
+                                    throw new CustomException("EG_SS_QUESTION_NOT_FOUND","question not found with id "+answer.getQuestionUuid());
+                                }
+                                answer.setUuid(UUID.randomUUID().toString());
+                                answer.setSurveyUuid(answerEntity.getSurveyId());
+                                answer.setAuditDetails(auditDetails);
+                                answer.setCitizenId(uuid);
 
                                 return ScorecardQuestionResponse.builder()
                                         .questionUuid(answer.getQuestionUuid())
@@ -140,60 +98,38 @@ public class ScorecardSurveyService {
                                         .comments(answer.getComments())
                                         .build();
                             }).collect(Collectors.toList());
-
+                    producer.push(applicationProperties.getSubmitAnswerScorecardSurveyTopic(),answerRequest);
                     return ScorecardSectionResponse.builder()
                             .sectionUuid(entry.getKey())
                             .questionResponses(enrichedQuestionResponses)
                             .build();
                 }).collect(Collectors.toList());
 
-        ScorecardAnswerResponse surveyResponse = ScorecardAnswerResponse.builder()
+        return ScorecardAnswerResponse.builder()
                 .surveyUuid(answerEntity.getSurveyId())
                 .citizenId(uuid)
                 .sectionResponses(enrichedSectionResponses)
-                .auditDetails(AuditDetails.builder()
-                        .createdBy(uuid)
-                        .lastModifiedBy(uuid)
-                        .createdTime(System.currentTimeMillis())
-                        .lastModifiedTime(System.currentTimeMillis())
-                        .build())
+                .auditDetails(auditDetails)
                 .build();
 
-        return surveyResponse;
-    }
-
-    public void submitsResponse(AnswerRequest answerRequest) {
-        RequestInfo requestInfo = answerRequest.getRequestInfo();
-        AnswerEntity answerEntity = answerRequest.getAnswerEntity();
-
-        // Validations
-
-        // 1. Validate whether userType is citizen or not
-        surveyValidator.validateUserTypeForAnsweringSurvey(requestInfo);
-        // 2. Validate if survey for which citizen is responding exists
-        if(CollectionUtils.isEmpty(surveyRepository.fetchSurveys(SurveySearchCriteria.builder().isCountCall(Boolean.FALSE).uuid(answerEntity.getSurveyId()).build())))
-            throw new CustomException("EG_SY_DOES_NOT_EXIST_ERR", "The survey for which citizen responded does not exist");
-        // 3. Validate if citizen has already responded or not
-        surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, requestInfo.getUserInfo().getUuid());
-        // 4. Validate answers
-        surveyValidator.validateAnswers(answerEntity);
-
-        // Enrich answer request
-        enrichmentService.enrichAnswerEntity(answerRequest);
-
-        // Persist response if it passes all validations
-        producer.push("save-ss-answer", answerRequest);
     }
 
     public boolean hasCitizenAlreadyResponded(AnswerEntity answerEntity, String citizenId) {
         if(ObjectUtils.isEmpty(answerEntity.getSurveyId()))
-            throw new CustomException("EG_SY_FETCH_CITIZEN_RESP_ERR", "Cannot fetch citizen's response without surveyId");
+            throw new CustomException("EG_SS_FETCH_CITIZEN_RESP_ERR", "Cannot fetch citizen's response without surveyId");
         return surveyRepository.fetchWhetherCitizenAlreadyResponded(answerEntity.getSurveyId(), citizenId);
     }
 
-    public List<Question> fetchQuestionListBasedOnSurveyId(String surveyId) {
-        List<Question> questionList = surveyRepository.fetchQuestionsList(surveyId);
-        if(CollectionUtils.isEmpty(questionList))
+    public List<Section> fetchSectionListBasedOnSurveyId(String surveyId) {
+        List<Section> sectionList = surveyRepository.fetchSectionListBasedOnSurveyId(surveyId);
+        if (CollectionUtils.isEmpty(sectionList))
+            return new ArrayList<>();
+        return sectionList;
+    }
+
+    public List<QuestionWeightage> fetchQuestionsWeightageListBySurveyAndSection(String surveyId, String sectionId) {
+        List<QuestionWeightage> questionList = surveyRepository.fetchQuestionsWeightageListBySurveyAndSection(surveyId, sectionId);
+        if (CollectionUtils.isEmpty(questionList))
             return new ArrayList<>();
         return questionList;
     }

@@ -43,36 +43,6 @@ public class EnrichmentService {
                     .build());
         }
     }
-
-    /*public void enrichScorecardSurveyEntity(ScorecardSurveyRequest surveyRequest) {
-        ScorecardSurveyEntity
-                surveyEntity = surveyRequest.getSurveyEntity();
-        surveyEntity.setStatus(ACTIVE);
-        surveyEntity.setActive(Boolean.TRUE);
-        surveyEntity.setAuditDetails(AuditDetails.builder()
-                .createdBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
-                .lastModifiedBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
-                .createdTime(System.currentTimeMillis())
-                .lastModifiedTime(System.currentTimeMillis())
-                .build());
-        surveyEntity.setPostedBy(surveyRequest.getRequestInfo().getUserInfo().getName());
-
-        //fix this
-        for(int i = 0; i < surveyEntity.getQuestions().size(); i++) {
-            Question question = surveyEntity.getQuestions().get(i);
-            question.setQorder((long)i+1);
-            question.setUuid(UUID.randomUUID().toString());
-            question.setSurveyId(surveyEntity.getUuid());
-            if(ObjectUtils.isEmpty(question.getStatus()))
-                question.setStatus(Status.ACTIVE);
-            question.setAuditDetails(AuditDetails.builder()
-                    .createdBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
-                    .lastModifiedBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
-                    .createdTime(System.currentTimeMillis())
-                    .lastModifiedTime(System.currentTimeMillis())
-                    .build());
-        }
-    }*/
     
     public void enrichScorecardSurveyEntity(ScorecardSurveyRequest surveyRequest) {
         ScorecardSurveyEntity surveyEntity = surveyRequest.getSurveyEntity();
@@ -111,7 +81,6 @@ public class EnrichmentService {
 
             for (int j = 0; j < qnws; j++) {
                 QuestionWeightage questionWeightage = questionWeightages.get(j);
-                questionWeightage.setQuestionUuid(UUID.randomUUID().toString());
                 questionWeightage.setSectionUuid(section.getUuid());
                 questionWeightage.setQorder((long) j + 1);
                 Question question = questionWeightage.getQuestion();
@@ -123,7 +92,6 @@ public class EnrichmentService {
                 }
 
                 question.setQorder((long) j + 1);
-                question.setUuid(UUID.randomUUID().toString());
                 question.setSurveyId(surveyEntity.getUuid());
 
                 if (ObjectUtils.isEmpty(question.getStatus())) {

@@ -36,10 +36,11 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
     Digit.Surveys.searchCategory(payload)
       .then((response) => {
         //console.log("Category Options: ", response);
-        const categoryOptions =
-          response?.Categories?.map((item) => {
+        categoryOptions = (response && response.Categories)
+          ? response.Categories.map(function (item) {
             return { name: t(item.label), i18Key: item.label, value: item.id };
-          }) ?? [];
+          })
+          : [];
         setCategoryOptions(categoryOptions);
       })
       .catch((error) => {
@@ -62,10 +63,15 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
     Digit.Surveys.searchQuestions(payload)
       .then((response) => {
         //console.log("Question Options: ", response);
-        const questionOptions =
-          response?.Questions?.map((item) => {
-            return { name: t(item.questionStatement), i18Key: item.questionStatement, value: item.uuid };
-          }) ?? [];
+        const questionOptions = (response && response.Questions) 
+        ? response.Questions.map(function(item) {
+            return { 
+                name: t(item.questionStatement), 
+                i18Key: item.questionStatement, 
+                value: item.uuid 
+            };
+          }) 
+        : [];
         setQuestionOptions(questionOptions);
         setIsQuestionsLoading(false);
       })

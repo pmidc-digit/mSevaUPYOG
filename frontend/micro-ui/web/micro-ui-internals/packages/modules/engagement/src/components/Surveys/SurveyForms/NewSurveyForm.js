@@ -26,12 +26,16 @@ const NewSurveyForm = ({
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // Options for the answer type dropdown
   const { data: AnswerTypeData = {}, isLoading } = Digit.Hooks.engagement.useMDMS(tenantId, "common-masters", "questionType") || {};
-  const answerTypeOptions =
-    AnswerTypeData?.["common-masters"]?.questionType
-      ?.filter((item) => item.active)
-      ?.map((item) => {
-        return { title: t(item.title), i18Key: item.code, value: item.code };
-      }) ?? [];
+  var answerTypeOptions = 
+  (AnswerTypeData && AnswerTypeData["common-masters"] && AnswerTypeData["common-masters"].questionType) 
+    ? AnswerTypeData["common-masters"].questionType
+        .filter(function(item) {
+          return item.active;
+        })
+        .map(function(item) {
+          return { title: t(item.title), i18Key: item.code, value: item.code };
+        })
+    : [];
 
   // Options for the category dropdown
   const [categoryOptions, setCategoryOptions] = useState([]);

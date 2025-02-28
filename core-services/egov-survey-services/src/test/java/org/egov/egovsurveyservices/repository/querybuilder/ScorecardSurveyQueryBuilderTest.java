@@ -95,4 +95,34 @@ public class ScorecardSurveyQueryBuilderTest {
         assertEquals("id1", preparedStmtList.get(0));
         assertEquals("id2", preparedStmtList.get(1));
     }
+    
+    @Test
+    public void testGetSurveySearchQuery_WithActiveTrue() {
+        criteria.setActive(true);
+        String query = queryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
+
+        assertTrue(query.contains("survey.active = ?"));
+        assertEquals(1, preparedStmtList.size());
+        assertEquals(true, preparedStmtList.get(0));
+    }
+
+    @Test
+    public void testGetSurveySearchQuery_WithActiveFalse() {
+        criteria.setActive(false);
+        String query = queryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
+
+        assertTrue(query.contains("survey.active = ?"));
+        assertEquals(1, preparedStmtList.size());
+        assertEquals(false, preparedStmtList.get(0));
+    }
+
+    @Test
+    public void testGetSurveySearchQuery_WithoutActiveFilter() {
+        criteria.setActive(null);  // No active filter applied
+        String query = queryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
+
+        assertFalse(query.contains("survey.active = ?")); // Active filter should not be present
+        assertEquals(0, preparedStmtList.size()); // No parameters should be added
+    }
+
 }

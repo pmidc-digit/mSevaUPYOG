@@ -60,6 +60,12 @@ public class ScorecardSurveyQueryBuilder {
             query.append("survey.title ILIKE ? ");
             preparedStmtList.add("%" + criteria.getTitle() + "%");
         }
+        
+        if (criteria.getActive() != null) {
+            query.append(whereAdded ? " AND " : " WHERE ");
+            query.append("survey.active = ? ");
+            preparedStmtList.add(criteria.getActive());
+        }
 
         return query.toString();
     }

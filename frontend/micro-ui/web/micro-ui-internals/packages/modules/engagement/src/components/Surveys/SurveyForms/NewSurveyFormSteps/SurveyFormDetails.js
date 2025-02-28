@@ -6,8 +6,39 @@ import { updateSurveyForm} from "../../../../redux/actions/surveyFormActions";
 
 
 const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
+ const dispatch = useDispatch();
+        const surveyDetails = useSelector(state => state.engagement.surveyForm.surveyDetails);
+ 
     function goNext(data) {
         console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+        let f=0;
+        let alertMsg=""
+        surveyDetails.map((item)=>{
+           if(item.name===''){
+            f=1;
+            alertMsg+="Please enter survey name\n"
+           }
+           if(item.fromDate===''){
+            f=1;
+            alertMsg+="Please enter From date\n"
+           }
+           if(item.fromTime===''){
+            f=1;
+            alertMsg+="Please enter From time\n"
+           }
+           if(item.toDate===''){
+            f=1;
+            alertMsg+="Please enter To date\n"
+           }
+           if(item.toTime===''){
+            f=1;
+            alertMsg+="Please enter To time\n"
+            }
+        })
+        if(f===1){
+            alert(alertMsg);
+            return;
+        }
         onGoNext();
     }
 
@@ -29,7 +60,7 @@ const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
             ? state.engagement.surveyForm.formData[config.key]
             : {};
     });
-    const dispatch = useDispatch();
+  
 
     // console.log("currentStepData in  Administrative details: ", currentStepData);
 

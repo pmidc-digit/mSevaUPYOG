@@ -23,7 +23,7 @@ const Inbox = ({ parentRoute }) => {
   const searchFormDefaultValues = {
     // tenantIds: tenantId,
     tenantIds: userUlbs[0],
-    postedBy: "",
+    // postedBy: "",
     title: "",
   };
 
@@ -55,7 +55,7 @@ const Inbox = ({ parentRoute }) => {
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("CITIZENSURVEY.INBOX");
 
   const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("postedBy", "");
+   // setSearchFormValue("postedBy", "");
     setSearchFormValue("title", "");
     setSearchFormValue("tenantIds", tenantId);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });

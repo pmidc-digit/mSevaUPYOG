@@ -40,9 +40,9 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
             });
          
            console.log("survey det",surveyDetails)
-           let startDateObj= new Date(surveyDetails.fromDate);
+           let startDateObj= new Date(`${surveyDetails.fromDate} ${surveyDetails.fromTime}`);
            let startDate=startDateObj.getTime()
-           let endDateObj= new Date(surveyDetails.toDate);
+           let endDateObj= new Date(`${surveyDetails.toDate} ${surveyDetails.toTime}`);
            let endDate=endDateObj.getTime()
            let SurveyEntityObj= {
                 startDate: startDate,

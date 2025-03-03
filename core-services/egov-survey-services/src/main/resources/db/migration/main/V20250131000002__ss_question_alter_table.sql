@@ -1,7 +1,7 @@
 ALTER TABLE public.eg_ss_question
-ADD COLUMN categoryid VARCHAR(128) REFERENCES eg_ss_category(id);
+ADD COLUMN IF NOT EXISTS categoryid VARCHAR(128) REFERENCES eg_ss_category(id);
 
-ALTER TABLE public.eg_ss_question ADD COLUMN tenantid varchar(128) ;
+ALTER TABLE public.eg_ss_question ADD COLUMN IF NOT EXISTS tenantid varchar(128) ;
 
 CREATE INDEX IF NOT EXISTS idx_eg_ss_question_uuid ON eg_ss_question(uuid);
 CREATE INDEX IF NOT EXISTS idx_eg_ss_question_questionstatement ON eg_ss_question(questionstatement);

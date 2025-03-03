@@ -57,6 +57,10 @@ public class CategoryQueryBuilder {
         return "SELECT COUNT(*) FROM eg_ss_category WHERE label = ? AND tenantid = ?";
     }
 
+    public String existById(){
+        return "SELECT COUNT(*) FROM eg_ss_category WHERE id = ?";
+    }
+
     private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList) {
         if (preparedStmtList.isEmpty()) {
             query.append(" WHERE ");

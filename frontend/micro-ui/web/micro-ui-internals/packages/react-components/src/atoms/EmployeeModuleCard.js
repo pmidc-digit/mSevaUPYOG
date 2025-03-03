@@ -50,8 +50,9 @@ import { Link } from "react-router-dom";
 //   );
 // };
 const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], isCitizen = false, className, styles, FsmHideCount }) => {
+  const parentClassName ="employeeCard card-home customEmployeeCard";
   return (
-    <div className={className ? "employeeCard card-home customEmployeeCard" : "employeeCard card-home customEmployeeCard"} style={className ? {} : styles}>
+    <div className={parentClassName} style={className ? {} : styles}>
       <div className="employeeCustomCard" style={{ width: "100%", height: "85%", position: "relative" }}>
         <span className="text-employee-card">{moduleName}</span>
         <span className="logo-removeBorderRadiusLogo" style={{ position: "absolute", right: "10%", top: "10%" }}>{Icon}</span>
@@ -88,7 +89,7 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], isCitizen
             </div>
             </div>
             <div>
-            <div className="links-wrapper" style={{ width: "100%", display: "flex", fontSize: "0.8rem", paddingLeft: "10px", flexWrap:"wrap",flexDirection:"row",paddingTop:"10px"}}>
+            <div className="links-wrapper">
               {links.map(({ count, label, link }, index) => (
                 <div className="link" key={index} style={{ paddingLeft: "5px", color: "#a1a5b7",display:"flex" }}>
                   {link ? <div style={{display:"flex"}}> <Link to={link}> {label} </Link>  <span>|</span> </div>: null}

@@ -558,7 +558,7 @@ console.log("appl", applicationDetails)
            </thead>
            <tbody >
           
-          {demandData.map((item)=>{
+          {demandData?.map((item)=>{
             return(
               <tr>
                 <td style={tableStyles.td}>{item.taxPeriodFrom}-{item.taxPeriodTo}</td>

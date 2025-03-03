@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -31,6 +32,7 @@ public class ScorecardSurveyRowMapperTest {
     @Test
     void testMapRow() throws SQLException {
         // Mock ResultSet behavior
+        when(resultSet.next()).thenReturn(true,false);
         when(resultSet.getString("uuid")).thenReturn("12345");
         when(resultSet.getString("tenantid")).thenReturn("pb.testing");
         when(resultSet.getString("title")).thenReturn("Survey on citizen Feedback");
@@ -44,10 +46,12 @@ public class ScorecardSurveyRowMapperTest {
         when(resultSet.getBoolean("hasresponded")).thenReturn(false);
         when(resultSet.getLong("createdtime")).thenReturn(1672531200000L);
         when(resultSet.getLong("lastmodifiedtime")).thenReturn(1675219600000L);
-        when(resultSet.getString("status")).thenReturn("ACTIVE");
+        when(resultSet.getString("createdby")).thenReturn("admin");
+        when(resultSet.getString("lastmodifiedby")).thenReturn("admin");
 
         // Call mapRow method
-        ScorecardSurveyEntity surveyEntity = rowMapper.mapRow(resultSet, 1);
+        List<ScorecardSurveyEntity> surveyEntityList = rowMapper.extractData(resultSet);
+        ScorecardSurveyEntity surveyEntity = surveyEntityList.get(0);
 
         // Assertions
         assertEquals("12345", surveyEntity.getUuid());
@@ -63,10 +67,9 @@ public class ScorecardSurveyRowMapperTest {
         assertEquals(false, surveyEntity.getHasResponded());
         assertEquals(1672531200000L, surveyEntity.getCreatedTime());
         assertEquals(1675219600000L, surveyEntity.getLastModifiedTime());
-        assertEquals("ACTIVE", surveyEntity.getStatus());
 
         // Verify ResultSet interactions
-        verify(resultSet, times(1)).getString("uuid");
+        verify(resultSet, times(2)).getString("uuid");
         verify(resultSet, times(1)).getString("tenantid");
         verify(resultSet, times(1)).getString("title");
         verify(resultSet, times(1)).getString("category");
@@ -77,9 +80,8 @@ public class ScorecardSurveyRowMapperTest {
         verify(resultSet, times(1)).getBoolean("active");
         verify(resultSet, times(1)).getLong("answerscount");
         verify(resultSet, times(1)).getBoolean("hasresponded");
-        verify(resultSet, times(1)).getLong("createdtime");
-        verify(resultSet, times(1)).getLong("lastmodifiedtime");
-        verify(resultSet, times(1)).getString("status");
+        verify(resultSet, times(2)).getLong("createdtime");
+        verify(resultSet, times(2)).getLong("lastmodifiedtime");
     }
 }
 

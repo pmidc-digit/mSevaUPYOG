@@ -44,7 +44,7 @@ class CategoryControllerTest {
     @Test
     public void testSearchQuestion() throws Exception {
 
-        mockMvc.perform(get("/egov-ss/category/_search").contentType
+        mockMvc.perform(post("/egov-ss/category/_search").contentType
                         (MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(new CategorySearchCriteria())))
                 .andExpect(status().isOk());
     }

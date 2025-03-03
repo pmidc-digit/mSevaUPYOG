@@ -33,30 +33,27 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
 
             if(surveyEntity == null) {
 
-                Long lastModifiedTime = rs.getLong("lastmodifiedtime");
-                if (rs.wasNull()) {
-                    lastModifiedTime = null;
-                }
-
                 AuditDetails auditdetails = AuditDetails.builder()
-                        .createdBy(rs.getString("screatedby"))
-                        .createdTime(rs.getLong("screatedtime"))
-                        .lastModifiedBy(rs.getString("slastmodifiedby"))
-                        .lastModifiedTime(lastModifiedTime)
+                        .createdBy(rs.getString("createdby"))
+                        .createdTime(rs.getLong("createdtime"))
+                        .lastModifiedBy(rs.getString("lastmodifiedby"))
+                        .lastModifiedTime(rs.getLong("lastmodifiedtime"))
                         .build();
 
                 surveyEntity = ScorecardSurveyEntity.builder()
-                        .uuid(rs.getString("uuid"))
+                        .uuid(rs.getString("uuid")) // Primary Key
                         .tenantId(rs.getString("tenantid"))
-                        .surveyCategory(rs.getString("category"))
                         .surveyTitle(rs.getString("title"))
+                        .surveyCategory(rs.getString("category"))
                         .surveyDescription(rs.getString("description"))
                         .startDate(rs.getLong("startdate"))
                         .endDate(rs.getLong("enddate"))
                         .postedBy(rs.getString("postedby"))
                         .active(rs.getBoolean("active"))
-                        .answersCount(rs.getLong("answercount"))
+                        .answersCount(rs.getLong("answerscount"))
                         .hasResponded(rs.getBoolean("hasresponded"))
+                        .createdTime(rs.getLong("createdtime"))
+                        .lastModifiedTime(rs.getLong("lastmodifiedtime"))
                         .auditDetails(auditdetails)
                         .build();
             }

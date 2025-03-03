@@ -1,13 +1,8 @@
 package org.egov.egovsurveyservices.web.controllers;
 
 
-import org.egov.common.contract.request.RequestInfo;
-import org.egov.common.contract.request.User;
-import org.egov.common.contract.response.ResponseInfo;
-import org.egov.egovsurveyservices.service.QuestionService;
 import org.egov.egovsurveyservices.service.ScorecardSurveyService;
 import org.egov.egovsurveyservices.utils.ResponseInfoFactory;
-import org.egov.egovsurveyservices.web.models.RequestInfoWrapper;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyRequest;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyResponse;
@@ -25,16 +20,12 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -94,7 +85,6 @@ class ScorecardSurveyControllerTest {
             survey.setSurveyDescription("survey about the citizens issues and problems");
             survey.setStartDate(1745173800000L);
             survey.setEndDate(1771372800000L);
-            survey.setStatus("ACTIVE");
             survey.setActive(false);
             survey.setAnswersCount(0L);
             survey.setHasResponded(false);
@@ -107,7 +97,7 @@ class ScorecardSurveyControllerTest {
                     .totalCount(1)
                     .build();
 
-            Mockito.when(surveyService.searchSurveys(Mockito.any(ScorecardSurveySearchCriteria.class), Mockito.anyBoolean()))
+            Mockito.when(surveyService.searchSurveys(Mockito.any(ScorecardSurveySearchCriteria.class)))
                     .thenReturn(surveys);
 
             mockMvc.perform(post(SEARCH_URL)

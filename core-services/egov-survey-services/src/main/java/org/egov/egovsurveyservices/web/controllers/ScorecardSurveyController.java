@@ -21,10 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.*;
 import org.egov.egovsurveyservices.web.models.*;
-
-import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/egov-ss")
@@ -48,7 +45,7 @@ public class ScorecardSurveyController {
     public ResponseEntity<ScorecardSurveyResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
                                                    @Valid @ModelAttribute ScorecardSurveySearchCriteria criteria) {
         Boolean isCitizen = requestInfoWrapper.getRequestInfo().getUserInfo().getType().equals(CITIZEN);
-        List<ScorecardSurveyEntity> surveys = surveyService.searchSurveys(criteria, isCitizen);
+        List<ScorecardSurveyEntity> surveys = surveyService.searchSurveys(criteria);
         int surveyCount = (surveys != null) ? surveys.size() : 0;
         ScorecardSurveyResponse response  = ScorecardSurveyResponse.builder().surveyEntities(surveys).totalCount(surveyCount).build();
         return new ResponseEntity<>(response,HttpStatus.OK);

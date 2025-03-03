@@ -108,7 +108,7 @@ public class ScorecardSurveyService {
         RequestInfo requestInfo = answerRequest.getRequestInfo();
         surveyValidator.validateUserTypeForAnsweringSurvey(requestInfo);
         String uuid = requestInfo.getUserInfo().getUuid();
-        surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, uuid);
+//        surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, uuid);
         surveyValidator.validateAnswers(answerEntity);
 
         AuditDetails auditDetails = AuditDetails.builder()

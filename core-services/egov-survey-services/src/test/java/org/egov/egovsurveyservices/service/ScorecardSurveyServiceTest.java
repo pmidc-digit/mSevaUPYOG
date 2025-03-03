@@ -5,16 +5,11 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
-import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
-import org.egov.egovsurveyservices.repository.SurveyRepository;
 import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
-import org.egov.egovsurveyservices.validators.QuestionValidator;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
-import org.egov.egovsurveyservices.web.models.enums.Status;
 import org.egov.egovsurveyservices.web.models.enums.Type;
-import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,8 +23,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.verify;
@@ -81,9 +75,11 @@ class ScorecardSurveyServiceTest {
                 .surveyEntity(survey)
                 .build();
 
+
         doNothing().when(surveyValidator).validateUserType(any());
         doNothing().when(surveyValidator).validateQuestionsAndSections(any());
         doNothing().when(enrichmentService).enrichScorecardSurveyEntity(any());
+        when(surveyRepository.allQuestionsExist(anyList())).thenReturn(true);
 
         doNothing().when(producer).push(anyString(), any(Object.class));
 
@@ -93,6 +89,26 @@ class ScorecardSurveyServiceTest {
 
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getUuid());
+    }
+
+    @Test
+    public void testCreateSurvey_Failure() {
+        lenient().when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
+        lenient().when(applicationProperties.getCreateScorecardSurveyTopic()).thenReturn("save-survey");
+
+        ScorecardSurveyEntity survey = getValidSurveyEntity();
+        ScorecardSurveyRequest surveyRequest = ScorecardSurveyRequest.builder()
+                .requestInfo(requestInfo)
+                .surveyEntity(survey)
+                .build();
+
+
+        doNothing().when(surveyValidator).validateUserType(any());
+        doNothing().when(surveyValidator).validateQuestionsAndSections(any());
+
+        assertThrows(IllegalArgumentException.class, () ->
+                scorecardSurveyService.createSurvey(surveyRequest));
+
     }
 
 
@@ -115,7 +131,7 @@ class ScorecardSurveyServiceTest {
         List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
         when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
         
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
         
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -131,7 +147,7 @@ class ScorecardSurveyServiceTest {
         List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
         when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
         
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
         
         assertNotNull(result);
         assertFalse(result.isEmpty());
@@ -142,7 +158,7 @@ class ScorecardSurveyServiceTest {
     public void testSearchSurvey_NoCriteria() {
         ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
         
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
         
         assertNotNull(result);
         assertTrue(result.isEmpty());

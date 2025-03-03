@@ -250,7 +250,7 @@ const TLApplicationDetails = () => {
                 // textStyle={{ whiteSpace: "pre-wrap", width: "70%", wordBreak:"break-word" }}
                 textStyle={{wordBreak:"break-word"}}
               />
-              <CardSectionHeader>{t("TL_OWNERSHIP_DETAILS_HEADER")}</CardSectionHeader>
+              <CardSectionHeader>{t("TL_COMMON_OWN_DETAILS")}</CardSectionHeader>
               {ownersSequences.map((ele, index) => {
                 return application?.tradeLicenseDetail?.subOwnerShipCategory.includes("INSTITUTIONAL") ? (
                   <div key={index} style={multiBoxStyle}>
@@ -288,12 +288,12 @@ const TLApplicationDetails = () => {
                     <Row className="border-none" label={`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`} text={t(ele.gender)} textStyle={{ wordBreak:"break-word" }} />
                     <Row className="border-none" label={`${t("TL_MOBILE_NUMBER_LABEL")}`} text={t(ele.mobileNumber)} textStyle={{ wordBreak:"break-word" }} />
                     <Row className="border-none" label={`${t("TL_EMAIL_ID_LABEL")}`} text={t(ele.emailId || t("CS_NA"))} textStyle={{ wordBreak:"break-word" }} />
-                    <Row className="border-none" label={`${t("TL_GUARDIAN_S_NAME_LABEL")}`} text={t(ele.fatherOrHusbandName)} textStyle={{ wordBreak:"break-word" }} />
-                    <Row className="border-none" label={`${t("TL_RELATIONSHIP_WITH_GUARDIAN_LABEL")}`} text={t(ele.relationship)} textStyle={{ wordBreak:"break-word" }} />
+                    <Row className="border-none" label={`${t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}`} text={t(ele.fatherOrHusbandName)} textStyle={{ wordBreak:"break-word" }} />
+                    <Row className="border-none" label={`${t("TL_COMMON_RELATIONSHIP_LABEL")}`} text={t(ele.relationship)} textStyle={{ wordBreak:"break-word" }} />
                   </div>
                 );
               })}
-              <CardSubHeader>{t("TL_TRADE_UNITS_HEADER")}</CardSubHeader>
+              <CardSubHeader>{t("TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER")}</CardSubHeader>
               {application?.tradeLicenseDetail?.tradeUnits?.map((ele, index) => {
                 return (
                   <div key={index} style={multiBoxStyle}>

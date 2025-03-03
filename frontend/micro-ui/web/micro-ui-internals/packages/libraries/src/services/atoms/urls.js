@@ -216,7 +216,7 @@ const Urls = {
     surveys: {
       create: "/egov-survey-services/egov-ss/survey/_create",
       update: "/egov-survey-services/egov-ss/survey/_update",
-      search: "/egov-survey-services/egov-ss/survey/_search",
+      search: "/egov-survey-services/egov-ss/csc/_search",
       delete: "/egov-survey-services/egov-ss/survey/_delete",
       submitResponse: "/egov-survey-services/egov-ss/survey/response/_submit",
       showResults: "/egov-survey-services/egov-ss/survey/response/_results",

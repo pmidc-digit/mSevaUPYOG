@@ -21,7 +21,9 @@ const surveyConfig = [
     key: "surveyFormDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "SURVEY_COMMON_BUTTON_NXT_STEP",
+      // submitBarLabel: "SURVEY_COMMON_BUTTON_NXT_STEP",
+
+      submitBarLabel: "Next Step",
     },
   },
   {
@@ -34,7 +36,8 @@ const surveyConfig = [
     key: "surveyFormCategoryDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "SURVEY_COMMON_BUTTON_NXT_STEP",
+      // submitBarLabel: "SURVEY_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "Next Step",
     },
   },
   {
@@ -47,7 +50,8 @@ const surveyConfig = [
     key: "summary",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "SURVEY_COMMON_SUBMIT",
+      // submitBarLabel: "SURVEY_COMMON_SUBMIT",
+      submitBarLabel: "Submit",
     },
   },
 ];

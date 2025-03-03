@@ -174,7 +174,7 @@ const WrapCheckPage = ({ onSubmit, value }) => {
               />
               <Row
                 className="border-none"
-                label={t("TL_CHECK_ADDRESS")}
+                label={t("TL_NEW_TRADE_DETAILS_HEADER_TRADE_LOC_DETAILS")}
                 text={`${cpt.details?.address?.doorNo?.trim() ? `${cpt.details?.address?.doorNo?.trim()}, ` : ""} ${
                   cpt.details?.address?.street?.trim() ? `${cpt.details?.address?.street?.trim()}, ` : ""
                 } ${cpt.details?.address?.buildingName?.trim() ? `${cpt.details?.address?.buildingName?.trim()}, ` : ""}
@@ -192,7 +192,7 @@ const WrapCheckPage = ({ onSubmit, value }) => {
               />
               <Row
                 className="border-none"
-                label={t("TL_CHECK_ADDRESS")}
+                label={t("TL_NEW_TRADE_DETAILS_HEADER_TRADE_LOC_DETAILS")}
                 text={`${address?.doorNo?.trim() ? `${address?.doorNo?.trim()}, ` : ""} ${
                   address?.street?.trim() ? `${address?.street?.trim()}, ` : ""
                 }${t(address?.locality?.i18nkey)}, ${t(address?.city.code)} ${address?.pincode?.trim() ? `,${address?.pincode?.trim()}` : ""}`}
@@ -223,8 +223,8 @@ const WrapCheckPage = ({ onSubmit, value }) => {
                 <Row className="border-none" label={t("TL_COMMON_TABLE_COL_OWN_NAME")} text={t(owner?.name)} />
                 <Row className="border-none" label={t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")} text={t(owner?.gender?.i18nKey) || t("CS_NA")} />
                 <Row className="border-none" label={t("TL_MOBILE_NUMBER_LABEL")} text={t(owner?.mobilenumber)} />
-                <Row className="border-none" label={t("TL_GUARDIAN_S_NAME_LABEL")} text={t(owner?.fatherOrHusbandName) || t("CS_NA")} />
-                <Row className="border-none" label={t("TL_RELATIONSHIP_WITH_GUARDIAN_LABEL")} text={t(owner?.relationship?.i18nKey) || t("CS_NA")} />
+                <Row className="border-none" label={t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")} text={t(owner?.fatherOrHusbandName) || t("CS_NA")} />
+                <Row className="border-none" label={t("TL_COMMON_RELATIONSHIP_LABEL")} text={t(owner?.relationship?.i18nKey) || t("CS_NA")} />
                 <Row className="border-none" label={t("TL_EMAIL_ID_LABEL")} text={t(owner?.emailId) || t("CS_NA")} />
                 <Row
                   className="border-none"

@@ -3,20 +3,18 @@ import { useMutation, useQuery } from "react-query";
 /* import { isObject, isObjectLike } from "lodash"; */
 
 const useSearch = (filters, config) => {
-    const { filterForm, searchForm, tableForm } = filters
+    const { filterForm, searchForm } = filters
     const { status } = filterForm
-    const { title, tenantIds, postedBy } = searchForm
-    const { sortBy, limit, offset, sortOrder } = tableForm;
+    const { title, tenantIds} = searchForm
+    //const { sortBy, limit, offset, sortOrder } = tableForm;
     const validTenantId = typeof tenantIds === 'object' ? tenantIds.code : tenantIds;
     const validStatus = typeof status === 'object' ? status.code : status;
 
     const finalFilters = {
-        tenantIds: validTenantId,
+        tenantId: validTenantId,
         status: validStatus === "ALL" ? "" : validStatus,
-        title,
-        postedBy,
-        limit,
-        offset
+        title
+       
     }
 
     //clearing out empty string params from payload
@@ -27,7 +25,7 @@ const useSearch = (filters, config) => {
     });
 
 
-    return useQuery(["search_surveys", title, tenantIds, postedBy, status, offset, limit], () => Surveys.search(finalFilters), { ...config, refetchInterval: 6000 });
+    return useQuery(["search_surveys", title, tenantIds], () => Surveys.search(finalFilters), { ...config, refetchInterval: 6000 });
 };
 
 export default useSearch;

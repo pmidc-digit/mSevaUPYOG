@@ -7,7 +7,7 @@ const useSearch = (filters, config) => {
   const { status } = filterForm;
   const validTenantId = typeof tenantIds === "object" ? tenantIds.code : tenantIds;
 
-  const finalFilters = {
+  var finalFilters = {
     tenantId: validTenantId,
     categoryId: categoryName?.value ?? "",
     //uuid: question?.value??"",

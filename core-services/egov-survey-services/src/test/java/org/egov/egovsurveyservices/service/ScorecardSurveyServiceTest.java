@@ -32,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -146,6 +147,83 @@ class ScorecardSurveyServiceTest {
         
         assertNotNull(result);
         assertTrue(result.isEmpty());
+    }
+    
+    @Test
+    public void testUpdateSurveyActive_WhenUuidIsNull_ShouldThrowException() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid(null);
+        request.setActive(true);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.updateSurveyActive(request));
+
+        assertEquals("UUID must not be null or empty", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateSurveyActive_WhenUuidIsEmpty_ShouldThrowException() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid("");
+        request.setActive(true);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.updateSurveyActive(request));
+
+        assertEquals("UUID must not be null or empty", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateSurveyActive_WhenActiveIsNull_ShouldThrowException() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid("SS-1012/2024-25/000131");
+        request.setActive(null);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.updateSurveyActive(request));
+
+        assertEquals("Active status must not be null", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateSurveyActive_WhenUuidDoesNotExist_ShouldThrowException() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid("SS-1012/2024-25/000999");
+        request.setActive(true);
+
+        ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
+        criteria.setUuid(request.getUuid());
+
+        when(surveyRepository.fetchSurveys(criteria)).thenReturn(Collections.emptyList());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.updateSurveyActive(request));
+
+        assertEquals("UUID does not exist in database, Update failed!", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateSurveyActive_WhenUuidExists_ShouldPublishToKafka() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid("SS-1012/2024-25/000131");
+        request.setActive(true);
+
+        ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
+        surveyEntity.setUuid("SS-1012/2024-25/000131");
+
+        ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
+        criteria.setUuid(request.getUuid());
+
+        when(surveyRepository.fetchSurveys(criteria))
+            .thenReturn(Collections.singletonList(surveyEntity));
+
+        when(applicationProperties.getUpdateActiveSurveyTopic()).thenReturn("update-topic");
+
+        scorecardSurveyService.updateSurveyActive(request);
+
+        assertNotNull(request.getLastModifiedTime());
+
+        verify(producer, times(1)).push("update-topic", request);
     }
     
     /*** Helper Method to Create Valid Survey ***/

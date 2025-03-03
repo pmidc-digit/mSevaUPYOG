@@ -111,7 +111,7 @@ public class EnrichmentService {
 
             for (int j = 0; j < qnws; j++) {
                 QuestionWeightage questionWeightage = questionWeightages.get(j);
-                questionWeightage.setQuestionUuid(UUID.randomUUID().toString());
+                questionWeightage.setQuestionUuid(questionWeightage.getQuestionUuid());
                 questionWeightage.setSectionUuid(section.getUuid());
                 questionWeightage.setQorder((long) j + 1);
                 Question question = questionWeightage.getQuestion();

@@ -33,8 +33,57 @@ public class ScorecardSurveyQueryBuilder {
 
     public static final String SURVEY_UUIDS_QUERY_WRAPPER = " SELECT uuid FROM ({HELPER_TABLE}) temp ";
     
-    private static final String BASE_QUERY = "SELECT * FROM eg_ss_survey_entity survey";
+//    private static final String BASE_QUERY = "SELECT * FROM eg_ss_survey_entity survey";
+    
+    private static final String BASE_QUERY =
+            "SELECT DISTINCT " +
+                    // Survey fields
+                    "survey.uuid AS survey_uuid, " +
+                    "survey.tenantid AS survey_tenantid, " +
+                    "survey.title AS survey_title, " +
+                    "survey.category AS survey_category, " +
+                    "survey.description AS survey_description, " +
+                    "survey.startdate AS survey_startdate, " +
+                    "survey.enddate AS survey_enddate, " +
+                    "survey.postedby AS survey_postedby, " +
+                    "survey.active AS survey_active, " +
+                    "survey.answerscount AS survey_answerscount, " +
+                    "survey.hasresponded AS survey_hasresponded, " +
+                    "survey.createdtime AS survey_createdtime, " +
+                    "survey.lastmodifiedtime AS survey_lastmodifiedtime, " +
 
+                    // Section fields
+                    "section.uuid AS section_uuid, " +
+                    "section.title AS section_title, " +
+                    "section.weightage AS section_weightage, " +
+
+                    // Question fields
+                    "question.uuid AS question_uuid, " +
+                    "question.surveyid AS question_surveyid, " +
+                    "question.questionstatement AS question_statement, " +
+                    "question.options AS question_options, " +
+                    "question.type AS question_type, " +
+                    "question.status AS question_status, " +
+                    "question.required AS question_required, " +
+                    "question.createdby AS question_createdby, " +
+                    "question.lastmodifiedby AS question_lastmodifiedby, " +
+                    "question.createdtime AS question_createdtime, " +
+                    "question.lastmodifiedtime AS question_lastmodifiedtime, " +
+                    "question.qorder AS question_order, " +
+                    "question.categoryid AS question_categoryid, " +
+                    "question.tenantid AS question_tenantid, " +
+
+                    // Question weightage fields
+                    "questionWeightage.weightage AS question_weightage " +
+
+            "FROM eg_ss_survey_entity AS survey " +
+            "LEFT JOIN eg_ss_survey_section AS section " +
+            "ON survey.uuid = section.surveyuuid " +
+            "LEFT JOIN eg_ss_question_weightage AS questionWeightage " +
+            "ON section.uuid = questionWeightage.sectionuuid " +
+            "LEFT JOIN eg_ss_question AS question " +
+            "ON questionWeightage.questionuuid = question.uuid ";
+    
     /**
      * Generates query to fetch surveys dynamically based on UUID, tenantId, and title.
      */
@@ -77,6 +126,10 @@ public class ScorecardSurveyQueryBuilder {
         }else{
             query.append(" AND ");
         }
+    }
+    
+    public String allQuestionExistsQuery(String placeholders) {
+        return "SELECT uuid FROM public.eg_ss_question WHERE uuid IN (" + placeholders + ")";
     }
 
     private String createQuery(List<String> ids) {

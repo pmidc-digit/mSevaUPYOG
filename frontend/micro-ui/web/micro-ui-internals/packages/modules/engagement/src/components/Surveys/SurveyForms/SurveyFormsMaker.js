@@ -1,7 +1,7 @@
 import React, { useReducer } from "react";
 import NewSurveyForm from "./NewSurveyForm";
 
-const SurveyFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPartiallyEnabled, addOption, formDisabled, controlSurveyForm }) => {
+const SurveyFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPartiallyEnabled, addOption, formDisabled, controlSurveyForm, formState }) => {
   const defaultFormsConfig = {
     question: "",
     answerType: "Short Answer",
@@ -54,6 +54,8 @@ const SurveyFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPa
               isPartiallyEnabled={isPartiallyEnabled}
               formDisabled={formDisabled}
               controlSurveyForm={controlSurveyForm}
+              mainFormState={formState}
+              noOfQuestions={surveyState?.length} 
             />
           );
         })
@@ -62,7 +64,7 @@ const SurveyFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPa
 
   return (
     <div className="surveyformslist_wrapper">
-      <div className="heading">{t("CS_SURVEYS_QUESTIONS")}</div>
+      {/* <div className="heading">{t("CS_SURVEYS_QUESTIONS")}</div> */}
       {renderPreviewForms()}
       <div className="pointer">
         {surveyState.length < 30 && (

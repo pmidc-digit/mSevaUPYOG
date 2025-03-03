@@ -2,7 +2,7 @@ import React, { Fragment, useEffect, useMemo, useState } from "react";
 import { CardLabelError, Dropdown, Loader, SearchField, TextInput } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { Controller, useForm } from "react-hook-form";
-import { alphabeticalSortFunctionForTenantsBasedOnName } from "../../../../../utils";
+import { alphabeticalSortFunctionForTenantsBasedOnName } from "../../../../utils";
 
 const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searchFormState }) => {
   const { t } = useTranslation();
@@ -20,10 +20,6 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
   //     { id: false, name: "False" },
   //     { id: true, name: "True" },
   //   ];
-
-  //
-  const categoryName = controlSearchForm.getValues("categoryName");
-  const [isQuestionsLoading, setIsQuestionsLoading] = useState(false);
 
   // Options for the category dropdown
   const [categoryOptions, setCategoryOptions] = useState([]);
@@ -48,50 +44,56 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
   }
 
   // Options for the question dropdown
-  const [questionOptions, setQuestionOptions] = useState([]);
-  useEffect(() => {
-    const categoryId = categoryName?.value;
-    if (tenantId && categoryId) {
-      fetchQuestions(categoryId);
-    }
-  }, [tenantId, categoryName]);
+  // const categoryName = controlSearchForm.getValues("categoryName");
+  // const [isQuestionsLoading, setIsQuestionsLoading] = useState(false);
+  // const [questionOptions, setQuestionOptions] = useState([]);
+  // useEffect(() => {
+  //   const categoryId = categoryName?.value;
+  //   if (tenantId && categoryId) {
+  //     fetchQuestions(categoryId);
+  //   }
+  // }, [tenantId, categoryName]);
 
-  function fetchQuestions(categoryId) {
-    setIsQuestionsLoading(true);
-    const payload = { tenantId: tenantId, categoryId: categoryId };
-    Digit.Surveys.searchQuestions(payload)
-      .then((response) => {
-        //console.log("Question Options: ", response);
-        const questionOptions =
-          response?.Questions?.map((item) => {
-            return { name: t(item.questionStatement), i18Key: item.questionStatement, value: item.uuid };
-          }) ?? [];
-        setQuestionOptions(questionOptions);
-        setIsQuestionsLoading(false);
-      })
-      .catch((error) => {
-        console.error("Failed to fetch questions:", error);
-        setIsQuestionsLoading(false);
-      });
-  }
+  // function fetchQuestions(categoryId) {
+  //   setIsQuestionsLoading(true);
+  //   const payload = { tenantId: tenantId, categoryId: categoryId };
+  //   Digit.Surveys.searchQuestions(payload)
+  //     .then((response) => {
+  //       //console.log("Question Options: ", response);
+  //       const questionOptions =
+  //         response?.Questions?.map((item) => {
+  //           return { name: t(item.questionStatement), i18Key: item.questionStatement, value: item.uuid };
+  //         }) ?? [];
+  //       setQuestionOptions(questionOptions);
+  //       setIsQuestionsLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Failed to fetch questions:", error);
+  //       setIsQuestionsLoading(false);
+  //     });
+  // }
 
   return (
     <>
       <SearchField>
-        <label>{t("LABEL_FOR_ULB")}</label>
-
+        <label>
+          {t("LABEL_FOR_ULB")} <span style={{ color: "red" }}>*</span>
+        </label>
         <Controller
-          rules={{ required: true }}
+          rules={{ required: t("REQUIRED_FIELD") }}
           defaultValue={selectedTenat?.[0]}
           render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
           name={"tenantIds"}
           control={controlSearchForm}
         />
+        <CardLabelError>{searchFormState?.errors?.["tenantIds"]?.message}</CardLabelError>
       </SearchField>
       <SearchField>
-        <label>{t("Category Name")}</label>
+        <label>
+          {t("Category")} <span style={{ color: "red" }}>*</span>
+        </label>
         <Controller
-          rules={{ required: false }}
+          rules={{ required: t("REQUIRED_FIELD") }}
           render={(props) => <Dropdown option={categoryOptions} optionKey={"name"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
           name={"categoryName"}
           control={controlSearchForm}
@@ -100,6 +102,20 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
       </SearchField>
 
       <SearchField>
+        <label>
+          {t("Question")}
+          {/* <span style={{ color: "red" }}>*</span> */}
+        </label>
+        <Controller
+          //rules={{ required: t("REQUIRED_FIELD") }}
+          render={(props) => <TextInput name="questionStatement" type="text" value={props.value} onChange={(e) => props.onChange(e)} />}
+          name={"questionStatement"}
+          control={controlSearchForm}
+        />
+        <CardLabelError>{searchFormState?.errors?.["questionStatement"]?.message}</CardLabelError>
+      </SearchField>
+
+      {/* <SearchField>
         <label>{t("Question")}</label>
         {isQuestionsLoading ? (
           <Loader />
@@ -116,7 +132,7 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
             <CardLabelError>{searchFormState?.errors?.["question"]?.message}</CardLabelError>
           </>
         )}
-      </SearchField>
+      </SearchField> */}
 
       {/* <SearchField>
         <label>{t("Is Active")}</label>

@@ -83,7 +83,7 @@ const EmployeeSideBarMenu = (t, HRMS, FSM, PT, mCollect, DSS, RECEIPTS, TL, NOC,
       },
       {
         label: t("CS_COMMON_NEW_SURVEY"),
-        link: `/digit-ui/employee/engagement/surveys/create`,
+        link: `/digit-ui/employee/engagement/surveys/create-survey-step-form`,
       },
     ],
   },

@@ -3,14 +3,15 @@ import { useQuery } from "react-query";
 
 const useSearch = (filters, config) => {
   const { searchForm, filterForm } = filters;
-  const { tenantIds, categoryName, question } = searchForm;
+  const { tenantIds, categoryName, questionStatement } = searchForm; //question
   const { status } = filterForm;
   const validTenantId = typeof tenantIds === "object" ? tenantIds.code : tenantIds;
 
   const finalFilters = {
     tenantId: validTenantId,
     categoryId: categoryName?.value ?? "",
-    uuid: question?.value??"",
+    //uuid: question?.value??"",
+    questionStatement: questionStatement?.trim(),
     status: status?.code==="ALL"?"":status?.code
     //isActive: status?.bool ?? null,
     //isActive: isActive?.id ?? ""
@@ -28,7 +29,8 @@ const useSearch = (filters, config) => {
       "search_survey_questions",
       tenantIds,
       categoryName,
-      question,
+      questionStatement,
+      //question,
       //isActive,
       status,
     ],

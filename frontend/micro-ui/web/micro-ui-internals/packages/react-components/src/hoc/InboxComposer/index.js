@@ -100,6 +100,7 @@ const InboxComposer = ({
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   if (isMobile) {
+    console.log("currentlyActiveMobileModal: ",currentlyActiveMobileModal,"\n CurrentMobileModalComponent: ",CurrentMobileModalComponent);
     const CurrentMobileModalComponent = useCallback(
       ({ ...props }) => (currentlyActiveMobileModal ? MobileComponentDirectory[currentlyActiveMobileModal]({ ...props }) : null),
       [currentlyActiveMobileModal]
@@ -110,6 +111,7 @@ const InboxComposer = ({
       FilterFormFields,
       registerSearchFormField,
       searchFormState,
+      controlSearchForm,
       handleSearchFormSubmit,
       onResetSearchForm,
       registerFilterFormField,

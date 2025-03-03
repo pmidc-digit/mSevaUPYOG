@@ -29,7 +29,7 @@ const useCategoryInboxTableConfig = ({ parentRoute, onPageSizeChange, formState,
       isDeleteBtn: true,
       warning: true,
       isWarningButtons: true,
-      rowData: { row },
+      rowData: row?.original ,
     });
   };
 

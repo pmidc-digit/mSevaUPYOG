@@ -36,7 +36,7 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
   const tableColumnConfig = useMemo(() => {
     return [
       {
-        Header: t("Question Statement"),
+        Header: t("Question"),
         accessor: "questionStatement",
         Cell: ({ row }) => {
           return (

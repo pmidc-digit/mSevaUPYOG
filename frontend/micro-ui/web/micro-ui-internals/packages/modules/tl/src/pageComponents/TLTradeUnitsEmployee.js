@@ -108,7 +108,7 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
             {units.map((unit, index) => (
                 <TradeUnitForm key={unit.key} index={index} unit={unit} {...commonProps} />
             ))}
-            <LinkButton label={t("TL_ADD_TRADE_UNIT")} onClick={addNewUnits} style={{ color: "#a82227", width: "fit-content" }} />
+            <LinkButton label={t("TL_ADD_TRADE_UNITS")} onClick={addNewUnits} style={{ color: "#a82227", width: "fit-content" }} />
         </React.Fragment>
     );
 };
@@ -386,7 +386,7 @@ function checkBillingSlab(value){
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}>{localFormState.touched.tradeType ? errors?.tradeType?.message : ""}</CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_SUB_TYPE_LABEL")} * `}</CardLabel>
+                        <CardLabel className="card-label-smaller">{`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_TRADE_SUB_TYPE")} * `}</CardLabel>
                         <Controller
                             control={control}
                             name={"tradeSubType"}

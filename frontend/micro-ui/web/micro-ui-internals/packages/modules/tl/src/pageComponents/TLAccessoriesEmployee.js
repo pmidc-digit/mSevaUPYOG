@@ -112,7 +112,7 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
             {accessoriesList.map((accessor, index) => (
                 <AccessoriersForm key={accessor.key} index={index} accessor={accessor} {...commonProps} />
             ))}
-            <LinkButton label={`${t("TL_NEW_TRADE_DETAILS_NEW_ACCESSORIES")}`} onClick={addAccessories} style={{ color: "#a82227", width: "fit-content" }} />
+            <LinkButton label={`${t("TL_NEW_TRADE_DETAILS_BUTTON_NEW_ACC")}`} onClick={addAccessories} style={{ color: "#a82227", width: "fit-content" }} />
 
         </React.Fragment>
     );
@@ -378,7 +378,7 @@ const AccessoriersForm = (_props) => {
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}>{localFormState.touched.uomValue ? errors?.uomValue?.message : ""}</CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{accessor?.accessoryCategory?.code ? `${t("TL_ACCESSORY_COUNT_LABEL")} * ` : `${t("TL_ACCESSORY_COUNT_LABEL")} `}</CardLabel>
+                        <CardLabel className="card-label-smaller">{accessor?.accessoryCategory?.code ? `${t("TL_NEW_TRADE_ACCESSORY_COUNT")} * ` : `${t("TL_NEW_TRADE_ACCESSORY_COUNT")} `}</CardLabel>
                         <div className="field">
                             <Controller
                                 control={control}

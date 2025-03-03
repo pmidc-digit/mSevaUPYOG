@@ -96,7 +96,7 @@ public class ScorecardSurveyService {
     
     /**
      * Searches surveys based on the criteria request and fetches details
-     * @param ScorecardSurveySearchCriteria Request object containing criteria filters of survey to be searched
+     * @param criteria Request object containing criteria filters of survey to be searched
      */
     
     public List<ScorecardSurveyEntity> searchSurveys(ScorecardSurveySearchCriteria criteria, Boolean isCitizen) {

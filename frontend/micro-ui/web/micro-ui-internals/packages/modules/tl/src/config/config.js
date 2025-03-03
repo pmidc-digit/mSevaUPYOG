@@ -24,7 +24,7 @@ export const newConfig = [
     ]
   },
   {
-    head: "TL_TRADE_UNITS_HEADER",
+    head: "TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER",
     body: [
       {
         type: "component",
@@ -132,7 +132,7 @@ export const newConfig = [
                     // }
                 },
                 {
-                    label: "TL_LOCALIZATION_BUILDING_NO",
+                    label: "TL_NEW_TRADE_DETAILS_BLDG_NAME_LABEL",
                     type: "text",
                     name: "doorNo",
                     disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
@@ -158,7 +158,7 @@ export const newConfig = [
             },
             inputs: [
                 {
-                    label: "TL_LOCALIZATION_BUILDING_NO",
+                    label: "TL_NEW_TRADE_DETAILS_BLDG_NAME_LABEL",
                     type: "text",
                     name: "buildingNo",
                     // "validation": {
@@ -167,7 +167,7 @@ export const newConfig = [
                     // }
                 },
                 {
-                  label: "TL_LOCALIZATION_DOOR_HOUSE_NO",
+                  label: "TL_NEW_TRADE_DETAILS_DOOR_NO_LABEL",
                   type: "text",
                   name: "doorNo",
                   // "validation": {
@@ -185,7 +185,7 @@ export const newConfig = [
                     // }
                 },
                 {
-                  label: "TL_LOCALIZATION_ELECTRICITY_CON_NO",
+                  label: "TL_NEW_TRADE_DETAILS_ELEC_CON_NO_LABEL",
                   type: "text",
                   name: "electricityNo",
                   // "validation": {
@@ -334,7 +334,7 @@ export const newConfig = [
         component: "SelectTradeUnits",
         texts: {
           headerCaption: "",
-          header: "TL_TRADE_UNITS_HEADER",
+          header: "TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER",
           cardText: "TL_TRADE_UNITS_TEXT",
           submitBarLabel: "CS_COMMON_NEXT",
         },
@@ -640,7 +640,7 @@ export const newConfig = [
   //   ],
   // },
   {
-    head: "TL_NEW_APPLICATION_DOCUMENTS_REQUIRED",
+    head: "TL_COMMON_DOCS",
     body: [
       {
         component: "TLDocumentsEmployee",

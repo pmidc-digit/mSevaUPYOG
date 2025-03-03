@@ -1940,6 +1940,9 @@ export const MdmsService = {
   getHrmsEmployeeTypes: (tenantId, moduleCode, type, filter) => {
     return MdmsService.getDataByCriteria(tenantId, getGeneralCriteria(tenantId, moduleCode, type), moduleCode);
   },
+  getSurveyAnswerTypes: (tenantId, moduleCode, type, filter) => {
+    return MdmsService.getDataByCriteria(tenantId, getGeneralCriteria(tenantId, moduleCode, type), moduleCode);
+  },
   getHrmsEmployeeReason: (tenantId, moduleCode, type) => {
     return MdmsService.getDataByCriteria(tenantId, getGeneralCriteria(tenantId, moduleCode, type), moduleCode);
   },

@@ -199,6 +199,8 @@ import useSurveySearch from "./surveys/useSearch";
 import useSurveyShowResults from "./surveys/useShowResults";
 import useSurveySubmitResponse from "./surveys/useSubmitResponse";
 import useSurveyInbox from "./surveys/useSurveyInbox";
+import useSurveyCategoryInbox from "./surveys/useSurveyCategoryInbox";
+import useSurveyQuestionInbox from "./surveys/useSurveyQuestionInbox";
 
 import useNOCDetails from "./noc/useNOCDetails";
 import useNOCInbox from "./noc/useInbox";
@@ -479,6 +481,8 @@ const survey = {
   useSubmitResponse: useSurveySubmitResponse,
   useShowResults: useSurveyShowResults,
   useSurveyInbox,
+  useSurveyCategoryInbox,
+  useSurveyQuestionInbox
 };
 
 const noc = {

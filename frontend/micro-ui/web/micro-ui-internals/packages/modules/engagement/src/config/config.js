@@ -5,11 +5,35 @@ export const newConfig = [
       body: [
         {
           type: "component",
-          component: "CreateSurveyForm",
-          key: "CreateSurveyForm",
+          component: "NewSurveys",
+          key: "NewSurveys",
           withoutLabel: true,
         },
        
+      ],
+    },
+    {
+      head: "Survey Form",
+      stepNumber: 2,
+      body: [
+        {
+          type: "component",
+          component: "SurveyCreationPage",
+          key: "SurveyCreationPage",
+          withoutLabel: true,
+        },  
+      ],
+    },
+    {
+      head: "Survey Form",
+      stepNumber: 3,
+      body: [
+        {
+          type: "component",
+          component: "SurveySummary",
+          key: "SurveySummary",
+          withoutLabel: true,
+        },  
       ],
     },
   ];

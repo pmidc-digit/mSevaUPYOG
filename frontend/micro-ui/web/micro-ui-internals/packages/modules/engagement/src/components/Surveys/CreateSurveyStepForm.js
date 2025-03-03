@@ -1,54 +1,57 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-//import { Toast } from "@upyog/digit-ui-react-components";
 //
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { newConfig } from "../../config/config";
 import Toast from "../../../../../react-components/src/atoms/Toast";
-import { setSurveyStep} from "../../redux/actions/surveyFormActions";
+import { setSurveyStep } from "../../redux/actions/surveyFormActions";
 import CardHeader from "../../../../../react-components/src/atoms/CardHeader";
- 
+
 //Config for steps
 const surveyConfig = [
   {
-    head: "HR_EMPLOYEE_DETAILS",
-    stepLabel: "HR_NEW_EMPLOYEE_FORM_HEADER",//"HR_EMPLOYEE_DETAILS_STEP_LABEL",
+    head: "SURVEY_DETAILS",
+    stepLabel: "SURVEY_DETAILS_STEP_LABEL",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
-    component: "SurveyFormPage",
-    key: "SurveyFormPage",
+    component: "SurveyFormDetails",
+    key: "surveyFormDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      // submitBarLabel: "SURVEY_COMMON_BUTTON_NXT_STEP",
+
+      submitBarLabel: "Next Step",
     },
   },
   {
-    head: "HR_ADMINISTRATIVE_DETAILS",
-    stepLabel: "HR_ADMINISTRATIVE_DETAILS_STEP_LABEL",
+    head: "SURVEY_CATEGORIES",
+    stepLabel: "SURVEY_CATEGORIES_STEP_LABEL",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
-    component: "AdministrativeDetails",
-    key: "administrativeDetails",
+    component: "SurveyFormCategoryDetails",
+    key: "surveyFormCategoryDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_SUBMIT",
+      // submitBarLabel: "SURVEY_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "Next Step",
     },
   },
   {
-    head: "HR_SUMMARY",
-    stepLabel: "HR_SUMMARY_STEP_LABEL",
+    head: "SURVEY_SUMMARY",
+    stepLabel: "SURVEY_SUMMARY_STEP_LABEL",
     stepNumber: 3,
-    isStepEnabled: false,
+    isStepEnabled: true,
     type: "component",
-    component: "Summary",
+    component: "SurveryFormSummary",
     key: "summary",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_SUBMIT",
+      // submitBarLabel: "SURVEY_COMMON_SUBMIT",
+      submitBarLabel: "Submit",
     },
   },
 ];
@@ -58,7 +61,7 @@ const updatedSurveyConfig = surveyConfig.map((item) => {
 });
 
 const CreateSurveyStepForm = () => {
-  const history=useHistory();
+  const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
@@ -72,10 +75,10 @@ const CreateSurveyStepForm = () => {
   };
 
   const handleSubmit = () => {
-  
+
   };
 
-  console.log("formState: ",formState);
+  console.log("formState: ", formState);
   return (
     <div class="pageCard">
       <CardHeader divider={true}>{t("SURVEY_FORM")}</CardHeader>

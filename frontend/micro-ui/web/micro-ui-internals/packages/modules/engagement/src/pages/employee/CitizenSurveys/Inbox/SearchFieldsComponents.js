@@ -53,7 +53,7 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
                 {searchFormState?.errors?.["title"]?.message}
             </CardLabelError>
         </SearchField>
-        <SearchField>
+        {/* <SearchField>
             <label>{t("EVENTS_POSTEDBY_LABEL")}</label>
             <TextInput name="postedBy" type="text" inputRef={registerRef({
                 maxLength: {
@@ -64,7 +64,7 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
             <CardLabelError>
                 {searchFormState?.errors?.["postedBy"]?.message}
             </CardLabelError>
-        </SearchField>
+        </SearchField> */}
     </>
 }
 

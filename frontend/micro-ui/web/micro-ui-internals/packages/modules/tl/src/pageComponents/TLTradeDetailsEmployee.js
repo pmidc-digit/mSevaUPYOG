@@ -458,7 +458,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.touched.commencementDate ? errors?.commencementDate?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_GST_NUMBER_LABEL")} `}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_LABEL")} `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -484,7 +484,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.touched.gstNo ? errors?.gstNo?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_OPERATIONAL_SQ_FT_AREA_LABEL")} `}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL")} `}</CardLabel>
             <div className="field">
               <Controller
                 name="operationalArea"
@@ -509,7 +509,7 @@ const OwnerForm1 = (_props) => {
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.touched.operationalArea ? errors?.operationalArea?.message : ""}</CardLabelError>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_NUMBER_OF_EMPLOYEES_LABEL")} `}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL")} `}</CardLabel>
             <div className="field">
               <Controller
                 name="noOfEmployees"
@@ -536,7 +536,7 @@ const OwnerForm1 = (_props) => {
           
         
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_OLD_RECEIPT_NUMBER")} `}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("TL_LOCALIZATION_RECEIPT_NO")} `}</CardLabel>
             <div className="field">
               <Controller
                 name="oldReceiptNo"

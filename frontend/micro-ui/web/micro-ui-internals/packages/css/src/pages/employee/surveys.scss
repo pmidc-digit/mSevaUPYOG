@@ -261,7 +261,7 @@ border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
   }
 
   .surveyformslist_wrapper {
-    @apply w-3/4 grid gap-6 py-md;
+    @apply grid gap-6 py-md;
   }
 }
 
@@ -301,4 +301,113 @@ border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
   .survey-grid-container  {
       grid-template-columns: repeat(4, 1fr);
   }
+}
+
+
+
+
+
+.section-card {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+}
+
+.section-card h3 {
+  margin-top: 0;
+}
+
+.section-card input {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.section-card button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.section-card button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+
+
+
+.category-card {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #f0f8ff;
+}
+
+.category-card h3 {
+  margin-top: 0;
+}
+
+.category-card input,
+.category-card select {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.category-card button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.category-card button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.category-card table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.category-card table, .category-card th, .category-card td {
+  border: 1px solid #ccc;
+}
+.category-card thead{
+  background-color: #6f98b8;
+}
+.category-card th, .category-card td {
+  padding: 10px;
+  text-align: left;
+}
+
+.category-card label {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.category-card label:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }

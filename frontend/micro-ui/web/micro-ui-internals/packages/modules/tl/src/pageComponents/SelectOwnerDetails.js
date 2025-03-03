@@ -499,7 +499,7 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                     },
                   }}
                 />
-                <CardLabel>{`${t("TL_RELATIONSHIP_WITH_GUARDIAN_LABEL")}*`}</CardLabel>
+                <CardLabel>{`${t("TL_COMMON_RELATIONSHIP_LABEL")}*`}</CardLabel>
                 <RadioButtons
                   t={t}
                   options={relationshipMenu}

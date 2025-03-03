@@ -6,6 +6,10 @@ export const useEngagementMDMS = (tenantId, moduleCode, type, config = {}, paylo
     return useQuery(type, () => MdmsService.getDataByCriteria(tenantId, getGeneralCriteria(tenantId, moduleCode, type), moduleCode), config);
   };
 
+  const useSurveyAnswerTypes = () => {
+    return useQuery([type, tenantId], () => MdmsService.getSurveyAnswerTypes(tenantId, moduleCode, type), config);
+  };
+
   const _default = () => {
     return useQuery([tenantId, moduleCode, type], () => MdmsService.getMultipleTypes(tenantId, moduleCode, type), config);
   };
@@ -13,6 +17,8 @@ export const useEngagementMDMS = (tenantId, moduleCode, type, config = {}, paylo
   switch (type) {
     case "DocumentsCategory":
       return useDocumentCategory();
+    case "questionType":
+      return useSurveyAnswerTypes();
     default:
       return _default();
   }

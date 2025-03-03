@@ -3,19 +3,20 @@ import { useQueryClient } from "react-query";
 import React, { useEffect,useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link,useHistory } from "react-router-dom";
-const getMessage = (mutation) => {
-  if (mutation.isSuccess) return mutation.data?.Surveys?.[0]?.uuid;
-  return "";
-};
+// const getMessage = (mutation) => {
+//   if (mutation.isSuccess) return mutation.data?.Surveys?.[0]?.uuid;
+//   return "";
+// };
 
 const BannerPicker = (props) => {
   const { t } = useTranslation();
   return (
     <Banner
-      message={props.mutation.isSuccess ? t(`SURVEY_FORM_CREATED`) : t("SURVEY_FORM_FAILURE")}
-      applicationNumber={getMessage(props.mutation)}
-      info={props.mutation.isSuccess ? t("SURVEY_FORM_ID") : ""}
-      successful={props.mutation.isSuccess}
+      // message={props.mutation.isSuccess ? t(`SURVEY_FORM_CREATED`) : t("SURVEY_FORM_FAILURE")}
+      message={ t(`SURVEY_FORM_CREATED`) }
+      //applicationNumber={getMessage(props.mutation)}
+     // info={props.mutation.isSuccess ? t("SURVEY_FORM_ID") : ""}
+      successful={true}
     />
   );
 };
@@ -24,29 +25,30 @@ const Acknowledgement = (props) => {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const mutation = Digit.Hooks.survey.useCreate();
+  //const mutation = Digit.Hooks.survey.useCreate();
   const { state } = props.location;
   const history = useHistory();
+  //console.log("mutation",mutation)
   const [isActionClicked,setIsActionClicked] = useState(false) 
   useEffect(() => {
-    const onSuccess = () => {
+    // const onSuccess = () => {
       queryClient.clear();
       window.history.replaceState(null, 'CREATE_SURVEY_STATE')
-    };
-    if(!!state){
-      mutation.mutate(state, {
-        onSuccess,
-      })
-    };
+    // };
+    // if(!!state){
+    //   mutation.mutate(state, {
+    //     onSuccess,
+    //   })
+    // };
   }, []);
 
-  if (mutation.isLoading && !mutation.isIdle) {
-    return <Loader />;
-  }
+  // if (mutation.isLoading && !mutation.isIdle) {
+  //   return <Loader />;
+  // }
 
 
-  const survey = mutation.data?.Surveys?.[0];
- 
+  //const survey = mutation.data?.Surveys?.[0];
+  //const survey = props.Surveys;
   const handleActionClick = () => {
     setIsActionClicked((prevState => {
       return !prevState
@@ -59,22 +61,25 @@ const Acknowledgement = (props) => {
 
    const actionClickHandler = (option) => {
     if(option === t("GO_BACK_TO_HOME")) history.push("/digit-ui/employee")
-    else if(option === t("CREATE_ANOTHER_SURVEY")) history.push("/digit-ui/employee/engagement/surveys/create")
+    else if(option === t("CREATE_ANOTHER_SURVEY")) history.push("/digit-ui/employee/engagement/surveys/create-survey-step-form")
   }
   return (
     <Card>
       <BannerPicker
         t={t}
-        mutation={mutation}
+      //  mutation={mutation}
       />
       <CardText>
-        {mutation.isSuccess 
-          ? t(`SURVEY_FORM_CREATION_MESSAGE`, {
-              surveyName: survey?.title,
-              fromDate: Digit.DateUtils.ConvertTimestampToDate(survey?.startDate),
-              toDate: Digit.DateUtils.ConvertTimestampToDate(survey?.endDate),
-            })
-          : null}
+         {/* {mutation.isSuccess 
+         ?  */}
+        { t(`SURVEY_FORM_CREATION_MESSAGE`, {
+              surveyName: props?.title,
+              fromDate: Digit.DateUtils.ConvertTimestampToDate(props?.startDate),
+              toDate: Digit.DateUtils.ConvertTimestampToDate(props?.endDate),
+              
+             }
+             )
+            }
       </CardText>
       
        {/* <ActionBar>

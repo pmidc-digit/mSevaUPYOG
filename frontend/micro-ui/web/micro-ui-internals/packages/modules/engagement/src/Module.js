@@ -1,8 +1,7 @@
 import { Loader, BreadCrumb } from "@mseva/digit-ui-react-components";
-import React, {Fragment} from "react";
+import React, { Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { Switch, useLocation, useRouteMatch, Route } from "react-router-dom";
-
+import { Switch, useLocation, useRouteMatch, Route, useHistory } from "react-router-dom";
 
 import EngagementCard from "./components/EngagementCard";
 import EngagementDocSelectULB from "./components/Documents/EngagementDocsULB";
@@ -26,31 +25,40 @@ import EmployeeEventDetails from "./pages/employee/Events/EventDetails";
 import CitizenApp from "./pages/citizen";
 import EventDetails from "./pages/citizen/EventsListOnGround/EventDetails";
 import DocumenetCreate from "./pages/employee/Documents/documents-create";
-import DocumentUpdate from './pages/employee/Documents/documents-update';
+import DocumentUpdate from "./pages/employee/Documents/documents-update";
 import DocumentResponse from "./pages/employee/Documents/response";
 import DocUpdateResponse from "./pages/employee/Documents/update-response";
 import DocDeleteResponse from "./pages/employee/Documents/delete-response";
 import DocumentNotification from "./pages/employee/Documents/Inbox";
-import DocumentList from './pages/citizen/Documents/DocumentList';
-import SurveyList from "./pages/citizen/CitizenSurvey/SurveyList"
+import DocumentList from "./pages/citizen/Documents/DocumentList";
+import SurveyList from "./pages/citizen/CitizenSurvey/SurveyList";
 import DocumentDetails from "./components/Documents/DocumentDetails";
 import Surveys from "./pages/employee/CitizenSurveys";
-import FillSurvey from './pages/citizen/CitizenSurvey/FillSurvey'
-import CitizenSurveyForm from './components/Surveys/CitizenSurveyForm';
-import ShowSurvey from './pages/citizen/CitizenSurvey/ShowSurvey'
-import SurveyCategory from "./pages/employee/CitizenSurveys/SurveyCategory";
+import FillSurvey from "./pages/citizen/CitizenSurvey/FillSurvey";
+import CitizenSurveyForm from "./components/Surveys/CitizenSurveyForm";
+import ShowSurvey from "./pages/citizen/CitizenSurvey/ShowSurvey";
+import CreateSurveyCategory from "./pages/employee/CitizenSurveys/CreateSurveyCategory";
 import SurveyResults from "./pages/employee/CitizenSurveys/SurveyResults";
-import SearchCategory from "./pages/employee/CitizenSurveys/SearchCategory";
-import SurveyQuestions from "./pages/employee/CitizenSurveys/SurveyQuestions";
+import SearchCategories from "./pages/employee/CitizenSurveys/SearchCategories";
+import CreateSurveyQuestions from "./pages/employee/CitizenSurveys/CreateSurveyQuestions";
 import SurveyForm from "./components/Surveys/SurveyForms/SurveyForm";
-import SurveyFormPage from "./components/Surveys/SurveyFormPage";
-import getRootReducer from "./redux/reducers"
+//import SurveyFormPage from "./components/Surveys/SurveyFormPage";
+import getRootReducer from "./redux/reducers";
 import CreateSurveyForm from "./components/Surveys/SurveyForms/CreateSurveyForm";
+import SurveyFormDetails from "./components/Surveys/SurveyForms/NewSurveyFormSteps/SurveyFormDetails";
+import SurveyFormCategoryDetails from "./components/Surveys/SurveyForms/NewSurveyFormSteps/SurveyFormCategoryDetails";
+import SurveryFormSummary from "./components/Surveys/SurveyForms/NewSurveyFormSteps/SurveryFormSummary";
+import NewSurveys from "./pages/employee/CitizenSurveys/NewSurvey";
+import SurveyCreationPage from "./components/Surveys/SurveyForms/SurveyCreationPage";
+import SurveySummary from "./components/Surveys/SurveyForms/SurveySummary";
 
 export const SurveyReducers = getRootReducer;
 
 const EventsBreadCrumb = ({ location }) => {
   const { t } = useTranslation();
+  const history = useHistory();
+  const search = useLocation().search;
+  const fromScreen = new URLSearchParams(search).get("from") || null;
   const crumbs = [
     {
       path: "/digit-ui/employee",
@@ -167,61 +175,81 @@ const EventsBreadCrumb = ({ location }) => {
       content: t("ES_EVENT_NEW_EVENT_RESPONSE"),
       show: location.pathname.includes("/messages/response?delete=true") ? true : false,
     },
+    // Surveys
     {
       path: "/digit-ui/employee/engagement/surveys/inbox",
       content: t("ES_EVENT_INBOX"),
       show: location.pathname.includes("/surveys/inbox") ? true : false,
     },
     {
-      path: "/digit-ui/employee/engagement/surveys/inbox/create",
-      content: t("CS_COMMON_SURVEYS"),
-      show: location.pathname.includes("/surveys/inbox/create") ? true : false,
-    },
-    {
-      path: "/digit-ui/employee/engagement/surveys/create",
-      content: t("CS_COMMON_SURVEYS"),
-      show: location.pathname.includes("/surveys/create") ? true : false,
-    },
-    {
-      path: "/digit-ui/employee/engagement/survey/create-response",
-      content: t("ES_EVENT_NEW_EVENT_RESPONSE"),
-      show: location.pathname.includes("/engagement/survey/create-response") ? true : false,
+      path: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
+      content: fromScreen ? `${t(fromScreen)} / ${t("CS_COMMON_SURVEYS")}` : t("CS_COMMON_SURVEYS"),
+      //content: t("CS_COMMON_SURVEYS"),
+      show: location.pathname.includes("/surveys/create-survey-step-form") ? true : false,
+      isBack: fromScreen && true,
     },
     {
       path: "/digit-ui/employee/engagement/surveys/create-category",
-      content: t("Survey Category"),
-      show: location.pathname.includes("/engagement/surveys/create-category") ? true : false,
-    }, 
+      content: fromScreen ? `${t(fromScreen)} / ${t("Create Category")}` : t("Create Category"),
+      //content: t("Survey Category"),
+      show: location.pathname.includes("/surveys/create-category") ? true : false,
+      isBack: fromScreen && true,
+    },
     {
-      path: "/digit-ui/employee/engagement/surveys/search-category",
-      content: t("Search Category"),
-      show: location.pathname.includes("/engagement/surveys/search-category") ? true : false,
-    }, 
+      path: "/digit-ui/employee/engagement/surveys/search-categories",
+      content: fromScreen ? `${t(fromScreen)} / ${t("Search Categories")}` : t("Search Categories"),
+      //content: t("Search Categories"),
+      show: location.pathname.includes("/surveys/search-categories") ? true : false,
+      isBack: fromScreen && true,
+    },
     {
       path: "/digit-ui/employee/engagement/surveys/create-questions",
-      content: t("Create Questions"),
-      show: location.pathname.includes("/engagement/surveys/create-questions") ? true : false,
-    }, 
+      content: fromScreen ? `${t(fromScreen)} / ${t("Create Questions")}` : t("Create Questions"),
+      //content: t("Create Questions"),
+      show: location.pathname.includes("/surveys/create-questions") ? true : false,
+      isBack: fromScreen && true,
+    },
     {
       path: "/digit-ui/employee/engagement/surveys/search-questions",
-      content: t("Search Questions"),
-      show: location.pathname.includes("/engagement/surveys/search-questions") ? true : false,
-    }, 
+      content: fromScreen ? `${t(fromScreen)} / ${t("Search Questions")}` : t("Search Questions"),
+      //content: t("Search Questions"),
+      show: location.pathname.includes("/surveys/search-questions") ? true : false,
+      isBack: fromScreen && true,
+    },
+    {
+      path: "/digit-ui/employee/engagement/surveys/create-response",
+      content: fromScreen ? `${t(fromScreen)} / ${t("ES_EVENT_NEW_EVENT_RESPONSE")}` : t("ES_EVENT_NEW_EVENT_RESPONSE"),
+      //content: t("ES_EVENT_NEW_EVENT_RESPONSE"),
+      show: location.pathname.includes("/surveys/create-response") ? true : false,
+      isBack: fromScreen && true,
+    },
   ];
 
-  return <BreadCrumb crumbs={crumbs} />;
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "4px" }}>
+      <BreadCrumb crumbs={crumbs} />
+      <p className="breadcrumb">
+        <button
+          onClick={() => {
+            history.goBack();
+          }}
+          style={{ cursor: "pointer", color: "#666" }}
+        >
+          {"<"} {t("CS_COMMON_BACK")}
+        </button>
+      </p>
+    </div>
+  );
 };
 
 const EmployeeApp = ({ path, url, userType, tenants }) => {
   const location = useLocation();
- 
 
   return (
     // <div className="ground-container">
     <>
       <EventsBreadCrumb location={location} />
       <Switch>
-       
         <Route path={`${path}/event/inbox`} exact>
           <Inbox tenants={tenants} parentRoute={path} />
         </Route>
@@ -247,33 +275,26 @@ const EmployeeApp = ({ path, url, userType, tenants }) => {
         <Route path={`${path}/documents/delete-response`} component={(props) => <DocDeleteResponse {...props} />} />
         <Route path={`${path}/documents/inbox`} component={(props) => <DocumentNotification tenants={tenants} />} />
         <Route path={`${path}/messages`} component={(props) => <Messages {...props} tenants={tenants} parentRoute={path} />} />
-        <Route path={`${path}/surveys`} component={(props)=><Surveys {...props} tenants={tenants} parentRoute={path} />} />
-       
-        {/* <Route path={`${path}/abc/create-category`} >
-        <MySurveyCateogory/>
-        </Route> */}
-        {/* documents/update-response */}
-        {/* <Redirect to={`${path}/docs`} /> */}
+        <Route path={`${path}/surveys`} component={(props) => <Surveys {...props} tenants={tenants} parentRoute={path} />} />
       </Switch>
-      </>
+    </>
     // </div>
   );
 };
 
 const EngagementModule = ({ stateCode, userType, tenants }) => {
-
   const moduleCode = "Engagement";
   const { path, url } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();
 
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
 
-console.log("path",path)
+  console.log("path", path);
   if (isLoading) {
     return <Loader />;
   }
   Digit.SessionStorage.set("ENGAGEMENT_TENANTS", tenants);
-  console.log("userType",userType)
+  console.log("userType", userType);
 
   if (userType === "citizen") {
     return <CitizenApp path={path} url={url} userType={userType} tenants={tenants} />;
@@ -334,15 +355,20 @@ const componentsToRegister = {
   SelectToDate,
   SurveyList,
   FillSurvey,
-  CitizenSurveyForm, 
-  ShowSurvey, 
+  CitizenSurveyForm,
+  ShowSurvey,
   SurveyResults,
-  SurveyCategory,
-  SearchCategory,
-  SurveyCategory,
+  CreateSurveyCategory,
+  SearchCategories,
   SurveyForm,
-  SurveyFormPage,
-  CreateSurveyForm
+  // SurveyFormPage,
+  CreateSurveyForm,
+  SurveyFormDetails,
+  SurveyFormCategoryDetails,
+  SurveryFormSummary,
+  NewSurveys,
+  SurveyCreationPage,
+  SurveySummary,
 };
 
 export const initEngagementComponents = () => {

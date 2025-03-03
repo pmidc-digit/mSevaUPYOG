@@ -62,8 +62,8 @@
 }
 
 .employeeCard {
-  @apply bg-white  p-md mb-xl;
-  border-radius: 4px;
+  @apply bg-white  p-xxl mb-xl shadow-card;
+  border-radius: 8px;
 
   .card-header {
     @apply text-text-primary text-heading-xl font-bold font-rc align-middle text-left mb-md;
@@ -75,7 +75,7 @@
   }
 
   .card-section-header {
-    @apply text-text-primary text-heading-m font-bold;
+    @apply text-text-primary text-heading-m font-medium;
   }
 
   .card-section-sub-text{
@@ -154,8 +154,10 @@
 }
 
 .submit-bar {
-  @apply h-10 bg-primary-main text-center w-full outline-none;
- 
+  @apply h-10 bg-primary-main text-center outline-none text-white;
+  
+  width:175px;
+  border-radius:8px;
 
   &:focus {
     @apply outline-none;
@@ -167,7 +169,10 @@
 }
 
 .submit-bar-disabled {
-  @apply h-10 bg-primary-main text-center w-full outline-none opacity-50;
+  @apply h-10 bg-primary-main text-center outline-none opacity-50 text-white;
+
+  width:175px;
+  border-radius:8px;
  
   &:focus {
     @apply outline-none;
@@ -182,7 +187,8 @@
 @screen dt {
   .submit-bar,
   .submit-bar-disabled {
-    width: 240px;
+    width:175px;
+    border-radius:8px;
    
     height: 2rem !important
   }
@@ -396,7 +402,7 @@
 }
 
 .language-selector .submit-bar, .submit-bar-disabled{
-  background-color: #5a1166 !important;
+  background-color: rgb(178, 196, 239,0.8) !important;
 }
 
 .owner-details{

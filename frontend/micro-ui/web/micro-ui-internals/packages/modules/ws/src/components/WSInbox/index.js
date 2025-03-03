@@ -134,7 +134,7 @@ const WSInbox = ({ parentRoute }) => {
     t
   );
 
-  const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {} } = Digit.Hooks.ws.useInbox({
+  const { isLoading: isInboxLoading, data: { table=[], statuses, totalCount } = {} } = Digit.Hooks.ws.useInbox({
     tenantId,
     filters: { ...formState },
   });

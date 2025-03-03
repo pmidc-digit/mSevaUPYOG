@@ -11,12 +11,12 @@ module.exports = {
     colors: {
       primary: {
         light: "#F18F5E",
-        main: "#a82227",
+        main: "#2947A3",
         dark: "#C8602B",
       },
       secondary: "#22394D",
       text: {
-        primary: "#0B0C0C",
+        primary: "#0d43a7",
         secondary: "#505A5F",
       },
       link: {
@@ -25,15 +25,15 @@ module.exports = {
       },
       border: "#D6D5D4",
       "input-border": "#464646",
-      focus: "#a82227",
+      focus: "#1359C8",
       error: "#D4351C",
-      success: "#00703C",
+      success: "#05A660",
       black: "#000000",
       grey: {
         dark: "#9E9E9E",
         mid: "#EEEEEE",
         light: "#FAFAFA",
-        bg: "#E3E3E3",
+        bg: "#F5F7FA",
       },
       white: "#FFFFFF",
     },
@@ -75,6 +75,7 @@ module.exports = {
       md: "16px",
       lg: "24px",
       xl: "36px",
+      xxl: "48px"
     },
     margin: {
       xs: "4px",
@@ -91,7 +92,7 @@ module.exports = {
       10: "10px",
     },
     boxShadow: {
-      card: "0 1px 2px 0 rgba(0, 0, 0, 0.16)",
+      card: "0px 0px 5px 0px #22222270",
       radiobtn: "0 0 0 5px #a82227",
     },
     inset: {

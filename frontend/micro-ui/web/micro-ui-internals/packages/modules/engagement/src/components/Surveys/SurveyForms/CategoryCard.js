@@ -135,14 +135,14 @@ console.log("selected ques read only len",category.selectedQuestions.length)
 
   return (
     <div className="category-card">
-      <h3>Category</h3>
+      <h3>Section Title</h3>
       <input
         type="text"
         name="title"
         value={category.title}
         readOnly={readOnly}
         onChange={handleFieldChange}
-        placeholder="Category Title"
+        placeholder="Section Title"
         required
       />
                   {/* <TextInput
@@ -153,14 +153,14 @@ console.log("selected ques read only len",category.selectedQuestions.length)
             onChange={handleFieldChange} 
        
             /> */}
-        <h3>Category weightage</h3>
+        <h3>Section Weightage</h3>
       <input
         type="number"
         name="weightage"
         value={category.weightage}
         onChange={handleFieldChange}
         readOnly={checked}
-        placeholder="Category Weightage"
+        placeholder="Section Weightage"
         required
       />
             {((readOnly===false || readOnly===undefined )) && (
@@ -180,7 +180,7 @@ console.log("selected ques read only len",category.selectedQuestions.length)
           backgroundColor: "red",
           color: "white",
          // marginLeft:"5px",
-          cursor: "pointer"}} onClick={()=>{onDelete(category.id)}}>Delete Category</label>
+          cursor: "pointer"}} onClick={()=>{onDelete(category.id)}}>Delete Section</label>
 
       </div>
       )}
@@ -218,16 +218,21 @@ console.log("selected ques read only len",category.selectedQuestions.length)
           optionKey="i18Key"
           selected={category.selectCategory || null}
         />
-         <h3>Question Statement</h3>
+         {((readOnly===false || readOnly===undefined )) && (
+
+         <h3>Search Question</h3>
+         )}
+          {((readOnly===false || readOnly===undefined )) && (
           <input
             type="text"
             name="questionStatement"
             value={category.questionStatement}
             onChange={ handleFieldChange}
-            placeholder="Question Statement"
+            placeholder="Search Question"
             readOnly={readOnly}
             required
           />
+         )}
            {(readOnly===false || readOnly===undefined  )&& ( <label style={{ padding: "10px 20px",
         border: "none",
         borderRadius: "4px",

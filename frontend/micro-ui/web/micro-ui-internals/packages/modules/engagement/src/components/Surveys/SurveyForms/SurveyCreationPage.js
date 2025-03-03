@@ -51,7 +51,7 @@ else{
           setIndex(index+1)
         }
       }}
-      >Add Category</label>
+      >Add Section</label>
       
     )}
  {/* {readOnly!==true && (

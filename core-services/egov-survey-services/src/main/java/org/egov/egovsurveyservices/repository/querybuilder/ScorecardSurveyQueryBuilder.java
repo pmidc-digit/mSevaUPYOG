@@ -115,6 +115,12 @@ public class ScorecardSurveyQueryBuilder {
             query.append("survey.active = ? ");
             preparedStmtList.add(criteria.getActive());
         }
+        
+        if (Boolean.TRUE.equals(criteria.getOpenSurveyFlag())) {
+            query.append(whereAdded ? " AND " : " WHERE ");
+            query.append(" ? BETWEEN survey.startdate AND survey.enddate ");
+            preparedStmtList.add(System.currentTimeMillis()); 
+        }
 
         return query.toString();
     }

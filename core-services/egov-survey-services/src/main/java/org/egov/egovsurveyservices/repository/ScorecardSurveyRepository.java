@@ -9,7 +9,6 @@ import org.egov.egovsurveyservices.repository.rowmapper.AnswerRowMapper;
 import org.egov.egovsurveyservices.repository.rowmapper.QuestionRowMapper;
 import org.egov.egovsurveyservices.repository.rowmapper.ScorecardSurveyRowMapper;
 import org.egov.egovsurveyservices.repository.rowmapper.SurveyRowMapper;
-import org.egov.egovsurveyservices.repository.rowmapper.SurveyRowMapperTesting2;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +33,7 @@ public class ScorecardSurveyRepository {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-//    private ScorecardSurveyRowMapper rowMapper;
-    private SurveyRowMapperTesting2 rowMapper;
+    private ScorecardSurveyRowMapper rowMapper;
 
     @Autowired
     private ScorecardSurveyQueryBuilder surveyQueryBuilder;

@@ -107,7 +107,7 @@ public class ScorecardSurveyService {
         }
 
         // If UUID is absent, check if tenantId or title is provided
-        if (StringUtils.isNotBlank(criteria.getTenantId()) || StringUtils.isNotBlank(criteria.getTitle())) {
+        if (StringUtils.isNotBlank(criteria.getTenantId()) || StringUtils.isNotBlank(criteria.getTitle()) || Boolean.TRUE.equals(criteria.getOpenSurveyFlag())) {
             return surveyRepository.fetchSurveys(criteria); // Fetch based on tenantId, title, or both
         }
 

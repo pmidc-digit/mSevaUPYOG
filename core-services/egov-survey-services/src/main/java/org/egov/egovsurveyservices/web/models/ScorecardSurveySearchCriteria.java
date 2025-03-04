@@ -27,6 +27,9 @@ public class ScorecardSurveySearchCriteria {
     @JsonProperty("active")
     private Boolean active;
     
+    @JsonProperty("openSurveyFlag")
+    private Boolean openSurveyFlag;
+    
     @JsonIgnore
     private Boolean isCountCall = false;
 

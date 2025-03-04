@@ -124,5 +124,28 @@ public class ScorecardSurveyQueryBuilderTest {
         assertFalse(query.contains("survey.active = ?")); // Active filter should not be present
         assertEquals(0, preparedStmtList.size()); // No parameters should be added
     }
+    
+    @Test
+    public void testGetSurveySearchQuery_WithOpenSurveyFlag() {
+        criteria.setOpenSurveyFlag(true);
+        String query = queryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
+
+        assertTrue(query.contains("? BETWEEN survey.startdate AND survey.enddate"));
+
+        assertEquals(1, preparedStmtList.size()); // Only one value (System.currentTimeMillis()) is added
+    }
+
+
+    @Test
+    public void testGetSurveySearchQuery_WithoutOpenSurveyFlag() {
+        criteria.setOpenSurveyFlag(false); // Should not add the open survey filter
+        String query = queryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
+
+        assertFalse(query.contains("? BETWEEN survey.startdate AND survey.enddate"));
+
+        // Ensure no extra parameters are added
+        assertEquals(0, preparedStmtList.size());
+    }
+
 
 }

@@ -29,6 +29,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
@@ -56,7 +58,7 @@ class ScorecardSurveyServiceTest {
     @Mock
     private ScorecardSurveyRepository surveyRepository;
 
-    @Autowired
+    @Mock
     private ScorecardSurveyUtil surveyUtil;
 
     private RequestInfo requestInfo;
@@ -86,6 +88,13 @@ class ScorecardSurveyServiceTest {
         doNothing().when(surveyValidator).validateQuestionsAndSections(any());
         doNothing().when(enrichmentService).enrichScorecardSurveyEntity(any());
 
+        // Mock question existence check
+        when(surveyRepository.allQuestionsExist(anyList())).thenReturn(true);
+        
+        // Mock surveyUtil to return a dummy UUID list
+        when(surveyUtil.getIdList(any(), anyString(), anyString(), anyString(), anyInt()))
+                .thenReturn(Collections.singletonList("SS-1012/2024-25/0020"));
+        
         doNothing().when(producer).push(anyString(), any(Object.class));
 
         ScorecardSurveyEntity responseEntity = scorecardSurveyService.createSurvey(surveyRequest);
@@ -226,6 +235,36 @@ class ScorecardSurveyServiceTest {
         verify(producer, times(1)).push("update-topic", request);
     }
     
+    @Test
+    public void testSearchSurvey_WithOpenSurveyFlag() {
+        ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
+        criteria.setOpenSurveyFlag(true);
+        
+        List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
+        when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
+        
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+    }
+
+    @Test
+    public void testSearchSurvey_WithoutOpenSurveyFlag() {
+        ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
+        criteria.setOpenSurveyFlag(false);
+        criteria.setTenantId("pb.testing");  // Ensure the repository method gets called
+
+        List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
+        when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
+
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+    }
+
+    
     /*** Helper Method to Create Valid Survey ***/
     private ScorecardSurveyEntity getValidSurveyEntity() {
         return ScorecardSurveyEntity.builder()
@@ -267,3 +306,4 @@ class ScorecardSurveyServiceTest {
     }
 
 }
+

@@ -136,6 +136,7 @@ public class ScorecardSurveyService {
 		}
 		else {
 			request.setLastModifiedTime(System.currentTimeMillis());
+			request.setLastModifiedBy(request.getRequestInfo().getUserInfo().getUuid());
 			producer.push(applicationProperties.getUpdateActiveSurveyTopic(), request);
 		}
 	}

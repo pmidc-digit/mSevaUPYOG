@@ -28,4 +28,7 @@ public class UpdateSurveyActiveRequest {
     
     @JsonProperty("lastModifiedTime")
     private Long lastModifiedTime;
+    
+    @JsonProperty("lastModifiedBy")
+    private String lastModifiedBy;
 }

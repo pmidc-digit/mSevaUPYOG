@@ -63,7 +63,7 @@ public class QuestionControllerTest {
     @Test
     public void testSearchQuestion() throws Exception {
 
-        mockMvc.perform(get("/egov-ss/question/_search").contentType
+        mockMvc.perform(post("/egov-ss/question/_search").contentType
                         (MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(new QuestionSearchCriteria())))
                 .andExpect(status().isOk());
     }

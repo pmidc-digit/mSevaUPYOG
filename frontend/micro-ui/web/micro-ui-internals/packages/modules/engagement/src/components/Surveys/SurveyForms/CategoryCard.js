@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useTransition } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { addQuestions,addQuestionsList, deleteCategory, updateCategory, updateQuestionSelection ,setQuestions, goPrev} from '../../../redux/actions/surveyFormActions';
-import {TextInput, Dropdown, CheckBox } from '@mseva/digit-ui-react-components';
+import {TextInput, Dropdown, CheckBox ,Toast} from '@mseva/digit-ui-react-components';
 import { useTranslation } from 'react-i18next';
+import { isError } from 'lodash';
 
 const CategoryCard = ({ category ,checked,readOnly,onDelete,hideQuestionLabel}) => {
  
@@ -19,6 +20,7 @@ const {t} = useTranslation();
   ]
 const [categoryList,setCategoryList] =useState([])
 const [questionsList,setQuestionsList]=useState([])
+  const [showToast, setShowToast] = useState(null);
 const state = useSelector(state => state.engagement.surveyForm);
 console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
   useEffect(()=>{
@@ -40,7 +42,7 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
           });
 
          setCategoryList(categoryOptions)
-          //setShowToast({ key: true, label: "Category successfully retrieved." });
+         // setShowToast({ key: true, label: "Category successfully retrieved." });
         }
         else
         {
@@ -53,10 +55,16 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
       console.log(error);
     }
   },[])
+  const closeToast = () => {
+    setShowToast(null);
+  };
   const handleCategoryChange = (e) => {
     console.log("e",e)
     // const { value } = e;
     dispatch(updateCategory(category.id, { ["selectCategory"]: e }));
+    dispatch(setQuestions(category.id,[]))
+    dispatch(addQuestions(category.id, []));
+    setShowQuestionTableList(false);
   };
   const handleFieldChange = (e) => {
 
@@ -73,12 +81,12 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
     console.log("category",category)
   
   };
- const fetchQuestions =(categoryId)=>{
+ const fetchQuestions =(categoryId,questionStatement)=>{
   let filters={
     // categoryId:category.selectCategory.id
     categoryId:categoryId,
-    tenantId: tenantId
- 
+    tenantId: tenantId,
+   questionStatement: questionStatement
     
 
 
@@ -96,25 +104,39 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
         console.log("arr",arr)
         dispatch(setQuestions(category.id,arr))
        setQuestionsList(arr)
-
+       setShowQuestionTableList(true);
+       setShowToast({ key: true, isError:false,label: `QUESTIONS RETRIEVED` });
        // setShowToast({ key: true, label: "Category successfully retrieved." });
       }
       else
       {
-       // setShowToast({ key: true, label: `${response?.Errors?.message}` });
+        dispatch(setQuestions(category.id,[]))
+        dispatch(addQuestions(category.id, []));
+        setQuestionsList([])
+        setShowQuestionTableList(false);
+
+        setShowToast({ key: true, isError:true,label: `NO QUESTIONS FOUND` });
       }
     })
   }
   catch(error)
   {
+    dispatch(setQuestions(category.id,[]))
+    dispatch(addQuestions(category.id, []));
     console.log(error);
+    setQuestionsList([])
+    setShowQuestionTableList(false);
   }
  }
  console.log("cat qus",category)
   const handleGoClick = () => {
     //dispatch(setQuestions(category.id, questions));
-    setShowQuestionTableList(true);
-    fetchQuestions(category.selectCategory?.value)
+  if(category.selectCategory===''){
+    setShowToast({ key: true, isError:true,label: `PLEASE SELECT A CATEGORY` });
+  }
+  else{
+    fetchQuestions(category.selectCategory?.value, category.questionStatement)
+  }
   };
 
   const handleAddQuestions = () => {
@@ -230,7 +252,7 @@ console.log("selected ques read only len",category.selectedQuestions.length)
             onChange={ handleFieldChange}
             placeholder="Search Question"
             readOnly={readOnly}
-            required
+            
           />
          )}
            {(readOnly===false || readOnly===undefined  )&& ( <label style={{ padding: "10px 20px",
@@ -239,7 +261,7 @@ console.log("selected ques read only len",category.selectedQuestions.length)
         backgroundColor: "#007bff",
         color: "white",
         cursor: "pointer"}}disable={readOnly} onClick={handleGoClick}>Go</label>)}
-          {(showQuestionTableList && hideQuestionLabel!=true )&& (
+          {(showQuestionTableList && hideQuestionLabel!=true && category.questions.length>0 )&& (
             <div>
             <table>
               <thead>
@@ -285,7 +307,8 @@ console.log("selected ques read only len",category.selectedQuestions.length)
             </table>
             </div>
                  )}
-            {((readOnly=== false || readOnly===undefined) && showQuestionTableList ) && (
+                 {/* {category.questions.length===0?<div style={{color:'red'}}>NO QUESTIONS FOUND FOR SELECTED CATEGORY</div>:null} */}
+            {((readOnly=== false || readOnly===undefined) && showQuestionTableList && category.questions.length>0 ) && (
           <label style={{ padding: "10px 20px",
             border: "none",
             borderRadius: "4px",
@@ -328,6 +351,7 @@ console.log("selected ques read only len",category.selectedQuestions.length)
      
     
       )}
+        {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </div>
   );
 };

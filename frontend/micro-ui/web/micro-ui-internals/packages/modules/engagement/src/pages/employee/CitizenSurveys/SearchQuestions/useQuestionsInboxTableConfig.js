@@ -20,7 +20,7 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
   // };
 
   const handleUpdateQuestionConfirm = (row) => {
-    console.log("Current row: ", row);
+    //console.log("Current row: ", row);
     const currentStatus = row?.original?.status;
     const updatedStatus = currentStatus === "ACTIVE" ? "INACTIVE" : currentStatus === "INACTIVE" ? "ACTIVE" : "";
 
@@ -29,7 +29,8 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
       isDeleteBtn: true,
       warning: true,
       isWarningButtons: true,
-      rowData: { row, updatedStatus },
+      rowData: row?.original,
+      updatedStatus: updatedStatus
     });
   };
 

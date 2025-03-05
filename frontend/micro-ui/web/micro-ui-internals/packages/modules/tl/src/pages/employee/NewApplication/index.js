@@ -280,9 +280,9 @@ const NewApplication = () => {
 
   function checkHead(head) {
     if (head === "ES_NEW_APPLICATION_LOCATION_DETAILS") {
-      return "TL_CHECK_ADDRESS";
+      return "TL_NEW_TRADE_DETAILS_HEADER_TRADE_LOC_DETAILS";
     } else if (head === "ES_NEW_APPLICATION_OWNERSHIP_DETAILS") {
-      return "TL_OWNERSHIP_DETAILS_HEADER";
+      return "TL_COMMON_OWN_DETAILS";
     } else if (head === "TL_NEW_APPLICATION_PROPERTY" && (sessionFormData?.tradedetils?.[0]?.structureType?.code === "MOVABLE" && (isEmpNewApplication || isEmpRenewLicense))) {
       return "";
     }

@@ -25,7 +25,7 @@ import {
   PTRModule,
   PTRLinks,
   PTRComponents,
-} from "@mseva/upyog-ui-module-ptr";
+} from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
   ReceiptsModule,

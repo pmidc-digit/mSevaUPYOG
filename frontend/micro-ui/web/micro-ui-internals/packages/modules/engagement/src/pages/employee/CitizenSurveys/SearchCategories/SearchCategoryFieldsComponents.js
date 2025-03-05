@@ -45,21 +45,42 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
       });
   }
 
+  console.log("controlSearchForm: ", controlSearchForm);
   return (
     <>
       <SearchField>
-        <label>{t("LABEL_FOR_ULB")}</label>
+        <label>
+          {t("LABEL_FOR_ULB")} <span style={{ color: "red" }}>*</span>
+        </label>
         <Controller
-          rules={{ required: true }}
+          rules={{ required: t("REQUIRED_FIELD") }}
           defaultValue={selectedTenat?.[0]}
           render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
           name={"tenantIds"}
           control={controlSearchForm}
         />
+        <CardLabelError>{searchFormState?.errors?.["tenantIds"]?.message}</CardLabelError>
       </SearchField>
 
+      {/* <SearchField>
+        <label>
+          {t("LABEL_FOR_ULB")} <span style={{ color: "red" }}>*</span>
+        </label>
+        <Dropdown
+          defaultValue={selectedTenat?.[0]}
+          t={t}
+          option={userUlbs}
+          optionKey={"i18nKey"}
+          name="tenantIds"
+          inputRef={registerRef({
+            required: t("REQUIRED_FIELD"), //t("ES_ERROR_REQUIRED"),
+          })}
+        />
+        <CardLabelError>{searchFormState?.errors?.["tenantIds"]?.message}</CardLabelError>
+      </SearchField> */}
+
       <SearchField>
-        <label>{t("Category Name")}</label>
+        <label>{t("Category")}</label>
         <Controller
           rules={{ required: false }}
           render={(props) => (
@@ -68,7 +89,7 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
           name={"categoryName"}
           control={controlSearchForm}
         />
-        <CardLabelError>{searchFormState?.errors?.["categoryName"]?.message}</CardLabelError>
+        {/* <CardLabelError>{searchFormState?.errors?.["categoryName"]?.message}</CardLabelError> */}
       </SearchField>
 
       {/* <SearchField>

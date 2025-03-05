@@ -41,6 +41,13 @@
 
   .links-wrapper {
     @apply pl-md py-sm text-text-btn;
+    width: "100%"; 
+    display: "flex"; 
+    font-size: "0.8rem"; 
+    padding-left: "10px"; 
+    flex-wrap:"wrap";
+    flex-direction:"row";
+    padding-top:"10px";
     .link {
       padding: 0 !important;
       padding-bottom: 4px !important;
@@ -451,9 +458,9 @@
     padding: 0px !important;
   }
 }
+
 .employeeTotalLink{
   color: #a82227;
-  
   font-size: 12px;
 }
 

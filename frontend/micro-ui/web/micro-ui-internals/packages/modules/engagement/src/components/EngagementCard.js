@@ -77,7 +77,23 @@ const EngagementCard = () => {
       },
       {
         label: t("CS_COMMON_NEW_SURVEY"),
-        link: `/digit-ui/employee/engagement/surveys/create`,
+        link: `/digit-ui/employee/engagement/surveys/create-survey-step-form`,
+      },
+      {
+        label: t("Create Category"),
+        link: `/digit-ui/employee/engagement/surveys/create-category`,
+      },
+      {
+        label: t("Search Categories"),
+        link: `/digit-ui/employee/engagement/surveys/search-categories`,
+      },
+      {
+        label: t("Create Questions"),
+        link: `/digit-ui/employee/engagement/surveys/create-questions`,
+      },
+      {
+        label: t("Search Questions"),
+        link: `/digit-ui/employee/engagement/surveys/search-questions`,
       },
     ],
   };

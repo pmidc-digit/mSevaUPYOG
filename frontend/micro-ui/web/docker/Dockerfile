@@ -17,7 +17,7 @@ RUN yarn add @mseva/digit-ui-module-obps
 RUN yarn add @mseva/digit-ui-module-common
 RUN yarn add @mseva/digit-ui-module-ws
 RUN yarn add @mseva/digit-ui-module-commonpt
-RUN yarn add @mseva/upyog-ui-module-ptr
+RUN yarn add @mseva/digit-ui-module-ptr
 
 ARG WORK_DIR
 WORKDIR /app

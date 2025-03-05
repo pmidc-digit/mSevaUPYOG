@@ -94,22 +94,27 @@ const Inbox = ({ parentRoute }) => {
       {
         text: t("CS_COMMON_NEW_SURVEY"),
         link: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
+        //link: "/digit-ui/employee/engagement/surveys/create-survey-step-form?from=ES_EVENT_INBOX",
       },
       {
         text: t("Create Category"),
         link: "/digit-ui/employee/engagement/surveys/create-category",
+        //link: "/digit-ui/employee/engagement/surveys/create-category?from=ES_EVENT_INBOX",
       },
       {
-        text: t("Search Category"),
-        link: "/digit-ui/employee/engagement/surveys/search-category",
+        text: t("Search Categories"),
+        link: "/digit-ui/employee/engagement/surveys/search-categories",
+        //link: "/digit-ui/employee/engagement/surveys/search-categories?from=ES_EVENT_INBOX",
       },
       {
         text: t("Create Questions"),
         link: "/digit-ui/employee/engagement/surveys/create-questions",
+        //link: "/digit-ui/employee/engagement/surveys/create-questions?from=ES_EVENT_INBOX",
       },
       {
         text: t("Search Questions"),
         link: "/digit-ui/employee/engagement/surveys/search-questions",
+        //link: "/digit-ui/employee/engagement/surveys/search-questions?from=ES_EVENT_INBOX",
       },
     ],
   };
@@ -190,7 +195,7 @@ const Inbox = ({ parentRoute }) => {
         propsForInboxTable,
         formState,
       }}
-    ></InboxComposer>
+    />
   );
 };
 

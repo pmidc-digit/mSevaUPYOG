@@ -1,16 +1,16 @@
 import React, { Fragment, useCallback, useMemo, useReducer, useState } from "react";
-import { InboxComposer, DocumentIcon, Toast, Header } from "@mseva/digit-ui-react-components";
+import {  DocumentIcon, Toast, Header, InboxComposer } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import FilterFormFieldsComponent from "./Inbox/FilterFieldsComponent";
-import SearchQuestionsFieldsComponents from "./Inbox/Questions/SearchQuestionsFieldsComponents";
-import useQuestionsInboxMobileCardsData from "./Inbox/Questions/useQuestionsInboxMobileCardsData";
-import useQuestionsInboxTableConfig from "./Inbox/Questions/useQuestionsInboxTableConfig";
+import FilterFormFieldsComponent from "./FilterFieldsComponent";
+import SearchCategoryFieldsComponents from "./SearchCategoryFieldsComponents";
+import useCategoryInboxMobileCardsData from "./useCategoryInboxMobileDataCard";
+import useCategoryInboxTableConfig from "./useCategoryInboxTableConfig";
 
 //Keep below values from localisation:
-const SEARCH_QUESTIONS = "Search Questions";
+const SEARCH_CATEGORY = "Search Categories";
 const ERR_MESSAGE = "Something went wrong";
 
-const SearchQuestions = ({ parentRoute }) => {
+const SearchCategories = ({ parentRoute }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -25,12 +25,12 @@ const SearchQuestions = ({ parentRoute }) => {
     { code: "INACTIVE", name: `${t("ES_COMMON_INACTIVE")}`, bool: false },
   ];
 
-  //Default values
+  //Default values:
   const searchFormDefaultValues = {
-    // tenantIds: tenantId,
+    //tenantIds: tenantId,
     tenantIds: userUlbs[0],
     categoryName: "",
-    question: "",
+    //isActive: null,
   };
 
   const filterFormDefaultValues = {
@@ -39,9 +39,10 @@ const SearchQuestions = ({ parentRoute }) => {
 
   const tableOrderFormDefaultValues = {
     sortBy: "",
-    limit: 10,
+    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    //limit: 10,
     offset: 0,
-    sortOrder: "DESC",
+    sortOrder: "DESC", //sortOrder: "ASC",
   };
 
   //
@@ -49,27 +50,32 @@ const SearchQuestions = ({ parentRoute }) => {
   function formReducer(state, payload) {
     switch (payload.action) {
       case "mutateSearchForm":
-        Digit.SessionStorage.set("CITIZENSURVEYQUESTION.INBOX", { ...state, searchForm: payload.data });
+        Digit.SessionStorage.set("CITIZENSURVEYCATEGORY.INBOX", { ...state, searchForm: payload.data });
         return { ...state, searchForm: payload.data };
       case "mutateFilterForm":
-        Digit.SessionStorage.set("CITIZENSURVEYQUESTION.INBOX", { ...state, filterForm: payload.data });
+        Digit.SessionStorage.set("CITIZENSURVEYCATEGORY.INBOX", { ...state, filterForm: payload.data });
         return { ...state, filterForm: payload.data };
       case "mutateTableForm":
-        Digit.SessionStorage.set("CITIZENSURVEYQUESTION.INBOX", { ...state, tableForm: payload.data });
+        Digit.SessionStorage.set("CITIZENSURVEYCATEGORY.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
       default:
         break;
     }
   }
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("CITIZENSURVEYQUESTION.INBOX");
+  const InboxObjectInSessionStorage = Digit.SessionStorage.get("CITIZENSURVEYCATEGORY.INBOX");
 
   //Reset:
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("tenantIds", tenantId);
     setSearchFormValue("categoryName", "");
-    setSearchFormValue("question", "");
+    //setSearchFormValue("isActive", null);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
   };
+
+  // const onSortFormReset = (setSortFormValue) => {
+  //   setSortFormValue("sortOrder", "DESC");
+  //   dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues });
+  // };
 
   const onFilterFormReset = (setFilterFormValue) => {
     setFilterFormValue("status", statuses[0]);
@@ -95,9 +101,14 @@ const SearchQuestions = ({ parentRoute }) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
   };
 
+  // const onMobileSortOrderData = (data) => {
+  //   const { sortOrder } = data;
+  //   dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } });
+  // };
+
   //
-  const { data: { Questions = [] } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyQuestionInbox(formState);
-  const totalCount = Questions?.length;
+  const { data: { Categories = [] } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyCategoryInbox(formState);
+  const totalCount = Categories?.length;
 
   //Props for links card:
   const PropsForInboxLinks = {
@@ -113,12 +124,16 @@ const SearchQuestions = ({ parentRoute }) => {
         link: "/digit-ui/employee/engagement/surveys/create-category",
       },
       {
-        text: t("Search Category"),
-        link: "/digit-ui/employee/engagement/surveys/search-category",
+        text: t("Search Categories"),
+        link: "/digit-ui/employee/engagement/surveys/search-categories",
       },
       {
-        text: t("Create Question"),
+        text: t("Create Questions"),
         link: "/digit-ui/employee/engagement/surveys/create-questions",
+      },
+      {
+        text: t("Search Questions"),
+        link: "/digit-ui/employee/engagement/surveys/search-questions",
       },
     ],
   };
@@ -127,7 +142,7 @@ const SearchQuestions = ({ parentRoute }) => {
 
   const SearchFormFields = useCallback(
     ({ registerRef, searchFormState, controlSearchForm }) => (
-      <SearchQuestionsFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} />
+      <SearchCategoryFieldsComponents {...{ registerRef, searchFormState, controlSearchForm }} />
     ),
     []
   );
@@ -150,7 +165,7 @@ const SearchQuestions = ({ parentRoute }) => {
 
   //
   const onSearchFormSubmit = (data) => {
-    console.log("onSearchFormSubmit:", data);
+    console.log("onSearchFormSubmit: ", data);
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
     data.hasOwnProperty("") ? delete data?.[""] : null;
     dispatch({ action: "mutateSearchForm", data });
@@ -178,50 +193,51 @@ const SearchQuestions = ({ parentRoute }) => {
     onFilterFormReset,
   };
 
-  const propsForInboxTable = useQuestionsInboxTableConfig({
+  const propsForInboxTable = useCategoryInboxTableConfig({
     ...{
       parentRoute,
       onPageSizeChange,
       formState,
       totalCount: totalCount,
-      table: Questions,
-      noResultsMessage: "No Questions found",
+      table: Categories,
+      noResultsMessage: "No Categories found",
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
       setShowToast,
     },
   });
-  const propsForInboxMobileCards = useQuestionsInboxMobileCardsData({ parentRoute, table: Questions });
 
-  //For the card displayed after clicking the delete question button:
-  //On clicking delete button under "Delete Question" column in a table row, a toast with Yes & No buttons is opened:
+  const propsForInboxMobileCards = useCategoryInboxMobileCardsData({ parentRoute, table: Categories,   setShowToast });
+
+  //const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
+
+  //For the card displayed after clicking the delete category button:
+  //On clicking delete button under "Delete Category" column in a table row, a toast with Yes & No buttons is opened:
   //Toast is closed if no is clicked
   const onNoToToast = () => {
     setShowToast(null);
   };
   //Row will be deleted if yes is clicked
   const onYesToToast = () => {
-    handleUpdateQuestions();
+    handleUpdateCategory();
   };
 
-  const handleUpdateQuestions = () => {
-    const row = showToast.rowData.row;
-    const updatedStatus = showToast.rowData.updatedStatus;
+  const handleUpdateCategory = () => {
+    const row = showToast.rowData;
     const payload = {
-      Questions: [
+      Categories: [
         {
-          uuid: row?.original?.uuid,
-          status: updatedStatus,
-          //...(typeof row?.original?.isActive === "boolean" && { isActive: !row?.original?.isActive }),
-          //label: "" //For updating the question name(question label)
+          id: row?.id,
+          ...(typeof row?.isActive === "boolean" && { isActive: !row?.isActive }),
+          //label: "" //For updating the category name(category label)
         },
       ],
     };
 
-    Digit.Surveys.updateQuestions(payload)
+    Digit.Surveys.updateCategory(payload)
       .then((response) => {
-        if (response?.Questions?.length > 0) {
-          setShowToast({ label: "Question status updated successfully", isDleteBtn: "true" });
+        if (response?.Categories?.length > 0) {
+          setShowToast({ label: "Category status updated successfully", isDleteBtn: "true" });
         } else {
           setShowToast({ label: response?.Errors?.[0]?.message || ERR_MESSAGE, isDleteBtn: "true", error: true });
         }
@@ -232,14 +248,16 @@ const SearchQuestions = ({ parentRoute }) => {
   };
 
   return (
+    // <div className="pageCard">
     <Fragment>
-      <Header>{t(SEARCH_QUESTIONS)}</Header>
+      <Header>{t(SEARCH_CATEGORY)}</Header>
       <InboxComposer
         {...{
           isInboxLoading,
           PropsForInboxLinks,
           ...propsForSearchForm,
           ...propsForFilterForm,
+          //...propsForMobileSortForm,
           propsForInboxMobileCards,
           propsForInboxTable,
           formState,
@@ -260,7 +278,8 @@ const SearchQuestions = ({ parentRoute }) => {
         />
       )}
     </Fragment>
+    // </div>
   );
 };
 
-export default SearchQuestions;
+export default SearchCategories;

@@ -39,7 +39,7 @@ const ChangeLanguage = (prop) => {
                 selected={language.value === selected}
                 text={language.label}
                 onClick={() => handleChangeLanguage(language)}
-              ></CustomButton>
+              />
             </div>
           ))}
         </div>

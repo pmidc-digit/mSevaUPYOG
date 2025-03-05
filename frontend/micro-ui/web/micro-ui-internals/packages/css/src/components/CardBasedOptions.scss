@@ -23,20 +23,22 @@
           margin: auto;
           .ChildOptionImageWrapper{
               margin: auto !important;
-              background: rgba(244, 119, 56, 0.12);
+              background: #f5fbff;
               mix-blend-mode: normal;
               padding-top: 14px;
               @apply h-12 w-12 rounded-full cursor-pointer;
               svg{
                   height: 20px;
                   width: 20px;
-                  fill: #a82227;
+                  fill: #1359C8;
                   margin: auto;
               }
           }
           .ChildOptionName{
               font-size: 12px;
               line-height: 14px;
+              color: #2947A3;
+
           }
       }
   }

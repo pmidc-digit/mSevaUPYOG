@@ -16,6 +16,7 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
   const SurveyList = Digit.ComponentRegistryService.getComponent("SurveyList");
   const FillSurvey = Digit.ComponentRegistryService.getComponent("FillSurvey");
   const ShowSurvey = Digit.ComponentRegistryService.getComponent("ShowSurvey");
+  const FillSurveyNew = Digit.ComponentRegistryService.getComponent("FillSurveyNew");
   return (
     <React.Fragment>
       <div className="engagement-citizen-wrapper">
@@ -30,6 +31,7 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
           <PrivateRoute path={`${path}/documents/list/:category/:count`} component={(props) => <Documents {...props} />} />
           <PrivateRoute path={`${path}/surveys/list`} component={(props) => <SurveyList {...props} />} />
           <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillSurvey {...props} />} />
+          <PrivateRoute path={`${path}/surveys/fillSurvey`} component={(props) => <FillSurveyNew {...props} />} />
           <PrivateRoute path={`${path}/surveys/submit-response`} component={(props) => <Response {...props} />} />
           <PrivateRoute path={`${path}/surveys/show-survey`} component={(props) => <ShowSurvey {...props} />} />
         </Switch>

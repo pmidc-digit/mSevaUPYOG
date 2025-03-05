@@ -354,9 +354,20 @@ border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
 }
 
 .category-card h3 {
-  margin-top: 0;
-}
+  margin-top: 5px;
+  margin-bottom: 2px;
+  font-weight: 600;
+  color: #0d43a7;
+  font-family: 'roboto';
 
+}
+.category-card h2 {
+  margin-top: 5px;
+  margin-bottom: 2px;
+  font-weight: bold;
+  font-size: 18px;
+  color: #0d43a7;
+}
 .category-card input,
 .category-card select {
   display: block;
@@ -365,6 +376,7 @@ border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
   margin-bottom: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  color: #0d43a7;
 }
 
 .category-card button {
@@ -410,4 +422,9 @@ border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
 .category-card label:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+}
+
+.category-card span{
+  color: #FF2400;
+ 
 }

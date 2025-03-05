@@ -15,7 +15,8 @@ import CreateSurveyQuestions from "./CreateSurveyQuestions";
 import SearchQuestions from "./SearchQuestions";
 import SurveyForm from "../../../components/Surveys/SurveyForms/SurveyForm";
 import CreateSurveyStepForm from "../../../components/Surveys/CreateSurveyStepForm";
-import CreateSurveyForm from "../../../components/Surveys/SurveyForms/CreateSurveyForm"
+import CreateSurveyForm from "../../../components/Surveys/SurveyForms/CreateSurveyForm";
+import CitizenSurveyFormNew from "../../../components/Surveys/CitizenSurveyFormNew";
 
 const Surveys = ({ match: { path } = {}, tenants, parentRoute }) => {
   return (
@@ -35,6 +36,7 @@ const Surveys = ({ match: { path } = {}, tenants, parentRoute }) => {
       <PrivateRoute path={`${path}/create-survey`} component={(props) => <SurveyForm {...props} />} />
       <PrivateRoute path={`${path}/create-survey-step-form`} component={(props) => <CreateSurveyStepForm {...props} />} />
       <PrivateRoute path={`${path}/create-survey-form`} component={(props) => <CreateSurveyForm {...props} />} />
+      <PrivateRoute path={`${path}/fill-survey`} component={(props) => <CitizenSurveyFormNew {...props} />} />
     </Switch>
   );
 };

@@ -29,9 +29,12 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -55,7 +58,7 @@ class ScorecardSurveyServiceTest {
     @Mock
     private ScorecardSurveyRepository surveyRepository;
 
-    @Autowired
+    @Mock
     private ScorecardSurveyUtil surveyUtil;
 
     private RequestInfo requestInfo;
@@ -85,6 +88,13 @@ class ScorecardSurveyServiceTest {
         doNothing().when(surveyValidator).validateQuestionsAndSections(any());
         doNothing().when(enrichmentService).enrichScorecardSurveyEntity(any());
 
+        // Mock question existence check
+        when(surveyRepository.allQuestionsExist(anyList())).thenReturn(true);
+        
+        // Mock surveyUtil to return a dummy UUID list
+        when(surveyUtil.getIdList(any(), anyString(), anyString(), anyString(), anyInt()))
+                .thenReturn(Collections.singletonList("SS-1012/2024-25/0020"));
+        
         doNothing().when(producer).push(anyString(), any(Object.class));
 
         ScorecardSurveyEntity responseEntity = scorecardSurveyService.createSurvey(surveyRequest);
@@ -148,6 +158,113 @@ class ScorecardSurveyServiceTest {
         assertTrue(result.isEmpty());
     }
     
+    @Test
+    public void testUpdateSurveyActive_WhenUuidIsNull_ShouldThrowException() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid(null);
+        request.setActive(true);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.updateSurveyActive(request));
+
+        assertEquals("UUID must not be null or empty", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateSurveyActive_WhenUuidIsEmpty_ShouldThrowException() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid("");
+        request.setActive(true);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.updateSurveyActive(request));
+
+        assertEquals("UUID must not be null or empty", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateSurveyActive_WhenActiveIsNull_ShouldThrowException() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid("SS-1012/2024-25/000131");
+        request.setActive(null);
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.updateSurveyActive(request));
+
+        assertEquals("Active status must not be null", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateSurveyActive_WhenUuidDoesNotExist_ShouldThrowException() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid("SS-1012/2024-25/000999");
+        request.setActive(true);
+
+        ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
+        criteria.setUuid(request.getUuid());
+
+        when(surveyRepository.fetchSurveys(criteria)).thenReturn(Collections.emptyList());
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.updateSurveyActive(request));
+
+        assertEquals("UUID does not exist in database, Update failed!", exception.getMessage());
+    }
+
+    @Test
+    public void testUpdateSurveyActive_WhenUuidExists_ShouldPublishToKafka() {
+        UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+        request.setUuid("SS-1012/2024-25/000131");
+        request.setActive(true);
+
+        ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
+        surveyEntity.setUuid("SS-1012/2024-25/000131");
+
+        ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
+        criteria.setUuid(request.getUuid());
+
+        when(surveyRepository.fetchSurveys(criteria))
+            .thenReturn(Collections.singletonList(surveyEntity));
+
+        when(applicationProperties.getUpdateActiveSurveyTopic()).thenReturn("update-topic");
+
+        scorecardSurveyService.updateSurveyActive(request);
+
+        assertNotNull(request.getLastModifiedTime());
+
+        verify(producer, times(1)).push("update-topic", request);
+    }
+    
+    @Test
+    public void testSearchSurvey_WithOpenSurveyFlag() {
+        ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
+        criteria.setOpenSurveyFlag(true);
+        
+        List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
+        when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
+        
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+    }
+
+    @Test
+    public void testSearchSurvey_WithoutOpenSurveyFlag() {
+        ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
+        criteria.setOpenSurveyFlag(false);
+        criteria.setTenantId("pb.testing");  // Ensure the repository method gets called
+
+        List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
+        when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
+
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+
+        assertNotNull(result);
+        assertFalse(result.isEmpty());
+    }
+
+    
     /*** Helper Method to Create Valid Survey ***/
     private ScorecardSurveyEntity getValidSurveyEntity() {
         return ScorecardSurveyEntity.builder()
@@ -189,3 +306,4 @@ class ScorecardSurveyServiceTest {
     }
 
 }
+

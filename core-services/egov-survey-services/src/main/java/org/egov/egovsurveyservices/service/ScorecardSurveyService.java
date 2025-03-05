@@ -9,11 +9,13 @@ import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
 import org.egov.egovsurveyservices.repository.SurveyRepository;
 import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
+import org.egov.egovsurveyservices.web.models.QuestionWeightage;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyRequest;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveySearchCriteria;
 import org.egov.egovsurveyservices.web.models.SurveyEntity;
 import org.egov.egovsurveyservices.web.models.SurveySearchCriteria;
+import org.egov.egovsurveyservices.web.models.UpdateSurveyActiveRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -27,6 +29,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 @Slf4j
 @Service
@@ -63,11 +68,22 @@ public class ScorecardSurveyService {
         }
 
         String tenantId = surveyEntity.getTenantId();
-        //List<String> listOfSurveyIds = surveyUtil.getIdList(surveyRequest.getRequestInfo(), tenantId, "ss.surveyid", "SY-[cy:yyyy-MM-dd]-[SEQ_EG_DOC_ID]", 1);
-        //log.info(listOfSurveyIds.toString());
+        
+        // Collect all question UUIDs
+        List<String> questionUuids = surveyEntity.getSections().stream()
+                .flatMap(section -> section.getQuestions().stream())
+                .map(QuestionWeightage::getQuestionUuid)
+                .collect(Collectors.toList());
+        
+        // Check if all the questions in the given sections exist
+        if (!allQuestionsExist(questionUuids)) {
+            throw new IllegalArgumentException("One or more questions do not exist in the database.");
+        }
+        
+        List<String> listOfSurveyIds = surveyUtil.getIdList(surveyRequest.getRequestInfo(), tenantId, "ss.surveyid", "SY-[cy:yyyy-MM-dd]-[SEQ_EG_DOC_ID]", 1);
+        log.info(listOfSurveyIds.toString());
 
-        //surveyEntity.setUuid(listOfSurveyIds.get(0));
-        surveyEntity.setUuid("SS-1012/2024-25/000142");       
+        surveyEntity.setUuid(listOfSurveyIds.get(0));      
         surveyEntity.setTenantId(tenantId);
         
         enrichmentService.enrichScorecardSurveyEntity(surveyRequest);
@@ -80,7 +96,7 @@ public class ScorecardSurveyService {
     
     /**
      * Searches surveys based on the criteria request and fetches details
-     * @param ScorecardSurveySearchCriteria Request object containing criteria filters of survey to be searched
+     * @param criteria Request object containing criteria filters of survey to be searched
      */
     
     public List<ScorecardSurveyEntity> searchSurveys(ScorecardSurveySearchCriteria criteria, Boolean isCitizen) {
@@ -91,12 +107,42 @@ public class ScorecardSurveyService {
         }
 
         // If UUID is absent, check if tenantId or title is provided
-        if (StringUtils.isNotBlank(criteria.getTenantId()) || StringUtils.isNotBlank(criteria.getTitle())) {
+        if (StringUtils.isNotBlank(criteria.getTenantId()) || StringUtils.isNotBlank(criteria.getTitle()) || Boolean.TRUE.equals(criteria.getOpenSurveyFlag())) {
             return surveyRepository.fetchSurveys(criteria); // Fetch based on tenantId, title, or both
         }
 
         // If no valid search criteria is given, return an empty list
         return new ArrayList<>();
+    }
+
+	public void updateSurveyActive(@Valid UpdateSurveyActiveRequest request) {
+		// Validate UUID
+	    if (request.getUuid() == null || request.getUuid().trim().isEmpty()) {
+	        throw new IllegalArgumentException("UUID must not be null or empty");
+	    }
+
+	    // Validate Active status
+	    if (request.getActive() == null) {
+	        throw new IllegalArgumentException("Active status must not be null");
+	    }
+		ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
+		
+		//check uuid is present in database
+		criteria.setUuid(request.getUuid());
+		List<ScorecardSurveyEntity> surveyEntities = surveyRepository.fetchSurveys(criteria);
+		if(surveyEntities.isEmpty()) {
+			log.warn("No survey found in database for this uuid: {}", request.getUuid());
+			throw new IllegalArgumentException("UUID does not exist in database, Update failed!");
+		}
+		else {
+			request.setLastModifiedTime(System.currentTimeMillis());
+			request.setLastModifiedBy(request.getRequestInfo().getUserInfo().getUuid());
+			producer.push(applicationProperties.getUpdateActiveSurveyTopic(), request);
+		}
+	}
+	
+	private boolean allQuestionsExist(List<String> questionUuids) {
+        return surveyRepository.allQuestionsExist(questionUuids);
     }
     
 }

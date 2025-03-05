@@ -48,4 +48,14 @@ public class ScorecardSurveyController {
         ScorecardSurveyResponse response  = ScorecardSurveyResponse.builder().surveyEntities(surveys).totalCount(surveyCount).build();
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
+    
+    @PostMapping("/csc/active/_update")
+    public ResponseEntity<?> updateActiveSurvey(@Valid @RequestBody UpdateSurveyActiveRequest request) {
+        try {
+            surveyService.updateSurveyActive(request);
+            return ResponseEntity.ok().body(Collections.singletonMap("message", "Survey active status updated successfully!"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
 }

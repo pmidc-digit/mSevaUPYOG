@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -51,6 +52,13 @@ public class ScorecardSurveyRepository {
         log.info("Generated Query: " + query + " | Params: " + preparedStmtList);
 
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+    }
+    
+    public boolean allQuestionsExist(List<String> questionUuids) {
+        String placeholders = questionUuids.stream().map(uuid -> "?").collect(Collectors.joining(","));
+        String query = surveyQueryBuilder.allQuestionExistsQuery(placeholders);
+        List<String> foundUuids = jdbcTemplate.query(query, questionUuids.toArray(), (rs, rowNum) -> rs.getString("uuid"));
+        return foundUuids.containsAll(questionUuids);
     }
 
 }

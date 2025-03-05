@@ -62,7 +62,7 @@ public class QuestionQueryBuilderTest {
         assertEquals(tenantId, preparedStmtList.get(0));
         assertEquals(uuid, preparedStmtList.get(1));
         assertEquals(createdBy, preparedStmtList.get(2));
-        assertEquals(status, preparedStmtList.get(3));
+        assertEquals(status.toString(), preparedStmtList.get(3));
         assertEquals(categoryId, preparedStmtList.get(4));
     }
 
@@ -210,7 +210,7 @@ public class QuestionQueryBuilderTest {
 
         assertEquals(expectedQuery, query);
         assertEquals(1, preparedStmtList.size());
-        assertEquals(status, preparedStmtList.get(0));
+        assertEquals(status.toString(), preparedStmtList.get(0));
     }
 
     @Test

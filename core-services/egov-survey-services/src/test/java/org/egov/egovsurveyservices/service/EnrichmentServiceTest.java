@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.google.gson.Gson;
@@ -18,12 +20,16 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 public class EnrichmentServiceTest {
 
     @InjectMocks
     private EnrichmentService enrichmentService;
+
+    @Mock
+    private QuestionService questionService;
 
     private RequestInfo requestInfo;
 
@@ -127,6 +133,11 @@ public class EnrichmentServiceTest {
             new QuestionWeightage("q-002", new Question(), 70) // Total = 110 (Invalid)
         ));
 
+        Question ques = Question.builder().questionStatement("ques").auditDetails(new AuditDetails()).uuid("q-001").build();
+        QuestionResponse questionResponse=QuestionResponse.builder().questions(Collections.singletonList(ques)).build();
+
+
+        when(questionService.searchQuestion(Mockito.any(QuestionSearchCriteria.class))).thenReturn(questionResponse);
         ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
         surveyEntity.setUuid("survey-001");
         surveyEntity.setSections(Collections.singletonList(section));
@@ -136,9 +147,9 @@ public class EnrichmentServiceTest {
         request.setRequestInfo(requestInfo);
 
         // Act & Assert
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, 
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
             () -> enrichmentService.enrichScorecardSurveyEntity(request));
-        
+
         assertTrue(thrown.getMessage().contains("Total question weightage in section"));
     }
 }

@@ -71,4 +71,8 @@ public class ApplicationProperties {
     
     @Value("${egov.ss.createsurvey.create.topic}")
     private String createScorecardSurveyTopic ;
+    
+    @Value("${egov.ss.updatesurvey.active.topic}")
+    private String updateActiveSurveyTopic ;
+ 
 }

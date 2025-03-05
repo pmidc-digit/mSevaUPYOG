@@ -3,8 +3,10 @@ package org.egov.egovsurveyservices.service;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.egovsurveyservices.web.models.enums.Status;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -15,6 +17,9 @@ import static org.egov.egovsurveyservices.utils.SurveyServiceConstants.*;
 @Service
 @Slf4j
 public class EnrichmentService {
+
+    @Autowired
+    QuestionService questionService;
 
     public void enrichSurveyEntity(SurveyRequest surveyRequest) {
         SurveyEntity surveyEntity = surveyRequest.getSurveyEntity();
@@ -43,36 +48,6 @@ public class EnrichmentService {
                     .build());
         }
     }
-
-    /*public void enrichScorecardSurveyEntity(ScorecardSurveyRequest surveyRequest) {
-        ScorecardSurveyEntity
-                surveyEntity = surveyRequest.getSurveyEntity();
-        surveyEntity.setStatus(ACTIVE);
-        surveyEntity.setActive(Boolean.TRUE);
-        surveyEntity.setAuditDetails(AuditDetails.builder()
-                .createdBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
-                .lastModifiedBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
-                .createdTime(System.currentTimeMillis())
-                .lastModifiedTime(System.currentTimeMillis())
-                .build());
-        surveyEntity.setPostedBy(surveyRequest.getRequestInfo().getUserInfo().getName());
-
-        //fix this
-        for(int i = 0; i < surveyEntity.getQuestions().size(); i++) {
-            Question question = surveyEntity.getQuestions().get(i);
-            question.setQorder((long)i+1);
-            question.setUuid(UUID.randomUUID().toString());
-            question.setSurveyId(surveyEntity.getUuid());
-            if(ObjectUtils.isEmpty(question.getStatus()))
-                question.setStatus(Status.ACTIVE);
-            question.setAuditDetails(AuditDetails.builder()
-                    .createdBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
-                    .lastModifiedBy(surveyRequest.getRequestInfo().getUserInfo().getUuid())
-                    .createdTime(System.currentTimeMillis())
-                    .lastModifiedTime(System.currentTimeMillis())
-                    .build());
-        }
-    }*/
     
     public void enrichScorecardSurveyEntity(ScorecardSurveyRequest surveyRequest) {
         ScorecardSurveyEntity surveyEntity = surveyRequest.getSurveyEntity();
@@ -85,7 +60,7 @@ public class EnrichmentService {
                 .build());
         surveyEntity.setPostedBy(surveyRequest.getRequestInfo().getUserInfo().getName());
 
-        List<Section> sections = surveyEntity.getSections(); //get all the sections
+        List<Section> sections = surveyEntity.getSections();
         Integer countOfSections = sections.size();
         if (CollectionUtils.isEmpty(sections)) {
             log.warn("No sections found in survey: {}", surveyEntity.getUuid());
@@ -96,11 +71,11 @@ public class EnrichmentService {
 
         for (int i = 0; i < countOfSections; i++) {
         	Section section = surveyEntity.getSections().get(i);
-        	totalSectionWeightage += section.getWeightage(); // Track section weightage sum
+        	totalSectionWeightage += section.getWeightage();
             section.setUuid(UUID.randomUUID().toString());
             section.setTitle(surveyEntity.getSections().get(i).getTitle());   
             section.setWeightage(surveyEntity.getSections().get(i).getWeightage());
-            List<QuestionWeightage> questionWeightages = section.getQuestions(); //get qns
+            List<QuestionWeightage> questionWeightages = section.getQuestions();
             Integer qnws = questionWeightages.size();
             if (CollectionUtils.isEmpty(questionWeightages)) {
                 log.warn("No questions found in section: {}", section.getUuid());
@@ -111,10 +86,15 @@ public class EnrichmentService {
 
             for (int j = 0; j < qnws; j++) {
                 QuestionWeightage questionWeightage = questionWeightages.get(j);
-                questionWeightage.setQuestionUuid(UUID.randomUUID().toString());
+                questionWeightage.setQuestionUuid(questionWeightage.getQuestionUuid());
                 questionWeightage.setSectionUuid(section.getUuid());
                 questionWeightage.setQorder((long) j + 1);
-                Question question = questionWeightage.getQuestion();
+                QuestionSearchCriteria criteria =new QuestionSearchCriteria();
+                criteria.setUuid(questionWeightage.getQuestionUuid());
+                QuestionResponse questionResponse = questionService.searchQuestion(criteria);
+                Question question1 = questionResponse.getQuestions().get(0);
+                questionWeightage.setQuestion(question1);
+                Question question =questionWeightage.getQuestion();
                 totalQuestionWeightage += questionWeightage.getWeightage(); // Track question weightage sum
 
                 if (question == null) {
@@ -122,8 +102,8 @@ public class EnrichmentService {
                     continue;
                 }
 
-                question.setQorder((long) j + 1);
-                question.setUuid(UUID.randomUUID().toString());
+                question.setQorder(questionWeightage.getQorder());
+                question.setUuid(questionWeightage.getQuestionUuid());
                 question.setSurveyId(surveyEntity.getUuid());
 
                 if (ObjectUtils.isEmpty(question.getStatus())) {

@@ -1,5 +1,5 @@
 {
-  "name": "@mseva/upyog-ui-module-ptr",
+  "name": "@mseva/digit-ui-module-ptr",
   "version": "1.0.0",
   "license": "MIT",
   "main": "dist/index.js",

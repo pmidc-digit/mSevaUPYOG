@@ -9,13 +9,13 @@ const useSearch = (filters, config) => {
 
   var finalFilters = {
     tenantId: validTenantId,
-    categoryId: categoryName?.value ?? "",
-    //uuid: question?.value??"",
-    questionStatement: questionStatement?.trim(),
-    status: status?.code==="ALL"?"":status?.code
-    //isActive: status?.bool ?? null,
-    //isActive: isActive?.id ?? ""
-  };
+    categoryId: categoryName ? categoryName.value : "",
+    //uuid: question ? question.value : "",
+    questionStatement: questionStatement ? questionStatement.trim() : "",
+    status: status && status.code === "ALL" ? "" : status ? status.code : ""
+    //isActive: status ? status.bool : null,
+    //isActive: isActive ? isActive.id : ""
+};
 
   //clearing out empty string params from payload
   Object.keys(finalFilters).forEach((key) => {

@@ -7,9 +7,9 @@ import {
   UPDATE_COMPLAINT,
   FETCH_ALL_BUSINESSS_SERVICES,
 } from "./types";
-//import { LocalizationService } from "../../@egovernments/digit-utils/services/Localization/service";
-//import { LocationService } from "../../@egovernments/digit-utils/services/Location";
-//import { LocalityService } from "../../@egovernments/digit-utils/services/Localities";
+//import { LocalizationService } from "../../@mseva/digit-utils/services/Localization/service";
+//import { LocationService } from "../../@mseva/digit-utils/services/Location";
+//import { LocalityService } from "../../@mseva/digit-utils/services/Localities";
 import createComplaint from "./complaint";
 
 export const fetchLocalities = (city) => async (dispatch, getState) => {

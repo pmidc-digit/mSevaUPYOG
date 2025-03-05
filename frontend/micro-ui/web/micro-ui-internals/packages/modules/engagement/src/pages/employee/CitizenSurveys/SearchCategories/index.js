@@ -1,12 +1,10 @@
 import React, { Fragment, useCallback, useMemo, useReducer, useState } from "react";
-import {  DocumentIcon, Toast, Header } from "@mseva/digit-ui-react-components";
+import {  DocumentIcon, Toast, Header, InboxComposer } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFieldsComponent";
 import SearchCategoryFieldsComponents from "./SearchCategoryFieldsComponents";
 import useCategoryInboxMobileCardsData from "./useCategoryInboxMobileDataCard";
 import useCategoryInboxTableConfig from "./useCategoryInboxTableConfig";
-//
-import InboxComposer from "../../../../../../../react-components/src/hoc/InboxComposer";
 
 //Keep below values from localisation:
 const SEARCH_CATEGORY = "Search Categories";

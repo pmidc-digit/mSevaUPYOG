@@ -177,7 +177,7 @@ public class SurveyValidator {
                 mandatoryQuestionsUuids.add(question.getUuid());
         });
         answerEntity.getAnswers().forEach(answer -> {
-            questionsThatAreAnsweredUuids.add(answer.getQuestionId());
+            questionsThatAreAnsweredUuids.add(answer.getQuestionUuid());
         });
         // Check to validate whether all answers belong to same survey
         if(!allQuestionsUuids.containsAll(questionsThatAreAnsweredUuids))

@@ -1,11 +1,7 @@
 package org.egov.egovsurveyservices.repository;
 
-import org.egov.egovsurveyservices.repository.querybuilder.CategoryQueryBuilder;
 import org.egov.egovsurveyservices.repository.querybuilder.ScorecardSurveyQueryBuilder;
-import org.egov.egovsurveyservices.repository.rowmapper.CategoryRowMapper;
 import org.egov.egovsurveyservices.repository.rowmapper.ScorecardSurveyRowMapper;
-import org.egov.egovsurveyservices.web.models.Category;
-import org.egov.egovsurveyservices.web.models.CategorySearchCriteria;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveySearchCriteria;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -75,6 +70,7 @@ public class ScorecardSurveyRepositoryTest {
     @Test
     public void testFetchSurveys_NotFound() {
         List<Object> preparedStmtList = new ArrayList<>();
+
         String query = "SELECT * FROM survey WHERE condition";
         when(surveyQueryBuilder.getSurveySearchQuery(searchCriteria, preparedStmtList)).thenReturn(query);
 

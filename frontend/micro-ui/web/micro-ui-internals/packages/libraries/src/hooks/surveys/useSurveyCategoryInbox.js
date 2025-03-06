@@ -10,7 +10,7 @@ const useSearch = (filters, config) => {
   var finalFilters = {
     tenantId: validTenantId,
     id: (categoryName && categoryName.value) ? categoryName.value : "",
-    isActive: (status && status.bool) ? status.bool : null
+    isActive: typeof status==="object" ? status.bool : ""
     // isActive: (isActive && isActive.id) ? isActive.id : ""
 };
 

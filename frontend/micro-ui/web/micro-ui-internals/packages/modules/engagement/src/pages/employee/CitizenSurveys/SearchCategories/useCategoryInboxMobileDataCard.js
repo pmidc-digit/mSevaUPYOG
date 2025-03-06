@@ -45,7 +45,7 @@ const useCategoryInboxMobileCardsData = ({ parentRoute, table, setShowToast }) =
   };
 
   const handleUpdateCategoryConfirm = (row) => {
-    console.log("Current row: ", row);
+    //console.log("Current row: ", row);
     const currentStatus = row?.isActive;
     setShowToast({
       label: `Are you sure you want to change the category status of "${row?.label}" from ${currentStatus} to ${!currentStatus}? Please confirm.`,

@@ -83,7 +83,7 @@ export const Surveys = {
   searchCategory: (filters = {}) =>
     Request({
       url: Urls.engagement.surveys.searchCategory,
-      params: { ...filters },
+      params: { ...filters, size: 100000 },
       useCache: false,
       userService: true,
       method: "POST",
@@ -94,7 +94,7 @@ export const Surveys = {
   searchQuestions: (filters = {}) =>
     Request({
       url: Urls.engagement.surveys.searchQuestions,
-      params: { ...filters },
+      params: { ...filters, size: 100000 },
       useCache: false,
       userService: true,
       method: "POST",

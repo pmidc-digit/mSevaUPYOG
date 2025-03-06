@@ -134,7 +134,7 @@ public class EnrichmentService {
         RequestInfo requestInfo = answerRequest.getRequestInfo();
         AnswerEntity answerEntity = answerRequest.getAnswerEntity();
         answerEntity.getAnswers().forEach(answer -> {
-            answer.setUuid(UUID.randomUUID().toString());
+            answer.setAnswerUuid(UUID.randomUUID().toString());
             answer.setCitizenId(requestInfo.getUserInfo().getUuid());
             answer.setAuditDetails(AuditDetails.builder()
                     .createdBy(requestInfo.getUserInfo().getUuid())

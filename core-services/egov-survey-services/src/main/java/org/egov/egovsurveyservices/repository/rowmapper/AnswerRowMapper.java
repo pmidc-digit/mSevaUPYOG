@@ -36,7 +36,7 @@ public class AnswerRowMapper implements ResultSetExtractor<List<Answer>> {
                         .build();
 
                 answer = Answer.builder()
-                        .uuid(rs.getString("uuid"))
+                        .answerUuid(rs.getString("uuid"))
                         .surveyUuid(rs.getString("surveyuuid"))
                         .sectionUuid(rs.getString("sectionuuid"))
                         .questionUuid(rs.getString("questionuuid"))

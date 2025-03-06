@@ -15,8 +15,6 @@ import org.egov.egovsurveyservices.web.models.QuestionWeightage;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyRequest;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveySearchCriteria;
-import org.egov.egovsurveyservices.web.models.SurveyEntity;
-import org.egov.egovsurveyservices.web.models.SurveySearchCriteria;
 import org.egov.egovsurveyservices.web.models.UpdateSurveyActiveRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,13 +23,10 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -173,12 +168,12 @@ public class ScorecardSurveyService {
                             .map(answer -> {
                                 String questionStatement = questionRepository.findQuestionStatementByUuid(answer.getQuestionUuid());
 
-                                String existingUuid = getExistingAnswerUuid(answer.getUuid());
+                                String existingUuid = getExistingAnswerUuid(answer.getAnswerUuid());
                                 String uuidToUse = existingUuid != null ? existingUuid : UUID.randomUUID().toString();
                                 if (StringUtils.isBlank(questionStatement)) {
                                     throw new CustomException("EG_SS_QUESTION_NOT_FOUND", "question not found with id " + answer.getQuestionUuid());
                                 }
-                                answer.setUuid(uuidToUse);
+                                answer.setAnswerUuid(uuidToUse);
                                 answer.setSurveyUuid(answerEntity.getSurveyId());
                                 answer.setAuditDetails(auditDetails);
                                 answer.setCitizenId(uuid);
@@ -186,7 +181,7 @@ public class ScorecardSurveyService {
                                 return ScorecardQuestionResponse.builder()
                                         .questionUuid(answer.getQuestionUuid())
                                         .questionStatement(questionStatement)
-                                        .answeruuid(answer.getUuid())
+                                        .answerUuid(answer.getAnswerUuid())
                                         .answer(answer.getAnswer())
                                         .comments(answer.getComments())
                                         .build();

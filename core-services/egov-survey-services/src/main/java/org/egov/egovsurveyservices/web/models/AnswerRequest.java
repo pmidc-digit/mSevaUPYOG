@@ -18,7 +18,7 @@ public class AnswerRequest {
     @JsonProperty("AnswerEntity")
     AnswerEntity answerEntity;
 
-    @JsonProperty("user")
+    @JsonProperty("User")
     User user;
 
     @JsonProperty("RequestInfo")

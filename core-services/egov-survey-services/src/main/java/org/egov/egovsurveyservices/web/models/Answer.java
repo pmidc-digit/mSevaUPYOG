@@ -14,8 +14,8 @@ import java.util.List;
 @ToString
 public class Answer {
 
-    @JsonProperty("uuid")
-    private String uuid;
+    @JsonProperty("answerUuid")
+    private String answerUuid;
 
     @JsonProperty("surveyUuid")
     private String surveyUuid;

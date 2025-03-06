@@ -94,8 +94,8 @@ public class EnrichmentServiceTest {
 
         enrichmentService.enrichAnswerEntity(answerRequest);
 
-        assertNotNull(answerEntity.getAnswers().get(0).getUuid());
-        assertNotNull(answerEntity.getAnswers().get(1).getUuid());
+        assertNotNull(answerEntity.getAnswers().get(0).getAnswerUuid());
+        assertNotNull(answerEntity.getAnswers().get(1).getAnswerUuid());
         assertEquals("12345", answerEntity.getAnswers().get(0).getCitizenId());
         assertEquals("12345", answerEntity.getAnswers().get(1).getCitizenId());
         assertEquals("12345", answerEntity.getAnswers().get(0).getAuditDetails().getCreatedBy());

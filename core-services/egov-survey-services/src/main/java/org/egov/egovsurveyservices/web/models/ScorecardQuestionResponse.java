@@ -24,8 +24,8 @@ public class ScorecardQuestionResponse {
     @JsonProperty("answer")
     private List<Object> answer;
 
-    @JsonProperty("answeruuid")
-    private String answeruuid;
+    @JsonProperty("answerUuid")
+    private String answerUuid;
 
     @JsonProperty("comments")
     private String comments;

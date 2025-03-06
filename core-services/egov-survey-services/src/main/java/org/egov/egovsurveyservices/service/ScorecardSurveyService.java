@@ -7,6 +7,7 @@ import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
 import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
+import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.tracer.model.CustomException;
@@ -49,6 +50,9 @@ public class ScorecardSurveyService {
 
     @Autowired
     private ScorecardSurveyRepository surveyRepository;
+
+    @Autowired
+    private ScorecardSurveyUtil surveyUtil;
 
     @Autowired
     private ApplicationProperties applicationProperties;
@@ -151,8 +155,8 @@ public class ScorecardSurveyService {
     public ScorecardAnswerResponse submitResponse(AnswerRequest answerRequest) {
         AnswerEntity answerEntity = answerRequest.getAnswerEntity();
         RequestInfo requestInfo = answerRequest.getRequestInfo();
-        surveyValidator.validateUserTypeForAnsweringSurvey(requestInfo);
-        String uuid = requestInfo.getUserInfo().getUuid();
+        surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);
+        String uuid = answerRequest.getUser().getUuid();
 //        surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, uuid);
         surveyValidator.validateAnswers(answerEntity);
 

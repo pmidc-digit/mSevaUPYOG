@@ -60,6 +60,15 @@ public class ScorecardSurveyValidator {
             throw new CustomException("EG_SS_SUBMIT_RESPONSE_ERR", "Survey can only be answered by citizens.");
     }
 
+    public void validateUserTypeForAnsweringScorecardSurvey(AnswerRequest requestInfo) {
+        if(requestInfo.getUser()==null){
+            throw new CustomException("EG_SS_USER_INFO_MISSING", "Please provide citizen info.");
+        }
+
+        if(requestInfo.getUser().getType()==null || !requestInfo.getUser().getType().equalsIgnoreCase(CITIZEN))
+            throw new CustomException("EG_SS_SUBMIT_RESPONSE_ERR", "Survey can only be answered by citizens.");
+    }
+
     public void validateWhetherCitizenAlreadyResponded(AnswerEntity answerEntity, String citizenId) {
         if(surveyService.hasCitizenAlreadyResponded(answerEntity, citizenId))
             throw new CustomException("EG_SS_CITIZEN_ALREADY_RESPONDED", "The citizen has already responded to this survey.");

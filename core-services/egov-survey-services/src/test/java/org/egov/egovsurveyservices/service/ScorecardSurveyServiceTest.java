@@ -234,6 +234,7 @@ class ScorecardSurveyServiceTest {
         UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
         request.setUuid("SS-1012/2024-25/000131");
         request.setActive(true);
+        request.setRequestInfo(requestInfo);
 
         ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
         surveyEntity.setUuid("SS-1012/2024-25/000131");
@@ -261,7 +262,7 @@ class ScorecardSurveyServiceTest {
         List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
         when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
 
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
@@ -276,7 +277,7 @@ class ScorecardSurveyServiceTest {
         List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
         when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
 
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());

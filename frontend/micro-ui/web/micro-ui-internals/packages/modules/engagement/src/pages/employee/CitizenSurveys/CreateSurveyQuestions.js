@@ -4,6 +4,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 //
 import SurveyFormsMaker from "../../../components/Surveys/SurveyForms/SurveyFormsMaker";
+import { useHistory } from "react-router-dom";
 
 //Keep below values from localisation:
 const SURVEY_QUESIONS = "Create Questions";
@@ -12,6 +13,7 @@ const CREATE_QUESTIONS_BTN_LABEL = "Create Questions";
 const ERR_MESSAGE = "Something went wrong";
 
 const CreateSurveyQuestions = () => {
+  const history=useHistory();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -53,7 +55,8 @@ const CreateSurveyQuestions = () => {
         setIsLoading(false);
         setShowToast({ isError: false, label: QUESTIONS_CREATED });
         setTimeout(() => {
-          window.location.reload();
+          //window.location.reload();
+          history.push("/digit-ui/employee/engagement/surveys/search-questions");
         }, 2000);
         //reset();
       } else {

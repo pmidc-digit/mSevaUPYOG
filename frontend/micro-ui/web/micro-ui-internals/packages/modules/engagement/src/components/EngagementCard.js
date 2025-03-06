@@ -95,6 +95,11 @@ const EngagementCard = () => {
         label: t("Search Questions"),
         link: `/digit-ui/employee/engagement/surveys/search-questions`,
       },
+      {
+        label: t("Active and Open Surveys"),
+        link: `/digit-ui/employee/engagement/surveys/active-open-surveys`,
+      },
+
     ],
   };
 

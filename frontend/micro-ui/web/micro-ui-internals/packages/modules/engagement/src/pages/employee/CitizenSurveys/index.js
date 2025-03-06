@@ -20,6 +20,7 @@ import NewSurvey from "./NewSurvey";
 import DeleteResponse from "./responses/delete";
 import SurveyForm from "../../../components/Surveys/SurveyForms/SurveyForm";
 import CreateSurveyForm from "../../../components/Surveys/SurveyForms/CreateSurveyForm";
+import ActiveAndOpenSurveys from "./ActiveAndOpenSurveys";
 
 const Surveys = ({ match: { path } = {}, tenants, parentRoute }) => {
   return (
@@ -31,6 +32,7 @@ const Surveys = ({ match: { path } = {}, tenants, parentRoute }) => {
       <PrivateRoute path={`${path}/search-questions`} component={(props) => <SearchQuestions {...props} />} />
       <PrivateRoute path={`${path}/create-survey-step-form`} component={(props) => <CreateSurveyStepForm {...props} />} />
       <PrivateRoute path={`${path}/fill-survey`} component={(props) => <CitizenSurveyFormNew {...props} />} />
+      <PrivateRoute path={`${path}/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} />} />
       {/*  */}
       <PrivateRoute path={`${path}/create-response`} component={(props) => <CreateResponse {...props} />} />
       <PrivateRoute path={`${path}/update-response`} component={(props) => <UpdateResponse {...props} />} />

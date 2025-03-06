@@ -45,6 +45,9 @@ public class AnswerRowMapper implements ResultSetExtractor<List<Answer>> {
                         .citizenId(rs.getString("citizenid"))
                         .auditDetails(auditdetails)
                         .build();
+                if(rs.getString("questionstatement")!=null){
+                    answer.setQuestionStatement(rs.getString("questionstatement"));
+                }
             }
 
             answerMap.put(uuid, answer);

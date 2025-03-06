@@ -15,12 +15,7 @@ import org.egov.egovsurveyservices.web.models.ScorecardSurveyRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.egov.egovsurveyservices.web.models.*;
 
 @RestController
@@ -48,6 +43,8 @@ public class ScorecardSurveyController {
         List<ScorecardSurveyEntity> surveys = surveyService.searchSurveys(criteria);
         int surveyCount = (surveys != null) ? surveys.size() : 0;
         ScorecardSurveyResponse response  = ScorecardSurveyResponse.builder().surveyEntities(surveys).totalCount(surveyCount).build();
+        ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
+        response.setResponseInfo(responseInfo);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
@@ -69,5 +66,13 @@ public class ScorecardSurveyController {
                 .citizenId(answerResponse.getCitizenId()).sectionResponses(answerResponse.getSectionResponses())
                 .auditDetails(answerResponse.getAuditDetails()).build();
         return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/csc/response/_answers", method = RequestMethod.POST)
+    public ResponseEntity<ScorecardAnswerResponse> getAnswers(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper, @Valid @ModelAttribute AnswerFetchCriteria criteria) {
+        ScorecardAnswerResponse answerResponse = surveyService.getAnswers(criteria);
+        ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
+        answerResponse.setResponseInfo(responseInfo);
+        return new ResponseEntity<>(answerResponse, HttpStatus.OK);
     }
 }

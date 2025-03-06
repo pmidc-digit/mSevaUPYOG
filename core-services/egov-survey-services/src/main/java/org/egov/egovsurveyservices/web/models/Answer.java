@@ -26,6 +26,9 @@ public class Answer {
     @JsonProperty("questionUuid")
     private String questionUuid;
 
+    @JsonProperty("questionStatement")
+    private String questionStatement;
+
     @JsonProperty("comments")
     private String comments;
 

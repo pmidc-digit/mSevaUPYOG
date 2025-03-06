@@ -13,7 +13,70 @@ public class ScorecardSurveyQueryBuilder {
     @Autowired
     private ApplicationProperties config;
 
-    private static final String BASE_QUERY = "SELECT * FROM eg_ss_survey_entity survey";
+    private static final String SELECT = " SELECT ";
+    private static final String INNER_JOIN = " INNER JOIN ";
+    private static final String LEFT_JOIN  =  " LEFT OUTER JOIN ";
+    private static final String AND_QUERY = " AND ";
+    private final String ORDERBY_CREATEDTIME = " ORDER BY survey.createdtime DESC ";
+
+    private static final String SURVEY_SELECT_VALUES = "survey.uuid as suuid, survey.tenantid as stenantid, survey.title as stitle, survey.category as scategory, survey.description as sdescription, survey.startdate as sstartdate, survey.enddate as senddate, survey.postedby as spostedby, survey.active as sactive, survey.answerscount as sanswerscount, survey.hasresponded as shasresponded, survey.createdtime as screatedtime, survey.lastmodifiedtime as slastmodifiedtime, survey.status as sstatus";
+
+    private static final String QUESTION_SELECT_VALUES = " question.uuid as quuid, question.surveyid as qsurveyid, question.questionstatement as qstatement, question.options as qoptions, question.status as qstatus, question.type as qtype, question.required as qrequired, question.createdby as qcreatedby, question.lastmodifiedby as qlastmodifiedby, question.createdtime as qcreatedtime, question.lastmodifiedtime as qlastmodifiedtime, question.qorder as qorder";
+
+    public static final String SURVEY_COUNT_WRAPPER = " SELECT COUNT(uuid) FROM ({INTERNAL_QUERY}) AS count ";
+
+    public static final String SURVEY_UUIDS_QUERY_WRAPPER = " SELECT uuid FROM ({HELPER_TABLE}) temp ";
+    
+//    private static final String BASE_QUERY = "SELECT * FROM eg_ss_survey_entity survey";
+
+    private static final String BASE_QUERY =
+            "SELECT DISTINCT " +
+                    // Survey fields
+                    "survey.uuid AS survey_uuid, " +
+                    "survey.tenantid AS survey_tenantid, " +
+                    "survey.title AS survey_title, " +
+                    "survey.category AS survey_category, " +
+                    "survey.description AS survey_description, " +
+                    "survey.startdate AS survey_startdate, " +
+                    "survey.enddate AS survey_enddate, " +
+                    "survey.postedby AS survey_postedby, " +
+                    "survey.active AS survey_active, " +
+                    "survey.answerscount AS survey_answerscount, " +
+                    "survey.hasresponded AS survey_hasresponded, " +
+                    "survey.createdtime AS survey_createdtime, " +
+                    "survey.lastmodifiedtime AS survey_lastmodifiedtime, " +
+
+                    // Section fields
+                    "section.uuid AS section_uuid, " +
+                    "section.title AS section_title, " +
+                    "section.weightage AS section_weightage, " +
+
+                    // Question fields
+                    "question.uuid AS question_uuid, " +
+                    "question.surveyid AS question_surveyid, " +
+                    "question.questionstatement AS question_statement, " +
+                    "question.options AS question_options, " +
+                    "question.type AS question_type, " +
+                    "question.status AS question_status, " +
+                    "question.required AS question_required, " +
+                    "question.createdby AS question_createdby, " +
+                    "question.lastmodifiedby AS question_lastmodifiedby, " +
+                    "question.createdtime AS question_createdtime, " +
+                    "question.lastmodifiedtime AS question_lastmodifiedtime, " +
+                    "question.qorder AS question_order, " +
+                    "question.categoryid AS question_categoryid, " +
+                    "question.tenantid AS question_tenantid, " +
+
+                    // Question weightage fields
+                    "questionWeightage.weightage AS question_weightage " +
+
+            "FROM eg_ss_survey_entity AS survey " +
+            "LEFT JOIN eg_ss_survey_section AS section " +
+            "ON survey.uuid = section.surveyuuid " +
+            "LEFT JOIN eg_ss_question_weightage AS questionWeightage " +
+            "ON section.uuid = questionWeightage.sectionuuid " +
+            "LEFT JOIN eg_ss_question AS question " +
+            "ON questionWeightage.questionuuid = question.uuid ";
 
     /**
      * Generates query to fetch surveys dynamically based on UUID, tenantId, and title.
@@ -41,7 +104,32 @@ public class ScorecardSurveyQueryBuilder {
             preparedStmtList.add("%" + criteria.getTitle() + "%");
         }
 
+        if (criteria.getActive() != null) {
+            query.append(whereAdded ? " AND " : " WHERE ");
+            query.append("survey.active = ? ");
+            preparedStmtList.add(criteria.getActive());
+        }
+
+        if (Boolean.TRUE.equals(criteria.getOpenSurveyFlag())) {
+            query.append(whereAdded ? " AND " : " WHERE ");
+            query.append(" ? BETWEEN survey.startdate AND survey.enddate ");
+            preparedStmtList.add(System.currentTimeMillis());
+        }
+
         return query.toString();
+    }
+
+
+    private void addClauseIfRequired(StringBuilder query, List<Object> preparedStmtList){
+        if(preparedStmtList.isEmpty()){
+            query.append(" WHERE ");
+        }else{
+            query.append(" AND ");
+        }
+    }
+
+    public String allQuestionExistsQuery(String placeholders) {
+        return "SELECT uuid FROM public.eg_ss_question WHERE uuid IN (" + placeholders + ")";
     }
 
     private String createQuery(List<String> ids) {
@@ -89,11 +177,17 @@ public class ScorecardSurveyQueryBuilder {
                 "WHERE ss.surveyuuid = ? AND ss.uuid = ?";
     }
 
-    public String allQuestionExistsQuery(String placeholders) {
-        return "SELECT uuid FROM public.eg_ss_question WHERE uuid IN (" + placeholders + ")";
-    }
-
     public String getExistingAnswerUuid() {
         return "SELECT uuid FROM public.eg_ss_answer WHERE uuid = ?";
+    }
+
+    public String getWhetherCitizenHasRespondedQuery(List<String> listOfSurveyIds, String citizenId, List<Object> preparedStmtList) {
+        StringBuilder query = new StringBuilder(" SELECT surveyid FROM eg_ss_answer answer ");
+        query.append(" WHERE answer.surveyid IN ( ").append(createQuery(listOfSurveyIds)).append(" )");
+        addToPreparedStatement(preparedStmtList, listOfSurveyIds);
+        addClauseIfRequired(query, preparedStmtList);
+        query.append(" answer.citizenid = ? ");
+        preparedStmtList.add(citizenId);
+        return query.toString();
     }
 }

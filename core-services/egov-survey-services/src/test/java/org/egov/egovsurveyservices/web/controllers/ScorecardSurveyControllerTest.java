@@ -7,6 +7,7 @@ import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyRequest;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyResponse;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveySearchCriteria;
+import org.egov.egovsurveyservices.web.models.UpdateSurveyActiveRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,9 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -112,6 +116,58 @@ class ScorecardSurveyControllerTest {
                     .andExpect(jsonPath("$.Surveys[0].tenantId").value(tenantId))
                     .andExpect(jsonPath("$.Surveys[0].surveyTitle").value(title));
       }
+
+     @Test
+     public void testUpdateActiveSurvey_WhenRequestIsValid_ShouldReturnSuccess() throws Exception {
+         UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+         request.setUuid("SS-1012/2024-25/000131");
+         request.setActive(true);
+
+         mockMvc.perform(post("/egov-ss/csc/active/_update")
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(new ObjectMapper().writeValueAsString(request)))
+                 .andExpect(status().isOk())
+                 .andExpect(jsonPath("$.message").value("Survey active status updated successfully!"));
+
+         verify(surveyService, times(1)).updateSurveyActive(any(UpdateSurveyActiveRequest.class));
+     }
+
+     @Test
+     public void testUpdateActiveSurvey_WhenUuidIsMissing_ShouldReturnBadRequest() throws Exception {
+         UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+         request.setActive(true);  // Missing UUID
+
+         mockMvc.perform(post("/egov-ss/csc/active/_update")
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(new ObjectMapper().writeValueAsString(request)))
+                 .andExpect(status().isBadRequest());
+     }
+
+     @Test
+     public void testUpdateActiveSurvey_WhenActiveIsMissing_ShouldReturnBadRequest() throws Exception {
+         UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+         request.setUuid("SS-1012/2024-25/000131");  // Missing active field
+
+         mockMvc.perform(post("/egov-ss/csc/active/_update")
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(new ObjectMapper().writeValueAsString(request)))
+                 .andExpect(status().isBadRequest());
+     }
+
+     @Test
+     public void testUpdateActiveSurvey_WhenUuidDoesNotExist_ShouldReturnBadRequest() throws Exception {
+         UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
+         request.setUuid("INVALID_UUID");
+         request.setActive(true);
+
+         doThrow(new IllegalArgumentException("UUID does not exist in database, Update failed!"))
+             .when(surveyService).updateSurveyActive(any(UpdateSurveyActiveRequest.class));
+
+         mockMvc.perform(post("/egov-ss/csc/active/_update")
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(new ObjectMapper().writeValueAsString(request)))
+                 .andExpect(status().isBadRequest());
+     }
 }
 
 

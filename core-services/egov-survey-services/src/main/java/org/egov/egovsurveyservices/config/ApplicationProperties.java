@@ -67,8 +67,14 @@ public class ApplicationProperties {
     @Value("${egov.ss.max.create.limit}")
     private Integer maxCreateLimit ;
 
-    @Value("${egov.ss.scorecardsurvey.create.topic}")
+    //egov.ss.createsurvey.create.topic
+    
+    @Value("${egov.ss.createsurvey.create.topic}")
     private String createScorecardSurveyTopic ;
+
+    @Value("${egov.ss.updatesurvey.active.topic}")
+    private String updateActiveSurveyTopic ;
+
 
     @Value("${egov.ss.scorecardsurvey.submitanswer.topic}")
     private String submitAnswerScorecardSurveyTopic ;

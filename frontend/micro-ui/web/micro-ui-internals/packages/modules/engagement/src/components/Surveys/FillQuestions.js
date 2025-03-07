@@ -1,10 +1,10 @@
-import React,{useEffect,useState,Fragment} from 'react'
+import React, { useEffect, useState, Fragment } from "react";
 import { Controller, useFormContext, useForm } from "react-hook-form";
-import { Card, CardLabelError, CheckBox, RadioButtons, TextArea, TextInput ,Toast} from "@mseva/digit-ui-react-components";
+import { Card, CardLabelError, CheckBox, RadioButtons, TextArea, TextInput, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 const FillQuestions = (props) => {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const {
     register: register,
     control: control,
@@ -15,109 +15,109 @@ const FillQuestions = (props) => {
     formState: formState,
     clearErrors: clearSurveyFormsErrors,
   } = useForm({
-    defaultValues:[]
+    defaultValues: [],
   });
   const formErrors = formState?.errors;
-const [formData, setFormData] = useState({})
-const [showToast, setShowToast] = useState(null);
-// const [userInfo,setUserInfo]=useState([])
-const tenantId = Digit.ULBService.getCurrentTenantId()
-const history = useHistory();
+  const [formData, setFormData] = useState({});
+  const [showToast, setShowToast] = useState(null);
+  // const [userInfo,setUserInfo]=useState([])
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const history = useHistory();
 
-// const data= 
-//  [{
-//     "uuid": "SS-1012/2024-25/000171",
-//     "tenantId": "pb.testing",
-//     "surveyTitle": "Testing one",
-//     "surveyCategory": "Testing one",
-//     "surveyDescription": "example",
-//     "sections": [
-//         {
-//             "uuid": "7fea480a-4398-4935-99dd-a1901827ab92",
-//             "title": "Title1",
-//             "weightage": 100,
-//             "questions": [
-//                 {
-//                     "questionUuid": "8904f992-e2fe-4720-ba52-727555691a7b",
-//                     "sectionUuid": "7fea480a-4398-4935-99dd-a1901827ab92",
-//                     "qorder": null,
-//                     "question": {
-//                         "uuid": "8904f992-e2fe-4720-ba52-727555691a7b",
-//                         "tenantId": "pb.testing",
-//                         "questionStatement": "First Question regarding Demo",
-//                         "options": [
-//                             "Yes",
-//                             "No",
-//                             "May be"
-//                         ],
-//                         "auditDetails": {
-//                             "createdBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
-//                             "lastModifiedBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
-//                             "createdTime": 1740740112660,
-//                             "lastModifiedTime": 1741173060405
-//                         },
-//                         "status": "ACTIVE",
-//                         "type": "MULTIPLE_ANSWER_TYPE",
-//                         "required": false,
-//                         "qorder": 0,
-//                         "categoryId": "9b8b9243-4f86-4032-9a90-b8da78f03664"
-//                     },
-//                     "weightage": 50
-//                 },
-//                 {
-//                     "questionUuid": "cbdd5045-252f-45bc-9715-66b3c79a265e",
-//                     "sectionUuid": "7fea480a-4398-4935-99dd-a1901827ab92",
-//                     "qorder": null,
-//                     "question": {
-//                         "uuid": "cbdd5045-252f-45bc-9715-66b3c79a265e",
-//                         "tenantId": "pb.testing",
-//                         "questionStatement": "Second Question regarding Demo",
-//                         "options": [
-//                             "Yes",
-//                             "No",
-//                             "Test Text"
-//                         ],
-//                         "auditDetails": {
-//                             "createdBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
-//                             "lastModifiedBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
-//                             "createdTime": 1740740112661,
-//                             "lastModifiedTime": 1741173345841
-//                         },
-//                         "status": "ACTIVE",
-//                         "type": "CHECKBOX_ANSWER_TYPE",
-//                         "required": false,
-//                         "qorder": 0,
-//                         "categoryId": "9b8b9243-4f86-4032-9a90-b8da78f03664"
-//                     },
-//                     "weightage": 50
-//                 }
-//             ]
-//         }
-//     ],
-//     "startDate": 1741341960000,
-//     "endDate": 1743717960000,
-//     "postedBy": "Manasa",
-//     "auditDetails": null,
-//     "active": true,
-//     "answersCount": 0,
-//     "hasResponded": false,
-//     "createdTime": 1741255647601,
-//     "lastModifiedTime": 1741255647601
-// }];
-const prevProps= props.location.state
-console.log('props',props)
-const data= prevProps.surveyDetails
+  // const data=
+  //  [{
+  //     "uuid": "SS-1012/2024-25/000171",
+  //     "tenantId": "pb.testing",
+  //     "surveyTitle": "Testing one",
+  //     "surveyCategory": "Testing one",
+  //     "surveyDescription": "example",
+  //     "sections": [
+  //         {
+  //             "uuid": "7fea480a-4398-4935-99dd-a1901827ab92",
+  //             "title": "Title1",
+  //             "weightage": 100,
+  //             "questions": [
+  //                 {
+  //                     "questionUuid": "8904f992-e2fe-4720-ba52-727555691a7b",
+  //                     "sectionUuid": "7fea480a-4398-4935-99dd-a1901827ab92",
+  //                     "qorder": null,
+  //                     "question": {
+  //                         "uuid": "8904f992-e2fe-4720-ba52-727555691a7b",
+  //                         "tenantId": "pb.testing",
+  //                         "questionStatement": "First Question regarding Demo",
+  //                         "options": [
+  //                             "Yes",
+  //                             "No",
+  //                             "May be"
+  //                         ],
+  //                         "auditDetails": {
+  //                             "createdBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
+  //                             "lastModifiedBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
+  //                             "createdTime": 1740740112660,
+  //                             "lastModifiedTime": 1741173060405
+  //                         },
+  //                         "status": "ACTIVE",
+  //                         "type": "MULTIPLE_ANSWER_TYPE",
+  //                         "required": false,
+  //                         "qorder": 0,
+  //                         "categoryId": "9b8b9243-4f86-4032-9a90-b8da78f03664"
+  //                     },
+  //                     "weightage": 50
+  //                 },
+  //                 {
+  //                     "questionUuid": "cbdd5045-252f-45bc-9715-66b3c79a265e",
+  //                     "sectionUuid": "7fea480a-4398-4935-99dd-a1901827ab92",
+  //                     "qorder": null,
+  //                     "question": {
+  //                         "uuid": "cbdd5045-252f-45bc-9715-66b3c79a265e",
+  //                         "tenantId": "pb.testing",
+  //                         "questionStatement": "Second Question regarding Demo",
+  //                         "options": [
+  //                             "Yes",
+  //                             "No",
+  //                             "Test Text"
+  //                         ],
+  //                         "auditDetails": {
+  //                             "createdBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
+  //                             "lastModifiedBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
+  //                             "createdTime": 1740740112661,
+  //                             "lastModifiedTime": 1741173345841
+  //                         },
+  //                         "status": "ACTIVE",
+  //                         "type": "CHECKBOX_ANSWER_TYPE",
+  //                         "required": false,
+  //                         "qorder": 0,
+  //                         "categoryId": "9b8b9243-4f86-4032-9a90-b8da78f03664"
+  //                     },
+  //                     "weightage": 50
+  //                 }
+  //             ]
+  //         }
+  //     ],
+  //     "startDate": 1741341960000,
+  //     "endDate": 1743717960000,
+  //     "postedBy": "Manasa",
+  //     "auditDetails": null,
+  //     "active": true,
+  //     "answersCount": 0,
+  //     "hasResponded": false,
+  //     "createdTime": 1741255647601,
+  //     "lastModifiedTime": 1741255647601
+  // }];
+  const prevProps = props.location.state;
+  console.log("props", props);
+  const data = prevProps.surveyDetails;
 
-console.log("data",data)
+  console.log("data", data);
   useEffect(() => {
-        const savedData = localStorage.getItem('surveyFormData');
-        if (savedData) {
-            setFormData(JSON.parse(savedData));
-        }
-    }, []);
-    useEffect(() => {
-        localStorage.setItem('surveyFormData', JSON.stringify(formData));
-    }, [formData]);
+    const savedData = localStorage.getItem("surveyFormData");
+    if (savedData) {
+      setFormData(JSON.parse(savedData));
+    }
+  }, []);
+  useEffect(() => {
+    localStorage.setItem("surveyFormData", JSON.stringify(formData));
+  }, [formData]);
 
   //   useEffect(()=>{
   //   let data={
@@ -128,7 +128,7 @@ console.log("data",data)
   //       tenantId: tenantId.split(".")[0]
   //   }
   //   try{
-       
+
   //       Digit.Surveys.userSearch(data,filters).then((response) => {
   //           setUserInfo(response.user);
   //       })
@@ -138,178 +138,162 @@ console.log("data",data)
   //   console.log(error);
   // }
   //   },[])
- const handleCheckboxChange = (section, event) => {
-        const { value, checked } = event.target;
-        setFormData((prevData) => {
-            const newCheckboxes = checked
-                ? [...prevData[section].checkboxes, value]
-                : prevData[section].checkboxes.filter((item) => item !== value);
-            return { ...prevData, [section]: { ...prevData[section], checkboxes: newCheckboxes } };
-        });
-    };
+  const handleCheckboxChange = (section, event) => {
+    const { value, checked } = event.target;
+    setFormData((prevData) => {
+      const newCheckboxes = checked ? [...prevData[section].checkboxes, value] : prevData[section].checkboxes.filter((item) => item !== value);
+      return { ...prevData, [section]: { ...prevData[section], checkboxes: newCheckboxes } };
+    });
+  };
 
-    const handleInputChange = (sectionId, questionId, value) => {
-        setFormData((prevData) => ({
-          ...prevData,
-          [sectionId]: {
-            ...prevData[sectionId],
-            [questionId]: value
-          }
-        }));
-      };
-    const handleFieldChange = (event) => {
-        const { name, value } = event.target;
-        console.log("date value", event.target)
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: value
-        }));
-    };
-    console.log("formData", formData)
-    const handleDropdownChange = (name, event) => {
-        setFormData((prevData) => ({
-            ...prevData,
-            [name]: event
-        }));
-    }
-    const [errors, setErrors] = useState({});
+  const handleInputChange = (sectionId, questionId, value) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [sectionId]: {
+        ...prevData[sectionId],
+        [questionId]: value,
+      },
+    }));
+  };
+  const handleFieldChange = (event) => {
+    const { name, value } = event.target;
+    console.log("date value", event.target);
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+  console.log("formData", formData);
+  const handleDropdownChange = (name, event) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: event,
+    }));
+  };
+  const [errors, setErrors] = useState({});
 
-    const validateForm = () => {
-        const newErrors = {};
+  const validateForm = () => {
+    const newErrors = {};
 
-        data.sections.forEach((section) => {
-            section.questions.forEach((question) => {
-              const value = formData[section.uuid]?.[question.question.uuid || ''];
-              if (!value) {
-                newErrors[question.question.uuid] = `${question.questionStatement} is required`;
-              }
-            });
-        });
-        setErrors(newErrors);
-        console.log("errors",newErrors)
-        return Object.keys(newErrors).length === 0;
-    };
-    const handleSubmitSurvey = () => {
-        let answerArr=[]
-        for (const sectionId in formData) {
-            for (const questionId in formData[sectionId]) {
-              answerArr.push({
-                answerUuid: null,
-                surveyUuid: data.uuid,
-                questionUuid: questionId,
-                sectionUuid: sectionId,
-                comments: "comment_1",
-                answer: [
-                    formData[sectionId][questionId]
-                ]
-                
-              });
-            }
-          }
-          const { roles, ...newUserObject } = prevProps.userInfo[0];
-          
-        let payload={
-             User: newUserObject,
-       
-
-            AnswerEntity:{
-                surveyId:data.uuid,
-                answers:answerArr
-            }
-      
-
-          
-           
+    data.sections.forEach((section) => {
+      section.questions.forEach((question) => {
+        const value = formData[section.uuid]?.[question.question.uuid || ""];
+        if (!value) {
+          newErrors[question.question.uuid] = `${question.questionStatement} is required`;
         }
-      
-        try{
-           
-            Digit.Surveys.submitSurvey(payload).then((response) => {
-                if(response?.sectionResponses.length>0){
-                  history.push("/digit-ui/employee/engagement/surveys/submit-response", {message:"SURVEY FORM SUBMITTED SUCCESSFULLY",response:response,isSuccess:true})
-                    return;
-                }
-                else{
-                    console.log(response)
-                }
-                
-            })
-        }
-        catch(error)
-      {
-        console.log(error);
+      });
+    });
+    setErrors(newErrors);
+    console.log("errors", newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  const handleSubmitSurvey = () => {
+    let answerArr = [];
+    for (const sectionId in formData) {
+      for (const questionId in formData[sectionId]) {
+        answerArr.push({
+          answerUuid: null,
+          surveyUuid: data.uuid,
+          questionUuid: questionId,
+          sectionUuid: sectionId,
+          comments: "comment_1",
+          answer: [formData[sectionId][questionId]],
+        });
       }
     }
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        console.log("citizen fill",prevProps.citizenFill)
-        if(prevProps.citizenFill){
-         if (validateForm()) {
-            console.log('Form submitted:', formData);
-            handleSubmitSurvey()
-           
-         }
-        }
-        else{
-          setShowToast({ key: true, isError:true,label: `PLEASE FILL CITIZEN DETAILS` });
-          return;
-        }
-    };
-    const onSubmit=(data)=>{
-        console.log("data",data)
+    const { roles, ...newUserObject } = prevProps.userInfo[0];
 
+    let payload = {
+      User: newUserObject,
+
+      AnswerEntity: {
+        surveyId: data.uuid,
+        answers: answerArr,
+      },
+    };
+
+    try {
+      Digit.Surveys.submitSurvey(payload).then((response) => {
+        if (response?.sectionResponses.length > 0) {
+          history.push("/digit-ui/employee/engagement/surveys/submit-response", {
+            message: "SURVEY FORM SUBMITTED SUCCESSFULLY",
+            response: response,
+            isSuccess: true,
+          });
+          return;
+        } else {
+          console.log(response);
+        }
+      });
+    } catch (error) {
+      console.log(error);
     }
-console.log("formState",formState)
-    const displayAnswerField = (answerType,question,section) => {
-        console.log("answer type",answerType,question)
-        switch (answerType) {
-           case "SHORT_ANSWER_TYPE":
-             return (
+  };
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    console.log("citizen fill", prevProps.citizenFill);
+    if (prevProps.citizenFill) {
+      if (validateForm()) {
+        console.log("Form submitted:", formData);
+        handleSubmitSurvey();
+      }
+    } else {
+      setShowToast({ key: true, isError: true, label: `PLEASE FILL CITIZEN DETAILS` });
+      return;
+    }
+  };
+  const onSubmit = (data) => {
+    console.log("data", data);
+  };
+  console.log("formState", formState);
+  const displayAnswerField = (answerType, question, section) => {
+    console.log("answer type", answerType, question);
+    switch (answerType) {
+      case "SHORT_ANSWER_TYPE":
+        return (
           //     <>
 
-                <TextInput
-                  name={question.uuid}
-                  //disabled={formDisabled}
-                  onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
-                  type="text"
-                  inputRef={register({
-                    maxLength: {
-                      value: 200,
-                     message: t("EXCEEDS_200_CHAR_LIMIT"),
-                    },
-                    required:question.required,
-                  })}
-                />
+          <TextInput
+            name={question.uuid}
+            //disabled={formDisabled}
+            onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+            type="text"
+            inputRef={register({
+              maxLength: {
+                value: 200,
+                message: t("EXCEEDS_200_CHAR_LIMIT"),
+              },
+              required: question.required,
+            })}
+          />
 
-        //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
-        //           <CardLabelError>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>)}
-        //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "maxLength" && (
-        //           <CardLabelError>{t(`EXCEEDS_200_CHAR_LIMIT`)}</CardLabelError>)} 
-        //       </>
-           );
-           case "LONG_ANSWER_TYPE":
-            return (
-              <>
-                <TextArea
-                  name={question.uuid}
-                 // disabled={formDisabled}
-                 onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
-                  inputRef={register({
-                    maxLength: {
-    
-                      value: 500,
-                      message: t("EXCEEDS_500_CHAR_LIMIT"),
-                    },
-                    required:question.required
-                  })}
-                />
-             </>
-           );
-          case "MULTIPLE_ANSWER_TYPE":
-            return (
-              <>
-            
-               {/* <select
+          //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
+          //           <CardLabelError>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>)}
+          //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "maxLength" && (
+          //           <CardLabelError>{t(`EXCEEDS_200_CHAR_LIMIT`)}</CardLabelError>)}
+          //       </>
+        );
+      case "LONG_ANSWER_TYPE":
+        return (
+          <>
+            <TextArea
+              name={question.uuid}
+              // disabled={formDisabled}
+              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+              inputRef={register({
+                maxLength: {
+                  value: 500,
+                  message: t("EXCEEDS_500_CHAR_LIMIT"),
+                },
+                required: question.required,
+              })}
+            />
+          </>
+        );
+      case "MULTIPLE_ANSWER_TYPE":
+        return (
+          <>
+            {/* <select
                                     name="multipleChoice"
                                     value={formData.section2.multipleChoice}
                                     onChange={(e) => handleInputChange('section2', e)}
@@ -318,27 +302,24 @@ console.log("formState",formState)
                                     <option value="choice1">Choice 1</option>
                                     <option value="choice2">Choice 2</option>
                                 </select> */}
-                       
-    
-                                      <div style={{display:'flex',flexDirection:'column'}}>
-                  {question.options.map((option) => (
-                    <h4 key={option} style={{display:'flex',alignItems:'center',marginBottom:'10px',fontSize:'18px'}}>
-                      <input
-                        type="radio"
-                        name={question.uuid}
-                        value={option}
-                        checked={formData[section.uuid]?.[question.uuid] === option}
-                        onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
-                        required
-                        
-                        style={{marginRight:'10px',width:'25px',height:'25px'}}
 
-                      />
-                      {option}
-                    </h4>
-                  ))}
-                </div>
-                                      {/* <RadioButtons
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {question.options.map((option) => (
+                <h4 key={option} style={{ display: "flex", alignItems: "center", marginBottom: "10px", fontSize: "18px" }}>
+                  <input
+                    type="radio"
+                    name={question.uuid}
+                    value={option}
+                    checked={formData[section.uuid]?.[question.uuid] === option}
+                    onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+                    required
+                    style={{ marginRight: "10px", width: "25px", height: "25px" }}
+                  />
+                  {option}
+                </h4>
+              ))}
+            </div>
+            {/* <RadioButtons
                   
                   onSelect={(e)=>handleInputChange(section.uuid, question.uuid, e)}
                   selectedOption={formData[section.uuid]?.[question.uuid] || ''}
@@ -346,7 +327,7 @@ console.log("formState",formState)
                   options={[...question.options]}
                  
                 /> */}
-                {/* <Controller
+            {/* <Controller
                   control={control}
                   name={question.uuid}
                   
@@ -365,42 +346,42 @@ console.log("formState",formState)
                 {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
                   <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
                 )} */}
-              </>
-            );
-          case "CHECKBOX_ANSWER_TYPE":
-            return (
-              <>
-               <div style={{display:'flex',flexDirection:'column'}}>
-                  {question.options.map((option) => (
-                    <h4 key={option} style={{display:'flex',alignItems:'center',marginBottom:'10px',fontSize:'18px'}}>
-                      <input
-                      style={{width:'25px',height:'25px',marginRight:'10px'}}
-                        type="checkbox"
-                        value={option}
-                        checked={formData[section.uuid]?.[question.uuid]?.includes(option) || false}
-                        onChange={(e) => {
-                          const value = e.target.value;
-                          const checked = e.target.checked;
-                          setFormData((prevData) => {
-                            const newValues = checked
-                              ? [...(prevData[section.uuid]?.[question.uuid] || []), value]
-                              : (prevData[section.uuid]?.[question.uuid] || []).filter((item) => item !== value);
-                            return {
-                              ...prevData,
-                              [section.uuid]: {
-                                ...prevData[section.uuid],
-                                [question.uuid]: newValues
-                              }
-                            };
-                          });
-                        }}
-                      />
-                      {option}
-                    </h4>
-                  ))}
-                </div>
-             
-                {/* <Controller
+          </>
+        );
+      case "CHECKBOX_ANSWER_TYPE":
+        return (
+          <>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              {question.options.map((option) => (
+                <h4 key={option} style={{ display: "flex", alignItems: "center", marginBottom: "10px", fontSize: "18px" }}>
+                  <input
+                    style={{ width: "25px", height: "25px", marginRight: "10px" }}
+                    type="checkbox"
+                    value={option}
+                    checked={formData[section.uuid]?.[question.uuid]?.includes(option) || false}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const checked = e.target.checked;
+                      setFormData((prevData) => {
+                        const newValues = checked
+                          ? [...(prevData[section.uuid]?.[question.uuid] || []), value]
+                          : (prevData[section.uuid]?.[question.uuid] || []).filter((item) => item !== value);
+                        return {
+                          ...prevData,
+                          [section.uuid]: {
+                            ...prevData[section.uuid],
+                            [question.uuid]: newValues,
+                          },
+                        };
+                      });
+                    }}
+                  />
+                  {option}
+                </h4>
+              ))}
+            </div>
+
+            {/* <Controller
                   control={control}
                   name={question.uuid}
                   
@@ -433,151 +414,153 @@ console.log("formState",formState)
                 {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type ==="required" && (
                   <CardLabelError style={{marginTop:"20px"}}>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>
                 )} */}
-              </>
-            );
-          // case "CHECKBOX_ANSWER_TYPE":
-          //   return (
-          //     <>
-          //     {question.options.map((option,index) => (
-          //     <div>
-          //       <label for="checkbox">
-          //         <input
-          //         control={control}
-          //         id={option}
-          //         type="checkbox"
-          //         name={option}
-          //         value={option}
-          //         ref={register({
-          //           required:false,
-          //         })}
-          //       />
-          //         {option}</label>
-                
-          //     </div>
-          //     ))}
-              
-          //       {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type ==="required" && (
-          //         <CardLabelError>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>
-          //       )}
-          //     </>
-          //   );
-          case "DATE_ANSWER_TYPE":
-            return (
-              <>
-              <TextInput
-                   
-                    type="date"  
-                    onChange={(e)=>handleInputChange(section.uuid, question.uuid, e.target.value)}
-                   // defaultValue={value}
-                    />
-              </>
-            )
-          // return (
-          //   <>
-         //    <Controller
-        //           control={control}
-        //           name={question.uuid}
-        //           //defaultValue=
-        //           rules={{
-        //             required: question.required,
-        //             // validate: { isValidToDate }
-        //           }}
-    
-        //           render={({ onChange, value }) => <TextInput
-        //           // disabled={formDisabled}
-        //             type="date"  onChange={onChange} defaultValue={value} />}
-        //         />
-        //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
-        //           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
-        //         )}
-            //  </>
-           // );
-          case "TIME_ANSWER_TYPE":
-            return(
-              <>
-                  <TextInput
-                   
-                   type="time"  
-                   onChange={(e)=>handleInputChange(section.uuid, question.uuid, e.target.value)}
-                  // defaultValue={value}
-                   />
-              </>
-            )
-        //     return (
-        //       <>
-        //         <Controller
-        //           control={control}
-        //           name={question.uuid}
-        //           //defaultValue={surveyFormState?.toTime}
-        //           rules={{
-        //             required: question.required,
-        //             // validate: { isValidToTime }
-        //           }}
-        //           render={({ onChange, value }) => <TextInput type="time" 
-        //           //disabled={formDisabled} 
-        //            onChange={onChange} defaultValue={value} />}
-        //         />
-        //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
-        //           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
-        //         )}
-        //       </>
-        //     );
-    
-          default:
-            return (
-                
-              <TextInput
-                name={question.uuid}
-                onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
-                type="text"
-                inputRef={register({
-                  maxLength: {
-                    value: 60,
-                    message: t("EXCEEDS_60_CHAR_LIMIT"),
-                  },
-                  required:question.required
-                })}
-              />
-            );
-        }
-      };
-      console.log("data section", data.sections)
-      data.sections.map((s)=>console.log("data sec",s.title))
-      const closeToast = () => {
-        setShowToast(null);
-      };
-  return (
-    <div className="create-survey-page" style={{ background: 'white', display: 'block', padding: '15px' }}>
-            <div className="category-card">
-           
-    <form onSubmit={handleSubmit}>
-        {data.sections.length>0 ?
-        data.sections.map((section) => (
-           
-     <div>
-     <h2>{section.title}</h2>
-     {section.questions.map((question,index)=>(
-     <div>
-        <h3>{question.questionStatement}</h3>
-         <div className="surveyQuestion-wrapper">
-        {index+1}. {question.question.questionStatement} {question.question?.required? "*":""}
-         {displayAnswerField(question.question.type,question.question,section)}
-         {errors[question.uuid] && <span className="error">{errors[question.uuid]}</span>}
-       </div>
-      
-    </div>
-     ))}
-   
-</div>
-        ))
-: null}
-               <button onClick={()=> history.push("/digit-ui/employee/engagement/surveys/fill-citizen-details-survey")}>Back</button>
-                    <button type='submit' style={{marginLeft:'10px'}}>Submit</button>
-</form>
-</div>
- {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
-</div>
-  )
-}
+          </>
+        );
+      // case "CHECKBOX_ANSWER_TYPE":
+      //   return (
+      //     <>
+      //     {question.options.map((option,index) => (
+      //     <div>
+      //       <label for="checkbox">
+      //         <input
+      //         control={control}
+      //         id={option}
+      //         type="checkbox"
+      //         name={option}
+      //         value={option}
+      //         ref={register({
+      //           required:false,
+      //         })}
+      //       />
+      //         {option}</label>
 
-export default FillQuestions
+      //     </div>
+      //     ))}
+
+      //       {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type ==="required" && (
+      //         <CardLabelError>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>
+      //       )}
+      //     </>
+      //   );
+      case "DATE_ANSWER_TYPE":
+        return (
+          <>
+            <TextInput
+              type="date"
+              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+              // defaultValue={value}
+            />
+          </>
+        );
+      // return (
+      //   <>
+      //    <Controller
+      //           control={control}
+      //           name={question.uuid}
+      //           //defaultValue=
+      //           rules={{
+      //             required: question.required,
+      //             // validate: { isValidToDate }
+      //           }}
+
+      //           render={({ onChange, value }) => <TextInput
+      //           // disabled={formDisabled}
+      //             type="date"  onChange={onChange} defaultValue={value} />}
+      //         />
+      //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
+      //           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
+      //         )}
+      //  </>
+      // );
+      case "TIME_ANSWER_TYPE":
+        return (
+          <>
+            <TextInput
+              type="time"
+              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+              // defaultValue={value}
+            />
+          </>
+        );
+      //     return (
+      //       <>
+      //         <Controller
+      //           control={control}
+      //           name={question.uuid}
+      //           //defaultValue={surveyFormState?.toTime}
+      //           rules={{
+      //             required: question.required,
+      //             // validate: { isValidToTime }
+      //           }}
+      //           render={({ onChange, value }) => <TextInput type="time"
+      //           //disabled={formDisabled}
+      //            onChange={onChange} defaultValue={value} />}
+      //         />
+      //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
+      //           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
+      //         )}
+      //       </>
+      //     );
+
+      default:
+        return (
+          <TextInput
+            name={question.uuid}
+            onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+            type="text"
+            inputRef={register({
+              maxLength: {
+                value: 60,
+                message: t("EXCEEDS_60_CHAR_LIMIT"),
+              },
+              required: question.required,
+            })}
+          />
+        );
+    }
+  };
+  console.log("data section", data.sections);
+  data.sections.map((s) => console.log("data sec", s.title));
+  const closeToast = () => {
+    setShowToast(null);
+  };
+  return (
+    <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
+      <div className="category-card">
+        <form onSubmit={handleSubmit}>
+          {data.sections.length > 0
+            ? data.sections.map((section) => (
+                <div>
+                  <h2>{section.title}</h2>
+                  {section.questions.map((question, index) => (
+                    <div>
+                      <h3>{question.questionStatement}</h3>
+                      <div className="surveyQuestion-wrapper">
+                        {index + 1}. {question.question.questionStatement} {question.question?.required ? "*" : ""}
+                        {displayAnswerField(question.question.type, question.question, section)}
+                        {errors[question.uuid] && <span className="error">{errors[question.uuid]}</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))
+            : null}
+          <button
+            onClick={
+              () => history.goBack()
+              // history.push("/digit-ui/employee/engagement/surveys/fill-citizen-details-survey")
+            }
+          >
+            Back
+          </button>
+          <button type="submit" style={{ marginLeft: "10px" }}>
+            Submit
+          </button>
+        </form>
+      </div>
+      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
+    </div>
+  );
+};
+
+export default FillQuestions;

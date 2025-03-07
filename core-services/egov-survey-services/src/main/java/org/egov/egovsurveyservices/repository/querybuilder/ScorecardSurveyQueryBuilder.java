@@ -190,4 +190,24 @@ public class ScorecardSurveyQueryBuilder {
         preparedStmtList.add(citizenId);
         return query.toString();
     }
+
+    public String getAnswers() {
+        return "SELECT " +
+                "answer.uuid, " +
+                "answer.questionuuid, " +
+                "answer.surveyuuid, " +
+                "answer.sectionuuid, " +
+                "answer.answer, " +
+                "answer.citizenid, " +
+                "answer.comments, " +
+                "answer.createdby , " +
+                "answer.lastmodifiedby, " +
+                "answer.createdtime, " +
+                "answer.lastmodifiedtime, " +
+                "question.questionstatement " +
+                "FROM public.eg_ss_answer AS answer " +
+                "LEFT JOIN public.eg_ss_question AS question " +
+                "ON answer.questionuuid = question.uuid " +
+                "WHERE answer.surveyuuid = ? AND answer.citizenid = ?";
+    }
 }

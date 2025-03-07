@@ -21,12 +21,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -226,4 +224,39 @@ public class ScorecardSurveyService {
        return surveyRepository.getExistingAnswerUuid(answerUuid);
     }
 
+    public ScorecardAnswerResponse getAnswers(AnswerFetchCriteria criteria) {
+        if(criteria.getSurveyUuid()==null || criteria.getCitizenId()==null){
+            throw new CustomException("EG_SS_SURVEY_UUID_CITIZEN_UUID_ERR","surveyUuid and citizenUuid cannot be null");
+        }
+            List<Answer> answers = surveyRepository.getAnswers(criteria.getSurveyUuid(),criteria.getCitizenId());
+        return buildScorecardAnswerResponse(answers,criteria);
+    }
+
+    private ScorecardAnswerResponse buildScorecardAnswerResponse(List<Answer> answers, AnswerFetchCriteria criteria) {
+        Map<String, List<ScorecardQuestionResponse>> sectionResponsesMap = new HashMap<>();
+
+        for (Answer answer : answers) {
+            ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
+                    .questionUuid(answer.getQuestionUuid())
+                    .questionStatement(answer.getQuestionStatement())
+                    .answer(answer.getAnswer())
+                    .answerUuid(answer.getAnswerUuid())
+                    .comments(answer.getComments())
+                    .build();
+            sectionResponsesMap.computeIfAbsent(answer.getSectionUuid(), k -> new ArrayList<>()).add(questionResponse);
+        }
+
+        List<ScorecardSectionResponse> sectionResponses = sectionResponsesMap.entrySet().stream()
+                .map(entry -> ScorecardSectionResponse.builder()
+                        .sectionUuid(entry.getKey())
+                        .questionResponses(entry.getValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        return ScorecardAnswerResponse.builder()
+                .surveyUuid(criteria.getSurveyUuid())
+                .citizenId(criteria.getCitizenId())
+                .sectionResponses(sectionResponses)
+                .build();
+    }
 }

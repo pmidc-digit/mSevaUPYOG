@@ -3,6 +3,7 @@ package org.egov.egovsurveyservices.repository;
 import lombok.extern.slf4j.Slf4j;
 
 import org.egov.egovsurveyservices.repository.querybuilder.ScorecardSurveyQueryBuilder;
+import org.egov.egovsurveyservices.repository.rowmapper.AnswerRowMapper;
 import org.egov.egovsurveyservices.repository.rowmapper.ScorecardSurveyRowMapper;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.egovsurveyservices.repository.rowmapper.QuestionWeightageWithQuestionRowMapper;
@@ -18,8 +19,6 @@ import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -85,6 +84,13 @@ public class ScorecardSurveyRepository {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
 
+    public List<Answer> getAnswers(String surveyUuid, String citizenId) {
+        String query=surveyQueryBuilder.getAnswers();
+        List<Object> preparedStmtList = new ArrayList<>();
+        preparedStmtList.add(surveyUuid);
+        preparedStmtList.add(citizenId);
+        return jdbcTemplate.query(query, preparedStmtList.toArray(), new AnswerRowMapper());
     }
 }

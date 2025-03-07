@@ -1,18 +1,20 @@
 import React, { useReducer } from "react";
-import NewSurveyForm from "./NewSurveyForm";
+import QuestionForm from "./QuestionForm";
 
-const SurveyFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPartiallyEnabled, addOption, formDisabled, controlSurveyForm, formState }) => {
+const QuestionFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPartiallyEnabled, addOption, formDisabled, controlSurveyForm, formState }) => {
   const defaultFormsConfig = {
+    category:"",
     question: "",
     answerType: "Short Answer",
-    required: false,
     options: [],
+    required: false,
     uuid: "",
     qorder: null,
   };
   const initialSurveyFormState = [defaultFormsConfig];
 
   const surveyFormReducer = (state, { type, payload }) => {
+    console.log("Form state:", state);
     switch (type) {
       case "addNewForm":
         const newSurveyQues = [...state, defaultFormsConfig];
@@ -25,10 +27,10 @@ const SurveyFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPa
         return updatedSurveyQues;
       case "removeForm":
         if (state.length === 1) return state;
-        const copyOfSate = [...state];
-        copyOfSate.splice(payload.index, 1);
-        payload.setSurveyConfig("questions", copyOfSate);
-        return copyOfSate;
+        const copyOfState = [...state];
+        copyOfState.splice(payload.index, 1);
+        payload.setSurveyConfig("questions", copyOfState);
+        return copyOfState;
     }
   };
 
@@ -42,7 +44,7 @@ const SurveyFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPa
     return surveyState.length
       ? surveyState.map((config, index) => {
           return (
-            <NewSurveyForm
+            <QuestionForm
               key={index}
               {...(config.formConfig ? config?.formConfig : config)}
               //  type={config?.formConfig?.type}
@@ -67,12 +69,12 @@ const SurveyFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPa
       {/* <div className="heading">{t("CS_SURVEYS_QUESTIONS")}</div> */}
       {renderPreviewForms()}
       <div className="pointer">
-        {surveyState.length < 30 && (
+        {surveyState.length < 100 && (
           <button
-            className={`unstyled-button link ${disableInputs ? "disabled-btn" : ""} ${surveyState.length >= 30 ? "disabled-btn" : ""} `}
+            className={`unstyled-button link ${disableInputs ? "disabled-btn" : ""} ${surveyState.length >= 100 ? "disabled-btn" : ""} `}
             type="button"
             onClick={() => passingSurveyConfigInDispatch({ type: "addNewForm" })}
-            disabled={surveyState.length >= 30 ? true : false}
+            disabled={surveyState.length >= 100 ? true : false}
           >
             {t("CS_COMMON_ADD_QUESTION")}
           </button>
@@ -82,4 +84,4 @@ const SurveyFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPa
   );
 };
 
-export default SurveyFormsMaker;
+export default QuestionFormsMaker;

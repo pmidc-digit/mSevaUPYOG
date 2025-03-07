@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 import SurveyDetailsForms from "./SurveyDetailsForms";
-import SurveyFormsMaker from "./SurveyFormsMaker";
+import QuestionFormsMaker from "./QuestionFormsMaker";
 import SurveySettingsForms from "./SurveySettingsForm";
 
 const CreateNewSurvey = ({ t, initialFormValues, onSubmit, isFormDisabled = false ,readOnly}) => {
@@ -47,7 +47,7 @@ const CreateNewSurvey = ({ t, initialFormValues, onSubmit, isFormDisabled = fals
               surveyFormData={getSurveyFormValues}
               readOnly={readOnly}
             />
-            {/* <SurveyFormsMaker t={t} setSurveyConfig={setSurveyFormValue} addOption={true} controlSurveyForm={controlSurveyForm} /> */}
+            {/* <QuestionFormsMaker t={t} setSurveyConfig={setSurveyFormValue} addOption={true} controlSurveyForm={controlSurveyForm} /> */}
             <SurveySettingsForms t={t} controlSurveyForm={controlSurveyForm} surveyFormState={surveyFormState} readOnly={readOnly}/>
           </Card>
 

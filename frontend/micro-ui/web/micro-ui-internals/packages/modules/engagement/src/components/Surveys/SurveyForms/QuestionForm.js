@@ -5,7 +5,7 @@ import Checkboxes from "./AnswerTypes/Checkboxes";
 import MultipleChoice from "./AnswerTypes/MultipleChoice";
 
 // Main component for the survey form
-const NewSurveyForm = ({
+const QuestionForm = ({
   t, // Translation function
   index, // Index of the question
   questionStatement, // The question text
@@ -345,4 +345,4 @@ const NewSurveyForm = ({
   );
 };
 
-export default NewSurveyForm;
+export default QuestionForm;

@@ -63,7 +63,7 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
     // const { value } = e;
     dispatch(updateCategory(category.id, { ["selectCategory"]: e }));
     dispatch(setQuestions(category.id,[]))
-    dispatch(addQuestions(category.id, []));
+   // dispatch(addQuestions(category.id, []));
     setShowQuestionTableList(false);
   };
   const handleFieldChange = (e) => {
@@ -86,7 +86,8 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
     // categoryId:category.selectCategory.id
     categoryId:categoryId,
     tenantId: tenantId,
-   questionStatement: questionStatement
+   questionStatement: questionStatement,
+   status: "ACTIVE"
     
 
 
@@ -97,7 +98,8 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
       if(response?.Questions?.length>0)
       {
         let arr=[]
-        response.Questions.map((item)=>{
+       
+         response.Questions.map((item)=>{
          let obj= {...item,selected:false}
          arr.push(obj)
         })
@@ -111,7 +113,7 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
       else
       {
         dispatch(setQuestions(category.id,[]))
-        dispatch(addQuestions(category.id, []));
+      //  dispatch(addQuestions(category.id, []));
         setQuestionsList([])
         setShowQuestionTableList(false);
 
@@ -122,7 +124,7 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
   catch(error)
   {
     dispatch(setQuestions(category.id,[]))
-    dispatch(addQuestions(category.id, []));
+   // dispatch(addQuestions(category.id, []));
     console.log(error);
     setQuestionsList([])
     setShowQuestionTableList(false);
@@ -140,10 +142,37 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
   };
 
   const handleAddQuestions = () => {
+
+    const prev=[...category.selectedQuestions]
+    console.log("prev selected ques",prev)
+    let arr= []
     const selectedQuestions = category.questions.filter(question => question.selected);
-    const weightage = 100 / selectedQuestions.length;
-    const questionsWithWeightage = selectedQuestions.map(question => ({ ...question, weightage }));
-    dispatch(addQuestions(category.id, questionsWithWeightage));
+    arr.push(selectedQuestions)
+    // const selectedQuestions =[...category.selectedQuestions,category.questions.filter(question => question.selected)];
+    // if(category.selectedQuestions.length>0){
+       
+    // }
+   
+    // const updatedQuestions = [...category.selectedQuestions, ...selected.map(question => ({
+    //   question,
+    //   weightage: 100 / (selectedQuestions.length + selected.length)
+    // }))];
+    // const newQuestions = [prev,selectedQuestions];
+    // console.log("new ques",newQuestions)
+    console.log("selected ques",selectedQuestions)
+    console.log("arr",arr)
+    const weightage = 100 / arr.length;
+    const newQuestions = selectedQuestions.filter(question => 
+      !category.selectedQuestions.some(q => q.uuid === question.uuid)
+    );
+    const selectedCategory= category.selectCategory.title
+    const updatedQuestions = [...category.selectedQuestions, ...newQuestions.map(question => ({ ...question,selectedCategory }))];
+    const updatedQuestionsWithWeightage = updatedQuestions.map(q => ({
+      ...q,
+      weightage: 100 / updatedQuestions.length
+    }));
+    console.log("upd Qus",updatedQuestions)
+    dispatch(addQuestions(category.id, updatedQuestionsWithWeightage));
   };
 
   // const handleWeightageChange = (e) => {
@@ -155,6 +184,16 @@ console.log("cat list",categoryList)
 console.log("cat",category)
 console.log("selected ques read only len",category.selectedQuestions.length)
 
+const handleDeleteQuestion = (questionToDelete) => {
+  const updatedQuestions = category.selectedQuestions.filter(q => q.uuid !== questionToDelete.uuid);
+  const totalQuestions = updatedQuestions.length;
+  const updatedQuestionsWithWeightage = updatedQuestions.map(q => ({
+    ...q,
+    weightage: 100 / totalQuestions
+  }));
+  console.log("upd Qus",updatedQuestions)
+  dispatch(addQuestions(category.id, updatedQuestionsWithWeightage));
+};
   return (
     <div className="category-card">
       <h3>Section Title</h3>
@@ -322,6 +361,7 @@ console.log("selected ques read only len",category.selectedQuestions.length)
           <table>
               <thead>
                <tr>
+                <th>Selected Category</th>
                   <th>Question Statement</th>
                   <th>Weightage</th>
                 </tr>
@@ -329,6 +369,7 @@ console.log("selected ques read only len",category.selectedQuestions.length)
               <tbody>
               {category.selectedQuestions.map((question,index) => (
                   <tr key={question.uuid}>
+                    <td>{question.selectedCategory}</td>
                     <td>{question.questionStatement}</td>
                     <td>
                       {question.weightage}
@@ -341,6 +382,9 @@ console.log("selected ques read only len",category.selectedQuestions.length)
                       /> */}
                        
                     </td>
+                    <td>
+                  <label onClick={() => handleDeleteQuestion(question)}>Delete</label>
+                </td>
                   </tr>
                 ))}
               </tbody>

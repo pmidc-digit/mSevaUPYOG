@@ -10,13 +10,14 @@ import { Link,useHistory } from "react-router-dom";
 
 const BannerPicker = (props) => {
   const { t } = useTranslation();
+  console.log("props",props)
   return (
     <Banner
       // message={props.mutation.isSuccess ? t(`SURVEY_FORM_CREATED`) : t("SURVEY_FORM_FAILURE")}
-      message={ t(`SURVEY_FORM_CREATED`) }
-      //applicationNumber={getMessage(props.mutation)}
-     // info={props.mutation.isSuccess ? t("SURVEY_FORM_ID") : ""}
-      successful={true}
+      message={props.props.message}
+      applicationNumber={props.props.response[0]?.uuid}
+     info={props.props.isSuccess ? t("SURVEY_FORM_ID") : ""}
+     successful={props.props.isSuccess}
     />
   );
 };
@@ -66,7 +67,7 @@ const Acknowledgement = (props) => {
   return (
     <Card>
       <BannerPicker
-        t={t}
+        props={props.location.state}
       //  mutation={mutation}
       />
       <CardText>

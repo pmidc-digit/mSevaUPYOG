@@ -378,6 +378,7 @@ export const FormComposer = (props) => {
             {props.currentStep > 1 && (
               <button style={buttonStyle.back} 
                onClick={handleBackClick}
+               className="submit-bar"
               >
                 {t("COMMON_BACK")}
               </button>

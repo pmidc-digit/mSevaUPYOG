@@ -53,23 +53,23 @@
 }
 .citizen .ServicesSection .CardBasedOptions:nth-child(odd){
   .employeeCustomCard{
-    background-image: url("https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-red-card.png");
+    background-image: url("https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/citizenDashboardImage1.png");
     background-size: cover
   }
 }
 .citizen .ServicesSection .CardBasedOptions:nth-child(even){
   .employeeCustomCard{
-background-image: url("https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-green-card.png");
+background-image: url("https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/citizenDashBoardImage2.png");
 background-size: cover
   }
 }
 .citizen .employeeCustomCard {
   border-radius: 10px;
-  background-image: url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-red-card.png);
+  background-image: url("https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/citizenDashboardImage1.png");
       background-size: cover;
     .employeeCustomCard {
       border-radius: 10px;
-      background-image: url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-red-card.png);
+      background-image: url("https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/citizenDashboardImage1.png");
       background-size: cover;
   }
 }

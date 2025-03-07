@@ -3,13 +3,13 @@
     flex-direction: column;
     justify-content: space-between;
     height: 522px;
+}
 
-    @media (min-width: 768px) {
-        .middle-content{
-          flex-direction: row;
-          min-height: 360px;
-        } 
-    }
+@media (min-width: 768px) {
+    .middle-content{
+      flex-direction: row;
+      min-height: 360px;
+    } 
 }
 
 .middle-left-half {
@@ -69,7 +69,7 @@
     border: 1px solid black;
 
     @media (min-width: 768px) {
-        height: 360px;
+        height: 98%;
         width: 48%;
     }
 }

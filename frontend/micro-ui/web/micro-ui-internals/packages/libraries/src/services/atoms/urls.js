@@ -228,6 +228,7 @@ const Urls = {
       searchQuestions: "/egov-survey-services/egov-ss/question/_search",
       createSurvey: "/egov-survey-services/egov-ss/csc/create",
       searchSurvey: "/egov-survey-services/egov-ss/csc/_search",
+      submitSurvey:"/egov-survey-services/egov-ss/csc/response/_submit"
     },
   },
 

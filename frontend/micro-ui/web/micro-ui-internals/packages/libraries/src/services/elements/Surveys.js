@@ -83,7 +83,7 @@ export const Surveys = {
   searchCategory: (filters = {}) =>
     Request({
       url: Urls.engagement.surveys.searchCategory,
-      params: { ...filters },
+      params: { ...filters,size:100000 },
       useCache: false,
       userService: true,
       method: "POST",
@@ -94,7 +94,7 @@ export const Surveys = {
   searchQuestions: (filters = {}) =>
     Request({
       url: Urls.engagement.surveys.searchQuestions,
-      params: { ...filters },
+      params: { ...filters,size:100000 },
       useCache: false,
       userService: true,
       method: "POST",
@@ -135,4 +135,24 @@ export const Surveys = {
       auth: true,
       locale: true,
     }),
+    userSearch: async (data, filters = {}) => {
+      return Request({
+        url: Urls.UserSearch,
+        params: {...filters },
+        method: "POST",
+        auth: true,
+        userService: true,
+        data: data
+      });
+    },
+    submitSurvey: (details) =>
+      Request({
+        url: Urls.engagement.surveys.submitSurvey,
+        data: details,
+        useCache: true,
+        userService: true,
+        method: "POST",
+        auth: true,
+        locale: true,
+      }),
 };

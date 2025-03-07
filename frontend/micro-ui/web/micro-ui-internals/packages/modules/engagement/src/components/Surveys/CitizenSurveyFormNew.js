@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Controller, useFormContext,useForm } from "react-hook-form";
 import {TextInput, Dropdown, CheckBox ,Toast} from '@mseva/digit-ui-react-components';
+import CitizenDetails from './CitizenDetails';
 const CitizenSurveyFormNew = () => {
   const [formData, setFormData] = useState({
    name:"",
@@ -103,7 +104,8 @@ const CitizenSurveyFormNew = () => {
         <h1 style={{ fontWeight: 'bold', fontSize: '20px' }}>Survey Title : Citizen Survey</h1>
         <div><h1 style={{ fontWeight: 'bold', fontSize: '20px' }}>Survey Description :  This is a sample citizen survey</h1></div>
         <form onSubmit={handleSubmit}>
-        <div style={{border:'2px solid #ccc',padding:'15px',borderRadius:'4px'}}>
+        <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} relationList={relationList}/>
+        {/* <div style={{border:'2px solid #ccc',padding:'15px',borderRadius:'4px'}}>
           <h2>Citizen Details</h2>
           <div style={{border:'1px solid #ccc'}}></div>
         <h3>Name</h3>
@@ -145,7 +147,7 @@ const CitizenSurveyFormNew = () => {
           />} */}
         {/* /> */}
        
-             <h3>Father/Husband Name</h3>
+             {/* <h3>Father/Husband Name</h3>
       <input
         type="text"
         name="relationName"
@@ -191,7 +193,7 @@ const CitizenSurveyFormNew = () => {
       //  required
       />
        {errors.email && <span className="error">{errors.email}</span>}
-        </div>
+        </div> */} 
           <div>
             <h2>Section 1</h2>
             <div>

@@ -1,5 +1,5 @@
 import { CardLabelError, Dropdown, RemoveableTag, TextInput, MultiSelectDropdown } from "@mseva/digit-ui-react-components";
-import React, { Fragment, useMemo } from "react";
+import React, { Fragment, useEffect, useMemo } from "react";
 import { Controller } from "react-hook-form";
 import { useSelector, useDispatch } from 'react-redux';
 import { alphabeticalSortFunctionForTenantsBasedOnName } from "../../../utils/index";
@@ -33,6 +33,9 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
     //inactive survey editing
     return false
   }
+  useEffect(()=>{
+    dispatch(fieldChange(surveyDetails.id, { ["ulb"]: tenantId }));
+  },[])
   const handleULBChange=(e,name)=>{
     console.log("eeee",e,name)
     const temp=   surveyFormData("tenantIds")?.filter?.((f) => e.code !== f?.code) || [];
@@ -51,7 +54,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
     <div className="surveydetailsform-wrapper">
       <span className="surveyformfield">
         <label>{`${t("LABEL_FOR_ULB")} * `}</label>
-        <Controller
+        {/* <Controller
           name="ulb"
           control={controlSurveyForm}
           // defaultValue={selectedTenat}
@@ -76,9 +79,9 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
                 }),
               [props?.value]
             );
-         console.log("prop",props?.value)
-            return (
-              <div style={{ display: "grid", gridAutoFlow: "row" }}>
+         console.log("prop",props?.value) */}
+            {/* return ( */}
+              {/* <div style={{ display: "grid", gridAutoFlow: "row" }}> */}
                  {/* <Dropdown
                   allowMultiselect={true}
                   optionKey={"i18nKey"}
@@ -95,7 +98,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
                  
                   t={t}
                 />  */}
-                <MultiSelectDropdown
+                {/* <MultiSelectDropdown
                   options={userUlbs}
                   isSurvey={true}
                   optionsKey="i18nKey"
@@ -113,12 +116,30 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
                   defaultUnit={t("CS_SELECTED_TEXT")}
                   readOnly={readOnly||false}
                   disable={readOnly||false}
-                />
+                /> */}
+
+
+<TextInput
+          name="ulb"
+          type="text"
+          inputRef={registerRef({
+            required: t("ES_ERROR_REQUIRED"),
+           
+          
+          })}
+          readOnly={true}
+          value={surveyDetails.ulb}
+          defaultValue={tenantId}
+         // onChange={handleFieldChange}
+          // disable={disableInputs}
+          disable={true}
+        />
                 {/* <div className="tag-container">{renderRemovableTokens}</div> */}
-              </div>
+              {/* </div>
             );
           }}
-        />
+        /> */}
+        
         {surveyFormState?.errors?.tenantIds && <CardLabelError>{t("ES_ERROR_REQUIRED")}</CardLabelError>}
       </span>
 

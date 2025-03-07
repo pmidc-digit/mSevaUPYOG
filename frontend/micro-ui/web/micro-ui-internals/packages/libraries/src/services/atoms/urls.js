@@ -214,20 +214,27 @@ const Urls = {
       update: "/egov-document-uploader/egov-du/document/_update",
     },
     surveys: {
+      //Existing endpoints:
       create: "/egov-survey-services/egov-ss/survey/_create",
       update: "/egov-survey-services/egov-ss/survey/_update",
-      search: "/egov-survey-services/egov-ss/csc/_search",
+      search: "/egov-survey-services/egov-ss/survey/_search",
       delete: "/egov-survey-services/egov-ss/survey/_delete",
       submitResponse: "/egov-survey-services/egov-ss/survey/response/_submit",
       showResults: "/egov-survey-services/egov-ss/survey/response/_results",
+      //Endpoints for mseva punjab:
+      //Categories:
       createCategory: "/egov-survey-services/egov-ss/category/_create",
       updateCategory: "/egov-survey-services/egov-ss/category/_update",
       searchCategory: "/egov-survey-services/egov-ss/category/_search",
+      //Questions:
       createQuestions: "/egov-survey-services/egov-ss/question/_create",
       updateQuestions: "/egov-survey-services/egov-ss/question/_update",
       searchQuestions: "/egov-survey-services/egov-ss/question/_search",
+      //Surveys:
       createSurvey: "/egov-survey-services/egov-ss/csc/create",
       searchSurvey: "/egov-survey-services/egov-ss/csc/_search",
+      submitSurvey:"/egov-survey-services/egov-ss/csc/response/_submit",
+      updateSurvey: "/egov-survey-services/egov-ss/csc/active/_update"
     },
   },
 

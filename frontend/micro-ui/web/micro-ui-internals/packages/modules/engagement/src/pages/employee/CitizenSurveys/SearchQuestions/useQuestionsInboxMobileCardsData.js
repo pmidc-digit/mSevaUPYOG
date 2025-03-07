@@ -64,6 +64,7 @@ const useQuestionsInboxMobileCardsData = ({ parentRoute, table, setShowToast }) 
       [t("Question")]: item.questionStatement,
       [t("Is Question Active")]: item.status,
       [t("Question Type")]: item.type,
+      [t("Is Question Required")]: item.required.toString(),
       [t("Category")]: item.category.label,
       [t("Created On")]: item.auditDetails.createdTime ? format(new Date(item.auditDetails.createdTime), "dd/MM/yyyy") : "",
       [t("Last Updated On")]: item.auditDetails.lastModifiedTime ? format(new Date(item.auditDetails.lastModifiedTime), "dd/MM/yyyy") : "",

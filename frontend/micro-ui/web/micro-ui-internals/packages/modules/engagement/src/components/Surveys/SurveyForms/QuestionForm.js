@@ -5,7 +5,7 @@ import Checkboxes from "./AnswerTypes/Checkboxes";
 import MultipleChoice from "./AnswerTypes/MultipleChoice";
 
 // Main component for the survey form
-const NewSurveyForm = ({
+const QuestionForm = ({
   t, // Translation function
   index, // Index of the question
   questionStatement, // The question text
@@ -135,7 +135,7 @@ const NewSurveyForm = ({
       case "MULTIPLE_ANSWER_TYPE":
         return (
           <Controller
-            rules={{ required: true }}
+            //rules={{ required: true }}
             defaultValue={[]}
             name={`OPTIONS_${index}`}
             control={controlSurveyForm}
@@ -163,7 +163,7 @@ const NewSurveyForm = ({
         return (
           <div>
             <Controller
-              rules={{ required: true }}
+              //rules={{ required: true }}
               defaultValue={[]}
               name={`OPTIONS_${index}`}
               control={controlSurveyForm}
@@ -232,7 +232,7 @@ const NewSurveyForm = ({
       <span className="newSurveyForm_quesno">{`${t("CS_COMMON_QUESTION")} ${index + 1} `}</span>
       <span className="newSurveyForm_mainsection">
         <Controller
-          rules={{ required: t("REQUIRED_FIELD") }} // t("EVENTS_CATEGORY_ERROR_REQUIRED")
+          //rules={{ required: t("REQUIRED_FIELD") }} // t("EVENTS_CATEGORY_ERROR_REQUIRED")
           defaultValue={""}
           name={`CATEGORY_SURVEY_${index}`}
           control={controlSurveyForm}
@@ -268,7 +268,7 @@ const NewSurveyForm = ({
           name={`QUESTION_SURVEY_${index}`}
           disable={disableInputs}
           inputRef={register({
-            required: t("REQUIRED_FIELD"), //t("ES_ERROR_REQUIRED"),
+            //required: t("REQUIRED_FIELD"), //t("ES_ERROR_REQUIRED"),
             maxLength: {
               value: 100,
               message: t("EXCEEDS_100_CHAR_LIMIT"),
@@ -282,7 +282,7 @@ const NewSurveyForm = ({
         {formState?.errors && <CardLabelError>{formState?.errors?.[`QUESTION_SURVEY_${index}`]?.message}</CardLabelError>}
 
         <Controller
-          rules={{ required: t("REQUIRED_FIELD") }} //t("ES_ERROR_REQUIRED")
+          //rules={{ required: t("REQUIRED_FIELD") }} //t("ES_ERROR_REQUIRED")
           defaultValue={{ title: t("MULTIPLE_ANSWER_TYPE"), i18Key: "MULTIPLE_ANSWER_TYPE", value: "MULTIPLE_ANSWER_TYPE" }}
           name={`ANSWER_TYPE_SURVEY_${index}`}
           control={controlSurveyForm}
@@ -308,7 +308,7 @@ const NewSurveyForm = ({
         <div className="newSurveyForm_actions">
           <div>
             <Controller
-              rules={{ required: t("ES_ERROR_REQUIRED") }}
+              //rules={{ required: t("ES_ERROR_REQUIRED") }}
               defaultValue={false}
               name={`REQUIRED_QUESTION_${index}`}
               control={controlSurveyForm}
@@ -345,4 +345,4 @@ const NewSurveyForm = ({
   );
 };
 
-export default NewSurveyForm;
+export default QuestionForm;

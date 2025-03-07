@@ -43,7 +43,7 @@ const TopBarSideBar = ({
   const userOptionsBeforeLogin = [
     
   ];
-  console.log("UserDetails"+JSON.stringify(userDetails))
+  //console.log("UserDetails"+JSON.stringify(userDetails))
   return (
     <React.Fragment>
       <TopBar

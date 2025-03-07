@@ -24,7 +24,7 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
                 let quesArr=[]
                 category.selectedQuestions.map((question)=>{
                     let quesObj={
-                        questionUuid: question.id,
+                        questionUuid: question.uuid,
                         weightage:question.weightage
                     }
                   quesArr.push(quesObj)
@@ -65,7 +65,7 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
               Digit.Surveys.createSurvey(filters).then((response) => {
                 if(response?.Surveys?.length>0)
                 {
-                  history.push("/digit-ui/employee/engagement/surveys/create-response", response?.Surveys)
+                  history.push("/digit-ui/employee/engagement/surveys/create-response", {message:"SURVEY_FORM_CREATED",response:response?.Surveys,isSuccess:true})
                  // alert("Survey Successfully Created");
                  // setShowToast({ key: true, label: "Survey successfully created" });
                 }

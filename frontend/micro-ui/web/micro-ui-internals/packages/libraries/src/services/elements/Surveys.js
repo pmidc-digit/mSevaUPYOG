@@ -3,6 +3,7 @@ import Urls from "../atoms/urls";
 import { Request } from "../atoms/Utils/Request";
 
 export const Surveys = {
+  //Existing requests:
   search: (filters = {}) =>
     Request({
       url: Urls.engagement.surveys.search,
@@ -59,6 +60,42 @@ export const Surveys = {
       auth: true,
       params: { surveyId: details.surveyId },
     }),
+
+  //Requests for mseva punjab:
+  //For surveys:
+
+  createSurvey: (details) =>
+    Request({
+      url: Urls.engagement.surveys.createSurvey,
+      data: details,
+      useCache: true,
+      userService: true,
+      method: "POST",
+      auth: true,
+      locale: true,
+    }),
+
+  searchSurvey: (filters = {}) =>
+    Request({
+      url: Urls.engagement.surveys.searchSurvey,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: false,
+      params: { ...filters },
+    }),
+
+  updateSurvey: (details) =>
+    Request({
+      url: Urls.engagement.surveys.updateSurvey,
+      data: details,
+      useCache: true,
+      userService: true,
+      method: "POST",
+      auth: true,
+    }),
+
+  //For categories:
   createCategory: (details) =>
     Request({
       url: Urls.engagement.surveys.createCategory,
@@ -83,7 +120,7 @@ export const Surveys = {
   searchCategory: (filters = {}) =>
     Request({
       url: Urls.engagement.surveys.searchCategory,
-      params: { ...filters, size: 100000 },
+      params: { ...filters,size:100000 },
       useCache: false,
       userService: true,
       method: "POST",
@@ -91,10 +128,11 @@ export const Surveys = {
       locale: true,
     }),
 
+  //For questions:
   searchQuestions: (filters = {}) =>
     Request({
       url: Urls.engagement.surveys.searchQuestions,
-      params: { ...filters, size: 100000 },
+      params: { ...filters,size:100000 },
       useCache: false,
       userService: true,
       method: "POST",
@@ -135,4 +173,24 @@ export const Surveys = {
       auth: true,
       locale: true,
     }),
+    userSearch: async (data, filters = {}) => {
+      return Request({
+        url: Urls.UserSearch,
+        params: {...filters },
+        method: "POST",
+        auth: true,
+        userService: true,
+        data: data
+      });
+    },
+    submitSurvey: (details) =>
+      Request({
+        url: Urls.engagement.surveys.submitSurvey,
+        data: details,
+        useCache: true,
+        userService: true,
+        method: "POST",
+        auth: true,
+        locale: true,
+      }),
 };

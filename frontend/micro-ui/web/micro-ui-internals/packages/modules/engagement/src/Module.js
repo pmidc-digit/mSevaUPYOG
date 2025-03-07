@@ -52,6 +52,8 @@ import NewSurveys from "./pages/employee/CitizenSurveys/NewSurvey";
 import SurveyCreationPage from "./components/Surveys/SurveyForms/SurveyCreationPage";
 import SurveySummary from "./components/Surveys/SurveyForms/SurveySummary";
 import FillSurveyNew from "./pages/citizen/CitizenSurvey/FillSurveyNew";
+import FillSurveyEmp from "./pages/employee/CitizenSurveys/FillSurveyEmp";
+import FillQuestions from "./components/Surveys/FillQuestions";
 export const SurveyReducers = getRootReducer;
 
 const EventsBreadCrumb = ({ location }) => {
@@ -289,12 +291,12 @@ const EngagementModule = ({ stateCode, userType, tenants }) => {
 
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
 
-  console.log("path", path);
+  //console.log("path", path);
   if (isLoading) {
     return <Loader />;
   }
   Digit.SessionStorage.set("ENGAGEMENT_TENANTS", tenants);
-  console.log("userType", userType);
+  //console.log("userType", userType);
 
   if (userType === "citizen") {
     return <CitizenApp path={path} url={url} userType={userType} tenants={tenants} />;
@@ -369,7 +371,9 @@ const componentsToRegister = {
   NewSurveys,
   SurveyCreationPage,
   SurveySummary,
-  FillSurveyNew
+  FillSurveyNew,
+  FillSurveyEmp,
+  FillQuestions
 };
 
 export const initEngagementComponents = () => {

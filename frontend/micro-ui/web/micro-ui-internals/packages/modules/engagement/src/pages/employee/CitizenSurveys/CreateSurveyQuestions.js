@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, Header, ActionBar, SubmitBar, Toast, Loader } from "@mseva/digit-ui-react-components";
 import { useForm, FormProvider } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 //
-import SurveyFormsMaker from "../../../components/Surveys/SurveyForms/SurveyFormsMaker";
+import QuestionFormsMaker from "../../../components/Surveys/SurveyForms/QuestionFormsMaker";
+import { useHistory } from "react-router-dom";
 
 //Keep below values from localisation:
 const SURVEY_QUESIONS = "Create Questions";
@@ -12,11 +13,12 @@ const CREATE_QUESTIONS_BTN_LABEL = "Create Questions";
 const ERR_MESSAGE = "Something went wrong";
 
 const CreateSurveyQuestions = () => {
+  const history = useHistory();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
-  const { register: registerRef, control: controlSurveyForm, handleSubmit, setValue, getValues, reset, formState, clearErrors, ...methods } = useForm(
+  const { register: registerRef, control: controlSurveyForm, handleSubmit, setValue, getValues, reset, formState, clearErrors, watch,...methods } = useForm(
     {
       defaultValues: { questions: {} },
     }
@@ -53,7 +55,8 @@ const CreateSurveyQuestions = () => {
         setIsLoading(false);
         setShowToast({ isError: false, label: QUESTIONS_CREATED });
         setTimeout(() => {
-          window.location.reload();
+          //window.location.reload();
+          history.push("/digit-ui/employee/engagement/surveys/search-questions");
         }, 2000);
         //reset();
       } else {
@@ -72,6 +75,14 @@ const CreateSurveyQuestions = () => {
   const closeToast = () => {
     setShowToast(null);
   };
+
+  // Watch all form values
+  // const formValues = watch();
+
+  // useEffect(() => {
+  //   console.log("Form values:", formValues);
+  // }, [formValues]);
+
   return (
     <div className="pageCard">
       <Header>{t(SURVEY_QUESIONS)}</Header>
@@ -89,7 +100,7 @@ const CreateSurveyQuestions = () => {
       >
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card>
-            <SurveyFormsMaker t={t} setSurveyConfig={setValue} addOption={true} controlSurveyForm={controlSurveyForm} formState={formState} />
+            <QuestionFormsMaker t={t} setSurveyConfig={setValue} addOption={true} controlSurveyForm={controlSurveyForm} formState={formState} />
           </Card>
           <ActionBar>
             <SubmitBar label={t(CREATE_QUESTIONS_BTN_LABEL)} submit="submit" />

@@ -8,18 +8,20 @@ import SearchCategories from "./SearchCategories";
 import CreateSurveyQuestions from "./CreateSurveyQuestions";
 import SearchQuestions from "./SearchQuestions";
 import CreateSurveyStepForm from "../../../components/Surveys/CreateSurveyStepForm";
-import CitizenSurveyFormNew from "../../../components/Surveys/CitizenSurveyFormNew";
+import FillSurveyEmp from "./FillSurveyEmp";
+import FillQuestions from "../../../components/Surveys/FillQuestions";
 //
 import CreateResponse from "./responses/create";
 import UpdateResponse from "./responses/update";
 import SurveyDetails from "./SurveyDetails";
 import SurveyResults from "./SurveyResults";
-
+import SubmitResponse from "./responses/submit"
 //
 import NewSurvey from "./NewSurvey";
 import DeleteResponse from "./responses/delete";
 import SurveyForm from "../../../components/Surveys/SurveyForms/SurveyForm";
 import CreateSurveyForm from "../../../components/Surveys/SurveyForms/CreateSurveyForm";
+import ActiveAndOpenSurveys from "./ActiveAndOpenSurveys";
 
 const Surveys = ({ match: { path } = {}, tenants, parentRoute }) => {
   return (
@@ -30,10 +32,13 @@ const Surveys = ({ match: { path } = {}, tenants, parentRoute }) => {
       <PrivateRoute path={`${path}/create-questions`} component={(props) => <CreateSurveyQuestions {...props} />} />
       <PrivateRoute path={`${path}/search-questions`} component={(props) => <SearchQuestions {...props} />} />
       <PrivateRoute path={`${path}/create-survey-step-form`} component={(props) => <CreateSurveyStepForm {...props} />} />
-      <PrivateRoute path={`${path}/fill-survey`} component={(props) => <CitizenSurveyFormNew {...props} />} />
+      <PrivateRoute path={`${path}/fill-citizen-details-survey`} component={(props) => <FillSurveyEmp {...props} />} />
+      <PrivateRoute path={`${path}/fill-survey`} component={(props) => <FillQuestions {...props} />} />
+      <PrivateRoute path={`${path}/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} />} />
       {/*  */}
       <PrivateRoute path={`${path}/create-response`} component={(props) => <CreateResponse {...props} />} />
       <PrivateRoute path={`${path}/update-response`} component={(props) => <UpdateResponse {...props} />} />
+      <PrivateRoute path={`${path}/submit-response`} component={(props) => <SubmitResponse {...props} />} />
       <PrivateRoute path={`${path}/inbox/details/:id`} component={(props) => <SurveyDetails {...props} />} />
       <PrivateRoute path={`${path}/inbox/results/:id`} component={(props) => <SurveyResults {...props} />} />
 

@@ -1,13 +1,18 @@
-import React, { Fragment, useCallback, useMemo, useReducer } from "react";
-import { InboxComposer, DocumentIcon } from "@mseva/digit-ui-react-components";
+import React, { Fragment, useCallback, useMemo, useReducer, useState } from "react";
+import { InboxComposer, DocumentIcon, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFieldsComponent";
 import SearchFormFieldsComponents from "./SearchFieldsComponents";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileDataCard";
 // import { useHistory } from "react-router-dom";
+
+//Keep below values from localisation:
+const ERR_MESSAGE = "Something went wrong";
+
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
+  const [showToast, setShowToast] = useState(null);
   // const history = useHistory()
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
@@ -15,9 +20,9 @@ const Inbox = ({ parentRoute }) => {
   const userUlbs = ulbs.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
 
   const statuses = [
-    { code: "ALL", name: `${t("ES_COMMON_ALL")}` },
-    { code: "ACTIVE", name: `${t("ES_COMMON_ACTIVE")}` },
-    { code: "INACTIVE", name: `${t("ES_COMMON_INACTIVE")}` },
+    { code: "ALL", name: `${t("ES_COMMON_ALL")}`, bool: null },
+    { code: "ACTIVE", name: `${t("ES_COMMON_ACTIVE")}`, bool: true },
+    { code: "INACTIVE", name: `${t("ES_COMMON_INACTIVE")}`, bool: false },
   ];
 
   const searchFormDefaultValues = {
@@ -55,7 +60,7 @@ const Inbox = ({ parentRoute }) => {
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("CITIZENSURVEY.INBOX");
 
   const onSearchFormReset = (setSearchFormValue) => {
-   // setSearchFormValue("postedBy", "");
+    // setSearchFormValue("postedBy", "");
     setSearchFormValue("title", "");
     setSearchFormValue("tenantIds", tenantId);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
@@ -95,6 +100,16 @@ const Inbox = ({ parentRoute }) => {
         text: t("CS_COMMON_NEW_SURVEY"),
         link: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
         //link: "/digit-ui/employee/engagement/surveys/create-survey-step-form?from=ES_EVENT_INBOX",
+      },
+      {
+        text: t("Active and Open Surveys"),
+        link: "/digit-ui/employee/engagement/surveys/active-open-surveys",
+        //link: "/digit-ui/employee/engagement/surveys/active-open-surveys?from=ES_EVENT_INBOX",
+      },
+      {
+        text: t("Surveys Inbox/Search Surveys"),
+        link: "/digit-ui/employee/engagement/surveys/inbox",
+        //link: "/digit-ui/employee/engagement/surveys/inbox?from=ES_EVENT_INBOX",
       },
       {
         text: t("Create Category"),
@@ -179,23 +194,72 @@ const Inbox = ({ parentRoute }) => {
       noResultsMessage: "CS_SURVEYS_NOT_FOUND",
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
+      setShowToast,
     },
   });
 
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table: Surveys });
+  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table: Surveys, setShowToast, });
+
+  //For the card displayed after clicking the delete survey button:
+  //On clicking delete button under "Delete Survey" column in a table row, a toast with Yes & No buttons is opened:
+  //Toast is closed if no is clicked
+  const onNoToToast = () => {
+    setShowToast(null);
+  };
+  //Row will be deleted if yes is clicked
+  const onYesToToast = () => {
+    handleUpdateSurvey();
+  };
+
+  const handleUpdateSurvey = () => {
+    const row = showToast.rowData;
+    const payload = {
+      uuid: row?.uuid,
+      active: !row?.active,
+    };
+
+    Digit.Surveys.updateSurvey(payload)
+      .then((response) => {
+        // if (response?.Surveys?.length > 0) {
+        //   setShowToast({ label: "Survey status updated successfully", isDleteBtn: "true" });
+        // } else {
+        //   setShowToast({ label: response?.Errors?.[0]?.message || ERR_MESSAGE, isDleteBtn: "true", error: true });
+        // }
+        setShowToast({ label: response?.message, isDleteBtn: "true" });
+      })
+      .catch((error) => {
+        setShowToast({ label: error?.response?.data?.Errors?.[0]?.message || ERR_MESSAGE, isDleteBtn: "true", error: true });
+      });
+  };
 
   return (
-    <InboxComposer
-      {...{
-        isInboxLoading,
-        PropsForInboxLinks,
-        ...propsForSearchForm,
-        ...propsForFilterForm,
-        propsForInboxMobileCards,
-        propsForInboxTable,
-        formState,
-      }}
-    />
+    <Fragment>
+      <InboxComposer
+        {...{
+          isInboxLoading,
+          PropsForInboxLinks,
+          ...propsForSearchForm,
+          ...propsForFilterForm,
+          propsForInboxMobileCards,
+          propsForInboxTable,
+          formState,
+        }}
+      />
+      {showToast && (
+        <Toast
+          label={t(showToast.label)}
+          isDleteBtn={showToast.isDleteBtn}
+          error={showToast.error}
+          onClose={() => {
+            setShowToast(null);
+          }}
+          onNo={onNoToToast}
+          onYes={onYesToToast}
+          warning={showToast.warning}
+          isWarningButtons={showToast.isWarningButtons}
+        />
+      )}
+    </Fragment>
   );
 };
 

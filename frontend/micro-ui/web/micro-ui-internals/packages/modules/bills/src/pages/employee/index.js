@@ -79,7 +79,7 @@ const EmployeeApp = ({ path, url, userType }) => {
     businessServiceList.push(element.code);
   });
   //const BillInbox = Digit.ComponentRegistryService.getComponent("BillInbox");
-console.log("path",path)
+  //console.log("path",path)
   return (
     <Switch>
       <React.Fragment>

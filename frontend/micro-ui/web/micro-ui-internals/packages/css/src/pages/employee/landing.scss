@@ -5,9 +5,10 @@
     height: 522px;
 
     @media (min-width: 768px) {
-        display: flex;
-        flex-direction: row;
-        height: 360px;
+        .middle-content{
+          flex-direction: row;
+          min-height: 360px;
+        } 
     }
 }
 
@@ -22,8 +23,8 @@
    
 }
 .middle-left-half-upper{
-    height: 162px;
-    margin-bottom: auto;
+    min-height: 162px;
+    margin-bottom: 18px;
     border: 1px solid black;
 
     @media (min-width: 768px) {
@@ -54,7 +55,7 @@
 }
 
 .middle-left-half-lower{
-    height: 162px;
+    min-height: 162px;
     border: 1px solid black;
 
   @media (min-width: 768px) {
@@ -63,7 +64,7 @@
 }
 
 .middle-right-half{
-    height: 162px;
+    min-height: 162px;
     width: 100%;
     border: 1px solid black;
 

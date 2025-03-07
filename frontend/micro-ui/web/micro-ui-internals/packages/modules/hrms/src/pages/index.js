@@ -22,7 +22,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const EditEmpolyee = Digit?.ComponentRegistryService?.getComponent("HREditEmpolyee");
   const HRMSEmployeewiseReport = Digit?.ComponentRegistryService?.getComponent("HRMSEmployeewiseReport");
 
-  console.log("Path in hrms: ", path);
+  //console.log("Path in hrms: ", path);
   return (
     <Switch>
       <React.Fragment>

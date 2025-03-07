@@ -32,7 +32,7 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
     Digit.Surveys.searchCategory(payload)
       .then((response) => {
         //console.log("Category Options: ", response);
-        categoryOptions = (response && response.Categories)
+        const categoryOptions = (response && response.Categories)
           ? response.Categories.map(function (item) {
             return { name: t(item.label), i18Key: item.label, value: item.id };
           })

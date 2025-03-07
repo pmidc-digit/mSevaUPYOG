@@ -187,7 +187,8 @@
     outline: none;
     font-size: 16px;
     position: relative;
-    color: rgb(95, 92, 98);
+    color: #61646B;
+    font-weight: 500;
     line-height: 48px;
     transition: all 450ms cubic-bezier(0.23, 1, 0.32, 1) 0ms;
     min-height: 48px;
@@ -195,8 +196,8 @@
     background: none;
     .icon {
       display: block;
-      color: rgb(117, 117, 117);
-      fill: rgb(117, 117, 117);
+      color: #61646B;
+      fill: #61646B;
       height: 21px !important;
       width: 21px !important;
       float: left;
@@ -219,13 +220,14 @@
       padding-right: 16px;
       padding-left: 16px;
       &.active {
-        border-left: 5px solid #a82227;
+        border-left: 10px solid #0D43A7;
         padding-left: 11px;
+        background-color: #F2FAFF;
         .menu-label {
-          color: #a82227;
+          color: #0D43A7;
         }
         .icon {
-          fill: #a82227;
+          fill: #0D43A7;
         }
       }
 

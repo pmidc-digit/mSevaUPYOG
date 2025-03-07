@@ -120,6 +120,14 @@ const SearchCategories = ({ parentRoute }) => {
         link: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
       },
       {
+        text: t("Active and Open Surveys"),
+        link: "/digit-ui/employee/engagement/surveys/active-open-surveys",
+      },
+      {
+        text: t("Surveys Inbox/Search Surveys"),
+        link: "/digit-ui/employee/engagement/surveys/inbox",
+      },
+      {
         text: t("Create Category"),
         link: "/digit-ui/employee/engagement/surveys/create-category",
       },

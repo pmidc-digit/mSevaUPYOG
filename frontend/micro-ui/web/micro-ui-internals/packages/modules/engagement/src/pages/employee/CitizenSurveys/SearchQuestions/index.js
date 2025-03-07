@@ -119,6 +119,14 @@ const SearchQuestions = ({ parentRoute }) => {
         link: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
       },
       {
+        text: t("Active and Open Surveys"),
+        link: "/digit-ui/employee/engagement/surveys/active-open-surveys",
+      },
+      {
+        text: t("Surveys Inbox/Search Surveys"),
+        link: "/digit-ui/employee/engagement/surveys/inbox",
+      },
+      {
         text: t("Create Category"),
         link: "/digit-ui/employee/engagement/surveys/create-category",
       },
@@ -206,7 +214,7 @@ const SearchQuestions = ({ parentRoute }) => {
       setShowToast,
     },
   });
-  const propsForInboxMobileCards = useQuestionsInboxMobileCardsData({ parentRoute, table: Questions });
+  const propsForInboxMobileCards = useQuestionsInboxMobileCardsData({ parentRoute, table: Questions, setShowToast });
 
   //For the card displayed after clicking the delete question button:
   //On clicking delete button under "Delete Question" column in a table row, a toast with Yes & No buttons is opened:
@@ -220,12 +228,12 @@ const SearchQuestions = ({ parentRoute }) => {
   };
 
   const handleUpdateQuestions = () => {
-    const row = showToast.rowData.row;
-    const updatedStatus = showToast.rowData.updatedStatus;
+    const row = showToast.rowData;
+    const updatedStatus = showToast.updatedStatus;
     const payload = {
       Questions: [
         {
-          uuid: row?.original?.uuid,
+          uuid: row?.uuid,
           status: updatedStatus,
           //...(typeof row?.original?.isActive === "boolean" && { isActive: !row?.original?.isActive }),
           //label: "" //For updating the question name(question label)

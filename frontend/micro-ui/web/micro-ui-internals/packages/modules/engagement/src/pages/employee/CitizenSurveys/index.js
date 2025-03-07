@@ -21,6 +21,7 @@ import NewSurvey from "./NewSurvey";
 import DeleteResponse from "./responses/delete";
 import SurveyForm from "../../../components/Surveys/SurveyForms/SurveyForm";
 import CreateSurveyForm from "../../../components/Surveys/SurveyForms/CreateSurveyForm";
+import ActiveAndOpenSurveys from "./ActiveAndOpenSurveys";
 
 const Surveys = ({ match: { path } = {}, tenants, parentRoute }) => {
   return (

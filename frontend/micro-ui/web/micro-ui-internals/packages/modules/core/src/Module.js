@@ -20,7 +20,7 @@ const DigitUIWrapper = ({ stateCode, enabledModules, moduleReducers }) => {
   if (isLoading) {
     return <Loader page={true} />;
   }
-  console.log("initdata",initData)
+  //console.log("initdata",initData)
   const i18n = getI18n();
   return (
     <StrictMode>

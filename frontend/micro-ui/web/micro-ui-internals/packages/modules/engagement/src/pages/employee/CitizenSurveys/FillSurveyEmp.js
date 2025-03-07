@@ -4,9 +4,14 @@ import { TextInput, Dropdown, CheckBox, Toast } from '@mseva/digit-ui-react-comp
 import CitizenDetails from '../../../components/Surveys/CitizenDetails';
 import { useHistory} from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useLocation } from 'react-router-dom';
 const FillSurvey = () => {
     const history = useHistory();
     const {t} = useTranslation();
+    const location = useLocation();
+    console.log("loca",location.state.surveyDetails)
+  const  surveyDetails  = location.state?.surveyDetails || {};
+  console.log("surv det",surveyDetails)
 
     const tenantId = Digit.ULBService.getCurrentTenantId()
       const [showToast, setShowToast] = useState(null);
@@ -106,7 +111,7 @@ const handleNext =()=>{
         Digit.Surveys.userSearch(data,filters).then((response) => {
             console.log("response",response)
            if(response?.responseInfo?.status==="200" || response?.responseInfo?.status==="201"){
-            history.push("/digit-ui/employee/engagement/surveys/fill-survey",{citizenFill: true, citizenData:formData,userInfo:response.user})
+            history.push("/digit-ui/employee/engagement/surveys/fill-survey",{citizenFill: true, citizenData:formData,userInfo:response.user,surveyDetails:surveyDetails})
            }
            else{
             setShowToast({ key: true, isError:true,label: `CITIZEN NOT FOUND FOR THE GIVEN DETAILS` });

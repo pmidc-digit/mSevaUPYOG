@@ -23,89 +23,92 @@ const [showToast, setShowToast] = useState(null);
 // const [userInfo,setUserInfo]=useState([])
 const tenantId = Digit.ULBService.getCurrentTenantId()
 const history = useHistory();
-const data= 
- [{
-    "uuid": "SS-1012/2024-25/000171",
-    "tenantId": "pb.testing",
-    "surveyTitle": "Testing one",
-    "surveyCategory": "Testing one",
-    "surveyDescription": "example",
-    "sections": [
-        {
-            "uuid": "7fea480a-4398-4935-99dd-a1901827ab92",
-            "title": "Title1",
-            "weightage": 100,
-            "questions": [
-                {
-                    "questionUuid": "8904f992-e2fe-4720-ba52-727555691a7b",
-                    "sectionUuid": "7fea480a-4398-4935-99dd-a1901827ab92",
-                    "qorder": null,
-                    "question": {
-                        "uuid": "8904f992-e2fe-4720-ba52-727555691a7b",
-                        "tenantId": "pb.testing",
-                        "questionStatement": "First Question regarding Demo",
-                        "options": [
-                            "Yes",
-                            "No",
-                            "May be"
-                        ],
-                        "auditDetails": {
-                            "createdBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
-                            "lastModifiedBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
-                            "createdTime": 1740740112660,
-                            "lastModifiedTime": 1741173060405
-                        },
-                        "status": "ACTIVE",
-                        "type": "MULTIPLE_ANSWER_TYPE",
-                        "required": false,
-                        "qorder": 0,
-                        "categoryId": "9b8b9243-4f86-4032-9a90-b8da78f03664"
-                    },
-                    "weightage": 50
-                },
-                {
-                    "questionUuid": "cbdd5045-252f-45bc-9715-66b3c79a265e",
-                    "sectionUuid": "7fea480a-4398-4935-99dd-a1901827ab92",
-                    "qorder": null,
-                    "question": {
-                        "uuid": "cbdd5045-252f-45bc-9715-66b3c79a265e",
-                        "tenantId": "pb.testing",
-                        "questionStatement": "Second Question regarding Demo",
-                        "options": [
-                            "Yes",
-                            "No",
-                            "Test Text"
-                        ],
-                        "auditDetails": {
-                            "createdBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
-                            "lastModifiedBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
-                            "createdTime": 1740740112661,
-                            "lastModifiedTime": 1741173345841
-                        },
-                        "status": "ACTIVE",
-                        "type": "CHECKBOX_ANSWER_TYPE",
-                        "required": false,
-                        "qorder": 0,
-                        "categoryId": "9b8b9243-4f86-4032-9a90-b8da78f03664"
-                    },
-                    "weightage": 50
-                }
-            ]
-        }
-    ],
-    "startDate": 1741341960000,
-    "endDate": 1743717960000,
-    "postedBy": "Manasa",
-    "auditDetails": null,
-    "active": true,
-    "answersCount": 0,
-    "hasResponded": false,
-    "createdTime": 1741255647601,
-    "lastModifiedTime": 1741255647601
-}];
+
+// const data= 
+//  [{
+//     "uuid": "SS-1012/2024-25/000171",
+//     "tenantId": "pb.testing",
+//     "surveyTitle": "Testing one",
+//     "surveyCategory": "Testing one",
+//     "surveyDescription": "example",
+//     "sections": [
+//         {
+//             "uuid": "7fea480a-4398-4935-99dd-a1901827ab92",
+//             "title": "Title1",
+//             "weightage": 100,
+//             "questions": [
+//                 {
+//                     "questionUuid": "8904f992-e2fe-4720-ba52-727555691a7b",
+//                     "sectionUuid": "7fea480a-4398-4935-99dd-a1901827ab92",
+//                     "qorder": null,
+//                     "question": {
+//                         "uuid": "8904f992-e2fe-4720-ba52-727555691a7b",
+//                         "tenantId": "pb.testing",
+//                         "questionStatement": "First Question regarding Demo",
+//                         "options": [
+//                             "Yes",
+//                             "No",
+//                             "May be"
+//                         ],
+//                         "auditDetails": {
+//                             "createdBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
+//                             "lastModifiedBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
+//                             "createdTime": 1740740112660,
+//                             "lastModifiedTime": 1741173060405
+//                         },
+//                         "status": "ACTIVE",
+//                         "type": "MULTIPLE_ANSWER_TYPE",
+//                         "required": false,
+//                         "qorder": 0,
+//                         "categoryId": "9b8b9243-4f86-4032-9a90-b8da78f03664"
+//                     },
+//                     "weightage": 50
+//                 },
+//                 {
+//                     "questionUuid": "cbdd5045-252f-45bc-9715-66b3c79a265e",
+//                     "sectionUuid": "7fea480a-4398-4935-99dd-a1901827ab92",
+//                     "qorder": null,
+//                     "question": {
+//                         "uuid": "cbdd5045-252f-45bc-9715-66b3c79a265e",
+//                         "tenantId": "pb.testing",
+//                         "questionStatement": "Second Question regarding Demo",
+//                         "options": [
+//                             "Yes",
+//                             "No",
+//                             "Test Text"
+//                         ],
+//                         "auditDetails": {
+//                             "createdBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
+//                             "lastModifiedBy": "120ee55c-ab07-4e62-8317-5e5700f86597",
+//                             "createdTime": 1740740112661,
+//                             "lastModifiedTime": 1741173345841
+//                         },
+//                         "status": "ACTIVE",
+//                         "type": "CHECKBOX_ANSWER_TYPE",
+//                         "required": false,
+//                         "qorder": 0,
+//                         "categoryId": "9b8b9243-4f86-4032-9a90-b8da78f03664"
+//                     },
+//                     "weightage": 50
+//                 }
+//             ]
+//         }
+//     ],
+//     "startDate": 1741341960000,
+//     "endDate": 1743717960000,
+//     "postedBy": "Manasa",
+//     "auditDetails": null,
+//     "active": true,
+//     "answersCount": 0,
+//     "hasResponded": false,
+//     "createdTime": 1741255647601,
+//     "lastModifiedTime": 1741255647601
+// }];
 const prevProps= props.location.state
 console.log('props',props)
+const data= prevProps.surveyDetails
 
+console.log("data",data)
   useEffect(() => {
         const savedData = localStorage.getItem('surveyFormData');
         if (savedData) {
@@ -174,7 +177,7 @@ console.log('props',props)
     const validateForm = () => {
         const newErrors = {};
 
-        data[0].sections.forEach((section) => {
+        data.sections.forEach((section) => {
             section.questions.forEach((question) => {
               const value = formData[section.uuid]?.[question.question.uuid || ''];
               if (!value) {
@@ -192,7 +195,7 @@ console.log('props',props)
             for (const questionId in formData[sectionId]) {
               answerArr.push({
                 answerUuid: null,
-                surveyUuid: data[0].uuid,
+                surveyUuid: data.uuid,
                 questionUuid: questionId,
                 sectionUuid: sectionId,
                 comments: "comment_1",
@@ -210,7 +213,7 @@ console.log('props',props)
        
 
             AnswerEntity:{
-                surveyId:data[0].uuid,
+                surveyId:data.uuid,
                 answers:answerArr
             }
       
@@ -260,49 +263,48 @@ console.log("formState",formState)
     const displayAnswerField = (answerType,question,section) => {
         console.log("answer type",answerType,question)
         switch (answerType) {
-        //   case "SHORT_ANSWER_TYPE":
-        //     return (
-        //       <>
-        //         <TextInput
-        //           name={question.uuid}
-        //           //disabled={formDisabled}
-        //           type="text"
-        //           inputRef={register({
-        //             maxLength: {
-        //               value: 200,
-        //              message: t("EXCEEDS_200_CHAR_LIMIT"),
-        //             },
-        //             required:question.required,
-        //           })}
-        //         />
+           case "SHORT_ANSWER_TYPE":
+             return (
+          //     <>
+
+                <TextInput
+                  name={question.uuid}
+                  //disabled={formDisabled}
+                  onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+                  type="text"
+                  inputRef={register({
+                    maxLength: {
+                      value: 200,
+                     message: t("EXCEEDS_200_CHAR_LIMIT"),
+                    },
+                    required:question.required,
+                  })}
+                />
 
         //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
         //           <CardLabelError>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>)}
         //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "maxLength" && (
         //           <CardLabelError>{t(`EXCEEDS_200_CHAR_LIMIT`)}</CardLabelError>)} 
         //       </>
-        //     );
-        //   case "LONG_ANSWER_TYPE":
-            // return (
-            //   <>
-            //     <TextArea
-            //       name={question.uuid}
-            //      // disabled={formDisabled}
-            //       inputRef={register({
-            //         maxLength: {
+           );
+           case "LONG_ANSWER_TYPE":
+            return (
+              <>
+                <TextArea
+                  name={question.uuid}
+                 // disabled={formDisabled}
+                 onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+                  inputRef={register({
+                    maxLength: {
     
-            //           value: 500,
-            //           message: t("EXCEEDS_500_CHAR_LIMIT"),
-            //         },
-            //         required:question.required
-            //       })}
-            //     />
-            //     {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
-            //       <CardLabelError>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>)} 
-            //     {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "maxLength" && (
-            //       <CardLabelError>{t(`EXCEEDS_500_CHAR_LIMIT`)}</CardLabelError>)}
-            //   </>
-            // );
+                      value: 500,
+                      message: t("EXCEEDS_500_CHAR_LIMIT"),
+                    },
+                    required:question.required
+                  })}
+                />
+             </>
+           );
           case "MULTIPLE_ANSWER_TYPE":
             return (
               <>
@@ -316,7 +318,8 @@ console.log("formState",formState)
                                     <option value="choice1">Choice 1</option>
                                     <option value="choice2">Choice 2</option>
                                 </select> */}
-                         
+                       
+    
                                       <div style={{display:'flex',flexDirection:'column'}}>
                   {question.options.map((option) => (
                     <h4 key={option} style={{display:'flex',alignItems:'center',marginBottom:'10px',fontSize:'18px'}}>
@@ -458,10 +461,20 @@ console.log("formState",formState)
           //       )}
           //     </>
           //   );
-        //   case "DATE_ANSWER_TYPE":
-        //     return (
-        //       <>
-        //         <Controller
+          case "DATE_ANSWER_TYPE":
+            return (
+              <>
+              <TextInput
+                   
+                    type="date"  
+                    onChange={(e)=>handleInputChange(section.uuid, question.uuid, e.target.value)}
+                   // defaultValue={value}
+                    />
+              </>
+            )
+          // return (
+          //   <>
+         //    <Controller
         //           control={control}
         //           name={question.uuid}
         //           //defaultValue=
@@ -477,9 +490,19 @@ console.log("formState",formState)
         //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
         //           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
         //         )}
-        //       </>
-        //     );
-        //   case "TIME_ANSWER_TYPE":
+            //  </>
+           // );
+          case "TIME_ANSWER_TYPE":
+            return(
+              <>
+                  <TextInput
+                   
+                   type="time"  
+                   onChange={(e)=>handleInputChange(section.uuid, question.uuid, e.target.value)}
+                  // defaultValue={value}
+                   />
+              </>
+            )
         //     return (
         //       <>
         //         <Controller
@@ -502,24 +525,24 @@ console.log("formState",formState)
     
           default:
             return (
-                <>huuuu</>
-            //   <TextInput
-            //     name={question.uuid}
-             
-            //     type="text"
-            //     inputRef={register({
-            //       maxLength: {
-            //         value: 60,
-            //         message: t("EXCEEDS_60_CHAR_LIMIT"),
-            //       },
-            //       required:question.required
-            //     })}
-            //   />
+                
+              <TextInput
+                name={question.uuid}
+                onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+                type="text"
+                inputRef={register({
+                  maxLength: {
+                    value: 60,
+                    message: t("EXCEEDS_60_CHAR_LIMIT"),
+                  },
+                  required:question.required
+                })}
+              />
             );
         }
       };
-      console.log("data section", data[0].sections)
-      data[0].sections.map((s)=>console.log("data sec",s.title))
+      console.log("data section", data.sections)
+      data.sections.map((s)=>console.log("data sec",s.title))
       const closeToast = () => {
         setShowToast(null);
       };
@@ -528,8 +551,8 @@ console.log("formState",formState)
             <div className="category-card">
            
     <form onSubmit={handleSubmit}>
-        {data[0].sections.length>0 ?
-        data[0].sections.map((section) => (
+        {data.sections.length>0 ?
+        data.sections.map((section) => (
            
      <div>
      <h2>{section.title}</h2>

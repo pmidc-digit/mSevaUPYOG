@@ -87,7 +87,7 @@ const ActiveAndOpenSurveys = (props) => {
     console.log("Survey Details: ", surveyDetails);
     // history.push("/digit-ui/employee/engagement/surveys/fill-survey");
     history.push({
-      pathname: "/digit-ui/employee/engagement/surveys/fill-survey",
+      pathname: "/digit-ui/employee/engagement/surveys/fill-citizen-details-survey",
       state: { surveyDetails: surveyDetails },
     });
   };

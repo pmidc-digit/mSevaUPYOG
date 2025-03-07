@@ -351,6 +351,9 @@ border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
   padding: 20px;
   margin-bottom: 20px;
   background-color: #f0f8ff;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 .category-card h3 {

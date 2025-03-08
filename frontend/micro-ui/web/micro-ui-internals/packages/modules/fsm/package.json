@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-fsm",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "main": "dist/index.js",
   "description": "Digit FSM Module",
@@ -19,7 +19,7 @@
     "react-router-dom": "5.3.0"
   },
   "dependencies": {
-    "@mseva/digit-ui-react-components" : "1.0.1",
+    "@mseva/digit-ui-react-components": "1.0.1",
     "microbundle-crl": "0.13.11",
     "react": "17.0.2",
     "react-dom": "17.0.2",
@@ -28,5 +28,7 @@
     "react-query": "3.6.1",
     "react-router-dom": "5.3.0",
     "react-time-picker": "4.2.1"
-  }
+  },
+  "devDependencies": {},
+  "author": ""
 }

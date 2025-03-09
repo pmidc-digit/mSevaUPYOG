@@ -16,7 +16,9 @@ import org.egov.egovsurveyservices.web.models.ScorecardSurveySearchCriteria;
 import org.egov.egovsurveyservices.web.models.SurveyEntity;
 import org.egov.egovsurveyservices.web.models.SurveySearchCriteria;
 import org.egov.egovsurveyservices.web.models.UpdateSurveyActiveRequest;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -60,6 +62,15 @@ public class ScorecardSurveyService {
     public ScorecardSurveyEntity createSurvey(ScorecardSurveyRequest surveyRequest) {
         ScorecardSurveyEntity surveyEntity = surveyRequest.getSurveyEntity();
 
+        if (surveyEntity.getStartDate() == null || surveyEntity.getStartDate() < 1577836800000L) {
+        	throw new IllegalArgumentException("Survey valid startDate is required");
+    	}
+        if (surveyEntity.getEndDate() == null) {
+        	throw new IllegalArgumentException("Survey endDate is required");
+    	}
+        if (surveyEntity.getStartDate() >= surveyEntity.getEndDate()) {
+            throw new CustomException("INVALID_DATE_RANGE", "Start date must be before end date");
+        }
         surveyValidator.validateUserType(surveyRequest.getRequestInfo());
         surveyValidator.validateQuestionsAndSections(surveyEntity);
         
@@ -100,18 +111,17 @@ public class ScorecardSurveyService {
      */
     
     public List<ScorecardSurveyEntity> searchSurveys(ScorecardSurveySearchCriteria criteria, Boolean isCitizen) {
-        // If UUID is present, fetch only one record
+        // If UUID is present
         if (StringUtils.isNotBlank(criteria.getUuid())) {
             List<ScorecardSurveyEntity> surveyEntities = surveyRepository.fetchSurveys(criteria);
             return !surveyEntities.isEmpty() ? surveyEntities : new ArrayList<>();
         }
 
-        // If UUID is absent, check if tenantId or title is provided
-        if (StringUtils.isNotBlank(criteria.getTenantId()) || StringUtils.isNotBlank(criteria.getTitle()) || Boolean.TRUE.equals(criteria.getOpenSurveyFlag())) {
+        //check either if tenantId or title or active or openSurveyFlag true is provided
+        if (StringUtils.isNotBlank(criteria.getTenantId()) || StringUtils.isNotBlank(criteria.getTitle()) || Boolean.TRUE.equals(criteria.getOpenSurveyFlag()) || criteria.getActive() != null) {
             return surveyRepository.fetchSurveys(criteria); // Fetch based on tenantId, title, or both
         }
 
-        // If no valid search criteria is given, return an empty list
         return new ArrayList<>();
     }
 

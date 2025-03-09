@@ -116,6 +116,56 @@ class ScorecardSurveyServiceTest {
                 .build();
         assertThrows(IllegalArgumentException.class, () -> scorecardSurveyService.createSurvey(surveyRequest));
     }
+    
+    @Test
+    public void testCreateSurvey_InvalidStartDate() {
+        ScorecardSurveyEntity survey = getValidSurveyEntity();
+        survey.setStartDate(1577836799000L);
+
+        ScorecardSurveyRequest surveyRequest = ScorecardSurveyRequest.builder()
+                .requestInfo(requestInfo)
+                .surveyEntity(survey)
+                .build();
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.createSurvey(surveyRequest));
+        
+        assertEquals("Survey valid startDate is required", exception.getMessage());
+    }
+
+    @Test
+    public void testCreateSurvey_NullEndDate() {
+        ScorecardSurveyEntity survey = getValidSurveyEntity();
+        survey.setEndDate(null); 
+
+        ScorecardSurveyRequest surveyRequest = ScorecardSurveyRequest.builder()
+                .requestInfo(requestInfo)
+                .surveyEntity(survey)
+                .build();
+
+        Exception exception = assertThrows(IllegalArgumentException.class, 
+            () -> scorecardSurveyService.createSurvey(surveyRequest));
+
+        assertEquals("Survey endDate is required", exception.getMessage());
+    }
+
+    @Test
+    public void testCreateSurvey_InvalidDateRange() {
+        ScorecardSurveyEntity survey = getValidSurveyEntity();
+        survey.setStartDate(1704067200000L); 
+        survey.setEndDate(1704067200000L); 
+
+        ScorecardSurveyRequest surveyRequest = ScorecardSurveyRequest.builder()
+                .requestInfo(requestInfo)
+                .surveyEntity(survey)
+                .build();
+
+        Exception exception = assertThrows(CustomException.class, 
+            () -> scorecardSurveyService.createSurvey(surveyRequest));
+
+        assertEquals("INVALID_DATE_RANGE", ((CustomException) exception).getCode());
+        assertEquals("Start date must be before end date", exception.getMessage());
+    }
 
     @Test
     public void testSearchSurvey_ByUuid() {
@@ -216,6 +266,7 @@ class ScorecardSurveyServiceTest {
         UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
         request.setUuid("SS-1012/2024-25/000131");
         request.setActive(true);
+        request.setRequestInfo(requestInfo); // Ensure requestInfo is set
 
         ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
         surveyEntity.setUuid("SS-1012/2024-25/000131");

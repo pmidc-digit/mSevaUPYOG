@@ -32,7 +32,7 @@ public class ScorecardSurveyController {
     private ResponseInfoFactory responseInfoFactory;
 
     @PostMapping("/csc/create")
-    public ResponseEntity<ScorecardSurveyResponse> createSurvey(@RequestBody ScorecardSurveyRequest surveyRequest) {
+    public ResponseEntity<ScorecardSurveyResponse> createSurvey(@Valid @RequestBody ScorecardSurveyRequest surveyRequest) {
     	ScorecardSurveyEntity scorecardSurveyEntity = surveyService.createSurvey(surveyRequest);
     	ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(surveyRequest.getRequestInfo(), true);
     	ScorecardSurveyResponse response = ScorecardSurveyResponse.builder().surveyEntities(Collections.singletonList(scorecardSurveyEntity)).responseInfo(responseInfo).build();

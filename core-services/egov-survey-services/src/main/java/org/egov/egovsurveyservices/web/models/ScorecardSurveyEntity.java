@@ -42,11 +42,11 @@ public class ScorecardSurveyEntity {
     @JsonProperty("sections")
     private List<Section> sections;
 
-    @NotBlank
+    @NotNull(message = "Start date is required")
     @JsonProperty("startDate")
     private Long startDate;
 
-    @NotBlank
+    @NotNull(message = "End date is required")
     @JsonProperty("endDate")
     private Long endDate;
     

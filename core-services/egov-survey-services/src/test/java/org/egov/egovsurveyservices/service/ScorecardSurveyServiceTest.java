@@ -10,7 +10,6 @@ import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.egovsurveyservices.web.models.enums.Type;
-import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

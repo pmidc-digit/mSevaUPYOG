@@ -4,7 +4,7 @@ import { Toast } from "@mseva/digit-ui-react-components";
 //
 import { FormComposer } from "../../../../../react-components/src/hoc/FormComposer";
 import { updateSurveyForm } from "../../redux/actions/surveyFormActions";
-import CardHeader from "../../../../../react-components/src/atoms/CardHeader"
+import { CardHeader } from "@mseva/digit-ui-react-components";
 
 const SurveyFormPage = ({ config, onGoNext, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);

@@ -277,7 +277,7 @@ const EmployeeApp = ({ path, url, userType, tenants }) => {
         <Route path={`${path}/documents/delete-response`} component={(props) => <DocDeleteResponse {...props} />} />
         <Route path={`${path}/documents/inbox`} component={(props) => <DocumentNotification tenants={tenants} />} />
         <Route path={`${path}/messages`} component={(props) => <Messages {...props} tenants={tenants} parentRoute={path} />} />
-        <Route path={`${path}/surveys`} component={(props) => <Surveys {...props} tenants={tenants} parentRoute={path} />} />
+        <Route path={`${path}/surveys`} component={(props) => <Surveys {...props} tenants={tenants} parentRoute={path} userType={userType} />} />
       </Switch>
     </>
     // </div>

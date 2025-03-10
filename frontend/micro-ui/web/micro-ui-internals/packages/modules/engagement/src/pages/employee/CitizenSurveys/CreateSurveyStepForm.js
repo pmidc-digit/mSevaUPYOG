@@ -3,17 +3,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 //
-import Stepper from "../../../../../react-components/src/customComponents/Stepper";
-import { newConfig } from "../../config/config";
-import Toast from "../../../../../react-components/src/atoms/Toast";
-import { setSurveyStep } from "../../redux/actions/surveyFormActions";
-import CardHeader from "../../../../../react-components/src/atoms/CardHeader";
+import Stepper from "../../../../../../react-components/src/customComponents/Stepper";
+import { Header, Toast } from "@mseva/digit-ui-react-components";
+//
+import { newConfig } from "../../../config/config";
+import { setSurveyStep } from "../../../redux/actions/surveyFormActions";
 
 //Config for steps
 const surveyConfig = [
   {
     head: "SURVEY_DETAILS",
-    stepLabel: "SURVEY_DETAILS_STEP_LABEL",
+    stepLabel: "Survey Details", //"SURVEY_DETAILS_STEP_LABEL",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -28,7 +28,7 @@ const surveyConfig = [
   },
   {
     head: "SURVEY_CATEGORIES",
-    stepLabel: "SURVEY_CATEGORIES_STEP_LABEL",
+    stepLabel: "Survey Sections", //"SURVEY_CATEGORIES_STEP_LABEL",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
@@ -42,7 +42,7 @@ const surveyConfig = [
   },
   {
     head: "SURVEY_SUMMARY",
-    stepLabel: "SURVEY_SUMMARY_STEP_LABEL",
+    stepLabel: "Summary", //"SURVEY_SUMMARY_STEP_LABEL",
     stepNumber: 3,
     isStepEnabled: true,
     type: "component",
@@ -74,14 +74,15 @@ const CreateSurveyStepForm = () => {
     dispatch(setSurveyStep(updatedStepNumber));
   };
 
-  const handleSubmit = () => {
-
-  };
+  const handleSubmit = () => {};
 
   console.log("formState: ", formState);
   return (
     <div class="pageCard">
-      <CardHeader divider={true}>{t("SURVEY_FORM")}</CardHeader>
+      {/* <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+        {t("CREATE_NEW_SURVEY")}
+      </CardHeader> */}
+      <Header>{t("CREATE_NEW_SURVEY")}</Header>
       <Stepper stepsList={updatedSurveyConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast

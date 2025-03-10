@@ -5,6 +5,7 @@ import { BackButton, PrivateRoute } from "@mseva/digit-ui-react-components";
 import DocumentCategories from "./Documents/DocumentCategories";
 import ViewDocument from "./Documents/ViewDocument";
 import Response from "./CitizenSurvey/Response";
+import ActiveAndOpenSurveys from "../../components/Surveys/ActiveAndOpenSurveys";
 
 const CitizenApp = ({ path, url, userType, tenants }) => {
   const location = useLocation();
@@ -16,7 +17,6 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
   const SurveyList = Digit.ComponentRegistryService.getComponent("SurveyList");
   const FillSurvey = Digit.ComponentRegistryService.getComponent("FillSurvey");
   const ShowSurvey = Digit.ComponentRegistryService.getComponent("ShowSurvey");
-  const FillSurveyNew = Digit.ComponentRegistryService.getComponent("FillSurveyNew");
   return (
     <React.Fragment>
       <div className="engagement-citizen-wrapper">
@@ -31,9 +31,10 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
           <PrivateRoute path={`${path}/documents/list/:category/:count`} component={(props) => <Documents {...props} />} />
           <PrivateRoute path={`${path}/surveys/list`} component={(props) => <SurveyList {...props} />} />
           <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillSurvey {...props} />} />
-          <PrivateRoute path={`${path}/surveys/fillSurvey`} component={(props) => <FillSurveyNew {...props} />} />
           <PrivateRoute path={`${path}/surveys/submit-response`} component={(props) => <Response {...props} />} />
           <PrivateRoute path={`${path}/surveys/show-survey`} component={(props) => <ShowSurvey {...props} />} />
+          {/* New Development */}
+          <PrivateRoute path={`${path}/surveys/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} userType={userType} />} />
         </Switch>
       </div>
     </React.Fragment>

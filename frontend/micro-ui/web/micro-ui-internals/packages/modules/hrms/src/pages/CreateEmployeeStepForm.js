@@ -2,14 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-//import { Toast } from "@mseva/digit-ui-react-components";
 //
 import Stepper from "../../../../react-components/src/customComponents/Stepper";
 import { newConfig } from "../components/config/config";
-import Toast from "../../../../react-components/src/atoms/Toast";
 import { setEmployeeStep } from "../redux/actions/employeeFormActions";
 import { onSubmit } from "../utils/onSubmitCreateEmployee";
-import CardHeader from "../../../../react-components/src/atoms/CardHeader";
+import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
 //Config for steps
 const createEmployeeConfig = [

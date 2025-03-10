@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useHistory } from "react-router-dom";
 
 const ActiveAndOpenSurveys = (props) => {
+  const { userType } = props;
   const history = useHistory();
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -24,7 +25,10 @@ const ActiveAndOpenSurveys = (props) => {
           return (
             <div>
               {/* <Link to={`${parentRoute}/surveys/inbox/details/${row.original["uuid"]}`}> */}
-              <span className="link">{row.original.surveyTitle}</span>
+              <span //className="link"
+              >
+                {row.original.surveyTitle}
+              </span>
               {/* </Link> */}
             </div>
           );
@@ -86,9 +90,15 @@ const ActiveAndOpenSurveys = (props) => {
   const handleStartSurvey = (surveyDetails) => {
     console.log("Survey Details: ", surveyDetails);
     // history.push("/digit-ui/employee/engagement/surveys/fill-survey");
+    const paths = {
+      employee: "/digit-ui/employee/engagement/surveys/fill-citizen-details-survey",
+      citizen: "/digit-ui/employee/engagement/surveys/fill-survey",
+    };
+    
+    const newPath = paths[userType] || "";
     history.push({
-      pathname: "/digit-ui/employee/engagement/surveys/fill-citizen-details-survey",
-      state: { surveyDetails: surveyDetails },
+      pathname: newPath,
+      state: { surveyDetails },
     });
   };
 

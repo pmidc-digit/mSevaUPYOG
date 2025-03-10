@@ -8,10 +8,9 @@ import { Loader } from "@mseva/digit-ui-react-components";
 //
 import Stepper from "../../../../../../react-components/src/customComponents/Stepper";
 import { newConfig as fullConfig } from "../../../config/wsCreateConfig";
-import Toast from "../../../../../../react-components/src/atoms/Toast";
 import { resetWSApplicationForm, setWSNewApplicationFormStep } from "../../../redux/actions/newWSApplicationFormActions";
 //import { createAndUpdateWS } from "../../../utils/apiCalls";
-import CardHeader from "../../../../../../react-components/src/atoms/CardHeader";
+import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import { createPayloadOfWS, updatePayloadOfWS } from "../../../utils";
 
 //Config for steps

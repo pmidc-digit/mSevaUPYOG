@@ -4,7 +4,7 @@ import { Toast } from "@mseva/digit-ui-react-components";
 //
 import { FormComposer } from "../../../../../react-components/src/hoc/FormComposer";
 import { updateEmployeeForm } from "../../redux/actions/employeeFormActions";
-import CardHeader from "../../../../../react-components/src/atoms/CardHeader"
+import { CardHeader } from "@mseva/digit-ui-react-components";
 
 const EmployeeDetails = ({ config, onGoNext, t }) => {
   const [canSubmit, setSubmitValve] = useState(false);

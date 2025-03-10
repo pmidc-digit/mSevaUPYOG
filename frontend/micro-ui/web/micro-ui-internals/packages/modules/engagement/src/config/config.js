@@ -1,6 +1,6 @@
 export const newConfig = [
     {
-      head: "Survey Form",
+      head: "Survey Details",
       stepNumber: 1,
       body: [
         {
@@ -13,7 +13,7 @@ export const newConfig = [
       ],
     },
     {
-      head: "Survey Form",
+      head: "Survey Sections",
       stepNumber: 2,
       body: [
         {
@@ -25,7 +25,7 @@ export const newConfig = [
       ],
     },
     {
-      head: "Survey Form",
+      head: "Summary",
       stepNumber: 3,
       body: [
         {

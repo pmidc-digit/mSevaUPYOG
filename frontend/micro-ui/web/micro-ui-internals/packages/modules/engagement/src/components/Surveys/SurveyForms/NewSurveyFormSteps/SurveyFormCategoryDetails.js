@@ -29,12 +29,13 @@ const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
             alert("Please select at least one question for each category");
             return;
           }
-        const totalWeightage = categories.reduce((sum, category) => sum + parseInt(category.weightage), 0);
-        if (totalWeightage > 100) {
+        const totalWeightage = categories.reduce((sum, category) => sum + parseFloat(category.weightage), 0);
+       console.log("tot weight",Math.round(totalWeightage))
+        if (Math.round(totalWeightage) > 100) {
           alert('The total weightage of categories should not exceed 100.');
           return;
         }
-        if (totalWeightage < 100) {
+        if (Math.round(totalWeightage) < 100) {
             alert('The total weightage of categories should sum upto 100.');
             return;
           }

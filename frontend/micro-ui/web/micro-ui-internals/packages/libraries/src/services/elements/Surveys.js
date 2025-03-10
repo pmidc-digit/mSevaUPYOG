@@ -184,4 +184,16 @@ export const Surveys = {
       auth: true,
       locale: true,
     }),
+
+    getAnswers: (filters={}) =>
+      Request({
+        url: Urls.engagement.surveys.getAnswers,
+        params: { ...filters },
+        useCache: true,
+        userService: true,
+        method: "POST",
+        auth: true,
+        locale: true,
+      }),
+
 };

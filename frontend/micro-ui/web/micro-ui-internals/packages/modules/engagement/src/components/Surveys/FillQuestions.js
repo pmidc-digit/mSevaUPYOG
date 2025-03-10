@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Fragment } from "react";
+import React, { useEffect, useState, Fragment, useRef } from "react";
 import { Controller, useFormContext, useForm } from "react-hook-form";
 import { Card, CardLabelError, CheckBox, RadioButtons, TextArea, TextInput, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
@@ -23,7 +23,7 @@ const FillQuestions = (props) => {
   // const [userInfo,setUserInfo]=useState([])
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const history = useHistory();
-
+  const prevFormDataRef = useRef({});
   // const data=
   //  [{
   //     "uuid": "SS-1012/2024-25/000171",
@@ -109,6 +109,50 @@ const FillQuestions = (props) => {
   const data = prevProps.surveyDetails;
 
   console.log("data", data);
+  useEffect(()=>{
+  let payload={
+    "surveyUuid":data.uuid,
+    "citizenId": prevProps.userInfo[0].uuid
+  }
+    try {
+      Digit.Surveys.getAnswers(payload).then((response) => {
+        if (response?.sectionResponses.length > 0) {
+          console.log("response",response)
+        //  let ans={}
+        //   response.sectionResponses.map((section)=>{
+        //     let updateAns={}
+        //     section.questionResponses.map((question)=>{
+        //       let obj={
+        //         [question.questionUuid]: question.answer
+        //       }
+        //      let answerSub={ [section.sectionUuid]:obj}
+        //      updateAns={...updateAns,...answerSub}
+        //     })
+          
+        //    ans={...ans,updateAns}
+        //   })
+
+          let result = {};
+
+          response.sectionResponses.forEach(section => {
+    let sectionObj = {};
+    section.questionResponses.forEach(question => {
+        sectionObj[question.questionUuid] = {answer:question.answer,answerUuid:question.answerUuid};
+    });
+    result[section.sectionUuid] = sectionObj;
+});
+
+          setFormData(result)
+          return;
+        } else {
+          console.log(response);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  },[])
+ 
   useEffect(() => {
     const savedData = localStorage.getItem("surveyFormData");
     if (savedData) {
@@ -146,12 +190,12 @@ const FillQuestions = (props) => {
     });
   };
 
-  const handleInputChange = (sectionId, questionId, value) => {
+  const handleInputChange = (sectionId, questionId, value,answerUuid) => {
     setFormData((prevData) => ({
       ...prevData,
       [sectionId]: {
         ...prevData[sectionId],
-        [questionId]: value,
+        [questionId]: {answer:value,answerUuid:answerUuid},
       },
     }));
   };
@@ -171,6 +215,60 @@ const FillQuestions = (props) => {
     }));
   };
   const [errors, setErrors] = useState({});
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (JSON.stringify(prevFormDataRef.current) !== JSON.stringify(formData)) {
+        prevFormDataRef.current = formData;
+        handleAutoSave();
+      }
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [formData]);
+
+  const handleAutoSave = async () => {
+    let answerArr = [];
+    for (const sectionId in formData) {
+      for (const questionId in formData[sectionId]) {
+        answerArr.push({
+          answerUuid: formData[sectionId][questionId].answerUuid,
+          surveyUuid: data.uuid,
+          questionUuid: questionId,
+          sectionUuid: sectionId,
+          comments: "comment_1",
+          answer: [formData[sectionId][questionId].answer],
+        });
+      }
+    }
+    //const { roles, ...newUserObject } = prevProps.userInfo[0];
+
+    let payload = {
+      User: {
+        type:prevProps.userInfo[0].type,
+        uuid:prevProps.userInfo[0].uuid
+      },
+
+      AnswerEntity: {
+        surveyId: data.uuid,
+        answers: answerArr,
+      },
+    };
+
+    try {
+      Digit.Surveys.submitSurvey(payload).then((response) => {
+        if (response?.sectionResponses.length > 0) {
+        
+         // return;
+        } else {
+          console.log(response);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const validateForm = () => {
     const newErrors = {};
@@ -192,19 +290,22 @@ const FillQuestions = (props) => {
     for (const sectionId in formData) {
       for (const questionId in formData[sectionId]) {
         answerArr.push({
-          answerUuid: null,
+          answerUuid: formData[sectionId][questionId].answerUuid,
           surveyUuid: data.uuid,
           questionUuid: questionId,
           sectionUuid: sectionId,
           comments: "comment_1",
-          answer: [formData[sectionId][questionId]],
+          answer: [formData[sectionId][questionId].answer],
         });
       }
     }
-    const { roles, ...newUserObject } = prevProps.userInfo[0];
+    //const { roles, ...newUserObject } = prevProps.userInfo[0];
 
     let payload = {
-      User: newUserObject,
+      User: {
+        type:prevProps.userInfo[0].type,
+        uuid:prevProps.userInfo[0].uuid
+      },
 
       AnswerEntity: {
         surveyId: data.uuid,
@@ -220,6 +321,7 @@ const FillQuestions = (props) => {
             response: response,
             isSuccess: true,
           });
+          
           return;
         } else {
           console.log(response);
@@ -248,6 +350,7 @@ const FillQuestions = (props) => {
   console.log("formState", formState);
   const displayAnswerField = (answerType, question, section) => {
     console.log("answer type", answerType, question);
+    console.log("fetched ans", formData[section.uuid]?.[question.uuid])
     switch (answerType) {
       case "SHORT_ANSWER_TYPE":
         return (
@@ -256,7 +359,8 @@ const FillQuestions = (props) => {
           <TextInput
             name={question.uuid}
             //disabled={formDisabled}
-            onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+            value={formData[section.uuid]?.[question.uuid]?.answer}
+            onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
             type="text"
             inputRef={register({
               maxLength: {
@@ -279,7 +383,8 @@ const FillQuestions = (props) => {
             <TextArea
               name={question.uuid}
               // disabled={formDisabled}
-              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+              value={formData[section.uuid]?.[question.uuid]?.answer}
+              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
               inputRef={register({
                 maxLength: {
                   value: 500,
@@ -301,7 +406,7 @@ const FillQuestions = (props) => {
                                     <option value="">Select an option</option>
                                     <option value="choice1">Choice 1</option>
                                     <option value="choice2">Choice 2</option>
-                                </select> */}
+                                </select> */} 
 
             <div style={{ display: "flex", flexDirection: "column" }}>
               {question.options.map((option) => (
@@ -310,8 +415,8 @@ const FillQuestions = (props) => {
                     type="radio"
                     name={question.uuid}
                     value={option}
-                    checked={formData[section.uuid]?.[question.uuid] === option}
-                    onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+                    checked={formData[section.uuid]?.[question.uuid]?.answer?.[0] === option}
+                    onChange={(e) => handleInputChange(section.uuid, question.uuid, [e.target.value],formData[section.uuid]?.[question.uuid]?.answerUuid)}
                     required
                     style={{ marginRight: "10px", width: "25px", height: "25px" }}
                   />
@@ -358,19 +463,20 @@ const FillQuestions = (props) => {
                     style={{ width: "25px", height: "25px", marginRight: "10px" }}
                     type="checkbox"
                     value={option}
-                    checked={formData[section.uuid]?.[question.uuid]?.includes(option) || false}
+                    checked={formData[section.uuid]?.[question.uuid]?.answer.includes(option) || false}
                     onChange={(e) => {
                       const value = e.target.value;
                       const checked = e.target.checked;
                       setFormData((prevData) => {
                         const newValues = checked
-                          ? [...(prevData[section.uuid]?.[question.uuid] || []), value]
-                          : (prevData[section.uuid]?.[question.uuid] || []).filter((item) => item !== value);
+                          ? [...(prevData[section.uuid]?.[question.uuid]?.answer || []), value]
+                          : (prevData[section.uuid]?.[question.uuid]?.answer || []).filter((item) => item !== value);
                         return {
                           ...prevData,
                           [section.uuid]: {
                             ...prevData[section.uuid],
-                            [question.uuid]: newValues,
+                         [question.uuid]:{answer:newValues,answerUuid:formData[section.uuid]?.[question.uuid]?.answerUuid}
+                            // [question.uuid]: {answer:newValues},
                           },
                         };
                       });
@@ -447,7 +553,8 @@ const FillQuestions = (props) => {
           <>
             <TextInput
               type="date"
-              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+              value={formData[section.uuid]?.[question.uuid]?.answer}
+              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
               // defaultValue={value}
             />
           </>
@@ -477,7 +584,8 @@ const FillQuestions = (props) => {
           <>
             <TextInput
               type="time"
-              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value)}
+              value={formData[section.uuid]?.[question.uuid]?.answer}
+              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
               // defaultValue={value}
             />
           </>
@@ -524,6 +632,7 @@ const FillQuestions = (props) => {
   const closeToast = () => {
     setShowToast(null);
   };
+  console.log("formData",formData)
   return (
     <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
       <div className="category-card">
@@ -545,14 +654,14 @@ const FillQuestions = (props) => {
                 </div>
               ))
             : null}
-          <button
+          {/* <button
             onClick={
               () => history.goBack()
               // history.push("/digit-ui/employee/engagement/surveys/fill-citizen-details-survey")
             }
           >
             Back
-          </button>
+          </button> */}
           <button type="submit" style={{ marginLeft: "10px" }}>
             Submit
           </button>

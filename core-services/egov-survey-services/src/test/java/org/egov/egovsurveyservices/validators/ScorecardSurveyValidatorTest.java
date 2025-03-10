@@ -64,7 +64,7 @@ class ScorecardSurveyValidatorTest {
 
         CustomException exception = assertThrows(CustomException.class, () -> validator.validateUserTypeForAnsweringSurvey(requestInfo));
 
-        assertEquals("EG_SY_SUBMIT_RESPONSE_ERR", exception.getCode());
+        assertEquals("EG_SS_SUBMIT_RESPONSE_ERR", exception.getCode());
         assertEquals("Survey can only be answered by citizens.", exception.getMessage());
     }
 

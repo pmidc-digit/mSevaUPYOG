@@ -39,4 +39,9 @@ public class QuestionRepository {
         log.info("query for category search: " + query + " params: " + preparedStmtList);
         return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
     }
+
+    public String findQuestionStatementByUuid(String questionUuid) {
+        String sql = "SELECT questionstatement FROM public.eg_ss_question WHERE uuid = ?";
+        return jdbcTemplate.queryForObject(sql, new Object[]{questionUuid}, String.class);
+    }
 }

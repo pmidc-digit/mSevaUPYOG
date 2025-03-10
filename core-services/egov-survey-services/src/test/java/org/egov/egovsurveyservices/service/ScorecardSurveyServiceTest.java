@@ -5,14 +5,10 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
-import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
-import org.egov.egovsurveyservices.repository.SurveyRepository;
 import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
-import org.egov.egovsurveyservices.validators.QuestionValidator;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
-import org.egov.egovsurveyservices.web.models.enums.Status;
 import org.egov.egovsurveyservices.web.models.enums.Type;
 import org.egov.tracer.model.CustomException;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -84,17 +81,19 @@ class ScorecardSurveyServiceTest {
                 .surveyEntity(survey)
                 .build();
 
+
         doNothing().when(surveyValidator).validateUserType(any());
         doNothing().when(surveyValidator).validateQuestionsAndSections(any());
         doNothing().when(enrichmentService).enrichScorecardSurveyEntity(any());
+        when(surveyRepository.allQuestionsExist(anyList())).thenReturn(true);
 
         // Mock question existence check
         when(surveyRepository.allQuestionsExist(anyList())).thenReturn(true);
-        
+
         // Mock surveyUtil to return a dummy UUID list
         when(surveyUtil.getIdList(any(), anyString(), anyString(), anyString(), anyInt()))
                 .thenReturn(Collections.singletonList("SS-1012/2024-25/0020"));
-        
+
         doNothing().when(producer).push(anyString(), any(Object.class));
 
         ScorecardSurveyEntity responseEntity = scorecardSurveyService.createSurvey(surveyRequest);
@@ -103,6 +102,26 @@ class ScorecardSurveyServiceTest {
 
         assertNotNull(responseEntity);
         assertNotNull(responseEntity.getUuid());
+    }
+
+    @Test
+    public void testCreateSurvey_Failure() {
+        lenient().when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
+        lenient().when(applicationProperties.getCreateScorecardSurveyTopic()).thenReturn("save-survey");
+
+        ScorecardSurveyEntity survey = getValidSurveyEntity();
+        ScorecardSurveyRequest surveyRequest = ScorecardSurveyRequest.builder()
+                .requestInfo(requestInfo)
+                .surveyEntity(survey)
+                .build();
+
+
+        doNothing().when(surveyValidator).validateUserType(any());
+        doNothing().when(surveyValidator).validateQuestionsAndSections(any());
+
+        assertThrows(IllegalArgumentException.class, () ->
+                scorecardSurveyService.createSurvey(surveyRequest));
+
     }
 
 
@@ -118,9 +137,9 @@ class ScorecardSurveyServiceTest {
     }
     
     @Test
-    public void testCreateSurvey_InvalidStartDate() {
+    public void testCreateSurvey_NullStartDate() {
         ScorecardSurveyEntity survey = getValidSurveyEntity();
-        survey.setStartDate(1577836799000L);
+        survey.setStartDate(null); 
 
         ScorecardSurveyRequest surveyRequest = ScorecardSurveyRequest.builder()
                 .requestInfo(requestInfo)
@@ -129,8 +148,8 @@ class ScorecardSurveyServiceTest {
 
         Exception exception = assertThrows(IllegalArgumentException.class, 
             () -> scorecardSurveyService.createSurvey(surveyRequest));
-        
-        assertEquals("Survey valid startDate is required", exception.getMessage());
+
+        assertEquals("Survey startDate is required", exception.getMessage());
     }
 
     @Test
@@ -175,7 +194,7 @@ class ScorecardSurveyServiceTest {
         List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
         when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
         
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
         
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -191,7 +210,7 @@ class ScorecardSurveyServiceTest {
         List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
         when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
         
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
         
         assertNotNull(result);
         assertFalse(result.isEmpty());
@@ -202,7 +221,7 @@ class ScorecardSurveyServiceTest {
     public void testSearchSurvey_NoCriteria() {
         ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
         
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
         
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -214,7 +233,7 @@ class ScorecardSurveyServiceTest {
         request.setUuid(null);
         request.setActive(true);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, 
+        Exception exception = assertThrows(IllegalArgumentException.class,
             () -> scorecardSurveyService.updateSurveyActive(request));
 
         assertEquals("UUID must not be null or empty", exception.getMessage());
@@ -226,7 +245,7 @@ class ScorecardSurveyServiceTest {
         request.setUuid("");
         request.setActive(true);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, 
+        Exception exception = assertThrows(IllegalArgumentException.class,
             () -> scorecardSurveyService.updateSurveyActive(request));
 
         assertEquals("UUID must not be null or empty", exception.getMessage());
@@ -238,7 +257,7 @@ class ScorecardSurveyServiceTest {
         request.setUuid("SS-1012/2024-25/000131");
         request.setActive(null);
 
-        Exception exception = assertThrows(IllegalArgumentException.class, 
+        Exception exception = assertThrows(IllegalArgumentException.class,
             () -> scorecardSurveyService.updateSurveyActive(request));
 
         assertEquals("Active status must not be null", exception.getMessage());
@@ -255,7 +274,7 @@ class ScorecardSurveyServiceTest {
 
         when(surveyRepository.fetchSurveys(criteria)).thenReturn(Collections.emptyList());
 
-        Exception exception = assertThrows(IllegalArgumentException.class, 
+        Exception exception = assertThrows(IllegalArgumentException.class,
             () -> scorecardSurveyService.updateSurveyActive(request));
 
         assertEquals("UUID does not exist in database, Update failed!", exception.getMessage());
@@ -266,7 +285,7 @@ class ScorecardSurveyServiceTest {
         UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
         request.setUuid("SS-1012/2024-25/000131");
         request.setActive(true);
-        request.setRequestInfo(requestInfo); // Ensure requestInfo is set
+        request.setRequestInfo(requestInfo);
 
         ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
         surveyEntity.setUuid("SS-1012/2024-25/000131");
@@ -285,17 +304,17 @@ class ScorecardSurveyServiceTest {
 
         verify(producer, times(1)).push("update-topic", request);
     }
-    
+
     @Test
     public void testSearchSurvey_WithOpenSurveyFlag() {
         ScorecardSurveySearchCriteria criteria = new ScorecardSurveySearchCriteria();
         criteria.setOpenSurveyFlag(true);
-        
+
         List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
         when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
-        
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
-        
+
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
+
         assertNotNull(result);
         assertFalse(result.isEmpty());
     }
@@ -309,13 +328,13 @@ class ScorecardSurveyServiceTest {
         List<ScorecardSurveyEntity> mockSurveys = Collections.singletonList(getValidSurveyEntity());
         when(surveyRepository.fetchSurveys(criteria)).thenReturn(mockSurveys);
 
-        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria, false);
+        List<ScorecardSurveyEntity> result = scorecardSurveyService.searchSurveys(criteria);
 
         assertNotNull(result);
         assertFalse(result.isEmpty());
     }
 
-    
+
     /*** Helper Method to Create Valid Survey ***/
     private ScorecardSurveyEntity getValidSurveyEntity() {
         return ScorecardSurveyEntity.builder()

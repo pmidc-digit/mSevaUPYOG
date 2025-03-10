@@ -2,16 +2,10 @@ package org.egov.egovsurveyservices.repository.querybuilder;
 
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveySearchCriteria;
-import org.egov.egovsurveyservices.web.models.SurveyResultsSearchCriteria;
-import org.egov.egovsurveyservices.web.models.SurveySearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-import org.springframework.util.ObjectUtils;
 
 import java.util.List;
-
-import static org.egov.egovsurveyservices.utils.SurveyServiceConstants.ACTIVE;
 
 @Component
 public class ScorecardSurveyQueryBuilder {
@@ -34,7 +28,7 @@ public class ScorecardSurveyQueryBuilder {
     public static final String SURVEY_UUIDS_QUERY_WRAPPER = " SELECT uuid FROM ({HELPER_TABLE}) temp ";
     
 //    private static final String BASE_QUERY = "SELECT * FROM eg_ss_survey_entity survey";
-    
+
     private static final String BASE_QUERY =
             "SELECT DISTINCT " +
                     // Survey fields
@@ -85,7 +79,7 @@ public class ScorecardSurveyQueryBuilder {
             "ON section.uuid = questionWeightage.sectionuuid " +
             "LEFT JOIN eg_ss_question AS question " +
             "ON questionWeightage.questionuuid = question.uuid ";
-    
+
     /**
      * Generates query to fetch surveys dynamically based on UUID, tenantId, and title.
      */
@@ -111,17 +105,17 @@ public class ScorecardSurveyQueryBuilder {
             query.append("survey.title ILIKE ? ");
             preparedStmtList.add("%" + criteria.getTitle() + "%");
         }
-        
+
         if (criteria.getActive() != null) {
             query.append(whereAdded ? " AND " : " WHERE ");
             query.append("survey.active = ? ");
             preparedStmtList.add(criteria.getActive());
         }
-        
+
         if (Boolean.TRUE.equals(criteria.getOpenSurveyFlag())) {
             query.append(whereAdded ? " AND " : " WHERE ");
             query.append(" ? BETWEEN survey.startdate AND survey.enddate ");
-            preparedStmtList.add(System.currentTimeMillis()); 
+            preparedStmtList.add(System.currentTimeMillis());
         }
         
         return query.toString();
@@ -135,7 +129,7 @@ public class ScorecardSurveyQueryBuilder {
             query.append(" AND ");
         }
     }
-    
+
     public String allQuestionExistsQuery(String placeholders) {
         return "SELECT uuid FROM public.eg_ss_question WHERE uuid IN (" + placeholders + ")";
     }
@@ -157,80 +151,36 @@ public class ScorecardSurveyQueryBuilder {
         });
     }
 
-    public String getQuestionsBasedOnSurveyIdsQuery() {
-        return " SELECT uuid, surveyid, questionstatement, options, status, type, required, createdby, lastmodifiedby, createdtime, lastmodifiedtime FROM eg_ss_question WHERE surveyid = ? ";
-    }
-
-    public String getCitizenResponseExistsQuery() {
-        return " SELECT EXISTS(SELECT uuid FROM eg_ss_answer WHERE surveyid = ? AND citizenid = ? ) ";
-    }
-
-    public String getCitizensWhoRespondedUuidQuery(SurveyResultsSearchCriteria criteria, List<Object> preparedStmtList) {
-        StringBuilder query = new StringBuilder(" SELECT DISTINCT citizenid FROM eg_ss_answer  ");
-        if(!ObjectUtils.isEmpty(criteria.getSurveyId())){
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" surveyid = ? ");
-            preparedStmtList.add(criteria.getSurveyId());
-        }
-        if(!ObjectUtils.isEmpty(criteria.getOffset())){
-            query.append(" offset ? ");
-            preparedStmtList.add(criteria.getOffset());
-        }
-        if(!ObjectUtils.isEmpty(criteria.getLimit())){
-            query.append(" limit ? ");
-            preparedStmtList.add(criteria.getLimit());
-        }
-        return  query.toString();
-    }
-
-    public String fetchSurveyResultsQuery(SurveyResultsSearchCriteria criteria, List<Object> preparedStmtList) {
-        StringBuilder query = new StringBuilder(" SELECT uuid,questionid,surveyid,answer,createdby,lastmodifiedby,createdtime,lastmodifiedtime,citizenid FROM eg_ss_answer  ");
-        if(!ObjectUtils.isEmpty(criteria.getSurveyId())){
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" surveyid = ? ");
-            preparedStmtList.add(criteria.getSurveyId());
-        }
-        if(!CollectionUtils.isEmpty(criteria.getCitizenUuids())){
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" citizenid IN ( ").append(createQuery(criteria.getCitizenUuids())).append(" ) ");
-            addToPreparedStatement(preparedStmtList, criteria.getCitizenUuids());
-        }
-        return query.toString();
-    }
-
-    private void addPagination(StringBuilder query,List<Object> preparedStmtList,SurveySearchCriteria criteria){
-        int limit = config.getDefaultLimit();
-        int offset = config.getDefaultOffset();
-        query.append(" OFFSET ? ");
-        query.append(" LIMIT ? ");
-
-        if(criteria.getLimit()!=null && criteria.getLimit()<=config.getMaxSearchLimit())
-            limit = criteria.getLimit();
-
-        if(criteria.getLimit()!=null && criteria.getLimit()>config.getMaxSearchLimit())
-            limit = config.getMaxSearchLimit();
-
-        if(criteria.getOffset()!=null)
-            offset = criteria.getOffset();
-
-        preparedStmtList.add(offset);
-        preparedStmtList.add(limit);
-
-    }
-
-    private void appendStatusFilterToQuery(StringBuilder query, String status) {
-        if(status.equals(ACTIVE))
-            query.append(" AND (select extract(epoch from current_timestamp) * 1000 ) BETWEEN survey.startdate AND survey.enddate) ");
-        else
-            query.append(" OR (select extract(epoch from current_timestamp) * 1000 ) NOT BETWEEN survey.startdate AND survey.enddate) ");
-    }
-
     public String getSurveyUuidsToCountMapQuery(List<String> listOfSurveyIds, List<Object> preparedStmtList) {
         StringBuilder query = new StringBuilder(" SELECT surveyid, COUNT(DISTINCT citizenid) FROM eg_ss_answer answer ");
         query.append(" WHERE answer.surveyid IN ( ").append(createQuery(listOfSurveyIds)).append(" )");
         addToPreparedStatement(preparedStmtList, listOfSurveyIds);
         query.append(" GROUP  BY surveyid ");
         return query.toString();
+    }
+
+    public String fetchSectionListBasedOnSurveyId() {
+        return "SELECT uuid, surveyuuid, title, weightage FROM eg_ss_survey_section WHERE surveyuuid = ?";
+    }
+
+    public String getCitizenResponseExistsQuery() {
+        return " SELECT EXISTS(SELECT uuid FROM eg_ss_answer WHERE surveyuuid = ? AND citizenid = ? ) ";
+    }
+
+    public String fetchQuestionsWeightageListBySurveyAndSection() {
+        return "SELECT q.uuid as uuid, q.questionstatement as questionstatement, q.options as options, " +
+                "q.status as status, q.type as type, q.required as required, " +
+                "q.createdby as createdby, q.lastmodifiedby as lastmodifiedby, q.createdtime as createdtime, " +
+                "q.lastmodifiedtime as lastmodifiedtime,qw.questionuuid as questionuuid,qw.sectionuuid as sectionuuid ," +
+                "qw.weightage as weightage,qw.qorder as qorder " +
+                "FROM eg_ss_question q " +
+                "JOIN eg_ss_question_weightage qw ON q.uuid = qw.questionuuid " +
+                "JOIN eg_ss_survey_section ss ON qw.sectionuuid = ss.uuid " +
+                "WHERE ss.surveyuuid = ? AND ss.uuid = ?";
+    }
+
+    public String getExistingAnswerUuid() {
+        return "SELECT uuid FROM public.eg_ss_answer WHERE uuid = ?";
     }
 
     public String getWhetherCitizenHasRespondedQuery(List<String> listOfSurveyIds, String citizenId, List<Object> preparedStmtList) {
@@ -241,5 +191,25 @@ public class ScorecardSurveyQueryBuilder {
         query.append(" answer.citizenid = ? ");
         preparedStmtList.add(citizenId);
         return query.toString();
+    }
+
+    public String getAnswers() {
+        return "SELECT " +
+                "answer.uuid, " +
+                "answer.questionuuid, " +
+                "answer.surveyuuid, " +
+                "answer.sectionuuid, " +
+                "answer.answer, " +
+                "answer.citizenid, " +
+                "answer.comments, " +
+                "answer.createdby , " +
+                "answer.lastmodifiedby, " +
+                "answer.createdtime, " +
+                "answer.lastmodifiedtime, " +
+                "question.questionstatement " +
+                "FROM public.eg_ss_answer AS answer " +
+                "LEFT JOIN public.eg_ss_question AS question " +
+                "ON answer.questionuuid = question.uuid " +
+                "WHERE answer.surveyuuid = ? AND answer.citizenid = ?";
     }
 }

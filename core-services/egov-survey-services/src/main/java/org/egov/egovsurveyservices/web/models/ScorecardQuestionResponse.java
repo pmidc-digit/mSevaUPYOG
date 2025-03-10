@@ -1,9 +1,9 @@
 package org.egov.egovsurveyservices.web.models;
 
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Getter
@@ -12,33 +12,21 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @ToString
-public class Answer {
+public class ScorecardQuestionResponse {
 
-    @JsonProperty("answerUuid")
-    private String answerUuid;
-
-    @JsonProperty("surveyUuid")
-    private String surveyUuid;
-
-    @JsonProperty("sectionUuid")
-    private String sectionUuid;
-
+    @NotNull
     @JsonProperty("questionUuid")
     private String questionUuid;
 
     @JsonProperty("questionStatement")
     private String questionStatement;
 
-    @JsonProperty("comments")
-    private String comments;
-
     @JsonProperty("answer")
     private List<Object> answer;
 
-    @JsonProperty("auditDetails")
-    private AuditDetails auditDetails;
+    @JsonProperty("answerUuid")
+    private String answerUuid;
 
-    @JsonProperty("citizenId")
-    private String citizenId;
-
+    @JsonProperty("comments")
+    private String comments;
 }

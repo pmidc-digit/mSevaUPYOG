@@ -49,10 +49,6 @@ public class ScorecardSurveyEntity {
     @NotNull(message = "End date is required")
     @JsonProperty("endDate")
     private Long endDate;
-    
-    @Size(max = 128)
-    @JsonProperty("status")
-    private String status;
 
     @Size(max = 128)
     @JsonProperty("postedBy")

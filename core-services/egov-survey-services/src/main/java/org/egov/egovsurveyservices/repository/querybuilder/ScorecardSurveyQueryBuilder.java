@@ -45,6 +45,8 @@ public class ScorecardSurveyQueryBuilder {
                     "survey.hasresponded AS survey_hasresponded, " +
                     "survey.createdtime AS survey_createdtime, " +
                     "survey.lastmodifiedtime AS survey_lastmodifiedtime, " +
+                    "survey.createdby AS survey_createdby, " +
+                    "survey.lastmodifiedby AS survey_lastmodifiedby, " +
 
                     // Section fields
                     "section.uuid AS section_uuid, " +
@@ -115,7 +117,7 @@ public class ScorecardSurveyQueryBuilder {
             query.append(" ? BETWEEN survey.startdate AND survey.enddate ");
             preparedStmtList.add(System.currentTimeMillis());
         }
-
+        
         return query.toString();
     }
 

@@ -47,16 +47,25 @@ public class QuestionService {
 
     public QuestionResponse createQuestion(QuestionRequest questionRequest) {
         RequestInfo requestInfo = questionRequest.getRequestInfo();
+        
         if (questionRequest.getQuestions().size() > applicationProperties.getMaxCreateLimit()) {
             throw new IllegalArgumentException("Maximum " + applicationProperties.getMaxCreateLimit() + " questions allowed per request.");
         }
+
         questionRequest.getQuestions().forEach(question -> {
             categoryExistsById(question.getCategoryId());
-            enrichCreateRequest(question,requestInfo);
+            enrichCreateRequest(question, requestInfo);
+
+            // Validate options length
+            if (question.getOptions() != null && question.getOptions().stream().anyMatch(opt -> opt.length() > 200)) {
+                throw new IllegalArgumentException("Maximum 200 characters allowed only for a question's option");
+            }
         });
+
         producer.push(applicationProperties.getSaveQuestionTopic(), questionRequest);
         return generateResponse(questionRequest);
     }
+
 
     public QuestionResponse updateQuestion(QuestionRequest questionRequest) {
         questionValidator.validateForUpdate(questionRequest);

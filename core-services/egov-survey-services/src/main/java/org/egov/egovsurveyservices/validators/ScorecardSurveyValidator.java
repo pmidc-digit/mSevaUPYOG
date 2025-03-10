@@ -1,6 +1,7 @@
 package org.egov.egovsurveyservices.validators;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.egovsurveyservices.service.ScorecardSurveyService;
 import org.egov.egovsurveyservices.web.models.*;
@@ -67,6 +68,9 @@ public class ScorecardSurveyValidator {
 
         if(requestInfo.getUser().getType()==null || !requestInfo.getUser().getType().equalsIgnoreCase(CITIZEN))
             throw new CustomException("EG_SS_SUBMIT_RESPONSE_ERR", "Survey can only be answered by citizens.");
+
+        if(StringUtils.isBlank(requestInfo.getUser().getUuid()))
+            throw new CustomException("EG_SS_SUBMIT_RESPONSE_ERR", "Provide a valid citizen uuid.");
     }
 
     public void validateWhetherCitizenAlreadyResponded(AnswerEntity answerEntity, String citizenId) {

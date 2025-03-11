@@ -33,7 +33,7 @@ const Surveys = ({ match: { path } = {}, tenants, parentRoute, userType }) => {
       <PrivateRoute path={`${path}/search-questions`} component={(props) => <SearchQuestions {...props} />} />
       <PrivateRoute path={`${path}/create-survey-step-form`} component={(props) => <CreateSurveyStepForm {...props} />} />
       <PrivateRoute path={`${path}/fill-citizen-details-survey`} component={(props) => <FillSurveyEmp {...props} />} />
-      <PrivateRoute path={`${path}/fill-survey`} component={(props) => <FillQuestions {...props} />} />
+      <PrivateRoute path={`${path}/fill-survey`} component={(props) => <FillQuestions {...props} userType={userType} />} />
       <PrivateRoute path={`${path}/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} userType={userType} />} />
       {/*  */}
       <PrivateRoute path={`${path}/create-response`} component={(props) => <CreateResponse {...props} />} />

@@ -8,7 +8,7 @@ const ActiveAndOpenSurveys = (props) => {
   const { userType } = props;
   const history = useHistory();
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = Digit.ULBService.getCurrentPermanentCity();
   const [loading, setLoading] = useState(false);
   const [count, setCount] = useState(null);
   const [data, setData] = useState([]);
@@ -92,7 +92,7 @@ const ActiveAndOpenSurveys = (props) => {
     // history.push("/digit-ui/employee/engagement/surveys/fill-survey");
     const paths = {
       employee: "/digit-ui/employee/engagement/surveys/fill-citizen-details-survey",
-      citizen: "/digit-ui/employee/engagement/surveys/fill-survey",
+      citizen: "/digit-ui/citizen/engagement/surveys/fill-survey",
     };
     
     const newPath = paths[userType] || "";

@@ -4,6 +4,7 @@ import { Card, CardLabelError, CheckBox, RadioButtons, TextArea, TextInput, Toas
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 const FillQuestions = (props) => {
+  const {userType}=props;
   const { t } = useTranslation();
   const {
     register: register,

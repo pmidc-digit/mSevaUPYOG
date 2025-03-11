@@ -103,7 +103,7 @@ export const addUUIDAndAuditDetails = async (request, method = "_update") => {
           let userlegalName = userSearchResponse.user[0].name;
           let userFatherName = userSearchResponse.user[0].fatherOrHusbandName
            if (ownerShipType === 'INDIVIDUAL.SINGLEOWNER' || ownerShipType === 'INDIVIDUAL.MULTIPLEOWNERS') {
-             if (userlegalName === owners[owneriter].name && userFatherName === owners[owneriter].fatherOrHusbandName) {
+             if (userlegalName === owners[owneriter].name && (userFatherName === owners[owneriter].fatherOrHusbandName || userFatherName === null || userFatherName === '')) {
                userResponse = await userService.updateUser(RequestInfo,
                 {
                    ...userSearchResponse.user[0],
@@ -258,8 +258,9 @@ const addDefaultUserDetails = (tenantId, owner) => {
 };
 
 const addDeactiveUserDetails = (tenantId, owner) => {
+   // console.log("owner"+JSON.stringify(owner))
   if (!owner.userName || isEmpty(owner.userName))
-    owner.userName = uuidv1();
+      owner.userName = uuidv1();
   owner.active = true;
   owner.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
   owner.type = "CITIZEN";

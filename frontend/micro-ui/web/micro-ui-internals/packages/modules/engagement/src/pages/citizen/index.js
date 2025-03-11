@@ -7,6 +7,7 @@ import ViewDocument from "./Documents/ViewDocument";
 import Response from "./CitizenSurvey/Response";
 import ActiveAndOpenSurveys from "../../components/Surveys/ActiveAndOpenSurveys";
 import FillQuestions from "../../components/Surveys/FillQuestions";
+import SubmitResponse from "./Responses/submit";
 
 const CitizenApp = ({ path, url, userType, tenants }) => {
   const location = useLocation();
@@ -37,6 +38,7 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
           {/* New Development */}
           <PrivateRoute path={`${path}/surveys/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} userType={userType} />} />
           <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillQuestions {...props} userType={userType}/>} />
+          <PrivateRoute path={`${path}/surveys/submit-survey-response`} component={(props) => <SubmitResponse {...props} />} />
         </Switch>
       </div>
     </React.Fragment>

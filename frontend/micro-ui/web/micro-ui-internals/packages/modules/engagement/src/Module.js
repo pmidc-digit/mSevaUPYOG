@@ -244,7 +244,7 @@ const EventsBreadCrumb = ({ location }) => {
   );
 };
 
-const EmployeeApp = ({ path, url, userType, tenants }) => {
+const EmployeeApp = ({ path, url, userType, tenants,stateCode }) => {
   const location = useLocation();
 
   return (
@@ -277,7 +277,7 @@ const EmployeeApp = ({ path, url, userType, tenants }) => {
         <Route path={`${path}/documents/delete-response`} component={(props) => <DocDeleteResponse {...props} />} />
         <Route path={`${path}/documents/inbox`} component={(props) => <DocumentNotification tenants={tenants} />} />
         <Route path={`${path}/messages`} component={(props) => <Messages {...props} tenants={tenants} parentRoute={path} />} />
-        <Route path={`${path}/surveys`} component={(props) => <Surveys {...props} tenants={tenants} parentRoute={path} userType={userType} />} />
+        <Route path={`${path}/surveys`} component={(props) => <Surveys {...props} tenants={tenants} parentRoute={path} userType={userType} stateCode={stateCode} />} />
       </Switch>
     </>
     // </div>
@@ -301,7 +301,7 @@ const EngagementModule = ({ stateCode, userType, tenants }) => {
   if (userType === "citizen") {
     return <CitizenApp path={path} url={url} userType={userType} tenants={tenants} />;
   } else {
-    return <EmployeeApp path={path} url={url} userType={userType} tenants={tenants} />;
+    return <EmployeeApp path={path} url={url} userType={userType} tenants={tenants} stateCode={stateCode}/>;
   }
 };
 

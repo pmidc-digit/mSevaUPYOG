@@ -86,7 +86,8 @@ const ActiveAndOpenSurveys = (props) => {
         console.error("Failed to fetch surveys", error);
       });
   }
-
+const userInfo= Digit.UserService.getUser().info;
+console.log("userinfo",userInfo)
   const handleStartSurvey = (surveyDetails) => {
     console.log("Survey Details: ", surveyDetails);
     // history.push("/digit-ui/employee/engagement/surveys/fill-survey");
@@ -95,11 +96,13 @@ const ActiveAndOpenSurveys = (props) => {
       citizen: "/digit-ui/citizen/engagement/surveys/fill-survey",
     };
     
-    const newPath = paths[userType] || "";
+    const newPath = paths[userType.toLowerCase()] || "";
+
     history.push({
       pathname: newPath,
-      state: { surveyDetails },
+     state: { surveyDetails: surveyDetails, ...(userType.toUpperCase()==="CITIZEN" && {userInfo: userInfo})},
     });
+
   };
 
   return (

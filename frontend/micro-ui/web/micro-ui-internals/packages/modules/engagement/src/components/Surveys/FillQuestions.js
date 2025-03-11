@@ -4,7 +4,7 @@ import { Card, CardLabelError, CheckBox, RadioButtons, TextArea, TextInput, Toas
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 const FillQuestions = (props) => {
-  const {userType}=props;
+ 
   const { t } = useTranslation();
   const {
     register: register,
@@ -23,6 +23,8 @@ const FillQuestions = (props) => {
   const [showToast, setShowToast] = useState(null);
   // const [userInfo,setUserInfo]=useState([])
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const userType = props.userType;
+  console.log("usertype",userType)
   const history = useHistory();
   const prevFormDataRef = useRef({});
   // const data=
@@ -113,7 +115,7 @@ const FillQuestions = (props) => {
   useEffect(()=>{
   let payload={
     "surveyUuid":data.uuid,
-    "citizenId": prevProps.userInfo[0].uuid
+    "citizenId": prevProps.userInfo.uuid
   }
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
@@ -154,15 +156,15 @@ const FillQuestions = (props) => {
     }
   },[])
  
-  useEffect(() => {
-    const savedData = localStorage.getItem("surveyFormData");
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
-    }
-  }, []);
-  useEffect(() => {
-    localStorage.setItem("surveyFormData", JSON.stringify(formData));
-  }, [formData]);
+  // useEffect(() => {
+  //   const savedData = localStorage.getItem("surveyFormData");
+  //   if (savedData) {
+  //     setFormData(JSON.parse(savedData));
+  //   }
+  // }, []);
+  // useEffect(() => {
+  //   localStorage.setItem("surveyFormData", JSON.stringify(formData));
+  // }, [formData]);
 
   //   useEffect(()=>{
   //   let data={
@@ -221,10 +223,12 @@ const FillQuestions = (props) => {
   useEffect(() => {
     const interval = setInterval(() => {
       if (JSON.stringify(prevFormDataRef.current) !== JSON.stringify(formData)) {
+        if((prevProps.citizenFill && (userType).toLowerCase()==="employee") || (userType).toLowerCase()==="citizen" ){
         prevFormDataRef.current = formData;
         handleAutoSave();
+        }
       }
-    }, 30000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [formData]);
@@ -247,8 +251,8 @@ const FillQuestions = (props) => {
 
     let payload = {
       User: {
-        type:prevProps.userInfo[0].type,
-        uuid:prevProps.userInfo[0].uuid
+        type:prevProps.userInfo.type,
+        uuid:prevProps.userInfo.uuid
       },
 
       AnswerEntity: {
@@ -300,12 +304,13 @@ const FillQuestions = (props) => {
         });
       }
     }
-    //const { roles, ...newUserObject } = prevProps.userInfo[0];
+    //const { roles, ...newUserObject } = prevProps.userInfo;
 
     let payload = {
+
       User: {
-        type:prevProps.userInfo[0].type,
-        uuid:prevProps.userInfo[0].uuid
+        type:prevProps.userInfo.type,
+        uuid:prevProps.userInfo.uuid
       },
 
       AnswerEntity: {
@@ -317,7 +322,13 @@ const FillQuestions = (props) => {
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
         if (response?.sectionResponses.length > 0) {
+          userType.toUpperCase()==="EMPLOYEE"?
           history.push("/digit-ui/employee/engagement/surveys/submit-response", {
+            message: "SURVEY FORM SUBMITTED SUCCESSFULLY",
+            response: response,
+            isSuccess: true,
+          }): 
+          history.push("/digit-ui/citizen/engagement/surveys/submit-survey-response", {
             message: "SURVEY FORM SUBMITTED SUCCESSFULLY",
             response: response,
             isSuccess: true,
@@ -335,7 +346,7 @@ const FillQuestions = (props) => {
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("citizen fill", prevProps.citizenFill);
-    if (prevProps.citizenFill) {
+    if ((prevProps.citizenFill && (userType).toLowerCase()==="employee") || (userType).toLowerCase()==="citizen" ) {
       if (validateForm()) {
         console.log("Form submitted:", formData);
         handleSubmitSurvey();

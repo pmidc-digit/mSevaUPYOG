@@ -23,7 +23,7 @@ import SurveyForm from "../../../components/Surveys/SurveyForms/SurveyForm";
 import CreateSurveyForm from "../../../components/Surveys/SurveyForms/CreateSurveyForm";
 import ActiveAndOpenSurveys from "../../../components/Surveys/ActiveAndOpenSurveys";
 
-const Surveys = ({ match: { path } = {}, tenants, parentRoute, userType }) => {
+const Surveys = ({ match: { path } = {}, tenants, parentRoute, userType , stateCode}) => {
   return (
     <Switch>
       <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} tenants={tenants} parentRoute={parentRoute} />} />
@@ -32,7 +32,7 @@ const Surveys = ({ match: { path } = {}, tenants, parentRoute, userType }) => {
       <PrivateRoute path={`${path}/create-questions`} component={(props) => <CreateSurveyQuestions {...props} />} />
       <PrivateRoute path={`${path}/search-questions`} component={(props) => <SearchQuestions {...props} />} />
       <PrivateRoute path={`${path}/create-survey-step-form`} component={(props) => <CreateSurveyStepForm {...props} />} />
-      <PrivateRoute path={`${path}/fill-citizen-details-survey`} component={(props) => <FillSurveyEmp {...props} />} />
+      <PrivateRoute path={`${path}/fill-citizen-details-survey`} component={(props) => <FillSurveyEmp {...props} stateCode={stateCode}/>} />
       <PrivateRoute path={`${path}/fill-survey`} component={(props) => <FillQuestions {...props} userType={userType} />} />
       <PrivateRoute path={`${path}/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} userType={userType} />} />
       {/*  */}

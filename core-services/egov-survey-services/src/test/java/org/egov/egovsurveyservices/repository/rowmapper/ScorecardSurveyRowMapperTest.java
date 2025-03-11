@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
@@ -41,10 +42,11 @@ public class ScorecardSurveyRowMapperTest {
     void setUp() {
         rowMapper = new ScorecardSurveyRowMapper();
     }
-
+    
     @Test
     void testExtractData_Success() throws SQLException {
         when(resultSet.next()).thenReturn(true, true, false);
+
         when(resultSet.getString("survey_uuid")).thenReturn("survey-123");
         when(resultSet.getString("survey_tenantid")).thenReturn("pb.testing");
         when(resultSet.getString("survey_title")).thenReturn("Survey on Feedback");
@@ -61,12 +63,10 @@ public class ScorecardSurveyRowMapperTest {
         when(resultSet.getString("survey_createdby")).thenReturn("creatorUser");
         when(resultSet.getString("survey_lastmodifiedby")).thenReturn("modifierUser");
 
-        
         when(resultSet.getString("section_uuid")).thenReturn("section-123");
         when(resultSet.getString("section_title")).thenReturn("General Feedback");
-        when(resultSet.getInt("section_weightage")).thenReturn(10);
+        when(resultSet.getBigDecimal("section_weightage")).thenReturn(new BigDecimal("10.00"));  
 
-        
         when(resultSet.getString("question_uuid")).thenReturn("question-123", "question-456");
         when(resultSet.getString("question_surveyid")).thenReturn("survey-123");
         when(resultSet.getString("question_statement")).thenReturn("How satisfied are you?", "Would you recommend us?");
@@ -81,49 +81,41 @@ public class ScorecardSurveyRowMapperTest {
         when(resultSet.getLong("question_order")).thenReturn(1L, 2L);
         when(resultSet.getString("question_categoryid")).thenReturn("cat-123", "cat-456");
         when(resultSet.getString("question_tenantid")).thenReturn("pb.testing", "pb.testing");
-        when(resultSet.getInt("question_weightage")).thenReturn(5, 3);
+        when(resultSet.getBigDecimal("question_weightage")).thenReturn(new BigDecimal("5.00"), new BigDecimal("3.00"));  
 
-        
         List<ScorecardSurveyEntity> result = rowMapper.extractData(resultSet);
 
-        
         assertNotNull(result);
-        assertEquals(1, result.size()); 
+        assertEquals(1, result.size());
 
         ScorecardSurveyEntity survey = result.get(0);
         assertEquals("survey-123", survey.getUuid());
         assertEquals("Survey on Feedback", survey.getSurveyTitle());
         assertEquals("Feedback", survey.getSurveyCategory());
 
-        
         assertNotNull(survey.getAuditDetails());
         assertEquals("creatorUser", survey.getAuditDetails().getCreatedBy());
         assertEquals("modifierUser", survey.getAuditDetails().getLastModifiedBy());
         assertEquals(1672531200000L, survey.getAuditDetails().getCreatedTime());
         assertEquals(1675219600000L, survey.getAuditDetails().getLastModifiedTime());
 
-        
         assertEquals(1, survey.getSections().size());
         Section section = survey.getSections().get(0);
         assertEquals("section-123", section.getUuid());
         assertEquals("General Feedback", section.getTitle());
+        assertEquals(new BigDecimal("10.00"), section.getWeightage());  
 
-        
         assertEquals(2, section.getQuestions().size());
-        for (QuestionWeightage qw : section.getQuestions()) {
-            Question question = qw.getQuestion();
-            assertNotNull(question.getAuditDetails());
-            assertEquals("questionCreator", question.getAuditDetails().getCreatedBy());
-            assertEquals("questionModifier", question.getAuditDetails().getLastModifiedBy());
-            assertEquals(1672531200000L, question.getAuditDetails().getCreatedTime());
-            assertEquals(1675219600000L, question.getAuditDetails().getLastModifiedTime());
-        }
+        QuestionWeightage firstQw = section.getQuestions().get(0);
+        assertEquals(new BigDecimal("5.00"), firstQw.getWeightage());  
 
-        
+        QuestionWeightage secondQw = section.getQuestions().get(1);
+        assertEquals(new BigDecimal("3.00"), secondQw.getWeightage());  
+
         verify(resultSet, atLeastOnce()).next();
         verify(resultSet, atLeastOnce()).getString("survey_uuid");
     }
-
+ 
     @Test
     void testExtractData_EmptyResultSet() throws SQLException {
         

@@ -9,6 +9,8 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 
 import static org.egov.egovsurveyservices.utils.SurveyServiceConstants.CITIZEN;
@@ -30,27 +32,6 @@ public class ScorecardSurveyValidator {
             throw new CustomException("EG_SY_ACCESS_ERR", "Survey can only be created/updated/deleted by employees.");
     }
 
-    public void validateQuestionsAndSections(ScorecardSurveyEntity surveyEntity) {
-        // Validate that the total weightage for sections equals 100
-        int totalSectionWeightage = surveyEntity.getSections().stream()
-                .mapToInt(Section::getWeightage)
-                .sum();
-
-        if (totalSectionWeightage != 100) {
-            throw new CustomException("INVALID_SECTION_WEIGHTAGE", "Total section weightage must be 100");
-        }
-
-        // Validate that the total weightage for questions in each section equals 100
-        surveyEntity.getSections().forEach(section -> {
-            int totalQuestionWeightage = section.getQuestions().stream()
-                    .mapToInt(QuestionWeightage::getWeightage)
-                    .sum();
-
-            if (totalQuestionWeightage != 100) {
-                throw new CustomException("INVALID_QUESTION_WEIGHTAGE", "Total question weightage for section " + section.getTitle() + " must be 100");
-            }
-        });
-    }
 
     /**
      * Validates whether the user trying to answer a survey is a Citizen

@@ -45,7 +45,7 @@ public class QuestionWeightageWithQuestionRowMapper implements ResultSetExtracto
                 questionWeightage = QuestionWeightage.builder()
                         .questionUuid(rs.getString("questionuuid"))
                         .sectionUuid(rs.getString("sectionuuid"))
-                        .weightage(rs.getInt("weightage"))
+                        .weightage(rs.getBigDecimal("weightage"))
                         .qorder(rs.getLong("qorder"))
                         .question(question)
                         .build();

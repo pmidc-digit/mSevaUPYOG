@@ -1,5 +1,7 @@
 package org.egov.egovsurveyservices.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
@@ -61,41 +63,37 @@ public class EnrichmentService {
         surveyEntity.setPostedBy(surveyRequest.getRequestInfo().getUserInfo().getName());
 
         List<Section> sections = surveyEntity.getSections();
-        Integer countOfSections = sections.size();
         if (CollectionUtils.isEmpty(sections)) {
             log.warn("No sections found in survey: {}", surveyEntity.getUuid());
             return;
         }
 
-        int totalSectionWeightage = 0;
+        BigDecimal totalSectionWeightage = BigDecimal.ZERO;
 
-        for (int i = 0; i < countOfSections; i++) {
-        	Section section = surveyEntity.getSections().get(i);
-        	totalSectionWeightage += section.getWeightage();
+        for (Section section : sections) {
             section.setUuid(UUID.randomUUID().toString());
-            section.setTitle(surveyEntity.getSections().get(i).getTitle());   
-            section.setWeightage(surveyEntity.getSections().get(i).getWeightage());
+            totalSectionWeightage = totalSectionWeightage.add(section.getWeightage());
+
             List<QuestionWeightage> questionWeightages = section.getQuestions();
-            Integer qnws = questionWeightages.size();
             if (CollectionUtils.isEmpty(questionWeightages)) {
                 log.warn("No questions found in section: {}", section.getUuid());
                 continue;
             }
 
-            int totalQuestionWeightage = 0;
+            BigDecimal totalQuestionWeightage = BigDecimal.ZERO;
 
-            for (int j = 0; j < qnws; j++) {
+            for (int j = 0; j < questionWeightages.size(); j++) {
                 QuestionWeightage questionWeightage = questionWeightages.get(j);
-                questionWeightage.setQuestionUuid(questionWeightage.getQuestionUuid());
                 questionWeightage.setSectionUuid(section.getUuid());
                 questionWeightage.setQorder((long) j + 1);
-                QuestionSearchCriteria criteria =new QuestionSearchCriteria();
+
+                QuestionSearchCriteria criteria = new QuestionSearchCriteria();
                 criteria.setUuid(questionWeightage.getQuestionUuid());
                 QuestionResponse questionResponse = questionService.searchQuestion(criteria);
-                Question question1 = questionResponse.getQuestions().get(0);
-                questionWeightage.setQuestion(question1);
-                Question question =questionWeightage.getQuestion();
-                totalQuestionWeightage += questionWeightage.getWeightage(); // Track question weightage sum
+                Question question = questionResponse.getQuestions().get(0);
+                questionWeightage.setQuestion(question);
+
+                totalQuestionWeightage = totalQuestionWeightage.add(questionWeightage.getWeightage());
 
                 if (question == null) {
                     log.warn("Skipping null question in section: {}", section.getUuid());
@@ -117,19 +115,25 @@ public class EnrichmentService {
                         .lastModifiedTime(System.currentTimeMillis())
                         .build());
             }
-
-            if (totalQuestionWeightage != 100) {
-                throw new IllegalArgumentException("Total question weightage in section " + section.getUuid() + " is not 100, found: " + totalQuestionWeightage);
+            if (totalQuestionWeightage.compareTo(BigDecimal.valueOf(100)) > 0) {
+                throw new IllegalArgumentException("Total question weightage in section " + section.getUuid() + " must be 100, found: " + totalQuestionWeightage);
+            }
+            totalQuestionWeightage = totalQuestionWeightage.setScale(0, RoundingMode.HALF_UP);
+            if (totalQuestionWeightage.compareTo(BigDecimal.valueOf(100)) != 0) {
+                throw new IllegalArgumentException("Total question weightage in section " + section.getUuid() + " must be 100, found: " + totalQuestionWeightage + " after rounding off");
             }
         }
-
-        if (totalSectionWeightage != 100) {
-            throw new IllegalArgumentException("Total section weightage in survey " + surveyEntity.getUuid() + " is not 100, found: " + totalSectionWeightage);
+        if (totalSectionWeightage.compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new IllegalArgumentException("Total section weightage in survey " + surveyEntity.getUuid() + " must be 100, found: " + totalSectionWeightage);
+        }
+        totalSectionWeightage = totalSectionWeightage.setScale(0, RoundingMode.HALF_UP);
+        if (totalSectionWeightage.compareTo(BigDecimal.valueOf(100)) != 0) {
+            throw new IllegalArgumentException("Total section weightage in survey " + surveyEntity.getUuid() + " must be 100, found: " + totalSectionWeightage + " after rounding off");
         }
 
         log.info("Survey enrichment completed for survey: {}", surveyEntity.getUuid());
     }
-
+    
     public void enrichAnswerEntity(AnswerRequest answerRequest) {
         RequestInfo requestInfo = answerRequest.getRequestInfo();
         AnswerEntity answerEntity = answerRequest.getAnswerEntity();

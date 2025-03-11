@@ -6,6 +6,8 @@ import lombok.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -25,7 +27,7 @@ public class Section {
 
     @NotNull
     @JsonProperty("weightage")
-    private Integer weightage;
+    private BigDecimal weightage;
 
     @NotNull
     @JsonProperty("questions")

@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.google.gson.Gson;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,47 +69,19 @@ class ScorecardSurveyValidatorTest {
         assertEquals("Survey can only be answered by citizens.", exception.getMessage());
     }
 
-    @Test
-    void testValidateQuestionsAndSections_ValidWeightages() {
-        ScorecardSurveyEntity surveyEntity = getValidSurveyEntity();
-        assertDoesNotThrow(() -> validator.validateQuestionsAndSections(surveyEntity));
-    }
-
-    @Test
-    void testValidateQuestionsAndSections_InvalidSectionWeightage() {
-        ScorecardSurveyEntity surveyEntity = getValidSurveyEntity();
-        surveyEntity.getSections().get(0).setWeightage(90); // Invalid weightage
-
-        CustomException exception = assertThrows(CustomException.class, () -> validator.validateQuestionsAndSections(surveyEntity));
-
-        assertEquals("INVALID_SECTION_WEIGHTAGE", exception.getCode());
-        assertEquals("Total section weightage must be 100", exception.getMessage());
-    }
-
-    @Test
-    void testValidateQuestionsAndSections_InvalidQuestionWeightage() {
-        ScorecardSurveyEntity surveyEntity = getValidSurveyEntity();
-        surveyEntity.getSections().get(0).getQuestions().get(0).setWeightage(60); // Invalid question weightage
-
-        CustomException exception = assertThrows(CustomException.class, () -> validator.validateQuestionsAndSections(surveyEntity));
-
-        assertEquals("INVALID_QUESTION_WEIGHTAGE", exception.getCode());
-        assertEquals("Total question weightage for section section1 must be 100", exception.getMessage());
-    }
-
     /*** Helper Method to Create Valid Survey ***/
     private ScorecardSurveyEntity getValidSurveyEntity() {
         return ScorecardSurveyEntity.builder()
                 .sections(Arrays.asList(
                         Section.builder()
                                 .title("section1")
-                                .weightage(100) // Valid weightage
+                                .weightage(new BigDecimal("100.00")) // Valid weightage
                                 .questions(Arrays.asList(
                                         QuestionWeightage.builder()
-                                                .weightage(50)
+                                                .weightage(new BigDecimal("50.00"))
                                                 .build(),
                                         QuestionWeightage.builder()
-                                                .weightage(50)
+                                                .weightage(new BigDecimal("50.00"))
                                                 .build()))
                                 .build()
                 ))

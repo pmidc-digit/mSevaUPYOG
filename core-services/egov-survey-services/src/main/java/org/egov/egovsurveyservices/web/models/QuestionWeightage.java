@@ -3,6 +3,8 @@ package org.egov.egovsurveyservices.web.models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.math.BigDecimal;
+
 import javax.validation.constraints.NotNull;
 
 @Getter
@@ -26,9 +28,9 @@ public class QuestionWeightage {
 
     @NotNull
     @JsonProperty("weightage")
-    private Integer weightage;
+    private BigDecimal weightage;
     
-    public QuestionWeightage(String questionUuid, Question question, int weightage) {
+    public QuestionWeightage(String questionUuid, Question question, BigDecimal weightage) {
         this.questionUuid = questionUuid;
         this.question = question;
         this.weightage = weightage;

@@ -18,6 +18,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -81,7 +83,6 @@ class ScorecardSurveyServiceTest {
 
 
         doNothing().when(surveyValidator).validateUserType(any());
-        doNothing().when(surveyValidator).validateQuestionsAndSections(any());
         doNothing().when(enrichmentService).enrichScorecardSurveyEntity(any());
         when(surveyRepository.allQuestionsExist(anyList())).thenReturn(true);
 
@@ -115,7 +116,6 @@ class ScorecardSurveyServiceTest {
 
 
         doNothing().when(surveyValidator).validateUserType(any());
-        doNothing().when(surveyValidator).validateQuestionsAndSections(any());
 
         assertThrows(IllegalArgumentException.class, () ->
                 scorecardSurveyService.createSurvey(surveyRequest));
@@ -346,11 +346,11 @@ class ScorecardSurveyServiceTest {
                 .sections(Arrays.asList(
                         Section.builder()
                                 .title("section1")
-                                .weightage(50)
+                                .weightage(new BigDecimal("50.00"))
                                 .questions(Arrays.asList(
                                         QuestionWeightage.builder()
                                                 .qorder(1L)
-                                                .weightage(50)
+                                                .weightage(new BigDecimal("50.00"))
                                                 .question(Question.builder()
                                                         .tenantId("pb.testing")
                                                         .questionStatement("How would you rate the service?")
@@ -360,7 +360,7 @@ class ScorecardSurveyServiceTest {
                                                 .build(),
                                         QuestionWeightage.builder()
                                                 .qorder(2L)
-                                                .weightage(50)
+                                                .weightage(new BigDecimal("50.00"))
                                                 .question(Question.builder()
                                                         .tenantId("pb.testing")
                                                         .questionStatement("How would you rate the delivery?")

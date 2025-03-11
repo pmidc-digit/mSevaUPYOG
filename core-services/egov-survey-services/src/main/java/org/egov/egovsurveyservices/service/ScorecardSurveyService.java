@@ -70,7 +70,6 @@ public class ScorecardSurveyService {
             throw new CustomException("INVALID_DATE_RANGE", "Start date must be before end date");
         }
         surveyValidator.validateUserType(surveyRequest.getRequestInfo());
-        surveyValidator.validateQuestionsAndSections(surveyEntity);
 
         if (surveyEntity.getSurveyTitle() == null || surveyEntity.getSurveyTitle().isEmpty()) {
             throw new IllegalArgumentException("Survey title is empty");
@@ -78,13 +77,11 @@ public class ScorecardSurveyService {
 
         String tenantId = surveyEntity.getTenantId();
 
-        // Collect all question UUIDs
         List<String> questionUuids = surveyEntity.getSections().stream()
                 .flatMap(section -> section.getQuestions().stream())
                 .map(QuestionWeightage::getQuestionUuid)
                 .collect(Collectors.toList());
 
-        // Check if all the questions in the given sections exist
         if (!allQuestionsExist(questionUuids)) {
             throw new IllegalArgumentException("One or more questions do not exist in the database.");
         }

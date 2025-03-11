@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.google.gson.Gson;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -106,38 +107,54 @@ public class EnrichmentServiceTest {
     
     @Test
     void testEnrichScorecardSurveyEntity_InvalidSectionWeightage_ShouldThrowException() {
-        // Arrange
+        Section section1 = new Section("section-001", "Section 1", new BigDecimal("10.00"), new ArrayList<>());
+        Section section2 = new Section("section-002", "Section 2", new BigDecimal("80.00"), new ArrayList<>());
+
         ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
         surveyEntity.setUuid("survey-001");
-        surveyEntity.setSections(Arrays.asList(
-            new Section("section-001", "Section 1", 60, new ArrayList<>()),
-            new Section("section-002", "Section 2", 50, new ArrayList<>()) // Total = 110 (Invalid)
-        ));
+        surveyEntity.setSections(Arrays.asList(section1, section2));
 
         ScorecardSurveyRequest request = new ScorecardSurveyRequest();
         request.setSurveyEntity(surveyEntity);
         request.setRequestInfo(requestInfo);
 
-        // Act & Assert
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, 
             () -> enrichmentService.enrichScorecardSurveyEntity(request));
-        
-        assertEquals("Total section weightage in survey survey-001 is not 100, found: 110", thrown.getMessage());
+
+        assertEquals("Total section weightage in survey survey-001 must be 100, found: 90 after rounding off", thrown.getMessage());
+    }
+    
+    @Test
+    void testEnrichScorecardSurveyEntity_OverlimitInvalidSectionWeightage_ShouldThrowException() {
+        Section section1 = new Section("section-001", "Section 1", new BigDecimal("20.00"), new ArrayList<>());
+        Section section2 = new Section("section-002", "Section 2", new BigDecimal("80.01"), new ArrayList<>());
+
+        ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
+        surveyEntity.setUuid("survey-001");
+        surveyEntity.setSections(Arrays.asList(section1, section2));
+
+        ScorecardSurveyRequest request = new ScorecardSurveyRequest();
+        request.setSurveyEntity(surveyEntity);
+        request.setRequestInfo(requestInfo);
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, 
+            () -> enrichmentService.enrichScorecardSurveyEntity(request));
+
+        assertEquals("Total section weightage in survey survey-001 must be 100, found: 100.01", thrown.getMessage());
     }
 
     @Test
     void testEnrichScorecardSurveyEntity_InvalidQuestionWeightage_ShouldThrowException() {
-        // Arrange
-        Section section = new Section("section-001", "Section 1", 100, Arrays.asList(
-            new QuestionWeightage("q-001", new Question(), 40),
-            new QuestionWeightage("q-002", new Question(), 70) // Total = 110 (Invalid)
-        ));
+        QuestionWeightage q1 = new QuestionWeightage("q-001", new Question(), new BigDecimal("10.00"));
+        QuestionWeightage q2 = new QuestionWeightage("q-002", new Question(), new BigDecimal("70.00"));
+
+        Section section = new Section("section-001", "Section 1", new BigDecimal("100.00"), Arrays.asList(q1, q2));
 
         Question ques = Question.builder().questionStatement("ques").auditDetails(new AuditDetails()).uuid("q-001").build();
-        QuestionResponse questionResponse=QuestionResponse.builder().questions(Collections.singletonList(ques)).build();
-
+        QuestionResponse questionResponse = QuestionResponse.builder().questions(Collections.singletonList(ques)).build();
 
         when(questionService.searchQuestion(Mockito.any(QuestionSearchCriteria.class))).thenReturn(questionResponse);
+
         ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
         surveyEntity.setUuid("survey-001");
         surveyEntity.setSections(Collections.singletonList(section));
@@ -146,10 +163,65 @@ public class EnrichmentServiceTest {
         request.setSurveyEntity(surveyEntity);
         request.setRequestInfo(requestInfo);
 
-        // Act & Assert
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
             () -> enrichmentService.enrichScorecardSurveyEntity(request));
 
         assertTrue(thrown.getMessage().contains("Total question weightage in section"));
     }
+    
+    @Test
+    void testEnrichScorecardSurveyEntity_OverlimitInvalidQuestionWeightage_ShouldThrowException() {
+        QuestionWeightage q1 = new QuestionWeightage("q-001", new Question(), new BigDecimal("30.30"));
+        QuestionWeightage q2 = new QuestionWeightage("q-002", new Question(), new BigDecimal("70.10"));
+
+        Section section = new Section("section-001", "Section 1", new BigDecimal("100.00"), Arrays.asList(q1, q2));
+
+        Question ques = Question.builder().questionStatement("ques").auditDetails(new AuditDetails()).uuid("q-001").build();
+        QuestionResponse questionResponse = QuestionResponse.builder().questions(Collections.singletonList(ques)).build();
+
+        when(questionService.searchQuestion(Mockito.any(QuestionSearchCriteria.class))).thenReturn(questionResponse);
+
+        ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
+        surveyEntity.setUuid("survey-001");
+        surveyEntity.setSections(Collections.singletonList(section));
+
+        ScorecardSurveyRequest request = new ScorecardSurveyRequest();
+        request.setSurveyEntity(surveyEntity);
+        request.setRequestInfo(requestInfo);
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+            () -> enrichmentService.enrichScorecardSurveyEntity(request));
+
+        assertTrue(thrown.getMessage().contains("Total question weightage in section"));
+    }
+    
+    @Test
+    void testEnrichScorecardSurveyEntity_ValidData() {
+    	QuestionWeightage q1 = new QuestionWeightage("q-001", new Question(), new BigDecimal("40.00"));
+        QuestionWeightage q2 = new QuestionWeightage("q-002", new Question(), new BigDecimal("60.00"));
+
+        Section section1 = new Section("section-001", "Section 1", new BigDecimal("50.00"), Arrays.asList(q1, q2));
+        Section section2 = new Section("section-002", "Section 2", new BigDecimal("50.00"), new ArrayList<>());
+
+        Question ques = Question.builder().questionStatement("ques").auditDetails(new AuditDetails()).uuid("q-001").build();
+        QuestionResponse questionResponse = QuestionResponse.builder().questions(Collections.singletonList(ques)).build();
+
+        when(questionService.searchQuestion(Mockito.any(QuestionSearchCriteria.class)))
+            .thenReturn(questionResponse);
+
+        ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
+        surveyEntity.setUuid("survey-001");
+        surveyEntity.setSections(Arrays.asList(section1, section2));
+
+        ScorecardSurveyRequest request = new ScorecardSurveyRequest();
+        request.setSurveyEntity(surveyEntity);
+        request.setRequestInfo(requestInfo);
+
+        assertDoesNotThrow(() -> enrichmentService.enrichScorecardSurveyEntity(request));
+
+        assertEquals("survey-001", q1.getQuestion().getSurveyId());
+        assertEquals(1L, q1.getQorder());
+        assertEquals(2L, q2.getQorder());    
+     }
+    
 }

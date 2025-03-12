@@ -1,12 +1,16 @@
 import { CloseSvg } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useDebounce } from "../../../../hooks/useDebounce";
+import { v4 as uuidv4 } from 'uuid';
 
 const MultipleChoice = ({ t, options = checkboxlist, updateOption, addOption, removeOption,createNewSurvey,isPartiallyEnabled,formDisabled,inputRef,maxLength,titleHover,isInputDisabled }) => {
+  console.log("options", options)
   return (
     <div className="options_checkboxes">
       {options.map((title, index) => (
-        <RadioButtonOption key={index} index={index} title={title} updateOption={updateOption} removeOption={removeOption} inputRef={inputRef} maxLength={maxLength} titleHover={titleHover} isPartiallyEnabled={isPartiallyEnabled} isInputDisabled={isInputDisabled} formDisabled={formDisabled}/>
+         <div key={title}>
+         <RadioButtonOption index={index} title={title} updateOption={updateOption} removeOption={removeOption} inputRef={inputRef} maxLength={maxLength} titleHover={titleHover} isPartiallyEnabled={isPartiallyEnabled} isInputDisabled={isInputDisabled} formDisabled={formDisabled}/>
+        </div>
       ))}
       <div>
         <button className="unstyled-button link" type="button" disabled={(!createNewSurvey && formDisabled) || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)} onClick={() => addOption()}>

@@ -1,23 +1,14 @@
 import React, { useReducer } from "react";
 import QuestionForm from "./QuestionForm";
 
-const QuestionFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPartiallyEnabled, addOption, formDisabled, controlSurveyForm, formState }) => {
-  const defaultFormsConfig = {
-    category:"",
-    question: "",
-    answerType: "Short Answer",
-    options: [],
-    required: false,
-    uuid: "",
-    qorder: null,
-  };
-  const initialSurveyFormState = [defaultFormsConfig];
+const QuestionFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, isPartiallyEnabled, addOption, formDisabled, controlSurveyForm, formState, defaultQuestionValues }) => {
+  const initialSurveyFormState = [defaultQuestionValues];
 
   const surveyFormReducer = (state, { type, payload }) => {
-    console.log("Form state:", state);
+    console.log("Form state:", state, "\n Type: ", type, "\n Payload: ",payload);
     switch (type) {
       case "addNewForm":
-        const newSurveyQues = [...state, defaultFormsConfig];
+        const newSurveyQues = [...state, defaultQuestionValues];
         payload.setSurveyConfig("questions", newSurveyQues);
         return newSurveyQues;
       case "updateForm":
@@ -40,6 +31,7 @@ const QuestionFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, is
     dispatch({ type, payload: { ...payload, setSurveyConfig } });
   };
 
+  console.log("Form State 2:", formState);
   const renderPreviewForms = () => {
     return surveyState.length
       ? surveyState.map((config, index) => {
@@ -47,7 +39,6 @@ const QuestionFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, is
             <QuestionForm
               key={index}
               {...(config.formConfig ? config?.formConfig : config)}
-              //  type={config?.formConfig?.type}
               addOption={addOption}
               t={t}
               index={index}
@@ -58,6 +49,7 @@ const QuestionFormsMaker = ({ t, formsConfig, setSurveyConfig, disableInputs, is
               controlSurveyForm={controlSurveyForm}
               mainFormState={formState}
               noOfQuestions={surveyState?.length} 
+              defaultQuestionValues={defaultQuestionValues}
             />
           );
         })

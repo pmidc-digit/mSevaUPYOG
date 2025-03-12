@@ -18,11 +18,31 @@ const CreateSurveyQuestions = () => {
   const [isLoading, setIsLoading] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
-  const { register: registerRef, control: controlSurveyForm, handleSubmit, setValue, getValues, reset, formState, clearErrors, watch,...methods } = useForm(
-    {
-      defaultValues: { questions: {} },
-    }
-  );
+
+  const defaultQuestionValues = {
+    category: null,
+    questionStatement: "",
+    type: { title: t("MULTIPLE_ANSWER_TYPE"), i18Key: "MULTIPLE_ANSWER_TYPE", value: "MULTIPLE_ANSWER_TYPE" },
+    options: [`${t("CMN_OPTION")} 1`],
+    required: false,
+    uuid: "",
+    qorder: null,
+  };
+
+  const {
+    register: registerRef,
+    control: controlSurveyForm,
+    handleSubmit,
+    setValue,
+    getValues,
+    reset,
+    formState,
+    clearErrors,
+    watch,
+    ...methods
+  } = useForm({
+    defaultValues: { questions: [defaultQuestionValues] },
+  });
 
   function parsePayloadData(data) {
     const payload = [];
@@ -76,7 +96,7 @@ const CreateSurveyQuestions = () => {
     setShowToast(null);
   };
 
-  // Watch all form values
+  //Watch all form values
   // const formValues = watch();
 
   // useEffect(() => {
@@ -100,7 +120,14 @@ const CreateSurveyQuestions = () => {
       >
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card>
-            <QuestionFormsMaker t={t} setSurveyConfig={setValue} addOption={true} controlSurveyForm={controlSurveyForm} formState={formState} />
+            <QuestionFormsMaker
+              t={t}
+              setSurveyConfig={setValue}
+              addOption={true}
+              controlSurveyForm={controlSurveyForm}
+              formState={formState}
+              defaultQuestionValues={defaultQuestionValues}
+            />
           </Card>
           <ActionBar>
             <SubmitBar label={t(CREATE_QUESTIONS_BTN_LABEL)} submit="submit" />

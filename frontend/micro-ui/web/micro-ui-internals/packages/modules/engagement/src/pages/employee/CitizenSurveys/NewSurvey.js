@@ -19,6 +19,10 @@ const NewSurveys = ({ readOnly }) => {
     tenantIds: userUlbs,
   };
 
+  const stylesForForm = {
+    marginLeft:'-20px',
+  }
+
   return (
     <div style={stylesForForm}>
       <CreateNewSurvey t={t} initialFormValues={defaultValues} readOnly={readOnly} />

@@ -95,8 +95,9 @@ public class ScorecardSurveyQueryBuilder {
 
         if (criteria.getTenantId() != null) {
             query.append(whereAdded ? " AND " : " WHERE ");
-            query.append("survey.tenantid = ? ");
+            query.append("( survey.tenantid = ? or survey.tenantid = 'pb.punjab' )");
             preparedStmtList.add(criteria.getTenantId());
+//            preparedStmtList.add("pb.punjab");
             whereAdded = true;
         }
 
@@ -201,6 +202,7 @@ public class ScorecardSurveyQueryBuilder {
                 "answer.sectionuuid, " +
                 "answer.answer, " +
                 "answer.citizenid, " +
+                "answer.city, " +
                 "answer.comments, " +
                 "answer.createdby , " +
                 "answer.lastmodifiedby, " +
@@ -211,5 +213,10 @@ public class ScorecardSurveyQueryBuilder {
                 "LEFT JOIN public.eg_ss_question AS question " +
                 "ON answer.questionuuid = question.uuid " +
                 "WHERE answer.surveyuuid = ? AND answer.citizenid = ?";
+    }
+
+    public String fetchTenantIdBasedOnSurveyId() {
+        return "SELECT tenantid FROM eg_ss_survey_entity WHERE uuid = ?";
+
     }
 }

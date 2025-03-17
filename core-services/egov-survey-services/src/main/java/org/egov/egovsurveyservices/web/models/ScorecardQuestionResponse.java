@@ -18,6 +18,9 @@ public class ScorecardQuestionResponse {
     @JsonProperty("questionUuid")
     private String questionUuid;
 
+    @JsonProperty("city")
+    private String city;
+
     @JsonProperty("questionStatement")
     private String questionStatement;
 

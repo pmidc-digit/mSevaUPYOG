@@ -101,4 +101,10 @@ public class ScorecardSurveyValidator {
             throw new CustomException("EG_SY_MANDATORY_QUES_NOT_ANSWERED_ERR", "A mandatory question was not answered.");
         }
     }
+
+    public void validateCityIsProvided(String city) {
+        if(StringUtils.isBlank(city)){
+            throw new CustomException("EG_SS_CITY_MISSING","provide a valid city");
+        }
+    }
 }

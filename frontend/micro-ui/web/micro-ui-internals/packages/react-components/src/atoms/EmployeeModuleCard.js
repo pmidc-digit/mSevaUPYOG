@@ -54,7 +54,7 @@ const EmployeeModuleCard = ({ Icon, moduleName, kpis = [], links = [], isCitizen
   return (
     <div className={parentClassName} style={className ? {} : styles}>
       <div className="employeeCustomCard" style={{ width: "100%", height: "85%", position: "relative" }}>
-        <span className="text-employee-card">{moduleName}</span>
+        <span className="text-employee-card">{moduleName} fydydydydyd</span>
         <span className="logo-removeBorderRadiusLogo" style={{ position: "absolute", right: "10%", top: "10%" }}>{Icon}</span>
         <div className="employee-card-banner">
           <div className="body" style={{ margin: "0px", padding: "0px" }}>

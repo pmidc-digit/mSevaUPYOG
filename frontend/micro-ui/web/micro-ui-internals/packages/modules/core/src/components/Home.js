@@ -13,6 +13,7 @@ import {
   WSICon,
   PTRIcon,
   Table,
+  ArrowRightInbox,
 } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { Link } from "react-router-dom";
@@ -21,6 +22,8 @@ import EmployeeQuickServicesCard from "../../../../react-components/src/atoms/Em
 /* 
 Feature :: Citizen All service screen cards
 */
+
+
 
 export const processLinkData = (newData, code, t) => {
   const obj = newData?.[`${code}`];
@@ -130,12 +133,12 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
                     Info={
                       code === "OBPS"
                         ? () => (
-                            <CitizenInfoLabel
-                              style={{ margin: "0px", padding: "10px" }}
-                              info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-                              text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
-                            />
-                          )
+                          <CitizenInfoLabel
+                            style={{ margin: "0px", padding: "10px" }}
+                            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                            text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                          />
+                        )
                         : null
                     }
                     isInfo={code === "OBPS" ? true : false}
@@ -158,14 +161,15 @@ const EmployeeHome = ({ modules }) => {
     { Header: "Column2", accessor: "column2" },
     { Header: "Column3", accessor: "column3" },
   ];
-
+  const userName = Digit.UserService.getUser();
+  //console.log("User Info", userName)
   const apiData = {
     welcomeCard: {
-      background: "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 100%)",
+      background: "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 100%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
       icon: "icon1.png",
-      heading: "Welcome Ajay",
+      heading: "Welcome "+userName.info.name,
       content:
-        "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod",
+        "",
     },
     cards: [
       {
@@ -199,28 +203,43 @@ const EmployeeHome = ({ modules }) => {
   console.log("Modules: ", modules);
   return (
     <div className="employee-app-container employee-dashboard-container">
-      <div className="employee-dashboard-welcome-card" style={{ background: apiData.welcomeCard.background }}>
+      <div className="employee-dashboard-welcome-card" style={{ 
+          background: "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 80%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
+          backgroundSize: "cover",
+          backgroundPosition:"right",
+          backgroundRepeat :"no-repeat"
+
+       }}>
         <div className="employee-dashboard-welcome-card-entire-content">
           <div className="employee-dashboard-welcome-card-heading">{apiData.welcomeCard.heading}</div>
           <p className="employee-dashboard-welcome-card-content">{apiData.welcomeCard.content}</p>
+          <div style={{
+            width: "134px",
+            height: "134px",
+            background: "#D6D6D620",
+            borderRadius: "0% 100% 0% 0%",
+            position:"absolute",
+            left:"1px",
+            top:"70px",
+          }}></div>
         </div>
       </div>
 
-      <div className="employee-dashboard-card-grid">
+      {/* <div className="employee-dashboard-card-grid">
         {apiData.cards.map((card, index) => (
           <Card key={index} card={card} />
         ))}
-      </div>
+      </div> */}
 
       <div className="employee-dashboard-table-and-services">
-        <div className="employee-dashboard-table-container">
-          <div className="employee-dashboard-table-header">
-            <div className="employee-dashboard-table-title">Table</div>
+       {/* <div className="employee-dashboard-table-container"> */}
+        {/*  <div className="employee-dashboard-table-header">
+             <div className="employee-dashboard-table-title">Table</div>
             <div className="employee-dashboard-view-all-link">
               <Link>View all &gt;</Link>
-            </div>
-          </div>
-          <div className="employee-dashboard-table-content">
+            </div> 
+          </div> */}
+          {/* <div className="employee-dashboard-table-content">
             <Table
               t={t}
               data={[]}
@@ -233,25 +252,26 @@ const EmployeeHome = ({ modules }) => {
               })}
               manualPagination={false}
             />
-          </div>
-        </div>
+          </div> */}
+      {/*  </div> */}
 
         <div className="employee-dashboard-quick-services-container">
           <div className="employee-dashboard-quick-services-header">
             <div className="employee-dashboard-quick-services-title">Quick Services</div>
-            <div className="employee-dashboard-view-all-link">
+            {/* <div className="employee-dashboard-view-all-link">
               <Link to={{ pathname: "/digit-ui/employee/services", state: { modules: modules } }}>View all &gt;</Link>
-            </div>
+            </div> */}
           </div>
           <div className="employee-dashboard-module-card-wrapper">
-            {/* {modules.map((moduleData, index) => {
+            {modules.map((moduleData, index) => {
               //const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
               return <EmployeeQuickServicesCard moduleData={moduleData} />;
-            })} */}
-            {modules.map(({ code }, index) => {
+            })}
+            {/*modules.map(({ code }, index) => {
+              console.log("dsjdgsh", code)
               const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
               return <Card key={index} />;
-            })}
+            }) */}
           </div>
         </div>
       </div>

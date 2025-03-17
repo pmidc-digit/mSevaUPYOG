@@ -17,6 +17,9 @@ public class Answer {
     @JsonProperty("answerUuid")
     private String answerUuid;
 
+    @JsonProperty("city")
+    private String city;
+
     @JsonProperty("surveyUuid")
     private String surveyUuid;
 

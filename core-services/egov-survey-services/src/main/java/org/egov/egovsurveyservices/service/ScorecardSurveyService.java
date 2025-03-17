@@ -154,7 +154,10 @@ public class ScorecardSurveyService {
 
     public ScorecardAnswerResponse submitResponse(AnswerRequest answerRequest) {
         AnswerEntity answerEntity = answerRequest.getAnswerEntity();
-        RequestInfo requestInfo = answerRequest.getRequestInfo();
+        String tenantIdBasedOnSurveyId = fetchTenantIdBasedOnSurveyId(answerEntity.getSurveyId());
+        if(StringUtils.equalsIgnoreCase(tenantIdBasedOnSurveyId,"pb.punjab")){
+            surveyValidator.validateCityIsProvided(answerEntity.getCity());
+        }
         surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);
         String uuid = answerRequest.getUser().getUuid();
 //        surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, uuid);
@@ -184,6 +187,7 @@ public class ScorecardSurveyService {
                                 answer.setCitizenId(uuid);
 
                                 return ScorecardQuestionResponse.builder()
+                                        .city(answerEntity.getCity())
                                         .questionUuid(answer.getQuestionUuid())
                                         .questionStatement(questionStatement)
                                         .answerUuid(answer.getAnswerUuid())
@@ -231,6 +235,10 @@ public class ScorecardSurveyService {
        return surveyRepository.getExistingAnswerUuid(answerUuid);
     }
 
+    public String fetchTenantIdBasedOnSurveyId(String surveyId) {
+        return surveyRepository.fetchTenantIdBasedOnSurveyId(surveyId);
+    }
+
     public ScorecardAnswerResponse getAnswers(AnswerFetchCriteria criteria) {
         if(criteria.getSurveyUuid()==null || criteria.getCitizenId()==null){
             throw new CustomException("EG_SS_SURVEY_UUID_CITIZEN_UUID_ERR","surveyUuid and citizenUuid cannot be null");
@@ -245,6 +253,7 @@ public class ScorecardSurveyService {
         for (Answer answer : answers) {
             ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
                     .questionUuid(answer.getQuestionUuid())
+                    .city(answer.getCity())
                     .questionStatement(answer.getQuestionStatement())
                     .answer(answer.getAnswer())
                     .answerUuid(answer.getAnswerUuid())

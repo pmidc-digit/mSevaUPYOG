@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-
+import {quickServiceModules} from "../../../constants/quickServiceData"
 const EmployeeQuickServicesCard = ({ moduleData }) => {
   const { t } = useTranslation();
   // function getModuleCardData(){
@@ -24,44 +24,59 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
     </svg>
   );
 
-  const updatedModuleData = {
-    ...moduleData,
-    moduleDataForDashboard: {
-      Icon: <Icon />,
-      moduleName: t("ES_PGR_HEADER_COMPLAINT"),
-      kpis: [
-        {
-          label: t("TOTAL_PGR"),
-          link: `/digit-ui/employee/pgr/inbox`,
-        },
-        {
-          label: t("TOTAL_NEARING_SLA"),
-          link: `/digit-ui/employee/pgr/inbox`,
-        },
-      ],
-      links: [
-        {
-          label: t("ES_PGR_INBOX"),
-          link: `/digit-ui/employee/pgr/inbox`,
-        },
-        //...propsForCSR,
-      ],
-    },
-  };
+   const updatedModuleData = {
+     ...moduleData,
+     moduleDataForDashboard: {
+       Icon: <Icon />,
+       moduleName: moduleData.module,//t("ES_PGR_HEADER_COMPLAINT"),
+       kpis: [
+         {
+           label: t("TOTAL_PGR"),
+           link: `/digit-ui/employee/pgr/inbox`,
+         },
+         {
+           label: t("TOTAL_NEARING_SLA"),
+           link: `/digit-ui/employee/pgr/inbox`,
+         },
+       ],
+       links: [
+         {
+           label: t("ES_PGR_INBOX"),
+           link: `/digit-ui/employee/pgr/inbox`,
+         },
+         //...propsForCSR,
+       ],
+     },
+   };
 
   const { moduleDataForDashboard } = updatedModuleData;
 
   return (
-    <div className="employee-dashboard-quick-service-card employee-dashboard-quick-service-card-content">
+    <div className="employee-dashboard-quick-service-card employee-dashboard-quick-service-card-content" style={{
+          display :"flex", 
+          padding : "0px",
+          borderRadius : "0px 8px 8px 0px"
+        }}>
+
       <div
-        className="employee-dashboard-quick-service-card-module-icon"
+        className="" style={{
+            width : "20%",
+            background : "#FF0000",
+            display :"flex",
+            alignItems : "center",
+            justifyContent : "center"
+
+        }}
       >
         <span className="icon-banner-employee" style={{ borderRadius: "5px", boxShadow: "5px 5px 5px 0px #e3e4e3" }}>
-          {moduleDataForDashboard?.Icon}
+          {moduleDataForDashboard?.Icon
+          }
         </span>
       </div>
 
-      <div className="employee-dashboard-quick-service-card-module-name">{moduleDataForDashboard?.moduleName ?? ""}</div>
+      <div className="employee-dashboard-quick-service-card-module-name">{ 
+          moduleDataForDashboard.moduleName 
+       }</div>
     </div>
   );
 };

@@ -141,11 +141,12 @@ const swach = {
                         context.intention == dialog.INTENTION_MORE,
                     },
                     {
-                      target: "#location",
+                      target: "#swachLocation",
                       cond: (context) =>
                         context.intention != dialog.INTENTION_UNKOWN,
                       actions: assign((context, event) => {
-                        context.slots.swach["complaint"] = context.intention;
+                        return (context.slots.swach["complaint"] =
+                          context.intention);
                       }),
                     },
                     {
@@ -237,11 +238,11 @@ const swach = {
                       }),
                       always: [
                         {
-                          target: "#other",
+                          target: "#swachOther",
                           cond: (context) => context.intention == "Others",
                           actions: assign((context, event) => {
-                            context.slots.swach["complaint"] =
-                              context.intention;
+                            return (context.slots.swach["complaint"] =
+                              context.intention);
                           }),
                         },
                         {
@@ -249,8 +250,8 @@ const swach = {
                           cond: (context) =>
                             context.intention != dialog.INTENTION_UNKOWN,
                           actions: assign((context, event) => {
-                            context.slots.swach["complaint"] =
-                              context.intention;
+                            return (context.slots.swach["complaint"] =
+                              context.intention);
                           }),
                         },
                         {
@@ -364,12 +365,12 @@ const swach = {
                             context.intention == dialog.INTENTION_GOBACK,
                         },
                         {
-                          target: "#other",
+                          target: "#swachOther",
                           cond: (context) =>
                             context.intention != dialog.INTENTION_UNKOWN,
                           actions: assign((context, event) => {
-                            context.slots.swach["complaint"] =
-                              context.intention;
+                            return (context.slots.swach["complaint"] =
+                              context.intention);
                           }),
                         },
                         {
@@ -396,8 +397,8 @@ const swach = {
             }, // swachComplaintType2Step
           },
         },
-        location: {
-          id: "location",
+        swachLocation: {
+          id: "swachLocation",
           initial: "swachGeoLocationSharingInfo",
           states: {
             swachGeoLocationSharingInfo: {
@@ -992,7 +993,7 @@ const swach = {
                 },
                 process: {
                   onEntry: assign((context, event) => {
-                    context.intention = dialog.get_intention(
+                    return context.intention = dialog.get_intention(
                       context.grammer,
                       event
                     );
@@ -1032,9 +1033,9 @@ const swach = {
             },
           },
         },
-        other: {
+        swachOther: {
           // get other info
-          id: "other",
+          id: "swachOther",
           initial: "imageUpload",
           states: {
             imageUpload: {
@@ -1077,7 +1078,7 @@ const swach = {
                       },
                     },
                     {
-                      target: "#location",
+                      target: "#swachLocation",
                       cond: (context, event) => {
                         return context.message.isValid;
                       },
@@ -1103,7 +1104,6 @@ const swach = {
           invoke: {
             id: "persistSwachComplaint",
             src: (context) => {
-              // console.log("Persist Context -----> ", context);
               return pgrService.persistSwachComplaint(
                 context.user,
                 context.slots.swach,

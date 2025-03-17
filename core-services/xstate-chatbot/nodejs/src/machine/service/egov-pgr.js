@@ -660,12 +660,8 @@ class PGRService {
       body: JSON.stringify(requestBody),
     };
 
-    // console.log("Track Request ---> ", requestBody);
-    // console.log("Track URL ---> ", url);
-
     let response = await fetch(url, options);
 
-    // console.log("Response ---> ", response);
     let results;
     if (response.status === 200) {
       let responseBody = await response.json();

@@ -122,11 +122,11 @@ const envVariables = {
       process.env.EGOV_SERVICES_HOST || "https://mseva-uat.lgpunjab.gov.in/",
     externalHost:
       process.env.EXTERNAL_HOST || "https://mseva-uat.lgpunjab.gov.in/",
-    //searcherHost: process.env.EGOV_SEARCHER_HOST || "https://mseva.lgpunjab.gov.in/",
-    searcherHost: process.env.EGOV_SEARCHER_HOST || "http://localhost:8081/",
+    searcherHost: process.env.EGOV_SEARCHER_HOST || "https://mseva-uat.lgpunjab.gov.in/",
+    // searcherHost: process.env.EGOV_SEARCHER_HOST || "http://localhost:8081/",
 
-    userServiceHost: process.env.USER_SERVICE_HOST || "http://localhost:8082/",
-    //userServiceHost: process.env.USER_SERVICE_HOST || 'https://mseva-uat.lgpunjab.gov.in/',
+    // userServiceHost: process.env.USER_SERVICE_HOST || "http://localhost:8082/",
+    userServiceHost: process.env.USER_SERVICE_HOST || 'https://mseva-uat.lgpunjab.gov.in/',
     userServiceOAuthPath:
       process.env.USER_SERVICE_OAUTH_PATH || "user/oauth/token",
     userServiceCreateCitizenPath:
@@ -136,8 +136,9 @@ const envVariables = {
     userServiceCitizenDetailsPath:
       process.env.USER_SERVICE_CITIZEN_DETAILS_PATH || "user/_details",
 
-    egovlocalizationhost:
-      process.env.LOCALISATION_SERVICE_HOST || "http://localhost:8583/",
+    // egovlocalizationhost:
+    //   process.env.LOCALISATION_SERVICE_HOST || "http://localhost:8583/",
+    egovlocalizationhost : process.env.LOCALISATION_SERVICE_HOST || "http://egov-localization:8080/",
     mdmsSearchPath:
       process.env.MDMS_SEARCH_PATH || "egov-mdms-service/v1/_search",
     localisationServiceSearchPath:

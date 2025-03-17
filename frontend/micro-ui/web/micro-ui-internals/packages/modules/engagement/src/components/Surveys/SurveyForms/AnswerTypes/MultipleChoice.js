@@ -1,19 +1,47 @@
 import { CloseSvg } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDebounce } from "../../../../hooks/useDebounce";
-import { v4 as uuidv4 } from 'uuid';
 
-const MultipleChoice = ({ t, options = checkboxlist, updateOption, addOption, removeOption,createNewSurvey,isPartiallyEnabled,formDisabled,inputRef,maxLength,titleHover,isInputDisabled }) => {
-  console.log("options", options)
+const MultipleChoice = ({
+  t,
+  options=[],
+  updateOption,
+  addOption,
+  removeOption,
+  createNewSurvey,
+  isPartiallyEnabled,
+  formDisabled,
+  inputRef,
+  maxLength,
+  titleHover,
+  isInputDisabled,
+}) => {
   return (
     <div className="options_checkboxes">
-      {options.map((title, index) => (
-         <div key={title}>
-         <RadioButtonOption index={index} title={title} updateOption={updateOption} removeOption={removeOption} inputRef={inputRef} maxLength={maxLength} titleHover={titleHover} isPartiallyEnabled={isPartiallyEnabled} isInputDisabled={isInputDisabled} formDisabled={formDisabled}/>
+      {options.map((option) => (
+        <div key={option.id}>
+          <RadioButtonOption
+            index={option.id}
+            title={option.title}
+            updateOption={updateOption}
+            removeOption={removeOption}
+            inputRef={inputRef}
+            maxLength={maxLength}
+            titleHover={titleHover}
+            isPartiallyEnabled={isPartiallyEnabled}
+            isInputDisabled={isInputDisabled}
+            formDisabled={formDisabled}
+            optionsLength={options.length}
+          />
         </div>
       ))}
       <div>
-        <button className="unstyled-button link" type="button" disabled={(!createNewSurvey && formDisabled) || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)} onClick={() => addOption()}>
+        <button
+          className="unstyled-button link"
+          type="button"
+          disabled={(!createNewSurvey && formDisabled) || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)}
+          onClick={() => addOption()}
+        >
           {t("CS_COMMON_ADD_OPTION")}
         </button>
       </div>
@@ -23,17 +51,29 @@ const MultipleChoice = ({ t, options = checkboxlist, updateOption, addOption, re
 
 export default MultipleChoice;
 
-const RadioButtonOption = ({ index, title, updateOption, removeOption, inputRef, maxLength, titleHover,isPartiallyEnabled, isInputDisabled, formDisabled }) => {
+const RadioButtonOption = ({
+  index,
+  title,
+  updateOption,
+  removeOption,
+  inputRef,
+  maxLength,
+  titleHover,
+  isPartiallyEnabled,
+  isInputDisabled,
+  formDisabled,
+  optionsLength
+}) => {
   const [optionTitle, setOptionTitle] = useState(title);
   const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
-      updateOption({ value: optionTitle, id: index });
+    updateOption({ value: optionTitle, id: index });
   }, [optionTitle]);
 
   return (
     <div className="optionradiobtnwrapper">
-      <input type="radio" className="customradiobutton" disabled={isInputDisabled}/>
+      <input type="radio" className="customradiobutton" disabled={isInputDisabled} />
       <input
         type="text"
         ref={inputRef}
@@ -46,9 +86,11 @@ const RadioButtonOption = ({ index, title, updateOption, removeOption, inputRef,
         title={titleHover}
         disabled={isPartiallyEnabled ? !isPartiallyEnabled : formDisabled}
       />
+       {optionsLength > 1 && (
       <div className="pointer" onClick={() => removeOption(index)}>
         <CloseSvg />
       </div>
+       )}
     </div>
   );
 };

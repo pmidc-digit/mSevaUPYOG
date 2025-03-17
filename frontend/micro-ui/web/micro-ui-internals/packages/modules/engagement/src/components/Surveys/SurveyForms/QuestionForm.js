@@ -27,6 +27,7 @@ const QuestionForm = ({
   noOfQuestions,
   defaultQuestionValues,
 }) => {
+  //console.log("3) Default Values:", defaultQuestionValues);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // Options for the answer type dropdown
   const { data: AnswerTypeData = {}, isLoading } = Digit.Hooks.engagement.useMDMS(tenantId, "common-masters", "questionType") || {};
@@ -77,57 +78,30 @@ const QuestionForm = ({
 
   // const { register, formState } = useFormContext();
   const { errors } = mainFormState;
-  console.log("mainFormState", mainFormState, "\n index", index, "\n errors:", errors, "\n message:", errors[`questions[${index}]`]);
+  //console.log("mainFormState", mainFormState, "\n index", index, "\n errors:", errors, "\n message:", errors[`questions[${index}]`]);
 
-  // Function to add a new option
   const handleAddOption = () => {
-    // setSurveyQuestionConfig((prevState) => {
-    //   const updatedState = { ...prevState };
-    //   console.log("in handle add options");
-    //   updatedState.options.push(`${t("CMN_OPTION")} ${updatedState.options.length + 1}`);
-    //   return updatedState;
-    // });
-    setSurveyQuestionConfig((prevState) => ({
-      ...prevState,
-      options: [...prevState.options, `${t("CMN_OPTION")} ${prevState.options.length + 1}`],
-    }));
+    const newOptions = [...surveyQuestionConfig.options, { id: Date.now(), title: `${t("CMN_OPTION")} ${surveyQuestionConfig.options.length + 1}` }];
+    setSurveyQuestionConfig((prevState) => ({ ...prevState, options: newOptions }));
+    return newOptions;
   };
 
-  // Function to update an existing option
   const handleUpdateOption = ({ value, id }) => {
-    setSurveyQuestionConfig((prevState) => {
-      const updatedState = { ...prevState };
-      updatedState.options.splice(id, 1, value);
-      return updatedState;
-    });
+    const updatedOptions = surveyQuestionConfig.options.map((option) => (option.id === id ? { ...option, title: value } : option));
+    setSurveyQuestionConfig((prevState) => ({ ...prevState, options: updatedOptions }));
+    return updatedOptions;
   };
 
-  // Function to remove an option
   const handleRemoveOption = (id) => {
-    console.log("handleRemoveOption, id: ", id);
-    if (surveyQuestionConfig.options.length === 1 || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)) return;
-    // setSurveyQuestionConfig((prevState) => {
-    //   const updatedState = { ...prevState };
-    //   updatedState.options.splice(id, 1);
-    //   console.log("handleRemoveOption, updatedState: ", updatedState);
-    //   return updatedState;
-    // });
-    // setSurveyQuestionConfig((prevState) => {
-    //   const updatedOptions = prevState.options.filter((_, index) => index !== id);
-    //   const updatedState = { ...prevState, options: updatedOptions };
-    //   console.log("handleRemoveOption, updatedState: ", updatedState);
-    //   //setValue("options", updatedOptions); // Set the value programmatically
-    //   return updatedState;
-    // });
-    setSurveyQuestionConfig((prevState) => ({
-      ...prevState,
-      options: [...prevState.options.filter((_, index) => index !== id)]
-    }));
+    if (surveyQuestionConfig.options.length === 1 || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)) return surveyQuestionConfig.options;
+    const updatedOptions = surveyQuestionConfig.options.filter((option) => option.id !== id);
+    setSurveyQuestionConfig((prevState) => ({ ...prevState, options: updatedOptions }));
+    return updatedOptions;
   };
 
   // Dispatch the updated survey question configuration
   useEffect(() => {
-    console.log("surveyQuestionConfig",surveyQuestionConfig);
+    //console.log("surveyQuestionConfig", surveyQuestionConfig);
     dispatch({ type: "updateForm", payload: { index: index, formConfig: surveyQuestionConfig } });
   }, [surveyQuestionConfig]);
 
@@ -154,51 +128,79 @@ const QuestionForm = ({
       //   return <TextInput type="time" textInputStyle={{ width: "202px" }} disable={isInputDisabled} />;
       case "MULTIPLE_ANSWER_TYPE":
         return (
-          <Controller
-            //rules={{ required: true }}
-            defaultValue={[]}
-            //name={`OPTIONS_${index}`}
-            name={`questions[${index}].options`}
-            control={controlSurveyForm}
-            render={(props) => (
-              <MultipleChoice
-                maxLength={60}
-                titleHover={t("MAX_LENGTH_60")}
-                t={t}
-                addOption={handleAddOption}
-                updateOption={handleUpdateOption}
-                removeOption={handleRemoveOption}
-                options={surveyQuestionConfig?.options}
-                createNewSurvey={addOption}
-                isInputDisabled={isInputDisabled}
-                isPartiallyEnabled={isPartiallyEnabled}
-                formDisabled={formDisabled}
-              />
-            )}
-          />
+          <div>
+            {errors.questions?.[index]?.options && <CardLabelError>{errors.questions[index].options.message}</CardLabelError>}
+            <Controller
+              rules={{ validate: (value) => value.every((option) => option.title.trim() !== "") || "Option cannot be empty" }}
+              defaultValue={defaultQuestionValues.options}
+              //name={`OPTIONS_${index}`}
+              name={`questions[${index}].options`}
+              control={controlSurveyForm}
+              render={(props) => (
+                <MultipleChoice
+                  // addOption={handleAddOption}
+                  // updateOption={handleUpdateOption}
+                  // removeOption={handleRemoveOption}
+                  updateOption={(option) => {
+                    const updatedOptions = handleUpdateOption(option);
+                    props.onChange(updatedOptions);
+                  }}
+                  addOption={() => {
+                    const newOptions = handleAddOption();
+                    props.onChange(newOptions);
+                  }}
+                  removeOption={(id) => {
+                    const updatedOptions = handleRemoveOption(id);
+                    props.onChange(updatedOptions);
+                  }}
+                  options={surveyQuestionConfig?.options}
+                  createNewSurvey={addOption} //Check this
+                  isInputDisabled={isInputDisabled}
+                  isPartiallyEnabled={isPartiallyEnabled}
+                  formDisabled={formDisabled}
+                  maxLength={60}
+                  titleHover={t("MAX_LENGTH_60")}
+                  t={t}
+                />
+              )}
+            />
+          </div>
         );
       case "CHECKBOX_ANSWER_TYPE":
         return (
           <div>
+            {errors.questions?.[index]?.options && <CardLabelError>{errors.questions[index].options.message}</CardLabelError>}
             <Controller
-              //rules={{ required: true }}
-              defaultValue={[]}
+              rules={{ validate: (value) => value.every((option) => option.title.trim() !== "") || "Option cannot be empty" }}
+              defaultValue={defaultQuestionValues.options}
               name={`questions[${index}].options`}
               control={controlSurveyForm}
               render={(props) => (
                 <Checkboxes
-                  t={t}
-                  addOption={handleAddOption}
-                  updateOption={handleUpdateOption}
-                  removeOption={handleRemoveOption}
+                  // addOption={handleAddOption}
+                  // updateOption={handleUpdateOption}
+                  // removeOption={handleRemoveOption}
+                  updateOption={(option) => {
+                    const updatedOptions = handleUpdateOption(option);
+                    props.onChange(updatedOptions);
+                  }}
+                  addOption={() => {
+                    const newOptions = handleAddOption();
+                    props.onChange(newOptions);
+                  }}
+                  removeOption={(id) => {
+                    const updatedOptions = handleRemoveOption(id);
+                    props.onChange(updatedOptions);
+                  }}
                   options={surveyQuestionConfig?.options}
                   isInputDisabled={isInputDisabled}
                   isPartiallyEnabled={isPartiallyEnabled}
-                  createNewSurvey={addOption}
+                  createNewSurvey={addOption} //Check this
                   formDisabled={formDisabled}
-                  maxLength={60}
                   titleHover={t("MAX_LENGTH_60")}
                   labelstyle={{ marginLeft: "-20px" }}
+                  maxLength={60}
+                  t={t}
                 />
               )}
             />
@@ -248,16 +250,10 @@ const QuestionForm = ({
       <span className="newSurveyForm_mainsection">
         <Controller
           rules={{ required: t("REQUIRED_FIELD") }} // t("EVENTS_CATEGORY_ERROR_REQUIRED")
-          defaultValue={null}
-          //name={`CATEGORY_SURVEY_${index}`}
-          //name="category"
+          defaultValue={defaultQuestionValues.category}
           name={`questions[${index}].category`}
           control={controlSurveyForm}
           render={(props) => (
-            // <span className="surveyformfield">
-            //   <label>
-            //     {t("Category")} <span style={{ color: "red" }}>*</span>
-            //   </label>
             <Dropdown
               t={t}
               option={categoryOptions}
@@ -271,11 +267,9 @@ const QuestionForm = ({
               }}
               disable={disableInputs}
             />
-            // </span>
           )}
         />
         {errors.questions?.[index]?.category && <CardLabelError>{errors.questions[index].category.message}</CardLabelError>}
-        {/* {errors[`CATEGORY_SURVEY_${index}`] && <CardLabelError>{errors[`CATEGORY_SURVEY_${index}`].message}</CardLabelError>} */}
 
         <Controller
           rules={{
@@ -289,14 +283,10 @@ const QuestionForm = ({
               message: "Input should not start with a number",
             },
           }}
-          defaultValue={""}
+          defaultValue={defaultQuestionValues.questionStatement}
           name={`questions[${index}].questionStatement`}
           control={controlSurveyForm}
           render={(props) => (
-            // <span className="surveyformfield">
-            //   <label>
-            //     {t("Category")} <span style={{ color: "red" }}>*</span>
-            //   </label>
             <TextInput
               placeholder={t("CS_COMMON_TYPE_QUESTION")}
               //value={t(Digit.Utils.locale.getTransformedLocale(surveyQuestionConfig.questionStatement))}
@@ -306,33 +296,16 @@ const QuestionForm = ({
                 props.onChange(e);
               }}
               textInputStyle={{ width: "100%" }}
-              //name={`QUESTION_SURVEY_${index}`}
-              //name="questionStatement"
               //name={`questions[${index}].questionStatement`}
               disable={disableInputs}
-              // inputRef={register({
-              //   //required: t("REQUIRED_FIELD"), //t("ES_ERROR_REQUIRED"),
-              //   maxLength: {
-              //     value: 100,
-              //     message: t("EXCEEDS_100_CHAR_LIMIT"),
-              //   },
-              //   pattern: {
-              //     value: /^[A-Za-z_-][A-Za-z0-9_\ -?]*$/,
-              //     message: t("ES_SURVEY_DONT_START_WITH_NUMBER"),
-              //   },
-              // })}
             />
-            // </span>
           )}
         />
         {errors.questions?.[index]?.questionStatement && <CardLabelError>{errors.questions[index].questionStatement.message}</CardLabelError>}
-        {/* {formState?.errors && <CardLabelError>{formState?.errors?.[`questions[${index}].questionStatement`]?.message}</CardLabelError>} */}
 
         <Controller
           rules={{ required: t("REQUIRED_FIELD") }} //t("ES_ERROR_REQUIRED")
           defaultValue={defaultQuestionValues.type}
-          //name={`ANSWER_TYPE_SURVEY_${index}`}
-          //name="type"
           name={`questions[${index}].type`}
           control={controlSurveyForm}
           render={(props) => (
@@ -352,16 +325,12 @@ const QuestionForm = ({
           )}
         />
         {errors.questions?.[index]?.type && <CardLabelError>{errors.questions[index].type.message}</CardLabelError>}
-        {/* {errors[`ANSWER_TYPE_SURVEY_${index}`] && <CardLabelError>{errors[`ANSWER_TYPE_SURVEY_${index}`].message}</CardLabelError>} */}
 
         <div className="newSurveyForm_answer">{renderAnswerComponent(surveyQuestionConfig?.type)}</div>
         <div className="newSurveyForm_actions">
           <div>
             <Controller
-              //rules={{ required: t("ES_ERROR_REQUIRED") }}
-              defaultValue={false}
-              //name={`REQUIRED_QUESTION_${index}`}
-              //name="required"
+              defaultValue={defaultQuestionValues.required}
               name={`questions[${index}].required`}
               control={controlSurveyForm}
               render={(props) => (
@@ -380,7 +349,7 @@ const QuestionForm = ({
           </div>
           {noOfQuestions > 1 && <div className="newSurveyForm_seprator" />}
           {noOfQuestions > 1 && (
-            <div className={`pointer ${disableInputs ? "disabled-btn" : ""}`} onClick={() => dispatch({ type: "removeForm", payload: { index } })}>
+            <div className={`pointer ${disableInputs ? "disabled-btn" : ""}`} onClick={() => dispatch({ type: "removeForm", payload: { uuid } })}>
               <div className="tooltip" /* style={{position:"relative"}} */>
                 <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
                   <DustbinIcon />

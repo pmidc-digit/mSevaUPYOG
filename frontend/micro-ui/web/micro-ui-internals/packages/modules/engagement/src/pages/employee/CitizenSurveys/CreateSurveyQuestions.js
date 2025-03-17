@@ -19,14 +19,21 @@ const CreateSurveyQuestions = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
 
-  const defaultQuestionValues = {
-    category: null,
-    questionStatement: "",
-    type: { title: t("MULTIPLE_ANSWER_TYPE"), i18Key: "MULTIPLE_ANSWER_TYPE", value: "MULTIPLE_ANSWER_TYPE" },
-    options: [`${t("CMN_OPTION")} 1`],
-    required: false,
-    uuid: "",
-    qorder: null,
+  const generateUUID = () => {
+    return Date.now() + Math.random().toString(36).substring(2, 11);
+  };
+
+  const defaultQuestionValues = () => {
+    //console.log("defaultQuestionValues called");
+    return {
+      category: null,
+      questionStatement: "",
+      type: { title: t("MULTIPLE_ANSWER_TYPE"), i18Key: "MULTIPLE_ANSWER_TYPE", value: "MULTIPLE_ANSWER_TYPE" },
+      options: [{ id: Date.now(), title: `${t("CMN_OPTION")} 1` }],
+      required: false,
+      uuid: generateUUID(),
+      qorder: null,
+    };
   };
 
   const {
@@ -41,25 +48,22 @@ const CreateSurveyQuestions = () => {
     watch,
     ...methods
   } = useForm({
-    defaultValues: { questions: [defaultQuestionValues] },
+    defaultValues: { questions: [defaultQuestionValues()] },
   });
 
   function parsePayloadData(data) {
-    const payload = [];
-    let index = 0;
-
-    while (data[`QUESTION_SURVEY_${index}`] !== undefined) {
-      payload.push({
+    const payload = data.questions.map((item) => {
+      return {
         tenantId: tenantId,
-        questionStatement: data[`QUESTION_SURVEY_${index}`],
-        categoryId: data[`CATEGORY_SURVEY_${index}`].value,
-        type: data[`ANSWER_TYPE_SURVEY_${index}`].value,
-        required: data[`REQUIRED_QUESTION_${index}`],
-        options: data[`OPTIONS_${index}`],
-      });
-      index++;
-    }
-
+        categoryId: item.category.value,
+        questionStatement: item.questionStatement,
+        type: item.type.value,
+        required: item.required,
+        options: item.options.map((option) => {
+          return option.title;
+        }),
+      };
+    });
     return payload;
   }
 
@@ -103,6 +107,12 @@ const CreateSurveyQuestions = () => {
   //   console.log("Form values:", formValues);
   // }, [formValues]);
 
+  // useEffect(() => {
+  //   // Access the default values
+  //   const defaultValues = getValues();
+  //   console.log("1) Default Values:", defaultValues);
+  // }, [getValues]);
+
   return (
     <div className="pageCard">
       <Header>{t(SURVEY_QUESIONS)}</Header>
@@ -126,7 +136,7 @@ const CreateSurveyQuestions = () => {
               addOption={true}
               controlSurveyForm={controlSurveyForm}
               formState={formState}
-              defaultQuestionValues={defaultQuestionValues}
+              defaultQuestionValuesFromFile1={defaultQuestionValues}
             />
           </Card>
           <ActionBar>

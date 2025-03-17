@@ -67,7 +67,7 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
     setShowQuestionTableList(false);
   };
   const handleFieldChange = (e) => {
-
+   console.log("value",e.target)
     const { name, value } = e.target;
     dispatch(updateCategory(category.id, { [name]: value }));
   };
@@ -169,7 +169,7 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
     const updatedQuestions = [...category.selectedQuestions, ...newQuestions.map(question => ({ ...question,selectedCategory }))];
     const updatedQuestionsWithWeightage = updatedQuestions.map(q => ({
       ...q,
-      weightage: 100 / updatedQuestions.length
+      weightage: (100 / updatedQuestions.length).toFixed(2)
     }));
     console.log("upd Qus",updatedQuestions)
     dispatch(addQuestions(category.id, updatedQuestionsWithWeightage));
@@ -189,7 +189,7 @@ const handleDeleteQuestion = (questionToDelete) => {
   const totalQuestions = updatedQuestions.length;
   const updatedQuestionsWithWeightage = updatedQuestions.map(q => ({
     ...q,
-    weightage: 100 / totalQuestions
+    weightage: (100 / totalQuestions).toFixed(2)
   }));
   console.log("upd Qus",updatedQuestions)
   dispatch(addQuestions(category.id, updatedQuestionsWithWeightage));

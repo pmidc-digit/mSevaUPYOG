@@ -64,7 +64,7 @@ const surveyFormReducer = (state = initialState, action) => {
   const recalculateWeightage = (categories) => {
     const updatedCategories = categories.map(category => ({
       ...category,
-      weightage: 100 / state.categories.length
+      weightage: (100 / state.categories.length).toFixed(2)
     }));
     return {
       ...state,
@@ -197,7 +197,7 @@ const surveyFormReducer = (state = initialState, action) => {
     case RECALCULATE_WEIGHTAGE:
       const updatedCategories = state.categories.map(category => ({
         ...category,
-        weightage: 100 / state.categories.length
+        weightage: (100 / state.categories.length).toFixed(2)
       }));
       return {
         ...state,

@@ -95,10 +95,10 @@ const swach = {
               states: {
                 question: {
                   invoke: {
-                    src: (context) =>
-                      pgrService.fetchSwachFrequentComplaints(
+                    src: (context) =>{
+                      return pgrService.fetchSwachFrequentComplaints(
                         context.extraInfo.tenantId
-                      ),
+                      )},
                     id: "fetchSwachFrequentComplaints",
                     onDone: {
                       actions: assign((context, event) => {
@@ -179,10 +179,10 @@ const swach = {
                   states: {
                     question: {
                       invoke: {
-                        src: (context, event) =>
-                          pgrService.fetchSwachComplaintCategories(
+                        src: (context, event) =>{
+                          return pgrService.fetchSwachComplaintCategories(
                             context.extraInfo.tenantId
-                          ),
+                          )},
                         id: "fetchSwachComplaintCategories",
                         onDone: {
                           actions: assign((context, event) => {
@@ -617,11 +617,11 @@ const swach = {
                 process: {
                   invoke: {
                     id: "swachCityFuzzySearch",
-                    src: (context, event) =>
-                      pgrService.getCity(
+                    src: (context, event) =>{
+                      return pgrService.getCity(
                         event.message.input,
                         context.user.locale
-                      ),
+                      )},
                     onDone: {
                       target: "route",
                       cond: (context, event) => event.data,
@@ -757,12 +757,12 @@ const swach = {
                 process: {
                   invoke: {
                     id: "swachNlpLocalitySearch",
-                    src: (context, event) =>
-                      pgrService.getLocality(
+                    src: (context, event) =>{
+                      return pgrService.getLocality(
                         event.message.input,
                         context.slots.swach["city"],
                         context.user.locale
-                      ),
+                      )},
                     onDone: {
                       target: "route",
                       cond: (context, event) => event.data,
@@ -886,11 +886,11 @@ const swach = {
                 question: {
                   invoke: {
                     id: "fetchCities",
-                    src: (context, event) =>
-                      pgrService.fetchCitiesAndWebpageLink(
+                    src: (context, event) =>{
+                      return pgrService.fetchCitiesAndWebpageLink(
                         context.extraInfo.tenantId,
                         context.extraInfo.whatsAppBusinessNumber
-                      ),
+                      )},
                     onDone: {
                       actions: assign((context, event) => {
                         let { cities, messageBundle, link } = event.data;
@@ -960,11 +960,11 @@ const swach = {
                 question: {
                   invoke: {
                     id: "fetchLocalities",
-                    src: (context) =>
-                      pgrService.fetchLocalitiesAndWebpageLink(
+                    src: (context) =>{
+                      return pgrService.fetchLocalitiesAndWebpageLink(
                         context.slots.swach.city,
                         context.extraInfo.whatsAppBusinessNumber
-                      ),
+                      )},
                     onDone: {
                       actions: assign((context, event) => {
                         let { localities, messageBundle, link } = event.data;
@@ -1145,7 +1145,7 @@ const swach = {
       id: "swachTrackComplaint",
       invoke: {
         id: "fetchOpenSwachComplaints",
-        src: (context) => pgrService.fetchOpenSwachComplaints(context.user),
+        src: (context) => {return pgrService.fetchOpenSwachComplaints(context.user)},
         onDone: [
           {
             target: "#endstate",

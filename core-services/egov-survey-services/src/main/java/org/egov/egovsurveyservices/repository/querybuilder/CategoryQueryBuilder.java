@@ -54,7 +54,7 @@ public class CategoryQueryBuilder {
     }
 
     public String getIsUniqueCategorySql(){
-        return "SELECT COUNT(*) FROM eg_ss_category WHERE label = ? AND tenantid = ?";
+        return "SELECT COUNT(*) FROM eg_ss_category WHERE label ILIKE ? AND tenantid = ?";
     }
 
     public String existById(){

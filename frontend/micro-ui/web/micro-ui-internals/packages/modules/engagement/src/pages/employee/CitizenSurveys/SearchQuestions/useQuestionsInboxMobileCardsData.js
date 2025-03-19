@@ -10,6 +10,7 @@ const useQuestionsInboxMobileCardsData = ({ parentRoute, table, setShowToast }) 
   /**
    * Todo : after creating surveys details page handle serviceRequestIdKey
    */
+  const GetStatusCell = (value) => <span className={value === "ACTIVE" ? "sla-cell-success" : "sla-cell-error"}>{value}</span>;
 
   const MobileSortFormValues = () => {
     const sortOrderOptions = [
@@ -62,7 +63,7 @@ const useQuestionsInboxMobileCardsData = ({ parentRoute, table, setShowToast }) 
   const dataForMobileInboxCards = table?.map((item) => {
     return {
       [t("Question")]: item.questionStatement,
-      [t("Is Question Active")]: item.status,
+      [t("Status")]: GetStatusCell(item.status),
       [t("Question Type")]: item.type,
       [t("Is Question Required")]: item.required.toString(),
       [t("Category")]: item.category.label,

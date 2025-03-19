@@ -248,35 +248,42 @@ const QuestionForm = ({
     <div className="newSurveyForm_wrapper">
       <span className="newSurveyForm_quesno">{`${t("CS_COMMON_QUESTION")} ${index + 1} `}</span>
       <span className="newSurveyForm_mainsection">
-        <Controller
-          rules={{ required: t("REQUIRED_FIELD") }} // t("EVENTS_CATEGORY_ERROR_REQUIRED")
-          defaultValue={defaultQuestionValues.category}
-          name={`questions[${index}].category`}
-          control={controlSurveyForm}
-          render={(props) => (
-            <Dropdown
-              t={t}
-              option={categoryOptions}
-              placeholder={"Select Category"}
-              optionKey="i18Key"
-              //selected={props.value}
-              selected={surveyQuestionConfig.category}
-              select={(e) => {
-                props.onChange(e);
-                handleSelectCategory(e);
-              }}
-              disable={disableInputs}
-            />
-          )}
-        />
+      {/* <div className="surveydetailsform-wrapper">
+        <span className="surveyformfield">
+          <label>
+            {t("Category")} <span style={{ color: "red" }}>*</span>
+          </label> */}
+          <Controller
+            rules={{ required: t("REQUIRED_FIELD") }} // t("EVENTS_CATEGORY_ERROR_REQUIRED")
+            defaultValue={defaultQuestionValues.category}
+            name={`questions[${index}].category`}
+            control={controlSurveyForm}
+            render={(props) => (
+              <Dropdown
+                t={t}
+                option={categoryOptions}
+                placeholder={"Select Category *"}
+                optionKey="i18Key"
+                //selected={props.value}
+                selected={surveyQuestionConfig.category}
+                select={(e) => {
+                  props.onChange(e);
+                  handleSelectCategory(e);
+                }}
+                disable={disableInputs}
+              />
+            )}
+          />
+        {/* </span> */}
         {errors.questions?.[index]?.category && <CardLabelError>{errors.questions[index].category.message}</CardLabelError>}
+        {/* </div> */}
 
         <Controller
           rules={{
             required: t("REQUIRED_FIELD"),
             maxLength: {
               value: 100,
-              message: "Exceeds 100 character limit",
+              message: "Question exceeds 100 character limit",
             },
             pattern: {
               value: /^[A-Za-z_-][A-Za-z0-9_\ -?]*$/,
@@ -288,7 +295,7 @@ const QuestionForm = ({
           control={controlSurveyForm}
           render={(props) => (
             <TextInput
-              placeholder={t("CS_COMMON_TYPE_QUESTION")}
+              placeholder={t("CS_COMMON_TYPE_QUESTION")+" *"}
               //value={t(Digit.Utils.locale.getTransformedLocale(surveyQuestionConfig.questionStatement))}
               value={surveyQuestionConfig.questionStatement}
               onChange={(e) => {
@@ -312,7 +319,7 @@ const QuestionForm = ({
             <Dropdown
               t={t}
               option={answerTypeOptions}
-              placeholder={"Select Question Type"}
+              placeholder={"Select Question Type *"}
               optionKey="i18Key"
               //selected={props.value}
               selected={surveyQuestionConfig.type}

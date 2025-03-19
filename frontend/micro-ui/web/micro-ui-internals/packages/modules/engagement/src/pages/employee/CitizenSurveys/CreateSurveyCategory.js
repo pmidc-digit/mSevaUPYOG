@@ -35,7 +35,7 @@ const CreateSurveyCategory = () => {
       Categories: [
         {
           tenantId: tenantId,
-          label: data.categoryName,
+          label: data.categoryName.trim(),
         },
       ],
     };
@@ -101,12 +101,12 @@ const CreateSurveyCategory = () => {
                   },
                 })}
               />
-              <button
+              <label
                 onClick={handleInfoButtonClick}
-                style={{ width: "24px", display: "flex", justifyContent: "center", alignItems: "center", outline: "none" }}
+                style={{ width: "24px", display: "flex", justifyContent: "center", alignItems: "center", outline: "none", cursor: "pointer" }}
               >
                 <InfoIcon />
-              </button>
+              </label>
             </span>
             {errors.categoryName && <p style={{ color: "red" }}>{errors.categoryName.message}</p>}
           </div>
@@ -120,8 +120,8 @@ const CreateSurveyCategory = () => {
           onSelect={handleOnSubmitDialog}
           onCancel={handleOnCancelDialog}
           onDismiss={handleOnCancelDialog}
-          heading="ABOUT_CREATE_CATEGORY_HEADER"
-          content="CREATE_CATEGORY_DESCRIPTION"
+          heading="ABOUT_CATEGORY_CREATION_HEADER"
+          content="ABOUT_CATEGORY_CREATION_DESCRIPTION"
           hideSubmit={true}
         />
       )}

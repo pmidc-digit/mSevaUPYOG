@@ -51,7 +51,7 @@ const CitizenDetails = ({ formData, setFormData, errors, citizenFound,setRegiste
     <div style={{ border: "2px solid #ccc", padding: "15px", borderRadius: "4px" }}>
       <h2>Citizen Details</h2>
       <div style={{ border: "1px solid #ccc" }}></div>
-      <h3>Mobile Number</h3>
+      <h3>Mobile Number <span style={{ color: "red" }}>*</span></h3>
       <input
         type="text"
         name="mobile"

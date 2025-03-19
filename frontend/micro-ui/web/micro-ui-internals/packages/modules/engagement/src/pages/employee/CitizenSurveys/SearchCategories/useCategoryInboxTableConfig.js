@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { DeleteIcon, EditIcon } from "@mseva/digit-ui-react-components";
 const useCategoryInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, inboxStyles = {}, setShowToast }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
+  const GetStatusCell = (value) =>
+    value === true ? <span className="sla-cell-success">Active</span> : value === false ? <span className="sla-cell-error">Inactive</span> : "-";
   const { t } = useTranslation();
 
   // const handleDeleteConfirm = (row) => {
@@ -21,11 +23,12 @@ const useCategoryInboxTableConfig = ({ parentRoute, onPageSizeChange, formState,
 
   const handleUpdateCategoryConfirm = (row) => {
     console.log("Current row: ", row);
-    const currentStatus = row?.original?.isActive;
+    const currentStatus = row?.original?.isActive?"Active":"Inactive";
+    const updatedStatus= row?.original?.isActive?"Inactive":"Active";
     setShowToast({
       label: `Are you sure you want to change the category status of "${
         row?.original?.label
-      }" from ${currentStatus} to ${!currentStatus}? Please confirm.`,
+      }" from ${currentStatus} to ${updatedStatus}? Please confirm.`,
       isDeleteBtn: true,
       warning: true,
       isWarningButtons: true,
@@ -49,15 +52,9 @@ const useCategoryInboxTableConfig = ({ parentRoute, onPageSizeChange, formState,
         },
       },
       {
-        Header: t("Is Category Active"),
+        Header: t("Status"),
         accessor: "isActive",
-        Cell: ({ row }) => {
-          return (
-            <div>
-              <span>{row.original?.isActive === true ? "Yes" : row.original?.isActive === false ? "No" : ""}</span>
-            </div>
-          );
-        },
+        Cell: ({ row }) => GetStatusCell(row.original?.isActive),
       },
 
       {

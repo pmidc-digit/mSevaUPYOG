@@ -54,7 +54,7 @@ public class CategoryRepository {
 
     public Integer isCategoryUnique(Category category){
         List<Object> preparedStmtList = new ArrayList<>();
-        preparedStmtList.add(category.getLabel());
+        preparedStmtList.add(category.getLabel().trim());
         preparedStmtList.add(category.getTenantId());
         String query = categoryQueryBuilder.getIsUniqueCategorySql();
         log.info("query for search: " + query + " params: " + preparedStmtList);

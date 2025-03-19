@@ -267,11 +267,11 @@ const EmployeeHome = ({ modules }) => {
               //const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
               return <EmployeeQuickServicesCard moduleData={moduleData} />;
             })}
-            {/*modules.map(({ code }, index) => {
+            {modules.map(({ code }, index) => {
               console.log("dsjdgsh", code)
               const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
               return <Card key={index} />;
-            }) */}
+            })}
           </div>
         </div>
       </div>

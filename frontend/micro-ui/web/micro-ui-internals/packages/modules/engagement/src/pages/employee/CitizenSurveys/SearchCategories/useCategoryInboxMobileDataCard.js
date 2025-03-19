@@ -11,6 +11,9 @@ const useCategoryInboxMobileCardsData = ({ parentRoute, table, setShowToast }) =
    * Todo : after creating surveys details page handle serviceRequestIdKey
    */
 
+  const GetStatusCell = (value) =>
+    value === true ? <span className="sla-cell-success">Active</span> : value === false ? <span className="sla-cell-error">Inactive</span> : "-";
+
   const MobileSortFormValues = () => {
     const sortOrderOptions = [
       {
@@ -46,9 +49,10 @@ const useCategoryInboxMobileCardsData = ({ parentRoute, table, setShowToast }) =
 
   const handleUpdateCategoryConfirm = (row) => {
     //console.log("Current row: ", row);
-    const currentStatus = row?.isActive;
+    const currentStatus = row?.isActive?"Active":"Inactive";
+    const updatedStatus= row?.isActive?"Inactive":"Active";
     setShowToast({
-      label: `Are you sure you want to change the category status of "${row?.label}" from ${currentStatus} to ${!currentStatus}? Please confirm.`,
+      label: `Are you sure you want to change the category status of "${row?.label}" from ${currentStatus} to ${updatedStatus}? Please confirm.`,
       isDeleteBtn: true,
       warning: true,
       isWarningButtons: true,
@@ -60,7 +64,7 @@ const useCategoryInboxMobileCardsData = ({ parentRoute, table, setShowToast }) =
     const { label, isActive, auditDetails } = item;
     return {
       [t("Category")]: label,
-      [t("Is Category Active")]: isActive === true ? "Yes" : isActive === false ? "No" : "",
+      [t("Status")]:  GetStatusCell(isActive),
       [t("Created On")]: auditDetails?.createdTime ? format(new Date(auditDetails?.createdTime), "dd/MM/yyyy") : "",
       [t("Last Updated On")]: auditDetails?.lastModifiedTime ? format(new Date(auditDetails?.lastModifiedTime), "dd/MM/yyyy") : "",
       [t("Update Category Status")]: (

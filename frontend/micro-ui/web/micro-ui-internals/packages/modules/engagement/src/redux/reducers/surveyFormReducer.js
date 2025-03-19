@@ -1,5 +1,5 @@
 import { goPrev } from '../actions/surveyFormActions';
-import { FIELD_CHANGE,ADD_CATEGORY,DELETE_CATEGORY, RECALCULATE_WEIGHTAGE, UPDATE_WEIGHTAGE, ADD_QUESTIONS,ADD_QUESTIONS_LIST, UPDATE_CATEGORY, UPDATE_QUESTION_SELECTION, SET_QUESTIONS, NEXT_STEP, PREVIOUS_STEP, SET_STEP_DATA, UPDATE_SURVEY_FORM, SET_SURVEY_STEP, GO_PREV,GO_NEXT } from '../actions/types';
+import { FIELD_CHANGE,ADD_CATEGORY,DELETE_CATEGORY, RECALCULATE_WEIGHTAGE, UPDATE_WEIGHTAGE, UPDATE_QUESTION_WEIGHTAGE, ADD_QUESTIONS,ADD_QUESTIONS_LIST, UPDATE_CATEGORY, UPDATE_QUESTION_SELECTION, SET_QUESTIONS, NEXT_STEP, PREVIOUS_STEP, SET_STEP_DATA, UPDATE_SURVEY_FORM, SET_SURVEY_STEP, GO_PREV,GO_NEXT } from '../actions/types';
 
 const initialState = {
   // sections: [
@@ -64,7 +64,7 @@ const surveyFormReducer = (state = initialState, action) => {
   const recalculateWeightage = (categories) => {
     const updatedCategories = categories.map(category => ({
       ...category,
-      weightage: (100 / state.categories.length).toFixed(2)
+      weightage: Math.floor((100 / state.categories.length)*100)/100
     }));
     return {
       ...state,
@@ -195,9 +195,11 @@ const surveyFormReducer = (state = initialState, action) => {
     //     categories: updatedCategories
     //   };
     case RECALCULATE_WEIGHTAGE:
+    
       const updatedCategories = state.categories.map(category => ({
+       
         ...category,
-        weightage: (100 / state.categories.length).toFixed(2)
+        weightage: Math.floor((100 / state.categories.length)*100)/100
       }));
       return {
         ...state,
@@ -239,6 +241,20 @@ const surveyFormReducer = (state = initialState, action) => {
             : category
         )
       };
+      case UPDATE_QUESTION_WEIGHTAGE:
+        return {
+          ...state,
+          categories: state.categories.map(category =>
+            category.id === action.categoryId
+            ? {...category,
+               selectedQuestions: category.selectedQuestions.map(question =>
+              question.uuid === action.questionId ? { ...question, weightage:action.weightage}: question
+               )
+              }
+              :
+              category
+            )
+        }
     case UPDATE_CATEGORY:
       return {
         ...state,

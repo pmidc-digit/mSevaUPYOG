@@ -226,6 +226,7 @@ export const FormComposer = (props) => {
           <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : {}} id={section.headId}>
             {t(section.head)}
           </CardSectionHeader>
+          <div style={{border:'1px solid #DFE0E2', marginBottom:'20px'}}></div>
         </>
       );
     } else {

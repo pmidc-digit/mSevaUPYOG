@@ -47,9 +47,21 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
          dispatch(fieldChange(surveyDetails.id, { [name]: value }));
        };
   return (
-    <div className="surveydetailsform-wrapper">
-      <div className="heading">{t("CS_COMMON_SETTINGS")}</div>
-      <span className="surveyformfield">
+    // <div className="surveydetailsform-wrapper">
+    <div
+    //className="surveydetailsform-wrapper"
+     className="create-survey-card"
+    >
+      <div 
+      style={{fontSize:'22px', lineHeight:'24px',color:'#0D43A7',fontWeight:'500',fontFamily:'Noto Sans,sans-serif'}}
+      //className="heading"
+      >
+        {t("CS_COMMON_SETTINGS")}</div>
+        <div style={{border:'1px solid #DFE0E2'}}></div>
+      {/* <span className="surveyformfield"> */}
+      <div className="survey-row">
+   
+    <div className="survey-column">
         <label>{`${t("LABEL_SURVEY_START_DATE")} * `}</label>
         <Controller
           control={controlSurveyForm}
@@ -63,15 +75,17 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
           disable={readOnly||false}
           />}
         />
+     
         {formErrors && formErrors?.fromDate && formErrors?.fromDate?.type === "required" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_REQUIRED`)}</CardLabelError>
         )}
         {formErrors && formErrors?.fromDate && formErrors?.fromDate?.type === "isValidFromDate" && (
           <CardLabelError>{t(`EVENTS_FROM_DATE_ERROR_INVALID`)}</CardLabelError>
         )}
-      </span>
+      </div>
 
-      <span className="surveyformfield">
+      {/* <span className="surveyformfield"> */}
+      <div className="survey-column">
         <label>{`${t("LABEL_SURVEY_START_TIME")} * `}</label>
         <Controller
           control={controlSurveyForm}
@@ -89,9 +103,12 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
         {formErrors && formErrors?.fromTime && formErrors?.fromTime?.type === "isValidFromDate" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_INVALID`)}</CardLabelError>
         )}
-      </span>
+      </div>
+      </div>
 
-      <span className="surveyformfield">
+      <div className="survey-row">
+   
+    <div className="survey-column">
         <label>{`${t("LABEL_SURVEY_END_DATE")} * `}</label>
         <Controller
           control={controlSurveyForm}
@@ -109,9 +126,10 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
         {formErrors && formErrors?.toDate && formErrors?.toDate?.type === "isValidToDate" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_INVALID`)}</CardLabelError>
         )}{" "}
-      </span>
+      </div>
 
-      <span className="surveyformfield">
+      {/* <span className="surveyformfield"> */}
+      <div className="survey-column">
         <label>{`${t("LABEL_SURVEY_END_TIME")} * `}</label>
 
         <Controller
@@ -130,7 +148,8 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
         {formErrors && formErrors?.toTime && formErrors?.toTime?.type === "isValidToDate" && (
           <CardLabelError>{t(`EVENTS_TO_DATE_ERROR_INVALID`)}</CardLabelError>
         )}
-      </span>
+      </div>
+      </div>
     </div>
   );
 };

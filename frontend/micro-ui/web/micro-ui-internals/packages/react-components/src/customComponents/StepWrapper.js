@@ -8,11 +8,12 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
     display: "flex",
     //flexDirection: "column",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     flex: 1,
    // position: "relative",
     color: isActive ? "#3f51b5" : "#ccc",
     padding: "10px 10px",
+    width:'250px'
    // margin:"25px",
 
   });
@@ -43,8 +44,8 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
     }
 
     return {
-      width: "30px",
-      height: "30px",
+      width: "50px",
+      height: "50px",
       borderRadius: "50%",
       backgroundColor,
       color: stepNumber <= currentStep ? "white" : "black",
@@ -107,11 +108,11 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          width: "30%",
+          //width: "30%",
           height:"50%",
           //maxWidth: "1500px",
           //minWidth: "650px",
-          marginRight: "auto",
+          //marginRight: "auto",
           marginBottom: "20px",
         }}
       >
@@ -142,7 +143,7 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
       <div
         className="stepper-body"
         style={{
-          width: "70%",
+          width: "100%",
           //maxWidth: "1500px",
           marginBottom: "20px",
         }}

@@ -37,8 +37,8 @@ const CreateNewSurvey = ({ t, initialFormValues, onSubmit, isFormDisabled = fals
         clearErrors: clearSurveyFormsErrors,
         ...methods
       }}>
-        <form onSubmit={handleSurveyFormSubmit(onSubmit)}>
-          <Card>
+        <form onSubmit={handleSurveyFormSubmit(onSubmit)} style={{marginRight:'10px'}}>
+          {/* <Card> */}
             <SurveyDetailsForms
               t={t}
               registerRef={registerRef}
@@ -49,14 +49,14 @@ const CreateNewSurvey = ({ t, initialFormValues, onSubmit, isFormDisabled = fals
             />
             {/* <QuestionFormsMaker t={t} setSurveyConfig={setSurveyFormValue} addOption={true} controlSurveyForm={controlSurveyForm} /> */}
             <SurveySettingsForms t={t} controlSurveyForm={controlSurveyForm} surveyFormState={surveyFormState} readOnly={readOnly}/>
-          </Card>
+          {/* </Card> */}
 
           {/* <ActionBar>
             <SubmitBar label={t("CS_CREATE_SURVEY")} submit="submit" />
           </ActionBar> */}
         </form>
       </FormProvider>
-    </div>
+     </div>
   );
 };
 

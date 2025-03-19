@@ -1,8 +1,10 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FormComposer } from "@mseva/digit-ui-react-components";
+//import { FormComposer } from "@mseva/digit-ui-react-components";
 //
+import {FormComposer} from "../../../../../../../react-components/src/hoc/FormComposer";
 import { updateSurveyForm} from "../../../../redux/actions/surveyFormActions";
+import { Header } from "@mseva/digit-ui-react-components";
 
 
 const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
@@ -66,6 +68,7 @@ const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
 
     return (
         <React.Fragment>
+           
             <FormComposer
                 defaultValues={currentStepData}
                 //heading={t("")}

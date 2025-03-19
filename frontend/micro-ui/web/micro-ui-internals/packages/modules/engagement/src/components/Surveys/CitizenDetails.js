@@ -1,6 +1,6 @@
 import React ,{Fragment, useState}from "react";
 import { TextInput, Dropdown, CheckBox, Toast } from "@mseva/digit-ui-react-components";
-const CitizenDetails = ({ formData, setFormData, errors, citizenFound,setRegister,register,stateCode,Otp,setGetOtp }) => {
+const CitizenDetails = ({ formData, setFormData, errors, stateCode,Otp,setGetOtp }) => {
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [showToast, setShowToast] = useState(null);
   console.log("cities",cities)
@@ -47,6 +47,47 @@ const CitizenDetails = ({ formData, setFormData, errors, citizenFound,setRegiste
     }
    
   }
+  const handleFetchDetails = () => {
+
+    const data = {
+      userName: formData?.mobile,
+      tenantId: formData?.city?.code,
+    };
+    const filters = {
+      tenantId: formData?.city?.code,
+    };
+
+    Digit.Surveys.userSearch(data, filters)
+      .then((response) => {
+        console.log("response", response);
+      
+        if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length>0) {
+        // setCitizenFound(true)
+         setFormData((prevData) => ({
+          ...prevData,
+          ["citizenFound"]: true,
+          ["name"]: response.user[0]?.name,
+          ["city"]: response.user[0]?.city,
+          ["user"]: response.user[0],
+        }));
+
+
+          
+        } else {
+          setFormData((prevData) => ({
+            ...prevData,
+            ["citizenFound"]: false
+           
+          }));
+         // setCitizenFound(false)
+          setShowToast({ key: true, isError: true, label: `CITIZEN NOT FOUND FOR THE GIVEN DETAILS` });
+         
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
   return (
     <div style={{ border: "2px solid #ccc", padding: "15px", borderRadius: "4px" }}>
       <h2>Citizen Details</h2>
@@ -60,15 +101,31 @@ const CitizenDetails = ({ formData, setFormData, errors, citizenFound,setRegiste
         placeholder="Mobile Number"
         required
       />
+      <label onClick={handleFetchDetails}>Fetch Details</label>
       {errors.mobile && <span className="error">{errors.mobile}</span>}
-      {citizenFound===false && 
+      {formData.citizenFound===false && 
       <div style={{display:"flex",flexDirection:"row",columnGap:'10px'}}>
       <h3>Do you want to register?</h3>
-      <label style={{backgroundColor:"green"}} onClick={()=>setRegister(true)}>Yes</label>
-      <label  style={{backgroundColor:"red"}} onClick={()=>setRegister(false)}>No</label>
+      <label style={{backgroundColor:"green"}} 
+      onClick={()=>{
+        setFormData((prevData) => ({
+          ...prevData,
+          ["register"]: true,
+        }));
+      }
+
+      }>Yes</label>
+      <label  style={{backgroundColor:"red"}} onClick={()=>
+      {
+               setFormData((prevData) => ({
+                ...prevData,
+                ["register"]: false,
+              }));
+            }
+        }>No</label>
       </div>
       }
-      {register === true &&(
+      {formData.register === true || formData.citizenFound === true &&(
         <>
       <h3>Name</h3>
       <input
@@ -77,6 +134,7 @@ const CitizenDetails = ({ formData, setFormData, errors, citizenFound,setRegiste
         value={formData.name}
         onChange={handleFieldChange}
         placeholder="Citizen Name"
+        readOnly={formData.citizenFound}
         // required
       />
       {errors.name && <span className="error">{errors.name}</span>}
@@ -94,7 +152,7 @@ const CitizenDetails = ({ formData, setFormData, errors, citizenFound,setRegiste
         selected={formData.city || null}
       />
       {errors.city && <span className="error">{errors.city}</span>}
-      <label  onClick={()=>getOtp()}>Get OTP</label>
+     {formData.register === true && ( <label  onClick={()=>getOtp()}>Get OTP</label> )}
     </>
       )}
       {Otp===true ?

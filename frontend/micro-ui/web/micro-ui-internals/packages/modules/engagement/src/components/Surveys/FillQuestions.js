@@ -630,8 +630,8 @@ const FillQuestions = (props) => {
             type="text"
             inputRef={register({
               maxLength: {
-                value: 60,
-                message: t("EXCEEDS_60_CHAR_LIMIT"),
+                value: 200,
+                message: t("EXCEEDS_200_CHAR_LIMIT"),
               },
               required: question.required,
             })}

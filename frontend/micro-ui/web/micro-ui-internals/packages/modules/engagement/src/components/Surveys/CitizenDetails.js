@@ -1,9 +1,14 @@
 import React ,{Fragment, useState}from "react";
 import { TextInput, Dropdown, CheckBox, Toast } from "@mseva/digit-ui-react-components";
-const CitizenDetails = ({ formData, setFormData, errors, stateCode,Otp,setGetOtp }) => {
+import { useTranslation } from "react-i18next";
+const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp,setGetOtp }) => {
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [showToast, setShowToast] = useState(null);
+    const { t } = useTranslation();
   console.log("cities",cities)
+  const closeToast = () => {
+    setShowToast(null);
+  };
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
     console.log("date value", event.target);
@@ -47,14 +52,21 @@ const CitizenDetails = ({ formData, setFormData, errors, stateCode,Otp,setGetOtp
     }
    
   }
-  const handleFetchDetails = () => {
 
+  const handleFetchDetails = () => {
+    let newErrors={};
+    if (!formData.mobile) newErrors.mobile = "Mobile number is required";
+    else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";
+    if (!formData.city) newErrors.city = "City is required";
+   setErrors(newErrors)
+   console.log("errors",newErrors.mobile)
+   if(newErrors?.mobile===undefined && newErrors?.city===undefined){
     const data = {
       userName: formData?.mobile,
-      tenantId: formData?.city?.code,
+      tenantId: (formData?.city?.code).split(".")[0],
     };
     const filters = {
-      tenantId: formData?.city?.code,
+      tenantId: (formData?.city?.code).split(".")[0],
     };
 
     Digit.Surveys.userSearch(data, filters)
@@ -65,18 +77,19 @@ const CitizenDetails = ({ formData, setFormData, errors, stateCode,Otp,setGetOtp
         // setCitizenFound(true)
          setFormData((prevData) => ({
           ...prevData,
-          ["citizenFound"]: true,
-          ["name"]: response.user[0]?.name,
-          ["city"]: response.user[0]?.city,
-          ["user"]: response.user[0],
+          "citizenFound": true,
+          "name": response.user[0]?.name,
+          "register": false,
+          // "city": response.user[0]?.permanentCity,
+          "user": response.user[0],
         }));
-
+   
 
           
         } else {
           setFormData((prevData) => ({
             ...prevData,
-            ["citizenFound"]: false
+            "citizenFound": false
            
           }));
          // setCitizenFound(false)
@@ -87,7 +100,9 @@ const CitizenDetails = ({ formData, setFormData, errors, stateCode,Otp,setGetOtp
       .catch((error) => {
         console.log(error);
       });
+    }
   };
+
   return (
     <div style={{ border: "2px solid #ccc", padding: "15px", borderRadius: "4px" }}>
       <h2>Citizen Details</h2>
@@ -101,8 +116,23 @@ const CitizenDetails = ({ formData, setFormData, errors, stateCode,Otp,setGetOtp
         placeholder="Mobile Number"
         required
       />
+ {errors.mobile && <span className="error">{errors.mobile}</span>}
+<h3>City</h3>
+      <Dropdown
+        required={true}
+      
+        id="city"
+        name="city"
+        option={cities}
+        className="cityCss"
+        select={(e) => handleDropdownChange("city", e)}
+        placeholder={"Select City"}
+        optionKey="i18nKey"
+        selected={formData.city || null}
+      />
+      {errors.city && <span className="error">{errors.city}</span>}
       <label onClick={handleFetchDetails}>Fetch Details</label>
-      {errors.mobile && <span className="error">{errors.mobile}</span>}
+     
       {formData.citizenFound===false && 
       <div style={{display:"flex",flexDirection:"row",columnGap:'10px'}}>
       <h3>Do you want to register?</h3>
@@ -110,7 +140,7 @@ const CitizenDetails = ({ formData, setFormData, errors, stateCode,Otp,setGetOtp
       onClick={()=>{
         setFormData((prevData) => ({
           ...prevData,
-          ["register"]: true,
+          "register": true,
         }));
       }
 
@@ -125,7 +155,7 @@ const CitizenDetails = ({ formData, setFormData, errors, stateCode,Otp,setGetOtp
         }>No</label>
       </div>
       }
-      {formData.register === true || formData.citizenFound === true &&(
+      {(formData.register === true || formData.citizenFound === true) &&(
         <>
       <h3>Name</h3>
       <input
@@ -138,20 +168,7 @@ const CitizenDetails = ({ formData, setFormData, errors, stateCode,Otp,setGetOtp
         // required
       />
       {errors.name && <span className="error">{errors.name}</span>}
-      <h3>City</h3>
-      <Dropdown
-        required={true}
-      
-        id="city"
-        name="city"
-        option={cities}
-        className="cityCss"
-        select={(e) => handleDropdownChange("city", e)}
-        placeholder={"Select City"}
-        optionKey="i18nKey"
-        selected={formData.city || null}
-      />
-      {errors.city && <span className="error">{errors.city}</span>}
+     
      {formData.register === true && ( <label  onClick={()=>getOtp()}>Get OTP</label> )}
     </>
       )}

@@ -221,7 +221,7 @@ const FillSurvey = ({stateCode}) => {
           </h2>
         </div>
         <form onSubmit={handleSubmit}>
-          <CitizenDetails formData={formData} setFormData={setFormData} errors={errors}  stateCode={stateCode} Otp={Otp} setGetOtp={setGetOtp}/>
+          <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} stateCode={stateCode} Otp={Otp} setGetOtp={setGetOtp}/>
           <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", gap: "10px", flexDirection: "row", marginTop: "10px" }}>
             <button type="submit">Next</button>
             <button
@@ -230,11 +230,11 @@ const FillSurvey = ({stateCode}) => {
                 setFormData({
                   name: "",
                   mobile: "",
-                  relationName: "",
-                  relation: null,
-                  address: "",
-                  email: "",
-                  dob: "",
+                  city:"",
+                  otp:"",
+                  citizenFound: null,
+                  register: null,
+                  user:null
                 })
               }
             >

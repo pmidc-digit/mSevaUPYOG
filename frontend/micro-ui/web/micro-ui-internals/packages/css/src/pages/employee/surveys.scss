@@ -354,6 +354,7 @@ border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
   display: flex;
   flex-direction: column;
   gap: 20px;
+  box-shadow: none;
 }
 
 .category-card h3 {
@@ -448,13 +449,21 @@ border-left-width: calc(2px * calc(1 - var(--tw-divide-x-reverse)));
   flex-direction: column;
   gap: 10px;
   width: 48%;
-  color: #0d43a7;
+  color: #232323;
+  font-family: 'Noto Sans';
+  font-size: 16px;
+  line-height: "100%";
+  font-weight: 400;
+  letter-spacing: "0%";
+  
 }
 
 .create-survey-card
 .heading{
   color: #0d43a7;
-  font-size: 16px;
+  font-size: 20px;
     line-height: 24px;
     font-weight: 700;
 }
+
+

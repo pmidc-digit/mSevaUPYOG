@@ -53,7 +53,7 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
      className="create-survey-card"
     >
       <div 
-      style={{fontSize:'22px', lineHeight:'24px',color:'#0D43A7',fontWeight:'500',fontFamily:'Noto Sans,sans-serif'}}
+      style={{fontSize:'22px', lineHeight:'24px',color:'black',fontWeight:'500',fontFamily:'Noto Sans,sans-serif'}}
       //className="heading"
       >
         {t("CS_COMMON_SETTINGS")}</div>

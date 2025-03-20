@@ -199,7 +199,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
       {/* <span className="surveyformfield"> */}
       <div className="survey-column" style={{width:'100%'}}>
         <label>{`${t("CS_SURVEY_DESCRIPTION")} `}</label>
-        <TextArea
+        <TextInput
           name="description"
           type="text"
           

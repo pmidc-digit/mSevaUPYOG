@@ -62,7 +62,14 @@ const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
             ? state.engagement.surveyForm.formData[config.key]
             : {};
     });
-  
+  const headerStyle={
+    marginLeft:'-10px'
+  }
+  const lineStyle={
+    border:'1px solid #DFE0E2',
+     marginBottom:'20px',
+      marginLeft:'-10px'
+  }
 
     // console.log("currentStepData in  Administrative details: ", currentStepData);
 
@@ -72,6 +79,9 @@ const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
             <FormComposer
                 defaultValues={currentStepData}
                 //heading={t("")}
+                box={true}
+                lineStyle={lineStyle}
+                sectionHeadStyle={headerStyle}
                 config={config.currStepConfig}
                 onSubmit={goNext}
                 onFormValueChange={onFormValueChange}

@@ -81,10 +81,20 @@ const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
     
 
     // console.log("currentStepData in  Administrative details: ", currentStepData);
-
+    const lineStyle={
+      border:'1px solid #DFE0E2',
+       marginBottom:'20px',
+        marginLeft:'-10px'
+    }
+    const headerStyle={
+      marginLeft:'-10px'
+    }
     return (
         <React.Fragment>
             <FormComposer
+                 box={true}
+                 lineStyle={lineStyle}
+                 sectionHeadStyle={headerStyle}
                 defaultValues={currentStepData}
                 //heading={t("")}
                 config={config.currStepConfig}

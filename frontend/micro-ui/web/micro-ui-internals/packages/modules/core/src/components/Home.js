@@ -265,7 +265,7 @@ const EmployeeHome = ({ modules }) => {
           <div className="employee-dashboard-module-card-wrapper">
             {modules.map((moduleData, index) => {
               //const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
-              return <EmployeeQuickServicesCard moduleData={moduleData} />;
+              return <EmployeeQuickServicesCard moduleData={moduleData}  />;
             })}
             {modules.map(({ code }, index) => {
               console.log("dsjdgsh", code)

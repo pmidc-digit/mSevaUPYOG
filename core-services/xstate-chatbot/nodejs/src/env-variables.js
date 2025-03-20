@@ -126,7 +126,11 @@ const envVariables = {
         pgrUpdateTopic: process.env.PGR_UPDATE_TOPIC || 'update-pgr-request',
         geoSearch: process.env.GEO_SEARCH || true
     },
-
+    swachUseCase: {
+      complaintSearchLimit: process.env.COMPLAINT_SEARCH_LIMIT || 3,
+      informationImageFilestoreId: process.env.INFORMATION_IMAGE_FILESTORE_ID || '45ec7c1f-1f54-471c-895d-2f8bd131d371', 
+      geoSearch: process.env.GEO_SEARCH || true
+    },
     billsAndReceiptsUseCase: {
         billSearchLimit: process.env.BILL_SEARCH_LIMIT || 3,
         receiptSearchLimit: process.env.RECEIPT_SEARCH_LIMIT || 3,

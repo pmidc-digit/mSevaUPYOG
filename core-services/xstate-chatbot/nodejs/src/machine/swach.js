@@ -1,5 +1,5 @@
 const { assign } = require("xstate");
-const { pgrService } = require("./service/service-loader");
+const { swachService } = require("./service/service-loader");
 const dialog = require("./util/dialog");
 const localisationService = require("./util/localisation-service");
 const config = require("../env-variables");
@@ -95,10 +95,11 @@ const swach = {
               states: {
                 question: {
                   invoke: {
-                    src: (context) =>{
-                      return pgrService.fetchSwachFrequentComplaints(
+                    src: (context) => {
+                      return swachService.fetchSwachFrequentComplaints(
                         context.extraInfo.tenantId
-                      )},
+                      );
+                    },
                     id: "fetchSwachFrequentComplaints",
                     onDone: {
                       actions: assign((context, event) => {
@@ -179,10 +180,11 @@ const swach = {
                   states: {
                     question: {
                       invoke: {
-                        src: (context, event) =>{
-                          return pgrService.fetchSwachComplaintCategories(
+                        src: (context, event) => {
+                          return swachService.fetchSwachComplaintCategories(
                             context.extraInfo.tenantId
-                          )},
+                          );
+                        },
                         id: "fetchSwachComplaintCategories",
                         onDone: {
                           actions: assign((context, event) => {
@@ -281,7 +283,7 @@ const swach = {
                     question: {
                       invoke: {
                         src: (context) => {
-                          return pgrService.fetchSwatchComplaintItemsForCategory(
+                          return swachService.fetchSwatchComplaintItemsForCategory(
                             context.slots.swach.complaint,
                             context.extraInfo.tenantId
                           );
@@ -406,7 +408,7 @@ const swach = {
               onEntry: assign((context, event) => {
                 var message = {
                   type: "image",
-                  output: config.pgrUseCase.informationImageFilestoreId,
+                  output: config.swachUseCase.informationImageFilestoreId,    //need review
                 };
                 dialog.sendMessage(context, message);
               }),
@@ -434,7 +436,8 @@ const swach = {
                     src: (context, event) => {
                       if (event.message.type === "location") {
                         context.slots.swach.geocode = event.message.input;
-                        return pgrService.getCityAndLocalityForGeocode(
+                        // console.log("Swach City and Locality")
+                        return swachService.getCityAndLocalityForGeocode(
                           event.message.input,
                           context.extraInfo.tenantId
                         );
@@ -451,18 +454,18 @@ const swach = {
                         }),
                       },
                       {
-                        target: "#city",
+                        target: "#swachCity",
                         cond: (context, event) =>
                           !event.data &&
                           context.message === "1" &&
-                          !config.pgrUseCase.geoSearch,
+                          !config.swachUseCase.geoSearch,   //need review
                       },
                       {
                         target: "#swachNLPCitySearch",
                         cond: (context, event) =>
                           !event.data &&
                           context.message === "1" &&
-                          config.pgrUseCase.geoSearch,
+                          config.swachUseCase.geoSearch,    //need review
                       },
                       {
                         target: "#swachGeoLocation",
@@ -479,12 +482,12 @@ const swach = {
                     ],
                     onError: [
                       {
-                        target: "#city",
-                        cond: (context, event) => !config.pgrUseCase.geoSearch,
+                        target: "#swachCity",
+                        cond: (context, event) => !config.swachUseCase.geoSearch,   //need review
                       },
                       {
                         target: "#swachNLPCitySearch",
-                        cond: (context, event) => config.pgrUseCase.geoSearch,
+                        cond: (context, event) => config.swachUseCase.geoSearch,    //need review
                       },
                     ],
                   },
@@ -565,28 +568,28 @@ const swach = {
                         context.slots.swach["locality"],
                     },
                     {
-                      target: "#locality",
+                      target: "#swachLocality",
                       cond: (context, event) =>
                         context.message.isValid &&
-                        !config.pgrUseCase.geoSearch &&
+                        !config.swachUseCase.geoSearch &&   //need review
                         context.slots.swach["locationConfirmed"],
                     },
                     {
                       target: "#swachNlpLocalitySearch",
                       cond: (context, event) =>
                         context.message.isValid &&
-                        config.pgrUseCase.geoSearch &&
+                        config.swachUseCase.geoSearch &&    //need review
                         context.slots.swach["locationConfirmed"],
                     },
                     {
-                      target: "#city",
+                      target: "#swachCity",
                       cond: (context, event) =>
-                        context.message.isValid && !config.pgrUseCase.geoSearch,
+                        context.message.isValid && !config.swachUseCase.geoSearch,    //need review
                     },
                     {
                       target: "#swachNLPCitySearch",
                       cond: (context, event) =>
-                        context.message.isValid && config.pgrUseCase.geoSearch,
+                        context.message.isValid && config.swachUseCase.geoSearch,     //need review
                     },
                     {
                       target: "process",
@@ -617,11 +620,13 @@ const swach = {
                 process: {
                   invoke: {
                     id: "swachCityFuzzySearch",
-                    src: (context, event) =>{
-                      return pgrService.getCity(
+                    src: (context, event) => {
+                      // console.log("Swach Get City")
+                      return swachService.getCity(
                         event.message.input,
                         context.user.locale
-                      )},
+                      );
+                    },
                     onDone: {
                       target: "route",
                       cond: (context, event) => event.data,
@@ -757,12 +762,14 @@ const swach = {
                 process: {
                   invoke: {
                     id: "swachNlpLocalitySearch",
-                    src: (context, event) =>{
-                      return pgrService.getLocality(
+                    src: (context, event) => {
+                      // console.log("Swach Get Locality")
+                      return swachService.getLocality(
                         event.message.input,
                         context.slots.swach["city"],
                         context.user.locale
-                      )},
+                      );
+                    },
                     onDone: {
                       target: "route",
                       cond: (context, event) => event.data,
@@ -879,18 +886,20 @@ const swach = {
                 },
               },
             },
-            city: {
-              id: "city",
+            swachCity: {
+              id: "swachCity",
               initial: "question",
               states: {
                 question: {
                   invoke: {
                     id: "fetchCities",
-                    src: (context, event) =>{
-                      return pgrService.fetchCitiesAndWebpageLink(
+                    src: (context, event) => {
+                      // console.log("Swach Cities and Webpage")
+                      return swachService.fetchCitiesAndWebpageLink(
                         context.extraInfo.tenantId,
                         context.extraInfo.whatsAppBusinessNumber
-                      )},
+                      );
+                    },
                     onDone: {
                       actions: assign((context, event) => {
                         let { cities, messageBundle, link } = event.data;
@@ -925,7 +934,7 @@ const swach = {
                   }),
                   always: [
                     {
-                      target: "#locality",
+                      target: "#swachLocality",
                       cond: (context) =>
                         context.intention != dialog.INTENTION_UNKOWN,
                       actions: assign(
@@ -953,18 +962,20 @@ const swach = {
                 },
               },
             },
-            locality: {
-              id: "locality",
+            swachLocality: {
+              id: "swachLocality",
               initial: "question",
               states: {
                 question: {
                   invoke: {
                     id: "fetchLocalities",
-                    src: (context) =>{
-                      return pgrService.fetchLocalitiesAndWebpageLink(
+                    src: (context) => {
+                      // console.log("Swach Get Locality and Webpage")
+                      return swachService.fetchLocalitiesAndWebpageLink(
                         context.slots.swach.city,
                         context.extraInfo.whatsAppBusinessNumber
-                      )},
+                      );
+                    },
                     onDone: {
                       actions: assign((context, event) => {
                         let { localities, messageBundle, link } = event.data;
@@ -993,10 +1004,10 @@ const swach = {
                 },
                 process: {
                   onEntry: assign((context, event) => {
-                    return context.intention = dialog.get_intention(
+                    return (context.intention = dialog.get_intention(
                       context.grammer,
                       event
-                    );
+                    ));
                   }),
                   always: [
                     {
@@ -1028,7 +1039,7 @@ const swach = {
                 },
               },
             },
-            landmark: {
+            swachLandmark: {
               // come here when user 1) did not provide geolocation or 2) did not confirm geolocation - either because google maps got it wrong or if there was a google api error
             },
           },
@@ -1036,16 +1047,16 @@ const swach = {
         swachOther: {
           // get other info
           id: "swachOther",
-          initial: "imageUpload",
+          initial: "swachImageUpload",
           states: {
-            imageUpload: {
-              id: "imageUpload",
+            swachImageUpload: {
+              id: "swachImageUpload",
               initial: "question",
               states: {
                 question: {
                   onEntry: assign((context, event) => {
                     let message = dialog.get_message(
-                      messages.swachFileComplaint.imageUpload.question,
+                      messages.swachFileComplaint.swachImageUpload.question,
                       context.user.locale
                     );
                     dialog.sendMessage(context, message);
@@ -1104,7 +1115,8 @@ const swach = {
           invoke: {
             id: "persistSwachComplaint",
             src: (context) => {
-              return pgrService.persistSwachComplaint(
+              // console.log("Swach Persist")
+              return swachService.persistSwachComplaint(
                 context.user,
                 context.slots.swach,
                 context.extraInfo
@@ -1145,7 +1157,9 @@ const swach = {
       id: "swachTrackComplaint",
       invoke: {
         id: "fetchOpenSwachComplaints",
-        src: (context) => {return pgrService.fetchOpenSwachComplaints(context.user)},
+        src: (context) => {
+          return swachService.fetchOpenSwachComplaints(context.user);
+        },
         onDone: [
           {
             target: "#endstate",
@@ -1181,7 +1195,7 @@ const swach = {
                   let complaint = complaints[i];
                   template = template.replace(
                     "{{complaintType}}",
-                    complaint.swachcomplaintType
+                    complaint.complaintType
                   );
                   template = template.replace(
                     "{{filedDate}}",
@@ -1336,7 +1350,7 @@ let messages = {
         },
       },
     }, // locality
-    imageUpload: {
+    swachImageUpload: {
       question: {
         en_IN:
           "If possible, attach a photo of your grievance.\n\nTo continue without photo, type and send *1*",

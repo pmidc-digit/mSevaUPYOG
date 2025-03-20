@@ -12,10 +12,13 @@ var geturl = require("url");
 var path = require("path");
 require("url-search-params-polyfill");
 
-let pgrCreateRequestBody =
+let swachCreateRequestBody =
   '{"RequestInfo":{"authToken":"","userInfo":{}},"service":{"tenantId":"","serviceCode":"","description":"","accountId":"","source":"whatsapp","address":{"landmark":"","city":"","geoLocation":{"latitude": null, "longitude": null},"locality":{"code":""}}},"workflow":{"action":"APPLY","verificationDocuments":[]}}';
 
-class PGRService {
+let swachSearchRequestBody =
+  '{"RequestInfo": {"apiId": "Rainmaker", "authToken":"", "userInfo":{}, "msgId":"", "plainAccessRequest": {}}}';
+
+class SwachService {
   async fetchMdmsData(tenantId, moduleName, masterName, filterPath) {
     var url =
       config.egovServices.egovServicesHost + config.egovServices.mdmsSearchPath;
@@ -51,11 +54,12 @@ class PGRService {
     return data["MdmsRes"][moduleName][masterName];
   }
 
-  async fetchFrequentComplaints(tenantId) {
+  async fetchSwachFrequentComplaints(tenantId) {
+    //
     let complaintTypeMdmsData = await this.fetchMdmsData(
       tenantId,
-      "RAINMAKER-PGR",
-      "ServiceDefs",
+      "SwachReform",
+      "SwachBharatCategory",
       "$.[?(@.order && @.active == true)]"
     );
     let sortedData = complaintTypeMdmsData
@@ -66,61 +70,64 @@ class PGRService {
       if (!complaintTypes.includes(data.serviceCode))
         complaintTypes.push(data.serviceCode);
     }
-    let localisationPrefix = "SERVICEDEFS.";
+    // let localisationPrefix = "SERVICEDEFS.";    //need review
+    let localisationPrefix = "SWACHBHARATCATEGORY.";
     let messageBundle = {};
     for (let complaintType of complaintTypes) {
       let message = localisationService.getMessageBundleForCode(
         localisationPrefix + complaintType.toUpperCase()
       );
+
       messageBundle[complaintType] = message;
     }
     return { complaintTypes, messageBundle };
   }
 
-
-  async fetchComplaintCategories(tenantId) {
-    //
+  async fetchSwachComplaintCategories(tenantId) {
+    // fetchs all the menupath of swach-complaint-category object from MDMS
     let complaintCategories = await this.fetchMdmsData(
       tenantId,
-      "RAINMAKER-PGR",
-      "ServiceDefs",
+      "SwachReform",
+      "SwachBharatCategory",
       "$.[?(@.active == true)].menuPath"
     );
     complaintCategories = [...new Set(complaintCategories)];
     complaintCategories = complaintCategories.filter(
       (complaintCategory) => complaintCategory != ""
     ); // To remove any empty category
-    let localisationPrefix = "SERVICEDEFS.";
+    // let localisationPrefix = "SERVICEDEFS.";    //need review
+    let localisationPrefix = "SWACHBHARATCATEGORY.";
     let messageBundle = {};
     for (let complaintCategory of complaintCategories) {
       let message = localisationService.getMessageBundleForCode(
         localisationPrefix + complaintCategory.toUpperCase()
       );
+
       messageBundle[complaintCategory] = message;
     }
     return { complaintCategories, messageBundle };
   }
 
-
-  async fetchComplaintItemsForCategory(category, tenantId) {
+  async fetchSwatchComplaintItemsForCategory(category, tenantId) {
+    // fetchs all the serviceCode under the selected menupath of complaint-categoy
     let complaintItems = await this.fetchMdmsData(
       tenantId,
-      "RAINMAKER-PGR",
-      "ServiceDefs",
+      "SwachReform",
+      "SwachBharatCategory",
       '$.[?(@.active == true && @.menuPath == "' + category + '")].serviceCode'
     );
-    let localisationPrefix = "SERVICEDEFS.";
+    // let localisationPrefix = "SERVICEDEFS.";    //need review
+    let localisationPrefix = "SWACHBHARATCATEGORY.";
     let messageBundle = {};
     for (let complaintItem of complaintItems) {
       let message = localisationService.getMessageBundleForCode(
         localisationPrefix + complaintItem.toUpperCase()
       );
+
       messageBundle[complaintItem] = message;
     }
-
     return { complaintItems, messageBundle };
   }
-
 
   async getCityAndLocalityForGeocode(geocode, tenantId) {
     let latlng = geocode.substring(1, geocode.length - 1); // Remove braces
@@ -167,7 +174,7 @@ class PGRService {
       };
     }
     return undefined; // No matching city found
-  }
+  } //
 
   async fetchCitiesAndWebpageLink(tenantId, whatsAppBusinessNumber) {
     let { cities, messageBundle } = await this.fetchCities(tenantId);
@@ -183,7 +190,7 @@ class PGRService {
       tenantId,
       "tenant",
       "citymodule",
-      "$.[?(@.module=='PGR.WHATSAPP')].tenants.*.code"
+      "$.[?(@.module=='SWACH.WHATSAPP')].tenants.*.code"
     );
     let messageBundle = {};
     for (let city of cities) {
@@ -370,13 +377,14 @@ class PGRService {
     }
   }
 
-  async preparePGRResult(responseBody, locale) {
+  async prepareSwachResult(responseBody, locale) {
     let serviceWrappers = responseBody.ServiceWrappers;
     var results = {};
     results["ServiceWrappers"] = [];
-    let localisationPrefix = "SERVICEDEFS.";
+    // let localisationPrefix = "SERVICEDEFS.";    //need review
+    let localisationPrefix = "SWACHBHARATCATEGORY.";
 
-    let complaintLimit = config.pgrUseCase.complaintSearchLimit;
+    let complaintLimit = config.swachUseCase.complaintSearchLimit; //need review
 
     if (serviceWrappers.length < complaintLimit)
       complaintLimit = serviceWrappers.length;
@@ -390,7 +398,7 @@ class PGRService {
           serviceRequestId,
           mobileNumber
         );
-        let serviceCode = localisationService.getMessageBundleForCode(
+        let serviceCode = localisationService.getMessageBundleForCode(    // issue is here
           localisationPrefix + serviceWrapper.service.serviceCode.toUpperCase()
         );
         let filedDate = serviceWrapper.service.auditDetails.createdTime;
@@ -400,8 +408,9 @@ class PGRService {
         let applicationStatus = localisationService.getMessageBundleForCode(
           serviceWrapper.service.applicationStatus
         );
+
         var data = {
-          complaintType: dialog.get_message(serviceCode, locale),
+          complaintType: dialog.get_message(serviceCode, locale), 
           complaintNumber: serviceRequestId,
           filedDate: filedDate,
           complaintStatus: dialog.get_message(applicationStatus, locale),
@@ -414,8 +423,8 @@ class PGRService {
     return results["ServiceWrappers"];
   }
 
-  async persistComplaint(user, slots, extraInfo) {
-    let requestBody = JSON.parse(pgrCreateRequestBody);
+  async persistSwachComplaint(user, slots, extraInfo) {
+    let requestBody = JSON.parse(swachCreateRequestBody);
 
     let authToken = user.authToken;
     let userId = user.userId;
@@ -450,7 +459,7 @@ class PGRService {
 
     var url =
       config.egovServices.egovServicesHost +
-      config.egovServices.pgrCreateEndpoint +
+      config.egovServices.swachCreateEndpoint +
       "?tenantId=" +
       city;
 
@@ -468,7 +477,7 @@ class PGRService {
     let results;
     if (response.status === 200) {
       let responseBody = await response.json();
-      results = await this.preparePGRResult(responseBody, user.locale);
+      results = await this.prepareSwachResult(responseBody, user.locale);
     } else {
       console.error("Error in fetching the complaints");
       return undefined;
@@ -476,16 +485,22 @@ class PGRService {
     return results[0];
   }
 
-  async fetchOpenComplaints(user) {
-    let requestBody = {
-      RequestInfo: {
-        authToken: user.authToken,
-      },
-    };
+  async fetchOpenSwachComplaints(user) {
+    let requestBody = JSON.parse(swachSearchRequestBody);
+
+    requestBody["RequestInfo"]["authToken"] = user.authToken;
+    requestBody["RequestInfo"]["userInfo"] = user.userInfo;
+    requestBody["RequestInfo"]["msgId"] = config.msgId + "|" + user.locale;
+
+    // let requestBody = {
+    //   RequestInfo: {
+    //     authToken: user.authToken,
+    //   },
+    // };
 
     var url =
       config.egovServices.egovServicesHost +
-      config.egovServices.pgrSearchEndpoint;
+      config.egovServices.swachSearchEndpoint;
     url = url + "?tenantId=" + config.rootTenantId;
     url += "&";
     url += "mobileNumber=" + user.mobileNumber;
@@ -499,19 +514,19 @@ class PGRService {
       body: JSON.stringify(requestBody),
     };
 
+    
     let response = await fetch(url, options);
+
     let results;
     if (response.status === 200) {
       let responseBody = await response.json();
-      results = await this.preparePGRResult(responseBody, user.locale);
+      results = await this.prepareSwachResult(responseBody, user.locale);
     } else {
       console.error("Error in fetching the complaints");
       return [];
     }
-
     return results;
   }
-
 
   async getShortenedURL(finalPath) {
     var url =
@@ -537,7 +552,7 @@ class PGRService {
       config.egovServices.externalHost +
       "citizen/otpLogin?mobileNo=" +
       mobileNumber +
-      "&redirectTo=digit-ui/citizen/pgr/complaints/" +
+      "&redirectTo=digit-ui/citizen/swach/complaints/" +
       encodedPath +
       "&channel=whatsapp&tag=complaintTrack";
     let shortURL = await this.getShortenedURL(url);
@@ -611,4 +626,4 @@ class PGRService {
   }
 }
 
-module.exports = new PGRService();
+module.exports = new SwachService();

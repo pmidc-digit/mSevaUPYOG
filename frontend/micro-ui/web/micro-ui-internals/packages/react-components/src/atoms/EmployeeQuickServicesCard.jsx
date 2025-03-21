@@ -36,89 +36,55 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
 
   console.log("Module Data: ", moduleData);
   //const [moduleData, setModuleData] = useState([])
-  // const moduleAccessProps = (code) =>{
-  //   console.log("Inside moduleAccessProps",Digit.Utils.ptAccess());
+  const moduleAccessProps = (code) =>{
+    console.log("Inside moduleAccessProps",Digit.Utils.ptAccess());
   
-  //   switch (code) {
-  //     case "PT":
-  //       if (Digit.Utils.ptAccess()) {
-  //         return true;
-  //       } else {
-  //         return null;
-  //       }
-  //     case "WS":
-  //       if (Digit.Utils.wsAccess()) {
-  //         return true;
-  //       } else {
-  //         return null;
-  //       }
-  //     case "FSM":
-  //       if (Digit.Utils.fsmAccess()) {
-  //         return true;
-  //       } else {
-  //         return null;
-  //       }
-  //     case "MCollect":
-  //       if (Digit.Utils.mCollectAccess()) {
-  //         return true;
-  //       } else {
-  //         return null;
-  //       }
-  //     case "PGR":
-  //       if (Digit.Utils.pgrAccess()) {
-  //         return true;
-  //       } else {
-  //         return null;
-  //       }
-  //     case "TL":
-  //       if (Digit.Utils.tlAccess()) {
-  //         return true;
-  //       } else {
-  //         return null;
-  //       }
-  //     // case "OBPS":
-  //     //   if (Digit.Utils.obpsAccess()) {
-  //     //     return true;
-  //     //   } else {
-  //     //     return null;
-  //     //   }
-  //     case "Bills":
-  //       if (Digit.Utils.billsAccess()) {
-  //         return true;
-  //       } else {
-  //         return null;
-  //       }
-  //     // case "PTR":
-  //     //   if (Digit.Utils.ptrAccess()) {
-  //     //     return true;
-  //     //   } else {
-  //     //     return null;
-  //     //   }
-  //     default:
+    switch (code) {
+      case "PT":
+       
+          return true;
+       
+      case "WS":
+        
+          return true;
+        
+      case "FSM":
+        
+          return true;
+       
+      case "MCollect":
+       
+          return true;
+       
+      case "PGR":
+        
+          return true;
+       
+      case "TL":
+        
+          return true;
+        
+      case "OBPS":
+        
+          return true;
+        
+      case "Bills":
+       
+          return true;
+        
+      case "PTR":
+        
+          return true;
+       
+      default:
         
      
-  //         return null;
+          return null;
         
-  //   }
-  // }
+    }
+  }
 
-  const moduleAccessProps = (code) => {
-    const accessMap = {
-      PT: Digit.Utils.ptAccess,
-      WS: Digit.Utils.wsAccess,
-      FSM: Digit.Utils.fsmAccess,
-      MCollect: Digit.Utils.mCollectAccess,
-      PGR: Digit.Utils.pgrAccess,
-      TL: Digit.Utils.tlAccess,
-      Bills: Digit.Utils.billsAccess,
-      // Uncomment and add more cases as needed
-      // OBPS: Digit.Utils.obpsAccess,
-      // PTR: Digit.Utils.ptrAccess,
-    };
-   
-    // Call the corresponding access function if it exists in the map
-    return accessMap[code] && accessMap[code]() ? true : null;
-  };
+ 
 
   const Icon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
@@ -204,110 +170,71 @@ const iconSelector = (code) => {
   switch (code) {
     case "PT":
       
-      return <PTIcon className="fill-path-primary-main" />;
+      return <PTIcon />;
     case "WS":
-      return <WSICon className="fill-path-primary-main" />;
+      return <WSICon  />;
     case "FSM":
-      return <FSMIcon className="fill-path-primary-main" />;
+      return <FSMIcon />;
     case "MCollect":
-      return <MCollectIcon className="fill-path-primary-main" />;
+      return <MCollectIcon  />;
     case "PGR":
-      return <PGRIcon className="fill-path-primary-main" />;
+      return <PGRIcon  />;
     case "TL":
-      return <TLIcon className="fill-path-primary-main" />;
+      return <TLIcon  />;
     case "OBPS":
-      return <OBPSIcon className="fill-path-primary-main" />;
+      return <OBPSIcon  />;
     case "Bills":
-      return <BillsIcon className="fill-path-primary-main" />;
+      return <BillsIcon  />;
     case "PTR":
-      return <PTRIcon className="fill-path-primary-main" />;
+      return <PTRIcon  />;
     default:
-      return <PTIcon className="fill-path-primary-main" />;
+      return <PTIcon  />;
   }
 };
-// return (
-//   moduleAccessProps(moduleData.code) ? (
-//     <div
-//       className="employee-dashboard-quick-service-card employee-dashboard-quick-service-card-content"
-//       style={{
-//         display: "flex",
-//         padding: "0px",
-//         borderRadius: "0px 8px 8px 0px",
-       
-//       }}
-//       // onClick={}
-//     >
-//       <Link to={`${updatedModuleData[0].routes}`}>
-//         <div
-//           className="flex justify-center items-center"
-//           // style={{
-//           //   width: "20%",
-//           //   background: updatedModuleData[0]?.bgColor,
-//           //   display: "flex",
-//           //   alignItems: "center",
-//           //   justifyContent: "center",
-//           //   borderRadius: "8px 0px 0px 8px",
-//           // }}
-//           style={{display:"flex",marginLeft:"12px",marginTop:"80%"}}
-//         >
-//           {/* <span
-//             className="icon-banner-employee"
-//             style={{
-//               borderRadius: "5px",
-//               boxShadow: "5px 5px 5px 0px #e3e4e3",
-//             }}
-//           > */}
-//             {iconSelector(moduleData.code)}
-//             {
-//               // moduleAccessProps()
-//               // moduleDataForDashboard?.Icon
-//               // React.createElement(updatedModuleData[0]?.icon)
-//             }
-//           {/* </span> */}
-//         </div>
-//       </Link>
-//       <div
-//         className="employee-dashboard-quick-service-card-module-name"
-//         style={{
-//           display: "flex",
-//           justifyContent: "center",
-//           alignItems: "center",
-//           fontSize: "24px",
-//           fontWeight: "bold",
-//           padding: "2rem 2rem",
-//         }}
-//       >
-//         {
-//           // moduleDataForDashboard.moduleName
-//           updatedModuleData[0]?.moduleCode
-//         }
-//       </div>
-//     </div>
-//   ): null
-// );
 return (
   moduleAccessProps(moduleData.code) ? (
-<div
+    <div
       className="employee-dashboard-quick-service-card employee-dashboard-quick-service-card-content"
-      style={{
-        display: "flex",
-        padding: "0px",
-        borderRadius: "0px 8px 8px 0px",
-      }}
->
-<Link to={`${updatedModuleData[0]?.routes}`}>
-<div
-          className="flex justify-center items-center"
+      // style={{
+      //   display: "flex",
+      //   padding: "0px",
+      //   borderRadius: "0px 8px 8px 0px",
+       
+      // }}
+      // onClick={}
+    >
+      <Link to={`${updatedModuleData[0].routes}`}>
+        <div
+          className="employee-dashboard-quick-service-card-module-icon"
           style={{
             display: "flex",
-            marginLeft: "12px",
-            marginTop: "80%",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100px",
+            width: "100px",
+            paddingTop: "5px",
+            borderRadius: "8px 0 0 8px",
+            backgroundColor:updatedModuleData[0]?.bgColor
           }}
->
-          {iconSelector(moduleData.code)}
-</div>
-</Link>
-<div
+         // style={{backgroundColor:updatedModuleData[0]?.bgColor}}
+        >
+          {/* <span
+            className="icon-banner-employee"
+            style={{
+              borderRadius: "5px",
+              boxShadow: "5px 5px 5px 0px #e3e4e3",
+            }}
+          > */}
+            {iconSelector(moduleData.code)}
+            {
+              // moduleAccessProps()
+              // moduleDataForDashboard?.Icon
+              // React.createElement(updatedModuleData[0]?.icon)
+            }
+          {/* </span> */}
+        </div>
+      </Link>
+      <div
         className="employee-dashboard-quick-service-card-module-name"
         style={{
           display: "flex",
@@ -315,14 +242,18 @@ return (
           alignItems: "center",
           fontSize: "24px",
           fontWeight: "bold",
-          padding: "2rem 2rem",
+          padding: "2rem 2rem"
         }}
->
-        {updatedModuleData[0]?.moduleCode}
-</div>
-</div>
-  ) : null
+      >
+        {
+          // moduleDataForDashboard.moduleName
+          updatedModuleData[0]?.moduleCode
+        }
+      </div>
+    </div>
+  ): null
 );
+
 };
 
 export default EmployeeQuickServicesCard;

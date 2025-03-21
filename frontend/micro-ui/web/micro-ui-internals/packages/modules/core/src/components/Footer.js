@@ -2,14 +2,43 @@ import React from "react";
 
 const Footer = () => {
   const styles = {
-    footerTop: {
+    footerTopIcons: {
       backgroundColor: "#F5FBFF",
       width: "100%",
       minHeight: "100px",
       padding: "20px 60px 60px 60px",
       display: "flex",
       flexWrap: "wrap",
-     justifyContent: "space-between",
+      justifyContent: "space-between",
+    },
+
+    footerTopButton:{
+      backgroundColor: "#F5FBFF",
+      width: "300px",
+      border: "1px solid green",
+      borderRadius: "90px",
+      padding: "8px 20px 8px 10px",
+      boxSizing: "borderBox"
+    },
+
+    buttonText:{
+     marginRight: "10px"
+    },
+
+    footerTopSocialIcons: {
+      display:"flex",
+      justifyContent:"spaceBetween"
+    },
+
+    footerTop: {
+      backgroundColor: "#F5FBFF",
+      width: "100%",
+      minHeight: "100px",
+      padding: "20px 60px 60px 60px",
+    },
+
+    footerTopHeader:{
+
     },
 
     image: {
@@ -19,7 +48,7 @@ const Footer = () => {
    },
 
    '@media (min-width: 768px)': {
-        footerTop: {
+        footerTopIcons: {
             flexWrap: 'nowrap',
         },
         image: {
@@ -33,7 +62,8 @@ const Footer = () => {
 
   return (
     <div className="footer-body" style={{ width: "100%", position: "relative", bottom: 0, backgroundColor: "#152265", textAlign: "center" }}>
-      <div className="footer-top" style={styles.footerTop}>
+      <div className="footer-top" styles={styles.footerTop}>
+      <div className="footer-top-icons" style={styles.footerTopIcons}>
         
           <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/nic%20image.png" alt="nic"  style={styles.image}/>
           <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/myGov%20image.png" alt="myGov"  style={styles.image}/>
@@ -43,6 +73,21 @@ const Footer = () => {
           <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/india%20gov%20image.png" alt="indiaGov" style={styles.image}/>
           <img src="https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/meity%20image.png" alt="meity" style={styles.image}/>
        
+      </div>
+       {/* <button className="footer-top-button"   styles={styles.footerTopButton}>
+        <div className="footer-top-header" styles={styles.footerTopHeader}> 
+          Follow Us
+        </div>
+
+        <div className="social-icons " style={styles.footerTopSocialIcons}>
+        <a href="https://www.facebook.com" target="_blank" className="social-icon facebook">FB</a>
+        <a href="https://www.twitter.com" target="_blank" className="social-icon twitter">TW</a>
+        <a href="https://www.linkedin.com" target="_blank" className="social-icon linkedin">LIN</a>
+        <a href="https://www.youtube.com" target="_blank" className="social-icon youtube">UTUBE</a>
+        </div>
+
+       </button> */}
+
       </div>
 
       <div className="footer-bottom">

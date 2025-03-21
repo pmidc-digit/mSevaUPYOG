@@ -29,7 +29,7 @@ const LandingPage = () => {
     <div className="landingPage" style={containerStyle}>
       {/* <h1>This is our Landing Page</h1> */}
      
-      {/* <TopSection/> */}
+      <TopSection/>
       <Header />
       <MiddleSection/>
       <HelpSection/>

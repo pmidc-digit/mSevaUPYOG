@@ -165,11 +165,6 @@
                         align-items: center;
                         gap: 16px;
 
-                        .employee-dashboard-quick-service-card-module-icon {
-                            width: "48px";
-                            height: "41px";
-                            background: #0D43A7;
-                        }
 
                         .employee-dashboard-quick-service-card-module-name {
                             font-family: Noto Sans;
@@ -184,4 +179,14 @@
             }
         }
     }
+}
+
+.employee-dashboard-quick-service-card-module-icon {
+    display: "flex";
+    justify-content: "center";     
+    align-items: "center";         
+    height: "100px";              
+    width: "100px";              
+    padding-top: "5px";
+    border-radius: "8px 0 0 8px";
 }

@@ -22,17 +22,7 @@ import {
 import { update } from "lodash";
 const EmployeeQuickServicesCard = ({ moduleData }) => {
   const { t } = useTranslation();
-  // function getModuleCardData(){
-  //   switch(moduleCode){
-  //     case "":
-
-  //     case "":
-  //     default:
-  //       return ";
-  //   };
-  // }
-
-  // const moduleCardData=getModuleCardData();
+  
 
   console.log("Module Data: ", moduleData);
   //const [moduleData, setModuleData] = useState([])
@@ -174,7 +164,7 @@ const iconSelector = (code) => {
     case "WS":
       return <WSICon  />;
     case "FSM":
-      return <FSMIcon />;
+      return <FSMIcon className="fill-path-primary-main" />;
     case "MCollect":
       return <MCollectIcon  />;
     case "PGR":
@@ -191,50 +181,28 @@ const iconSelector = (code) => {
       return <PTIcon  />;
   }
 };
+
 return (
   moduleAccessProps(moduleData.code) ? (
     <div
       className="employee-dashboard-quick-service-card employee-dashboard-quick-service-card-content"
-      // style={{
-      //   display: "flex",
-      //   padding: "0px",
-      //   borderRadius: "0px 8px 8px 0px",
-       
-      // }}
-      // onClick={}
-    >
-      <Link to={`${updatedModuleData[0].routes}`}>
-        <div
-          className="employee-dashboard-quick-service-card-module-icon"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "100px",
-            width: "100px",
-            paddingTop: "5px",
-            borderRadius: "8px 0 0 8px",
-            backgroundColor:updatedModuleData[0]?.bgColor
-          }}
-         // style={{backgroundColor:updatedModuleData[0]?.bgColor}}
-        >
-          {/* <span
-            className="icon-banner-employee"
-            style={{
-              borderRadius: "5px",
-              boxShadow: "5px 5px 5px 0px #e3e4e3",
-            }}
-          > */}
-            {iconSelector(moduleData.code)}
-            {
-              // moduleAccessProps()
-              // moduleDataForDashboard?.Icon
-              // React.createElement(updatedModuleData[0]?.icon)
-            }
-          {/* </span> */}
-        </div>
-      </Link>
-      <div
+      style={{
+        display: "flex",
+        padding: "0px",
+        borderRadius: "8px",
+      }}
+>
+<Link to={`${updatedModuleData[0]?.routes}`}>
+<div
+  className="employee-dashboard-quick-service-card-module-icon"
+  style={{
+    backgroundColor: updatedModuleData[0]?.bgColor,
+  }}
+>
+    {iconSelector(moduleData.code)}
+</div>
+</Link>
+<div
         className="employee-dashboard-quick-service-card-module-name"
         style={{
           display: "flex",

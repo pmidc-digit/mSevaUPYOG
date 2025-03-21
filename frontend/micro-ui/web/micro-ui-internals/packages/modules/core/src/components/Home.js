@@ -67,6 +67,7 @@ export const processLinkData = (newData, code, t) => {
 const iconSelector = (code) => {
   switch (code) {
     case "PT":
+      
       return <PTIcon className="fill-path-primary-main" />;
     case "WS":
       return <WSICon className="fill-path-primary-main" />;
@@ -267,12 +268,15 @@ const EmployeeHome = ({ modules }) => {
               //const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
               return <EmployeeQuickServicesCard moduleData={moduleData}  />;
             })}
+            </div>
+            <div style={{marginTop:'70px'}}>
             {modules.map(({ code }, index) => {
               console.log("dsjdgsh", code)
               const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
               return <Card key={index} />;
             })}
-          </div>
+            </div>
+          {/* </div> */}
         </div>
       </div>
     </div>

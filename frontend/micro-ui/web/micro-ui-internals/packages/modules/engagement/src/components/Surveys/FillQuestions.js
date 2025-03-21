@@ -630,8 +630,8 @@ const FillQuestions = (props) => {
             type="text"
             inputRef={register({
               maxLength: {
-                value: 60,
-                message: t("EXCEEDS_60_CHAR_LIMIT"),
+                value: 200,
+                message: t("EXCEEDS_200_CHAR_LIMIT"),
               },
               required: question.required,
             })}
@@ -648,6 +648,14 @@ const FillQuestions = (props) => {
   return (
     <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
       <div className="category-card">
+        <div>
+          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
+            Survey Name: <span style={{ fontWeight: "normal", color: "black" }}>{data.surveyTitle}</span>
+          </h2>
+          <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
+            Survey Description: <span style={{ fontWeight: "normal", color: "black" }}>{data.surveyDescription}</span>
+          </h2>
+        </div>
         <form onSubmit={handleSubmit}>
           {data.sections.length > 0
             ? data.sections.map((section) => (
@@ -657,7 +665,9 @@ const FillQuestions = (props) => {
                     <div>
                       <h3>{question.questionStatement}</h3>
                       <div className="surveyQuestion-wrapper">
-                        {index + 1}. {question.question.questionStatement} {question.question?.required ? "*" : ""}
+                        <div style={{ display: "inline" }}>
+                        {index + 1}. {question.question.questionStatement} {question.question?.required&&<span style={{ color: "red" }}>*</span>}
+                        </div>
                         {displayAnswerField(question.question.type, question.question, section)}
                         {errors[question.uuid] && <span className="error">{errors[question.uuid]}</span>}
                       </div>

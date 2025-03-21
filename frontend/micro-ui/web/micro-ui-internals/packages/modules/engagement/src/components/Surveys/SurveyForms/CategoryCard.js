@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useTransition } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addQuestions,addQuestionsList, deleteCategory, updateCategory, updateQuestionSelection ,setQuestions, goPrev} from '../../../redux/actions/surveyFormActions';
+import { addQuestions,addQuestionsList, deleteCategory, updateCategory, updateQuestionSelection , updateQuestionWeightage,setQuestions, goPrev} from '../../../redux/actions/surveyFormActions';
 import {TextInput, Dropdown, CheckBox ,Toast} from '@mseva/digit-ui-react-components';
 import { useTranslation } from 'react-i18next';
 import { isError } from 'lodash';
@@ -13,6 +13,7 @@ const {t} = useTranslation();
   const [showQuestionTable, setShowQuestionTable] = useState(readOnly);
   const [showQuestionTableList, setShowQuestionTableList] = useState(readOnly);
   const [questionStatement, setQuestionStatement] = useState('');
+    const [errors, setErrors] = useState({});
   const  questions= [
     { id: 1, statement: 'Question 1', selected: false },
     { id: 2, statement: 'Question 2', selected: false },
@@ -67,7 +68,7 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
     setShowQuestionTableList(false);
   };
   const handleFieldChange = (e) => {
-
+   console.log("value",e.target)
     const { name, value } = e.target;
     dispatch(updateCategory(category.id, { [name]: value }));
   };
@@ -169,7 +170,7 @@ console.log("readOnly, goPrev, hide",readOnly,state.goPrev,hideQuestionLabel)
     const updatedQuestions = [...category.selectedQuestions, ...newQuestions.map(question => ({ ...question,selectedCategory }))];
     const updatedQuestionsWithWeightage = updatedQuestions.map(q => ({
       ...q,
-      weightage: 100 / updatedQuestions.length
+      weightage: Math.floor((100 / updatedQuestions.length)*100)/100
     }));
     console.log("upd Qus",updatedQuestions)
     dispatch(addQuestions(category.id, updatedQuestionsWithWeightage));
@@ -189,11 +190,31 @@ const handleDeleteQuestion = (questionToDelete) => {
   const totalQuestions = updatedQuestions.length;
   const updatedQuestionsWithWeightage = updatedQuestions.map(q => ({
     ...q,
-    weightage: 100 / totalQuestions
+    weightage: Math.floor((100 / totalQuestions)*100)/100
   }));
   console.log("upd Qus",updatedQuestions)
   dispatch(addQuestions(category.id, updatedQuestionsWithWeightage));
 };
+const handleWeightage =(index,questionId, value) =>{
+  console.log("value",value)
+  console.log("id",questionId)
+  console.log("quest",category.selectedQuestions)
+  const regex = /^\d*(\.\d{0,2})?$/;
+  let newErrors = {};
+  if (regex.test(value)) {
+ dispatch(updateQuestionWeightage(category.id,questionId,value))
+  newErrors={}
+ setErrors(newErrors)
+
+  }
+  else{
+   
+    let obj= {weightage :'Invalid weightage value. Please enter a number or decimal upto 2 decimal points'}
+    newErrors[index] =obj;
+    setErrors(newErrors)
+  }
+}
+console.log("errors",errors)
   return (
     <div className="category-card">
       <h3>Section Title</h3>
@@ -372,7 +393,15 @@ const handleDeleteQuestion = (questionToDelete) => {
                     <td>{question.selectedCategory}</td>
                     <td>{question.questionStatement}</td>
                     <td>
-                      {question.weightage}
+                      <input 
+                      type='text'
+                      defaultValue={question.weightage}
+                      value={question.weightage}
+                      required
+                      onChange={(e) => handleWeightage(index,question.uuid, e.target.value)}
+                      />
+                      {errors[index]?.weightage!='undefined' &&<span className='error'>{errors[index]?.weightage}</span>}
+                      {/* {question.weightage} */}
                       {/* <input
                         type="checkbox"
                         readOnly={readOnly}

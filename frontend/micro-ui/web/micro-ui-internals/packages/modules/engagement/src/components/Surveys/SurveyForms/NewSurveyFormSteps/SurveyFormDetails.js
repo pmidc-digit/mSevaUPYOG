@@ -1,8 +1,10 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FormComposer } from "@mseva/digit-ui-react-components";
+//import { FormComposer } from "@mseva/digit-ui-react-components";
 //
+import {FormComposer} from "../../../../../../../react-components/src/hoc/FormComposer";
 import { updateSurveyForm} from "../../../../redux/actions/surveyFormActions";
+import { Header } from "@mseva/digit-ui-react-components";
 
 
 const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
@@ -60,15 +62,26 @@ const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
             ? state.engagement.surveyForm.formData[config.key]
             : {};
     });
-  
+  const headerStyle={
+    marginLeft:'-10px'
+  }
+  const lineStyle={
+    border:'1px solid #DFE0E2',
+     marginBottom:'20px',
+      marginLeft:'-10px'
+  }
 
     // console.log("currentStepData in  Administrative details: ", currentStepData);
 
     return (
         <React.Fragment>
+           
             <FormComposer
                 defaultValues={currentStepData}
                 //heading={t("")}
+                box={true}
+                lineStyle={lineStyle}
+                sectionHeadStyle={headerStyle}
                 config={config.currStepConfig}
                 onSubmit={goNext}
                 onFormValueChange={onFormValueChange}

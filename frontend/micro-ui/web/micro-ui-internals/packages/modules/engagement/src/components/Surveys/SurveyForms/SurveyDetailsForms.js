@@ -1,4 +1,4 @@
-import { CardLabelError, Dropdown, RemoveableTag, TextInput, MultiSelectDropdown } from "@mseva/digit-ui-react-components";
+import { CardLabelError, Dropdown, RemoveableTag, TextInput, MultiSelectDropdown, TextArea } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useMemo } from "react";
 import { Controller } from "react-hook-form";
 import { useSelector, useDispatch } from 'react-redux';
@@ -51,8 +51,35 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
      console.log("survey deta",surveyDetails)
 console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
   return (
-    <div className="surveydetailsform-wrapper">
-      <span className="surveyformfield">
+    <div
+     //className="surveydetailsform-wrapper"
+ className="create-survey-card"
+     >
+     {/* <span 
+      style={{  
+        display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  alignItems: "flex-start",
+  justifyContent: "center",
+  alignSelf: "stretch",
+  flexShrink: 0,
+  position: "relative"}}
+  className="surveyformfield"
+   > */}
+   <div 
+   className="survey-row"
+  //  style={{display: "flex",
+  // justifyContent: "space-between"}}
+  >
+   
+    <div 
+    className="survey-column"
+  //   style={{display: "flex",
+  // flexDirection: "column",
+  // gap: "10px",
+  // width:" 45%"}}
+  >
         <label>{`${t("LABEL_FOR_ULB")} * `}</label>
         {/* <Controller
           name="ulb"
@@ -141,9 +168,9 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
         /> */}
         
         {surveyFormState?.errors?.tenantIds && <CardLabelError>{t("ES_ERROR_REQUIRED")}</CardLabelError>}
-      </span>
-
-      <span className="surveyformfield">
+   </div>
+   <div className="survey-column">
+      {/* <span className="surveyformfield"> */}
         <label>{`${t("CS_SURVEY_NAME")} * `}</label>
         <TextInput
           name="name"
@@ -166,12 +193,16 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
           disable={readOnly||false}
         />
         {surveyFormState?.errors?.title && <CardLabelError>{surveyFormState?.errors?.["title"]?.message}</CardLabelError>}
-      </span>
-      <span className="surveyformfield">
+        
+      </div>
+      </div>
+      {/* <span className="surveyformfield"> */}
+      <div className="survey-column" style={{width:'100%'}}>
         <label>{`${t("CS_SURVEY_DESCRIPTION")} `}</label>
         <TextInput
           name="description"
           type="text"
+          
           inputRef={registerRef({
             //required: t("ES_ERROR_REQUIRED"),
             maxLength: {
@@ -190,8 +221,10 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
           disable={readOnly||false}
         />
         {surveyFormState?.errors?.description && <CardLabelError>{surveyFormState?.errors?.["description"]?.message}</CardLabelError>}
-      </span>
-    </div>
+      {/* </span> */}
+      </div>
+      </div>
+   
   );
 };
 

@@ -226,6 +226,7 @@ export const FormComposer = (props) => {
           <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : {}} id={section.headId}>
             {t(section.head)}
           </CardSectionHeader>
+          <div style={props?.lineStyle? props?.lineStyle:{}}></div>
         </>
       );
     } else {
@@ -343,10 +344,12 @@ export const FormComposer = (props) => {
   const handleBackClick = () => {
     props.onBackClick && props.onBackClick(formData);
   };
-
+const styles={boxShadow:'none',padding: "20px 48px 48px"}
   return (
     <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)} id={props.formId} className={props.className}>
       <Card 
+      
+      style={props?.box===true? styles: null}
       // style={getCardStyles()} 
       // className={props?.cardClassName ? props.cardClassName : ""}
       >

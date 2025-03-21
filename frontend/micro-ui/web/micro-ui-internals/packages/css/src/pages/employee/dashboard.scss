@@ -28,6 +28,7 @@
             line-height: 32px;
             letter-spacing: 0%;
             color: #FFFFFF;
+            text-transform: uppercase;
         }
 
         .employee-dashboard-welcome-card-content {
@@ -137,6 +138,7 @@
                     font-size: 20px;
                     line-height: 27.32px;
                     letter-spacing: 0%;
+                    padding: 2rem 0.5rem;
                 }
 
                 .employee-dashboard-view-all-link {
@@ -150,8 +152,8 @@
                 gap: 16px;
 
                 .employee-dashboard-quick-service-card {
-                    width: 350px;
-                    height: 72px;
+                    width: 32%;
+                    height: 102px;
                     padding: 8px 16px;
                     border-radius: 8px;
                     background: #FFFFFF;
@@ -163,11 +165,6 @@
                         align-items: center;
                         gap: 16px;
 
-                        .employee-dashboard-quick-service-card-module-icon {
-                            width: "48px";
-                            height: "41px";
-                            background: #0D43A7;
-                        }
 
                         .employee-dashboard-quick-service-card-module-name {
                             font-family: Noto Sans;
@@ -182,4 +179,14 @@
             }
         }
     }
+}
+
+.employee-dashboard-quick-service-card-module-icon {
+    display: "flex";
+    justify-content: "center";     
+    align-items: "center";         
+    height: "100px";              
+    width: "100px";              
+    padding-top: "5px";
+    border-radius: "8px 0 0 8px";
 }

@@ -8,20 +8,21 @@ import { DeleteIcon, EditIcon } from "@mseva/digit-ui-react-components";
 const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, inboxStyles = {}, setShowToast }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value) =>
-    value === true ? <span className="sla-cell-success">Active</span> : value === false ? <span className="sla-cell-error">INACTIVE</span> : "-";
+    value === true ? <span className="sla-cell-success">Active</span> : value === false ? <span className="sla-cell-error">Inactive</span> : "-";
   const { t } = useTranslation();
 
   const handleUpdateSurveyConfirm = (row) => {
     console.log("Current row: ", row);
-    const currentStatus = row?.original?.active;
+    const currentStatus = row?.original?.active?"Active":"Inactive";
+    const updatedStatus= row?.original?.active? "Inactive":"Active";
     setShowToast({
       label: `Are you sure you want to change the survey status of "${
         row?.original?.surveyTitle
-      }" from ${currentStatus} to ${!currentStatus}? Please confirm.`,
+      }" from ${currentStatus} to ${updatedStatus}? Please confirm.`,
       isDeleteBtn: true,
       warning: true,
       isWarningButtons: true,
-      rowData: row?.original ,
+      rowData: row?.original,
     });
   };
 
@@ -86,6 +87,18 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "postedBy",
         Cell: ({ row }) => GetCell(row.original?.postedBy),
         // accessor: (row) => row.postedBy,
+      },
+      {
+        Header: t("Created On"),
+        accessor: "createdTime",
+        Cell: ({ row }) =>
+          row.original?.auditDetails?.createdTime ? GetCell(format(new Date(row.original?.auditDetails?.createdTime), "dd/MM/yyyy")) : "",
+      },
+      {
+        Header: t("Last Updated On"),
+        accessor: "updatedTime",
+        Cell: ({ row }) =>
+          row.original?.auditDetails?.lastModifiedTime ? GetCell(format(new Date(row.original?.auditDetails?.lastModifiedTime), "dd/MM/yyyy")) : "",
       },
       //   {
       //     Header: t("CS_SURVEY_RESULTS"),

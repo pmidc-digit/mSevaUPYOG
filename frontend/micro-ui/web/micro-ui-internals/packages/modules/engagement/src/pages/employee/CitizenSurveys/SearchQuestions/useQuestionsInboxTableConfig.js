@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { DeleteIcon, EditIcon } from "@mseva/digit-ui-react-components";
 const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, inboxStyles = {}, setShowToast }) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
+  const GetStatusCell = (value) => <span className={value === "ACTIVE" ? "sla-cell-success" : "sla-cell-error"}>{value}</span>;
   const { t } = useTranslation();
 
   // const handleDeleteConfirm = (row) => {
@@ -30,7 +31,7 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
       warning: true,
       isWarningButtons: true,
       rowData: row?.original,
-      updatedStatus: updatedStatus
+      updatedStatus: updatedStatus,
     });
   };
 
@@ -52,13 +53,7 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
       {
         Header: t("Is Question Active"),
         accessor: "isActive",
-        Cell: ({ row }) => {
-          return (
-            <div>
-              <span>{row.original?.status}</span>
-            </div>
-          );
-        },
+        Cell: ({ row }) => GetStatusCell(row.original?.status),
       },
       {
         Header: t("Question Type"),

@@ -82,7 +82,9 @@ const CreateSurveyStepForm = () => {
       {/* <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("CREATE_NEW_SURVEY")}
       </CardHeader> */}
-      <Header>{t("CREATE_NEW_SURVEY")}</Header>
+      {/* <Header>{t("CREATE_NEW_SURVEY")}</Header> */}
+      <h1 style={{color:'black',fontFamily:'Noto Sans,sans-serif', fontSize:'28px',fontWeight:'500'}}>{t("CREATE_NEW_SURVEY")}</h1>
+      <div style={{border:'1px solid #DFE0E2', marginBottom:'50px'}}></div>
       <Stepper stepsList={updatedSurveyConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast

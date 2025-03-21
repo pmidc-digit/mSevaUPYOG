@@ -241,9 +241,12 @@
     }
 
     .card-section-header {
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       color: #0D43A7;
-      @apply text-heading-m-dt font-medium;
+      font-size: 24px;
+        line-height: 28px;
+      font-family:Noto Sans, sans-serif;
+      @apply text-heading-m-dt font-medium font-sans;
     }
 
     .card-section-sub-text{

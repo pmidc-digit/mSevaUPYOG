@@ -15,14 +15,17 @@ const FillSurvey = ({stateCode}) => {
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
-  const [citizenFound, setCitizenFound]=useState(null)
+  //const [citizenFound, setCitizenFound]=useState(null)
   const [register,setRegister]=useState(null)
   const [Otp,setGetOtp]=useState(false);
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
     city:"",
-    otp:""
+    otp:"",
+    citizenFound: null,
+    register: null,
+    user:null
     // relationName: "",
     // relation: null,
     // address: "",
@@ -88,6 +91,7 @@ const FillSurvey = ({stateCode}) => {
     // else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
     if (!formData.mobile) newErrors.mobile = "Mobile number is required";
     else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";
+    if (!formData.city) newErrors.city = "City is required";
     // if (!formData.relation) newErrors.relation = "Relation is required";
     // if (!formData.address) newErrors.address = "Address is required";
     // if (!formData.dob) newErrors.dob = "Date of Birth is required";
@@ -125,7 +129,12 @@ const FillSurvey = ({stateCode}) => {
         console.log("response", response);
       
         if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length>0) {
-         setCitizenFound(true)
+          setFormData((prevData) => ({
+            ...prevData,
+            ["citizenFound"]: true,
+          }));
+         
+         // setCitizenFound(true)
           history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
             citizenFill: true,
             citizenData: formData,
@@ -134,7 +143,11 @@ const FillSurvey = ({stateCode}) => {
           });
           
         } else {
-          setCitizenFound(false)
+          setFormData((prevData) => ({
+            ...prevData,
+            ["citizenFound"]: false,
+          }));
+         // setCitizenFound(false)
           setShowToast({ key: true, isError: true, label: `CITIZEN NOT FOUND FOR THE GIVEN DETAILS` });
          
         }
@@ -171,12 +184,22 @@ const FillSurvey = ({stateCode}) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-   const proceed = register===true?validateRegisterForm(): validateForm()
+    if(formData.citizenFound===null){
+      setShowToast({ key: true, isError: true, label: `PLEASE CLICK ON FETCH DETAILS BUTTON` })
+      return;
+    }
+   const proceed = formData.register===true?validateRegisterForm():formData.citizenFound===true? validateForm():null;
      if (proceed) {
       console.log("Form submitted:", formData);
-      console.log("reg",register,citizenFound);
-      if((register===false|| register===null) && (citizenFound===null || citizenFound===true)){
-        handleNext();
+      console.log("reg",formData.register,formData.citizenFound);
+      if((formData.register===false|| formData.register===null) && (formData.citizenFound===true)){
+       // handleNext();
+       history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
+        citizenFill: true,
+        citizenData: formData,
+        userInfo: formData.user,
+        surveyDetails: surveyDetails,
+      });
       }
       else{
         handleRegisterNext();
@@ -198,7 +221,7 @@ const FillSurvey = ({stateCode}) => {
           </h2>
         </div>
         <form onSubmit={handleSubmit}>
-          <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} citizenFound={citizenFound} setRegister={setRegister} register={register} stateCode={stateCode} Otp={Otp} setGetOtp={setGetOtp}/>
+          <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} stateCode={stateCode} Otp={Otp} setGetOtp={setGetOtp}/>
           <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", gap: "10px", flexDirection: "row", marginTop: "10px" }}>
             <button type="submit">Next</button>
             <button
@@ -207,11 +230,11 @@ const FillSurvey = ({stateCode}) => {
                 setFormData({
                   name: "",
                   mobile: "",
-                  relationName: "",
-                  relation: null,
-                  address: "",
-                  email: "",
-                  dob: "",
+                  city:"",
+                  otp:"",
+                  citizenFound: null,
+                  register: null,
+                  user:null
                 })
               }
             >

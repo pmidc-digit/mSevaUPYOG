@@ -1,7 +1,7 @@
 {
-  "name": "@nudmcdgnpm/upyog-ui-module-chb",
-  "description": "Community Hall Booking Module",
-  "version": "1.2.4",
+  "name": "@mseva/upyog-ui-module-ads",
+  "description": "Advertisement Module",
+  "version": "1.0.0",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
@@ -33,5 +33,7 @@
     "react-table": "7.7.0",
     "redux": "4.1.2",
     "redux-thunk": "2.4.1"
-  }
+  },
+  "devDependencies": {},
+  "author": ""
 }

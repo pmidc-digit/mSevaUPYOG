@@ -15,7 +15,7 @@ const sevaMachine = Machine({
       // actions: assign( (context, event) => dialog.sendMessage(context, dialog.get_message(messages.reset, context.user.locale), false))
     },
     USER_SWACH_RESET: {
-      target: "#swachsevamenu",
+      target: "#swachWelcome",
     },
   },
   states: {
@@ -363,6 +363,53 @@ const sevaMachine = Machine({
             dialog.sendMessage(context, message, true);
           }),
           always: "#sevamenu",
+        },
+      },
+    },
+    swachWelcome: {
+      id: "swachWelcome",
+      onEntry: assign((context, event) => {
+        console.log("Swach Welcome intention ----- ", event)
+      }),
+      initial: "preCondition",
+      states: {
+        preCondition: {
+          always: [
+            {
+              target: "invoke",
+              cond: (context) => context.user.locale,
+            },
+            {
+              target: "#onboarding",
+            },
+          ],
+        },
+        invoke: {
+          onEntry: assign((context, event) => {
+            var message = dialog.get_message(
+              messages.welcome,
+              context.user.locale
+            );
+            let name = "Citizen";
+            if (context.user.name) {
+              message = message.replace("{{name}}", context.user.name);
+              name = context.user.name;
+            } else {
+              message = message.replace("{{name}}", "Citizen");
+              name = "Citizen";
+            }
+            let params = [];
+            params.push(name);
+
+            var templateContent = {
+              output: "3797437",
+              type: "template",
+              params: params,
+            };
+            //dialog.sendMessage(context, templateContent, true);
+            dialog.sendMessage(context, message, true);
+          }),
+          always: "#swachsevamenu",
         },
       },
     },

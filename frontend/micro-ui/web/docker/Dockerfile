@@ -1,23 +1,23 @@
 FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries
-RUN yarn add @mseva/digit-ui-module-bills
-RUN yarn add @mseva/digit-ui-module-pt
-RUN yarn add @mseva/digit-ui-module-fsm
-RUN yarn add @mseva/digit-ui-module-tl
-RUN yarn add @mseva/digit-ui-module-dss
-RUN yarn add @mseva/digit-ui-module-mcollect
-RUN yarn add @mseva/digit-ui-module-pgr
-RUN yarn add @mseva/digit-ui-module-noc
-RUN yarn add @mseva/digit-ui-module-engagement
-RUN yarn add @mseva/digit-ui-module-hrms
-RUN yarn add @mseva/digit-ui-module-core
-RUN yarn add @mseva/digit-ui-module-obps
-RUN yarn add @mseva/digit-ui-module-common
-RUN yarn add @mseva/digit-ui-module-ws
-RUN yarn add @mseva/digit-ui-module-commonpt
-RUN yarn add @mseva/digit-ui-module-ptr
+RUN yarn add @mseva/digit-ui-libraries@1.0.2
+RUN yarn add @mseva/digit-ui-module-bills@1.0.3
+RUN yarn add @mseva/digit-ui-module-pt@1.0.1
+RUN yarn add @mseva/digit-ui-module-fsm@1.0.1
+RUN yarn add @mseva/digit-ui-module-tl@1.0.1
+RUN yarn add @mseva/digit-ui-module-dss@1.0.1
+RUN yarn add @mseva/digit-ui-module-mcollect@1.0.1
+RUN yarn add @mseva/digit-ui-module-pgr@1.0.1
+RUN yarn add @mseva/digit-ui-module-noc@1.0.1
+RUN yarn add @mseva/digit-ui-module-engagement@1.1.1
+RUN yarn add @mseva/digit-ui-module-hrms@1.0.1
+RUN yarn add @mseva/digit-ui-module-core@1.0.1
+RUN yarn add @mseva/digit-ui-module-obps@1.0.1
+RUN yarn add @mseva/digit-ui-module-common@1.0.2
+RUN yarn add @mseva/digit-ui-module-ws@1.0.1
+RUN yarn add @mseva/digit-ui-module-commonpt@1.0.1
+RUN yarn add @mseva/digit-ui-module-ptr@1.0.2
 
 ARG WORK_DIR
 WORKDIR /app

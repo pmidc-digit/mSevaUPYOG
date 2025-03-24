@@ -18,12 +18,10 @@ import {
 import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import EmployeeQuickServicesCard from "../../../../react-components/src/atoms/EmployeeQuickServicesCard";
+import EmployeeQuickServicesCard from "../EmployeeQuickServicesCard";
 /* 
 Feature :: Citizen All service screen cards
 */
-
-
 
 export const processLinkData = (newData, code, t) => {
   const obj = newData?.[`${code}`];
@@ -67,7 +65,6 @@ export const processLinkData = (newData, code, t) => {
 const iconSelector = (code) => {
   switch (code) {
     case "PT":
-      
       return <PTIcon className="fill-path-primary-main" />;
     case "WS":
       return <WSICon className="fill-path-primary-main" />;
@@ -134,12 +131,12 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
                     Info={
                       code === "OBPS"
                         ? () => (
-                          <CitizenInfoLabel
-                            style={{ margin: "0px", padding: "10px" }}
-                            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-                            text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
-                          />
-                        )
+                            <CitizenInfoLabel
+                              style={{ margin: "0px", padding: "10px" }}
+                              info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+                              text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
+                            />
+                          )
                         : null
                     }
                     isInfo={code === "OBPS" ? true : false}
@@ -166,11 +163,11 @@ const EmployeeHome = ({ modules }) => {
   //console.log("User Info", userName)
   const apiData = {
     welcomeCard: {
-      background: "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 100%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
+      background:
+        "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 100%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
       icon: "icon1.png",
-      heading: "Welcome "+userName.info.name,
-      content:
-        "",
+      heading: "Welcome " + userName.info.name,
+      content: "",
     },
     cards: [
       {
@@ -204,25 +201,30 @@ const EmployeeHome = ({ modules }) => {
   console.log("Modules: ", modules);
   return (
     <div className="employee-app-container employee-dashboard-container">
-      <div className="employee-dashboard-welcome-card" style={{ 
-          background: "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 80%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
+      <div
+        className="employee-dashboard-welcome-card"
+        style={{
+          background:
+            "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 80%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
           backgroundSize: "cover",
-          backgroundPosition:"right",
-          backgroundRepeat :"no-repeat"
-
-       }}>
+          backgroundPosition: "right",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
         <div className="employee-dashboard-welcome-card-entire-content">
           <div className="employee-dashboard-welcome-card-heading">{apiData.welcomeCard.heading}</div>
           <p className="employee-dashboard-welcome-card-content">{apiData.welcomeCard.content}</p>
-          <div style={{
-            width: "134px",
-            height: "134px",
-            background: "#D6D6D620",
-            borderRadius: "0% 100% 0% 0%",
-            position:"absolute",
-            left:"1px",
-            top:"70px",
-          }}></div>
+          <div
+            style={{
+              width: "134px",
+              height: "134px",
+              background: "#D6D6D620",
+              borderRadius: "0% 100% 0% 0%",
+              position: "absolute",
+              left: "1px",
+              top: "70px",
+            }}
+          ></div>
         </div>
       </div>
 
@@ -233,14 +235,14 @@ const EmployeeHome = ({ modules }) => {
       </div> */}
 
       <div className="employee-dashboard-table-and-services">
-       {/* <div className="employee-dashboard-table-container"> */}
+        {/* <div className="employee-dashboard-table-container"> */}
         {/*  <div className="employee-dashboard-table-header">
              <div className="employee-dashboard-table-title">Table</div>
             <div className="employee-dashboard-view-all-link">
               <Link>View all &gt;</Link>
             </div> 
           </div> */}
-          {/* <div className="employee-dashboard-table-content">
+        {/* <div className="employee-dashboard-table-content">
             <Table
               t={t}
               data={[]}
@@ -254,7 +256,7 @@ const EmployeeHome = ({ modules }) => {
               manualPagination={false}
             />
           </div> */}
-      {/*  </div> */}
+        {/*  </div> */}
 
         <div className="employee-dashboard-quick-services-container">
           <div className="employee-dashboard-quick-services-header">
@@ -266,16 +268,16 @@ const EmployeeHome = ({ modules }) => {
           <div className="employee-dashboard-module-card-wrapper">
             {modules.map((moduleData, index) => {
               //const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
-              return <EmployeeQuickServicesCard moduleData={moduleData}  />;
+              return <EmployeeQuickServicesCard moduleData={moduleData} />;
             })}
-            </div>
-            <div style={{marginTop:'70px'}}>
-            {modules.map(({ code }, index) => {
-              console.log("dsjdgsh", code)
+          </div>
+          <div style={{ marginTop: "70px" }}>
+            {/* modules.map(({ code }, index) => {
+              console.log("dsjdgsh", code);
               const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
               return <Card key={index} />;
-            })}
-            </div>
+            })*/}
+          </div>
           {/* </div> */}
         </div>
       </div>

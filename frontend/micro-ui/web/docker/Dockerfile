@@ -12,7 +12,7 @@ RUN yarn add @mseva/digit-ui-module-pgr@1.0.1
 RUN yarn add @mseva/digit-ui-module-noc@1.0.1
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.1
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.1
-RUN yarn add @mseva/digit-ui-module-core@1.0.1
+RUN yarn add @mseva/digit-ui-module-core@1.0.3
 RUN yarn add @mseva/digit-ui-module-obps@1.0.1
 RUN yarn add @mseva/digit-ui-module-common@1.0.2
 RUN yarn add @mseva/digit-ui-module-ws@1.0.1

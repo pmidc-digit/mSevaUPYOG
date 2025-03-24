@@ -4,6 +4,9 @@ import {
   initPGRComponents,
   PGRReducers,
 } from "@mseva/digit-ui-module-pgr";
+import {
+  initSWACHComponents
+} from "@mseva/digit-ui-module-swach"
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { PTModule, PTLinks, PTComponents } from "@mseva/digit-ui-module-pt";
 import {
@@ -65,6 +68,7 @@ const enabledModules = [
   "FireNoc",
   "Birth",
   "Death",
+  "Swach"
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -84,6 +88,7 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ...PTRComponents,
 });
 initPGRComponents();
+initSWACHComponents();
 initFSMComponents();
 initDSSComponents();
 initMCollectComponents();

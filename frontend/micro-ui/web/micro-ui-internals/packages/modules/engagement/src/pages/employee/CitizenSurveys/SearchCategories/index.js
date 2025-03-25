@@ -282,6 +282,7 @@ const SearchCategories = ({ parentRoute }) => {
           onNo={onNoToToast}
           onYes={onYesToToast}
           warning={showToast.warning}
+          style={{padding:'16px'}}
           isWarningButtons={showToast.isWarningButtons}
         />
       )}

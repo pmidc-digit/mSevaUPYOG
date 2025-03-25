@@ -56,7 +56,7 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
       style={{fontSize:'22px', lineHeight:'24px',color:'black',fontWeight:'500',fontFamily:'Noto Sans,sans-serif'}}
       //className="heading"
       >
-        {t("CS_COMMON_SETTINGS")}</div>
+        {"Survey Publish Period"}</div>
         <div style={{border:'1px solid #DFE0E2'}}></div>
       {/* <span className="surveyformfield"> */}
       <div className="survey-row">

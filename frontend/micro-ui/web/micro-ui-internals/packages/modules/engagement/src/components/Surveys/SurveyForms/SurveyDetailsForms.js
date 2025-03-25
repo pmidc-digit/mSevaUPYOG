@@ -8,6 +8,9 @@ import { fieldChange} from '../../../redux/actions/surveyFormActions';
 const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState, surveyFormData, disableInputs, enableDescriptionOnly,readOnly }) => {
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const cityNameSplit= tenantId.split(".")
+  const cityName= cityNameSplit[1];
+  console.log("cityName",cityName)
   const userInfo = Digit.UserService.getUser().info;
    const dispatch = useDispatch();
   const surveyDetails = useSelector(state => state.engagement.surveyForm.surveyDetails[0]);
@@ -34,7 +37,7 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
     return false
   }
   useEffect(()=>{
-    dispatch(fieldChange(surveyDetails.id, { ["ulb"]: tenantId }));
+    dispatch(fieldChange(surveyDetails.id, { ["ulb"]: cityName }));
   },[])
   const handleULBChange=(e,name)=>{
     console.log("eeee",e,name)
@@ -80,7 +83,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
   // gap: "10px",
   // width:" 45%"}}
   >
-        <label>{`${t("LABEL_FOR_ULB")} * `}</label>
+        <label>City</label>
         {/* <Controller
           name="ulb"
           control={controlSurveyForm}
@@ -156,7 +159,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
           })}
           readOnly={true}
           value={surveyDetails.ulb}
-          defaultValue={tenantId}
+          defaultValue={cityName}
          // onChange={handleFieldChange}
           // disable={disableInputs}
           disable={true}
@@ -189,6 +192,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
           readOnly={readOnly||false}
           value={surveyDetails.name}
           onChange={handleFieldChange}
+          placeholder={"Survey Name"}
           // disable={disableInputs}
           disable={readOnly||false}
         />
@@ -217,6 +221,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
           readOnly={readOnly||false}
           value={surveyDetails.description}
           onChange={handleFieldChange}
+          placeholder={"Survey Description"}
           // disable={enableDescriptionOnly ?  !enableDescriptionOnly : disableInputs}
           disable={readOnly||false}
         />

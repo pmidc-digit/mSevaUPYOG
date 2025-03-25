@@ -127,6 +127,12 @@ const envVariables = {
         geoSearch: process.env.GEO_SEARCH || true
     },
 
+    swachUseCase: {
+        complaintSearchLimit: process.env.COMPLAINT_SEARCH_LIMIT || 3,
+        informationImageFilestoreId: process.env.INFORMATION_IMAGE_FILESTORE_ID || 'b7285c21-7f6e-4a71-9537-bd4d2c56b34c',
+        geoSearch: process.env.GEO_SEARCH || true
+    },
+
     billsAndReceiptsUseCase: {
         billSearchLimit: process.env.BILL_SEARCH_LIMIT || 3,
         receiptSearchLimit: process.env.RECEIPT_SEARCH_LIMIT || 3,

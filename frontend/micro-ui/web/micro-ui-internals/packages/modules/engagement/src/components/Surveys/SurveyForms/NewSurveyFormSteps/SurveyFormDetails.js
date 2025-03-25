@@ -36,6 +36,19 @@ const SurveyFormDetails = ({ config, onGoNext, onBackClick, t }) => {
             f=1;
             alertMsg+="Please enter To time\n"
             }
+            if((item.description).length>140){
+                f=1;
+                alertMsg+="Please enter description less than 140 characters\n"
+            }
+
+            let start = new Date(`${item.fromDate}T${item.fromTime}`);
+            let end = new Date(`${item.toDate}T${item.toTime}`);
+        
+            // Check if start date is greater than end date
+            if (start > end) {
+                f=1;
+                alertMsg+="Start date and time must be before end date and time.\n";
+            } 
         })
         if(f===1){
             alert(alertMsg);

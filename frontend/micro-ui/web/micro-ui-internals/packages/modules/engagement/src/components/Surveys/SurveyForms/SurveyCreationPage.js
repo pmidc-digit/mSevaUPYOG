@@ -62,15 +62,30 @@ else{
     color: "red",
     cursor: "pointer"}} onClick={dispatch(deleteCategory(category.id))}>Delete Category</label>
  )} */}
-      <CheckBox
+      {/* <CheckBox
       disable={readOnly}
         onChange={(e) => { setChecked(!checked); if(checked===true){ dispatch(recalculateWeightage())} }}
         checked={checked}
         label={"Auto Calculate Catgeory Weightage"}
         pageType={"employee"}
         //  disable={disableInputs}
+        checkboxStyle={{marginTop:'30px'}}
         style={{ marginTop: "8px" }}
-      />
+      /> */}
+      <div style={{marginTop:'20px'}}>
+        <div style={{display: "flex",
+    columnGap: "20px"}}>
+      <input
+      style={{height:'20px',width:'20px'}}
+                    type="checkbox"
+                    checked={checked}
+                    disable={readOnly}
+                    onChange={(e) => { setChecked(!checked); if(checked===true){ dispatch(recalculateWeightage())} }}
+                />
+
+                Auto Calculate Catgeory Weightage
+                </div>
+      </div>
     </div>
   );
 };

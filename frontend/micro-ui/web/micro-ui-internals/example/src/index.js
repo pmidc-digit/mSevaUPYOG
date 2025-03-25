@@ -18,9 +18,10 @@ import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
 import { initTLComponents } from "@mseva/digit-ui-module-tl";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
 import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
-import { initEngagementComponents,SurveyReducers } from "@mseva/digit-ui-module-engagement";
+import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
+import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
@@ -62,7 +63,7 @@ const enabledModules = [
   "Birth",
   "Death",
   "PTR",
-  "ADS"
+  "ADS",
 ];
 
 const initTokens = (stateCode) => {
@@ -109,7 +110,6 @@ const initDigitUI = () => {
     PTRModule,
     PTRLinks,
     ...PTRComponents,
-  
 
     // TLModule,
     // TLLinks,
@@ -126,6 +126,7 @@ const initDigitUI = () => {
   initEngagementComponents();
   initNOCComponents();
   initWSComponents();
+  initNDCComponents();
   initCommonPTComponents();
   initBillsComponents();
   // initCustomisationComponents();
@@ -134,7 +135,7 @@ const initDigitUI = () => {
     pgr: PGRReducers(initData),
     hrms: HRMSReducers(initData),
     ws: WSReducers(initData),
-    engagement: SurveyReducers(initData)
+    engagement: SurveyReducers(initData),
   });
 
   window.Digit.Customizations = {

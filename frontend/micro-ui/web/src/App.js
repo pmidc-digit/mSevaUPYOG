@@ -1,9 +1,6 @@
 import React from "react";
 
-import {
-  initPGRComponents,
-  PGRReducers,
-} from "@mseva/digit-ui-module-pgr";
+import { initPGRComponents, PGRReducers } from "@mseva/digit-ui-module-pgr";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { PTModule, PTLinks, PTComponents } from "@mseva/digit-ui-module-pt";
 import {
@@ -19,21 +16,25 @@ import {
 } from "@mseva/digit-ui-module-common";
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initLibraries } from "@mseva/digit-ui-libraries";
-import { HRMSModule, initHRMSComponents, HRMSReducers } from "@mseva/digit-ui-module-hrms";
-import { TLModule, TLLinks, initTLComponents } from "@mseva/digit-ui-module-tl";
 import {
-  PTRModule,
-  PTRLinks,
-  PTRComponents,
-} from "@mseva/digit-ui-module-ptr";
+  HRMSModule,
+  initHRMSComponents,
+  HRMSReducers,
+} from "@mseva/digit-ui-module-hrms";
+import { TLModule, TLLinks, initTLComponents } from "@mseva/digit-ui-module-tl";
+import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
   ReceiptsModule,
 } from "@mseva/digit-ui-module-receipts";
 import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
-import { initEngagementComponents,SurveyReducers } from "@mseva/digit-ui-module-engagement";
+import {
+  initEngagementComponents,
+  SurveyReducers,
+} from "@mseva/digit-ui-module-engagement";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
+import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
 import { initCustomisationComponents } from "./Customisations";
 import { initCommonPTComponents } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
@@ -94,6 +95,7 @@ initOBPSComponents();
 initNOCComponents();
 initEngagementComponents();
 initWSComponents();
+initNDCComponents();
 initCommonPTComponents();
 initBillsComponents();
 // initReportsComponents();
@@ -101,9 +103,9 @@ initCustomisationComponents();
 
 const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
-  hrms:  HRMSReducers(initData),
+  hrms: HRMSReducers(initData),
   ws: WSReducers(initData),
-  engagement: SurveyReducers(initData)
+  engagement: SurveyReducers(initData),
 });
 
 function App() {

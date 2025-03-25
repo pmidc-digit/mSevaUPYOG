@@ -11,6 +11,7 @@ import { MCollectModule, MCollectLinks } from "@mseva/digit-ui-module-mcollect";
 // import { TLModule, TLLinks } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
+import { initSWACHComponents } from "@mseva/digit-ui-module-swach"
 import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-receipts";
 // import { initReportsComponents } from "@mseva/digit-ui-module-reports";
@@ -62,7 +63,8 @@ const enabledModules = [
   "Birth",
   "Death",
   "PTR",
-  "ADS"
+  "ADS",
+  "Swach"
 ];
 
 const initTokens = (stateCode) => {
@@ -116,6 +118,7 @@ const initDigitUI = () => {
   });
   initFSMComponents();
   initPGRComponents();
+  initSWACHComponents();
   initDSSComponents();
   initMCollectComponents();
   initHRMSComponents();

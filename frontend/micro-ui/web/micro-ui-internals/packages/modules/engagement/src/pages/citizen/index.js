@@ -32,9 +32,9 @@ const CitizenApp = ({ path, url, userType, tenants }) => {
           <PrivateRoute path={`${path}/documents/viewDocument`} component={() => <ViewDocument t={t} {...{ path }} />} />
           <PrivateRoute path={`${path}/documents/list/:category/:count`} component={(props) => <Documents {...props} />} />
           <PrivateRoute path={`${path}/surveys/list`} component={(props) => <SurveyList {...props} />} />
-          {/* <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillSurvey {...props} />} /> */}
           <PrivateRoute path={`${path}/surveys/submit-response`} component={(props) => <Response {...props} />} />
           <PrivateRoute path={`${path}/surveys/show-survey`} component={(props) => <ShowSurvey {...props} />} />
+          {/* <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) =>  /> */}
           {/* New Development */}
           <PrivateRoute path={`${path}/surveys/active-open-surveys`} component={(props) => <ActiveAndOpenSurveys {...props} userType={userType} />} />
           <PrivateRoute path={`${path}/surveys/fill-survey`} component={(props) => <FillQuestions {...props} userType={userType}/>} />

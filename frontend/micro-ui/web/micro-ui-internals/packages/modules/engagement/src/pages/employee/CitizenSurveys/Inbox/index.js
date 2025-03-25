@@ -37,7 +37,7 @@ const Inbox = ({ parentRoute }) => {
   };
   const tableOrderFormDefaultValues = {
     sortBy: "",
-    limit: 10,
+    limit:  window.Digit.Utils.browser.isMobile() ? 50 : 10,
     offset: 0,
     sortOrder: "DESC",
   };
@@ -88,6 +88,17 @@ const Inbox = ({ parentRoute }) => {
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
   const onPageSizeChange = (e) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
+  };
+
+  const onSortingByData = (e) => {
+    if (e.length > 0) {
+      const [{ id, desc }] = e;
+      const sortOrder = desc ? "DESC" : "ASC";
+      const sortBy = id;
+      if (!(formState.tableForm.sortBy === sortBy && formState.tableForm.sortOrder === sortOrder)) {
+        dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortBy: id, sortOrder: desc ? "DESC" : "ASC" } });
+      }
+    }
   };
 
   const { data: { Surveys = [], TotalCount } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyInbox(formState);
@@ -195,6 +206,7 @@ const Inbox = ({ parentRoute }) => {
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
       setShowToast,
+      onSortingByData
     },
   });
 

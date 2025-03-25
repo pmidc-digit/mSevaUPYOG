@@ -13,14 +13,22 @@ const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
         let f=0;
         let alertMsg="";
         // let index=1
+  
         categories.map((category, index)=>{
             // if(category.questions.length===0){
             //   alert("Please select fetch questions by cliccking on Go button and select at least one question for each category");
             //   return;
-            // } 
+            // }
+
+            if(category.title.length>500){ 
+              alertMsg+=`-> Please enter a Section Title that is 500 characters or fewer for section ${index+1} card\n`
+              f=1;
+             // return;
+            }
+
             if(category.selectedQuestions.length===0){
              
-              alertMsg+=`Please select at least one question for section ${index+1} card\n`
+              alertMsg+=`-> Please select at least one question for section ${index+1} card\n`
               f=1;
              // return;
             }

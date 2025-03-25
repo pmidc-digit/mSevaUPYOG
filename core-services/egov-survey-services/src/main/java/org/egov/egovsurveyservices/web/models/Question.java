@@ -34,7 +34,7 @@ public class Question {
 
     @NotBlank(message = "Question statement cannot be blank")
     @JsonProperty("questionStatement")
-    @Size(max = 250, message = "Question statement must be at most 250 characters")
+//    @Size(max = 250, message = "Question statement must be at most 250 characters")
     private String questionStatement;
 
     @JsonProperty("options")

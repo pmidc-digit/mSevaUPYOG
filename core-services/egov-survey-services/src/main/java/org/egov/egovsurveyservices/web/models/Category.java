@@ -22,7 +22,6 @@ public class Category {
 
     @NotBlank(message = "Category label cannot be blank")
     @JsonProperty("label")
-    @Size(max = 140, message = "Category label must be at most 140 characters")
     private String label;
 
     @JsonProperty("isActive")

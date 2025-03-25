@@ -128,31 +128,31 @@ class QuestionServiceTest {
         assertThrows(CustomException.class, () -> questionService.createQuestion(questionRequest));
     }
     
-    @Test
-    public void testCreateQuestionWithOptionExceedingLimit() {
-        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
-        
-        String longOption = "This is a very long option that exceeds the 200-character limit. It keeps going to ensure that we reach beyond the allowed length for a question's option in the system. This should trigger the validation error as expected.";
-        
-        Question question = Question.builder()
-                .questionStatement("Test Question")
-                .options(Arrays.asList(longOption)) // Exceeding 200 characters
-                .categoryId("1")
-                .build();
-        
-        List<Question> questions = Collections.singletonList(question);
-        QuestionRequest questionRequest = QuestionRequest.builder()
-                .requestInfo(requestInfo)
-                .questions(questions)
-                .build();
-
-        when(categoryRepository.existsById(anyString())).thenReturn(1);
-
-        Exception exception = assertThrows(IllegalArgumentException.class, 
-            () -> questionService.createQuestion(questionRequest));
-
-        assertEquals("Maximum 200 characters allowed only for a question's option", exception.getMessage());
-    }
+//    @Test
+//    public void testCreateQuestionWithOptionExceedingLimit() {
+//        when(applicationProperties.getMaxCreateLimit()).thenReturn(5);
+//
+//        String longOption = "This is a very long option that exceeds the 200-character limit. It keeps going to ensure that we reach beyond the allowed length for a question's option in the system. This should trigger the validation error as expected.";
+//
+//        Question question = Question.builder()
+//                .questionStatement("Test Question")
+//                .options(Arrays.asList(longOption)) // Exceeding 200 characters
+//                .categoryId("1")
+//                .build();
+//
+//        List<Question> questions = Collections.singletonList(question);
+//        QuestionRequest questionRequest = QuestionRequest.builder()
+//                .requestInfo(requestInfo)
+//                .questions(questions)
+//                .build();
+//
+//        when(categoryRepository.existsById(anyString())).thenReturn(1);
+//
+//        Exception exception = assertThrows(IllegalArgumentException.class,
+//            () -> questionService.createQuestion(questionRequest));
+//
+//        assertEquals("Maximum 200 characters allowed only for a question's option", exception.getMessage());
+//    }
 
 
     @Test

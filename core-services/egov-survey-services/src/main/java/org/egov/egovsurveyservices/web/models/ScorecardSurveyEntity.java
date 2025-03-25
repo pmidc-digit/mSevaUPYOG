@@ -18,23 +18,18 @@ import java.util.List;
 @Builder
 @ToString
 public class ScorecardSurveyEntity {
-    @Size(max = 128)
     @JsonProperty("uuid")
     private String uuid;
     
-    @Size(max = 128)
     @JsonProperty("tenantId")
     private String tenantId;
 
-    @Size(max = 60)
     @JsonProperty("surveyTitle")
     private String surveyTitle;
 
-    @Size(max = 128)
     @JsonProperty("surveyCategory")
     private String surveyCategory;
 
-    @Size(max = 140)
     @JsonProperty("surveyDescription")
     private String surveyDescription;
 
@@ -50,7 +45,6 @@ public class ScorecardSurveyEntity {
     @JsonProperty("endDate")
     private Long endDate;
 
-    @Size(max = 128)
     @JsonProperty("postedBy")
     private String postedBy;
 

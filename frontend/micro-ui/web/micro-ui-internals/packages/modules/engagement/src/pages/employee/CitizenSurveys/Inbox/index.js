@@ -1,5 +1,5 @@
 import React, { Fragment, useCallback, useMemo, useReducer, useState } from "react";
-import { InboxComposer, DocumentIcon, Toast } from "@mseva/digit-ui-react-components";
+import { InboxComposer, DocumentIcon, Toast, Header } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFieldsComponent";
 import SearchFormFieldsComponents from "./SearchFieldsComponents";
@@ -246,6 +246,10 @@ const Inbox = ({ parentRoute }) => {
 
   return (
     <Fragment>
+      <Header>
+        {t("Inbox")}
+        {TotalCount ? <p className="inbox-count">{TotalCount}</p> : null}
+      </Header>
       <InboxComposer
         {...{
           isInboxLoading,
@@ -269,6 +273,7 @@ const Inbox = ({ parentRoute }) => {
           onYes={onYesToToast}
           warning={showToast.warning}
           isWarningButtons={showToast.isWarningButtons}
+          style={{ padding: "16px" }}
         />
       )}
     </Fragment>

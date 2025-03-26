@@ -6,6 +6,7 @@ import { useHistory } from "react-router-dom";
 const FillQuestions = (props) => {
  
   const { t } = useTranslation();
+  const [formData, setFormData] = useState({});
   const {
     register: register,
     control: control,
@@ -13,13 +14,14 @@ const FillQuestions = (props) => {
     setValue: setSurveyFormValue,
     getValues: getSurveyFormValues,
     reset: resetSurveyForm,
-    formState: formState,
+    formState: {formErrors},
     clearErrors: clearSurveyFormsErrors,
   } = useForm({
-    defaultValues: [],
+    defaultValues: formData,
   });
-  const formErrors = formState?.errors;
-  const [formData, setFormData] = useState({});
+  console.log("formState",formErrors)
+ // const formErrors = formState?.errors;
+
   const [showToast, setShowToast] = useState(null);
   // const [userInfo,setUserInfo]=useState([])
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -198,18 +200,31 @@ const FillQuestions = (props) => {
       ...prevData,
       [sectionId]: {
         ...prevData[sectionId],
-        [questionId]: {answer:value,answerUuid:answerUuid},
+        [questionId]: { ...prevData?.[sectionId]?.[questionId],answer:value,answerUuid:answerUuid},
       },
     }));
   };
-  const handleFieldChange = (event) => {
-    const { name, value } = event.target;
-    console.log("date value", event.target);
+  const handleFieldChange = (sectionId, questionId, value) => {
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [sectionId]: {
+        ...prevData[sectionId],
+        [questionId]: 
+        { 
+          ...prevData?.[sectionId]?.[questionId],
+          comments:value
+        },
+      },
     }));
   };
+  // const handleFieldChange = (event) => {
+  //   const { name, value } = event.target;
+  //   console.log("date value", event.target);
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     [name]: value,
+  //   }));
+  // };
   console.log("formData", formData);
   const handleDropdownChange = (name, event) => {
     setFormData((prevData) => ({
@@ -277,13 +292,34 @@ const FillQuestions = (props) => {
 
   const validateForm = () => {
     const newErrors = {};
-
+   
     data.sections.forEach((section) => {
+      
       section.questions.forEach((question) => {
+        
         const value = formData[section.uuid]?.[question.question.uuid || ""];
-        if (!value) {
-          newErrors[question.question.uuid] = `${question.questionStatement} is required`;
+        if (question.required===true && (value.answer).length===0) {
+        newErrors[section.uuid]={
+          ...newErrors[section.uuid],
+          [question.question.uuid]: {...newErrors[section.uuid]?.[question.question.uuid], answerRequired: `${question.questionStatement} is required*`},
         }
+          //newErrors[question.question.uuid].answerRequired = `${question.questionStatement} is required`
+        }
+        if ((value.answer).length>500) {
+         // newErrors[question.question.uuid].answerLength = "Answer length allowed only to 500 characters"
+         newErrors[section.uuid]={
+          ...newErrors[section.uuid],
+          [question.question.uuid]: {...newErrors[section.uuid]?.[question.question.uuid], answerLength: "Answer length allowed only to 500 characters*"},
+        }
+        }
+        if ((value.comments).length>500) {
+         // newErrors[question.question.uuid].commentsLength = "Comments length allowed only to 500 characters"
+         newErrors[section.uuid]={
+          ...newErrors[section.uuid],
+          [question.question.uuid]: {...newErrors[section.uuid]?.[question.question.uuid], commentsLength: "Comments length allowed only to 500 characters*"},
+        }
+        }
+      
       });
     });
     setErrors(newErrors);
@@ -299,7 +335,7 @@ const FillQuestions = (props) => {
           surveyUuid: data.uuid,
           questionUuid: questionId,
           sectionUuid: sectionId,
-          comments: "comment_1",
+          comments: formData[sectionId][questionId]?.comments||"",
           answer: [formData[sectionId][questionId].answer],
         });
       }
@@ -359,18 +395,19 @@ const FillQuestions = (props) => {
   const onSubmit = (data) => {
     console.log("data", data);
   };
-  console.log("formState", formState);
+  //console.log("formState", formState);
   const displayAnswerField = (answerType, question, section) => {
     console.log("answer type", answerType, question);
     console.log("fetched ans", formData[section.uuid]?.[question.uuid])
     switch (answerType) {
       case "SHORT_ANSWER_TYPE":
         return (
-          //     <>
+              <>
 
           <TextInput
             name={question.uuid}
             //disabled={formDisabled}
+            textInputStyle={{maxWidth:'none'}}
             value={formData[section.uuid]?.[question.uuid]?.answer}
             onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
             type="text"
@@ -382,18 +419,40 @@ const FillQuestions = (props) => {
               required: question.required,
             })}
           />
-
-          //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "required" && (
-          //           <CardLabelError>{t(`CS_COMMON_REQUIRED`)}</CardLabelError>)}
-          //         {formErrors && formErrors?.[question.uuid] && formErrors?.[question.uuid]?.type === "maxLength" && (
-          //           <CardLabelError>{t(`EXCEEDS_200_CHAR_LIMIT`)}</CardLabelError>)}
-          //       </>
+          {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerRequired  && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerRequired}</CardLabelError>)}
+                  {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerLength && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerLength}</CardLabelError>)}
+          <div 
+          //style={{fontWeight:'bold'}}
+          > {"Add Suggestions/Comments"}</div>
+            <TextArea
+  name={question.uuid}
+  // disabled={formDisabled}
+  value={formData[section.uuid]?.[question.uuid]?.comments}
+  maxLength={500}
+  style={{maxWidth:'none',marginBottom:'0px'}}
+  onChange={(e) => handleFieldChange(section.uuid, question.uuid, e.target.value)}
+  inputRef={register({
+    maxLength: {
+      value: 500,
+      message: t("EXCEEDS_500_CHAR_LIMIT"),
+    },
+    
+  })}
+/>
+{errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength  && (
+                    <CardLabelError style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.commentsLength}</CardLabelError>)}
+               
+                  
+              </>
         );
       case "LONG_ANSWER_TYPE":
         return (
           <>
             <TextArea
               name={question.uuid}
+              style={{maxWidth:'none'}}
               // disabled={formDisabled}
               value={formData[section.uuid]?.[question.uuid]?.answer}
               onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
@@ -405,6 +464,30 @@ const FillQuestions = (props) => {
                 required: question.required,
               })}
             />
+            {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerRequired  && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerRequired}</CardLabelError>)}
+                  {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerLength && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerLength}</CardLabelError>)}
+          <div 
+          //style={{fontWeight:'bold'}}
+          > {"Add Suggestions/Comments"}</div>
+            <TextArea
+  name={question.uuid}
+  // disabled={formDisabled}
+  value={formData[section.uuid]?.[question.uuid]?.comments}
+  maxLength={500}
+  style={{maxWidth:'none',marginBottom:'0px'}}
+  onChange={(e) => handleFieldChange(section.uuid, question.uuid, e.target.value)}
+  inputRef={register({
+    maxLength: {
+      value: 500,
+      message: t("EXCEEDS_500_CHAR_LIMIT"),
+    },
+    
+  })}
+/>
+{errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength  && (
+                    <CardLabelError style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.commentsLength}</CardLabelError>)}
           </>
         );
       case "MULTIPLE_ANSWER_TYPE":
@@ -436,6 +519,30 @@ const FillQuestions = (props) => {
                 </h4>
               ))}
             </div>
+            {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerRequired  && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerRequired}</CardLabelError>)}
+                  {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerLength && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerLength}</CardLabelError>)}
+          <div 
+          //style={{fontWeight:'bold'}}
+          > {"Add Suggestions/Comments"}</div>
+            <TextArea
+  name={question.uuid}
+  // disabled={formDisabled}
+  value={formData[section.uuid]?.[question.uuid]?.comments}
+  maxLength={500}
+  style={{maxWidth:'none',marginBottom:'0px'}}
+  onChange={(e) => handleFieldChange(section.uuid, question.uuid, e.target.value)}
+  inputRef={register({
+    maxLength: {
+      value: 500,
+      message: t("EXCEEDS_500_CHAR_LIMIT"),
+    },
+    
+  })}
+/>
+{errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength  && (
+                    <CardLabelError style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.commentsLength}</CardLabelError>)}
             {/* <RadioButtons
                   
                   onSelect={(e)=>handleInputChange(section.uuid, question.uuid, e)}
@@ -498,7 +605,30 @@ const FillQuestions = (props) => {
                 </h4>
               ))}
             </div>
-
+            {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerRequired  && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerRequired}</CardLabelError>)}
+                  {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerLength && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerLength}</CardLabelError>)}
+          <div 
+          //style={{fontWeight:'bold'}}
+          > {"Add Suggestions/Comments"}</div>
+            <TextArea
+  name={question.uuid}
+  // disabled={formDisabled}
+  value={formData[section.uuid]?.[question.uuid]?.comments}
+  maxLength={500}
+  style={{maxWidth:'none',marginBottom:'0px'}}
+  onChange={(e) => handleFieldChange(section.uuid, question.uuid, e.target.value)}
+  inputRef={register({
+    maxLength: {
+      value: 500,
+      message: t("EXCEEDS_500_CHAR_LIMIT"),
+    },
+    
+  })}
+/>
+{errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength  && (
+                    <CardLabelError style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.commentsLength}</CardLabelError>)}
             {/* <Controller
                   control={control}
                   name={question.uuid}
@@ -565,10 +695,35 @@ const FillQuestions = (props) => {
           <>
             <TextInput
               type="date"
+              textInputStyle={{maxWidth:'none'}}
               value={formData[section.uuid]?.[question.uuid]?.answer}
               onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
               // defaultValue={value}
             />
+            {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerRequired  && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerRequired}</CardLabelError>)}
+                  {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerLength && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerLength}</CardLabelError>)}
+          <div 
+          //style={{fontWeight:'bold'}}
+          > {"Add Suggestions/Comments"}</div>
+            <TextArea
+  name={question.uuid}
+  // disabled={formDisabled}
+  value={formData[section.uuid]?.[question.uuid]?.comments}
+  maxLength={500}
+  style={{maxWidth:'none',marginBottom:'0px'}}
+  onChange={(e) => handleFieldChange(section.uuid, question.uuid, e.target.value)}
+  inputRef={register({
+    maxLength: {
+      value: 500,
+      message: t("EXCEEDS_500_CHAR_LIMIT"),
+    },
+    
+  })}
+/>
+{errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength  && (
+                    <CardLabelError style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.commentsLength}</CardLabelError>)}
           </>
         );
       // return (
@@ -596,10 +751,35 @@ const FillQuestions = (props) => {
           <>
             <TextInput
               type="time"
+              textInputStyle={{maxWidth:'none'}}
               value={formData[section.uuid]?.[question.uuid]?.answer}
               onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
               // defaultValue={value}
             />
+            {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerRequired  && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerRequired}</CardLabelError>)}
+                  {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerLength && (
+                    <CardLabelError  style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.answerLength}</CardLabelError>)}
+          <div 
+          //style={{fontWeight:'bold'}}
+          > {"Add Suggestions/Comments"}</div>
+            <TextArea
+  name={question.uuid}
+  // disabled={formDisabled}
+  value={formData[section.uuid]?.[question.uuid]?.comments}
+  maxLength={500}
+  style={{maxWidth:'none',marginBottom:'0px'}}
+  onChange={(e) => handleFieldChange(section.uuid, question.uuid, e.target.value)}
+  inputRef={register({
+    maxLength: {
+      value: 500,
+      message: t("EXCEEDS_500_CHAR_LIMIT"),
+    },
+    
+  })}
+/>
+{errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.commentsLength  && (
+                    <CardLabelError style={{marginTop:"0px", marginBottom:"0px",color:"red",fontWeight:'500'}}>{errors?.[section.uuid]?.[question.uuid]?.commentsLength}</CardLabelError>)}
           </>
         );
       //     return (
@@ -665,11 +845,15 @@ const FillQuestions = (props) => {
                     <div>
                       <h3>{question.questionStatement}</h3>
                       <div className="surveyQuestion-wrapper">
-                        <div style={{ display: "inline" }}>
+                        <div style={{ display: "inline"}}>
                         {index + 1}. {question.question.questionStatement} {question.question?.required&&<span style={{ color: "red" }}>*</span>}
                         </div>
                         {displayAnswerField(question.question.type, question.question, section)}
                         {errors[question.uuid] && <span className="error">{errors[question.uuid]}</span>}
+                        <div>
+
+              
+                        </div>
                       </div>
                     </div>
                   ))}

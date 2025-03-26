@@ -4,6 +4,7 @@ import { addQuestions,addQuestionsList, deleteCategory, updateCategory, updateQu
 import {TextInput, Dropdown, CheckBox ,Toast} from '@mseva/digit-ui-react-components';
 import { useTranslation } from 'react-i18next';
 import { isError } from 'lodash';
+import Dialog from '../../Modal/Dialog';
 
 const CategoryCard = ({ category ,checked,readOnly,onDelete,hideQuestionLabel}) => {
  
@@ -214,10 +215,46 @@ const handleWeightage =(index,questionId, value) =>{
     setErrors(newErrors)
   }
 }
+
+const [openQuesDetailsDialog,setOpenQuesDetailsDialog]=useState(false);
+const [questionDetailsContent,setQuestionDetailsContent]=useState(false);
+
+function handleDisplayQuesDetails(question){
+  console.log("question: ", question);
+   setOpenQuesDetailsDialog(true);
+   const content=
+   <div>
+   <fieldset>
+    <legend style={{fontWeight: "bold"}}>Question:</legend>
+    <p>{question.questionStatement}</p>
+</fieldset>
+<fieldset>
+    <legend style={{fontWeight: "bold"}}>Question Type:</legend>
+    <p>{t(question.type)}</p>
+</fieldset>
+<fieldset>
+    <legend style={{fontWeight: "bold"}}>Question Type:</legend>
+    <p>{t(question.type)}</p>
+</fieldset>
+{ (question.type==="MULTIPLE_ANSWER_TYPE" || question.type==="CHECKBOX_ANSWER_TYPE")  && <fieldset>
+    <legend style={{fontWeight: "bold"}}>Options:</legend>
+    <ul>{question.options.map((option)=>(<li>{option}</li>))}</ul>
+  </fieldset>}
+   </div>;
+   setQuestionDetailsContent(content);
+}
+
+function handleOnSubmitDialog() {
+  setOpenQuesDetailsDialog(false);
+}
+function handleOnCancelDialog() {
+  setOpenQuesDetailsDialog(false);
+}
+
 console.log("errors",errors)
   return (
     <div className="category-card">
-      <h3>Section Title</h3>
+      <h3>Section Title <span style={{color:"red"}}>*</span></h3>
       <input
         type="text"
         name="title"
@@ -328,12 +365,13 @@ console.log("errors",errors)
                <tr>
                   <th>Question Label</th>
                   <th>Select</th>
+                  <th>Is Mandatory</th>
                 </tr>
             </thead>
               <tbody>
                 {category.questions.map(question=> (
                   <tr key={question?.uuid}>
-                    <td>{question?.questionStatement}</td>
+                    <td><div style={{cursor: 'pointer'}} onClick={()=>handleDisplayQuesDetails(question)}>{question?.questionStatement}</div></td>
                     <td>
                       {/* <input
                         type="checkbox"
@@ -361,6 +399,31 @@ console.log("errors",errors)
                                             //  style={{marginTop:"5px", overflowWrap:"break-word"}}
                                             />
                     </td>
+                    <td>
+                      {/* <input
+                        type="checkbox"
+                        readOnly={readOnly}
+                        disabled={readOnly}
+                        checked={question?.selected||false}
+                        onChange={(e) => handleQuestionSelection(question.uuid, e.target.checked)}
+                      /> */}
+                         <CheckBox
+                                              disable={readOnly}
+                                              key={question.uuid}
+                                              onChange={(e) => {
+                                                // if (e.target.checked) {
+                                                //   onChange([option,...value?value:[]]);             
+                                                // } else {
+                                                //   value && onChange(value?.filter((item) => item !== option));
+                                                // }
+                                                console.log("e t",e.target.checked)
+                                                //handleQuestionSelection(question.uuid, e.target.checked)
+                                              }}
+                                              //checked={question.selected}
+                                             // checkboxWidth = {{width:"34px",height:"34px"}}
+                                            //  style={{marginTop:"5px", overflowWrap:"break-word"}}
+                                            />
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -374,7 +437,9 @@ console.log("errors",errors)
             borderRadius: "4px",
             backgroundColor: "#007bff",
             color: "white",
-            cursor: "pointer"}}disable={readOnly} onClick={handleAddQuestions}>Add These Questions</label>
+            cursor: "pointer",
+            marginTop: "10px"
+          }}disable={readOnly} onClick={handleAddQuestions}>Add These Questions</label>
             )}
 
           <div>
@@ -423,6 +488,16 @@ console.log("errors",errors)
          </div>
      
     
+      )}
+       {openQuesDetailsDialog && (
+        <Dialog
+          onSelect={handleOnSubmitDialog}
+          onCancel={handleOnCancelDialog}
+          onDismiss={handleOnCancelDialog}
+          heading="Question Details"
+          content={questionDetailsContent}
+          hideSubmit={true}
+        />
       )}
         {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </div>

@@ -9,7 +9,7 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const cityNameSplit= tenantId.split(".")
-  const cityName= cityNameSplit[1];
+  const cityName= cityNameSplit[1].toUpperCase();
   console.log("cityName",cityName)
   const userInfo = Digit.UserService.getUser().info;
    const dispatch = useDispatch();
@@ -174,15 +174,15 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
    </div>
    <div className="survey-column">
       {/* <span className="surveyformfield"> */}
-        <label>{`${t("CS_SURVEY_NAME")} * `}</label>
+        <label>{t("CS_SURVEY_NAME")} <span style={{color:"red"}}>*</span></label>
         <TextInput
           name="name"
           type="text"
           inputRef={registerRef({
             required: t("ES_ERROR_REQUIRED"),
             maxLength: {
-              value: 60,
-              message: t("EXCEEDS_60_CHAR_LIMIT"),
+              value: 500,
+              message:  t("Survey Name length should be less than or equal to 500 characters")//t("EXCEEDS_60_CHAR_LIMIT"),
             },
             pattern:{
               value: /^[A-Za-z_-][A-Za-z0-9_\ -]*$/,
@@ -192,7 +192,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
           readOnly={readOnly||false}
           value={surveyDetails.name}
           onChange={handleFieldChange}
-          placeholder={"Survey Name"}
+          placeholder={"Enter Survey Name"}
           // disable={disableInputs}
           disable={readOnly||false}
         />
@@ -202,7 +202,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
       </div>
       {/* <span className="surveyformfield"> */}
       <div className="survey-column" style={{width:'100%'}}>
-        <label>{`${t("CS_SURVEY_DESCRIPTION")} `}</label>
+        <label>{t("CS_SURVEY_DESCRIPTION")}</label>
         <TextInput
           name="description"
           type="text"
@@ -210,8 +210,8 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
           inputRef={registerRef({
             //required: t("ES_ERROR_REQUIRED"),
             maxLength: {
-              value: 140,
-              message: t("EXCEEDS_140_CHAR_LIMIT"),
+              value: 500,
+              message:  t("Survey Description length should be less than or equal to 500 characters") //t("EXCEEDS_140_CHAR_LIMIT"),
             },
             pattern:{
               value: /^[A-Za-z_-][A-Za-z0-9_\ -]*$/,
@@ -221,7 +221,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
           readOnly={readOnly||false}
           value={surveyDetails.description}
           onChange={handleFieldChange}
-          placeholder={"Survey Description"}
+          placeholder={"Enter Survey Description"}
           // disable={enableDescriptionOnly ?  !enableDescriptionOnly : disableInputs}
           disable={readOnly||false}
         />

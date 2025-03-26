@@ -121,7 +121,7 @@ const CreateSurveyCategory = () => {
           onCancel={handleOnCancelDialog}
           onDismiss={handleOnCancelDialog}
           heading="ABOUT_CATEGORY_CREATION_HEADER"
-          content="ABOUT_CATEGORY_CREATION_DESCRIPTION"
+          content={t("ABOUT_CATEGORY_CREATION_DESCRIPTION")}
           hideSubmit={true}
         />
       )}

@@ -1,5 +1,6 @@
 package org.egov.egovsurveyservices.web.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -50,7 +51,7 @@ public class Question {
     @NotNull(message="The value provided is either Invalid or null")
     private Type type;
 
-    @JsonProperty("required")
+    @JsonIgnore
     private Boolean required;
 
     @JsonProperty("qorder")

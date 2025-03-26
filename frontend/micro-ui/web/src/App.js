@@ -21,6 +21,7 @@ import {
   initHRMSComponents,
   HRMSReducers,
 } from "@mseva/digit-ui-module-hrms";
+import { NDCReducers } from "@mseva/digit-ui-module-ndc";
 import { TLModule, TLLinks, initTLComponents } from "@mseva/digit-ui-module-tl";
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import {
@@ -105,6 +106,7 @@ initCustomisationComponents();
 const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
   hrms: HRMSReducers(initData),
+  ndc: NDCReducers(initData),
   ws: WSReducers(initData),
   engagement: SurveyReducers(initData),
 });

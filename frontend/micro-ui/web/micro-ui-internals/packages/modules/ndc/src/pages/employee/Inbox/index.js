@@ -6,6 +6,7 @@ import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { businessServiceList } from "../../../utils";
+import CreateNDCApplicationStep from "../createNDCApplication";
 
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
@@ -191,18 +192,25 @@ const Inbox = ({ parentRoute }) => {
         {t("ES_COMMON_INBOX")}
         {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
       </Header>
-      <InboxComposer
+      <section>
+        <div>
+          <h1>NDC</h1>
+        </div>
+        <CreateNDCApplicationStep />
+      </section>
+
+      {/* <InboxComposer
         {...{
           isInboxLoading,
           PropsForInboxLinks,
-          ...propsForSearchForm,
-          ...propsForFilterForm,
-          ...propsForMobileSortForm,
-          propsForInboxTable,
-          propsForInboxMobileCards,
-          formState,
+          // ...propsForSearchForm,
+          // ...propsForFilterForm,
+          // ...propsForMobileSortForm,
+          // propsForInboxTable,
+          // propsForInboxMobileCards,
+          // formState,
         }}
-      ></InboxComposer>
+      ></InboxComposer> */}
     </>
   );
 };

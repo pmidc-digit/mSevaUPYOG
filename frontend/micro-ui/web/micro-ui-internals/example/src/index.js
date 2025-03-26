@@ -4,6 +4,7 @@ import ReactDOM from "react-dom";
 import { initLibraries } from "@mseva/digit-ui-libraries";
 import { PGRReducers } from "@mseva/digit-ui-module-pgr";
 import { HRMSReducers } from "@mseva/digit-ui-module-hrms";
+import { NDCReducers } from "@mseva/digit-ui-module-ndc";
 import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 
 import { PTModule, PTLinks, PTComponents } from "@mseva/digit-ui-module-pt";
@@ -64,7 +65,7 @@ const enabledModules = [
   "Death",
   "PTR",
   "ADS",
-  "NDC"
+  "NDC",
 ];
 
 const initTokens = (stateCode) => {
@@ -135,6 +136,7 @@ const initDigitUI = () => {
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),
     hrms: HRMSReducers(initData),
+    ndc: NDCReducers(initData),
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData),
   });

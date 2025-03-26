@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo } from "react";
+import React, { Fragment, useMemo,useState } from "react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { DeleteIcon, EditIcon } from "@mseva/digit-ui-react-components";
@@ -7,7 +7,7 @@ const useCategoryInboxTableConfig = ({ parentRoute, onPageSizeChange, formState,
   const GetStatusCell = (value) =>
     value === true ? <span className="sla-cell-success">Active</span> : value === false ? <span className="sla-cell-error">Inactive</span> : "-";
   const { t } = useTranslation();
-
+  const [showTooltip, setShowTooltip] = useState(false);
   // const handleDeleteConfirm = (row) => {
   // console.log("Current row: ", row);
   // const currentStatus = row?.original?.isActive;
@@ -20,7 +20,7 @@ const useCategoryInboxTableConfig = ({ parentRoute, onPageSizeChange, formState,
   // });
   //   });
   // };
-
+  console.log("formState tableform",formState.tableForm)
   const handleUpdateCategoryConfirm = (row) => {
     console.log("Current row: ", row);
     const currentStatus = row?.original?.isActive?"Active":"Inactive";
@@ -86,8 +86,37 @@ const useCategoryInboxTableConfig = ({ parentRoute, onPageSizeChange, formState,
         accessor: "updateCategory",
         Cell: ({ row }) => {
           return (
-            <button onClick={() => handleUpdateCategoryConfirm(row)}>
+            <button onClick={() => handleUpdateCategoryConfirm(row) } 
+            onMouseEnter={() =>{ setShowTooltip(true);} }
+            onMouseLeave={() => setShowTooltip(false)} 
+            // style={{
+            //   position: "relative",
+            //   display: "inline-block",
+            //   border: "none",
+            //   background: "none",
+            //   cursor: "pointer"
+            // }}
+            >
+
               <EditIcon className="table-cell-for-update" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
+              <span style={{ 
+                visibility: showTooltip?"visible":"hidden",
+                width: !showTooltip? "120px": null,
+                backgroundColor: !showTooltip? "black":null,
+                color: !showTooltip? "#fff":null,
+                textAlign: !showTooltip? "center":null,
+                borderRadius: !showTooltip? "5px":null,
+                padding: !showTooltip?  "5px":null,
+                position: !showTooltip? "absolute":null,
+                zIndex: !showTooltip? "1":null,
+                top: !showTooltip? "-125%":null, /* Position the tooltip above the icon */
+                left: !showTooltip? "50%":null,
+                marginLeft: !showTooltip? "-60px":null,
+                opacity: showTooltip?1:0,
+                transition: !showTooltip? "opacity 0.3s":null
+               }}>
+       Click here to update category status
+      </span>
             </button>
           );
         },

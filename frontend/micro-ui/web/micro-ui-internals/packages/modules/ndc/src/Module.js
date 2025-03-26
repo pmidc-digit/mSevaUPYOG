@@ -6,6 +6,12 @@ import ApplicationOverview from "./pages/employee/ApplicationOverview";
 import NOCCard from "./pages/employee/EmployeeCard";
 import Inbox from "./pages/employee/Inbox";
 import NOCSearchApplication from "./pages/employee/SearchApplication/Search";
+import PropertyDetailsForm from "./pages/employee/createNDCApplication/propertyDetailsForm";
+import PropertyDetailsStep1 from "./pages/employee/createNDCApplication/PropertyDetailsStep1";
+
+import getRootReducer from "./redux/reducers";
+
+export const NDCReducers = getRootReducer;
 
 const NDCModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "common-noc";
@@ -32,6 +38,8 @@ const componentsToRegister = {
   NOCApplicationOverview: ApplicationOverview,
   NDCInbox: Inbox,
   NOCSearchApplication,
+  PropertyDetailsForm,
+  PropertyDetailsStep1,
 };
 
 export const initNDCComponents = () => {

@@ -12,8 +12,8 @@ import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 //Config for steps
 const createEmployeeConfig = [
   {
-    head: "APPLICATION_DETAILS",
-    stepLabel: "HR_NEW_EMPLOYEE_FORM_HEADER", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
+    head: "APPLICANT_DETAILS",
+    stepLabel: "Applicant Details", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -21,22 +21,22 @@ const createEmployeeConfig = [
     key: "PropertyDetailsStep1",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "Next Step",
     },
   },
-  //   {
-  //     head: "PROPERTY_DETAILS",
-  //     stepLabel: "ADMIN_DETAILS",
-  //     stepNumber: 2,
-  //     isStepEnabled: true,
-  //     type: "component",
-  //     component: "propertyDetails",
-  //     key: "propertyDetails",
-  //     withoutLabel: true,
-  //     texts: {
-  //       submitBarLabel: "HR_COMMON_BUTTON_SUBMIT",
-  //     },
-  //   },
+  {
+    head: "PROPERTY_DETAILS",
+    stepLabel: "Property Details",
+    stepNumber: 2,
+    isStepEnabled: true,
+    type: "component",
+    component: "propertyDetailsStep2",
+    key: "propertyDetailsStep2",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Submit",
+    },
+  },
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
@@ -57,25 +57,18 @@ const CreateNDCApplicationStep = () => {
     dispatch(setNDCStep(updatedStepNumber));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (data) => {
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
-    let data = {};
-
+    console.log("data=====", data);
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
-  console.log("formState: ", formState);
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}
+        No Due Certification Form
       </CardHeader>
-      <Stepper
-        stepsList={updatedCreateEmployeeconfig}
-        //   onSubmit={handleSubmit}
-        step={step}
-        setStep={setStep}
-      />
+      <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast
           error={showToast.key}

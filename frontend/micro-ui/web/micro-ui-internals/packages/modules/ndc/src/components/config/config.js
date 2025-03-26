@@ -1,6 +1,6 @@
 export const newConfig = [
   {
-    head: "Application Details",
+    head: "Applicant Details",
     stepNumber: 1,
     body: [
       {
@@ -11,18 +11,17 @@ export const newConfig = [
       },
     ],
   },
-
-  // {
-  //   head: "Property Details",
-  //   stepNumber: 2,
-  //   body: [
-  //     {
-  //       type: "component",
-  //       isMandatory: true,
-  //       component: "Jurisdictions",
-  //       key: "Jurisdictions",
-  //       withoutLabel: true,
-  //     },
-  //   ],
-  // },
+  {
+    head: "Property Details",
+    stepNumber: 2,
+    body: [
+      {
+        type: "component",
+        isMandatory: true,
+        component: "PropertyDetailsFormUser",
+        key: "PropertyDetailsFormUser",
+        withoutLabel: true,
+      },
+    ],
+  },
 ];

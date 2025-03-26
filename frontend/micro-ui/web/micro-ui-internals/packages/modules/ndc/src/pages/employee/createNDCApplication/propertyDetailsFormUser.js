@@ -9,20 +9,17 @@ const SURVEY_CATEGORY = "Create Category";
 const CATEGORY_CREATED = "Category created successfully";
 const ERR_MESSAGE = "Something went wrong";
 
-const PropertyDetailsForm = (props) => {
+const PropertyDetailsFormUser = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
-
   const methods = useForm({
     defaultValues: {
       categoryName: "",
     },
   });
-
-  // console.log("props====", props);
 
   const {
     register,
@@ -32,7 +29,7 @@ const PropertyDetailsForm = (props) => {
   } = methods;
 
   const onSubmit = async (data) => {
-    console.log("data is here==========", data);
+    console.log("data", data);
   };
 
   useEffect(() => {
@@ -50,30 +47,29 @@ const PropertyDetailsForm = (props) => {
           <div className="surveydetailsform-wrapper">
             <span className="surveyformfield">
               <label>
-                First Name <span style={{ color: "red" }}>*</span>
+                Property ID <span style={{ color: "red" }}>*</span>
               </label>
               <TextInput
-                {...register("firstName")}
-                // name="firstName"
-                // type="text"
-                // inputRef={register({
-                //   required: "This field is required",
-                //   maxLength: {
-                //     value: 500,
-                //     message: "Category length should be less than or equal to 500 characters",
-                //   },
-                // })}
+                name="propertyID"
+                type="text"
+                inputRef={register({
+                  required: "This field is required",
+                  maxLength: {
+                    value: 500,
+                    message: "Category length should be less than or equal to 500 characters",
+                  },
+                })}
               />
             </span>
-            {errors.firstName && <p style={{ color: "red" }}>{errors.firstName.message}</p>}
+            {errors.propertyID && <p style={{ color: "red" }}>{errors.propertyID.message}</p>}
           </div>
-          {/* <div className="surveydetailsform-wrapper">
+          <div className="surveydetailsform-wrapper">
             <span className="surveyformfield">
               <label>
-                Last Name <span style={{ color: "red" }}>*</span>
+                Water Connection Number <span style={{ color: "red" }}>*</span>
               </label>
               <TextInput
-                name="lastName"
+                name="waterConnectionNumber"
                 type="text"
                 inputRef={register({
                   required: "This field is required",
@@ -89,7 +85,7 @@ const PropertyDetailsForm = (props) => {
           <div className="surveydetailsform-wrapper">
             <span className="surveyformfield">
               <label>
-                Email <span style={{ color: "red" }}>*</span>
+                Sewage Connection Number <span style={{ color: "red" }}>*</span>
               </label>
               <TextInput
                 name="email"
@@ -108,7 +104,7 @@ const PropertyDetailsForm = (props) => {
           <div className="surveydetailsform-wrapper">
             <span className="surveyformfield">
               <label>
-                Address <span style={{ color: "red" }}>*</span>
+                Property Type <span style={{ color: "red" }}>*</span>
               </label>
               <TextInput
                 name="address"
@@ -123,7 +119,7 @@ const PropertyDetailsForm = (props) => {
               />
             </span>
             {errors.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
-          </div> */}
+          </div>
           {/* <button type="submit">Submit</button> */}
         </form>
       </FormProvider>
@@ -134,4 +130,4 @@ const PropertyDetailsForm = (props) => {
   );
 };
 
-export default PropertyDetailsForm;
+export default PropertyDetailsFormUser;

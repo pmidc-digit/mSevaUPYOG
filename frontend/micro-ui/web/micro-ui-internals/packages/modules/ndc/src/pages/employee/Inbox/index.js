@@ -193,9 +193,6 @@ const Inbox = ({ parentRoute }) => {
         {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
       </Header>
       <section>
-        <div>
-          <h1>NDC</h1>
-        </div>
         <CreateNDCApplicationStep />
       </section>
 

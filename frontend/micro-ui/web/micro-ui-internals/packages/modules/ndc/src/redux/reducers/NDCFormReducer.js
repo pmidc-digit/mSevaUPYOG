@@ -3,7 +3,7 @@ import { SET_NDC_STEP, UPDATE_NDC_FORM } from "../actions/types";
 
 const initialState = {
   step: 1,
-  isValid: false,
+  // isValid: false,
   formData: {},
 };
 

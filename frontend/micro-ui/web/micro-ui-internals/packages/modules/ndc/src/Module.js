@@ -8,6 +8,8 @@ import Inbox from "./pages/employee/Inbox";
 import NOCSearchApplication from "./pages/employee/SearchApplication/Search";
 import PropertyDetailsForm from "./pages/employee/createNDCApplication/propertyDetailsForm";
 import PropertyDetailsStep1 from "./pages/employee/createNDCApplication/PropertyDetailsStep1";
+import PropertyDetailsStep2 from "./pages/employee/createNDCApplication/propertyDetailsStep2";
+import PropertyDetailsFormUser from "./pages/employee/createNDCApplication/propertyDetailsFormUser";
 
 import getRootReducer from "./redux/reducers";
 
@@ -40,6 +42,8 @@ const componentsToRegister = {
   NOCSearchApplication,
   PropertyDetailsForm,
   PropertyDetailsStep1,
+  PropertyDetailsStep2,
+  PropertyDetailsFormUser,
 };
 
 export const initNDCComponents = () => {

@@ -64,6 +64,7 @@ const enabledModules = [
   "Death",
   "PTR",
   "ADS",
+  "NDC"
 ];
 
 const initTokens = (stateCode) => {

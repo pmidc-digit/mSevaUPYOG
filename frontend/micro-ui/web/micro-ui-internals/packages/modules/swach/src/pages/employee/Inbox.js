@@ -44,7 +44,7 @@ const Inbox = () => {
     setSearchParams({ ...searchParams, search: params });
   };
 
-  // let complaints = Digit.Hooks.pgr.useInboxData(searchParams) || [];
+  // let complaints = Digit.Hooks.swach.useInboxData(searchParams) || [];
   let { data: complaints, isLoading } = Digit.Hooks.swach.useInboxData({ ...searchParams, offset: pageOffset, limit: pageSize }) ;
 
   let isMobile = Digit.Utils.browser.isMobile();

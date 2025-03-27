@@ -12,6 +12,7 @@ import { LocalityService } from "./services/elements/Localities";
 import { LocalizationService } from "./services/elements/Localization/service";
 import { LoginService } from "./services/elements/Login";
 import { PGRService } from "./services/elements/PGR";
+import { SwachService } from "./services/elements/Swach";
 import { FSMService } from "./services/elements/FSM";
 import { PaymentService } from "./services/elements/Payment";
 import * as dateUtils from "./services/atoms/Utils/Date";
@@ -33,6 +34,7 @@ import { DigiLockerService } from "./services/elements/DigiLocker";
 
 import ShareFiles from "./services/molecules/ShareFiles";
 import { GetServiceDefinitions } from "./services/molecules/ServiceDefinitions";
+import { GetSwachBharatCategories } from "./services/molecules/SwachBharatCategories";
 import { ULBService } from "./services/molecules/Ulb";
 import { FileDesludging } from "./services/molecules/FSM/FileDesludging";
 import { ComponentRegistryService } from "./services/elements/ComponentRegistry";
@@ -75,6 +77,7 @@ const initLibraries = () => {
   setupLibraries("LoginService", LoginService);
   setupLibraries("LocalizationService", LocalizationService);
   setupLibraries("PGRService", PGRService);
+  setupLibraries("SwachService", SwachService);
   setupLibraries("FSMService", FSMService);
   setupLibraries("PTService", PTService);
   setupLibraries("CFService", CFService);
@@ -95,6 +98,7 @@ const initLibraries = () => {
   setupLibraries("UploadServices", UploadServices);
   setupLibraries("JsDictionary", JsDictionary);
   setupLibraries("GetServiceDefinitions", GetServiceDefinitions);
+  setupLibraries("GetSwachBharatCategories", GetSwachBharatCategories);
   setupLibraries("Complaint", Complaint);
   setupLibraries("FileDesludging", FileDesludging);
   setupLibraries("ComponentRegistryService", ComponentRegistryService);

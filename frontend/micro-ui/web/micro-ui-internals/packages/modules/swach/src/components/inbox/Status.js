@@ -8,8 +8,8 @@ const Status = ({ complaints, onAssignmentChange, swachfilters }) => {
   let hasFilters = swachfilters?.applicationStatus?.length;
   return (
     <div className="status-container">
-      <div className="filter-label">{t("ES_SWACH_FILTER_STATUS")}</div>
-      {/* {complaintsWithCount.length === 0 && <Loader />}
+      {/* <div className="filter-label">{t("ES_SWACH_FILTER_STATUS")}</div>
+      {complaintsWithCount.length === 0 && <Loader />}
       {complaintsWithCount.map((option, index) => {
         return (
           <CheckBox

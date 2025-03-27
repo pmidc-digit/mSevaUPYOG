@@ -17,7 +17,7 @@ export const newConfig = [
     body: [
       {
         type: "component",
-        isMandatory: true,
+        // isMandatory: true,
         component: "PropertyDetailsFormUser",
         key: "PropertyDetailsFormUser",
         withoutLabel: true,

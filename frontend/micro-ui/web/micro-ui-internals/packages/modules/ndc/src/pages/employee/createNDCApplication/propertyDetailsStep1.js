@@ -2,12 +2,10 @@ import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
 import { updateNDCForm } from "../../../redux/actions/NDCFormActions";
+import PropertyDetailsForm from "./propertyDetailsForm";
 
 const PropertyDetailsStep1 = ({ config, onGoNext, t }) => {
-  function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
-    onGoNext();
-  }
+  const dispatch = useDispatch();
 
   const onFormValueChange = (setValue = true, data) => {
     if (!_.isEqual(data, currentStepData)) {
@@ -15,17 +13,14 @@ const PropertyDetailsStep1 = ({ config, onGoNext, t }) => {
     }
   };
 
-  const [api, setApi] = useState();
-
   const currentStepData = useSelector(function (state) {
     return state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {};
   });
 
-  const dispatch = useDispatch();
-
   return (
     <React.Fragment>
-      <FormComposer
+      <PropertyDetailsForm onGoNext={onGoNext} />
+      {/* <FormComposer
         defaultValues={currentStepData}
         //heading={t("")}
         config={config.currStepConfig}
@@ -34,8 +29,8 @@ const PropertyDetailsStep1 = ({ config, onGoNext, t }) => {
         //isDisabled={!canSubmit}
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
-        setApi={setApi}
-      />
+        setFormSubmitRef={setFormSubmitRef}
+      /> */}
     </React.Fragment>
   );
 };

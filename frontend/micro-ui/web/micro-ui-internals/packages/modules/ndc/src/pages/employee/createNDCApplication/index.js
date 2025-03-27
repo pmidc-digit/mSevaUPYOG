@@ -13,7 +13,7 @@ import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 const createEmployeeConfig = [
   {
     head: "APPLICANT_DETAILS",
-    stepLabel: "Applicant Details", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
+    stepLabel: "Applicant Details",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -30,8 +30,8 @@ const createEmployeeConfig = [
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
-    component: "propertyDetailsStep2",
-    key: "propertyDetailsStep2",
+    component: "PropertyDetailsStep2",
+    key: "PropertyDetailsStep2",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Submit",
@@ -48,7 +48,7 @@ const CreateNDCApplicationStep = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.hrms.employeeForm);
+  const formState = useSelector((state) => state.ndc.NDCForm);
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();

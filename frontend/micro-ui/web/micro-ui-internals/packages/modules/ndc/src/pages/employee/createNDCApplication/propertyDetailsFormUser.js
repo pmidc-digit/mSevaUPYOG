@@ -9,7 +9,7 @@ const SURVEY_CATEGORY = "Create Category";
 const CATEGORY_CREATED = "Category created successfully";
 const ERR_MESSAGE = "Something went wrong";
 
-const PropertyDetailsFormUser = () => {
+const PropertyDetailsFormUser = ({ onBackClick }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
@@ -118,9 +118,70 @@ const PropertyDetailsFormUser = () => {
                 })}
               />
             </span>
-            {errors.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
+            {errors.propertyType && <p style={{ color: "red" }}>{errors.propertyType.message}</p>}
           </div>
+          <div className="surveydetailsform-wrapper">
+            <span className="surveyformfield">
+              <label>
+                Property Usage Type <span style={{ color: "red" }}>*</span>
+              </label>
+              <TextInput
+                name="address"
+                type="text"
+                inputRef={register({
+                  required: "This field is required",
+                  maxLength: {
+                    value: 500,
+                    message: "Category length should be less than or equal to 500 characters",
+                  },
+                })}
+              />
+            </span>
+            {errors.propertyUsageType && <p style={{ color: "red" }}>{errors.propertyUsageType.message}</p>}
+          </div>
+          <div className="surveydetailsform-wrapper">
+            <span className="surveyformfield">
+              <label>
+                Property Location Type <span style={{ color: "red" }}>*</span>
+              </label>
+              <TextInput
+                name="address"
+                type="text"
+                inputRef={register({
+                  required: "This field is required",
+                  maxLength: {
+                    value: 500,
+                    message: "Category length should be less than or equal to 500 characters",
+                  },
+                })}
+              />
+            </span>
+            {errors.propertyLocationType && <p style={{ color: "red" }}>{errors.propertyLocationType.message}</p>}
+          </div>
+          <div className="surveydetailsform-wrapper">
+            <span className="surveyformfield">
+              <label>
+                No of Floors <span style={{ color: "red" }}>*</span>
+              </label>
+              <TextInput
+                name="numberOfFloors"
+                type="text"
+                inputRef={register({
+                  required: "This field is required",
+                  maxLength: {
+                    value: 500,
+                    message: "Category length should be less than or equal to 500 characters",
+                  },
+                })}
+              />
+            </span>
+            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
+          </div>
+          <ActionBar>
+            <SubmitBar label="Submit" submit="submit" />
+          </ActionBar>
           {/* <button type="submit">Submit</button> */}
+          <button onClick={() => onBackClick()}>Back</button>
         </form>
       </FormProvider>
 

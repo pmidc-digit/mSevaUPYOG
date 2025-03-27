@@ -2,8 +2,11 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
 import { updateNDCForm } from "../../../redux/actions/NDCFormActions";
+import PropertyDetailsFormUser from "./propertyDetailsFormUser";
 
-const PropertyDetailsStep2 = ({ config, onGoNext, t }) => {
+const PropertyDetailsStep2 = ({ config, onGoNext, t, onBackClick }) => {
+  const dispatch = useDispatch();
+
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
@@ -20,13 +23,12 @@ const PropertyDetailsStep2 = ({ config, onGoNext, t }) => {
     return state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {};
   });
 
-  const dispatch = useDispatch();
-
   // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>
-      <FormComposer
+      <PropertyDetailsFormUser onBackClick={onBackClick} />
+      {/* <FormComposer
         defaultValues={currentStepData}
         //heading={t("")}
         config={config.currStepConfig}
@@ -35,7 +37,7 @@ const PropertyDetailsStep2 = ({ config, onGoNext, t }) => {
         //isDisabled={!canSubmit}
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
-      />
+      /> */}
     </React.Fragment>
   );
 };

@@ -56,7 +56,7 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
   };
 
   const labelStyle = {
-    fontSize: "20px",
+    fontSize: "18px",
     color: "#1E1E1E",
     fontWeight: "500",
     fontFamily: "Noto Sans,sans-serif",
@@ -142,7 +142,7 @@ const StepWrapper = ({ children, currentStep = 1, nextStep, prevStep, stepsList 
             <div className="step-sub-content" style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", margin: "10px" }}>
               {index + 1 === totalSteps ? null : (
                 <div className="step-number" style={stepNumberStyle}>
-                  Step {index + 1}
+                  {/* Step {index + 1} */}
                 </div>
               )}
               <div className="step-label" style={labelStyle}>

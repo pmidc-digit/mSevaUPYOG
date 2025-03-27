@@ -9,7 +9,7 @@ const SURVEY_CATEGORY = "Create Category";
 const CATEGORY_CREATED = "Category created successfully";
 const ERR_MESSAGE = "Something went wrong";
 
-const PropertyDetailsForm = (props) => {
+const PropertyDetailsForm = ({ onGoNext }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +33,7 @@ const PropertyDetailsForm = (props) => {
 
   const onSubmit = async (data) => {
     console.log("data is here==========", data);
+    onGoNext();
   };
 
   useEffect(() => {
@@ -53,21 +54,20 @@ const PropertyDetailsForm = (props) => {
                 First Name <span style={{ color: "red" }}>*</span>
               </label>
               <TextInput
-                {...register("firstName")}
-                // name="firstName"
-                // type="text"
-                // inputRef={register({
-                //   required: "This field is required",
-                //   maxLength: {
-                //     value: 500,
-                //     message: "Category length should be less than or equal to 500 characters",
-                //   },
-                // })}
+                name="firstName"
+                type="text"
+                inputRef={register({
+                  required: "This field is required",
+                  maxLength: {
+                    value: 500,
+                    message: "Category length should be less than or equal to 500 characters",
+                  },
+                })}
               />
             </span>
             {errors.firstName && <p style={{ color: "red" }}>{errors.firstName.message}</p>}
           </div>
-          {/* <div className="surveydetailsform-wrapper">
+          <div className="surveydetailsform-wrapper">
             <span className="surveyformfield">
               <label>
                 Last Name <span style={{ color: "red" }}>*</span>
@@ -123,7 +123,10 @@ const PropertyDetailsForm = (props) => {
               />
             </span>
             {errors.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
-          </div> */}
+          </div>
+          <ActionBar>
+            <SubmitBar label="Next" submit="submit" />
+          </ActionBar>
           {/* <button type="submit">Submit</button> */}
         </form>
       </FormProvider>

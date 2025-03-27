@@ -118,7 +118,7 @@ export const quickServiceModules = {
             bgColor : "#0a3622",
             labelKey : "",
             icon : "",
-            routes : "",
+            routes : "/digit-ui/employee/engagement/surveys/inbox",
             isCitizen : false,
             description : "",
             subHeading :"",

@@ -61,8 +61,8 @@ const Acknowledgement = (props) => {
   // }
 
    const actionClickHandler = (option) => {
-    if(option === t("GO_BACK_TO_HOME")) history.push("/digit-ui/employee")
-    else if(option === t("CREATE_ANOTHER_SURVEY")) history.push("/digit-ui/employee/engagement/surveys/create-survey-step-form")
+    if(option === t("GO_BACK_TO_HOME")) history.replace("/digit-ui/employee")
+    else if(option === t("CREATE_ANOTHER_SURVEY")) history.replace("/digit-ui/employee/engagement/surveys/create-survey-step-form")
   }
   return (
     <Card>

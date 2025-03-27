@@ -96,8 +96,8 @@ const CreateSurveyCategory = () => {
                 inputRef={register({
                   required: t("REQUIRED_FIELD"), // t("EVENTS_CATEGORY_ERROR_REQUIRED")//t("ES_ERROR_REQUIRED"),
                   maxLength: {
-                    value: 60,
-                    message: t("EXCEEDS_60_CHAR_LIMIT"),
+                    value: 500,
+                    message: t("Category length should be less than or equal to 500 characters") //t("EXCEEDS_60_CHAR_LIMIT"),
                   },
                 })}
               />
@@ -121,7 +121,7 @@ const CreateSurveyCategory = () => {
           onCancel={handleOnCancelDialog}
           onDismiss={handleOnCancelDialog}
           heading="ABOUT_CATEGORY_CREATION_HEADER"
-          content="ABOUT_CATEGORY_CREATION_DESCRIPTION"
+          content={t("ABOUT_CATEGORY_CREATION_DESCRIPTION")}
           hideSubmit={true}
         />
       )}

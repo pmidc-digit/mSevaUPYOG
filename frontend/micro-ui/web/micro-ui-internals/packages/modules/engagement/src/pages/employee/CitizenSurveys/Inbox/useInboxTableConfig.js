@@ -142,9 +142,9 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       };
     },
     disableSort: false,
-    autoSort: true,
+    autoSort: false,
     manualPagination: true,
-    initSortI: "endDate",
+    initSortId: "endDate",
     onPageSizeChange: onPageSizeChange,
     currentPage: parseInt(formState.tableForm?.offset / formState.tableForm?.limit),
     onNextPage: () =>
@@ -160,8 +160,14 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
     pageSizeLimit: formState.tableForm?.limit,
     // onSort: onSort,
     // sortParams: [{id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false}],
-    totalRecords: parseInt(totalCount),
+    totalRecords: totalCount,
     onSearch: formState?.searchForm?.message,
+    onLastPage: () =>
+      dispatch({
+        action: "mutateTableForm",
+        data: { ...formState.tableForm, offset: Math.ceil(totalCount / 10) * 10 - parseInt(formState.tableForm?.limit) },
+      }),
+    onFirstPage: () => dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } }),
     // globalSearch: {searchForItemsInTable},
     // searchQueryForTable,
     data: table,

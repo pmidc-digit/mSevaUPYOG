@@ -58,7 +58,7 @@ const CreateSurveyQuestions = () => {
         categoryId: item.category.value,
         questionStatement: item.questionStatement.trim(),
         type: item.type.value,
-        required: item.required,
+        //required: item.required,
         options: item.options.map((option) => {
           return option.title.trim();
         }),

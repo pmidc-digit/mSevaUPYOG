@@ -66,17 +66,17 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
           );
         },
       },
-      {
-        Header: t("Is Question Required"),
-        accessor: "isQuestionRequired",
-        Cell: ({ row }) => {
-          return (
-            <div>
-              <span>{t(row.original?.required)}</span>
-            </div>
-          );
-        },
-      },
+      // {
+      //   Header: t("Is Question Required"),
+      //   accessor: "isQuestionRequired",
+      //   Cell: ({ row }) => {
+      //     return (
+      //       <div>
+      //         <span>{t(row.original?.required)}</span>
+      //       </div>
+      //     );
+      //   },
+      // },
       {
         Header: t("Category"),
         accessor: "category",

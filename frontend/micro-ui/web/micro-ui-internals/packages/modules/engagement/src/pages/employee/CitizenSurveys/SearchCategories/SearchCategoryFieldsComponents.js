@@ -51,7 +51,7 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
     <>
       <SearchField>
         <label>
-          {t("CITY")} <span style={{ color: "red" }}>*</span>
+          {t("City")} <span style={{ color: "red" }}>*</span>
         </label>
         <Controller
           rules={{ required: t("REQUIRED_FIELD") }}

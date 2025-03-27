@@ -56,6 +56,9 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
       case "PTR":
         return true;
 
+      case "Engagement":
+        return true;
+
       default:
         return null;
     }

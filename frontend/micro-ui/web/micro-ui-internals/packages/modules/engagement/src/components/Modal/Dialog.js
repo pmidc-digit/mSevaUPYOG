@@ -87,7 +87,7 @@ const Dialog = ({ onSelect, onCancel, onDismiss, heading, content, hideSubmit })
       hideSubmit={hideSubmit}
     >
       <div>
-        <CardText style={{ margin: 0 }}> {t(content)}</CardText>
+        <CardText style={{ margin: 0 }}> {content}</CardText>
       </div>
     </Modal>
   ) : (
@@ -105,7 +105,7 @@ const Dialog = ({ onSelect, onCancel, onDismiss, heading, content, hideSubmit })
       hideSubmit={hideSubmit}
     >
       <div>
-        <CardText style={{ marginBottom: "54px", marginLeft: "8px", marginRight: "8px" }}>{t(content)}</CardText>
+        <CardText style={{ marginBottom: "54px", marginLeft: "8px", marginRight: "8px" }}>{content}</CardText>
       </div>
     </Modal>
   );

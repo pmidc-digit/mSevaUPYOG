@@ -113,14 +113,14 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp
         name="mobile"
         value={formData.mobile}
         onChange={handleFieldChange}
-        placeholder="Mobile Number"
+        placeholder="Enter Mobile Number"
         required
+        maxLength={10}
       />
  {errors.mobile && <span className="error">{errors.mobile}</span>}
 <h3>City</h3>
       <Dropdown
         required={true}
-      
         id="city"
         name="city"
         option={cities}
@@ -128,6 +128,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp
         select={(e) => handleDropdownChange("city", e)}
         placeholder={"Select City"}
         optionKey="i18nKey"
+        t={t}
         selected={formData.city || null}
       />
       {errors.city && <span className="error">{errors.city}</span>}
@@ -157,7 +158,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp
       }
       {(formData.register === true || formData.citizenFound === true) &&(
         <>
-      <h3>Name</h3>
+      <h3>Citizen Name</h3>
       <input
         type="text"
         name="name"
@@ -166,6 +167,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp
         placeholder="Citizen Name"
         readOnly={formData.citizenFound}
         // required
+        maxLength={100}
       />
       {errors.name && <span className="error">{errors.name}</span>}
      

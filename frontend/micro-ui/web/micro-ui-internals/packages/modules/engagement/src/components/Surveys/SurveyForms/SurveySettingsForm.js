@@ -1,5 +1,5 @@
 import React, { useEffect,useMemo } from "react";
-import { CardLabelError, TextInput, RadioButtons } from "@mseva/digit-ui-react-components";
+import { CardLabelError, TextInput, RadioButtons, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { Controller, useFormContext } from "react-hook-form";
 import { fieldChange} from '../../../redux/actions/surveyFormActions';
 import { useSelector, useDispatch } from 'react-redux';
@@ -52,17 +52,25 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
     //className="surveydetailsform-wrapper"
      className="create-survey-card"
     >
-      <div 
+      {/* <div 
       style={{fontSize:'22px', lineHeight:'24px',color:'black',fontWeight:'500',fontFamily:'Noto Sans,sans-serif'}}
       //className="heading"
       >
-        {"Survey Publish Period"}</div>
-        <div style={{border:'1px solid #DFE0E2'}}></div>
-      {/* <span className="surveyformfield"> */}
+        {"Survey Publish Period"}</div> */}
+        <div>
+        <CardSectionHeader>
+            {t("Survey Publish Period")}
+          </CardSectionHeader>
+          <div style={{
+ border:'1px solid #DFE0E2',
+ marginBottom:'20px',
+          }}></div>
+          </div>
+      
       <div className="survey-row">
    
     <div className="survey-column">
-        <label>{`${t("LABEL_SURVEY_START_DATE")} * `}</label>
+        <label>{t("LABEL_SURVEY_START_DATE")} <span style={{color:"red"}}>*</span></label>
         <Controller
           control={controlSurveyForm}
           name="fromDate"
@@ -86,7 +94,7 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
 
       {/* <span className="surveyformfield"> */}
       <div className="survey-column">
-        <label>{`${t("LABEL_SURVEY_START_TIME")} * `}</label>
+        <label>{t("LABEL_SURVEY_START_TIME")} <span style={{color:"red"}}>*</span></label>
         <Controller
           control={controlSurveyForm}
           name="fromTime"
@@ -109,7 +117,7 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
       <div className="survey-row">
    
     <div className="survey-column">
-        <label>{`${t("LABEL_SURVEY_END_DATE")} * `}</label>
+        <label>{t("LABEL_SURVEY_END_DATE")} <span style={{color:"red"}}>*</span></label>
         <Controller
           control={controlSurveyForm}
           name="toDate"
@@ -130,7 +138,7 @@ const SurveySettingsForms = ({ t, controlSurveyForm, surveyFormState, disableInp
 
       {/* <span className="surveyformfield"> */}
       <div className="survey-column">
-        <label>{`${t("LABEL_SURVEY_END_TIME")} * `}</label>
+        <label>{t("LABEL_SURVEY_END_TIME")} <span style={{color:"red"}}>*</span></label>
 
         <Controller
           control={controlSurveyForm}

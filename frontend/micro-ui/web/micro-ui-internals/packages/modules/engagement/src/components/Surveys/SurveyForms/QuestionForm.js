@@ -131,7 +131,7 @@ const QuestionForm = ({
           <div>
             {errors.questions?.[index]?.options && <CardLabelError>{errors.questions[index].options.message}</CardLabelError>}
             <Controller
-              rules={{ validate: (value) => value.every((option) => option.title.trim() !== "") || "Option cannot be empty" }}
+              rules={{ validate: (value) => value.every((option) => option.title.trim() !== "") || "Some options are empty. Please provide text or remove the empty options." }}
               defaultValue={defaultQuestionValues.options}
               //name={`OPTIONS_${index}`}
               name={`questions[${index}].options`}
@@ -158,8 +158,8 @@ const QuestionForm = ({
                   isInputDisabled={isInputDisabled}
                   isPartiallyEnabled={isPartiallyEnabled}
                   formDisabled={formDisabled}
-                  maxLength={60}
-                  titleHover={t("MAX_LENGTH_60")}
+                  maxLength={500}
+                  titleHover={t("The maximum length is 500 characters")}
                   t={t}
                 />
               )}
@@ -171,7 +171,7 @@ const QuestionForm = ({
           <div>
             {errors.questions?.[index]?.options && <CardLabelError>{errors.questions[index].options.message}</CardLabelError>}
             <Controller
-              rules={{ validate: (value) => value.every((option) => option.title.trim() !== "") || "Option cannot be empty" }}
+              rules={{ validate: (value) => value.every((option) => option.title.trim() !== "") || "Some options are empty. Please provide text or remove the empty options." }}
               defaultValue={defaultQuestionValues.options}
               name={`questions[${index}].options`}
               control={controlSurveyForm}
@@ -197,9 +197,9 @@ const QuestionForm = ({
                   isPartiallyEnabled={isPartiallyEnabled}
                   createNewSurvey={addOption} //Check this
                   formDisabled={formDisabled}
-                  titleHover={t("MAX_LENGTH_60")}
+                  titleHover={t("The maximum length is 500 characters")}
                   labelstyle={{ marginLeft: "-20px" }}
-                  maxLength={60}
+                  maxLength={500}
                   t={t}
                 />
               )}
@@ -282,8 +282,8 @@ const QuestionForm = ({
           rules={{
             required: t("REQUIRED_FIELD"),
             maxLength: {
-              value: 100,
-              message: "Question exceeds 100 character limit",
+              value: 500,
+              message: "Question length should be less than or equal to 500 characters",
             },
             pattern: {
               value: /^[A-Za-z_-][A-Za-z0-9_\ -?]*$/,
@@ -335,7 +335,7 @@ const QuestionForm = ({
 
         <div className="newSurveyForm_answer">{renderAnswerComponent(surveyQuestionConfig?.type)}</div>
         <div className="newSurveyForm_actions">
-          <div>
+          {/* <div>
             <Controller
               defaultValue={defaultQuestionValues.required}
               name={`questions[${index}].required`}
@@ -353,7 +353,7 @@ const QuestionForm = ({
                 />
               )}
             />
-          </div>
+          </div> */}
           {noOfQuestions > 1 && <div className="newSurveyForm_seprator" />}
           {noOfQuestions > 1 && (
             <div className={`pointer ${disableInputs ? "disabled-btn" : ""}`} onClick={() => dispatch({ type: "removeForm", payload: { uuid } })}>

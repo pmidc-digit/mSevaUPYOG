@@ -24,7 +24,7 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
   return (
     <>
       <SearchField>
-        <label>{t("LABEL_FOR_ULB")} <span style={{ color: "red" }}>*</span></label>
+        <label>{t("City")} <span style={{ color: "red" }}>*</span></label>
         <Controller
           rules={{ required: t("REQUIRED_FIELD") }}
           defaultValue={selectedTenat?.[0]}

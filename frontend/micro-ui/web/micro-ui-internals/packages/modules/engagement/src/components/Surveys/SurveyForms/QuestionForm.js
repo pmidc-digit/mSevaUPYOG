@@ -71,6 +71,7 @@ const QuestionForm = ({
     questionStatement: questionStatement || defaultQuestionValues.questionStatement,
     type: type || defaultQuestionValues.type,
     options: options?.length > 0 ? options : defaultQuestionValues.options,
+    //optionWeightage:defaultQuestionValues.optionWeightage,
     required: required || defaultQuestionValues.required,
     uuid: uuid || defaultQuestionValues.uuid,
     qorder: qorder || defaultQuestionValues.qorder,
@@ -81,13 +82,13 @@ const QuestionForm = ({
   //console.log("mainFormState", mainFormState, "\n index", index, "\n errors:", errors, "\n message:", errors[`questions[${index}]`]);
 
   const handleAddOption = () => {
-    const newOptions = [...surveyQuestionConfig.options, { id: Date.now(), title: `${t("CMN_OPTION")} ${surveyQuestionConfig.options.length + 1}` }];
+    const newOptions = [...surveyQuestionConfig.options, { id: Date.now(), title: `${t("CMN_OPTION")} ${surveyQuestionConfig.options.length + 1}` ,optionWeightage:0}];
     setSurveyQuestionConfig((prevState) => ({ ...prevState, options: newOptions }));
     return newOptions;
   };
 
-  const handleUpdateOption = ({ value, id }) => {
-    const updatedOptions = surveyQuestionConfig.options.map((option) => (option.id === id ? { ...option, title: value } : option));
+  const handleUpdateOption = ({ value, id,weightage }) => {
+    const updatedOptions = surveyQuestionConfig.options.map((option) => (option.id === id ? { ...option, title: value , optionWeightage:weightage} : option));
     setSurveyQuestionConfig((prevState) => ({ ...prevState, options: updatedOptions }));
     return updatedOptions;
   };
@@ -159,11 +160,15 @@ const QuestionForm = ({
                   isPartiallyEnabled={isPartiallyEnabled}
                   formDisabled={formDisabled}
                   maxLength={500}
+                  minWeight={0}
+                  maxWeight={10}
                   titleHover={t("The maximum length is 500 characters")}
+                  weightHover={t("Enter a number between 0 and 10")}
                   t={t}
                 />
               )}
             />
+          
           </div>
         );
       case "CHECKBOX_ANSWER_TYPE":
@@ -198,8 +203,11 @@ const QuestionForm = ({
                   createNewSurvey={addOption} //Check this
                   formDisabled={formDisabled}
                   titleHover={t("The maximum length is 500 characters")}
+                  weightHover={t("Enter a number between 0 and 10")}
                   labelstyle={{ marginLeft: "-20px" }}
                   maxLength={500}
+                  minWeight={0}
+                  maxWeight={10}
                   t={t}
                 />
               )}
@@ -243,7 +251,7 @@ const QuestionForm = ({
       type: ev ? { title: ev.title, i18Key: ev.i18Key, value: ev.value } : null,
     }));
   };
-
+console.log("surveyQuestionConfig",surveyQuestionConfig.options[0].optionWeightage)
   return (
     <div className="newSurveyForm_wrapper">
       <span className="newSurveyForm_quesno">{`${t("CS_COMMON_QUESTION")} ${index + 1} `}</span>

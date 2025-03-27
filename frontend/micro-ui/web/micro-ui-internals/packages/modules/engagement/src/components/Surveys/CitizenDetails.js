@@ -1,6 +1,7 @@
 import React ,{Fragment, useState}from "react";
 import { TextInput, Dropdown, CheckBox, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import { format, parseISO } from 'date-fns';
 const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp,setGetOtp }) => {
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [showToast, setShowToast] = useState(null);
@@ -9,13 +10,49 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp
   const closeToast = () => {
     setShowToast(null);
   };
+  const genderList=[
+    {label:"Male",value:"Male"},
+    {label:"Female",value:"Female"},
+    {label:"Other",value:"Other"},
+
+  ]
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
+    console.log("date e",event)
     console.log("date value", event.target);
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
+  };
+  const handleDateChange = (event) => {
+    const { name, value } = event.target;
+    console.log("date e",event)
+    console.log("date value", event.target);
+    if (value) {
+      const today = new Date();
+      const birthDate = new Date(value);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDifference = today.getMonth() - birthDate.getMonth();
+
+      if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+      }
+
+      if (age < 15 || age > 100) {
+          alert('Age must be between 15 and 100 years.');
+      } else {
+         // setError('');
+         setFormData((prevData) => ({
+          ...prevData,
+          [name]: value,
+        }));
+      }
+  } else {
+    //  setError('');
+ 
+  }
+    
   };
   const handleDropdownChange = (name, event) => {
     setFormData((prevData) => ({
@@ -75,10 +112,14 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp
       
         if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length>0) {
         // setCitizenFound(true)
+        const formattedDate = format(parseISO(response.user[0]?.dob), 'dd/MM/yyyy');
          setFormData((prevData) => ({
           ...prevData,
           "citizenFound": true,
           "name": response.user[0]?.name,
+          ["email"]:response.user[0]?.email,
+          ["gender"]: response.user[0]?.gender,
+          ["dob"]:response.user[0]?.dob,
           "register": false,
           // "city": response.user[0]?.permanentCity,
           "user": response.user[0],
@@ -170,7 +211,39 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp
         maxLength={100}
       />
       {errors.name && <span className="error">{errors.name}</span>}
-     
+
+
+      <h3>Citizen Gender</h3>
+        <select
+            name="select gender"
+            value={formData.gender}
+            onChange={handleFieldChange}
+            
+          >
+             <option value="">Select Gender</option>
+          {genderList.length>0? genderList.map((item)=>{
+             <option id={item.value} value={item?.value}>{item?.label}</option>
+          }): <option value="">Select Gender</option>} 
+          
+         </select>  
+      {errors.gender && <span className="error">{errors.gender}</span>}
+
+      <h3>Citizen Email</h3>
+      <input
+        type="email"
+        id="emailInput"
+        name="email"
+        value={formData.email}
+        onChange={handleFieldChange}
+        placeholder="Citizen Email"
+        defaultValue={formData.email}
+        // required
+       // maxLength={100}
+      />
+      {errors.email && <span className="error">{errors.email}</span>}
+      <h3>Citizen Date of Birth</h3>
+     <input name="dob" type="date" onChange={handleDateChange} defaultValue={formData.dob} value={formData.dob}/>
+     {errors.dob && <span className="error">{errors.dob}</span>}
      {formData.register === true && ( <label  onClick={()=>getOtp()}>Get OTP</label> )}
     </>
       )}

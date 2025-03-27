@@ -21,6 +21,9 @@ const FillSurvey = ({stateCode}) => {
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
+    email:"",
+    dob:"",
+    gender: "",
     city:"",
     otp:"",
     citizenFound: null,
@@ -92,6 +95,13 @@ const FillSurvey = ({stateCode}) => {
     if (!formData.mobile) newErrors.mobile = "Mobile number is required";
     else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";
     if (!formData.city) newErrors.city = "City is required";
+
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invlid Email";
+
+    if (!formData.gender) newErrors.gender = "Gender is required";
+
+    if (!formData.dob) newErrors.dob = "Date of Birth is required";
     // if (!formData.relation) newErrors.relation = "Relation is required";
     // if (!formData.address) newErrors.address = "Address is required";
     // if (!formData.dob) newErrors.dob = "Date of Birth is required";
@@ -106,7 +116,14 @@ const FillSurvey = ({stateCode}) => {
     if (!formData.name) newErrors.name = "Name is required";
     else if (!/^[A-Za-z\s]+$/.test(formData.name)) newErrors.name = "Name can only contain alphabets and spaces";
    
-    
+   
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invlid Email";
+
+    if (!formData.gender) newErrors.gender = "Gender is required";
+
+    if (!formData.dob) newErrors.dob = "Date of Birth is required";
+
     if (!formData.mobile) newErrors.mobile = "Mobile number is required";
     else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";
      if (!formData.city) newErrors.city = "City is required";
@@ -132,6 +149,9 @@ const FillSurvey = ({stateCode}) => {
           setFormData((prevData) => ({
             ...prevData,
             ["citizenFound"]: true,
+            ["email"]:response.user?.email,
+            ["gender"]: response.user?.gender,
+            ["dob"]:response.user?.dob
           }));
          
          // setCitizenFound(true)
@@ -230,6 +250,9 @@ const FillSurvey = ({stateCode}) => {
                 setFormData({
                   name: "",
                   mobile: "",
+                  email:"",
+                  dob:"",
+                  gender:"",
                   city:"",
                   otp:"",
                   citizenFound: null,

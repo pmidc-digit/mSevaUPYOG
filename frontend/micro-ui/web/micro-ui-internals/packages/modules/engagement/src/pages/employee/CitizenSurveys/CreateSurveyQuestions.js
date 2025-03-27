@@ -29,7 +29,8 @@ const CreateSurveyQuestions = () => {
       category: null,
       questionStatement: "",
       type: { title: t("MULTIPLE_ANSWER_TYPE"), i18Key: "MULTIPLE_ANSWER_TYPE", value: "MULTIPLE_ANSWER_TYPE" },
-      options: [{ id: Date.now(), title: `${t("CMN_OPTION")} 1` }],
+      options: [{ id: Date.now(), title: `${t("CMN_OPTION")} 1` , optionWeightage:0}],
+      
       required: false,
       uuid: generateUUID(),
       qorder: null,

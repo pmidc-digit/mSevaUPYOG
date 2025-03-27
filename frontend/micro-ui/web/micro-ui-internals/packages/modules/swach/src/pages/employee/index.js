@@ -35,10 +35,10 @@ const Complaint = () => {
       content: t("CS_SWACH_RESPONSE"),
       path: match.url + Employee.Response,
     },
-    editApplication: {
-      content: t("CS_SWACH_EDIT_APPLICATION"),
-      path: match.url + Employee.EditApplication,
-    },    
+    // editApplication: {
+    //   content: t("CS_SWACH_EDIT_APPLICATION"),
+    //   path: match.url + Employee.EditApplication,
+    // },    
   };
   function popupCall(option) {
     setDisplayMenu(false);
@@ -50,6 +50,7 @@ const Complaint = () => {
   const Inbox = Digit?.ComponentRegistryService?.getComponent('SWACHInbox');
   const CreateComplaint = Digit?.ComponentRegistryService?.getComponent('SWACHCreateComplaintEmp');
   const Response = Digit?.ComponentRegistryService?.getComponent('SWACHResponseEmp');
+  const ComplaintDetails = Digit?.ComponentRegistryService?.getComponent('SWACHComplaintDetails');
   return (
     <React.Fragment>
       <div className="ground-container">
@@ -71,6 +72,7 @@ const Complaint = () => {
         )}
         <Switch>
           <Route path={match.url + Employee.CreateComplaint} component={() => <CreateComplaint parentUrl={match.url} />} />
+          <Route path={match.url + Employee.ComplaintDetails + ":id*"} component={() => <ComplaintDetails />} />
           <Route path={match.url + Employee.Inbox} component={Inbox} />
           <Route path={match.url + Employee.Response} component={Response} />
         </Switch>

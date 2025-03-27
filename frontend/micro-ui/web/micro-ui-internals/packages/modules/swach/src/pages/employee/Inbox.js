@@ -16,13 +16,13 @@ const Inbox = () => {
 
   useEffect(() => {
     (async () => {
-      const applicationStatus = searchParams?.filters?.pgrfilters?.applicationStatus?.map(e => e.code).join(",")
+      const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map(e => e.code).join(",")
       let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0  ? {applicationStatus} : {} );
       if (response?.count) {
         setTotalRecords(response.count);
       }
     })();
-  }, [searchParams]);
+  }, [searchParams, pageOffset, pageSize]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + 10);

@@ -11,6 +11,7 @@ import Inbox from "./pages/employee/Inbox";
 import EmployeeApp from "./EmployeeApp";
 import { ComplaintIcon, CitizenHomeCard, Loader } from "@mseva/digit-ui-react-components";
 import { CreateComplaint as CreateComplaintEmp } from "./pages/employee/CreateComplaint";
+import { ComplaintDetails } from "./pages/employee/ComplaintDetails";
 import ResponseEmp from "./pages/employee/Response";
 
 
@@ -63,6 +64,7 @@ const componentsToRegister = {
   SWACHInbox : Inbox,
   SWACHCreateComplaintEmp: CreateComplaintEmp,
   SWACHResponseEmp : ResponseEmp,
+  SWACHComplaintDetails : ComplaintDetails,
 };
 
 export const initSWACHComponents = () => {

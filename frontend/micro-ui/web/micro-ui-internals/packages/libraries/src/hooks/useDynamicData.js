@@ -2,6 +2,7 @@ import { useQuery } from "react-query";
 import { TLService } from "./../services/elements/TL";
 import { MCollectService } from "./../services/elements/MCollect";
 import { PGRService } from "../services/elements/PGR";
+import { SwachService } from "../services/elements/Swach";
 import { endOfToday, start } from "date-fns";
 import { WSService } from "../services/elements/WS";
 import { PTService } from "../services/elements/PT";
@@ -47,6 +48,20 @@ const useDynamicData = ({moduleCode ,tenantId, filters, t }) => {
         }});
         return { isLoading, error, data, isSuccess };
     }
+
+    const useSwachDynamicData = () => {
+        const { isLoading, error, data, isSuccess } =  useQuery(['Swach_OPEN_SEARCH', tenantId, filters], async () => await SwachService.SwachOpensearch({ tenantId, filters }),  //need review
+        {select: (data) => {
+            const pgrData = {
+                dynamicDataOne : data?.complaintsResolved === 0 || data?.complaintsResolved === null ? null : data?.complaintsResolved + " " + t("COMPLAINTS_RESOLVED_IN_LAST_30_DAYS"),
+                dynamicDataTwo : data?.averageResolutionTime === 0 || data?.averageResolutionTime === null ? null : data?.averageResolutionTime + " " + (data?.averageResolutionTime === 1 ? t("COMMON_DAY") : t("COMMON_DAYS")) + " " + t("IS_AVG_COMPLAINT_RESOLUTION_TIME"),
+                staticData : data?.complaintTypes === 0 || data?.complaintTypes === null ? null : data?.complaintTypes
+            }
+            return pgrData;
+        }});
+        return { isLoading, error, data, isSuccess };
+    }
+
     const usePTDynamicData = () => {
         const fromDate = format(subMonths(new Date(), 12), 'yyyy-MM-dd').toString();
         const toDate = format(new Date(),'yyyy-MM-dd').toString();
@@ -118,6 +133,8 @@ const useDynamicData = ({moduleCode ,tenantId, filters, t }) => {
             return usePTDynamicData();
         case 'OBPS':                                         
             return useBPADynamicData();
+        case 'Swach':
+            return useSwachDynamicData();
         default:
             return {isLoading: false, error: false, data: null, isSuccess: false};
     }

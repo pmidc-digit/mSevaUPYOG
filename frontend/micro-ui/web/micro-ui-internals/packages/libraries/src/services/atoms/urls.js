@@ -18,6 +18,11 @@ const Urls = {
   PGR_Create: `/pgr-services/v2/request/_create`,
   pgr_count: `/pgr-services/v2/request/_count`,
 
+  Swach_Create: `/swach-services/v2/request/_create`,
+  Swach_count: `/swach-services/v2/request/_count`,
+  Swach_search: `/swach-services/v2/request/_search`,
+  Swach_update: `/swach-services/v2/request/_update`,
+
   OTP_Send: "/user-otp/v1/_send",
   Authenticate: "/user/oauth/token",
   RegisterUser: "/user/citizen/_create",

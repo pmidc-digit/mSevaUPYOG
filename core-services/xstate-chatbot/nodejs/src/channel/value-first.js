@@ -68,17 +68,35 @@ class ValueFirstWhatsAppProvider {
     
 
     async convertFromBase64AndStore(imageInBase64String){
-        imageInBase64String = imageInBase64String.replace(/ /g,'+');
+
+        if (!imageInBase64String) {
+            console.error("Error: imageInBase64String is undefined or null");
+            return null;  // Return null or handle the error appropriately
+        }
+        console.log("Base64 Input Before Processing:", imageInBase64String);
+    
+
+
+        imageInBase64String = imageInBase64String.replace(/ /g, '+');
         let buff = Buffer.from(imageInBase64String, 'base64');
-        var tempName = 'pgr-whatsapp-'+Date.now()+'.jpg'; 
+        var tempName = 'pgr-whatsapp-' + Date.now() + '.jpg'; 
 
         /*fs.writeFile(tempName, buff, (err) => {
             if (err) throw err;
         });*/
 
-        var filestoreId = await this.fileStoreAPICall(tempName,buff);
+        try {
+            var filestoreId = await this.fileStoreAPICall(tempName, buff);
+            console.log("FileStore ID:", filestoreId);
+            return filestoreId;
+        } catch (error) {
+            console.error("Error in fileStoreAPICall:", error);
+            return null;
+        }
+
+        // var filestoreId = await this.fileStoreAPICall(tempName,buff);
         
-        return filestoreId;
+        // return filestoreId;
     }
 
     async getUserMessage(requestBody){

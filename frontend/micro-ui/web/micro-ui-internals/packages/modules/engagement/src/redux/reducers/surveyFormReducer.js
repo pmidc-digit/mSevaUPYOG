@@ -1,5 +1,5 @@
 import { goPrev } from '../actions/surveyFormActions';
-import { FIELD_CHANGE,ADD_CATEGORY,DELETE_CATEGORY, RECALCULATE_WEIGHTAGE, UPDATE_WEIGHTAGE, UPDATE_QUESTION_WEIGHTAGE, ADD_QUESTIONS,ADD_QUESTIONS_LIST, UPDATE_CATEGORY, UPDATE_QUESTION_SELECTION, SET_QUESTIONS, NEXT_STEP, PREVIOUS_STEP, SET_STEP_DATA, UPDATE_SURVEY_FORM, SET_SURVEY_STEP, GO_PREV,GO_NEXT } from '../actions/types';
+import { FIELD_CHANGE,ADD_CATEGORY,DELETE_CATEGORY, RECALCULATE_WEIGHTAGE, UPDATE_WEIGHTAGE,UPDATE_MANDATORY_QUESTION_SELECTION, UPDATE_QUESTION_WEIGHTAGE, ADD_QUESTIONS,ADD_QUESTIONS_LIST, UPDATE_CATEGORY, UPDATE_QUESTION_SELECTION, SET_QUESTIONS, NEXT_STEP, PREVIOUS_STEP, SET_STEP_DATA, UPDATE_SURVEY_FORM, SET_SURVEY_STEP, GO_PREV,GO_NEXT } from '../actions/types';
 
 const initialState = {
   // sections: [
@@ -278,6 +278,23 @@ const surveyFormReducer = (state = initialState, action) => {
             : category
         )
       };
+
+      case UPDATE_MANDATORY_QUESTION_SELECTION:
+        return {
+          ...state,
+          categories: state.categories.map(category =>
+  
+            category.id === action.categoryId
+              ? {
+                ...category,
+                questions: category.questions.map(question =>
+                  question.uuid === action.questionId ? { ...question, mandatory: action.mandatory } : question
+                )
+              }
+              : category
+          )
+        };
+  
     case SET_QUESTIONS:
       return {
         ...state,

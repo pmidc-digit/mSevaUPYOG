@@ -1,5 +1,5 @@
 import { UPDATE_SURVEY_FORM, SET_SURVEY_STEP } from "./types";
-import {FIELD_CHANGE,DELETE_CATEGORY, ADD_CATEGORY, ADD_QUESTIONS, UPDATE_QUESTION_WEIGHTAGE, GO_PREV, GO_NEXT,RECALCULATE_WEIGHTAGE, UPDATE_CATEGORY, UPDATE_QUESTION_SELECTION, SET_QUESTIONS, NEXT_STEP, PREVIOUS_STEP, SET_STEP_DATA } from "./types";
+import {FIELD_CHANGE,DELETE_CATEGORY, ADD_CATEGORY, ADD_QUESTIONS, UPDATE_QUESTION_WEIGHTAGE, GO_PREV, GO_NEXT,RECALCULATE_WEIGHTAGE, UPDATE_CATEGORY, UPDATE_QUESTION_SELECTION, UPDATE_MANDATORY_QUESTION_SELECTION, SET_QUESTIONS, NEXT_STEP, PREVIOUS_STEP, SET_STEP_DATA } from "./types";
 
 export const updateSurveyForm = (key, value) => ({
     type: UPDATE_SURVEY_FORM,
@@ -25,6 +25,7 @@ export const addQuestions = (categoryId, questions) => ({ type: ADD_QUESTIONS, c
 export const addQuestionsList = (categoryId, questionsList) => ({ type: ADD_QUESTIONS, categoryId, questionsList });
 export const updateCategory = (categoryId, data) => ({ type: UPDATE_CATEGORY, categoryId, data });
 export const updateQuestionSelection = (categoryId, questionId, selected) => ({ type: UPDATE_QUESTION_SELECTION, categoryId, questionId, selected });
+export const updateMandatoryQuestionSelection = (categoryId, questionId, mandatory) => ({ type: UPDATE_MANDATORY_QUESTION_SELECTION, categoryId, questionId, mandatory});
 export const updateQuestionWeightage = (categoryId, questionId, weightage) => ({ type: UPDATE_QUESTION_WEIGHTAGE, categoryId, questionId, weightage });
 export const setQuestions = (categoryId, questions) => ({ type: SET_QUESTIONS, categoryId, questions });
 export const recalculateWeightage = () => ({ type: RECALCULATE_WEIGHTAGE });

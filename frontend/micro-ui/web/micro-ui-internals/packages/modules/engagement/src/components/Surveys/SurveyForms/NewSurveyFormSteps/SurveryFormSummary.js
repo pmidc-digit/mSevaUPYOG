@@ -25,7 +25,8 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
                 category.selectedQuestions.map((question)=>{
                     let quesObj={
                         questionUuid: question.uuid,
-                        weightage:parseFloat(question.weightage)
+                        weightage:parseFloat(question.weightage),
+                        required: question.mandatory,
                     }
                   quesArr.push(quesObj)
                 })

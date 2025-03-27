@@ -48,25 +48,33 @@ const Complaint = () => {
   let location = useLocation().pathname;
 
   const Inbox = Digit?.ComponentRegistryService?.getComponent('SWACHInbox');
+  const CreateComplaint = Digit?.ComponentRegistryService?.getComponent('SWACHCreateComplaintEmp');
+  const Response = Digit?.ComponentRegistryService?.getComponent('SWACHResponseEmp');
   return (
     <React.Fragment>
       <div className="ground-container">
         {!location.includes(Employee.Response) && (
           <Switch>
             <Route
+              path={match.url + Employee.CreateComplaint}
+              component={() => <BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.createComplaint]}></BreadCrumb>}
+            />
+            <Route
               path={match.url + Employee.Inbox}
               component={() => <BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.inbox]}></BreadCrumb>}
+            />
+            <Route
+              path={match.url + Employee.Response}
+              component={<BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.response]}></BreadCrumb>}
             />
           </Switch>
         )}
         <Switch>
+          <Route path={match.url + Employee.CreateComplaint} component={() => <CreateComplaint parentUrl={match.url} />} />
           <Route path={match.url + Employee.Inbox} component={Inbox} />
+          <Route path={match.url + Employee.Response} component={Response} />
         </Switch>
       </div>
-      {/* <ActionBar>
-        {displayMenu ? <Menu options={["Assign Complaint", "Reject Complaint"]} onSelect={popupCall} /> : null}
-        <SubmitBar label="Take Action" onSubmit={() => setDisplayMenu(!displayMenu)} />
-      </ActionBar> */}
     </React.Fragment>
   );
 };

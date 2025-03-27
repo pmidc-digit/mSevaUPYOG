@@ -26,6 +26,7 @@ const useSwachInboxData = (searchParams) => {
         sla: Math.round(data.sla / (24 * 60 * 60 * 1000)),
       }));
     }
+    console.log("combinedRes",combinedRes);
     return combinedRes;
   };
 
@@ -36,6 +37,8 @@ const useSwachInboxData = (searchParams) => {
   fetchInboxData,
   { staleTime: Infinity }
   );
+
+  console.log("Search Results", result);
   return { ...result, revalidate: () => client.refetchQueries(["fetchInboxData"]) };
 };
 

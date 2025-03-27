@@ -10,6 +10,8 @@ import { LOCALE } from "./constants/Localization";
 import Inbox from "./pages/employee/Inbox";
 import EmployeeApp from "./EmployeeApp";
 import { ComplaintIcon, CitizenHomeCard, Loader } from "@mseva/digit-ui-react-components";
+import { CreateComplaint as CreateComplaintEmp } from "./pages/employee/CreateComplaint";
+import ResponseEmp from "./pages/employee/Response";
 
 
 export const SWACHReducers = getRootReducer;
@@ -59,6 +61,8 @@ const componentsToRegister = {
   SWACHLinks,
   SWACHCard,
   SWACHInbox : Inbox,
+  SWACHCreateComplaintEmp: CreateComplaintEmp,
+  SWACHResponseEmp : ResponseEmp,
 };
 
 export const initSWACHComponents = () => {

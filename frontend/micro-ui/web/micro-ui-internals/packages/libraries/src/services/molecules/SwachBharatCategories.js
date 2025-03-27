@@ -26,7 +26,7 @@ export const GetSwachBharatCategories = {
   },
   getMenu: async (stateCode, t) => {
     var Menu = [];
-    const response = await GetServiceDefinitions.get(stateCode);
+    const response = await GetSwachBharatCategories.get(stateCode);
     await Promise.all(
       response.map((def) => {
         if (!Menu.find((e) => e.key === def.menuPath)) {
@@ -46,7 +46,7 @@ export const GetSwachBharatCategories = {
   },
 
   getSubMenu: async (tenantId, selectedType, t) => {
-    const fetchServiceDefs = await GetServiceDefinitions.get(tenantId);
+    const fetchServiceDefs = await GetSwachBharatCategories.get(tenantId);
     return fetchServiceDefs
       .filter((def) => def.menuPath === selectedType.key)
       .map((id) => ({

@@ -19,7 +19,7 @@ const createComplaint = ({
   emailId,
   additionalDetails
 }) => async (dispatch, getState) => {
-  const response = await Digit.Complaint.create({
+  const response = await Digit.Complaint.createSwach({
     cityCode,
     complaintType,
     priorityLevel,

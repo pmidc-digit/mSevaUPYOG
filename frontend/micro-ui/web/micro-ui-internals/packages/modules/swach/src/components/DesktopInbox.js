@@ -9,7 +9,7 @@ import SearchComplaint from "./inbox/search";
 import { LOCALE } from "../constants/Localization";
 
 const DesktopInbox = ({
-  data = [],
+  data,
   onFilterChange,
   onSearch,
   isLoading = false,

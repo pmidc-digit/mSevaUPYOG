@@ -7,8 +7,7 @@ const useSwachComplaintStatusCount = (complaints) => {
   let tenantId = Digit.ULBService.getCurrentTenantId();
 
   const getCount = async (value) => {
-    let response
-    //  = await Digit.SwachService.count(tenantId, { applicationStatus: value });
+    let response = await Digit.SwachService.count(tenantId, { applicationStatus: value });
     return response?.count || "";
   };
 

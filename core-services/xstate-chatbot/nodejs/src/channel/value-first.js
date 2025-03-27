@@ -69,17 +69,20 @@ class ValueFirstWhatsAppProvider {
 
     async convertFromBase64AndStore(imageInBase64String){
 
-        if (!imageInBase64String) {
-            console.error("Error: imageInBase64String is undefined or null");
-            return null;  // Return null or handle the error appropriately
+        if (!imageInBase64String || typeof imageInBase64String !== "string") {
+            throw new Error("Invalid imageInBase64String: Value is missing or not a string");
         }
-        console.log("Base64 Input Before Processing:", imageInBase64String);
+
+       console.log("Base64 Input Before Processing:", imageInBase64String.substring(0, 50) + "..."); // Print first 50 chars
     
 
 
         imageInBase64String = imageInBase64String.replace(/ /g, '+');
+
         let buff = Buffer.from(imageInBase64String, 'base64');
         var tempName = 'pgr-whatsapp-' + Date.now() + '.jpg'; 
+
+        console.log("Temp Filename:", tempName);
 
         /*fs.writeFile(tempName, buff, (err) => {
             if (err) throw err;
@@ -100,6 +103,10 @@ class ValueFirstWhatsAppProvider {
     }
 
     async getUserMessage(requestBody){
+
+        console.log("Received requestBody:", JSON.stringify(requestBody, null, 2));
+
+
         let reformattedMessage={};
         let type;
         let input;
@@ -119,8 +126,14 @@ class ValueFirstWhatsAppProvider {
             if(type === "location") {
                 input = '(' + requestBody.latitude + ',' + requestBody.longitude + ')';
             } 
+
             else if(type === 'image'){
                 var imageInBase64String = requestBody.media_data;
+
+                if (!imageInBase64String) {
+                    console.error("Error: Base64 image string is missing in requestBody!");
+                }
+
                 input = await this.convertFromBase64AndStore(imageInBase64String);
             }
             else if(type === 'unknown' || type === 'document')

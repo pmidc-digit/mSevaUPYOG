@@ -57,9 +57,9 @@ public class QuestionService {
             enrichCreateRequest(question, requestInfo);
 
             // Validate options length
-            if (question.getOptions() != null && question.getOptions().stream().anyMatch(opt -> opt.length() > 200)) {
-                throw new IllegalArgumentException("Maximum 200 characters allowed only for a question's option");
-            }
+//            if (question.getOptions() != null && question.getOptions().stream().anyMatch(opt -> opt.length() > 200)) {
+//                throw new IllegalArgumentException("Maximum 200 characters allowed only for a question's option");
+//            }
         });
 
         producer.push(applicationProperties.getSaveQuestionTopic(), questionRequest);

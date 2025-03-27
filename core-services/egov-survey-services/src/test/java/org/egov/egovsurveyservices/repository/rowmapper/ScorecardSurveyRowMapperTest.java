@@ -78,10 +78,10 @@ public class ScorecardSurveyRowMapperTest {
         when(resultSet.getString("question_lastmodifiedby")).thenReturn("questionModifier", "questionModifier");
         when(resultSet.getLong("question_createdtime")).thenReturn(1672531200000L, 1672531200000L);
         when(resultSet.getLong("question_lastmodifiedtime")).thenReturn(1675219600000L, 1675219600000L);
-        when(resultSet.getLong("question_order")).thenReturn(1L, 2L);
         when(resultSet.getString("question_categoryid")).thenReturn("cat-123", "cat-456");
         when(resultSet.getString("question_tenantid")).thenReturn("pb.testing", "pb.testing");
         when(resultSet.getBigDecimal("question_weightage")).thenReturn(new BigDecimal("5.00"), new BigDecimal("3.00"));  
+        when(resultSet.getLong("question_weightage_qorder")).thenReturn(1L, 2L);
 
         List<ScorecardSurveyEntity> result = rowMapper.extractData(resultSet);
 

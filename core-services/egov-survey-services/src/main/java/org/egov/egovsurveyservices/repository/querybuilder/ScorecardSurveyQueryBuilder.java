@@ -65,12 +65,13 @@ public class ScorecardSurveyQueryBuilder {
                     "question.lastmodifiedby AS question_lastmodifiedby, " +
                     "question.createdtime AS question_createdtime, " +
                     "question.lastmodifiedtime AS question_lastmodifiedtime, " +
-                    "question.qorder AS question_order, " +
                     "question.categoryid AS question_categoryid, " +
                     "question.tenantid AS question_tenantid, " +
 
                     // Question weightage fields
-                    "questionWeightage.weightage AS question_weightage " +
+                    "questionWeightage.qorder AS question_weightage_qorder, " +
+                    "questionWeightage.weightage AS question_weightage, " +
+                    "questionWeightage.required AS question_weightage_required " +
 
             "FROM eg_ss_survey_entity AS survey " +
             "LEFT JOIN eg_ss_survey_section AS section " +

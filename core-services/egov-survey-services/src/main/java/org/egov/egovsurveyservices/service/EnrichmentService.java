@@ -100,7 +100,7 @@ public class EnrichmentService {
                     continue;
                 }
 
-                question.setQorder(questionWeightage.getQorder());
+//                question.setQorder(questionWeightage.getQorder());
                 question.setUuid(questionWeightage.getQuestionUuid());
                 question.setSurveyId(surveyEntity.getUuid());
 

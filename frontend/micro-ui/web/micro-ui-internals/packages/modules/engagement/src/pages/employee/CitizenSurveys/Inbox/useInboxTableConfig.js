@@ -13,12 +13,10 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
 
   const handleUpdateSurveyConfirm = (row) => {
     console.log("Current row: ", row);
-    const currentStatus = row?.original?.active?"Active":"Inactive";
-    const updatedStatus= row?.original?.active? "Inactive":"Active";
+    const currentStatus = row?.original?.active ? "Active" : "Inactive";
+    const updatedStatus = row?.original?.active ? "Inactive" : "Active";
     setShowToast({
-      label: `Are you sure you want to change the survey status of "${
-        row?.original?.surveyTitle
-      }" from ${currentStatus} to ${updatedStatus}? Please confirm.`,
+      label: `Are you sure you want to change the survey status of "${row?.original?.surveyTitle}" from ${currentStatus} to ${updatedStatus}? Please confirm.`,
       isDeleteBtn: true,
       warning: true,
       isWarningButtons: true,
@@ -123,9 +121,16 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "updateSurvey",
         Cell: ({ row }) => {
           return (
-            <button onClick={() => handleUpdateSurveyConfirm(row)}>
-              <EditIcon className="table-cell-for-update" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
-            </button>
+            <div className="tooltip" /* style={{position:"relative"}} */>
+              <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
+                <button onClick={() => handleUpdateSurveyConfirm(row)}>
+                  <EditIcon className="table-cell-for-update" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
+                </button>
+                <span className="tooltiptext" style={{ position: "absolute", width: "100px", marginLeft: "50%", fontSize: "medium" }}>
+                  {t("Click here to update the survey status")}
+                </span>
+              </div>
+            </div>
           );
         },
       },

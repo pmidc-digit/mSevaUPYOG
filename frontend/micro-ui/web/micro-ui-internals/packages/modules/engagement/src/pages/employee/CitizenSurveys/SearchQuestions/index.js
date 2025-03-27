@@ -256,7 +256,10 @@ const SearchQuestions = ({ parentRoute }) => {
 
   return (
     <Fragment>
-      <Header>{t(SEARCH_QUESTIONS)}</Header>
+      <Header>
+        {t(SEARCH_QUESTIONS)}
+        {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+      </Header>
       <InboxComposer
         {...{
           isInboxLoading,
@@ -279,7 +282,7 @@ const SearchQuestions = ({ parentRoute }) => {
           onNo={onNoToToast}
           onYes={onYesToToast}
           warning={showToast.warning}
-          style={{padding:'16px'}}
+          style={{ padding: "16px" }}
           isWarningButtons={showToast.isWarningButtons}
         />
       )}

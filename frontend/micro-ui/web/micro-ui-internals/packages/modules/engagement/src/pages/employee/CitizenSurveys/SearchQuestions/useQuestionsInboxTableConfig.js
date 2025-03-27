@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo,useState } from "react";
+import React, { Fragment, useMemo } from "react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { DeleteIcon, EditIcon } from "@mseva/digit-ui-react-components";
@@ -6,7 +6,7 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value) => <span className={value === "ACTIVE" ? "sla-cell-success" : "sla-cell-error"}>{value}</span>;
   const { t } = useTranslation();
-  const [showTooltip, setShowTooltip] = useState(false);
+
   // const handleDeleteConfirm = (row) => {
   // console.log("Current row: ", row);
   // const currentStatus = row?.original?.isActive;
@@ -66,17 +66,17 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
           );
         },
       },
-      // {
-      //   Header: t("Is Question Required"),
-      //   accessor: "isQuestionRequired",
-      //   Cell: ({ row }) => {
-      //     return (
-      //       <div>
-      //         <span>{t(row.original?.required)}</span>
-      //       </div>
-      //     );
-      //   },
-      // },
+      {
+        Header: t("Is Question Required"),
+        accessor: "isQuestionRequired",
+        Cell: ({ row }) => {
+          return (
+            <div>
+              <span>{t(row.original?.required)}</span>
+            </div>
+          );
+        },
+      },
       {
         Header: t("Category"),
         accessor: "category",
@@ -116,30 +116,16 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
         accessor: "updateQuestion",
         Cell: ({ row }) => {
           return (
-            <button onClick={() => handleUpdateQuestionConfirm(row)}
-              onMouseEnter={() =>{ setShowTooltip(true);} }
-              onMouseLeave={() => setShowTooltip(false)
-            }>
-              <EditIcon className="table-cell-for-update" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
-              <span style={{ 
-                visibility: showTooltip?"visible":"hidden",
-                width: !showTooltip? "120px": null,
-                backgroundColor: !showTooltip? "black":null,
-                color: !showTooltip? "#fff":null,
-                textAlign: !showTooltip? "center":null,
-                borderRadius: !showTooltip? "5px":null,
-                padding: !showTooltip?  "5px":null,
-                position: !showTooltip? "absolute":null,
-                zIndex: !showTooltip? "1":null,
-                top: !showTooltip? "-125%":null, /* Position the tooltip above the icon */
-                left: !showTooltip? "50%":null,
-                marginLeft: !showTooltip? "-60px":null,
-                opacity: showTooltip?1:0,
-                transition: !showTooltip? "opacity 0.3s":null
-               }}>
-       Click here to update question status
-      </span>
-            </button>
+            <div className="tooltip" /* style={{position:"relative"}} */>
+              <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
+                <button onClick={() => handleUpdateQuestionConfirm(row)}>
+                  <EditIcon className="table-cell-for-update" fill="#a82227" style={{ cursor: "pointer", marginLeft: "20px" }} />
+                </button>
+                <span className="tooltiptext" style={{ position: "absolute", width: "100px", marginLeft: "50%", fontSize: "medium" }}>
+                  {t("Click here to update the question status")}
+                </span>
+              </div>
+            </div>
           );
         },
       },

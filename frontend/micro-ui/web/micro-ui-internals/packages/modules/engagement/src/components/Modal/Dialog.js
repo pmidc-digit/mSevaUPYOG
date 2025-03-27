@@ -72,7 +72,12 @@ const Dialog = ({ onSelect, onCancel, onDismiss, heading, content, hideSubmit })
         padding: "18px",
       }}
       style={{
-        flex: 1,
+        //flex: 1,
+        padding: "10px",
+        display: "flex",
+        alignItems: "center",
+        marginRight: "10px",
+        //color: "fff"
       }}
       popupModuleMianStyles={{
         padding: "18px",
@@ -94,6 +99,14 @@ const Dialog = ({ onSelect, onCancel, onDismiss, heading, content, hideSubmit })
     <Modal
       popupModuleMianStyles={{
         paddingTop: "30px",
+      }}
+      style={{
+        //flex: 1,
+        padding: "10px",
+        display: "flex",
+        alignItems: "center",
+        marginRight: "10px",
+        //color: "fff"
       }}
       headerBarMain={<Heading label={t(heading)} />}
       headerBarEnd={<CloseBtn onClick={onDismiss} isMobileView={false} />}

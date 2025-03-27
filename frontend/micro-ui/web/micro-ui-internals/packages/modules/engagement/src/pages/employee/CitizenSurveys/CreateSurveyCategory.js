@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Card, TextInput, Header, ActionBar, SubmitBar,  Loader, InfoIcon, Toast } from "@mseva/digit-ui-react-components";
+import { Card, TextInput, Header, ActionBar, SubmitBar, Loader, InfoIcon, Toast } from "@mseva/digit-ui-react-components";
 import { useForm, FormProvider } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -90,17 +90,22 @@ const CreateSurveyCategory = () => {
               <label>
                 {t("Category")} <span style={{ color: "red" }}>*</span>
               </label>
-              <TextInput
-                name="categoryName"
-                type="text"
-                inputRef={register({
-                  required: t("REQUIRED_FIELD"), // t("EVENTS_CATEGORY_ERROR_REQUIRED")//t("ES_ERROR_REQUIRED"),
-                  maxLength: {
-                    value: 500,
-                    message: t("Category length should be less than or equal to 500 characters") //t("EXCEEDS_60_CHAR_LIMIT"),
-                  },
-                })}
-              />
+              <div>
+                <TextInput
+                  errorStyle={errors.categoryName?true:false}
+                  name="categoryName"
+                  type="text"
+                  placeholder={"Enter Category"}
+                  inputRef={register({
+                    required: t("REQUIRED_FIELD"), // t("EVENTS_CATEGORY_ERROR_REQUIRED")//t("ES_ERROR_REQUIRED"),
+                    maxLength: {
+                      value: 500,
+                      message: t("Category length should be less than or equal to 500 characters"), //t("EXCEEDS_60_CHAR_LIMIT"),
+                    },
+                  })}
+                />
+                {errors.categoryName && <p style={{ color: "red" }}>{errors.categoryName.message}</p>}
+              </div>
               <label
                 onClick={handleInfoButtonClick}
                 style={{ width: "24px", display: "flex", justifyContent: "center", alignItems: "center", outline: "none", cursor: "pointer" }}
@@ -108,7 +113,6 @@ const CreateSurveyCategory = () => {
                 <InfoIcon />
               </label>
             </span>
-            {errors.categoryName && <p style={{ color: "red" }}>{errors.categoryName.message}</p>}
           </div>
           <ActionBar>
             <SubmitBar label={t("Create Category")} submit="submit" />
@@ -120,8 +124,14 @@ const CreateSurveyCategory = () => {
           onSelect={handleOnSubmitDialog}
           onCancel={handleOnCancelDialog}
           onDismiss={handleOnCancelDialog}
-          heading="ABOUT_CATEGORY_CREATION_HEADER"
-          content={t("ABOUT_CATEGORY_CREATION_DESCRIPTION")}
+          heading={"About category creation"} //"ABOUT_CATEGORY_CREATION_HEADER"
+          content={
+            <p style={{ fontWeight: "bold" }}>
+              {t(
+                "This page is designed for creating categories to organize survey questions. The categories created here will be used on the question creation page, allowing users to group and manage survey questions effectively based on their topics. Users can search and edit the category status in the search categories page."
+              )}
+            </p>
+          } //{t("ABOUT_CATEGORY_CREATION_DESCRIPTION")
           hideSubmit={true}
         />
       )}

@@ -248,6 +248,34 @@ public class ReportService {
 
         return reportResponse;
     }
+    
+    
+    public List<Map<String, Object>>  getpdcReportData(PdcRequest reportRequest, String moduleName, String reportName, String authToken) {
+        ReportDefinitions rds = ReportApp.getReportDefs();
+        ReportDefinition reportDefinition = rds.getReportDefinition(moduleName+ " "+reportName);
+        List<Map<String, Object>> maps = reportRepository.getpdcData(reportRequest, reportDefinition,authToken);
+        // Call decryption service if decryption is required for the report
+        if ((reportDefinition.getdecryptionPathId()!= null)&&(reportRequest.getRequestInfo()!=null)&&(reportRequest.getRequestInfo().getUserInfo()!=null))
+        {
+            try {
+            								
+            	 User userInfo=getEncrichedandCopiedUserInfo(reportRequest.getRequestInfo().getUserInfo());
+                 maps = encryptionService.decryptJson(maps,reportDefinition.getdecryptionPathId(),
+                         userInfo,Map.class);
+                 auditDecryptRequest(maps, reportDefinition.getdecryptionPathId(),
+                         reportRequest.getRequestInfo().getUserInfo());
+            } catch (IOException e) {
+                log.error("IO exception while decrypting report: " + e.getMessage());
+                throw new CustomException("REPORT_DECRYPTION_ERROR", "Error while decrypting report data");
+            }
+        }
+
+
+
+        return maps;
+    }
+
+    
 
     private void populateData(List<SourceColumn> columns, List<Map<String, Object>> maps,
                               ReportResponse reportResponse) {

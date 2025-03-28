@@ -49,79 +49,71 @@ const PropertyDetailsForm = ({ onGoNext }) => {
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="surveydetailsform-wrapper">
-            <span className="surveyformfield">
-              <label>
-                First Name <span style={{ color: "red" }}>*</span>
-              </label>
-              <TextInput
-                name="firstName"
-                type="text"
-                inputRef={register({
-                  required: "This field is required",
-                  maxLength: {
-                    value: 500,
-                    message: "Category length should be less than or equal to 500 characters",
-                  },
-                })}
-              />
-            </span>
+            <label>
+              First Name <span style={{ color: "red" }}>*</span>
+            </label>
+            <TextInput
+              name="firstName"
+              type="text"
+              inputRef={register({
+                required: "This field is required",
+                maxLength: {
+                  value: 500,
+                  message: "Category length should be less than or equal to 500 characters",
+                },
+              })}
+            />
             {errors.firstName && <p style={{ color: "red" }}>{errors.firstName.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
-            <span className="surveyformfield">
-              <label>
-                Last Name <span style={{ color: "red" }}>*</span>
-              </label>
-              <TextInput
-                name="lastName"
-                type="text"
-                inputRef={register({
-                  required: "This field is required",
-                  maxLength: {
-                    value: 500,
-                    message: "Category length should be less than or equal to 500 characters",
-                  },
-                })}
-              />
-            </span>
+            <label>
+              Last Name <span style={{ color: "red" }}>*</span>
+            </label>
+            <TextInput
+              name="lastName"
+              type="text"
+              inputRef={register({
+                required: "This field is required",
+                maxLength: {
+                  value: 500,
+                  message: "Category length should be less than or equal to 500 characters",
+                },
+              })}
+            />
             {errors.lastName && <p style={{ color: "red" }}>{errors.lastName.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
-            <span className="surveyformfield">
-              <label>
-                Email <span style={{ color: "red" }}>*</span>
-              </label>
-              <TextInput
-                name="email"
-                type="text"
-                inputRef={register({
-                  required: "This field is required",
-                  maxLength: {
-                    value: 500,
-                    message: "Category length should be less than or equal to 500 characters",
-                  },
-                })}
-              />
-            </span>
+            <label>
+              Email <span style={{ color: "red" }}>*</span>
+            </label>
+            <TextInput
+              name="email"
+              type="text"
+              inputRef={register({
+                required: "This field is required",
+                maxLength: {
+                  value: 500,
+                  message: "Category length should be less than or equal to 500 characters",
+                },
+              })}
+            />
             {errors.email && <p style={{ color: "red" }}>{errors.email.message}</p>}
           </div>
           <div className="surveydetailsform-wrapper">
-            <span className="surveyformfield">
-              <label>
-                Address <span style={{ color: "red" }}>*</span>
-              </label>
-              <TextInput
-                name="address"
-                type="text"
-                inputRef={register({
-                  required: "This field is required",
-                  maxLength: {
-                    value: 500,
-                    message: "Category length should be less than or equal to 500 characters",
-                  },
-                })}
-              />
-            </span>
+            <label>
+              Address <span style={{ color: "red" }}>*</span>
+            </label>
+            <TextInput
+              name="address"
+              type="text"
+              inputRef={register({
+                required: "This field is required",
+                maxLength: {
+                  value: 500,
+                  message: "Category length should be less than or equal to 500 characters",
+                },
+              })}
+            />
             {errors.address && <p style={{ color: "red" }}>{errors.address.message}</p>}
           </div>
           <ActionBar>

@@ -38,8 +38,8 @@ public class Question {
 //    @Size(max = 250, message = "Question statement must be at most 250 characters")
     private String questionStatement;
 
-    @JsonProperty("options")
-    private List<String> options;
+//    @JsonProperty("options")
+//    private List<String> options;
 
     @JsonProperty("auditDetails")
     private AuditDetails auditDetails;
@@ -64,17 +64,7 @@ public class Question {
     @JsonProperty("category")
     private Category category;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Question question = (Question) o;
-        return Objects.equals(uuid, question.uuid) && Objects.equals(tenantId, question.tenantId) && Objects.equals(surveyId, question.surveyId) && Objects.equals(questionStatement, question.questionStatement) && Objects.equals(options, question.options) && status == question.status && type == question.type && Objects.equals(required, question.required) && Objects.equals(qorder, question.qorder) && Objects.equals(categoryId, question.categoryId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(uuid, tenantId, surveyId, questionStatement, options, status, type, required, qorder, categoryId);
-    }
+    @JsonProperty("options")
+    private List<QuestionOption> options;
 
 }

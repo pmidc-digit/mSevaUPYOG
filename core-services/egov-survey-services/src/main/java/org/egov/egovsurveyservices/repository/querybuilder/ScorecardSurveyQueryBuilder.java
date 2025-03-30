@@ -57,7 +57,6 @@ public class ScorecardSurveyQueryBuilder {
                     "question.uuid AS question_uuid, " +
                     "question.surveyid AS question_surveyid, " +
                     "question.questionstatement AS question_statement, " +
-                    "question.options AS question_options, " +
                     "question.type AS question_type, " +
                     "question.status AS question_status, " +
                     "question.required AS question_required, " +
@@ -71,7 +70,12 @@ public class ScorecardSurveyQueryBuilder {
                     // Question weightage fields
                     "questionWeightage.qorder AS question_weightage_qorder, " +
                     "questionWeightage.weightage AS question_weightage, " +
-                    "questionWeightage.required AS question_weightage_required " +
+                    "questionWeightage.required AS question_weightage_required, " +
+
+                    // Question option fields
+                    "questionOption.uuid AS option_uuid, " +
+                    "questionOption.optiontext AS option_text, " +
+                    "questionOption.weightage AS option_weightage " +
 
             "FROM eg_ss_survey_entity AS survey " +
             "LEFT JOIN eg_ss_survey_section AS section " +
@@ -79,7 +83,9 @@ public class ScorecardSurveyQueryBuilder {
             "LEFT JOIN eg_ss_question_weightage AS questionWeightage " +
             "ON section.uuid = questionWeightage.sectionuuid " +
             "LEFT JOIN eg_ss_question AS question " +
-            "ON questionWeightage.questionuuid = question.uuid ";
+            "ON questionWeightage.questionuuid = question.uuid "+
+            "LEFT JOIN eg_ss_question_option AS questionOption " +
+            "ON question.uuid = questionOption.questionuuid ";
 
     /**
      * Generates query to fetch surveys dynamically based on UUID, tenantId, and title.
@@ -170,14 +176,19 @@ public class ScorecardSurveyQueryBuilder {
     }
 
     public String fetchQuestionsWeightageListBySurveyAndSection() {
-        return "SELECT q.uuid as uuid, q.questionstatement as questionstatement, q.options as options, " +
+        return "SELECT q.uuid as uuid, q.questionstatement as questionstatement, " +
                 "q.status as status, q.type as type, q.required as required, " +
                 "q.createdby as createdby, q.lastmodifiedby as lastmodifiedby, q.createdtime as createdtime, " +
                 "q.lastmodifiedtime as lastmodifiedtime,qw.questionuuid as questionuuid,qw.sectionuuid as sectionuuid ," +
-                "qw.weightage as weightage,qw.qorder as qorder " +
+                "qw.weightage as weightage,qw.qorder as qorder, " +
+                "option.uuid AS option_uuid, "+
+                "option.optiontext AS option_text, "+
+                "option.weightage AS option_weightage, "+
+                "option.createdby AS option_createdby, option.lastmodifiedby AS option_lastmodifiedby, option.createdtime AS option_createdtime, option.lastmodifiedtime AS option_lastmodifiedtime " +
                 "FROM eg_ss_question q " +
                 "JOIN eg_ss_question_weightage qw ON q.uuid = qw.questionuuid " +
                 "JOIN eg_ss_survey_section ss ON qw.sectionuuid = ss.uuid " +
+                "LEFT JOIN eg_ss_question_option AS option ON q.uuid = option.questionuuid "+
                 "WHERE ss.surveyuuid = ? AND ss.uuid = ?";
     }
 
@@ -220,4 +231,8 @@ public class ScorecardSurveyQueryBuilder {
         return "SELECT tenantid FROM eg_ss_survey_entity WHERE uuid = ?";
 
     }
+
+//    public String fetchTenantIdBasedOnSurveyResponseId() {
+//        return "SELECT tenantid FROM eg_ss_survey_response WHERE uuid = ?";
+//    }
 }

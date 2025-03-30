@@ -2,6 +2,7 @@ package org.egov.egovsurveyservices.repository.rowmapper;
 
 import org.egov.egovsurveyservices.web.models.AuditDetails;
 import org.egov.egovsurveyservices.web.models.Question;
+import org.egov.egovsurveyservices.web.models.QuestionOption;
 import org.egov.egovsurveyservices.web.models.QuestionWeightage;
 import org.egov.egovsurveyservices.web.models.enums.Status;
 import org.egov.egovsurveyservices.web.models.enums.Type;
@@ -18,6 +19,7 @@ public class QuestionWeightageWithQuestionRowMapper implements ResultSetExtracto
 
     public List<QuestionWeightage> extractData(ResultSet rs) throws SQLException, DataAccessException {
         Map<String, QuestionWeightage> questionWeightageMap = new LinkedHashMap<>();
+        Map<String, List<QuestionOption>> questionOptionsMap = new HashMap<>(); // To store options for each question
 
         while (rs.next()) {
             String uuid = rs.getString("uuid");
@@ -34,7 +36,6 @@ public class QuestionWeightageWithQuestionRowMapper implements ResultSetExtracto
                 Question question = Question.builder()
                         .uuid(rs.getString("uuid"))
                         .questionStatement(rs.getString("questionstatement"))
-                        .options(Arrays.asList(rs.getString("options").split(",")))
                         .status(Status.valueOf(rs.getString("status")))
                         .type(Type.valueOf(rs.getString("type")))
                         .required(rs.getBoolean("required"))
@@ -51,6 +52,32 @@ public class QuestionWeightageWithQuestionRowMapper implements ResultSetExtracto
                         .build();
             }
             questionWeightageMap.put(uuid, questionWeightage);
+            // Handle QuestionOption
+            String optionUuid = rs.getString("option_uuid");
+            if (optionUuid != null) { // Check if there is an option in the row
+                AuditDetails optionAuditdetails = AuditDetails.builder()
+                        .createdBy(rs.getString("option_createdby"))
+                        .createdTime(rs.getLong("option_createdtime"))
+                        .lastModifiedBy(rs.getString("option_lastmodifiedby"))
+                        .lastModifiedTime(rs.getLong("option_lastmodifiedtime"))
+                        .build();
+                QuestionOption questionOption = QuestionOption.builder()
+                        .uuid(optionUuid)
+                        .questionUuid(uuid)
+                        .optionText(rs.getString("option_text"))
+                        .weightage(rs.getDouble("option_weightage"))
+                        .auditDetails(optionAuditdetails)
+                        .build();
+
+                // Add the option to the options map for the respective question UUID
+                questionOptionsMap.computeIfAbsent(uuid, k -> new ArrayList<>()).add(questionOption);
+            }
+        }
+        for (Map.Entry<String, QuestionWeightage> entry : questionWeightageMap.entrySet()) {
+            String questionUuid = entry.getKey();
+            QuestionWeightage questionWeightage = entry.getValue();
+            List<QuestionOption> options = questionOptionsMap.getOrDefault(questionUuid, new ArrayList<>());
+            questionWeightage.getQuestion().setOptions(options);
         }
         return new ArrayList<>(questionWeightageMap.values());
     }

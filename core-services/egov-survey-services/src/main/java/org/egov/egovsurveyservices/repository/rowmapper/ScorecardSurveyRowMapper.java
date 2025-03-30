@@ -1,22 +1,13 @@
 package org.egov.egovsurveyservices.repository.rowmapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
-import org.egov.egovsurveyservices.web.models.AuditDetails;
-import org.egov.egovsurveyservices.web.models.Question;
-import org.egov.egovsurveyservices.web.models.QuestionWeightage;
-import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
-import org.egov.egovsurveyservices.web.models.Section;
+import org.egov.egovsurveyservices.web.models.*;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
-
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +17,7 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
     @Override
     public List<ScorecardSurveyEntity> extractData(ResultSet rs) {
         Map<String, ScorecardSurveyEntity> surveyMap = new HashMap<>();
+        Map<String, List<QuestionOption>> questionOptionsMap = new HashMap<>(); // Map to store options by question UUID
 
         try {
             while (rs.next()) {
@@ -86,7 +78,7 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
                                 .uuid(questionUuid)
                                 .surveyId(rs.getString("question_surveyid"))
                                 .questionStatement(rs.getString("question_statement"))
-                                .options(Arrays.asList(rs.getString("question_options").split(",")))
+//                                .options(Arrays.asList(rs.getString("question_options").split(",")))
                                 .type(org.egov.egovsurveyservices.web.models.enums.Type.fromValue(rs.getString("question_type")))
                                 .status(org.egov.egovsurveyservices.web.models.enums.Status.fromValue(rs.getString("question_status")))
                                 .required(rs.getBoolean("question_required"))
@@ -111,8 +103,32 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
 
                         section.getQuestions().add(questionWeightage);
                     }
+
+                    // Handle QuestionOption
+                    String optionUuid = rs.getString("option_uuid");
+                    if (optionUuid != null) {
+                        QuestionOption questionOption = QuestionOption.builder()
+                                .uuid(optionUuid)
+                                .questionUuid(questionUuid)
+                                .optionText(rs.getString("option_text"))
+                                .weightage(rs.getDouble("option_weightage"))
+                                .build();
+
+                        questionOptionsMap.computeIfAbsent(questionUuid, k -> new ArrayList<>()).add(questionOption);
+                    }
                 }
             }
+
+            // Add options to their respective questions
+            surveyMap.values().forEach(survey -> {
+                survey.getSections().forEach(section -> {
+                    section.getQuestions().forEach(questionWeightage -> {
+                        Question question = questionWeightage.getQuestion();
+                        List<QuestionOption> options = questionOptionsMap.getOrDefault(question.getUuid(), new ArrayList<>());
+                        question.setOptions(options);
+                    });
+                });
+            });
         } catch (SQLException e) {
             throw new RuntimeException("Error while extracting survey data", e);
         }

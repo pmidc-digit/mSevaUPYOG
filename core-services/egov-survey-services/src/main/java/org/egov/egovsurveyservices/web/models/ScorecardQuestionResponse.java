@@ -18,14 +18,14 @@ public class ScorecardQuestionResponse {
     @JsonProperty("questionUuid")
     private String questionUuid;
 
-    @JsonProperty("city")
-    private String city;
-
     @JsonProperty("questionStatement")
     private String questionStatement;
 
-    @JsonProperty("answer")
-    private List<Object> answer;
+//    @JsonProperty("answer")
+//    private List<Object> answer;
+
+    @JsonProperty("answerResponse")
+    private AnswerNew answerResponse;
 
     @JsonProperty("answerUuid")
     private String answerUuid;

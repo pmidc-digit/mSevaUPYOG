@@ -59,20 +59,19 @@ public class ScorecardSurveyController {
     }
 
     @RequestMapping(value="/csc/response/_submit", method = RequestMethod.POST)
-    public ResponseEntity<ScorecardAnswerResponse> responseSubmit(@Valid @RequestBody AnswerRequest answerRequest) {
-        ScorecardAnswerResponse answerResponse = surveyService.submitResponse(answerRequest);
+    public ResponseEntity<ScorecardSubmitResponse> responseSubmit(@Valid @RequestBody AnswerRequestNew answerRequest) {
+        ScorecardSubmitResponse answerResponse = surveyService.submitResponse(answerRequest);
         ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(answerRequest.getRequestInfo(), true);
-        ScorecardAnswerResponse response = ScorecardAnswerResponse.builder().responseInfo(responseInfo).surveyUuid(answerResponse.getSurveyUuid())
-                .citizenId(answerResponse.getCitizenId()).sectionResponses(answerResponse.getSectionResponses())
-                .auditDetails(answerResponse.getAuditDetails()).build();
+        ScorecardSubmitResponse response = ScorecardSubmitResponse.builder().responseInfo(responseInfo).scorecardAnswerResponse(answerResponse.getScorecardAnswerResponse())
+                .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/csc/response/_answers", method = RequestMethod.POST)
-    public ResponseEntity<ScorecardAnswerResponse> getAnswers(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper, @Valid @ModelAttribute AnswerFetchCriteria criteria) {
-        ScorecardAnswerResponse answerResponse = surveyService.getAnswers(criteria);
-        ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
-        answerResponse.setResponseInfo(responseInfo);
-        return new ResponseEntity<>(answerResponse, HttpStatus.OK);
-    }
+//    @RequestMapping(value = "/csc/response/_answers", method = RequestMethod.POST)
+//    public ResponseEntity<ScorecardAnswerResponse> getAnswers(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper, @Valid @ModelAttribute AnswerFetchCriteria criteria) {
+//        ScorecardAnswerResponse answerResponse = surveyService.getAnswers(criteria);
+//        ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
+//        answerResponse.setResponseInfo(responseInfo);
+//        return new ResponseEntity<>(answerResponse, HttpStatus.OK);
+//    }
 }

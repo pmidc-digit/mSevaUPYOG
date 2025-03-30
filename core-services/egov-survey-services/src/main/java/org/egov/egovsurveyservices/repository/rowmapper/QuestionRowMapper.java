@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.egovsurveyservices.web.models.AuditDetails;
 import org.egov.egovsurveyservices.web.models.Category;
 import org.egov.egovsurveyservices.web.models.Question;
+import org.egov.egovsurveyservices.web.models.QuestionOption;
 import org.egov.egovsurveyservices.web.models.enums.Status;
 import org.egov.egovsurveyservices.web.models.enums.Type;
 import org.springframework.dao.DataAccessException;
@@ -20,6 +21,8 @@ public class QuestionRowMapper implements ResultSetExtractor<List<Question>>{
 
     public List<Question> extractData(ResultSet rs) throws SQLException, DataAccessException {
         Map<String,Question> questionMap = new LinkedHashMap<>();
+        Map<String, List<QuestionOption>> questionOptionsMap = new HashMap<>(); // To store options for each question
+
 
         while (rs.next()){
             String uuid = rs.getString("uuid");
@@ -41,7 +44,6 @@ public class QuestionRowMapper implements ResultSetExtractor<List<Question>>{
                         .questionStatement(rs.getString("questionstatement"))
                         .status(Status.fromValue(rs.getString("status")))
                         .required(rs.getBoolean("required"))
-                        .options(Arrays.asList(rs.getString("options").split(",")))
                         .type(Type.fromValue(rs.getString("type")))
                         .categoryId(rs.getString("categoryid"))
                         .auditDetails(auditdetails)
@@ -61,6 +63,34 @@ public class QuestionRowMapper implements ResultSetExtractor<List<Question>>{
 
             }
             questionMap.put(uuid, question);
+
+            // Handle QuestionOption
+            String optionUuid = rs.getString("option_uuid");
+            if (optionUuid != null) { // Check if there is an option in the row
+                AuditDetails optionAuditdetails = AuditDetails.builder()
+                        .createdBy(rs.getString("option_createdby"))
+                        .createdTime(rs.getLong("option_createdtime"))
+                        .lastModifiedBy(rs.getString("option_lastmodifiedby"))
+                        .lastModifiedTime(rs.getLong("option_lastmodifiedtime"))
+                        .build();
+                QuestionOption questionOption = QuestionOption.builder()
+                        .uuid(optionUuid)
+                        .questionUuid(uuid)
+                        .optionText(rs.getString("option_text"))
+                        .weightage(rs.getDouble("option_weightage"))
+                        .auditDetails(optionAuditdetails)
+                        .build();
+
+                // Add the option to the question's option list
+                questionOptionsMap.computeIfAbsent(uuid, k -> new ArrayList<>()).add(questionOption);
+            }
+        }
+        // Add options to the respective questions
+        for (Map.Entry<String, Question> entry : questionMap.entrySet()) {
+            String questionUuid = entry.getKey();
+            Question question = entry.getValue();
+            List<QuestionOption> options = questionOptionsMap.getOrDefault(questionUuid, new ArrayList<>());
+            question.setOptions(options);
         }
         return new ArrayList<>(questionMap.values());
     }

@@ -152,16 +152,93 @@ public class ScorecardSurveyService {
 
 
 
-    public ScorecardAnswerResponse submitResponse(AnswerRequest answerRequest) {
-        AnswerEntity answerEntity = answerRequest.getAnswerEntity();
-        String tenantIdBasedOnSurveyId = fetchTenantIdBasedOnSurveyId(answerEntity.getSurveyId());
+//    public ScorecardAnswerResponse submitResponse(AnswerRequest answerRequest) {
+//        AnswerEntity answerEntity = answerRequest.getAnswerEntity();
+//        String tenantIdBasedOnSurveyId = fetchTenantIdBasedOnSurveyId(answerEntity.getSurveyId());
+//        //populating eg_ss_survey_response
+//        NewScorecardSurveyResponse surveyResponse = answerEntity.getSurveyResponse(); //this we need to populate to save in db
+//        surveyResponse.setUuid(UUID.randomUUID().toString());
+//        surveyResponse.setSurveyUuid(answerEntity.getSurveyId());
+//        surveyResponse.setTenantId(answerEntity.getCity());
+//
+//        // Validate tenant ID based on survey response
+//        if(StringUtils.equalsIgnoreCase(tenantIdBasedOnSurveyId,"pb.punjab")){
+//            surveyValidator.validateCityIsProvided(answerEntity.getCity());
+////            surveyValidator.validateCityIsProvided(surveyResponse.getTenantId());
+//        }
+//        surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);
+//        String uuid = answerRequest.getUser().getUuid();
+////        surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, uuid);
+//        surveyValidator.validateAnswers(answerEntity);
+//
+//        AuditDetails auditDetails = AuditDetails.builder()
+//                .createdBy(uuid)
+//                .lastModifiedBy(uuid)
+//                .createdTime(System.currentTimeMillis())
+//                .lastModifiedTime(System.currentTimeMillis())
+//                .build();
+//        List<ScorecardSectionResponse> enrichedSectionResponses = answerEntity.getAnswers().stream()
+//                .collect(Collectors.groupingBy(Answer::getSectionUuid)).entrySet().stream()
+//                .map(entry -> {
+//                    List<ScorecardQuestionResponse> enrichedQuestionResponses = entry.getValue().stream()
+//                            .map(answer -> {
+//                                String questionStatement = questionRepository.findQuestionStatementByUuid(answer.getQuestionUuid());
+//
+//                                String existingUuid = getExistingAnswerUuid(answer.getUuid());
+//                                String uuidToUse = existingUuid != null ? existingUuid : UUID.randomUUID().toString();
+//                                if (StringUtils.isBlank(questionStatement)) {
+//                                    throw new CustomException("EG_SS_QUESTION_NOT_FOUND", "question not found with id " + answer.getQuestionUuid());
+//                                }
+//                                answer.setUuid(uuidToUse);
+////                                answer.setSurveyUuid(answerEntity.getSurveyId());
+//                                answer.setSurveyResponseUuid(surveyResponse.getUuid());
+//                                answer.setAuditDetails(auditDetails);
+////                                answer.setCitizenId(uuid);
+//                                surveyResponse.setCitizenId(uuid);
+//
+//                                return ScorecardQuestionResponse.builder()
+//                                        .city(answerEntity.getCity())
+//                                        .questionUuid(answer.getQuestionUuid())
+//                                        .questionStatement(questionStatement)
+//                                        .answerUuid(answer.getAnswerUuid())
+//                                        .answer(answer.getAnswer())
+//                                        .comments(answer.getComments())
+//                                        .build();
+//                            }).collect(Collectors.toList());
+//                    producer.push(applicationProperties.getSubmitAnswerScorecardSurveyTopic(), answerRequest);
+//                    return ScorecardSectionResponse.builder()
+//                            .sectionUuid(entry.getKey())
+//                            .questionResponses(enrichedQuestionResponses)
+//                            .build();
+//                }).collect(Collectors.toList());
+//
+//        return ScorecardAnswerResponse.builder()
+//                .surveyUuid(answerEntity.getSurveyId())
+//                .citizenId(uuid)
+//                .sectionResponses(enrichedSectionResponses)
+//                .auditDetails(auditDetails)
+//                .build();
+//
+//    }
+
+    public ScorecardSubmitResponse submitResponse(AnswerRequestNew answerRequest) {
+        SurveyResponseNew surveyResponse = answerRequest.getSurveyResponse();
+        String tenantIdBasedOnSurveyId = fetchTenantIdBasedOnSurveyId(surveyResponse.getSurveyUuid());
+        surveyResponse.setUuid(UUID.randomUUID().toString());
+//        if(surveyResponse.getStatus()==null) {
+//            surveyResponse.setStatus("draft");
+//        }
+//        if(surveyResponse.getStatus()=="submitted"){
+//        }
+        // Validate tenant ID based on survey response
         if(StringUtils.equalsIgnoreCase(tenantIdBasedOnSurveyId,"pb.punjab")){
-            surveyValidator.validateCityIsProvided(answerEntity.getCity());
+            surveyValidator.validateCityIsProvided(surveyResponse.getTenantId());
+//            surveyValidator.validateCityIsProvided(surveyResponse.getTenantId());
         }
         surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);
         String uuid = answerRequest.getUser().getUuid();
-//        surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, uuid);
-        surveyValidator.validateAnswers(answerEntity);
+//        surveyValidator.validateWhetherCitizenAlreadyResponded(surveyResponse, uuid);
+        surveyValidator.validateAnswers(surveyResponse);
 
         AuditDetails auditDetails = AuditDetails.builder()
                 .createdBy(uuid)
@@ -169,30 +246,40 @@ public class ScorecardSurveyService {
                 .createdTime(System.currentTimeMillis())
                 .lastModifiedTime(System.currentTimeMillis())
                 .build();
-        List<ScorecardSectionResponse> enrichedSectionResponses = answerEntity.getAnswers().stream()
-                .collect(Collectors.groupingBy(Answer::getSectionUuid)).entrySet().stream()
+        List<ScorecardSectionResponse> enrichedSectionResponses = surveyResponse.getAnswers().stream()
+                .collect(Collectors.groupingBy(AnswerNew::getSectionUuid)).entrySet().stream()
                 .map(entry -> {
                     List<ScorecardQuestionResponse> enrichedQuestionResponses = entry.getValue().stream()
                             .map(answer -> {
-                                String questionStatement = questionRepository.findQuestionStatementByUuid(answer.getQuestionUuid());
-
-                                String existingUuid = getExistingAnswerUuid(answer.getAnswerUuid());
+                                List<Question> questionById = questionRepository.getQuestionById(answer.getQuestionUuid());
+                                Question question = questionById.get(0);
+                                String existingUuid = getExistingAnswerUuid(answer.getUuid());
                                 String uuidToUse = existingUuid != null ? existingUuid : UUID.randomUUID().toString();
-                                if (StringUtils.isBlank(questionStatement)) {
+                                if (StringUtils.isBlank(question.getQuestionStatement())) {
                                     throw new CustomException("EG_SS_QUESTION_NOT_FOUND", "question not found with id " + answer.getQuestionUuid());
                                 }
-                                answer.setAnswerUuid(uuidToUse);
-                                answer.setSurveyUuid(answerEntity.getSurveyId());
+                                answer.setUuid(uuidToUse);
+//                                answer.setSurveyUuid(surveyResponseNew.getSurveyId());
+//                                answer.setSurveyResponseUuid(surveyResponse.getUuid());
                                 answer.setAuditDetails(auditDetails);
-                                answer.setCitizenId(uuid);
+                                if (answer.getAnswerDetails() != null) {
+                                    answer.getAnswerDetails().forEach(detail -> {
+                                        detail.setUuid(UUID.randomUUID().toString());
+                                        detail.setAnswerUuid(answer.getUuid());
+                                        detail.setAuditDetails(auditDetails);
+                                        detail.setAnswerType(question.getType().toString());
+                                    });
+                                }
+//                                answer.setCitizenId(uuid);
+                                surveyResponse.setCitizenId(uuid);
 
                                 return ScorecardQuestionResponse.builder()
-                                        .city(answerEntity.getCity())
+//                                        .city(surveyResponse.getTenantId())
                                         .questionUuid(answer.getQuestionUuid())
-                                        .questionStatement(questionStatement)
-                                        .answerUuid(answer.getAnswerUuid())
-                                        .answer(answer.getAnswer())
+                                        .questionStatement(question.getQuestionStatement())
+                                        .answerUuid(answer.getUuid())
                                         .comments(answer.getComments())
+                                        .answerResponse(answer)
                                         .build();
                             }).collect(Collectors.toList());
                     producer.push(applicationProperties.getSubmitAnswerScorecardSurveyTopic(), answerRequest);
@@ -202,12 +289,17 @@ public class ScorecardSurveyService {
                             .build();
                 }).collect(Collectors.toList());
 
-        return ScorecardAnswerResponse.builder()
-                .surveyUuid(answerEntity.getSurveyId())
-                .citizenId(uuid)
+        ScorecardAnswerResponse scorecardAnswerResponse = ScorecardAnswerResponse.builder()
+                .locality(surveyResponse.getLocality())
+                .tenantId(surveyResponse.getTenantId())
+                .status(surveyResponse.getStatus())
+                .surveyUuid(surveyResponse.getSurveyUuid())
+                .citizenId(surveyResponse.getCitizenId())
                 .sectionResponses(enrichedSectionResponses)
                 .auditDetails(auditDetails)
                 .build();
+
+        return ScorecardSubmitResponse.builder().scorecardAnswerResponse(scorecardAnswerResponse).build();
 
     }
 
@@ -253,9 +345,9 @@ public class ScorecardSurveyService {
         for (Answer answer : answers) {
             ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
                     .questionUuid(answer.getQuestionUuid())
-                    .city(answer.getCity())
+//                    .city(answer.getCity())
                     .questionStatement(answer.getQuestionStatement())
-                    .answer(answer.getAnswer())
+//                    .answerResponse(answer)//correct this for getAnswers
                     .answerUuid(answer.getAnswerUuid())
                     .comments(answer.getComments())
                     .build();

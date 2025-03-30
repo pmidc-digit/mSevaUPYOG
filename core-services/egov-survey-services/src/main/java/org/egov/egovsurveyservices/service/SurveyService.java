@@ -51,7 +51,7 @@ public class SurveyService {
         // Validate whether usertype employee is trying to create survey.
         surveyValidator.validateUserType(surveyRequest.getRequestInfo());
         // Validate question types.
-        surveyValidator.validateQuestions(surveyEntity);
+//        surveyValidator.validateQuestions(surveyEntity);
         // Validate survey uniqueness.
         surveyValidator.validateSurveyUniqueness(surveyEntity);
 
@@ -190,7 +190,7 @@ public class SurveyService {
         surveyValidator.validateUserType(surveyRequest.getRequestInfo());
         sanitizeSurveyForUpdate(surveyRequest);
         // Validate question types.
-        surveyValidator.validateQuestionsWhileUpdate(surveyEntity);
+//        surveyValidator.validateQuestionsWhileUpdate(surveyEntity);
         surveyValidator.validateUpdateRequest(surveyEntity);
         // Enrich update request
         surveyEntity.setAuditDetails(existingSurveyEntity.getAuditDetails());

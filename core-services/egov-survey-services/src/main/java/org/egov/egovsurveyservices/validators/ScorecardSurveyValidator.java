@@ -42,7 +42,7 @@ public class ScorecardSurveyValidator {
             throw new CustomException("EG_SS_SUBMIT_RESPONSE_ERR", "Survey can only be answered by citizens.");
     }
 
-    public void validateUserTypeForAnsweringScorecardSurvey(AnswerRequest requestInfo) {
+    public void validateUserTypeForAnsweringScorecardSurvey(AnswerRequestNew requestInfo) {
         if(requestInfo.getUser()==null){
             throw new CustomException("EG_SS_USER_INFO_MISSING", "Please provide citizen info.");
         }
@@ -59,9 +59,9 @@ public class ScorecardSurveyValidator {
             throw new CustomException("EG_SS_CITIZEN_ALREADY_RESPONDED", "The citizen has already responded to this survey.");
     }
 
-    public void validateAnswers(AnswerEntity answerEntity) {
+    public void validateAnswers(SurveyResponseNew answerEntity) {
 
-        List<Section> sectionList = surveyService.fetchSectionListBasedOnSurveyId(answerEntity.getSurveyId());
+        List<Section> sectionList = surveyService.fetchSectionListBasedOnSurveyId(answerEntity.getSurveyUuid());
         Map<String, Set<String>> sectionQuestionMap = new HashMap<>();
         HashSet<String> mandatoryQuestionsUuids = new HashSet<>();
         List<String> questionsThatAreAnsweredUuids = new ArrayList<>();
@@ -72,7 +72,7 @@ public class ScorecardSurveyValidator {
 
         // Fetch questions for the survey and sections
         sectionList.forEach(section -> {
-            List<QuestionWeightage> questionWeightageList = surveyService.fetchQuestionsWeightageListBySurveyAndSection(answerEntity.getSurveyId(), section.getUuid());
+            List<QuestionWeightage> questionWeightageList = surveyService.fetchQuestionsWeightageListBySurveyAndSection(answerEntity.getSurveyUuid(), section.getUuid());
             questionWeightageList.forEach(questionWeightage -> {
                 Question question = questionWeightage.getQuestion();
                 sectionQuestionMap.computeIfAbsent(questionWeightage.getSectionUuid(), k -> new HashSet<>()).add(question.getUuid());

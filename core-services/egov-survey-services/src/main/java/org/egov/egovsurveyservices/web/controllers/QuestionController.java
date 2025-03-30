@@ -45,24 +45,24 @@ public class QuestionController {
     }
 
 
-    @RequestMapping(value = "/question/_upload",
-            produces = {MediaType.APPLICATION_JSON_VALUE},
-            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
-            method = RequestMethod.POST
-    )
-    public ResponseEntity<String> uploadQuestions(@Valid @RequestPart(name="requestInfo") RequestInfoWrapper requestInfoWrapper
-            ,@RequestPart MultipartFile file) throws IOException {
-        questionService.uploadQuestions(requestInfoWrapper, file);
-        return ResponseEntity.status(HttpStatus.CREATED).body("Questions uploaded successfully!");
-    }
-
-    @GetMapping("/question/download-template")
-    public ResponseEntity<byte[]> downloadExcelTemplate(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) throws IOException {
-        byte[] templateBytes = questionService.downloadTemplate();
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", "question_template.xlsx");
-        return new ResponseEntity<>(templateBytes, headers, HttpStatus.OK);
-    }
+//    @RequestMapping(value = "/question/_upload",
+//            produces = {MediaType.APPLICATION_JSON_VALUE},
+//            consumes = {MediaType.MULTIPART_FORM_DATA_VALUE},
+//            method = RequestMethod.POST
+//    )
+//    public ResponseEntity<String> uploadQuestions(@Valid @RequestPart(name="requestInfo") RequestInfoWrapper requestInfoWrapper
+//            ,@RequestPart MultipartFile file) throws IOException {
+//        questionService.uploadQuestions(requestInfoWrapper, file);
+//        return ResponseEntity.status(HttpStatus.CREATED).body("Questions uploaded successfully!");
+//    }
+//
+//    @GetMapping("/question/download-template")
+//    public ResponseEntity<byte[]> downloadExcelTemplate(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) throws IOException {
+//        byte[] templateBytes = questionService.downloadTemplate();
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+//        headers.setContentDispositionFormData("attachment", "question_template.xlsx");
+//        return new ResponseEntity<>(templateBytes, headers, HttpStatus.OK);
+//    }
 
 }

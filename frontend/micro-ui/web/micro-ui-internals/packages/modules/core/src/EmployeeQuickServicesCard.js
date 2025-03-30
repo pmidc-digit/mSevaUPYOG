@@ -59,6 +59,9 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
       case "Engagement":
         return true;
 
+      case "Swach":
+        return true;
+
       default:
         return null;
     }
@@ -164,6 +167,8 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <BillsIcon />;
       case "PTR":
         return <PTIcon />;
+      case "Swach":
+        return <PGRIcon />;
       default:
         return <PTIcon />;
     }

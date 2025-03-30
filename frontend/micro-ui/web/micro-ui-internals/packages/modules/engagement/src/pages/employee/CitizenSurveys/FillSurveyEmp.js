@@ -99,7 +99,7 @@ const FillSurvey = ({stateCode}) => {
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invlid Email";
 
-    if (!formData.gender) newErrors.gender = "Gender is required";
+    //if (!formData.gender) newErrors.gender = "Gender is required";
 
     if (!formData.dob) newErrors.dob = "Date of Birth is required";
     // if (!formData.relation) newErrors.relation = "Relation is required";
@@ -120,7 +120,7 @@ const FillSurvey = ({stateCode}) => {
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invlid Email";
 
-    if (!formData.gender) newErrors.gender = "Gender is required";
+   // if (!formData.gender) newErrors.gender = "Gender is required";
 
     if (!formData.dob) newErrors.dob = "Date of Birth is required";
 
@@ -219,6 +219,7 @@ const FillSurvey = ({stateCode}) => {
         citizenData: formData,
         userInfo: formData.user,
         surveyDetails: surveyDetails,
+        userType: location.state?.userType
       });
       }
       else{
@@ -241,7 +242,7 @@ const FillSurvey = ({stateCode}) => {
           </h2>
         </div>
         <form onSubmit={handleSubmit}>
-          <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} stateCode={stateCode} Otp={Otp} setGetOtp={setGetOtp}/>
+          <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} stateCode={stateCode} Otp={Otp} setGetOtp={setGetOtp} city={formData?.city}/>
           <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", gap: "10px", flexDirection: "row", marginTop: "10px" }}>
             <button type="submit">Next</button>
             <button

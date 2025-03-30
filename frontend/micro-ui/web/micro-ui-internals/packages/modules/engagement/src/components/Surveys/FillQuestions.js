@@ -1,12 +1,23 @@
 import React, { useEffect, useState, Fragment, useRef } from "react";
 import { Controller, useFormContext, useForm } from "react-hook-form";
-import { Card, CardLabelError, CheckBox, RadioButtons, TextArea, TextInput, Toast } from "@mseva/digit-ui-react-components";
+import { Card, CardLabelError, CheckBox, RadioButtons, TextArea, TextInput, Toast,Localities,CardLabel,Dropdown } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+
 const FillQuestions = (props) => {
  
   const { t } = useTranslation();
   const [formData, setFormData] = useState({});
+  const { data: cities, isLoading } = Digit.Hooks.useTenants();
+  const [city,setCity]=useState(null);
+  const [geoLocation,setGeoLocation]= useState({
+    latitude: null,
+    longitude: null,
+  });
+  const [pincode,setPincode]=useState('')
+  const [isgeoLoc,setIsGeoLoc]=useState(false)
+  const [hasCitizenDetails,setHasCitizenDetails]=useState(false)
+
   const {
     register: register,
     control: control,
@@ -20,11 +31,17 @@ const FillQuestions = (props) => {
     defaultValues: formData,
   });
   console.log("formState",formErrors)
+ 
  // const formErrors = formState?.errors;
 
   const [showToast, setShowToast] = useState(null);
+  const [locality,setLocality] = useState([])
+  
+ 
   // const [userInfo,setUserInfo]=useState([])
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
+  // console.log("localities",localities)
   const userType = props.userType;
   console.log("usertype",userType)
   const history = useHistory();
@@ -111,6 +128,7 @@ const FillQuestions = (props) => {
   // }];
   const prevProps = props.location.state;
   console.log("props", props);
+  console.log("prevProps",prevProps)
   const data = prevProps.surveyDetails;
 
   console.log("data", data);
@@ -155,6 +173,73 @@ const FillQuestions = (props) => {
       });
     } catch (error) {
       console.log(error);
+    }
+  },[])
+  const fetchPosition =  () => {
+    navigator.geolocation.getCurrentPosition(
+       (position) => {
+         // Update both latitude and longitude in a single state object
+         setIsGeoLoc(true)
+         setGeoLocation({
+           latitude: position.coords.latitude,
+           longitude: position.coords.longitude,
+         });
+         console.log("Latitude:", position.coords.latitude);
+         console.log("Longitude:", position.coords.longitude);
+        
+       },
+       (err) => {
+         if (err.code === 1) {
+           setIsGeoLoc(false)
+           alert("Location access is mandatory. Without it, we cannot proceed.");
+         } else {
+           console.log("Error fetching location:", err.message);
+           setIsGeoLoc(false)
+         }
+       }
+     );
+   };
+  useEffect(()=>{
+    
+    if((prevProps?.userType).toUpperCase()==="CITIZEN"){
+    const data = {
+      userName: prevProps?.userInfo?.mobileNumber,
+      tenantId: prevProps?.userInfo?.tenantId,
+    };
+    const filters = {
+      tenantId: prevProps?.userInfo?.tenantId,
+    };
+
+    Digit.Surveys.userSearch(data, filters)
+      .then((response) => {
+        console.log("response", response);
+      
+        if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length>0) {
+        // setCitizenFound(true)
+        if(response?.user[0]?.gender===null || response?.user[0]?.email===null || response?.user[0]?.dob===null || response?.user[0]?.gender==='' || response?.user[0]?.email==='' || response?.user[0]?.dob==='' )
+          {
+        console.log("hola")
+         setHasCitizenDetails(false)
+
+          
+        }
+        else{
+          console.log("hola true")
+          setHasCitizenDetails(true)
+          fetchPosition();
+        } 
+      }
+        else {
+        
+         // setCitizenFound(false)
+         setShowToast({ key: true, isError: true, label: `ERROR FILE FETCHING CITIZEN DETAILS` });
+         
+        }
+      
+      })
+      .catch((error) => {
+        console.log(error);
+      });
     }
   },[])
  
@@ -250,6 +335,7 @@ const FillQuestions = (props) => {
 
   const handleAutoSave = async () => {
     let answerArr = [];
+  //  let geolocationStr= geoLocation.latitude.concat(geoLocation.longitude;
     for (const sectionId in formData) {
       for (const questionId in formData[sectionId]) {
         answerArr.push({
@@ -271,7 +357,11 @@ const FillQuestions = (props) => {
       },
 
       AnswerEntity: {
-        surveyId: data.uuid,
+        surveyUuid: data.uuid,
+        tenantId:(prevProps?.userType).toUpperCase()==="EMPLOYEE"?prevProps?.citizenData?.city?.code: city?.code,
+        status:"draft",
+        locality:locality?.name,
+        coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         answers: answerArr,
       },
     };
@@ -298,21 +388,22 @@ const FillQuestions = (props) => {
       section.questions.forEach((question) => {
         
         const value = formData[section.uuid]?.[question.question.uuid || ""];
-        if (question.required===true && (value.answer).length===0) {
+        if (question.required===true && (value.answer)?.length===0) {
         newErrors[section.uuid]={
           ...newErrors[section.uuid],
           [question.question.uuid]: {...newErrors[section.uuid]?.[question.question.uuid], answerRequired: `${question.questionStatement} is required*`},
         }
           //newErrors[question.question.uuid].answerRequired = `${question.questionStatement} is required`
         }
-        if ((value.answer).length>500) {
+        console.log("value",value)
+        if ((value?.answer)?.length>500) {
          // newErrors[question.question.uuid].answerLength = "Answer length allowed only to 500 characters"
          newErrors[section.uuid]={
           ...newErrors[section.uuid],
           [question.question.uuid]: {...newErrors[section.uuid]?.[question.question.uuid], answerLength: "Answer length allowed only to 500 characters*"},
         }
         }
-        if ((value.comments).length>500) {
+        if ((value?.comments)?.length>500) {
          // newErrors[question.question.uuid].commentsLength = "Comments length allowed only to 500 characters"
          newErrors[section.uuid]={
           ...newErrors[section.uuid],
@@ -326,8 +417,10 @@ const FillQuestions = (props) => {
     console.log("errors", newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  console.log("locality",locality)
   const handleSubmitSurvey = () => {
     let answerArr = [];
+    let geolocationStr= geoLocation.latitude+ geoLocation.longitude;
     for (const sectionId in formData) {
       for (const questionId in formData[sectionId]) {
         answerArr.push({
@@ -341,7 +434,7 @@ const FillQuestions = (props) => {
       }
     }
     //const { roles, ...newUserObject } = prevProps.userInfo;
-
+    
     let payload = {
 
       User: {
@@ -350,7 +443,12 @@ const FillQuestions = (props) => {
       },
 
       AnswerEntity: {
-        surveyId: data.uuid,
+        surveyUuid: data.uuid,
+        tenantId:(prevProps?.userType).toUpperCase()==="EMPLOYEE"?prevProps?.citizenData?.city?.code: city?.code,
+        status:"submitted",
+        locality:locality?.name,
+        coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
+
         answers: answerArr,
       },
     };
@@ -824,8 +922,32 @@ const FillQuestions = (props) => {
   const closeToast = () => {
     setShowToast(null);
   };
+  const [location, setLocation] = useState({
+    latitude: null,
+    longitude: null,
+  });
+
+  useEffect(() => {
+    console.log("hii",hasCitizenDetails,(prevProps?.userType).toUpperCase())
+    if(((prevProps?.userType).toUpperCase()==="EMPLOYEE") || ((prevProps?.userType).toUpperCase()==="CITIZEN" && hasCitizenDetails)){
+      console.log("hii")
+    fetchPosition(); // Automatically fetch location on component mount
+    }
+  
+  }, []);
+  console.log("city code",prevProps?.citizenData?.city?.code)
+  console.log("formData",formData)
+  console.log("pincode,location",pincode,geoLocation)
+  console.log("city",city?.code)
+  const handleCityChange=(e)=>{
+    setCity(e)
+  }
+  const handleLocalityChange=(e)=>{
+    setLocality(e)
+  }
   console.log("formData",formData)
   return (
+(   ( ((prevProps?.userType).toUpperCase()==="EMPLOYEE" || prevProps?.citizenFill) && isgeoLoc===true) || (prevProps?.userType).toUpperCase()==="CITIZEN" && hasCitizenDetails===true && isgeoLoc===true)?(
     <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
       <div className="category-card">
         <div>
@@ -836,6 +958,85 @@ const FillQuestions = (props) => {
             Survey Description: <span style={{ fontWeight: "normal", color: "black" }}>{data.surveyDescription}</span>
           </h2>
         </div>
+        {(prevProps?.userType).toUpperCase()==="EMPLOYEE"?
+        <>
+        <CardLabel>{`${t("LOCALITY")}`} <span className="check-page-link-button">*</span></CardLabel>
+        
+           <Controller
+            name="locality"
+           defaultValue={locality}
+            control={ control }
+            rules={{required: t("REQUIRED_FIELD")}}
+            render={({value, onBlur, onChange}) => (
+              <Localities
+                selectLocality={(value)=>{
+                 
+                  setLocality(value);
+                }}
+                tenantId={prevProps?.citizenData?.city?.code}
+                boundaryType="revenue"
+                keepNull={false}
+                optionCardStyles={{ height: "600px", overflow: "auto", zIndex: "10" }}
+                selected={locality}
+                 disable={false}
+                disableLoader={true}
+                sortFn={(a, b) => (a.i18nkey < b.i18nkey ? -1 : 1)}
+                //onBlur={onBlur}
+              />
+            )} />
+            </>
+            :<>
+  <CardLabel>{`${t("CITY")}`} <span className="check-page-link-button">*</span></CardLabel>
+             <Dropdown
+                    required={true}
+                    id="city"
+                    name="city"
+                    option={cities}
+                    className="cityCss"
+                    select={(e) => handleCityChange(e)}
+                    placeholder={"Select City"}
+                    optionKey="i18nKey"
+                    t={t}
+                    selected={city || null}
+                  />
+                   <CardLabel>{`${t("LOCALITY")}`} <span className="check-page-link-button">*</span></CardLabel>
+      
+        {/* <Controller
+         name="locality"
+        defaultValue={locality}
+         control={ control }
+         rules={{required: t("REQUIRED_FIELD")}}
+         render={({value, onBlur, onChange}) => ( */}
+           <Localities
+             selectLocality={(value)=>{
+              
+               handleLocalityChange(value);
+             }}
+             tenantId={city?.code||""}
+             boundaryType="revenue"
+             keepNull={false}
+             optionCardStyles={{ height: "600px", overflow: "auto", zIndex: "10" }}
+             selected={locality}
+              disable={false}
+             disableLoader={true}
+             sortFn={(a, b) => (a.i18nkey < b.i18nkey ? -1 : 1)}
+             //onBlur={onBlur}
+           />
+         {/* )}  */}
+         {/* /> */}
+
+          {/* <Dropdown
+               option={sortFn ? tenantlocalties?.sort(sortFn) : tenantlocalties}
+               keepNull={keepNull === false ? false : true}
+               selected={locality}
+               select={}
+               optionCardStyles={{ height: "600px", overflow: "auto", zIndex: "10" }}
+               optionKey="i18nkey"
+               
+               disable={false}
+             /> */}
+                  </>
+          }
         <form onSubmit={handleSubmit}>
           {data.sections.length > 0
             ? data.sections.map((section) => (
@@ -875,6 +1076,30 @@ const FillQuestions = (props) => {
       </div>
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </div>
+    ): 
+    (  (prevProps?.userType).toUpperCase()==="CITIZEN" && hasCitizenDetails===false)?(
+      <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
+        <h3 style={{color:'red', fontSize:'20px'}}>Please fill in your basic details to proceed with the survey</h3>
+        <h4 style={{fontSize:'16px'}}>Click on below button to fill in your details</h4>
+        <button onClick={()=>history.push("/digit-ui/citizen/user/profile")}
+         style={{padding: "10px 20px",
+         border: "none",
+         borderRadius: "4px",
+         backgroundColor: "#007bff",
+         color: "white",
+         marginTop:'10px'
+         //cursor: "pointer"
+        }}
+          >Fill your details</button>
+      </div>
+    ):
+    null
+    //  (
+    //   <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
+    //     <TextInput name="pincode" value={pincode} onChange={(e)=>setPincode(e.target.value)}/>
+    //       <SelectGeolocation pincode={pincode} geoLocation={geoLocation} setPincode={setPincode} setGeoLocation={setGeoLocation}/>
+    //   </div>
+    // )
   );
 };
 

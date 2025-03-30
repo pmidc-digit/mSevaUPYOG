@@ -7,6 +7,12 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp
   const [showToast, setShowToast] = useState(null);
     const { t } = useTranslation();
   console.log("cities",cities)
+  let menu = [];
+  const { data: Menu } = Digit.Hooks.pt.useGenderMDMS(stateCode, "common-masters", "GenderType");
+  Menu &&
+    Menu.map((genderDetails) => {
+      menu.push({ i18nKey: `PT_COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
+    });
   const closeToast = () => {
     setShowToast(null);
   };
@@ -214,19 +220,19 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors,stateCode,Otp
 
 
       <h3>Citizen Gender</h3>
-        <select
-            name="select gender"
-            value={formData.gender}
-            onChange={handleFieldChange}
-            
-          >
-             <option value="">Select Gender</option>
-          {genderList.length>0? genderList.map((item)=>{
-             <option id={item.value} value={item?.value}>{item?.label}</option>
-          }): <option value="">Select Gender</option>} 
-          
-         </select>  
-      {errors.gender && <span className="error">{errors.gender}</span>}
+        <Dropdown
+                         style={{ width: "100%" }}
+                         className="form-field"
+                         selected={formData?.gender}
+                        
+                         option={menu}
+                         select={(e)=>handleDropdownChange("gender", e)}
+                         value={formData?.gender}
+                         optionKey="code"
+                         t={t}
+                         name="gender"
+                         id="gender"
+                       />      {errors.gender && <span className="error">{errors.gender}</span>}
 
       <h3>Citizen Email</h3>
       <input

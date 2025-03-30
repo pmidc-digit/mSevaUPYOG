@@ -127,7 +127,7 @@ const CheckBoxOption = ({
             
             type='number'
             id="numberInput"
-            defaultValue={optionWeightage}
+          //  defaultValue={optionWeightage}
             value={optionWeightage}
             required
             placeholder="Option Weightage"

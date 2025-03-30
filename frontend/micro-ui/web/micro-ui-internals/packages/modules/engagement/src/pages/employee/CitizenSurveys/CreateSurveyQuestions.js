@@ -54,22 +54,38 @@ const CreateSurveyQuestions = () => {
 
   function parsePayloadData(data) {
     const payload = data.questions.map((item) => {
-      return {
-        tenantId: tenantId,
-        categoryId: item.category.value,
-        questionStatement: item.questionStatement.trim(),
-        type: item.type.value,
-        //required: item.required,
-        options: item.options.map((option) => {
-          return option.title.trim();
-        }),
-      };
+      let obj = {};
+  
+      if (item.type.value === "MULTIPLE_ANSWER_TYPE" || item.type.value === "CHECKBOX_ANSWER_TYPE") {
+        obj = {
+          tenantId: tenantId,
+          categoryId: item.category.value,
+          questionStatement: item.questionStatement.trim(),
+          type: item.type.value,
+          options: item.options.map((option) => ({
+            optionText: option.title.trim(),
+            weightage: option.optionWeightage,
+          })),
+        };
+      } else {
+        obj = {
+          tenantId: tenantId,
+          categoryId: item.category.value,
+          questionStatement: item.questionStatement.trim(),
+          type: item.type.value,
+        };
+      }
+  
+      return obj;
     });
+  
+    console.log("qus payload", payload);
     return payload;
   }
 
   async function onSubmit(data) {
     setIsLoading(true);
+
     const payload = { Questions: parsePayloadData(data) };
     console.log("onSubmit create survey questions: \n", data);
     console.log("Payload: ", payload);

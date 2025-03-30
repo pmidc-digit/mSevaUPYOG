@@ -97,13 +97,16 @@ console.log("userinfo",userInfo)
     };
     
     const newPath = paths[userType.toLowerCase()] || "";
-
+   
     history.push({
       pathname: newPath,
-     state: { surveyDetails: surveyDetails, ...(userType.toUpperCase()==="CITIZEN" && {userInfo: userInfo})},
+    //  state: { surveyDetails: surveyDetails, ...(userType.toUpperCase()==="CITIZEN" && {userInfo: userInfo})},
+    state: { surveyDetails: surveyDetails, userInfo: userInfo,userType:userType},
     });
 
-  };
+  
+}
+
 
   return (
     <div>

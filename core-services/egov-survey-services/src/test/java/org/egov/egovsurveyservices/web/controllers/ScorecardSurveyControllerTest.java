@@ -1,8 +1,17 @@
 package org.egov.egovsurveyservices.web.controllers;
 
 
+import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.response.ResponseInfo;
 import org.egov.egovsurveyservices.service.ScorecardSurveyService;
 import org.egov.egovsurveyservices.utils.ResponseInfoFactory;
+import org.egov.egovsurveyservices.web.models.Answer;
+import org.egov.egovsurveyservices.web.models.AnswerEntity;
+import org.egov.egovsurveyservices.web.models.AnswerFetchCriteria;
+import org.egov.egovsurveyservices.web.models.AnswerRequest;
+import org.egov.egovsurveyservices.web.models.AuditDetails;
+import org.egov.egovsurveyservices.web.models.RequestInfoWrapper;
+import org.egov.egovsurveyservices.web.models.ScorecardAnswerResponse;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyRequest;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyResponse;
@@ -23,11 +32,13 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -168,6 +179,34 @@ class ScorecardSurveyControllerTest {
                  .content(new ObjectMapper().writeValueAsString(request)))
                  .andExpect(status().isBadRequest());
      }
+     
+     @Test
+     public void testResponseSubmit() throws Exception {
+
+         AnswerRequest answerRequest = new AnswerRequest();
+         AnswerEntity answerEntity = new AnswerEntity();
+         answerEntity.setSurveyId("123");
+         answerEntity.setCity("Sample City");
+         answerRequest.setAnswerEntity(answerEntity);
+
+         ScorecardAnswerResponse mockResponse = ScorecardAnswerResponse.builder()
+                 .surveyUuid("mock-survey-uuid")
+                 .citizenId("mock-citizen-id")
+                 .build();
+
+         when(surveyService.submitResponse(Mockito.any(AnswerRequest.class)))
+                 .thenReturn(mockResponse);
+
+         String requestJson = objectMapper.writeValueAsString(answerRequest);
+
+         mockMvc.perform(post("/egov-ss/csc/response/_submit")
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(requestJson))
+                 .andExpect(status().isOk()) 
+                 .andExpect(jsonPath("$.surveyUuid").value("mock-survey-uuid")) 
+                 .andExpect(jsonPath("$.citizenId").value("mock-citizen-id")); 
+     }
+     
 }
 
 

@@ -119,7 +119,7 @@ public class ScorecardSurveyQueryBuilder {
             query.append(" ? BETWEEN survey.startdate AND survey.enddate ");
             preparedStmtList.add(System.currentTimeMillis());
         }
-        
+        query.append(" LIMIT ").append(config.getMaxSsSearchLimit());
         return query.toString();
     }
 

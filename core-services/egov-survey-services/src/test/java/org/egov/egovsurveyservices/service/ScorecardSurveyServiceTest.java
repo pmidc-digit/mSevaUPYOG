@@ -5,6 +5,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
+import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
 import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
@@ -34,6 +35,8 @@ import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.eq;
+
 
 @ExtendWith(MockitoExtension.class)
 class ScorecardSurveyServiceTest {
@@ -54,6 +57,9 @@ class ScorecardSurveyServiceTest {
 
     @Mock
     private ScorecardSurveyRepository surveyRepository;
+    
+    @Mock
+    private QuestionRepository questionRepository;
 
     @Mock
     private ScorecardSurveyUtil surveyUtil;
@@ -331,7 +337,76 @@ class ScorecardSurveyServiceTest {
         assertNotNull(result);
         assertFalse(result.isEmpty());
     }
+    
+    @Test
+    void testSubmitResponse() {
+        AnswerRequest answerRequest = new AnswerRequest();
+        AnswerEntity answerEntity = new AnswerEntity();
+        answerEntity.setSurveyId("survey123");
+        answerEntity.setCity("Amritsar");
 
+        Answer answer = new Answer();
+        answer.setQuestionUuid("question123");
+        answer.setSectionUuid("section123"); // Ensure sectionUuid is not null
+        answer.setAnswer(Collections.singletonList("Sample Answer"));
+        answer.setComments("Sample Comments");
+        answerEntity.setAnswers(Collections.singletonList(answer));
+
+        User user = new User();
+        user.setUuid("user123");
+
+        answerRequest.setAnswerEntity(answerEntity);
+        answerRequest.setUser(user);
+
+        when(questionRepository.findQuestionStatementByUuid(anyString())).thenReturn("Sample Question?");
+        when(applicationProperties.getSubmitAnswerScorecardSurveyTopic()).thenReturn("test-topic");
+
+        ScorecardAnswerResponse response = scorecardSurveyService.submitResponse(answerRequest);
+
+        assertNotNull(response);
+        assertEquals("survey123", response.getSurveyUuid());
+        assertEquals("user123", response.getCitizenId());
+        assertFalse(response.getSectionResponses().isEmpty());
+        assertEquals(Collections.singletonList("Sample Answer"), response.getSectionResponses().get(0).getQuestionResponses().get(0).getAnswer());
+
+
+        verify(questionRepository).findQuestionStatementByUuid("question123");
+        verify(producer).push(eq("test-topic"), any(AnswerRequest.class));
+    }
+    
+    @Test
+    void testGetAnswers_Success() {
+        AnswerFetchCriteria criteria = new AnswerFetchCriteria();
+        criteria.setSurveyUuid("survey123");
+        criteria.setCitizenId("citizen123");
+
+        Answer answer = new Answer();
+        answer.setSurveyUuid("survey123");
+        answer.setCitizenId("citizen123");
+        answer.setAnswer(Collections.singletonList("Sample Answer"));
+
+        when(surveyRepository.getAnswers("survey123", "citizen123"))
+                .thenReturn(Collections.singletonList(answer));
+
+        ScorecardAnswerResponse response = scorecardSurveyService.getAnswers(criteria);
+
+        assertNotNull(response);
+        assertEquals("survey123", response.getSurveyUuid());
+        assertEquals("citizen123", response.getCitizenId());
+        assertFalse(response.getSectionResponses().isEmpty());
+    }
+
+    @Test
+    void testGetAnswers_ThrowsException_WhenSurveyUuidOrCitizenIdIsNull() {
+        AnswerFetchCriteria criteria = new AnswerFetchCriteria();
+
+        CustomException exception = assertThrows(CustomException.class, () -> {
+        	scorecardSurveyService.getAnswers(criteria);
+        });
+
+        assertEquals("EG_SS_SURVEY_UUID_CITIZEN_UUID_ERR", exception.getCode());
+        assertEquals("surveyUuid and citizenUuid cannot be null", exception.getMessage());
+    }
 
     /*** Helper Method to Create Valid Survey ***/
     private ScorecardSurveyEntity getValidSurveyEntity() {

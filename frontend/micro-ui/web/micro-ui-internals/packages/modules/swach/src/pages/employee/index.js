@@ -1,23 +1,74 @@
-import React from 'react';
-import { Switch, useLocation, Route } from "react-router-dom";
+import React, { useState } from "react";
+import { Switch, Route, useRouteMatch, useLocation } from "react-router-dom";
+import { ActionBar, Menu, SubmitBar, BreadCrumb } from "@mseva/digit-ui-react-components";
+import { useTranslation } from "react-i18next";
+// import { ComplaintDetails } from "./ComplaintDetails";
+// import { CreateComplaint } from "./CreateComplaint";
+// import Inbox from "./Inbox";
+import { Employee } from "../../constants/Routes";
+// import Response from "./Response";
 
+const Complaint = () => {
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const [popup, setPopup] = useState(false);
+  const match = useRouteMatch();
+  const { t } = useTranslation();
 
-function index({path}) {
-  console.log("GETTING INSIDE SWACH");
+  const breadcrumConfig = {
+    home: {
+      content: t("CS_COMMON_HOME"),
+      path: Employee.Home,
+    },
+    inbox: {
+      content: t("CS_COMMON_INBOX"),
+      path: match.url + Employee.Inbox,
+    },
+    createComplaint: {
+      content: t("CS_SWACH_CREATE_COMPLAINT"),
+      path: match.url + Employee.CreateComplaint,
+    },
+    complaintDetails: {
+      content: t("CS_SWACH_COMPLAINT_DETAILS"),
+      path: match.url + Employee.ComplaintDetails + ":id",
+    },
+    response: {
+      content: t("CS_SWACH_RESPONSE"),
+      path: match.url + Employee.Response,
+    },
+    editApplication: {
+      content: t("CS_SWACH_EDIT_APPLICATION"),
+      path: match.url + Employee.EditApplication,
+    },    
+  };
+  function popupCall(option) {
+    setDisplayMenu(false);
+    setPopup(true);
+  }
+
+  let location = useLocation().pathname;
+
+  const Inbox = Digit?.ComponentRegistryService?.getComponent('SWACHInbox');
   return (
-    <Switch>
-      <React.Fragment>
-        <div className="ground-container">
-          {/* <div style={locationCheck ? { marginLeft: "12px" } : locationCheckReqDocs ? { marginLeft: "25px" } : { marginLeft: "-4px" }}>
-            <BILLSBreadCrumbs location={location} />
-          </div> */}
+    <React.Fragment>
+      <div className="ground-container">
+        {!location.includes(Employee.Response) && (
+          <Switch>
+            <Route
+              path={match.url + Employee.Inbox}
+              component={() => <BreadCrumb crumbs={[breadcrumConfig.home, breadcrumConfig.inbox]}></BreadCrumb>}
+            />
+          </Switch>
+        )}
+        <Switch>
+          <Route path={match.url + Employee.Inbox} component={Inbox} />
+        </Switch>
+      </div>
+      {/* <ActionBar>
+        {displayMenu ? <Menu options={["Assign Complaint", "Reject Complaint"]} onSelect={popupCall} /> : null}
+        <SubmitBar label="Take Action" onSubmit={() => setDisplayMenu(!displayMenu)} />
+      </ActionBar> */}
+    </React.Fragment>
+  );
+};
 
-          <Route path={`${path}/inbox`} component={<div>Swach Module</div>} />
-          
-        </div>
-      </React.Fragment>
-    </Switch>
-  )
-}
-
-export default index
+export default Complaint;

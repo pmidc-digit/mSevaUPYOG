@@ -8,13 +8,13 @@ const SWACHCard = () => {
   const { t } = useTranslation();
 
   const allLinks = [
-    { text: t("ES_PGR_INBOX"), link: "/digit-ui/employee/pgr/inbox" },
-    { text: t("ES_PGR_NEW_COMPLAINT"), link: "/digit-ui/employee/pgr/complaint/create" , accessTo: ["CSR"] 
+    { text: t("ES_SWACH_INBOX"), link: "/digit-ui/employee/swach/inbox" },
+    { text: t("ES_SWACH_NEW_COMPLAINT"), link: "/digit-ui/employee/swach/complaint/create" , accessTo: ["CSR"] 
       // have to change in roleactions
      },
   ];
 
-  if (!Digit.Utils.pgrAccess()) {
+  if (!Digit.Utils.pgrAccess()) { // swach is using same user base as pgr
     return null;
   }
 
@@ -25,8 +25,8 @@ const SWACHCard = () => {
 
   let propsForCSR =[
     {
-      label: t("ES_PGR_NEW_COMPLAINT"),
-      link: `/digit-ui/employee/pgr/complaint/create`,
+      label: t("ES_SWACH_NEW_COMPLAINT"),
+      link: `/digit-ui/employee/swach/complaint/create`,
        role: "CSR" 
       // have to change in roleactions
       //   role: "PGR-ADMIN"
@@ -38,21 +38,21 @@ const SWACHCard = () => {
 
   const propsForModuleCard = {
     Icon: <Icon />,
-    moduleName: t("ES_PGR_HEADER_COMPLAINT"),
+    moduleName: t("ES_SWACH_HEADER_COMPLAINT"),
     kpis: [
         {
-            label: t("TOTAL_PGR"),
-            link: `/digit-ui/employee/pgr/inbox`
+            label: t("TOTAL_SWACH"),
+            link: `/digit-ui/employee/swach/inbox`
         },
         {
             label: t("TOTAL_NEARING_SLA"),
-            link: `/digit-ui/employee/pgr/inbox`
+            link: `/digit-ui/employee/swach/inbox`
         }
     ],
     links: [
     {
-        label: t("ES_PGR_INBOX"),
-        link: `/digit-ui/employee/pgr/inbox`
+        label: t("ES_SWACH_INBOX"),
+        link: `/digit-ui/employee/swach/inbox`
     },
     ...propsForCSR
     ]

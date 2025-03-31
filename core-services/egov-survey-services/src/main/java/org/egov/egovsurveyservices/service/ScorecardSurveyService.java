@@ -1,32 +1,46 @@
 package org.egov.egovsurveyservices.service;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+
 import org.apache.commons.lang3.StringUtils;
-import org.egov.common.contract.request.RequestInfo;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
 import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
 import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
-import org.egov.egovsurveyservices.web.models.*;
-import org.egov.tracer.model.CustomException;
+import org.egov.egovsurveyservices.web.models.Answer;
+import org.egov.egovsurveyservices.web.models.AnswerEntity;
+import org.egov.egovsurveyservices.web.models.AnswerFetchCriteria;
+import org.egov.egovsurveyservices.web.models.AnswerNew;
+import org.egov.egovsurveyservices.web.models.AnswerRequestNew;
+import org.egov.egovsurveyservices.web.models.AuditDetails;
+import org.egov.egovsurveyservices.web.models.Question;
 import org.egov.egovsurveyservices.web.models.QuestionWeightage;
+import org.egov.egovsurveyservices.web.models.ScorecardAnswerResponse;
+import org.egov.egovsurveyservices.web.models.ScorecardQuestionResponse;
+import org.egov.egovsurveyservices.web.models.ScorecardSectionResponse;
+import org.egov.egovsurveyservices.web.models.ScorecardSubmitResponse;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyRequest;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveySearchCriteria;
+import org.egov.egovsurveyservices.web.models.Section;
+import org.egov.egovsurveyservices.web.models.SurveyResponseNew;
 import org.egov.egovsurveyservices.web.models.UpdateSurveyActiveRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.validation.Valid;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -225,7 +239,11 @@ public class ScorecardSurveyService {
         SurveyResponseNew surveyResponse = answerRequest.getSurveyResponse();
         String tenantIdBasedOnSurveyId = fetchTenantIdBasedOnSurveyId(surveyResponse.getSurveyUuid());
         surveyResponse.setUuid(UUID.randomUUID().toString());
-//        if(surveyResponse.getStatus()==null) {
+        if (answerRequest.getSurveyResponse().getStatus()==null)
+        	answerRequest.getSurveyResponse().setStatus(org.egov.egovsurveyservices.utils.SurveyServiceConstants.DRAFT);
+        	
+        	
+        //        if(surveyResponse.getStatus()==null) {
 //            surveyResponse.setStatus("draft");
 //        }
 //        if(surveyResponse.getStatus()=="submitted"){

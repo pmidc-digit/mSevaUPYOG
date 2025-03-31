@@ -72,7 +72,7 @@ public class QuestionControllerTest {
     public void testUploadQuestions_success() throws Exception {
         MockMultipartFile file = new MockMultipartFile("file", "file.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "file content".getBytes());
         MockMultipartFile requestInfo = new MockMultipartFile("requestInfo", "", "application/json", "{\"field1\": \"value1\", \"field2\": \"value2\"}".getBytes());
-        doNothing().when(questionService).uploadQuestions(any(RequestInfoWrapper.class), any(MultipartFile.class));
+        //   doNothing().when(questionService).uploadQuestions(any(RequestInfoWrapper.class), any(MultipartFile.class));
 
         mockMvc.perform(multipart("/egov-ss/question/_upload")
                         .file(file)
@@ -84,7 +84,7 @@ public class QuestionControllerTest {
     @Test
     public void testDownloadExcelTemplate() throws Exception {
         byte[] templateBytes = "template content".getBytes();
-        when(questionService.downloadTemplate()).thenReturn(templateBytes);
+        //      when(questionService.downloadTemplate()).thenReturn(templateBytes);
 
         String jsonData = "{\"field1\": \"value1\", \"field2\": \"value2\"}";
 

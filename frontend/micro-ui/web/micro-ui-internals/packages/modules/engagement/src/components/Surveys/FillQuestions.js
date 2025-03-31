@@ -241,7 +241,7 @@ const FillQuestions = (props) => {
           } else {
          
           setHasCitizenDetails(true)
-          fetchPosition();
+         // fetchPosition();
           }
         } 
       }

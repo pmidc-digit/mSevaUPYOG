@@ -7,7 +7,6 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   const { pathname: url } = useLocation();
   const userInfo = Digit.UserService.getUser();
   let validation = {};
-  // let regex = /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])(?=.*[a-zA-Z0-9])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{10,}$/
   const tenantId = Digit.ULBService.getCurrentTenantId();
   let isOpenLinkFlow = window.location.href.includes("openlink");
   const uuid = userInfo?.info?.uuid;
@@ -93,17 +92,16 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDifference = today.getMonth() - birthDate.getMonth();
   
-    // Adjust age if the current month and day are before the birth month and day
     if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
       age--;
     }
   
     if (age < 18) {
       alert(t("You must be at least 18 years old. Please enter a valid date of birth."));
-      return; // Prevent setting the date if age is less than 18
+      return; 
     }
   
-    setDateOfBirth(date); // Update the state if age is valid
+    setDateOfBirth(date); 
   }
 
   const goNext = () => {
@@ -112,7 +110,6 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   let age = today.getFullYear() - birthDate.getFullYear();
   const monthDifference = today.getMonth() - birthDate.getMonth();
 
-  // Adjust age if the current month and day are before the birth month and day
   if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
     age--;
   }
@@ -134,7 +131,6 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     }
     if (age < 18) {
       alert(t("You must be at least 18 years old to proceed."));
-      // return ; // Prevent moving forward
     }
   };
 
@@ -209,10 +205,9 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
             <CardLabel>{"Date of Birth"}</CardLabel>
             <DatePicker
                 date={dateOfBirth}
-                // onChange={(date) => setDateOfBirth(date)} // Update the state when the date changes
-                onChange={handleDateOfBirthChange} // Update the state when the date changes
-                min="1900-01-01" // Optional: Set a minimum date
-                max={new Date().toISOString().split("T")[0]} // Optional: Set the maximum date to today
+                onChange={handleDateOfBirthChange} 
+                min="1900-01-01" 
+                max={new Date().toISOString().split("T")[0]} 
                 isRequired={true}
               />
             {/* <CardLabel>{`${t("BPA_APPLICANT_NAME_LABEL")}*`}</CardLabel>

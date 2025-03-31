@@ -2,7 +2,7 @@ import { CardLabel, FormStep, RadioOrSelect, TextInput, OpenLinkContainer, BackB
 import React, { useEffect, useState } from "react";
 import { stringReplaceAll } from "../utils";
 import Timeline from "../components/Timeline";
-import { CompetencyDescriptions } from "../constants/LicenseTypeConstants"
+import { CompetencyDescriptions, getQualificationTypes } from "../constants/LicenseTypeConstants"
 
 const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   if (JSON.parse(sessionStorage.getItem("BPAREGintermediateValue")) !== null) {
@@ -18,11 +18,11 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   const [qualificationType, setQualificationType] = useState(() => {
     return formData?.qualificationType || ""; // Initialize with the value from formData if it exists
   });
-  // const [LicenseType, setLicenseType] = useState(formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || "");
-  const [LicenseType, setLicenseType] = useState(() => {
-    const initialLicenseType = formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || "";
-    return initialLicenseType || ""; // Ensure it's blank if no valid value exists
-  });
+  const [LicenseType, setLicenseType] = useState(formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || "");
+  // const [LicenseType, setLicenseType] = useState(() => {
+  //   const initialLicenseType = formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || "";
+  //   return initialLicenseType || ""; // Ensure it's blank if no valid value exists
+  // });
   const [ArchitectNo, setArchitectNo] = useState(formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null);
 
 
@@ -69,54 +69,23 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       }
     });
 
-    // Filter the list based on the qualificationType
     if (qualificationType === "B-Arch") {
-      // Only include "ARCHITECT" in the list
       list = list.filter((item) => item.i18nKey.includes("ARCHITECT"));
     } else {
-      // Exclude "ARCHITECT" from the list
       list = list.filter((item) => !item.i18nKey.includes("ARCHITECT"));
     }
 
-    console.log("Filtered License Types:", list);
+    // console.log("Filtered License Types:", list);
     return list;
   }
-  function getQualificationTypes() {
-    return ["B-Arch", "BE", "B-Tech", "Diploma", "Bulding designer & supervisor"];
-  }
+  // function getQualificationTypes() {
+  //   return ["B-Arch", "BE", "B-Tech", "Diploma", "Bulding designer & supervisor"];
+  // }
 
 
   function mapQualificationToLicense(qualification) {
     let license = null;
-
-    // if (qualification === "B-Arch") {
-    //   license = getLicenseType().find((type) => type.i18nKey.includes("ARCHITECT"));
-    // } else if (qualification === "BE" || qualification === "B-Tech") {
-    //   license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
-    // } else if (qualification === "Diploma") {
-    //   license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
-    // }
-
-    // if (license) {
-    //   console.log("Mapped License:", license);
-    //   setLicenseType(license);
-
-    // }
-    // const licenseOptions = getLicenseType();
-
-    // // Log the available license options for debugging
-    // console.log("Mapped License Options:", licenseOptions);
-
-    // // Reset the LicenseType to ensure no option is pre-selected
-    // setLicenseType(null);
-
-    // const licenseOptions = getLicenseType();
-
-    // Log the available license options for debugging
-    // console.log("Mapped License Options:", licenseOptions);
-
     if (qualification === "B-Arch") {
-      // For "B-Arch", do not pre-select any license type
       setLicenseType(null);
     }
     else if (qualification === "BE" || qualification === "B-Tech") {
@@ -126,7 +95,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     }
 
     if (license) {
-      console.log("Mapped License:", license);
+      // console.log("Mapped License:", license);
       setLicenseType(license);
 
     }
@@ -135,19 +104,10 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   const onSkip = () => onSelect();
 
   function selectQualificationType(value) {
-    console.log("Value comes inside the selectQualificationType", value);
+    // console.log("Value comes inside the selectQualificationType", value);
 
     setQualificationType(value);
     setLicenseType(null)
-    // const filteredLicenseTypes = getLicenseType(value);
-
-    // // Set the default license type to the first item in the filtered list
-    // if (filteredLicenseTypes.length > 0) {
-    //   setLicenseType(filteredLicenseTypes[0]);
-    // } else {
-    //   setLicenseType(null); // Fallback if no license types are available
-    // }
-    // mapQualificationToLicense(value); 
   }
 
 
@@ -156,24 +116,21 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   }
 
   function selectArchitectNo(e) {
-    // setArchitectNo(e.target.value);
     const input = e.target.value.trim();
-    console.log("input value", e.target.value);
+    // console.log("input value", e.target.value);
     const pattern = /^CA(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\d{5}$/;
-    console.log("pattern.test(input)", pattern.test(input))
+    // console.log("pattern.test(input)", pattern.test(input))
     if (e.key === 'Enter') {
       if (!pattern.test(input) && input !== '') {
-        // alert('Invalid Council Number format!\nFormat should be: CA<YEAR><5 DIGITS>\nExample: CA20230012345\nYear should be between 1972-2025');
         setErrorMessage('Invalid Council Number format! Format should be: CA<YEAR><5 DIGITS> (Year between 1972-2025) Example: CA20230012345');
-        e.preventDefault(); // Prevent default enter key behavior
+        e.preventDefault();
         setArchitectNo('');
         return;
       }
       else {
-        setErrorMessage(''); // Clear error message if input is valid
+        setErrorMessage(''); 
       }
     }
-    // setArchitectNo(input);
     if (e.key !== 'Enter') {
       setArchitectNo(input);
       setErrorMessage('');
@@ -195,7 +152,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   function selectSelfCertification(e) {
     setSelfCertification(e.target.checked);
   }
-  console.log("competencies", LicenseType && CompetencyDescriptions[LicenseType?.i18nKey.split("_").pop()]);
+  // console.log("competencies", LicenseType && CompetencyDescriptions[LicenseType?.i18nKey.split("_").pop()]);
 
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
@@ -214,7 +171,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                 t={t}
                 // optionKey="i18nKey"
                 isMandatory={config.isMandatory}
-                options={getQualificationTypes() || []}
+                options={getQualificationTypes || []}
                 selectedOption={setQualificationType}
                 // onSelect={selectQualificationType}
                 onSelect={(value) => {
@@ -248,14 +205,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                 value={ArchitectNo}
                 onChange={selectArchitectNo}
                 onKeyPress={selectArchitectNo}
-              // pattern="^CA(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\d{5}$"
-              // {...(validation = {
-              //   isRequired: true,
-              //   pattern: "^CA(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\d{5}$",
-              //   type: "text",
-              //   title: t("PT_NAME_ERROR_MESSAGE"),
-              // })}
-
               />
                {errorMessage && (
                 <div style={{
@@ -280,10 +229,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
               </div>}
 
           </FormStep>
-          {/* <div style={{ flex: "0 0 30%", border: "2px solid red", backgroundColor: "transparent", padding: "10px" }}>
-  <h1 style={{fontSize:"20px"}}>Competencies</h1>
-  <p>{LicenseType && CompetencyDescriptions[LicenseType?.i18nKey.split("_").pop()]}</p>
-</div> */}
           <div style={{
             flex: "0 0 30%",
             border: "1px solid #dcdcdc",
@@ -304,15 +249,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
             }}>
               Competencies
             </h1>
-            {/* <p style={{
-    fontSize: "16px",
-    color: "#555",
-    lineHeight: "1.6",
-    textAlign: "justify",
-    margin: "0"
-  }}>
-    {LicenseType && CompetencyDescriptions[LicenseType?.i18nKey.split("_").pop()]}
-  </p> */}
             <ul style={{
               fontSize: "16px",
               color: "#555",
@@ -323,10 +259,10 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
             }}>
               {LicenseType &&
                 CompetencyDescriptions[LicenseType?.i18nKey.split("_").pop()]
-                  .split("\n") // Split the string by newline character
+                  .split("\n")
                   .map((point, index) => (
                     <li key={index} style={{ marginBottom: "8px" }}>
-                      {point.trim()} {/* Trim any extra spaces */}
+                    {point.trim()} 
                     </li>
                   ))}
             </ul>

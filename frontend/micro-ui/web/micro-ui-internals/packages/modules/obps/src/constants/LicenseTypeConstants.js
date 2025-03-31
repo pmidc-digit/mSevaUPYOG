@@ -26,3 +26,6 @@ export const CompetencyDescriptions = {
     "URBAN DESIGNER": "The registered urban designer shall be competent to carry out the work related to urban design for city areas more than 5 hectares and campus area more than 2 hectares. He/She shall also be competent to carry out the work of urban renewal for all blighted/congested areas.\n" +
       "NOTE — For smaller areas below the limits indicated above, association of urban designer may be considered from the point of view of desired urban design."
   };
+
+  export const getQualificationTypes= ["B-Arch", "BE", "B-Tech", "Diploma", "Bulding designer & supervisor"]
+  

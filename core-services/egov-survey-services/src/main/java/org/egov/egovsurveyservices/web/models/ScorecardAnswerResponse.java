@@ -17,8 +17,8 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ScorecardAnswerResponse {
 
-//    @JsonProperty("ResponseInfo")
-//    private ResponseInfo responseInfo = null;
+	  @JsonProperty("ResponseInfo")
+	    private ResponseInfo responseInfo;  
 
     @NotNull
     @JsonProperty("surveyUuid")

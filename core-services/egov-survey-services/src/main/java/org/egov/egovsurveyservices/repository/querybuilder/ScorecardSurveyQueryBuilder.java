@@ -210,22 +210,26 @@ public class ScorecardSurveyQueryBuilder {
         return "SELECT " +
                 "answer.uuid, " +
                 "answer.questionuuid, " +
-                "answer.surveyuuid, " +
                 "answer.sectionuuid, " +
-                "answer.answer, " +
-                "answer.citizenid, " +
-                "answer.city, " +
                 "answer.comments, " +
-                "answer.createdby , " +
+                "answer.createdby, " +
                 "answer.lastmodifiedby, " +
                 "answer.createdtime, " +
                 "answer.lastmodifiedtime, " +
-                "question.questionstatement " +
+                "question.questionstatement, " +
+                "ansdetail.*, " +
+                "surveyresponse.* " +
                 "FROM public.eg_ss_answer AS answer " +
                 "LEFT JOIN public.eg_ss_question AS question " +
                 "ON answer.questionuuid = question.uuid " +
-                "WHERE answer.surveyuuid = ? AND answer.citizenid = ?";
+                "JOIN public.eg_ss_answer_detail AS ansdetail " +
+                "ON answer.uuid = ansdetail.answeruuid " +
+                "JOIN public.eg_ss_survey_response AS surveyresponse " +
+                "ON answer.surveyresponseuuid = surveyresponse.uuid " +  
+                "WHERE surveyresponse.surveyuuid = ? " +
+                "AND surveyresponse.citizenid = ?";
     }
+
 
     public String fetchTenantIdBasedOnSurveyId() {
         return "SELECT tenantid FROM eg_ss_survey_entity WHERE uuid = ?";

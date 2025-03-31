@@ -28,7 +28,7 @@ public class ScorecardSurveyController {
     @Autowired
     private ResponseInfoFactory responseInfoFactory;
 
-    @PostMapping("/csc/create")
+    @PostMapping("/survey/create")
     public ResponseEntity<ScorecardSurveyResponse> createSurvey(@Valid @RequestBody ScorecardSurveyRequest surveyRequest) {
     	ScorecardSurveyEntity scorecardSurveyEntity = surveyService.createSurvey(surveyRequest);
     	ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(surveyRequest.getRequestInfo(), true);
@@ -36,7 +36,7 @@ public class ScorecardSurveyController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @RequestMapping(value="/csc/_search", method = RequestMethod.POST)
+    @RequestMapping(value="/survey/_search", method = RequestMethod.POST)
     public ResponseEntity<ScorecardSurveyResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
                                                    @Valid @ModelAttribute ScorecardSurveySearchCriteria criteria) {
         Boolean isCitizen = requestInfoWrapper.getRequestInfo().getUserInfo().getType().equals(CITIZEN);
@@ -48,7 +48,7 @@ public class ScorecardSurveyController {
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
 
-    @PostMapping("/csc/active/_update")
+    @PostMapping("/survey/active/_update")
     public ResponseEntity<?> updateActiveSurvey(@Valid @RequestBody UpdateSurveyActiveRequest request) {
         try {
             surveyService.updateSurveyActive(request);
@@ -58,7 +58,7 @@ public class ScorecardSurveyController {
         }
     }
 
-    @RequestMapping(value="/csc/response/_submit", method = RequestMethod.POST)
+    @RequestMapping(value="/survey/response/_submit", method = RequestMethod.POST)
     public ResponseEntity<ScorecardSubmitResponse> responseSubmit(@Valid @RequestBody AnswerRequestNew answerRequest) {
         ScorecardSubmitResponse answerResponse = surveyService.submitResponse(answerRequest);
         ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(answerRequest.getRequestInfo(), true);
@@ -66,12 +66,15 @@ public class ScorecardSurveyController {
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
-//    @RequestMapping(value = "/csc/response/_answers", method = RequestMethod.POST)
-//    public ResponseEntity<ScorecardAnswerResponse> getAnswers(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper, @Valid @ModelAttribute AnswerFetchCriteria criteria) {
-//        ScorecardAnswerResponse answerResponse = surveyService.getAnswers(criteria);
-//        ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
-//        answerResponse.setResponseInfo(responseInfo);
-//        return new ResponseEntity<>(answerResponse, HttpStatus.OK);
-//    }
+	/*
+	 * @RequestMapping(value = "/survey/response/_answers", method =
+	 * RequestMethod.POST) public ResponseEntity<ScorecardAnswerResponse>
+	 * getAnswers(@Valid @RequestBody RequestInfoWrapper
+	 * requestInfoWrapper, @Valid @ModelAttribute AnswerFetchCriteria criteria) {
+	 * ScorecardAnswerResponse answerResponse = surveyService.getAnswers(criteria);
+	 * ResponseInfo responseInfo =
+	 * responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.
+	 * getRequestInfo(), true); answerResponse.setResponseInfo(responseInfo); return
+	 * new ResponseEntity<>(answerResponse, HttpStatus.OK); }
+	 */
 }

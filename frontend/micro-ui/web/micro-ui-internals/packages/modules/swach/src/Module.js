@@ -3,18 +3,24 @@ import SWACHCard from "./components/SWACHCard";
 import { useRouteMatch } from "react-router-dom";
 
 import CitizenApp from "./pages/citizen";
+import getRootReducer from "./redux/reducers";
+import { useTranslation } from "react-i18next";
+import { LOCALE } from "./constants/Localization";
 
-import EmployeeApp from "./pages/employee";
+import Inbox from "./pages/employee/Inbox";
+import EmployeeApp from "./EmployeeApp";
 import { ComplaintIcon, CitizenHomeCard, Loader } from "@mseva/digit-ui-react-components";
+import { CreateComplaint as CreateComplaintEmp } from "./pages/employee/CreateComplaint";
+import { ComplaintDetails } from "./pages/employee/ComplaintDetails";
+import ResponseEmp from "./pages/employee/Response";
 
 
+export const SWACHReducers = getRootReducer;
 
-
-export const SWACHModule = ({ stateCode, userType, tenants }) => {
+export const SwachModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "Swach";
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
-  const { path, url } = useRouteMatch();
 
   if (isLoading) {
     return <Loader />;
@@ -23,9 +29,9 @@ export const SWACHModule = ({ stateCode, userType, tenants }) => {
   Digit.SessionStorage.set("SWACH_TENANTS", tenants);
 
   if (userType === "citizen") {
-    return <CitizenApp />;
+    return <></>
   } else {
-    return <EmployeeApp path={path}/>;
+    return <EmployeeApp />;
   }
 };
 
@@ -52,9 +58,13 @@ export const SWACHLinks = ({ matchPath }) => {
 };
 
 const componentsToRegister = {
-  SWACHModule,
+  SwachModule,
   SWACHLinks,
   SWACHCard,
+  SWACHInbox : Inbox,
+  SWACHCreateComplaintEmp: CreateComplaintEmp,
+  SWACHResponseEmp : ResponseEmp,
+  SWACHComplaintDetails : ComplaintDetails,
 };
 
 export const initSWACHComponents = () => {

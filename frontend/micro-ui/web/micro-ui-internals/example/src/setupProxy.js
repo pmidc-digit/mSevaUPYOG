@@ -4,10 +4,12 @@ const createProxy = createProxyMiddleware({
   //target: process.env.REACT_APP_PROXY_API || "https://uat.digit.org",
   // target: process.env.REACT_APP_PROXY_API || "https://qa.digit.org",
   target: process.env.REACT_APP_PROXY_API || "https://upyog-test.niua.org",
+  // target: process.env.REACT_APP_PROXY_API || "https://mseva-uat.lgpunjab.gov.in/",
   changeOrigin: true,
 });
 const assetsProxy = createProxyMiddleware({
   target: process.env.REACT_APP_PROXY_ASSETS || "https://upyog-test.niua.org",
+  // target: process.env.REACT_APP_PROXY_ASSETS || "https://mseva-uat.lgpunjab.gov.in/",
   changeOrigin: true,
 });
 module.exports = function (app) {
@@ -18,6 +20,7 @@ module.exports = function (app) {
     "/localization",
     "/egov-workflow-v2",
     "/pgr-services",
+    "/swach-services",
     "/filestore",
     "/egov-hrms",
     "/user-otp",
@@ -30,7 +33,7 @@ module.exports = function (app) {
     "/vehicle",
     "/vendor",
     //added this new rainmaker-pgr
-    "/rainmaker-pgr", 
+    "/rainmaker-pgr",
     "/property-services",
     "/fsm-calculator/v1/billingSlab/_search",
     "/pt-calculator-v2",
@@ -70,9 +73,7 @@ module.exports = function (app) {
     "/pet-services/pet-registration/_update",
     "/billing-service/bill/v2/_fetchbill",
     "/collection-services/payments/pet-services/_search",
-    "/requester-services-dx"
-   
-
+    "/requester-services-dx",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

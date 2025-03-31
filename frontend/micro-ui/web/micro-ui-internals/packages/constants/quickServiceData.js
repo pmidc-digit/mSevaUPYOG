@@ -16,7 +16,7 @@ export const quickServiceModules = {
         {
             moduleCode : "Swach",
             moduleName : "Grivance",
-            bgColor : "#ffab2d",
+            bgColor : "#00cccd",
             labelKey : "",
             icon :  "",
             routes : "/digit-ui/employee/swach/inbox",

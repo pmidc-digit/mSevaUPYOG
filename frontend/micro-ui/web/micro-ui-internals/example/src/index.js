@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 
 import { initLibraries } from "@mseva/digit-ui-libraries";
 import { PGRReducers } from "@mseva/digit-ui-module-pgr";
+import { SWACHReducers } from "@mseva/digit-ui-module-swach";
 import { HRMSReducers } from "@mseva/digit-ui-module-hrms";
 import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 
@@ -135,6 +136,7 @@ const initDigitUI = () => {
 
   const moduleReducers = (initData) => ({
     pgr: PGRReducers(initData),
+    swach: SWACHReducers(initData),
     hrms: HRMSReducers(initData),
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData)

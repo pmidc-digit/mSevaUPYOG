@@ -160,9 +160,9 @@ const QuestionForm = ({
                   isPartiallyEnabled={isPartiallyEnabled}
                   formDisabled={formDisabled}
                   maxLength={500}
+                  titleHover={t("The maximum length is 500 characters")}
                   minWeight={0}
                   maxWeight={10}
-                  titleHover={t("The maximum length is 500 characters")}
                   weightHover={t("Enter a number between 0 and 10")}
                   t={t}
                 />

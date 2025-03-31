@@ -99,7 +99,7 @@ const FillSurvey = ({stateCode}) => {
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invlid Email";
 
-    //if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.gender) newErrors.gender = "Gender is required";
 
     if (!formData.dob) newErrors.dob = "Date of Birth is required";
     // if (!formData.relation) newErrors.relation = "Relation is required";
@@ -120,7 +120,7 @@ const FillSurvey = ({stateCode}) => {
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invlid Email";
 
-   // if (!formData.gender) newErrors.gender = "Gender is required";
+    if (!formData.gender) newErrors.gender = "Gender is required";
 
     if (!formData.dob) newErrors.dob = "Date of Birth is required";
 

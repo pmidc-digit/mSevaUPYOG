@@ -47,6 +47,12 @@ const MultipleChoice = ({
         <button
           className="unstyled-button link"
           type="button"
+         
+          style={{ display: "block",
+            padding: "8px 16px 8px",
+            backgroundColor: "#2947a3",
+            color: "white",
+            borderRadius:'8px'}}
           disabled={(!createNewSurvey && formDisabled) || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)}
           onClick={() => addOption()}
         >

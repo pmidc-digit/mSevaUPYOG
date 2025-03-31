@@ -79,8 +79,15 @@ const QuestionFormsMaker = ({
       <div className="pointer">
         {surveyState.length < 100 && (
           <button
-            className={`unstyled-button link ${disableInputs ? "disabled-btn" : ""} ${surveyState.length >= 100 ? "disabled-btn" : ""} `}
+            //className={`unstyled-button link ${disableInputs ? "disabled-btn" : ""} ${surveyState.length >= 100 ? "disabled-btn" : ""} `}
             type="button"
+            style={{
+              display: "block",
+              padding: "8px 16px 8px",
+              backgroundColor: "#2947a3",
+              color: "white",
+              borderRadius:'8px'
+            }}
             onClick={() => passingSurveyConfigInDispatch({ type: "addNewForm" })}
             disabled={surveyState.length >= 100 ? true : false}
           >

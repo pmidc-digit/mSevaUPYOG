@@ -115,13 +115,14 @@ const Inbox = ({ parentRoute }) => {
     tenantId,
     filters: { ...formState },
   });
+
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,
-    headerText: "ACTION_TEST_NOC",
+    headerText: "NDC Module",
     links: [
       {
-        text: t("ES_COMMON_APPLICATION_SEARCH"),
-        link: "/digit-ui/employee/ndc/search",
+        text: "Create NDC Application",
+        link: "/digit-ui/employee/ndc/create",
       },
     ],
   };
@@ -192,22 +193,22 @@ const Inbox = ({ parentRoute }) => {
         {t("ES_COMMON_INBOX")}
         {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
       </Header>
-      <section>
+      {/* <section>
         <CreateNDCApplicationStep />
-      </section>
+      </section> */}
 
-      {/* <InboxComposer
+      <InboxComposer
         {...{
           isInboxLoading,
           PropsForInboxLinks,
-          // ...propsForSearchForm,
-          // ...propsForFilterForm,
-          // ...propsForMobileSortForm,
-          // propsForInboxTable,
-          // propsForInboxMobileCards,
-          // formState,
+          ...propsForSearchForm,
+          ...propsForFilterForm,
+          ...propsForMobileSortForm,
+          propsForInboxTable,
+          propsForInboxMobileCards,
+          formState,
         }}
-      ></InboxComposer> */}
+      ></InboxComposer>
     </>
   );
 };

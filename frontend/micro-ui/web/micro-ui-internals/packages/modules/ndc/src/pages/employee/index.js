@@ -3,9 +3,10 @@ import React, { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import SearchApplication from "./SearchApplication";
 import { Switch, useLocation, Route } from "react-router-dom";
+import CreateNDCApplicationStep from "./createNDCApplication";
 import Response from "./Response";
 
-const NOCBreadCrumbs = ({ location }) => {
+const NDCBreadCrumbs = ({ location }) => {
   const { t } = useTranslation();
   const crumbs = [
     {
@@ -17,6 +18,11 @@ const NOCBreadCrumbs = ({ location }) => {
       path: "/digit-ui/employee/ndc/inbox",
       content: t("ES_COMMON_INBOX"),
       show: location.pathname.includes("ndc/inbox") ? true : false,
+    },
+    {
+      path: "/digit-ui/employee/ndc/create",
+      content: "NDC Application Create Page",
+      show: location.pathname.includes("ndc/create") ? true : false,
     },
     {
       path: "/digit-ui/employee/noc/inbox/application-overview/:id",
@@ -51,15 +57,15 @@ const EmployeeApp = ({ path }) => {
     <Fragment>
       {!isResponse ? (
         <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
-          <NOCBreadCrumbs location={location} />
+          <NDCBreadCrumbs location={location} />
         </div>
       ) : null}
       <Switch>
         {/* <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} />
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} /> */}
         <Route path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
-        {/* <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/response`} component={Response} /> */}
+        <PrivateRoute path={`${path}/create`} component={(props) => <CreateNDCApplicationStep {...props} parentRoute={path} />} />
+        {/* <PrivateRoute path={`${path}/response`} component={Response} />  */}
       </Switch>
     </Fragment>
   );

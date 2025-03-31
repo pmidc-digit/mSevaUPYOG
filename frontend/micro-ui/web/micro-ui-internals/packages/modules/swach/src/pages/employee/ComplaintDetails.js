@@ -78,10 +78,12 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
   
   // RAIN-5692 PGR : GRO is assigning complaint, Selecting employee and assign. Its not getting assigned.
   // Fix for next action  assignee dropdown issue
-  const stateArray = workflowDetails?.data?.initialActionState?.nextActions?.filter( ele => ele?.action == selectedAction );  
+  // const stateArray = workflowDetails?.data?.initialActionState?.nextActions?.filter( ele => ele?.action == selectedAction );  
+  const stateArray = workflowDetails?.data?.processInstances[0]?.nextActions?.filter( ele => ele?.action == selectedAction );
+  // console.log("Asignee Role", workflowDetails?.data?.processInstances[0]?.nextActions?.filter( ele => ele?.action == selectedAction ));
   const useEmployeeData = Digit.Hooks.swach.useEmployeeFilter(
     tenantId, 
-    stateArray?.[0]?.assigneeRoles?.length > 0 ? stateArray?.[0]?.assigneeRoles?.join(",") : "",
+    stateArray?.[0]?.roles?.length > 0 ? stateArray?.[0]?.roles?.join(",") : "",
     complaintDetails,
     true
     );
@@ -90,6 +92,8 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
       return { heading: departmentData.department, options: departmentData.employees };
     })
     : null;
+
+  console.log("employeeData: ", useEmployeeData)
 
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [comments, setComments] = useState("");

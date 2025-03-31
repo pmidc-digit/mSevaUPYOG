@@ -190,7 +190,7 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            height: "100px",
+            height: "100%",
             width: "100px",
             paddingTop: "5px",
             borderRadius: "8px 0 0 8px",

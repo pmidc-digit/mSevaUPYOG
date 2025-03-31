@@ -195,22 +195,29 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
           {iconSelector(moduleData.code)}
         </div>
       </Link>
-      <div
-        className="employee-dashboard-quick-service-card-module-name"
+      <Link
+        to={`${updatedModuleData[0]?.routes}`}
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          fontSize: "24px",
-          fontWeight: "bold",
-          padding: "2rem 2rem",
+          width: "100%",
         }}
       >
-        {
-          // moduleDataForDashboard.moduleName
-          updatedModuleData[0]?.moduleCode
-        }
-      </div>
+        <div
+          className="employee-dashboard-quick-service-card-module-name"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            fontSize: "24px",
+            fontWeight: "bold",
+            padding: "2rem 2rem",
+          }}
+        >
+          {
+            // moduleDataForDashboard.moduleName
+            updatedModuleData[0]?.moduleCode
+          }
+        </div>
+      </Link>
     </div>
   ) : null;
 };

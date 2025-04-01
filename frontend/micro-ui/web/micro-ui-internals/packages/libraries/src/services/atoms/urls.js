@@ -18,6 +18,11 @@ const Urls = {
   PGR_Create: `/pgr-services/v2/request/_create`,
   pgr_count: `/pgr-services/v2/request/_count`,
 
+  Swach_Create: `/swach-services/v2/request/_create`,
+  Swach_count: `/swach-services/v2/request/_count`,
+  Swach_search: `/swach-services/v2/request/_search`,
+  Swach_update: `/swach-services/v2/request/_update`,
+
   OTP_Send: "/user-otp/v1/_send",
   Authenticate: "/user/oauth/token",
   RegisterUser: "/user/citizen/_create",
@@ -231,11 +236,11 @@ const Urls = {
       updateQuestions: "/egov-survey-services/egov-ss/question/_update",
       searchQuestions: "/egov-survey-services/egov-ss/question/_search",
       //Surveys:
-      createSurvey: "/egov-survey-services/egov-ss/csc/create",
-      searchSurvey: "/egov-survey-services/egov-ss/csc/_search",
-      submitSurvey:"/egov-survey-services/egov-ss/csc/response/_submit",
-      updateSurvey: "/egov-survey-services/egov-ss/csc/active/_update",
-      getAnswers:"/egov-survey-services/egov-ss/csc/response/_answers"
+      createSurvey: "/egov-survey-services/egov-ss/survey/create",
+      searchSurvey: "/egov-survey-services/egov-ss/survey/_search",
+      submitSurvey:"/egov-survey-services/egov-ss/survey/response/_submit",
+      updateSurvey: "/egov-survey-services/egov-ss/survey/active/_update",
+      getAnswers:"/egov-survey-services/egov-ss/survey/response/_answers"
     },
   },
 

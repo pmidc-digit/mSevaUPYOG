@@ -49,6 +49,20 @@ import usePGRMDMS from "./pgr/useMDMS";
 import useComplaintSubType from "./pgr/useComplaintSubType";
 import useComplaintStatusCount from "./pgr/useComplaintStatusWithCount";
 
+import useSwachComplaintDetails from "./swach/useComplaintDetails";
+import { useSwachComplaintsList, useSwachComplaintsListByMobile } from "./swach/useComplaintList";
+import useSwachComplaintStatus from "./swach/useComplaintStatus";
+import useSwachComplaintTable from "./swach/useComplaintTable";
+import useSwachComplaintTypes from "./swach/useComplaintTypes";
+import useSwachEmployeeFilter from "./swach/useEmployeeFilter";
+import useSwachInboxData from "./swach/useInboxData";
+import useSwachLocalities from "./swach/useLocalities";
+import useSwachBharatCategory from "./swach/useSwachBharatCategory";
+import useSwachTenants from "./swach/useTenants";
+// import usePGRMDMS from "./pgr/useMDMS";
+import useSwachComplaintSubType from "./swach/useComplaintSubType";
+import useSwachComplaintStatusCount from "./swach/useComplaintStatusWithCount";
+
 import useTenantsFSM from "./fsm/useTenants";
 import useDesludging from "./fsm/useDesludging";
 import useApplicationStatus from "./fsm/useApplicationStatus";
@@ -291,6 +305,26 @@ const pgr = {
   useTradeLicenseBillingslab,
   useMDMS: usePGRMDMS,
 };
+
+const swach = {
+  useComplaintDetails: useSwachComplaintDetails,
+  useComplaintsList: useSwachComplaintsList,
+  useComplaintsListByMobile: useSwachComplaintsListByMobile,
+  useComplaintStatus: useSwachComplaintStatus,
+  useComplaintTable: useSwachComplaintTable,
+  useComplaintTypes: useSwachComplaintTypes,
+  useEmployeeFilter: useSwachEmployeeFilter,
+  useInboxData: useSwachInboxData,
+  useLocalities: useSwachLocalities,
+  useSwachBharatCategory: useSwachBharatCategory,
+  useTenants: useSwachTenants,
+  useComplaintSubType: useSwachComplaintSubType,
+  usePropertyMDMS,
+  useComplaintStatusCount: useSwachComplaintStatusCount,
+  useTradeLicenseBillingslab,
+  // useMDMS: usePGRMDMS,
+};
+
 const ptr = {
   usePetMDMS,
   usePTRPetMDMS,
@@ -574,6 +608,7 @@ const Hooks = {
   useTenantsBills,
   usePrivacyContext,
   pgr,
+  swach,
   fsm,
   pt,
   dss,

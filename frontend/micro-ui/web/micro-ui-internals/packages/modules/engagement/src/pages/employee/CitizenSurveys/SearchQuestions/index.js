@@ -115,7 +115,7 @@ const SearchQuestions = ({ parentRoute }) => {
     headerText: "CS_COMMON_SURVEYS",
     links: [
       {
-        text: t("CS_COMMON_NEW_SURVEY"),
+        text: t("Create New Survey"),
         link: "/digit-ui/employee/engagement/surveys/create-survey-step-form",
       },
       {

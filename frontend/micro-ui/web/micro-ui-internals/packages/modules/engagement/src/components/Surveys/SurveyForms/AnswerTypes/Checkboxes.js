@@ -46,8 +46,13 @@ const Checkboxes = ({
       ))}
       <div>
         <button
-          className="unstyled-button link"
+        //  className="unstyled-button link"
           type="button"
+          style={{ display: "block",
+            padding: "8px 16px 8px",
+            backgroundColor: "#2947a3",
+            color: "white",
+            borderRadius:'8px'}}
           disabled={(!createNewSurvey && formDisabled) || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)}
           onClick={() => addOption()}
         >
@@ -127,7 +132,7 @@ const CheckBoxOption = ({
             
             type='number'
             id="numberInput"
-            defaultValue={optionWeightage}
+          //  defaultValue={optionWeightage}
             value={optionWeightage}
             required
             placeholder="Option Weightage"

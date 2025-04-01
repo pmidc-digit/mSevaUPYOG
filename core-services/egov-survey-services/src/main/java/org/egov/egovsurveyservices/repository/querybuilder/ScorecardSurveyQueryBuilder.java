@@ -236,6 +236,10 @@ public class ScorecardSurveyQueryBuilder {
 
     }
 
+    public String getAnswerDetailsByAnswerUuid() {
+        return "SELECT uuid FROM eg_ss_answer_detail WHERE answeruuid = ?";
+    }
+
 //    public String fetchTenantIdBasedOnSurveyResponseId() {
 //        return "SELECT tenantid FROM eg_ss_survey_response WHERE uuid = ?";
 //    }

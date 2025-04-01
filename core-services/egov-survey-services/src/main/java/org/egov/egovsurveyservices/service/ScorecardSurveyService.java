@@ -16,24 +16,7 @@ import org.egov.egovsurveyservices.repository.QuestionRepository;
 import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
 import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
-import org.egov.egovsurveyservices.web.models.Answer;
-import org.egov.egovsurveyservices.web.models.AnswerEntity;
-import org.egov.egovsurveyservices.web.models.AnswerFetchCriteria;
-import org.egov.egovsurveyservices.web.models.AnswerNew;
-import org.egov.egovsurveyservices.web.models.AnswerRequestNew;
-import org.egov.egovsurveyservices.web.models.AuditDetails;
-import org.egov.egovsurveyservices.web.models.Question;
-import org.egov.egovsurveyservices.web.models.QuestionWeightage;
-import org.egov.egovsurveyservices.web.models.ScorecardAnswerResponse;
-import org.egov.egovsurveyservices.web.models.ScorecardQuestionResponse;
-import org.egov.egovsurveyservices.web.models.ScorecardSectionResponse;
-import org.egov.egovsurveyservices.web.models.ScorecardSubmitResponse;
-import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
-import org.egov.egovsurveyservices.web.models.ScorecardSurveyRequest;
-import org.egov.egovsurveyservices.web.models.ScorecardSurveySearchCriteria;
-import org.egov.egovsurveyservices.web.models.Section;
-import org.egov.egovsurveyservices.web.models.SurveyResponseNew;
-import org.egov.egovsurveyservices.web.models.UpdateSurveyActiveRequest;
+import org.egov.egovsurveyservices.web.models.*;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -168,6 +151,26 @@ public class ScorecardSurveyService {
         SurveyResponseNew surveyResponse = answerRequest.getSurveyResponse();
         String tenantIdBasedOnSurveyId = fetchTenantIdBasedOnSurveyId(surveyResponse.getSurveyUuid());
         surveyResponse.setUuid(UUID.randomUUID().toString());
+        List<String> answerUuids = surveyResponse.getAnswers().stream()
+                .map(AnswerNew::getUuid)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toList());
+
+        String existingSurveyResponseUuid = surveyRepository.getSurveyResponseUuidForAnswers(answerUuids);
+        if (existingSurveyResponseUuid != null) {
+            surveyResponse.setUuid(existingSurveyResponseUuid); // Use existing surveyResponseUuid for all answers
+
+        }else{
+            existingSurveyResponseUuid = surveyRepository.getExistingSurveyResponseUuid(
+                    surveyResponse.getSurveyUuid(), answerRequest.getUser().getUuid(), surveyResponse.getTenantId());
+
+            if (existingSurveyResponseUuid != null) {
+                throw new CustomException("EG_SS_SURVEYUUID_CITIZEN_TENANTID_UNIQUE_KEY_VIOLATION","unique key violation - survey already answered by citizen in the tenant");
+            } else {
+                surveyResponse.setUuid(UUID.randomUUID().toString()); // Generate new UUID
+            }
+        }
+
         if (answerRequest.getSurveyResponse().getStatus()==null)
         	answerRequest.getSurveyResponse().setStatus(org.egov.egovsurveyservices.utils.SurveyServiceConstants.DRAFT);
 
@@ -193,8 +196,26 @@ public class ScorecardSurveyService {
                             .map(answer -> {
                                 List<Question> questionById = questionRepository.getQuestionById(answer.getQuestionUuid());
                                 Question question = questionById.get(0);
-                                String existingUuid = getExistingAnswerUuid(answer.getUuid());
-                                String uuidToUse = existingUuid != null ? existingUuid : UUID.randomUUID().toString();
+                                String existingAnswerUuid = getExistingAnswerUuid(answer.getUuid());
+                                String uuidToUse;
+                                if(existingAnswerUuid!=null){
+                                    uuidToUse = existingAnswerUuid;
+                                }else{
+                                    String existingAnswerUuidMethodTwo = surveyRepository.getExistingAnswerUuid(surveyResponse.getUuid(), answer.getQuestionUuid());
+                                    if(existingAnswerUuidMethodTwo!=null){
+                                        uuidToUse = existingAnswerUuidMethodTwo;
+                                    }else{
+                                        uuidToUse = UUID.randomUUID().toString();
+                                    }
+                                }
+//                                uuidToUse = existingAnswerUuid != null ? existingAnswerUuid : UUID.randomUUID().toString();
+
+
+                                if (existingAnswerUuid != null) {
+                                    answer.setUuid(existingAnswerUuid); // Use the existing UUID
+                                } else {
+                                    answer.setUuid(UUID.randomUUID().toString()); // Generate a new UUID for new answer
+                                }
                                 if (StringUtils.isBlank(question.getQuestionStatement())) {
                                     throw new CustomException("EG_SS_QUESTION_NOT_FOUND", "question not found with id " + answer.getQuestionUuid());
                                 }
@@ -202,12 +223,25 @@ public class ScorecardSurveyService {
                                 answer.setAuditDetails(auditDetails);
                                 if (answer.getAnswerDetails() != null) {
                                     answer.getAnswerDetails().forEach(detail -> {
-                                        detail.setUuid(UUID.randomUUID().toString());
+//                                        detail.setUuid(UUID.randomUUID().toString());
                                         detail.setAnswerUuid(answer.getUuid());
                                         detail.setAuditDetails(auditDetails);
                                         detail.setAnswerType(question.getType().toString());
                                     });
                                 }
+                                // Update existing AnswerDetails instead of creating new ones
+                                if (answer.getAnswerDetails() != null) {
+                                    answer.getAnswerDetails().forEach(detail -> {
+                                        String existingAnswerDetailUuid = getExistingAnswerDetailUuid(detail.getAnswerUuid());
+                                        String detailUuidToUse = existingAnswerDetailUuid != null ? existingAnswerDetailUuid : UUID.randomUUID().toString();
+
+                                        detail.setUuid(detailUuidToUse);
+                                        detail.setAnswerUuid(answer.getUuid());
+                                        detail.setAuditDetails(auditDetails);
+                                        detail.setAnswerType(question.getType().toString());
+                                    });
+                                }
+
                                 surveyResponse.setCitizenId(uuid);
 
                                 return ScorecardQuestionResponse.builder()
@@ -239,7 +273,10 @@ public class ScorecardSurveyService {
 
     }
 
-    public boolean hasCitizenAlreadyResponded(AnswerEntity answerEntity, String citizenId) {
+
+
+
+        public boolean hasCitizenAlreadyResponded(AnswerEntity answerEntity, String citizenId) {
         if (ObjectUtils.isEmpty(answerEntity.getSurveyId()))
             throw new CustomException("EG_SS_FETCH_CITIZEN_RESP_ERR", "Cannot fetch citizen's response without surveyId");
         return surveyRepository.fetchWhetherCitizenAlreadyResponded(answerEntity.getSurveyId(), citizenId);
@@ -261,6 +298,11 @@ public class ScorecardSurveyService {
 
     private String getExistingAnswerUuid(String answerUuid) {
        return surveyRepository.getExistingAnswerUuid(answerUuid);
+    }
+
+    private String getExistingAnswerDetailUuid(String answerUuid) {
+        List<AnswerDetail> existingDetails = surveyRepository.getAnswerDetailsByAnswerUuid(answerUuid);
+        return existingDetails.isEmpty() ? null : existingDetails.get(0).getUuid();
     }
 
     public String fetchTenantIdBasedOnSurveyId(String surveyId) {

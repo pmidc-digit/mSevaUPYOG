@@ -86,6 +86,33 @@ public class ScorecardSurveyRepository {
         }
     }
 
+    public String getExistingAnswerUuid(String surveyResponseUuid, String questionUuid) {
+        String query = "SELECT uuid FROM eg_ss_answer WHERE surveyresponseuuid = ? AND questionuuid = ? LIMIT 1";
+        try {
+            return jdbcTemplate.queryForObject(query, new Object[]{surveyResponseUuid, questionUuid}, String.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    public String getSurveyResponseUuidForAnswers(List<String> answerUuids) {
+        String query = "SELECT surveyresponseuuid FROM eg_ss_answer WHERE uuid::uuid = ANY(?::uuid[]) LIMIT 1";
+        try {
+            return jdbcTemplate.queryForObject(query, new Object[]{answerUuids.toArray(new String[0])}, String.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    public String getExistingSurveyResponseUuid(String surveyUuid, String citizenId, String tenantId) {
+        String query = "SELECT uuid FROM eg_ss_survey_response WHERE surveyuuid = ? AND citizenid = ? AND tenantid = ? LIMIT 1";
+        try {
+            return jdbcTemplate.queryForObject(query, new Object[]{surveyUuid, citizenId, tenantId}, String.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
     public List<Answer> getAnswers(String surveyUuid, String citizenId) {
         String query=surveyQueryBuilder.getAnswers();
         List<Object> preparedStmtList = new ArrayList<>();
@@ -103,5 +130,11 @@ public class ScorecardSurveyRepository {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    public List<AnswerDetail> getAnswerDetailsByAnswerUuid(String answerUuid) {
+        String query = surveyQueryBuilder.getAnswerDetailsByAnswerUuid();
+        return jdbcTemplate.query(query, new Object[]{answerUuid}, (rs, rowNum) ->
+                AnswerDetail.builder().uuid(rs.getString("uuid")).build());
     }
 }

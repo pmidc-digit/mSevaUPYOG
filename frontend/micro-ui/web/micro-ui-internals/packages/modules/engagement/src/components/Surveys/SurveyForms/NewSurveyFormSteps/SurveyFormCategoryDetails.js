@@ -51,7 +51,13 @@ const SurveyFormCategoryDetails = ({ config, onGoNext, onBackClick, t }) => {
           categories.map((category,index)=>{
             const totalQuesWeightage = category.selectedQuestions.reduce((sum, question) => sum + parseFloat(question.weightage), 0);
             if(Math.round(totalQuesWeightage)>100){
-              alertMsg+= `The total weightage of questions in section ${index} should sum upto 100.\n`
+              alertMsg+= `The total weightage of questions in section ${index+1} titled "${category?.title}" should sum upto 100.\n`
+              f=1;
+              //alert('The total weightage of questions in each category should sum upto 100.');
+             // return;
+            }
+            if(Math.round(totalQuesWeightage)<100){
+              alertMsg+= `The total weightage of questions in section ${index+1} titled "${category?.title}" should sum upto 100.\n`
               f=1;
               //alert('The total weightage of questions in each category should sum upto 100.');
              // return;

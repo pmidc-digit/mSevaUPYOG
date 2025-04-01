@@ -572,7 +572,7 @@ const CategoryCard = ({ category, checked, readOnly, onDelete, hideQuestionLabel
           hideSubmit={true}
         />
       )}
-      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
+      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} labelstyle={{color:'white',width:'100%'}}/>}
     </div>
   );
 };

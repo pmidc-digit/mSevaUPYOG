@@ -225,8 +225,24 @@ const FillQuestions = (props) => {
         }
         else{
           console.log("hola true")
+          const today = new Date();
+          const birthDate = new Date(response?.user[0]?.dob);
+          let age = today.getFullYear() - birthDate.getFullYear();
+          const monthDifference = today.getMonth() - birthDate.getMonth();
+    
+          if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+              age--;
+          }
+    
+          if (age < 15 || age > 100) {
+            setHasCitizenDetails(false)
+              alert('Citizen age must be between 15 and 100 years.');
+              return;
+          } else {
+         
           setHasCitizenDetails(true)
-          fetchPosition();
+         // fetchPosition();
+          }
         } 
       }
         else {
@@ -280,12 +296,12 @@ const FillQuestions = (props) => {
     });
   };
 
-  const handleInputChange = (sectionId, questionId, value,answerUuid) => {
+  const handleInputChange = (sectionId, questionId, questionType,answerWeightage,value,answerUuid) => {
     setFormData((prevData) => ({
       ...prevData,
       [sectionId]: {
         ...prevData[sectionId],
-        [questionId]: { ...prevData?.[sectionId]?.[questionId],answer:value,answerUuid:answerUuid},
+        [questionId]: { ...prevData?.[sectionId]?.[questionId],answer:value,answerUuid:answerUuid, answerType: questionType,weightage:(questionType==="MULTIPLE_ANSWER_TYPE"||questionType==="CHECKBOX_ANSWER_TYPE")?answerWeightage:null},
       },
     }));
   };
@@ -343,8 +359,12 @@ const FillQuestions = (props) => {
           surveyUuid: data.uuid,
           questionUuid: questionId,
           sectionUuid: sectionId,
-          comments: "comment_1",
-          answer: [formData[sectionId][questionId].answer],
+          comments: formData[sectionId][questionId]?.comments||"",
+          answerDetails: [{
+            answerType: formData[sectionId][questionId].answerType,
+            answerContent:formData[sectionId][questionId].answer,
+            weightage:formData[sectionId][questionId].weightage
+          }]
         });
       }
     }
@@ -353,10 +373,13 @@ const FillQuestions = (props) => {
     let payload = {
       User: {
         type:prevProps.userInfo.type,
-        uuid:prevProps.userInfo.uuid
+        uuid:prevProps.userInfo.uuid,
+        gender:(prevProps?.userType).toUpperCase()==="EMPLOYEE"? prevProps?.citizenData?.gender:prevProps.userInfo.gender,
+        emailId: (prevProps?.userType).toUpperCase()==="EMPLOYEE"? prevProps?.citizenData?.email:prevProps.userInfo.emailId,
+        dob:(prevProps?.userType).toUpperCase()==="EMPLOYEE"?prevProps?.citizenData?.dob: prevProps.userInfo.dob
       },
 
-      AnswerEntity: {
+      SurveyResponse: {
         surveyUuid: data.uuid,
         tenantId:(prevProps?.userType).toUpperCase()==="EMPLOYEE"?prevProps?.citizenData?.city?.code: city?.code,
         status:"draft",
@@ -368,7 +391,7 @@ const FillQuestions = (props) => {
 
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
-        if (response?.sectionResponses.length > 0) {
+        if (response?.SubmitResponse.length > 0) {
         
          // return;
         } else {
@@ -429,7 +452,12 @@ const FillQuestions = (props) => {
           questionUuid: questionId,
           sectionUuid: sectionId,
           comments: formData[sectionId][questionId]?.comments||"",
-          answer: [formData[sectionId][questionId].answer],
+         // answer: [formData[sectionId][questionId].answer],
+         answerDetails: [{
+          answerType: formData[sectionId][questionId].answerType,
+          answerContent:formData[sectionId][questionId].answer,
+          weightage:formData[sectionId][questionId].weightage
+        }]
         });
       }
     }
@@ -439,10 +467,14 @@ const FillQuestions = (props) => {
 
       User: {
         type:prevProps.userInfo.type,
-        uuid:prevProps.userInfo.uuid
+        uuid:prevProps.userInfo.uuid,
+        gender:(prevProps?.userType).toUpperCase()==="EMPLOYEE"? prevProps?.citizenData?.gender:prevProps.userInfo.gender,
+        emailId: (prevProps?.userType).toUpperCase()==="EMPLOYEE"? prevProps?.citizenData?.email:prevProps.userInfo.emailId,
+        dob:(prevProps?.userType).toUpperCase()==="EMPLOYEE"?prevProps?.citizenData?.dob: prevProps.userInfo.dob
+
       },
 
-      AnswerEntity: {
+      SurveyResponse: {
         surveyUuid: data.uuid,
         tenantId:(prevProps?.userType).toUpperCase()==="EMPLOYEE"?prevProps?.citizenData?.city?.code: city?.code,
         status:"submitted",
@@ -455,7 +487,7 @@ const FillQuestions = (props) => {
 
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
-        if (response?.sectionResponses.length > 0) {
+        if (response?.SubmitResponse.length > 0) {
           userType.toUpperCase()==="EMPLOYEE"?
           history.push("/digit-ui/employee/engagement/surveys/submit-response", {
             message: "SURVEY FORM SUBMITTED SUCCESSFULLY",
@@ -507,7 +539,7 @@ const FillQuestions = (props) => {
             //disabled={formDisabled}
             textInputStyle={{maxWidth:'none'}}
             value={formData[section.uuid]?.[question.uuid]?.answer}
-            onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
+            onChange={(e) => handleInputChange(section.uuid, question.uuid, question.type,null, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
             type="text"
             inputRef={register({
               maxLength: {
@@ -530,7 +562,7 @@ const FillQuestions = (props) => {
   value={formData[section.uuid]?.[question.uuid]?.comments}
   maxLength={500}
   style={{maxWidth:'none',marginBottom:'0px'}}
-  onChange={(e) => handleFieldChange(section.uuid, question.uuid, e.target.value)}
+  onChange={(e) => handleFieldChange(section.uuid, question.uuid,e.target.value)}
   inputRef={register({
     maxLength: {
       value: 500,
@@ -553,7 +585,7 @@ const FillQuestions = (props) => {
               style={{maxWidth:'none'}}
               // disabled={formDisabled}
               value={formData[section.uuid]?.[question.uuid]?.answer}
-              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
+              onChange={(e) => handleInputChange(section.uuid, question.uuid, question.type,null, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
               inputRef={register({
                 maxLength: {
                   value: 500,
@@ -607,13 +639,13 @@ const FillQuestions = (props) => {
                   <input
                     type="radio"
                     name={question.uuid}
-                    value={option}
-                    checked={formData[section.uuid]?.[question.uuid]?.answer?.[0] === option}
-                    onChange={(e) => handleInputChange(section.uuid, question.uuid, [e.target.value],formData[section.uuid]?.[question.uuid]?.answerUuid)}
+                    value={option?.optionText} 
+                    checked={formData[section.uuid]?.[question.uuid]?.answer === option.optionText}
+                    onChange={(e) => handleInputChange(section.uuid, question.uuid, question.type, option.weightage, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
                     required
                     style={{ marginRight: "10px", width: "25px", height: "25px" }}
                   />
-                  {option}
+                  {option?.optionText}
                 </h4>
               ))}
             </div>
@@ -679,8 +711,8 @@ const FillQuestions = (props) => {
                   <input
                     style={{ width: "25px", height: "25px", marginRight: "10px" }}
                     type="checkbox"
-                    value={option}
-                    checked={formData[section.uuid]?.[question.uuid]?.answer.includes(option) || false}
+                    value={option?.optionText}
+                    checked={formData[section.uuid]?.[question.uuid]?.answer.includes(option.optionText) || false}
                     onChange={(e) => {
                       const value = e.target.value;
                       const checked = e.target.checked;
@@ -692,7 +724,7 @@ const FillQuestions = (props) => {
                           ...prevData,
                           [section.uuid]: {
                             ...prevData[section.uuid],
-                         [question.uuid]:{answer:newValues,answerUuid:formData[section.uuid]?.[question.uuid]?.answerUuid}
+                         [question.uuid]:{answer:newValues,answerUuid:formData[section.uuid]?.[question.uuid]?.answerUuid,answerType:question.type,weightage:option.weightage}
                             // [question.uuid]: {answer:newValues},
                           },
                         };
@@ -795,7 +827,7 @@ const FillQuestions = (props) => {
               type="date"
               textInputStyle={{maxWidth:'none'}}
               value={formData[section.uuid]?.[question.uuid]?.answer}
-              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
+              onChange={(e) => handleInputChange(section.uuid, question.uuid,question.type,null, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
               // defaultValue={value}
             />
             {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerRequired  && (
@@ -851,7 +883,7 @@ const FillQuestions = (props) => {
               type="time"
               textInputStyle={{maxWidth:'none'}}
               value={formData[section.uuid]?.[question.uuid]?.answer}
-              onChange={(e) => handleInputChange(section.uuid, question.uuid, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
+              onChange={(e) => handleInputChange(section.uuid, question.uuid,question.type,null, e.target.value,formData[section.uuid]?.[question.uuid]?.answerUuid)}
               // defaultValue={value}
             />
             {errors && errors?.[section.uuid] && errors?.[section.uuid]?.[question.uuid]?.answerRequired  && (
@@ -1090,7 +1122,7 @@ const FillQuestions = (props) => {
          marginTop:'10px'
          //cursor: "pointer"
         }}
-          >Fill your details</button>
+          >Fill your details : Name, Gender, DOB and Email are required</button>
       </div>
     ):
     null

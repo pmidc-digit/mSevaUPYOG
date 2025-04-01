@@ -236,11 +236,11 @@ const Urls = {
       updateQuestions: "/egov-survey-services/egov-ss/question/_update",
       searchQuestions: "/egov-survey-services/egov-ss/question/_search",
       //Surveys:
-      createSurvey: "/egov-survey-services/egov-ss/csc/create",
-      searchSurvey: "/egov-survey-services/egov-ss/csc/_search",
-      submitSurvey:"/egov-survey-services/egov-ss/csc/response/_submit",
-      updateSurvey: "/egov-survey-services/egov-ss/csc/active/_update",
-      getAnswers:"/egov-survey-services/egov-ss/csc/response/_answers"
+      createSurvey: "/egov-survey-services/egov-ss/survey/create",
+      searchSurvey: "/egov-survey-services/egov-ss/survey/_search",
+      submitSurvey:"/egov-survey-services/egov-ss/survey/response/_submit",
+      updateSurvey: "/egov-survey-services/egov-ss/survey/active/_update",
+      getAnswers:"/egov-survey-services/egov-ss/survey/response/_answers"
     },
   },
 

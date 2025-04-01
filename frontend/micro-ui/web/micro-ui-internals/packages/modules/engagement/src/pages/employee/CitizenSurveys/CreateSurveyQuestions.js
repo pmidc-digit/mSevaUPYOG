@@ -64,7 +64,8 @@ const CreateSurveyQuestions = () => {
           type: item.type.value,
           options: item.options.map((option) => ({
             optionText: option.title.trim(),
-            weightage: option.optionWeightage,
+            weightage: parseInt(option.optionWeightage),
+            required: item?.required
           })),
         };
       } else {
@@ -73,6 +74,7 @@ const CreateSurveyQuestions = () => {
           categoryId: item.category.value,
           questionStatement: item.questionStatement.trim(),
           type: item.type.value,
+          required: item?.required
         };
       }
   

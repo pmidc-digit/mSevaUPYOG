@@ -79,7 +79,7 @@ public class pdcController {
                 reportRequest.setRequestInfo(reqInfo);
             }
 
-            List<Map<String, Object>> reportResponse = reportService.getpdcReportData(
+            List<Object> reportResponse = reportService.getpdcReportData(
                     reportRequest, moduleName,
                     reportRequest.getReportName(),
                     reportRequest.getRequestInfo() != null ? reportRequest.getRequestInfo().getAuthToken() : null

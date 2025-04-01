@@ -50,7 +50,7 @@ class ScorecardSurveyControllerTest {
     @MockBean
     private ResponseInfoFactory responseInfoFactory;
     
-    private static final String SEARCH_URL = "/egov-ss/csc/_search";
+    private static final String SEARCH_URL = "/egov-ss/survey/_search";
 
     private ObjectMapper objectMapper = new ObjectMapper();
     
@@ -64,7 +64,7 @@ class ScorecardSurveyControllerTest {
         when(surveyService.createSurvey(ArgumentMatchers.any(ScorecardSurveyRequest.class)))
             .thenReturn(new ScorecardSurveyEntity());
 
-        mockMvc.perform(post("/egov-ss/csc/create")
+        mockMvc.perform(post("/egov-ss/survey/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(surveyJson))
             .andExpect(status().isOk());
@@ -123,7 +123,7 @@ class ScorecardSurveyControllerTest {
          request.setUuid("SS-1012/2024-25/000131");
          request.setActive(true);
 
-         mockMvc.perform(post("/egov-ss/csc/active/_update")
+         mockMvc.perform(post("/egov-ss/survey/active/_update")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(new ObjectMapper().writeValueAsString(request)))
                  .andExpect(status().isOk())
@@ -137,7 +137,7 @@ class ScorecardSurveyControllerTest {
          UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
          request.setActive(true);  // Missing UUID
 
-         mockMvc.perform(post("/egov-ss/csc/active/_update")
+         mockMvc.perform(post("/egov-ss/survey/active/_update")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(new ObjectMapper().writeValueAsString(request)))
                  .andExpect(status().isBadRequest());
@@ -148,7 +148,7 @@ class ScorecardSurveyControllerTest {
          UpdateSurveyActiveRequest request = new UpdateSurveyActiveRequest();
          request.setUuid("SS-1012/2024-25/000131");  // Missing active field
 
-         mockMvc.perform(post("/egov-ss/csc/active/_update")
+         mockMvc.perform(post("/egov-ss/survey/active/_update")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(new ObjectMapper().writeValueAsString(request)))
                  .andExpect(status().isBadRequest());
@@ -163,7 +163,7 @@ class ScorecardSurveyControllerTest {
          doThrow(new IllegalArgumentException("UUID does not exist in database, Update failed!"))
              .when(surveyService).updateSurveyActive(any(UpdateSurveyActiveRequest.class));
 
-         mockMvc.perform(post("/egov-ss/csc/active/_update")
+         mockMvc.perform(post("/egov-ss/survey/active/_update")
                  .contentType(MediaType.APPLICATION_JSON)
                  .content(new ObjectMapper().writeValueAsString(request)))
                  .andExpect(status().isBadRequest());

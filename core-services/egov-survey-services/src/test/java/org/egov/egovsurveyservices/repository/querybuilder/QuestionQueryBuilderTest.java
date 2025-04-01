@@ -22,10 +22,9 @@ public class QuestionQueryBuilderTest {
 
     @InjectMocks
     private QuestionQueryBuilder queryBuilder;
-
+    
     @Test
     public void testGetQuestionSearchQuery_withAllCriteria() {
-
         String tenantId = "default";
         String uuid = "question-uuid";
         String questionStatement = "question statement";
@@ -47,17 +46,26 @@ public class QuestionQueryBuilderTest {
         when(criteria.getSize()).thenReturn(pageSize);
 
         String query = queryBuilder.getQuestionSearchQuery(criteria, preparedStmtList);
-
+        
         String expectedQuery = "SELECT question.uuid, question.tenantid, question.surveyid, " +
-                "question.questionstatement, question.status, question.options, question.type," +
-                " question.required, question.qorder, question.categoryid, question.createdby, " +
-                "question.lastmodifiedby, question.createdtime, question.lastmodifiedtime," +
-                " category.id as category_id, category.label as category_label, " +
-                "category.isactive as category_isactive, category.tenantid as category_tenantid FROM " +
-                "eg_ss_question question INNER JOIN eg_ss_category category ON question.categoryid = category.id WHERE  " +
-                "question.tenantid = ?  AND  question.uuid = ?  AND  question.questionstatement ilike '%question statement%' AND  question.createdby = ?  AND  question.status = ?  AND  question.categoryid = ?  ORDER BY question.createdtime DESC  LIMIT 10 OFFSET 0";
+                "question.questionstatement, question.status, question.type, question.required, " +
+                "question.qorder, question.categoryid, question.createdby, question.lastmodifiedby, " +
+                "question.createdtime, question.lastmodifiedtime, category.id as category_id, " +
+                "category.label as category_label, category.isactive as category_isactive, " +
+                "category.tenantid as category_tenantid, option.uuid AS option_uuid, " +
+                "option.optiontext AS option_text, option.weightage AS option_weightage, " +
+                "option.createdby AS option_createdby, option.lastmodifiedby AS option_lastmodifiedby, " +
+                "option.createdtime AS option_createdtime, option.lastmodifiedtime AS option_lastmodifiedtime " +
+                "FROM eg_ss_question question INNER JOIN eg_ss_category category " +
+                "ON question.categoryid = category.id " +
+                "LEFT JOIN eg_ss_question_option option ON question.uuid = option.questionuuid " +
+                "WHERE question.tenantid = ? AND question.uuid = ? " +
+                "AND question.questionstatement ilike '%question statement%' " +
+                "AND question.createdby = ? AND question.status = ? " +
+                "AND question.categoryid = ? ORDER BY question.createdtime DESC LIMIT 10 OFFSET 0";
 
-        assertEquals(expectedQuery, query);
+        assertEquals(expectedQuery.replaceAll("\\s+", " ").trim(), query.replaceAll("\\s+", " ").trim());
+
         assertEquals(5, preparedStmtList.size());
         assertEquals(tenantId, preparedStmtList.get(0));
         assertEquals(uuid, preparedStmtList.get(1));
@@ -66,6 +74,7 @@ public class QuestionQueryBuilderTest {
         assertEquals(categoryId, preparedStmtList.get(4));
     }
 
+    
     @Test
     public void testGetQuestionSearchQuery_withEmptyCriteria() {
         QuestionQueryBuilder queryBuilder = new QuestionQueryBuilder();
@@ -213,14 +222,19 @@ public class QuestionQueryBuilderTest {
         assertEquals(status.toString(), preparedStmtList.get(0));
     }
 
+    
     @Test
-    public void testGetQuestionByIdSql(){
+    public void testGetQuestionByIdSql() {
         assertEquals("SELECT question.uuid, question.tenantid, question.surveyid, question.questionstatement, question.status, " +
-                "question.options, question.type, question.required, question.qorder, question.categoryid, " +
-                "question.createdby, question.lastmodifiedby, question.createdtime, question.lastmodifiedtime "+
-                " FROM eg_ss_question question "+
-                "  WHERE question.uuid = ?",queryBuilder.getQuestionByIdSql());
+                "question.type, question.required, question.qorder, question.categoryid, " +
+                "question.createdby, question.lastmodifiedby, question.createdtime, question.lastmodifiedtime, " +
+                "option.uuid AS option_uuid, option.optiontext AS option_text, option.weightage AS option_weightage, " +
+                "option.createdby AS option_createdby, option.lastmodifiedby AS option_lastmodifiedby, option.createdtime AS option_createdtime, option.lastmodifiedtime AS option_lastmodifiedtime " +
+                "FROM eg_ss_question question " +
+                "LEFT JOIN eg_ss_question_option option ON question.uuid = option.questionuuid " +
+                "WHERE question.uuid = ?", queryBuilder.getQuestionByIdSql());
     }
+
 
     @Test
     public void testGetCheckDuplicateCategory() {

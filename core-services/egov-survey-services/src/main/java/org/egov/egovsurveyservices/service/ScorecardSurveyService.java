@@ -251,6 +251,7 @@ public class ScorecardSurveyService {
         // Validate tenant ID based on survey response
         if(StringUtils.equalsIgnoreCase(tenantIdBasedOnSurveyId,"pb.punjab")){
             surveyValidator.validateCityIsProvided(surveyResponse.getTenantId());
+            surveyResponse.setTenantId(surveyResponse.getCity());
 //            surveyValidator.validateCityIsProvided(surveyResponse.getTenantId());
         }
         surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);

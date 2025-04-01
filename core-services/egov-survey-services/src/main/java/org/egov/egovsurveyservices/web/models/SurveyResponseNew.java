@@ -19,6 +19,8 @@ public class SurveyResponseNew {
     private String surveyUuid;
     @JsonProperty("tenantId")
     private String tenantId;
+    @JsonProperty("city")
+    private String city;
     @JsonProperty("citizenId")
     private String citizenId;
     @JsonProperty("locality")

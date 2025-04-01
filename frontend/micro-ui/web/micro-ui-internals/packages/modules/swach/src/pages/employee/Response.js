@@ -44,10 +44,11 @@ const Response = (props) => {
   const { tenants } = storeData || {};
   const [enable, setEnable] = useState(false)
   let id= appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
-  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId:"pg.citya", id },{ enabled: enable ? true : false});
+  const tenantId = window.Digit.SessionStorage.get("Employee.tenantId");
+  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId:tenantId, id },{ enabled: enable ? true : false}); // Respnse Page is changed
   
   const handleDownloadPdf = async (e) => {
-    const tenantInfo = tenants.find((tenant) => tenant.code === "pg.citya");
+    const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
     e.preventDefault()
     setEnable(true)
     const data = await getSWACHcknowledgementData({ ...complaintDetails }, tenantInfo, t);

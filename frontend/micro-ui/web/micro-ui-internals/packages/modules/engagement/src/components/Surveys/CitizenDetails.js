@@ -35,30 +35,11 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
     const { name, value } = event.target;
     console.log("date e", event)
     console.log("date value", event.target);
-    if (value) {
-      const today = new Date();
-      const birthDate = new Date(value);
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDifference = today.getMonth() - birthDate.getMonth();
 
-      if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-
-      if (age < 15 || age > 100) {
-        alert('Age must be between 15 and 100 years.');
-      } else {
-        // setError('');
-        setFormData((prevData) => ({
-          ...prevData,
-          [name]: value,
-        }));
-      }
-    } else {
-      //  setError('');
-
-    }
-
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
   const handleDropdownChange = (name, event) => {
    console.log("dropdown e",event)

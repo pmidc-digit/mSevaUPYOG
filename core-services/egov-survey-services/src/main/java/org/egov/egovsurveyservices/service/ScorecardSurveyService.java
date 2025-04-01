@@ -164,99 +164,20 @@ public class ScorecardSurveyService {
         return surveyRepository.allQuestionsExist(questionUuids);
     }
 
-
-
-//    public ScorecardAnswerResponse submitResponse(AnswerRequest answerRequest) {
-//        AnswerEntity answerEntity = answerRequest.getAnswerEntity();
-//        String tenantIdBasedOnSurveyId = fetchTenantIdBasedOnSurveyId(answerEntity.getSurveyId());
-//        //populating eg_ss_survey_response
-//        NewScorecardSurveyResponse surveyResponse = answerEntity.getSurveyResponse(); //this we need to populate to save in db
-//        surveyResponse.setUuid(UUID.randomUUID().toString());
-//        surveyResponse.setSurveyUuid(answerEntity.getSurveyId());
-//        surveyResponse.setTenantId(answerEntity.getCity());
-//
-//        // Validate tenant ID based on survey response
-//        if(StringUtils.equalsIgnoreCase(tenantIdBasedOnSurveyId,"pb.punjab")){
-//            surveyValidator.validateCityIsProvided(answerEntity.getCity());
-////            surveyValidator.validateCityIsProvided(surveyResponse.getTenantId());
-//        }
-//        surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);
-//        String uuid = answerRequest.getUser().getUuid();
-////        surveyValidator.validateWhetherCitizenAlreadyResponded(answerEntity, uuid);
-//        surveyValidator.validateAnswers(answerEntity);
-//
-//        AuditDetails auditDetails = AuditDetails.builder()
-//                .createdBy(uuid)
-//                .lastModifiedBy(uuid)
-//                .createdTime(System.currentTimeMillis())
-//                .lastModifiedTime(System.currentTimeMillis())
-//                .build();
-//        List<ScorecardSectionResponse> enrichedSectionResponses = answerEntity.getAnswers().stream()
-//                .collect(Collectors.groupingBy(Answer::getSectionUuid)).entrySet().stream()
-//                .map(entry -> {
-//                    List<ScorecardQuestionResponse> enrichedQuestionResponses = entry.getValue().stream()
-//                            .map(answer -> {
-//                                String questionStatement = questionRepository.findQuestionStatementByUuid(answer.getQuestionUuid());
-//
-//                                String existingUuid = getExistingAnswerUuid(answer.getUuid());
-//                                String uuidToUse = existingUuid != null ? existingUuid : UUID.randomUUID().toString();
-//                                if (StringUtils.isBlank(questionStatement)) {
-//                                    throw new CustomException("EG_SS_QUESTION_NOT_FOUND", "question not found with id " + answer.getQuestionUuid());
-//                                }
-//                                answer.setUuid(uuidToUse);
-////                                answer.setSurveyUuid(answerEntity.getSurveyId());
-//                                answer.setSurveyResponseUuid(surveyResponse.getUuid());
-//                                answer.setAuditDetails(auditDetails);
-////                                answer.setCitizenId(uuid);
-//                                surveyResponse.setCitizenId(uuid);
-//
-//                                return ScorecardQuestionResponse.builder()
-//                                        .city(answerEntity.getCity())
-//                                        .questionUuid(answer.getQuestionUuid())
-//                                        .questionStatement(questionStatement)
-//                                        .answerUuid(answer.getAnswerUuid())
-//                                        .answer(answer.getAnswer())
-//                                        .comments(answer.getComments())
-//                                        .build();
-//                            }).collect(Collectors.toList());
-//                    producer.push(applicationProperties.getSubmitAnswerScorecardSurveyTopic(), answerRequest);
-//                    return ScorecardSectionResponse.builder()
-//                            .sectionUuid(entry.getKey())
-//                            .questionResponses(enrichedQuestionResponses)
-//                            .build();
-//                }).collect(Collectors.toList());
-//
-//        return ScorecardAnswerResponse.builder()
-//                .surveyUuid(answerEntity.getSurveyId())
-//                .citizenId(uuid)
-//                .sectionResponses(enrichedSectionResponses)
-//                .auditDetails(auditDetails)
-//                .build();
-//
-//    }
-
     public ScorecardSubmitResponse submitResponse(AnswerRequestNew answerRequest) {
         SurveyResponseNew surveyResponse = answerRequest.getSurveyResponse();
         String tenantIdBasedOnSurveyId = fetchTenantIdBasedOnSurveyId(surveyResponse.getSurveyUuid());
         surveyResponse.setUuid(UUID.randomUUID().toString());
         if (answerRequest.getSurveyResponse().getStatus()==null)
         	answerRequest.getSurveyResponse().setStatus(org.egov.egovsurveyservices.utils.SurveyServiceConstants.DRAFT);
-        	
-        	
-        //        if(surveyResponse.getStatus()==null) {
-//            surveyResponse.setStatus("draft");
-//        }
-//        if(surveyResponse.getStatus()=="submitted"){
-//        }
+
         // Validate tenant ID based on survey response
         if(StringUtils.equalsIgnoreCase(tenantIdBasedOnSurveyId,"pb.punjab")){
             surveyValidator.validateCityIsProvided(surveyResponse.getTenantId());
             surveyResponse.setTenantId(surveyResponse.getCity());
-//            surveyValidator.validateCityIsProvided(surveyResponse.getTenantId());
         }
         surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);
         String uuid = answerRequest.getUser().getUuid();
-//        surveyValidator.validateWhetherCitizenAlreadyResponded(surveyResponse, uuid);
         surveyValidator.validateAnswers(surveyResponse);
 
         AuditDetails auditDetails = AuditDetails.builder()
@@ -278,8 +199,6 @@ public class ScorecardSurveyService {
                                     throw new CustomException("EG_SS_QUESTION_NOT_FOUND", "question not found with id " + answer.getQuestionUuid());
                                 }
                                 answer.setUuid(uuidToUse);
-//                                answer.setSurveyUuid(surveyResponseNew.getSurveyId());
-//                                answer.setSurveyResponseUuid(surveyResponse.getUuid());
                                 answer.setAuditDetails(auditDetails);
                                 if (answer.getAnswerDetails() != null) {
                                     answer.getAnswerDetails().forEach(detail -> {
@@ -289,11 +208,9 @@ public class ScorecardSurveyService {
                                         detail.setAnswerType(question.getType().toString());
                                     });
                                 }
-//                                answer.setCitizenId(uuid);
                                 surveyResponse.setCitizenId(uuid);
 
                                 return ScorecardQuestionResponse.builder()
-//                                        .city(surveyResponse.getTenantId())
                                         .questionUuid(answer.getQuestionUuid())
                                         .questionStatement(question.getQuestionStatement())
                                         .answerUuid(answer.getUuid())

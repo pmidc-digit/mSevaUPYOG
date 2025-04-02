@@ -53,6 +53,9 @@ const EmployeeApp = ({ path, url, userType }) => {
   const EditChallan = Digit?.ComponentRegistryService?.getComponent("MCollectEditChallan");
   const NewChallan = Digit?.ComponentRegistryService?.getComponent("MCollectNewChallan");
   const SearchReceiptPage = Digit?.ComponentRegistryService?.getComponent("SearchReceipt");
+  const SearchChallanPage = Digit?.ComponentRegistryService?.getComponent("SearchChallan");
+  const SearchBillPage = Digit?.ComponentRegistryService?.getComponent("SearchBill");
+  const GroupBillPage = Digit?.ComponentRegistryService?.getComponent("GroupBill");
 
   return (
     <Switch>
@@ -90,6 +93,9 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/challansearch/:challanno`} component={() => <EmployeeChallan />} />
           <PrivateRoute path={`${path}/modify-challan/:challanNo`} component={() => <EditChallan />} />{" "}
           <PrivateRoute path={`${path}/search-receipt`} component={() => <SearchReceiptPage />} />{" "}
+          <PrivateRoute path={`${path}/search-challan`} component={() => <SearchChallanPage />} />{" "}
+          <PrivateRoute path={`${path}/search-bill`} component={() => <SearchBillPage />} />{" "}
+          <PrivateRoute path={`${path}/group-bill`} component={() => <GroupBillPage />} />{" "}
         </div>
       </React.Fragment>
     </Switch>

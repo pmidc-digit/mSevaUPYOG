@@ -313,12 +313,14 @@ public class ScorecardSurveyService {
             throw new CustomException("EG_SS_SURVEY_UUID_CITIZEN_UUID_ERR","surveyUuid and citizenUuid cannot be null");
         }
             List<AnswerNew> answers = surveyRepository.getAnswers(criteria.getSurveyUuid(),criteria.getCitizenId());
-        return buildScorecardAnswerResponse(answers,criteria);
+        String surveyResponseStatus = surveyRepository.getSurveyResponseStatus(criteria.getSurveyUuid(), criteria.getCitizenId());
+        ScorecardAnswerResponse scorecardAnswerResponse = buildScorecardAnswerResponse(answers, criteria);
+        scorecardAnswerResponse.setStatus(surveyResponseStatus);
+        return scorecardAnswerResponse;
     }
 
     private ScorecardAnswerResponse buildScorecardAnswerResponse(List<AnswerNew> answers, AnswerFetchCriteria criteria) {
         Map<String, List<ScorecardQuestionResponse>> sectionResponsesMap = new HashMap<>();
-
         for (AnswerNew answer : answers) {
             ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
                     .questionUuid(answer.getQuestionUuid())

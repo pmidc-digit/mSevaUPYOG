@@ -121,6 +121,17 @@ public class ScorecardSurveyRepository {
         return jdbcTemplate.query(query, preparedStmtList.toArray(), new AnswerRowMapper());
     }
 
+    public String getSurveyResponseStatus(String surveyUuid, String citizenId) {
+        String query = surveyQueryBuilder.getSurveyResponseStatus();
+        try {
+            return jdbcTemplate.queryForObject(query, new Object[]{surveyUuid, citizenId}, String.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null; // No existing response found
+        }
+    }
+
+
+
     public String fetchTenantIdBasedOnSurveyId(String surveyId) {
         if (ObjectUtils.isEmpty(surveyId))
             throw new CustomException("EG_SS_SURVEYID_ERR", "please provide a valid surveyId");

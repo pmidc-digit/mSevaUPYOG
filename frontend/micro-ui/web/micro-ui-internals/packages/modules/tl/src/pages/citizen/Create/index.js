@@ -145,20 +145,32 @@ const CreateTradeLicence = ({ parentRoute }) => {
         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
         return (
           <Route path={`${match.path}/${routeObj.route}`} key={index}>
-            <Component
-              config={{ texts, inputs, key, isSkipEnabled }}
-              onSelect={handleSelect}
-              onSkip={handleSkip}
-              t={t}
-              formData={params}
-              onAdd={handleMultiple}
-              userType="citizen"
-            />
+            <div className="pageCard">
+              <h1 style={{ color: "black", fontFamily: "Noto Sans,sans-serif", fontSize: "28px", fontWeight: "500" }}>
+                {t("Trade Licence New Application")}
+              </h1>
+              <div style={{ border: "1px solid #DFE0E2", marginBottom: "50px" }}></div>
+              <Component
+                config={{ texts, inputs, key, isSkipEnabled }}
+                onSelect={handleSelect}
+                onSkip={handleSkip}
+                t={t}
+                formData={params}
+                onAdd={handleMultiple}
+                userType="citizen"
+              />
+            </div>
           </Route>
         );
       })}
       <Route path={`${match.path}/check`}>
-        <CheckPage onSubmit={createProperty} value={params} />
+        <div className="pageCard">
+          <h1 style={{ color: "black", fontFamily: "Noto Sans,sans-serif", fontSize: "28px", fontWeight: "500" }}>
+            {t("Trade Licence New Application")}
+          </h1>
+          <div style={{ border: "1px solid #DFE0E2", marginBottom: "50px" }}></div>
+          <CheckPage onSubmit={createProperty} value={params} />
+        </div>
       </Route>
       <Route path={`${match.path}/acknowledgement`}>
         <TLAcknowledgement data={params} onSuccess={onSuccess} onUpdateSuccess={onUpdateSuccess} />

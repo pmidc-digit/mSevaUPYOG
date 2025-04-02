@@ -1,0 +1,26 @@
+/* Base styles for the form */
+.form-container {
+    display: grid;
+    gap: 16px; /* Space between fields */
+}
+
+/* 3 fields per row for medium to large screens */
+@media (min-width: 900px) {
+    .form-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* 2 fields per row for small screens */
+@media (min-width: 480px) and (max-width: 899px) {
+    .form-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* 1 field per row for very small screens */
+@media (max-width: 479px) {
+    .form-container {
+        grid-template-columns: 1fr;
+    }
+}

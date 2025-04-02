@@ -75,8 +75,9 @@ const SelectOwnershipProof = ({ t, config, onSelect, userType, formData }) => {
 
   return (
     <React.Fragment>
+    <div className="step-form-wrapper">
     {window.location.href.includes("/citizen") ? <Timeline currentStep={3}/> : null}
-    <FormStep config={config} onSelect={handleSubmit} onSkip={onSkip} t={t} isDisabled={!uploadedFile || error}>
+    <FormStep config={config} onSelect={handleSubmit} onSkip={onSkip} t={t} isDisabled={!uploadedFile || error} cardStyle={{ boxShadow: "none" }}>
       <CardLabelDesc style={{ fontWeight: "unset" }}>{t(`TL_UPLOAD_OWNERSHIP_RESTRICTIONS_TYPES`)}</CardLabelDesc>
       <CardLabelDesc style={{ fontWeight: "unset" }}>{t(`TL_UPLOAD_RESTRICTIONS_SIZE`)}</CardLabelDesc>
       <CardLabel>{`${t("TL_CATEGORY_DOCUMENT_TYPE")}`}</CardLabel>
@@ -103,6 +104,7 @@ const SelectOwnershipProof = ({ t, config, onSelect, userType, formData }) => {
       {error ? <div style={{ height: "20px", width: "100%", fontSize: "20px", color: "red", marginTop: "5px" }}>{error}</div> : ""}
       <div style={{ disabled: "true", height: "20px", width: "100%" }}></div>
     </FormStep>
+    </div>
     </React.Fragment>
   );
 };

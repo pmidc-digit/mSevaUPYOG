@@ -48,6 +48,7 @@ const SelectTradeName = ({ t, config, onSelect, value, userType, formData }) => 
 
   return (
     <React.Fragment>
+      <div className="step-form-wrapper">
       {window.location.href.includes("/citizen") ? <Timeline /> : null}
       <FormStep
         config={config}
@@ -55,6 +56,7 @@ const SelectTradeName = ({ t, config, onSelect, value, userType, formData }) => 
         onSkip={onSkip}
         t={t}
         isDisabled={!TradeName}
+        cardStyle = {{ boxShadow: "none"}}
       >
         <CardLabel>{`${t("TL_LOCALIZATION_TRADE_NAME")}`}</CardLabel>
         <TextInput
@@ -69,6 +71,7 @@ const SelectTradeName = ({ t, config, onSelect, value, userType, formData }) => 
           {...(validation = { pattern: "^[a-zA-Z0-9 ]*$", isRequired: true, title: t("TL_INVALID_TRADE_NAME") })}
         />
       </FormStep>
+      </div>
       {<CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t("TL_LICENSE_ISSUE_YEAR_INFO_MSG") + FY} />}
     </React.Fragment>
   );

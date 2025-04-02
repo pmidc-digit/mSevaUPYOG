@@ -64,6 +64,7 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
                                             .uuid(sectionUuid)
                                             .title(rs.getString("section_title"))
                                             .weightage(rs.getBigDecimal("section_weightage"))
+                                            .sectionOrder(rs.getInt("section_order"))
                                             .questions(new ArrayList<>())
                                             .build();
                                     surveyMap.get(surveyUuid).getSections().add(newSection);

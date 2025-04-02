@@ -229,7 +229,6 @@ public class ScorecardSurveyService {
                                         detail.setAnswerType(question.getType().toString());
                                     });
                                 }
-                                // Update existing AnswerDetails instead of creating new ones
                                 if (answer.getAnswerDetails() != null) {
                                     answer.getAnswerDetails().forEach(detail -> {
                                         String existingAnswerDetailUuid = getExistingAnswerDetailUuid(detail.getAnswerUuid());
@@ -313,22 +312,22 @@ public class ScorecardSurveyService {
         if(criteria.getSurveyUuid()==null || criteria.getCitizenId()==null){
             throw new CustomException("EG_SS_SURVEY_UUID_CITIZEN_UUID_ERR","surveyUuid and citizenUuid cannot be null");
         }
-            List<Answer> answers = surveyRepository.getAnswers(criteria.getSurveyUuid(),criteria.getCitizenId());
+            List<AnswerNew> answers = surveyRepository.getAnswers(criteria.getSurveyUuid(),criteria.getCitizenId());
         return buildScorecardAnswerResponse(answers,criteria);
     }
 
-    private ScorecardAnswerResponse buildScorecardAnswerResponse(List<Answer> answers, AnswerFetchCriteria criteria) {
+    private ScorecardAnswerResponse buildScorecardAnswerResponse(List<AnswerNew> answers, AnswerFetchCriteria criteria) {
         Map<String, List<ScorecardQuestionResponse>> sectionResponsesMap = new HashMap<>();
 
-        for (Answer answer : answers) {
+        for (AnswerNew answer : answers) {
             ScorecardQuestionResponse questionResponse = ScorecardQuestionResponse.builder()
                     .questionUuid(answer.getQuestionUuid())
-//                    .city(answer.getCity())
                     .questionStatement(answer.getQuestionStatement())
-//                    .answerResponse(answer)//correct this for getAnswers
-                    .answerUuid(answer.getAnswerUuid())
+                    .answerUuid(answer.getUuid())
                     .comments(answer.getComments())
+                    .answerResponse(answer)
                     .build();
+
             sectionResponsesMap.computeIfAbsent(answer.getSectionUuid(), k -> new ArrayList<>()).add(questionResponse);
         }
 

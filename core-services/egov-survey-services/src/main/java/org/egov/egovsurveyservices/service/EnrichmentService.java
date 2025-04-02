@@ -70,8 +70,10 @@ public class EnrichmentService {
 
         BigDecimal totalSectionWeightage = BigDecimal.ZERO;
 
-        for (Section section : sections) {
+        for (int i = 0; i < sections.size(); i++) {
+            Section section = sections.get(i);
             section.setUuid(UUID.randomUUID().toString());
+            section.setSectionOrder(i + 1);
             totalSectionWeightage = totalSectionWeightage.add(section.getWeightage());
 
             List<QuestionWeightage> questionWeightages = section.getQuestions();

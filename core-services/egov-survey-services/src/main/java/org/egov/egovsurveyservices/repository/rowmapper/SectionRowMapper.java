@@ -27,6 +27,7 @@ public class SectionRowMapper implements ResultSetExtractor<List<Section>> {
                         .uuid(rs.getString("uuid"))
                         .weightage(rs.getBigDecimal("weightage"))
                         .title(rs.getString("title"))
+                        .sectionOrder(rs.getInt("sectionorder"))
                         .build();
             }
             sectionMap.put(uuid, section);

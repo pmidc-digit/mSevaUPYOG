@@ -52,6 +52,7 @@ public class ScorecardSurveyQueryBuilder {
                     "section.uuid AS section_uuid, " +
                     "section.title AS section_title, " +
                     "section.weightage AS section_weightage, " +
+                    "section.sectionorder AS section_order, " +
 
                     // Question fields
                     "question.uuid AS question_uuid, " +
@@ -168,7 +169,7 @@ public class ScorecardSurveyQueryBuilder {
     }
 
     public String fetchSectionListBasedOnSurveyId() {
-        return "SELECT uuid, surveyuuid, title, weightage FROM eg_ss_survey_section WHERE surveyuuid = ?";
+        return "SELECT uuid, surveyuuid, title, weightage,sectionorder FROM eg_ss_survey_section WHERE surveyuuid = ?";
     }
 
     public String getCitizenResponseExistsQuery() {
@@ -217,8 +218,15 @@ public class ScorecardSurveyQueryBuilder {
                 "answer.createdtime, " +
                 "answer.lastmodifiedtime, " +
                 "question.questionstatement, " +
-                "ansdetail.*, " +
-                "surveyresponse.* " +
+                "ansdetail.uuid AS answer_detail_uuid,"+
+                "ansdetail.answeruuid AS answer_detail_answeruuid," +
+                "ansdetail.answertype AS answer_detail_type," +
+                "ansdetail.answercontent AS answer_detail_content," +
+                "ansdetail.weightage AS answer_detail_weightage," +
+                "surveyresponse.uuid AS survey_response_uuid," +
+                "surveyresponse.surveyuuid AS survey_uuid," +
+                "surveyresponse.citizenid AS survey_citizen_id," +
+                "surveyresponse.tenantid AS survey_tenant_id " +
                 "FROM public.eg_ss_answer AS answer " +
                 "LEFT JOIN public.eg_ss_question AS question " +
                 "ON answer.questionuuid = question.uuid " +
@@ -240,7 +248,4 @@ public class ScorecardSurveyQueryBuilder {
         return "SELECT uuid FROM eg_ss_answer_detail WHERE answeruuid = ?";
     }
 
-//    public String fetchTenantIdBasedOnSurveyResponseId() {
-//        return "SELECT tenantid FROM eg_ss_survey_response WHERE uuid = ?";
-//    }
 }

@@ -113,7 +113,7 @@ public class ScorecardSurveyRepository {
         }
     }
 
-    public List<Answer> getAnswers(String surveyUuid, String citizenId) {
+    public List<AnswerNew> getAnswers(String surveyUuid, String citizenId) {
         String query=surveyQueryBuilder.getAnswers();
         List<Object> preparedStmtList = new ArrayList<>();
         preparedStmtList.add(surveyUuid);

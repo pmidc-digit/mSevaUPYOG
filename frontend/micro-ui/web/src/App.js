@@ -8,7 +8,7 @@ import {
   initSWACHComponents
 } from "@mseva/digit-ui-module-swach"
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
-import { PTModule, PTLinks, PTComponents } from "@mseva/digit-ui-module-pt";
+import { PTModule, PTLinks, PTComponents, PTReducers } from "@mseva/digit-ui-module-pt";
 import {
   MCollectModule,
   MCollectLinks,
@@ -107,6 +107,7 @@ initCustomisationComponents();
 const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
   hrms:  HRMSReducers(initData),
+  pt:  PTReducers(initData),
   ws: WSReducers(initData),
   engagement: SurveyReducers(initData)
 });

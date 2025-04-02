@@ -1,0 +1,475 @@
+export const newConfig = [
+    {
+      head: "Personal Details",
+      stepNumber: 1,
+    "body": [
+          {
+              "route": "map",
+              "component": "PTSelectGeolocation",
+              "nextStep": "pincode",
+              "hideInEmployee": true,
+              "key": "address",
+              "texts": {
+                  "header": "PT_GEOLOCATON_HEADER",
+                  "cardText": "PT_GEOLOCATION_TEXT",
+                  "nextText": "PT_COMMON_NEXT",
+                  "skipAndContinueText": "CORE_COMMON_SKIP_CONTINUE"
+              }
+          },
+          {
+              "route": "pincode",
+              "component": "PTSelectPincode",
+              "texts": {
+                  "headerCaption": "PT_PROPERTY_LOCATION_CAPTION",
+                  "header": "PT_PINCODE_LABEL",
+                  "cardText": "PT_PINCODE_TEXT",
+                  "submitBarLabel": "PT_COMMON_NEXT",
+                  "skipText": "CORE_COMMON_SKIP_CONTINUE"
+              },
+              "withoutLabel": true,
+              "key": "address",
+              "nextStep": "address",
+              "type": "component"
+          },
+          {
+              "route": "address",
+              "component": "PTSelectAddress",
+              "withoutLabel": true,
+              "texts": {
+                  "headerCaption": "PT_PROPERTY_LOCATION_CAPTION",
+                  "header": "CS_FILE_APPLICATION_PROPERTY_LOCATION_ADDRESS_TEXT",
+                  "cardText": "CS_FILE_APPLICATION_PROPERTY_LOCATION_CITY_MOHALLA_TEXT",
+                  "submitBarLabel": "PT_COMMON_NEXT"
+              },
+              "key": "address",
+              "nextStep": "street",
+              "isMandatory": true,
+              "type": "component"
+          },
+          {
+              "type": "component",
+              "route": "street",
+              "component": "PTSelectStreet",
+              "key": "address",
+              "withoutLabel": true,
+              "texts": {
+                  "headerCaption": "PT_PROPERTY_LOCATION_CAPTION",
+                  "header": "CS_FILE_APPLICATION_PROPERTY_LOCATION_ADDRESS_TEXT",
+                  "cardText": "PT_STREET_TEXT",
+                  "submitBarLabel": "PT_COMMON_NEXT"
+              },
+              "nextStep": "existingPropertyId",
+          },
+          {
+            "type": "component",
+            "isMandatory": true,
+            "component": "ExistingPropertyId",
+            "key": "existingPropertyId",
+            "withoutLabel": true,
+          },
+          {
+            "type": "component",
+            "isMandatory": true,
+            "component": "SurveyId",
+            "key": "surveyId",
+            "withoutLabel": true,
+          },
+          {
+            "type": "component",
+            "isMandatory": true,
+            "component": "YearOfCreation",
+            "key": "yearOfCreation",
+            "withoutLabel": true,
+          },
+        //   {
+        //     "type": "component",
+        //     "route": "proof",
+        //     "component": "Proof",
+        //     "withoutLabel": true,
+        //     "texts": {
+        //         "headerCaption": "PT_PROPERTY_LOCATION_CAPTION",
+        //         "header": "PT_PROOF_OF_ADDRESS_HEADER",
+        //         "cardText": "",
+        //         "nextText": "PT_COMMONS_NEXT",
+        //         "submitBarLabel": "PT_COMMONS_NEXT"
+        //     },
+        //     "key": "address",
+        //     "nextStep": "owner-ship-details@0",
+        //     "hideInEmployee": true
+        // }
+      ]
+    },
+    {
+        head: "ES_NEW_APPLICATION_PROPERTY_ASSESSMENT",
+        stepNumber: 2,
+        "body": [
+        //   {
+        //       "route": "info",
+        //       "component": "PropertyTax",
+        //       "nextStep": "isResidential",
+        //       "hideInEmployee": true,
+        //       "key": "Documents"
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "isResidential",
+        //       "isMandatory": true,
+        //       "component": "IsResidential",
+        //       "texts": {
+        //           "headerCaption": "",
+        //           "header": "PT_PROPERTY_DETAILS_RESIDENTIAL_PROPERTY_HEADER",
+        //           "cardText": "PT_PROPERTY_DETAILS_RESIDENTIAL_PROPERTY_TEXT",
+        //           "submitBarLabel": "PT_COMMON_NEXT"
+        //       },
+        //       "key": "isResdential",
+        //       "withoutLabel": true,
+        //       "hideInEmployee": true,
+        //       "nextStep": {
+        //           "PT_COMMON_YES": "property-type",
+        //           "PT_COMMON_NO": "property-usage-type"
+        //       }
+        //   },
+          {
+              "type": "component",
+              "route": "property-usage-type",
+              "isMandatory": true,
+              "component": "PropertyUsageType",
+              "texts": {
+                  "headerCaption": "PT_ASSESMENT_INFO_USAGE_TYPE",
+                  "header": "PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER",
+                  "cardText": "PT_PROPERTY_DETAILS_USAGE_TYPE_TEXT",
+                  "submitBarLabel": "PT_COMMONS_NEXT"
+              },
+              "nextStep": "property-type",
+              "key": "usageCategoryMajor",
+              "withoutLabel": true
+          },
+          {
+              "type": "component",
+              "isMandatory": true,
+              "component": "ProvideSubUsageType",
+              "key": "usageCategoryMinor",
+              "withoutLabel": true
+          },
+          {
+              "type": "component",
+              "route": "provide-sub-usage-type",
+              "isMandatory": true,
+              "component": "ProvideSubUsageType",
+              "texts": {
+                  "headerCaption": "PT_ASSESMENT_INFO_USAGE_TYPE",
+                  "header": "PT_ASSESSMENT_FLOW_SUBUSAGE_HEADER",
+                  "cardText": "PT_ASSESSMENT_FLOW_SUBUSAGE_TEXT",
+                  "submitBarLabel": "PT_COMMON_NEXT"
+              },
+              "key": "units",
+              "withoutLabel": true,
+              "nextStep": {
+                  "yes": "is-any-part-of-this-floor-unoccupied",
+                  "no": "provide-sub-usage-type-of-rented-area"
+              },
+              "hideInEmployee": true
+          },
+          {
+              "type": "component",
+              "route": "property-type",
+              "isMandatory": true,
+              "component": "PropertyType",
+              "texts": {
+                  "headerCaption": "",
+                  "header": "PT_ASSESMENT1_PROPERTY_TYPE",
+                  "cardText": "",
+                  "submitBarLabel": "PT_COMMONS_NEXT"
+              },
+              "nextStep": {
+                  "COMMON_PROPTYPE_BUILTUP_INDEPENDENTPROPERTY": "number-of-floors",
+                  "COMMON_PROPTYPE_BUILTUP_SHAREDPROPERTY": "provide-floor-no",
+                  "COMMON_PROPTYPE_VACANT": "area"
+              },
+              "key": "PropertyType",
+              "withoutLabel": true
+          },
+          {
+              "type": "component",
+              "isMandatory": true,
+              "component": "Area",
+              "key": "landarea",
+              "withoutLabel": true
+          },
+          {
+            "type": "component",
+            "key": "address",
+            // "isMandatory": true,
+            "component": "VasikaDetails",
+            "key": "vasikaDetails",
+            "withoutLabel": true,
+          },
+          {
+            "type": "component",
+            // "isMandatory": true,
+            "component": "AllotmentDetails",
+            "key": "allottmentDetails",
+            "withoutLabel": true,
+          },
+          {
+            "type": "component",
+            "isMandatory": true,
+            "component": "BusinessName",
+            "key": "businessName",
+            "withoutLabel": true,
+          },
+          {
+            "type": "component",
+            //"isMandatory": true,
+            "component": "Remarks",
+            "key": "remarks",
+            "withoutLabel": true,
+          },
+        //   {
+        //       "type": "component",
+        //       "isMandatory": true,
+        //       "component": "Electricity",
+        //       "key": "electricity",
+        //       "withoutLabel": true,
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "isMandatory": true,
+        //       "component": "UID",
+        //       "key": "uid",
+        //       "withoutLabel": true,
+        //       "hideInEmployee": true
+        //   },
+         {
+              "type": "component",
+              "isMandatory": true,
+              "component": "PropertyStructureDetails",
+              "key": "propertyStructureDetails",
+              "withoutLabel": true,
+              "hideInEmployee": true
+          },
+        //   {
+        //       "type": "component",
+        //       "route": "electricity",
+        //       "isMandatory": true,
+        //       "component": "Electricity",
+        //       "texts": {
+        //           "headerCaption": "",
+        //           "header": "PT_ASSESSMENT_FLOW_AREA_HEADER",
+        //           "cardText": "PT_SELFOCCUPIED_AREA",
+        //           "submitBarLabel": "PT_COMMON_NEXT"
+        //       },
+        //       "key": "units",
+        //       "withoutLabel": true,
+        //       "nextStep": {
+        //           "yes": "rental-details",
+        //           "no": "provide-sub-usage-type",
+        //           "vacant": "map"
+        //       },
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "uid",
+        //       "isMandatory": true,
+        //       "component": "UID",
+        //       "texts": {
+        //           "headerCaption": "",
+        //           "header": "PT_ASSESSMENT_FLOW_AREA_HEADER",
+        //           "cardText": "PT_SELFOCCUPIED_AREA",
+        //           "submitBarLabel": "PT_COMMON_NEXT"
+        //       },
+        //       "key": "units",
+        //       "withoutLabel": true,
+        //       "nextStep": {
+        //           "yes": "rental-details",
+        //           "no": "provide-sub-usage-type",
+        //           "vacant": "map"
+        //       },
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "area",
+        //       "isMandatory": true,
+        //       "component": "Area",
+        //       "texts": {
+        //           "headerCaption": "",
+        //           "header": "PT_ASSESSMENT_FLOW_AREA_HEADER",
+        //           "cardText": "PT_SELFOCCUPIED_AREA",
+        //           "submitBarLabel": "PT_COMMON_NEXT"
+        //       },
+        //       "key": "units",
+        //       "withoutLabel": true,
+        //       "nextStep": {
+        //           "yes": "rental-details",
+        //           "no": "provide-sub-usage-type",
+        //           "vacant": "map"
+        //       },
+        //       "hideInEmployee": true
+        //   },
+          {
+              "type": "component",
+              "route": "number-of-floors",
+              "isMandatory": true,
+              "component": "PropertyFloorDetails",
+              "texts": {
+                  "headerCaption": "",
+                  "header": "BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL",
+                  "cardText": "PT_PROPERTY_DETAILS_NO_OF_FLOORS_TEXT",
+                  "submitBarLabel": "PT_COMMONS_NEXT"
+              },
+              "nextStep": "number-of-basements@0",
+              "key": "noOfFloors",
+              "withoutLabel": true
+          },
+        //   {
+        //       "type": "component",
+        //       "component": "Units",
+        //       "key": "units",
+        //       "withoutLabel": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "provide-floor-no",
+        //       "isMandatory": true,
+        //       "component": "ProvideFloorNo",
+        //       "texts": {
+        //           "headerCaption": "",
+        //           "header": "PT_FLOOR_NUMBER_HEADER",
+        //           "cardText": "",
+        //           "submitBarLabel": "PT_COMMONS_NEXT"
+        //       },
+        //       "nextStep": "floordetails",
+        //       "key": "Floorno",
+        //       "withoutLabel": true,
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "is-this-floor-self-occupied",
+        //       "isMandatory": true,
+        //       "component": "IsThisFloorSelfOccupied",
+        //       "texts": {
+        //           "headerCaption": "",
+        //           "header": "PT_ASSESSMENT_FLOW_FLOOR_OCC_HEADER",
+        //           "cardText": "PT_ASSESSMENT_FLOW_FLOOR_OCC_TEXT",
+        //           "submitBarLabel": "PT_COMMON_NEXT"
+        //       },
+        //       "key": "units",
+        //       "withoutLabel": true,
+        //       "nextStep": {
+        //           "PT_YES_IT_IS_SELFOCCUPIED": "provide-sub-usage-type",
+        //           "PT_YES_IT_IS_SELFOCCUPIED1": "is-any-part-of-this-floor-unoccupied",
+        //           "PT_PARTIALLY_RENTED_OUT": "area",
+        //           "PT_PARTIALLY_RENTED_OUT1": "area",
+        //           "PT_FULLY_RENTED_OUT": "provide-sub-usage-type-of-rented-area",
+        //           "PT_FULLY_RENTED_OUT1": "rental-details"
+        //       },
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "number-of-basements@0",
+        //       "isMandatory": true,
+        //       "component": "PropertyBasementDetails",
+        //       "texts": {
+        //           "headerCaption": "",
+        //           "header": "PT_PROPERTY_DETAILS_NO_OF_BASEMENTS_HEADER",
+        //           "cardText": "",
+        //           "submitBarLabel": "PT_COMMONS_NEXT"
+        //       },
+        //       "nextStep": {
+        //           "PT_NO_BASEMENT_OPTION": "floordetails",
+        //           "PT_ONE_BASEMENT_OPTION": "floordetails",
+        //           "PT_TWO_BASEMENT_OPTION": "floordetails"
+        //       },
+        //       "key": "noOofBasements",
+        //       "withoutLabel": true,
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "floordetails",
+        //       "isMandatory": true,
+        //       "component": "GroundFloorDetails",
+        //       "texts": {
+        //           "headerCaption": "",
+        //           "cardText": "PT_PROPERTY_DETAILS_FLOOR_DETAILS_TEXT",
+        //           "submitBarLabel": "Next"
+        //       },
+        //       "nextStep": "is-this-floor-self-occupied",
+        //       "key": "units",
+        //       "withoutLabel": true,
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "rental-details",
+        //       "isMandatory": true,
+        //       "component": "RentalDetails",
+        //       "texts": {
+        //           "header": "PT_ASSESSMENT_FLOW_RENTAL_DETAIL_HEADER",
+        //           "cardText": "",
+        //           "submitBarLabel": "PT_COMMON_NEXT"
+        //       },
+        //       "key": "units",
+        //       "withoutLabel": true,
+        //       "nextStep": "is-any-part-of-this-floor-unoccupied",
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "provide-sub-usage-type-of-rented-area",
+        //       "isMandatory": true,
+        //       "component": "ProvideSubUsageTypeOfRentedArea",
+        //       "texts": {
+        //           "headerCaption": "PT_ASSESMENT_INFO_USAGE_TYPE",
+        //           "header": "PT_ASSESSMENT_FLOW_RENT_SUB_USAGE_HEADER",
+        //           "cardText": "PT_ASSESSMENT_FLOW_SUBUSAGE_TEXT",
+        //           "submitBarLabel": "PT_COMMON_NEXT"
+        //       },
+        //       "key": "units",
+        //       "withoutLabel": true,
+        //       "nextStep": "rental-details",
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "is-any-part-of-this-floor-unoccupied",
+        //       "isMandatory": true,
+        //       "component": "IsAnyPartOfThisFloorUnOccupied",
+        //       "texts": {
+        //           "header": "PT_ASSESSMENT_FLOW_ISUNOCCUPIED_HEADER",
+        //           "cardText": "PT_ASSESSMENT_FLOW_ISUNOCCUPIED_TEXT",
+        //           "submitBarLabel": "PT_COMMON_NEXT"
+        //       },
+        //       "key": "units",
+        //       "withoutLabel": true,
+        //       "nextStep": {
+        //           "PT_COMMON_NO": "map",
+        //           "PT_COMMON_YES": "un-occupied-area"
+        //       },
+        //       "hideInEmployee": true
+        //   },
+        //   {
+        //       "type": "component",
+        //       "route": "un-occupied-area",
+        //       "isMandatory": true,
+        //       "component": "UnOccupiedArea",
+        //       "texts": {
+        //           "header": "PT_ASSESSMENT_FLOW_UNOCCUPIED_AREA_HEADER",
+        //           "cardText": "PT_ASSESSMENT_FLOW_UNOCCUPIED_AREA_TEXT",
+        //           "submitBarLabel": "PT_COMMON_NEXT",
+        //           "skipText": ""
+        //       },
+        //       "key": "units",
+        //       "withoutLabel": true,
+        //       "nextStep": "map",
+        //       "hideInEmployee": true
+        //   }
+      ]
+      },
+  ]
+  

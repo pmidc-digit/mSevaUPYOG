@@ -1,8 +1,9 @@
-import { FormComposer, Loader,Modal ,Card , CardHeader, StatusTable,Row } from "@mseva/digit-ui-react-components";
+import { FormComposer, Loader,Modal ,Card , CardHeader, StatusTable, Row } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { newConfig } from "../../../config/Create/config";
+import  YearOfCreation from "../../../../src/pageComponents/YearOfCreation.js"
 
 const NewApplication = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -137,7 +138,7 @@ const NewApplication = () => {
        allotmentNo: data?.allottmentDetails?.allotmentNo,
        allotmentDate: data?.allottmentDetails?.allotmentDate,
        businessName: data?.businessName,
-       //yearConstruction: data?.yearOfCreation,
+       yearConstruction: data?.yearOfCreation,
        remarks: data?.remarks
       },
       channel: "CFC_COUNTER", // required
@@ -295,6 +296,25 @@ let conf =[
           //   "key": "yearOfCreation",
           //   "withoutLabel": true,
           // },
+          {
+            type: "component",
+            route: "YearOfCreation",
+            isMandatory: true,
+            component: YearOfCreation, // Use the imported YearOfCreation component
+            texts: {
+              headerCaption: "PROPERTY_DETAILS",
+              header: "YEAR_OF_CREATION_HEADER",
+              cardText: "TEXT",
+              submitBarLabel: "PT_COMMON_NEXT",
+              // headerCaption: "PT_PROPERTY_DETAILS",
+              // header: "PT_YEAR_OF_CREATION_HEADER",
+              // cardText: "PT_YEAR_OF_CREATION_TEXT",
+              // submitBarLabel: "PT_COMMON_NEXT",
+            },
+            key: "YearOfCreation",
+            withoutLabel: true,
+            nextStep: "proof", // Replace with the actual next step key
+          },
           {
               "type": "component",
               "route": "landmark",
@@ -880,6 +900,7 @@ let conf =[
       ]
   }
 ]
+
   return (
     <div>   
     <FormComposer

@@ -102,6 +102,12 @@ import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/Acknow
 //import PTCitizenFeedbackPopUp from "./pageComponents/PTCitizenFeedbackPopUp";
 
 import PTSelectLandmark from "./pageComponents/PTSelectLandmark";
+import NewPropertyStepForm from "../src/pages/employee/NewApplication/NewApplicationStepForm/NewPropertyStepForm";
+import PTNewFormStepOne from "../src/pages/employee/NewApplication/NewApplicationStepForm/PTNewFormStepOne";
+import PTNewFormStepTwo from "../src/pages/employee/NewApplication/NewApplicationStepForm/PTNewFormStepTwo";
+import getRootReducer from "./redux/reducers";
+
+export const PTReducers = getRootReducer;
 
 const componentsToRegister = {
   PTLandArea,
@@ -194,7 +200,10 @@ const componentsToRegister = {
   AcknowledgementCF,
   CitizenFeedback,
   PTSelectLandmark,
-  SearchPTIDProp
+  SearchPTIDProp,
+  NewPropertyStepForm,
+  PTNewFormStepOne,
+  PTNewFormStepTwo,
 };
 
 const addComponentsToRegistry = () => {

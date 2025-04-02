@@ -53,6 +53,7 @@ const CreateSurveyQuestions = () => {
   });
 
   function parsePayloadData(data) {
+    console.log("data",data)
     const payload = data.questions.map((item) => {
       let obj = {};
   
@@ -62,10 +63,11 @@ const CreateSurveyQuestions = () => {
           categoryId: item.category.value,
           questionStatement: item.questionStatement.trim(),
           type: item.type.value,
+         // required: item.required,
           options: item.options.map((option) => ({
             optionText: option.title.trim(),
             weightage: parseInt(option.optionWeightage),
-            required: item?.required
+            
           })),
         };
       } else {
@@ -74,7 +76,7 @@ const CreateSurveyQuestions = () => {
           categoryId: item.category.value,
           questionStatement: item.questionStatement.trim(),
           type: item.type.value,
-          required: item?.required
+          //required: item.required
         };
       }
   
@@ -93,7 +95,7 @@ const CreateSurveyQuestions = () => {
     console.log("Payload: ", payload);
     //return;
     try {
-      const response = await Digit.Surveys.createQuestions(payload);
+       const response = await Digit.Surveys.createQuestions(payload);
       if (response?.Questions?.length > 0) {
         setIsLoading(false);
         setShowToast({ isError: false, label: QUESTIONS_CREATED });

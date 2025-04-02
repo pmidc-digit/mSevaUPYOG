@@ -16,6 +16,7 @@ const FillQuestions = (props) => {
   });
   const [pincode,setPincode]=useState('')
   const [isgeoLoc,setIsGeoLoc]=useState(false)
+ // let isgeoLoc = false
   const [hasCitizenDetails,setHasCitizenDetails]=useState(false)
 
   const {
@@ -133,6 +134,7 @@ const FillQuestions = (props) => {
 
   console.log("data", data);
   useEffect(()=>{
+    const fetchSurveyAnswers = async () => {
   let payload={
     "surveyUuid":data.uuid,
     "citizenId": prevProps.userInfo.uuid
@@ -174,33 +176,40 @@ const FillQuestions = (props) => {
     } catch (error) {
       console.log(error);
     }
-  },[])
-  const fetchPosition =  () => {
+  };
+
+  fetchSurveyAnswers();
+
+  },[data.uuid, prevProps.userInfo.uuid])
+  const fetchPosition = async () => {
     navigator.geolocation.getCurrentPosition(
        (position) => {
          // Update both latitude and longitude in a single state object
-         setIsGeoLoc(true)
+       //  setIsGeoLoc(true)
+       isgeoLoc= true
          setGeoLocation({
            latitude: position.coords.latitude,
            longitude: position.coords.longitude,
          });
          console.log("Latitude:", position.coords.latitude);
          console.log("Longitude:", position.coords.longitude);
-        
+         
        },
        (err) => {
          if (err.code === 1) {
-           setIsGeoLoc(false)
+           //setIsGeoLoc(false)
+           isgeoLoc=false
            alert("Location access is mandatory. Without it, we cannot proceed.");
          } else {
            console.log("Error fetching location:", err.message);
-           setIsGeoLoc(false)
+          // setIsGeoLoc(false)
+          isgeoLoc=false
          }
        }
      );
    };
   useEffect(()=>{
-    
+    const fetchUserDetails = async () => {
     if((prevProps?.userType).toUpperCase()==="CITIZEN"){
     const data = {
       userName: prevProps?.userInfo?.mobileNumber,
@@ -257,7 +266,11 @@ const FillQuestions = (props) => {
         console.log(error);
       });
     }
-  },[])
+    
+  };
+
+  fetchUserDetails();
+  },[prevProps?.userType, prevProps?.userInfo])
  
   // useEffect(() => {
   //   const savedData = localStorage.getItem("surveyFormData");
@@ -960,13 +973,46 @@ const FillQuestions = (props) => {
   });
 
   useEffect(() => {
-    console.log("hii",hasCitizenDetails,(prevProps?.userType).toUpperCase())
-    if(((prevProps?.userType).toUpperCase()==="EMPLOYEE") || ((prevProps?.userType).toUpperCase()==="CITIZEN" && hasCitizenDetails)){
-      console.log("hii")
-    fetchPosition(); // Automatically fetch location on component mount
+    let locationFetched = false;
+    console.log("hii",hasCitizenDetails,(prevProps?.userType).toUpperCase(),isgeoLoc)
+    if(((prevProps?.userType).toUpperCase()==="EMPLOYEE" && !isgeoLoc)  || ((prevProps?.userType).toUpperCase()==="CITIZEN" && hasCitizenDetails)){
+     
+    // if (!isgeoLoc) {
+    //   fetchPosition(); // Automatically fetch location on component mount
+    //   locationFetched = true;
+    // }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        // Update both latitude and longitude in a single state object
+        setIsGeoLoc(true)
+        console.log("isgeolocc")
+     // isgeoLoc= true
+        setGeoLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        console.log("Latitude:", position.coords.latitude);
+        console.log("Longitude:", position.coords.longitude);
+        return;
+      },
+      (err) => {
+        if (err.code === 1) {
+          setIsGeoLoc(false)
+         // isgeoLoc=false
+          alert("Location access is mandatory. Without it, we cannot proceed.");
+          return;
+        } else {
+          console.log("Error fetching location:", err.message);
+          setIsGeoLoc(false)
+
+        // isgeoLoc=false
+        }
+      }
+    );
+   
     }
   
-  }, []);
+  }, [prevProps?.userType, hasCitizenDetails]);
   console.log("city code",prevProps?.citizenData?.city?.code)
   console.log("formData",formData)
   console.log("pincode,location",pincode,geoLocation)
@@ -978,6 +1024,7 @@ const FillQuestions = (props) => {
     setLocality(e)
   }
   console.log("formData",formData)
+  console.log("isgeoLoc",isgeoLoc,(prevProps?.userType).toUpperCase()==="EMPLOYEE")
   return (
 (   ( ((prevProps?.userType).toUpperCase()==="EMPLOYEE" || prevProps?.citizenFill) && isgeoLoc===true) || (prevProps?.userType).toUpperCase()==="CITIZEN" && hasCitizenDetails===true && isgeoLoc===true)?(
     <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>

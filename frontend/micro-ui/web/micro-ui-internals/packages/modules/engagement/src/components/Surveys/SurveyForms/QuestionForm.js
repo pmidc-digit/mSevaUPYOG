@@ -343,7 +343,7 @@ console.log("surveyQuestionConfig",surveyQuestionConfig.options[0].optionWeighta
 
         <div className="newSurveyForm_answer">{renderAnswerComponent(surveyQuestionConfig?.type)}</div>
         <div className="newSurveyForm_actions">
-          <div>
+          {/* <div>
             <Controller
               defaultValue={defaultQuestionValues.required}
               name={`questions[${index}].required`}
@@ -361,7 +361,7 @@ console.log("surveyQuestionConfig",surveyQuestionConfig.options[0].optionWeighta
                 />
               )}
             />
-          </div>
+          </div> */}
           {noOfQuestions > 1 && <div className="newSurveyForm_seprator" />}
           {noOfQuestions > 1 && (
             <div className={`pointer ${disableInputs ? "disabled-btn" : ""}`} onClick={() => dispatch({ type: "removeForm", payload: { uuid } })}>

@@ -12,6 +12,21 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       link: "/digit-ui/employee/mcollect/new-application",
       roles: [],
     },
+    {
+      text: "Search Receipt",
+      link: "/digit-ui/employee/mcollect/search-receipt",
+      roles: [],
+    },
+    {
+      text: "Search Challan",
+      link: "/digit-ui/employee/mcollect/search-receipt",
+      roles: [],
+    },
+    {
+      text: "Bill Genie",
+      link: "/digit-ui/employee/mcollect/search-receipt",
+      roles: [],
+    },
   ];
 
   useEffect(() => {

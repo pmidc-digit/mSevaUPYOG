@@ -15,9 +15,9 @@ const GetActionMessage = ({ action }) => {
 };
 
 const BannerPicker = ({ response }) => {
-  const { complaints } = response;
+  const { swach } = response;
 
-  if (complaints && complaints.response && complaints.response.responseInfo) {
+  if (swach && swach.response && swach.response.responseInfo) {
     sessionStorage.removeItem("type" );
     sessionStorage.removeItem("pincode");
     sessionStorage.removeItem("tenantId");
@@ -26,8 +26,8 @@ const BannerPicker = ({ response }) => {
     sessionStorage.removeItem("propertyid")
     return (
       <Banner
-        message={GetActionMessage(complaints.response.ServiceWrappers[0].workflow)}
-        complaintNumber={complaints.response.ServiceWrappers[0].service.serviceRequestId}
+        message={GetActionMessage(swach.response.ServiceWrappers[0].workflow)}
+        complaintNumber={swach.response.ServiceWrappers[0].service.serviceRequestId}
         successful={true}
       />
     );
@@ -43,7 +43,7 @@ const Response = (props) => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const [enable, setEnable] = useState(false)
-  let id= appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
+  let id= appState?.swach?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
   const tenantId = window.Digit.SessionStorage.get("Employee.tenantId");
   const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId:tenantId, id },{ enabled: enable ? true : false}); // Respnse Page is changed
   
@@ -56,12 +56,12 @@ const Response = (props) => {
   };
   return (
     <Card>
-      {appState.complaints.response && <BannerPicker response={appState} />}
+      {appState.swach.response && <BannerPicker response={appState} />}
       <CardText>{t("ES_COMMON_TRACK_COMPLAINT_TEXT")}</CardText>
       <Link to="/digit-ui/employee">
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>
-      {appState.complaints.response && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={(e) =>{handleDownloadPdf(e)}} />}
+      {appState.swach.response && <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={(e) =>{handleDownloadPdf(e)}} />}
     </Card>
   );
 };

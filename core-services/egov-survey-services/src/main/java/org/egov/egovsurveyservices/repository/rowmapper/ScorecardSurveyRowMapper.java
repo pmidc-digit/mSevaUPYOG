@@ -15,8 +15,9 @@ import java.util.Map;
 public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<ScorecardSurveyEntity>> {
 
     @Override
-    public List<ScorecardSurveyEntity> extractData(ResultSet rs) {
+    public List<ScorecardSurveyEntity> extractData(ResultSet rs) throws SQLException {
         Map<String, ScorecardSurveyEntity> surveyMap = new HashMap<>();
+        Map<String, Map<String, Question>> sectionQuestionMap = new HashMap<>();
         Map<String, List<QuestionOption>> questionOptionsMap = new HashMap<>(); // Map to store options by question UUID
 
         try {
@@ -63,6 +64,7 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
                                             .uuid(sectionUuid)
                                             .title(rs.getString("section_title"))
                                             .weightage(rs.getBigDecimal("section_weightage"))
+                                            .sectionOrder(rs.getInt("section_order"))
                                             .questions(new ArrayList<>())
                                             .build();
                                     surveyMap.get(surveyUuid).getSections().add(newSection);
@@ -71,65 +73,81 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
                                     throw new RuntimeException(e);
                                 }
                             });
-
+                    sectionQuestionMap.computeIfAbsent(sectionUuid, k -> new HashMap<>());
                     String questionUuid = rs.getString("question_uuid");
                     if (questionUuid != null) {
-                        Question question = Question.builder()
-                                .uuid(questionUuid)
-                                .surveyId(rs.getString("question_surveyid"))
-                                .questionStatement(rs.getString("question_statement"))
-//                                .options(Arrays.asList(rs.getString("question_options").split(",")))
-                                .type(org.egov.egovsurveyservices.web.models.enums.Type.fromValue(rs.getString("question_type")))
-                                .status(org.egov.egovsurveyservices.web.models.enums.Status.fromValue(rs.getString("question_status")))
-                                .required(rs.getBoolean("question_required"))
-                                .auditDetails(AuditDetails.builder()
-                                        .createdBy(rs.getString("question_createdby"))
-                                        .lastModifiedBy(rs.getString("question_lastmodifiedby"))
-                                        .createdTime(rs.getLong("question_createdtime"))
-                                        .lastModifiedTime(rs.getLong("question_lastmodifiedtime"))
-                                        .build())
-                                .categoryId(rs.getString("question_categoryid"))
-                                .tenantId(rs.getString("question_tenantid"))
-                                .build();
+                        Question question = sectionQuestionMap.get(sectionUuid).computeIfAbsent(questionUuid, k -> {
+                            Question newQuestion;
+                            try {
+                                newQuestion = Question.builder()
+                                        .uuid(questionUuid)
+                                        .options(new ArrayList<>())
+                                        .surveyId(rs.getString("question_surveyid"))
+                                        .questionStatement(rs.getString("question_statement"))
+                                        //                                .options(Arrays.asList(rs.getString("question_options").split(",")))
+                                        .type(org.egov.egovsurveyservices.web.models.enums.Type.fromValue(rs.getString("question_type")))
+                                        .status(org.egov.egovsurveyservices.web.models.enums.Status.fromValue(rs.getString("question_status")))
+                                        .required(rs.getBoolean("question_required"))
+                                        .auditDetails(AuditDetails.builder()
+                                                .createdBy(rs.getString("question_createdby"))
+                                                .lastModifiedBy(rs.getString("question_lastmodifiedby"))
+                                                .createdTime(rs.getLong("question_createdtime"))
+                                                .lastModifiedTime(rs.getLong("question_lastmodifiedtime"))
+                                                .build())
+                                        .categoryId(rs.getString("question_categoryid"))
+                                        .tenantId(rs.getString("question_tenantid"))
+                                        .build();
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
+                            }
 
-                        QuestionWeightage questionWeightage = QuestionWeightage.builder()
-                                .questionUuid(questionUuid)
-                                .sectionUuid(sectionUuid)
-                                .qorder(rs.getLong("question_weightage_qorder"))
-                                .weightage(rs.getBigDecimal("question_weightage"))
-                                .required(rs.getBoolean("question_weightage_required"))
-                                .question(question)
-                                .build();
+                            QuestionWeightage questionWeightage;
+                            try {
+                                questionWeightage = QuestionWeightage.builder()
+                                        .questionUuid(questionUuid)
+                                        .sectionUuid(sectionUuid)
+                                        .qorder(rs.getLong("question_weightage_qorder"))
+                                        .weightage(rs.getBigDecimal("question_weightage"))
+                                        .required(rs.getBoolean("question_weightage_required"))
+                                        .question(newQuestion)
+                                        .build();
+                            } catch (SQLException e) {
+                                throw new RuntimeException(e);
+                            }
 
-                        section.getQuestions().add(questionWeightage);
-                    }
+                            section.getQuestions().add(questionWeightage);
+                            return newQuestion;
+                        });
 
-                    // Handle QuestionOption
-                    String optionUuid = rs.getString("option_uuid");
-                    if (optionUuid != null) {
-                        QuestionOption questionOption = QuestionOption.builder()
-                                .uuid(optionUuid)
-                                .questionUuid(questionUuid)
-                                .optionText(rs.getString("option_text"))
-                                .weightage(rs.getDouble("option_weightage"))
-                                .build();
+                        // Handle QuestionOption
+                        String optionUuid = rs.getString("option_uuid");
+                        if (optionUuid != null) {
+                            QuestionOption questionOption = QuestionOption.builder()
+                                    .uuid(optionUuid)
+                                    .questionUuid(questionUuid)
+                                    .optionText(rs.getString("option_text"))
+                                    .weightage(rs.getDouble("option_weightage"))
+                                    .build();
 
-                        questionOptionsMap.computeIfAbsent(questionUuid, k -> new ArrayList<>()).add(questionOption);
+                            question.getOptions().add(questionOption);
+
+//                            questionOptionsMap.computeIfAbsent(questionUuid, k -> new ArrayList<>()).add(questionOption);
+                        }
                     }
                 }
-            }
 
-            // Add options to their respective questions
-            surveyMap.values().forEach(survey -> {
-                survey.getSections().forEach(section -> {
-                    section.getQuestions().forEach(questionWeightage -> {
-                        Question question = questionWeightage.getQuestion();
-                        List<QuestionOption> options = questionOptionsMap.getOrDefault(question.getUuid(), new ArrayList<>());
-                        question.setOptions(options);
-                    });
-                });
-            });
-        } catch (SQLException e) {
+                // Add options to their respective questions
+//                surveyMap.values().forEach(survey -> {
+//                    survey.getSections().forEach(section -> {
+//                        section.getQuestions().forEach(questionWeightage -> {
+//                            Question question = questionWeightage.getQuestion();
+//                            List<QuestionOption> options = questionOptionsMap.getOrDefault(question.getUuid(), new ArrayList<>());
+//                            question.setOptions(options);
+//                        });
+//                    });
+//                });
+            }
+        }catch (SQLException e) {
             throw new RuntimeException("Error while extracting survey data", e);
         }
 

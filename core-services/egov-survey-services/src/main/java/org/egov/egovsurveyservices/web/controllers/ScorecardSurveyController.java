@@ -66,16 +66,13 @@ public class ScorecardSurveyController {
                 .build();
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-	
-	  @RequestMapping(value = "/survey/response/_answers", method =
-	  RequestMethod.POST) public ResponseEntity<ScorecardAnswerResponse>
-	  getAnswers(@Valid @RequestBody RequestInfoWrapper
-	  requestInfoWrapper, @Valid @ModelAttribute AnswerFetchCriteria criteria) {
-	  ScorecardAnswerResponse answerResponse = surveyService.getAnswers(criteria);
-	 ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.
-	  getRequestInfo(), true); 
-	 answerResponse.setResponseInfo(responseInfo);
-			  return
-	  new ResponseEntity<>(answerResponse, HttpStatus.OK); }
+
+    @RequestMapping(value = "/survey/response/_answers", method = RequestMethod.POST)
+    public ResponseEntity<ScorecardAnswerResponse> getAnswers(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper, @Valid @ModelAttribute AnswerFetchCriteria criteria) {
+        ScorecardAnswerResponse answerResponse = surveyService.getAnswers(criteria);
+        ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
+        answerResponse.setResponseInfo(responseInfo);
+        return new ResponseEntity<>(answerResponse, HttpStatus.OK);
+    }
 	 
 }

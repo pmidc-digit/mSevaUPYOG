@@ -29,6 +29,9 @@ public class Section {
     @JsonProperty("weightage")
     private BigDecimal weightage;
 
+    @JsonProperty("sectionOrder")
+    private Integer sectionOrder;
+
     @NotNull
     @JsonProperty("questions")
     private List<QuestionWeightage> questions;

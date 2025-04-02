@@ -270,40 +270,40 @@ public class SurveyService {
 
     }
 
-    public AnswerResponse fetchSurveyResults(RequestInfo requestInfo, SurveyResultsSearchCriteria criteria) {
-
-        // Validate whether employee is trying to fetch survey results
-        //surveyValidator.validateUserType(requestInfo);
-
-        // Validate survey exists
-        List<SurveyEntity> surveyEntities = surveyRepository.fetchSurveys(SurveySearchCriteria.builder().isCountCall(Boolean.FALSE).uuid(criteria.getSurveyId()).build());
-
-        if(CollectionUtils.isEmpty(surveyEntities))
-            throw new CustomException("EG_SY_DOES_NOT_EXIST_ERR", "The provided survey does not exist");
-
-        List<Answer> answers = new ArrayList<>();
-        List<String> listOfCitizensWhoResponded = new ArrayList<>();
-
-        // If citizen is accessing API, enrich his uuid in answers being fetched, in case of employee, fetch all citizens who responded
-        if(requestInfo.getUserInfo().getType().equals(CITIZEN))
-            listOfCitizensWhoResponded = Collections.singletonList(requestInfo.getUserInfo().getUuid());
-        else
-            listOfCitizensWhoResponded = surveyRepository.fetchCitizensUuid(criteria);
-
-//        log.info(listOfCitizensWhoResponded.toString());
-
-        // Fetch answers given by the fetched citizens for the requested survey
-        answers = surveyRepository.fetchSurveyResults(SurveyResultsSearchCriteria.builder().citizenUuids(listOfCitizensWhoResponded).surveyId(criteria.getSurveyId()).build());
-
-        AnswerResponse response = AnswerResponse.builder()
-                                                .answers(answers)
-                                                .surveyId(surveyEntities.get(0).getUuid())
-                                                .title(surveyEntities.get(0).getTitle())
-                                                .tenantId(surveyEntities.get(0).getTenantId())
-                                                .description(surveyEntities.get(0).getDescription())
-                                                .build();
-        return response;
-    }
+//    public AnswerResponse fetchSurveyResults(RequestInfo requestInfo, SurveyResultsSearchCriteria criteria) {
+//
+//        // Validate whether employee is trying to fetch survey results
+//        //surveyValidator.validateUserType(requestInfo);
+//
+//        // Validate survey exists
+//        List<SurveyEntity> surveyEntities = surveyRepository.fetchSurveys(SurveySearchCriteria.builder().isCountCall(Boolean.FALSE).uuid(criteria.getSurveyId()).build());
+//
+//        if(CollectionUtils.isEmpty(surveyEntities))
+//            throw new CustomException("EG_SY_DOES_NOT_EXIST_ERR", "The provided survey does not exist");
+//
+//        List<Answer> answers = new ArrayList<>();
+//        List<String> listOfCitizensWhoResponded = new ArrayList<>();
+//
+//        // If citizen is accessing API, enrich his uuid in answers being fetched, in case of employee, fetch all citizens who responded
+//        if(requestInfo.getUserInfo().getType().equals(CITIZEN))
+//            listOfCitizensWhoResponded = Collections.singletonList(requestInfo.getUserInfo().getUuid());
+//        else
+//            listOfCitizensWhoResponded = surveyRepository.fetchCitizensUuid(criteria);
+//
+////        log.info(listOfCitizensWhoResponded.toString());
+//
+//        // Fetch answers given by the fetched citizens for the requested survey
+//        answers = surveyRepository.fetchSurveyResults(SurveyResultsSearchCriteria.builder().citizenUuids(listOfCitizensWhoResponded).surveyId(criteria.getSurveyId()).build());
+//
+//        AnswerResponse response = AnswerResponse.builder()
+//                                                .answers(answers)
+//                                                .surveyId(surveyEntities.get(0).getUuid())
+//                                                .title(surveyEntities.get(0).getTitle())
+//                                                .tenantId(surveyEntities.get(0).getTenantId())
+//                                                .description(surveyEntities.get(0).getDescription())
+//                                                .build();
+//        return response;
+//    }
 
     /**
      * Fetches total count of surveys in the system based on the search criteria

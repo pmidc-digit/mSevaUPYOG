@@ -11,7 +11,7 @@ public class ScorecardQueryBuilder {
     private JdbcTemplate jdbcTemplate;
 
     public String fetchSectionListBasedOnSurveyId() {
-        return "SELECT uuid, surveyuuid, title, weightage FROM eg_ss_survey_section WHERE surveyuuid = ?";
+        return "SELECT uuid, surveyuuid, title, weightage, sectionorder FROM eg_ss_survey_section WHERE surveyuuid = ?";
     }
 
     public String getCitizenResponseExistsQuery() {

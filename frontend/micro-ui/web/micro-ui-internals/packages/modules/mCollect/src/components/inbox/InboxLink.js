@@ -23,7 +23,7 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       roles: [],
     },
     {
-      text: "Bill Search",
+      text: "Search and Pay",
       link: "/digit-ui/employee/mcollect/search-bill",
       roles: [],
     },

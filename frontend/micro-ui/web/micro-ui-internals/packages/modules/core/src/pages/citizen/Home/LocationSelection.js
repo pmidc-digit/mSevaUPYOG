@@ -22,9 +22,10 @@ const LocationSelection = () => {
 
   function selectCity(city) {
     setSelectedCity(city);
+    console.log("selected city",city)
     setShowError(false);
   }
-
+  console.log("selected city",selectCity)
   const RadioButtonProps = useMemo(() => {
     return {
       options: cities,
@@ -38,6 +39,7 @@ const LocationSelection = () => {
   function onSubmit() {
     if (selectedCity) {
       Digit.SessionStorage.set("CITIZEN.COMMON.HOME.CITY", selectedCity);
+      localStorage.setItem("CITIZEN.CITY", selectedCity?.code);
       const redirectBackTo = location.state?.redirectBackTo;
       if (redirectBackTo) {
         history.replace(redirectBackTo);

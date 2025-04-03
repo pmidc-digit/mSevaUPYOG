@@ -11,6 +11,7 @@ const FillQuestions = (props) => {
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [city, setCity] = useState(null);
   const [submitted, setSubmitted] = useState(false)
+  const [localityList,setLocalityList]=useState(null)
   const [openQuesDetailsDialog, setOpenQuesDetailsDialog] = useState(false);
   const [geoLocation, setGeoLocation] = useState({
     latitude: null,
@@ -19,8 +20,20 @@ const FillQuestions = (props) => {
   const [pincode, setPincode] = useState('')
   const [isgeoLoc, setIsGeoLoc] = useState(false)
   // let isgeoLoc = false
-  const [hasCitizenDetails, setHasCitizenDetails] = useState(false)
-
+  const [hasCitizenDetails, setHasCitizenDetails] = useState(null)
+ // let { data: tenantlocalties, isLoadingLocality } = Digit.Hooks.useBoundaryLocalities(city, "revenue", { enabled: !!city }, t);
+  useEffect(() => {
+    (async () => {
+     
+      let response = await Digit.LocationService.getLocalities(city);
+      let __localityList = [];
+      if (response && response.TenantBoundary.length > 0) {
+        __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+      }
+      setLocalityList(__localityList);
+    })();
+  }, [city]);
+console.log("locality list",localityList)
   const {
     register: register,
     control: control,
@@ -57,7 +70,7 @@ const FillQuestions = (props) => {
       <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
         <h3 style={{ color: 'red', fontSize: '20px' }}>This Survey is already submitted. Cannot be reSubmitted</h3>
         <h4 style={{ fontSize: '16px' }}>Click on below button to go back</h4>
-        <button onClick={() => history.push("/digit-ui/employee/engagement/surveys/active-open-surveys")}
+        <button onClick={() => (prevProps?.userType).toUpperCase() === "CITIZEN"? history.push("/digit-ui/citizen/engagement/surveys/active-open-surveys"): history.push("/digit-ui/employee/engagement/surveys/active-open-surveys")}
           style={{
             padding: "10px 20px",
             border: "none",
@@ -158,6 +171,41 @@ const FillQuestions = (props) => {
   const data = prevProps.surveyDetails;
 
   console.log("data", data);
+  const fetchAnswer = async(status)=>{
+    let payload = {
+      "surveyUuid": data.uuid,
+      "citizenId": prevProps.userInfo.uuid
+    }
+    try {
+      Digit.Surveys.getAnswers(payload).then((response) => {
+        if (response?.sectionResponses.length>0) {
+          console.log("response", response)
+        
+          let result = {};
+
+          response.sectionResponses.forEach(section => {
+            let sectionObj = {};
+            section.questionResponses.forEach(question => {
+              console.log("answer", question)
+              sectionObj[question.questionUuid] = {...formData[section.sectionUuid][question.questionUuid],  answerUuid: question.answerUuid };
+            });
+            result[section.sectionUuid] = sectionObj;
+          });
+
+          setFormData(result)
+         if(status==="draft") {handleAutoSave()}
+         else{handleSubmitSurvey()}
+          return;
+        } else {
+          console.log(response);
+          if(status==="draft") {handleAutoSave()}
+          else{handleSubmitSurvey()}
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }
   useEffect(() => {
     const fetchSurveyAnswers = async () => {
       let payload = {
@@ -214,9 +262,9 @@ const FillQuestions = (props) => {
 
   }, [data.uuid, prevProps.userInfo.uuid])
   const fetchPosition = async () => {
-   
-    if (((prevProps?.userType).toUpperCase() === "EMPLOYEE" && !isgeoLoc && submitted===false) || ((prevProps?.userType).toUpperCase() === "CITIZEN" && hasCitizenDetails && submitted===false)) {
-  
+   console.log("inside fetch position",hasCitizenDetails,submitted)
+    // if (((prevProps?.userType).toUpperCase() === "EMPLOYEE" && !isgeoLoc && submitted===false) || ((prevProps?.userType).toUpperCase() === "CITIZEN" && hasCitizenDetails && submitted===false)) {
+  console.log("inside if of fetch position")
     navigator.geolocation.getCurrentPosition(
       (position) => {
         // Update both latitude and longitude in a single state object
@@ -243,7 +291,7 @@ const FillQuestions = (props) => {
         }
       }
     );
-  }
+ // }
   };
   const fetchUserDetails = async () => {
     // if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
@@ -449,7 +497,8 @@ const FillQuestions = (props) => {
       if (JSON.stringify(prevFormDataRef.current) !== JSON.stringify(formData)) {
         if ((prevProps.citizenFill && (userType).toLowerCase() === "employee") || (userType).toLowerCase() === "citizen") {
           prevFormDataRef.current = formData;
-          handleAutoSave();
+          // handleAutoSave();
+          fetchAnswer("draft")
         }
       }
     }, 10000);
@@ -524,7 +573,7 @@ const FillQuestions = (props) => {
         if (question.required === true && (value?.answer)?.length === 0) {
           newErrors[section.uuid] = {
             ...newErrors[section.uuid],
-            [question.question.uuid]: { ...newErrors[section.uuid]?.[question.question.uuid], answerRequired: `${question.questionStatement} is required*` },
+            [question.question.uuid]: { ...newErrors[section.uuid]?.[question.question.uuid], answerRequired: `${question.question.questionStatement} is required*` },
           }
           //newErrors[question.question.uuid].answerRequired = `${question.questionStatement} is required`
         }
@@ -548,6 +597,9 @@ const FillQuestions = (props) => {
     });
     if(locality===null){
       newErrors['locality'] = {answerRequired: 'Please select your locality'}
+    }
+    if(city===null){
+      newErrors['city'] = {answerRequired: 'Please select your city'}
     }
     setErrors(newErrors);
     console.log("errors", newErrors);
@@ -629,7 +681,8 @@ const FillQuestions = (props) => {
     if ((prevProps.citizenFill && (userType).toLowerCase() === "employee") || (userType).toLowerCase() === "citizen") {
       if (validateForm()) {
         console.log("Form submitted:", formData);
-        handleSubmitSurvey();
+      //  handleSubmitSurvey();
+      fetchAnswer("submit")
       }
     } else {
       setShowToast({ key: true, isError: true, label: `PLEASE FILL CITIZEN DETAILS` });
@@ -1165,9 +1218,13 @@ const FillQuestions = (props) => {
   console.log("city code", prevProps?.citizenData?.city?.code)
   console.log("formData", formData)
   console.log("pincode,location", pincode, geoLocation)
-  console.log("city", city?.code)
+  console.log("city", city)
   const handleCityChange = (e) => {
-    setCity(e)
+    console.log("city e",e.target.value)
+    setCity(e.target.value)
+  }
+  const handleLocalityChangeCitizen =(e)=>{
+    setLocality(e.target.value)
   }
   const handleLocalityChange = (e) => {
     setLocality(e)
@@ -1238,7 +1295,7 @@ const FillQuestions = (props) => {
               </>
               : <>
                 <CardLabel>{`${t("CITY")}`} <span className="check-page-link-button">*</span></CardLabel>
-                <Dropdown
+                {/* <Dropdown
                   required={true}
                   id="city"
                   name="city"
@@ -1249,7 +1306,24 @@ const FillQuestions = (props) => {
                   optionKey="i18nKey"
                   t={t}
                   selected={city || null}
-                />
+                /> */}
+                
+                <select id="dropdown" value={city} 
+                        onChange={(e) => {
+                       
+                        
+                          handleCityChange(e); 
+                        }}
+                       >
+        <option value="">--Please choose a city--</option>
+        {cities.map((option, index) => (
+          <option key={index} value={option.code}>
+            {option?.code}
+          </option>
+        ))}
+        </select>
+                 {errors && errors['city'] && (
+              <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: '500' }}>{errors?.['city'].answerRequired}</CardLabelError>)}
                 <CardLabel>{`${t("LOCALITY")}`} <span className="check-page-link-button">*</span></CardLabel>
 
                 {/* <Controller
@@ -1258,12 +1332,12 @@ const FillQuestions = (props) => {
          control={ control }
          rules={{required: t("REQUIRED_FIELD")}}
          render={({value, onBlur, onChange}) => ( */}
-                <Localities
+                {/* <Localities
                   selectLocality={(value) => {
 
                     handleLocalityChange(value);
                   }}
-                  tenantId={city?.code || ""}
+                  tenantId={city || ""}
                   boundaryType="revenue"
                   keepNull={false}
                   optionCardStyles={{ height: "600px", overflow: "auto", zIndex: "10" }}
@@ -1272,7 +1346,27 @@ const FillQuestions = (props) => {
                   disableLoader={true}
                   sortFn={(a, b) => (a.i18nkey < b.i18nkey ? -1 : 1)}
                 //onBlur={onBlur}
-                />
+                /> */}
+                  <select id="dropdown" value={locality} 
+                        onChange={(e) => {
+                       
+                        
+                          handleLocalityChangeCitizen(e); 
+                        }}
+                       >
+        <option value="">--Please choose a locality--</option>
+        {(city!==null && localityList!==null )&& (
+          <>
+        {localityList.map((option, index) => (
+          <option key={index} value={option.name}>
+            {option?.name}
+          </option>
+        ))}
+        </>
+        )}
+        </select>
+                 {errors && errors['locality'] && (
+              <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: '500' }}>{errors?.['locality'].answerRequired}</CardLabelError>)}
                 {/* )}  */}
                 {/* /> */}
 
@@ -1298,7 +1392,7 @@ const FillQuestions = (props) => {
                         <h3>{question.questionStatement}</h3>
                         <div className="surveyQuestion-wrapper">
                           <div style={{ display: "inline" }}>
-                            {index + 1}. {question.question.questionStatement} {question.question?.required && <span style={{ color: "red" }}>*</span>}
+                            {index + 1}. {question.question.questionStatement} {question?.required && <span style={{ color: "red" }}>*</span>}
                           </div>
                           {displayAnswerField(question.question.type, question.question, section)}
                           {errors[question.uuid] && <span className="error">{errors[question.uuid]}</span>}

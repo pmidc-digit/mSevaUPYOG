@@ -27,11 +27,13 @@ const SelectCommencementDate = ({ t, config, onSelect, userType, formData }) => 
   }
   return (
     <React.Fragment>
+    <div className="step-form-wrapper">
     {window.location.href.includes("/citizen") ? <Timeline /> : null}
-    <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!CommencementDate}>
+    <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!CommencementDate} cardStyle = {{ boxShadow: "none"}}>
       <CardLabel>{t("TL_NEW_TRADE_DETAILS_TRADE_COMM_DATE_LABEL")}</CardLabel>
       <DatePicker date={CommencementDate} name="CommencementDate" onChange={selectCommencementDate} disabled={isEdit} />
     </FormStep>
+    </div>
     </React.Fragment>
   );
 };

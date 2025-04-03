@@ -33,13 +33,17 @@ const SelectAccessoriesDetails = ({ t, config, onSelect, userType, formData }) =
 
   const { isLoading, data: Data = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "TradeLicense", "AccessoryCategory");
   const [accessories, SetAccessories] = useState([]);
-  const { data: billingSlabData } = Digit.Hooks.tl.useTradeLicenseBillingslab({ tenantId: TenantId, filters: {} }, {
-    select: (data) => {
-    return data?.billingSlab.filter((e) => e.accessoryCategory && (window.location.href.includes("renew-trade") ? "RENEWAL" : "NEW") && e.uom);
-    }});
+  const { data: billingSlabData } = Digit.Hooks.tl.useTradeLicenseBillingslab(
+    { tenantId: TenantId, filters: {} },
+    {
+      select: (data) => {
+        return data?.billingSlab.filter((e) => e.accessoryCategory && (window.location.href.includes("renew-trade") ? "RENEWAL" : "NEW") && e.uom);
+      },
+    }
+  );
 
   useEffect(() => {
-    if (billingSlabData  && billingSlabData?.length > 0) {
+    if (billingSlabData && billingSlabData?.length > 0) {
       const processedData =
         billingSlabData &&
         billingSlabData.reduce(
@@ -122,7 +126,7 @@ const SelectAccessoriesDetails = ({ t, config, onSelect, userType, formData }) =
     acc[i].accessorycount = "";
     acc[i].uom = "";
     setenableUOM(true);
-    acc[i].unit = value?.uom != null ?  value.uom : "";
+    acc[i].unit = value?.uom != null ? value.uom : "";
     Array.from(document.querySelectorAll("input")).forEach((input) => (input.value = ""));
     setUnitOfMeasure(value?.uom != null ? value.uom : null);
     // Data?.TradeLicense?.AccessoriesCategory.map((ob) => {
@@ -149,29 +153,28 @@ const SelectAccessoriesDetails = ({ t, config, onSelect, userType, formData }) =
   function selectUomValue(i, e) {
     setAccUOMError(null);
     if (isNaN(e.target.value)) setAccUOMError("TL_ONLY_NUM_ALLOWED");
-    if(!(e.target.value && parseFloat(e.target.value) > 0)){
-      setAccUOMError(t("TL_UOM_VALUE_GREATER_O"))
-      window.setTimeout(function(){
-        window.scrollTo(0,0);
+    if (!(e.target.value && parseFloat(e.target.value) > 0)) {
+      setAccUOMError(t("TL_UOM_VALUE_GREATER_O"));
+      window.setTimeout(function () {
+        window.scrollTo(0, 0);
       }, 0);
-    }
-    else{
-    if(fields?.[i]?.accessory && Number.isInteger(fields?.[i]?.accessory?.fromUom)){
-      if(!(e.target.value && parseInt(e.target.value) >= fields?.[i]?.accessory?.fromUom)){
-        setAccUOMError(`${t("TL_FILL_CORRECT_UOM_VALUE")} ${fields?.[i]?.accessory?.fromUom} - ${fields?.[i]?.accessory?.toUom}`);
-        window.setTimeout(function(){
-          window.scrollTo(0,0);
-        }, 0);
+    } else {
+      if (fields?.[i]?.accessory && Number.isInteger(fields?.[i]?.accessory?.fromUom)) {
+        if (!(e.target.value && parseInt(e.target.value) >= fields?.[i]?.accessory?.fromUom)) {
+          setAccUOMError(`${t("TL_FILL_CORRECT_UOM_VALUE")} ${fields?.[i]?.accessory?.fromUom} - ${fields?.[i]?.accessory?.toUom}`);
+          window.setTimeout(function () {
+            window.scrollTo(0, 0);
+          }, 0);
+        }
       }
-     }
-     if(fields?.[i]?.accessory && Number.isInteger(fields?.[i]?.accessory?.toUom)){
-     if(!(e.target.value && parseInt(e.target.value) <= fields?.[i]?.accessory?.toUom)){
-      setAccUOMError(`${t("TL_FILL_CORRECT_UOM_VALUE")} ${fields?.[i]?.accessory?.fromUom} - ${fields?.[i]?.accessory?.toUom}`);
-      window.setTimeout(function(){
-        window.scrollTo(0,0);
-      }, 0);
-       }
-     }
+      if (fields?.[i]?.accessory && Number.isInteger(fields?.[i]?.accessory?.toUom)) {
+        if (!(e.target.value && parseInt(e.target.value) <= fields?.[i]?.accessory?.toUom)) {
+          setAccUOMError(`${t("TL_FILL_CORRECT_UOM_VALUE")} ${fields?.[i]?.accessory?.fromUom} - ${fields?.[i]?.accessory?.toUom}`);
+          window.setTimeout(function () {
+            window.scrollTo(0, 0);
+          }, 0);
+        }
+      }
     }
     let acc = [...fields];
     acc[i].uom = e.target.value;
@@ -187,153 +190,163 @@ const SelectAccessoriesDetails = ({ t, config, onSelect, userType, formData }) =
     onSelect(config.key, formdata);
   };
 
-  function canMoveNext(){
-    if(!fields?.[0]?.accessory || !fields?.[0]?.accessorycount || (fields?.[0]?.unit && !fields?.[0]?.uom) || AccCountError || AccUOMError)
-    return true
-    else 
-    return false
+  function canMoveNext() {
+    if (!fields?.[0]?.accessory || !fields?.[0]?.accessorycount || (fields?.[0]?.unit && !fields?.[0]?.uom) || AccCountError || AccUOMError)
+      return true;
+    else return false;
   }
 
   const onSkip = () => onSelect();
   return (
     <React.Fragment>
-      {window.location.href.includes("/citizen") ? <Timeline /> : null}
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <FormStep
-          config={config}
-          onSelect={goNext}
-          onSkip={onSkip}
-          t={t}
-          forcedError={t(AccCountError) || t(AccUOMError)}
-          isDisabled={canMoveNext()}
-        >
-          {fields.map((field, index) => {
-            return (
-              <div key={`${field}-${index}`}>
-                <div
-                  style={{
-                    border: "solid",
-                    borderRadius: "5px",
-                    padding: "10px",
-                    paddingTop: "20px",
-                    marginTop: "10px",
-                    borderColor: "#f3f3f3",
-                    background: "#FAFAFA",
-                  }}
-                >
-                  <CardLabel>{`${t("TL_ACCESSORY_LABEL")}*`}</CardLabel>
-                  <LinkButton
-                    label={
+      <div className="step-form-wrapper">
+        {window.location.href.includes("/citizen") ? <Timeline /> : null}
+        {isLoading ? (
+          <Loader />
+        ) : (
+          <FormStep
+            config={config}
+            onSelect={goNext}
+            onSkip={onSkip}
+            t={t}
+            forcedError={t(AccCountError) || t(AccUOMError)}
+            isDisabled={canMoveNext()}
+            cardStyle={{ boxShadow: "none" }}
+          >
+            {fields.map((field, index) => {
+              return (
+                <div key={`${field}-${index}`}>
+                  <div
+                    style={{
+                      border: "solid",
+                      borderRadius: "5px",
+                      padding: "10px",
+                      paddingTop: "20px",
+                      marginTop: "10px",
+                      borderColor: "#f3f3f3",
+                      background: "#FAFAFA",
+                    }}
+                  >
+                    {fields.length > 1 && (
+                      <label style={{ width: "100px", display: "inline" }} onClick={(e) => handleRemove(index)}>
+                        <div>
+                          <span>
+                            <svg
+                              style={{ float: "right", position: "relative", cursor:"pointer"}}
+                              width="24"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z"
+                                fill={!(fields.length == 1) ? "#494848" : "#FAFAFA"}
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                      </label>
+                    )}
+                    <div className="form-container">
                       <div>
-                        <span>
-                          <svg
-                            style={{ float: "right", position: "relative", bottom: "32px" }}
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M1 16C1 17.1 1.9 18 3 18H11C12.1 18 13 17.1 13 16V4H1V16ZM14 1H10.5L9.5 0H4.5L3.5 1H0V3H14V1Z"
-                              fill={!(fields.length == 1) ? "#494848" : "#FAFAFA"}
-                            />
-                          </svg>
-                        </span>
+                        <CardLabel>{`${t("TL_ACCESSORY_LABEL")}*`}</CardLabel>
+                        {!isLoading ? (
+                          <RadioOrSelect
+                            t={t}
+                            optionKey="i18nKey"
+                            isMandatory={config.isMandatory}
+                            //options={[{ i18nKey: "a" }, { i18nKey: "a" }, { i18nKey: "a" }, { i18nKey: "a" }, { i18nKey: "a" }, { i18nKey: "a" }]}
+                            options={sortDropdownNames(accessories, "i18nKey", t) || []}
+                            selectedOption={field.accessory}
+                            onSelect={(e) => selectAccessory(index, e)}
+                            isPTFlow={true}
+                          />
+                        ) : (
+                          <Loader />
+                        )}
                       </div>
-                    }
-                    style={{ width: "100px", display: "inline" }}
-                    onClick={(e) => handleRemove(index)}
-                  />
-                  {!isLoading ? (
-                    <RadioOrSelect
-                      t={t}
-                      optionKey="i18nKey"
-                      isMandatory={config.isMandatory}
-                      //options={[{ i18nKey: "a" }, { i18nKey: "a" }, { i18nKey: "a" }, { i18nKey: "a" }, { i18nKey: "a" }, { i18nKey: "a" }]}
-                      options={sortDropdownNames( accessories, "i18nKey", t) || []}
-                      selectedOption={field.accessory}
-                      onSelect={(e) => selectAccessory(index, e)}
-                      isPTFlow={true}
-                    />
-                  ) : (
-                    <Loader />
-                  )}
-                  <CardLabel>{`${t("TL_ACCESSORY_COUNT_LABEL")}*`}</CardLabel>
-                  <TextInput
-                    style={{ background: "#FAFAFA" }}
-                    t={t}
-                    type={"text"}
-                    isMandatory={false}
-                    optionKey="i18nKey"
-                    name="AccessoryCount"
-                    value={field.accessorycount}
-                    onChange={(e) => selectAccessoryCount(index, e)}
-                    //disable={(isEditTrade || isRenewTrade) && (formData?.TradeDetails?.accessories.length - 1 < index ? false : field.accessorycount)}
-                    disable={isRenewTrade || isEditTrade ? !enableUOM : false}
-                    {...(validation = {
-                      isRequired: true,
-                      pattern: "[0-9]+",
-                      type: "text",
-                      title: t("TL_WRONG_UOM_COUNT_ERROR"),
-                    })}
-                  />
-                  <CardLabel>{`${t("TL_UNIT_OF_MEASURE_LABEL")}`}</CardLabel>
-                  <TextInput
-                    style={{ background: "#FAFAFA" }}
-                    t={t}
-                    type={"text"}
-                    isMandatory={false}
-                    optionKey="i18nKey"
-                    name="UnitOfMeasure"
-                    value={field.unit}
-                    onChange={(e) => selectUnitOfMeasure(index, e)}
-                    disable={true}
-                    /* {...(validation = {
+                      <div>
+                        <CardLabel>{`${t("TL_ACCESSORY_COUNT_LABEL")}*`}</CardLabel>
+                        <TextInput
+                          style={{ background: "#FAFAFA" }}
+                          t={t}
+                          type={"text"}
+                          isMandatory={false}
+                          optionKey="i18nKey"
+                          name="AccessoryCount"
+                          value={field.accessorycount}
+                          onChange={(e) => selectAccessoryCount(index, e)}
+                          //disable={(isEditTrade || isRenewTrade) && (formData?.TradeDetails?.accessories.length - 1 < index ? false : field.accessorycount)}
+                          disable={isRenewTrade || isEditTrade ? !enableUOM : false}
+                          {...(validation = {
+                            isRequired: true,
+                            pattern: "[0-9]+",
+                            type: "text",
+                            title: t("TL_WRONG_UOM_COUNT_ERROR"),
+                          })}
+                        />
+                      </div>
+                      <div>
+                        <CardLabel>{`${t("TL_UNIT_OF_MEASURE_LABEL")}`}</CardLabel>
+                        <TextInput
+                          style={{ background: "#FAFAFA" }}
+                          t={t}
+                          type={"text"}
+                          isMandatory={false}
+                          optionKey="i18nKey"
+                          name="UnitOfMeasure"
+                          value={field.unit}
+                          onChange={(e) => selectUnitOfMeasure(index, e)}
+                          disable={true}
+                          /* {...(validation = {
             isRequired: true,
             pattern: "^[a-zA-Z ]*$",
             type: "text",
             title: t("PT_NAME_ERROR_MESSAGE"),
           })} */
-                  />
-                  <CardLabel>{`${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")}*`}</CardLabel>
-                  <TextInput
-                    style={{ background: "#FAFAFA" }}
-                    t={t}
-                    type={"text"}
-                    isMandatory={false}
-                    optionKey="i18nKey"
-                    name="UomValue"
-                    value={field.uom}
-                    onChange={(e) => selectUomValue(index, e)}
-                    // disable={
-                    //   isEditTrade || isRenewTrade
-                    //     ? (isEditTrade || isRenewTrade) && (formData?.TradeDetails?.accessories.length - 1 < index ? false : field.uom)
-                    //     : !field.unit
-                    // }
-                    //disable={isUpdateProperty || isEditProperty}
-                    disable={isRenewTrade || isEditTrade ? !enableUOM : false}
-                    {...(validation = {
-                      isRequired: true,
-                      pattern: "[0-9]+",
-                      type: "text",
-                      title: t("TL_WRONG_UOM_VALUE_ERROR"),
-                    })}
-                  />
+                        />
+                      </div>
+                      <div>
+                        <CardLabel>{`${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")}*`}</CardLabel>
+                        <TextInput
+                          style={{ background: "#FAFAFA" }}
+                          t={t}
+                          type={"text"}
+                          isMandatory={false}
+                          optionKey="i18nKey"
+                          name="UomValue"
+                          value={field.uom}
+                          onChange={(e) => selectUomValue(index, e)}
+                          // disable={
+                          //   isEditTrade || isRenewTrade
+                          //     ? (isEditTrade || isRenewTrade) && (formData?.TradeDetails?.accessories.length - 1 < index ? false : field.uom)
+                          //     : !field.unit
+                          // }
+                          //disable={isUpdateProperty || isEditProperty}
+                          disable={isRenewTrade || isEditTrade ? !enableUOM : false}
+                          {...(validation = {
+                            isRequired: true,
+                            pattern: "[0-9]+",
+                            type: "text",
+                            title: t("TL_WRONG_UOM_VALUE_ERROR"),
+                          })}
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-          {/* <hr color="#d6d5d4" className="break-line"></hr> */}
-          <div style={{ justifyContent: "center", display: "flex", paddingBottom: "15px", color: "#FF8C00" }}>
-            <button type="button" style={{ paddingTop: "10px" }} onClick={() => handleAdd()}>
-              {`${t("TL_ADD_MORE_TRADE_ACC")}`}
-            </button>
-          </div>
-        </FormStep>
-      )}
+              );
+            })}
+            {/* <hr color="#d6d5d4" className="break-line"></hr> */}
+            <div style={{ justifyContent: "center", display: "flex", paddingBottom: "15px", color: "#FF8C00" }}>
+              <button type="button" style={{ paddingTop: "10px" }} onClick={() => handleAdd()}>
+                {`${t("TL_ADD_MORE_TRADE_ACC")}`}
+              </button>
+            </div>
+          </FormStep>
+        )}
+      </div>
     </React.Fragment>
   );
 };

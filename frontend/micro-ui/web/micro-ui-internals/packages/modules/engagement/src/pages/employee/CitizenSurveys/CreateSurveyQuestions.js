@@ -29,8 +29,8 @@ const CreateSurveyQuestions = () => {
       category: null,
       questionStatement: "",
       type: { title: t("MULTIPLE_ANSWER_TYPE"), i18Key: "MULTIPLE_ANSWER_TYPE", value: "MULTIPLE_ANSWER_TYPE" },
-      options: [{ id: Date.now(), title: `${t("CMN_OPTION")} 1` , optionWeightage:0}],
-      
+      options: [{ id: Date.now(), title: `${t("CMN_OPTION")} 1`, optionWeightage: 0 }],
+
       required: false,
       uuid: generateUUID(),
       qorder: null,
@@ -91,9 +91,8 @@ const CreateSurveyQuestions = () => {
     setIsLoading(true);
 
     const payload = { Questions: parsePayloadData(data) };
-    console.log("onSubmit create survey questions: \n", data);
-    console.log("Payload: ", payload);
-    //return;
+    //console.log("onSubmit create survey questions: \n", data);
+    //console.log("Payload: ", payload);
     try {
        const response = await Digit.Surveys.createQuestions(payload);
       if (response?.Questions?.length > 0) {

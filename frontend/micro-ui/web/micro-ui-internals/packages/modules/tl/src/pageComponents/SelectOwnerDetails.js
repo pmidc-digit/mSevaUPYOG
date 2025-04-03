@@ -177,33 +177,29 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData }) => {
         return false;
       } else return true;
     } else if (typeOfOwner === "MULTIOWNER") {
-      ownersData.forEach((ownerData, index)=>{
-        if (ownerData[index]?.gender===null){
+      ownersData.forEach((ownerData, index) => {
+        if (ownerData[index]?.gender === null) {
           setError("TL_ERROR_FILL_ALL_MANDATORY_DETAILS");
           return false;
-        }else return true;
+        } else return true;
       });
     }
   }
 
   const goNext = () => {
-    if (!checkMandatoryFieldsForEachOwner(formState) && (typeOfOwner==="SINGLEOWNER" || typeOfOwner==="INSTITUTIONAL")) {
+    if (!checkMandatoryFieldsForEachOwner(formState) && (typeOfOwner === "SINGLEOWNER" || typeOfOwner === "INSTITUTIONAL")) {
       let owner = formData.owners;
       let ownerStep;
       ownerStep = { ...owner, owners: formState };
       onSelect(config.key, ownerStep);
-    }
-    else if(checkMandatoryFieldsForEachOwner(formState)){
-      setError("please fill mandatory fields")
-    }
-    else if(typeOfOwner==="MULTIOWNER"){
-      if(formState?.length<2){
-        setError(t("TL_ERROR_MULTIPLE_OWNER"))
-      }
-      else if(checkMandatoryFieldsForEachOwner(formState)){
-        setError("please fill mandatory fields")
-      }
-      else{
+    } else if (checkMandatoryFieldsForEachOwner(formState)) {
+      setError("please fill mandatory fields");
+    } else if (typeOfOwner === "MULTIOWNER") {
+      if (formState?.length < 2) {
+        setError(t("TL_ERROR_MULTIPLE_OWNER"));
+      } else if (checkMandatoryFieldsForEachOwner(formState)) {
+        setError("please fill mandatory fields");
+      } else {
         let owner = formData.owners;
         let ownerStep;
         ownerStep = { ...owner, owners: formState };
@@ -217,184 +213,192 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData }) => {
   if (typeOfOwner === "INSTITUTIONAL") {
     return (
       <React.Fragment>
-        {window.location.href.includes("/citizen") ? <Timeline currentStep={2} /> : null}
-        <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false} forcedError={t(error)}>
-          {formState.map((field, index) => {
-            return (
-              <div key={`${field}-${index}`}>
-                <div>
-                  <CardLabel>{`${t("TL_INSTITUTION_NAME_LABEL")}*`}</CardLabel>
-                  <TextInput
-                    t={t}
-                    type={"text"}
-                    isMandatory={false}
-                    name="institutionName"
-                    value={field.institutionName}
-                    ValidationRequired={true}
-                    onChange={(e) => handleTextInputField(index, e, "institutionName")}
-                    //disable={isUpdateProperty || isEditProperty}
-                    {...{
-                      validation: {
-                        isRequired: true,
-                        pattern: "^[a-zA-Z_@./()#&+- ]*$",
-                        type: "text",
-                        title: t("TL_NAME_ERROR_MESSAGE"),
-                      },
-                    }}
-                  />
-                  <CardLabel>{`${t("TL_INSTITUTION_TYPE_LABEL")}*`}</CardLabel>
-                  <Dropdown
-                    t={t}
-                    option={institutionOwnershipTypeOptions}
-                    selected={field.subOwnerShipCategory}
-                    select={(value) => {
-                      handleDropdownInputField(index, value, "subOwnerShipCategory");
-                    }}
-                    optionKey="i18nKey"
-                  />
-                  <CardHeader>{t("TL_AUTHORIZED_PERSON_DETAILS")}</CardHeader>
-                  <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}`}</CardLabel>
-                  <TextInput
-                    t={t}
-                    type={"text"}
-                    isMandatory={false}
-                    name="name"
-                    value={field.name}
-                    onChange={(e) => handleTextInputField(index, e, "name")}
-                    ValidationRequired={true}
-                    {...{
-                      validation: {
-                        // isRequired: true,
-                        pattern: "^[a-z0-9]+( [a-z0-9]+)*$",
-                        type: "text",
-                        title: t("TL_NAME_ERROR_MESSAGE"),
-                      },
-                    }}
-                  />
-                  <CardLabel>{`${t("TL_NEW_OWNER_DESIG_LABEL")}`}</CardLabel>
-                  <TextInput
-                    t={t}
-                    type={"text"}
-                    isMandatory={false}
-                    name="designation"
-                    value={field.designation}
-                    onChange={(e) => handleTextInputField(index, e, "designation")}
-                    ValidationRequired={true}
-                    //disable={isUpdateProperty || isEditProperty}
-                    {...{
-                      validation: {
-                        // isRequired: true,
-                        pattern: "^[a-z0-9]+( [a-z0-9]+)*$",
-                        type: "text",
-                        title: t("TL_NAME_ERROR_MESSAGE"),
-                      },
-                    }}
-                  />
-                  <CardLabel>{`${t("TL_MOBILE_NUMBER_LABEL")}*`}</CardLabel>
-                  <div className="field-container">
-                    <span className="employee-card-input employee-card-input--front" style={{ marginTop: "-1px" }}>
-                      +91
-                    </span>
+        <div className="step-form-wrapper">
+          {window.location.href.includes("/citizen") ? <Timeline currentStep={2} /> : null}
+          <FormStep
+            config={config}
+            onSelect={goNext}
+            onSkip={onSkip}
+            t={t}
+            isDisabled={false}
+            forcedError={t(error)}
+            cardStyle={{ boxShadow: "none" }}
+            s
+          >
+            {formState.map((field, index) => {
+              return (
+                <div key={`${field}-${index}`}>
+                  <div>
+                    <CardLabel>{`${t("TL_INSTITUTION_NAME_LABEL")}*`}</CardLabel>
                     <TextInput
-                      type={"text"}
                       t={t}
+                      type={"text"}
                       isMandatory={false}
-                      name="mobilenumber"
-                      value={field.mobilenumber}
-                      onChange={(e) => handleTextInputField(index, e, "mobilenumber")}
+                      name="institutionName"
+                      value={field.institutionName}
                       ValidationRequired={true}
+                      onChange={(e) => handleTextInputField(index, e, "institutionName")}
                       //disable={isUpdateProperty || isEditProperty}
                       {...{
                         validation: {
                           isRequired: true,
-                          pattern: "[6-9]{1}[0-9]{9}",
-                          type: "tel",
-                          title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
+                          pattern: "^[a-zA-Z_@./()#&+- ]*$",
+                          type: "text",
+                          title: t("TL_NAME_ERROR_MESSAGE"),
                         },
                       }}
                     />
-                  </div>
-                  <CardLabel>{`${t("TL_TELEPHONE_NUMBER_LABEL")}`}</CardLabel>
-                  <div className="field-container">
-                    <span className="employee-card-input employee-card-input--front" style={{ marginTop: "-1px" }}>
-                      +91
-                    </span>
-                    <TextInput
-                      type={"text"}
+                    <CardLabel>{`${t("TL_INSTITUTION_TYPE_LABEL")}*`}</CardLabel>
+                    <Dropdown
                       t={t}
+                      option={institutionOwnershipTypeOptions}
+                      selected={field.subOwnerShipCategory}
+                      select={(value) => {
+                        handleDropdownInputField(index, value, "subOwnerShipCategory");
+                      }}
+                      optionKey="i18nKey"
+                    />
+                    <CardHeader>{t("TL_AUTHORIZED_PERSON_DETAILS")}</CardHeader>
+                    <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}`}</CardLabel>
+                    <TextInput
+                      t={t}
+                      type={"text"}
                       isMandatory={false}
-                      name="altContactNumber"
-                      value={field.altContactNumber}
-                      onChange={(e) => handleTextInputField(index, e, "altContactNumber")}
+                      name="name"
+                      value={field.name}
+                      onChange={(e) => handleTextInputField(index, e, "name")}
+                      ValidationRequired={true}
+                      {...{
+                        validation: {
+                          // isRequired: true,
+                          pattern: "^[a-z0-9]+( [a-z0-9]+)*$",
+                          type: "text",
+                          title: t("TL_NAME_ERROR_MESSAGE"),
+                        },
+                      }}
+                    />
+                    <CardLabel>{`${t("TL_NEW_OWNER_DESIG_LABEL")}`}</CardLabel>
+                    <TextInput
+                      t={t}
+                      type={"text"}
+                      isMandatory={false}
+                      name="designation"
+                      value={field.designation}
+                      onChange={(e) => handleTextInputField(index, e, "designation")}
                       ValidationRequired={true}
                       //disable={isUpdateProperty || isEditProperty}
                       {...{
                         validation: {
                           // isRequired: true,
-                          pattern: "[0][1-9][0-9]{9}|[1-9][0-9]{9}",
-                          type: "tel",
-                          title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
+                          pattern: "^[a-z0-9]+( [a-z0-9]+)*$",
+                          type: "text",
+                          title: t("TL_NAME_ERROR_MESSAGE"),
+                        },
+                      }}
+                    />
+                    <CardLabel>{`${t("TL_MOBILE_NUMBER_LABEL")}*`}</CardLabel>
+                    <div className="field-container">
+                      <span className="employee-card-input employee-card-input--front" style={{ marginTop: "-1px" }}>
+                        +91
+                      </span>
+                      <TextInput
+                        type={"text"}
+                        t={t}
+                        isMandatory={false}
+                        name="mobilenumber"
+                        value={field.mobilenumber}
+                        onChange={(e) => handleTextInputField(index, e, "mobilenumber")}
+                        ValidationRequired={true}
+                        //disable={isUpdateProperty || isEditProperty}
+                        {...{
+                          validation: {
+                            isRequired: true,
+                            pattern: "[6-9]{1}[0-9]{9}",
+                            type: "tel",
+                            title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
+                          },
+                        }}
+                      />
+                    </div>
+                    <CardLabel>{`${t("TL_TELEPHONE_NUMBER_LABEL")}`}</CardLabel>
+                    <div className="field-container">
+                      <span className="employee-card-input employee-card-input--front" style={{ marginTop: "-1px" }}>
+                        +91
+                      </span>
+                      <TextInput
+                        type={"text"}
+                        t={t}
+                        isMandatory={false}
+                        name="altContactNumber"
+                        value={field.altContactNumber}
+                        onChange={(e) => handleTextInputField(index, e, "altContactNumber")}
+                        ValidationRequired={true}
+                        //disable={isUpdateProperty || isEditProperty}
+                        {...{
+                          validation: {
+                            // isRequired: true,
+                            pattern: "[0][1-9][0-9]{9}|[1-9][0-9]{9}",
+                            type: "tel",
+                            title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
+                          },
+                        }}
+                      />
+                    </div>
+                    <CardLabel>{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}</CardLabel>
+                    <TextInput
+                      t={t}
+                      type={"text"}
+                      isMandatory={false}
+                      name="emailId"
+                      value={field.emailId}
+                      onChange={(e) => handleTextInputField(index, e, "emailId")}
+                      ValidationRequired={true}
+                      //disable={isUpdateProperty || isEditProperty}
+                      {...{
+                        validation: {
+                          // isRequired: true,
+                          // pattern: getPattern("Email"),
+                          pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$",
+                          type: "text",
+                          title: t("TL_EMAIL_ERROR_MESSAGE"),
                         },
                       }}
                     />
                   </div>
-                  <CardLabel>{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}</CardLabel>
-                  <TextInput
-                    t={t}
-                    type={"text"}
-                    isMandatory={false}
-                    name="emailId"
-                    value={field.emailId}
-                    onChange={(e) => handleTextInputField(index, e, "emailId")}
-                    ValidationRequired={true}
-                    //disable={isUpdateProperty || isEditProperty}
-                    {...{
-                      validation: {
-                        // isRequired: true,
-                        // pattern: getPattern("Email"),
-                        pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$",
-                        type: "text",
-                        title: t("TL_EMAIL_ERROR_MESSAGE"),
-                      },
-                    }}
-                  />
                 </div>
-              </div>
-            );
-          })}
-        </FormStep>
+              );
+            })}
+          </FormStep>
+        </div>
       </React.Fragment>
     );
   }
 
   return (
     <React.Fragment>
-      {window.location.href.includes("/citizen") ? <Timeline currentStep={2} /> : null}
-      <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false} forcedError={t(error)}>
-        {formState.map((field, index) => {
-          return (
-            <div key={`${field}-${index}`}>
-              <div
-                style={
-                  typeOfOwner === "MULTIOWNER"
-                    ? {
-                        border: "solid",
-                        borderRadius: "5px",
-                        padding: "10px",
-                        paddingTop: "20px",
-                        marginTop: "10px",
-                        borderColor: "#f3f3f3",
-                        background: "#FAFAFA",
-                      }
-                    : {}
-                }
-              >
-                <CardLabel style={{}}>{`${t(
-                  "TL_NEW_OWNER_DETAILS_NAME_LABEL"
-                )}*`}</CardLabel>
-                {typeOfOwner === "MULTIOWNER" && (
-                  <LinkButton
-                    label={
+      <div className="step-form-wrapper">
+        {window.location.href.includes("/citizen") ? <Timeline currentStep={2} /> : null}
+        <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false} forcedError={t(error)} cardStyle={{ boxShadow: "none" }}>
+          {formState.map((field, index) => {
+            return (
+              <div key={`${field}-${index}`}>
+                <div
+                  style={
+                    typeOfOwner === "MULTIOWNER"
+                      ? {
+                          border: "solid",
+                          borderRadius: "5px",
+                          padding: "10px",
+                          paddingTop: "20px",
+                          marginTop: "10px",
+                          borderColor: "#f3f3f3",
+                          background: "#FAFAFA",
+                        }
+                      : {}
+                  }
+                >
+                  {typeOfOwner === "MULTIOWNER" && (
+                    <label style={{ width: "100px", display: "inline" }} onClick={(e) => dispatch({ type: "REMOVE_THIS_OWNER", payload: { index } })}>
                       <div>
                         <span>
                           <svg
@@ -412,149 +416,174 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                           </svg>
                         </span>
                       </div>
-                    }
-                    style={{ width: "100px", display: "inline" }}
-                    onClick={(e) => dispatch({ type: "REMOVE_THIS_OWNER", payload: { index } })}
-                  />
-                )}
-                <TextInput
-                  style={typeOfOwner === "MULTIOWNER" ? { background: "#FAFAFA" } : {}}
-                  t={t}
-                  type={"text"}
-                  isMandatory={false}
-                  optionKey="i18nKey"
-                  name="name"
-                  value={field.name}
-                  onChange={(e) => handleTextInputField(index, e, "name")}
-                  ValidationRequired={true}
-                  //disable={isUpdateProperty || isEditProperty}
-                  {...{
-                    validation: {
-                      isRequired: true,
-                      pattern: "[a-zA-Z][a-zA-Z ]+[a-zA-Z]$",
-                      type: "text",
-                      title: t("TL_NAME_ERROR_MESSAGE"),
-                    },
-                  }}
-                />
-                <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}*`}</CardLabel>
-                {!isGenderLoading ? (
-                  <RadioButtons
-                    t={t}
-                    options={TLmenu}
-                    optionsKey="i18nKey"
-                    name={`gender-${index}`}
-                    selectedOption={field.gender}
-                    onSelect={(e) => handleRadioButtonInput(index, e, "gender")}
-                    labelKey=""
-                    isPTFlow={true}
-                    //disabled={isUpdateProperty || isEditProperty}
-                  />
-                ) : (
-                  <Loader />
-                )}
-                <CardLabel>{`${t("TL_MOBILE_NUMBER_LABEL")}*`}</CardLabel>
-                <div className="field-container">
-                  <span className="employee-card-input employee-card-input--front" style={{ marginTop: "-1px" }}>
-                    +91
-                  </span>
-                  <TextInput
-                    style={typeOfOwner === "MULTIOWNER" ? { background: "#FAFAFA",maxWidth:"500px" } : {maxWidth:"500px"}}
-                    type={"text"}
-                    t={t}
-                    isMandatory={false}
-                    optionKey="i18nKey"
-                    name="mobilenumber"
-                    value={field.mobilenumber}
-                    onChange={(e) => handleTextInputField(index, e, "mobilenumber")}
-                    ValidationRequired={true}
-                    //disable={isUpdateProperty || isEditProperty}
-                    {...{
-                      validation: {
-                        isRequired: true,
-                        pattern: "[6-9]{1}[0-9]{9}",
-                        type: "tel",
-                        title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
-                      },
-                    }}
-                  />
+                    </label>
+                  )}
+
+                  <div className="form-container">
+                    <div>
+                      {" "}
+                      <CardLabel style={{}}>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}*`}</CardLabel>
+                      <TextInput
+                        style={typeOfOwner === "MULTIOWNER" ? { background: "#FAFAFA" } : {}}
+                        t={t}
+                        type={"text"}
+                        isMandatory={false}
+                        optionKey="i18nKey"
+                        name="name"
+                        value={field.name}
+                        onChange={(e) => handleTextInputField(index, e, "name")}
+                        ValidationRequired={true}
+                        //disable={isUpdateProperty || isEditProperty}
+                        {...{
+                          validation: {
+                            isRequired: true,
+                            pattern: "[a-zA-Z][a-zA-Z ]+[a-zA-Z]$",
+                            type: "text",
+                            title: t("TL_NAME_ERROR_MESSAGE"),
+                          },
+                        }}
+                      />
+                    </div>
+                    <div>
+                      {" "}
+                      <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}*`}</CardLabel>
+                      {!isGenderLoading ? (
+                        <RadioButtons
+                          t={t}
+                          options={TLmenu}
+                          optionsKey="i18nKey"
+                          name={`gender-${index}`}
+                          selectedOption={field.gender}
+                          onSelect={(e) => handleRadioButtonInput(index, e, "gender")}
+                          labelKey=""
+                          isPTFlow={true}
+                          //disabled={isUpdateProperty || isEditProperty}
+                        />
+                      ) : (
+                        <Loader />
+                      )}
+                    </div>
+                    <div>
+                      {" "}
+                      <CardLabel>{`${t("TL_MOBILE_NUMBER_LABEL")}*`}</CardLabel>
+                      <div className="field-container">
+                        <span className="employee-card-input employee-card-input--front" style={{ marginTop: "-1px" }}>
+                          +91
+                        </span>
+                        <TextInput
+                          style={typeOfOwner === "MULTIOWNER" ? { background: "#FAFAFA", maxWidth: "500px" } : { maxWidth: "500px" }}
+                          type={"text"}
+                          t={t}
+                          isMandatory={false}
+                          optionKey="i18nKey"
+                          name="mobilenumber"
+                          value={field.mobilenumber}
+                          onChange={(e) => handleTextInputField(index, e, "mobilenumber")}
+                          ValidationRequired={true}
+                          //disable={isUpdateProperty || isEditProperty}
+                          {...{
+                            validation: {
+                              isRequired: true,
+                              pattern: "[6-9]{1}[0-9]{9}",
+                              type: "tel",
+                              title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
+                            },
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      {" "}
+                      <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_GUARDIAN_LABEL")}*`}</CardLabel>
+                      <TextInput
+                        style={typeOfOwner === "MULTIOWNER" ? { background: "#FAFAFA" } : {}}
+                        t={t}
+                        type={"text"}
+                        isMandatory={false}
+                        name="fatherOrHusbandName"
+                        value={field.fatherOrHusbandName}
+                        onChange={(e) => handleTextInputField(index, e, "fatherOrHusbandName")}
+                        ValidationRequired={true}
+                        //disable={isUpdateProperty || isEditProperty}
+                        {...{
+                          validation: {
+                            isRequired: true,
+                            pattern: "[a-zA-Z][a-zA-Z ]+[a-zA-Z]$",
+                            type: "text",
+                            title: t("TL_NAME_ERROR_MESSAGE"),
+                          },
+                        }}
+                      />
+                    </div>
+                    <div>
+                      {" "}
+                      <CardLabel>{`${t("TL_COMMON_RELATIONSHIP_LABEL")}*`}</CardLabel>
+                      <RadioButtons
+                        t={t}
+                        options={relationshipMenu}
+                        optionsKey="i18nKey"
+                        name={`relationship-${index}`}
+                        value={field.relationship}
+                        selectedOption={field.relationship}
+                        onSelect={(e) => handleRadioButtonInput(index, e, "relationship")}
+                        labelKey=""
+                        isPTFlow={true}
+                      />
+                    </div>
+                    <div>
+                      {" "}
+                      <CardLabel>{`${t("TL_EMAIL_ID_LABEL")}`}</CardLabel>
+                      <TextInput
+                        t={t}
+                        isMandatory={false}
+                        name="emailId"
+                        value={field.emailId}
+                        onChange={(e) => handleTextInputField(index, e, "emailId")}
+                        {...{
+                          required: true,
+                          pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$",
+                          title: t("CORE_COMMON_APPLICANT_EMAILI_ID_INVALID"),
+                        }}
+                      />
+                    </div>
+
+                    {typeOfOwner === "MULTIOWNER" && (
+                      <div>
+                        <CheckBox
+                          label={t("TL_PRIMARY_OWNER_LABEL")}
+                          onChange={(e) => dispatch({ type: "SET_PRIMARY_OWNER", payload: { index } })}
+                          value={field.isprimaryowner}
+                          checked={field.isprimaryowner}
+                          style={{ paddingTop: "10px" }}
+                          name={`multiowner-checkbox-${index}`}
+                          //disable={isUpdateProperty || isEditProperty}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_GUARDIAN_LABEL")}*`}</CardLabel>
-                <TextInput
-                  style={typeOfOwner === "MULTIOWNER" ? { background: "#FAFAFA" } : {}}
-                  t={t}
-                  type={"text"}
-                  isMandatory={false}
-                  name="fatherOrHusbandName"
-                  value={field.fatherOrHusbandName}
-                  onChange={(e) => handleTextInputField(index, e, "fatherOrHusbandName")}
-                  ValidationRequired={true}
-                  //disable={isUpdateProperty || isEditProperty}
-                  {...{
-                    validation: {
-                      isRequired: true,
-                      pattern: "[a-zA-Z][a-zA-Z ]+[a-zA-Z]$",
-                      type: "text",
-                      title: t("TL_NAME_ERROR_MESSAGE"),
-                    },
-                  }}
-                />
-                <CardLabel>{`${t("TL_COMMON_RELATIONSHIP_LABEL")}*`}</CardLabel>
-                <RadioButtons
-                  t={t}
-                  options={relationshipMenu}
-                  optionsKey="i18nKey"
-                  name={`relationship-${index}`}
-                  value={field.relationship}
-                  selectedOption={field.relationship}
-                  onSelect={(e) => handleRadioButtonInput(index, e, "relationship")}
-                  labelKey=""
-                  isPTFlow={true}
-                />
-                <CardLabel>{`${t("TL_EMAIL_ID_LABEL")}`}</CardLabel>
-                <TextInput
-                  t={t}
-                  isMandatory={false}
-                  name="emailId"
-                  value={field.emailId}
-                  onChange={(e) => handleTextInputField(index, e, "emailId")}
-                  {...{ required: true, pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$", title: t("CORE_COMMON_APPLICANT_EMAILI_ID_INVALID") }}
-                />
-                {typeOfOwner === "MULTIOWNER" && (
-                  <CheckBox
-                    label={t("TL_PRIMARY_OWNER_LABEL")}
-                    onChange={(e) => dispatch({ type: "SET_PRIMARY_OWNER", payload: { index } })}
-                    value={field.isprimaryowner}
-                    checked={field.isprimaryowner}
-                    style={{ paddingTop: "10px" }}
-                    name={`multiowner-checkbox-${index}`}
-                    //disable={isUpdateProperty || isEditProperty}
-                  />
-                )}
+              </div>
+            );
+          })}
+          {typeOfOwner === "MULTIOWNER" && (
+            <div>
+              {/* <hr color="#d6d5d4" className="break-line"></hr> */}
+              <div style={{ justifyContent: "left", display: "flex", paddingBottom: "15px", color: "#FF8C00" }}>
+                <button type="button" style={{ paddingTop: "10px" }} onClick={() => dispatch({ type: "ADD_NEW_OWNER" })}>
+                  {t("TL_ADD_OWNER_LABEL")}
+                </button>
               </div>
             </div>
-          );
-        })}
-        {typeOfOwner === "MULTIOWNER" && (
-          <div>
-            {/* <hr color="#d6d5d4" className="break-line"></hr> */}
-            <div style={{ justifyContent: "left", display: "flex", paddingBottom: "15px", color: "#FF8C00" }}>
-              <button type="button" style={{ paddingTop: "10px" }} onClick={() => dispatch({ type: "ADD_NEW_OWNER" })}>
-                {t("TL_ADD_OWNER_LABEL")}
-              </button>
-            </div>
-          </div>
-        )}
-        {typeOfOwner==="MULTIOWNER" &&
-            formState?.length<2 && (
-              <div>
-                <div style={{ justifyContent: "left", display: "flex", paddingBottom: "15px", fontSize: "15px",color: "#FF8C00" }}>
-                  {t("TL_ERROR_MULTIPLE_OWNER")}
-                </div>
+          )}
+          {typeOfOwner === "MULTIOWNER" && formState?.length < 2 && (
+            <div>
+              <div style={{ justifyContent: "left", display: "flex", paddingBottom: "15px", fontSize: "15px", color: "#FF8C00" }}>
+                {t("TL_ERROR_MULTIPLE_OWNER")}
               </div>
-            )
-        }
-      </FormStep>
+            </div>
+          )}
+        </FormStep>
+      </div>
     </React.Fragment>
   );
 };

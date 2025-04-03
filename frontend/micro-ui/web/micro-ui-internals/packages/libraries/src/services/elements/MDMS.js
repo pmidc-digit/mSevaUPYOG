@@ -173,6 +173,23 @@ const getModuleServiceDefsCriteria = (tenantId, moduleCode) => ({
   },
 });
 
+const getModuleSwachBharatCategoryCriteria = (tenantId, moduleCode) => ({
+  type: "swachBharatCategory",
+  details: {
+    tenantId: tenantId,
+    moduleDetails: [
+      {
+        moduleName: `SwachReform`,
+        masterDetails: [
+          {
+            name: "SwachBharatCategory",
+          },
+        ],
+      },
+    ],
+  },
+});
+
 const getSanitationTypeCriteria = (tenantId, moduleCode) => ({
   type: "SanitationType",
   details: {
@@ -1212,6 +1229,8 @@ const GetEgovLocations = (MdmsRes) => {
 
 const GetServiceDefs = (MdmsRes, moduleCode) => MdmsRes[`RAINMAKER-${moduleCode}`].ServiceDefs.filter((def) => def.active);
 
+const GetSwachBharatCategory = (MdmsRes, moduleCode) => MdmsRes[`SwachReform`].SwachBharatCategory.filter((def) => def.active);
+
 const GetSanitationType = (MdmsRes) => MdmsRes["FSM"].SanitationType.filter((type) => type.active);
 
 const GetPitType = (MdmsRes) =>
@@ -1540,6 +1559,8 @@ const transformResponse = (type, MdmsRes, moduleCode, tenantId) => {
       return GetEgovLocations(MdmsRes);
     case "serviceDefs":
       return GetServiceDefs(MdmsRes, moduleCode);
+    case "swachBharatCategory":
+      return GetSwachBharatCategory(MdmsRes, moduleCode);
     case "ApplicationChannel":
       return GetApplicationChannel(MdmsRes);
     case "SanitationType":
@@ -1772,6 +1793,9 @@ export const MdmsService = {
   },
   getServiceDefs: (tenantId, moduleCode) => {
     return MdmsService.getDataByCriteria(tenantId, getModuleServiceDefsCriteria(tenantId, moduleCode), moduleCode);
+  },
+  getSwachBharatCategory: (tenantId, moduleCode) => {
+    return MdmsService.getDataByCriteria(tenantId, getModuleSwachBharatCategoryCriteria(tenantId, moduleCode), moduleCode);
   },
   getSanitationType: (tenantId, moduleCode) => {
     return MdmsService.getDataByCriteria(tenantId, getSanitationTypeCriteria(tenantId, moduleCode), moduleCode);

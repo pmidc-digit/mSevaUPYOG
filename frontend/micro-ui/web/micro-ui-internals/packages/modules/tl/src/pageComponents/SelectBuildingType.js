@@ -35,8 +35,9 @@ const SelectBuildingType = ({ t, config, onSelect, userType, formData }) => {
   }
   return (
     <React.Fragment>
+    <div className="step-form-wrapper">
     {window.location.href.includes("/citizen") ? <Timeline /> : null}
-      <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!BuildingType}>
+      <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!BuildingType} cardStyle = {{ boxShadow: "none"}}>
       {!isLoading ? <RadioButtons
           t={t}
           optionsKey="i18nKey"
@@ -47,6 +48,7 @@ const SelectBuildingType = ({ t, config, onSelect, userType, formData }) => {
         />
       :<Loader />}
       </FormStep>
+      </div>
       {<CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t("TL_BUILDING_TYPE_INFO_MSG")} />}
       {isEdit && <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t("Structure type cant be modified")} />}
     </React.Fragment>

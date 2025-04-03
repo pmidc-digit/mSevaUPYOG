@@ -84,6 +84,21 @@ const FillSurvey = ({ stateCode }) => {
     }));
   };
   const [errors, setErrors] = useState({});
+
+  function calculateAge(dob) {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+
+    return age;
+}
+
+
   const validateForm = () => {
     const newErrors = {};
     // if (!formData.name) newErrors.name = "Name is required";
@@ -101,7 +116,11 @@ const FillSurvey = ({ stateCode }) => {
 
     if (!formData.gender) newErrors.gender = "Gender is required";
 
+
+    const age = calculateAge(formData.dob); // Assume calculateAge is a function that calculates age from dob
+  
     if (!formData.dob) newErrors.dob = "Date of Birth is required";
+    else if (age < 15 || age > 100) newErrors.dob = "Age must be between 15 and 100 years";
     // if (!formData.relation) newErrors.relation = "Relation is required";
     // if (!formData.address) newErrors.address = "Address is required";
     // if (!formData.dob) newErrors.dob = "Date of Birth is required";
@@ -122,7 +141,10 @@ const FillSurvey = ({ stateCode }) => {
 
     if (!formData.gender) newErrors.gender = "Gender is required";
 
+    const age = calculateAge(formData.dob); // Assume calculateAge is a function that calculates age from dob
+    
     if (!formData.dob) newErrors.dob = "Date of Birth is required";
+    else if (age < 15 || age > 100) newErrors.dob = "Age must be between 15 and 100 years";
 
     if (!formData.mobile) newErrors.mobile = "Mobile number is required";
     else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";

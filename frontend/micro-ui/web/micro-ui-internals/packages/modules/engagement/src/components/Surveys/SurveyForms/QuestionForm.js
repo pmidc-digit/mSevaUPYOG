@@ -3,6 +3,7 @@ import React, { useEffect, useState, Fragment } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import Checkboxes from "./AnswerTypes/Checkboxes";
 import MultipleChoice from "./AnswerTypes/MultipleChoice";
+import DropdownType from "./AnswerTypes/DropdownType";
 
 // Main component for the survey form
 const QuestionForm = ({
@@ -82,13 +83,18 @@ const QuestionForm = ({
   //console.log("mainFormState", mainFormState, "\n index", index, "\n errors:", errors, "\n message:", errors[`questions[${index}]`]);
 
   const handleAddOption = () => {
-    const newOptions = [...surveyQuestionConfig.options, { id: Date.now(), title: `${t("CMN_OPTION")} ${surveyQuestionConfig.options.length + 1}` ,optionWeightage:0}];
+    const newOptions = [
+      ...surveyQuestionConfig.options,
+      { id: Date.now(), title: `${t("CMN_OPTION")} ${surveyQuestionConfig.options.length + 1}`, optionWeightage: 0 },
+    ];
     setSurveyQuestionConfig((prevState) => ({ ...prevState, options: newOptions }));
     return newOptions;
   };
 
-  const handleUpdateOption = ({ value, id,weightage }) => {
-    const updatedOptions = surveyQuestionConfig.options.map((option) => (option.id === id ? { ...option, title: value , optionWeightage:weightage} : option));
+  const handleUpdateOption = ({ value, id, weightage }) => {
+    const updatedOptions = surveyQuestionConfig.options.map((option) =>
+      option.id === id ? { ...option, title: value, optionWeightage: weightage } : option
+    );
     setSurveyQuestionConfig((prevState) => ({ ...prevState, options: updatedOptions }));
     return updatedOptions;
   };
@@ -132,7 +138,10 @@ const QuestionForm = ({
           <div>
             {errors.questions?.[index]?.options && <CardLabelError>{errors.questions[index].options.message}</CardLabelError>}
             <Controller
-              rules={{ validate: (value) => value.every((option) => option.title.trim() !== "") || "Some options are empty. Please provide text or remove the empty options." }}
+              rules={{
+                validate: (value) =>
+                  value.every((option) => option.title.trim() !== "") || "Some options are empty. Please provide text or remove the empty options.",
+              }}
               defaultValue={defaultQuestionValues.options}
               //name={`OPTIONS_${index}`}
               name={`questions[${index}].options`}
@@ -168,7 +177,6 @@ const QuestionForm = ({
                 />
               )}
             />
-          
           </div>
         );
       case "CHECKBOX_ANSWER_TYPE":
@@ -176,12 +184,61 @@ const QuestionForm = ({
           <div>
             {errors.questions?.[index]?.options && <CardLabelError>{errors.questions[index].options.message}</CardLabelError>}
             <Controller
-              rules={{ validate: (value) => value.every((option) => option.title.trim() !== "") || "Some options are empty. Please provide text or remove the empty options." }}
+              rules={{
+                validate: (value) =>
+                  value.every((option) => option.title.trim() !== "") || "Some options are empty. Please provide text or remove the empty options.",
+              }}
               defaultValue={defaultQuestionValues.options}
               name={`questions[${index}].options`}
               control={controlSurveyForm}
               render={(props) => (
                 <Checkboxes
+                  // addOption={handleAddOption}
+                  // updateOption={handleUpdateOption}
+                  // removeOption={handleRemoveOption}
+                  updateOption={(option) => {
+                    const updatedOptions = handleUpdateOption(option);
+                    props.onChange(updatedOptions);
+                  }}
+                  addOption={() => {
+                    const newOptions = handleAddOption();
+                    props.onChange(newOptions);
+                  }}
+                  removeOption={(id) => {
+                    const updatedOptions = handleRemoveOption(id);
+                    props.onChange(updatedOptions);
+                  }}
+                  options={surveyQuestionConfig?.options}
+                  isInputDisabled={isInputDisabled}
+                  isPartiallyEnabled={isPartiallyEnabled}
+                  createNewSurvey={addOption} //Check this
+                  formDisabled={formDisabled}
+                  titleHover={t("The maximum length is 500 characters")}
+                  weightHover={t("Enter a number between 0 and 10")}
+                  labelstyle={{ marginLeft: "-20px" }}
+                  maxLength={500}
+                  minWeight={0}
+                  maxWeight={10}
+                  t={t}
+                />
+              )}
+            />
+          </div>
+        );
+      case "DROPDOWN_ANSWER_TYPE":
+        return (
+          <div>
+            {errors.questions?.[index]?.options && <CardLabelError>{errors.questions[index].options.message}</CardLabelError>}
+            <Controller
+              rules={{
+                validate: (value) =>
+                  value.every((option) => option.title.trim() !== "") || "Some options are empty. Please provide text or remove the empty options.",
+              }}
+              defaultValue={defaultQuestionValues.options}
+              name={`questions[${index}].options`}
+              control={controlSurveyForm}
+              render={(props) => (
+                <DropdownType
                   // addOption={handleAddOption}
                   // updateOption={handleUpdateOption}
                   // removeOption={handleRemoveOption}
@@ -251,37 +308,37 @@ const QuestionForm = ({
       type: ev ? { title: ev.title, i18Key: ev.i18Key, value: ev.value } : null,
     }));
   };
-console.log("surveyQuestionConfig",surveyQuestionConfig.options[0].optionWeightage)
+  console.log("surveyQuestionConfig", surveyQuestionConfig.options[0].optionWeightage);
   return (
     <div className="newSurveyForm_wrapper">
       <span className="newSurveyForm_quesno">{`${t("CS_COMMON_QUESTION")} ${index + 1} `}</span>
       <span className="newSurveyForm_mainsection">
-      {/* <div className="surveydetailsform-wrapper">
+        {/* <div className="surveydetailsform-wrapper">
         <span className="surveyformfield">
           <label>
             {t("Category")} <span style={{ color: "red" }}>*</span>
           </label> */}
-          <Controller
-            rules={{ required: t("REQUIRED_FIELD") }} // t("EVENTS_CATEGORY_ERROR_REQUIRED")
-            defaultValue={defaultQuestionValues.category}
-            name={`questions[${index}].category`}
-            control={controlSurveyForm}
-            render={(props) => (
-              <Dropdown
-                t={t}
-                option={categoryOptions}
-                placeholder={"Select Category *"}
-                optionKey="i18Key"
-                //selected={props.value}
-                selected={surveyQuestionConfig.category}
-                select={(e) => {
-                  props.onChange(e);
-                  handleSelectCategory(e);
-                }}
-                disable={disableInputs}
-              />
-            )}
-          />
+        <Controller
+          rules={{ required: t("REQUIRED_FIELD") }} // t("EVENTS_CATEGORY_ERROR_REQUIRED")
+          defaultValue={defaultQuestionValues.category}
+          name={`questions[${index}].category`}
+          control={controlSurveyForm}
+          render={(props) => (
+            <Dropdown
+              t={t}
+              option={categoryOptions}
+              placeholder={"Select Category *"}
+              optionKey="i18Key"
+              //selected={props.value}
+              selected={surveyQuestionConfig.category}
+              select={(e) => {
+                props.onChange(e);
+                handleSelectCategory(e);
+              }}
+              disable={disableInputs}
+            />
+          )}
+        />
         {/* </span> */}
         {errors.questions?.[index]?.category && <CardLabelError>{errors.questions[index].category.message}</CardLabelError>}
         {/* </div> */}
@@ -303,7 +360,7 @@ console.log("surveyQuestionConfig",surveyQuestionConfig.options[0].optionWeighta
           control={controlSurveyForm}
           render={(props) => (
             <TextInput
-              placeholder={t("CS_COMMON_TYPE_QUESTION")+" *"}
+              placeholder={t("CS_COMMON_TYPE_QUESTION") + " *"}
               //value={t(Digit.Utils.locale.getTransformedLocale(surveyQuestionConfig.questionStatement))}
               value={surveyQuestionConfig.questionStatement}
               onChange={(e) => {

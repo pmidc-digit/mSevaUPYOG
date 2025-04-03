@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
+import java.util.Objects;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -33,4 +35,22 @@ public class QuestionOption {
 
     @JsonProperty("auditDetails")
     private AuditDetails auditDetails;
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        QuestionOption that = (QuestionOption) obj;
+        return Objects.equals(uuid, that.uuid) &&
+               Objects.equals(questionUuid, that.questionUuid) &&
+               Objects.equals(optionText, that.optionText) &&
+               Objects.equals(weightage, that.weightage) &&
+               Objects.equals(auditDetails, that.auditDetails);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uuid, questionUuid, optionText, weightage, auditDetails);
+    }
+
 }

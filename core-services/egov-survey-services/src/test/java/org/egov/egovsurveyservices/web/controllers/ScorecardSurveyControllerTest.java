@@ -1,12 +1,20 @@
 package org.egov.egovsurveyservices.web.controllers;
 
 
+import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.User;
+import org.egov.common.contract.response.ResponseInfo;
 import org.egov.egovsurveyservices.service.ScorecardSurveyService;
 import org.egov.egovsurveyservices.utils.ResponseInfoFactory;
+import org.egov.egovsurveyservices.web.models.AnswerFetchCriteria;
+import org.egov.egovsurveyservices.web.models.AnswerRequestNew;
+import org.egov.egovsurveyservices.web.models.ScorecardAnswerResponse;
+import org.egov.egovsurveyservices.web.models.ScorecardSubmitResponse;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyEntity;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyRequest;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveyResponse;
 import org.egov.egovsurveyservices.web.models.ScorecardSurveySearchCriteria;
+import org.egov.egovsurveyservices.web.models.SurveyResponseNew;
 import org.egov.egovsurveyservices.web.models.UpdateSurveyActiveRequest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +36,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -168,6 +177,100 @@ class ScorecardSurveyControllerTest {
                  .content(new ObjectMapper().writeValueAsString(request)))
                  .andExpect(status().isBadRequest());
      }
+     
+     @Test
+     void testResponseSubmit() throws Exception {
+         String requestJson = "{"
+                 + "\"requestInfo\": {\"apiId\": \"Rainmaker\", \"ver\": \".01\", \"msgId\": \"201703900|en_IN\", \"authToken\": \"ae9b231e16\"},"
+                 + "\"answers\": [{\"surveyUuid\": \"S1\", \"citizenId\": \"C1\", \"tenantId\": \"T1\"}]"
+                 + "}";
+
+         // Manually creating RequestInfo
+         RequestInfo requestInfo = new RequestInfo();
+         requestInfo.setApiId("");
+         requestInfo.setVer(".01");
+         requestInfo.setMsgId("201703900|en_IN");
+
+         // Directly call static method
+         ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfo, true);
+
+         ScorecardAnswerResponse answerResponse = ScorecardAnswerResponse.builder()
+                 .responseInfo(responseInfo)
+                 .surveyUuid("S1")
+                 .citizenId("C1")
+                 .tenantId("T1")
+                 .status("Submitted")
+                 .build();
+
+         ScorecardSubmitResponse mockResponse = ScorecardSubmitResponse.builder()
+                 .responseInfo(responseInfo)
+                 .scorecardAnswerResponse(answerResponse)
+                 .build();
+
+         // Mock surveyService response
+         when(surveyService.submitResponse(any(AnswerRequestNew.class))).thenReturn(mockResponse);
+
+         // Perform POST request
+         mockMvc.perform(post("/egov-ss/survey/response/_submit")
+                 .contentType(MediaType.APPLICATION_JSON)
+                 .content(requestJson))
+                 .andExpect(status().isOk())
+                 .andExpect(jsonPath("$.ResponseInfo.apiId").value(""))
+                 .andExpect(jsonPath("$.SubmitResponse.surveyUuid").value("S1"))
+                 .andExpect(jsonPath("$.SubmitResponse.citizenId").value("C1"))
+                 .andExpect(jsonPath("$.SubmitResponse.tenantId").value("T1"))
+                 .andExpect(jsonPath("$.SubmitResponse.status").value("Submitted"));
+
+         // Verify interaction
+         verify(surveyService, times(1)).submitResponse(any(AnswerRequestNew.class));
+     }
+     
+//     @Test
+//     void testGetAnswers() throws Exception {
+//         String requestJson = "{"
+//                 + "\"requestInfo\": {\"apiId\": \"Rainmaker\", \"ver\": \".01\", \"msgId\": \"201703900|en_IN\", \"authToken\": \"ae9b231e16\"}"
+//                 + "}";
+//
+//         // Manually creating RequestInfo
+//         RequestInfo requestInfo = new RequestInfo();
+//         requestInfo.setApiId("Rainmaker");
+//         requestInfo.setVer(".01");
+//         requestInfo.setMsgId("201703900|en_IN");
+//
+//         // Directly call static method
+//         ResponseInfo responseInfo = ResponseInfoFactory.createResponseInfoFromRequestInfo(requestInfo, true);
+//
+//         // Prepare mock response
+//         ScorecardAnswerResponse answerResponse = ScorecardAnswerResponse.builder()
+//                 .responseInfo(responseInfo)
+//                 .surveyUuid("S1")
+//                 .citizenId("C1")
+//                 .tenantId("T1")
+//                 .status("Fetched")
+//                 .build();
+//
+//         // Mock surveyService response
+//         when(surveyService.getAnswers(any(AnswerFetchCriteria.class))).thenReturn(answerResponse);
+//
+//         // Perform POST request
+//         mockMvc.perform(post("/egov-ss/survey/response/_answers")
+//                 .contentType(MediaType.APPLICATION_JSON)
+//                 .content(requestJson)
+//                 .param("surveyUuid", "S1")
+//                 .param("citizenId", "C1")
+//                 .param("tenantId", "T1"))
+//                 .andExpect(status().isOk())
+////                 .andExpect(jsonPath("$.responseInfo.apiId").value("Rainmaker"))
+//                 .andExpect(jsonPath("$.surveyUuid").value("S1"))
+//                 .andExpect(jsonPath("$.citizenId").value("C1"))
+//                 .andExpect(jsonPath("$.tenantId").value("T1"))
+//                 .andExpect(jsonPath("$.status").value("Fetched"));
+//
+//         // Verify interaction
+//         verify(surveyService, times(1)).getAnswers(any(AnswerFetchCriteria.class));
+//     }
+
+
 }
 
 

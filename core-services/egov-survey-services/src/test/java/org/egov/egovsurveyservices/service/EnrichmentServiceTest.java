@@ -107,8 +107,9 @@ public class EnrichmentServiceTest {
     
     @Test
     void testEnrichScorecardSurveyEntity_InvalidSectionWeightage_ShouldThrowException() {
-        Section section1 = new Section("section-001", "Section 1", new BigDecimal("10.00"), new ArrayList<>());
-        Section section2 = new Section("section-002", "Section 2", new BigDecimal("80.00"), new ArrayList<>());
+        Section section1 = new Section("section-001", "Section 1", new BigDecimal("10.00"), 1, new ArrayList<>());
+        Section section2 = new Section("section-002", "Section 2", new BigDecimal("80.00"), 2, new ArrayList<>());
+    	//Section section1 = Section.builder().uuid("section-001").title("Section 1");
 
         ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
         surveyEntity.setUuid("survey-001");
@@ -126,8 +127,8 @@ public class EnrichmentServiceTest {
     
     @Test
     void testEnrichScorecardSurveyEntity_OverlimitInvalidSectionWeightage_ShouldThrowException() {
-        Section section1 = new Section("section-001", "Section 1", new BigDecimal("20.00"), new ArrayList<>());
-        Section section2 = new Section("section-002", "Section 2", new BigDecimal("80.01"), new ArrayList<>());
+        Section section1 = new Section("section-001", "Section 1", new BigDecimal("20.00"), 1, new ArrayList<>());
+        Section section2 = new Section("section-002", "Section 2", new BigDecimal("80.01"), 2, new ArrayList<>());
 
         ScorecardSurveyEntity surveyEntity = new ScorecardSurveyEntity();
         surveyEntity.setUuid("survey-001");
@@ -148,7 +149,7 @@ public class EnrichmentServiceTest {
         QuestionWeightage q1 = new QuestionWeightage("q-001", new Question(), new BigDecimal("10.00"));
         QuestionWeightage q2 = new QuestionWeightage("q-002", new Question(), new BigDecimal("70.00"));
 
-        Section section = new Section("section-001", "Section 1", new BigDecimal("100.00"), Arrays.asList(q1, q2));
+        Section section = new Section("section-001", "Section 1", new BigDecimal("100.00"), 1, Arrays.asList(q1, q2));
 
         Question ques = Question.builder().questionStatement("ques").auditDetails(new AuditDetails()).uuid("q-001").build();
         QuestionResponse questionResponse = QuestionResponse.builder().questions(Collections.singletonList(ques)).build();
@@ -174,7 +175,7 @@ public class EnrichmentServiceTest {
         QuestionWeightage q1 = new QuestionWeightage("q-001", new Question(), new BigDecimal("30.30"));
         QuestionWeightage q2 = new QuestionWeightage("q-002", new Question(), new BigDecimal("70.10"));
 
-        Section section = new Section("section-001", "Section 1", new BigDecimal("100.00"), Arrays.asList(q1, q2));
+        Section section = new Section("section-001", "Section 1", new BigDecimal("100.00"), 1, Arrays.asList(q1, q2));
 
         Question ques = Question.builder().questionStatement("ques").auditDetails(new AuditDetails()).uuid("q-001").build();
         QuestionResponse questionResponse = QuestionResponse.builder().questions(Collections.singletonList(ques)).build();
@@ -200,8 +201,8 @@ public class EnrichmentServiceTest {
     	QuestionWeightage q1 = new QuestionWeightage("q-001", new Question(), new BigDecimal("40.00"));
         QuestionWeightage q2 = new QuestionWeightage("q-002", new Question(), new BigDecimal("60.00"));
 
-        Section section1 = new Section("section-001", "Section 1", new BigDecimal("50.00"), Arrays.asList(q1, q2));
-        Section section2 = new Section("section-002", "Section 2", new BigDecimal("50.00"), new ArrayList<>());
+        Section section1 = new Section("section-001", "Section 1", new BigDecimal("50.00"), 1, Arrays.asList(q1, q2));
+        Section section2 = new Section("section-002", "Section 2", new BigDecimal("50.00"), 2, new ArrayList<>());
 
         Question ques = Question.builder().questionStatement("ques").auditDetails(new AuditDetails()).uuid("q-001").build();
         QuestionResponse questionResponse = QuestionResponse.builder().questions(Collections.singletonList(ques)).build();

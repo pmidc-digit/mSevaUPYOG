@@ -225,7 +225,7 @@ const QuestionForm = ({
             />
           </div>
         );
-      case "DROPDOWN_ANSWER_TYPE":
+      case "DROP_DOWN_MENU_ANSWER_TYPE":
         return (
           <div>
             {errors.questions?.[index]?.options && <CardLabelError>{errors.questions[index].options.message}</CardLabelError>}

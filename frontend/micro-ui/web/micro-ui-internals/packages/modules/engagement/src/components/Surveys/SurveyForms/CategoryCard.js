@@ -568,6 +568,7 @@ const CategoryCard = ({ category, checked, readOnly, onDelete, hideQuestionLabel
           onCancel={handleOnCancelDialog}
           onDismiss={handleOnCancelDialog}
           heading="Question Details"
+          actionCancel={true}
           content={questionDetailsContent}
           hideSubmit={true}
         />

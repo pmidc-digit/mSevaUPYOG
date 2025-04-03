@@ -57,7 +57,7 @@ const CreateSurveyQuestions = () => {
     const payload = data.questions.map((item) => {
       let obj = {};
   
-      if (item.type.value === "MULTIPLE_ANSWER_TYPE" || item.type.value === "CHECKBOX_ANSWER_TYPE") {
+      if (item.type.value === "MULTIPLE_ANSWER_TYPE" || item.type.value === "CHECKBOX_ANSWER_TYPE" || item.type.value === "DROP_DOWN_MENU_ANSWER_TYPE") {
         obj = {
           tenantId: tenantId,
           categoryId: item.category.value,

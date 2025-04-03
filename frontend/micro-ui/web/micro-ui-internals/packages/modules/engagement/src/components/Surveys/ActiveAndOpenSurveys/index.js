@@ -8,7 +8,8 @@ const ActiveAndOpenSurveys = (props) => {
   const { userType } = props;
   const history = useHistory();
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentPermanentCity();
+  const tenantId = userType.toLowerCase()==="employee"?Digit.ULBService.getCurrentPermanentCity():Digit.ULBService.getCurrentTenantId();
+  console.log("tenantId",Digit.ULBService.getCurrentTenantId(),Digit.ULBService.getCurrentPermanentCity())
   const [loading, setLoading] = useState(false);
   const [count, setCount] = useState(null);
   const [data, setData] = useState([]);

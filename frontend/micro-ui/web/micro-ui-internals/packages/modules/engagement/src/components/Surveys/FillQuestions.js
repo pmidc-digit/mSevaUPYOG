@@ -23,7 +23,7 @@ const FillQuestions = (props) => {
   const prevProps = props.location.state;
   // let isgeoLoc = false
   const [hasCitizenDetails, setHasCitizenDetails] = useState(null)
-  console.log("city citizen det",prevProps.citizenData.city)
+
  // let { data: tenantlocalties, isLoadingLocality } = Digit.Hooks.useBoundaryLocalities(city, "revenue", { enabled: !!city }, t);
   useEffect(() => {
     (async () => {

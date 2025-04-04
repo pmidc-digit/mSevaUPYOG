@@ -48,7 +48,7 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
            let SurveyEntityObj= {
                 startDate: startDate,
                 endDate: endDate,
-                tenantId: tenantId,
+                tenantId: surveyDetails.ulb.code,
                 surveyTitle: surveyDetails.name,
                 surveyCategory: surveyDetails.name,
                 surveyDescription: surveyDetails.description,

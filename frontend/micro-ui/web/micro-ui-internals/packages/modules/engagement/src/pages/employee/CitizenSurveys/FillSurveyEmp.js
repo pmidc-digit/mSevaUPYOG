@@ -5,7 +5,7 @@ import CitizenDetails from "../../../components/Surveys/CitizenDetails";
 import { useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
-const FillSurvey = ({stateCode}) => {
+const FillSurvey = ({ stateCode }) => {
   const history = useHistory();
   const { t } = useTranslation();
   const location = useLocation();
@@ -16,19 +16,19 @@ const FillSurvey = ({stateCode}) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
   //const [citizenFound, setCitizenFound]=useState(null)
-  const [register,setRegister]=useState(null)
-  const [Otp,setGetOtp]=useState(false);
+  const [register, setRegister] = useState(null)
+  const [Otp, setGetOtp] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     mobile: "",
-    email:"",
-    dob:"",
+    email: "",
+    dob: "",
     gender: "",
-    city:"",
-    otp:"",
+    city: "",
+    otp: "",
     citizenFound: null,
     register: null,
-    user:null
+    user: null
     // relationName: "",
     // relation: null,
     // address: "",
@@ -134,8 +134,8 @@ const FillSurvey = ({stateCode}) => {
     const newErrors = {};
     if (!formData.name) newErrors.name = "Name is required";
     else if (!/^[A-Za-z\s]+$/.test(formData.name)) newErrors.name = "Name can only contain alphabets and spaces";
-   
-   
+
+
     if (!formData.email) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invlid Email";
 
@@ -148,8 +148,8 @@ const FillSurvey = ({stateCode}) => {
 
     if (!formData.mobile) newErrors.mobile = "Mobile number is required";
     else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";
-     if (!formData.city) newErrors.city = "City is required";
-     if (!formData.otp) newErrors.otp = "Otp is required";
+    if (!formData.city) newErrors.city = "City is required";
+    if (!formData.otp) newErrors.otp = "Otp is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -166,32 +166,32 @@ const FillSurvey = ({stateCode}) => {
     Digit.Surveys.userSearch(data, filters)
       .then((response) => {
         console.log("response", response);
-      
-        if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length>0) {
+
+        if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
           setFormData((prevData) => ({
             ...prevData,
             ["citizenFound"]: true,
-            ["email"]:response.user?.email,
+            ["email"]: response.user?.email,
             ["gender"]: response.user?.gender,
-            ["dob"]:response.user?.dob
+            ["dob"]: response.user?.dob
           }));
-         
-         // setCitizenFound(true)
+
+          // setCitizenFound(true)
           history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
             citizenFill: true,
             citizenData: formData,
             userInfo: response.user[0],
             surveyDetails: surveyDetails,
           });
-          
+
         } else {
           setFormData((prevData) => ({
             ...prevData,
             ["citizenFound"]: false,
           }));
-         // setCitizenFound(false)
+          // setCitizenFound(false)
           setShowToast({ key: true, isError: true, label: `CITIZEN NOT FOUND FOR THE GIVEN DETAILS` });
-         
+
         }
       })
       .catch((error) => {
@@ -199,7 +199,7 @@ const FillSurvey = ({stateCode}) => {
       });
   };
   const handleRegisterNext = () => {
-    let payload={
+    let payload = {
       name: formData.name,
       username: formData.mobile,
       otpReference: formData.otp,
@@ -208,17 +208,17 @@ const FillSurvey = ({stateCode}) => {
     }
     try {
       Digit.UserService.registerUser(payload, stateCode)
-      .then((response) => {
-        if(response?.UserRequest!==null || response?.UserRequest!==undefined){
-          history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
-            citizenFill: true,
-            citizenData: formData,
-            userInfo: response.UserRequest,
-            surveyDetails: surveyDetails,
-          });
-        }
-       console.log("res",response)
-      })
+        .then((response) => {
+          if (response?.UserRequest !== null || response?.UserRequest !== undefined) {
+            history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
+              citizenFill: true,
+              citizenData: formData,
+              userInfo: response.UserRequest,
+              surveyDetails: surveyDetails,
+            });
+          }
+          console.log("res", response)
+        })
     } catch (err) {
       console.log(err);
     }
@@ -226,25 +226,75 @@ const FillSurvey = ({stateCode}) => {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    if(formData.citizenFound===null){
+    if (formData.citizenFound === null) {
       setShowToast({ key: true, isError: true, label: `PLEASE CLICK ON FETCH DETAILS BUTTON` })
       return;
     }
-   const proceed = formData.register===true?validateRegisterForm():formData.citizenFound===true? validateForm():null;
-     if (proceed) {
+    const proceed = formData.register === true ? validateRegisterForm() : formData.citizenFound === true ? validateForm() : null;
+    if (proceed) {
       console.log("Form submitted:", formData);
-      console.log("reg",formData.register,formData.citizenFound);
-      if((formData.register===false|| formData.register===null) && (formData.citizenFound===true)){
-       // handleNext();
-       history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
-        citizenFill: true,
-        citizenData: formData,
-        userInfo: formData.user,
-        surveyDetails: surveyDetails,
-        userType: location.state?.userType
-      });
+      console.log("reg", formData.register, formData.citizenFound);
+      if ((formData.register === false || formData.register === null) && (formData.citizenFound === true)) {
+        // handleNext();
+        // const updateddata = {
+         
+        //   name: formData.name,
+        //   gender: formData.gender,
+        //   emailId: formData.email,
+        //   dob: formData.dob
+        // };
+        // const data={
+        //   ...formData.user,
+        //   ...updateddata
+        // }
+      
+
+        // Digit.UserService.updateUser(data, stateCode)
+        //   .then((response) => {
+        //     console.log("response", response);
+
+        //     if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
+
+        //       // setFormData((prevData) => ({
+        //       //   ...prevData,
+        //       //   "citizenFound": true,
+        //       //   "name": response.user[0]?.name,
+        //       //   ["email"]: response.user[0]?.email,
+        //       //   ["gender"]: response.user[0]?.gender,
+        //       //   ["dob"]: response.user[0]?.dob,
+        //       //   "register": false,
+        //       //   // "city": response.user[0]?.permanentCity,
+        //       //   "user": response.user[0],
+        //       // }));
+        //       history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
+        //         citizenFill: true,
+        //         citizenData: formData,
+        //         userInfo: formData.user,
+        //         surveyDetails: surveyDetails,
+        //         userType: location.state?.userType
+        //       });
+
+
+        //     } else {
+
+        //       setShowToast({ key: true, isError: true, label: `CITIZEN DETAILS NOT UPDTAED` });
+
+        //     }
+        //   })
+        //   .catch((error) => {
+        //     console.log(error);
+        //   });
+
+        history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
+          citizenFill: true,
+          citizenData: formData,
+          userInfo: formData.user,
+          surveyDetails: surveyDetails,
+          userType: location.state?.userType
+        });
+
       }
-      else{
+      else {
         handleRegisterNext();
       }
     }
@@ -264,7 +314,7 @@ const FillSurvey = ({stateCode}) => {
           </h2>
         </div>
         <form onSubmit={handleSubmit}>
-          <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} stateCode={stateCode} Otp={Otp} setGetOtp={setGetOtp} city={formData?.city}/>
+          <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} setErrors={setErrors} stateCode={stateCode} Otp={Otp} setGetOtp={setGetOtp} city={formData?.city} />
           <div style={{ display: "flex", justifyContent: "flex-start", alignItems: "center", gap: "10px", flexDirection: "row", marginTop: "10px" }}>
             <button type="submit">Next</button>
             <button
@@ -273,14 +323,14 @@ const FillSurvey = ({stateCode}) => {
                 setFormData({
                   name: "",
                   mobile: "",
-                  email:"",
-                  dob:"",
-                  gender:"",
-                  city:"",
-                  otp:"",
+                  email: "",
+                  dob: "",
+                  gender: "",
+                  city: "",
+                  otp: "",
                   citizenFound: null,
                   register: null,
-                  user:null
+                  user: null
                 })
               }
             >

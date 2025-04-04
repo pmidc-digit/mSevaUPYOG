@@ -8,7 +8,8 @@ const ActiveAndOpenSurveys = (props) => {
   const { userType } = props;
   const history = useHistory();
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentPermanentCity();
+  const tenantId = userType.toLowerCase()==="employee"?Digit.ULBService.getCurrentPermanentCity():localStorage.getItem("CITIZEN.CITY"); //passing static value for testing 
+  console.log("tenantId",Digit.ULBService.getCurrentTenantId(),Digit.ULBService.getCurrentPermanentCity())
   const [loading, setLoading] = useState(false);
   const [count, setCount] = useState(null);
   const [data, setData] = useState([]);
@@ -73,7 +74,8 @@ const ActiveAndOpenSurveys = (props) => {
 
   function fetchActiveAndOpenSurveys() {
     setLoading(true);
-    const payload = { tenantId: tenantId, active: true, openSurveyFlag: true };
+    const payload = { tenantId: localStorage.getItem("CITIZEN.CITY"),
+       active: true, openSurveyFlag: true };
     Digit.Surveys.searchSurvey(payload)
       .then((response) => {
         const tableData = response.Surveys.filter((item) => item.active);

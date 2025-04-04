@@ -128,7 +128,8 @@ const CreateSurveyCategory = () => {
           content={
             <p style={{ fontWeight: "bold" }}>
               {t(
-                "This page is designed for creating categories to organize survey questions. The categories created here will be used on the question creation page, allowing users to group and manage survey questions effectively based on their topics. Users can search and edit the category status in the search categories page."
+               // "This page is designed for creating categories to organize survey questions. The categories created here will be used on the question creation page, allowing users to group and manage survey questions effectively based on their topics. Users can search and edit the category status in the search categories page."
+               "Organize your survey by category to steamline feedback on municipal services."
               )}
             </p>
           } //{t("ABOUT_CATEGORY_CREATION_DESCRIPTION")

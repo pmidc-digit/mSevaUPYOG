@@ -271,15 +271,6 @@ public class ScorecardSurveyService {
 
     }
 
-
-
-
-        public boolean hasCitizenAlreadyResponded(AnswerEntity answerEntity, String citizenId) {
-        if (ObjectUtils.isEmpty(answerEntity.getSurveyId()))
-            throw new CustomException("EG_SS_FETCH_CITIZEN_RESP_ERR", "Cannot fetch citizen's response without surveyId");
-        return surveyRepository.fetchWhetherCitizenAlreadyResponded(answerEntity.getSurveyId(), citizenId);
-    }
-
     public List<Section> fetchSectionListBasedOnSurveyId(String surveyId) {
         List<Section> sectionList = surveyRepository.fetchSectionListBasedOnSurveyId(surveyId);
         if (CollectionUtils.isEmpty(sectionList))

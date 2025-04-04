@@ -47,14 +47,6 @@ public class ScorecardSurveyRepository {
         return foundUuids.containsAll(questionUuids);
     }
 
-    public boolean fetchWhetherCitizenAlreadyResponded(String surveyId, String citizenId) {
-        List<Object> preparedStmtList = new ArrayList<>();
-        preparedStmtList.add(surveyId);
-        preparedStmtList.add(citizenId);
-        String query = surveyQueryBuilder.getCitizenResponseExistsQuery();
-        return jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Boolean.class);
-    }
-
     public List<Section> fetchSectionListBasedOnSurveyId(String surveyId) {
         List<Object> preparedStmtList = new ArrayList<>();
         if (ObjectUtils.isEmpty(surveyId))

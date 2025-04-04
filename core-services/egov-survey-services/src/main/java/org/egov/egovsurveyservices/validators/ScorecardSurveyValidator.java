@@ -54,11 +54,6 @@ public class ScorecardSurveyValidator {
             throw new CustomException("EG_SS_SUBMIT_RESPONSE_ERR", "Provide a valid citizen uuid.");
     }
 
-    public void validateWhetherCitizenAlreadyResponded(AnswerEntity answerEntity, String citizenId) {
-        if(surveyService.hasCitizenAlreadyResponded(answerEntity, citizenId))
-            throw new CustomException("EG_SS_CITIZEN_ALREADY_RESPONDED", "The citizen has already responded to this survey.");
-    }
-
     public void validateAnswers(SurveyResponseNew answerEntity) {
 
         List<Section> sectionList = surveyService.fetchSectionListBasedOnSurveyId(answerEntity.getSurveyUuid());

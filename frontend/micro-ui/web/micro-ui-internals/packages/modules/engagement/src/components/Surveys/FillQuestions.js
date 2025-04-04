@@ -19,8 +19,11 @@ const FillQuestions = (props) => {
   });
   const [pincode, setPincode] = useState('')
   const [isgeoLoc, setIsGeoLoc] = useState(false)
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const prevProps = props.location.state;
   // let isgeoLoc = false
   const [hasCitizenDetails, setHasCitizenDetails] = useState(null)
+  console.log("city citizen det",prevProps.citizenData.city)
  // let { data: tenantlocalties, isLoadingLocality } = Digit.Hooks.useBoundaryLocalities(city, "revenue", { enabled: !!city }, t);
   useEffect(() => {
     (async () => {
@@ -33,6 +36,18 @@ const FillQuestions = (props) => {
       setLocalityList(__localityList);
     })();
   }, [city]);
+  useEffect(() => {
+    (async () => {
+     if((prevProps?.userType).toUpperCase() === "EMPLOYEE"){
+      let response = await Digit.LocationService.getLocalities(prevProps.citizenData.city?.code);
+      let __localityList = [];
+      if (response && response.TenantBoundary.length > 0) {
+        __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+      }
+      setLocalityList(__localityList);
+    }
+    })();
+  }, []);
 console.log("locality list",localityList)
   const {
     register: register,
@@ -55,7 +70,7 @@ console.log("locality list",localityList)
 
 
   // const [userInfo,setUserInfo]=useState([])
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+
   // const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   // console.log("localities",localities)
   const userType = props.userType;
@@ -165,7 +180,7 @@ console.log("locality list",localityList)
   //     "createdTime": 1741255647601,
   //     "lastModifiedTime": 1741255647601
   // }];
-  const prevProps = props.location.state;
+ 
   console.log("props", props);
   console.log("prevProps", prevProps)
   const data = prevProps.surveyDetails;
@@ -598,9 +613,10 @@ console.log("locality list",localityList)
     if(locality===null){
       newErrors['locality'] = {answerRequired: 'Please select your locality'}
     }
-    if(city===null){
+    if((prevProps?.userType).toUpperCase() === "CITIZEN" && city===null){
       newErrors['city'] = {answerRequired: 'Please select your city'}
     }
+  
     setErrors(newErrors);
     console.log("errors", newErrors);
     return Object.keys(newErrors).length === 0;
@@ -678,7 +694,7 @@ console.log("locality list",localityList)
   const handleSubmit = (event) => {
     event.preventDefault();
     console.log("citizen fill", prevProps.citizenFill);
-    if ((prevProps.citizenFill && (userType).toLowerCase() === "employee") || (userType).toLowerCase() === "citizen") {
+    if ((prevProps.citizenFill && (prevProps?.userType).toLowerCase() === "employee") || (prevProps?.userType).toLowerCase() === "citizen") {
       if (validateForm()) {
         console.log("Form submitted:", formData);
       //  handleSubmitSurvey();
@@ -1268,7 +1284,7 @@ console.log("locality list",localityList)
               <>
                 <CardLabel>{`${t("LOCALITY")}`} <span className="check-page-link-button">*</span></CardLabel>
 
-                <Controller
+                {/* <Controller
                   name="locality"
                   defaultValue={locality}
                   control={control}
@@ -1291,7 +1307,28 @@ console.log("locality list",localityList)
                     />
                   )} />
                    {errors && errors['locality'] && (
+              <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: '500' }}>{errors?.['locality'].answerRequired}</CardLabelError>)} */}
+               <select id="dropdown" value={locality} 
+                        onChange={(e) => {
+                       
+                        
+                          handleLocalityChangeCitizen(e); 
+                        }}
+                       >
+        <option value="">--Please choose a locality--</option>
+        {(localityList!==null )&& (
+          <>
+        {localityList.map((option, index) => (
+          <option key={index} value={option.name}>
+            {option?.name}
+          </option>
+        ))}
+        </>
+        )}
+        </select>
+                 {errors && errors['locality'] && (
               <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: '500' }}>{errors?.['locality'].answerRequired}</CardLabelError>)}
+             
               </>
               : <>
                 <CardLabel>{`${t("CITY")}`} <span className="check-page-link-button">*</span></CardLabel>

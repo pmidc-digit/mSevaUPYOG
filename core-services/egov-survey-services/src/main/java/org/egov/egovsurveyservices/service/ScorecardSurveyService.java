@@ -315,15 +315,17 @@ public class ScorecardSurveyService {
         List<SurveyResponseNew> surveyResponseStatus = surveyRepository.getSurveyResponseDetails(criteria.getSurveyUuid(), criteria.getCitizenId());
         SurveyResponseNew surveyResponseNew;
         if (surveyResponseStatus.isEmpty()) {
-            throw new CustomException("EG_SS_SURVEY_UUID_NOT_FOUND","survey response entity not found");
+            surveyResponseNew = null;
         }
         else {
             surveyResponseNew = surveyResponseStatus.get(0);
         }
         ScorecardAnswerResponse scorecardAnswerResponse = buildScorecardAnswerResponse(answers, criteria);
-        scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
-        scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
-        scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
+        if(surveyResponseNew!=null) {
+            scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
+            scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
+            scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
+        }
         return scorecardAnswerResponse;
     }
 

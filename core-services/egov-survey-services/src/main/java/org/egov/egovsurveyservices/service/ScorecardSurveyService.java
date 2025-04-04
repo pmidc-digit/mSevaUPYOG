@@ -17,6 +17,7 @@ import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
 import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
+import org.egov.egovsurveyservices.web.models.enums.SurveyStatus;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -158,7 +159,7 @@ public class ScorecardSurveyService {
 
         String existingSurveyResponseUuid = surveyRepository.getSurveyResponseUuidForAnswers(answerUuids);
         if (existingSurveyResponseUuid != null) {
-            surveyResponse.setUuid(existingSurveyResponseUuid); // Use existing surveyResponseUuid for all answers
+            surveyResponse.setUuid(existingSurveyResponseUuid);
 
         }else{
             existingSurveyResponseUuid = surveyRepository.getExistingSurveyResponseUuid(
@@ -171,9 +172,9 @@ public class ScorecardSurveyService {
             }
         }
 
-        if (answerRequest.getSurveyResponse().getStatus()==null)
-        	answerRequest.getSurveyResponse().setStatus(org.egov.egovsurveyservices.utils.SurveyServiceConstants.DRAFT);
-
+        if (answerRequest.getSurveyResponse().getStatus()==null) {
+            answerRequest.getSurveyResponse().setStatus(SurveyStatus.DRAFT);
+        }
         // Validate tenant ID based on survey response
         if(StringUtils.equalsIgnoreCase(tenantIdBasedOnSurveyId,"pb.punjab")){
             surveyValidator.validateCityIsProvided(surveyResponse.getTenantId());
@@ -208,13 +209,11 @@ public class ScorecardSurveyService {
                                         uuidToUse = UUID.randomUUID().toString();
                                     }
                                 }
-//                                uuidToUse = existingAnswerUuid != null ? existingAnswerUuid : UUID.randomUUID().toString();
-
 
                                 if (existingAnswerUuid != null) {
-                                    answer.setUuid(existingAnswerUuid); // Use the existing UUID
+                                    answer.setUuid(existingAnswerUuid);
                                 } else {
-                                    answer.setUuid(UUID.randomUUID().toString()); // Generate a new UUID for new answer
+                                    answer.setUuid(UUID.randomUUID().toString());
                                 }
                                 if (StringUtils.isBlank(question.getQuestionStatement())) {
                                     throw new CustomException("EG_SS_QUESTION_NOT_FOUND", "question not found with id " + answer.getQuestionUuid());
@@ -223,7 +222,6 @@ public class ScorecardSurveyService {
                                 answer.setAuditDetails(auditDetails);
                                 if (answer.getAnswerDetails() != null) {
                                     answer.getAnswerDetails().forEach(detail -> {
-//                                        detail.setUuid(UUID.randomUUID().toString());
                                         detail.setAnswerUuid(answer.getUuid());
                                         detail.setAuditDetails(auditDetails);
                                         detail.setAnswerType(question.getType().toString());
@@ -260,8 +258,9 @@ public class ScorecardSurveyService {
 
         ScorecardAnswerResponse scorecardAnswerResponse = ScorecardAnswerResponse.builder()
                 .locality(surveyResponse.getLocality())
+                .coordinates(surveyResponse.getCoordinates())
                 .tenantId(surveyResponse.getTenantId())
-                .status(surveyResponse.getStatus())
+                .status(surveyResponse.getStatus().toString())
                 .surveyUuid(surveyResponse.getSurveyUuid())
                 .citizenId(surveyResponse.getCitizenId())
                 .sectionResponses(enrichedSectionResponses)
@@ -313,9 +312,18 @@ public class ScorecardSurveyService {
             throw new CustomException("EG_SS_SURVEY_UUID_CITIZEN_UUID_ERR","surveyUuid and citizenUuid cannot be null");
         }
             List<AnswerNew> answers = surveyRepository.getAnswers(criteria.getSurveyUuid(),criteria.getCitizenId());
-        String surveyResponseStatus = surveyRepository.getSurveyResponseStatus(criteria.getSurveyUuid(), criteria.getCitizenId());
+        List<SurveyResponseNew> surveyResponseStatus = surveyRepository.getSurveyResponseDetails(criteria.getSurveyUuid(), criteria.getCitizenId());
+        SurveyResponseNew surveyResponseNew;
+        if (surveyResponseStatus.isEmpty()) {
+            throw new CustomException("EG_SS_SURVEY_UUID_NOT_FOUND","survey response entity not found");
+        }
+        else {
+            surveyResponseNew = surveyResponseStatus.get(0);
+        }
         ScorecardAnswerResponse scorecardAnswerResponse = buildScorecardAnswerResponse(answers, criteria);
-        scorecardAnswerResponse.setStatus(surveyResponseStatus);
+        scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
+        scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
+        scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());
         return scorecardAnswerResponse;
     }
 

@@ -3,6 +3,7 @@ package org.egov.egovsurveyservices.web.models;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.egov.egovsurveyservices.web.models.enums.SurveyStatus;
 
 import java.util.List;
 
@@ -24,11 +25,11 @@ public class SurveyResponseNew {
     @JsonProperty("citizenId")
     private String citizenId;
     @JsonProperty("locality")
-    private String locality;
+    private String locality = "";
     @JsonProperty("coordinates")
-    private String coordinates;
+    private String coordinates = "";
     @JsonProperty("status")
-    private String status;
+    private SurveyStatus status;
     @JsonProperty("answers")
     private List<AnswerNew> answers;
 }

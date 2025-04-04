@@ -3,11 +3,8 @@ package org.egov.egovsurveyservices.repository;
 import lombok.extern.slf4j.Slf4j;
 
 import org.egov.egovsurveyservices.repository.querybuilder.ScorecardSurveyQueryBuilder;
-import org.egov.egovsurveyservices.repository.rowmapper.AnswerRowMapper;
-import org.egov.egovsurveyservices.repository.rowmapper.ScorecardSurveyRowMapper;
+import org.egov.egovsurveyservices.repository.rowmapper.*;
 import org.egov.egovsurveyservices.web.models.*;
-import org.egov.egovsurveyservices.repository.rowmapper.QuestionWeightageWithQuestionRowMapper;
-import org.egov.egovsurveyservices.repository.rowmapper.SectionRowMapper;
 import org.egov.egovsurveyservices.web.models.QuestionWeightage;
 import org.egov.egovsurveyservices.web.models.Section;
 import org.egov.tracer.model.CustomException;
@@ -121,10 +118,10 @@ public class ScorecardSurveyRepository {
         return jdbcTemplate.query(query, preparedStmtList.toArray(), new AnswerRowMapper());
     }
 
-    public String getSurveyResponseStatus(String surveyUuid, String citizenId) {
-        String query = surveyQueryBuilder.getSurveyResponseStatus();
+    public List<SurveyResponseNew> getSurveyResponseDetails(String surveyUuid, String citizenId) {
+        String query = surveyQueryBuilder.getSurveyResponseDetails();
         try {
-            return jdbcTemplate.queryForObject(query, new Object[]{surveyUuid, citizenId}, String.class);
+            return jdbcTemplate.query(query, new Object[]{surveyUuid, citizenId}, new SurveyResponseRowMapper());
         } catch (EmptyResultDataAccessException e) {
             return null; // No existing response found
         }

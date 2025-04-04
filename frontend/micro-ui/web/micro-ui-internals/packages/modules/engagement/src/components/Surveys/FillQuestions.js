@@ -556,7 +556,7 @@ console.log("locality list",localityList)
         surveyUuid: data.uuid,
         tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
         status: "draft",
-        locality: locality?.name||null,
+        locality: locality||null,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         answers: answerArr,
       },
@@ -659,7 +659,7 @@ console.log("locality list",localityList)
         surveyUuid: data.uuid,
         tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
         status: "submitted",
-        locality: locality?.name||null,
+        locality: locality||null,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
 
         answers: answerArr,

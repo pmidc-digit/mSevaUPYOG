@@ -43,6 +43,18 @@ const SearchReceipt = () => {
 
   const onSubmit = async (data) => {
     console.log("data is here==========", data);
+    // const { isLoading, isError, error, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
+    //   tenantId,
+    //   filters: { challanNo: challanno },
+    //   isMcollectAppChanged,
+    // });
+    data["businessServices"] = data?.businessServices?.code;
+    try {
+      const response = await Digit.MCollectService.recieptSearch(tenantId, data?.businessServices?.code, data);
+      // let collectionres = await Digit.PaymentService.recieptSearch(BPA?.tenantId, appBusinessService[i], { consumerCodes: BPA?.applicationNo, isEmployee: true });
+    } catch (error) {
+      console.log("error", error);
+    }
   };
 
   useEffect(() => {
@@ -52,7 +64,6 @@ const SearchReceipt = () => {
   const closeToast = () => {
     setShowToast(null);
   };
-
   return (
     <React.Fragment>
       <style>
@@ -110,7 +121,7 @@ const SearchReceipt = () => {
               <div className="surveydetailsform-wrapper">
                 <label>Receipt No</label>
                 <TextInput
-                  name="receiptNo"
+                  name="receiptNumbers"
                   type="text"
                   inputRef={register({
                     maxLength: {
@@ -127,10 +138,10 @@ const SearchReceipt = () => {
                 <Controller
                   control={control}
                   rules={{ required: t("REQUIRED_FIELD") }}
-                  name="serviceCategory"
+                  name="businessServices"
                   render={(props) => (
                     <Dropdown
-                      option={[{ active: true, code: "CONTRACT" }]}
+                      option={EmployeeStatusData}
                       select={(e) => {
                         props.onChange(e);
                       }}
@@ -157,7 +168,7 @@ const SearchReceipt = () => {
               <div className="surveydetailsform-wrapper">
                 <label>Consumer code</label>
                 <TextInput
-                  name="consumerCode"
+                  name="consumerCodes"
                   type="text"
                   inputRef={register({
                     maxLength: {
@@ -174,7 +185,7 @@ const SearchReceipt = () => {
                     +91
                   </span>
                   <TextInput
-                    name="mobileNo"
+                    name="mobileNumber"
                     type="text"
                     inputRef={register({
                       pattern: {

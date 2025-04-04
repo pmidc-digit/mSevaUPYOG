@@ -67,9 +67,9 @@ export const Request = async ({
   multipartFormData = false,
   multipartData = {},
   reqTimestamp = false,
-  plainAccessRequest = null
+  plainAccessRequest = null,
 }) => {
-  if (method.toUpperCase() === "POST"||method.toUpperCase() === "PUT") {
+  if (method.toUpperCase() === "POST" || method.toUpperCase() === "PUT") {
     const ts = new Date().getTime();
     data.RequestInfo = {
       apiId: "Rainmaker",
@@ -100,10 +100,9 @@ export const Request = async ({
       data.RequestInfo = { ...data.RequestInfo, plainAccessRequest: { ...privacy } };
     }
 
-    if(plainAccessRequest){
+    if (plainAccessRequest) {
       data.RequestInfo = { ...data.RequestInfo, plainAccessRequest };
     }
-
   }
 
   const headers1 = {

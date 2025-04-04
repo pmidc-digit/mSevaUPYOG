@@ -105,6 +105,9 @@ import PTSelectLandmark from "./pageComponents/PTSelectLandmark";
 import NewPropertyStepForm from "../src/pages/employee/NewApplication/NewApplicationStepForm/NewPropertyStepForm";
 import PTNewFormStepOne from "../src/pages/employee/NewApplication/NewApplicationStepForm/PTNewFormStepOne";
 import PTNewFormStepTwo from "../src/pages/employee/NewApplication/NewApplicationStepForm/PTNewFormStepTwo";
+import PTNewFormStepThree from "../src/pages/employee/NewApplication/NewApplicationStepForm/PTNewFormStepThree";
+import PTNewFormStepFour from "../src/pages/employee/NewApplication/NewApplicationStepForm/PTNewFormStepFour";
+import PTNewFormSummaryStepFive from "../src/pages/employee/NewApplication/NewApplicationStepForm/PTNewFormSummaryStepFive";
 import getRootReducer from "./redux/reducers";
 
 export const PTReducers = getRootReducer;
@@ -204,6 +207,9 @@ const componentsToRegister = {
   NewPropertyStepForm,
   PTNewFormStepOne,
   PTNewFormStepTwo,
+  PTNewFormStepThree,
+  PTNewFormStepFour,
+  PTNewFormSummaryStepFive
 };
 
 const addComponentsToRegistry = () => {

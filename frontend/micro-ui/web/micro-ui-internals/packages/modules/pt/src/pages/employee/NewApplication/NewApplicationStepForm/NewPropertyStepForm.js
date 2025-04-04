@@ -14,18 +14,18 @@ const createEmployeeConfig = [
   {
     head: "Personal Details",
     stepLabel: "Property Address",//"HR_EMPLOYEE_DETAILS_STEP_LABEL",
-    stepNumber: 2,
+    stepNumber: 1,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormStepTwo",
+    component: "PTNewFormStepOne",
     key: "PropertyDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "Next",
     },
   },
   {
-    head: "Property Details",
+    head: "ES_NEW_APPLICATION_PROPERTY_ASSESSMENT",
     stepLabel: "Property Assesment",
     stepNumber: 2,
     isStepEnabled: true,
@@ -34,22 +34,49 @@ const createEmployeeConfig = [
     key: "PropertyDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "Next",
     },
   },
-//   {
-//     head: "HR_SUMMARY",
-//     stepLabel: "HR_SUMMARY_STEP_LABEL",
-//     stepNumber: 3,
-//     isStepEnabled: false,
-//     type: "component",
-//     component: "Summary",
-//     key: "summary",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "HR_COMMON_SUBMIT",
-//     },
-//   },
+  {
+    head: "ES_NEW_APPLICATION_OWNERSHIP_DETAILS",
+    stepLabel: "Owner Details",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "PTNewFormStepThree",
+    key: "ownerShipDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
+    head: "ES_NEW_APPLICATION_DOCUMENTS_REQUIRED",
+    stepLabel: "Document Info",
+    stepNumber: 4,
+    isStepEnabled: true,
+    type: "component",
+    component: "PTNewFormStepFour",
+    key: "DocummentDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
+    head: "Summary",
+    stepLabel: "Summary",
+    stepNumber: 5,
+    isStepEnabled: true,
+    type: "component",
+    component: "PTNewFormSummaryStepFive",
+    key: "SummaryPT",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Submit",
+    },
+  },
+  
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
@@ -65,6 +92,8 @@ const CreateEmployeeStepForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  console.log("Form data", formData)
+  console.log("formState: ",formState);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PtNewApplication(updatedStepNumber));
@@ -81,7 +110,6 @@ const CreateEmployeeStepForm = () => {
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
-  console.log("formState: ",formState);
   return (
     <div className="pageCard">
       <CardHeader styles={{fontSize:"28px" ,fontWeight:"400", color: "#1C1D1F"}} divider={true}>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</CardHeader>

@@ -13,49 +13,6 @@ import java.util.*;
 public class AnswerRowMapper implements ResultSetExtractor<List<AnswerNew>> {
     public List<AnswerNew> extractData(ResultSet rs) throws SQLException, DataAccessException {
         Map<String,AnswerNew> answerMap = new LinkedHashMap<>();
-
-//        while (rs.next()){
-//            String uuid = rs.getString("uuid");
-//            Answer answer = answerMap.get(uuid);
-//
-//            if(answer == null) {
-//
-//                Long lastModifiedTime = rs.getLong("lastmodifiedtime");
-//                if (rs.wasNull()) {
-//                    lastModifiedTime = null;
-//                }
-//
-//                AuditDetails auditdetails = AuditDetails.builder()
-//                        .createdBy(rs.getString("createdby"))
-//                        .createdTime(rs.getLong("createdtime"))
-//                        .lastModifiedBy(rs.getString("lastmodifiedby"))
-//                        .lastModifiedTime(lastModifiedTime)
-//                        .build();
-//                List<String> answerContent = new ArrayList<>();
-//                if (rs.getString("answercontent") != null) {
-//                    answerContent = Arrays.asList(rs.getString("answercontent"));
-//                }
-//
-//                answer = Answer.builder()
-//                        .answerUuid(rs.getString("uuid"))
-//                        .city(rs.getString("tenantid"))
-//                        .surveyUuid(rs.getString("surveyuuid"))
-//                        .sectionUuid(rs.getString("sectionuuid"))
-//                        .questionUuid(rs.getString("questionuuid"))
-//                        .comments(rs.getString("comments"))
-//                        .answer(Arrays.asList(rs.getString("answercontent").split(",")))
-//                        .citizenId(rs.getString("citizenid"))
-//                        .auditDetails(auditdetails)
-//                        .build();
-//                if(rs.getString("questionstatement")!=null){
-//                    answer.setQuestionStatement(rs.getString("questionstatement"));
-//                }
-//            }
-//
-//            answerMap.put(uuid, answer);
-//        }
-
-
         while (rs.next()) {
             String answerUuid = rs.getString("uuid");
 

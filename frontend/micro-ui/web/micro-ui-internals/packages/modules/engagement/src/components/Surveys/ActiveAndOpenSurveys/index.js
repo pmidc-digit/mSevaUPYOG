@@ -9,7 +9,6 @@ const ActiveAndOpenSurveys = (props) => {
   const history = useHistory();
   const { t } = useTranslation();
   const tenantId = userType.toLowerCase() === "employee" ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY"); //passing static value for testing
-  console.log("tenantId", Digit.ULBService.getCurrentTenantId(), Digit.ULBService.getCurrentPermanentCity());
   const [loading, setLoading] = useState(false);
   const [count, setCount] = useState(null);
   const [data, setData] = useState([]);

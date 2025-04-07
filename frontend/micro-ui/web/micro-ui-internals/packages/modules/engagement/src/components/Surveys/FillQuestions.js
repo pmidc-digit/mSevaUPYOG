@@ -214,6 +214,7 @@ const FillQuestions = (props) => {
           });
 
           setFormData(result);
+          console.log("status======", status);
           if (status === "draft") {
             handleAutoSave();
           } else {
@@ -250,7 +251,7 @@ const FillQuestions = (props) => {
               fetchPosition();
             }
           }
-          if (response.status === "submitted") {
+          if (response.status === "Submit") {
             setSubmitted(true);
             handleDisplayQuesDetails();
             return;
@@ -567,7 +568,7 @@ const FillQuestions = (props) => {
       SurveyResponse: {
         surveyUuid: data.uuid,
         tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
-        status: "draft",
+        status: "Draft",
         locality: locality || null,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         answers: answerArr,
@@ -674,7 +675,7 @@ const FillQuestions = (props) => {
       SurveyResponse: {
         surveyUuid: data.uuid,
         tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
-        status: "submitted",
+        status: "Submit",
         locality: locality || null,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
 
@@ -706,11 +707,12 @@ const FillQuestions = (props) => {
       return error;
     }
   };
+
   const handleSubmit = (event) => {
     event.preventDefault();
     if ((prevProps.citizenFill && (prevProps?.userType).toLowerCase() === "employee") || (prevProps?.userType).toLowerCase() === "citizen") {
       if (validateForm()) {
-        //  handleSubmitSurvey();
+        // handleSubmitSurvey();
         fetchAnswer("submit");
       }
     } else {

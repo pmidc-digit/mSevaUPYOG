@@ -259,8 +259,8 @@ const addDefaultUserDetails = (tenantId, owner) => {
 
 const addDeactiveUserDetails = (tenantId, owner) => {
    // console.log("owner"+JSON.stringify(owner))
-  if (!owner.userName || isEmpty(owner.userName))
-      owner.userName = uuidv1();
+ // if (!owner.userName || isEmpty(owner.userName))
+  owner.userName = uuidv1();
   owner.active = true;
   owner.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
   owner.type = "CITIZEN";

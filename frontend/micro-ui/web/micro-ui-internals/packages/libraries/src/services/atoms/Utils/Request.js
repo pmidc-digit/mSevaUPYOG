@@ -69,6 +69,8 @@ export const Request = async ({
   reqTimestamp = false,
   plainAccessRequest = null,
 }) => {
+  console.log("urlParams", urlParams);
+
   if (method.toUpperCase() === "POST" || method.toUpperCase() === "PUT") {
     const ts = new Date().getTime();
     data.RequestInfo = {

@@ -23,18 +23,20 @@ const SelectStructureType = ({ t, config, onSelect, userType, formData }) => {
   }
   return (
     <React.Fragment>
-    {window.location.href.includes("/citizen") ? <Timeline /> : null}
-    <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!StructureType}>
-      <RadioButtons
-        t={t}
-        optionsKey="i18nKey"
-        isMandatory={config.isMandatory}
-        options={menu}
-        selectedOption={StructureType}
-        onSelect={selectStructuretype}
-        disabled={isEdit}
-      />
-    </FormStep>
+      <div className="step-form-wrapper">
+        {window.location.href.includes("/citizen") ? <Timeline /> : null}
+        <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!StructureType} cardStyle = {{ boxShadow: "none"}}>
+          <RadioButtons
+            t={t}
+            optionsKey="i18nKey"
+            isMandatory={config.isMandatory}
+            options={menu}
+            selectedOption={StructureType}
+            onSelect={selectStructuretype}
+            disabled={isEdit}
+          />
+        </FormStep>
+      </div>
     </React.Fragment>
   );
 };

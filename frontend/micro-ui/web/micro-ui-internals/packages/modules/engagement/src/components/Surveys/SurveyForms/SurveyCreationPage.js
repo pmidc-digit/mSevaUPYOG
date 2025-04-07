@@ -80,10 +80,10 @@ else{
                     type="checkbox"
                     checked={checked}
                     disable={readOnly}
-                    onChange={(e) => { setChecked(!checked); if(checked===true){ dispatch(recalculateWeightage())} }}
+                    onChange={(e) => {console.log("e checked",e.target.checked); setChecked(e.target.checked); if(e.target.checked===true){ dispatch(recalculateWeightage())} }}
                 />
 
-                Auto Calculate Catgeory Weightage
+                Auto Calculate Category Weightage
                 </div>
       </div>
     </div>

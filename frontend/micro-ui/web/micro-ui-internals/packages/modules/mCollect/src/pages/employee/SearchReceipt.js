@@ -43,14 +43,25 @@ const SearchReceipt = () => {
 
   const onSubmit = async (data) => {
     console.log("data is here==========", data);
-    // const { isLoading, isError, error, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
-    //   tenantId,
-    //   filters: { challanNo: challanno },
-    //   isMcollectAppChanged,
-    // });
-    data["businessServices"] = data?.businessServices?.code;
+    const businessService = data?.businessServices?.code;
+
+    // Filter out empty strings, null, undefined, and empty arrays
+    const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
+      if (
+        value !== null &&
+        value !== undefined &&
+        !(typeof value === "string" && value.trim() === "") &&
+        !(Array.isArray(value) && value.length === 0)
+      ) {
+        // Replace businessServices with its code
+        acc[key] = key === "businessServices" ? businessService : value;
+      }
+      return acc;
+    }, {});
+
     try {
-      const response = await Digit.MCollectService.recieptSearch(tenantId, data?.businessServices?.code, data);
+      const response = await Digit.MCollectService.recieptSearch(tenantId, businessService, filteredData);
+      console.log("✅ recieptSearch response", response);
       // let collectionres = await Digit.PaymentService.recieptSearch(BPA?.tenantId, appBusinessService[i], { consumerCodes: BPA?.applicationNo, isEmployee: true });
     } catch (error) {
       console.log("error", error);

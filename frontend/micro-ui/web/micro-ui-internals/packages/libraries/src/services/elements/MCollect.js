@@ -45,15 +45,21 @@ export const MCollectService = {
       //params: { tenantId, ...filters },
     }),
 
-  recieptSearch: (tenantId, businessService, params) =>
-    Request({
+  recieptSearch: (tenantId, businessService, params) => {
+    console.log("🔍 [MCollectService.recieptSearch] Params:", {
+      tenantId,
+      businessService,
+      ...params,
+    });
+
+    return Request({
       url: Urls.mcollect.reciept_search,
       urlParams: { businessService },
       method: "POST",
-      // do not change this directly add a param if needed
       auth: true,
       params: { tenantId, ...params },
-    }),
+    });
+  },
 
   update: (details, tenantId) =>
     Request({

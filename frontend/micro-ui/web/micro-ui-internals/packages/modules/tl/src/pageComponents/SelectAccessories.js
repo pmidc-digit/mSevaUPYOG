@@ -24,8 +24,9 @@ const SelectAccessories = ({ t, config, onSelect, userType, formData }) => {
   }
   return (
     <React.Fragment>
+    <div className="step-form-wrapper">
     {window.location.href.includes("/citizen") ? <Timeline /> : null}
-    <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!isAccessories}>
+    <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!isAccessories} cardStyle = {{ boxShadow: "none"}}>
       <RadioButtons
         t={t}
         optionsKey="i18nKey"
@@ -35,6 +36,7 @@ const SelectAccessories = ({ t, config, onSelect, userType, formData }) => {
         onSelect={selectisAccessories}
       />
     </FormStep>
+    </div>
     </React.Fragment>
   );
 };

@@ -18,7 +18,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepOne",
-    key: "PropertyDetails",
+    key: "PersonalDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Next",
@@ -70,7 +70,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormSummaryStepFive",
-    key: "SummaryPT",
+    key: "PTSummary",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Submit",

@@ -15,13 +15,14 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
+    console.log("onFormValueChange data in Propety setils in step 2", data,"\n Bool: ",!_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PtNewApplication(config.key, data));
     }
   };
 
   const currentStepData = useSelector(function (state) {
+    console.log("state in step two ", state);
     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
         ? state.pt.PTNewApplicationForm.formData[config.key] 
         : {};

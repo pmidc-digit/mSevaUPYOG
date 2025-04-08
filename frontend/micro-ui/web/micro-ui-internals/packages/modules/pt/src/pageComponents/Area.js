@@ -2,9 +2,20 @@ import { CardLabel, FormStep, LabelFieldPair, TextInput, CardLabelError } from "
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/TLTimeline";
+import { useForm, Controller } from "react-hook-form";
 
 const Area = ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
   //let index = window.location.href.charAt(window.location.href.length - 1);
+  const {
+    control,
+    formState: localFormState,
+    watch,
+    setError: setLocalError,
+    clearErrors: clearLocalErrors,
+    setValue,
+    trigger,
+    getValues,
+  } = useForm();
   let index = window.location.href.split("/").pop();
   let validation = {};
   const onSkip = () => onSelect();
@@ -13,7 +24,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
   if (!isNaN(index)) {
     [floorarea, setfloorarea] = useState(formData.units && formData.units[index] && formData.units[index].floorarea);
   } else {
-    [floorarea, setfloorarea] = useState(formData.landarea?.floorarea);
+    [floorarea, setfloorarea] = useState(formData.landarea);
   }
   const [error, setError] = useState(null);
   const [unitareaerror, setunitareaerror] = useState(null);
@@ -78,6 +89,13 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
       setfloorarea(e.target.value);
     }
   }
+  useEffect(() => {
+    onSelect(config.key, floorarea);
+  }, [floorarea]);
+
+//   const onChange = (e) => {
+//     setSelectedValue(e);
+//   }
 
   useEffect(() => {
     if (userType === "employee") {
@@ -152,6 +170,21 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
           <LabelFieldPair key={index}>
             <CardLabel className="card-label-smaller">{t(input.label)} {input.isMandatory ? " * " : ""}</CardLabel>
             <div className="field">
+              {/* <TextInput
+                key={input.name}
+                id={input.name}
+                value={floorarea}
+                onChange={onChange}
+                {...input.validation}
+                onBlur={onBlur}
+                // autoFocus={presentInModifyApplication}
+              /> */}
+              <Controller
+            name={"LandArea"}
+            control={control}
+            defaultValue={floorarea}
+            rules={{ required: t("REQUIRED_FIELD") }}
+            render={(props) => (
               <TextInput
                 key={input.name}
                 id={input.name}
@@ -161,6 +194,8 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
                 onBlur={onBlur}
                 // autoFocus={presentInModifyApplication}
               />
+            )}
+          />
             </div>
           </LabelFieldPair>
           {formState.touched[config.key] ? (

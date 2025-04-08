@@ -11,6 +11,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../utils";
+import { useForm, Controller } from "react-hook-form"
 import Timeline from "../components/TLTimeline";
 
 const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, clearErrors, formState, onBlur }) => {
@@ -18,7 +19,17 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const { data: Menu = {}, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "PTPropertyType") || {};
-
+  const {
+    control,
+    formState: localFormState,
+    watch,
+    setError: setLocalError,
+    clearErrors: clearLocalErrors,
+    setValue,
+    trigger,
+    getValues,
+  } = useForm();
+  const [selectedValue, setSelectedValue] = useState(formData?.yearOfCreation || "");
   console.log("Our menu---", Menu);
   let proptype = [];
   proptype = Menu?.PropertyTax?.PropertyType;
@@ -26,6 +37,13 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   let menu = [];
   console.log("menu : ", Menu);
 
+  useEffect(() => {
+    onSelect(config.key, selectedValue);
+  }, [selectedValue]);
+
+  const onChange = (e) => {
+    setSelectedValue(e);
+  }
   const { data: FinancialYearData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "egf-master", [{ name: "FinancialYear" }], {
     select: (data) => {
       const formattedData = data?.["egf-master"]?.["FinancialYear"];
@@ -119,7 +137,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
         <React.Fragment key={index}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t(input.label) + " *"}</CardLabel>
-            <Dropdown
+            {/* <Dropdown
               className="form-field"
               selected={BuildingType}
               // disable={getPropertyTypeMenu(proptype)?.length === 1}
@@ -128,7 +146,30 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
               optionKey="i18nKey"
               onBlur={onBlur}
               t={t}
-            />
+            /> */}
+
+<Controller
+            name={config.key}
+            control={control}
+            defaultValue={selectedValue}
+            rules={{ required: t("REQUIRED_FIELD") }}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                selected={selectedValue}
+                disable={false}
+                option={FinancialYearOptions}
+                errorStyle={localFormState.touched.tradeSubType && errors?.tradeSubType?.message ? true : false}
+                select={(e) => {
+                  props.onChange(e);
+                  onChange(e);
+                }}
+                optionKey="i18nKey"
+                onBlur={props.onBlur}  
+                t={t}
+              />
+            )}
+          />
           </LabelFieldPair>
           {formState.touched[config.key] ? (
             <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>

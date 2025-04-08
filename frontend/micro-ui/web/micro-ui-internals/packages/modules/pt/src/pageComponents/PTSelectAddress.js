@@ -37,7 +37,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
 
   const [localities, setLocalities] = useState();
 
-  const [selectedLocality, setSelectedLocality] = useState();
+  const [selectedLocality, setSelectedLocality] = useState(formData?.address?.locality);
 
   useEffect(() => {
     if (userType === "employee" && presentInModifyApplication && localities?.length) {
@@ -53,6 +53,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
         setSelectedCity(cities[0]);
       }
     }
+    
   }, [cities]);
 
   useEffect(() => {
@@ -86,13 +87,15 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   }
 
   function selectLocality(locality) {
-    if (formData?.address?.locality) {
-      formData.address["locality"] = locality;
-    }
+    // if (formData?.address?.locality) {
+    //   formData.address["locality"] = locality;
+    // }
     setSelectedLocality(locality);
     if (userType === "employee") {
       onSelect(config.key, { ...formData[config.key], locality: locality });
     }
+    
+  console.log("Selected locality being saved:", locality);
   }
 
   function onSubmit() {
@@ -103,7 +106,14 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   const formValue = watch();
   const { errors } = localFormState;
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
+//   useEffect(() => {
+//     onSelect(config.key, selectedValue);
+//   }, [selectedValue]);
 
+//   const onChange = (e) => {
+//     setSelectedValue(e);
+//   }
   useEffect(() => {
     if (userType === "employee") {
       let keys = Object.keys(formValue);
@@ -156,12 +166,12 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
           <CardLabel className="card-label-smaller">{t("PT_LOCALITY_LABEL") + " *"}</CardLabel>
           <Controller
             name="locality"
-            defaultValue={null}
+            defaultValue={selectedLocality}
             control={control}
             render={(props) => (
               <Dropdown
                 className="form-field"
-                selected={props.value}
+                selected={selectedLocality}
                 option={localities}
                 select={props.onChange}
                 onBlur={props.onBlur}

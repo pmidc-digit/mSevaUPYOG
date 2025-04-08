@@ -8,8 +8,7 @@ const ActiveAndOpenSurveys = (props) => {
   const { userType } = props;
   const history = useHistory();
   const { t } = useTranslation();
-  const tenantId = userType.toLowerCase()==="employee"?Digit.ULBService.getCurrentPermanentCity():localStorage.getItem("CITIZEN.CITY"); //passing static value for testing 
-  console.log("tenantId",Digit.ULBService.getCurrentTenantId(),Digit.ULBService.getCurrentPermanentCity())
+  const tenantId = userType.toLowerCase() === "employee" ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY"); //passing static value for testing
   const [loading, setLoading] = useState(false);
   const [count, setCount] = useState(null);
   const [data, setData] = useState([]);
@@ -74,8 +73,7 @@ const ActiveAndOpenSurveys = (props) => {
 
   function fetchActiveAndOpenSurveys() {
     setLoading(true);
-    const payload = { tenantId: localStorage.getItem("CITIZEN.CITY"),
-       active: true, openSurveyFlag: true };
+    const payload = { tenantId: tenantId, active: true, openSurveyFlag: true };
     Digit.Surveys.searchSurvey(payload)
       .then((response) => {
         const tableData = response.Surveys.filter((item) => item.active);
@@ -88,8 +86,8 @@ const ActiveAndOpenSurveys = (props) => {
         console.error("Failed to fetch surveys", error);
       });
   }
-const userInfo= Digit.UserService.getUser().info;
-console.log("userinfo",userInfo)
+  const userInfo = Digit.UserService.getUser().info;
+  console.log("userinfo", userInfo);
   const handleStartSurvey = (surveyDetails) => {
     console.log("Survey Details: ", surveyDetails);
     // history.push("/digit-ui/employee/engagement/surveys/fill-survey");
@@ -97,18 +95,15 @@ console.log("userinfo",userInfo)
       employee: "/digit-ui/employee/engagement/surveys/fill-citizen-details-survey",
       citizen: "/digit-ui/citizen/engagement/surveys/fill-survey",
     };
-    
+
     const newPath = paths[userType.toLowerCase()] || "";
-   
+
     history.push({
       pathname: newPath,
-    //  state: { surveyDetails: surveyDetails, ...(userType.toUpperCase()==="CITIZEN" && {userInfo: userInfo})},
-    state: { surveyDetails: surveyDetails, userInfo: userInfo,userType:userType},
+      //  state: { surveyDetails: surveyDetails, ...(userType.toUpperCase()==="CITIZEN" && {userInfo: userInfo})},
+      state: { surveyDetails: surveyDetails, userInfo: userInfo, userType: userType },
     });
-
-  
-}
-
+  };
 
   return (
     <div>

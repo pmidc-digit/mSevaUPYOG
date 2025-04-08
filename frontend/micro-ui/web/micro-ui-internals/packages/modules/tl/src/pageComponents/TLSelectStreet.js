@@ -8,6 +8,7 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
   const onSkip = () => onSelect();
 
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
+  const [localFormData, setLocalFormData] = useState({});
 
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, getValues, trigger } = useForm();
   const formValue = watch();
@@ -87,7 +88,7 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
       onSelect(config.key, { ...formData[config.key], ...formValue });
       trigger();
     }
-  }, [formValue]);
+  }, [localFormData]);
 
   useEffect(() => {
     if(formData?.cpt?.details && window.location.href.includes("tl"))
@@ -122,10 +123,19 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
                   id={input.name}
                   key={input.name}
                   value={_props.value}
+                  // onChange={(e) => {
+                  //   setFocusIndex({ index });
+                  //   _props.onChange(e.target.value);
+                  // }}
                   onChange={(e) => {
-                    setFocusIndex({ index });
+                    _props.onChange(e.target.value);  // Update react-hook-form controlled value
+                    setFocusIndex({ index });          // UI focus
+                    setLocalFormData(prev => ({
+                      ...prev,
+                      [input.name]: e.target.value
+                    }));
                     _props.onChange(e.target.value);
-                  }}
+                  }}                  
                   onBlur={_props.onBlur}
                   // disable={isRenewal}
                   disable={formData?.cpt?.details?.address?.[input.name] ? true : false}

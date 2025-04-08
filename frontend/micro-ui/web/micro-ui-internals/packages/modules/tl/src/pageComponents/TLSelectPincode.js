@@ -2,6 +2,7 @@ import { FormStep, TextInput, CardLabel, LabelFieldPair } from "@mseva/digit-ui-
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/TLTimeline";
+import { useForm, Controller } from "react-hook-form";
 
 const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, register, errors, props }) => {
   const tenants = Digit.Hooks.tl.useTenants();
@@ -11,6 +12,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   // let isEditProperty = formData?.isEditProperty || false;
   let isEdit = window.location.href.includes("/edit-application/")||window.location.href.includes("renew-trade");
   const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("tl/renew-application-details");
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
   
   //if (formData?.isUpdateProperty) isEditProperty = true;
   const inputs = [
@@ -36,6 +38,10 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
     }
   }, [formData?.address?.pincode]);
 
+  useEffect(() => {
+    onSelect(config.key, { pincode });
+  },[pincode])
+
   function onChange(e) {
     setPincode(e.target.value);
     setPincodeServicability(null);
@@ -54,6 +60,7 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   const goNext = async (data) => {
     const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item == data?.pincode));
     if (foundValue) {
+      console.log("pincode",pincode);
       onSelect(config.key, { pincode });
     } else {
       setPincodeServicability("TL_COMMON_PINCODE_NOT_SERVICABLE");
@@ -66,19 +73,33 @@ const TLSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
         <LabelFieldPair key={index}>
           <CardLabel className="card-label-smaller">{`${t(input.label)}*`}</CardLabel>
           <div className="field">
-            <TextInput 
+            {/* <TextInput 
               key={input.name} 
               value={formData?.cpt?.details?.address?.pincode || pincode} 
               onChange={onChange}
               disable={formData?.cpt?.details || isRenewal}
               {...input.validation} 
               autoFocus={presentInModifyApplication} 
-              isMandatory={true}
+              // isMandatory={true}
               // ValidationRequired={true}
               // validation={type="number"}
-              
+            /> */}
+            <Controller 
+              control={control}
+              name="pincode"
+              defaultValue={formData?.cpt?.details?.address?.pincode || pincode} 
+              render={(props) => (
+                <TextInput 
+                  value={props.value}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    onChange(e);
+                  }}
+                />
 
+              )}
             />
+
           </div>
         </LabelFieldPair>
       );

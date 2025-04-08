@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, MobileNumber, DatePicker, Loader } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -281,7 +281,19 @@ const OwnerForm1 = (_props) => {
       }));
       trigger();
     }
+
+    console.log("tradedetail", tradedetail);
+    
   }, [formValue]);
+
+
+  useEffect(() => {
+    console.log("licenseTypeValue", licenseTypeValue);
+    
+    if (licenseTypeValue) {
+      setValue("licenseType", licenseTypeValue); // <-- This is the missing part
+    }
+  },[licenseTypeValue])
 
 
 
@@ -327,15 +339,19 @@ const OwnerForm1 = (_props) => {
             <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL")} * `}</CardLabel>
             <Controller
               name="licenseType"
-              defaultValue={tradedetail?.licenseType}
+              // defaultValue={tradedetail?.licenseType}
+              defaultValue={licenseTypeValue}
               control={control}
               render={(props) => (
                 <Dropdown
                   className="form-field"
                   selected={licenseTypeValue} //{licenseTypeList[1]}
+                  // selected={licenseTypeNewValue} 
                   disable={true}
                   option={licenseTypeList}
-                  select={props.onChange}
+                  select={(e)=>{
+                    props.onChange(e)
+                  }}
                   optionKey="i18nKey"
                   onBlur={props.onBlur}
                   t={t}

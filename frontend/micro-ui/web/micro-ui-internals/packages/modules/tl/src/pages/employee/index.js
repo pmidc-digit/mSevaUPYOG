@@ -157,6 +157,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const Response = Digit?.ComponentRegistryService?.getComponent('TLResponse');
   const Search = Digit?.ComponentRegistryService?.getComponent('TLSearch');
   const CommonRedirect = Digit?.ComponentRegistryService?.getComponent('CommonRedirect')
+  const NewTLStepForm = Digit?.ComponentRegistryService?.getComponent('NewTLStepForm')
   return (
     <Switch>
       <React.Fragment>
@@ -188,7 +189,8 @@ const EmployeeApp = ({ path, url, userType }) => {
               <Inbox parentRoute={path} businessService="TL" filterComponent="TL_INBOX_FILTER" initialStates={{}} isInbox={true} />
             )}
           />
-          <PrivateRoute path={`${path}/new-application`} component={() => <NewApplication parentUrl={url} />} />
+          <PrivateRoute path={`${path}/new-application`} component={() => <NewTLStepForm parentUrl={url} />} />
+          <PrivateRoute path={`${path}/new-application-spa`} component={() => <NewApplication parentUrl={url} />} />
           <PrivateRoute path={`${path}/common`} component={() => <CommonRedirect parentUrl={url} />} />
           <PrivateRoute path={`${path}/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/renew-application-details/:id`} component={(props) => <ReNewApplication {...props} parentRoute={path} />} />

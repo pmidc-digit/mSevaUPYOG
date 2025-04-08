@@ -58,6 +58,17 @@ import TLTradeUnitsEmployeeInitial from "./pageComponents/TLTradeUnitsEmployeeIn
 import CommonRedirect from "./pageComponents/CommonRedirect"
 import CitizenApp from "./pages/citizen";
 import EmployeeApp from "./pages/employee";
+import getRootReducer from "./redux/reducer";
+import TLTradeVlidityEmployee from "./pageComponents/TLTradeValidityEmployee"
+import NewTLStepForm from "./pages/employee/NewApplication/NewApplicationStepForm/NewTLStepForm";
+import TLNewFormStepOne from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewFormStepOne";
+import TLNewFormStepTwo from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewFormStepTwo";
+import TLNewFormStepThree from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewFormStepThree";
+import TLNewSummaryStepFour from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewSummaryStepFour";
+import TLSummaryPage from "./pageComponents/TLSummaryPage"
+
+export const TLReducers = getRootReducer;
+
 
 export const TLModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
@@ -153,7 +164,14 @@ const componentsToRegister = {
   SelectOtherTradeDetails,
   SelectTradeUnitsInitial,
   TLTradeUnitsEmployeeInitial,
-  CommonRedirect
+  CommonRedirect,
+  TLTradeVlidityEmployee,
+  NewTLStepForm,
+  TLNewFormStepOne,
+  TLNewFormStepTwo,
+  TLNewFormStepThree,
+  TLNewSummaryStepFour,
+  TLSummaryPage
 };
 
 export const initTLComponents = () => {

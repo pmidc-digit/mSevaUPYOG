@@ -5,7 +5,8 @@ import {
   PGRReducers,
 } from "@mseva/digit-ui-module-pgr";
 import {
-  initSWACHComponents
+  initSWACHComponents,
+  // SWACHReducers,
 } from "@mseva/digit-ui-module-swach"
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { PTModule, PTLinks, PTComponents } from "@mseva/digit-ui-module-pt";
@@ -23,7 +24,7 @@ import {
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initLibraries } from "@mseva/digit-ui-libraries";
 import { HRMSModule, initHRMSComponents, HRMSReducers } from "@mseva/digit-ui-module-hrms";
-import { TLModule, TLLinks, initTLComponents } from "@mseva/digit-ui-module-tl";
+import { TLModule, TLReducers, TLLinks, initTLComponents } from "@mseva/digit-ui-module-tl";
 import {
   PTRModule,
   PTRLinks,
@@ -108,7 +109,9 @@ const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
   hrms:  HRMSReducers(initData),
   ws: WSReducers(initData),
-  engagement: SurveyReducers(initData)
+  engagement: SurveyReducers(initData),
+  tl: TLReducers(initData),
+  // swach: SWACHReducers(initData),
 });
 
 function App() {

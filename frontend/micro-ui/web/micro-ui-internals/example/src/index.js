@@ -17,7 +17,7 @@ import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-receipts";
 // import { initReportsComponents } from "@mseva/digit-ui-module-reports";
 import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
-import { initTLComponents } from "@mseva/digit-ui-module-tl";
+import { initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
 import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents,SurveyReducers } from "@mseva/digit-ui-module-engagement";
@@ -139,7 +139,8 @@ const initDigitUI = () => {
     swach: SWACHReducers(initData),
     hrms: HRMSReducers(initData),
     ws: WSReducers(initData),
-    engagement: SurveyReducers(initData)
+    engagement: SurveyReducers(initData),
+    tl: TLReducers(initData),
   });
 
   window.Digit.Customizations = {

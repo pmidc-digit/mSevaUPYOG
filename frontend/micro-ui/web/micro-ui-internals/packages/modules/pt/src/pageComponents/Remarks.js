@@ -3,20 +3,21 @@ import { CardLabel,LabelFieldPair, TextInput, CardLabelError } from "@mseva/digi
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 //import Timeline from "../components/TLTimeline";
+import { Controller, useForm } from "react-hook-form";
 
 const Remarks = ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
   //let index = window.location.href.charAt(window.location.href.length - 1);
   let index = window.location.href.split("/").pop();
   let validation = {};
   const onSkip = () => onSelect();
-
+const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
    let remarks;
    let setRemarks;
   const [hidden, setHidden] = useState(true);
   if (!isNaN(index)) {
-    [remarks, setRemarks] = useState(formData?.originalData?.additionalDetails?.remarks || "");
+    [remarks, setRemarks] = useState(formData?.remarks || "");
   } else {
-    [remarks, setRemarks] = useState(formData?.originalData?.additionalDetails?.remarks || "");
+    [remarks, setRemarks] = useState(formData?.remarks || "");
   }
   const [error, setError] = useState(null);
   const { pathname } = useLocation();
@@ -25,8 +26,9 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
     validateRemarks();
   }, [remarks])
 
-  const onChange=(e)=> {
-    setRemarks(e.target.value);//
+  const handleRemarksChange=(value)=> {
+    setRemarks(value);//
+    onSelect(config.key, {...formData[config.key], remark: value })
     validateRemarks();
   }
 
@@ -49,7 +51,7 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
 
   useEffect(() => {
     if (presentInModifyApplication && userType === "employee") {
-      setRemarks(formData?.originalData?.additionalDetails?.remarks)
+      setRemarks(formData?.remarks)
     }
   }, []);
 
@@ -69,14 +71,14 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
   ];
   const validateRemarks=()=>{
     if (remarks === ""){
-        // setError("Please Enter Remarks")
+        setError("Please Enter Remarks")
     }
     
   };
-  const handleRemarksChange=(e)=>{
+  // const handleRemarksChange=(e)=>{
     
-    onChange(e);
-  }
+  //   onChange(e);
+  // }
 
   if (userType === "employee") {
     return inputs?.map((input, index) => {
@@ -86,7 +88,7 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
             <CardLabel className="card-label-smaller">{t(input.label)}</CardLabel>
             <div className="field">
 
-              <TextInput
+              {/* <TextInput
                 key={input.name}
                 id={input.name}
                 //isMandatory={config.isMandatory}
@@ -99,8 +101,23 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
                 onBlur={onBlur}
 
               // autoFocus={presentInModifyApplication}
-              />
-
+              /> */}
+              <Controller
+              control={control}
+              defaultValue={remarks}
+              name="remark"
+              render={(_props) => (
+                <TextInput
+                  id="remark"
+                  value={remarks}
+                  onChange={(e) => {
+                    handleRemarksChange(e.target.value);
+                    _props.onChange(e.target.value);
+                  }}
+                  // onBlur={_props.onBlur}
+                />
+              )}
+            />
             </div>
           </LabelFieldPair>
           {formState.touched[config.key] ? (

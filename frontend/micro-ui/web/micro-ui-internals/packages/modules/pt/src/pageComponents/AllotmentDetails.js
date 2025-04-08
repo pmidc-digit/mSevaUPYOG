@@ -8,8 +8,8 @@ const AllotmentDetails = ({ t, config, onSelect, userType, formData, formState, 
   const onSkip = () => onSelect();
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
 
-  const[allotmentNo, setAllotmentNo]=useState(formData?.additionalDetails?.allotmentNo || "")
-  const [allotmentDate,setAllotmentDate]=useState(formData?.additionalDetails?.allotmentDate || "")
+  const[allotmentNo, setAllotmentNo]=useState(formData?.allottmentDetails?.allotmentNo || "")
+  const [allotmentDate,setAllotmentDate]=useState(formData?.allottmentDetails?.allotmentDate || "")
   
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
@@ -73,6 +73,17 @@ const setData=(config,data)=>{
   }, []);
 
   useEffect(() => {
+    // Synchronize local state with formData when the component mounts or formData changes
+    if (formData?.allottmentDetails) {
+      setAllotmentNo(formData.allottmentDetails.allotmentNo || "");
+      setAllotmentDate(formData.allottmentDetails.allotmentDate || "");
+    }else {
+      setAllotmentNo("");
+      setAllotmentDate("");
+    }
+  }, [formData?.allottmentDetails]);
+
+  useEffect(() => {
     if (userType === "employee") {
       if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) setError(config.key, { type: errors });
       else if (!Object.keys(errors).length && formState.errors[config.key]) clearErrors(config.key);
@@ -106,7 +117,17 @@ const setData=(config,data)=>{
     setFocusIndex({ index:1 });
     setAllotmentDate(e.target.value);
   }
-
+  const handleAllotmentNoChange = (value) => {
+    setAllotmentNo(value);
+    onSelect(config.key, {...formData[config.key], allotmentNo: value },// vasikaDetails: { ...(formData.PropertyDetails?.vasikaDetails || {}), vasikaNo: value },
+    );
+  };
+  
+  const handleAllotmentDateChange = (value) => {
+    setAllotmentDate(value);
+    onSelect(config.key, {...formData[config.key], allotmentDate: value },// vasikaDetails: { ...(formData.PropertyDetails?.vasikaDetails || {}), vasikaDate: value },
+    );
+  };
 
   if (userType === "employee") {
 
@@ -120,19 +141,21 @@ const setData=(config,data)=>{
           <div className="field">
             <Controller
               control={control}
-              defaultValue={formData?.additionalDetails?.[inputs[0].name]}
-              name={inputs[0].name}
-              rules={{ validate: convertValidationToRules(inputs[0]) }}
+              // defaultValue={formData?.allottmentDetails?.[inputs[0].name]}
+              defaultValue={allotmentNo}
+              name={"AllotmentNo"}
+              // rules={{ validate: convertValidationToRules(inputs[0]) }}
               type={"text"}
               render={(_props) => (
                 
                 <TextInput
-                  id={inputs[0].name}
-                  key={inputs[0].name}
-                  value={_props.value}
+                  id={"AllotmentNo"}
+                  // key={inputs[0].name}
+                  value={allotmentNo}
                   type={"text"}
                   onChange={(e) => {
-                    setFocusIndex({ index:0  });
+                    // setFocusIndex({ index:0  });
+                    handleAllotmentNoChange(e.target.value);
                     _props.onChange(e.target.value);
                   }}
                   onBlur={_props.onBlur}
@@ -140,8 +163,6 @@ const setData=(config,data)=>{
                   autoFocus={focusIndex?.index == 0}
                   {...inputs[0].validation}
                 />
-                
-         
               )}
             />
            
@@ -161,17 +182,18 @@ const setData=(config,data)=>{
           <div className="field">
             <Controller
               control={control}
-              defaultValue={formData?.additionalDetails?.[inputs[1].name]}
-              name={inputs[1].name}
+              // defaultValue={formData?.additionalDetails?.[inputs[1].name]}
+              defaultValue={allotmentNo}
+              name={"AllotmentDate"}
               //rules={{ validate: convertValidationToRules(inputs[1]) }}
-              type={"date"}
+              // type={"date"}
               render={(_props) => (
-          
                 <DatePicker
-                date={_props.value} 
-                name="AllotmentDate"
+                date={allotmentDate} 
+                // name="AllotmentDate"
                 onChange={(e) => {
-                    setFocusIndex({ index:1 });
+                    // setFocusIndex({ index:1 });
+                    handleAllotmentDateChange(e);
                     _props.onChange(e);
                 }}
                 disabled={isRenewal}

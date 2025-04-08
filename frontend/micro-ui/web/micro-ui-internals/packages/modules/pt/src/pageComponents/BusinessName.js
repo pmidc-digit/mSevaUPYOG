@@ -3,20 +3,21 @@ import { CardLabel,LabelFieldPair, TextInput, CardLabelError } from "@mseva/digi
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 //import Timeline from "../components/TLTimeline";
+import { Controller, useForm } from "react-hook-form";
 
 const BusinessName = ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
   //let index = window.location.href.charAt(window.location.href.length - 1);
   let index = window.location.href.split("/").pop();
   let validation = {};
   const onSkip = () => onSelect();
-
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
   let businessName;
   let setBusinessName;
   const [hidden, setHidden] = useState(true);
   if (!isNaN(index)) {
-    [businessName, setBusinessName] = useState(formData?.originalData?.additionalDetails?.businessName || "");
+    [businessName, setBusinessName] = useState(formData?.businessName || "");
   } else {
-    [businessName, setBusinessName] = useState(formData?.originalData?.additionalDetails?.businessName || "");
+    [businessName, setBusinessName] = useState(formData?.businessName || "");
   }
   const [error, setError] = useState(null);
   const { pathname } = useLocation();
@@ -25,8 +26,9 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
     validateBusinessName();
   }, [businessName])
 
-  const onChange=(e)=> {
-    setBusinessName(e.target.value);//
+  const handleBusinessNameChange=(value)=> {
+    setBusinessName(value);
+    onSelect(config.key, {...formData[config.key], businessName: value })
     validateBusinessName();
   }
 
@@ -52,7 +54,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
 
   useEffect(() => {
     if (presentInModifyApplication && userType === "employee") {
-      setBusinessName(formData?.originalData?.additionalDetails?.businessName)
+      setBusinessName(formData?.businessName)
     }
   }, []);
 
@@ -80,17 +82,17 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
     }
     
   };
-  const handleBusinessNameChange=(e)=>{
-    const value=e.target.value;
-    //   if(new RegExp(/^\d{0,10}$/).test(value)|| value===""){
-    //     onChange(e);
-    //     validateRemarks();
-    //   }
-    //   else{
-    //     setError("Remarks number should contain only 10 digits");
-    //   }
-    onChange(e);
-  }
+  // const handleBusinessNameChange=(e)=>{
+  //   const value=e.target.value;
+  //   //   if(new RegExp(/^\d{0,10}$/).test(value)|| value===""){
+  //   //     onChange(e);
+  //   //     validateRemarks();
+  //   //   }
+  //   //   else{
+  //   //     setError("Remarks number should contain only 10 digits");
+  //   //   }
+  //   onChange(e);
+  // }
 
   if (userType === "employee") {
     return inputs?.map((input, index) => {
@@ -99,7 +101,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
           <LabelFieldPair key={index}>
             <CardLabel className="card-label-smaller">{t(input.label) + "  *"}</CardLabel>
             <div className="field">
-
+{/* 
               <TextInput
                 key={input.name}
                 id={input.name}
@@ -113,7 +115,23 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
                 onBlur={onBlur}
 
               // autoFocus={presentInModifyApplication}
-              />
+              /> */}
+              <Controller
+              control={control}
+              defaultValue={businessName}
+              name="bussinessName"
+              render={(_props) => (
+                <TextInput
+                  id="bussinessName"
+                  value={businessName}
+                  onChange={(e) => {
+                    handleBusinessNameChange(e.target.value);
+                    _props.onChange(e.target.value);
+                  }}
+                  // onBlur={_props.onBlur}
+                />
+              )}
+            />
 
             </div>
           </LabelFieldPair>

@@ -248,6 +248,8 @@ class ValueFirstWhatsAppProvider {
         for(let i = 0; i < messages.length; i++) {
             let message;
             let type;
+            console.log("getTransformedResponse message",messages[i]);
+            console.log("getTransformedResponse type",typeof messages[i]);
             if(typeof messages[i] == 'string'){
                 type = "text";
                 message = messages[i];

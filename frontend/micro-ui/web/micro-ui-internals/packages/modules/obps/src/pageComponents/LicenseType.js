@@ -13,11 +13,12 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   else
     formData = formData
 
+  console.log("formData", formData)
   let index = window.location.href.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [qualificationType, setQualificationType] = useState(() => {
-    return formData?.qualificationType || "B-Arch"; // Initialize with the value from formData if it exists
+    return formData?.LicneseType?.qualificationType  || "B-Arch"; // Initialize with the value from formData if it exists
   });
   const [LicenseType, setLicenseType] = useState(formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || "");
   const [ArchitectNo, setArchitectNo] = useState(formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null);
@@ -38,7 +39,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       mapQualificationToLicense(qualificationType);
     }
   }, [qualificationType]);
-
 
 
   function getLicenseType() {
@@ -79,16 +79,35 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
   function mapQualificationToLicense(qualification) {
     let license = null;
-    if (qualification === "B-Arch") {
-      setLicenseType(null);
-    }
-    else if (qualification.name === "BE" || qualification.name === "B-Tech") {
+    // if (qualification === "B-Arch") {
+    //   setLicenseType(null);
+    // }
+    // else if (qualification.name === "BE" || qualification.name === "B-Tech") {
+    //   license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
+    // } else if (qualification.name === "Diploma") {
+    //   license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
+    // }else if (qualification.name === "Building designer & supervisor") {
+    //   license = getLicenseType().find((type) => type.i18nKey.includes("DESIGNER"));
+    // }
+     if (qualification === "B-Arch") {
+    setLicenseType(null);
+  } else if (qualification.name === "BE") {
+    // Automatically select "Engineer" license for BE
+    license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
+  } else if (qualification.name === "B-Tech") {
+    // Allow all license types for B-Tech by not pre-selecting any license
+    // license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
+    if (!LicenseType || !getLicenseType().some((type) => type.i18nKey === LicenseType.i18nKey)) {
       license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
-    } else if (qualification.name === "Diploma") {
-      license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
-    }else if (qualification.name === "Building designer & supervisor") {
-      license = getLicenseType().find((type) => type.i18nKey.includes("DESIGNER"));
     }
+  } else if (qualification.name === "Diploma") {
+    // license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
+    if (!LicenseType || !getLicenseType().some((type) => type.i18nKey === LicenseType.i18nKey)) {
+      license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
+    }
+  } else if (qualification.name == "Building designer & supervisor") {
+    license = getLicenseType().find((type) => type.i18nKey.includes("SUPERVISOR"));
+  }
 
     if (license) {
       setLicenseType(license);

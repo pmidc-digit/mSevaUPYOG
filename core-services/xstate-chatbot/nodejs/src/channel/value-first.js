@@ -288,6 +288,8 @@ class ValueFirstWhatsAppProvider {
                 let fileStoreId;
                 if(message)
                     fileStoreId = message;
+                console.log("getTransformedResponse type for non-textual ",type)
+                console.log("getTransformedResponse message for non-textual ",message)
                 var fileURL = await this.getFileForFileStoreId(fileStoreId);
                 var uniqueImageMessageId = uuid();
                 messageBody = JSON.parse(imageMessageBody);

@@ -1,5 +1,5 @@
 import { CloseSvg, TextInput } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState,Fragment } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { useDebounce } from "../../../../hooks/useDebounce";
 
 const MultipleChoice = ({
@@ -40,19 +40,13 @@ const MultipleChoice = ({
             formDisabled={formDisabled}
             optionsLength={options.length}
           />
-         
         </div>
       ))}
       <div>
         <button
           className="unstyled-button link"
           type="button"
-         
-          style={{ display: "block",
-            padding: "8px 16px 8px",
-            backgroundColor: "#2947a3",
-            color: "white",
-            borderRadius:'8px'}}
+          style={{ display: "block", padding: "8px 16px 8px", backgroundColor: "#2947a3", color: "white", borderRadius: "8px" }}
           disabled={(!createNewSurvey && formDisabled) || (isPartiallyEnabled ? !isPartiallyEnabled : formDisabled)}
           onClick={() => addOption()}
         >
@@ -80,31 +74,29 @@ const RadioButtonOption = ({
   isPartiallyEnabled,
   isInputDisabled,
   formDisabled,
-  optionsLength
+  optionsLength,
 }) => {
   const [optionTitle, setOptionTitle] = useState(title);
   const [optionWeightage, setOptionWeightage] = useState(weightage);
   const [isFocused, setIsFocused] = useState(false);
-  const [error,setError] =useState('')
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    updateOption({ value: optionTitle, id: index,weightage:optionWeightage });
+    updateOption({ value: optionTitle, id: index, weightage: optionWeightage });
   }, [optionTitle, optionWeightage]);
   const handleChange = (e) => {
     const inputValue = e.target.value;
     const number = parseInt(inputValue, 10);
 
-    if (inputValue === '' || (/^(10|[0-9])$/.test(inputValue) && !inputValue.includes('-'))) {
-      setError('');
-      setOptionWeightage(e.target.value)
-        
+    if (inputValue === "" || (/^(10|[0-9])$/.test(inputValue) && !inputValue.includes("-"))) {
+      setError("");
+      setOptionWeightage(e.target.value);
     } else {
-      setError('Please enter a number between 0 and 10.');
-      
+      setError("Please enter a number between 0 and 10.");
     }
-};
+  };
   return (
-    <div className="optionradiobtnwrapper" style={{alignItems:'flex-start'}}>
+    <div className="optionradiobtnwrapper" style={{ alignItems: "flex-start" }}>
       <input type="radio" className="customradiobutton" disabled={isInputDisabled} />
       <input
         type="text"
@@ -123,25 +115,25 @@ const RadioButtonOption = ({
           <CloseSvg />
         </div>
       )}
-      <div style={{display:'flex',flexDirection:'column'}}>
-      <label htmlFor="numberInput">Enter a number (0-10):</label>
-       <input
-            
-            type='number'
-            id="numberInput"
-           // defaultValue={optionWeightage}
-            value={optionWeightage}
-            required
-            placeholder="Option Weightage"
-            min={minWeight}
-            max={maxWeight}
-            title={weightHover}
-            className="employee-card-input"
-            //    name={`questions[${index}].optionsWeightage`}
-            onChange={handleChange}
-          />
-          {error && <span style={{ color: 'red' }}>{error}</span>}
-          </div>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <label htmlFor="numberInput">Enter a number (0-10):</label>
+        <input
+          type="number"
+          id="numberInput"
+          // defaultValue={optionWeightage}
+          value={optionWeightage}
+          required
+          placeholder="Option Weightage"
+          min={minWeight}
+          max={maxWeight}
+          title={weightHover}
+          className="employee-card-input"
+          //    name={`questions[${index}].optionsWeightage`}
+          onChange={handleChange}
+          onWheel={(e) => e.target.blur()}
+        />
+        {error && <span style={{ color: "red" }}>{error}</span>}
+      </div>
     </div>
   );
 };

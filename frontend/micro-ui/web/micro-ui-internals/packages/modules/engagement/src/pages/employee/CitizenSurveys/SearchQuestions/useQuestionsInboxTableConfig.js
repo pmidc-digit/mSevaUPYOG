@@ -2,7 +2,19 @@ import React, { Fragment, useMemo } from "react";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { DeleteIcon, EditIcon } from "@mseva/digit-ui-react-components";
-const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, inboxStyles = {}, setShowToast }) => {
+
+const useQuestionsInboxTableConfig = ({
+  parentRoute,
+  onPageSizeChange,
+  formState,
+  totalCount,
+  table,
+  dispatch,
+  inboxStyles = {},
+  setShowToast,
+  setOpenQuesDetailsDialog,
+  setQuestionDetailsContent,
+}) => {
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value) => <span className={value === "ACTIVE" ? "sla-cell-success" : "sla-cell-error"}>{value}</span>;
   const { t } = useTranslation();
@@ -35,6 +47,43 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
     });
   };
 
+  function handleDisplayQuesDetails(question) {
+    console.log("question: ", question);
+    setOpenQuesDetailsDialog(true);
+    const content = (
+      <div>
+        <fieldset>
+          <legend style={{ fontWeight: "bold" }}>Question:</legend>
+          <p>{question?.questionStatement}</p>
+        </fieldset>
+        <fieldset>
+          <legend style={{ fontWeight: "bold" }}>Category:</legend>
+          <p>{question?.category?.label}</p>
+        </fieldset>
+        <fieldset>
+          <legend style={{ fontWeight: "bold" }}>Question Type:</legend>
+          <p>{t(question?.type)}</p>
+        </fieldset>
+        {(question?.type === "MULTIPLE_ANSWER_TYPE" || question?.type === "CHECKBOX_ANSWER_TYPE") && (
+          <fieldset>
+            <legend style={{ fontWeight: "bold" }}>Options:</legend>
+            {question?.options.map((option, index) => {
+              return (
+                <li key={option.uuid}>
+                  {index + 1}. {option?.optionText}
+                </li>
+              );
+            })}
+          </fieldset>
+        )}
+        {/* <div>
+    Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur? At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores.
+    </div> */}
+      </div>
+    );
+    setQuestionDetailsContent(content);
+  }
+
   const tableColumnConfig = useMemo(() => {
     return [
       {
@@ -42,10 +91,25 @@ const useQuestionsInboxTableConfig = ({ parentRoute, onPageSizeChange, formState
         accessor: "questionStatement",
         Cell: ({ row }) => {
           return (
-            <div>
-              {/* <Link to={`${parentRoute}/surveys/inbox/details/${row.original["uuid"]}`}> */}
-              <span>{row.original?.questionStatement}</span>
-              {/* </Link> */}
+            <div className="tooltip">
+              <div style={{ display: "flex", gap: "0 4px" }}>
+                <div style={{ cursor: "pointer" }} onClick={() => handleDisplayQuesDetails(row?.original)}>
+                  {row?.original?.questionStatement}
+                </div>
+                <span
+                  className="tooltiptext"
+                  style={{
+                    top: "40%", // override bottom positioning to show below
+                    bottom: "auto",
+                    left: "50%",
+                    marginLeft: "-10px",
+                    fontSize: "medium",
+                    position: "absolute",
+                  }}
+                >
+                  {t("Click here to view the question details")}
+                </span>
+              </div>
             </div>
           );
         },

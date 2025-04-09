@@ -165,21 +165,6 @@ const SearchReceipt = () => {
           return GetCell(row?.paymentDetails?.[0]?.bill?.totalAmount);
         },
       },
-      // {
-      //   Header: t("AUDIT_ROLE_LABEL"),
-      //   disableSortBy: true,
-      //   accessor: (row) => {
-      //     console.log("row", row);
-      //     return GetCell(
-      //       `${
-      //         row?.roles
-      //           ?.slice(0, 3)
-      //           ?.map((e) => e.name)
-      //           ?.join(", ") || "-"
-      //       }`
-      //     );
-      //   },
-      // },
     ],
     []
   );

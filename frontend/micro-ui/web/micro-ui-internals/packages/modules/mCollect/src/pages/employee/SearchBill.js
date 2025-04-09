@@ -44,6 +44,7 @@ const SearchBill = () => {
     reset,
     control,
     formState: { errors },
+    getValues,
   } = methods;
 
   const onSubmit = async (data) => {
@@ -83,6 +84,8 @@ const SearchBill = () => {
       const response = await Digit.MCollectService.search_bill(tenantId, filteredData);
       // console.log("response ✅", response?.Payments);
       // setTableData(response?.Payments);
+      console.log("response", response?.Bills);
+      setTableData(response?.Bills);
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
@@ -93,6 +96,68 @@ const SearchBill = () => {
   const closeToast = () => {
     setShowToast(null);
   };
+
+  //need to get from workflow
+  const GetCell = (value) => <span className="cell-text">{value}</span>;
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Bill No",
+        disableSortBy: true,
+        accessor: (row) => {
+          const receiptNumber = row?.billNumber;
+          return (
+            <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => downloadPDF(row)}>
+              {receiptNumber}
+            </span>
+          );
+          // return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
+        },
+      },
+      {
+        Header: "Consumer Name",
+        disableSortBy: true,
+        accessor: (row) => {
+          return GetCell(row?.payerName);
+        },
+      },
+      {
+        Header: "Bill Date",
+        disableSortBy: true,
+        accessor: (row) => {
+          return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
+        },
+      },
+      {
+        Header: "Bill Amount (Rs)",
+        disableSortBy: true,
+        accessor: (row) => {
+          return GetCell(row?.totalAmount);
+        },
+      },
+      {
+        Header: "Status",
+        disableSortBy: true,
+        accessor: (row) => {
+          return GetCell(row?.status);
+        },
+      },
+      {
+        Header: "Action",
+        disableSortBy: true,
+        accessor: (row) => {
+          return (
+            <SubmitBar onSubmit={() => alert("hello")} label=" Generate New Bill" />
+            // <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => alert("new bill")}>
+            //   Generate New Bill
+            // </span>
+          );
+        },
+      },
+    ],
+    []
+  );
+
   return (
     <React.Fragment>
       <style>
@@ -250,6 +315,38 @@ const SearchBill = () => {
             <SubmitBar label="Next" submit="submit" />
           </form>
         </FormProvider>
+
+        {tableData?.length > 0 ? (
+          <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
+            <Table
+              t={t}
+              data={tableData}
+              totalRecords={9}
+              columns={columns}
+              getCellProps={(cellInfo) => {
+                return {
+                  style: {
+                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+                    padding: "20px 18px",
+                    fontSize: "16px",
+                  },
+                };
+              }}
+              // onPageSizeChange={onPageSizeChange}
+              currentPage={getValues("offset") / getValues("limit")}
+              // onNextPage={nextPage}
+              // onPrevPage={previousPage}
+              pageSizeLimit={getValues("limit")}
+              // onSort={onSort}
+              disableSort={false}
+              sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
+            />
+          </div>
+        ) : (
+          hasSearched &&
+          !isLoading && <div style={{ margin: "2rem 0", textAlign: "center", fontSize: "18px", color: "#505050" }}>{t("No Records Found")}</div>
+        )}
+
         {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}
         {isLoading && <Loader />}
       </div>

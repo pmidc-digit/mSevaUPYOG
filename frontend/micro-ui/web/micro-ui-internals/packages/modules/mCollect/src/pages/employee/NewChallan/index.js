@@ -42,12 +42,15 @@ const getformDataforEdit = (ChallanData, fetchBillData) => {
         `${new Date(ChallanData[0].taxPeriodTo).getDate() < 10 ? "0" : ""}${new Date(ChallanData[0].taxPeriodTo).getDate()}`
       : null,
   };
+
   defaultval[`${ChallanData[0]?.businessService.split(".")[0]}`] = {};
-  if (fetchBillData.Bill[0].billDetails[0].billAccountDetails.length > 0) {
-    fetchBillData.Bill[0].billDetails[0].billAccountDetails.map(
-      (ele) => (defaultval[`${ChallanData[0]?.businessService.split(".")[0]}`][`${ele.taxHeadCode.split(".")[1]}`] = `${ele.amount}`)
-    );
-  }
+
+  // if (fetchBillData.Bill[0].billDetails[0].billAccountDetails.length > 0) {
+  //   fetchBillData.Bill[0].billDetails[0].billAccountDetails.map(
+  //     (ele) => (defaultval[`${ChallanData[0]?.businessService.split(".")[0]}`][`${ele.taxHeadCode.split(".")[1]}`] = `${ele.amount}`)
+  //   );
+  // }
+
   sessionStorage.setItem("InitialTaxFeilds", JSON.stringify(defaultval[`${ChallanData[0]?.businessService.split(".")[0]}`]));
   return defaultval;
 };
@@ -61,6 +64,8 @@ const NewChallan = ({ ChallanData }) => {
   if (url.includes("modify-challan")) {
     isEdit = true;
   }
+
+  console.log("here", ChallanData);
 
   const [canSubmit, setSubmitValve] = useState(false);
   const defaultValues = {};
@@ -90,7 +95,7 @@ const NewChallan = ({ ChallanData }) => {
 
   useEffect(() => {
     console.log("isEdit", isEdit, fetchBillData);
-    if (isEdit && fetchBillData) {
+    if (isEdit) {
       let formdata = getformDataforEdit(ChallanData, fetchBillData);
       setdefaultUpdatedValue(true);
       sessionStorage.setItem("mcollectEditObject", JSON.stringify({ consomerDetails1: [{ ...formdata }] }));

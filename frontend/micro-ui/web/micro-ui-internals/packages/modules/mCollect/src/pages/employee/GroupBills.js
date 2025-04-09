@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Card, TextInput, Header, ActionBar, SubmitBar, Loader, InfoIcon, Toast, Dropdown } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, TextInput, Header, ActionBar, SubmitBar, Loader, InfoIcon, Toast, Dropdown, Table } from "@mseva/digit-ui-react-components";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -10,6 +10,8 @@ const GroupBills = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const [tableData, setTableData] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const { data: EmployeeStatusData = [], isLoading: callMDMS } = Digit.Hooks.useCustomMDMS(
     tenantId,
@@ -22,8 +24,6 @@ const GroupBills = () => {
       },
     }
   );
-
-  console.log("EmployeeStatusData,", EmployeeStatusData);
 
   const methods = useForm({
     defaultValues: {
@@ -105,12 +105,12 @@ const GroupBills = () => {
             <div className="ndcFormCard">
               <div className="surveydetailsform-wrapper">
                 <label>
-                  ABG ULB LABEL <span style={{ color: "red" }}>*</span>
+                  ULB <span style={{ color: "red" }}>*</span>
                 </label>
                 <Controller
                   control={control}
                   rules={{ required: t("REQUIRED_FIELD") }}
-                  name="serviceCategory"
+                  name="ULB"
                   render={(props) => (
                     <Dropdown
                       option={[{ active: true, code: "CONTRACT" }]}
@@ -124,19 +124,19 @@ const GroupBills = () => {
                     />
                   )}
                 />
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
+                {errors.ULB && <p style={{ color: "red" }}>{errors.ULB.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>
-                  Service Type <span style={{ color: "red" }}>*</span>
+                  Service Category <span style={{ color: "red" }}>*</span>
                 </label>
                 <Controller
                   control={control}
                   rules={{ required: t("REQUIRED_FIELD") }}
-                  name="serviceCategory"
+                  name="businesService"
                   render={(props) => (
                     <Dropdown
-                      option={[{ active: true, code: "CONTRACT" }]}
+                      option={EmployeeStatusData}
                       select={(e) => {
                         props.onChange(e);
                       }}
@@ -148,7 +148,7 @@ const GroupBills = () => {
                   )}
                 />
 
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
+                {errors.businesService && <p style={{ color: "red" }}>{errors.businesService.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>
@@ -175,7 +175,7 @@ const GroupBills = () => {
                 {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
-                <label>ABG_LOCMOHALLA_LABEL</label>
+                <label>Location/Mohalla</label>
                 <Controller
                   control={control}
                   rules={{ required: t("REQUIRED_FIELD") }}
@@ -237,7 +237,7 @@ const GroupBills = () => {
               </div>
 
               <div className="surveydetailsform-wrapper">
-                <label>ABG_CONSUMER_ID_LABEL</label>
+                <label>Consumer ID</label>
                 <TextInput
                   name="billNo"
                   type="text"

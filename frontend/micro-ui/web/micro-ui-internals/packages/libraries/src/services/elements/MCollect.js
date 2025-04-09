@@ -61,6 +61,28 @@ export const MCollectService = {
     });
   },
 
+  generatePdf: (tenantId, data = {}, key) =>
+    Request({
+      url: Urls.mcollect.generate_pdf,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: true,
+      locale: true,
+      params: { tenantId, key },
+      data: data,
+    }),
+
+  file_fetch: (tenantId, fileStoreIds) =>
+    Request({
+      url: Urls.mcollect.file_fetch,
+      useCache: false,
+      method: "GET",
+      auth: true,
+      userService: true,
+      params: { tenantId, fileStoreIds },
+    }),
+
   update: (details, tenantId) =>
     Request({
       url: Urls.mcollect.update,

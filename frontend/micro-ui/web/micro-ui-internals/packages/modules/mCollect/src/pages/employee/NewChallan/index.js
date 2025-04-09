@@ -89,6 +89,7 @@ const NewChallan = ({ ChallanData }) => {
     : {};
 
   useEffect(() => {
+    console.log("isEdit", isEdit, fetchBillData);
     if (isEdit && fetchBillData) {
       let formdata = getformDataforEdit(ChallanData, fetchBillData);
       setdefaultUpdatedValue(true);

@@ -10,6 +10,8 @@ const SearchReceipt = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const [tableData, setTableData] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const { data: EmployeeStatusData = [], isLoading: callMDMS } = Digit.Hooks.useCustomMDMS(
     tenantId,
@@ -23,15 +25,11 @@ const SearchReceipt = () => {
     }
   );
 
-  console.log("EmployeeStatusData,", EmployeeStatusData);
-
   const methods = useForm({
     defaultValues: {
       categoryName: "",
     },
   });
-
-  // console.log("props====", props);
 
   const {
     register,
@@ -43,6 +41,8 @@ const SearchReceipt = () => {
   } = methods;
 
   const onSubmit = async (data) => {
+    setIsLoading(true);
+    setHasSearched(true);
     console.log("data is here==========", data);
     const businessService = data?.businessServices?.code;
 
@@ -62,19 +62,55 @@ const SearchReceipt = () => {
 
     try {
       const response = await Digit.MCollectService.recieptSearch(tenantId, businessService, filteredData);
-      console.log("✅ recieptSearch response", response);
+      console.log("✅ recieptSearch response", response?.Payments);
+      setTableData(response?.Payments);
+      setIsLoading(false);
       // let collectionres = await Digit.PaymentService.recieptSearch(BPA?.tenantId, appBusinessService[i], { consumerCodes: BPA?.applicationNo, isEmployee: true });
     } catch (error) {
+      setIsLoading(false);
       console.log("error", error);
     }
   };
 
-  useEffect(() => {
-    console.log("errors", errors);
-  }, [errors]);
-
   const closeToast = () => {
     setShowToast(null);
+  };
+
+  const downloadPDF = async (rowData) => {
+    console.log("generating pdf here==========");
+    setIsLoading(true);
+    try {
+      const response = await Digit.MCollectService.generatePdf(tenantId, { Payments: [{ ...rowData }] }, "consolidatedreceiptold");
+      setIsLoading(false);
+      fileFetch(response?.filestoreIds?.[0]);
+      console.log("✅ generating pdf response", response);
+    } catch (error) {
+      setIsLoading(false);
+      console.log("error", error);
+    }
+  };
+
+  const fileFetch = async (fileStoreId) => {
+    setIsLoading(true);
+    console.log("fetching file here==========");
+    try {
+      const response = await Digit.MCollectService.file_fetch(tenantId, fileStoreId);
+      setIsLoading(false);
+      console.log("✅ fetching file response", response);
+
+      // Extract the URL from the response
+      const fileUrl = response?.[fileStoreId] || response?.fileStoreIds?.[0]?.url;
+      if (fileUrl) {
+        // Redirect or open in new tab
+        window.open(fileUrl, "_blank"); // opens in new tab
+        // OR use window.location.href = fileUrl; // to redirect in same tab
+      } else {
+        console.error("File URL not found in response.");
+      }
+    } catch (error) {
+      setIsLoading(false);
+      console.log("error", error);
+    }
   };
 
   //need to get from workflow
@@ -84,70 +120,66 @@ const SearchReceipt = () => {
       {
         Header: "Receipt No",
         disableSortBy: true,
-        // accessor:( row ) => {
-        //   const timestamp = row.timestamp === "NA" ? t("WS_NA") : convertEpochToDate(row.timestamp);
-        //   return GetCell(`${timestamp || "-"}`);
-        // },
+        accessor: (row) => {
+          const receiptNumber = row?.paymentDetails?.[0]?.receiptNumber;
+          return (
+            <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => downloadPDF(row)}>
+              {receiptNumber}
+            </span>
+          );
+          // return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
+        },
       },
       {
-        Header: "UC_COMMON_TABLE_COL_CONSUMERCODE",
+        Header: "Consumer Code/Application No/Challan No",
         disableSortBy: true,
-        // accessor:( row ) => {
-        //   const timestamp = row.timestamp === "NA" ? t("WS_NA") : convertEpochToDate(row.timestamp);
-        //   return GetCell(`${timestamp || "-"}`);
-        // },
+        accessor: (row) => {
+          return GetCell(row?.paymentDetails?.[0]?.bill?.consumerCode);
+        },
       },
       {
         Header: "Consumer Name",
         disableSortBy: true,
-        // accessor:(row) => {
-        //   const timestamp = row.timestamp === "NA" ? t("WS_NA") : convertEpochToTimeInHours(row.timestamp);
-        //   return GetCell(`${timestamp || "-"}`);
-        // },
-      },
-      {
-        Header: t("AUDIT_DATAVIEWED_PRIVACY"),
-        disableSortBy: true,
-        // accessor: (row) => {
-        //   return GetCell(`${row?.dataView?.join(", ") || "-"}`);
-        // },
+        accessor: (row) => {
+          return GetCell(row?.paidBy);
+        },
       },
       {
         Header: "Service Type",
         disableSortBy: true,
-        // accessor:(row) => {
-        //   return GetCell(`${row?.dataViewedBy || "-"}`);
-        // },
+        accessor: (row) => {
+          return GetCell(row?.paymentDetails?.[0]?.businessService);
+        },
       },
       {
         Header: "Receipt Date",
         disableSortBy: true,
-        // accessor:(row) => {
-        //   return GetCell(`${row?.dataViewedBy || "-"}`);
-        // },
+        accessor: (row) => {
+          return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
+        },
       },
       {
         Header: "Amount Paid[INR]",
         disableSortBy: true,
-        // accessor:(row) => {
-        //   return GetCell(`${row?.dataViewedBy || "-"}`);
-        // },
-      },
-      {
-        Header: t("AUDIT_ROLE_LABEL"),
-        disableSortBy: true,
         accessor: (row) => {
-          console.log("row", row);
-          return GetCell(
-            `${
-              row?.roles
-                ?.slice(0, 3)
-                ?.map((e) => e.name)
-                ?.join(", ") || "-"
-            }`
-          );
+          return GetCell(row?.paymentDetails?.[0]?.bill?.totalAmount);
         },
       },
+      // {
+      //   Header: t("AUDIT_ROLE_LABEL"),
+      //   disableSortBy: true,
+      //   accessor: (row) => {
+      //     console.log("row", row);
+      //     return GetCell(
+      //       `${
+      //         row?.roles
+      //           ?.slice(0, 3)
+      //           ?.map((e) => e.name)
+      //           ?.join(", ") || "-"
+      //       }`
+      //     );
+      //   },
+      // },
     ],
     []
   );
@@ -217,7 +249,7 @@ const SearchReceipt = () => {
                     },
                   })}
                 />
-                {errors.receiptNo && <p style={{ color: "red" }}>{errors.receiptNo.message}</p>}
+                {errors.receiptNumbers && <p style={{ color: "red" }}>{errors.receiptNumbers.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>
@@ -240,18 +272,7 @@ const SearchReceipt = () => {
                     />
                   )}
                 />
-
-                {/* <TextInput
-                  name="serviceCategory"
-                  type="text"
-                  inputRef={register({
-                    required: "This field is required",
-                    maxLength: {
-                      value: 500,
-                    },
-                  })}
-                /> */}
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
+                {errors.businessServices && <p style={{ color: "red" }}>{errors.businessServices.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Consumer code</label>
@@ -264,7 +285,7 @@ const SearchReceipt = () => {
                     },
                   })}
                 />
-                {errors.consumerCode && <p style={{ color: "red" }}>{errors.consumerCode.message}</p>}
+                {errors.consumerCodes && <p style={{ color: "red" }}>{errors.consumerCodes.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Mobile No</label>
@@ -290,59 +311,47 @@ const SearchReceipt = () => {
                       },
                     })}
                   />
-                  {errors.mobileNo && <p style={{ color: "red" }}>{errors.mobileNo.message}</p>}
+                  {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
                 </div>
               </div>
             </div>
-            <SubmitBar label="Next" submit="submit" />
+            <SubmitBar label="Search" submit="submit" />
           </form>
         </FormProvider>
 
-        {/* table component */}
-
-        {/* {data?.display ? (
-          <div style={{ marginTop: "20x", maxWidth: "680%", marginLeft: "60px", backgroundColor: "white", height: "60px" }}>
-            {t(data.display)
-              .split("\\n")
-              .map((text, index) => (
-                <p key={index} style={{ textAlign: "center", paddingTop: "12px" }}>
-                  {text}
-                </p>
-              ))}
+        {tableData?.length > 0 ? (
+          <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
+            <Table
+              t={t}
+              data={tableData}
+              totalRecords={9}
+              columns={columns}
+              getCellProps={(cellInfo) => {
+                return {
+                  style: {
+                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+                    padding: "20px 18px",
+                    fontSize: "16px",
+                  },
+                };
+              }}
+              // onPageSizeChange={onPageSizeChange}
+              currentPage={getValues("offset") / getValues("limit")}
+              // onNextPage={nextPage}
+              // onPrevPage={previousPage}
+              pageSizeLimit={getValues("limit")}
+              // onSort={onSort}
+              disableSort={false}
+              sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
+            />
           </div>
-        ) : data !== "" ? ( */}
-        <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
-          <Table
-            t={t}
-            // data={data.sort((a, b) => a.timestamp - b.timestamp)}
-            data={[]}
-            totalRecords={9}
-            columns={columns}
-            getCellProps={(cellInfo) => {
-              return {
-                style: {
-                  minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
-                  padding: "20px 18px",
-                  fontSize: "16px",
-                },
-              };
-            }}
-            // onPageSizeChange={onPageSizeChange}
-            currentPage={getValues("offset") / getValues("limit")}
-            // onNextPage={nextPage}
-            // onPrevPage={previousPage}
-            pageSizeLimit={getValues("limit")}
-            // onSort={onSort}
-            disableSort={false}
-            sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
-          />
-        </div>
-        {/* ) : (
-          <Loader />
-        )} */}
+        ) : (
+          hasSearched &&
+          !isLoading && <div style={{ margin: "2rem 0", textAlign: "center", fontSize: "18px", color: "#505050" }}>{t("No Records Found")}</div>
+        )}
 
-        {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}
         {isLoading && <Loader />}
+        {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}
       </div>
     </React.Fragment>
   );

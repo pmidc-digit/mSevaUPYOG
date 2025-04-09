@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Card, TextInput, Header, ActionBar, SubmitBar, Loader, InfoIcon, Toast, Dropdown } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, TextInput, Header, ActionBar, SubmitBar, Loader, InfoIcon, Toast, Dropdown, Table } from "@mseva/digit-ui-react-components";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -10,6 +10,8 @@ const SearchBill = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const [tableData, setTableData] = useState([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const { data: EmployeeStatusData = [], isLoading: callMDMS } = Digit.Hooks.useCustomMDMS(
     tenantId,
@@ -23,15 +25,18 @@ const SearchBill = () => {
     }
   );
 
-  console.log("EmployeeStatusData,", EmployeeStatusData);
+  const { data: ULBData = [], isLoading: ulbLoading } = Digit.Hooks.useCustomMDMS(tenantId, "tenant", [{ name: "tenants" }], {
+    select: (data) => {
+      const formattedData = data?.["tenant"]?.["tenants"];
+      return formattedData;
+    },
+  });
 
   const methods = useForm({
     defaultValues: {
       categoryName: "",
     },
   });
-
-  // console.log("props====", props);
 
   const {
     register,
@@ -42,12 +47,48 @@ const SearchBill = () => {
   } = methods;
 
   const onSubmit = async (data) => {
+    setIsLoading(true);
+    setHasSearched(true);
     console.log("data is here==========", data);
-  };
+    const businessServiceData = data?.businesService?.code;
+    delete data["ULB"];
 
-  useEffect(() => {
-    console.log("errors", errors);
-  }, [errors]);
+    data["url"] = "egov-searcher/bill-genie/mcollectbills/_get";
+
+    // Filter out empty strings, null, undefined, and empty arrays
+    const filteredData = Object.entries(data).reduce((acc, [key, value]) => {
+      if (
+        value !== null &&
+        value !== undefined &&
+        !(typeof value === "string" && value.trim() === "") &&
+        !(Array.isArray(value) && value.length === 0)
+      ) {
+        // Replace businessServices with its code
+        acc[key] = key === "businesService" ? businessServiceData : value;
+      }
+      return acc;
+    }, {});
+
+    console.log("filteredData", filteredData);
+
+    // const payload = {
+    //   businesService: businessServiceData,
+    //   billNo: data?.billNo,
+    //   consumerCode: data?.consumerCode,
+    //   mobileNumber: data?.mobileNumber,
+    //   url: "egov-searcher/bill-genie/mcollectbills/_get",
+    // };
+
+    try {
+      const response = await Digit.MCollectService.search_bill(tenantId, filteredData);
+      // console.log("response ✅", response?.Payments);
+      // setTableData(response?.Payments);
+      setIsLoading(false);
+    } catch (error) {
+      setIsLoading(false);
+      console.log("error", error);
+    }
+  };
 
   const closeToast = () => {
     setShowToast(null);
@@ -108,19 +149,19 @@ const SearchBill = () => {
             <div className="ndcFormCard">
               <div className="surveydetailsform-wrapper">
                 <label>
-                  ABG ULB LABEL <span style={{ color: "red" }}>*</span>
+                  ULB<span style={{ color: "red" }}>*</span>
                 </label>
                 <Controller
                   control={control}
                   rules={{ required: t("REQUIRED_FIELD") }}
-                  name="serviceCategory"
+                  name="ULB"
                   render={(props) => (
                     <Dropdown
-                      option={[{ active: true, code: "CONTRACT" }]}
+                      option={ULBData}
                       select={(e) => {
                         props.onChange(e);
                       }}
-                      optionKey="code"
+                      optionKey="name"
                       onBlur={props.onBlur}
                       t={t}
                       selected={props.value}
@@ -136,10 +177,10 @@ const SearchBill = () => {
                 <Controller
                   control={control}
                   rules={{ required: t("REQUIRED_FIELD") }}
-                  name="serviceCategory"
+                  name="businesService"
                   render={(props) => (
                     <Dropdown
-                      option={[{ active: true, code: "CONTRACT" }]}
+                      option={EmployeeStatusData}
                       select={(e) => {
                         props.onChange(e);
                       }}
@@ -150,18 +191,7 @@ const SearchBill = () => {
                     />
                   )}
                 />
-
-                {/* <TextInput
-                  name="serviceCategory"
-                  type="text"
-                  inputRef={register({
-                    required: "This field is required",
-                    maxLength: {
-                      value: 500,
-                    },
-                  })}
-                /> */}
-                {errors.serviceCategory && <p style={{ color: "red" }}>{errors.serviceCategory.message}</p>}
+                {errors.businesService && <p style={{ color: "red" }}>{errors.businesService.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Consumer code</label>
@@ -196,7 +226,7 @@ const SearchBill = () => {
                     +91
                   </span>
                   <TextInput
-                    name="mobileNo"
+                    name="mobileNumber"
                     type="text"
                     inputRef={register({
                       pattern: {
@@ -213,7 +243,7 @@ const SearchBill = () => {
                       },
                     })}
                   />
-                  {errors.mobileNo && <p style={{ color: "red" }}>{errors.mobileNo.message}</p>}
+                  {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
                 </div>
               </div>
             </div>

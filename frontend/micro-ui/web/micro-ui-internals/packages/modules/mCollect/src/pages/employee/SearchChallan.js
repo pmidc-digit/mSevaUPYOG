@@ -1,15 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { Card, TextInput, Header, ActionBar, SubmitBar, Loader, InfoIcon, Toast, Dropdown } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, TextInput, Header, SubmitBar, Loader, Toast, Dropdown, Table } from "@mseva/digit-ui-react-components";
 import { useForm, FormProvider, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 
-const SearchChallan = () => {
+const SearchChallan = (props) => {
+  console.log("props", props);
+
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [isLoading, setIsLoading] = useState(false);
   const [showToast, setShowToast] = useState(null);
+  const [tableData, setTableData] = useState([]);
 
   const { data: EmployeeStatusData = [], isLoading: callMDMS } = Digit.Hooks.useCustomMDMS(
     tenantId,
@@ -23,35 +27,115 @@ const SearchChallan = () => {
     }
   );
 
-  console.log("EmployeeStatusData,", EmployeeStatusData);
-
   const methods = useForm({
     defaultValues: {
       categoryName: "",
     },
   });
 
-  // console.log("props====", props);
-
   const {
     register,
     handleSubmit,
     reset,
     control,
+    getValues,
     formState: { errors },
   } = methods;
 
   const onSubmit = async (data) => {
-    console.log("data is here==========", data);
-  };
+    // check if all fields are empty
+    const noFieldFilled = !data?.challanNo?.trim() && !data?.businessService && !data?.mobileNumber?.trim();
 
-  useEffect(() => {
-    console.log("errors", errors);
-  }, [errors]);
+    if (noFieldFilled) {
+      setShowToast({ isError: true, label: "Please fill at least one field to search." });
+      return;
+    }
+
+    console.log("data is here==========", data);
+    setIsLoading(true);
+    const businessServiceData = data?.businessService?.code;
+
+    // Filter out empty strings, null, undefined, and empty arrays
+    const filters = Object.entries(data).reduce((acc, [key, value]) => {
+      if (
+        value !== null &&
+        value !== undefined &&
+        !(typeof value === "string" && value.trim() === "") &&
+        !(Array.isArray(value) && value.length === 0)
+      ) {
+        // Replace businessService with its code
+        acc[key] = key === "businessService" ? businessServiceData : value;
+      }
+      return acc;
+    }, {});
+
+    console.log("filters", filters);
+
+    try {
+      const response = await Digit.MCollectService.search({ tenantId, filters });
+      console.log("✅ recieptSearch response", response?.challans);
+      setTableData(response?.challans);
+      setIsLoading(false);
+      // let collectionres = await Digit.PaymentService.recieptSearch(BPA?.tenantId, appBusinessService[i], { consumerCodes: BPA?.applicationNo, isEmployee: true });
+    } catch (error) {
+      setIsLoading(false);
+      console.log("error", error);
+    }
+  };
 
   const closeToast = () => {
     setShowToast(null);
   };
+
+  //need to get from workflow
+  const GetCell = (value) => <span className="cell-text">{value}</span>;
+  const columns = useMemo(
+    () => [
+      {
+        Header: "Challan No",
+        disableSortBy: true,
+        accessor: (row) => {
+          const challanNumber = row?.challanNo;
+          return (
+            <span className="link">
+              <Link to={`${props.parentRoute}/challansearch/` + challanNumber}>{challanNumber}</Link>
+            </span>
+            // <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => downloadPDF(row)}>
+            //   {challanNumber}
+            // </span>
+          );
+        },
+      },
+      {
+        Header: "Consumer Name",
+        disableSortBy: true,
+        accessor: (row) => {
+          return GetCell(row?.citizen?.name);
+        },
+      },
+      {
+        Header: "Service Type",
+        disableSortBy: true,
+        accessor: (row) => {
+          return GetCell(row?.businessService);
+        },
+      },
+      {
+        Header: "Status",
+        disableSortBy: true,
+        accessor: (row) => {
+          const formattedStatus = row?.applicationStatus.toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
+          return (
+            <span className="cell-text" style={{ color: "green" }}>
+              {formattedStatus}
+            </span>
+          );
+          // return GetCell(row?.applicationStatus);
+        },
+      },
+    ],
+    []
+  );
 
   return (
     <React.Fragment>
@@ -121,16 +205,13 @@ const SearchChallan = () => {
                 {errors.challanNo && <p style={{ color: "red" }}>{errors.challanNo.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
-                <label>
-                  Service Type <span style={{ color: "red" }}>*</span>
-                </label>
+                <label>Service Type</label>
                 <Controller
                   control={control}
-                  rules={{ required: t("REQUIRED_FIELD") }}
-                  name="serviceType"
+                  name="businessService"
                   render={(props) => (
                     <Dropdown
-                      option={[{ active: true, code: "CONTRACT" }]}
+                      option={EmployeeStatusData}
                       select={(e) => {
                         props.onChange(e);
                       }}
@@ -142,17 +223,7 @@ const SearchChallan = () => {
                   )}
                 />
 
-                {/* <TextInput
-                  name="serviceCategory"
-                  type="text"
-                  inputRef={register({
-                    required: "This field is required",
-                    maxLength: {
-                      value: 500,
-                    },
-                  })}
-                /> */}
-                {errors.serviceType && <p style={{ color: "red" }}>{errors.serviceType.message}</p>}
+                {errors.businessService && <p style={{ color: "red" }}>{errors.businessService.message}</p>}
               </div>
               <div className="surveydetailsform-wrapper">
                 <label>Mobile No</label>
@@ -161,7 +232,7 @@ const SearchChallan = () => {
                     +91
                   </span>
                   <TextInput
-                    name="mobileNo"
+                    name="mobileNumber"
                     type="text"
                     inputRef={register({
                       pattern: {
@@ -178,13 +249,41 @@ const SearchChallan = () => {
                       },
                     })}
                   />
-                  {errors.mobileNo && <p style={{ color: "red" }}>{errors.mobileNo.message}</p>}
+                  {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
                 </div>
               </div>
             </div>
-            <SubmitBar label="Next" submit="submit" />
+            <SubmitBar label="Search" submit="submit" />
           </form>
         </FormProvider>
+
+        {tableData?.length > 0 && (
+          <div style={{ backgroundColor: "white", marginRight: "200px", marginLeft: "2.5%", width: "100%" }}>
+            <Table
+              t={t}
+              data={tableData}
+              totalRecords={9}
+              columns={columns}
+              getCellProps={(cellInfo) => {
+                return {
+                  style: {
+                    minWidth: cellInfo.column.Header === t("ES_INBOX_APPLICATION_NO") ? "240px" : "",
+                    padding: "20px 18px",
+                    fontSize: "16px",
+                  },
+                };
+              }}
+              // onPageSizeChange={onPageSizeChange}
+              currentPage={getValues("offset") / getValues("limit")}
+              // onNextPage={nextPage}
+              // onPrevPage={previousPage}
+              pageSizeLimit={getValues("limit")}
+              // onSort={onSort}
+              disableSort={false}
+              sortParams={[{ id: getValues("sortBy"), desc: getValues("sortOrder") === "DESC" ? true : false }]}
+            />
+          </div>
+        )}
         {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}
         {isLoading && <Loader />}
       </div>

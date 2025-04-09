@@ -223,6 +223,7 @@ class ValueFirstWhatsAppProvider {
 
         let response = await fetch(url,options);
         response = await(response).json();
+        console.log("getFileForFileStoreId Response", response);
         var fileURL = response['fileStoreIds'][0]['url'].split(",");
         /*var fileName = geturl.parse(fileURL[0]);
         fileName = path.basename(fileName.pathname);

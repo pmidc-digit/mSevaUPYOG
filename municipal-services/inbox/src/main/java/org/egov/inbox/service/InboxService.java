@@ -8,6 +8,7 @@ import static org.egov.inbox.util.BpaConstants.MOBILE_NUMBER_PARAM;
 import static org.egov.inbox.util.BpaConstants.OFFSET_PARAM;
 import static org.egov.inbox.util.BpaConstants.STATUS_ID;
 import static org.egov.inbox.util.BpaConstants.STATUS_PARAM;
+import static org.egov.inbox.util.BpaConstants.ASSIGNEE_PARAM; 
 import static org.egov.inbox.util.DSSConstants.*;
 import static org.egov.inbox.util.FSMConstants.APPLICATIONSTATUS;
 import static org.egov.inbox.util.FSMConstants.CITIZEN_FEEDBACK_PENDING_STATE;
@@ -32,6 +33,9 @@ import static org.egov.inbox.util.TLConstants.TL;
 import static org.egov.inbox.util.SWConstants.SW;
 import static org.egov.inbox.util.BSConstants.*;
 import static org.egov.inbox.util.WSConstants.WS;
+import static org.egov.inbox.util.PTRConstants.PTR;
+import static org.egov.inbox.util.AssetConstants.ASSET;
+import static org.egov.inbox.util.EwasteConstants.EWASTE;
 
 import java.util.*;
 import java.util.function.Function;
@@ -990,6 +994,8 @@ public class InboxService {
 
     private Map<String, String> fetchAppropriateServiceMap(List<String> businessServiceName,String  moduleName) {
         StringBuilder appropriateKey = new StringBuilder();
+        Set<String> serviceKeys = config.getServiceSearchMapping().keySet();
+        System.out.println(serviceKeys.size());
         for (String businessServiceKeys : config.getServiceSearchMapping().keySet()) {
             if (businessServiceKeys.contains(businessServiceName.get(0))) {
                 appropriateKey.append(businessServiceKeys);

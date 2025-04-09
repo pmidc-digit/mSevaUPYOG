@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpHost;
-import org.apache.tomcat.util.codec.binary.Base64;
+//import org.apache.tomcat.util.codec.binary.Base64;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
 import org.egov.common.contract.request.User;
@@ -30,6 +30,7 @@ import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Base64;
 
 import static java.util.Objects.isNull;
 import static javax.servlet.http.HttpServletRequest.BASIC_AUTH;
@@ -305,6 +306,7 @@ public class ElasticSearchService {
 
     private HttpHeaders getHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
+        headers.add("Authorization", getESEncodedCredentials());
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
@@ -313,12 +315,19 @@ public class ElasticSearchService {
         headers.setAccept(mediaTypes);
         return headers;
     }
-
-    private String getBase64Value(String userName, String password) {
-        String authString = String.format("%s:%s", userName, password);
-        byte[] encodedAuthString = Base64.encodeBase64(authString.getBytes(Charset.forName(US_ASCII)));
-        return String.format(BASIC_AUTH, new String(encodedAuthString));
+    
+    public String getESEncodedCredentials() {
+        String credentials = config.getUserName() + ":" + config.getPassword();
+        byte[] credentialsBytes = credentials.getBytes();
+        byte[] base64CredentialsBytes = Base64.getEncoder().encode(credentialsBytes);
+        return "Basic " + new String(base64CredentialsBytes);
     }
+
+//    private String getBase64Value(String userName, String password) {
+//        String authString = String.format("%s:%s", userName, password);
+//        byte[] encodedAuthString = Base64.encodeBase64(authString.getBytes(Charset.forName(US_ASCII)));
+//        return String.format(BASIC_AUTH, new String(encodedAuthString));
+//    }
 
     /**
      * Gets plain data of user details

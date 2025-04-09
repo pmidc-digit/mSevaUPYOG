@@ -274,6 +274,7 @@ const CategoryCard = ({ category, checked, readOnly, onDelete, hideQuestionLabel
         name="weightage"
         value={category.weightage}
         onChange={handleFieldChange}
+        onWheel={(e) => e.target.blur()}
         readOnly={checked}
         placeholder="Section Weightage"
         required

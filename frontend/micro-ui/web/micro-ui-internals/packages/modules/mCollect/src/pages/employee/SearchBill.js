@@ -208,6 +208,9 @@ const SearchBill = () => {
       </style>
       <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
         <Header>Search Bill</Header>
+        <div>
+          <SubmitBar onSubmit={() => history.push("/digit-ui/employee/mcollect/group-bill")} label="Group Bills" />{" "}
+        </div>
       </div>
 
       <div className="pageCard">

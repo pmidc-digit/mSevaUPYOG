@@ -27,11 +27,11 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       link: "/digit-ui/employee/mcollect/search-bill",
       roles: [],
     },
-    {
-      text: "Group Bill",
-      link: "/digit-ui/employee/mcollect/group-bill",
-      roles: [],
-    },
+    // {
+    //   text: "Group Bill",
+    //   link: "/digit-ui/employee/mcollect/group-bill",
+    //   roles: [],
+    // },
   ];
 
   useEffect(() => {

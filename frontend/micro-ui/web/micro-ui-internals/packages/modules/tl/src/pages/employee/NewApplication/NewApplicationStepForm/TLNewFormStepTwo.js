@@ -39,50 +39,59 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     setError("");
   };
 
-  const validateOwnerDetails = (ownerDetails) => {
-    const { ownershipCategory, owners } = ownerDetails || {};
+  // const validateOwnerDetails = (ownerDetails) => {
+  //   const { ownershipCategory, owners } = ownerDetails || {};
 
-    if (!ownershipCategory?.value) {
-      console.log("Ownership Category missing.");
-      return false;
-    }
+  //   if (!ownershipCategory?.value) {
+  //     console.log("Ownership Category missing.");
+  //     return false;
+  //   }
 
-    if (!owners?.length) {
-      console.log("Owners array is empty.");
-      return false;
-    }
+  //   if (!owners?.length) {
+  //     console.log("Owners array is empty.");
+  //     return false;
+  //   }
 
-    const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
+  //   const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
 
-    if (isSingleOwner && owners.length !== 1) {
-      console.log("Single owner expected, but multiple owners present.");
-      return false;
-    }
+  //   if (isSingleOwner && owners.length !== 1) {
+  //     console.log("Single owner expected, but multiple owners present.");
+  //     return false;
+  //   }
 
-    const mandatoryFieldsCheck = owners.every((owner) => {
-      return (
-        owner?.name &&
-        typeof owner.name === "string" &&
-        owner.name.trim() !== "" &&
+  //   const mandatoryFieldsCheck = owners.every((owner) => {
+  //     return (
+  //       owner?.name &&
+  //       typeof owner.name === "string" &&
+  //       owner.name.trim() !== "" &&
 
-        owner?.mobileNumber &&
-        /^[0-9]{10}$/.test(owner.mobileNumber) &&
+  //       owner?.mobileNumber &&
+  //       /^[0-9]{10}$/.test(owner.mobileNumber) &&
 
-        owner?.gender?.code &&
-        typeof owner.gender.code === "string" &&
-        owner.gender.code.trim() !== "" &&
+  //       owner?.gender?.code &&
+  //       typeof owner.gender.code === "string" &&
+  //       owner.gender.code.trim() !== "" &&
 
-        owner?.relationship?.code &&
-        typeof owner.relationship.code === "string" &&
-        owner.relationship.code.trim() !== "" &&
+  //       owner?.relationship?.code &&
+  //       typeof owner.relationship.code === "string" &&
+  //       owner.relationship.code.trim() !== "" &&
 
-        owner?.fatherOrHusbandName &&
-        typeof owner.fatherOrHusbandName === "string" &&
-        owner.fatherOrHusbandName.trim() !== ""
-      );
-    });
+  //       owner?.fatherOrHusbandName &&
+  //       typeof owner.fatherOrHusbandName === "string" &&
+  //       owner.fatherOrHusbandName.trim() !== ""
+  //     );
+  //   });
 
-    return mandatoryFieldsCheck;
+  //   return mandatoryFieldsCheck;
+  // };
+
+  const validateOwnerDetails = (data) => {
+    const { ownershipCategory, owners } = data;
+    if (!ownershipCategory?.value || !owners?.length) return false;
+    return owners.every(
+      (owner) =>
+        owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
+    );
   };
 
   const goNext = async (data) => {
@@ -96,15 +105,15 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    // const res = await onSubmit(formData);
-    // console.log("API response: ", res);
+    const res = await onSubmit(formData);
+    console.log("API response: ", res);
 
-    // if (res) {
-    //   console.log("Submission successful, moving to next step.");
-    //   onGoNext();
-    // } else {
-    //   console.error("Submission failed, not moving to next step.");
-    // }
+    if (res) {
+      console.log("Submission successful, moving to next step.");
+      onGoNext();
+    } else {
+      console.error("Submission failed, not moving to next step.");
+    }
   };
 
   // const goNext = async (data) => {
@@ -127,6 +136,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data) => {
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
+    console.log("sample_formData: ", data);
     
     const { TraidDetails, OwnerDetails } = data;
   
@@ -275,12 +285,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       : formData;
 
       console.log("formData in step 2: ", formData);
-      // const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
-      // if(response?.ResponseInfo?.status === "successful"){
-      //   dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-      //   console.log("response in step 2: ", response.Licenses[0]);
-      // }
-      // return (response?.ResponseInfo?.status === "successful");
+      const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
+      if(response?.ResponseInfo?.status === "successful"){
+        dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
+        console.log("response in step 2: ", response.Licenses[0]);
+      }
+      return (response?.ResponseInfo?.status === "successful");
     
   };
   

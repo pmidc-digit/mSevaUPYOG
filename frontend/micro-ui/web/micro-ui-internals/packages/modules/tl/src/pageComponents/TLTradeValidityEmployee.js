@@ -55,7 +55,6 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
     setSelectedValue(e);
   }
 
-  console.log("selectedValue formData?.validityYears: ",formData?.validityYears)
 
   // useEffect(() => {
   //   console.log("selectedValue", selectedValue);

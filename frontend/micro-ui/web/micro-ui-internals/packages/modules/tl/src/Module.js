@@ -66,7 +66,11 @@ import TLNewFormStepTwo from "./pages/employee/NewApplication/NewApplicationStep
 import TLNewFormStepThree from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewFormStepThree";
 import TLNewSummaryStepFour from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewSummaryStepFour";
 import TLSummaryPage from "./pageComponents/TLSummaryPage"
-
+import RenewTLStepForm from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLStepForm"
+import RenewTLFormStepOne from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLFormStepOne";
+import RenewTLFormStepTwo from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLFormStepTwo";
+import RenewTLFormStepThree from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLFormStepThree";
+import RenewTLSummaryStepFour from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLSummaryStepFour";
 export const TLReducers = getRootReducer;
 
 
@@ -171,7 +175,12 @@ const componentsToRegister = {
   TLNewFormStepTwo,
   TLNewFormStepThree,
   TLNewSummaryStepFour,
-  TLSummaryPage
+  TLSummaryPage,
+  RenewTLStepForm,
+  RenewTLFormStepOne,
+  RenewTLFormStepTwo,
+  RenewTLFormStepThree,
+  RenewTLSummaryStepFour,
 };
 
 export const initTLComponents = () => {

@@ -158,6 +158,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const Search = Digit?.ComponentRegistryService?.getComponent('TLSearch');
   const CommonRedirect = Digit?.ComponentRegistryService?.getComponent('CommonRedirect')
   const NewTLStepForm = Digit?.ComponentRegistryService?.getComponent('NewTLStepForm')
+  const RenewTLStepForm = Digit?.ComponentRegistryService?.getComponent('RenewTLStepForm')
   return (
     <Switch>
       <React.Fragment>
@@ -193,8 +194,10 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/new-application-spa`} component={() => <NewApplication parentUrl={url} />} />
           <PrivateRoute path={`${path}/common`} component={() => <CommonRedirect parentUrl={url} />} />
           <PrivateRoute path={`${path}/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
-          <PrivateRoute path={`${path}/renew-application-details/:id`} component={(props) => <ReNewApplication {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/edit-application-details/:id`} component={(props) => <ReNewApplication {...props} header={t("TL_ACTION_RESUBMIT")} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/renew-application-details-spa/:id`} component={(props) => <ReNewApplication {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/renew-application-details/:id`} component={(props) => <RenewTLStepForm {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/edit-application-details-spa/:id`} component={(props) => <ReNewApplication {...props} header={t("TL_ACTION_RESUBMIT")} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/edit-application-details/:id`} component={(props) => <RenewTLStepForm {...props} header={t("TL_ACTION_RESUBMIT")} parentRoute={path} />} />
           <PrivateRoute path={`${path}/response`} component={(props) => <Response {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/search/:variant`} component={(props) => <Search {...props} parentRoute={path} />} />
           

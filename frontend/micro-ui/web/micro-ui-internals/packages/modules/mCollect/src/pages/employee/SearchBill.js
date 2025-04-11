@@ -125,7 +125,9 @@ const SearchBill = () => {
         Header: "Bill Date",
         disableSortBy: true,
         accessor: (row) => {
-          return GetCell(row?.paymentDetails?.[0]?.receiptNumber);
+          const date = new Date(row?.billDate);
+          const formattedDate = date.toLocaleDateString("en-GB");
+          return GetCell(formattedDate);
         },
       },
       {
@@ -147,7 +149,7 @@ const SearchBill = () => {
         disableSortBy: true,
         accessor: (row) => {
           return (
-            <SubmitBar onSubmit={() => alert("hello")} label=" Generate New Bill" />
+            <SubmitBar onSubmit={() => alert("payment integration is pending")} label="Pay" />
             // <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => alert("new bill")}>
             //   Generate New Bill
             // </span>
@@ -218,7 +220,7 @@ const SearchBill = () => {
                 </label>
                 <Controller
                   control={control}
-                  rules={{ required: t("REQUIRED_FIELD") }}
+                  // rules={{ required: t("REQUIRED_FIELD") }}
                   name="ULB"
                   render={(props) => (
                     <Dropdown

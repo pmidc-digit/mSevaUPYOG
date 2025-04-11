@@ -1,5 +1,26 @@
-import { goPrev } from '../actions/surveyFormActions';
-import { FIELD_CHANGE,ADD_CATEGORY,DELETE_CATEGORY, RECALCULATE_WEIGHTAGE, UPDATE_WEIGHTAGE,UPDATE_MANDATORY_QUESTION_SELECTION, UPDATE_QUESTION_WEIGHTAGE, ADD_QUESTIONS,ADD_QUESTIONS_LIST, UPDATE_CATEGORY, UPDATE_QUESTION_SELECTION, SET_QUESTIONS, NEXT_STEP, PREVIOUS_STEP, SET_STEP_DATA, UPDATE_SURVEY_FORM, SET_SURVEY_STEP, GO_PREV,GO_NEXT } from '../actions/types';
+import { goPrev } from "../actions/surveyFormActions";
+import {
+  FIELD_CHANGE,
+  ADD_CATEGORY,
+  DELETE_CATEGORY,
+  RECALCULATE_WEIGHTAGE,
+  UPDATE_WEIGHTAGE,
+  UPDATE_MANDATORY_QUESTION_SELECTION,
+  UPDATE_QUESTION_WEIGHTAGE,
+  ADD_QUESTIONS,
+  ADD_QUESTIONS_LIST,
+  UPDATE_CATEGORY,
+  UPDATE_QUESTION_SELECTION,
+  SET_QUESTIONS,
+  NEXT_STEP,
+  PREVIOUS_STEP,
+  SET_STEP_DATA,
+  UPDATE_SURVEY_FORM,
+  SET_SURVEY_STEP,
+  GO_PREV,
+  GO_NEXT,
+  AUTO_CALCULATE_CATEGORY,
+} from "../actions/types";
 
 const initialState = {
   // sections: [
@@ -27,32 +48,33 @@ const initialState = {
   // ],
   //   }
   // ],
-  surveyDetails:[{
-    id:1,
-    ulb:'',
-    tenantIds:'',
-    name:'',
-    description:'',
-    fromDate:'',
-    fromTime:'',
-    toDate:'',
-    toTime:''
-  }],
+  surveyDetails: [
+    {
+      id: 1,
+      ulb: "",
+      tenantIds: "",
+      name: "",
+      description: "",
+      fromDate: "",
+      fromTime: "",
+      toDate: "",
+      toTime: "",
+    },
+  ],
   categories: [
     {
       id: 1,
-      title: '',
+      title: "",
       weightage: 100,
-      selectCategory: '',
-      questionStatement: '',
+      selectCategory: "",
+      questionStatement: "",
       questions: [],
       selectedQuestions: [],
-    
-    }
-
+    },
   ],
-  goPrev:false,
-  goNext:false,
+  autoCalculateCategoriesWeight: true,
+  goPrev: false,
+  goNext: false,
   stepData: {},
 
   step: 1,
@@ -62,13 +84,13 @@ const initialState = {
 
 const surveyFormReducer = (state = initialState, action) => {
   const recalculateWeightage = (categories) => {
-    const updatedCategories = categories.map(category => ({
+    const updatedCategories = categories.map((category) => ({
       ...category,
-      weightage: Math.floor((100 / state.categories.length)*100)/100
+      weightage: Math.floor((100 / state.categories.length) * 100) / 100,
     }));
     return {
       ...state,
-      categories: updatedCategories
+      categories: updatedCategories,
     };
   };
   switch (action.type) {
@@ -165,25 +187,31 @@ const surveyFormReducer = (state = initialState, action) => {
     //     }))
     //   };
     case GO_PREV:
-      
       return {
         ...state,
-        goPrev: true
+        goPrev: true,
       };
 
-      case GO_NEXT:
-      
+    case GO_NEXT:
       return {
         ...state,
-        goNext: true
+        goNext: true,
       };
 
+    case AUTO_CALCULATE_CATEGORY:
+      return {
+        ...state,
+        autoCalculateCategoriesWeight: action.categoryWeight,
+      };
 
     case ADD_CATEGORY:
-      const newCategories = [...state.categories, { id: action.id, title: '', weightage: '', selectCategory: '', questions: [], selectedQuestions: [] }];
+      const newCategories = [
+        ...state.categories,
+        { id: action.id, title: "", weightage: "", selectCategory: "", questions: [], selectedQuestions: [] },
+      ];
       return {
         ...state,
-        categories: newCategories
+        categories: newCategories,
       };
     // case RECALCULATE_WEIGHTAGE:
     //   const updatedCategories = state.categories.map(category => ({
@@ -195,15 +223,13 @@ const surveyFormReducer = (state = initialState, action) => {
     //     categories: updatedCategories
     //   };
     case RECALCULATE_WEIGHTAGE:
-    
-      const updatedCategories = state.categories.map(category => ({
-       
+      const updatedCategories = state.categories.map((category) => ({
         ...category,
-        weightage: Math.floor((100 / state.categories.length)*100)/100
+        weightage: Math.floor((100 / state.categories.length) * 100) / 100,
       }));
       return {
         ...state,
-        categories: updatedCategories
+        categories: updatedCategories,
       };
     // case UPDATE_WEIGHTAGE:
     //   const updatedCategories = state.categories.map(category => {
@@ -217,108 +243,96 @@ const surveyFormReducer = (state = initialState, action) => {
     //     categories: recalculateWeightage(updatedCategories)
     //   };
     case DELETE_CATEGORY:
-      const remainingCategories = state.categories.filter(category => category.id !== action.categoryId);
+      const remainingCategories = state.categories.filter((category) => category.id !== action.categoryId);
       return {
         ...state,
-        categories:remainingCategories
+        categories: remainingCategories,
       };
- 
-      case ADD_QUESTIONS_LIST:
-        return {
-          ...state,
-          categories: state.categories.map(category =>
-            category.id === action.categoryId
-              ? { ...category, questions: questionsList }
-              : category
-          )
-        };
+
+    case ADD_QUESTIONS_LIST:
+      return {
+        ...state,
+        categories: state.categories.map((category) => (category.id === action.categoryId ? { ...category, questions: questionsList } : category)),
+      };
     case ADD_QUESTIONS:
       return {
         ...state,
-        categories: state.categories.map(category =>
-          category.id === action.categoryId
-            ? { ...category, selectedQuestions: action.questions }
-            : category
-        )
+        categories: state.categories.map((category) =>
+          category.id === action.categoryId ? { ...category, selectedQuestions: action.questions } : category
+        ),
       };
-      case UPDATE_QUESTION_WEIGHTAGE:
-        return {
-          ...state,
-          categories: state.categories.map(category =>
-            category.id === action.categoryId
-            ? {...category,
-               selectedQuestions: category.selectedQuestions.map(question =>
-              question.uuid === action.questionId ? { ...question, weightage:action.weightage}: question
-               )
+    case UPDATE_QUESTION_WEIGHTAGE:
+      return {
+        ...state,
+        categories: state.categories.map((category) =>
+          category.id === action.categoryId
+            ? {
+                ...category,
+                selectedQuestions: category.selectedQuestions.map((question) =>
+                  question.uuid === action.questionId ? { ...question, weightage: action.weightage } : question
+                ),
               }
-              :
-              category
-            )
-        }
+            : category
+        ),
+      };
     case UPDATE_CATEGORY:
       return {
         ...state,
-        categories: state.categories.map(category =>
-          category.id === action.categoryId ? { ...category, ...action.data } : category
-        )
+        categories: state.categories.map((category) => (category.id === action.categoryId ? { ...category, ...action.data } : category)),
       };
 
     case UPDATE_QUESTION_SELECTION:
       return {
         ...state,
-        categories: state.categories.map(category =>
-
+        categories: state.categories.map((category) =>
           category.id === action.categoryId
             ? {
-              ...category,
-              questions: category.questions.map(question =>
-                question.uuid === action.questionId ? { ...question, selected: action.selected } : question
-              )
-            }
+                ...category,
+                questions: category.questions.map((question) =>
+                  question.uuid === action.questionId ? { ...question, selected: action.selected } : question
+                ),
+              }
             : category
-        )
+        ),
       };
 
-      case UPDATE_MANDATORY_QUESTION_SELECTION:
-        return {
-          ...state,
-          categories: state.categories.map(category =>
-  
-            category.id === action.categoryId
-              ? {
+    case UPDATE_MANDATORY_QUESTION_SELECTION:
+      return {
+        ...state,
+        categories: state.categories.map((category) =>
+          category.id === action.categoryId
+            ? {
                 ...category,
-                questions: category.questions.map(question =>
+                questions: category.questions.map((question) =>
                   question.uuid === action.questionId ? { ...question, mandatory: action.mandatory } : question
-                )
+                ),
               }
-              : category
-          )
-        };
-  
+            : category
+        ),
+      };
+
     case SET_QUESTIONS:
       return {
         ...state,
-        categories: state.categories.map(category =>
-          category.id === action.categoryId ? { ...category, questions: action.questions } : category
-        )
+        categories: state.categories.map((category) => (category.id === action.categoryId ? { ...category, questions: action.questions } : category)),
       };
     case NEXT_STEP:
       return {
         ...state,
-        step: state.step + 1
+        step: state.step + 1,
       };
     case PREVIOUS_STEP:
       return {
         ...state,
-        step: state.step - 1
+        step: state.step - 1,
       };
     case SET_STEP_DATA:
       return {
         ...state,
         stepData: {
           ...state.stepData,
-          [action.step]: action.data
-        }
+          [action.step]: action.data,
+        },
       };
 
     case UPDATE_SURVEY_FORM:
@@ -334,14 +348,12 @@ const surveyFormReducer = (state = initialState, action) => {
         ...state,
         step: action.payload,
       };
-    
-      case FIELD_CHANGE:
-        return {
-          ...state,
-          surveyDetails: state.surveyDetails.map(survey =>
-            survey.id === action.surveyId ? { ...survey, ...action.data } : survey
-          )
-        };
+
+    case FIELD_CHANGE:
+      return {
+        ...state,
+        surveyDetails: state.surveyDetails.map((survey) => (survey.id === action.surveyId ? { ...survey, ...action.data } : survey)),
+      };
 
     default:
       return state;

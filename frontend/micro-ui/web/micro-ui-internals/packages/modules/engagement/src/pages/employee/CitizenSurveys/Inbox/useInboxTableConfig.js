@@ -1,11 +1,12 @@
 import React, { Fragment, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { format } from "date-fns";
 import { useTranslation } from "react-i18next";
 import { InfoBannerIcon } from "@mseva/digit-ui-react-components";
 import { DeleteIcon, EditIcon } from "@mseva/digit-ui-react-components";
 
 const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, inboxStyles = {}, setShowToast }) => {
+  const history = useHistory();
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value) =>
     value === true ? <span className="sla-cell-success">Active</span> : value === false ? <span className="sla-cell-error">Inactive</span> : "-";
@@ -33,7 +34,15 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
           return (
             <div>
               {/* <Link to={`${parentRoute}/surveys/inbox/details/${row.original["uuid"]}`}> */}
-              <span className="link">{row.original.surveyTitle}</span>
+              {/* <span className="link">{row.original.surveyTitle}</span> */}
+              <span
+                className="link"
+                onClick={() => {
+                  history.push({ pathname: `/digit-ui/employee/engagement/surveys/previewQuestions`, state: { data: row.original } });
+                }}
+              >
+                {row.original.surveyTitle}
+              </span>
               {/* </Link> */}
             </div>
           );

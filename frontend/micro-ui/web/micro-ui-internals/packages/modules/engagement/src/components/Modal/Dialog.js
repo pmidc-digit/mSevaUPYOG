@@ -25,7 +25,7 @@ const CloseBtn = (props) => {
     </div>
   );
 };
-const Dialog = ({ onSelect, onCancel, onDismiss, heading, content, hideSubmit }) => {
+const Dialog = ({ onSelect, onCancel, onDismiss, heading, actionCancel, content, hideSubmit }) => {
   const { t } = useTranslation();
   const mobileDeviceWidth = 780;
   const [isMobileView, setIsMobileView] = React.useState(window.innerWidth <= mobileDeviceWidth);
@@ -84,7 +84,7 @@ const Dialog = ({ onSelect, onCancel, onDismiss, heading, content, hideSubmit })
       }}
       headerBarMain={<Heading label={t(heading)} />}
       headerBarEnd={<CloseBtn onClick={onDismiss} isMobileView={isMobileView} />}
-      actionCancelLabel={t("OK")}
+      actionCancelLabel={actionCancel?t("OK"):false}
       actionCancelOnSubmit={onCancel}
       //actionSaveLabel={t("COMMON_YES")}
       actionSaveOnSubmit={onSelect}
@@ -110,7 +110,7 @@ const Dialog = ({ onSelect, onCancel, onDismiss, heading, content, hideSubmit })
       }}
       headerBarMain={<Heading label={t(heading)} />}
       headerBarEnd={<CloseBtn onClick={onDismiss} isMobileView={false} />}
-      actionCancelLabel={t("OK")}
+      actionCancelLabel={actionCancel?t("OK"):false}
       actionCancelOnSubmit={onCancel}
       //actionSaveLabel={t("CORE_LOGOUT_WEB_YES")}
       actionSaveOnSubmit={onSelect}

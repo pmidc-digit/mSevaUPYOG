@@ -103,7 +103,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
 
       Digit.Surveys.userSearch(data, filters)
         .then((response) => {
-          console.log("response", response);
+          console.log("response", response.user[0]?.emailId);
 
           if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
             // setCitizenFound(true)
@@ -112,7 +112,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
               ...prevData,
               "citizenFound": true,
               "name": response.user[0]?.name,
-              ["email"]: response.user[0]?.email,
+              ["email"]: response.user[0]?.emailId, 
               ["gender"]: response.user[0]?.gender,
               ["dob"]: response.user[0]?.dob,
               "register": false,

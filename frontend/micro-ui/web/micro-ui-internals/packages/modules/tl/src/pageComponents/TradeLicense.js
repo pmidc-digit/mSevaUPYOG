@@ -15,7 +15,7 @@ const TradeLicense = ({ t, config, onSelect, userType, formData }) => {
   }
   return (
     <React.Fragment>
-      <Card>
+      <Card style = {{ boxShadow: "none"}}>
         <CardHeader>{t("TRADELICENSE_REQ_DOCS_HEADER")}</CardHeader>
         <div>
           <CardText>{t("TRADELICENSE_OWNER_OWNERIDPROOF_OWNERIDPROOF_DESCRIPTION_NOTE")}</CardText>

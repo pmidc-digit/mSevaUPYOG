@@ -2,7 +2,7 @@ import { CloseSvg, TextInput } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, Fragment } from "react";
 import { useDebounce } from "../../../../hooks/useDebounce";
 
-const MultipleChoice = ({
+const DropdownType = ({
   t,
   options = [],
   updateOption,
@@ -21,9 +21,10 @@ const MultipleChoice = ({
 }) => {
   return (
     <div className="options_checkboxes">
-      {options.map((option) => (
+      {options.map((option,i) => (
         <div key={option.id}>
-          <RadioButtonOption
+          <DropdownOption
+            indexNumber={i}
             index={option.id}
             title={option.title}
             weightage={option.optionWeightage}
@@ -57,9 +58,10 @@ const MultipleChoice = ({
   );
 };
 
-export default MultipleChoice;
+export default DropdownType;
 
-const RadioButtonOption = ({
+const DropdownOption = ({
+  indexNumber,
   index,
   title,
   weightage,
@@ -97,7 +99,7 @@ const RadioButtonOption = ({
   };
   return (
     <div className="optionradiobtnwrapper" style={{ alignItems: "flex-start" }}>
-      <input type="radio" className="customradiobutton" disabled={isInputDisabled} />
+      <span>{indexNumber+1}.</span>
       <input
         type="text"
         ref={inputRef}
@@ -130,7 +132,6 @@ const RadioButtonOption = ({
           className="employee-card-input"
           //    name={`questions[${index}].optionsWeightage`}
           onChange={handleChange}
-          onWheel={(e) => e.target.blur()}
         />
         {error && <span style={{ color: "red" }}>{error}</span>}
       </div>

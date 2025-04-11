@@ -18,7 +18,7 @@ const BannerPicker = (props) => {
   return (
     <Banner
       message={props.props.message}
-      applicationNumber={props.props.response?.surveyUuid}
+      applicationNumber={props.props.response?.SubmitResponse?.surveyUuid}
       info={props.props.isSuccess ? t("SURVEY_FORM_ID") : ""}
       successful={props.props.isSuccess}
     />

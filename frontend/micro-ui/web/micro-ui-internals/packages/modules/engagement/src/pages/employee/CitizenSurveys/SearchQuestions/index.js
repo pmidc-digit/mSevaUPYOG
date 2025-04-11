@@ -5,6 +5,7 @@ import FilterFormFieldsComponent from "./FilterFieldsComponent";
 import SearchQuestionsFieldsComponents from "./SearchQuestionsFieldsComponents";
 import useQuestionsInboxMobileCardsData from "./useQuestionsInboxMobileCardsData";
 import useQuestionsInboxTableConfig from "./useQuestionsInboxTableConfig";
+import Dialog from "../../../../components/Modal/Dialog";
 
 //Keep below values from localisation:
 const SEARCH_QUESTIONS = "Search Questions";
@@ -18,6 +19,8 @@ const SearchQuestions = ({ parentRoute }) => {
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const userInfo = Digit.UserService.getUser().info;
   const userUlbs = ulbs.filter((ulb) => userInfo?.roles?.some((role) => role?.tenantId === ulb?.code));
+  const [openQuesDetailsDialog, setOpenQuesDetailsDialog] = useState(false);
+  const [questionDetailsContent, setQuestionDetailsContent] = useState(false);
 
   //
   const statuses = [
@@ -212,6 +215,10 @@ const SearchQuestions = ({ parentRoute }) => {
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
       setShowToast,
+      openQuesDetailsDialog,
+      questionDetailsContent,
+      setOpenQuesDetailsDialog,
+      setQuestionDetailsContent,
     },
   });
   const propsForInboxMobileCards = useQuestionsInboxMobileCardsData({ parentRoute, table: Questions, setShowToast });
@@ -254,6 +261,13 @@ const SearchQuestions = ({ parentRoute }) => {
       });
   };
 
+  function handleOnSubmitDialog() {
+    setOpenQuesDetailsDialog(false);
+  }
+  function handleOnCancelDialog() {
+    setOpenQuesDetailsDialog(false);
+  }
+
   return (
     <Fragment>
       <Header>
@@ -284,6 +298,18 @@ const SearchQuestions = ({ parentRoute }) => {
           warning={showToast.warning}
           style={{ padding: "16px" }}
           isWarningButtons={showToast.isWarningButtons}
+        />
+      )}
+
+      {openQuesDetailsDialog && (
+        <Dialog
+          onSelect={handleOnSubmitDialog}
+          onCancel={handleOnCancelDialog}
+          onDismiss={handleOnCancelDialog}
+          heading="Question Details"
+          actionCancel={true}
+          content={questionDetailsContent}
+          hideSubmit={true}
         />
       )}
     </Fragment>

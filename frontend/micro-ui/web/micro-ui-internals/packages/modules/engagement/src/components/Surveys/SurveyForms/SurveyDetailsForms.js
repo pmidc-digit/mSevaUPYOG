@@ -8,8 +8,27 @@ import { fieldChange} from '../../../redux/actions/surveyFormActions';
 const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState, surveyFormData, disableInputs, enableDescriptionOnly,readOnly }) => {
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const cityNameSplit= tenantId.split(".")
-  const cityName= cityNameSplit[1];
+  //const cityNameSplit= tenantId.split(".")
+ // const cityName= cityNameSplit[1];
+  const { data: cities, isLoading } = Digit.Hooks.useTenants();
+ 
+  console.log("cities",cities)
+  let cityName=""
+  useEffect(()=>{
+    console.log("loading",isLoading)
+    if(!isLoading){
+    // cityName= cities.find((item)=>item.code===tenantId);
+     console.log("tenantId",tenantId)
+     cities.map((item)=>{
+      if((item.code).toString() === (tenantId).toString()){
+        cityName=item;
+        return;
+      }
+     })
+   
+    }
+  },[cities])
+
   console.log("cityName",cityName)
   const userInfo = Digit.UserService.getUser().info;
    const dispatch = useDispatch();
@@ -50,6 +69,10 @@ const SurveyDetailsForms = ({ t, registerRef, controlSurveyForm, surveyFormState
        const handleFieldChange = (e) => {
          const { name, value } = e.target;
          dispatch(fieldChange(surveyDetails.id, { [name]: value }));
+       };
+       const handleDropdownChange = (name, event) => {
+        dispatch(fieldChange(surveyDetails.id, { [name]: event }));
+      
        };
      console.log("survey deta",surveyDetails)
 console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
@@ -148,8 +171,20 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
                   disable={readOnly||false}
                 /> */}
 
-
-<TextInput
+ <Dropdown
+        required={true}
+        id="ulb"
+        name="ulb"
+        option={cities}
+        className="cityCss"
+        select={(e) => handleDropdownChange("ulb", e)}
+        placeholder={"Select City"}
+        optionKey="i18nKey"
+        t={t}
+      
+        selected={surveyDetails.ulb || cityName}
+      />
+{/* <TextInput
           name="ulb"
           type="text"
           inputRef={registerRef({
@@ -163,7 +198,7 @@ console.log("bb",surveyFormData,surveyFormState,registerRef,controlSurveyForm)
          // onChange={handleFieldChange}
           // disable={disableInputs}
           disable={true}
-        />
+        /> */}
                 {/* <div className="tag-container">{renderRemovableTokens}</div> */}
               {/* </div>
             );

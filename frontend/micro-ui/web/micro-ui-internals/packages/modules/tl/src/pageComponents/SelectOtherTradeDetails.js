@@ -35,6 +35,7 @@ const SelectOtherTradeDetails = ({ t, config, onSelect, value, userType, formDat
 
   return (
     <React.Fragment>
+      <div className="step-form-wrapper">
       {window.location.href.includes("/citizen") ? <Timeline /> : null}
       <FormStep
         config={config}
@@ -42,6 +43,7 @@ const SelectOtherTradeDetails = ({ t, config, onSelect, value, userType, formDat
         onSkip={onSkip}
         t={t}
         //isDisabled={!TradeGSTNumber || !OperationalSqFtArea || !NumberOfEmployees}
+        cardStyle={{ boxShadow: "none" }}
       >
         <CardLabel>{`${t("TL_TRADE_GST_NO")}`}</CardLabel>
         <TextInput
@@ -80,6 +82,7 @@ const SelectOtherTradeDetails = ({ t, config, onSelect, value, userType, formDat
           //{...(validation = { pattern: "^[a-zA-Z-0-9_@/#&+-.`' ]*$", isRequired: true, title: t("TL_INVALID_TRADE_NAME") })}
         />
       </FormStep>
+      </div>
     </React.Fragment>
   );
 };

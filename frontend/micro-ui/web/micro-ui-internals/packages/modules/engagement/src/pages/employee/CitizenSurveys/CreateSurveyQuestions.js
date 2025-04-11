@@ -29,8 +29,8 @@ const CreateSurveyQuestions = () => {
       category: null,
       questionStatement: "",
       type: { title: t("MULTIPLE_ANSWER_TYPE"), i18Key: "MULTIPLE_ANSWER_TYPE", value: "MULTIPLE_ANSWER_TYPE" },
-      options: [{ id: Date.now(), title: `${t("CMN_OPTION")} 1` , optionWeightage:0}],
-      
+      options: [{ id: Date.now(), title: `${t("CMN_OPTION")} 1`, optionWeightage: 0 }],
+
       required: false,
       uuid: generateUUID(),
       qorder: null,
@@ -53,19 +53,24 @@ const CreateSurveyQuestions = () => {
   });
 
   function parsePayloadData(data) {
+    console.log("data", data);
     const payload = data.questions.map((item) => {
       let obj = {};
-  
-      if (item.type.value === "MULTIPLE_ANSWER_TYPE" || item.type.value === "CHECKBOX_ANSWER_TYPE") {
+
+      if (
+        item.type.value === "MULTIPLE_ANSWER_TYPE" ||
+        item.type.value === "CHECKBOX_ANSWER_TYPE" ||
+        item.type.value === "DROP_DOWN_MENU_ANSWER_TYPE"
+      ) {
         obj = {
           tenantId: tenantId,
           categoryId: item.category.value,
           questionStatement: item.questionStatement.trim(),
           type: item.type.value,
+          // required: item.required,
           options: item.options.map((option) => ({
             optionText: option.title.trim(),
             weightage: parseInt(option.optionWeightage),
-            required: item?.required
           })),
         };
       } else {
@@ -74,13 +79,13 @@ const CreateSurveyQuestions = () => {
           categoryId: item.category.value,
           questionStatement: item.questionStatement.trim(),
           type: item.type.value,
-          required: item?.required
+          //required: item.required
         };
       }
-  
+
       return obj;
     });
-  
+
     console.log("qus payload", payload);
     return payload;
   }
@@ -89,9 +94,8 @@ const CreateSurveyQuestions = () => {
     setIsLoading(true);
 
     const payload = { Questions: parsePayloadData(data) };
-    console.log("onSubmit create survey questions: \n", data);
-    console.log("Payload: ", payload);
-    //return;
+    //console.log("onSubmit create survey questions: \n", data);
+    //console.log("Payload: ", payload);
     try {
       const response = await Digit.Surveys.createQuestions(payload);
       if (response?.Questions?.length > 0) {

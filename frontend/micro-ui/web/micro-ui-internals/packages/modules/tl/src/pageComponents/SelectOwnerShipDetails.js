@@ -143,8 +143,9 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   return (
     <React.Fragment>
+    <div className="step-form-wrapper">
     {window.location.href.includes("/citizen") ? <Timeline currentStep={2}/> : null}
-    <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!ownershipCategory?.code}>
+    <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!ownershipCategory?.code}  cardStyle={{ boxShadow: "none" }}>
       { !(formData?.TradeDetails?.StructureType?.code === "MOVABLE") && formData?.cpt?.details &&<CheckBox
           label={t("TL_COMMON_SAME_AS_PROPERTY_OWNERS")}
           onChange={selectisSameAsPropertyOwner}
@@ -166,6 +167,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
         isTLFlow={true}
       />
     </FormStep>
+    </div>
     </React.Fragment>
   );
 };

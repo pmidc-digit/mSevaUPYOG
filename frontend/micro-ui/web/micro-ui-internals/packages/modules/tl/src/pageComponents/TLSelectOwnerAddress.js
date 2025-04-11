@@ -122,8 +122,9 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
 
   return (
     <React.Fragment>
+      <div className="step-form-wrapper">
       {window.location.href.includes("/citizen") ? <Timeline currentStep={2} /> : null}
-      <FormStep config={config} t={t} onSelect={goNext} isDisabled={isedittrade || isrenewtrade ? false : !permanentAddress}>
+      <FormStep config={config} t={t} onSelect={goNext} isDisabled={isedittrade || isrenewtrade ? false : !permanentAddress}  cardStyle={{ boxShadow: "none" }}>
         <TextArea
           isMandatory={false}
           optionKey="i18nKey"
@@ -143,6 +144,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
           //disable={isUpdateProperty || isEditProperty}
         />}
       </FormStep>
+      </div>
       {ismultiple ? <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t("TL_PRIMARY_ADDR_INFO_MSG")} /> : ""}
     </React.Fragment>
   );

@@ -63,7 +63,7 @@ export const updateApiResponse = async ({ body }, next = {}) => {
     return;
   }
 
-  body = await addUUIDAndAuditDetails(body);
+  body = await addUUIDAndAuditDetails(body, "_update");
 
   //Check records for approved
   // let approvedList=await getApprovedList(cloneDeep(body));

@@ -91,7 +91,7 @@ export const addUUIDAndAuditDetails = async (request, method = "_update") => {
         let userSearchReqCriteria = {};
         let userSearchResponse = {};
 
-        userSearchReqCriteria.userName = owners[owneriter].mobileNumber;
+        userSearchReqCriteria.userName = method === "_create" ? owners[owneriter].mobileNumber : owners[owneriter].userName ;
         userSearchReqCriteria.mobileNumber = owners[owneriter].mobileNumber;
         userSearchReqCriteria.name = owners[owneriter].name;
         userSearchReqCriteria.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
@@ -131,11 +131,9 @@ export const addUUIDAndAuditDetails = async (request, method = "_update") => {
         else {
           userResponse = await createUser(
             RequestInfo,
-            // owners[owneriter],
-            owners[owneriter] = {
-              ...owners[owneriter], "userName": owners[owneriter].mobileNumber
-            },
-            envVariables.EGOV_DEFAULT_STATE_ID
+             owners[owneriter],
+            envVariables.EGOV_DEFAULT_STATE_ID,
+            method
           );
         }
         let ownerUUID = get(owners[owneriter], "ownerUUID");
@@ -175,15 +173,20 @@ export const addUUIDAndAuditDetails = async (request, method = "_update") => {
   return request;
 };
 
-const createUser = async (requestInfo, owner, tenantId) => {
+const createUser = async (requestInfo, owner, tenantId, method) => {
   let userSearchReqCriteria = {};
   let userSearchResponse = {};
   let userCreateResponse = {};
+  //console.log("Hello Owner"+JSON.stringify(owner))
   if (!owner.uuid) {
     //uuid of user not present
     userSearchReqCriteria.userType = "CITIZEN";
     userSearchReqCriteria.tenantId = tenantId;
     userSearchReqCriteria.mobileNumber = owner.mobileNumber;
+    userSearchReqCriteria.name = owner.name;
+    userSearchReqCriteria.userName = method === '_create' ? owner.mobileNumber : owner.userName;
+
+    //console.log ("New User Search Creteria"+ JSON.stringify(userSearchReqCriteria))
     userSearchResponse = await userService.searchUser(
       requestInfo,
       userSearchReqCriteria
@@ -197,7 +200,8 @@ const createUser = async (requestInfo, owner, tenantId) => {
       });
     } else {
 
-      owner = addDefaultUserDetails(tenantId, owner);
+     // owner = addDefaultUserDetails(tenantId, owner);
+     owner = addDeactiveUserDetails(tenantId, owner);
       userCreateResponse = await userService.createUser(requestInfo, {
         ...userSearchResponse.user[0],
         ...owner
@@ -259,7 +263,7 @@ const addDefaultUserDetails = (tenantId, owner) => {
 
 const addDeactiveUserDetails = (tenantId, owner) => {
    // console.log("owner"+JSON.stringify(owner))
- // if (!owner.userName || isEmpty(owner.userName))
+  if (!owner.userName || isEmpty(owner.userName))
   owner.userName = uuidv1();
   owner.active = true;
   owner.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;

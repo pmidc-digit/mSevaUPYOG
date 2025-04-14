@@ -6,7 +6,8 @@ class ConsoleProvider {
         let reformattedMessage = {
             message: {
                 type: requestBody.message.type,
-                input: requestBody.message.input
+                input: requestBody.message.input,
+                metadata: requestBody.message.metadata ? requestBody.message.metadata : {},
             },
             user: {
                 mobileNumber: requestBody.user.mobileNumber

@@ -7,6 +7,7 @@ var FormData = require("form-data");
 var uuid = require('uuid-random');
 var geturl = require("url");
 var path = require("path");
+const exifr = require('exifr');
 require('url-search-params-polyfill');
 
 let valueFirstRequestBody = "{\"@VER\":\"1.2\",\"USER\":{\"@USERNAME\":\"\",\"@PASSWORD\":\"\",\"@UNIXTIMESTAMP\":\"\",\"@CH_TYPE\":\"4\"},\"DLR\":{\"@URL\":\"\"},\"SMS\":[]}";
@@ -102,6 +103,33 @@ class ValueFirstWhatsAppProvider {
         // return filestoreId;
     }
 
+    async getMetadataFromBase64(base64Image) {
+        try {
+          // Remove "data:image/jpeg;base64," or similar header if present
+          const base64Data = base64Image.replace(/ /g, '+');
+      
+          // Convert to Buffer
+          const imgBuffer = Buffer.from(base64Data, 'base64');
+      
+          // Now pass the buffer to exifr
+          const metadata = await exifr.gps(imgBuffer);
+      
+            if (metadata && metadata.latitude && metadata.longitude) {
+                console.log('Metadata:', metadata);
+                return {
+                    latitude: metadata.latitude.toString(),
+                    longitude: metadata.longitude.toString(),
+                };
+            }else {
+                console.log('No metadata found.');
+                return {};
+            }
+        } catch (error) {
+          console.error('Error extracting metadata:', error);
+          return {};
+        }
+    }
+
     async getUserMessage(requestBody){
 
         console.log("Received requestBody:", JSON.stringify(requestBody, null, 2));
@@ -110,6 +138,7 @@ class ValueFirstWhatsAppProvider {
         let reformattedMessage={};
         let type;
         let input;
+        let metadata = {};
 
         if(requestBody.buttonLabel && requestBody.buttonLabel != '$btnLabel'){
             type = 'button'
@@ -134,7 +163,7 @@ class ValueFirstWhatsAppProvider {
                 if (!imageInBase64String) {
                     console.error("Error: Base64 image string is missing in requestBody!");
                 }
-
+                metadata = await this.getMetadataFromBase64(imageInBase64String);
                 input = await this.convertFromBase64AndStore(imageInBase64String);
             }
             else if(type === 'unknown' || type === 'document')
@@ -146,7 +175,8 @@ class ValueFirstWhatsAppProvider {
 
         reformattedMessage.message = {
             input: input,
-            type: type
+            type: type,
+            metadata: metadata
         };
         reformattedMessage.user = {
            mobileNumber: requestBody.from.slice(2)

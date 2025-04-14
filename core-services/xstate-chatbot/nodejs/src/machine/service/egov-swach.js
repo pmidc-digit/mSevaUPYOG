@@ -13,10 +13,14 @@ var path = require("path");
 require("url-search-params-polyfill");
 
 let swachCreateRequestBody =
-  '{"RequestInfo":{"authToken":"","userInfo":{}},"service":{"tenantId":"","serviceCode":"","description":"","accountId":"","source":"whatsapp","address":{"landmark":"","city":"","geoLocation":{"latitude": null, "longitude": null},"locality":{"code":""}}},"workflow":{"action":"APPLY","verificationDocuments":[]}}';
+  '{"RequestInfo": {"apiId": "Rainmaker", "authToken":"", "userInfo":{}, "msgId":"", "plainAccessRequest": {}},"service":{"tenantId":"","serviceCode":"","description":"","accountId":"","source":"whatsapp","address":{"landmark":"","city":"","geoLocation":{"latitude": null, "longitude": null},"locality":{"code":""}}},"workflow":{"action":"APPLY","verificationDocuments":[]}}';
 
 let swachSearchRequestBody =
   '{"RequestInfo": {"apiId": "Rainmaker", "authToken":"", "userInfo":{}, "msgId":"", "plainAccessRequest": {}}}';
+
+let attendanceRequestBody =
+  '{"RequestInfo": {"apiId": "Rainmaker", "authToken":"", "userInfo":{}, "msgId":"", "plainAccessRequest": {}},"ImageData":{"tenantId":"","useruuid":"","latitude":"","longitude":"","locality":"","imagerurl":""}}'
+
 
 class SwachService {
   async fetchMdmsData(tenantId, moduleName, masterName, filterPath) {
@@ -131,7 +135,9 @@ class SwachService {
 
   async getCityAndLocalityForGeocode(geocode, tenantId) {
     let latlng = geocode.substring(1, geocode.length - 1); // Remove braces
+    console.log("latlng", latlng);
     let cityAndLocality = await getCityAndLocality(latlng);
+    console.log("cityAndLocality", cityAndLocality);
     let { cities, messageBundle } = await this.fetchCities(tenantId);
     if (cityAndLocality.city == "Sahibzada Ajit Singh Nagar") {
       cityAndLocality.city = "Mohali";
@@ -288,6 +294,7 @@ class SwachService {
     };
 
     let response = await fetch(url, options);
+    console.log("Get City Response ----- ", response);
 
     let predictedCity = null;
     let predictedCityCode = null;
@@ -426,12 +433,16 @@ class SwachService {
   async persistSwachComplaint(user, slots, extraInfo) {
     let requestBody = JSON.parse(swachCreateRequestBody);
 
+    
+
     let authToken = user.authToken;
     let userId = user.userId;
     let complaintType = slots.complaint;
     let locality = slots.locality;
     let city = slots.city;
     let userInfo = user.userInfo;
+
+    
 
     requestBody["RequestInfo"]["authToken"] = authToken;
     requestBody["service"]["tenantId"] = city;
@@ -440,6 +451,7 @@ class SwachService {
     requestBody["service"]["serviceCode"] = complaintType;
     requestBody["service"]["accountId"] = userId;
     requestBody["RequestInfo"]["userInfo"] = userInfo;
+    requestBody["RequestInfo"]["msgId"] = config.msgId + "|" + user.locale;
 
     if (slots.geocode) {
       let latlng = slots.geocode.substring(1, slots.geocode.length - 1);
@@ -449,12 +461,18 @@ class SwachService {
     }
 
     if (slots.image) {
+      console.log("Request Body before mutation ----- ", requestBody);
       let filestoreId = await this.getFileForFileStoreId(slots.image, city);
+      if(!filestoreId){
+        console.error("Error in getting file store ID");
+      }else{
+      console.log("FileStore ID ----- ", filestoreId);
       var content = {
         documentType: "PHOTO",
         filestoreId: filestoreId,
       };
       requestBody["workflow"]["verificationDocuments"].push(content);
+      }
     }
 
     var url =
@@ -471,8 +489,15 @@ class SwachService {
       },
     };
 
+    console.log("Persist Swach Complaint URL ----- ", url);
+    console.log(
+      "Persist Swach Complaint Request Body ----- ",
+      JSON.stringify(requestBody)
+    );
+
     let response = await fetch(url, options);
 
+    console.log("persistSwachComplaint response ----- ", response);
 
     let results;
     if (response.status === 200) {
@@ -516,6 +541,7 @@ class SwachService {
 
     
     let response = await fetch(url, options);
+    console.log("Fetch Open Swach Complaints Response ----- ", response);
 
     let results;
     if (response.status === 200) {
@@ -526,6 +552,57 @@ class SwachService {
       return [];
     }
     return results;
+  }
+
+  async persistAttendence(user, slots, attendance, extraInfo) {
+    console.log("Persist Attendence ----- ");
+    let requestBody = JSON.parse(attendanceRequestBody);
+    
+
+    let authToken = user.authToken;
+    let userId = user.userId;
+    let locality = slots.locality;
+    let city = slots.city;
+    let userInfo = user.userInfo;
+
+    console.log("Persist Attendence ----- ", slots);
+    
+
+    requestBody["RequestInfo"]["authToken"] = authToken;
+    requestBody["RequestInfo"]["userInfo"] = userInfo;
+    requestBody["RequestInfo"]["msgId"] = config.msgId + "|" + user.locale;
+    requestBody["ImageData"]["tenantId"] = city;
+    requestBody["ImageData"]["locality"] = locality;
+    requestBody["ImageData"]["useruuid"] = userInfo.uuid;
+    requestBody["ImageData"]["latitude"] = attendance.metadata.latitude;
+    requestBody["ImageData"]["longitude"] = attendance.metadata.longitude;
+    requestBody["ImageData"]["imagerurl"] = attendance.image;
+
+    console.log("Persist Attendence request ----- ", JSON.stringify(requestBody));
+
+    var url =
+      config.egovServices.egovServicesHost +
+      config.egovServices.attendanceEndpoint;
+
+    console.log("Persist Attendence URL ----- ", url);
+
+    var options = {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    let response = await fetch(url, options);
+    console.log("Persist Attendence Response ----- ", response);
+    if (response.status === 200) {
+      let responseBody = await response.json();
+      return responseBody;
+    } else {
+      console.error("Error in persisting the attendence");
+      return undefined;
+    }
   }
 
   async getShortenedURL(finalPath) {
@@ -577,10 +654,14 @@ class SwachService {
   }
 
   async fileStoreAPICall(fileName, fileData, tenantId) {
+    try {
+    console.log("File Store API Call ----- ", fileName, fileData, tenantId);
     var url =
       config.egovServices.egovServicesHost +
       config.egovServices.egovFilestoreServiceUploadEndpoint;
     url = url + "&tenantId=" + tenantId;
+
+    console.log("url", url);
     var form = new FormData();
     form.append("file", fileData, {
       filename: fileName,
@@ -590,10 +671,17 @@ class SwachService {
       headers: {
         ...form.getHeaders(),
       },
-    });
+    }); // API Causing Persistance issue
+
+    console.log("File Store API Response ----- ", response);
 
     var filestore = response.data;
     return filestore["files"][0]["fileStoreId"];
+  } catch (error) {
+    console.error("Error in File Store API Call ----- ", error);
+    return undefined;
+    // throw error;
+    }
   }
 
   async getFileForFileStoreId(filestoreId, tenantId) {
@@ -620,8 +708,13 @@ class SwachService {
     let imageInBase64String = fs.readFileSync(fileName, "base64");
     imageInBase64String = imageInBase64String.replace(/ /g, "+");
     let fileData = Buffer.from(imageInBase64String, "base64");
+    console.log("Get File For File Store ID Response ----- ", fileData);
     var filestoreId = await this.fileStoreAPICall(fileName, fileData, tenantId);
     fs.unlinkSync(fileName);
+    if(!filestoreId){
+      console.error("Error in getting file store ID");
+      return undefined;
+    }
     return filestoreId;
   }
 }

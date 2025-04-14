@@ -1,8 +1,13 @@
-const { assign } = require("xstate");
+const { assign, actions } = require("xstate");
 const { swachService } = require("./service/service-loader");
 const dialog = require("./util/dialog");
 const localisationService = require("./util/localisation-service");
 const config = require("../env-variables");
+const { route } = require("../app");
+const { initial, cond } = require("lodash");
+const { on } = require("form-data");
+const { target } = require("./seva");
+const { error } = require("../session/system");
 
 // swach
 const swach = {
@@ -11,6 +16,9 @@ const swach = {
   onEntry: assign((context, event) => {
     context.slots.swach = {};
     context.swach = { slots: {} };
+    context.attendence = {};
+    context.slots.attendence = {};
+    context.grammer = []
   }),
   states: {
     swachmenu: {
@@ -34,6 +42,11 @@ const swach = {
               target: "#swachTrackComplaint",
               cond: (context) =>
                 context.intention == "track_existing_swach_complaints",
+            },
+            {
+              target: "#swachAttendance",
+              cond: (context) =>
+                context.intention == "attendence",
             },
             {
               target: "error",
@@ -60,6 +73,11 @@ const swach = {
                 context.intention == "track_existing_swach_complaints",
             },
             {
+              target: "#swachAttendance",
+              cond: (context) =>
+                context.intention == "attendence",
+            },
+            {
               target: "error",
             },
           ],
@@ -80,6 +98,417 @@ const swach = {
       }, // swachmenu.states
     },
 
+    swachAttendance: {
+      id: "swachAttendance",
+      initial: "question",
+      states: {
+        question: {
+          onEntry: assign((context, event) => {
+            let message = dialog.get_message(
+              messages.swachAttendance.question,
+              context.user.locale
+            );
+            dialog.sendMessage(context, message);
+          }),
+          on: {
+            USER_MESSAGE: "process",
+          },
+        },
+        process: {
+          onEntry: assign((context, event) => {
+            if (dialog.validateInputType(event, "image")) {
+              console.log("Swach Image Upload ------- type image", event.message);
+              context.attendence.image = event.message.input;
+              context.attendence.metadata = event.message.metadata;
+              if(event.message.metadata && event.message.metadata.latitude && event.message.metadata.longitude) {
+                context.message = {
+                  isValid: true,
+                  isImageError: false,
+                };
+              } else{
+                context.message = {
+                  isValid: true,
+                  isImageError: true,
+                };
+              }
+              console.log("Swach Image Upload ------- context", context);
+            } 
+            else {
+              context.message = {
+                isValid: false,
+              }
+            }
+          }),
+          always: [
+            {
+              target: "error",
+              cond: (context, event) => {
+                return !context.message.isValid;
+              },
+            },
+            {
+              target: "imageError",
+              cond: (context, event) => {
+                return context.message.isImageError;
+              },
+            },
+            {
+              target: "#swachNLPAttendanceCitySearch",
+              cond: (context, event) => {
+                return (context.message.isValid && !context.message.isImageError);
+              },
+            },
+          ],
+        },
+        error: {
+          onEntry: assign((context, event) => {
+            let message = dialog.get_message(
+              dialog.global_messages.error.retry,
+              context.user.locale
+            );
+            dialog.sendMessage(context, message, false);
+          }),
+          always: "question",
+        },
+        imageError: {
+          onEntry: assign((context, event) => {
+            let message = dialog.get_message(
+              dialog.global_messages.image_error.retry,
+              context.user.locale
+            );
+            dialog.sendMessage(context, message, false);
+          }),
+          always: "question",
+        }
+        
+      }, // states of swachAttendance
+    },
+
+    swachNLPAttendanceCitySearch: {
+      id: "swachNLPAttendanceCitySearch",
+      initial: "question",
+      states: {
+        question: {
+          onEntry: assign((context, event) => {
+            let message = dialog.get_message(
+              messages.swachFileComplaint.swachCityFuzzySearch.question,
+              context.user.locale
+            );
+            dialog.sendMessage(context, message);
+          }),
+          on: {
+            USER_MESSAGE: "process",
+          },
+        },
+        process: {
+          invoke: {
+            id: "swachAttendenceCityFuzzySearch",
+            src: (context, event) => {
+              console.log("Swach Get City")
+              return swachService.getCity(
+                event.message.input,
+                context.user.locale
+              );
+            },
+            onDone: {
+              target: "route",
+              cond: (context, event) => event.data,
+              actions: assign((context, event) => {
+                let {
+                  predictedCityCode,
+                  predictedCity,
+                  isCityDataMatch,
+                } = event.data;
+                context.slots.attendence["predictedCityCode"] =
+                  predictedCityCode;
+                context.slots.attendence["predictedCity"] = predictedCity;
+                context.slots.attendence["isCityDataMatch"] =
+                  isCityDataMatch;
+                context.slots.attendence["city"] = predictedCityCode;
+              }),
+            },
+            onError: {
+              target: "#system_error",
+            },
+        },
+        },
+        route: {
+          onEntry: assign((context, event) => {}),
+          always: [
+            {
+              target: "#swachNLPAttendanceLocalitySearch",
+              cond: (context) =>
+                context.slots.attendence["isCityDataMatch"] &&
+                context.slots.attendence["predictedCity"] != null &&
+                context.slots.attendence["predictedCityCode"] != null,
+            },
+            {
+              target: "#swachConfirmationAttendanceFuzzyCitySearch",
+              cond: (context) =>
+                !context.slots.attendence["isCityDataMatch"] &&
+                context.slots.attendence["predictedCity"] != null &&
+                context.slots.attendence["predictedCityCode"] != null,
+            },
+            {
+              target: "#swachNLPAttendanceCitySearch",
+              cond: (context) =>
+                !context.slots.attendence["isCityDataMatch"] &&
+                context.slots.attendence["predictedCity"] == null &&
+                context.slots.attendence["predictedCityCode"] == null,
+              actions: assign((context, event) => {
+                let message = dialog.get_message(
+                  messages.swachFileComplaint.swachCityFuzzySearch.noRecord,
+                  context.user.locale
+                );
+                dialog.sendMessage(context, message);
+              }),
+            }
+          ],
+        },
+        swachConfirmationAttendanceFuzzyCitySearch: {
+          id: "swachConfirmationAttendanceFuzzyCitySearch",
+          initial: "question",
+          states: {
+            question: {
+              onEntry: assign((context, event) => {
+                let message = dialog.get_message(
+                  messages.swachFileComplaint.swachCityFuzzySearch.confirmation,
+                  context.user.locale
+                );
+                message = message.replace(
+                  "{{city}}",
+                  context.slots.attendence["predictedCity"]
+                );
+                dialog.sendMessage(context, message);
+              }),
+              on: {
+                USER_MESSAGE: "process",
+              },
+            },
+            process: {
+              onEntry: assign((context, event) => {
+                if (dialog.validateInputType(event, "text"))
+                  context.intention = dialog.get_intention(
+                    grammer.confirmation.choice,
+                    event,
+                    true
+                  );
+                else context.intention = dialog.INTENTION_UNKOWN;
+              }),
+              always: [
+                {
+                  target: "#swachNLPAttendanceLocalitySearch",
+                  cond: (context) => context.intention == "Yes",
+                },
+                {
+                  target: "#swachNLPAttendanceCitySearch",
+                  cond: (context) => context.intention == "No",
+                },
+                {
+                  target: "error",
+                },
+              ],
+            },
+            error: {
+              onEntry: assign((context, event) => {
+                dialog.sendMessage(
+                  context,
+                  dialog.get_message(
+                    dialog.global_messages.error.retry,
+                    context.user.locale
+                  ),
+                  false
+                );
+              }),
+              always: "question",
+            }, // error
+          },
+        },
+    },
+    },
+
+    swachNLPAttendanceLocalitySearch: {
+      id: "swachNLPAttendanceLocalitySearch",
+      initial: "question",
+      states: {
+        question: {
+          onEntry: assign((context, event) => {
+            let message = dialog.get_message(
+              messages.swachFileComplaint.swachNlpLocalitySearch.question,
+              context.user.locale
+            );
+            dialog.sendMessage(context, message);
+          }),
+          on: {
+            USER_MESSAGE: "process",
+          },
+        },
+        process: {
+          invoke: {
+            id: "swachAttendenceLocalityFuzzySearch",
+            src: (context, event) => {
+              // console.log("Swach Get City")
+              return swachService.getLocality(
+                event.message.input,
+                context.slots.attendence["city"],
+                context.user.locale
+              );
+            },
+            onDone: {
+              target: "route",
+              cond: (context, event) => event.data,
+              actions: assign((context, event) => {
+                let {
+                  predictedLocalityCode,
+                  predictedLocality,
+                  isLocalityDataMatch,
+                } = event.data;
+                context.slots.attendence["predictedLocalityCode"] =
+                  predictedLocalityCode;
+                context.slots.attendence["predictedLocality"] = predictedLocality;
+                context.slots.attendence["isLocalityDataMatch"] =
+                  isLocalityDataMatch;
+                context.slots.attendence["locality"] = predictedLocalityCode;
+              }),
+            },
+            onError: {
+              target: "#system_error",
+            },
+          },
+        },
+        route: {
+          onEntry: assign((context, event) => {}),
+          always: [
+            {
+              target: "#persistAttendence", // persistAttendence
+              cond: (context) =>
+                context.slots.attendence["isLocalityDataMatch"] &&
+                context.slots.attendence["predictedLocality"] != null &&
+                context.slots.attendence["predictedLocalityCode"] != null,
+            },
+            {
+              target: "#swachConfirmationAttendanceFuzzyLocalitySearch",
+              cond: (context) =>
+                !context.slots.attendence["isLocalityDataMatch"] &&
+                context.slots.attendence["predictedLocality"] != null &&
+                context.slots.attendence["predictedLocalityCode"] != null,
+            },
+            {
+              target: "#swachNLPAttendanceLocalitySearch",
+              cond: (context) =>
+                !context.slots.attendence["isLocalityDataMatch"] &&
+                context.slots.attendence["predictedLocality"] == null &&
+                context.slots.attendence["predictedLocalityCode"] == null,
+              actions: assign((context, event) => {
+                let message = dialog.get_message(
+                  messages.swachFileComplaint.swachNlpLocalitySearch.noRecord,
+                  context.user.locale
+                );
+                dialog.sendMessage(context, message);
+              }),
+            }
+          ],
+        },
+        swachConfirmationAttendanceFuzzyLocalitySearch: {
+          id: "swachConfirmationAttendanceFuzzyLocalitySearch",
+          initial: "question",
+          states: {
+            question: {
+              onEntry: assign((context, event) => {
+                let message = dialog.get_message(
+                  messages.swachFileComplaint.swachNlpLocalitySearch.confirmation,
+                  context.user.locale
+                );
+                console.log("Final Context ------ ", context);
+                message = message.replace(
+                  "{{locality}}",
+                  context.slots.attendence["predictedLocality"]
+                );
+                dialog.sendMessage(context, message);
+              }),
+              on: {
+                USER_MESSAGE: "process",
+              },
+            },
+            process: {
+              onEntry: assign((context, event) => {
+                if (dialog.validateInputType(event, "text"))
+                  context.intention = dialog.get_intention(
+                    grammer.confirmation.choice,
+                    event,
+                    true
+                  );
+                else context.intention = dialog.INTENTION_UNKOWN;
+              }),
+              always: [
+                {
+                  target: "#persistAttendence", // persistAttendence
+                  cond: (context) => context.intention == "Yes",
+                },
+                {
+                  target: "#swachNLPAttendanceLocalitySearch",
+                  cond: (context) => context.intention == "No",
+                },
+                {
+                  target: "error",
+                },
+              ],
+                
+            },
+            error: {
+              onEntry: assign((context, event) => {
+                dialog.sendMessage(
+                  context,
+                  dialog.get_message(
+                    dialog.global_messages.error.retry,
+                    context.user.locale
+                  ),
+                  false
+                );
+              }),
+              always: "question",
+            }
+          }
+        }
+      },
+    },
+
+    persistAttendence: {
+      id: "persistAttendence",
+      invoke: {
+        id: "persistAttendence",
+        src: (context, event) => {
+          console.log("Swach Persist Attendence ------- context");
+          return swachService.persistAttendence(
+            context.user,
+            context.slots.attendence,
+            context.attendence,
+            context.extraInfo.tenantId
+          );
+        },
+        onDone: {
+          // target: "#endstate",
+          actions: assign((context, event) => {
+            console.log("Swach Persist Attendence ------- event", event);
+            if(event.data) {
+            let message = dialog.get_message(
+              messages.swachAttendance.confirmation,
+              context.user.locale
+            );
+            dialog.sendMessage(context, message);
+            }else{
+              let message = dialog.get_message(
+                dialog.global_messages.system_error,
+                context.user.locale
+              );
+              dialog.sendMessage(context, message);
+              context.chatInterface.system_error(event.data);
+            }
+          }),
+        },
+      },
+    },
+    
     // swachFileComplaint
     swachFileComplaint: {
       id: "swachFileComplaint",
@@ -181,6 +610,7 @@ const swach = {
                     question: {
                       invoke: {
                         src: (context, event) => {
+                          console.log("context at swachComplaintCategory :", context);
                           return swachService.fetchSwachComplaintCategories(
                             context.extraInfo.tenantId
                           );
@@ -401,7 +831,8 @@ const swach = {
         },
         swachLocation: {
           id: "swachLocation",
-          initial: "swachGeoLocationSharingInfo",
+          // initial: "swachGeoLocationSharingInfo",
+          initial: "swachGeoLocation",
           states: {
             swachGeoLocationSharingInfo: {
               id: "swachGeoLocationSharingInfo",
@@ -416,7 +847,8 @@ const swach = {
             },
             swachGeoLocation: {
               id: "swachGeoLocation",
-              initial: "question",
+              // initial: "question",
+              initial: "process",
               states: {
                 question: {
                   onEntry: assign((context, event) => {
@@ -434,15 +866,24 @@ const swach = {
                   invoke: {
                     id: "getSwachCityAndLocality",
                     src: (context, event) => {
-                      if (event.message.type === "location") {
-                        context.slots.swach.geocode = event.message.input;
-                        // console.log("Swach City and Locality")
-                        return swachService.getCityAndLocalityForGeocode(
-                          event.message.input,
-                          context.extraInfo.tenantId
-                        );
+                      // if (event.message.type === "location") {
+                      //   context.slots.swach.geocode = event.message.input;
+                      //   // console.log("Swach City and Locality")
+                      //   return swachService.getCityAndLocalityForGeocode(
+                      //     event.message.input,
+                      //     context.extraInfo.tenantId
+                      //   );
+                      // }
+                      if(context.slots.swach.metadata.latitude && context.slots.swach.metadata.longitude) {
+                        context.slots.swach.geocode = '('+ context.slots.swach.metadata.latitude + ',' + context.slots.swach.metadata.longitude + ')';
+                        console.log("Swach City and Locality", context.slots.swach.geocode);
+                        // return swachService.getCityAndLocalityForGeocode(
+                        //   context.slots.swach.geocode,
+                        //   context.extraInfo.tenantId
+                        // )
                       }
-                      context.message = event.message.input;
+                      // context.message = event.message.input;
+                      context.message = "1";
                       return Promise.resolve();
                     },
                     onDone: [
@@ -1068,17 +1509,33 @@ const swach = {
                 process: {
                   onEntry: assign((context, event) => {
                     if (dialog.validateInputType(event, "image")) {
+                      console.log("Swach Image Upload ------- type image", event.message);
                       context.slots.swach.image = event.message.input;
+                      context.slots.swach.metadata = event.message.metadata;
+                      if(event.message.metadata && event.message.metadata.latitude && event.message.metadata.longitude) {
+                        context.message = {
+                          isValid: true,
+                          isImageError: false,
+                        };
+                      } else{
+                        context.message = {
+                          isValid: true,
+                          isImageError: true,
+                        };
+                      }
+                      console.log("Swach Image Upload ------- context", context);
+                    } 
+                    else {
+                      // console.log("Swach Image Upload ------- type not image", event.message.input);
+                      // let parsed = event.message.input;
+                      // let isValid = parsed === "1";
+                      // context.message = {
+                      //   isValid: isValid,
+                      //   messageContent: event.message.input,
+                      // };
                       context.message = {
-                        isValid: true,
-                      };
-                    } else {
-                      let parsed = event.message.input;
-                      let isValid = parsed === "1";
-                      context.message = {
-                        isValid: isValid,
-                        messageContent: event.message.input,
-                      };
+                        isValid: false,
+                      }
                     }
                   }),
                   always: [
@@ -1089,9 +1546,15 @@ const swach = {
                       },
                     },
                     {
+                      target: "imageError",
+                      cond: (context, event) => {
+                        return context.message.isImageError;
+                      },
+                    },
+                    {
                       target: "#swachLocation",
                       cond: (context, event) => {
-                        return context.message.isValid;
+                        return (context.message.isValid && !context.message.isImageError);
                       },
                     },
                   ],
@@ -1106,6 +1569,16 @@ const swach = {
                   }),
                   always: "question",
                 },
+                imageError: {
+                  onEntry: assign((context, event) => {
+                    let message = dialog.get_message(
+                      dialog.global_messages.image_error.retry,
+                      context.user.locale
+                    );
+                    dialog.sendMessage(context, message, false);
+                  }),
+                  always: "question",
+                }
               },
             },
           },
@@ -1264,6 +1737,25 @@ let messages = {
     },
   },
 
+  swachAttendance: {
+    question: {
+      en_IN:
+        "Please attach the attendance image with turning on you location and send it to us.",
+      hi_IN:
+        "कृपया उपस्थिति छवि संलग्न करें और इसे हमें भेजने के लिए अपने स्थान को चालू करें।",
+      pa_IN:
+        "ਕਿਰਪਾ ਕਰਕੇ ਹਾਜ਼ਰੀ ਦੀ ਛਵੀ ਜੁੜੀ ਹੋਈ ਭੇਜੋ ਅਤੇ ਸਾਨੂੰ ਭੇਜਣ ਲਈ ਆਪਣੇ ਸਥਾਨ ਨੂੰ ਚਾਲੂ ਕਰੋ।",
+    },
+    confirmation: {
+      en_IN:
+        "Your Attendence have been successfully submitted. Thank you for your service.",
+      hi_IN:
+        "आपकी उपस्थिति सफलतापूर्वक प्रस्तुत की गई है। आपकी सेवा के लिए धन्यवाद।",
+      pa_IN:
+        "ਤੁਹਾਡੀ ਹਾਜ਼ਰੀ ਸਫਲਤਾਪੂਰਕ ਪੇਸ਼ ਕੀਤੀ ਗਈ ਹੈ। ਤੁਹਾਡੀ ਸੇਵਾ ਲਈ ਧੰਨਵਾਦ।",
+    }
+  },
+
   // swach file complaint
   swachFileComplaint: {
     swachcomplaintType: {
@@ -1353,10 +1845,11 @@ let messages = {
     swachImageUpload: {
       question: {
         en_IN:
-          "If possible, attach a photo of your grievance.\n\nTo continue without photo, type and send *1*",
+          "Please attach a photo of your grievance.",
         hi_IN:
-          "यदि संभव हो तो अपनी शिकायत का फोटो संलग्न करें।\n\nफोटो के बिना जारी रखने के लिए, टाइप करें और 1 भेजें",
-        pa_IN: " ਨਾਮ ਦੀ ਪੁਸ਼ਟੀ ਕਰਨ ਲਈ 1 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ",
+          "कृपया अपनी शिकायत की एक फोटो संलग्न करें।",
+        pa_IN: 
+          "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦੀ ਇੱਕ ਫੋਟੋ ਜੁੜੀ ਹੋਈ ਭੇਜੋ।",
       },
       error: {
         en_IN: "Sorry, I didn't understand",
@@ -1463,6 +1956,10 @@ let grammer = {
       {
         intention: "track_existing_swach_complaints",
         recognize: ["2", "track swach", "garbage track"],
+      },
+      {
+        intention: "attendence",
+        recognize: ["3", "fill", "attendance"],
       },
     ],
   },

@@ -31,8 +31,8 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   let { pathname, state } = useLocation();
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
   const isEditScreen = pathname.includes("/modify-application/");
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application");
+  const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
+  const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application") || window.location.href.includes("/citizen/tl/tradelicence/new-application");
   const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
   const search = useLocation().search;
   const urlPropertyId = new URLSearchParams(search).get("propertyId");

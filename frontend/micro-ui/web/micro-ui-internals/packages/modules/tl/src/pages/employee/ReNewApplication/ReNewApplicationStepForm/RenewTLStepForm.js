@@ -15,8 +15,8 @@ import { mapApplicationDataToDefaultValues } from "../../../../utils/mapApplicat
 
 const renewEmployeeConfig = [
   {
-    head: "Traid Details",
-    stepLabel: "Traid Details",
+    head: "Trade Details",
+    stepLabel: "Trade Details",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",

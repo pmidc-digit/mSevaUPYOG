@@ -6,7 +6,7 @@ import Timeline from "../components/TLTimeline";
 
 const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const allCities = Digit.Hooks.tl.useTenants();
-  let tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
   //let isEditProperty = formData?.isEditProperty || false;
   const isEdit = window.location.href.includes("/edit-application/")||window.location.href.includes("renew-trade");
   //if (formData?.isUpdateProperty) isEditProperty = true;

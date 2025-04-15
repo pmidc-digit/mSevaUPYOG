@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
-import { newConfig } from "../../../../config/newConfig";
+import { newConfig } from "../../../../config/citizenNewApplicationStepFormConfig";
 import { SET_tlNewApplication, RESET_tlNewApplicationForm } from "../../../../redux/action/tlNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";

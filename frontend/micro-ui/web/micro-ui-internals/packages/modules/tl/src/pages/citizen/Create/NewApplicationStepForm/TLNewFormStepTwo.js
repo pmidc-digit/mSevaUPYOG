@@ -24,6 +24,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState(null);
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig, isLoading } = Digit.Hooks.tl.useMDMS.getFormConfig(stateId, {});
+  console.log("Property Id: ", propertyId);
   const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: propertyId }, tenantId: tenantId },
     { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId ? true : false }
@@ -126,6 +127,8 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   
     if (TraidDetails?.cpt?.id) {
       if (!TraidDetails?.cpt?.details || !propertyDetails) {
+        console.log("Trade Details: ", TraidDetails);
+        console.log("Property Details: ", propertyDetails);
         setShowToast({ key: "error" });
         setError(t("ERR_INVALID_PROPERTY_ID"));
         return;

@@ -17,7 +17,7 @@ const createEmployeeConfig = [
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
-    component: "TLNewFormStepOne",
+    component: "TLNewFormStepOneCitizen",
     key: "TraidDetails",
     withoutLabel: true,
     texts: {
@@ -30,7 +30,7 @@ const createEmployeeConfig = [
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
-    component: "TLNewFormStepTwo",
+    component: "TLNewFormStepTwoCitizen",
     key: "OwnerDetails",
     withoutLabel: true,
     texts: {
@@ -43,7 +43,7 @@ const createEmployeeConfig = [
     stepNumber: 3,
     isStepEnabled: true,
     type: "component",
-    component: "TLNewFormStepThree",
+    component: "TLNewFormStepThreeCitizen",
     key: "Documents",
     withoutLabel: true,
     texts: {
@@ -56,7 +56,7 @@ const createEmployeeConfig = [
     stepNumber: 4,
     isStepEnabled: true,
     type: "component",
-    component: "TLNewSummaryStepFour",
+    component: "TLNewSummaryStepFourCitizen",
     key: "SummaryTL",
     withoutLabel: true,
     texts: {

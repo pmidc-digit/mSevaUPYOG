@@ -73,7 +73,13 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
       const scrollConst =  1600 
       setTimeout(() => window.scrollTo(0, scrollConst), 0);
     }
-    
+
+    if(window.location.pathname.includes("/tl/tradelicence/new-application")){
+      history.push(`/digit-ui/citizen/tl/tradelicence/new-application?propertyId=${propertyId}`)
+      const scrollConst =  1600 
+      setTimeout(() => window.scrollTo(0, scrollConst), 0);
+    }
+
     else if (window.location.pathname.includes("/ws/new-application"))
       history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`)
       const scrollConst =  460; 

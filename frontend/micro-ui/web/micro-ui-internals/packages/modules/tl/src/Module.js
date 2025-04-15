@@ -73,6 +73,10 @@ import RenewTLFormStepThree from "./pages/employee/ReNewApplication/ReNewApplica
 import RenewTLSummaryStepFour from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLSummaryStepFour";
 //For Citizen:
 import TLCreateTradeLicenceStepForm from "./pages/citizen/Create/NewApplicationStepForm/NewTLStepForm";
+import TLNewFormStepOneCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewFormStepOne";
+import TLNewFormStepTwoCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewFormStepTwo";
+import TLNewFormStepThreeCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewFormStepThree";
+import TLNewSummaryStepFourCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewSummaryStepFour";
 //
 
 export const TLReducers = getRootReducer;
@@ -186,7 +190,11 @@ const componentsToRegister = {
   RenewTLFormStepThree,
   RenewTLSummaryStepFour,
   //For citizen:
-  TLCreateTradeLicenceStepForm
+  TLCreateTradeLicenceStepForm,
+  TLNewFormStepOneCitizen,
+  TLNewFormStepTwoCitizen,
+  TLNewFormStepThreeCitizen,
+  TLNewSummaryStepFourCitizen,
 };
 
 export const initTLComponents = () => {

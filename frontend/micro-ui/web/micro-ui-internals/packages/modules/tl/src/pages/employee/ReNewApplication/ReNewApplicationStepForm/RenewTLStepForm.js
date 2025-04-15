@@ -21,7 +21,7 @@ const renewEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "RenewTLFormStepOne",
-    key: "TraidDetailsRenew",
+    key: "TraidDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
@@ -34,7 +34,7 @@ const renewEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "RenewTLFormStepTwo",
-    key: "OwnerDetailsRenew",
+    key: "OwnerDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
@@ -47,7 +47,7 @@ const renewEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "RenewTLFormStepThree",
-    key: "DocumentsRenew",
+    key: "Documents",
     withoutLabel: true,
     texts: {
       submitBarLabel: "HR_COMMON_BUTTON_SUBMIT",
@@ -60,7 +60,7 @@ const renewEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "RenewTLSummaryStepFour",
-    key: "SummaryTLRenew",
+    key: "SummaryTL",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Submit",
@@ -160,8 +160,18 @@ const RenewTLStepForm = (props) => {
     useEffect(() => {
         console.log("RenewTLStepForm props: ", props);
         console.log("Default_Values_RenewTL_Stepper_Form: ", defaultValues);
+
+        const updatedDefaultValues = JSON.parse(JSON.stringify(defaultValues));
+
+        // Set financialYear to {} if it exists
+        if (
+          updatedDefaultValues?.TraidDetails?.tradedetils?.length > 0 &&
+          updatedDefaultValues.TraidDetails.tradedetils[0].financialYear
+        ) {
+          updatedDefaultValues.TraidDetails.tradedetils[0].financialYear = "";
+        }
       
-        Object.entries(defaultValues).forEach(([key, value]) => {
+        Object.entries(updatedDefaultValues).forEach(([key, value]) => {
           dispatch(UPDATE_tlNewApplication(key, value));
         });
       }, []);  // Important to depend on defaultValues

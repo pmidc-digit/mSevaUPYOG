@@ -139,12 +139,12 @@ const DesktopInbox = ({ tableConfig, filterComponent,columns, isLoading, setSear
                 businessService: "TL",
                 roles: ["TL_FIELD_INSPECTOR","TL_APPROVER", "TL_DOC_VERIFIER","TL_CEMP"],
               },
-              {
-                text: "TL_SEARCH_LICENSE",
-                link: "/digit-ui/employee/tl/search/license",
-                businessService: "TL",
-                roles: ["TL_APPROVER", "TL_DOC_VERIFIER","TL_FIELD_INSPECTOR"],
-              },
+              // {
+              //   text: "TL_SEARCH_LICENSE",
+              //   link: "/digit-ui/employee/tl/search/license",
+              //   businessService: "TL",
+              //   roles: ["TL_APPROVER", "TL_DOC_VERIFIER","TL_FIELD_INSPECTOR"],
+              // },
               {
                 text: "TL_RENEWAL_HEADER",
                 link: "/digit-ui/employee/tl/search/license",

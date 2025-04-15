@@ -34,7 +34,7 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
       return []
     };
     const hasHazardous = tradeUnits.some(unit => unit?.tradeSubType?.ishazardous);
-    if(hasHazardous && selectedValue.code > 1) {
+    if(hasHazardous && selectedValue?.code > 1) {
       setSelectedValue({});
     }
     const years = hasHazardous ? [1] : [1, 2, 3];

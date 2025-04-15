@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { newConfig } from "../../../../config/newConfig";
-import { SET_tlNewApplication } from "../../../../redux/action/tlNewApplicationActions";
+import { SET_tlNewApplication, RESET_tlNewApplicationForm } from "../../../../redux/action/tlNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
@@ -82,6 +82,10 @@ const NewTLStepForm = () => {
   const setStep = (updatedStepNumber) => {
     dispatch(SET_tlNewApplication(updatedStepNumber));
   };
+
+  useEffect(()=>{
+    dispatch(RESET_tlNewApplicationForm());
+  },[])
 
   // console.log("formData",formData);
 

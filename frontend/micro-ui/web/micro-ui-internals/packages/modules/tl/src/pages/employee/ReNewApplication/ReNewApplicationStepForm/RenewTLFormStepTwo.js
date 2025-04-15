@@ -5,15 +5,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/tlNewApplicationActions";
 import _ from "lodash";
+import { convertDateToEpoch } from "../../../../utils";
 
 const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
+  let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
   const dispatch = useDispatch();
+  const tenants = Digit.Hooks.tl.useTenants();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
-  
     const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.OwnerDetails);
     const [localStepData, setLocalStepData] = useState(reduxStepData);
+    const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
 
     // useEffect(()=>{
     //     console.log("currentStepData in step 2: formData:", formData); 
@@ -29,167 +32,144 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const onSubmit = async (data) => {
-      let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
-      console.log("sample_formData: ", data);
-      
-      const { TraidDetails, OwnerDetails } = data;
+    let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
+    let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
+  
+    const { TraidDetails, OwnerDetails, Documents, applicationData } = data;
+    const Traid = TraidDetails || data.TraidDetailsRenew; // fallback in case you use different keys
     
-      if (TraidDetails?.cpt?.id) {
-        if (!TraidDetails?.cpt?.details || !propertyDetails) {
-          setShowToast({ key: "error" });
-          setError(t("ERR_INVALID_PROPERTY_ID"));
-          return;
-        }
-      }
-    
-      const foundValue = tenants?.find((obj) =>
-        obj.pincode?.find((item) => item.toString() === TraidDetails?.address?.pincode)
-      );
-      if (!foundValue && TraidDetails?.address?.pincode) {
-        setShowToast({ key: "error" });
-        setError(t("TL_COMMON_PINCODE_NOT_SERVICABLE"));
-        return;
-      }
-    
-      let accessories = [];
-      if (TraidDetails?.accessories?.length > 0) {
-        TraidDetails.accessories.map((item) => {
-          if (item?.accessoryCategory?.code) {
-            accessories.push({
-              accessoryCategory: item.accessoryCategory.code || null,
-              uom: item.accessoryCategory.uom || null,
-              count: Number(item.count) || null,
-              uomValue: Number(item.uomValue) || null,
-            });
-          }
-        });
-      }
-    
-      let tradeUnits = [];
-      if (TraidDetails?.tradeUnits?.length > 0) {
-        TraidDetails.tradeUnits.map((item) => {
-          tradeUnits.push({
-            tradeType: item.tradeSubType?.code || null,
-            uom: item.tradeSubType?.uom || null,
-            uomValue: Number(item.uomValue) || null,
+    // Prepare accessories
+    let accessories = [];
+    if (Traid?.accessories?.length > 0) {
+      Traid.accessories.map((item) => {
+        if (item?.accessoryCategory?.code) {
+          accessories.push({
+            accessoryCategory: item.accessoryCategory.code || null,
+            uom: item.accessoryCategory.uom || null,
+            count: item.count ? Number(item.count) : null,
+            uomValue: item.uomValue ? Number(item.uomValue) : null,
           });
-        });
-      }
-    
-      let address = {};
-      if (TraidDetails?.cpt?.details?.address) {
-        address.city = TraidDetails.cpt.details.address.city || null;
-        address.locality = { code: TraidDetails.cpt.details.address.locality?.code || null };
-        if (TraidDetails.cpt.details.address.doorNo || TraidDetails.address?.doorNo)
-          address.doorNo = TraidDetails.cpt.details.address.doorNo || TraidDetails.address.doorNo || null;
-        if (TraidDetails.cpt.details.address.street || TraidDetails.address?.street)
-          address.street = TraidDetails.cpt.details.address.street || TraidDetails.address.street || null;
-        if (TraidDetails.cpt.details.address.pincode)
-          address.pincode = TraidDetails.cpt.details.address.pincode;
-      } else if (TraidDetails?.address) {
-        address.city = TraidDetails.address.city?.code || null;
-        if(TraidDetails?.address?.locality?.code){
-  
         }
-        address.locality = { code: TraidDetails.address.locality?.code || null };
-        if (TraidDetails.address.doorNo) address.doorNo = TraidDetails.address.doorNo;
-        if (TraidDetails.address.street) address.street = TraidDetails.address.street;
-        if (TraidDetails.address.pincode) address.pincode = TraidDetails.address.pincode;
-      }
-    
-      let owners = [];
-      if (OwnerDetails?.owners?.length > 0) {
-        OwnerDetails.owners.map((owner, index) => {
-          let obj = {};
-          obj.dob = owner?.dob ? convertDateToEpoch(owner.dob) : null;
-          obj.additionalDetails = { ownerSequence: index, ownerName: owner.name };
-          if (owner.fatherOrHusbandName) obj.fatherOrHusbandName = owner.fatherOrHusbandName;
-          if (owner.gender?.code) obj.gender = owner.gender.code;
-          if (owner.mobileNumber) obj.mobileNumber = Number(owner.mobileNumber);
-          if (owner.name) obj.name = !OwnerDetails?.ownershipCategory?.code.includes("INSTITUTIONAL") ? owner.name : "";
-          if (owner.permanentAddress) obj.permanentAddress = owner.permanentAddress;
-          obj.permanentAddress = obj.permanentAddress || null;
-          if (owner.relationship) obj.relationship = owner.relationship?.code;
-          if (owner.emailId) obj.emailId = owner.emailId;
-          if (owner.ownerType?.code) obj.ownerType = owner.ownerType.code;
-          owners.push(obj);
-        });
-      }
-    
-      let applicationDocuments = TraidDetails?.documents?.documents || [];
-      let commencementDate = convertDateToEpoch(TraidDetails?.tradedetils?.[0]?.commencementDate);
-      let financialYear = TraidDetails?.tradedetils?.[0]?.financialYear?.code;
-      let gstNo = TraidDetails?.tradedetils?.[0]?.gstNo || "";
-      let noOfEmployees = Number(TraidDetails?.tradedetils?.[0]?.noOfEmployees) || "";
-      let operationalArea = Number(TraidDetails?.tradedetils?.[0]?.operationalArea) || "";
-      let structureType = TraidDetails?.tradedetils?.[0]?.structureSubType?.code || "";
-      let tradeName = TraidDetails?.tradedetils?.[0]?.tradeName || "";
-      let subOwnerShipCategory = OwnerDetails?.ownershipCategory?.code || "";
-      let licenseType = TraidDetails?.tradedetils?.[0]?.licenseType?.code || "PERMANENT";
-      let validityYears = TraidDetails?.validityYears?.code || 1;
+      });
+    }
   
-      console.log("trade type", );
-    
-      let formData = {
-        // action: "INITIATE",
-        // applicationType: "NEW",
-        workflowCode: TraidDetails?.tradeUnits.some(unit => unit?.tradeSubType?.ishazardous) ? "NEWTL.HAZ" : "NEWTL.NHAZ",
-        commencementDate,
-        financialYear,
-        licenseType,
-        tenantId,
-        tradeName,
-        wfDocuments: applicationDocuments,
-        tradeLicenseDetail: {
-          channel: "COUNTER",
-          additionalDetail: {
-            validityYears
-          },
-          applicationDocuments: applicationDocuments
-        },
-      };
-    //   formdata.calculation.applicationNumber = formdata.applicationNumber;
-    // formdata.action = "APPLY";
-    
-      if (gstNo) formData.tradeLicenseDetail.additionalDetail.gstNo = gstNo;
-      if (noOfEmployees) formData.tradeLicenseDetail.noOfEmployees = noOfEmployees;
-      if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
-      if (accessories?.length > 0) formData.tradeLicenseDetail.accessories = accessories;
-      if (tradeUnits?.length > 0) formData.tradeLicenseDetail.tradeUnits = tradeUnits;
-      if (owners?.length > 0) formData.tradeLicenseDetail.owners = owners;
-      if (address) formData.tradeLicenseDetail.address = address;
-      if (structureType) formData.tradeLicenseDetail.structureType = structureType;
-      if (OwnerDetails?.ownershipCategory?.code.includes("INDIVIDUAL"))
-        formData.tradeLicenseDetail.subOwnerShipCategory = OwnerDetails?.ownershipCategory?.code;
-      if (subOwnerShipCategory) formData.tradeLicenseDetail.subOwnerShipCategory = subOwnerShipCategory;
-    
-      if (OwnerDetails?.owners?.length && subOwnerShipCategory.includes("INSTITUTIONAL")) {
-        formData.tradeLicenseDetail.institution = {
-          designation: OwnerDetails.owners[0]?.designation,
-          instituionName: OwnerDetails.owners[0]?.instituionName,
-          name: OwnerDetails.owners[0]?.name,
-          contactNo: OwnerDetails.owners[0]?.altContactNumber,
+    // Prepare tradeUnits
+    let tradeUnits = [];
+    if (Traid?.tradeUnits?.length > 0) {
+      Traid.tradeUnits.map((item) => {
+        if (item?.tradeSubType?.code) {
+          tradeUnits.push({
+            tradeType: item.tradeSubType.code || null,
+            uom: item.tradeSubType.uom || null,
+            uomValue: item.uomValue ? Number(item.uomValue) : null,
+          });
+        }
+      });
+    }
+  
+    // Prepare address
+    let address = {};
+    if (Traid?.cpt?.details?.address) {
+      const addr = Traid.cpt.details.address;
+      address.city = addr.city || addr.tenantId || tenantId;
+      address.locality = { code: addr.locality?.code || null };
+      if (addr.doorNo) address.doorNo = addr.doorNo;
+      if (addr.street) address.street = addr.street;
+      if (addr.pincode) address.pincode = addr.pincode;
+    } else if (Traid?.address) {
+      address.city = Traid.address.city?.code || tenantId;
+      address.locality = { code: Traid.address.locality || null };
+      if (Traid.address.doorNo) address.doorNo = Traid.address.doorNo;
+      if (Traid.address.street) address.street = Traid.address.street;
+      if (Traid.address.pincode) address.pincode = Traid.address.pincode;
+    }
+  
+    // Prepare owners
+    let owners = [];
+    if (OwnerDetails?.owners?.length > 0) {
+      OwnerDetails.owners.map((owner, index) => {
+        let obj = {
+          name: owner?.name || "",
+          mobileNumber: owner?.mobileNumber ? Number(owner?.mobileNumber) : null,
+          fatherOrHusbandName: owner?.fatherOrHusbandName || "",
+          gender: owner?.gender?.code || "MALE",
+          permanentAddress: owner?.permanentAddress || "",
+          relationship: owner?.relationship?.code || "FATHER",
+          ownerType: owner?.ownerType?.code || "NONE",
+          dob: owner?.dob ? convertDateToEpoch(owner.dob) : null,
+          additionalDetails: {
+            ownerSequence: index,
+            ownerName: owner?.name || ""
+          }
         };
-      }
-    
-      if (TraidDetails?.cpt) {
-        formData.tradeLicenseDetail.additionalDetail.propertyId = TraidDetails.cpt.details?.propertyId;
-        formData.tradeLicenseDetail.additionalDetail.isSameAsPropertyOwner = isSameAsPropertyOwner;
-      }
-    
-      formData = Digit?.Customizations?.TL?.customiseCreateFormData
-        ? Digit.Customizations.TL.customiseCreateFormData(data, formData)
-        : formData;
+        owners.push(obj);
+      });
+    }
   
-        console.log("formData in step 2: ", formData);
-        const response = await Digit.TLService.update({ Licenses: [formData] }, tenantId);
-        if(response?.ResponseInfo?.status === "successful"){
-          dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-          console.log("response in step 2: ", response.Licenses[0]);
-        }
-        return (response?.ResponseInfo?.status === "successful");
-      
+    // Prepare documents
+    let applicationDocuments = Documents?.documents?.documents || [];
+  
+    // Prepare main formData
+    let formData = {
+      id: applicationData?.id,
+      tradeName: applicationData.tradeName,
+      applicationNumber: applicationData?.applicationNumber,
+      licenseNumber: applicationData?.licenseNumber,
+      tenantId: tenantId,
+      action: "INITIATE",
+      status: applicationData?.status || "APPROVED",
+      applicationType: "RENEWAL",
+      workflowCode: Traid?.tradeUnits?.some(unit => unit?.tradeSubType?.ishazardous) ? "NEWTL.HAZ" : "NEWTL.NHAZ",
+      commencementDate: convertDateToEpoch(Traid?.tradedetils?.[0]?.commencementDate),
+      issuedDate: applicationData?.issuedDate,
+      applicationDate: applicationData?.applicationDate,
+      financialYear: Traid?.tradedetils?.[0]?.financialYear?.code,
+      licenseType: Traid?.tradedetils?.[0]?.licenseType?.code || "PERMANENT",
+      businessService: applicationData?.businessService || "TL",
+      // wfDocuments: applicationDocuments,
+      wfDocuments: [],
+      accountId: applicationData?.accountId,
+      propertyId: applicationData?.propertyId || Traid?.cpt?.details?.propertyId || null,
+      tradeLicenseDetail: {
+        id: applicationData?.tradeLicenseDetail?.id,
+        surveyNo: applicationData?.tradeLicenseDetail?.surveyNo || null,
+        channel: "COUNTER",
+        address: address,
+        owners: owners,
+        structureType: Traid?.tradedetils?.[0]?.structureSubType?.code,
+        subOwnerShipCategory: OwnerDetails?.ownershipCategory?.code || "INDIVIDUAL.SINGLEOWNER",
+        operationalArea: Traid?.tradedetils?.[0]?.operationalArea ? Number(Traid.tradedetils[0].operationalArea) : null,
+        noOfEmployees: Traid?.tradedetils?.[0]?.noOfEmployees ? Number(Traid.tradedetils[0].noOfEmployees) : null,
+        tradeUnits: tradeUnits,
+        accessories: accessories,
+        applicationDocuments: applicationDocuments,
+        // verificationDocuments: applicationData?.tradeLicenseDetail?.verificationDocuments || null,
+        verificationDocuments: null,
+        additionalDetail: {
+          validityYears: Traid?.validityYears?.code || 1,
+          propertyId: Traid?.cpt?.details?.propertyId || null,
+          isSameAsPropertyOwner: isSameAsPropertyOwner
+        },
+        institution: applicationData?.tradeLicenseDetail?.institution || null,
+        auditDetails: applicationData?.tradeLicenseDetail?.auditDetails || {}
+      },
+      auditDetails: applicationData?.auditDetails || {},
+      fileStoreId: applicationData?.fileStoreId || null,
+      isDeclared: "false"
     };
+  
+    console.log("Final formData before API hit:", formData);
+  
+    // Call API
+    const response = await Digit.TLService.update({ Licenses: [formData] }, tenantId);
+    if (response?.ResponseInfo?.status === "successful") {
+      dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
+      console.log("API Success Response:", response.Licenses[0]);
+    }
+    
+    return (response?.ResponseInfo?.status === "successful");
+  };
+  
 
   const goNext = async () => {
     if (!validateOwners(localStepData)) {
@@ -198,6 +178,7 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
+    console.log("Form data before submission: ", formData);
     const res = await onSubmit(formData);
     console.log("API response: ", res);
 

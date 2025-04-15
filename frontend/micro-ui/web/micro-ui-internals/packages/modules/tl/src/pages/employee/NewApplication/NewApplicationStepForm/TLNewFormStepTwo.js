@@ -116,22 +116,6 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     }
   };
 
-  // const goNext = async (data) => {
-
-  //     console.log("Submitting full form data: ", formData);
-  //     const res = await onSubmit(formData); // wait for the API response
-  //     console.log("API response: ", res);
-  
-  //     // Check if the API call was successful
-  //     if (res) {
-  //       console.log("Submission successful, moving to next step.");
-  //       onGoNext();
-  //     } else {
-  //       console.error("Submission failed, not moving to next step.", res);
-  //       // Optionally show an error toast or alert here
-  //     }
-    
-  // };
   
 
   const onSubmit = async (data) => {
@@ -306,15 +290,10 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     }
   };
 
-//   const currentStepData = useSelector(function (state) {
-//     return state.tl.tlNewApplicationForm.formData && state.tl.tlNewApplicationForm.formData[config.key] 
-//         ? state.tl.tlNewApplicationForm.formData[config.key] 
-//         : {};
-// });
 
   const dispatch = useDispatch();
 
-//  console.log("currentStepData in  Administrative details: ", currentStepData);
+ console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>

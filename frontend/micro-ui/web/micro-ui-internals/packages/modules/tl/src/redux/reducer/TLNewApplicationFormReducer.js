@@ -1,5 +1,5 @@
 // reducers/employeeFormReducer.js
-import { UPDATE_tlNewApplication_FORM, SET_tlNewApplication_STEP } from "../action/types";
+import { UPDATE_tlNewApplication_FORM, SET_tlNewApplication_STEP, RESET_TL_NEW_APPLICATION_FORM } from "../action/types";
 
 const initialState = {
   step: 1,
@@ -22,6 +22,8 @@ const TLNewApplicationFormReducer = (state = initialState, action) => {
         ...state,
         step: action.payload,
       };
+    case RESET_TL_NEW_APPLICATION_FORM:
+      return initialState;
     default:
       return state;
   }

@@ -17,6 +17,18 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application");
   const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details");
   const isEmpEdit = window.location.href.includes("/employee/tl/edit-application-details");
+  const [ownershipTypeMain, setOwnershipTypeMain] = useState();
+  const ownershipTypeOptions = [
+    { code: "INDIVIDUAL", i18nKey: "COMMON_MASTERS_OWNERSHIPCATEGORY_INDIVIDUAL" },
+    { code: "INSTITUTIONALPRIVATE", i18nKey: "COMMON_MASTERS_OWNERSHIPCATEGORY_INSTITUTIONALPRIVATE" },
+    { code: "INSTITUTIONALGOVERNMENT", i18nKey: "COMMON_MASTERS_OWNERSHIPCATEGORY_INSTITUTIONALGOVERNMENT" }
+  ];
+
+  const filteredOwnershipSubTypes = useMemo(() => {
+    if (!ownershipTypeMain) return [];
+    return dropdownData?.filter(item => item.code.startsWith(ownershipTypeMain.code)) || [];
+  }, [dropdownData, ownershipTypeMain]);
+
 
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
@@ -122,10 +134,23 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           </CardLabel>
           <Dropdown
             className="form-field"
+            selected={ownershipTypeMain}
+            option={ownershipTypeOptions}
+            select={setOwnershipTypeMain}
+            optionKey="i18nKey"
+            t={t}
+          />
+        </LabelFieldPair>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
+            {`${t("TL_NEW_OWNER_DETAILS_OWNERSHIP_SUB_TYPE_LABEL")} * `}
+          </CardLabel>
+          <Dropdown
+            className="form-field"
             selected={ownershipCategory?.code ? ownershipCategory:{}}
             errorStyle={formState.touched?.[config.key] && formState.errors[config.key]?.message ? true : false}
             disable={(isRenewal && ownershipCategory?.code) || isSameAsPropertyOwner}
-            option={dropdownData}
+            option={filteredOwnershipSubTypes}
             select={selectedValue}
             optionKey="i18nKey"
             onBlur={onBlur}

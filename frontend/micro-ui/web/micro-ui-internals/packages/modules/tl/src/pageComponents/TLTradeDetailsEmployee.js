@@ -328,7 +328,7 @@ const OwnerForm1 = (_props) => {
                   select={props.onChange}
                   optionKey="i18nKey"
                   onBlur={props.onBlur}
-                  disable={isRenewal}
+                  // disable={isRenewal}
                   t={t}
                 />
               )}

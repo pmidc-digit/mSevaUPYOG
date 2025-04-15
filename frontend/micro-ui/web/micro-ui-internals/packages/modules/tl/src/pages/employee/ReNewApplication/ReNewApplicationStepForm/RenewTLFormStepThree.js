@@ -15,16 +15,24 @@ const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.Documents);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
 
-  const validateDocuments = (data) => {
+
+  function validateDocuments(data) {
     const requiredTypes = ["OWNERIDPROOF", "OWNERSHIPPROOF", "OWNERSELF"];
     const uploadedDocs = data?.documents?.documents || [];
-    return requiredTypes.every((type) => uploadedDocs.some((doc) => doc?.documentType === type));
-  };
+  
+    const uploadedTypes = uploadedDocs.map(doc => doc?.documentType);
+    const missingTypes = requiredTypes.filter(type => !uploadedTypes.includes(type));
+  
+    return missingTypes;
+  }
 
   const goNext = () => {
     console.log("localStepData in step 3: formData:", localStepData);
-    if (!validateDocuments(localStepData)) {
-      setError(t("Please upload all mandatory documents."));
+    
+    const missingDocs = validateDocuments(localStepData);
+
+    if (missingDocs.length > 0) {
+      setError(t(`Please upload the following documents: ${missingDocs.join(", ")}`));
       setShowToast(true);
       return;
     }

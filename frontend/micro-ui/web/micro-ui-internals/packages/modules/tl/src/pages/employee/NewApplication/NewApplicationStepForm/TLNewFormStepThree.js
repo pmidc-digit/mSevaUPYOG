@@ -17,8 +17,10 @@ const TLNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
 
-    if (!validateDocuments(currentStepData)) {
-      setError(t("Please upload all mandatory documents."));
+    const missingDocs = validateDocuments(currentStepData);
+
+    if (missingDocs.length > 0) {
+      setError(t(`Please upload the following documents: ${missingDocs.join(", ")}`));
       setShowToast(true);
       return;
     }
@@ -33,14 +35,11 @@ const TLNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   function validateDocuments(data) {
     const requiredTypes = ["OWNERIDPROOF", "OWNERSHIPPROOF", "OWNERSELF"];
     const uploadedDocs = data?.documents?.documents || [];
-
+  
     const uploadedTypes = uploadedDocs.map(doc => doc?.documentType);
-
-    console.log("Uploaded document types: ", uploadedTypes);
-
-    const allRequiredPresent = requiredTypes.every(type => uploadedTypes.includes(type));
-
-    return allRequiredPresent;
+    const missingTypes = requiredTypes.filter(type => !uploadedTypes.includes(type));
+  
+    return missingTypes;
   }
 
   const onFormValueChange = (setValue = true, data) => {

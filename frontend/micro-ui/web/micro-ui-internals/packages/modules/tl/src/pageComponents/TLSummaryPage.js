@@ -1,6 +1,8 @@
 import React from "react";
 import { CardLabel } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import TLDocument from "./TLDocumets";
+
 
 const TLSummaryPage = ({ config, formData, onSelect }) => {
   const { t } = useTranslation();
@@ -30,6 +32,8 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
     const date = new Date(timestamp);
     return date.toLocaleDateString();
   };
+
+  console.log("formData in Summary", formData)
 
   const sectionStyle = {
     backgroundColor: "#ffffff",
@@ -141,6 +145,16 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
           {renderLabel(t("Gender"), owner?.gender)}
         </div>
       ))}
+
+      <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
+      <div style={sectionStyle}>
+        {Array.isArray(formData?.Documents?.documents) && formData.Documents.documents.length > 0 ? (
+          <TLDocument value={{ workflowDocs: formData.Documents.documents }} ></TLDocument>
+        ) : (
+          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
+        )}
+      </div>
+
     </div>
   );
 };

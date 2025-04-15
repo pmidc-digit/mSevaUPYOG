@@ -102,6 +102,12 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
     }
   }, [ownershipCategory]);
 
+  const ownershipTypeMainDerived = useMemo(() => {
+    if (!ownershipCategory?.code) return null;
+    const mainCode = ownershipCategory.code.split(".")[0];
+    return ownershipTypeOptions.find(opt => opt.code === mainCode);
+  }, [ownershipCategory, ownershipTypeOptions]);
+
 
   // useEffect(() => {
   //   if (userType === "employee") {
@@ -134,7 +140,8 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           </CardLabel>
           <Dropdown
             className="form-field"
-            selected={ownershipTypeMain}
+            selected={ownershipTypeMainDerived}
+            disable={(isRenewal && ownershipCategory?.code) || isSameAsPropertyOwner}
             option={ownershipTypeOptions}
             select={setOwnershipTypeMain}
             optionKey="i18nKey"

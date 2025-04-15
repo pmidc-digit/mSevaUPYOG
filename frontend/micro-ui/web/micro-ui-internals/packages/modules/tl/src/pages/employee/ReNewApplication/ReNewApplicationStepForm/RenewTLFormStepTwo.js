@@ -18,17 +18,46 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     const [localStepData, setLocalStepData] = useState(reduxStepData);
     const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
 
-    // useEffect(()=>{
-    //     console.log("currentStepData in step 2: formData:", formData); 
-    //     // console.log("currentStepData in step 2: ", currentStepData);
-    // },[])
-  const validateOwners = (data) => {
-    const { ownershipCategory, owners } = data;
-    if (!ownershipCategory?.value || !owners?.length) return false;
-    return owners.every(
-      (owner) =>
-        owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
-    );
+
+  const validateOwnerDetails = (data) => {
+    const { ownershipCategory, owners } = data || {};
+    const missingFields = [];
+  
+    if (!ownershipCategory?.value) {
+      missingFields.push("Ownership Category");
+      return missingFields;
+    }
+  
+    if (!owners || owners.length === 0) {
+      missingFields.push("At least one Owner");
+      return missingFields;
+    }
+  
+    const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
+    const isMultipleOwner = ownershipCategory.value === "INDIVIDUAL.MULTIPLEOWNERS";
+  
+    const validateOwner = (owner, index = 1) => {
+      if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
+      if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
+      if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
+      if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
+      if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
+    };
+  
+    if (isSingleOwner) {
+      if (owners.length !== 1) {
+        missingFields.push("Only one owner allowed for SINGLEOWNER");
+      } else {
+        validateOwner(owners[0], 1);
+      }
+    } else if (isMultipleOwner) {
+      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+    } else {
+      // For other ownership types like INSTITUTIONAL, apply same validations for now
+      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+    }
+  
+    return missingFields;
   };
 
   const onSubmit = async (data) => {
@@ -172,8 +201,16 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   
 
   const goNext = async () => {
-    if (!validateOwners(localStepData)) {
-      setError(t("Please fill all owner mandatory details correctly."));
+    // if (!validateOwners(localStepData)) {
+    //   setError(t("Please fill all owner mandatory details correctly."));
+    //   setShowToast(true);
+    //   return;
+    // }
+
+    const missingFields = validateOwnerDetails(localStepData);
+
+    if (missingFields.length > 0) {
+      setError(`Please fill the following fields: ${missingFields.join(", ")}`);
       setShowToast(true);
       return;
     }

@@ -39,68 +39,62 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     setError("");
   };
 
-  // const validateOwnerDetails = (ownerDetails) => {
-  //   const { ownershipCategory, owners } = ownerDetails || {};
-
-  //   if (!ownershipCategory?.value) {
-  //     console.log("Ownership Category missing.");
-  //     return false;
-  //   }
-
-  //   if (!owners?.length) {
-  //     console.log("Owners array is empty.");
-  //     return false;
-  //   }
-
-  //   const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
-
-  //   if (isSingleOwner && owners.length !== 1) {
-  //     console.log("Single owner expected, but multiple owners present.");
-  //     return false;
-  //   }
-
-  //   const mandatoryFieldsCheck = owners.every((owner) => {
-  //     return (
-  //       owner?.name &&
-  //       typeof owner.name === "string" &&
-  //       owner.name.trim() !== "" &&
-
-  //       owner?.mobileNumber &&
-  //       /^[0-9]{10}$/.test(owner.mobileNumber) &&
-
-  //       owner?.gender?.code &&
-  //       typeof owner.gender.code === "string" &&
-  //       owner.gender.code.trim() !== "" &&
-
-  //       owner?.relationship?.code &&
-  //       typeof owner.relationship.code === "string" &&
-  //       owner.relationship.code.trim() !== "" &&
-
-  //       owner?.fatherOrHusbandName &&
-  //       typeof owner.fatherOrHusbandName === "string" &&
-  //       owner.fatherOrHusbandName.trim() !== ""
-  //     );
-  //   });
-
-  //   return mandatoryFieldsCheck;
-  // };
-
+  
   const validateOwnerDetails = (data) => {
-    const { ownershipCategory, owners } = data;
-    if (!ownershipCategory?.value || !owners?.length) return false;
-    return owners.every(
-      (owner) =>
-        owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
-    );
-  };
+    const { ownershipCategory, owners } = data || {};
+    const missingFields = [];
+  
+    if (!ownershipCategory?.value) {
+      missingFields.push("Ownership Category");
+      return missingFields;
+    }
+  
+    if (!owners || owners.length === 0) {
+      missingFields.push("At least one Owner");
+      return missingFields;
+    }
+  
+    const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
+    const isMultipleOwner = ownershipCategory.value === "INDIVIDUAL.MULTIPLEOWNERS";
+  
+    const validateOwner = (owner, index = 1) => {
+      if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
+      if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
+      if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
+      if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
+      if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
+    };
+  
+    if (isSingleOwner) {
+      if (owners.length !== 1) {
+        missingFields.push("Only one owner allowed for SINGLEOWNER");
+      } else {
+        validateOwner(owners[0], 1);
+      }
+    } else if (isMultipleOwner) {
+      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+    } else {
+      // For other ownership types like INSTITUTIONAL, apply same validations for now
+      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+    }
+  
+    return missingFields;
+  }; 
 
   const goNext = async (data) => {
     console.log("Submitting full form data: ", formData);
 
     const { OwnerDetails } = formData || {}; 
 
-    if (!validateOwnerDetails(OwnerDetails)) {
-      setError(t("Please fill all owner mandatory details correctly."));
+    // if (!validateOwnerDetails(OwnerDetails)) {
+    //   setError(t("Please fill all owner mandatory details correctly."));
+    //   setShowToast(true);
+    //   return;
+    // }
+    const missingFields = validateOwnerDetails(OwnerDetails);
+
+    if (missingFields.length > 0) {
+      setError(`Please fill the following fields: ${missingFields.join(", ")}`);
       setShowToast(true);
       return;
     }

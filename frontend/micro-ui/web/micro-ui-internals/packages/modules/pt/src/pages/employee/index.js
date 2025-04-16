@@ -149,6 +149,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   }
 
   const NewApplication = Digit?.ComponentRegistryService?.getComponent("PTNewApplication");
+  const NewPropertyStepForm = Digit?.ComponentRegistryService?.getComponent('NewPropertyStepForm')
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
   const PropertyDetails = Digit?.ComponentRegistryService?.getComponent("PTPropertyDetails");
   const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("PTAssessmentDetails");
@@ -184,7 +185,8 @@ const EmployeeApp = ({ path, url, userType }) => {
               />
             )}
           />
-          <PrivateRoute path={`${path}/new-application`} component={() => <NewApplication parentUrl={url} />} />
+          <PrivateRoute path={`${path}/new-application-SPA`} component={() => <NewApplication parentUrl={url} />} />
+          <PrivateRoute path={`${path}/new-application`} component={() => <NewPropertyStepForm parentUrl={url} />} />
           <PrivateRoute path={`${path}/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/property-details/:id`} component={() => <PropertyDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />

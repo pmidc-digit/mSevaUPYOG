@@ -8,8 +8,10 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
   const onSkip = () => onSelect();
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
 
-  const[vasikaNo, setVasikaNo]=useState(formData?.additionalDetails?.vasikaNo || "")
-  const [vasikaDate,setVasikaDate]=useState(formData?.additionalDetails?.vasikaDate || "")
+  // const [vasikaNo, setVasikaNo] = useState(formData?.PropertyDetails?.vasikaDetails?.vasikaNo || "");
+  // const [vasikaDate, setVasikaDate] = useState(formData?.PropertyDetails?.vasikaDetails?.vasikaDate || "");
+  const [vasikaNo, setVasikaNo] = useState(formData?.vasikaDetails?.vasikaNo || "");
+  const [vasikaDate, setVasikaDate] = useState(formData?.vasikaDetails?.vasikaDate || "");
   
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
@@ -18,7 +20,7 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
   const checkLocation = window.location.href.includes("pt/new-application") || window.location.href.includes("pt/renew-application-details");
   const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("pt/renew-application-details");
   let validation = {};
- 
+ console.log("config.key",config.key)
   let inputs = [
     {
       label: "PT_PROPERTY_ADDRESS_VASIKA_NO",
@@ -64,13 +66,32 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
     }
     return {};
   };
-const setData=(config,data)=>{
-  let dataNew ={vasikaNo,vasikaDate}
-  onSelect(config, dataNew)
-}
-  useEffect(() => {
-    trigger();
-  }, []);
+// const setData=(config,data)=>{
+//   let dataNew ={vasikaNo,vasikaDate}
+//   onSelect(config, dataNew)
+// }
+const setData = (config, data) => {
+  const dataNew = { vasikaNo, vasikaDate };
+  // onSelect(config, { ...formData[config.key], ...dataNew });
+  onSelect("PropertyDetails", {
+    ...formData.PropertyDetails,
+    vasikaDetails: dataNew, // Save vasika details here
+  });
+};
+// console.log("formData.PropertyDetails.vasikaDetails",formData?.PropertyDetails?.vasikaDetails)
+useEffect(() => {
+  // Synchronize local state with formData when the component mounts or formData changes
+  if (formData?.vasikaDetails) {
+    setVasikaNo(formData.vasikaDetails.vasikaNo || "");
+    setVasikaDate(formData.vasikaDetails.vasikaDate || "");
+  }else {
+    setVasikaNo("");
+    setVasikaDate("");
+  }
+}, [formData?.vasikaDetails]);
+  // useEffect(() => {
+  //   trigger();
+  // }, []);
 
   useEffect(() => {
     if (userType === "employee") {
@@ -79,117 +100,189 @@ const setData=(config,data)=>{
     }
   }, [errors]);
 
-  useEffect(() => {
-    const keys = Object.keys(formValue);
-    const part = {};
-    keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
-    console.log("key",formValue)
-    if (!_.isEqual(formValue, part)) {
-      onSelect(config.key, { ...formData[config.key], ...formValue });
-      for (let key in formValue) {
+  // useEffect(() => {
+  //   const keys = Object.keys(formValue);
+  //   const part = {};
+  //   keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
+  //   console.log("key",formValue)
+  //   if (!_.isEqual(formValue, part)) {
+  //     onSelect(config.key, { ...formData[config.key], ...formValue });
+  //     for (let key in formValue) {
       
-        if (!formValue[key] && !localFormState?.errors[key]) {
-          setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
-        } else if (formValue[key] && localFormState.errors[key]) {
-          clearLocalErrors([key]);
-        }
-      }
-      trigger();
-    } 
-    console.log("formValue",formValue,formData)
-  }, [formValue]);
+  //       if (!formValue[key] && !localFormState?.errors[key]) {
+  //         setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
+  //       } else if (formValue[key] && localFormState.errors[key]) {
+  //         clearLocalErrors([key]);
+  //       }
+  //     }
+  //     trigger();
+  //   } 
+  //   console.log("formValue",formValue,formData)
+  // }, [formValue]);
+  const handleVasikaNoChange = (value) => {
+    setVasikaNo(value);
+    onSelect(config.key, {...formData[config.key], vasikaNo: value },
+      // vasikaDetails: { ...(formData.PropertyDetails?.vasikaDetails || {}), vasikaNo: value },
+    );
+  };
+  
+  const handleVasikaDateChange = (value) => {
+    setVasikaDate(value);
+    onSelect(config.key, {...formData[config.key], vasikaDate: value },
+      // vasikaDetails: { ...(formData.PropertyDetails?.vasikaDetails || {}), vasikaDate: value },
+    );
+  };
   function selectVasikaNo(e) {
     setFocusIndex({ index:0});
-    setStreet(e.target.value);
+    // setStreet(e.target.value);
   }
   function selectVasikaDate(e) {
     setFocusIndex({ index:1 });
     setVasikaDate(e.target.value);
   }
+  const onSubmit = () => {
+    setData();
+  };
 
+  // if (userType === "employee") {
 
+  //     return (
+  //       <div>
+  //       <LabelFieldPair key={0}>
+  //         <CardLabel className="card-label-smaller">
+  //           {`${t(inputs[0].label)}`}
+  //           {config.isMandatory ? " *" : ""}
+  //         </CardLabel>
+  //         <div className="field">
+  //           <Controller
+  //             control={control}
+  //             defaultValue={formData?.PropertyDetails?.vasikaDetails?.[inputs[0].name]}
+  //             name={inputs[0].name}
+  //             rules={{ validate: convertValidationToRules(inputs[0]) }}
+  //             type={"text"}
+  //             render={(_props) => (
+                
+  //               <TextInput
+  //                 id={inputs[0].name}
+  //                 key={inputs[0].name}
+  //                 value={_props.value}
+  //                 type={"text"}
+  //                 onChange={(e) => {
+  //                   setFocusIndex({ index:0  });
+  //                   _props.onChange(e.target.value);
+  //                 }}
+  //                 onBlur={_props.onBlur}
+  //                 disable={isRenewal}
+  //                 autoFocus={focusIndex?.index == 0}
+  //                 {...inputs[0].validation}
+  //               />
+                
+         
+  //             )}
+  //           />
+           
+  //         </div>
+  //       </LabelFieldPair>
+  //       {formState.touched[config.key] ? (
+  //           <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+  //             {formState.errors?.[config.key]?.message}
+  //           </CardLabelError>
+  //         ) : null}
+
+  //       <LabelFieldPair key={1}>
+  //         <CardLabel className="card-label-smaller">
+  //           {`${t(inputs[1].label)}`}
+  //           {config.isMandatory ? " * " : ""}
+  //         </CardLabel>
+  //         <div className="field">
+  //           <Controller
+  //             control={control}
+  //             defaultValue={formData?.PropertyDetails?.vasikaDetails?.[inputs[1].name]}
+  //             name={inputs[1].name}
+  //             //rules={{ validate: convertValidationToRules(inputs[1]) }}
+  //             type={"date"}
+  //             render={(_props) => (
+  //               <DatePicker
+  //                   date={_props.value} 
+  //                   name="VasikaDate"
+  //                   onChange={(e) => {
+  //                       setFocusIndex({ index:1 });
+  //                       _props.onChange(e);
+  //                   }}
+  //                   disabled={isRenewal}
+  //                 />                 
+  //             )}
+  //           />
+  //         </div>
+  //       </LabelFieldPair>
+  //       {formState.touched[config.key] ? (
+  //           <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+  //             {formState.errors?.[config.key]?.message}
+  //           </CardLabelError>
+  //         ) : null}
+
+  //       </div>
+  //     );
+
+  // }
   if (userType === "employee") {
-
-      return (
-        <div>
+    return (
+      <div>
         <LabelFieldPair key={0}>
           <CardLabel className="card-label-smaller">
-            {`${t(inputs[0].label)}`}
+            {`${t("PT_PROPERTY_ADDRESS_VASIKA_NO")}`}
             {config.isMandatory ? " *" : ""}
           </CardLabel>
           <div className="field">
             <Controller
               control={control}
-              defaultValue={formData?.additionalDetails?.[inputs[0].name]}
-              name={inputs[0].name}
-              rules={{ validate: convertValidationToRules(inputs[0]) }}
-              type={"text"}
+              defaultValue={
+                vasikaNo}
+              name="vasikaNo"
               render={(_props) => (
-                
                 <TextInput
-                  id={inputs[0].name}
-                  key={inputs[0].name}
-                  value={_props.value}
-                  type={"text"}
+                  id="vasikaNo"
+                  value={vasikaNo}
                   onChange={(e) => {
-                    setFocusIndex({ index:0  });
+                    handleVasikaNoChange(e.target.value);
                     _props.onChange(e.target.value);
                   }}
                   onBlur={_props.onBlur}
-                  disable={isRenewal}
-                  autoFocus={focusIndex?.index == 0}
-                  {...inputs[0].validation}
                 />
-                
-         
               )}
             />
-           
           </div>
         </LabelFieldPair>
-        {formState.touched[config.key] ? (
-            <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
-              {formState.errors?.[config.key]?.message}
-            </CardLabelError>
-          ) : null}
+        <CardLabelError style={errorStyle}>{formState.errors?.[config.key]?.message}</CardLabelError>
 
         <LabelFieldPair key={1}>
           <CardLabel className="card-label-smaller">
-            {`${t(inputs[1].label)}`}
+            {`${t("PT_PROPERTY_ADDRESS_VASIKA_DATE")}`}
             {config.isMandatory ? " * " : ""}
           </CardLabel>
           <div className="field">
             <Controller
               control={control}
-              defaultValue={formData?.additionalDetails?.[inputs[1].name]}
-              name={inputs[1].name}
-              //rules={{ validate: convertValidationToRules(inputs[1]) }}
-              type={"date"}
+              defaultValue={vasikaDate}
+              name="vasikaDate"
               render={(_props) => (
                 <DatePicker
-                    date={_props.value} 
-                    name="VasikaDate"
-                    onChange={(e) => {
-                        setFocusIndex({ index:1 });
-                        _props.onChange(e);
-                    }}
-                    disabled={isRenewal}
-                  />                 
+                  date={vasikaDate}
+                  onChange={(e) => {        
+                    handleVasikaDateChange(e);
+                    _props.onChange(e);
+                  }}
+                />
               )}
             />
           </div>
         </LabelFieldPair>
-        {formState.touched[config.key] ? (
-            <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
-              {formState.errors?.[config.key]?.message}
-            </CardLabelError>
-          ) : null}
-
-        </div>
-      );
-
+        <CardLabelError style={errorStyle}>{formState.errors?.[config.key]?.message}</CardLabelError>
+      </div>
+    );
   }
-  return (
+  return null;
+  // return (
     <React.Fragment>
     {/* {window.location.href.includes("/citizen") ? <Timeline currentStep={1}/> : null}
     <FormStep
@@ -241,7 +334,7 @@ const setData=(config,data)=>{
           />
       </FormStep> */}
     </React.Fragment>
-  );
+  // );
 };
 
 export default VasikaDetails;

@@ -1,6 +1,7 @@
 export const newConfigMutate = [
   {
     head: "PT_MUTATION_TRANSFEROR_DETAILS",
+    stepNumber:1,
     body: [
       {
         route: "info",
@@ -206,6 +207,7 @@ export const newConfigMutate = [
   },
   {
     head: "PT_MUTATION_TRANSFEREE_DETAILS_HEADER",
+    stepNumber:2,
     body: [
       {
         type: "component",
@@ -398,6 +400,7 @@ export const newConfigMutate = [
   },
   {
     head: "PT_MUTATION_DETAILS",
+    stepNumber:3,
     body: [
       {
         key: "additionalDetails",
@@ -432,6 +435,7 @@ export const newConfigMutate = [
   },
   {
     head: "PT_MUTATION_REGISTRATION_DETAILS",
+    stepNumber:4,
     body: [
       {
         key: "additionalDetails",

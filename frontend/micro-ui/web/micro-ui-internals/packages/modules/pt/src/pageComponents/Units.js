@@ -10,9 +10,6 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   const presentInModifyApplication = pathname.includes("modify");
   let isMobile = window.Digit.Utils.browser.isMobile();
 
-  console.log("formData________________-", formData);
-  console.log("formState_______________", formState);
-
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [units, setUnits] = useState(
     formData?.units || [
@@ -203,7 +200,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   useEffect(() => {
     if (!isLoading && presentInModifyApplication && Menu) {
       // usage subUsage unit Occupancy
-      let defaultUnits = formData?.originalData?.units
+      let defaultUnits = formData?.PropertyDetails?.units
         ?.filter((e) => e.active)
         ?.map((unit, index) => {
           let { occupancyType, usageCategory: uc, constructionDetail, floorNo, arv } = unit;

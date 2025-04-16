@@ -15,9 +15,9 @@ const { control, formState: localFormState, watch, setError: setLocalError, clea
    let setRemarks;
   const [hidden, setHidden] = useState(true);
   if (!isNaN(index)) {
-    [remarks, setRemarks] = useState(formData?.remarks || "");
+    [remarks, setRemarks] = useState(formData?.PropertyDetails?.remarks || ""); formData.PropertyDetails.remarks
   } else {
-    [remarks, setRemarks] = useState(formData?.remarks || "");
+    [remarks, setRemarks] = useState(formData?.PropertyDetails?.remarks || "");
   }
   const [error, setError] = useState(null);
   const { pathname } = useLocation();
@@ -51,9 +51,10 @@ const { control, formState: localFormState, watch, setError: setLocalError, clea
 
   useEffect(() => {
     if (presentInModifyApplication && userType === "employee") {
-      setRemarks(formData?.remarks)
+      setRemarks(formData?.PropertyDetails?.remarks)
     }
-  }, []);
+    setValue("remarks",remarks);
+  }, [formData,remarks]);
 
   const inputs = [
     {

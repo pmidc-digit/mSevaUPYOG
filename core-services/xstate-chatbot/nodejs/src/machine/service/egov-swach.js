@@ -461,12 +461,13 @@ class SwachService {
     }
 
     if (slots.image) {
-      console.log("Request Body before mutation ----- ", requestBody);
+      // console.log("Request Body before mutation ----- ", requestBody);
       let filestoreId = await this.getFileForFileStoreId(slots.image, city);
+      // console.log("FileStore ID ----- outside if block", filestoreId);
       if(!filestoreId){
         console.error("Error in getting file store ID");
       }else{
-      console.log("FileStore ID ----- ", filestoreId);
+      // console.log("FileStore ID ----- ", filestoreId);
       var content = {
         documentType: "PHOTO",
         filestoreId: filestoreId,
@@ -541,7 +542,7 @@ class SwachService {
 
     
     let response = await fetch(url, options);
-    console.log("Fetch Open Swach Complaints Response ----- ", response);
+    // console.log("Fetch Open Swach Complaints Response ----- ", response);
 
     let results;
     if (response.status === 200) {
@@ -555,7 +556,7 @@ class SwachService {
   }
 
   async persistAttendence(user, slots, attendance, extraInfo) {
-    console.log("Persist Attendence ----- ");
+    // console.log("Persist Attendence ----- ");
     let requestBody = JSON.parse(attendanceRequestBody);
     
 
@@ -565,7 +566,7 @@ class SwachService {
     let city = slots.city;
     let userInfo = user.userInfo;
 
-    console.log("Persist Attendence ----- ", slots);
+    // console.log("Persist Attendence ----- ", slots);
     
 
     requestBody["RequestInfo"]["authToken"] = authToken;
@@ -576,7 +577,15 @@ class SwachService {
     requestBody["ImageData"]["useruuid"] = userInfo.uuid;
     requestBody["ImageData"]["latitude"] = attendance.metadata.latitude;
     requestBody["ImageData"]["longitude"] = attendance.metadata.longitude;
-    requestBody["ImageData"]["imagerurl"] = attendance.image;
+    // requestBody["ImageData"]["imagerurl"] = attendance.image;
+
+    let filestoreId = await this.getFileForFileStoreId(attendance.image, city);
+    if(!filestoreId){
+      console.error("Error in getting file store ID");
+    }else{
+    // console.log("FileStore ID ----- ", filestoreId);
+      requestBody["ImageData"]["imagerurl"] = filestoreId;
+    }
 
     console.log("Persist Attendence request ----- ", JSON.stringify(requestBody));
 
@@ -655,25 +664,26 @@ class SwachService {
 
   async fileStoreAPICall(fileName, fileData, tenantId) {
     try {
-    console.log("File Store API Call ----- ", fileName, fileData, tenantId);
+    // console.log("File Store API Call ----- ", fileName, fileData, tenantId);
     var url =
       config.egovServices.egovServicesHost +
       config.egovServices.egovFilestoreServiceUploadEndpoint;
     url = url + "&tenantId=" + tenantId;
 
-    console.log("url", url);
+    // console.log("url", url);
     var form = new FormData();
     form.append("file", fileData, {
       filename: fileName,
       contentType: "image/jpg",
     });
+    // console.log("File Store API Call ----- form ", form);
     let response = await axios.post(url, form, {
       headers: {
         ...form.getHeaders(),
       },
     }); // API Causing Persistance issue
 
-    console.log("File Store API Response ----- ", response);
+    // console.log("File Store API Response ----- ", response);
 
     var filestore = response.data;
     return filestore["files"][0]["fileStoreId"];
@@ -705,10 +715,11 @@ class SwachService {
     fileName = path.basename(fileName.pathname);
     fileName = fileName.substring(13);
     await this.downloadImage(fileURL[0].toString(), fileName);
+    // console.log("Called Here");
     let imageInBase64String = fs.readFileSync(fileName, "base64");
     imageInBase64String = imageInBase64String.replace(/ /g, "+");
     let fileData = Buffer.from(imageInBase64String, "base64");
-    console.log("Get File For File Store ID Response ----- ", fileData);
+    // console.log("Get File For File Store ID Response ----- ", imageInBase64String);
     var filestoreId = await this.fileStoreAPICall(fileName, fileData, tenantId);
     fs.unlinkSync(fileName);
     if(!filestoreId){

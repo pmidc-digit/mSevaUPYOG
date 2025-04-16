@@ -39,7 +39,7 @@ import { initNOCComponents } from "@mseva/digit-ui-module-noc";
 import { initEngagementComponents,SurveyReducers } from "@mseva/digit-ui-module-engagement";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { initCustomisationComponents } from "./Customisations";
-import { initCommonPTComponents } from "@mseva/digit-ui-module-commonpt";
+import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
@@ -86,6 +86,7 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ReceiptsModule,
   PTRModule,
   PTRLinks,
+  CommonPTModule,
   ...PTRComponents,
 });
 initPGRComponents();

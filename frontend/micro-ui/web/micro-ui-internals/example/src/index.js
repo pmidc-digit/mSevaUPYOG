@@ -24,7 +24,7 @@ import { initEngagementComponents,SurveyReducers } from "@mseva/digit-ui-module-
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { DigitUI } from "@mseva/digit-ui-module-core";
-import { initCommonPTComponents } from "@mseva/digit-ui-module-commonpt";
+import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 // import {initCustomisationComponents} from "./customisations";
@@ -111,6 +111,7 @@ const initDigitUI = () => {
     BillsModule,
     PTRModule,
     PTRLinks,
+    CommonPTModule,
     ...PTRComponents,
   
 

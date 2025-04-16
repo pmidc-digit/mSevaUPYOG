@@ -70,7 +70,7 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
     if (res) {
       console.log("Submission successful, moving to next step.");
-      history.replace(`/digit-ui/employee/tl/application-details/${formData?.CreatedResponse?.applicationNumber}`);
+      history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
     } else {
       console.error("Submission failed, not moving to next step.");
     }

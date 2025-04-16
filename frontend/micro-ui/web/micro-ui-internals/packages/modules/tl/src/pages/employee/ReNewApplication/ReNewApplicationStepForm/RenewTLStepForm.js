@@ -1,6 +1,4 @@
-// renewEmployeeConfig.js
-
-import { newConfig } from "../../../../config/newConfig";
+import { config } from "../../../../config/employee/RenewApplicationStepFormConfig";
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
@@ -72,138 +70,76 @@ const renewEmployeeConfig = [
 const updatedRenewEmployeeConfig = renewEmployeeConfig.map((item) => {
   return {
     ...item,
-    currStepConfig: newConfig.filter((conf) => conf.stepNumber === item.stepNumber),
+    currStepConfig: config.filter((conf) => conf.stepNumber === item.stepNumber),
   };
 });
 
-// const RenewTLStepForm = (props) => {
-//     const history = useHistory();
-//     const { t } = useTranslation();
-//     const dispatch = useDispatch();
-//     const [showToast, setShowToast] = useState(null);
-  
-//     const formState = useSelector((state) => state.tl.tlNewApplicationForm);
-//     const formData = formState.formData;
-//     const step = formState.step;
-//     const applicationData = cloneDeep(props?.location?.state?.applicationData) || {};
-//     const applicationDetails = props?.location?.state?.applicationDetails || [];
-    
-
-//     const defaultValues = mapApplicationDataToDefaultValues(props?.location?.state?.applicationData);
-    
-        
-//     useEffect(() => {
-//         console.log("RenewTLStepForm props: ", props);
-//         console.log("Default_Values_RenewTL_Stepper_Form: ", defaultValues);
-      
-//         Object.entries(defaultValues).forEach(([key, value]) => {
-//           dispatch(UPDATE_tlNewApplication(key, value));
-//         });
-//       }, []);
-
-
-//     useEffect(() => {
-//         console.log("RenewTLStepForm formData: ", formData);
-//     },[formData])
-//     const setStep = (updatedStepNumber) => {
-//       dispatch(SET_tlNewApplication(updatedStepNumber));
-//     };
-  
-//     const handleSubmit = () => {
-//       // We can trigger final API call here after Summary Submit
-//     };
-  
-//     return (
-//       <div className="pageCard">
-//         <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-//           {t("TL_RENEW_TRADE_LICENSE")}
-//         </CardHeader>
-//         <Stepper stepsList={updatedRenewEmployeeConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
-//         {showToast && (
-//           <Toast
-//             error={showToast.key}
-//             label={t(showToast.label)}
-//             onClose={() => setShowToast(null)}
-//             isDleteBtn={"true"}
-//           />
-//         )}
-//       </div>
-//     );
-//   };
-
 const RenewTLStepForm = (props) => {
-    const history = useHistory();
-    const { t } = useTranslation();
-    const dispatch = useDispatch();
-    const [showToast, setShowToast] = useState(null);
-  
-    const formState = useSelector((state) => state.tl.tlNewApplicationForm);
-    const formData = formState.formData;
-    const step = formState.step;
-    const applicationData = cloneDeep(props?.location?.state?.applicationData) || {};
-    const applicationDetails = props?.location?.state?.applicationDetails || [];
+  const history = useHistory();
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const [showToast, setShowToast] = useState(null);
 
-    const propertyId = new URLSearchParams(window.location.search).get("propertyId") ||
-      applicationDetails.find((details) => details?.title === "PT_DETAILS")?.values
-        .find((value) => value?.title === "TL_PROPERTY_ID")?.value;
+  const formState = useSelector((state) => state.tl.tlNewApplicationForm);
+  const formData = formState.formData;
+  const step = formState.step;
+  const applicationData = cloneDeep(props?.location?.state?.applicationData) || {};
+  const applicationDetails = props?.location?.state?.applicationDetails || [];
 
-    const tenantId = applicationData?.tenantId || "";
-    const isImmovable = applicationData?.tradeLicenseDetail?.structureType?.split(".")[0] === "IMMOVABLE";
+  const propertyId =
+    new URLSearchParams(window.location.search).get("propertyId") ||
+    applicationDetails.find((details) => details?.title === "PT_DETAILS")?.values.find((value) => value?.title === "TL_PROPERTY_ID")?.value;
 
-    const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch({
+  const tenantId = applicationData?.tenantId || "";
+  const isImmovable = applicationData?.tradeLicenseDetail?.structureType?.split(".")[0] === "IMMOVABLE";
+
+  const { data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
+    {
       filters: { propertyIds: propertyId },
       tenantId: tenantId,
-    }, { enabled: isImmovable && !!propertyId });
+    },
+    { enabled: isImmovable && !!propertyId }
+  );
 
-    const defaultValues = mapApplicationDataToDefaultValues(applicationData, t, propertyId, propertyDetails);
-        
-    useEffect(() => {
-        console.log("RenewTLStepForm props: ", props);
-        console.log("Default_Values_RenewTL_Stepper_Form: ", defaultValues);
+  const defaultValues = mapApplicationDataToDefaultValues(applicationData, t, propertyId, propertyDetails);
 
-        const updatedDefaultValues = JSON.parse(JSON.stringify(defaultValues));
+  useEffect(() => {
+    console.log("RenewTLStepForm props: ", props);
+    console.log("Default_Values_RenewTL_Stepper_Form: ", defaultValues);
 
-        // Set financialYear to {} if it exists
-        if (
-          updatedDefaultValues?.TraidDetails?.tradedetils?.length > 0 &&
-          updatedDefaultValues.TraidDetails.tradedetils[0].financialYear
-        ) {
-          updatedDefaultValues.TraidDetails.tradedetils[0].financialYear = "";
-        }
-      
-        Object.entries(updatedDefaultValues).forEach(([key, value]) => {
-          dispatch(UPDATE_tlNewApplication(key, value));
-        });
-      }, []);  // Important to depend on defaultValues
+    const updatedDefaultValues = JSON.parse(JSON.stringify(defaultValues));
 
-    useEffect(() => {
-        console.log("RenewTLStepForm formData: ", formData);
-    },[formData])
+    // Set financialYear to {} if it exists
+    if (updatedDefaultValues?.TraidDetails?.tradedetils?.length > 0 && updatedDefaultValues.TraidDetails.tradedetils[0].financialYear) {
+      updatedDefaultValues.TraidDetails.tradedetils[0].financialYear = "";
+    }
 
-    const setStep = (updatedStepNumber) => {
-      dispatch(SET_tlNewApplication(updatedStepNumber));
-    };
-  
-    const handleSubmit = () => {
-      // Final API call after Summary Submit
-    };
-  
-    return (
-      <div className="pageCard">
-        <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-          {t("TL_RENEW_TRADE_LICENSE")}
-        </CardHeader>
-        <Stepper stepsList={updatedRenewEmployeeConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
-        {showToast && (
-          <Toast
-            error={showToast.key}
-            label={t(showToast.label)}
-            onClose={() => setShowToast(null)}
-            isDleteBtn={"true"}
-          />
-        )}
-      </div>
-    );
+    Object.entries(updatedDefaultValues).forEach(([key, value]) => {
+      dispatch(UPDATE_tlNewApplication(key, value));
+    });
+  }, []); // Important to depend on defaultValues
+
+  useEffect(() => {
+    console.log("RenewTLStepForm formData: ", formData);
+  }, [formData]);
+
+  const setStep = (updatedStepNumber) => {
+    dispatch(SET_tlNewApplication(updatedStepNumber));
+  };
+
+  const handleSubmit = () => {
+    // Final API call after Summary Submit
+  };
+
+  return (
+    <div className="pageCard">
+      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+        {t("Renew Trade License Application")}
+      </CardHeader>
+      <Stepper stepsList={updatedRenewEmployeeConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
+      {showToast && <Toast error={showToast.key} label={t(showToast.label)} onClose={() => setShowToast(null)} isDleteBtn={"true"} />}
+    </div>
+  );
 };
-  
-  export default RenewTLStepForm;  
+
+export default RenewTLStepForm;

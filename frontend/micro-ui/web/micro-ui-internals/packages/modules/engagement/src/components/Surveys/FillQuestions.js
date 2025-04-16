@@ -1494,7 +1494,7 @@ const FillQuestions = (props) => {
                 <option value="">--Please choose a city--</option>
                 {cities.map((option, index) => (
                   <option key={index} value={option.code}>
-                    {option?.code}
+                    {option?.name}
                   </option>
                 ))}
               </select>

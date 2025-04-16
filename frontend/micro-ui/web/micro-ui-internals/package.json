@@ -17,7 +17,8 @@
     "packages/modules/hrms",
     "packages/modules/ws",
     "packages/modules/engagement",
-    "packages/modules/swach"
+    "packages/modules/swach",
+    "packages/modules/pgr"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",

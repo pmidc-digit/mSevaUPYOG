@@ -126,6 +126,21 @@ useEffect(() => {
     );
   };
   
+    useEffect(() => {
+      console.log("formDatavas",formData);
+      // console.log("BuildingType",getPropertyTypeMenu(proptype)?.length);
+      
+      // if (formData?.PropertyType && getPropertyTypeMenu(proptype)?.length) {
+      //   const code = formData?.PropertyType?.code;
+      //   // console.log("code====",code);
+      //   const builtdingtype = getPropertyTypeMenu(proptype)?.find((e) => e.code === code);
+      //   // console.log("cbuiltdingtypeode====",builtdingtype);
+        setValue("vasikaNo & vasikaDate", vasikaNo,vasikaDate);
+        // setValue("vasikaDate", vasikaDate);
+        // console.log("setValue***",setValue);
+      // }
+    }, [formData, vasikaNo, vasikaDate]);
+
   const handleVasikaDateChange = (value) => {
     setVasikaDate(value);
     onSelect(config.key, {...formData[config.key], vasikaDate: value },
@@ -236,8 +251,7 @@ useEffect(() => {
           <div className="field">
             <Controller
               control={control}
-              defaultValue={
-                vasikaNo}
+              defaultValue={vasikaNo}
               name="vasikaNo"
               render={(_props) => (
                 <TextInput

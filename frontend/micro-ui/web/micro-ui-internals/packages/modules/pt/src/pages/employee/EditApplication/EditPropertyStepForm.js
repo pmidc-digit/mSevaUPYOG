@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-//
+
 import Stepper from "../../../../../../react-components/src/customComponents/Stepper";
 import { editStepFormConfig } from "../../../config/Mutate/editStepFromConfig";
 // import { newConfig } from "../../../config/Create/stepFormConfig";
 import { SET_PtNewApplication, UPDATE_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
-import mapApplicationDataToDefaultValues from "../../../utils/EditFileData"
+import {mapApplicationDataToDefaultValues} from "../../../utils/EditFileData"
 
 //Config for steps
 const createEmployeeConfig = [
@@ -20,7 +20,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "PTEditFormStepOne",
-    key: "LocationDetails",
+    key: "LocationDetails1",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Next",
@@ -32,7 +32,7 @@ const createEmployeeConfig = [
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormStepTwo",
+    component: "PTEditFormStepTwo",
     key: "PropertyDetails",
     withoutLabel: true,
     texts: {
@@ -45,7 +45,7 @@ const createEmployeeConfig = [
     stepNumber: 3,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormStepThree",
+    component: "PTEditFormStepThree",
     key: "ownerShipDetails",
     withoutLabel: true,
     texts: {
@@ -58,7 +58,7 @@ const createEmployeeConfig = [
     stepNumber: 4,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormStepFour",
+    component: "PTEditFormStepFour",
     key: "DocummentDetails",
     withoutLabel: true,
     texts: {
@@ -71,7 +71,7 @@ const createEmployeeConfig = [
     stepNumber: 5,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormSummaryStepFive",
+    component: "PTEditFormSummaryStepFive",
     key: "PTSummary",
     withoutLabel: true,
     texts: {
@@ -95,20 +95,25 @@ const EditPropertyStepForm = ({ applicationData }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
   const formState = useSelector((state) => state.pt.PTNewApplicationForm);
-  const formData = formState.formData || applicationData;
+  const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
-//   console.log("applicationData for edit++++++++++", applicationData)
-  console.log("formData for edit ",formData);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PtNewApplication(updatedStepNumber));
   };
-  const defaultValues = mapApplicationDataToDefaultValues(applicationData, t, propertyId, propertyDetails);
-        
+  const defaultValues = mapApplicationDataToDefaultValues(applicationData);
+  // console.log("default Values in EditPropertyStepForm are: ", defaultValues);
+
+  const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});
+  const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
   useEffect(() => {
-    //   console.log("RenewTLStepForm props: ", props);
-      console.log("Default_Values_EDIT_PT_Stepper_Form: ", defaultValues);
+      setMutationHappened(false);
+      clearSuccessData();
+    }, []);
+
+  useEffect(() => {
+      console.log("deafult vaules in useEffect: ", defaultValues);
     
       Object.entries(defaultValues).forEach(([key, value]) => {
         dispatch(UPDATE_PtNewApplication(key, value));

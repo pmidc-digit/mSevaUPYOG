@@ -112,6 +112,12 @@ import getRootReducer from "./redux/reducers";
 import PTSummary from "../src/pageComponents/PTSummary"
 import EditPropertyStepForm from "../src/pages/employee/EditApplication/EditPropertyStepForm"
 import PTEditFormStepOne from "../src/pages/employee/EditApplication/PTEditFormStepOne"
+import PTEditFormStepTwo from "../src/pages/employee/EditApplication/PTEditFormStepTwo"
+import PTEditFormStepThree from "../src/pages/employee/EditApplication/PTEditFormStepThree"
+import PTEditFormStepFour from "../src/pages/employee/EditApplication/PTEditFormStepFour"
+import PTEditFormSummaryStepFive from "../src/pages/employee/EditApplication/PTEditFormSummaryStepFive"
+import PTOwnerTransfershipStepOne from "../src/pages/employee/PropertyMutation/OwnerTransfership/PTOwnerTransfershipStepOne"
+import OwnerTransfershipStepForm from "../src/pages/employee/PropertyMutation/OwnerTransfership/OwnerTransfershipStepForm"
 
 export const PTReducers = getRootReducer;
 
@@ -215,7 +221,13 @@ const componentsToRegister = {
   PTNewFormSummaryStepFive,
   PTSummary,
   EditPropertyStepForm,
-  PTEditFormStepOne
+  PTEditFormStepOne,
+  PTEditFormStepTwo,
+  PTEditFormStepThree,
+  PTEditFormStepFour,
+  PTEditFormSummaryStepFive,
+  PTOwnerTransfershipStepOne,
+  OwnerTransfershipStepForm
 };
 
 const addComponentsToRegistry = () => {

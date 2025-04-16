@@ -12,9 +12,10 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../utils";
 import Timeline from "../components/TLTimeline";
+import { Controller, useForm } from "react-hook-form";
 
 const PropertyType = ({ t, config, onSelect, userType, formData, setError, clearErrors, formState, onBlur }) => {
-  const [BuildingType, setBuildingType] = useState(formData?.PropertyType);
+  const [BuildingType, setBuildingType] = useState(formData?.PropertyDetails?.PropertyType);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const { data: Menu = {}, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "PTPropertyType") || {};
@@ -22,8 +23,9 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
   proptype = Menu?.PropertyTax?.PropertyType;
   let i;
   let menu = [];
+
   function getPropertyTypeMenu(proptype) {
-    if (userType === "employee") {
+    if (userType === "employee") {      
       return proptype
         ?.filter((e) => e.code === "VACANT" || e.code.split(".").length > 1)
         ?.map((item) => ({ i18nKey: "COMMON_PROPTYPE_" + stringReplaceAll(item?.code, ".", "_"), code: item?.code }))
@@ -54,9 +56,14 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
     onSelect(config.key, BuildingType);
   }
 
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
+  const formValue = watch();
+  const { errors } = localFormState;
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+
   useEffect(() => {
     if (presentInModifyApplication && userType === "employee" && Menu) {
-      const original = formData?.originalData?.propertyType;
+      const original = formData?.PropertyDetails?.PropertyType;
       const defaultVal = getPropertyTypeMenu(proptype)?.filter((e) => e.code === original)[0];
       setBuildingType(defaultVal);
     }
@@ -69,6 +76,14 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
       else clearErrors(config.key);
     }
   }, [BuildingType]);
+
+  useEffect(() => {
+    if (formData?.PropertyType && getPropertyTypeMenu(proptype)?.length) {
+      const code = formData?.PropertyType?.code;
+      const builtdingtype = getPropertyTypeMenu(proptype)?.find((e) => e.code === code);
+      setValue("PropertyType", builtdingtype);
+    }
+  }, [formData, BuildingType]);
 
   const inputs = [
     {
@@ -83,13 +98,15 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
     return <Loader />;
   }
 
+  // console.log("getPropertyTypeMenu(proptype)",getPropertyTypeMenu(proptype));
+
   if (userType === "employee") {
     return inputs?.map((input, index) => {
       return (
         <React.Fragment key={index}>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t(input.label) + " *"}</CardLabel>
-            <Dropdown
+            {/* <Dropdown
               className="form-field"
               selected={getPropertyTypeMenu(proptype)?.length === 1 ? getPropertyTypeMenu(proptype)[0] : BuildingType}
               disable={getPropertyTypeMenu(proptype)?.length === 1}
@@ -98,6 +115,29 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
               optionKey="i18nKey"
               onBlur={onBlur}
               t={t}
+            /> */}
+            <Controller
+              name="PropertyType"
+              // defaultValue={BuildingType}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  // selected={getPropertyTypeMenu(proptype)?.length === 1 ? getPropertyTypeMenu(proptype)[0] : BuildingType}
+                  selected={props.value}
+                  option={getPropertyTypeMenu(proptype)}
+                  select={(e) => {
+                    props.onChange(e);
+                    // selectLocality(e)
+                    selectBuildingType(e); // to keep your external state also in sync
+                  }}
+                  // select={props.onChange}
+                  onBlur={props.onBlur}
+                  optionKey="i18nKey"
+                  t={t}
+                  // disable={isEditProperty ? isEditProperty : false}
+                />
+              )}
             />
           </LabelFieldPair>
           {formState.touched[config.key] ? (
@@ -112,7 +152,7 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
 
   return (
     <React.Fragment>
-          {window.location.href.includes("/citizen") ? <Timeline currentStep={1}/> : null}
+      {window.location.href.includes("/citizen") ? <Timeline currentStep={1} /> : null}
       <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!BuildingType}>
         <RadioButtons
           t={t}

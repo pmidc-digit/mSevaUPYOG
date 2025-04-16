@@ -1,10 +1,10 @@
-import React,{useState} from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
-import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
-import { UPDATE_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
+import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
+import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
-const PTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
+const PTOwnerTransfershipStepOne = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
@@ -23,21 +23,18 @@ const PTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step one edit ", state);
+    console.log("state in step one ", state);
     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
         ? state.pt.PTNewApplicationForm.formData[config.key] 
         : {};
 });
-const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.LocationDetails);
-const [localStepData, setLocalStepData] = useState(reduxStepData);
-console.log("reduxStepData in step one: ", reduxStepData);
   const dispatch = useDispatch();
 
 
   return (
     <React.Fragment>
       <FormComposer
-        defaultValues={localStepData}
+        defaultValues={currentStepData}
         //heading={t("")}
         config={config.currStepConfig}
         onSubmit={goNext}
@@ -51,4 +48,4 @@ console.log("reduxStepData in step one: ", reduxStepData);
   );
 };
 
-export default PTEditFormStepOne;
+export default PTOwnerTransfershipStepOne;

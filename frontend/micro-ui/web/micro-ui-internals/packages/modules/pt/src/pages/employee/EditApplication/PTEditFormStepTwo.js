@@ -4,9 +4,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
 import { UPDATE_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
 
-const PTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
+const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
   }
 
@@ -15,24 +14,23 @@ const PTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in Property details step one: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PtNewApplication(config.key, data));
-      console.log("Dispatching UPDATE_PtNewApplication with key:", config.key, "and data:", data);
     }
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step one edit ", state);
+    console.log("state in step two ", state);
     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
         ? state.pt.PTNewApplicationForm.formData[config.key] 
         : {};
 });
-const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.LocationDetails);
+const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.PropertyDetails);
 const [localStepData, setLocalStepData] = useState(reduxStepData);
-console.log("reduxStepData in step one: ", reduxStepData);
+console.log("reduxStepData in step Two: ", reduxStepData);
   const dispatch = useDispatch();
 
+ // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>
@@ -51,4 +49,4 @@ console.log("reduxStepData in step one: ", reduxStepData);
   );
 };
 
-export default PTEditFormStepOne;
+export default PTEditFormStepTwo;

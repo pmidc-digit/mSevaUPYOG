@@ -151,7 +151,8 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       creationReason: "CREATE", // required
       source: "MUNICIPAL_RECORDS", // required
       units: data?.PropertyDetails?.PropertyType?.code !== "VACANT" ? updatedUnits : [],
-      documents: data?.DocummentDetails?.documents?.documents,
+      // documents: data?.DocummentDetails?.documents?.documents,
+      documents: data?.DocummentDetails?.documents,
       applicationStatus: "CREATE",
     };
 

@@ -17,7 +17,8 @@
     "packages/modules/hrms",
     "packages/modules/ws",
     "packages/modules/engagement",
-    "packages/modules/swach"
+    "packages/modules/swach",
+    "packages/modules/pgr"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",
@@ -60,7 +61,7 @@
     "build:pt": "cd packages/modules/pt && yarn build",
     "build:commonPt": "cd packages/modules/commonPt && yarn build",
     "build:core": "cd packages/modules/core && yarn build",
-    "buildD:pgr": "cd packages/modules/pgr && yarn build",
+    "build:pgr": "cd packages/modules/pgr && yarn build",
     "build:swach": "cd packages/modules/swach && yarn build",
     "build:fsm": "cd packages/modules/fsm && yarn build",
     "build:dss": "cd packages/modules/dss && yarn build",

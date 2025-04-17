@@ -1,29 +1,26 @@
 import React, { useEffect, useState } from "react";
-import {
-  CardLabel,
-  LabelFieldPair,
-  Dropdown,
-  UploadFile,
-  Toast,
-  Loader,
-  CardHeader,
-  CardSectionHeader,
-} from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, CardHeader, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
 
 const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
+  const [documents, setDocuments] = useState(formData?.documents);
+  console.log("my documents", documents);
   const [error, setError] = useState(null);
 
   let action = "create";
 
+  console.log("formData==??", formData);
+
   const { pathname } = useLocation();
-  const isEditScreen = pathname.includes("/edit-application/");
+  // const isEditScreen = pathname.includes("/edit-application/");
+  const isEditScreen = pathname.includes("/modify-application/");
   const isMutation = pathname.includes("/property-mutate/");
 
-  if (isEditScreen) action = "update";
+  console.log("isEditScreen", isEditScreen);
+
+  // if (isEditScreen) action = "update";
 
   const propertyInitialValues = JSON.parse(sessionStorage.getItem("PropertyInitials"));
 
@@ -38,7 +35,6 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
     "OwnerShipCategory",
     "MutationDocuments",
   ]);
-
 
   const mutationDocs = data?.PropertyTax?.MutationDocuments;
   const commonDocs = data?.PropertyTax?.Documents;
@@ -110,8 +106,14 @@ function SelectDocument({
   id,
   propertyInitialValues,
 }) {
-  const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+  console.log("documents", documents);
+
+  const filteredDocument = documents?.find((item) => item?.documentType == doc?.code);
+
+  console.log("filteredDocument", filteredDocument);
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
+
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
       ? { ...filteredDocument, active: filteredDocument?.status === "ACTIVE", code: filteredDocument?.documentType }
@@ -188,7 +190,7 @@ function SelectDocument({
 
   useEffect(() => {
     if (action === "update") {
-      const originalDoc = formData?.DocummentDetails?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
+      const originalDoc = formData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
       const docType = dropDownData
         .filter((e) => e.code === originalDoc?.documentType)
         .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
@@ -240,6 +242,7 @@ function SelectDocument({
 
   if (filterCondition) {
     const { filterValue, jsonPath, onArray, arrayAttribute, formDataPath, formArrayAttrPath } = filterCondition;
+
     if (action === "create") {
       const value = formDataPath?.reduce((acc, key) => {
         if (key.charAt(0).toUpperCase() + key.slice(1) === "PropertyType") return acc["PropertyType"];
@@ -260,9 +263,9 @@ function SelectDocument({
     }
 
     if (action === "update") {
-      const a = fromRawData ? jsonPath : jsonPath?.split("Properties[0].propertyDetails[0].")[1];
+      const a = fromRawData ? jsonPath : jsonPath?.split("Properties?.[0]?.propertyDetails[0].")[1];
       const keyArr = a?.split(".")?.map((e) => (e.includes("[") ? e.split("[")[1]?.split("]")[0] : e));
-      const value = keyArr.reduce((acc, curr) => acc[curr], formData?.DocummentDetails);
+      const value = keyArr.reduce((acc, curr) => acc[curr], formData?.documents);
       const formDataValue = formDataPath?.reduce((acc, key) => {
         if (key.charAt(0).toUpperCase() + key.slice(1) === "PropertyType") return acc["PropertyType"];
         return acc?.[key];
@@ -289,12 +292,12 @@ function SelectDocument({
       if (enabledActions?.[action].disableUpload) {
         if (onArray) {
           const keyForArr = parentArrayJsonPath?.split("Properties[0].propertyDetails[0].")[1].split(".");
-          const arr = keyForArr.reduce((acc, key) => acc[key], formData?.DocummentDetails);
+          const arr = keyForArr.reduce((acc, key) => acc[key], formData?.documents);
           const valueMap = arr.map((val) => parentJsonpath.split(".").reduce((acc, key) => acc[key], val));
           dropDownData = dropdownData.filter((e) => e.parentValue.some((val) => valueMap.includes(val)));
         } else {
           const keyForArr = parentJsonpath?.split("Properties[0].propertyDetails[0].")[1].split(".");
-          const value = keyForArr.reduce((acc, key) => acc[key], formData?.DocummentDetails);
+          const value = keyForArr.reduce((acc, key) => acc[key], formData?.documents);
           dropDownData = dropdownData.filter((e) => e.parentValue.includes(value));
         }
       } else {
@@ -321,6 +324,19 @@ function SelectDocument({
     dropDownData = dropDownData.filter((e) => e.code?.split(".")[2] === formData?.additionalDetails?.reasonForTransfer?.code);
   }
 
+  useEffect(() => {
+    if (!selectedDocument?.code) {
+      const existingDoc = documents?.find((item) => item.documentType === doc?.code);
+      if (existingDoc) {
+        const matchedDropdown = doc?.dropdownData?.find((d) => d.code === existingDoc.documentType);
+        if (matchedDropdown) {
+          setSelectedDocument({ ...matchedDropdown, i18nKey: matchedDropdown.code?.replaceAll(".", "_") });
+          setUploadedFile(existingDoc.fileStoreId);
+        }
+      }
+    }
+  }, [documents]);
+
   return (
     <div style={{ marginBottom: "24px" }}>
       {doc?.hasDropdown ? (
@@ -329,7 +345,14 @@ function SelectDocument({
           <Dropdown
             className="form-field"
             selected={selectedDocument}
-            disable={dropDownData?.length === 0 || (propertyInitialValues?.documents && propertyInitialValues?.documents.length>0 && propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length>0? enabledActions?.[action].disableDropdown : false)}
+            disable={
+              dropDownData?.length === 0 ||
+              (propertyInitialValues?.documents &&
+              propertyInitialValues?.documents.length > 0 &&
+              propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length > 0
+                ? enabledActions?.[action].disableDropdown
+                : false)
+            }
             option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
             select={handleSelectDocument}
             optionKey="i18nKey"
@@ -349,7 +372,13 @@ function SelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            disabled={(propertyInitialValues?.documents && propertyInitialValues?.documents.length>0 && propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length>0? enabledActions?.[action].disableUpload : false) || !selectedDocument?.code}
+            disabled={
+              (propertyInitialValues?.documents &&
+              propertyInitialValues?.documents.length > 0 &&
+              propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length > 0
+                ? enabledActions?.[action].disableUpload
+                : false) || !selectedDocument?.code
+            }
             buttonType="button"
             error={!uploadedFile}
           />

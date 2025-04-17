@@ -9,13 +9,13 @@ import { editStepFormConfig } from "../../../config/Mutate/editStepFromConfig";
 import { SET_PtNewApplication, UPDATE_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
-import {mapApplicationDataToDefaultValues} from "../../../utils/EditFileData"
+import { mapApplicationDataToDefaultValues } from "../../../utils/EditFileData";
 
 //Config for steps
 const createEmployeeConfig = [
   {
     head: "ES_EDIT_APPLICATION_LOCATION_DETAILS",
-    stepLabel: "Property Address",//"HR_EMPLOYEE_DETAILS_STEP_LABEL",
+    stepLabel: "Property Address", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -59,7 +59,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "PTEditFormStepFour",
-    key: "DocummentDetails",
+    key: "docummentDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Next",
@@ -78,7 +78,6 @@ const createEmployeeConfig = [
       submitBarLabel: "Submit",
     },
   },
-  
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
@@ -90,7 +89,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 // });
 
 const EditPropertyStepForm = ({ applicationData }) => {
-  const history=useHistory();
+  const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
@@ -108,17 +107,17 @@ const EditPropertyStepForm = ({ applicationData }) => {
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
   useEffect(() => {
-      setMutationHappened(false);
-      clearSuccessData();
-    }, []);
+    setMutationHappened(false);
+    clearSuccessData();
+  }, []);
 
   useEffect(() => {
-      console.log("deafult vaules in useEffect: ", defaultValues);
-    
-      Object.entries(defaultValues).forEach(([key, value]) => {
-        dispatch(UPDATE_PtNewApplication(key, value));
-      });
-      }, []);
+    console.log("deafult vaules in useEffect: ", defaultValues);
+
+    Object.entries(defaultValues).forEach(([key, value]) => {
+      dispatch(UPDATE_PtNewApplication(key, value));
+    });
+  }, []);
   const handleSubmit = () => {
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
     // let data = {};
@@ -132,7 +131,9 @@ const EditPropertyStepForm = ({ applicationData }) => {
 
   return (
     <div className="pageCard">
-      <CardHeader styles={{fontSize:"28px" ,fontWeight:"400", color: "#1C1D1F"}} divider={true}>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</CardHeader>
+      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+        {t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}
+      </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast

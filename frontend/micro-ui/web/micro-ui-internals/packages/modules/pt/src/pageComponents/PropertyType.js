@@ -15,7 +15,11 @@ import Timeline from "../components/TLTimeline";
 import { Controller, useForm } from "react-hook-form";
 
 const PropertyType = ({ t, config, onSelect, userType, formData, setError, clearErrors, formState, onBlur }) => {
-  const [BuildingType, setBuildingType] = useState(formData?.PropertyDetails?.PropertyType);
+
+console.log("formData???????????????????????",formData);
+
+
+  const [BuildingType, setBuildingType] = useState(formData?.PropertyType);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const { data: Menu = {}, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "PTPropertyType") || {};
@@ -52,7 +56,7 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
   }
 
   function goNext() {
-    sessionStorage.setItem("PropertyType", BuildingType?.i18nKey);
+    sessionStorage.setItem("PropertyType", BuildingType);
     onSelect(config.key, BuildingType);
   }
 
@@ -63,7 +67,7 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
 
   useEffect(() => {
     if (presentInModifyApplication && userType === "employee" && Menu) {
-      const original = formData?.PropertyDetails?.PropertyType;
+      const original = formData?.PropertyType?.code;
       const defaultVal = getPropertyTypeMenu(proptype)?.filter((e) => e.code === original)[0];
       setBuildingType(defaultVal);
     }
@@ -78,12 +82,12 @@ const PropertyType = ({ t, config, onSelect, userType, formData, setError, clear
   }, [BuildingType]);
 
   useEffect(() => {
-    if (formData?.PropertyType && getPropertyTypeMenu(proptype)?.length) {
+    if (formData?.PropertyType?.code && getPropertyTypeMenu(proptype)?.length) {
       const code = formData?.PropertyType?.code;
       const builtdingtype = getPropertyTypeMenu(proptype)?.find((e) => e.code === code);
       setValue("PropertyType", builtdingtype);
     }
-  }, [formData, BuildingType]);
+  }, [formData]);
 
   const inputs = [
     {

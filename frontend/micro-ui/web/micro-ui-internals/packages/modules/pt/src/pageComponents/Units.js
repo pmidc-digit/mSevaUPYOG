@@ -6,12 +6,14 @@ import _ from "lodash";
 import { useLocation } from "react-router-dom";
 
 const Units = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
+console.log("formData in unit component", formData);
+
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("modify");
+  const presentInModifyApplication = pathname.includes("modify") || pathname.includes("edit");
   let isMobile = window.Digit.Utils.browser.isMobile();
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [units, setUnits] = useState(
+  const [units, setUnits] = useState( 
     formData?.units || [
       {
         key: Date.now(),
@@ -28,6 +30,8 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       },
     ]
   );
+  
+  console.log("here???????")
   const stateId = Digit.ULBService.getStateId();
   const [focusIndex, setFocusIndex] = useState({ index: -1 });
   const [loader, setLoader] = useState(true);
@@ -200,7 +204,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   useEffect(() => {
     if (!isLoading && presentInModifyApplication && Menu) {
       // usage subUsage unit Occupancy
-      let defaultUnits = formData?.PropertyDetails?.units
+      let defaultUnits = formData?.units
         ?.filter((e) => e.active)
         ?.map((unit, index) => {
           let { occupancyType, usageCategory: uc, constructionDetail, floorNo, arv } = unit;
@@ -444,6 +448,12 @@ function Unit({
     "SubOwnerShipCategory",
     "OwnerShipCategory",
   ]);
+
+
+console.log("coming in this file ");
+
+
+
   let usagecat = [];
   usagecat = usageMenu?.PropertyTax?.UsageCategory?.filter((e) => e?.code !== "MIXED") || [];
 
@@ -511,7 +521,6 @@ function Unit({
       clearErrors("units");
     }
   }, [formValue]);
-
   const { errors } = localFormState;
   const errorStyle = isMobile
     ? { width: "70%", marginLeft: "4%", fontSize: "12px" }

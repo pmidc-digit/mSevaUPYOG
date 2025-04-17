@@ -7,6 +7,10 @@ import { Controller, useForm } from "react-hook-form";
 
 const Remarks = ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
   //let index = window.location.href.charAt(window.location.href.length - 1);
+
+console.log("formdata testing==",formData);
+
+
   let index = window.location.href.split("/").pop();
   let validation = {};
   const onSkip = () => onSelect();
@@ -15,13 +19,13 @@ const { control, formState: localFormState, watch, setError: setLocalError, clea
    let setRemarks;
   const [hidden, setHidden] = useState(true);
   if (!isNaN(index)) {
-    [remarks, setRemarks] = useState(formData?.PropertyDetails?.remarks || ""); formData.PropertyDetails.remarks
+    [remarks, setRemarks] = useState(formData?.remarks || ""); formData.remarks
   } else {
-    [remarks, setRemarks] = useState(formData?.PropertyDetails?.remarks || "");
+    [remarks, setRemarks] = useState(formData?.remarks || "");
   }
   const [error, setError] = useState(null);
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("modify");
+  const presentInModifyApplication = pathname.includes("modify")|| pathname.includes("edit");
   useEffect(() => {
     validateRemarks();
   }, [remarks])
@@ -50,10 +54,10 @@ const { control, formState: localFormState, watch, setError: setLocalError, clea
   }, [remarks]);
 
   useEffect(() => {
-    if (presentInModifyApplication && userType === "employee") {
-      setRemarks(formData?.PropertyDetails?.remarks)
-    }
-    setValue("remarks",remarks);
+
+      setRemarks(formData?.remarks)
+    
+    setValue("remark",remarks);
   }, [formData,remarks]);
 
   const inputs = [

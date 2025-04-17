@@ -11,7 +11,10 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
   // const [vasikaNo, setVasikaNo] = useState(formData?.PropertyDetails?.vasikaDetails?.vasikaNo || "");
   // const [vasikaDate, setVasikaDate] = useState(formData?.PropertyDetails?.vasikaDetails?.vasikaDate || "");
   const [vasikaNo, setVasikaNo] = useState(formData?.vasikaDetails?.vasikaNo || "");
-  const [vasikaDate, setVasikaDate] = useState(formData?.vasikaDetails?.vasikaDate || "");
+  // const [vasikaDate, setVasikaDate] = useState(formData?.vasikaDetails?.vasikaDate || "");
+  const [vasikaDate, setVasikaDate] = useState(
+    formData?.vasikaDetails?.vasikaDate ?  new Date(formData?.vasikaDetails?.vasikaDate).toISOString().slice(0, 10) : null
+  );
   
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
@@ -73,17 +76,20 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
 const setData = (config, data) => {
   const dataNew = { vasikaNo, vasikaDate };
   // onSelect(config, { ...formData[config.key], ...dataNew });
-  onSelect("PropertyDetails", {
-    ...formData.PropertyDetails,
-    vasikaDetails: dataNew, // Save vasika details here
-  });
+  // onSelect("PropertyDetails", {
+  //   ...formData,
+  //   vasikaDetails: dataNew, // Save vasika details here
+  // });
 };
 // console.log("formData.PropertyDetails.vasikaDetails",formData?.PropertyDetails?.vasikaDetails)
 useEffect(() => {
   // Synchronize local state with formData when the component mounts or formData changes
   if (formData?.vasikaDetails) {
     setVasikaNo(formData.vasikaDetails.vasikaNo || "");
-    setVasikaDate(formData.vasikaDetails.vasikaDate || "");
+    // setVasikaDate(formData.vasikaDetails.vasikaDate || "");
+    setVasikaDate(
+      formData.vasikaDetails.vasikaDate ?  new Date(formData?.vasikaDetails?.vasikaDate).toISOString().slice(0, 10) : null
+    );
   }else {
     setVasikaNo("");
     setVasikaDate("");
@@ -126,20 +132,6 @@ useEffect(() => {
     );
   };
   
-    useEffect(() => {
-      console.log("formDatavas",formData);
-      // console.log("BuildingType",getPropertyTypeMenu(proptype)?.length);
-      
-      // if (formData?.PropertyType && getPropertyTypeMenu(proptype)?.length) {
-      //   const code = formData?.PropertyType?.code;
-      //   // console.log("code====",code);
-      //   const builtdingtype = getPropertyTypeMenu(proptype)?.find((e) => e.code === code);
-      //   // console.log("cbuiltdingtypeode====",builtdingtype);
-        setValue("vasikaNo & vasikaDate", vasikaNo,vasikaDate);
-        // setValue("vasikaDate", vasikaDate);
-        // console.log("setValue***",setValue);
-      // }
-    }, [formData, vasikaNo, vasikaDate]);
 
   const handleVasikaDateChange = (value) => {
     setVasikaDate(value);

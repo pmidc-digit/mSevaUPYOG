@@ -1,4 +1,4 @@
-import React,{useState} from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
@@ -14,23 +14,27 @@ const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    if (!_.isEqual(data, currentStepData)) {
+    console.log("data====");
+
+    if (!_.isEqual(data, localStepData)) {
       dispatch(UPDATE_PtNewApplication(config.key, data));
+      setLocalStepData(data);
     }
   };
 
   const currentStepData = useSelector(function (state) {
     console.log("state in step two ", state);
-    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
-        ? state.pt.PTNewApplicationForm.formData[config.key] 
-        : {};
-});
-const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.PropertyDetails);
-const [localStepData, setLocalStepData] = useState(reduxStepData);
-console.log("reduxStepData in step Two: ", reduxStepData);
+    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
+      ? state.pt.PTNewApplicationForm.formData[config.key]
+      : {};
+  });
+
+  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.PropertyDetails);
+  const [localStepData, setLocalStepData] = useState(reduxStepData);
+  console.log("reduxStepData in step Two: ", reduxStepData);
   const dispatch = useDispatch();
 
- // console.log("currentStepData in  Administrative details: ", currentStepData);
+  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>

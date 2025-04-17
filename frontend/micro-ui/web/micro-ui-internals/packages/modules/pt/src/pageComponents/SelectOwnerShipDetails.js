@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from "react";
-import {
-  FormStep,
-  RadioOrSelect,
-  RadioButtons,
-  LabelFieldPair,
-  Dropdown,
-  CardLabel,
-  CardLabelError,
-  Loader,
-} from "@mseva/digit-ui-react-components";
+import { FormStep, RadioOrSelect, RadioButtons, LabelFieldPair, Dropdown, CardLabel, CardLabelError, Loader } from "@mseva/digit-ui-react-components";
 import { cardBodyStyle } from "../utils";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/TLTimeline";
+import { Controller, useForm } from "react-hook-form";
 
 const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlur, formState, setError, clearErrors }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const isUpdateProperty = formData?.isUpdateProperty || false;
   let isEditProperty = formData?.isEditProperty || false;
-  const [ownershipCategory, setOwnershipCategory] = useState(formData?.ownershipCategory);
+  const [ownershipCategory, setOwnershipCategory] = useState(formData?.ownerShipDetails?.ownershipCategory);
   const [loader, setLoader] = useState(true);
   const { data: SubOwnerShipCategoryOb, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "SubOwnerShipCategory");
   const { data: OwnerShipCategoryOb, isLoading: ownerShipCatLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "OwnerShipCategory");
@@ -28,6 +20,10 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   let SubOwnerShipCategory = {};
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
+
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
+
+  console.log("formData in SelectOwnerShipDetails 1", formData);
 
   useEffect(() => {
     if (!isLoading && SubOwnerShipCategoryOb && OwnerShipCategoryOb) {
@@ -122,12 +118,29 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   }
 
   useEffect(() => {
+    console.log("code is coming innn ", formData);
+    console.log("getDropdwonForProperty(ownerShipdropDown)", getDropdwonForProperty(ownerShipdropDown));
+    console.log("ownerShipdropDown=====", ownerShipdropDown);
+    if (formData?.ownershipCategory?.code && getDropdwonForProperty(ownerShipdropDown)?.length) {
+      const code = formData?.ownershipCategory?.code;
+      console.log("here is code -in if's", code);
+      const Ownertype = getDropdwonForProperty(ownerShipdropDown)?.find((e) => e.code === code);
+      console.log("code in Ownertype", Ownertype);
+      setValue("SelectOwnerShipDetails", Ownertype);
+      // setPropertyPurpose(Majorbuiltdingtype)
+    }
+    console.log("code is out ");
+  }, [formData, ownerShipdropDown]);
+
+  useEffect(() => {
     if (userType === "employee") {
       if (!ownershipCategory) setError(config.key, { type: "required", message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
       else clearErrors(config.key);
       goNext();
     }
   }, [ownershipCategory]);
+
+  console.log("formData in SelectOwnerShipDetails 2", formData);
 
   if (userType === "employee" && editScreen && loader) {
     return <Loader />;
@@ -140,7 +153,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
           <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
             {t("PT_PROVIDE_OWNERSHIP_DETAILS") + " *"}
           </CardLabel>
-          <Dropdown
+          {/* <Dropdown
             className="form-field"
             selected={getDropdwonForProperty(ownerShipdropDown)?.length === 1 ? getDropdwonForProperty(ownerShipdropDown)[0] : ownershipCategory}
             disable={getDropdwonForProperty(ownerShipdropDown)?.length === 1 || editScreen}
@@ -149,6 +162,27 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
             optionKey="i18nKey"
             onBlur={onBlur}
             t={t}
+          /> */}
+          <Controller
+            name="SelectOwnerShipDetails"
+            defaultValue={ownershipCategory}
+            control={control}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                // selected={getDropdwonForProperty(ownerShipdropDown)?.length === 1 ? getDropdwonForProperty(ownerShipdropDown)[0] : ownershipCategory}
+                disable={getDropdwonForProperty(ownerShipdropDown)?.length === 1 || editScreen}
+                selected={props.value}
+                option={getDropdwonForProperty(ownerShipdropDown)}
+                select={(e) => {
+                  props.onChange(e);
+                  selectedValue(e); // to keep your external state also in sync
+                }}
+                onBlur={props.onBlur}
+                optionKey="i18nKey"
+                t={t}
+              />
+            )}
           />
         </LabelFieldPair>
         {formState.touched?.[config.key] ? (
@@ -162,7 +196,11 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   return (
     <React.Fragment>
-      {window.location.href.includes("/citizen/pt/property/property-mutation") ? <Timeline currentStep={1} flow="PT_MUTATE" /> : <Timeline currentStep={2} />}
+      {window.location.href.includes("/citizen/pt/property/property-mutation") ? (
+        <Timeline currentStep={1} flow="PT_MUTATE" />
+      ) : (
+        <Timeline currentStep={2} />
+      )}
       <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!ownershipCategory}>
         <div>
           <RadioButtons

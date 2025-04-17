@@ -278,7 +278,13 @@ config:
       - work-dir: "core-services/report"
         image-name: "report"
         dockerfile: "build/maven/Dockerfile"   
-
+  
+  - name: "builds/upyog/core-services/report-v2"
+    build:
+      - work-dir: "core-services/report-v2"
+        image-name: "report-v2"
+        dockerfile: "build/maven/Dockerfile"
+        
   - name: "builds/upyog/core-services/tenant"
     build:
       - work-dir: "core-services/tenant"

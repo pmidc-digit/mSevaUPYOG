@@ -71,13 +71,6 @@ export const config = [
       {
         name: "",
         type: "component",
-        component: "TLSelectPincode",
-        key: "address",
-        withoutLabel: true,
-      },
-      {
-        name: "",
-        type: "component",
         component: "TLSelectAddress",
         key: "address",
         withoutLabel: true,
@@ -134,10 +127,24 @@ export const config = [
       {
         name: "",
         type: "component",
-        component: "TLSelectLandmark",
+        component: "TLSelectPincode",
         key: "address",
         withoutLabel: true,
       },
+      {
+        name: "",
+        type: "component",
+        component: "TLSelectGeolocation",
+        key: "address",
+        withoutLabel: true,
+      },
+      // {
+      //   name: "",
+      //   type: "component",
+      //   component: "TLSelectLandmark",
+      //   key: "address",
+      //   withoutLabel: true,
+      // },
     ],
   },
   {

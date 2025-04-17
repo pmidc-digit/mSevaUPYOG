@@ -16,8 +16,8 @@ export const config = [
     head: "TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER",
     stepNumber: 1,
     body: [
-      { 
-        name:"",
+      {
+        name: "",
         type: "component",
         component: "TLTradeUnitsEmployee",
         key: "tradeUnits",
@@ -30,7 +30,7 @@ export const config = [
     stepNumber: 1,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLAccessoriesEmployee",
         key: "accessories",
@@ -43,7 +43,7 @@ export const config = [
     stepNumber: 1,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLTradeVlidityEmployee",
         key: "validityYears",
@@ -56,7 +56,7 @@ export const config = [
     stepNumber: 1,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "CPTPropertySearchNSummary",
         key: "cpt",
@@ -69,21 +69,14 @@ export const config = [
     stepNumber: 1,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
-        component: "TLSelectPincode",
+        component: "TLSelectAddress",
         key: "address",
         withoutLabel: true,
       },
       {
-        name:"",
-        type: "component",
-        component: "TLSelectAddress",
-        key: "address",
-        withoutLabel: true,       
-      },
-      {
-        name:"",
+        name: "",
         type: "component",
         component: "TLSelectStreet",
         key: "address",
@@ -132,12 +125,26 @@ export const config = [
         ],
       },
       {
-        name:"",
+        name: "",
         type: "component",
-        component: "TLSelectLandmark",
+        component: "TLSelectPincode",
         key: "address",
         withoutLabel: true,
       },
+      {
+        name: "",
+        type: "component",
+        component: "TLSelectGeolocation",
+        key: "address",
+        withoutLabel: true,
+      },
+      // {
+      //   name:"",
+      //   type: "component",
+      //   component: "TLSelectLandmark",
+      //   key: "address",
+      //   withoutLabel: true,
+      // },
     ],
   },
   {
@@ -145,26 +152,26 @@ export const config = [
     stepNumber: 2,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "SelectOwnerShipDetails",
         key: "ownershipCategory",
         withoutLabel: true,
       },
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLSelectOwnerAddress",
         key: "owners",
         withoutLabel: true,
       },
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLOwnerDetailsEmployee",
         key: "owners",
         withoutLabel: true,
-      }
+      },
     ],
   },
   {
@@ -172,7 +179,7 @@ export const config = [
     stepNumber: 3,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLDocumentsEmployee",
         key: "documents",
@@ -185,7 +192,7 @@ export const config = [
     stepNumber: 4,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLSummaryPage",
         key: "SummaryTL",

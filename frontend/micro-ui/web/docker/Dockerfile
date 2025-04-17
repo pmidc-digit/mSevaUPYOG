@@ -1,11 +1,11 @@
 FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.0.6
+RUN yarn add @mseva/digit-ui-libraries@1.0.7
 RUN yarn add @mseva/digit-ui-module-bills@1.0.4
 RUN yarn add @mseva/digit-ui-module-pt@1.0.2
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.2
-RUN yarn add @mseva/digit-ui-module-tl@1.0.2
+RUN yarn add @mseva/digit-ui-module-tl@1.0.3
 RUN yarn add @mseva/digit-ui-module-dss@1.0.2
 RUN yarn add @mseva/digit-ui-module-mcollect@1.0.3
 RUN yarn add @mseva/digit-ui-module-pgr@1.0.2

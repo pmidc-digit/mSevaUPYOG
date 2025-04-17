@@ -48,7 +48,7 @@ function ApplicationDetailsContent({
   isDataLoading,
   applicationData,
   totalDemandTax,
-
+  // auditDataLoading,
   businessService,
   timelineStatusPrefix,
   id,
@@ -65,6 +65,18 @@ function ApplicationDetailsContent({
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
   console.log("appl", applicationDetails);
+
+  console.log("applicationData", applicationData);
+
+  const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.pt.usePropertySearch(
+    {
+      tenantId,
+      filters: { propertyIds: applicationDetails?.applicationData?.propertyId, audit: true },
+    }
+    // { enabled: enableAudit, select: (data) => data.Properties?.filter((e) => e.status === "ACTIVE") }
+  );
+
+  console.log("auditData", auditData);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -279,7 +291,7 @@ function ApplicationDetailsContent({
 
   const PropertyInActive = async () => {
     // console.log("applicationDetails", applicationDetails?.applicationData);
-    const data = { Property: applicationDetails?.applicationData };
+    const data = { Property: auditData?.Properties[0] };
     console.log("data====", data);
     const pID = applicationDetails?.applicationData?.propertyId;
     const confirm = window.confirm("Are you sure you want to make property Inactive?");

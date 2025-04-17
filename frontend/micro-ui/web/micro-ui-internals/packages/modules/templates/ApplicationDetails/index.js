@@ -260,6 +260,7 @@ const ApplicationDetails = (props) => {
             showTimeLine={showTimeLine}
             oldValue={oldValue}
             isInfoLabel={isInfoLabel}
+            auditDataLoading={props?.auditDataLoading}
           />
           {showModal ? (
             <ActionModal

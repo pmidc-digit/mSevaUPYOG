@@ -83,7 +83,6 @@ const enabledModules = [
   "Birth",
   "Death",
   "Swach",
-  "NDC",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -115,7 +114,6 @@ initOBPSComponents();
 initNOCComponents();
 initEngagementComponents();
 initWSComponents();
-initNDCComponents();
 initCommonPTComponents();
 initBillsComponents();
 // initReportsComponents();
@@ -125,7 +123,6 @@ const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
   pt: PTReducers(initData),
   hrms: HRMSReducers(initData),
-  ndc: NDCReducers(initData),
   ws: WSReducers(initData),
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),

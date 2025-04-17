@@ -66,7 +66,6 @@ const enabledModules = [
   "PTR",
   "ADS",
   "Swach",
-  "NDC",
 ];
 
 const initTokens = (stateCode) => {
@@ -131,7 +130,6 @@ const initDigitUI = () => {
   initEngagementComponents();
   initNOCComponents();
   initWSComponents();
-  initNDCComponents();
   initCommonPTComponents();
   initBillsComponents();
   // initCustomisationComponents();
@@ -141,7 +139,6 @@ const initDigitUI = () => {
     swach: SWACHReducers(initData),
     hrms: HRMSReducers(initData),
     pt: PTReducers(initData),
-    ndc: NDCReducers(initData),
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData),
     tl: TLReducers(initData),

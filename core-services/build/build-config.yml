@@ -150,7 +150,13 @@ config:
     build:
       - work-dir: "report"
         image-name: "report"
-        dockerfile: "build/maven/Dockerfile"   
+        dockerfile: "build/maven/Dockerfile"  
+
+  - name: "builds/core-services/report-v2"
+    build:
+      - work-dir: "report-v2"
+        image-name: "report-v2"
+        dockerfile: "build/maven/Dockerfile" 
 
   - name: "builds/core-services/tenant"
     build:

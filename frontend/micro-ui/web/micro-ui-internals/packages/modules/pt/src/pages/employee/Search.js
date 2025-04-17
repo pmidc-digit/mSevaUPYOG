@@ -1,5 +1,5 @@
 import { Header, Localities, Toast } from "@mseva/digit-ui-react-components";
-import PropertyType  from "../../utils/PropertyType";
+import PropertyType from "../../utils/PropertyType";
 import React, { memo, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -11,7 +11,8 @@ const PTSearchFields = {
       placeHolder: "PT_PROPERTY_UNIQUE_ID_PLACEHOLDER",
       validation: {
         pattern: {
-          value: "/[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}|[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}/,PG-PT-\d\d\d\d-\d\d\d\d-\d\d-\d\d-\d\d\d\d\d\d",
+          value:
+            "/[A-Za-z]{2}-[A-Za-z]{2}-[0-9]{4}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}|[A-Za-z]{2}-[A-Za-z]{2}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}/,PG-PT-dddd-dddd-dd-dd-dddddd",
           message: "ERR_INVALID_PROPERTY_ID",
         },
       },
@@ -22,7 +23,8 @@ const PTSearchFields = {
       placeholder: "PT_EXISTING_PROPERTY_ID_PLACEHOLDER",
       validation: {
         pattern: {
-          value: "/[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}|[A-Za-z]{2}\-[A-Za-z]{2}\-[0-9]{4}\-[0-9]{2}\-[0-9]{2}\-[0-9]{6}/,PG-PT-\d\d\d\d-\d\d\d\d-\d\d-\d\d-\d\d\d\d\d\d",
+          value:
+            "/[A-Za-z]{2}-[A-Za-z]{2}-[0-9]{4}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}|[A-Za-z]{2}-[A-Za-z]{2}-[0-9]{4}-[0-9]{2}-[0-9]{2}-[0-9]{6}/,PG-PT-dddd-dddd-dd-dd-dddddd",
           message: "ERR_INVALID_PROPERTY_ID",
         },
       },
@@ -80,7 +82,7 @@ const PTSearchFields = {
       placeHolder: "PT_SEARCH_DOOR_NO_PLACEHOLDER",
       validation: {
         pattern: {
-          value:  "[A-Za-z0-9#,/ -()]{1,63}",
+          value: "[A-Za-z0-9#,/ -()]{1,63}",
           message: "ERR_INVALID_DOOR_NO",
         },
       },
@@ -95,13 +97,13 @@ const PTSearchFields = {
           message: "PT_MIN_3CHAR",
         },
         pattern: {
-          value:  "^[a-zA-Z ]+$",
+          value: "^[a-zA-Z ]+$",
           message: "PAYMENT_INVALID_NAME",
         },
       },
     },
   },
-  defaulterNotice:{
+  defaulterNotice: {
     locality: {
       type: "custom",
       label: "PT_SEARCH_LOCALITY",
@@ -130,12 +132,12 @@ const PTSearchFields = {
         optionCardStyles: { height: "600px", overflow: "auto", zIndex: "10" },
         disableLoader: true,
       },
-    }
+    },
     // propertyType: {
     //   type: "propertyType",
     //   label: "PT_SEARCHPROPERTY_TABEL_PROPERTY_TYPE",
     //   placeHolder: "PT_SEARCH_DOOR_NO_PLACEHOLDER",
-     
+
     // },
   },
 };
@@ -147,7 +149,7 @@ const defaultValues = {
   locality: "",
   name: "",
   doorNo: "",
-  propertyType:""
+  propertyType: "",
 };
 
 const Search = () => {
@@ -167,40 +169,37 @@ const Search = () => {
   });
   const onReset = useCallback(() => {
     setFormData(defaultValues);
-     setPayload({});
+    setPayload({});
     setShowToast(null);
   });
 
-  useEffect (() =>{
-    if(sessionStorage.getItem("searchDetailValue") == 1 && searchBy === "searchId"){
-      setSearchBy("searchDetail")
+  useEffect(() => {
+    if (sessionStorage.getItem("searchDetailValue") == 1 && searchBy === "searchId") {
+      setSearchBy("searchDetail");
     }
-  },[searchBy])
+  }, [searchBy]);
   const onSubmit = useCallback((_data) => {
-    console.log("_data",_data)
-    if(Object.keys(_data).includes("propertyType"))
-    {
+    console.log("_data", _data);
+    if (Object.keys(_data).includes("propertyType")) {
       setFormData(_data);
-      console.log("_data2",payload)
-      setPayload({locality:_data.locality.code, propertyType:_data.propertyType.code})
-      console.log("_data3",payload)
-    }
-    else {
-      setFormData(_data);   
-      console.log("_data5",formData)  
+      console.log("_data2", payload);
+      setPayload({ locality: _data.locality.code, propertyType: _data.propertyType.code });
+      console.log("_data3", payload);
+    } else {
+      setFormData(_data);
+      console.log("_data5", formData);
       if (Object.keys(_data).filter((k) => _data[k] && typeof _data[k] !== "object")) {
         setPayload(
           Object.keys(_data)
             .filter((k) => _data[k])
             .reduce((acc, key) => ({ ...acc, [key]: typeof _data[key] === "object" ? _data[key].code : _data[key] }), {})
         );
-        console.log("_data4",payload)
+        console.log("_data4", payload);
         setShowToast(null);
       } else {
         setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS" });
       }
     }
-  
   });
   return (
     <React.Fragment>
@@ -215,12 +214,28 @@ const Search = () => {
         onSubmit={onSubmit}
         onReset={onReset}
       />
-      
-      {Object.keys(payload).includes("propertyType") ?
-      <SearchPTIDPropComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={tenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
-      : Object.keys(payload).length > 0 ? (
-        <SearchResultComponent t={t} showToast={showToast} setShowToast={setShowToast} tenantId={tenantId} payload={payload} ptSearchConfig={{...ptSearchConfig}} />
-      ):""}
+
+      {Object.keys(payload).includes("propertyType") ? (
+        <SearchPTIDPropComponent
+          t={t}
+          showToast={showToast}
+          setShowToast={setShowToast}
+          tenantId={tenantId}
+          payload={payload}
+          ptSearchConfig={{ ...ptSearchConfig }}
+        />
+      ) : Object.keys(payload).length > 0 ? (
+        <SearchResultComponent
+          t={t}
+          showToast={showToast}
+          setShowToast={setShowToast}
+          tenantId={tenantId}
+          payload={payload}
+          ptSearchConfig={{ ...ptSearchConfig }}
+        />
+      ) : (
+        ""
+      )}
       {showToast && (
         <Toast
           error={showToast.error}

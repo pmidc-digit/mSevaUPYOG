@@ -112,6 +112,10 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (Traid.address.street) address.street = Traid.address.street;
       if (Traid.address.pincode) address.pincode = Traid.address.pincode;
     }
+    if (TraidDetails.address.geoLocation.latitude ){
+      address.latitude = TraidDetails.address.geoLocation.latitude;
+      address.longitude = TraidDetails.address.geoLocation.longitude;
+    }
   
     // Prepare owners
     let owners = [];

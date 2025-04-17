@@ -248,10 +248,13 @@ const onMarkerDragged = (marker, onChange, isPlaceRequired = false) => {
     lat: currLat,
     lng: currLang,
   };
-  if(isPlaceRequired)
-  setLocationText(location, onChange, true);
-  else
-  setLocationText(location, onChange);
+
+  console.log("Lat & Long", location);
+  onChange("000000", { longitude: location.lng, latitude: location.lat });
+  // if(isPlaceRequired)
+  // setLocationText(location, onChange, true);
+  // else
+  // setLocationText(location, onChange);
 };
 
 const initAutocomplete = (onChange, position, isPlaceRequired=false) => {
@@ -359,7 +362,8 @@ const LocationSearch = (props) => {
         let defaultLatLong = {};
         if (props?.isPTDefault) {
           defaultLatLong = props?.PTdefaultcoord?.defaultConfig || { lat: 31.6160638, lng: 74.8978579 };
-        } else {
+        }
+        else {
           defaultLatLong = {
             lat: 31.6160638,
             lng: 74.8978579,

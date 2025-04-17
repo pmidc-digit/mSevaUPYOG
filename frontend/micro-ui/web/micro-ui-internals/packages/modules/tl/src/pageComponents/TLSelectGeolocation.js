@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 //import LocationSearchCard from '../../../../react-components/src/molecules/LocationSearchCard';
 //  import { LocationSearchCard } from "@mseva/digit-ui-react-components";
-import LocationSearchCard from "../../../../react-components/src/molecules/LocationSearchCard";
+// import LocationSearchCard from "../../../../react-components/src/molecules/LocationSearchCard";
+import LocationSearchCard from "../components/LocationSearchCard";
 import Timeline from "../components/TLTimeline";
 
 const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
@@ -27,8 +28,13 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
     } else {
       setPincode(code);
       setGeoLocation(location);
+      // console.log("GeoLocation key", config.key);
+      // onSelect(config.key, { geoLocation: location });
     }
   };
+
+  console.log("GeoLocation formdata", config.key, formData);
+  
 
   return (
     <React.Fragment>
@@ -47,6 +53,7 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
       forcedError={t(pincodeServicability)}
       isPTDefault={true}
       PTdefaultcoord={defaultcoord1}
+      onSelect={onSelect}
       //isPopUp={true}
     />
     </React.Fragment>

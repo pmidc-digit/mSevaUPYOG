@@ -17,6 +17,8 @@ import {
   usePaymentSearch,
   useBulkPdfDetails,
 } from "./payment";
+import { useMCollectRecieptSearch } from "./mcollect/mCollect";
+
 import { useUserSearch } from "./userSearch";
 import { useApplicationsForBusinessServiceSearch } from "./useApplicationForBillSearch";
 import useBoundaryLocalities from "./useLocalities";
@@ -197,7 +199,6 @@ import useDistricts from "./obps/useDistricts";
 import useULBList from "./obps/useULBList";
 import useUlbType from "./obps/useUlbType";
 
-
 import useEventInbox from "./events/useEventInbox";
 import useEventDetails from "./events/useEventDetails";
 import { useEngagementMDMS } from "./engagement/useMdms";
@@ -233,7 +234,7 @@ import WSuseSearch from "./ws/useSearch";
 import useOldValue from "./ws/useOldValue";
 import useSewSearch from "./ws/useSewSearch";
 import useSearchWS from "./ws/useSearchWS";
-import useBulkSearchWS from "./ws/useBulkSearchWS"
+import useBulkSearchWS from "./ws/useBulkSearchWS";
 import useMypaymentWS from "./ws/useMypaymentWS";
 import useWSDetailsPage from "./ws/useWSDetailsPage";
 import useWSApplicationActions from "./ws/useApplicationActions";
@@ -338,8 +339,7 @@ const ptr = {
   useServiceSearchPTR,
   usePetDocumentSearch,
   useMyPetPayments,
-  useTenants: useTenantsPTR
- 
+  useTenants: useTenantsPTR,
 };
 
 const fsm = {
@@ -489,7 +489,7 @@ const obps = {
   useBPATaxDocuments,
   useDistricts,
   useULBList,
-  useUlbType
+  useUlbType,
 };
 
 const events = {
@@ -516,7 +516,7 @@ const survey = {
   useShowResults: useSurveyShowResults,
   useSurveyInbox,
   useSurveyCategoryInbox,
-  useSurveyQuestionInbox
+  useSurveyQuestionInbox,
 };
 
 const noc = {
@@ -592,6 +592,7 @@ const Hooks = {
   useModuleTenants,
   useRecieptSearch,
   useRecieptSearchNew,
+  useMCollectRecieptSearch,
   usePaymentSearch,
   useNewInboxGeneral,
   useEvents,
@@ -635,7 +636,7 @@ const Hooks = {
   useBulkPdfDetails,
   useBillAmendmentInbox,
   useAudit,
-  createTokenAPI
+  createTokenAPI,
 };
 
 export default Hooks;

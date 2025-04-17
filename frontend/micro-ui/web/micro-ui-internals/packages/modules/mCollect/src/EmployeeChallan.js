@@ -1,4 +1,16 @@
-import { Card, CardSubHeader, Header, Row, StatusTable, SubmitBar, ActionBar, Menu, Toast,MultiLink,DownloadBtnCommon} from "@mseva/digit-ui-react-components";
+import {
+  Card,
+  CardSubHeader,
+  Header,
+  Row,
+  StatusTable,
+  SubmitBar,
+  ActionBar,
+  Menu,
+  Toast,
+  MultiLink,
+  DownloadBtnCommon,
+} from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory, useRouteMatch } from "react-router-dom";
@@ -20,6 +32,7 @@ const EmployeeChallan = (props) => {
   const { url } = useRouteMatch();
   const [isDisplayDownloadMenu, setIsDisplayDownloadMenu] = useState(false);
   const [showToast, setShowToast] = useState(null);
+
   useEffect(() => {
     switch (selectedAction) {
       case "CANCEL_CHALLAN":
@@ -68,10 +81,13 @@ const EmployeeChallan = (props) => {
     filters: { challanNo: challanno },
     isMcollectAppChanged,
   });
+
   var challanDetails = data?.challans?.filter(function (item) {
     return item.challanNo === challanno;
   })[0];
+
   let billDetails = [];
+
   useEffect(() => {
     async function fetchMyAPI() {
       billDetails = [];
@@ -83,12 +99,11 @@ const EmployeeChallan = (props) => {
         billDetails.push(bill);
       });
       setTotalDueAmount(res?.Bill[0]?.totalAmount);
-      billDetails && billDetails.map((ob) => {
-        if(ob.taxHeadCode.includes("CGST"))
-          ob.order = 3;
-        else if(ob.taxHeadCode.includes("SGST"))
-          ob.order = 4;
-      });
+      billDetails &&
+        billDetails.map((ob) => {
+          if (ob.taxHeadCode.includes("CGST")) ob.order = 3;
+          else if (ob.taxHeadCode.includes("SGST")) ob.order = 4;
+        });
       billDetails.sort((a, b) => a.order - b.order);
       setChallanBillDetails(billDetails);
     }
@@ -100,36 +115,33 @@ const EmployeeChallan = (props) => {
   const challanDownload = {
     order: 1,
     label: t("UC_CHALLAN"),
-    onClick: () => downloadAndPrintChallan(challanno),
+    onClick: () => downloadAndPrintChallan(challanno, "download"),
   };
 
   const receiptDownload = {
     order: 2,
     label: t("Receipt"),
-    onClick: () => downloadAndPrintReciept(challanDetails?.businessService, challanno),
+    onClick: () => downloadAndPrintReciept(challanDetails?.businessService, challanno, "download"),
   };
-
-  let dowloadOptions = []
-  dowloadOptions = challanDetails?.applicationStatus === "PAID" ? [challanDownload , receiptDownload] : [challanDownload];
 
   const workflowActions = ["CANCEL_CHALLAN", "UPDATE_CHALLAN", "BUTTON_PAY"];
 
-  function onDownloadActionSelect(action) {
-    action == "CHALLAN" ? downloadAndPrintChallan(challanno) : downloadAndPrintReciept(challanDetails?.businessService, challanno);
-  }
+  // function onDownloadActionSelect(action) {
+  //   action == "CHALLAN" ? downloadAndPrintChallan(challanno) : downloadAndPrintReciept(challanDetails?.businessService, challanno);
+  // }
 
   return (
     <React.Fragment>
       <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
         <Header>{`${t("CHALLAN_DETAILS")}`} </Header>
-          <MultiLink
-              className="multilinkWrapper employee-mulitlink-main-div"
-              onHeadClick={() => setIsDisplayDownloadMenu(!isDisplayDownloadMenu)}
-              displayOptions={isDisplayDownloadMenu}
-              options={challanDetails?.applicationStatus === "PAID" ? [challanDownload , receiptDownload] : [challanDownload]}
-              downloadBtnClassName={"employee-download-btn-className"}
-              optionsClassName={"employee-options-btn-className"}
-            />
+        <MultiLink
+          className="multilinkWrapper employee-mulitlink-main-div"
+          onHeadClick={() => setIsDisplayDownloadMenu(!isDisplayDownloadMenu)}
+          displayOptions={isDisplayDownloadMenu}
+          options={challanDetails?.applicationStatus === "PAID" ? [challanDownload, receiptDownload] : [challanDownload]}
+          downloadBtnClassName={"employee-download-btn-className"}
+          optionsClassName={"employee-options-btn-className"}
+        />
       </div>
 
       <div>
@@ -153,7 +165,9 @@ const EmployeeChallan = (props) => {
           <StatusTable>
             <Row
               label={`${t("UC_SERVICE_CATEGORY_LABEL")}`}
-              text={`${t(`BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(challanDetails?.businessService?.toUpperCase(), ".", "_")}` || t("CS_NA"))}`}
+              text={`${t(
+                `BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(challanDetails?.businessService?.toUpperCase(), ".", "_")}` || t("CS_NA")
+              )}`}
               textStyle={{ whiteSpace: "pre" }}
             />
             <Row label={`${t("UC_FROM_DATE_LABEL")}`} text={convertEpochToDate(challanDetails?.taxPeriodFrom) || t("CS_NA")} />

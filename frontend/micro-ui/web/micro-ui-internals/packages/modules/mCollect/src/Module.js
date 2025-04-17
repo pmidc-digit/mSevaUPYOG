@@ -16,6 +16,10 @@ import EmployeeApp from "./pages/employee";
 import EditChallan from "./pages/employee/EditChallan";
 import MCollectAcknowledgement from "./pages/employee/EmployeeChallanAcknowledgement";
 import NewChallan from "./pages/employee/NewChallan";
+import SearchReceipt from "./pages/employee/SearchReceipt";
+import SearchChallan from "./pages/employee/SearchChallan";
+import SearchBill from "./pages/employee/SearchBill";
+import GroupBill from "./pages/employee/GroupBills";
 
 export const MCollectModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "UC";
@@ -68,7 +72,10 @@ const componentsToRegister = {
   MCollectSearchChallanComponent: SearchChallanComponent,
   MCollectSearchResultsComponent: SearchResultsComponent,
   MCollectMyChallanResultsComponent: MyChallanResultsComponent,
-
+  SearchReceipt,
+  SearchChallan,
+  SearchBill,
+  GroupBill,
   MCOLLECT_INBOX_FILTER: (props) => <InboxFilter {...props} />,
 };
 

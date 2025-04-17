@@ -14,6 +14,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const location = useLocation();
   const mobileView = innerWidth <= 640;
 
+  console.log("her here here here");
   const inboxInitialState = {
     searchParams: {
       // uuid: { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
@@ -47,16 +48,20 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   const searchMW = [{ combineTaxDueInSearchData }];
 
-  const EmployeeChallan = Digit?.ComponentRegistryService?.getComponent('MCollectEmployeeChallan');
-  const MCollectAcknowledgement = Digit?.ComponentRegistryService?.getComponent('MCollectAcknowledgement');
-  const EditChallan = Digit?.ComponentRegistryService?.getComponent('MCollectEditChallan');
-  const NewChallan = Digit?.ComponentRegistryService?.getComponent('MCollectNewChallan');
+  const EmployeeChallan = Digit?.ComponentRegistryService?.getComponent("MCollectEmployeeChallan");
+  const MCollectAcknowledgement = Digit?.ComponentRegistryService?.getComponent("MCollectAcknowledgement");
+  const EditChallan = Digit?.ComponentRegistryService?.getComponent("MCollectEditChallan");
+  const NewChallan = Digit?.ComponentRegistryService?.getComponent("MCollectNewChallan");
+  const SearchReceiptPage = Digit?.ComponentRegistryService?.getComponent("SearchReceipt");
+  const SearchChallanPage = Digit?.ComponentRegistryService?.getComponent("SearchChallan");
+  const SearchBillPage = Digit?.ComponentRegistryService?.getComponent("SearchBill");
+  const GroupBillPage = Digit?.ComponentRegistryService?.getComponent("GroupBill");
 
   return (
     <Switch>
       <React.Fragment>
         <div className="ground-container" /* style={{ padding: "10px 0px 0px 30px" }} */>
-          <p className="breadcrumb employee-main-application-details"  style={{ marginLeft: mobileView ? "2vw" : "revert" }}>
+          <p className="breadcrumb employee-main-application-details" style={{ marginLeft: mobileView ? "2vw" : "revert" }}>
             <Link to="/digit-ui/employee" style={{ cursor: "pointer", color: "#666" }}>
               {t("ES_COMMON_HOME")}
             </Link>{" "}
@@ -75,8 +80,9 @@ const EmployeeApp = ({ path, url, userType }) => {
               />
             )}
           />
-{/*           <PrivateRoute path={`${path}/new-application`} component={() => <CreateChallen />} />
- */}          <PrivateRoute path={`${path}/new-application`} component={() => <NewChallan parentUrl={url} />} />
+          {/*           <PrivateRoute path={`${path}/new-application`} component={() => <CreateChallen />} />
+           */}{" "}
+          <PrivateRoute path={`${path}/new-application`} component={() => <NewChallan parentUrl={url} />} />
           <PrivateRoute
             path={`${path}/search`}
             component={() => (
@@ -86,6 +92,10 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/acknowledgement`} component={() => <MCollectAcknowledgement />} />
           <PrivateRoute path={`${path}/challansearch/:challanno`} component={() => <EmployeeChallan />} />
           <PrivateRoute path={`${path}/modify-challan/:challanNo`} component={() => <EditChallan />} />{" "}
+          <PrivateRoute path={`${path}/search-receipt`} component={() => <SearchReceiptPage />} />{" "}
+          <PrivateRoute path={`${path}/search-challan`} component={() => <SearchChallanPage parentRoute={path} />} />{" "}
+          <PrivateRoute path={`${path}/search-bill`} component={() => <SearchBillPage />} />{" "}
+          <PrivateRoute path={`${path}/group-bill`} component={() => <GroupBillPage />} />{" "}
         </div>
       </React.Fragment>
     </Switch>

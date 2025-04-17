@@ -88,7 +88,7 @@ export const printPdf = (blob) => {
   }
 };
 
-export const downloadAndPrintChallan = async (challanNo, mode = "download") => {
+export const downloadAndPrintChallan = async (challanNo, mode) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const response = await Digit.MCollectService.downloadPdf(challanNo, tenantId);
   const responseStatus = parseInt(response.status, 10);
@@ -99,19 +99,19 @@ export const downloadAndPrintChallan = async (challanNo, mode = "download") => {
   }
 };
 
-export const downloadAndPrintReciept = async (bussinessService, consumerCode, mode = "download") => {
+export const downloadAndPrintReciept = async (bussinessService, consumerCode, mode) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const data = await Digit.PaymentService.getReciept(tenantId, bussinessService,{ consumerCodes: consumerCode });
-  const payments=data?.Payments[0];
-  let response=null;
-    if (payments?.fileStoreIdS ) {
-       response = { filestoreIds: [payments?.fileStoreId] };      
-    }
-    else{
-       response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{...payments}] }, "consolidatedreceipt");
-    }    
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
-    window.open(fileStore[response?.filestoreIds[0]], "_blank");
+  const data = await Digit.PaymentService.getReciept(tenantId, bussinessService, { consumerCodes: consumerCode });
+  const payments = data?.Payments[0];
+
+  console.log("payments", payments);
+
+  let response = null;
+  if (payments?.fileStoreId) {
+    response = { filestoreIds: [payments?.fileStoreId] };
+  }
+  const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+  window.open(fileStore[response?.filestoreIds[0]], "_blank");
   const responseStatus = parseInt(response.status, 10);
   if (responseStatus === 201 || responseStatus === 200) {
     let fileName =

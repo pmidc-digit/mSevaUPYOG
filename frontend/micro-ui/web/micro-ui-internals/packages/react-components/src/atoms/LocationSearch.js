@@ -37,7 +37,6 @@ const getName = (places) => {
 
 const loadGoogleMaps = (callback) => {
   const key = globalConfigs?.getConfig("GMAPS_API_KEY");
-  console.log("GMAPS_API_KEY: ",key);
   const loader = new Loader({
     apiKey: key,
     version: "weekly",
@@ -248,13 +247,10 @@ const onMarkerDragged = (marker, onChange, isPlaceRequired = false) => {
     lat: currLat,
     lng: currLang,
   };
-
-  console.log("Lat & Long", location);
-  onChange("000000", { longitude: location.lng, latitude: location.lat });
-  // if(isPlaceRequired)
-  // setLocationText(location, onChange, true);
-  // else
-  // setLocationText(location, onChange);
+  if(isPlaceRequired)
+  setLocationText(location, onChange, true);
+  else
+  setLocationText(location, onChange);
 };
 
 const initAutocomplete = (onChange, position, isPlaceRequired=false) => {
@@ -300,16 +296,13 @@ const initAutocomplete = (onChange, position, isPlaceRequired=false) => {
   // Listen for the event fired when the user selects a prediction and retrieve
   // more details for that place.
   markers[0].addListener("dragend", (marker) => onMarkerDragged(marker, onChange, isPlaceRequired));
-  console.log("In initAutoComplete, searbox: ",searchBox);
   searchBox.addListener("place_changed", () => {
     const place = searchBox.getPlace();
-    console.log("Place: ",place);
+
     if (!place) {
       return;
     } // Clear out the old markers.
     let pincode = GetPinCode(place);
-
-    console.log("Pincode: ",pincode);
     if (pincode) {
       const { geometry } = place;
       const geoLocation = {
@@ -362,8 +355,7 @@ const LocationSearch = (props) => {
         let defaultLatLong = {};
         if (props?.isPTDefault) {
           defaultLatLong = props?.PTdefaultcoord?.defaultConfig || { lat: 31.6160638, lng: 74.8978579 };
-        }
-        else {
+        } else {
           defaultLatLong = {
             lat: 31.6160638,
             lng: 74.8978579,

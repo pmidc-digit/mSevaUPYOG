@@ -32,13 +32,11 @@ const LocationSearchCard = ({
 }) => {
   let isDisabled = false || disabled;
   const onLocationChange = (val, location) => {
-    console.log("onLocationChange");
     isDisabled = val ? false : true;
     onChange(val, location);
   };
 
   const onLocationChangewithPlace = (val, location, place) => {
-    console.log("onLocationChangewithPlace");
     isDisabled = val ? false : true;
     onChange(val, location, place);
   };
@@ -74,8 +72,8 @@ const LocationSearchCard = ({
         <LocationSearch onChange={isPlaceRequired?onLocationChangewithPlace:onLocationChange} position={position} isPTDefault={isPTDefault} PTdefaultcoord={PTdefaultcoord} isPlaceRequired={isPlaceRequired} />
         {forcedError && <CardLabelError>{t(forcedError)}</CardLabelError>}
       </div>
-      {/* <SubmitBar label={nextText} onSubmit={onSave} disabled={isDisabled} />
-      {skip ? <LinkButton onClick={skip} label={skipAndContinueText} /> : null} */}
+      <SubmitBar label={nextText} onSubmit={onSave} disabled={isDisabled} />
+      {skip ? <LinkButton onClick={skip} label={skipAndContinueText} /> : null}
     </Card>
   );
 };

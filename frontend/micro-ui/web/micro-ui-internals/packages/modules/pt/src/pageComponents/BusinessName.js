@@ -8,6 +8,9 @@ import { Controller, useForm } from "react-hook-form";
 const BusinessName = ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
   //let index = window.location.href.charAt(window.location.href.length - 1);
   let index = window.location.href.split("/").pop();
+
+  console.log("formdata testing==",formData);
+  
   let validation = {};
   const onSkip = () => onSelect();
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();

@@ -30,7 +30,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
   let menu = [];
 
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("modify");
+  const presentInModifyApplication = pathname.includes("edit");
 
   function usageCategoryMajorMenu(usagecat) {
     if (userType === "employee") {
@@ -59,7 +59,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
 
   useEffect(() => {
     if (!menuLoading && presentInModifyApplication && userType === "employee") {
-      const original = formData?.PropertyDetails?.usageCategoryMajor;
+      const original = formData?.usageCategoryMajor;
       const selectedOption = usageCategoryMajorMenu(usagecat).filter((e) => e.code === original)[0];
       setPropertyPurpose(selectedOption);
     }
@@ -72,18 +72,33 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
     //     setValue("MajorPropertyType", Majorbuiltdingtype);
     //   }
     // }, [formData, usageCategoryMajor]);
+    // useEffect(() => {
+
+    //   console.log("code is coming innn ")
+    //   if (formData?.PropertyDetails?.usageCategoryMajor?.code || usageCategoryMajorMenu(usagecat)?.length) {
+    //     const code = formData?.PropertyDetails?.usageCategoryMajor?.code;
+    //     console.log("here is code -in if's",code)
+    //     const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
+    //     console.log("code in Majorbuiltdingtype",Majorbuiltdingtype)
+    //     setValue("MajorPropertyType", Majorbuiltdingtype);
+    //     // setPropertyPurpose(Majorbuiltdingtype)
+    //   }
+    //   console.log("code is out ")
+    // }, [formData, usageCategoryMajor  ]);
+    
     useEffect(() => {
 
-      console.log("code is here ")
-      if (formData?.usageCategoryMajor?.code && usageCategoryMajorMenu(usagecat)?.length) {
+      console.log("code is coming innn ")
+      if (formData?.usageCategoryMajor?.code || usageCategoryMajorMenu(usagecat)?.length) {
         const code = formData?.usageCategoryMajor?.code;
-        console.log("here is code",code)
+        console.log("here is code -in if's",code)
         const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
         console.log("code in Majorbuiltdingtype",Majorbuiltdingtype)
-        setValue("MajorPropertyType", Majorbuiltdingtype);
-        setPropertyPurpose(Majorbuiltdingtype)
+        setValue("PropertyUsageType", Majorbuiltdingtype);
+        // setPropertyPurpose(Majorbuiltdingtype)
       }
-    }, [formData, usageCategoryMajor  ]);//,
+      console.log("code is out ")
+    }, [formData, usageCategoryMajor  ]);
 
 
 
@@ -126,25 +141,9 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
       <React.Fragment>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t("PT_ASSESMENT_INFO_USAGE_TYPE") + " *"}</CardLabel>
-          {/* <Dropdown
-            className="form-field"
-            selected={usageCategoryMajor}
-            disable={usageCategoryMajorMenu(usagecat)?.length === 1}
-            option={usageCategoryMajorMenu(usagecat)}
-            select={(e) => {
-              selectPropertyPurpose(e);
-            }}
-            // select={(e) => {
-            //   props.onChange(e);
-            //   selectPropertyPurpose(e); // to keep your external state also in sync
-            // }}
-            optionKey="i18nKey"
-            onBlur={onBlur}
-            t={t}
-          /> */}
           <Controller
               name="PropertyUsageType"
-              defaultValue={usageCategoryMajor}
+              // defaultValue={usageCategoryMajor}
               control={control}
               render={(props) => (
                 <Dropdown
@@ -155,7 +154,6 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
                   option={usageCategoryMajorMenu(usagecat)}
                   select={(e) => {
                     props.onChange(e);
-                    // selectLocality(e)
                     selectPropertyPurpose(e); // to keep your external state also in sync
                   }}
                   // select={props.onChange}

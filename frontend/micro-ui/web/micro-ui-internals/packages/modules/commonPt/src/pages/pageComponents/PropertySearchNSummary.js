@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   CardLabel,
   LabelFieldPair,
@@ -31,8 +31,8 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   let { pathname, state } = useLocation();
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
   const isEditScreen = pathname.includes("/modify-application/");
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application");
+  const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
+  const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application") || window.location.href.includes("/citizen/tl/tradelicence/new-application");
   const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
   const search = useLocation().search;
   const urlPropertyId = new URLSearchParams(search).get("propertyId");
@@ -41,6 +41,8 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   const [showToast, setShowToast] = useState(null);
   const isMobile = window.Digit.Utils.browser.isMobile();
   const serachParams = window.location.href.includes("?")? window.location.href.substring(window.location.href.indexOf("?")+1,window.location.href.length) : "";
+  const myElementRef = useRef(null);
+  
 
   const { isLoading, isError, error, data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: searchPropertyId }, tenantId: tenantId },
@@ -73,8 +75,18 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
       const scrollConst =  1600 
       setTimeout(() => window.scrollTo(0, scrollConst), 0);
     }
-    
-    else if (window.location.pathname.includes("/ws/new-application"))
+
+    if(window.location.pathname.includes("/tl/tradelicence/new-application")){
+      history.push(`/digit-ui/citizen/tl/tradelicence/new-application?propertyId=${propertyId}`)
+      const scrollConst =  1600
+      setTimeout(() => window.scrollTo(0, scrollConst), 0);
+      // const offsetTop= myElementRef.current.offsetTop; 
+      // setTimeout(() => window.scrollTo({top: offsetTop, behavior: "smooth"}),0);
+      // const element=document.getElementById("search-property-field");
+      // element.scrollIntoView({behavior:"smooth"})
+    }
+
+    if (window.location.pathname.includes("/ws/new-application"))
       history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`)
       const scrollConst =  460; 
       setTimeout(() => window.scrollTo(0, scrollConst), 0);
@@ -135,7 +147,7 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
      {(window.location.href.includes("/tl/") ? (!(formData?.tradedetils?.[0]?.structureType?.code === "MOVABLE") && (isEmpNewApplication || isEmpRenewLicense) ) : true) && <div>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller" style={getInputStyles()}>{`${t(propertyIdInput.label)}`}{propertyIdInput.isMandatory?"*":null}</CardLabel>
-        <div className="field" style={{ marginTop: "20px", display: "flex" }}>
+        <div className="field" style={{ marginTop: "20px", display: "flex" }} ref={myElementRef} id="search-property-field">
           <TextInput
             key={propertyIdInput.name}
             value= {getValue(propertyIdInput.name)}//{propertyId}

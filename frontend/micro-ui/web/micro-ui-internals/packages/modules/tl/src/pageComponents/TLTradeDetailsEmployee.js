@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, MobileNumber, DatePicker, Loader } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -41,7 +41,7 @@ const TLTradeDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const [structureSubTypeOptions, setStructureSubTypeOptions] = useState([]);
   const [owners, setOwners] = useState(formData?.owners || [createTradeDetailsDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
   const [licenseTypeList, setLicenseTypeList] = useState([]);
@@ -157,6 +157,7 @@ const OwnerForm1 = (_props) => {
   const { errors } = localFormState;
 
   useEffect(() => {
+    console.log("licenseTypeValue: ",licenseTypeValue);
     if (billingSlabData && billingSlabData?.billingSlab && billingSlabData?.billingSlab?.length > 0) {
         const processedData =
             billingSlabData.billingSlab &&
@@ -212,6 +213,17 @@ const OwnerForm1 = (_props) => {
   let financialYearOptions = [];
   FinaceMenu && FinaceMenu["egf-master"] &&
     FinaceMenu["egf-master"].FinancialYear.map(data => { if (data.module == "TL") financialYearOptions.push({ code: data.name, i18nKey: `FY${data.name}`, id: data.name.split('-')[0] }) });
+
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  const currFyStart = month >= 4 ? (year) : year-1 ;
+  
+  financialYearOptions=financialYearOptions.filter(y=>{
+    const fyYearStartStr=y.id;
+    const fyYearStart=parseInt(fyYearStartStr);
+    return fyYearStart<=currFyStart;
+  })
     
   if (financialYearOptions && financialYearOptions.length > 0) { financialYearOptions.sort(function (a, b) { return Number(a.id) - Number(b.id);});}
 
@@ -281,7 +293,19 @@ const OwnerForm1 = (_props) => {
       }));
       trigger();
     }
+
+    console.log("tradedetail", tradedetail);
+    
   }, [formValue]);
+
+
+  useEffect(() => {
+    console.log("licenseTypeValue", licenseTypeValue);
+    
+    if (licenseTypeValue) {
+      setValue("licenseType", licenseTypeValue); // <-- This is the missing part
+    }
+  },[licenseTypeValue])
 
 
 
@@ -296,9 +320,7 @@ const OwnerForm1 = (_props) => {
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
-    <React.Fragment>
       <div style={{ marginBottom: "16px" }}>
-        <div>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("TL_FINANCIAL_YEAR_LABEL")} * `}</CardLabel>
             <Controller
@@ -316,7 +338,7 @@ const OwnerForm1 = (_props) => {
                   select={props.onChange}
                   optionKey="i18nKey"
                   onBlur={props.onBlur}
-                  disable={isRenewal}
+                  // disable={isRenewal}
                   t={t}
                 />
               )}
@@ -327,15 +349,19 @@ const OwnerForm1 = (_props) => {
             <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL")} * `}</CardLabel>
             <Controller
               name="licenseType"
-              defaultValue={tradedetail?.licenseType}
+              // defaultValue={tradedetail?.licenseType}
+              defaultValue={licenseTypeValue}
               control={control}
               render={(props) => (
                 <Dropdown
                   className="form-field"
                   selected={licenseTypeValue} //{licenseTypeList[1]}
+                  // selected={licenseTypeNewValue} 
                   disable={true}
                   option={licenseTypeList}
-                  select={props.onChange}
+                  select={(e)=>{
+                    props.onChange(e)
+                  }}
                   optionKey="i18nKey"
                   onBlur={props.onBlur}
                   t={t}
@@ -560,11 +586,7 @@ const OwnerForm1 = (_props) => {
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.touched.oldReceiptNo ? errors?.oldReceiptNo?.message : ""}</CardLabelError>
-
-
-        </div>
       </div>
-    </React.Fragment>
   );
 };
 

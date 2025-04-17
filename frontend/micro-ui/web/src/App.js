@@ -1,6 +1,9 @@
 import React from "react";
 import { initPGRComponents, PGRReducers } from "@mseva/digit-ui-module-pgr";
-import { initSWACHComponents } from "@mseva/digit-ui-module-swach";
+import {
+  initSWACHComponents,
+  SWACHReducers,
+} from "@mseva/digit-ui-module-swach";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import {
   PTModule,
@@ -26,8 +29,14 @@ import {
   initHRMSComponents,
   HRMSReducers,
 } from "@mseva/digit-ui-module-hrms";
+import {
+  TLModule,
+  TLReducers,
+  TLLinks,
+  initTLComponents,
+} from "@mseva/digit-ui-module-tl";
+
 import { NDCReducers } from "@mseva/digit-ui-module-ndc";
-import { TLModule, TLLinks, initTLComponents } from "@mseva/digit-ui-module-tl";
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
@@ -42,7 +51,10 @@ import {
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
 import { initCustomisationComponents } from "./Customisations";
-import { initCommonPTComponents } from "@mseva/digit-ui-module-commonpt";
+import {
+  initCommonPTComponents,
+  CommonPTModule,
+} from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
@@ -90,6 +102,7 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ReceiptsModule,
   PTRModule,
   PTRLinks,
+  CommonPTModule,
   ...PTRComponents,
 });
 initPGRComponents();
@@ -117,6 +130,8 @@ const moduleReducers = (initData) => ({
   ndc: NDCReducers(initData),
   ws: WSReducers(initData),
   engagement: SurveyReducers(initData),
+  tl: TLReducers(initData),
+  swach: SWACHReducers(initData),
 });
 
 function App() {

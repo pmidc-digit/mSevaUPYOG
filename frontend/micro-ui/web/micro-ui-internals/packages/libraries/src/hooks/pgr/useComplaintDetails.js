@@ -70,6 +70,8 @@ const fetchComplaintDetails = async (tenantId, id) => {
 };
 
 const useComplaintDetails = ({ tenantId, id }) => {
+  console.log("tenantID in Use Complaint Details", tenantId);
+  console.log("ID in Use Complaint Details", id);
   const queryClient = useQueryClient();
   const { isLoading, error, data } = useQuery(["complaintDetails", tenantId, id], () => fetchComplaintDetails(tenantId, id));
   return { isLoading, error, complaintDetails: data, revalidate: () => queryClient.invalidateQueries(["complaintDetails", tenantId, id]) };

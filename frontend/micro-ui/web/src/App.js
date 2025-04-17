@@ -36,7 +36,6 @@ import {
   initTLComponents,
 } from "@mseva/digit-ui-module-tl";
 
-import { NDCReducers } from "@mseva/digit-ui-module-ndc";
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
@@ -49,7 +48,6 @@ import {
   SurveyReducers,
 } from "@mseva/digit-ui-module-engagement";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
-import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
 import { initCustomisationComponents } from "./Customisations";
 import {
   initCommonPTComponents,

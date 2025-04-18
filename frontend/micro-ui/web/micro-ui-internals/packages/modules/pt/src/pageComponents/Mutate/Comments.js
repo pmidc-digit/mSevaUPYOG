@@ -4,7 +4,6 @@ import Timeline from "../../components/TLTimeline";
 
 const Comments = (props) => {
   const { t, config, onSelect, userType, formData } = props;
-  console.log("Comments inremark", formData);
 
   const [remarks, setSelected] = useState(formData?.[config.key]?.remarks);
 

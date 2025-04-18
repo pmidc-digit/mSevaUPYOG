@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_tlNewApplication } from "../../../../redux/action/tlNewApplicationActions";
+import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import { useHistory, useLocation } from "react-router-dom";
-
 
 //   const dispatch = useDispatch();
 //   const currentStepData = useSelector(function (state) {
-//     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
-//         ? state.pt.PTNewApplicationForm.formData[config.key] 
+//     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
+//         ? state.pt.PTNewApplicationForm.formData[config.key]
 //         : {};
 // });
 
@@ -27,7 +26,6 @@ import { useHistory, useLocation } from "react-router-dom";
 //       dispatch(UPDATE_PtNewApplication(config.key, data));
 //     }
 //   };
-
 
 //  // console.log("currentStepData in  Administrative details: ", currentStepData);
 
@@ -50,7 +48,7 @@ import { useHistory, useLocation } from "react-router-dom";
 
 const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
-  
+
   const history = useHistory();
   const dispatch = useDispatch();
 
@@ -58,13 +56,16 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
 
   useEffect(() => {
-    Digit.TLService.fetch_bill({ tenantId: tenantId, filters: { consumerCode: formData?.CreatedResponse?.applicationNumber, businessService: "TL" } })
-  },[])
+    Digit.TLService.fetch_bill({
+      tenantId: tenantId,
+      filters: { consumerCode: formData?.CreatedResponse?.applicationNumber, businessService: "TL" },
+    });
+  }, []);
 
   // Function to handle the "Next" button click
   const goNext = (data) => {
     console.log("Full form data submitted: ", formData);
-    
+
     const res = onSubmit(formData?.CreatedResponse);
     console.log("API response: ", res);
 
@@ -79,17 +80,16 @@ const TLNewSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data) => {
     console.log("formData", data);
-    let formdata = {...data};
+    let formdata = { ...data };
     formdata.tradeLicenseDetail.applicationDocuments = formData?.Documents?.documents?.documents;
     formdata.wfDocuments = formData?.Documents?.documents?.documents;
     formdata.calculation.applicationNumber = formdata.applicationNumber;
     formdata.action = "APPLY";
 
-
     const response = await Digit.TLService.update({ Licenses: [formdata] }, tenantId);
-    return (response?.ResponseInfo?.status === "successful");
+    return response?.ResponseInfo?.status === "successful";
     // console.log("onSubmit data in step 4: ", formdata);
-  }
+  };
 
   // Function to handle the "Back" button click
   const onGoBack = (data) => {

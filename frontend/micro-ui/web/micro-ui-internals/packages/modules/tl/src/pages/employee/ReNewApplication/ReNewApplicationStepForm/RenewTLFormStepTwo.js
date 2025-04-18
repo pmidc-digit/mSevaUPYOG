@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_tlNewApplication } from "../../../../redux/action/tlNewApplicationActions";
+import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import _ from "lodash";
 import { convertDateToEpoch } from "../../../../utils";
 
@@ -14,28 +14,27 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
-    const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.OwnerDetails);
-    const [localStepData, setLocalStepData] = useState(reduxStepData);
-    const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-
+  const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.OwnerDetails);
+  const [localStepData, setLocalStepData] = useState(reduxStepData);
+  const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
 
   const validateOwnerDetails = (data) => {
     const { ownershipCategory, owners } = data || {};
     const missingFields = [];
-  
+
     if (!ownershipCategory?.value) {
       missingFields.push("Ownership Category");
       return missingFields;
     }
-  
+
     if (!owners || owners.length === 0) {
       missingFields.push("At least one Owner");
       return missingFields;
     }
-  
+
     const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
     const isMultipleOwner = ownershipCategory.value === "INDIVIDUAL.MULTIPLEOWNERS";
-  
+
     const validateOwner = (owner, index = 1) => {
       if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
       if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
@@ -43,7 +42,7 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
       if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
     };
-  
+
     if (isSingleOwner) {
       if (owners.length !== 1) {
         missingFields.push("Only one owner allowed for SINGLEOWNER");
@@ -56,17 +55,17 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       // For other ownership types like INSTITUTIONAL, apply same validations for now
       owners.forEach((owner, index) => validateOwner(owner, index + 1));
     }
-  
+
     return missingFields;
   };
 
   const onSubmit = async (data) => {
     let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
-  
+
     const { TraidDetails, OwnerDetails, Documents, applicationData } = data;
     const Traid = TraidDetails || data.TraidDetailsRenew; // fallback in case you use different keys
-    
+
     // Prepare accessories
     let accessories = [];
     if (Traid?.accessories?.length > 0) {
@@ -81,7 +80,7 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         }
       });
     }
-  
+
     // Prepare tradeUnits
     let tradeUnits = [];
     if (Traid?.tradeUnits?.length > 0) {
@@ -95,7 +94,7 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         }
       });
     }
-  
+
     // Prepare address
     let address = {};
     if (Traid?.cpt?.details?.address) {
@@ -112,11 +111,11 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (Traid.address.street) address.street = Traid.address.street;
       if (Traid.address.pincode) address.pincode = Traid.address.pincode;
     }
-    if (TraidDetails.address.geoLocation.latitude ){
+    if (TraidDetails.address.geoLocation.latitude) {
       address.latitude = TraidDetails.address.geoLocation.latitude;
       address.longitude = TraidDetails.address.geoLocation.longitude;
     }
-  
+
     // Prepare owners
     let owners = [];
     if (OwnerDetails?.owners?.length > 0) {
@@ -132,16 +131,16 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
           dob: owner?.dob ? convertDateToEpoch(owner.dob) : null,
           additionalDetails: {
             ownerSequence: index,
-            ownerName: owner?.name || ""
-          }
+            ownerName: owner?.name || "",
+          },
         };
         owners.push(obj);
       });
     }
-  
+
     // Prepare documents
     let applicationDocuments = Documents?.documents?.documents || [];
-  
+
     // Prepare main formData
     let formData = {
       id: applicationData?.id,
@@ -152,7 +151,7 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       action: "INITIATE",
       status: applicationData?.status || "APPROVED",
       applicationType: "RENEWAL",
-      workflowCode: Traid?.tradeUnits?.some(unit => unit?.tradeSubType?.ishazardous) ? "NEWTL.HAZ" : "NEWTL.NHAZ",
+      workflowCode: Traid?.tradeUnits?.some((unit) => unit?.tradeSubType?.ishazardous) ? "NEWTL.HAZ" : "NEWTL.NHAZ",
       commencementDate: convertDateToEpoch(Traid?.tradedetils?.[0]?.commencementDate),
       issuedDate: applicationData?.issuedDate,
       applicationDate: applicationData?.applicationDate,
@@ -181,28 +180,27 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         additionalDetail: {
           validityYears: Traid?.validityYears?.code || 1,
           propertyId: Traid?.cpt?.details?.propertyId || null,
-          isSameAsPropertyOwner: isSameAsPropertyOwner
+          isSameAsPropertyOwner: isSameAsPropertyOwner,
         },
         institution: applicationData?.tradeLicenseDetail?.institution || null,
-        auditDetails: applicationData?.tradeLicenseDetail?.auditDetails || {}
+        auditDetails: applicationData?.tradeLicenseDetail?.auditDetails || {},
       },
       auditDetails: applicationData?.auditDetails || {},
       fileStoreId: applicationData?.fileStoreId || null,
-      isDeclared: "false"
+      isDeclared: "false",
     };
-  
+
     console.log("Final formData before API hit:", formData);
-  
+
     // Call API
     const response = await Digit.TLService.update({ Licenses: [formData] }, tenantId);
     if (response?.ResponseInfo?.status === "successful") {
       dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
       console.log("API Success Response:", response.Licenses[0]);
     }
-    
-    return (response?.ResponseInfo?.status === "successful");
+
+    return response?.ResponseInfo?.status === "successful";
   };
-  
 
   const goNext = async () => {
     // if (!validateOwners(localStepData)) {

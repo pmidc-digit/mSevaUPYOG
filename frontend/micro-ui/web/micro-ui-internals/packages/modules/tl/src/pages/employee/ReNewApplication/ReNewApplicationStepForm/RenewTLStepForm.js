@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 
-import { SET_tlNewApplication, UPDATE_tlNewApplication } from "../../../../redux/action/tlNewApplicationActions";
+import { SET_tlNewApplication, UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 import cloneDeep from "lodash/cloneDeep";

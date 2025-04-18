@@ -23,7 +23,7 @@ RUN yarn add @mseva/digit-ui-module-swach@1.0.3
 ARG WORK_DIR
 WORKDIR /app
 ENV NODE_OPTIONS "--max-old-space-size=8192"
-ENV GENERATE_SOURCEMAP "false"
+ENV GENERATE_SOURCEMAP "true"
 
 COPY ${WORK_DIR} .
 RUN ls -lah

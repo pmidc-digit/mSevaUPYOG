@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(formData?.documents);
+  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   console.log("my documents", documents);
   const [error, setError] = useState(null);
 
@@ -190,7 +190,7 @@ function SelectDocument({
 
   useEffect(() => {
     if (action === "update") {
-      const originalDoc = formData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
+      const originalDoc = formData?.originalData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
       const docType = dropDownData
         .filter((e) => e.code === originalDoc?.documentType)
         .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
@@ -265,7 +265,7 @@ function SelectDocument({
     if (action === "update") {
       const a = fromRawData ? jsonPath : jsonPath?.split("Properties?.[0]?.propertyDetails[0].")[1];
       const keyArr = a?.split(".")?.map((e) => (e.includes("[") ? e.split("[")[1]?.split("]")[0] : e));
-      const value = keyArr.reduce((acc, curr) => acc[curr], formData?.documents);
+      const value = keyArr.reduce((acc, curr) => acc[curr], formData?.originalData);
       const formDataValue = formDataPath?.reduce((acc, key) => {
         if (key.charAt(0).toUpperCase() + key.slice(1) === "PropertyType") return acc["PropertyType"];
         return acc?.[key];
@@ -292,12 +292,12 @@ function SelectDocument({
       if (enabledActions?.[action].disableUpload) {
         if (onArray) {
           const keyForArr = parentArrayJsonPath?.split("Properties[0].propertyDetails[0].")[1].split(".");
-          const arr = keyForArr.reduce((acc, key) => acc[key], formData?.documents);
+          const arr = keyForArr.reduce((acc, key) => acc[key], formData?.originalData);
           const valueMap = arr.map((val) => parentJsonpath.split(".").reduce((acc, key) => acc[key], val));
           dropDownData = dropdownData.filter((e) => e.parentValue.some((val) => valueMap.includes(val)));
         } else {
           const keyForArr = parentJsonpath?.split("Properties[0].propertyDetails[0].")[1].split(".");
-          const value = keyForArr.reduce((acc, key) => acc[key], formData?.documents);
+          const value = keyForArr.reduce((acc, key) => acc[key], formData?.originalData);
           dropDownData = dropdownData.filter((e) => e.parentValue.includes(value));
         }
       } else {

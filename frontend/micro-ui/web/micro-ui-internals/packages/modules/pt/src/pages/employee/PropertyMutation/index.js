@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import MutationForm from "./mutationForm";
-import OwnerTransfershipStepForm from "../PropertyMutation/OwnerTransfership/OwnerTransfershipStepForm";
+import OwnerTransfershipStepForm from "../PropertyMutation/OwnerTransfership/OwnerTransfershipStepForm"
 
 const MutateProperty = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -13,8 +13,6 @@ const MutateProperty = () => {
   const { isLoading, data: applicationDetails } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, applicationNumber);
 
   // return applicationDetails && !isLoading ? <MutationForm applicationData={applicationDetails?.applicationData} tenantId={tenantId} /> : null;
-  return applicationDetails && !isLoading ? (
-    <OwnerTransfershipStepForm applicationData={applicationDetails?.applicationData} tenantId={tenantId} />
-  ) : null;
+  return applicationDetails && !isLoading ? <OwnerTransfershipStepForm applicationData={applicationDetails?.applicationData} tenantId={tenantId} /> : null;
 };
 export default MutateProperty;

@@ -1,4 +1,4 @@
-import { CardLabel, LabelFieldPair, TextInput, CardLabelError } from "@mseva/digit-ui-react-components";
+import { CardLabel,LabelFieldPair, TextInput, CardLabelError } from "@mseva/digit-ui-react-components";
 //import  FormStep  from "@mseva/digit-ui-react-components/src/molecules/FormStep";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -8,54 +8,57 @@ import { Controller, useForm } from "react-hook-form";
 const Remarks = ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
   //let index = window.location.href.charAt(window.location.href.length - 1);
 
-  console.log("formdata testing==", formData);
+console.log("formdata testing==",formData);
+
 
   let index = window.location.href.split("/").pop();
   let validation = {};
   const onSkip = () => onSelect();
-  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
-  let remarks;
-  let setRemarks;
+const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
+   let remarks;
+   let setRemarks;
   const [hidden, setHidden] = useState(true);
   if (!isNaN(index)) {
-    [remarks, setRemarks] = useState(formData?.remarks || "");
+    [remarks, setRemarks] = useState(formData?.remarks || ""); formData.remarks
   } else {
     [remarks, setRemarks] = useState(formData?.remarks || "");
   }
   const [error, setError] = useState(null);
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("modify") || pathname.includes("edit");
+  const presentInModifyApplication = pathname.includes("modify")|| pathname.includes("edit");
   useEffect(() => {
     validateRemarks();
-  }, [remarks]);
+  }, [remarks])
 
-  const handleRemarksChange = (value) => {
-    setRemarks(value); //
-    onSelect(config.key, { ...formData[config.key], remark: value });
+  const handleRemarksChange=(value)=> {
+    setRemarks(value);//
+    onSelect(config.key, {...formData[config.key], remark: value })
     validateRemarks();
-  };
+  }
 
   //}
-  const goNext = () => {
+  const goNext=()=> {
     sessionStorage.setItem("remarks", remarks.i18nKey);
     onSelect("remarks", { remarks });
   };
 
+
   useEffect(() => {
     if (userType === "employee") {
-      if (remarks !== "undefined" && remarks?.length === 0) {
+    if(remarks !== "undefined" && remarks?.length === 0){
         //setFormError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
-      } else clearFormErrors(config.key);
+    }else clearFormErrors(config.key);
 
       onSelect(config.key, remarks);
     }
   }, [remarks]);
 
   useEffect(() => {
-    // setRemarks(formData?.remarks);
 
-    setValue("remark", remarks);
-  }, [formData]);
+      setRemarks(formData?.remarks)
+    
+    setValue("remark",remarks);
+  }, [formData,remarks]);
 
   const inputs = [
     {
@@ -68,14 +71,17 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
       //    minLength: 1,
       //  }
     },
+
+
   ];
-  const validateRemarks = () => {
-    if (remarks === "") {
-      setError("Please Enter Remarks");
+  const validateRemarks=()=>{
+    if (remarks === ""){
+        setError("Please Enter Remarks")
     }
+    
   };
   // const handleRemarksChange=(e)=>{
-
+    
   //   onChange(e);
   // }
 
@@ -86,6 +92,7 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
           <LabelFieldPair key={index}>
             <CardLabel className="card-label-smaller">{t(input.label)}</CardLabel>
             <div className="field">
+
               {/* <TextInput
                 key={input.name}
                 id={input.name}
@@ -101,21 +108,21 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
               // autoFocus={presentInModifyApplication}
               /> */}
               <Controller
-                control={control}
-                defaultValue={remarks}
-                name="remark"
-                render={(_props) => (
-                  <TextInput
-                    id="remark"
-                    value={remarks}
-                    onChange={(e) => {
-                      handleRemarksChange(e.target.value);
-                      _props.onChange(e.target.value);
-                    }}
-                    // onBlur={_props.onBlur}
-                  />
-                )}
-              />
+              control={control}
+              defaultValue={remarks}
+              name="remark"
+              render={(_props) => (
+                <TextInput
+                  id="remark"
+                  value={remarks}
+                  onChange={(e) => {
+                    handleRemarksChange(e.target.value);
+                    _props.onChange(e.target.value);
+                  }}
+                  // onBlur={_props.onBlur}
+                />
+              )}
+            />
             </div>
           </LabelFieldPair>
           {formState.touched[config.key] ? (
@@ -129,8 +136,9 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
   }
   return (
     <React.Fragment>
-      <div>Remarks</div>
+    <div>Remarks</div>
 
+     
       {/* {window.location.href.includes("/citizen") ? <Timeline currentStep={1} /> : null}
       
       <FormStep
@@ -166,6 +174,9 @@ const Remarks = ({ t, config, onSelect, value, userType, formData, setError: set
        */}
     </React.Fragment>
   );
+
+
+
 };
 
 export default Remarks;

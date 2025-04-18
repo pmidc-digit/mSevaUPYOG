@@ -5,78 +5,52 @@ import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { newConfigMutate } from "../../../../config/Mutate/config";
-import { SET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { SET_PtNewApplication, UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
+import { OwnertransferMapData } from "../../../../utils/OwnertransferMapData";
 
 //Config for steps
 const createEmployeeConfig = [
   {
     head: "PT_MUTATION_TRANSFEROR_DETAILS",
-    stepLabel: "Transferor Details",//"HR_EMPLOYEE_DETAILS_STEP_LABEL",
+    stepLabel: "Transferor Details", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
     component: "PTOwnerTransfershipStepOne",
-    key: "PT_MUTATION_TRANSFEROR_DETAILS",
+    key: "TransferorDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Next",
     },
   },
-//   {
-//     head: "ES_NEW_APPLICATION_PROPERTY_ASSESSMENT",
-//     stepLabel: "Property Assesment",
-//     stepNumber: 2,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "PTNewFormStepTwo",
-//     key: "PropertyDetails",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "Next",
-//     },
-//   },
-//   {
-//     head: "ES_NEW_APPLICATION_OWNERSHIP_DETAILS",
-//     stepLabel: "Owner Details",
-//     stepNumber: 3,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "PTNewFormStepThree",
-//     key: "ownerShipDetails",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "Next",
-//     },
-//   },
-//   {
-//     head: "ES_NEW_APPLICATION_DOCUMENTS_REQUIRED",
-//     stepLabel: "Document Info",
-//     stepNumber: 4,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "PTNewFormStepFour",
-//     key: "DocummentDetails",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "Next",
-//     },
-//   },
-//   {
-//     head: "Summary",
-//     stepLabel: "Summary",
-//     stepNumber: 5,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "PTNewFormSummaryStepFive",
-//     key: "PTSummary",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "Submit",
-//     },
-//   },
-  
+  {
+    head: "PT_MUTATION_DOCUMENT_DETAILS",
+    stepLabel: "Docuement Details",
+    stepNumber: 2,
+    isStepEnabled: true,
+    type: "component",
+    component: "PTOwnerTransfershipStepTwo",
+    key: "DocuementDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
+    head: "Summary",
+    stepLabel: "Summary",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "PTOwnerTransfershipSummaryStepThree",
+    key: "PTSummary",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Submit",
+    },
+  },
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
@@ -84,7 +58,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 });
 
 const CreateEmployeeStepForm = ({ applicationData }) => {
-  const history=useHistory();
+  const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
@@ -94,6 +68,15 @@ const CreateEmployeeStepForm = ({ applicationData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // console.log("Form data", formData)
   // console.log("formState: ",formState);
+  console.log("applicationData in ownership transefership", applicationData);
+  const defaultValues = OwnertransferMapData(applicationData);
+  useEffect(() => {
+    console.log("deafult vaules in useEffect ownerTransfer: ", defaultValues);
+
+    Object.entries(defaultValues).forEach(([key, value]) => {
+      dispatch(UPDATE_PtNewApplication(key, value));
+    });
+  }, []);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PtNewApplication(updatedStepNumber));
@@ -112,7 +95,9 @@ const CreateEmployeeStepForm = ({ applicationData }) => {
 
   return (
     <div className="pageCard">
-      <CardHeader styles={{fontSize:"28px" ,fontWeight:"400", color: "#1C1D1F"}} divider={true}>{t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}</CardHeader>
+      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+        {t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}
+      </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast

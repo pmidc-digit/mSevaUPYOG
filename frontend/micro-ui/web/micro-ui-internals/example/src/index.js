@@ -5,7 +5,6 @@ import { initLibraries } from "@mseva/digit-ui-libraries";
 import { PGRReducers } from "@mseva/digit-ui-module-pgr";
 import { SWACHReducers } from "@mseva/digit-ui-module-swach";
 import { HRMSReducers } from "@mseva/digit-ui-module-hrms";
-import { NDCReducers } from "@mseva/digit-ui-module-ndc";
 import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 
 import { PTModule, PTLinks, PTComponents, PTReducers } from "@mseva/digit-ui-module-pt";
@@ -24,7 +23,6 @@ import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
-import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
@@ -68,7 +66,6 @@ const enabledModules = [
   "PTR",
   "ADS",
   "Swach",
-  "NDC",
 ];
 
 const initTokens = (stateCode) => {
@@ -133,7 +130,6 @@ const initDigitUI = () => {
   initEngagementComponents();
   initNOCComponents();
   initWSComponents();
-  initNDCComponents();
   initCommonPTComponents();
   initBillsComponents();
   // initCustomisationComponents();
@@ -143,7 +139,6 @@ const initDigitUI = () => {
     swach: SWACHReducers(initData),
     hrms: HRMSReducers(initData),
     pt: PTReducers(initData),
-    ndc: NDCReducers(initData),
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData),
     tl: TLReducers(initData),

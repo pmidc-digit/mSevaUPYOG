@@ -36,7 +36,6 @@ import {
   initTLComponents,
 } from "@mseva/digit-ui-module-tl";
 
-import { NDCReducers } from "@mseva/digit-ui-module-ndc";
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
@@ -49,7 +48,6 @@ import {
   SurveyReducers,
 } from "@mseva/digit-ui-module-engagement";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
-import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
 import { initCustomisationComponents } from "./Customisations";
 import {
   initCommonPTComponents,
@@ -85,7 +83,6 @@ const enabledModules = [
   "Birth",
   "Death",
   "Swach",
-  "NDC",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -117,7 +114,6 @@ initOBPSComponents();
 initNOCComponents();
 initEngagementComponents();
 initWSComponents();
-initNDCComponents();
 initCommonPTComponents();
 initBillsComponents();
 // initReportsComponents();
@@ -127,7 +123,6 @@ const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
   pt: PTReducers(initData),
   hrms: HRMSReducers(initData),
-  ndc: NDCReducers(initData),
   ws: WSReducers(initData),
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),

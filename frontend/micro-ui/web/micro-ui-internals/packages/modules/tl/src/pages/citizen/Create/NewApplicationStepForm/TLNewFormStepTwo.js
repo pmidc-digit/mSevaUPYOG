@@ -2,11 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_tlNewApplication } from "../../../../redux/action/tlNewApplicationActions";
+import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import { convertDateToEpoch } from "../../../../utils";
 
 const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
-  const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
+  const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
   const tenants = Digit.Hooks.tl.useTenants();
   const [canSubmit, setSubmitValve] = useState(false);
   const history = useHistory();
@@ -15,7 +15,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
   const currentStepData = formData && formData[config.key] ? formData[config.key] : {};
   // const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application");
-  // const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details"); 
+  // const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
 
   // const [sessionFormData, setSessionFormData, clearSessionFormData] = Digit.Hooks.useSessionStorage("PT_CREATE_EMP_TRADE_NEW_FORM", {});
   // const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
@@ -30,10 +30,9 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     { filters: { propertyIds: propertyId }, tenantId: tenantId, enabled: propertyId ? true : false }
   );
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log("formData in step 2: ", formData);
-  },[])
-
+  }, []);
 
   const closeToast = () => {
     setShowToast(false);
@@ -90,15 +89,14 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     const { ownershipCategory, owners } = data;
     if (!ownershipCategory?.value || !owners?.length) return false;
     return owners.every(
-      (owner) =>
-        owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
+      (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
     );
   };
 
   const goNext = async (data) => {
     console.log("Submitting full form data: ", formData);
 
-    const { OwnerDetails } = formData || {}; 
+    const { OwnerDetails } = formData || {};
 
     if (!validateOwnerDetails(OwnerDetails)) {
       setError(t("Please fill all owner mandatory details correctly."));
@@ -117,14 +115,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     }
   };
 
-  
-
   const onSubmit = async (data) => {
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
     console.log("sample_formData: ", data);
-    
+
     const { TraidDetails, OwnerDetails } = data;
-  
+
     if (TraidDetails?.cpt?.id) {
       if (!TraidDetails?.cpt?.details || !propertyDetails) {
         console.log("Trade Details: ", TraidDetails);
@@ -134,16 +130,14 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         return;
       }
     }
-  
-    const foundValue = tenants?.find((obj) =>
-      obj.pincode?.find((item) => item.toString() === TraidDetails?.address?.pincode)
-    );
+
+    const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails?.address?.pincode));
     if (!foundValue && TraidDetails?.address?.pincode) {
       setShowToast({ key: "error" });
       setError(t("TL_COMMON_PINCODE_NOT_SERVICABLE"));
       return;
     }
-  
+
     let accessories = [];
     if (TraidDetails?.accessories?.length > 0) {
       TraidDetails.accessories.map((item) => {
@@ -157,7 +151,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         }
       });
     }
-  
+
     let tradeUnits = [];
     if (TraidDetails?.tradeUnits?.length > 0) {
       TraidDetails.tradeUnits.map((item) => {
@@ -168,7 +162,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         });
       });
     }
-  
+
     let address = {};
     if (TraidDetails?.cpt?.details?.address) {
       address.city = TraidDetails.cpt.details.address.city || null;
@@ -177,19 +171,21 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         address.doorNo = TraidDetails.cpt.details.address.doorNo || TraidDetails.address.doorNo || null;
       if (TraidDetails.cpt.details.address.street || TraidDetails.address?.street)
         address.street = TraidDetails.cpt.details.address.street || TraidDetails.address.street || null;
-      if (TraidDetails.cpt.details.address.pincode)
-        address.pincode = TraidDetails.cpt.details.address.pincode;
+      if (TraidDetails.cpt.details.address.pincode) address.pincode = TraidDetails.cpt.details.address.pincode;
     } else if (TraidDetails?.address) {
       address.city = TraidDetails.address.city?.code || null;
-      if(TraidDetails?.address?.locality?.code){
-
+      if (TraidDetails?.address?.locality?.code) {
       }
       address.locality = { code: TraidDetails.address.locality?.code || null };
       if (TraidDetails.address.doorNo) address.doorNo = TraidDetails.address.doorNo;
       if (TraidDetails.address.street) address.street = TraidDetails.address.street;
       if (TraidDetails.address.pincode) address.pincode = TraidDetails.address.pincode;
     }
-  
+    if (TraidDetails.address.geoLocation.latitude) {
+      address.latitude = TraidDetails.address.geoLocation.latitude;
+      address.longitude = TraidDetails.address.geoLocation.longitude;
+    }
+
     let owners = [];
     if (OwnerDetails?.owners?.length > 0) {
       OwnerDetails.owners.map((owner, index) => {
@@ -208,7 +204,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         owners.push(obj);
       });
     }
-  
+
     let applicationDocuments = TraidDetails?.documents?.documents || [];
     let commencementDate = convertDateToEpoch(TraidDetails?.tradedetils?.[0]?.commencementDate);
     let financialYear = TraidDetails?.tradedetils?.[0]?.financialYear?.code;
@@ -221,12 +217,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let licenseType = TraidDetails?.tradedetils?.[0]?.licenseType?.code || "PERMANENT";
     let validityYears = TraidDetails?.validityYears?.code || 1;
 
-    console.log("trade type", );
-  
+    console.log("trade type");
+
     let formData = {
       action: "INITIATE",
       applicationType: "NEW",
-      workflowCode: TraidDetails?.tradeUnits.some(unit => unit?.tradeSubType?.ishazardous) ? "NEWTL.HAZ" : "NEWTL.NHAZ",
+      workflowCode: TraidDetails?.tradeUnits.some((unit) => unit?.tradeSubType?.ishazardous) ? "NEWTL.HAZ" : "NEWTL.NHAZ",
       commencementDate,
       financialYear,
       licenseType,
@@ -236,11 +232,11 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       tradeLicenseDetail: {
         channel: "COUNTER",
         additionalDetail: {
-          validityYears
+          validityYears,
         },
       },
     };
-  
+
     if (gstNo) formData.tradeLicenseDetail.additionalDetail.gstNo = gstNo;
     if (noOfEmployees) formData.tradeLicenseDetail.noOfEmployees = noOfEmployees;
     if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
@@ -252,7 +248,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (OwnerDetails?.ownershipCategory?.code.includes("INDIVIDUAL"))
       formData.tradeLicenseDetail.subOwnerShipCategory = OwnerDetails?.ownershipCategory?.code;
     if (subOwnerShipCategory) formData.tradeLicenseDetail.subOwnerShipCategory = subOwnerShipCategory;
-  
+
     if (OwnerDetails?.owners?.length && subOwnerShipCategory.includes("INSTITUTIONAL")) {
       formData.tradeLicenseDetail.institution = {
         designation: OwnerDetails.owners[0]?.designation,
@@ -261,42 +257,37 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         contactNo: OwnerDetails.owners[0]?.altContactNumber,
       };
     }
-  
+
     if (TraidDetails?.cpt) {
       formData.tradeLicenseDetail.additionalDetail.propertyId = TraidDetails.cpt.details?.propertyId;
       formData.tradeLicenseDetail.additionalDetail.isSameAsPropertyOwner = isSameAsPropertyOwner;
     }
-  
-    formData = Digit?.Customizations?.TL?.customiseCreateFormData
-      ? Digit.Customizations.TL.customiseCreateFormData(data, formData)
-      : formData;
 
-      console.log("formData in step 2: ", formData);
-      const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
-      if(response?.ResponseInfo?.status === "successful"){
-        dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-        console.log("response in step 2: ", response.Licenses[0]);
-      }
-      return (response?.ResponseInfo?.status === "successful");
-    
+    formData = Digit?.Customizations?.TL?.customiseCreateFormData ? Digit.Customizations.TL.customiseCreateFormData(data, formData) : formData;
+
+    console.log("formData in step 2: ", formData);
+    const response = await Digit.TLService.create({ Licenses: [formData] }, tenantId);
+    if (response?.ResponseInfo?.status === "successful") {
+      dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
+      console.log("response in step 2: ", response.Licenses[0]);
+    }
+    return response?.ResponseInfo?.status === "successful";
   };
-  
 
   function onGoBack(data) {
     onBackClick(config.key, data);
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data,"\n Bool: ",!_.isEqual(data, currentStepData));
+    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_tlNewApplication(config.key, data));
     }
   };
 
-
   const dispatch = useDispatch();
 
- console.log("currentStepData in  Administrative details: ", currentStepData);
+  console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>
@@ -311,14 +302,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
-      {showToast && (
-        <Toast
-          isDleteBtn={true}
-          error={true}
-          label={error}
-          onClose={closeToast}
-        />
-      )}
+      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

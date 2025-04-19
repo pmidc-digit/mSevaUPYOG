@@ -19,8 +19,7 @@
     "packages/modules/engagement",
     "packages/modules/swach",
     "packages/modules/pgr",
-    "packages/modules/mCollect",
-    "packages/modules/ndc"
+    "packages/modules/mCollect"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",
@@ -53,7 +52,6 @@
     "dev:obps": "cd packages/modules/obps && yarn start",
     "dev:engagement": "cd packages/modules/engagement && yarn start",
     "dev:noc": "cd packages/modules/noc && yarn start",
-    "dev:ndc": "cd packages/modules/ndc && yarn start",
     "dev:ws": "cd packages/modules/ws && yarn start",
     "dev:example": "cd example && yarn start",
     "dev:ptr": "cd packages/modules/ptr && yarn start",
@@ -76,7 +74,6 @@
     "build:obps": "cd packages/modules/obps && yarn build",
     "build:engagement": "cd packages/modules/engagement && yarn build",
     "build:noc": "cd packages/modules/noc && yarn build",
-    "build:ndc": "cd packages/modules/ndc && yarn build",
     "build:ws": "cd packages/modules/ws && yarn build",
     "buildd:bills": "cd packages/modules/bills && yarn build",
     "buildR:reports": "cd packages/modules/reports && yarn build",

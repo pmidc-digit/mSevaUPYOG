@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { config } from "../../../../config/citizen/NewApplicationStepFormConfig";
-import { SET_tlNewApplication, RESET_tlNewApplicationForm } from "../../../../redux/action/tlNewApplicationActions";
+import { SET_tlNewApplication, RESET_tlNewApplicationForm } from "../../../../redux/action/TLNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
@@ -48,7 +48,7 @@ const createEmployeeConfig = [
     withoutLabel: true,
     texts: {
       submitBarLabel: "HR_COMMON_BUTTON_SUBMIT",
-    }, 
+    },
   },
   {
     head: "Summary",
@@ -70,7 +70,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 });
 
 const NewTLStepForm = () => {
-  const history=useHistory();
+  const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
@@ -83,9 +83,9 @@ const NewTLStepForm = () => {
     dispatch(SET_tlNewApplication(updatedStepNumber));
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     dispatch(RESET_tlNewApplicationForm());
-  },[])
+  }, []);
 
   // console.log("formData",formData);
 
@@ -103,7 +103,9 @@ const NewTLStepForm = () => {
   // console.log("formState: ",formState);
   return (
     <div className="pageCard">
-      <CardHeader styles={{fontSize:"28px" ,fontWeight:"400", color: "#1C1D1F"}} divider={true}>{t("New Trade License Application")}</CardHeader>
+      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+        {t("New Trade License Application")}
+      </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
         <Toast

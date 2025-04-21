@@ -8,8 +8,7 @@ remindersService = require("../../machine/service/reminders-service");
 router.post("/message", async (req, res) => {
   try {
     console.log("Request URL: " + req.originalUrl);
-    // console.log('Request Body Object: ' + JSON.stringify(req.body));
-    console.log("Request Body Object: " + req.body);
+    console.log('Request Body Object: ' + JSON.stringify(req.body));
     let reformattedMessage = await channelProvider.processMessageFromUser(req);
     if (reformattedMessage != null) sessionManager.fromUser(reformattedMessage);
   } catch (e) {

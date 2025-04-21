@@ -20,18 +20,18 @@ public class NDCConsumer {
 	@Autowired
 	private NDCNotificationService notificationService;
 	
-	@KafkaListener(topics = { "${persister.save.ndc.topic}", "${persister.update.ndc.topic}",
-			"${persister.update.ndc.workflow.topic}" })
-	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
-		ObjectMapper mapper = new ObjectMapper();
-		NdcRequest ndcRequest = new NdcRequest();
-		try {
-			log.debug("Consuming record: " + record);
-			ndcRequest = mapper.convertValue(record, NdcRequest.class);
-		} catch (final Exception e) {
-			log.error("Error while listening to value: " + record + " on topic: " + topic + ": " + e);
-		}
-		log.debug("BPA Received: " + ndcRequest.getNdc().getApplicationNo());
-		notificationService.process(ndcRequest);
-	}
+//	@KafkaListener(topics = { "${persister.save.ndc.topic}", "${persister.update.ndc.topic}",
+//			"${persister.update.ndc.workflow.topic}" })
+//	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+//		ObjectMapper mapper = new ObjectMapper();
+//		NdcRequest ndcRequest = new NdcRequest();
+//		try {
+//			log.debug("Consuming record: " + record);
+//			ndcRequest = mapper.convertValue(record, NdcRequest.class);
+//		} catch (final Exception e) {
+//			log.error("Error while listening to value: " + record + " on topic: " + topic + ": " + e);
+//		}
+//		log.debug("BPA Received: " + ndcRequest.getNdc().getApplicationNo());
+//		notificationService.process(ndcRequest);
+//	}
 }

@@ -38,23 +38,23 @@ public class NDCRepository {
 	 * push the ndcRequest object to the producer on the save topic
 	 * @param ndcRequest
 	 */
-	public void save(NdcRequest ndcRequest) {
-		producer.push(config.getSaveTopic(), ndcRequest);
-	}
+//	public void save(NdcRequest ndcRequest) {
+//		producer.push(config.getSaveTopic(), ndcRequest);
+//	}
 	
 	/**
 	 * pushes the ndcRequest object to updateTopic if stateupdatable else to update workflow topic
 	 * @param ndcRequest
 	 * @param isStateUpdatable
 	 */
-	public void update(NdcRequest ndcRequest, boolean isStateUpdatable) {
-		log.info("Pushing NDC record with application status - "+ndcRequest.getNdc().getApplicationStatus());
-		if (isStateUpdatable) {
-			producer.push(config.getUpdateTopic(), ndcRequest);
-		} else {
-		    producer.push(config.getUpdateWorkflowTopic(), ndcRequest);
-		}
-	}
+//	public void update(NdcRequest ndcRequest, boolean isStateUpdatable) {
+//		log.info("Pushing NDC record with application status - "+ndcRequest.getNdc().getApplicationStatus());
+//		if (isStateUpdatable) {
+//			producer.push(config.getUpdateTopic(), ndcRequest);
+//		} else {
+//		    producer.push(config.getUpdateWorkflowTopic(), ndcRequest);
+//		}
+//	}
 	/**
 	 * using the queryBulider query the data on applying the search criteria and return the data 
 	 * parsing throw row mapper

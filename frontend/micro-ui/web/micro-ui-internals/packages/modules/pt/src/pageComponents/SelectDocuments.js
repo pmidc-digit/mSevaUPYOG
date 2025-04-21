@@ -83,7 +83,7 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
           />
         );
       })}
-      {/* {console.log("documents in select document component", propertyTaxDocuments)} */}
+      {console.log("propertyTaxDocuments", propertyTaxDocuments)}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
     </div>
   );
@@ -106,10 +106,15 @@ function SelectDocument({
   id,
   propertyInitialValues,
 }) {
-  const filteredDocument = documents?.find((item) => item?.documentType == doc?.code);
-
+  // const filteredDocument = documents?.find((item) => item?.documentType == doc?.code);
+  const filteredDocument = documents?.find((item) => {
+    const documentTypeParts = item?.documentType.split(".");
+    const truncatedDocumentType = documentTypeParts.slice(0, 2).join(".");
+    console.log("In find:", "type:", truncatedDocumentType, "\n doc:", doc, "\n bool: ", truncatedDocumentType === doc?.code);
+    return truncatedDocumentType === doc?.code;
+  });
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  console.log("dropdowndata1", doc?.dropDownData);
+  console.log("dropdowndata1", doc?.dropdownData);
   console.log("filteredDocument", filteredDocument);
   console.log("documents", documents);
   console.log("doc", doc);
@@ -119,7 +124,7 @@ function SelectDocument({
           ...filteredDocument,
           active: filteredDocument?.status === "ACTIVE",
           code: filteredDocument?.documentType,
-          i18nKey: (filteredDocument?.documentTyp).replaceAll(".", "_"),
+          i18nKey: (filteredDocument?.documentType).replaceAll(".", "_"),
         }
       : doc?.dropdownData?.length === 1
       ? doc?.dropdownData[0]

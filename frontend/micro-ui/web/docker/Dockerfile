@@ -22,7 +22,7 @@ RUN yarn add @mseva/digit-ui-module-obps@1.0.4
 ARG WORK_DIR
 WORKDIR /app
 ENV NODE_OPTIONS "--max-old-space-size=8192"
-ENV GENERATE_SOURCEMAP "FALSE"
+ENV GENERATE_SOURCEMAP "false"
 
 COPY ${WORK_DIR} .
 RUN ls -lah

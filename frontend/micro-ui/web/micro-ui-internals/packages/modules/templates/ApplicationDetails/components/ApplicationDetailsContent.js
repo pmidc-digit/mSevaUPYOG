@@ -7,19 +7,13 @@ import {
   ConnectingCheckPoints,
   Loader,
   Row,
-  Toast,
   StatusTable,
   LinkButton,
-  ActionBar,
-  SubmitBar,
 } from "@mseva/digit-ui-react-components";
-// import { PTService } from "../../services/elements/PT";
-import { PTService } from "../../../../libraries/src/services/elements/PT";
-
 import { values } from "lodash";
 import React, { Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
 import BPADocuments from "./BPADocuments";
 import InspectionReport from "./InspectionReport";
 import NOCDocuments from "./NOCDocuments";
@@ -48,7 +42,7 @@ function ApplicationDetailsContent({
   isDataLoading,
   applicationData,
   totalDemandTax,
-  // auditDataLoading,
+
   businessService,
   timelineStatusPrefix,
   id,
@@ -59,24 +53,9 @@ function ApplicationDetailsContent({
   isInfoLabel = false,
 }) {
   const { t } = useTranslation();
-  const history = useHistory();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [showToast, setShowToast] = useState(null);
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
   console.log("appl", applicationDetails);
-
-  console.log("applicationData", applicationData);
-
-  const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.pt.usePropertySearch(
-    {
-      tenantId,
-      filters: { propertyIds: applicationDetails?.applicationData?.propertyId, audit: true },
-    }
-    // { enabled: enableAudit, select: (data) => data.Properties?.filter((e) => e.status === "ACTIVE") }
-  );
-
-  console.log("auditData", auditData);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -705,14 +684,6 @@ function ApplicationDetailsContent({
           </tr>
         </tbody>
       </table>
-
-      <ActionBar className="clear-search-container" style={{ display: "block" }}>
-        <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />
-        <SubmitBar label={"Make Property Inactive"} style={{ marginLeft: "20px" }} onSubmit={PropertyInActive} />
-        <SubmitBar label={"Edit Property"} style={{ marginLeft: "20px" }} onSubmit={EditProperty} />
-        <SubmitBar label={"Access Property"} style={{ marginLeft: "20px" }} onSubmit={AccessProperty} />
-      </ActionBar>
-      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </Card>
   );
 }

@@ -59,7 +59,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "PTEditFormStepFour",
-    key: "docummentDetails",
+    key: "DocummentDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Next",

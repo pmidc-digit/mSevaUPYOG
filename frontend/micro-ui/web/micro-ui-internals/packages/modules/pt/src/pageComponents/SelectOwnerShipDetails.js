@@ -20,6 +20,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   let SubOwnerShipCategory = {};
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
+  const mutateScreen = url.includes("/property-mutate/");
 
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
 
@@ -35,7 +36,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   }, [formData?.ownershipCategory, SubOwnerShipCategoryOb]);
 
   useEffect(() => {
-    if (userType === "employee" && editScreen && !isLoading && !ownerShipCatLoading && OwnerShipCategoryOb) {
+    if (userType === "employee" && editScreen && mutateScreen && !isLoading && !ownerShipCatLoading && OwnerShipCategoryOb) {
       const arr = getDropdwonForProperty(ownerShipdropDown);
       const defaultValue = arr.filter((e) => e.code === formData?.originalData?.ownershipCategory)[0];
       selectedValue(defaultValue);
@@ -118,18 +119,14 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   }
 
   useEffect(() => {
-    console.log("code is coming innn ", formData);
-    console.log("getDropdwonForProperty(ownerShipdropDown)", getDropdwonForProperty(ownerShipdropDown));
-    console.log("ownerShipdropDown=====", ownerShipdropDown);
     if (formData?.ownershipCategory?.code && getDropdwonForProperty(ownerShipdropDown)?.length) {
       const code = formData?.ownershipCategory?.code;
-      console.log("here is code -in if's", code);
+
       const Ownertype = getDropdwonForProperty(ownerShipdropDown)?.find((e) => e.code === code);
-      console.log("code in Ownertype", Ownertype);
+      console.log("SetValues Ownertype", Ownertype);
       setValue("SelectOwnerShipDetails", Ownertype);
       // setPropertyPurpose(Majorbuiltdingtype)
     }
-    console.log("code is out ");
   }, [formData, ownerShipdropDown]);
 
   useEffect(() => {
@@ -142,13 +139,104 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   console.log("formData in SelectOwnerShipDetails 2", formData);
 
-  if (userType === "employee" && editScreen && loader) {
+  if (userType === "employee" && editScreen && mutateScreen && loader) {
     return <Loader />;
   }
 
   if (userType === "employee") {
     return (
       <React.Fragment>
+        {/* {mutateScreen && (
+          <div className="employee-data-table">
+            <div className="row">
+              <h2>NAME</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>Guardian Name</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>MOBILE NO</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>EMAIL ID</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>CATEGORY</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>Correspondence Address</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+          </div>
+        )} */}
+        {mutateScreen && (
+          <div className="employee-data-table">
+            {(() => {
+              // Retrieve data from sessionStorage
+              const ownerTransferData = JSON.parse(sessionStorage.getItem("ownerTransferData")) || {};
+              const owners = ownerTransferData?.ownershipCategory?.owners || [];
+
+              // Dynamically render rows for each owner
+              return owners.map((owner, index) => (
+                <React.Fragment key={index}>
+                  <div className="row">
+                    <h2>NAME</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.name || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>Guardian Name</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.fatherOrHusbandName || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>MOBILE NO</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.mobileNumber || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>EMAIL ID</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.emailId || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>CATEGORY</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.category || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>Correspondence Address</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.correspondenceAddress || "N/A"}</span>
+                    </div>
+                  </div>
+                </React.Fragment>
+              ));
+            })()}
+          </div>
+        )}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
             {t("PT_PROVIDE_OWNERSHIP_DETAILS") + " *"}

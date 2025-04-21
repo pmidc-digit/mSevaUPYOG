@@ -16,7 +16,7 @@ const PTEditFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
 
   const onFormValueChange = (setValue = true, data) => {
     console.log("onFormValueChange data in document detilas in step 4  ", data);
-   if (!_.isEqual(data, localStepData)) {
+    if (!_.isEqual(data, localStepData)) {
       dispatch(UPDATE_PtNewApplication(config.key, data));
       setLocalStepData(data);
     }
@@ -29,7 +29,7 @@ const PTEditFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
-  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.docummentDetails);
+  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.DocummentDetails);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   console.log("reduxStepData in step four: ", localStepData);
   const dispatch = useDispatch();

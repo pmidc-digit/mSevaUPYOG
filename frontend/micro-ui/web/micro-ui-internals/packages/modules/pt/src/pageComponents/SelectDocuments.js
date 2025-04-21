@@ -1,24 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, CardHeader, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
-
+import { Controller, useFormContext } from "react-hook-form";
 const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(formData?.documents);
-  console.log("my documents", documents);
+  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
+
   const [error, setError] = useState(null);
 
   let action = "create";
 
-  console.log("formData==??", formData);
+  console.log("formData in selecet document component", formData);
+  // console.log("formData.documents?.documents", formData.documents.documents);
 
   const { pathname } = useLocation();
   // const isEditScreen = pathname.includes("/edit-application/");
   const isEditScreen = pathname.includes("/modify-application/");
   const isMutation = pathname.includes("/property-mutate/");
-
-  console.log("isEditScreen", isEditScreen);
 
   // if (isEditScreen) action = "update";
 
@@ -84,6 +83,7 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
           />
         );
       })}
+      {/* {console.log("documents in select document component", propertyTaxDocuments)} */}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
     </div>
   );
@@ -106,25 +106,34 @@ function SelectDocument({
   id,
   propertyInitialValues,
 }) {
-  console.log("documents", documents);
-
   const filteredDocument = documents?.find((item) => item?.documentType == doc?.code);
 
-  console.log("filteredDocument", filteredDocument);
-
   const tenantId = Digit.ULBService.getCurrentTenantId();
-
+  console.log("dropdowndata1", doc?.dropDownData);
+  console.log("filteredDocument", filteredDocument);
+  console.log("documents", documents);
+  console.log("doc", doc);
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
-      ? { ...filteredDocument, active: filteredDocument?.status === "ACTIVE", code: filteredDocument?.documentType }
+      ? {
+          ...filteredDocument,
+          active: filteredDocument?.status === "ACTIVE",
+          code: filteredDocument?.documentType,
+          i18nKey: (filteredDocument?.documentTyp).replaceAll(".", "_"),
+        }
       : doc?.dropdownData?.length === 1
       ? doc?.dropdownData[0]
       : {}
   );
+
+  console.log("selectedDocument in componene6", selectedDocument);
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
 
-  const handleSelectDocument = (value) => setSelectedDocument(value);
+  const handleSelectDocument = (value) => {
+    setSelectedDocument(value);
+    console.log("selecr doc value", value);
+  };
 
   function selectfile(e) {
     setFile(e.target.files[0]);
@@ -190,7 +199,7 @@ function SelectDocument({
 
   useEffect(() => {
     if (action === "update") {
-      const originalDoc = formData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
+      const originalDoc = formData?.documents?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
       const docType = dropDownData
         .filter((e) => e.code === originalDoc?.documentType)
         .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
@@ -265,7 +274,7 @@ function SelectDocument({
     if (action === "update") {
       const a = fromRawData ? jsonPath : jsonPath?.split("Properties?.[0]?.propertyDetails[0].")[1];
       const keyArr = a?.split(".")?.map((e) => (e.includes("[") ? e.split("[")[1]?.split("]")[0] : e));
-      const value = keyArr.reduce((acc, curr) => acc[curr], formData?.documents);
+      const value = keyArr.reduce((acc, curr) => acc[curr], formData?.documents.documents);
       const formDataValue = formDataPath?.reduce((acc, key) => {
         if (key.charAt(0).toUpperCase() + key.slice(1) === "PropertyType") return acc["PropertyType"];
         return acc?.[key];
@@ -292,12 +301,12 @@ function SelectDocument({
       if (enabledActions?.[action].disableUpload) {
         if (onArray) {
           const keyForArr = parentArrayJsonPath?.split("Properties[0].propertyDetails[0].")[1].split(".");
-          const arr = keyForArr.reduce((acc, key) => acc[key], formData?.documents);
+          const arr = keyForArr.reduce((acc, key) => acc[key], formData?.documents?.documents);
           const valueMap = arr.map((val) => parentJsonpath.split(".").reduce((acc, key) => acc[key], val));
           dropDownData = dropdownData.filter((e) => e.parentValue.some((val) => valueMap.includes(val)));
         } else {
           const keyForArr = parentJsonpath?.split("Properties[0].propertyDetails[0].")[1].split(".");
-          const value = keyForArr.reduce((acc, key) => acc[key], formData?.documents);
+          const value = keyForArr.reduce((acc, key) => acc[key], formData?.documents?.documents);
           dropDownData = dropdownData.filter((e) => e.parentValue.includes(value));
         }
       } else {
@@ -336,7 +345,7 @@ function SelectDocument({
       }
     }
   }, [documents]);
-
+  console.log("Dropdown data", dropDownData);
   return (
     <div style={{ marginBottom: "24px" }}>
       {doc?.hasDropdown ? (

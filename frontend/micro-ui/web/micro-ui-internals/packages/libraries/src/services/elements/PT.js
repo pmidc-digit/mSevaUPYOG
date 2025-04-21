@@ -11,7 +11,7 @@ export const PTService = {
       userService: auth === false ? auth : true,
       params: { tenantId, ...filters },
     }),
-  fetchPaymentDetails: ({ tenantId, consumerCodes, auth = true }) =>
+  fetchPaymentDetails: ({ tenantId, consumerCodes ,auth=true}) =>
     Request({
       url: Urls.pt.fetch_payment_details,
       useCache: false,
@@ -31,7 +31,7 @@ export const PTService = {
       params: {},
       auth: true,
     }),
-  update: (details, tenantId, propertyIds) =>
+  update: (details, tenantId) =>
     Request({
       url: Urls.pt.update,
       data: details,
@@ -39,7 +39,7 @@ export const PTService = {
       setTimeParam: false,
       userService: true,
       method: "POST",
-      params: { tenantId, propertyIds },
+      params: {},
       auth: true,
     }),
   ptCalculationEstimate: (details, tenantId) =>
@@ -55,14 +55,14 @@ export const PTService = {
   assessmentCreate: (details, tenantId) =>
     Request({
       url: Urls.pt.assessment_create,
-      data: details,
+      data:details ,
       useCache: false,
       userService: true,
       method: "POST",
       params: { tenantId },
       auth: true,
     }),
-  assessmentCreateUlb: (details, tenantId) =>
+    assessmentCreateUlb: (details, tenantId) =>
     Request({
       url: Urls.pt.assessment_createUlb,
       data: details,
@@ -100,68 +100,71 @@ export const PTService = {
       params: { tenantId },
       auth: true,
     }),
-  PTOpenSearch: ({ tenantId, filters }) =>
-    Request({
-      url: Urls.pt.search,
-      useCache: false,
-      method: "POST",
-      auth: false,
-      userService: false,
-      params: { tenantId, ...filters },
-    }),
-  cfcreate: (details, tenantId) =>
-    Request({
-      url: Urls.pt.cfcreate,
-      data: details,
-      useCache: false,
-      setTimeParam: false,
-      userService: true,
-      method: "POST",
-      params: {},
-      auth: true,
-    }),
-  cfdefinitionsearch: ({ filters, auth }) =>
+  PTOpenSearch : ({ tenantId, filters }) =>
+  Request({
+   url: Urls.pt.search,
+   useCache: false,
+   method: "POST",
+   auth: false ,
+   userService: false,
+   params: { tenantId, ...filters },
+ }),
+    cfcreate: (details, tenantId) =>
+        Request({
+          url: Urls.pt.cfcreate,
+          data: details,
+          useCache: false,
+          setTimeParam: false,
+          userService: true,
+          method: "POST",
+          params: {},
+          auth: true,
+        }),
+    cfdefinitionsearch: ({ filters, auth }) =>
     Request({
       url: Urls.pt.cfdefinitionsearch,
       useCache: false,
       method: "POST",
       auth: auth === false ? auth : true,
       userService: auth === false ? auth : true,
-      data: { ...filters },
+      data: {...filters},
       //params: { tenantId, ...filters },
     }),
-  cfsearch: ({ filters, auth }) =>
+    cfsearch: ({ filters, auth }) =>
     Request({
       url: Urls.pt.cfsearch,
       useCache: false,
       method: "POST",
       auth: auth === false ? auth : true,
       userService: auth === false ? auth : true,
-      data: { ...filters },
+      data: {...filters},
       //params: { tenantId, ...filters },
     }),
-  generateDefaulterNotice: (tenantId, details) =>
+    generateDefaulterNotice: (tenantId,details) =>
     Request({
       url: Urls.pt.defaulterNotice,
-      data: { properties: details },
+      data: {properties:details},
       useCache: false,
-      auth: true,
+      auth:true,
       userService: true,
       method: "POST",
-      params: { tenantId, key: "pt-defaulternotice" },
+      params: { tenantId, key :"pt-defaulternotice" },
       auth: true,
     }),
-  getDefaulterNoticeStatus: (filters) =>
+    getDefaulterNoticeStatus: (filters) =>
     Request({
       url: Urls.pt.getDefaulterNoticeStatus,
       useCache: false,
-      auth: true,
+      auth:true,
       userService: true,
       method: "POST",
-      params: { ...filters },
+      params: {...filters },
       auth: true,
     }),
 };
+
+
+
 
 // export const PTService = {
 //   fetchProperties: ({ tenantId, filters }) =>

@@ -11,7 +11,7 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       text: "ES_TITLE_NEW_REGISTRATION",
       link: "/digit-ui/employee/pt/new-application",
       businessService: "PT",
-      roles: [],
+      roles: ["PT_CEMP"],
     },
     {
       text: "PT_SEARCH_PROPERTY",

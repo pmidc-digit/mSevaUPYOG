@@ -12,13 +12,22 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   const [isDisableForNext, setIsDisableForNext] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  let isopenlink = window.location.href.includes("/openlink/");
-  const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
+  const isopenlink = window.location.href.includes("/openlink/");
 
-  if(isopenlink)  
-  window.onunload = function () {
-    sessionStorage.removeItem("Digit.BUILDING_PERMIT");
-  }
+  const isMobileView = Digit.Utils.browser.isMobile() ? true : false;
+
+  // if(isopenlink)  
+  // window.onunload = function () {
+  //   sessionStorage.removeItem("Digit.BUILDING_PERMIT");
+  // }
+
+  useEffect(() => {
+    if (isOpenLink) {
+      window.onunload = () => {
+        sessionStorage.removeItem("Digit.BUILDING_PERMIT");
+      };
+    }
+  }, [isOpenLink]);
 
   function selectChecked(e) {
     if (isAddressSame == false) {
@@ -31,6 +40,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
       setCorrespondenceaddress("");
     }
   }
+  
   function selectCorrespondenceaddress(e) {
     setCorrespondenceaddress(e.target.value);
   }

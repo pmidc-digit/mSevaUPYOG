@@ -5,12 +5,12 @@ import {
   SWACHReducers,
 } from "@mseva/digit-ui-module-swach";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
-import {
-  PTModule,
-  PTLinks,
-  PTComponents,
-  PTReducers,
-} from "@mseva/digit-ui-module-pt";
+// import {
+//   PTModule,
+//   PTLinks,
+//   PTComponents,
+//   PTReducers,
+// } from "@mseva/digit-ui-module-pt";
 import {
   MCollectModule,
   MCollectLinks,
@@ -86,11 +86,11 @@ const enabledModules = [
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
-  PTModule,
-  PTLinks,
+  // PTModule,
+  // PTLinks,
   PaymentModule,
   PaymentLinks,
-  ...PTComponents,
+  // ...PTComponents,
   MCollectLinks,
   MCollectModule,
   HRMSModule,
@@ -121,7 +121,7 @@ initCustomisationComponents();
 
 const moduleReducers = (initData) => ({
   pgr: PGRReducers(initData),
-  pt: PTReducers(initData),
+  // pt: PTReducers(initData),
   hrms: HRMSReducers(initData),
   ws: WSReducers(initData),
   engagement: SurveyReducers(initData),

@@ -3,7 +3,6 @@ RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
 RUN yarn add @mseva/digit-ui-libraries@1.0.7
 RUN yarn add @mseva/digit-ui-module-bills@1.0.4
-RUN yarn add @mseva/digit-ui-module-pt@1.0.2
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.2
 RUN yarn add @mseva/digit-ui-module-tl@1.0.4
 RUN yarn add @mseva/digit-ui-module-dss@1.0.2
@@ -23,7 +22,7 @@ RUN yarn add @mseva/digit-ui-module-swach@1.0.3
 ARG WORK_DIR
 WORKDIR /app
 ENV NODE_OPTIONS "--max-old-space-size=8192"
-ENV GENERATE_SOURCEMAP "true"
+ENV GENERATE_SOURCEMAP "false"
 
 COPY ${WORK_DIR} .
 RUN ls -lah

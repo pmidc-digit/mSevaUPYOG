@@ -29,19 +29,19 @@ import {
   initHRMSComponents,
   HRMSReducers,
 } from "@mseva/digit-ui-module-hrms";
-import {
-  TLModule,
-  TLReducers,
-  TLLinks,
-  initTLComponents,
-} from "@mseva/digit-ui-module-tl";
+// import {
+//   TLModule,
+//   TLReducers,
+//   TLLinks,
+//   initTLComponents,
+// } from "@mseva/digit-ui-module-tl";
 
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
   ReceiptsModule,
 } from "@mseva/digit-ui-module-receipts";
-import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
+// import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
 import {
   initEngagementComponents,
@@ -94,8 +94,8 @@ window.Digit.ComponentRegistryService.setupRegistry({
   MCollectLinks,
   MCollectModule,
   HRMSModule,
-  TLModule,
-  TLLinks,
+  // TLModule,
+  // TLLinks,
   ReceiptsModule,
   PTRModule,
   PTRLinks,
@@ -108,9 +108,9 @@ initFSMComponents();
 initDSSComponents();
 initMCollectComponents();
 initHRMSComponents();
-initTLComponents();
+// initTLComponents();
 initReceiptsComponents();
-initOBPSComponents();
+// initOBPSComponents();
 initNOCComponents();
 initEngagementComponents();
 initWSComponents();
@@ -125,7 +125,7 @@ const moduleReducers = (initData) => ({
   hrms: HRMSReducers(initData),
   ws: WSReducers(initData),
   engagement: SurveyReducers(initData),
-  tl: TLReducers(initData),
+  // tl: TLReducers(initData),
   swach: SWACHReducers(initData),
 });
 

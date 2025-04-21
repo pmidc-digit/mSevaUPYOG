@@ -290,31 +290,11 @@ function ApplicationDetailsContent({
   };
 
   const PropertyInActive = async () => {
-    // console.log("applicationDetails", applicationDetails?.applicationData);
-    const data = { Property: auditData?.Properties[0] };
-    console.log("data====", data);
-    const pID = applicationDetails?.applicationData?.propertyId;
     const confirm = window.confirm("Are you sure you want to make property Inactive?");
-    if (!confirm) return; // user clicked "Cancel"
-
-    // return;
-    // alert("Are you sure you want to make property Inactive?");
-    try {
-      // const response = await PTService.update(applicationData, tenantId);
-      const response = await PTService.update(data, tenantId, pID);
-      console.log("Property successfully made inactive", response);
-    } catch (error) {
-      const errorMessage = error?.response?.data?.Errors?.[0]?.message || "Something went wrong";
-      setShowToast({ key: true, isError: true, label: errorMessage });
-
-      console.error("Error making property inactive:", errorMessage);
-      console.log("error", error);
-      return error;
-    }
   };
 
-  const PropertyActive = () => {
-    alert("Are you sure you want to make property active?");
+  const PropertyActive = async () => {
+    const confirm = window.confirm("Are you sure you want to make property Inactive?");
   };
 
   const EditProperty = () => {

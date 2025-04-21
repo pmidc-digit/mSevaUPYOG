@@ -15,7 +15,8 @@
     "micro-ui-internals/packages/modules/engagement",
     "micro-ui-internals/packages/modules/swach",
     "micro-ui-internals/packages/modules/pgr",
-    "micro-ui-internals/packages/modules/mCollect"
+    "micro-ui-internals/packages/modules/mCollect",
+    "micro-ui-internals/packages/modules/pt"
   ],
   "engines": {
     "node": ">=14"
@@ -39,6 +40,7 @@
     "@mseva/digit-ui-module-swach": "1.0.3",
     "@mseva/digit-ui-module-receipts": "1.0.1",
     "@mseva/digit-ui-module-ws": "1.0.2",
+    "@mseva/digit-ui-module-pt": "1.0.2",
     "babel-loader": "8.1.0",
     "qrcode": "^1.5.3",
     "react": "17.0.2",
@@ -59,7 +61,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "GENERATE_SOURCEMAP=false SKIP_PREFLIGHT_CHECK=true react-scripts build",
+    "build": "GENERATE_SOURCEMAP=TRUE SKIP_PREFLIGHT_CHECK=true react-scripts build",
     "build:prepare": "./build.sh"
   },
   "eslintConfig": {

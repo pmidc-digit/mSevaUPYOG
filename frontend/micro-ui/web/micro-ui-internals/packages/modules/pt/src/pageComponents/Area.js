@@ -163,15 +163,26 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
   ];
 
   if (userType === "employee") {
+    //const [displayPlotSize, setDisplayPlotSize] = useState(false);
+    // useEffect(() => {
+    //   if (formData?.usageCategoryMajor && formData?.PropertyType?.code === "VACANT") {
+    //     setDisplayPlotSize(true);
+    //   }else{
+    //     onSelect(config.key, undefined);
+    //   }
+    // }, [formData]);
+    console.log("formData: ",formData);
+    // console.log("config",config);
     return inputs?.map((input, index) => {
       return (
-        <React.Fragment>
-          <LabelFieldPair key={index}>
-            <CardLabel className="card-label-smaller">
-              {t(input.label)} {input.isMandatory ? " * " : ""}
-            </CardLabel>
-            <div className="field">
-              {/* <TextInput
+        formData?.usageCategoryMajor && formData?.PropertyType?.code === "VACANT" && (
+          <React.Fragment>
+            <LabelFieldPair key={index}>
+              <CardLabel className="card-label-smaller">
+                {t(input.label)} {input.isMandatory ? " * " : ""}
+              </CardLabel>
+              <div className="field">
+                {/* <TextInput
                 key={input.name}
                 id={input.name}
                 value={floorarea}
@@ -180,31 +191,32 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
                 onBlur={onBlur}
                 // autoFocus={presentInModifyApplication}
               /> */}
-              <Controller
-                name={"LandArea"}
-                control={control}
-                defaultValue={floorarea}
-                rules={{ required: t("REQUIRED_FIELD") }}
-                render={(props) => (
-                  <TextInput
-                    key={input.name}
-                    id={input.name}
-                    value={floorarea}
-                    onChange={onChange}
-                    {...input.validation}
-                    onBlur={onBlur}
-                    // autoFocus={presentInModifyApplication}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {formState.touched[config.key] ? (
-            <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
-              {formState.errors?.[config.key]?.message}
-            </CardLabelError>
-          ) : null}
-        </React.Fragment>
+                <Controller
+                  name={"LandArea"}
+                  control={control}
+                  defaultValue={floorarea}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  render={(props) => (
+                    <TextInput
+                      key={input.name}
+                      id={input.name}
+                      value={floorarea}
+                      onChange={onChange}
+                      {...input.validation}
+                      onBlur={onBlur}
+                      // autoFocus={presentInModifyApplication}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {formState.touched[config.key] ? (
+              <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+                {formState.errors?.[config.key]?.message}
+              </CardLabelError>
+            ) : null}
+          </React.Fragment>
+        )
       );
     });
   }

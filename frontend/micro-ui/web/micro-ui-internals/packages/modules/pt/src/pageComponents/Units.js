@@ -375,6 +375,10 @@ console.log("formData in unit component", formData);
 
   if (loader && presentInModifyApplication) return <Loader />;
 
+  // const propertyUsageTypeList=[];
+  // const propertyTypeList=["BUILTUP.INDEPENDENTPROPERTY","BUILTUP.SHAREDPROPERTY"];
+  // const displayThisComponent=propertyUsageTypeList.includes(formData?.usageCategoryMajor?.code) && propertyTypeList.includes(formData?.PropertyType?.code) 
+
   return !formData?.PropertyType?.code || !formData?.usageCategoryMajor?.code ? null : (
     <div>
       {units?.map((unit, index) => (
@@ -860,7 +864,7 @@ console.log("coming in this file ");
           ): null}     
         </React.Fragment>          
         ) : null}        
-        {formData?.PropertyType?.code == "VACANT" && ( 
+        {/* {formData?.PropertyType?.code == "VACANT" && ( 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
             <div className="field">
@@ -885,8 +889,8 @@ console.log("coming in this file ");
               />
             </div>
           </LabelFieldPair>
-        )}
-        <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError>
+        )} */}
+        {/* <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError> */}
       </div>
     </div>
   );

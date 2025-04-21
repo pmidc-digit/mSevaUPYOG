@@ -190,7 +190,7 @@ export const searchApiResponse = async (request, next = {}) => {
       }
        // sqlQuery = `${sqlQuery} ) AND`;
     }
-    if (ids.length > 0) sqlQuery = `${sqlQuery} ) AND`;
+    if (ids.length > 0) sqlQuery = `${sqlQuery} `;
     else 
     {
       return response;
@@ -290,7 +290,7 @@ if(queryObj.hasOwnProperty("subDistrict"))
  }else{
   sqlQuery = `${sqlQuery}  ) s WHERE s.rn  BETWEEN ${offset} AND ${limit} ORDER BY fid `;
  }
-  
+console.log("final Query"+JSON.stringify(sqlQuery));
 }else if(isEmpty(queryObj)){
   sqlQuery = `${sqlQuery}  ) s`;
 }else if(!isEmpty(queryObj)){

@@ -88,12 +88,12 @@ public class NDCConfiguration {
 	
 	@Value("${persister.save.ndc.topic}")
 	private String saveTopic;
-	
-	@Value("${persister.update.ndc.topic}")
-	private String updateTopic;
-	
-	@Value("${persister.update.ndc.workflow.topic}")
-	private String updateWorkflowTopic;
+//
+//	@Value("${persister.update.ndc.topic}")
+//	private String updateTopic;
+//
+//	@Value("${persister.update.ndc.workflow.topic}")
+//	private String updateWorkflowTopic;
 	
 	@Value("${egov.ndc.pagination.default.limit}")
 	private Integer defaultLimit;
@@ -116,5 +116,29 @@ public class NDCConfiguration {
 
     @Value("${egov.bpa.search.endpoint}")
     private String bpaSearchEndpoint;
+
+	@Value("${property.service.host}")
+	private String propertyServicePath;
+
+	@Value("${water.service.host}")
+	private String waterConnectionServicePath;
+
+	@Value("${sewerage.service.host}")
+	private String sewerageConnectionServicePath;
+
+	@Value("${billing.service.host}")
+	private String billingServicePath;
+
+	@Value("${property.service.search.endpoint}")
+	private String propertySearchPath;
+
+	@Value("${water.service.search.endpoint}")
+	private String waterSearchPath;
+
+	@Value("${sewerage.service.search.endpoint}")
+	private String sewerageSearchPath;
+
+	@Value("${billing.service.fetchbill.endpoint}")
+	private String fetchBillPath;
 
 }

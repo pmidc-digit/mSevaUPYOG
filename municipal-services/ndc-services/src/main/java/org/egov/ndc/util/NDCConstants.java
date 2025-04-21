@@ -79,4 +79,7 @@ public class NDCConstants {
 
 	public static final String PARSING_ERROR = "PARSING_ERROR";
 
+    public static final String PROPERTY_BUSINESS_SERVICE_CODE = "PT";
+	public static final String WATER_TAX_SERVICE_CODE = "WS";
+	public static final String SEWERAGE_TAX_SERVICE_CODE = "SW";
 }

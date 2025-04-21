@@ -19,7 +19,7 @@ import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-r
 import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
 // import { initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
-// import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
+import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
@@ -126,7 +126,7 @@ const initDigitUI = () => {
   // initTLComponents();
   initReceiptsComponents();
   // initReportsComponents();
-  // initOBPSComponents();
+  initOBPSComponents();
   initEngagementComponents();
   initNOCComponents();
   initWSComponents();

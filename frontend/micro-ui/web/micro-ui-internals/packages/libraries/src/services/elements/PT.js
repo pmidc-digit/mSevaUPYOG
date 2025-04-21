@@ -42,6 +42,17 @@ export const PTService = {
       params: { tenantId, propertyIds },
       auth: true,
     }),
+  updatePT: (details, tenantId, propertyIds) =>
+    Request({
+      url: Urls.pt.update,
+      data: details,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId, propertyIds },
+      auth: true,
+    }),
   ptCalculationEstimate: (details, tenantId) =>
     Request({
       url: Urls.pt.pt_calculation_estimate,

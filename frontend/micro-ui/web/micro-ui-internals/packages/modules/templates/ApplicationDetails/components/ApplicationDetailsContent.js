@@ -287,13 +287,65 @@ function ApplicationDetailsContent({
     setShowToast(null);
   };
 
-  const PropertyInActive = async () => {
-    const confirm = window.confirm("Are you sure you want to make property Inactive?");
+  // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
+  const updatePropertyStatus = async (propertyData, status, propertyIds) => {
+    const confirm = window.confirm(`Are you sure you want to make this property ${status}?`);
+    if (!confirm) return;
+
+    const payload = {
+      ...propertyData,
+      status: status,
+      isactive: status === "ACTIVE",
+      isinactive: status === "INACTIVE",
+      creationReason: "STATUS",
+      additionalDetails: {
+        ...propertyData.additionalDetails,
+        propertytobestatus: status,
+      },
+      workflow: {
+        ...propertyData.workflow,
+        businessService: "PT.CREATE",
+        action: "OPEN",
+        moduleName: "PT",
+      },
+    };
+    // try {
+    const response = await Digit.PTService.updatePT({ Property: { ...payload } }, tenantId, propertyIds);
+    console.log("response from inactive/active", response);
+    //   const result = await response.json();
+    //   if (response.ok) {
+    //     alert(`Property marked as ${status} successfully!`);
+    //   } else {
+    //     alert("Failed to update property status.");
+    //     console.error(result);
+    //   }
+    // }
+    //  catch (err) {
+    //   console.error("Error inactivating property:", err);
+    //   alert(`Something went wrong while making the property ${status}.`);
+    // }
   };
 
-  const PropertyActive = async () => {
-    const confirm = window.confirm("Are you sure you want to make property Inactive?");
+  const applicationData_pt = applicationDetails.applicationData;
+  const propertyIds = applicationDetails.applicationData.propertyId || "";
+  const checkPropertyStatus = applicationDetails.additionalDetails.propertytobestatus;
+  const PropertyInActive = () => {
+    if (checkPropertyStatus == "ACTIVE") {
+      updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+    } else {
+      alert("Property is already inactive.");
+    }
   };
+
+  const PropertyActive = () => {
+    if (checkPropertyStatus == "INACTIVE") {
+      updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
+    } else {
+      alert("Property is already active.");
+    }
+  };
+  // const PropertyInActive = () => updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+  // const PropertyActive = () => updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
 
   const EditProperty = () => {
     const pID = applicationDetails?.applicationData?.propertyId;

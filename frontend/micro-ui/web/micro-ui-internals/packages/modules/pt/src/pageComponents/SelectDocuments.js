@@ -106,17 +106,26 @@ function SelectDocument({
   id,
   propertyInitialValues,
 }) {
-  console.log("documents", documents);
-
-  const filteredDocument = documents?.find((item) => item?.documentType == doc?.code);
-
-  console.log("filteredDocument", filteredDocument);
-
+  // const filteredDocument = documents?.find((item) => item?.documentType == doc?.code);
+  const filteredDocument = documents?.find((item) => {
+    const documentTypeParts = item?.documentType.split(".");
+    const truncatedDocumentType = documentTypeParts.slice(0, 2).join(".");
+    console.log("In find:", "type:", truncatedDocumentType, "\n doc:", doc, "\n bool: ", truncatedDocumentType === doc?.code);
+    return truncatedDocumentType === doc?.code;
+  });
   const tenantId = Digit.ULBService.getCurrentTenantId();
-
+  console.log("dropdowndata1", doc?.dropdownData);
+  console.log("filteredDocument", filteredDocument);
+  console.log("documents", documents);
+  console.log("doc", doc);
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
-      ? { ...filteredDocument, active: filteredDocument?.status === "ACTIVE", code: filteredDocument?.documentType }
+      ? {
+          ...filteredDocument,
+          active: filteredDocument?.status === "ACTIVE",
+          code: filteredDocument?.documentType,
+          i18nKey: (filteredDocument?.documentType).replaceAll(".", "_"),
+        }
       : doc?.dropdownData?.length === 1
       ? doc?.dropdownData[0]
       : {}

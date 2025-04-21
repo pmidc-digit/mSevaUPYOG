@@ -77,6 +77,8 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
         structureType: data?.PropertyDetails?.propertyStructureDetails?.structureType,
         electricity: data?.PersonalDetails?.electricity,
         uid: data?.PersonalDetails?.uid,
+        heightAbove36Feet: data?.PropertyDetails?.propertyCheckboxQuestions?.isPropertyHeightMoreThan36Feet,
+        inflammable: data?.PropertyDetails?.propertyCheckboxQuestions?.hasInflammableMaterial
       },
       surveyId: data?.PersonalDetails?.surveyId,
       existingPropertyId: data?.PersonalDetails?.existingPropertyId,

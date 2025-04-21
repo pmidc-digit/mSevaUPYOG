@@ -227,6 +227,13 @@ export const newConfig = [
         key: "remarks",
         withoutLabel: true,
       },
+      {
+        type: "component",
+        //"isMandatory": true,
+        component: "PropertyCheckboxQuestions",
+        key: "propertyCheckboxQuestions",
+        withoutLabel: true,
+      },
       //------------------comment below
       // {
       //     "type": "component",

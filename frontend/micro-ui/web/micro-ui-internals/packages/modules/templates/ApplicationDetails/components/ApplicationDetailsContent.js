@@ -13,9 +13,7 @@ import {
   ActionBar,
   SubmitBar,
 } from "@mseva/digit-ui-react-components";
-// import { PTService } from "../../services/elements/PT";
 import { PTService } from "../../../../libraries/src/services/elements/PT";
-
 import { values } from "lodash";
 import React, { Fragment, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -705,7 +703,6 @@ function ApplicationDetailsContent({
           </tr>
         </tbody>
       </table>
-
       <ActionBar className="clear-search-container" style={{ display: "block" }}>
         <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />
         <SubmitBar label={"Make Property Inactive"} style={{ marginLeft: "20px" }} onSubmit={PropertyInActive} />

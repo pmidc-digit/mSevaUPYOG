@@ -138,7 +138,7 @@ class ValueFirstWhatsAppProvider {
         let reformattedMessage={};
         let type;
         let input;
-        let metadata = {};
+        // let metadata = {};
 
         if(requestBody.buttonLabel && requestBody.buttonLabel != '$btnLabel'){
             type = 'button'
@@ -163,7 +163,7 @@ class ValueFirstWhatsAppProvider {
                 if (!imageInBase64String) {
                     console.error("Error: Base64 image string is missing in requestBody!");
                 }
-                metadata = await this.getMetadataFromBase64(imageInBase64String);
+                // metadata = await this.getMetadataFromBase64(imageInBase64String);
                 input = await this.convertFromBase64AndStore(imageInBase64String);
             }
             else if(type === 'unknown' || type === 'document')
@@ -176,7 +176,7 @@ class ValueFirstWhatsAppProvider {
         reformattedMessage.message = {
             input: input,
             type: type,
-            metadata: metadata
+            // metadata: metadata
         };
         reformattedMessage.user = {
            mobileNumber: requestBody.from.slice(2)

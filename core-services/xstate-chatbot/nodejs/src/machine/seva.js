@@ -841,7 +841,7 @@ let messages = {
   swachsevamenu: {
     question: {
       en_IN:
-        "Please type and send the number for your option 👇\n\n*1.* File Swach New Complaint.\n\n*2.* Track Swach Old Complaint.\n\n*3.* Apply Attendence.\n\n 👉  At any stage type and send *mseva* or *swach* to go back to the Mseva menu or Swach menu.",
+        "Please type and send the number for your option 👇\n\n*1.* File Swach New Complaint.\n\n*2.* Track Swach Old Complaint.\n\n*3.* Apply Attandence.\n\n 👉  At any stage type and send *mseva* or *swach* to go back to the Mseva menu or Swach menu.",
       hi_IN:
         "कृपया अपने विकल्प के लिए नंबर टाइप करें और भेजें 👇\n\n1. Swach नई शिकायत दर्ज करें।\n2. Swach पुरानी शिकायतों की स्थिति देखें\n\n*3.* भाषा बदलें\n\n👉 किसी भी चरण में mseva या swach टाइप करें और भेजें ताकि मुख्य मेनू पर वापस जा सकें।",
       pa_IN:

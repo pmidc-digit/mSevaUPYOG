@@ -416,6 +416,8 @@ class SwachService {
           serviceWrapper.service.applicationStatus
         );
 
+        console.log("applicationStatus ----- ", JSON.stringify(serviceWrapper.service.applicationStatus));
+
         var data = {
           complaintType: dialog.get_message(serviceCode, locale), 
           complaintNumber: serviceRequestId,
@@ -542,7 +544,6 @@ class SwachService {
 
     
     let response = await fetch(url, options);
-    // console.log("Fetch Open Swach Complaints Response ----- ", response);
 
     let results;
     if (response.status === 200) {
@@ -556,7 +557,7 @@ class SwachService {
   }
 
   async persistAttendence(user, slots, attendance, extraInfo) {
-    // console.log("Persist Attendence ----- ");
+    console.log("Persist Attendence ----- ", attendance);
     let requestBody = JSON.parse(attendanceRequestBody);
     
 
@@ -565,6 +566,9 @@ class SwachService {
     let locality = slots.locality;
     let city = slots.city;
     let userInfo = user.userInfo;
+    let geocode = slots.geocode;
+    let latitude = geocode.substring(1, geocode.length - 1).split(",")[0];
+    let longitude = geocode.substring(1, geocode.length - 1).split(",")[1];
 
     // console.log("Persist Attendence ----- ", slots);
     
@@ -575,8 +579,10 @@ class SwachService {
     requestBody["ImageData"]["tenantId"] = city;
     requestBody["ImageData"]["locality"] = locality;
     requestBody["ImageData"]["useruuid"] = userInfo.uuid;
-    requestBody["ImageData"]["latitude"] = attendance.metadata.latitude;
-    requestBody["ImageData"]["longitude"] = attendance.metadata.longitude;
+    // requestBody["ImageData"]["latitude"] = attendance.metadata.latitude;
+    // requestBody["ImageData"]["longitude"] = attendance.metadata.longitude;
+    requestBody["ImageData"]["latitude"] = latitude;
+    requestBody["ImageData"]["longitude"] = longitude;
     // requestBody["ImageData"]["imagerurl"] = attendance.image;
 
     let filestoreId = await this.getFileForFileStoreId(attendance.image, city);

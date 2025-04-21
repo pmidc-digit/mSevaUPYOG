@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
 import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
+  const isFirstRender = useRef(true);
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
@@ -16,8 +17,13 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
   const onFormValueChange = (setValue = true, data) => {
     console.log("onFormValueChange data in Property details step one: ", data, "\n Bool: ", !_.isEqual(data, localStepData));
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
     if (!_.isEqual(data, localStepData)) {
-      // dispatch(UPDATE_PtNewApplication(config.key, data));
+      console.log("the formValuechange is called in step two", data);
+      dispatch(UPDATE_PtNewApplication(config.key, data));
       console.log("Dispatching UPDATE_PtNewApplication with key:", config.key, "and data:", data);
     }
   };
@@ -30,9 +36,12 @@ const PTOwnerTransfershipStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   });
   const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.DocuementDetails);
   const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData);
-  console.log("Step one formdata +", formData);
+  console.log("Step twoo formdata +", formData);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
   console.log("reduxStepData in step twoo: +", localStepData);
+  useEffect(() => {
+    setLocalStepData(reduxStepData);
+  }, [reduxStepData]);
   const dispatch = useDispatch();
 
   return (

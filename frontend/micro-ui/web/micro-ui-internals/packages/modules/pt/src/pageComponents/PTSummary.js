@@ -98,7 +98,7 @@ const PTSummary = ({ formData, t, onEdit }) => {
               <h3>{t("Document Details")}</h3>
             </div>
             <div className="section-content">
-              {formData?.TransferorDetails?.DocuementDetails?.documents?.documents?.map((doc, index) => (
+              {formData?.DocuementDetails?.documents?.documents?.map((doc, index) => (
                 <LabelFieldPair key={index}>
                   <CardLabel>{t("Document Type")}</CardLabel>
                   <div>{doc.documentType || "NA"}</div>
@@ -133,39 +133,39 @@ const PTSummary = ({ formData, t, onEdit }) => {
             <div className="section-content">
               <LabelFieldPair>
                 <CardLabel>{t("City")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.city?.name || "NA"}</div>
+                <div>{formData?.LocationDetails?.address?.city?.name || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Door/House No.")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.doorNo || "NA"}</div>
+                <div>{formData?.LocationDetails?.address?.doorNo || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair>
-                <CardLabel>{t("Colony Name")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.buildingName || "NA"}</div>
+                <CardLabel>{t("Building Name")}</CardLabel>
+                <div>{formData?.LocationDetails?.address?.buildingName || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Street Name")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.street || "NA"}</div>
+                <div>{formData?.LocationDetails?.address?.street || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Mohalla")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.locality?.code || "NA"}</div>
+                <div>{formData?.LocationDetails?.address?.locality?.code || "NA"}</div> {/*LocationDetails.address.locality*/}
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Pincode")}</CardLabel>
-                <div>{formData?.PersonalDetails?.address?.pincode || "NA"}</div>
+                <div>{formData?.LocationDetails?.address?.pincode || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Existing Property ID")}</CardLabel>
-                <div>{formData?.PersonalDetails?.existingPropertyId || "NA"}</div>
+                <div>{formData?.LocationDetails?.existingPropertyId || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Survey Id/UID")}</CardLabel>
-                <div>{formData?.PersonalDetails?.surveyId || "NA"}</div>
+                <div>{formData?.LocationDetails?.surveyId || "NA"}</div>
               </LabelFieldPair>
               <LabelFieldPair>
                 <CardLabel>{t("Year of creation of Property")}</CardLabel>
-                <div>{formData?.PersonalDetails?.yearOfCreation?.value || "NA"}</div>
+                <div>{formData?.LocationDetails?.yearOfCreation?.value || "NA"}</div>
               </LabelFieldPair>
             </div>
           </div>

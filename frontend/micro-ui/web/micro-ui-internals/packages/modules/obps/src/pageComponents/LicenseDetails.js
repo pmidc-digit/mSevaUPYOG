@@ -14,12 +14,23 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   const [name, setName] = useState(
     (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || ""
   );
-  const [lastName, setLastName] = useState(() => {
+  // const [lastName, setLastName] = useState(() => {
+  //   const fullName = formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
+  //   const nameParts = fullName.trim().split(" ");
+  //   return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
+  // });
+  // Outside the component
+  console.log("formData licenseDetails", formData);
+  function getLastName(formData) {
     const fullName = formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
     const nameParts = fullName.trim().split(" ");
-    return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
-  });
-  const [middleName, setMiddleName] = useState("");
+    return nameParts.length > 1 ? nameParts[nameParts.length - 1] : "";
+  }
+
+  // Inside the component
+  // const [lastName, setLastName] = useState(() => getLastName(formData));
+  const [lastName, setLastName] = useState(formData?.LicneseDetails?.lastName || formData?.formData?.LicneseDetails?.lastName || "");
+  const [middleName, setMiddleName] = useState(formData?.LicneseDetails?.middleName || formData?.formData?.LicneseDetails?.middleName || "");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(true);
@@ -128,7 +139,16 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     }
 
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
-      let licenseDet = { name: name, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
+      let licenseDet = {
+        name: name,
+        mobileNumber: mobileNumber,
+        gender: gender,
+        email: email,
+        PanNumber: PanNumber,
+        dateOfBirth: dateOfBirth,
+        lastName: lastName,
+        middleName: middleName,
+      };
       onSelect(config.key, licenseDet);
     } else {
       let data = formData?.formData;
@@ -137,6 +157,9 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       data.LicneseDetails.gender = gender;
       data.LicneseDetails.email = email;
       data.LicneseDetails.PanNumber = PanNumber;
+      data.LicneseDetails.PanNumber = PanNumber;
+      data.LicneseDetails.lastName = lastName;
+      data.LicneseDetails.middleName = middleName;
       onSelect("", formData);
     }
     if (age < 18) {

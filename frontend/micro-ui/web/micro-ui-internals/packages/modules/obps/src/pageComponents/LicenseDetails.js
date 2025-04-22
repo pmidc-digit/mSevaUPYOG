@@ -14,15 +14,11 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   const [name, setName] = useState(
     (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || ""
   );
-
-  const [lastName, setLastName] = useState("");
-  
-  // const [lastName, setLastName] = useState(() => {
-  //   const fullName = formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
-  //   const nameParts = fullName.trim().split(" ");
-  //   return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
-  // });
-
+  const [lastName, setLastName] = useState(() => {
+    const fullName = formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
+    const nameParts = fullName.trim().split(" ");
+    return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
+  });
   const [middleName, setMiddleName] = useState("");
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");

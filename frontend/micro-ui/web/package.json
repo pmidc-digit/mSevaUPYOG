@@ -17,7 +17,8 @@
     "micro-ui-internals/packages/modules/ws",
     "micro-ui-internals/packages/modules/engagement",
     "micro-ui-internals/packages/modules/swach",
-    "micro-ui-internals/packages/modules/pgr"
+    "micro-ui-internals/packages/modules/pgr",
+    "micro-ui-internals/packages/modules/mCollect"
   ],
   "engines": {
     "node": ">=14"

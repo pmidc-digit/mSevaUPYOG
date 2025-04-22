@@ -30,7 +30,7 @@ const componentsToRegister = {
   NDCModule,
   NOCCard,
   NOCApplicationOverview: ApplicationOverview,
-  NOCInbox: Inbox,
+  NDCInbox: Inbox,
   NOCSearchApplication,
 };
 

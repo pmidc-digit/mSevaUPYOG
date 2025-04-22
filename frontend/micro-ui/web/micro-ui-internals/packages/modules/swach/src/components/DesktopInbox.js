@@ -68,6 +68,12 @@ const DesktopInbox = ({
           return GetSlaCell(row.original["sla"]);
         },
       },
+      {
+        Header: t("WF_INBOX_HEADER_CREATED_DATE"),
+        Cell: ({ row }) => {
+          return GetSlaCell(row.original["createdDate"]);
+        },
+      },
     ],
     [t]
   );

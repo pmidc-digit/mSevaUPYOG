@@ -181,7 +181,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (TraidDetails.address.street) address.street = TraidDetails.address.street;
       if (TraidDetails.address.pincode) address.pincode = TraidDetails.address.pincode;
     }
-    if (TraidDetails.address.geoLocation.latitude) {
+    if (TraidDetails?.address?.geoLocation?.latitude) {
       address.latitude = TraidDetails.address.geoLocation.latitude;
       address.longitude = TraidDetails.address.geoLocation.longitude;
     }

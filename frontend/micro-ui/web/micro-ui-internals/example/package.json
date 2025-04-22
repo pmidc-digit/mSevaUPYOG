@@ -26,7 +26,7 @@
     "@mseva/digit-ui-module-bills": "1.0.4",
     "@mseva/digit-ui-module-commonpt": "1.0.2",
     "@mseva/digit-ui-module-ptr": "1.0.3",
-    "@mseva/digit-ui-module-swach": "1.0.3",
+    "@mseva/digit-ui-module-ndc": "1.0.0",
     "http-proxy-middleware": "^1.0.5",
     "react": "17.0.2",
     "react-dom": "17.0.2",

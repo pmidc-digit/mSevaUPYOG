@@ -276,6 +276,22 @@ function ApplicationDetailsContent({
   };
 
   // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
+
+  const [propertyIds, setPropertyIds] = useState("");
+  const [checkPropertyStatus, setCheckPropertyStatus] = useState("");
+  const [application_pt, setApplication_pt] = useState(null);
+
+  // Ensuring these values are extracted only once or when applicationDetails change
+  useEffect(() => {
+    if (applicationDetails?.applicationData) {
+      setPropertyIds(applicationDetails.applicationData.propertyId || "");
+      setApplication_pt(applicationDetails.applicationData);
+    }
+
+    if (applicationDetails?.applicationData?.status) {
+      setCheckPropertyStatus(applicationDetails.applicationData.status);
+    }
+  }, [applicationDetails, checkPropertyStatus]);
   const updatePropertyStatus = async (propertyData, status, propertyIds) => {
     const confirm = window.confirm(`Are you sure you want to make this property ${status}?`);
     if (!confirm) return;
@@ -297,43 +313,35 @@ function ApplicationDetailsContent({
         moduleName: "PT",
       },
     };
-    // try {
-    const response = await Digit.PTService.updatePT({ Property: { ...payload } }, tenantId, propertyIds);
-    console.log("response from inactive/active", response);
-    //   const result = await response.json();
-    //   if (response.ok) {
-    //     alert(`Property marked as ${status} successfully!`);
-    //   } else {
-    //     alert("Failed to update property status.");
-    //     console.error(result);
-    //   }
-    // }
-    //  catch (err) {
-    //   console.error("Error inactivating property:", err);
-    //   alert(`Something went wrong while making the property ${status}.`);
-    // }
-  };
 
-  const applicationData_pt = applicationDetails.applicationData;
-  const propertyIds = applicationDetails.applicationData.propertyId || "";
-  const checkPropertyStatus = applicationDetails.additionalDetails.propertytobestatus;
+    const response = await Digit.PTService.updatePT({ Property: { ...payload } }, tenantId, propertyIds);
+    //   const result = await response.json();
+    if (response.ResponseInfo.status === "successful") {
+      alert(`Property marked as ${status} successfully!`);
+    } else {
+      alert("Failed to update property status.");
+      console.error(result);
+    }
+  };
   const PropertyInActive = () => {
-    if (checkPropertyStatus == "ACTIVE") {
-      updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+    if (checkPropertyStatus === "ACTIVE") {
+      updatePropertyStatus(application_pt, "INACTIVE", propertyIds);
+    } else if (checkPropertyStatus === "INWORKFLOW") {
+      alert("Property is in workflow.");
     } else {
       alert("Property is already inactive.");
     }
   };
 
   const PropertyActive = () => {
-    if (checkPropertyStatus == "INACTIVE") {
-      updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
+    if (checkPropertyStatus === "INACTIVE") {
+      updatePropertyStatus(application_pt, "ACTIVE", propertyIds);
+    } else if (checkPropertyStatus === "INWORKFLOW") {
+      alert("Property is in workflow.");
     } else {
       alert("Property is already active.");
     }
   };
-  // const PropertyInActive = () => updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
-  // const PropertyActive = () => updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
 
   const EditProperty = () => {
     const pID = applicationDetails?.applicationData?.propertyId;
@@ -347,7 +355,6 @@ function ApplicationDetailsContent({
     alert("access property");
   };
 
-  // console.log("applicationDetails?.applicationDetails",applicationDetails?.applicationDetails)
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}

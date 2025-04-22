@@ -2,7 +2,7 @@ import { BreadCrumb, PrivateRoute } from "@mseva/digit-ui-react-components";
 import React, { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import SearchApplication from "./SearchApplication";
-import { Switch, useLocation } from "react-router-dom";
+import { Switch, useLocation, Route } from "react-router-dom";
 import Response from "./Response";
 
 const NOCBreadCrumbs = ({ location }) => {
@@ -14,9 +14,9 @@ const NOCBreadCrumbs = ({ location }) => {
       show: true,
     },
     {
-      path: "/digit-ui/employee/noc/inbox",
+      path: "/digit-ui/employee/ndc/inbox",
       content: t("ES_COMMON_INBOX"),
-      show: location.pathname.includes("noc/inbox") ? true : false,
+      show: location.pathname.includes("ndc/inbox") ? true : false,
     },
     {
       path: "/digit-ui/employee/noc/inbox/application-overview/:id",
@@ -40,6 +40,7 @@ const NOCBreadCrumbs = ({ location }) => {
 const EmployeeApp = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
+  console.log("here in ndc");
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCApplicationOverview");
   const Inbox = Digit?.ComponentRegistryService?.getComponent("NOCInbox");
 
@@ -48,15 +49,17 @@ const EmployeeApp = ({ path }) => {
 
   return (
     <Fragment>
-      {!isResponse ? <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
-        <NOCBreadCrumbs location={location} />
-      </div> : null} 
+      {!isResponse ? (
+        <div style={window.location.href.includes("application-overview") || isMobile ? { marginLeft: "10px" } : {}}>
+          <NOCBreadCrumbs location={location} />
+        </div>
+      ) : null}
       <Switch>
-        <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} />
-        <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
-        <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/response`} component={Response} />
+        {/* <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} />
+        <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} /> */}
+        <Route path={`${path}/inbox`} component={(props) => <div>hello</div>} />
+        {/* <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/response`} component={Response} /> */}
       </Switch>
     </Fragment>
   );

@@ -7,7 +7,7 @@ import NOCCard from "./pages/employee/EmployeeCard";
 import Inbox from "./pages/employee/Inbox";
 import NOCSearchApplication from "./pages/employee/SearchApplication/Search";
 
-const NOCModule = ({ stateCode, userType, tenants }) => {
+const NDCModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "common-noc";
   const { path, url } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();
@@ -27,14 +27,14 @@ const NOCModule = ({ stateCode, userType, tenants }) => {
 };
 
 const componentsToRegister = {
-  NOCModule,
+  NDCModule,
   NOCCard,
   NOCApplicationOverview: ApplicationOverview,
   NOCInbox: Inbox,
-  NOCSearchApplication
+  NOCSearchApplication,
 };
 
-export const initNOCComponents = () => {
+export const initNDCComponents = () => {
   Object.entries(componentsToRegister).forEach(([key, value]) => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });

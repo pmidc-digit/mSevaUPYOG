@@ -41,7 +41,7 @@ public class TLConstants {
     public static final String RENEWAL_NOTIFICATION_INITIATED_EMAIL = "tl.renew.en.counter.initiate.email";
 
     public static final String RENEWAL_NOTIFICATION_APPLIED = "tl.renew.en.counter.submit";
-
+public static final String TL_ACTION_APPLY = "APPLY";
     public static final String RENEWAL_NOTIFICATION_APPLIED_EMAIL  = "tl.renew.en.counter.submit.email";
 
     public static final String RENEWAL_NOTIFICATION_FIELD_INSPECTION = "tl.renew.en.field.inspection";

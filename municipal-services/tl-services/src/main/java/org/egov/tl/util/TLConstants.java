@@ -21,7 +21,7 @@ public class TLConstants {
 	public static final String MDMS_RESPONSE_KEY = "MdmsRes";
 	public static final String CATEGORY_KEY = "category";
 	public static final String ROLE_CODE_KEY = "rolecode";
-
+	public static final String TL_ACTION_APPLY = "APPLY";
     public static  final String businessService_TL = "NewTL";
 
     public static  final String businessService_DIRECT_RENEWAL = "DIRECTRENEWAL";

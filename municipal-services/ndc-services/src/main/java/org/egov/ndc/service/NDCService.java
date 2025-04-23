@@ -57,10 +57,26 @@ public class NDCService {
 
 		// Save NDC details
 		List<NdcDetailsRequest> ndcDetails = ndcApplicationRequest.getNdcDetails();
-		for (NdcDetailsRequest details : ndcDetails) {
-			details.setUuid(UUID.randomUUID().toString());
-			details.setApplicantId(applicantId);
+		if(ndcDetails!= null) {
+			for (NdcDetailsRequest details : ndcDetails) {
+				details.setUuid(UUID.randomUUID().toString());
+				details.setApplicantId(applicantId);
+			}
 		}
+
+		List<DocumentRequest> documents = ndcApplicationRequest.getDocuments();
+		if(documents != null) {
+			for (DocumentRequest document : documents) {
+				if(document.getDocumentAttachment()==null) throw new CustomException("DOCUMENT_ATTACHMENT_NULL", "Document attachment is null");
+				if(document.getUuid()==null) throw new CustomException("DOCUMENT_UUID_NULL", "Document uuid is null");
+				document.setApplicantId(applicantId);
+				document.setCreatedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
+				document.setLastmodifiedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
+				document.setCreatedtime(System.currentTimeMillis());
+				document.setLastmodifiedtime(System.currentTimeMillis());
+			}
+		}
+
 		producer.push(config.getSaveTopic(), ndcApplicationRequest);
 
 		return ndcApplicationRequest;

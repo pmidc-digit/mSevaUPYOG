@@ -45,5 +45,5 @@ const [localStepData, setLocalStepData] = useState(reduxStepData);
     </React.Fragment>
   );
 };
-
+}
 export default PTEditFormStepOne;

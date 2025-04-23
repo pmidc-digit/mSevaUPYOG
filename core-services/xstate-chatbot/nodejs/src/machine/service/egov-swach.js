@@ -112,13 +112,14 @@ class SwachService {
     return { complaintCategories, messageBundle };
   }
 
-  async fetchSwatchComplaintItemsForCategory(category, tenantId) {
+  async fetchSwatchComplaintItemsForCategory( tenantId) {
     // fetchs all the serviceCode under the selected menupath of complaint-categoy
     let complaintItems = await this.fetchMdmsData(
       tenantId,
       "SwachReform",
       "SwachBharatCategory",
-      '$.[?(@.active == true && @.menuPath == "' + category + '")].serviceCode'
+      // '$.[?(@.active == true && @.menuPath == "' + category + '")].serviceCode'
+      '$.[?(@.active == true && @.menuPath == "' + "SwachCategory" + '")].serviceCode'
     );
     // let localisationPrefix = "SERVICEDEFS.";    //need review
     let localisationPrefix = "SWACHBHARATCATEGORY.";
@@ -155,13 +156,17 @@ class SwachService {
     if (matchedCity) {
       let matchedLocality = null;
       let matchedLocalityMessageBundle = null;
+      // console.log("matchedCity", matchedCity);
       let { localities, messageBundle } = await this.fetchLocalities(
         matchedCity
       );
+      // console.log("messageBundle", messageBundle);
+      // console.log("localities", localities);
       for (let locality of localities) {
         let localityName = messageBundle[locality]["en_IN"];
+        // console.log("localityName", localityName);
         if (
-          localityName.toLowerCase() == cityAndLocality.locality.toLowerCase()
+          localityName?.toLowerCase() == cityAndLocality.locality.toLowerCase()
         ) {
           matchedLocality = locality;
           matchedLocalityMessageBundle = messageBundle[locality];
@@ -294,7 +299,7 @@ class SwachService {
     };
 
     let response = await fetch(url, options);
-    console.log("Get City Response ----- ", response);
+    // console.log("Get City Response ----- ", response);
 
     let predictedCity = null;
     let predictedCityCode = null;
@@ -416,7 +421,7 @@ class SwachService {
           serviceWrapper.service.applicationStatus
         );
 
-        console.log("applicationStatus ----- ", JSON.stringify(serviceWrapper.service.applicationStatus));
+        // console.log("applicationStatus ----- ", JSON.stringify(serviceWrapper.service.applicationStatus));
 
         var data = {
           complaintType: dialog.get_message(serviceCode, locale), 
@@ -492,15 +497,15 @@ class SwachService {
       },
     };
 
-    console.log("Persist Swach Complaint URL ----- ", url);
-    console.log(
-      "Persist Swach Complaint Request Body ----- ",
-      JSON.stringify(requestBody)
-    );
+    // console.log("Persist Swach Complaint URL ----- ", url);
+    // console.log(
+    //   "Persist Swach Complaint Request Body ----- ",
+    //   JSON.stringify(requestBody)
+    // );
 
     let response = await fetch(url, options);
 
-    console.log("persistSwachComplaint response ----- ", response);
+    // console.log("persistSwachComplaint response ----- ", response);
 
     let results;
     if (response.status === 200) {
@@ -557,7 +562,7 @@ class SwachService {
   }
 
   async persistAttendence(user, slots, attendance, extraInfo) {
-    console.log("Persist Attendence ----- ", attendance);
+    // console.log("Persist Attendence ----- ", attendance);
     let requestBody = JSON.parse(attendanceRequestBody);
     
 
@@ -593,13 +598,13 @@ class SwachService {
       requestBody["ImageData"]["imagerurl"] = filestoreId;
     }
 
-    console.log("Persist Attendence request ----- ", JSON.stringify(requestBody));
+    // console.log("Persist Attendence request ----- ", JSON.stringify(requestBody));
 
     var url =
       config.egovServices.egovServicesHost +
       config.egovServices.attendanceEndpoint;
 
-    console.log("Persist Attendence URL ----- ", url);
+    // console.log("Persist Attendence URL ----- ", url);
 
     var options = {
       method: "POST",
@@ -610,7 +615,7 @@ class SwachService {
     };
 
     let response = await fetch(url, options);
-    console.log("Persist Attendence Response ----- ", response);
+    // console.log("Persist Attendence Response ----- ", response);
     if (response.status === 200) {
       let responseBody = await response.json();
       return responseBody;

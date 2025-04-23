@@ -818,6 +818,9 @@ config.indexRoute = "info";
 
   const CheckPage = Digit?.ComponentRegistryService?.getComponent("PTCheckPage");
   const PTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("PTAcknowledgement");
+
+  console.log("config in CreateProperty",config)
+  console.log("match path in CreateProperty",match.patch)
   return (
     <div>
       <div>

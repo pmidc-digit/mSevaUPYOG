@@ -30,6 +30,9 @@ const App = () => {
   const PropertyInformation = Digit?.ComponentRegistryService?.getComponent("PropertyInformation");
   const PropertyOwnerHistory = Digit?.ComponentRegistryService?.getComponent("PropertyOwnerHistory");
   const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("PTAssessmentDetails");
+  const NewApplicationCitizen = Digit?.ComponentRegistryService?.getComponent("NewApplicationCitizen");
+  const CreateEmployeeStepForm= Digit?.ComponentRegistryService?.getComponent("CreateEmployeeStepForm");
+
   return (
     <span className={"pt-citizen"}style={{width:"100%"}}>
       <Switch>
@@ -51,6 +54,7 @@ const App = () => {
           {/* <Redirect to={`/`}></Redirect> */}
           <PrivateRoute path={`${path}/assessment-details/:id`} component={() => <AssessmentDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
+         
         </AppContainer>
       </Switch>
     </span>

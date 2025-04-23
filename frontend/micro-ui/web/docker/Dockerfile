@@ -21,7 +21,8 @@ RUN yarn add @mseva/digit-ui-module-tl@1.0.4
 
 ARG WORK_DIR
 WORKDIR /app
-ENV NODE_OPTIONS "--max-old-space-size=8192"
+# ENV NODE_OPTIONS "--max-old-space-size=8192"
+ENV  NODE_OPTIONS "--max_old_space_size=2048 react-scripts build"
 ENV GENERATE_SOURCEMAP "true"
 
 COPY ${WORK_DIR} .

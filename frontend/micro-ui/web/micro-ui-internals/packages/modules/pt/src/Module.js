@@ -111,6 +111,9 @@ import PTNewFormSummaryStepFive from "../src/pages/employee/NewApplication/NewAp
 import getRootReducer from "./redux/reducers";
 import PTSummary from "../src/pageComponents/PTSummary"
 
+import {NewApplication as NewApplicationCitizen }from "./pages/citizen/Create/NewApplication";
+import CreateEmployeeStepForm  from "./pages/citizen/Create/NewApplicationStepForm/NewPropertyStepForm" 
+
 export const PTReducers = getRootReducer;
 
 const componentsToRegister = {
@@ -211,7 +214,9 @@ const componentsToRegister = {
   PTNewFormStepThree,
   PTNewFormStepFour,
   PTNewFormSummaryStepFive,
-  PTSummary
+  PTSummary,
+  NewApplicationCitizen,
+  CreateEmployeeStepForm
 };
 
 const addComponentsToRegistry = () => {

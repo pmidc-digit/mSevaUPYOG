@@ -5,7 +5,6 @@ import Timeline from "../components/Timeline";
 import cloneDeep from "lodash/cloneDeep";
 
 const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
-    console.log("formdatatstd",formData);
     let validation = {};
     sessionStorage.removeItem("currentPincode");
     let isedittrade = window.location.href.includes("edit-application");
@@ -34,7 +33,6 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
     );
 
     const user = Digit.UserService.getUser();
-    console.log("userrrr",user);
 
     useEffect(() => {
         var flag=0;

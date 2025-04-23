@@ -112,7 +112,6 @@ const EditPropertyStepForm = ({ applicationData }) => {
   }, []);
 
   useEffect(() => {
-    console.log("deafult vaules in useEffect: ", defaultValues);
 
     Object.entries(defaultValues).forEach(([key, value]) => {
       dispatch(UPDATE_PtNewApplication(key, value));

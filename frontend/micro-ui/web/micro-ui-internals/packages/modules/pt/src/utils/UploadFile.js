@@ -191,7 +191,7 @@ const UploadFileDigiLocker = (props) => {
             "authToken":digiLockerToken
           }
           const res1 = await Digit.DigiLockerService.issueDoc({TokenReq })
-          console.log("res1res1res1res1res1",res1)
+          
           let uri = res1.IssuedDoc.filter((item)=>{
             return item.doctype == "DRVLC"
           })
@@ -200,7 +200,6 @@ const UploadFileDigiLocker = (props) => {
             "id":uri?.[0]?.uri,
           }
           
-         console.log("url",uri)
          if(uri?.length>0)
          {
           const res2 = await Digit.DigiLockerService.uri({"TokenReq":TokenReqNew})

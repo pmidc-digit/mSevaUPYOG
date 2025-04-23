@@ -88,16 +88,12 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
     
     useEffect(() => {
 
-      console.log("code is coming innn ")
       if (formData?.usageCategoryMajor?.code || usageCategoryMajorMenu(usagecat)?.length) {
         const code = formData?.usageCategoryMajor?.code;
-        console.log("here is code -in if's",code)
         const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
-        console.log("code in Majorbuiltdingtype",Majorbuiltdingtype)
         setValue("PropertyUsageType", Majorbuiltdingtype);
         // setPropertyPurpose(Majorbuiltdingtype)
       }
-      console.log("code is out ")
     }, [formData, usageCategoryMajor  ]);
 
 

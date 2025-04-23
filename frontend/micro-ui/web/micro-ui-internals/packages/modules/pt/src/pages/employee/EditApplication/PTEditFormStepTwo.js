@@ -14,8 +14,7 @@ const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("data====");
-
+    
     if (!_.isEqual(data, localStepData)) {
       dispatch(UPDATE_PtNewApplication(config.key, data));
       setLocalStepData(data);
@@ -23,7 +22,6 @@ const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step two ", state);
     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
       ? state.pt.PTNewApplicationForm.formData[config.key]
       : {};
@@ -31,7 +29,6 @@ const PTEditFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
   const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.PropertyDetails);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
-  console.log("reduxStepData in step Two: ", reduxStepData);
   const dispatch = useDispatch();
 
   // console.log("currentStepData in  Administrative details: ", currentStepData);

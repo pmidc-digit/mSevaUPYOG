@@ -11,7 +11,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     sessionStorage.setItem("BPAREGintermediateValue", null);
   } else formData = formData;
 
-  console.log("formData", formData);
   let index = window.location.href.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -45,9 +44,9 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       !qualificationType // saved string exists
     ) {
       const savedName = formData.LicneseType.qualificationType;
-      console.log("Saved Name:", savedName);
+      
       const matched = qualificationTypes.find((opt) => opt.name === savedName.name);
-      console.log("Matched Qualification Type:", matched);
+
       if (matched) {
         setQualificationType(matched);
         // also re‑map the licenseType if you want to restore that too:
@@ -57,14 +56,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   }, [qualificationTypes]);
 
   function getLicenseType() {
-    // let list = [];
-    // let found = false;
-    // data?.StakeholderRegistraition?.TradeTypetoRoleMapping.map((ob) => {
-    //   found = list.some(el => el.i18nKey.includes(ob.tradeType.split(".")[0]));
-    //   if (!found) list.push({ role: ob.role, i18nKey: `TRADELICENSE_TRADETYPE_${ob.tradeType.split(".")[0]}`, tradeType: ob.tradeType })
-    // });
-    // console.log("License Types:", list);
-    // return list;
 
     let list = [];
     let found = false;
@@ -81,12 +72,10 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     });
 
     if (qualificationType?.name === "B-Arch") {
-      console.log("qualificationType in getlicense", qualificationType.name);
       list = list.filter((item) => item.i18nKey.includes("ARCHITECT"));
     } else {
       list = list.filter((item) => !item.i18nKey.includes("ARCHITECT") && !item.i18nKey.includes("BUILDER"));
     }
-    console.log("List in the licnse type", LicenseType);
     return list;
   }
 
@@ -159,7 +148,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       data.qualificationType = qualificationType;
       onSelect("", formData);
     }
-    console.log("qualificationType in go next", qualificationType);
   }
   function selectSelfCertification(e) {
     setSelfCertification(e.target.checked);
@@ -199,7 +187,6 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                 // selectedOption={setQualificationType}
                 selectedOption={qualificationType}
                 onSelect={(value) => {
-                  console.log("Selected Value:", value);
                   selectQualificationType(value);
                 }}
               />

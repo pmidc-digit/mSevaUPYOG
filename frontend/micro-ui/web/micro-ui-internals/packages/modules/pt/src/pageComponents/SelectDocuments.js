@@ -11,8 +11,6 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
 
   let action = "create";
 
-  console.log("formData in selecet document component", formData);
-  // console.log("formData.documents?.documents", formData.documents.documents);
 
   const { pathname } = useLocation();
   // const isEditScreen = pathname.includes("/edit-application/");
@@ -83,7 +81,6 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
           />
         );
       })}
-      {console.log("propertyTaxDocuments", propertyTaxDocuments)}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
     </div>
   );
@@ -110,14 +107,10 @@ function SelectDocument({
   const filteredDocument = documents?.find((item) => {
     const documentTypeParts = item?.documentType.split(".");
     const truncatedDocumentType = documentTypeParts.slice(0, 2).join(".");
-    console.log("In find:", "type:", truncatedDocumentType, "\n doc:", doc, "\n bool: ", truncatedDocumentType === doc?.code);
     return truncatedDocumentType === doc?.code;
   });
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  console.log("dropdowndata1", doc?.dropdownData);
-  console.log("filteredDocument", filteredDocument);
-  console.log("documents", documents);
-  console.log("doc", doc);
+  
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
       ? {
@@ -131,13 +124,11 @@ function SelectDocument({
       : {}
   );
 
-  console.log("selectedDocument in componene6", selectedDocument);
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
 
   const handleSelectDocument = (value) => {
     setSelectedDocument(value);
-    console.log("selecr doc value", value);
   };
 
   function selectfile(e) {
@@ -350,7 +341,6 @@ function SelectDocument({
       }
     }
   }, [documents]);
-  console.log("Dropdown data", dropDownData);
   return (
     <div style={{ marginBottom: "24px" }}>
       {doc?.hasDropdown ? (

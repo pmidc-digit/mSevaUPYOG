@@ -21,7 +21,6 @@ const convertEpochToDate = dateEpoch => {
 //   await Digit.Utils.downloadReceipt(null, businessService, "consolidatedreceipt", undefined, receiptNumber);
 // };
 const printReciept = async (tenantId, payments) => { 
-  console.log("payments",payments)
   let response = { filestoreIds: [payments?.fileStoreId] };
   if (!payments?.fileStoreId) {
     let assessmentYear="",assessmentYearForReceipt="";
@@ -245,7 +244,6 @@ const PaymentDetails = () => {
     false
   );
   useEffect(() => {
-    console.log("data?.Payments",data?.Payments)
     if (data) {
       setPaymentObject(
         data?.Payments?.map((payment) => {

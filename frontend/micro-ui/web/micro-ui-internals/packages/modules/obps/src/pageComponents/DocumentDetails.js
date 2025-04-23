@@ -107,7 +107,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
         // Call the update service to save as draft
         Digit.OBPSService.update({ BPA }, tenantId)
             .then(response => {
-                console.log("Draft saved successfully", response);
+                // console.log("Draft saved successfully", response);
             })
             .catch(error => {
                 console.error("Error saving draft", error);
@@ -273,8 +273,6 @@ const SelectDocument = React.memo(function MyComponent({
             // Extract geo location from the first file
             extractGeoLocation(e[0][1].file)
                 .then(location => {
-                    console.log('Latitude:', location.latitude);
-                    console.log('Longitude:', location.longitude);
                     setLatitude(location.latitude);
                     setLongitude(location.longitude);
                     {if (doc?.code === "SITEPHOTOGRAPH.ONE"){

@@ -9,7 +9,6 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData, ownerInde
   const editScreen = url.includes("/modify-application/");
   const mutationScreen = url.includes("/property-mutation/");
 
-  console.log("formData nai test",formData  );
   
 
   let index = mutationScreen ? ownerIndex : window.location.href.charAt(window.location.href.length - 1);

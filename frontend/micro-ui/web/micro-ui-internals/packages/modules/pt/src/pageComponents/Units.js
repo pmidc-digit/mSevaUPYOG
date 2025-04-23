@@ -6,7 +6,6 @@ import _ from "lodash";
 import { useLocation } from "react-router-dom";
 
 const Units = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
-console.log("formData in unit component", formData);
 
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify") || pathname.includes("edit");
@@ -31,7 +30,6 @@ console.log("formData in unit component", formData);
     ]
   );
   
-  console.log("here???????")
   const stateId = Digit.ULBService.getStateId();
   const [focusIndex, setFocusIndex] = useState({ index: -1 });
   const [loader, setLoader] = useState(true);
@@ -450,7 +448,6 @@ function Unit({
   ]);
 
 
-console.log("coming in this file ");
 
 
 

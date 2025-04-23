@@ -11,14 +11,11 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
   // console.log("state.pt.PTNewApplicationForm Form data in Summary Step: ", useSelector((state) => state.pt.PTNewApplicationForm.formData));
   const goNext = async (data) => {
-    console.log("Full form data submitted: ", formData);
     // onSubmit(formData); // Call the onSubmit function with the form data
     const res = await onSubmit(formData); // wait for the API response
-    console.log("API response: ", res);
-
+    
     // Check if the API call was successful
     if (res) {
-      console.log("Submission successful, moving to next step.");
       onGoNext();
     } else {
       console.error("Submission failed, not moving to next step.", res);

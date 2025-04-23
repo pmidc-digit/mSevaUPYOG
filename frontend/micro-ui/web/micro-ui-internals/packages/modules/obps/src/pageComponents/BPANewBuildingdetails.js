@@ -299,7 +299,6 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
       setFile(e.target.files[0]);
    }
     function onClick(e){
-      console.log("inside_NOC_search")
     }
     function selectfiles(e) {
       setGreenUploadedFile(e.target.files[0]);

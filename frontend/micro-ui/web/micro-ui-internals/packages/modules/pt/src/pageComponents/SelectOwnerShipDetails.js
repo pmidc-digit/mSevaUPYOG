@@ -24,7 +24,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
 
-  console.log("formData in SelectOwnerShipDetails 1", formData);
+  
 
   useEffect(() => {
     if (!isLoading && SubOwnerShipCategoryOb && OwnerShipCategoryOb) {
@@ -123,7 +123,6 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
       const code = formData?.ownershipCategory?.code;
 
       const Ownertype = getDropdwonForProperty(ownerShipdropDown)?.find((e) => e.code === code);
-      console.log("SetValues Ownertype", Ownertype);
       setValue("SelectOwnerShipDetails", Ownertype);
       // setPropertyPurpose(Majorbuiltdingtype)
     }
@@ -137,7 +136,6 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
     }
   }, [ownershipCategory]);
 
-  console.log("formData in SelectOwnerShipDetails 2", formData);
 
   if (userType === "employee" && editScreen && mutateScreen && loader) {
     return <Loader />;

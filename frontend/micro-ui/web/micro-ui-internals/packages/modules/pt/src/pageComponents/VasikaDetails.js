@@ -23,7 +23,6 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
   const checkLocation = window.location.href.includes("pt/new-application") || window.location.href.includes("pt/renew-application-details");
   const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("pt/renew-application-details");
   let validation = {};
- console.log("config.key",config.key)
   let inputs = [
     {
       label: "PT_PROPERTY_ADDRESS_VASIKA_NO",

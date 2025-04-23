@@ -20,7 +20,6 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   //   return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
   // });
   // Outside the component
-  console.log("formData licenseDetails", formData);
   function getLastName(formData) {
     const fullName = formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
     const nameParts = fullName.trim().split(" ");

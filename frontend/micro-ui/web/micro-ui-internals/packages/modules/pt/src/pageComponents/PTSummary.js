@@ -3,7 +3,6 @@ import { CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
 
 const PTSummary = ({ formData, t, onEdit }) => {
-  console.log("form data in summary component", formData);
   const { pathname: url } = useLocation();
   const mutateScreen = url.includes("/property-mutate/");
 

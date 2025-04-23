@@ -98,7 +98,6 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
         Header: t("PT_COMMON_TABLE_COL_PT_ID"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log("row====", row);
           return (
             <div>
               <span className="link">
@@ -197,7 +196,6 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     });
   };
 
-  console.log("data=====", data);
 
   const tableData = Object.values(data?.Properties || {}) || [];
 
@@ -206,7 +204,6 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast, ptSearchCon
     return null;
   }
 
-  console.log("tableData=====", tableData);
   return (
     <React.Fragment>
       {data?.Properties?.length === 0 ? (

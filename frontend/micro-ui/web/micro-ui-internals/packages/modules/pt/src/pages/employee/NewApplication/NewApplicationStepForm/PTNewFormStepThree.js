@@ -6,7 +6,6 @@ import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicat
 
 const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
   }
 
@@ -15,14 +14,12 @@ const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in personal deatils step 3", data,"\n Bool: ",!_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PtNewApplication(config.key, data));
     }
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step three ", state);
     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
         ? state.pt.PTNewApplicationForm.formData[config.key] 
         : {};

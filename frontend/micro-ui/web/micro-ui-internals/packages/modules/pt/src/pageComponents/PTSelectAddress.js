@@ -46,12 +46,9 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
 
   useEffect(() => {
     if (userType === "employee" && presentInModifyApplication && localities?.length) {
-      console.log("coming here");
       
       const code = formData?.originalData?.address?.locality?.code;
-      console.log("coming here code",code);
       const _locality = localities?.filter((e) => e.code === code)[0];
-      console.log("coming here _locality",_locality);
       setValue("locality", _locality);
     }
   }, [localities]);
@@ -114,7 +111,6 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
       onSelect(config.key, { ...formData[config.key], locality: locality });
     }
     
-  console.log("Selected locality being saved:", locality);
   }
 
   function onSubmit() {

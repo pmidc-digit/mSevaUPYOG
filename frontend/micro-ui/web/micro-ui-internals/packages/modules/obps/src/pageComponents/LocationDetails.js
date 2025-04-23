@@ -87,7 +87,6 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
       if (selectedCity && fetchedLocalities && !Pinerror) {
         let __localityList = fetchedLocalities;
         let filteredLocalityList = [];
-        console.log("fetchedLocalities", fetchedLocalities);
         if (formData?.address?.locality && formData?.address?.locality?.code === selectedLocality?.code) {
           setSelectedLocality(formData.address.locality);
         }
@@ -101,7 +100,6 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
           (filteredLocalityList.length > 0 && localities.length !== filteredLocalityList.length) ||
           (filteredLocalityList.length <= 0 && localities && localities.length !== __localityList.length)
         ) {
-          console.log("filteredLocalityList", filteredLocalityList);
           setLocalities(() => (filteredLocalityList.length > 0 ? filteredLocalityList : __localityList));
         }
         if (

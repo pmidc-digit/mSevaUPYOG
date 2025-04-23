@@ -20,7 +20,6 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step two ", state);
     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
         ? state.pt.PTNewApplicationForm.formData[config.key] 
         : {};

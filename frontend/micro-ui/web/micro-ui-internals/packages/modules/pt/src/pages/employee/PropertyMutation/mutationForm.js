@@ -5,7 +5,6 @@ import { newConfigMutate } from "../../../config/Mutate/config";
 import { useHistory } from "react-router-dom";
 
 const MutationForm = ({ applicationData, tenantId }) => {
-  console.log("applicationData in ownership transefership", applicationData);
 
   const { t } = useTranslation();
   const [canSubmit, setSubmitValve] = useState(false);
@@ -14,7 +13,6 @@ const MutationForm = ({ applicationData, tenantId }) => {
   const defaultValues = {
     originalData: applicationData,
   };
-  console.log("defaultValues in ownership transefership", defaultValues);
   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
   const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});
 
@@ -44,7 +42,6 @@ const MutationForm = ({ applicationData, tenantId }) => {
       data?.originalData?.documents?.filter(
         (oldDoc) => !mutationDocs?.PropertyTax?.MutationDocuments.some((mut) => oldDoc.documentType.includes(mut.code))
       ) || [];
-    console.log("data", data);
     const submitData = {
       Property: {
         ...data.originalData,
@@ -113,7 +110,7 @@ const MutationForm = ({ applicationData, tenantId }) => {
   };
 
   const configs = newConfigMutate;
-  console.log("config", configs);
+  
   return (
     <FormComposer
       heading={t("ES_TITLE_MUTATE_PROPERTY")}

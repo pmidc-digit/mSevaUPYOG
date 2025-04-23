@@ -20,7 +20,6 @@ const PropertyStructureDetails = ({ t, config, onSelect, userType, formData }) =
   const [fields, setFields] = useState(window.location.pathname.includes("/pt/modify-application/")? formData.propertyStructureDetails: {"usageCategory":"","structureType":"","ageOfProperty":""})
    
   
-console.log("formaDataPropertyStructureDetails",formData)
 
   const getheader = () => {
    
@@ -186,7 +185,6 @@ console.log("formaDataPropertyStructureDetails",formData)
 
   function isAllowedNext (){
   
-console.log("fields",fields)
     return true;
   }
   if (userType === "employee") {

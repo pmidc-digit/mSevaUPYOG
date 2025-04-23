@@ -12,7 +12,6 @@ const NOCNumber = ({ t, config, onSelect, userType, formData, setError: setFormE
       }
 
       function onClick(e){
-        console.log("inside_search")
       }
 
       const handleSubmit = () => {

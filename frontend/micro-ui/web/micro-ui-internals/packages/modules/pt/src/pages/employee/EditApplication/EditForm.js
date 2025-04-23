@@ -17,7 +17,6 @@ const EditForm = ({ applicationData }) => {
     setMutationHappened(false);
     clearSuccessData();
   }, []);
-  console.log("applicationData",applicationData)
 let propertyStructureDetails= {"usageCategory":"","structureType":applicationData?.additionalDetails?.structureType,"ageOfProperty":applicationData?.additionalDetails?.ageOfProperty}
   const defaultValues = {
     originalData: applicationData,
@@ -44,7 +43,6 @@ let propertyStructureDetails= {"usageCategory":"","structureType":applicationDat
   };
 
   const onSubmit = (data) => {
-    console.log("dataaaa",data)
     const formData = {     
       ...applicationData,
       address: {

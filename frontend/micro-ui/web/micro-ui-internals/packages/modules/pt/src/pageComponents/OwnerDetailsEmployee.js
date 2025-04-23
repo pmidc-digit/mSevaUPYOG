@@ -22,7 +22,6 @@ const createOwnerDetails = () => ({
 const PTEmployeeOwnershipDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
 
-console.log("formData tes test",formData);
 
 
 

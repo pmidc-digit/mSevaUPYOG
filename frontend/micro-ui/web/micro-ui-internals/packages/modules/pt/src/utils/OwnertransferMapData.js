@@ -1,5 +1,4 @@
 export const OwnertransferMapData = (applicationData) => {
-  console.log("applicationData in mapApplicationDataToDefaultValues: ", applicationData);
   const owners = applicationData?.owners || [];
   const mappedData = {
     ownershipCategory: {

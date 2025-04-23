@@ -3,7 +3,7 @@ import complaintReducer from "./complaintReducer";
 
 const getRootReducer = () =>
   combineReducers({
-    complaints: complaintReducer,
+    swach: complaintReducer,
   });
 
 export default getRootReducer;

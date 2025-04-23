@@ -72,4 +72,13 @@ export const TLService = {
      userService: false,
      params: { tenantId, ...filters },
    }),
+   fetch_bill: ({ tenantId, filters }) =>
+    Request({
+      url: Urls.mcollect.fetch_bill,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: false,
+      params: { tenantId, ...filters },
+    }),
 };

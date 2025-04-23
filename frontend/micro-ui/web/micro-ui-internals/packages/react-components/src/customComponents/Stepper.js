@@ -3,15 +3,14 @@ import { useTranslation } from "react-i18next";
 //
 import StepWrapper from "./StepWrapper";
 
-const Stepper = ({ stepsList = [],onSubmit, step ,setStep }) => {
+const Stepper = ({ stepsList = [], onSubmit, step, setStep }) => {
   const enabledStepsList = stepsList.filter((item) => item.isStepEnabled);
   const { t } = useTranslation();
 
   function onGoNext() {
     if (step < enabledStepsList.length) {
       nextStep();
-    }
-    else if(step===enabledStepsList.length){
+    } else if (step === enabledStepsList.length) {
       onSubmit();
     }
   }
@@ -24,7 +23,7 @@ const Stepper = ({ stepsList = [],onSubmit, step ,setStep }) => {
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
-  
+
   const renderStep = () => {
     const currStepConfBody = enabledStepsList[step - 1];
     const { component, key, texts, currStepConfig } = currStepConfBody;

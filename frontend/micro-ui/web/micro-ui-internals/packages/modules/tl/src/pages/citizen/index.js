@@ -17,6 +17,7 @@ const App = () => {
 
   const ApplicationDetails = Digit.ComponentRegistryService.getComponent("TLApplicationDetails");
   const CreateTradeLicence = Digit?.ComponentRegistryService?.getComponent('TLCreateTradeLicence');
+  const CreateTradeLicenceStepForm=Digit?.ComponentRegistryService?.getComponent('TLCreateTradeLicenceStepForm');
   const EditTrade = Digit?.ComponentRegistryService?.getComponent('TLEditTrade');
   const RenewTrade = Digit?.ComponentRegistryService?.getComponent('TLRenewTrade');
   const TradeLicense = Digit?.ComponentRegistryService?.getComponent('TradeLicense');
@@ -40,7 +41,8 @@ const App = () => {
       <Switch>
         <AppContainer>
           {!(window.location.href.includes('/acknowledgement'))&&window.location.href.includes('tl/tradelicence')  &&<BackButton /* style={{ position: "fixed", top: "55px" }} */ isCommonPTPropertyScreen={isCommonPTPropertyScreen} isSuccessScreen={isSuccessScreen} getBackPageNumber={getBackPageNumber}>Back</BackButton>}
-          <PrivateRoute path={`${path}/tradelicence/new-application`} component={CreateTradeLicence} />
+          {/* <PrivateRoute path={`${path}/tradelicence/new-application`} component={CreateTradeLicence} /> */}
+          <PrivateRoute path={`${path}/tradelicence/new-application`} component={CreateTradeLicenceStepForm} />
           <PrivateRoute path={`${path}/tradelicence/edit-application/:id/:tenantId`} component={EditTrade} />
           <PrivateRoute path={`${path}/tradelicence/renew-trade/:id/:tenantId`} component={RenewTrade} />
           <PrivateRoute path={`${path}/tradelicence/my-application`} component={MyApplications} />

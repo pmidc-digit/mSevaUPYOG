@@ -67,57 +67,56 @@
     padding-top: 88px;
   }
 
-.submit-bar header{
-  height: 2rem  !important;
-  line-height: 2rem !important;
-  background-color: #2947A3;
-} 
+  .submit-bar header {
+    height: 2rem !important;
+    line-height: 2rem !important;
+    background-color: #2947a3;
+  }
 
   .loginContainer {
     padding-top: 88px;
     position: relative;
   }
 
-.loginnn{
-  position: relative;
-  max-width: 100%;
-  width: 100%;
-  min-width: 100%;
-}
-.loginnn .img{
-  position: absolute;
-  background-size: cover;
-  width: 100%;
-  max-width: 100%;
-  max-height: 100%;
-}
-.logoNiua{
-  display: flex;
-  width: 100%;
-  position: absolute;
-}
-.logoNiua .img{
-  width: 15%;
-  height: 15%;
-}
-.upyogLogo{
-  width: 100% !important;
-}
-.login-logo-wrapper{
+  .loginnn {
+    position: relative;
+    max-width: 100%;
+    width: 100%;
+    min-width: 100%;
+  }
+  .loginnn .img {
+    position: absolute;
+    background-size: cover;
+    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+  }
+  .logoNiua {
+    display: flex;
+    width: 100%;
+    position: absolute;
+  }
+  .logoNiua .img {
+    width: 15%;
+    height: 15%;
+  }
+  .upyogLogo {
+    width: 100% !important;
+  }
+  .login-logo-wrapper {
     min-width: 100%;
     height: 100%;
     position: absolute;
     display: flex;
     flex-direction: row;
-}
-.loginConference{
+  }
+  .loginConference {
     position: relative;
     height: 100%;
     width: 100%;
     font-weight: 700;
-
-}
-.login-banner-wrapper{
+  }
+  .login-banner-wrapper {
     position: relative;
     color: white;
     float: right;
@@ -127,7 +126,7 @@
     margin-right: 2%;
     text-align: right;
     font-family: none;
-}
+  }
 
   .react-time-picker {
     width: 100%;
@@ -157,24 +156,24 @@
     padding-left: 8px;
   }
 }
-#login-conference-table{
-  position:absolute;
-   z-index:1;
-   width:36vw;
-   height:62vh;
-   margin-top:20vh;
-   margin-left: 2vw;
+#login-conference-table {
+  position: absolute;
+  z-index: 1;
+  width: 36vw;
+  height: 62vh;
+  margin-top: 20vh;
+  margin-left: 2vw;
 }
-.banner-slogan{
+.banner-slogan {
   padding-top: 10%;
 }
-.psuedo-banner span{
+.psuedo-banner span {
   color: #fdd049;
-} 
-.login-banner-wrapper .psuedo-banner{
+}
+.login-banner-wrapper .psuedo-banner {
   font-size: 2.2rem;
 }
-.login-banner-wrapper .banner-slogan{
+.login-banner-wrapper .banner-slogan {
   font-size: 1.5rem;
 }
 .citizen {
@@ -197,11 +196,10 @@
     white-space: nowrap;
     height: calc(100vh - 36px);
     padding-bottom: 5rem;
-    background: linear-gradient(to bottom right, #3765CA, #294A97);
-   /* background-image: url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-green-card.png), url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-red-card.png);
+    background: linear-gradient(to bottom right, #3765ca, #294a97);
+    /* background-image: url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-green-card.png), url(https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/top-red-card.png);
     background-blend-mode: lighten;
     background-size: cover;*/
-
 
     .actions {
       cursor: pointer;
@@ -227,13 +225,13 @@
       align-items: center;
       padding: 20px;
       font-size: 14px;
-      border-left: 4px solid #294A97;
+      border-left: 4px solid #294a97;
       border-radius: 0px 10px 10px 0px;
       &.active {
-        color: #0D43A7 !important;
+        color: #0d43a7 !important;
         background-color: #ffffff;
         svg {
-          fill: #0D43A7 !important;
+          fill: #0d43a7 !important;
         }
       }
       .employee-search-input {
@@ -259,15 +257,15 @@
       }
 
       &:hover {
-        color: #0D43A7 !important;
-        background-color: #FFF;
+        color: #0d43a7 !important;
+        background-color: #fff;
         border-radius: 8px;
         padding: 1rem 0.2rem;
 
         cursor: pointer;
         svg {
-          fill: #0D43A7 !important;
-        } 
+          fill: #0d43a7 !important;
+        }
       }
       .search-icon-wrapper {
         svg {
@@ -300,7 +298,7 @@
         fill: #ffffff;
       }
       &:hover {
-       /* color: #fe7a51 !important;
+        /* color: #fe7a51 !important;
         background-color: #486480;
         cursor: pointer;
         svg {
@@ -434,12 +432,12 @@
   }
 }
 
-.RightMostTopBarOptions{
+.RightMostTopBarOptions {
   @apply flex float-right;
   display: flex;
-  .EventNotificationWrapper{
+  .EventNotificationWrapper {
     @apply relative cursor-pointer;
-    span{
+    span {
       top: -10px;
       right: -10px;
       @apply absolute bg-error h-5 w-5 rounded-full text-center;
@@ -455,7 +453,6 @@
     }
   }
 }
-
 
 .fullWidth {
   width: 100%;
@@ -483,17 +480,16 @@
     row-gap: 2px;
     margin-left: -12px;
   }
-
 }
 
 .m-auto {
   margin: auto !important;
 }
 
-.mb-50{
+.mb-50 {
   margin-bottom: 50px;
 }
-.mb-25{
+.mb-25 {
   margin-bottom: 25px;
 }
 @media (min-width: 640px) {
@@ -532,9 +528,9 @@
       padding-top: 58px;
     }
   }
-  #main-img{      
-    content:url("https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png");
-} 
+  #main-img {
+    content: url("https://in-egov-assets.s3.ap-south-1.amazonaws.com/images/employee-login.png");
+  }
   .citizen {
     .main {
       width: 100%;
@@ -547,85 +543,81 @@
     .center-container {
     }
   }
- 
 }
 
-@media only screen and (max-width:950px){
-  #main-img{      
-    content:url("https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png");
+@media only screen and (max-width: 950px) {
+  #main-img {
+    content: url("https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png");
   }
- #login-conference-table{
-  position:relative;
-   z-index:1;
-   width:75%;
-   height:115%;
-   margin:12%;
-   margin-top:25%
-}
-.loginConference{
+  #login-conference-table {
+    position: relative;
+    z-index: 1;
+    width: 75%;
+    height: 115%;
+    margin: 12%;
+    margin-top: 25%;
+  }
+  .loginConference {
     position: absolute;
     height: 100%;
     width: 100%;
     font-weight: 700;
     display: flex;
     flex-direction: column;
-}
-.employee .login-banner-wrapper{
-  padding-top: 0vh;
-  
-}
-.psuedo-banner{
-  font-size: 4vw;
-}
-.banner-slogan{
-  font-size: 3.5vw;
-}
-}
-
-@media screen and (min-width:768){
-
-   #login-conference-table{
-  position:absolute;
-   z-index:1;
-   width:40%;
-   height:30%;
-   margin:12%;
-   margin-top:25%
-} 
-}
-@media only screen and (max-width:500px){
-  #main-img{      
-    content:url("https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png");
   }
- #login-conference-table{
-  position:relative;
-   z-index:1;
-   width:75%;
-   height:80%;
-   margin:12%;
-   margin-top:25%
+  .employee .login-banner-wrapper {
+    padding-top: 0vh;
+  }
+  .psuedo-banner {
+    font-size: 4vw;
+  }
+  .banner-slogan {
+    font-size: 3.5vw;
+  }
 }
-.loginConference{
+
+@media screen and (min-width: 768) {
+  #login-conference-table {
+    position: absolute;
+    z-index: 1;
+    width: 40%;
+    height: 30%;
+    margin: 12%;
+    margin-top: 25%;
+  }
+}
+@media only screen and (max-width: 500px) {
+  #main-img {
+    content: url("https://i.postimg.cc/9Q7jT6Dd/Banner-Image-2.png");
+  }
+  #login-conference-table {
+    position: relative;
+    z-index: 1;
+    width: 75%;
+    height: 80%;
+    margin: 12%;
+    margin-top: 25%;
+  }
+  .loginConference {
     position: absolute;
     height: 100%;
     width: 100%;
     font-weight: 700;
     display: flex;
     flex-direction: column;
+  }
+  .employee .psuedo-banner {
+    font-size: 1.2rem;
+  }
+  .employee .banner-slogan {
+    font-size: 0.8rem;
+  }
 }
-.employee .psuedo-banner{
-  font-size: 1.2rem;
-}
-.employee .banner-slogan{
-  font-size: 0.8rem;
-}
-}
-@media only screen and (min-width:300px)
-{
-.employee .card-home{
-height: 220px;
-border-radius: 12px;
-}
+@media only screen and (min-width: 300px) {
+  .employee .card-home {
+    height: 220px;
+    border-radius: 12px;
+  }
 }
 
 .pageCard {
@@ -635,4 +627,53 @@ border-radius: 12px;
   gap: 48px;
   border-radius: 24px;
   background: #ffffff;
+}
+
+.ndcFormCard {
+  max-width: 1200px;
+  margin: auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  form {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+
+    .surveydetailsform-wrapper {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+
+      label {
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      p {
+        color: red;
+        font-size: 14px;
+      }
+    }
+  }
+
+  @media (max-width: 1024px) {
+    form {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    form {
+      grid-template-columns: 1fr;
+    }
+  }
 }

@@ -35,6 +35,7 @@ export const FormComposer = (props) => {
     setError,
     clearErrors,
     unregister,
+    setApi,
   } = useForm({
     defaultValues: props.defaultValues,
   });
@@ -140,6 +141,7 @@ export const FormComposer = (props) => {
                 clearErrors={clearErrors}
                 formState={formState}
                 onBlur={props.onBlur}
+                setApi={setApi}
               />
             )}
             name={config.key}

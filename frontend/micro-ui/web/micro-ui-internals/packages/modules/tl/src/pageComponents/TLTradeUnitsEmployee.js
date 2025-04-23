@@ -25,7 +25,7 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
     const [units, setUnits] = useState(formData?.tradeUnits || [createUnitDetails()]);
     // const [owners, setOwners] = useState(formData?.owners || [createOwnerDetails()]);
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-    const tenantId = Digit.ULBService.getCurrentTenantId();
+    const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
     const stateId = Digit.ULBService.getStateId();
     const [tradeTypeMdmsData, setTradeTypeMdmsData] = useState([]);
     const [tradeCategoryValues, setTradeCategoryValues] = useState([]);
@@ -153,6 +153,20 @@ const TradeUnitForm = (_props) => {
     const { errors } = localFormState;
 
     const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code?.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
+
+    const validTradeSubTypeOptions = useMemo(() => {
+        return sortDropdownNames(
+          tradeSubTypeOptionsList.filter((subType) => {
+            return billingSlabTradeTypeData?.some(
+              (ob) =>
+                ob?.tradeType === subType?.code &&
+                ob?.structureType === formData?.tradedetils?.[0]?.structureSubType?.code
+            );
+          }),
+          "i18nKey",
+          t
+        );
+      }, [tradeSubTypeOptionsList, billingSlabTradeTypeData, formData?.tradedetils?.[0]?.structureSubType?.code]);
 
     useEffect(() => {
         if (tradeMdmsData && ( billingSlabTradeTypeData?.length > 0 && formData?.tradedetils?.["0"]?.structureType?.code && formData?.tradedetils?.["0"]?.structureSubType?.code)) {
@@ -375,6 +389,7 @@ function checkBillingSlab(value){
                                             setValue("uomValue", "");
                                             setTradeSubTypeOptionsList(filterTradeSubTypeList);
                                         }
+                                        console.log("tradeType", e);
                                         props.onChange(e);
                                     }}
                                     optionKey="i18nKey"
@@ -397,13 +412,15 @@ function checkBillingSlab(value){
                                     className="form-field"
                                     selected={getValues("tradeSubType")}
                                     disable={false}
-                                    option={unit?.tradeType ? sortDropdownNames(tradeSubTypeOptionsList,"i18nKey",t) : []}
+                                    // option={unit?.tradeType ? sortDropdownNames(tradeSubTypeOptionsList,"i18nKey",t) : []}
+                                    option={unit?.tradeType ? validTradeSubTypeOptions : []}
                                     errorStyle={(localFormState.touched.tradeSubType && errors?.tradeSubType?.message) ? true : false}
                                     select={(e) => {
                                         if (props?.value?.code == e?.code) return true;
                                         if(e?.code != props?.value?.code && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true});
                                         setValue("uom", e?.uom ? e?.uom : "");
                                         setValue("uomValue", "");
+                                        console.log("tradeSubType", e);
                                         props.onChange(e);
                                     }}
                                     optionKey="i18nKey"

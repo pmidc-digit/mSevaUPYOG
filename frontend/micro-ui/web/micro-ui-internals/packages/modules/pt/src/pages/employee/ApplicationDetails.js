@@ -9,7 +9,6 @@ import TransfererDetails from "../../pageComponents/Mutate/TransfererDetails";
 import MutationApplicationDetails from "./MutationApplicatinDetails";
 import getPTAcknowledgementData from "../../getPTAcknowledgementData";
 
-
 const ApplicationDetails = () => {
   const { t } = useTranslation();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -21,8 +20,8 @@ const ApplicationDetails = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [enableAudit, setEnableAudit] = useState(false);
   const [businessService, setBusinessService] = useState("PT.CREATE");
-  sessionStorage.setItem("applicationNoinAppDetails",propertyId);
-  const [viewTimeline, setViewTimeline]=useState(false);
+  sessionStorage.setItem("applicationNoinAppDetails", propertyId);
+  const [viewTimeline, setViewTimeline] = useState(false);
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, propertyId);
 
   const {
@@ -64,7 +63,7 @@ const ApplicationDetails = () => {
       });
       setAppDetailsToShow({ ...appDetailsToShow, applicationDetails });
     }
-  },[setAppDetailsToShow,appDetailsToShow,auditData,applicationDetails,auditData,newConfigMutate]);
+  }, [setAppDetailsToShow, appDetailsToShow, auditData, applicationDetails, auditData, newConfigMutate]);
 
   const closeToast = () => {
     setShowToast(null);
@@ -72,7 +71,9 @@ const ApplicationDetails = () => {
 
   useEffect(() => {
     if (applicationDetails) {
-      appDetailsToShow?.applicationData?.owners.sort((item, item2) => { return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence })
+      appDetailsToShow?.applicationData?.owners.sort((item, item2) => {
+        return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence;
+      });
       setAppDetailsToShow(_.cloneDeep(applicationDetails));
       if (applicationDetails?.applicationData?.status !== "ACTIVE" && applicationDetails?.applicationData?.creationReason === "MUTATION") {
         setEnableAudit(true);
@@ -82,13 +83,16 @@ const ApplicationDetails = () => {
 
   useEffect(() => {
     showTransfererDetails();
-    if (appDetailsToShow?.applicationData?.status === "ACTIVE" && PT_CEMP&&businessService=="PT.CREATE") {
-       setBusinessService("PT.UPDATE");
-      }
+    if (appDetailsToShow?.applicationData?.status === "ACTIVE" && PT_CEMP && businessService == "PT.CREATE") {
+      setBusinessService("PT.UPDATE");
+    }
   }, [auditData, applicationDetails, appDetailsToShow]);
 
   useEffect(() => {
-    if (workflowDetails?.data?.applicationBusinessService && !(workflowDetails?.data?.applicationBusinessService === "PT.CREATE" && businessService === "PT.UPDATE")) {
+    if (
+      workflowDetails?.data?.applicationBusinessService &&
+      !(workflowDetails?.data?.applicationBusinessService === "PT.CREATE" && businessService === "PT.UPDATE")
+    ) {
       setBusinessService(workflowDetails?.data?.applicationBusinessService);
     }
   }, [workflowDetails.data]);
@@ -174,8 +178,8 @@ const ApplicationDetails = () => {
     ];
   }
   const handleDownloadPdf = async () => {
-    const Property = appDetailsToShow?.applicationData ;
-    const tenantInfo  = tenants.find((tenant) => tenant.code === Property.tenantId);
+    const Property = appDetailsToShow?.applicationData;
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
     const data = await getPTAcknowledgementData(Property, tenantInfo, t);
     Digit.Utils.pdf.generate(data);
@@ -186,70 +190,72 @@ const ApplicationDetails = () => {
     order: 1,
     label: t("PT_APPLICATION"),
     // onClick: () => handleDownloadPdf(),
-    onClick:  handleDownloadPdf,
+    onClick: handleDownloadPdf,
   };
   let dowloadOptions = [propertyDetailsPDF];
-  const handleViewTimeline=()=>{
+  const handleViewTimeline = () => {
     setViewTimeline(true);
-      const timelineSection=document.getElementById('timeline');
-      if(timelineSection){
-        timelineSection.scrollIntoView({behavior: 'smooth'});
-      } 
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) {
+      timelineSection.scrollIntoView({ behavior: "smooth" });
+    }
   };
- if (applicationDetails?.applicationData?.creationReason === "MUTATION"){  
-   return(
-    <MutationApplicationDetails 
-      propertyId = {propertyId}
-      acknowledgementIds={appDetailsToShow?.applicationData?.acknowldgementNumber}
-      workflowDetails={workflowDetails}
-      mutate={mutate}
-      showToast={showToast}
-      setShowToast={setShowToast}
-      closeToast={closeToast}
-    />
-   )
- } 
+  if (applicationDetails?.applicationData?.creationReason === "MUTATION") {
+    return (
+      <MutationApplicationDetails
+        propertyId={propertyId}
+        acknowledgementIds={appDetailsToShow?.applicationData?.acknowldgementNumber}
+        workflowDetails={workflowDetails}
+        mutate={mutate}
+        showToast={showToast}
+        setShowToast={setShowToast}
+        closeToast={closeToast}
+      />
+    );
+  }
   if (applicationDetails?.applicationDetails[1].title == "PT_ASSESMENT_INFO_SUB_HEADER") {
     if (applicationDetails?.applicationDetails[1].values.length == 4) {
       let obj = {
-        "title": "PT_ASSESMENT_ELECTRICITY",
-        "value": applicationDetails?.additionalDetails?.electricity || "NA"
-      }
-      applicationDetails?.applicationDetails[1].values.push(obj)
+        title: "PT_ASSESMENT_ELECTRICITY",
+        value: applicationDetails?.additionalDetails?.electricity || "NA",
+      };
+      applicationDetails?.applicationDetails[1].values.push(obj);
     }
     if (applicationDetails?.applicationDetails[1].values.length == 5) {
       let obj = {
-        "title": "PT_ASSESMENT_ELECTRICITY_UID",
-        "value": applicationDetails?.additionalDetails?.uid || "NA"
-      }
-      applicationDetails?.applicationDetails[1].values.push(obj)
+        title: "PT_ASSESMENT_ELECTRICITY_UID",
+        value: applicationDetails?.additionalDetails?.uid || "NA",
+      };
+      applicationDetails?.applicationDetails[1].values.push(obj);
     }
   }
 
-  const reversedOwners= Array.isArray(appDetailsToShow?.applicationData?.owners) ? appDetailsToShow?.applicationData?.owners.slice().reverse(): [];
+  const reversedOwners = Array.isArray(appDetailsToShow?.applicationData?.owners) ? appDetailsToShow?.applicationData?.owners.slice().reverse() : [];
   if (appDetailsToShow?.applicationData) {
-    appDetailsToShow?.applicationDetails?.[3]?.additionalDetails?.owners.sort(() => { return appDetailsToShow?.applicationDetails?.[3]?.additionalDetails?.owners})
+    appDetailsToShow?.applicationDetails?.[3]?.additionalDetails?.owners.sort(() => {
+      return appDetailsToShow?.applicationDetails?.[3]?.additionalDetails?.owners;
+    });
   }
   return (
     <div>
-        <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
-      <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("PT_APPLICATION_TITLE")}</Header>
-      <div>
-      <div style={{zIndex: "10",  position: "relative"}}>
-      {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-              downloadBtnClassName={"employee-download-btn-className"}
-              optionsClassName={"employee-options-btn-className"}
-              // ref={menuRef}
-            />
-          )}
+      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+        <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("PT_APPLICATION_TITLE")}</Header>
+        <div>
+          <div style={{ zIndex: "10", position: "relative" }}>
+            {dowloadOptions && dowloadOptions.length > 0 && (
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+                downloadBtnClassName={"employee-download-btn-className"}
+                optionsClassName={"employee-options-btn-className"}
+                // ref={menuRef}
+              />
+            )}
           </div>
-      <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
-      </div>      
+          <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+        </div>
       </div>
       <ApplicationDetailsTemplate
         applicationDetails={appDetailsToShow}
@@ -257,6 +263,7 @@ const ApplicationDetails = () => {
         isDataLoading={isLoading}
         applicationData={appDetailsToShow?.applicationData}
         mutate={mutate}
+        auditDataLoading={auditDataLoading}
         id={"timeline"}
         workflowDetails={workflowDetails}
         businessService={businessService}
@@ -269,7 +276,6 @@ const ApplicationDetails = () => {
         statusAttribute={"state"}
         MenuStyle={{ color: "#FFFFFF", fontSize: "18px" }}
       />
-    
     </div>
   );
 };

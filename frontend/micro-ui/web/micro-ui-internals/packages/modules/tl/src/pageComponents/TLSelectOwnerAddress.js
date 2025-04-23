@@ -10,7 +10,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
   let isrenewtrade = window.location.href.includes("renew-trade");
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
-  let ismultiple = formData?.ownershipCategory?.code.includes("SINGLEOWNER") ? false : true;
+  let ismultiple = formData?.ownershipCategory?.code?.includes("SINGLEOWNER") ? false : true;
 
   useEffect(() => {
     if (formData?.owners?.permanentAddress == null && isrenewtrade && permanentAddress === "") {

@@ -16,6 +16,7 @@ const GetActionMessage = ({ action }) => {
 
 const BannerPicker = ({ response }) => {
   const { complaints } = response;
+  console.log("Inside Banner");
 
   if (complaints && complaints.response && complaints.response.responseInfo) {
     sessionStorage.removeItem("type" );
@@ -37,6 +38,8 @@ const BannerPicker = ({ response }) => {
 };
 
 const Response = (props) => {
+  console.log("coming here");
+  
   const { t } = useTranslation();
   const { match } = useRouteMatch();
   const appState = useSelector((state) => state)["pgr"];
@@ -44,10 +47,13 @@ const Response = (props) => {
   const { tenants } = storeData || {};
   const [enable, setEnable] = useState(false)
   let id= appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
-  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId:"pg.citya", id },{ enabled: enable ? true : false});
+  const tenantId = window.Digit.SessionStorage.get("Employee.tenantId");
+  console.log("tenantId PGR", tenantId);
+  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId:tenantId, id },{ enabled: enable ? true : false});
+  console.log("Complaint Details", complaintDetails);
   
   const handleDownloadPdf = async (e) => {
-    const tenantInfo = tenants.find((tenant) => tenant.code === "pg.citya");
+    const tenantInfo = tenants.find((tenant) => tenant.code === tenantId);
     e.preventDefault()
     setEnable(true)
     const data = await getPGRcknowledgementData({ ...complaintDetails }, tenantInfo, t);

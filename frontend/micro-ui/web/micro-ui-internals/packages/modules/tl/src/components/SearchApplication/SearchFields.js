@@ -3,6 +3,9 @@ import { Controller, useWatch } from "react-hook-form";
 import { TextInput, SubmitBar, DatePicker, SearchField, Dropdown, Loader } from "@mseva/digit-ui-react-components";
 
 const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) => {
+  let validation = {};
+  const allCities = Digit.Hooks.tl.useTenants();
+  const cities = allCities.filter((city) => city.code === tenantId)
   const { data: applicationTypes, isLoading: applicationTypesLoading } = Digit.Hooks.tl.useMDMS.applicationTypes(tenantId);
 
   const applicationType = useWatch({ control, name: "applicationType" });
@@ -59,6 +62,16 @@ const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) =
         <label>{t("TL_TRADE_LICENSE_LABEL")}</label>
         <TextInput name="licenseNumbers" inputRef={register({})} />
       </SearchField>
+      <SearchField>
+        <label>{t("TL_TRADE_OWNER_S_NUMBER_LABEL")}</label>
+        <TextInput name="mobileNumber" inputRef={register({})}  type="mobileNumber" componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>} maxlength={10} 
+        // {...(validation = {pattern: "[6-9]{1}[0-9]{9}",type: "tel",title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),})}
+        />
+      </SearchField>
+      <SearchField>
+        <label>{t("TL_TRADE_OWNER_S_NAME_LABEL")}</label>
+        <TextInput name="name" inputRef={register({})} />
+      </SearchField>
       {isLoading ? (
         <Loader />
       ) : (
@@ -73,10 +86,22 @@ const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) =
           />
         </SearchField>
       )}
-      <SearchField>
+      
+        <SearchField>
+          <label>{t("TL_LOCALIZATION_LOCALITY")}</label>
+          <Controller
+            control={control}
+            name="locality"
+            render={(props) => (
+              <Dropdown selected={props.value} select={props.onChange} onBlur={props.onBlur} option={allCities} optionKey="i18nKey" t={t} />
+            )}
+          />
+        </SearchField>
+      
+      {/* <SearchField>
         <label>{t("TL_LOCALIZATION_TRADE_NAME")}</label>
         <TextInput name="tradeName" inputRef={register({})} />
-      </SearchField>
+      </SearchField> */}
       <SearchField className="submit">
         <SubmitBar label={t("ES_COMMON_SEARCH")} submit />
         <p
@@ -92,6 +117,9 @@ const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) =
               limit: 10,
               sortBy: "commencementDate",
               sortOrder: "DESC",
+              locality: "",
+              mobileNumber: "",
+              name: "",
             });
             previousPage();
           }}

@@ -58,18 +58,12 @@ const Inbox = ({
     filters: { ...searchParams, ...paginationParams },
     isMcollectAppChanged,
   });
-console.log("mcollect data: ",data)
-console.log("hookloading",hookLoading)
 
-console.log("data challan",data?.challans?.length > 0)
-console.log(!hookLoading && data?.challans?.length > 0)
   useEffect(() => {
-     if (!hookLoading && !data?.challans?.length > 0) setIsLoader(false);
-   // if (!hookLoading && data?.challans?.length > 0) setIsLoader(false);
-     else if (hookLoading || data?.challans?.length) setIsLoader(true);
-  
+    if (!hookLoading && !data?.challans?.length > 0) setIsLoader(false);
+    // if (!hookLoading && data?.challans?.length > 0) setIsLoader(false);
+    else if (hookLoading || data?.challans?.length) setIsLoader(true);
   }, [hookLoading, data]);
-  console.log("isLoader",isLoader)
   let formedData = [];
   let res;
   let businessIdToOwnerMapping = {};
@@ -85,17 +79,16 @@ console.log(!hookLoading && data?.challans?.length > 0)
         challanNums = businessServiceMap[item.businessService] || [];
         challanNumbers = challanNums;
         //adding this new condition untill this ADVT.canopy_Fee business service records comes successful from api (cureently geeting 400 bad request)
-        if(item.businessService!=="ADVT.Canopy_Fee"){
-        challanNums.push(item.challanNo);
-        businessServiceMap[item.businessService] = challanNums;
+        if (item.businessService !== "ADVT.Canopy_Fee") {
+          challanNums.push(item.challanNo);
+          businessServiceMap[item.businessService] = challanNums;
         }
-       
       });
       let processInstanceArray = [];
 
       for (var key in businessServiceMap) {
         let consumerCodes = businessServiceMap[key].toString();
-       
+
         res = await Digit.PaymentService.fetchBill(tenantId, { consumerCode: consumerCodes, businessService: key });
         processInstanceArray = processInstanceArray.concat(res.Bill);
         businessIdToOwnerMapping = {};
@@ -106,22 +99,21 @@ console.log(!hookLoading && data?.challans?.length > 0)
               businessService: item?.businessService,
               // totalAmount: item.totalAmount || 0,
               otalAmount: item?.billDetails[0]?.totalAmount || 0,
-               dueDate: item?.billDetails[0]?.expiryDate,
+              dueDate: item?.billDetails[0]?.expiryDate,
               //dueDate: item?.expiryDate,
             };
           });
       }
-    
+
       setIsLoader(false);
       setBusinessIdToOwnerMappings(businessIdToOwnerMapping);
     }
     if (data?.challans && data?.challans?.length > 0) {
-    
       setIsLoader(true);
       fetchMyAPI();
     }
   }, [data]);
-  console.log("isLoader 2",isLoader)
+
   data?.challans?.map((data) => {
     formedData.push({
       challanNo: data?.challanNo,
@@ -131,7 +123,7 @@ console.log(!hookLoading && data?.challans?.length > 0)
       totalAmount: businessIdToOwnerMappings[data.challanNo]?.totalAmount || 0,
       dueDate: businessIdToOwnerMappings[data.challanNo]?.dueDate || "NA",
       tenantId: data?.tenantId,
-      receiptNumber:data?.receiptNumber
+      receiptNumber: data?.receiptNumber,
     });
   });
 

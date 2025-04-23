@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { PgrRoutes, getRoute } from "../../constants/Routes";
 import { useTranslation } from "react-i18next";
+import getPGRcknowledgementData from "../../utils/getPGRcknowledgementData"
 
 const GetActionMessage = ({ action }) => {
   const { t } = useTranslation();
@@ -49,13 +50,15 @@ const Response = (props) => {
   const { tenants } = storeData || {};
   const [enable, setEnable] = useState(false)
   let id= appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
-  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId:"pg.citya", id },{ enabled: enable ? true : false});
+  const { isLoading, error, isError, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId:localStorage.getItem("CITIZEN.CITY"), id },{ enabled: enable ? true : false});
 console.log("appStateappState",appState)
+const complaintDetails = appState
   const handleDownloadPdf = async (e) => {
-    const tenantInfo = tenants.find((tenant) => tenant.code === "pg.citya");
+    const tenantInfo = tenants.find((tenant) => tenant.code === localStorage.getItem("CITIZEN.CITY"));
     e.preventDefault()
     setEnable(true)
-    const data = await getPGRcknowledgementData({ ...complaintDetails }, tenantInfo, t);
+    const data = await getPGRcknowledgementData({complaintDetails, tenantInfo, t})
+    console.log("data",data)
     Digit.Utils.pdf.generate(data);
   };
   return (

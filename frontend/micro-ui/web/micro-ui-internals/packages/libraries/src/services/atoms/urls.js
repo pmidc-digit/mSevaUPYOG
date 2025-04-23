@@ -109,7 +109,11 @@ const Urls = {
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
     bill_download: "/egov-pdf/download/BILL/consolidatedbill",
     count: "/echallan-services/eChallan/v1/_count",
+    reciept_search: "/collection-services/payments/:businessService/_search",
+    generate_pdf: "/pdf-service/v1/_create",
+    file_fetch: "/filestore/v1/files/url",
   },
+
   hrms: {
     search: "/egov-hrms/employees/_search",
     count: "/egov-hrms/employees/_count",
@@ -238,9 +242,9 @@ const Urls = {
       //Surveys:
       createSurvey: "/egov-survey-services/egov-ss/survey/create",
       searchSurvey: "/egov-survey-services/egov-ss/survey/_search",
-      submitSurvey:"/egov-survey-services/egov-ss/survey/response/_submit",
+      submitSurvey: "/egov-survey-services/egov-ss/survey/response/_submit",
       updateSurvey: "/egov-survey-services/egov-ss/survey/active/_update",
-      getAnswers:"/egov-survey-services/egov-ss/survey/response/_answers"
+      getAnswers: "/egov-survey-services/egov-ss/survey/response/_answers",
     },
   },
 

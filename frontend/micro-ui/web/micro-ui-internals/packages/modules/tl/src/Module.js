@@ -58,6 +58,29 @@ import TLTradeUnitsEmployeeInitial from "./pageComponents/TLTradeUnitsEmployeeIn
 import CommonRedirect from "./pageComponents/CommonRedirect"
 import CitizenApp from "./pages/citizen";
 import EmployeeApp from "./pages/employee";
+import getRootReducer from "./redux/reducer";
+import TLTradeVlidityEmployee from "./pageComponents/TLTradeValidityEmployee"
+import NewTLStepForm from "./pages/employee/NewApplication/NewApplicationStepForm/NewTLStepForm";
+import TLNewFormStepOne from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewFormStepOne";
+import TLNewFormStepTwo from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewFormStepTwo";
+import TLNewFormStepThree from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewFormStepThree";
+import TLNewSummaryStepFour from "./pages/employee/NewApplication/NewApplicationStepForm/TLNewSummaryStepFour";
+import TLSummaryPage from "./pageComponents/TLSummaryPage"
+import RenewTLStepForm from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLStepForm"
+import RenewTLFormStepOne from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLFormStepOne";
+import RenewTLFormStepTwo from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLFormStepTwo";
+import RenewTLFormStepThree from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLFormStepThree";
+import RenewTLSummaryStepFour from "./pages/employee/ReNewApplication/ReNewApplicationStepForm/RenewTLSummaryStepFour";
+//For Citizen:
+import TLCreateTradeLicenceStepForm from "./pages/citizen/Create/NewApplicationStepForm/NewTLStepForm";
+import TLNewFormStepOneCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewFormStepOne";
+import TLNewFormStepTwoCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewFormStepTwo";
+import TLNewFormStepThreeCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewFormStepThree";
+import TLNewSummaryStepFourCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewSummaryStepFour";
+//
+
+export const TLReducers = getRootReducer;
+
 
 export const TLModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
@@ -153,7 +176,25 @@ const componentsToRegister = {
   SelectOtherTradeDetails,
   SelectTradeUnitsInitial,
   TLTradeUnitsEmployeeInitial,
-  CommonRedirect
+  CommonRedirect,
+  TLTradeVlidityEmployee,
+  NewTLStepForm,
+  TLNewFormStepOne,
+  TLNewFormStepTwo,
+  TLNewFormStepThree,
+  TLNewSummaryStepFour,
+  TLSummaryPage,
+  RenewTLStepForm,
+  RenewTLFormStepOne,
+  RenewTLFormStepTwo,
+  RenewTLFormStepThree,
+  RenewTLSummaryStepFour,
+  //For citizen:
+  TLCreateTradeLicenceStepForm,
+  TLNewFormStepOneCitizen,
+  TLNewFormStepTwoCitizen,
+  TLNewFormStepThreeCitizen,
+  TLNewSummaryStepFourCitizen,
 };
 
 export const initTLComponents = () => {

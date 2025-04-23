@@ -1,11 +1,16 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory } from "react-router-dom";
 //
 import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
 import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { Toast } from "@mseva/digit-ui-react-components";
+import { useState } from "react";
 
 const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
+  const [showToast, setShowToast] = useState(null);
 
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
@@ -133,17 +138,6 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
           ...__owner,
           ownerType: owner?.ownerType?.code,
         };
-
-        if (_owner.ownerType !== "NONE") {
-          const { documentType, documentUid } = owner?.documents || {};
-          _owner.documents = [
-            { documentUid, documentType: documentType?.code, fileStoreId: documentUid },
-            data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF")),
-          ];
-        } else {
-          _owner.documents = [data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF"))];
-        }
-
         return _owner;
       }),
       channel: "CFC_COUNTER", // required
@@ -154,6 +148,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       documents: data?.DocummentDetails?.documents?.documents,
       applicationStatus: "CREATE",
     };
+    console.log("Documents: ", data.DocummentDetails.documents.documents);
 
     // Add institution details if ownership is not individual
     if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
@@ -181,13 +176,28 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
     // Set the form data and search data
     // setFormData(formData);
     // setSearchData({ city: formData.tenantId, filters: searchData });
-const tenantId = formData.tenantId;
-    const response = await Digit.PTService.create({ Property: { ...formData } }, tenantId);
-    // if(response?.ResponseInfo?.status === "successful"){
-    //   dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-    //   console.log("response in step 2: ", response.Licenses[0]);
-    // }
-    return response?.ResponseInfo?.status === "successful";
+    const tenantId = formData.tenantId;
+    try {
+      const response = await Digit.PTService.create({ Property: { ...formData } }, tenantId);
+
+      if (response?.ResponseInfo?.status === "successful") {
+        history.replace("/digit-ui/employee/pt/response", {
+          Property: formData
+        });
+      } else {
+        setShowToast({ error: true, label: response?.Errors?.[0]?.message });
+      }
+    } catch (error) {
+      console.error("Error creating property:", error);
+      if (error?.response?.data?.Errors) {
+        const errorMessage = error.response.data.Errors.map(err => err.message).join(", ");
+        setShowToast({ error: true, label: errorMessage });
+      } else {
+        setShowToast({ error: true, label: "An unexpected error occurred. Please try again later." });
+      }
+
+    }
+
   };
   return (
     <React.Fragment>
@@ -200,6 +210,16 @@ const tenantId = formData.tenantId;
         currentStep={config.currStepNumber} // Current step number
         onBackClick={onGoBack} // Handle back button click
       />
+      {showToast?.label && (
+        <Toast
+          error={showToast.error}
+          warning={showToast.warning}
+          label={showToast?.label}
+          onClose={(w) => {
+            setShowToast((x) => null);
+          }}
+        />
+      )}
     </React.Fragment>
   );
 };

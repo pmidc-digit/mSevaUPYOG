@@ -121,6 +121,7 @@ import OwnerTransfershipStepForm from "../src/pages/employee/PropertyMutation/Ow
 import PTOwnerTransfershipStepTwo from "../src/pages/employee/PropertyMutation/OwnerTransfership/PTOwnerTransfershipStepTwo";
 import PTOwnerTransfershipSummaryStepThree from "../src/pages/employee/PropertyMutation/OwnerTransfership/PTOwnerTransfershipSummaryStepThree";
 import PropertyCheckboxQuestions from "./pageComponents/PropertyCheckboxQuestions";
+import PTCreateDocsRequired from "./pageComponents/PTCreateDocsRequired";
 
 export const PTReducers = getRootReducer;
 
@@ -233,7 +234,8 @@ const componentsToRegister = {
   OwnerTransfershipStepForm,
   PTOwnerTransfershipStepTwo,
   PTOwnerTransfershipSummaryStepThree,
-  PropertyCheckboxQuestions
+  PropertyCheckboxQuestions,
+  PTCreateDocsRequired
 };
 
 const addComponentsToRegistry = () => {

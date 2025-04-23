@@ -159,9 +159,11 @@ const EmployeeApp = ({ path, url, userType }) => {
   const Response = Digit?.ComponentRegistryService?.getComponent("PTResponse");
   const TransferOwnership = Digit?.ComponentRegistryService?.getComponent("PTTransferOwnership");
   const DocsRequired = Digit?.ComponentRegistryService?.getComponent("PTDocsRequired");
+  const PTCreateDocsRequired=Digit?.ComponentRegistryService?.getComponent("PTCreateDocsRequired");
   const isRes = window.location.href.includes("pt/response");
   const isLocation = window.location.href.includes("pt") || window.location.href.includes("application");
   const isNewRegistration = window.location.href.includes("new-application") || window.location.href.includes("modify-application") || window.location.href.includes("pt/application-details");
+
   return (
     <Switch>
       <React.Fragment>
@@ -188,7 +190,8 @@ const EmployeeApp = ({ path, url, userType }) => {
             )}
           />
           <PrivateRoute path={`${path}/new-application-SPA`} component={() => <NewApplication parentUrl={url} />} />
-          <PrivateRoute path={`${path}/new-application`} component={() => <NewPropertyStepForm parentUrl={url} />} />
+          <PrivateRoute path={`${path}/new-application`} component={(props) => <PTCreateDocsRequired {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/create-application`} component={() => <NewPropertyStepForm parentUrl={url} />} />
           <PrivateRoute path={`${path}/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/property-details/:id`} component={() => <PropertyDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />

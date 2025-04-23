@@ -645,7 +645,7 @@ const [showToast, setShowToast] = useState(null);
                       setFocusIndex({ index: owner.key, type: "correspondenceAddress" });
                     }}
                     onBlur={props.onBlur}
-                    isRequired={true}
+                    isRequired={!isIndividualTypeOwner}
                   />
                 )}
               />

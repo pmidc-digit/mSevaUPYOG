@@ -1,4 +1,4 @@
-import { CardLabel, CardLabelError, Dropdown, LabelFieldPair, LinkButton, MobileNumber, TextInput,Toast } from "@mseva/digit-ui-react-components";
+import { CardLabel, CardLabelError, Dropdown, LabelFieldPair, MobileNumber, TextInput,Toast } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -99,7 +99,7 @@ console.log("formData tes test",formData);
         <OwnerForm key={owner.key} index={index} owner={owner} {...commonProps} />
       ))}
       {!isEditScreen && formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" ? (
-        <LinkButton label="Add Owner" onClick={addNewOwner} style={{ color: "orange" }} />
+        <label onClick={addNewOwner} style={{ color: "orange", cursor: "pointer" }}>Add Owner</label>
       ) : null}
     </React.Fragment>
   ) : null;
@@ -238,7 +238,7 @@ const [showToast, setShowToast] = useState(null);
           {!isIndividualTypeOwner ? (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_NAME") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_NAME")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -264,6 +264,7 @@ const [showToast, setShowToast] = useState(null);
                           setFocusIndex({ index: -1 });
                           props.onBlur(e);
                         }}
+                        isRequired={true}
                       />
                     )}
                   />
@@ -273,7 +274,7 @@ const [showToast, setShowToast] = useState(null);
                 {localFormState.touched?.institution?.name ? errors?.institution?.name?.message : ""}
               </CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_TYPE") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_TYPE")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"institution.type"}
@@ -305,7 +306,7 @@ const [showToast, setShowToast] = useState(null);
           ) : null}
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_OWNER_NAME") + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_OWNER_NAME")} <span style={{ color: 'red' }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -328,6 +329,7 @@ const [showToast, setShowToast] = useState(null);
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
+                    isRequired={true}
                   />
                 )}
               />
@@ -338,7 +340,7 @@ const [showToast, setShowToast] = useState(null);
           {isIndividualTypeOwner ? (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_FORM3_GENDER") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_FORM3_GENDER")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"gender"}
@@ -369,7 +371,7 @@ const [showToast, setShowToast] = useState(null);
           ) : (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_LANDLINE_NUMBER_FLOATING_LABEL") + (isIndividualTypeOwner ? "" : " *")}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_LANDLINE_NUMBER_FLOATING_LABEL")} {isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -405,7 +407,7 @@ const [showToast, setShowToast] = useState(null);
             </React.Fragment>
           )}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM3_MOBILE_NUMBER") + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_FORM3_MOBILE_NUMBER")} <span style={{ color: 'red' }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -435,7 +437,7 @@ const [showToast, setShowToast] = useState(null);
           {isIndividualTypeOwner ? (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_SEARCHPROPERTY_TABEL_GUARDIANNAME") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_SEARCHPROPERTY_TABEL_GUARDIANNAME")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -455,6 +457,7 @@ const [showToast, setShowToast] = useState(null);
                           setFocusIndex({ index: owner.key, type: "fatherOrHusbandName" });
                         }}
                         onBlur={props.onBlur}
+                        isRequired={true}
                       />
                     )}
                   />
@@ -464,7 +467,7 @@ const [showToast, setShowToast] = useState(null);
                 {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}
               </CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_FORM3_RELATIONSHIP") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_FORM3_RELATIONSHIP")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"relationship"}
@@ -489,7 +492,7 @@ const [showToast, setShowToast] = useState(null);
               </LabelFieldPair>
               <CardLabelError style={errorStyle}>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_FORM3_SPECIAL_CATEGORY") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_FORM3_SPECIAL_CATEGORY")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"ownerType"}
@@ -514,7 +517,7 @@ const [showToast, setShowToast] = useState(null);
           ) : (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("TL_NEW_DESIG_OWNER_LABEL") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("TL_NEW_DESIG_OWNER_LABEL")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -531,6 +534,7 @@ const [showToast, setShowToast] = useState(null);
                           setFocusIndex({ index: owner.key, type: "designation" });
                         }}
                         onBlur={props.onBlur}
+                        isRequired={true}
                       />
                     )}
                   />
@@ -543,7 +547,7 @@ const [showToast, setShowToast] = useState(null);
           {formValue.ownerType?.code && formValue.ownerType?.code !== "NONE" ? (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_DOCUMENT_TYPE") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_DOCUMENT_TYPE")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"documents.documentType"}
@@ -567,7 +571,7 @@ const [showToast, setShowToast] = useState(null);
                 {localFormState.touched.documents?.documentType ? errors?.documents?.documentType?.message : ""}
               </CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_DOCUMENT_ID") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_DOCUMENT_ID")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -586,6 +590,7 @@ const [showToast, setShowToast] = useState(null);
                         }}
                         labelStyle={{ marginTop: "unset" }}
                         onBlur={props.onBlur}
+                        isRequired={true}
                       />
                     )}
                   />
@@ -623,7 +628,7 @@ const [showToast, setShowToast] = useState(null);
           <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_INFO_CORR_ADDR") + (isIndividualTypeOwner ? "" : " *")}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_INFO_CORR_ADDR")} {isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -640,6 +645,7 @@ const [showToast, setShowToast] = useState(null);
                       setFocusIndex({ index: owner.key, type: "correspondenceAddress" });
                     }}
                     onBlur={props.onBlur}
+                    isRequired={true}
                   />
                 )}
               />

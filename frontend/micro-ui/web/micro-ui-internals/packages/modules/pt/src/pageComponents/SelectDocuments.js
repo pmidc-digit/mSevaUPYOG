@@ -350,7 +350,7 @@ function SelectDocument({
     <div style={{ marginBottom: "24px" }}>
       {doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
+          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))} <span style={{ color: 'red' }}>*</span></CardLabel>
           <Dropdown
             className="form-field"
             selected={selectedDocument}

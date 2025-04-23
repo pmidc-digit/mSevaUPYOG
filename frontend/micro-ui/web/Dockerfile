@@ -1,0 +1,51 @@
+FROM egovio/alpine-node-builder-14:yarn AS build
+RUN apk update && apk upgrade
+RUN apk add --no-cache git>2.30.0
+RUN yarn add @mseva/digit-ui-libraries@1.0.7
+RUN yarn add @mseva/digit-ui-module-bills@1.0.4
+RUN yarn add @mseva/digit-ui-module-fsm@1.0.2
+RUN yarn add @mseva/digit-ui-module-dss@1.0.2
+RUN yarn add @mseva/digit-ui-module-mcollect@1.0.3
+RUN yarn add @mseva/digit-ui-module-pgr@1.0.2
+RUN yarn add @mseva/digit-ui-module-noc@1.0.2
+RUN yarn add @mseva/digit-ui-module-engagement@1.1.11
+RUN yarn add @mseva/digit-ui-module-hrms@1.0.2
+RUN yarn add @mseva/digit-ui-module-core@1.0.4
+RUN yarn add @mseva/digit-ui-module-common@1.0.4
+RUN yarn add @mseva/digit-ui-module-ws@1.0.2
+RUN yarn add @mseva/digit-ui-module-commonpt@1.0.2
+RUN yarn add @mseva/digit-ui-module-ptr@1.0.4
+RUN yarn add @mseva/digit-ui-module-swach@1.0.3
+RUN yarn add @mseva/digit-ui-module-pt@1.0.2
+RUN yarn add @mseva/digit-ui-module-tl@1.0.4
+RUN yarn add @mseva/digit-ui-module-obps@1.0.5
+
+
+ARG WORK_DIR
+WORKDIR /app
+ENV NODE_OPTIONS "--max-old-space-size=8192"
+ENV GENERATE_SOURCEMAP "true"
+
+# COPY ${WORK_DIR} .
+COPY . .
+RUN ls -lah
+
+#RUN node web/envs.js
+# Split this block
+RUN node envs.js
+RUN ./install-deps.sh
+RUN yarn install
+RUN yarn build
+    
+
+FROM nginx:1.25-alpine
+#FROM ghcr.io/egovernments/nginx:mainline-alpine
+# ENV WORK_DIR=/var/web/digit-ui
+
+RUN mkdir -p /var/web/digit-ui
+
+# RUN mkdir -p ${WORK_DIR}
+
+# COPY --from=build /app/web/build ${WORK_DIR}/
+COPY --from=build /app/web/build /var/web/digit-ui/
+COPY --from=build /app/web/docker/nginx.conf /etc/nginx/conf.d/default.conf

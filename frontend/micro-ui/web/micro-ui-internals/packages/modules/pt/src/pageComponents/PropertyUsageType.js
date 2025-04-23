@@ -140,11 +140,14 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
     return (
       <React.Fragment>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_ASSESMENT_INFO_USAGE_TYPE") + " *"}</CardLabel>
+          <CardLabel className="card-label-smaller">{t("PT_ASSESMENT_INFO_USAGE_TYPE")} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
           <Controller
               name="PropertyUsageType"
               // defaultValue={usageCategoryMajor}
               control={control}
+              rules={{
+                required: config.isMandatory && t("Property Usage Type is required"),
+              }}
               render={(props) => (
                 <Dropdown
                   className="form-field"

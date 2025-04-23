@@ -108,7 +108,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
 
   useEffect(() => {
     // setfloorarea(formData?.landarea);
-    if(formData?.landarea) setValue("LandArea", floorarea);
+    if (formData?.landarea) setValue("LandArea", floorarea);
   }, [formData]);
 
   const inputs = [
@@ -119,7 +119,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
       isMandatory: "true",
       validation: {
         pattern: "^[0-9]+(\\.[0-9]+)?$",
-        isRequired: true,
+        isRequired: config.isMandatory,
         title: t("T_PLOT_SIZE_SQUARE_FEET_LABEL"),
       },
     },
@@ -171,7 +171,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
     //     onSelect(config.key, undefined);
     //   }
     // }, [formData]);
-    console.log("formData: ",formData);
+    console.log("formData: ", formData);
     // console.log("config",config);
     return inputs?.map((input, index) => {
       return (
@@ -179,7 +179,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
           <React.Fragment>
             <LabelFieldPair key={index}>
               <CardLabel className="card-label-smaller">
-                {t(input.label)} {input.isMandatory ? " * " : ""}
+                {t(input.label)} {config.isMandatory && <span style={{ color: "red" }}>*</span>}
               </CardLabel>
               <div className="field">
                 {/* <TextInput
@@ -204,7 +204,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
                       onChange={onChange}
                       {...input.validation}
                       onBlur={onBlur}
-                      // autoFocus={presentInModifyApplication}
+                    // autoFocus={presentInModifyApplication}
                     />
                   )}
                 />

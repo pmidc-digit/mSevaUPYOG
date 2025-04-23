@@ -43,7 +43,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
 
   const onChange = (e) => {
     setSelectedValue(e);
-  }
+  }
   const { data: FinancialYearData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "egf-master", [{ name: "FinancialYear" }], {
     select: (data) => {
       const formattedData = data?.["egf-master"]?.["FinancialYear"];
@@ -54,20 +54,20 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
 
   let FinancialYearOptions = [];
   const currentYear = new Date().getFullYear();
-  const seenYears = new Set(); 
+  const seenYears = new Set();
   FinancialYearData &&
-  FinancialYearData.forEach((item) => {
-    const year = parseInt(item.name); // Assuming `item.name` contains the year as a string
-    if (year <= currentYear && !seenYears.has(year)) { // Check if the year is unique
-      seenYears.add(year); // Add the year to the Set
-      FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
-    }
-  })
+    FinancialYearData.forEach((item) => {
+      const year = parseInt(item.name); // Assuming `item.name` contains the year as a string
+      if (year <= currentYear && !seenYears.has(year)) { // Check if the year is unique
+        seenYears.add(year); // Add the year to the Set
+        FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
+      }
+    })
   FinancialYearOptions.sort((a, b) => parseInt(a.value) - parseInt(b.value));
   console.log("FinancialYearOptions", FinancialYearOptions);
-    // FinancialYearData.map((item) => {
-    //   FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
-    // });
+  // FinancialYearData.map((item) => {
+  //   FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
+  // });
   function getPropertyTypeMenu(proptype) {
     if (userType === "employee") {
       return proptype
@@ -136,40 +136,28 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
       return (
         <React.Fragment key={index}>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t(input.label) + " *"}</CardLabel>
-            {/* <Dropdown
-              className="form-field"
-              selected={BuildingType}
-              // disable={getPropertyTypeMenu(proptype)?.length === 1}
-              option={FinancialYearOptions}
-              select={selectBuildingType}
-              optionKey="i18nKey"
-              onBlur={onBlur}
-              t={t}
-            /> */}
-
-<Controller
-            name={config.key}
-            control={control}
-            defaultValue={selectedValue}
-            rules={{ required: t("REQUIRED_FIELD") }}
-            render={(props) => (
-              <Dropdown
-                className="form-field"
-                selected={selectedValue}
-                disable={false}
-                option={FinancialYearOptions}
-                errorStyle={localFormState.touched.tradeSubType && errors?.tradeSubType?.message ? true : false}
-                select={(e) => {
-                  props.onChange(e);
-                  onChange(e);
-                }}
-                optionKey="i18nKey"
-                onBlur={props.onBlur}  
-                t={t}
-              />
-            )}
-          />
+            <CardLabel className="card-label-smaller">{t(input.label)} {config.isMandatory && <span style={{ color: "red" }}>*</span>}</CardLabel>
+            <Controller
+              name={config.key}
+              control={control}
+              defaultValue={selectedValue}
+              rules={{ required: config.isMandatory ? t("REQUIRED_FIELD") : false }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={selectedValue}
+                  option={FinancialYearOptions}
+                  errorStyle={localFormState.touched.tradeSubType && errors?.tradeSubType?.message ? true : false}
+                  select={(e) => {
+                    props.onChange(e);
+                    onChange(e);
+                  }}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
           </LabelFieldPair>
           {formState.touched[config.key] ? (
             <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>

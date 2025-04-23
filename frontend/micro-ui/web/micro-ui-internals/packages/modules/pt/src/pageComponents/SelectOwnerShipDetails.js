@@ -239,7 +239,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
         )}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
-            {t("PT_PROVIDE_OWNERSHIP_DETAILS") + " *"}
+            {t("PT_PROVIDE_OWNERSHIP_DETAILS")} <span style={{ color: 'red' }}>*</span>
           </CardLabel>
           {/* <Dropdown
             className="form-field"

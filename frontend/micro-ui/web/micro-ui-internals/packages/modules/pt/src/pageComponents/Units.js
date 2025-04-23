@@ -1,19 +1,19 @@
-import React, { useEffect, useState, Fragment } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, Loader, DeleteIcon } from "@mseva/digit-ui-react-components";
-import { stringReplaceAll } from "../utils";
-import { useForm, Controller } from "react-hook-form";
+import { CardLabel, CardLabelError, DeleteIcon, Dropdown, LabelFieldPair, Loader, TextInput } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
+import { stringReplaceAll } from "../utils";
 
 const Units = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
-console.log("formData in unit component", formData);
+  console.log("formData in unit component", formData);
 
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify") || pathname.includes("edit");
   let isMobile = window.Digit.Utils.browser.isMobile();
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [units, setUnits] = useState( 
+  const [units, setUnits] = useState(
     formData?.units || [
       {
         key: Date.now(),
@@ -30,7 +30,7 @@ console.log("formData in unit component", formData);
       },
     ]
   );
-  
+
   console.log("here???????")
   const stateId = Digit.ULBService.getStateId();
   const [focusIndex, setFocusIndex] = useState({ index: -1 });
@@ -379,7 +379,7 @@ console.log("formData in unit component", formData);
   // const propertyTypeList=["BUILTUP.INDEPENDENTPROPERTY","BUILTUP.SHAREDPROPERTY"];
   // const displayThisComponent=propertyUsageTypeList.includes(formData?.usageCategoryMajor?.code) && propertyTypeList.includes(formData?.PropertyType?.code) 
 
-  return !formData?.PropertyType?.code || !formData?.usageCategoryMajor?.code ? null : (
+  return !formData?.PropertyType?.code || !formData?.usageCategoryMajor?.code || formData?.PropertyType?.code === "VACANT" ? null : (
     <div>
       {units?.map((unit, index) => (
         <Unit
@@ -405,7 +405,7 @@ console.log("formData in unit component", formData);
           {...{ formState, setError, clearErrors, usageCategoryMajorMenu, subUsageCategoryMenu }}
         />
       ))}
-      <LinkButton label={t("PT_ADD_UNIT")} onClick={handleAddUnit} style={{ color: "orange", width: "175px" }}></LinkButton>
+      <label onClick={handleAddUnit} style={{ color: "orange", width: "175px", cursor: "pointer", }}>{t("PT_ADD_UNIT")}</label>
       {["units_missing", "landArea extended"].includes(formState.errors?.[config.key]?.type) ? (
         <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
           {`${t(formState.errors?.[config.key].message.split(".")[0])}` +
@@ -454,7 +454,7 @@ function Unit({
   ]);
 
 
-console.log("coming in this file ");
+  console.log("coming in this file ");
 
 
 
@@ -531,27 +531,23 @@ console.log("coming in this file ");
     : { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   return (
-    <div style={{ marginBottom: "16px" }}>
+    <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px", marginBottom: "16px" }}>
       <div className="label-field-pair">
         <h2 className="card-label card-label-smaller" style={{ color: "#505A5F" }}>
           Unit {unit?.order}
         </h2>
       </div>
-      <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px" }}>
-        {allUnits.length > 1 ? (
-          <LinkButton
-            label={
-              <DeleteIcon style={{ float: "right", position: "relative", bottom: "5px" }} fill={!(allUnits.length == 1) ? "#494848" : "#FAFAFA"} />
-            }
-            style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}
-            onClick={(e) => handleRemoveUnit(unit)}
-          />
-        ) : // <div onClick={() => handleRemoveUnit(unit)} style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>
+      {allUnits.length > 1 ? (
+        <label
+          style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}
+          onClick={(e) => handleRemoveUnit(unit)}
+        > <DeleteIcon style={{ float: "right", position: "relative", bottom: "5px" }} fill={!(allUnits.length == 1) ? "#494848" : "#FAFAFA"} /></label>
+      ) : // <div onClick={() => handleRemoveUnit(unit)} style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>
         //   X
         // </div>
         null}
-        <div style={{ marginTop: "30px" }}>
-          {/* {formData?.PropertyType?.code == "BUILTUP.INDEPENDENTPROPERTY" && (
+      <div style={{ marginTop: "30px" }}>
+        {/* {formData?.PropertyType?.code == "BUILTUP.INDEPENDENTPROPERTY" && (
             <div>
               {" "}
               <LabelFieldPair>
@@ -577,87 +573,21 @@ console.log("coming in this file ");
               <CardLabelError style={errorStyle}>{localFormState.touched.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
             </div>
           )} */}
-          {formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY" && (
-            <>
-              {/* Floor Selection Component */}
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
-                <Controller
-                  name="floorNo"
-                  defaultValue={unit.floorNo}
-                  control={control}
-                  render={(props) => (
-                    <Dropdown
-                      className="form-field"
-                      selected={props.value}
-                      disable={false}
-                      option={getfloorlistdata(floorlist) || []}
-                      select={props.onChange}
-                      optionKey="i18nKey"
-                      onBlur={props.onBlur}
-                      t={t}
-                    />
-                  )}
-                />
-              </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
-
-              {/* Built-Up Area Component */}
-              <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
-                <div className="field">
-                  <Controller
-                    name="builtUpArea"
-                    defaultValue={unit?.builtUpArea}
-                    control={control}
-                    render={(props) => (
-                      <TextInput
-                        type="text"
-                        name="unit-area"
-                        onChange={(e) => {
-                          props.onChange(e.target.value);
-                          setFocusIndex({ index, type: "builtUpArea" });
-                        }}
-                        value={props.value}
-                        autoFocus={focusIndex.index === index && focusIndex.type === "builtUpArea"}
-                        onBlur={props.onBlur}
-                      />
-                    )}
-                  />
-                </div>
-              </LabelFieldPair>
-              <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError>
-            </>
-          )}
-        </div>
-
-        {formData?.PropertyType?.code == "BUILTUP.SHAREDPROPERTY" && (
-          <>
+        {formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY" && (
+          <div>
+            {/* Floor Selection Component */}
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + " *"}</CardLabel>
-              <Dropdown
-                className="form-field"
-                selected={usageType}
-                disable={formData?.usageCategoryMajor?.code !== "MIXED"}
-                option={usageCategoryMajorMenu(usagecat)}
-                select={setUsageType}
-                optionKey="i18nKey"
-                t={t}
-              />
-            </LabelFieldPair>
-            {/* Usage Type Component */}
-            <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
-              <CardLabel className="card-label-smaller">{t("PT_FORM2_USAGE_TYPE") + " *"}</CardLabel>
+              <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
               <Controller
-                name="usageCategory"
-                defaultValue={subUsageCategoryMenu(usageType)?.filter((e) => e?.code === unit.existingUsageCategory)[0]}
+                name="floorNo"
+                defaultValue={unit.floorNo}
                 control={control}
                 render={(props) => (
                   <Dropdown
                     className="form-field"
                     selected={props.value}
-                    disable={!usageType?.code}
-                    option={subUsageCategoryMenu(usageType)}
+                    disable={false}
+                    option={getfloorlistdata(floorlist) || []}
                     select={props.onChange}
                     optionKey="i18nKey"
                     onBlur={props.onBlur}
@@ -666,6 +596,7 @@ console.log("coming in this file ");
                 )}
               />
             </LabelFieldPair>
+            <CardLabelError style={errorStyle}>{localFormState.touched.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
 
             {/* Built-Up Area Component */}
             <LabelFieldPair>
@@ -692,56 +623,121 @@ console.log("coming in this file ");
               </div>
             </LabelFieldPair>
             <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError>
-
-            {/* Floor Selection Component */}
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
-              <Controller
-                name="floorNo"
-                defaultValue={unit.floorNo}
-                control={control}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    selected={props.value}
-                    disable={false}
-                    option={getfloorlistdata(floorlist) || []}
-                    select={props.onChange}
-                    optionKey="i18nKey"
-                    onBlur={props.onBlur}
-                    t={t}
-                  />
-                )}
-              />
-            </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{localFormState.touched.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
-
-            {/* Occupancy Type Component */}
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY") + " *"}</CardLabel>
-              <Controller
-                name="occupancyType"
-                defaultValue={unit?.occupancyType}
-                control={control}
-                render={(props) => (
-                  <Dropdown
-                    className="form-field"
-                    selected={props.value}
-                    disable={occupencyOptions?.length === 1}
-                    option={occupencyOptions}
-                    select={props.onChange}
-                    optionKey="i18nKey"
-                    onBlur={props.onBlur}
-                    t={t}
-                  />
-                )}
-              />
-            </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{localFormState.touched.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError>
-          </>
+          </div>
         )}
+      </div>
 
-        {/* <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
+      {formData?.PropertyType?.code == "BUILTUP.SHAREDPROPERTY" && (
+        <div>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + " *"}</CardLabel>
+            <Dropdown
+              className="form-field"
+              selected={usageType}
+              disable={formData?.usageCategoryMajor?.code !== "MIXED"}
+              option={usageCategoryMajorMenu(usagecat)}
+              select={setUsageType}
+              optionKey="i18nKey"
+              t={t}
+            />
+          </LabelFieldPair>
+          {/* Usage Type Component */}
+          <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_USAGE_TYPE") + " *"}</CardLabel>
+            <Controller
+              name="usageCategory"
+              defaultValue={subUsageCategoryMenu(usageType)?.filter((e) => e?.code === unit.existingUsageCategory)[0]}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={!usageType?.code}
+                  option={subUsageCategoryMenu(usageType)}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+
+          {/* Built-Up Area Component */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
+            <div className="field">
+              <Controller
+                name="builtUpArea"
+                defaultValue={unit?.builtUpArea}
+                control={control}
+                render={(props) => (
+                  <TextInput
+                    type="text"
+                    name="unit-area"
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      setFocusIndex({ index, type: "builtUpArea" });
+                    }}
+                    value={props.value}
+                    autoFocus={focusIndex.index === index && focusIndex.type === "builtUpArea"}
+                    onBlur={props.onBlur}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError>
+
+          {/* Floor Selection Component */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
+            <Controller
+              name="floorNo"
+              defaultValue={unit.floorNo}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={false}
+                  option={getfloorlistdata(floorlist) || []}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.touched.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
+
+          {/* Occupancy Type Component */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY") + " *"}</CardLabel>
+            <Controller
+              name="occupancyType"
+              defaultValue={unit?.occupancyType}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={occupencyOptions?.length === 1}
+                  option={occupencyOptions}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.touched.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError>
+        </div>
+      )}
+
+      {/* <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
           <CardLabel className="card-label-smaller">{t("PT_FORM2_USAGE_TYPE") + " *"}</CardLabel>
           <Controller
             name="usageCategory"
@@ -762,11 +758,11 @@ console.log("coming in this file ");
           />
         </LabelFieldPair>  */}
 
-        {/* {!["RESIDENTIAL"].includes(usageType?.code) ? (
+      {/* {!["RESIDENTIAL"].includes(usageType?.code) ? (
           <CardLabelError style={errorStyle}>{localFormState.touched.usageCategory ? errors?.usageCategory?.message : ""}</CardLabelError>
         ) : null} */}
 
-        {/* <LabelFieldPair>
+      {/* <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY") + " *"}</CardLabel>
           <Controller
             name="occupancyType"
@@ -789,69 +785,46 @@ console.log("coming in this file ");
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError> */}
 
-        
-        {formValue.occupancyType?.code === "RENTED" ? (
-          <React.Fragment>
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("PT_FORM2_TOTAL_ANNUAL_RENT") + " *"}</CardLabel>
-              <div className="field">
-                <Controller
-                  name="arv"
-                  defaultValue={unit.arv}
-                  control={control}
-                  render={(props) => (
-                    <TextInput
-                      type="text"
-                      name="unit-area"
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                        setFocusIndex({ index, type: "arv" });
-                      }}
-                      value={props.value}
-                      autoFocus={focusIndex.index === index && focusIndex.type === "arv"}
-                      onBlur={props.onBlur}
-                    />
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{localFormState.touched.arv ? errors?.arv?.message : ""}</CardLabelError>
-            
+
+      {formValue.occupancyType?.code === "RENTED" ? (
+        <React.Fragment>
           <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_FORM2_RENTED_MONTHS") + " *"}</CardLabel>
-          <Controller
-            name="RentedMonths"
-            defaultValue={unit.RentedMonths}
-            control={control}
-            render={(props) => (
-              <Dropdown
-                className="form-field"
-                selected={props.value}
-                disable={rentedmonths?.length === 1}
-                option={rentedmonths}
-                select={props.onChange}
-                optionKey="i18nKey"
-                onBlur={props.onBlur}
-                t={t}
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_TOTAL_ANNUAL_RENT") + " *"}</CardLabel>
+            <div className="field">
+              <Controller
+                name="arv"
+                defaultValue={unit.arv}
+                control={control}
+                render={(props) => (
+                  <TextInput
+                    type="text"
+                    name="unit-area"
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      setFocusIndex({ index, type: "arv" });
+                    }}
+                    value={props.value}
+                    autoFocus={focusIndex.index === index && focusIndex.type === "arv"}
+                    onBlur={props.onBlur}
+                  />
+                )}
               />
-            )}
-          />
-        </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{localFormState.touched.Rentedmonths ? errors?.Rentedmonths?.message : ""}</CardLabelError>
-        {formValue?.RentedMonths?.code === "1" || formValue?.RentedMonths?.code === "2" || formValue?.RentedMonths?.code === "3" || formValue?.RentedMonths?.code === "4" || formValue?.RentedMonths?.code === "5" || formValue?.RentedMonths?.code === "6" || formValue?.RentedMonths?.code === "7" || formValue?.RentedMonths?.code === "8" || formValue?.RentedMonths?.code === "9" || formValue?.RentedMonths?.code === "10" || formValue?.RentedMonths?.code === "11" ? (
-          <React.Fragment>
-            <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM2_NONRENTED_MONTHS_USAGE") + " *"}</CardLabel>
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.touched.arv ? errors?.arv?.message : ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_RENTED_MONTHS") + " *"}</CardLabel>
             <Controller
-              name="NonRentedMonthsUsage"
-              defaultValue={unit.NonRentedMonthsUsage}
+              name="RentedMonths"
+              defaultValue={unit.RentedMonths}
               control={control}
               render={(props) => (
                 <Dropdown
                   className="form-field"
                   selected={props.value}
-                  disable={nonrentedusage?.length === 1}
-                  option={nonrentedusage}
+                  disable={rentedmonths?.length === 1}
+                  option={rentedmonths}
                   select={props.onChange}
                   optionKey="i18nKey"
                   onBlur={props.onBlur}
@@ -859,12 +832,35 @@ console.log("coming in this file ");
                 />
               )}
             />
-            </LabelFieldPair> 
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.touched.Rentedmonths ? errors?.Rentedmonths?.message : ""}</CardLabelError>
+          {formValue?.RentedMonths?.code === "1" || formValue?.RentedMonths?.code === "2" || formValue?.RentedMonths?.code === "3" || formValue?.RentedMonths?.code === "4" || formValue?.RentedMonths?.code === "5" || formValue?.RentedMonths?.code === "6" || formValue?.RentedMonths?.code === "7" || formValue?.RentedMonths?.code === "8" || formValue?.RentedMonths?.code === "9" || formValue?.RentedMonths?.code === "10" || formValue?.RentedMonths?.code === "11" ? (
+            <React.Fragment>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("PT_FORM2_NONRENTED_MONTHS_USAGE") + " *"}</CardLabel>
+                <Controller
+                  name="NonRentedMonthsUsage"
+                  defaultValue={unit.NonRentedMonthsUsage}
+                  control={control}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      selected={props.value}
+                      disable={nonrentedusage?.length === 1}
+                      option={nonrentedusage}
+                      select={props.onChange}
+                      optionKey="i18nKey"
+                      onBlur={props.onBlur}
+                      t={t}
+                    />
+                  )}
+                />
+              </LabelFieldPair>
             </React.Fragment>
-          ): null}     
-        </React.Fragment>          
-        ) : null}        
-        {/* {formData?.PropertyType?.code == "VACANT" && ( 
+          ) : null}
+        </React.Fragment>
+      ) : null}
+      {/* {formData?.PropertyType?.code == "VACANT" && ( 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
             <div className="field">
@@ -890,8 +886,7 @@ console.log("coming in this file ");
             </div>
           </LabelFieldPair>
         )} */}
-        {/* <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError> */}
-      </div>
+      {/* <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError> */}
     </div>
   );
 }

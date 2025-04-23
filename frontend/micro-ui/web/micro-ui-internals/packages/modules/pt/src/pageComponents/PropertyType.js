@@ -109,7 +109,7 @@ console.log("formData???????????????????????",formData);
       return (
         <React.Fragment key={index}>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t(input.label) + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t(input.label)} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
             {/* <Dropdown
               className="form-field"
               selected={getPropertyTypeMenu(proptype)?.length === 1 ? getPropertyTypeMenu(proptype)[0] : BuildingType}
@@ -124,6 +124,9 @@ console.log("formData???????????????????????",formData);
               name="PropertyType"
               // defaultValue={BuildingType}
               control={control}
+              rules={{
+                required: config.isMandatory && t("Property Type is required"),
+              }}
               render={(props) => (
                 <Dropdown
                   className="form-field"

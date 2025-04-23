@@ -154,22 +154,28 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   }, [localFormState]);
 
   if (userType === "employee") {
+    const disableCityDropdown=isEditProperty ? isEditProperty : cities?.length === 1;
     return (
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("MYCITY_CODE_LABEL") + " *"}</CardLabel>
+          <CardLabel className="card-label-smaller">
+            {t("MYCITY_CODE_LABEL")} {config.isMandatory.city && <span style={{ color: 'red' }}>*</span>}
+          </CardLabel>
           <Controller
             name={"city"}
             defaultValue={cities?.length === 1 ? cities[0] : selectedCity}
             control={control}
+            rules={{
+              required: config.isMandatory.city && t("City is required"),
+            }}
             render={(props) => (
               <Dropdown
                 className="form-field"
                 selected={props.value}
-                disable={isEditProperty ? isEditProperty : cities?.length === 1}
+                disable={disableCityDropdown}
                 option={cities}
                 select={props.onChange}
-                optionKey="code"
+                optionKey="i18nKey"
                 onBlur={props.onBlur}
                 t={t}
               />
@@ -178,11 +184,14 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.city ? errors?.city?.message : ""}</CardLabelError>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_LOCALITY_LABEL") + " *"}</CardLabel>
+          <CardLabel className="card-label-smaller">{t("PT_LOCALITY_LABEL")} {config.isMandatory.locality && <span style={{ color: 'red' }}>*</span>}</CardLabel>
           <Controller
             name="locality"
             defaultValue={selectedLocality}
             control={control}
+            rules={{
+              required: config.isMandatory.locality?t("Locality is required"):false,
+            }}
             render={(props) => (
               <Dropdown
                 className="form-field"
@@ -197,6 +206,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
                 optionKey="i18nkey"
                 t={t}
                 disable={isEditProperty ? isEditProperty : false}
+                isRequired={true}
               />
             )}
           />

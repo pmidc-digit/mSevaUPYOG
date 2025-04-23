@@ -62,6 +62,7 @@ const combineResponses = (complaintDetailsResponse, workflowInstances) => {
         taskOwner: wfMap[complaint.service.serviceRequestId]?.assignes?.[0]?.name || "-",
         sla: wfMap[complaint.service.serviceRequestId]?.businesssServiceSla,
         tenantId: complaint.service.tenantId,
+        createdDate: Digit.DateUtils.ConvertEpochToDate(complaint.service.auditDetails.createdTime),
       })
     }});
   return data;

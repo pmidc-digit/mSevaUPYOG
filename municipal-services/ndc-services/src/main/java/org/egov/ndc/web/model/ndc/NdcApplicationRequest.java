@@ -17,4 +17,7 @@ public class NdcApplicationRequest {
 
     @JsonProperty("NdcDetails")
     private List<NdcDetailsRequest> ndcDetails;
+
+    @JsonProperty("Documents")
+    private List<DocumentRequest> documents;
 }

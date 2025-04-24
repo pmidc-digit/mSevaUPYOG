@@ -14,14 +14,15 @@ import org.egov.ndc.web.model.ndc.*;
 import org.egov.ndc.web.model.property.PropertyResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -44,6 +45,9 @@ public class NDCService {
 
 	@Autowired
 	private Producer producer;
+
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 
 	public NdcApplicationRequest createNdcApplication(NdcApplicationRequest ndcApplicationRequest) {
 		// Save applicant data
@@ -81,6 +85,70 @@ public class NDCService {
 
 		return ndcApplicationRequest;
 	}
+
+	public NdcApplicationRequest updateNdcApplication(NdcApplicationRequest ndcApplicationRequest) {
+
+		if(ObjectUtils.isEmpty(ndcApplicationRequest.getApplicant().getUuid())){
+			throw new CustomException("APPLICANT_UUID_NULL", "Applicant uuid is null");
+		}
+//		List<NdcApplicationRequest> existingApplications = ndcRepository.getApplicationById(ndcApplicationRequest.getApplicant().getUuid());
+		if(ndcRepository.checkApplicantExists(ndcApplicationRequest.getApplicant().getUuid()) == false) {
+			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
+		}
+//		if (existingApplications == null || existingApplications.isEmpty()) {
+//			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
+//		}
+
+//		NdcApplicationRequest existingApplication = existingApplications.get(0);
+//		if(!existingApplication.getApplicant().getUuid().equals(ndcApplicationRequest.getApplicant().getUuid()))
+//			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
+
+		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
+		applicant.setLastmodifiedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
+		applicant.setLastmodifiedtime(System.currentTimeMillis());
+
+		// Update NDC details
+		List<NdcDetailsRequest> ndcDetails = ndcApplicationRequest.getNdcDetails();
+		if (ndcDetails != null) {
+			Set<String> existingDetailUuids = getExistingUuids("eg_ndc_details", ndcDetails.stream().map(NdcDetailsRequest::getUuid).collect(Collectors.toList()));
+			for (NdcDetailsRequest details : ndcDetails) {
+				if (details.getUuid() == null || !existingDetailUuids.contains(details.getUuid())) {
+					details.setUuid(UUID.randomUUID().toString());
+					details.setApplicantId(applicant.getUuid());
+				}
+			}
+		}
+
+		// Update documents
+		List<DocumentRequest> documents = ndcApplicationRequest.getDocuments();
+		if (documents != null) {
+			Set<String> existingDocumentUuids = getExistingUuids("eg_ndc_documents", documents.stream().map(DocumentRequest::getUuid).collect(Collectors.toList()));
+			for (DocumentRequest document : documents) {
+				if (document.getUuid() == null || !existingDocumentUuids.contains(document.getUuid())) {
+					document.setUuid(UUID.randomUUID().toString());
+					document.setApplicantId(applicant.getUuid());
+					document.setCreatedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
+					document.setCreatedtime(System.currentTimeMillis());
+				}
+				document.setLastmodifiedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
+				document.setLastmodifiedtime(System.currentTimeMillis());
+			}
+		}
+
+		// Push to update topic
+		producer.push(config.getUpdateTopic(), ndcApplicationRequest);
+
+		return ndcApplicationRequest;
+	}
+
+
+	private Set<String> getExistingUuids(String tableName, List<String> uuids) {
+		if (uuids == null || uuids.isEmpty()) {
+			return new HashSet<>();
+		}
+		return ndcRepository.getExistingUuids(tableName, uuids);
+	}
+
 
 	public DuesDetails checkNoDuesForProperty(PendingDuesRequest pendingDuesRequest, RequestInfo requestInfo) {
 		DuesDetails duesDetails = new DuesDetails();

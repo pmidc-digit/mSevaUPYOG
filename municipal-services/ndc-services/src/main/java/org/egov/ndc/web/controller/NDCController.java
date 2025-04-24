@@ -69,6 +69,12 @@ public class NDCController {
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
 
+	@PutMapping("/_update")
+	public ResponseEntity<NdcApplicationRequest> updateNdcApplication(@RequestBody NdcApplicationRequest ndcApplicationRequest) {
+		NdcApplicationRequest response = ndcService.updateNdcApplication(ndcApplicationRequest);
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@PostMapping("/dues/_pending")
 	public ResponseEntity<DuesDetailsResponse> checkPendingDues(@Valid @ModelAttribute PendingDuesRequest pendingDuesRequest,
 																@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) {

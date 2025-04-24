@@ -88,9 +88,9 @@ public class NDCConfiguration {
 	
 	@Value("${persister.save.ndc.topic}")
 	private String saveTopic;
-//
-//	@Value("${persister.update.ndc.topic}")
-//	private String updateTopic;
+
+	@Value("${persister.update.ndc.topic}")
+	private String updateTopic;
 //
 //	@Value("${persister.update.ndc.workflow.topic}")
 //	private String updateWorkflowTopic;

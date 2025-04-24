@@ -320,13 +320,13 @@ const swach = {
         process: {
           onEntry: assign((context, event) => {
             // TODO: Generalised "disagree" intention
-            if (event.message.input.trim()?.toLowerCase() === "2") {
+            if (event.message.input.trim()?.toLowerCase() === "1") {
               context.slots.attendence["locationConfirmed"] = false;
               context.message = {
                 isValid: true,
               };
             } else if (
-              event.message.input.trim()?.toLowerCase() === "1"
+              event.message.input.trim()?.toLowerCase() === "2"
             ) {
               context.slots.attendence["locationConfirmed"] = true;
               context.slots.attendence.city =
@@ -1184,13 +1184,13 @@ const swach = {
                 process: {
                   onEntry: assign((context, event) => {
                     // TODO: Generalised "disagree" intention
-                    if (event.message.input.trim().toLowerCase() === "2") {
+                    if (event.message.input.trim().toLowerCase() === "1") {
                       context.slots.swach["locationConfirmed"] = false;
                       context.message = {
                         isValid: true,
                       };
                     } else if (
-                      event.message.input.trim().toLowerCase() === "1"
+                      event.message.input.trim().toLowerCase() === "2"
                     ) {
                       context.slots.swach["locationConfirmed"] = true;
                       context.slots.swach.city =

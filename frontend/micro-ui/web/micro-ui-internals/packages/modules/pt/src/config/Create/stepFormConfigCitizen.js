@@ -199,21 +199,21 @@ export const newConfig = [
           key: "landarea",
           withoutLabel: true,
         },
-        {
-          type: "component",
-          key: "address",
-          // "isMandatory": true,
-          component: "VasikaDetails",
-          key: "vasikaDetails",
-          withoutLabel: true,
-        },
-        {
-          type: "component",
-          // "isMandatory": true,
-          component: "AllotmentDetails",
-          key: "allottmentDetails",
-          withoutLabel: true,
-        },
+        // {
+        //   type: "component",
+        //   key: "address",
+        //   // "isMandatory": true,
+        //   component: "VasikaDetails",
+        //   key: "vasikaDetails",
+        //   withoutLabel: true,
+        // },
+        // {
+        //   type: "component",
+        //   // "isMandatory": true,
+        //   component: "AllotmentDetails",
+        //   key: "allottmentDetails",
+        //   withoutLabel: true,
+        // },
         {
           type: "component",
           isMandatory: true,
@@ -315,6 +315,12 @@ export const newConfig = [
           //     },
           //     "hideInEmployee": true
           // },
+          {
+            type: "component",
+            component: "PropertyCheckboxQuestions",
+            key: "propertyCheckboxQuestions",
+            withoutLabel: true,
+          },
         {
           type: "component",
           route: "number-of-floors",

@@ -204,4 +204,4 @@ const tenantId = formData.tenantId;
   );
 };
 
-export default PTNewFormSummaryStepFive;
+export {PTNewFormSummaryStepFive};

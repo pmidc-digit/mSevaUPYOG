@@ -599,7 +599,7 @@ const OwnerForm = (_props) => {
           <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_INFO_CORR_ADDR") + (isIndividualTypeOwner ? "" : " *")}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_INFO_CORR_ADDRRRRR") + (isIndividualTypeOwner ? "" : " *")}</CardLabel>
             <div className="field">
               <Controller
                 control={control}

@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
-import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
-import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
+import { UPDATE_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
 
-const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
+const PTEditFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();
@@ -15,19 +15,25 @@ const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in document detilas in step 4  ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
-    if (!_.isEqual(data, currentStepData)) {
+    console.log("onFormValueChange data in personal deatils step 3", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+    // if (!_.isEqual(data, currentStepData)) {
+    //   dispatch(UPDATE_PtNewApplication(config.key, data));
+    // }
+    if (!_.isEqual(data, localStepData)) {
       dispatch(UPDATE_PtNewApplication(config.key, data));
+      setLocalStepData(data);
     }
   };
 
   const currentStepData = useSelector(function (state) {
-    console.log("state in step four ", state);
+    console.log("state in step three ", state);
     return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
       ? state.pt.PTNewApplicationForm.formData[config.key]
       : {};
   });
-  console.log("currentStepData in step four: ", currentStepData);
+  const reduxStepData = useSelector((state) => state.pt.PTNewApplicationForm.formData.ownerShipDetails);
+  const [localStepData, setLocalStepData] = useState(reduxStepData);
+  console.log("reduxStepData in step three: ", localStepData);
   const dispatch = useDispatch();
 
   // console.log("currentStepData in  Administrative details: ", currentStepData);
@@ -35,7 +41,7 @@ const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
   return (
     <React.Fragment>
       <FormComposer
-        defaultValues={currentStepData}
+        defaultValues={localStepData}
         //heading={t("")}
         config={config.currStepConfig}
         onSubmit={goNext}
@@ -49,4 +55,4 @@ const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export default PTNewFormStepFour;
+export default PTEditFormStepThree;

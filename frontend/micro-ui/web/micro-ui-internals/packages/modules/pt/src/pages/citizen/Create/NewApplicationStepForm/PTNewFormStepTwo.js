@@ -48,4 +48,4 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export default PTNewFormStepTwo;
+export {PTNewFormStepTwo};

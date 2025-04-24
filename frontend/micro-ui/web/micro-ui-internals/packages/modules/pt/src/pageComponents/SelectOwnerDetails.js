@@ -9,6 +9,9 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData, ownerInde
   const editScreen = url.includes("/modify-application/");
   const mutationScreen = url.includes("/property-mutation/");
 
+  console.log("formData nai test",formData  );
+  
+
   let index = mutationScreen ? ownerIndex : window.location.href.charAt(window.location.href.length - 1);
   let validation = {};
   const [name, setName] = useState((formData.owners && formData.owners[index] && formData.owners[index].name) || formData?.owners?.name || "");
@@ -188,7 +191,7 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData, ownerInde
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_OWNER_EMAIL")}`}</CardLabel>
+          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_OWNER_EMAILL")}`}</CardLabel>
           <div className="field">
             <TextInput
               t={t}

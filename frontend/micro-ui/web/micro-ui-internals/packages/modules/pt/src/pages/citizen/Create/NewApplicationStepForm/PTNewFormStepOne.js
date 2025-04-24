@@ -6,10 +6,20 @@ import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicat
 
 const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+    console.log(`Dataaaaaaa in step ${config.currStepNumber} is: \n`, data);
+    console.log("config in goNext",config)
+    let f=0;
+    config.currStepConfig[0].body.map((item)=>{
+      // if(item.isMandatory && (data[item.key]===''||data[item.key]===undefined)){
+      //   f=1;
+      //   return
+      // }
+    })
+    if(f===0){
     onGoNext();
+    }
   }
-
+  
   function onGoBack(data) {
     onBackClick(config.key, data);
   }
@@ -43,10 +53,10 @@ const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
-        employeeType={"citizen"}
+        
       />
     </React.Fragment>
   );
 };
 
-export default PTNewFormStepOne;
+export {PTNewFormStepOne};

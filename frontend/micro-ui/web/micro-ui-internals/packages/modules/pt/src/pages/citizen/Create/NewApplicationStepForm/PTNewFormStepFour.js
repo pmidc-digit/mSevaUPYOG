@@ -47,4 +47,4 @@ const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export default PTNewFormStepFour;
+export {PTNewFormStepFour};

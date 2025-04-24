@@ -54,32 +54,40 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
     const owners = Array.isArray(data?.ownerShipDetails?.owners) ? data?.ownerShipDetails?.owners : [];
     // Construct the payload
     const formData = {
-      tenantId: data?.PersonalDetails?.address?.city?.code,
-      // tenantId: PersonalDetails.address.city.code
+      tenantId: data?.LocationDetails?.address?.city?.code,
       address: {
-        ...data?.PersonalDetails?.address,
-        city: data?.PersonalDetails?.address?.city?.name,
+        ...data?.LocationDetails?.address,
+        city: data?.LocationDetails?.address?.city?.name,
         locality: {
-          code: data?.PersonalDetails?.address?.locality?.code,
-          area: data?.PersonalDetails?.address?.locality?.area,
+          code: data?.LocationDetails?.address?.locality?.code,
+          area: data?.LocationDetails?.address?.locality?.area,
         },
       },
       usageCategory: data?.PropertyDetails?.usageCategoryMajor?.code,
       usageCategoryMajor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[0],
       usageCategoryMinor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[1] || null,
-      landArea: Number(data?.PropertyDetails?.landArea || 0),
-      superBuiltUpArea: Number(data?.PropertyDetails?.landArea || 0),
+      landArea: Number(data?.PropertyDetails?.landarea || 0),
+      superBuiltUpArea: Number(data?.PropertyDetails?.landarea || 0),
       propertyType: data?.PropertyDetails?.PropertyType?.code,
       noOfFloors: Number(data?.PropertyDetails?.noOfFloors || 0),
       ownershipCategory: data?.ownerShipDetails?.ownershipCategory?.code,
       additionalDetails: {
         ageOfProperty: data?.PropertyDetails?.propertyStructureDetails?.ageOfProperty,
         structureType: data?.PropertyDetails?.propertyStructureDetails?.structureType,
-        electricity: data?.PersonalDetails?.electricity,
-        uid: data?.PersonalDetails?.uid,
+        electricity: data?.LocationDetails?.electricity,
+        uid: data?.LocationDetails?.uid,
+        heightAbove36Feet: data?.PropertyDetails?.propertyCheckboxQuestions?.isPropertyHeightMoreThan36Feet,
+        inflammable: data?.PropertyDetails?.propertyCheckboxQuestions?.hasInflammableMaterial,
+        vasikaNo: data?.PropertyDetails?.vasikaDetails?.vasikaNo,
+        vasikaDate: data?.PropertyDetails?.vasikaDetails?.vasikaDate,
+        allotmentNo: data?.PropertyDetails?.allottmentDetails?.allotmentNo,
+        allotmentDate: data?.PropertyDetails?.allottmentDetails?.allotmentDate,
+        businessName: data?.PropertyDetails?.businessName,
+        yearConstruction: data?.LocationDetails?.yearOfCreation?.code,
+        remarks: data?.PropertyDetails?.remarks,
       },
-      surveyId: data?.PersonalDetails?.surveyId,
-      existingPropertyId: data?.PersonalDetails?.existingPropertyId,
+      surveyId: data?.LocationDetails?.surveyId,
+      existingPropertyId: data?.LocationDetails?.existingPropertyId,
       owners: owners?.map((owner, index) => {
         const {
           name,
@@ -110,7 +118,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
             name,
             mobileNumber,
             correspondenceAddress,
-            permanentAddress: data?.PersonalDetails?.address?.locality?.name,
+            permanentAddress: data?.LocationDetails?.address?.locality?.name,
             relationship: owner?.relationship?.code,
             fatherOrHusbandName,
             gender: owner?.gender?.code,
@@ -138,19 +146,11 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
 
         return _owner;
       }),
-      additionalDetails: {
-        vasikaNo: data?.PropertyDetails?.vasikaDetails?.vasikaNo,
-        vasikaDate: data?.PropertyDetails?.vasikaDetails?.vasikaDate,
-        allotmentNo: data?.PropertyDetails?.allottmentDetails?.allotmentNo,
-        allotmentDate: data?.PropertyDetails?.allottmentDetails?.allotmentDate,
-        businessName: data?.PropertyDetails?.businessName,
-        yearConstruction: data?.PersonalDetails?.yearOfCreation?.code,
-        remarks: data?.PropertyDetails?.remarks,
-      },
       channel: "CFC_COUNTER", // required
       creationReason: "CREATE", // required
       source: "MUNICIPAL_RECORDS", // required
       units: data?.PropertyDetails?.PropertyType?.code !== "VACANT" ? updatedUnits : [],
+      // documents: data?.DocummentDetails?.documents?.documents,
       documents: data?.DocummentDetails?.documents?.documents,
       applicationStatus: "CREATE",
     };
@@ -162,7 +162,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
         type: data?.ownerShipDetails?.owners?.[0]?.institution?.type?.code,
         designation: data?.ownerShipDetails?.owners?.[0]?.designation,
         nameOfAuthorizedPerson: data?.ownerShipDetails?.owners?.[0]?.name,
-        tenantId: data?.PersonalDetails?.address?.city?.code,
+        tenantId: data?.LocationDetails?.address?.city?.code,
       };
     }
 

@@ -18,7 +18,7 @@ const createEmployeeConfig = [
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormStepOne",
+    component: "PTNewFormStepOneCitizen",
     key: "PersonalDetails",
     withoutLabel: true,
     texts: {
@@ -31,7 +31,7 @@ const createEmployeeConfig = [
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormStepTwo",
+    component: "PTNewFormStepTwoCitizen",
     key: "PropertyDetails",
     withoutLabel: true,
     texts: {
@@ -44,7 +44,7 @@ const createEmployeeConfig = [
     stepNumber: 3,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormStepThree",
+    component: "PTNewFormStepThreeCitizen",
     key: "ownerShipDetails",
     withoutLabel: true,
     texts: {
@@ -57,7 +57,7 @@ const createEmployeeConfig = [
     stepNumber: 4,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormStepFour",
+    component: "PTNewFormStepFourCitizen",
     key: "DocummentDetails",
     withoutLabel: true,
     texts: {
@@ -70,7 +70,7 @@ const createEmployeeConfig = [
     stepNumber: 5,
     isStepEnabled: true,
     type: "component",
-    component: "PTNewFormSummaryStepFive",
+    component: "PTNewFormSummaryStepFiveCitizen",
     key: "PTSummary",
     withoutLabel: true,
     texts: {

@@ -71,6 +71,7 @@ export const FormComposer = (props) => {
     props.onFormValueChange && props.onFormValueChange(setValue, formData, formState);
   }, [formData]);
 
+
   const fieldSelector = (type, populators, isMandatory, disable = false, component, config) => {
     const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
 

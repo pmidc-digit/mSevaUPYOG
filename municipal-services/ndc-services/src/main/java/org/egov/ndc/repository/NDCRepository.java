@@ -1,16 +1,15 @@
 package org.egov.ndc.repository;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.producer.Producer;
 import org.egov.ndc.repository.builder.NdcQueryBuilder;
 import org.egov.ndc.repository.rowmapper.NdcRowMapper;
-import org.egov.ndc.web.model.Ndc;
-import org.egov.ndc.web.model.NdcRequest;
-import org.egov.ndc.web.model.NdcSearchCriteria;
+import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -33,52 +32,23 @@ public class NDCRepository {
 
 	@Autowired
 	private NdcRowMapper rowMapper;
-	
-	/**
-	 * push the ndcRequest object to the producer on the save topic
-	 * @param ndcRequest
-	 */
-//	public void save(NdcRequest ndcRequest) {
-//		producer.push(config.getSaveTopic(), ndcRequest);
-//	}
-	
-	/**
-	 * pushes the ndcRequest object to updateTopic if stateupdatable else to update workflow topic
-	 * @param ndcRequest
-	 * @param isStateUpdatable
-	 */
-//	public void update(NdcRequest ndcRequest, boolean isStateUpdatable) {
-//		log.info("Pushing NDC record with application status - "+ndcRequest.getNdc().getApplicationStatus());
-//		if (isStateUpdatable) {
-//			producer.push(config.getUpdateTopic(), ndcRequest);
-//		} else {
-//		    producer.push(config.getUpdateWorkflowTopic(), ndcRequest);
-//		}
-//	}
-	/**
-	 * using the queryBulider query the data on applying the search criteria and return the data 
-	 * parsing throw row mapper
-	 * @param criteria
-	 * @return
-	 */
-	public List<Ndc> getNdcData(NdcSearchCriteria criteria) {
-		List<Object> preparedStmtList = new ArrayList<>();
-		String query = queryBuilder.getNdcSearchQuery(criteria, preparedStmtList, false);
-		List<Ndc> ndcList = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-		return ndcList;
+
+	public List<NdcApplicationRequest> getApplicationById(String applicantId) {
+		String sql = queryBuilder.getNdcDetailsQuery(applicantId);
+		return jdbcTemplate.query(sql, new Object[]{applicantId}, new NdcRowMapper());
 	}
-	
-	/**
-         * using the queryBulider query the data on applying the search criteria and return the count 
-         * parsing throw row mapper
-         * @param criteria
-         * @return
-         */
-        public Integer getNdcCount(NdcSearchCriteria criteria) {
-                List<Object> preparedStmtList = new ArrayList<>();
-                String query = queryBuilder.getNdcSearchQuery(criteria, preparedStmtList, true);
-                int count = jdbcTemplate.queryForObject(query, preparedStmtList.toArray(), Integer.class);
-                return count;
-        }
+
+
+	public Set<String> getExistingUuids(String tableName, List<String> uuids) {
+		String sql = queryBuilder.getExistingUuids(tableName, uuids);
+		return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("uuid")).stream().collect(Collectors.toSet());
+	}
+
+	public boolean checkApplicantExists(String uuid) {
+		String sql = queryBuilder.checkApplicantExists(uuid);
+		String query = jdbcTemplate.queryForObject(sql, new Object[]{uuid}, String.class);
+		return query != null;
+	}
+
 
 }

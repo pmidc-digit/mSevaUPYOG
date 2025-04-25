@@ -1,22 +1,48 @@
 import { useQuery, useQueryClient } from "react-query";
 
-const useInboxData = (searchParams) => {
+const useInboxSearchData = (searchParams) => {
   const client = useQueryClient();
-  // const [complaintList, setcomplaintList] = useState([]);
-  // const user = Digit.UserService.getUser();
-  // const tenantId = user?.info?.tenantId;
 
   const fetchInboxData = async () => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
-    let serviceIds = [];
-    let commonFilters = { start: 1, end: 10 };
-    const { limit, offset } = searchParams;
-    let appFilters = { ...commonFilters, ...searchParams.filters.pgrQuery, ...searchParams.search, limit, offset };
-    let wfFilters = { ...commonFilters, ...searchParams.filters.wfQuery };
-    let complaintDetailsResponse = null;
-    let combinedRes = [];
-    complaintDetailsResponse = await Digit.PGRService.search(tenantId, appFilters);
-    complaintDetailsResponse.ServiceWrappers.forEach((service) => serviceIds.push(service.service.serviceRequestId));
+    const { limit = 10, offset = 0 } = searchParams;
+    console.log("searchParams", searchParams);
+    console.log("searchParams.filters.pgrQuery", searchParams.filters.pgrQuery);
+
+    const pgrQueryExtras = searchParams.filters.pgrQuery || {};
+    const searchExtras = searchParams.search || {};
+    let wfFilters = { ...searchParams.filters.wfQuery };
+
+    const inboxPayload = {
+      inbox: {
+        tenantId,
+        processSearchCriteria: {
+          moduleName: pgrQueryExtras.moduleName || "pgr-services",
+          businessService: pgrQueryExtras.businessService || ["PGR"],
+          ...pgrQueryExtras.processSearchCriteria,
+        },
+        moduleSearchCriteria: {
+          businessService: Array.isArray(pgrQueryExtras.businessService)
+            ? pgrQueryExtras.businessService[0]
+            : pgrQueryExtras.businessService || "PGR",
+          sortOrder: pgrQueryExtras.sortOrder || "ASC",
+          sortBy: pgrQueryExtras.sortBy || "applicationStatus",
+          ...pgrQueryExtras.moduleSearchCriteria,
+        },
+        limit,
+        offset,
+        // if they searched by complaint no or mobile no:
+        ...(searchExtras.serviceRequestId && { serviceRequestId: searchExtras.serviceRequestId }),
+        ...(searchExtras.mobileNumber && { mobileNumber: searchExtras.mobileNumber }),
+        // any other top‐level filters
+        ...pgrQueryExtras,
+        ...searchExtras,
+      },
+    };
+
+    console.log("reaching to complaintne");
+    const complaintDetailsResponse = await Digit.PGRService.Inboxsearch(tenantId, inboxPayload);
+    complaintDetailsResponse.items.forEach((service) => serviceIds.push(service.service.serviceRequestId));
     const serviceIdParams = serviceIds.join();
     const workflowInstances = await Digit.WorkflowService.getByBusinessId(tenantId, serviceIdParams, wfFilters, false);
     if (workflowInstances.ProcessInstances.length) {
@@ -67,4 +93,4 @@ const combineResponses = (complaintDetailsResponse, workflowInstances) => {
   return data;
 };
 
-export default useInboxData;
+export default useInboxSearchData;

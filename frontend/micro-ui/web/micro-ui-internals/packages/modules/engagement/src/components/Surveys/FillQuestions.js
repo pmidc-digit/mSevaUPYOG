@@ -11,6 +11,7 @@ import {
   Localities,
   CardLabel,
   Dropdown,
+  Loader,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -21,6 +22,7 @@ const FillQuestions = (props) => {
   const [formData, setFormData] = useState({});
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [city, setCity] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [localityList, setLocalityList] = useState(null);
   const [openQuesDetailsDialog, setOpenQuesDetailsDialog] = useState(false);
@@ -38,10 +40,14 @@ const FillQuestions = (props) => {
   // let { data: tenantlocalties, isLoadingLocality } = Digit.Hooks.useBoundaryLocalities(city, "revenue", { enabled: !!city }, t);
   useEffect(() => {
     (async () => {
+      setLoading(true);
       let response = await Digit.LocationService.getLocalities(city);
+      setLoading(false);
       let __localityList = [];
       if (response && response.TenantBoundary.length > 0) {
+        setLoading(true);
         __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+        setLoading(false);
       }
       setLocalityList(__localityList);
     })();
@@ -50,10 +56,14 @@ const FillQuestions = (props) => {
   useEffect(() => {
     (async () => {
       if ((prevProps?.userType).toUpperCase() === "EMPLOYEE") {
+        setLoading(true);
         let response = await Digit.LocationService.getLocalities(prevProps.citizenData.city?.code);
+        setLoading(false);
         let __localityList = [];
         if (response && response.TenantBoundary.length > 0) {
+          setLoading(true);
           __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+          setLoading(false);
         }
         setLocalityList(__localityList);
       }
@@ -200,12 +210,14 @@ const FillQuestions = (props) => {
   const data = prevProps.surveyDetails;
 
   const fetchAnswer = async (status) => {
+    setLoading(true);
     let payload = {
       surveyUuid: data.uuid,
       citizenId: prevProps.userInfo.uuid,
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
+        setLoading(false);
         if (response?.sectionResponses.length > 0) {
           let result = {};
 
@@ -234,17 +246,20 @@ const FillQuestions = (props) => {
         }
       });
     } catch (error) {
+      setLoading(false);
       return error;
     }
   };
 
   const fetchSurveyAnswers = async () => {
+    setLoading(true);
     let payload = {
       surveyUuid: data.uuid,
       citizenId: prevProps.userInfo.uuid,
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
+        setLoading(false);
         if (response?.sectionResponses.length > 0) {
           console.log("response.status", response.status);
           if (response.status == "Draft") {
@@ -286,6 +301,7 @@ const FillQuestions = (props) => {
         }
       });
     } catch (error) {
+      setLoading(false);
       return error;
     }
   };
@@ -323,6 +339,7 @@ const FillQuestions = (props) => {
   };
 
   const fetchUserDetails = async () => {
+    setLoading(true);
     // if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
     const data = {
       userName: prevProps?.userInfo?.mobileNumber,
@@ -334,6 +351,7 @@ const FillQuestions = (props) => {
 
     Digit.Surveys.userSearch(data, filters)
       .then((response) => {
+        setLoading(false);
         if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
           // setCitizenFound(true)
           if (
@@ -371,6 +389,7 @@ const FillQuestions = (props) => {
         }
       })
       .catch((error) => {
+        setLoading(false);
         return error;
       });
     //}
@@ -541,6 +560,7 @@ const FillQuestions = (props) => {
   }, [formData]);
 
   const handleAutoSave = async () => {
+    setLoading(true);
     let answerArr = [];
     //  let geolocationStr= geoLocation.latitude.concat(geoLocation.longitude;
     for (const sectionId in formData) {
@@ -550,7 +570,6 @@ const FillQuestions = (props) => {
           surveyUuid: data.uuid,
           questionUuid: questionId,
           sectionUuid: sectionId,
-
           comments: formData[sectionId][questionId]?.comments || "",
           answerDetails: [
             {
@@ -566,7 +585,7 @@ const FillQuestions = (props) => {
       }
     }
     //const { roles, ...newUserObject } = prevProps.userInfo[0];
-
+    console.log("locality", locality);
     let payload = {
       User: {
         type: prevProps.userInfo.type,
@@ -578,9 +597,10 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
+        tenantId: city,
+        locality: locality,
+        // tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
         status: "Draft",
-        locality: locality || null,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         answers: answerArr,
       },
@@ -588,6 +608,7 @@ const FillQuestions = (props) => {
 
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
+        setLoading(false);
         if (response?.SubmitResponse !== undefined) {
           // return;
         } else {
@@ -595,6 +616,7 @@ const FillQuestions = (props) => {
         }
       });
     } catch (error) {
+      setLoading(false);
       return error;
     }
   };
@@ -648,7 +670,10 @@ const FillQuestions = (props) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  console.log("tenantId", Digit.ULBService.getCurrentPermanentCity(), localStorage.getItem("CITIZEN.CITY"));
+
   const handleSubmitSurvey = () => {
+    setLoading(true);
     let answerArr = [];
     let geolocationStr = geoLocation.latitude + geoLocation.longitude;
     for (const sectionId in formData) {
@@ -659,6 +684,7 @@ const FillQuestions = (props) => {
           questionUuid: questionId,
           sectionUuid: sectionId,
           comments: formData[sectionId][questionId]?.comments || "",
+          tenantId: localStorage.getItem("CITIZEN.CITY"),
           // answer: [formData[sectionId][questionId].answer],
           answerDetails: [
             {
@@ -686,17 +712,18 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
+        tenantId: city,
         status: "Submit",
-        locality: locality || null,
+        locality: locality,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
-
+        tenantId: localStorage.getItem("CITIZEN.CITY"),
         answers: answerArr,
       },
     };
 
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
+        setLoading(false);
         if (response?.SubmitResponse !== undefined) {
           userType.toUpperCase() === "EMPLOYEE"
             ? history.push("/digit-ui/employee/engagement/surveys/submit-response", {
@@ -716,6 +743,7 @@ const FillQuestions = (props) => {
         }
       });
     } catch (error) {
+      setLoading(false);
       return error;
     }
   };
@@ -1390,12 +1418,26 @@ const FillQuestions = (props) => {
   // }, [prevProps?.userType, hasCitizenDetails]);
 
   const handleCityChange = (e) => {
-    setCity(e.target.value);
+    const selectedCity = e.target.value;
+    setCity(selectedCity);
   };
 
+  useEffect(() => {
+    // On component mount, initialize city from localStorage
+    const storedCity = localStorage.getItem("CITIZEN.CITY");
+    if (storedCity) {
+      setCity(storedCity);
+    }
+  }, []);
+
   const handleLocalityChangeCitizen = (e) => {
+    console.log("e====", e);
     setLocality(e.target.value);
   };
+
+  useEffect(() => {
+    console.log("selectedCity", locality);
+  }, [locality]);
 
   const handleLocalityChange = (e) => {
     setLocality(e);
@@ -1504,10 +1546,12 @@ const FillQuestions = (props) => {
                   t={t}
                   selected={city || null}
                 /> */}
-
+              {console.log("cities", cities)}
               <select
                 id="dropdown"
                 value={city}
+                // value={localStorage.getItem("CITIZEN.CITY")}
+                // value={formData[section.uuid]?.[question.uuid]?.answer}
                 onChange={(e) => {
                   handleCityChange(e);
                 }}
@@ -1643,6 +1687,7 @@ const FillQuestions = (props) => {
         >
           Fill your details : Name, Gender, DOB and Email are required
         </button>
+        {loading && <Loader />}
       </div>
     ) : null
 

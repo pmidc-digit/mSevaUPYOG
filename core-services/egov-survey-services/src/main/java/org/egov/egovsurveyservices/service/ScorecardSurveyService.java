@@ -313,6 +313,7 @@ public class ScorecardSurveyService {
         }
         ScorecardAnswerResponse scorecardAnswerResponse = buildScorecardAnswerResponse(answers, criteria);
         if(surveyResponseNew!=null) {
+            scorecardAnswerResponse.setTenantId(surveyResponseNew.getTenantId());
             scorecardAnswerResponse.setStatus(surveyResponseNew.getStatus().toString());
             scorecardAnswerResponse.setLocality(surveyResponseNew.getLocality());
             scorecardAnswerResponse.setCoordinates(surveyResponseNew.getCoordinates());

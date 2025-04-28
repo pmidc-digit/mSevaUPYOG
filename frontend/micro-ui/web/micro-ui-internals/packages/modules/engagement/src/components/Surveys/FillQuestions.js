@@ -15,6 +15,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import Dialog from "../Modal/Dialog";
+
 const FillQuestions = (props) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({});
@@ -45,6 +46,7 @@ const FillQuestions = (props) => {
       setLocalityList(__localityList);
     })();
   }, [city]);
+
   useEffect(() => {
     (async () => {
       if ((prevProps?.userType).toUpperCase() === "EMPLOYEE") {
@@ -57,6 +59,7 @@ const FillQuestions = (props) => {
       }
     })();
   }, []);
+
   const {
     register: register,
     control: control,
@@ -111,6 +114,7 @@ const FillQuestions = (props) => {
     );
     setQuestionDetailsContent(content);
   }
+
   const prevFormDataRef = useRef({});
   // const data=
   //  [{
@@ -317,6 +321,7 @@ const FillQuestions = (props) => {
     );
     // }
   };
+
   const fetchUserDetails = async () => {
     // if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
     const data = {
@@ -333,10 +338,10 @@ const FillQuestions = (props) => {
           // setCitizenFound(true)
           if (
             response?.user[0]?.gender === null ||
-            response?.user[0]?.email === null ||
+            response?.user[0]?.emailId === null ||
             response?.user[0]?.dob === null ||
             response?.user[0]?.gender === "" ||
-            response?.user[0]?.email === "" ||
+            response?.user[0]?.emailId === "" ||
             response?.user[0]?.dob === ""
           ) {
             setHasCitizenDetails(false);
@@ -370,6 +375,7 @@ const FillQuestions = (props) => {
       });
     //}
   };
+
   // useEffect(() => {
   //   // const fetchUserDetails = async () => {
   //   //   if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
@@ -461,6 +467,7 @@ const FillQuestions = (props) => {
   //   console.log(error);
   // }
   //   },[])
+
   const handleCheckboxChange = (section, event) => {
     const { value, checked } = event.target;
     setFormData((prevData) => {
@@ -487,6 +494,7 @@ const FillQuestions = (props) => {
       },
     }));
   };
+
   const handleFieldChange = (sectionId, questionId, value) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -499,6 +507,7 @@ const FillQuestions = (props) => {
       },
     }));
   };
+
   // const handleFieldChange = (event) => {
   //   const { name, value } = event.target;
   //   console.log("date value", event.target);
@@ -507,12 +516,14 @@ const FillQuestions = (props) => {
   //     [name]: value,
   //   }));
   // };
+
   const handleDropdownChange = (name, event) => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: event,
     }));
   };
+
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -636,6 +647,7 @@ const FillQuestions = (props) => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleSubmitSurvey = () => {
     let answerArr = [];
     let geolocationStr = geoLocation.latitude + geoLocation.longitude;
@@ -720,9 +732,11 @@ const FillQuestions = (props) => {
       return;
     }
   };
+
   const onSubmit = (data) => {
     console.log("data", data);
   };
+
   //console.log("formState", formState);
   const displayAnswerField = (answerType, question, section) => {
     switch (answerType) {
@@ -1321,10 +1335,13 @@ const FillQuestions = (props) => {
         );
     }
   };
+
   data.sections.map((s) => console.log("data sec", s.title));
+
   const closeToast = () => {
     setShowToast(null);
   };
+
   const [location, setLocation] = useState({
     latitude: null,
     longitude: null,
@@ -1375,15 +1392,19 @@ const FillQuestions = (props) => {
   const handleCityChange = (e) => {
     setCity(e.target.value);
   };
+
   const handleLocalityChangeCitizen = (e) => {
     setLocality(e.target.value);
   };
+
   const handleLocalityChange = (e) => {
     setLocality(e);
   };
+
   function handleOnSubmitDialog() {
     setOpenQuesDetailsDialog(false);
   }
+
   function handleOnCancelDialog() {
     setOpenQuesDetailsDialog(false);
   }
@@ -1498,11 +1519,13 @@ const FillQuestions = (props) => {
                   </option>
                 ))}
               </select>
+
               {errors && errors["city"] && (
                 <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                   {errors?.["city"].answerRequired}
                 </CardLabelError>
               )}
+
               <CardLabel>
                 {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
               </CardLabel>

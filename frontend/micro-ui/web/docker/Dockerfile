@@ -18,6 +18,7 @@ RUN yarn add @mseva/digit-ui-module-ptr@1.0.13
 RUN yarn add @mseva/digit-ui-module-swach@1.0.15
 RUN yarn add @mseva/digit-ui-module-pt@1.0.6
 RUN yarn add @mseva/digit-ui-module-tl@1.0.4
+RUN yarn add @mseva/digit-ui-module-obps@1.0.5
 
 ARG WORK_DIR
 WORKDIR /app

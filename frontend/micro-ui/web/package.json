@@ -17,8 +17,7 @@
     "micro-ui-internals/packages/modules/pgr",
     "micro-ui-internals/packages/modules/mCollect",
     "micro-ui-internals/packages/modules/pt",
-    "micro-ui-internals/packages/modules/tl",
-    "micro-ui-internals/packages/modules/obps"
+    "micro-ui-internals/packages/modules/tl"
   ],
   "engines": {
     "node": ">=14"
@@ -33,7 +32,7 @@
     "@mseva/digit-ui-module-commonpt": "1.0.2",
     "@mseva/digit-ui-module-core": "1.0.13",
     "@mseva/digit-ui-module-dss": "1.0.2",
-    "@mseva/digit-ui-module-engagement": "1.1.11",
+    "@mseva/digit-ui-module-engagement": "1.1.12",
     "@mseva/digit-ui-module-fsm": "1.0.2",
     "@mseva/digit-ui-module-hrms": "1.0.2",
     "@mseva/digit-ui-module-mcollect": "1.0.3",
@@ -44,7 +43,6 @@
     "@mseva/digit-ui-module-ws": "1.0.2",
     "@mseva/digit-ui-module-pt": "1.0.6",
     "@mseva/digit-ui-module-tl": "1.0.4",
-    "@mseva/digit-ui-module-obps": "1.0.5",
     "babel-loader": "8.1.0",
     "qrcode": "^1.5.3",
     "react": "17.0.2",

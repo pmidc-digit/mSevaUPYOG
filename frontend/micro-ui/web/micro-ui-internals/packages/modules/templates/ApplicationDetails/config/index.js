@@ -12,6 +12,7 @@ import { configNOCApproverApplication } from "./NOCApproverApplication";
 import { configWSApproverApplication } from "./WSApproverApplication";
 import { configWSDisConnectApplication } from "./WSDisconnectApplication";
 import { configPTRApproverApplication } from "./PTRApproverApplication";
+import { configTLDirectRenewApplication } from "./TLDirectRenewApplication"
 
 export {
   configAssignDso,
@@ -27,5 +28,6 @@ export {
   configNOCApproverApplication,
   configWSApproverApplication,
   configWSDisConnectApplication,
-  configPTRApproverApplication
+  configPTRApproverApplication,
+  configTLDirectRenewApplication
 };

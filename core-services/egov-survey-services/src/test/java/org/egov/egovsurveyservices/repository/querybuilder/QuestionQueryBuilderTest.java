@@ -54,6 +54,7 @@ public class QuestionQueryBuilderTest {
                 "category.label as category_label, category.isactive as category_isactive, " +
                 "category.tenantid as category_tenantid, option.uuid AS option_uuid, " +
                 "option.optiontext AS option_text, option.weightage AS option_weightage, " +
+                "option.optionorder as option_order, " +
                 "option.createdby AS option_createdby, option.lastmodifiedby AS option_lastmodifiedby, " +
                 "option.createdtime AS option_createdtime, option.lastmodifiedtime AS option_lastmodifiedtime " +
                 "FROM eg_ss_question question INNER JOIN eg_ss_category category " +
@@ -228,7 +229,7 @@ public class QuestionQueryBuilderTest {
         assertEquals("SELECT question.uuid, question.tenantid, question.surveyid, question.questionstatement, question.status, " +
                 "question.type, question.required, question.qorder, question.categoryid, " +
                 "question.createdby, question.lastmodifiedby, question.createdtime, question.lastmodifiedtime, " +
-                "option.uuid AS option_uuid, option.optiontext AS option_text, option.weightage AS option_weightage, " +
+                "option.uuid AS option_uuid, option.optiontext AS option_text,option.optionorder as option_order, option.weightage AS option_weightage, " +
                 "option.createdby AS option_createdby, option.lastmodifiedby AS option_lastmodifiedby, option.createdtime AS option_createdtime, option.lastmodifiedtime AS option_lastmodifiedtime " +
                 "FROM eg_ss_question question " +
                 "LEFT JOIN eg_ss_question_option option ON question.uuid = option.questionuuid " +

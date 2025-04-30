@@ -127,6 +127,7 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
                                     .questionUuid(questionUuid)
                                     .optionText(rs.getString("option_text"))
                                     .weightage(rs.getDouble("option_weightage"))
+                                    .optionOrder(rs.getLong("option_order"))
                                     .build();
 
                             question.getOptions().add(questionOption);

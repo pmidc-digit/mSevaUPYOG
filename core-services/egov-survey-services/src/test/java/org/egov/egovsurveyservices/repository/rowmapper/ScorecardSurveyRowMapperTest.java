@@ -93,6 +93,8 @@ public class ScorecardSurveyRowMapperTest {
         when(resultSet.getString("option_uuid")).thenReturn("option-123", null);
         when(resultSet.getString("option_text")).thenReturn("Very Satisfied", null);
         when(resultSet.getDouble("option_weightage")).thenReturn(1.0, 0.0);
+        when(resultSet.getLong("option_order")).thenReturn(1L);
+
 
         // Execute row mapper
         List<ScorecardSurveyEntity> result = rowMapper.extractData(resultSet);

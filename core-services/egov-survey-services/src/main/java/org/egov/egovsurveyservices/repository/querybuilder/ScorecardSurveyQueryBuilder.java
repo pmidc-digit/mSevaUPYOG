@@ -76,6 +76,7 @@ public class ScorecardSurveyQueryBuilder {
                     // Question option fields
                     "questionOption.uuid AS option_uuid, " +
                     "questionOption.optiontext AS option_text, " +
+                    "questionOption.optionorder as option_order, " +
                     "questionOption.weightage AS option_weightage " +
 
             "FROM eg_ss_survey_entity AS survey " +
@@ -105,7 +106,6 @@ public class ScorecardSurveyQueryBuilder {
             query.append(whereAdded ? " AND " : " WHERE ");
             query.append("( survey.tenantid = ? or survey.tenantid = 'pb.punjab' )");
             preparedStmtList.add(criteria.getTenantId());
-//            preparedStmtList.add("pb.punjab");
             whereAdded = true;
         }
 
@@ -185,7 +185,7 @@ public class ScorecardSurveyQueryBuilder {
                 "option.uuid AS option_uuid, "+
                 "option.optiontext AS option_text, "+
                 "option.weightage AS option_weightage, "+
-                "option.createdby AS option_createdby, option.lastmodifiedby AS option_lastmodifiedby, option.createdtime AS option_createdtime, option.lastmodifiedtime AS option_lastmodifiedtime " +
+                "option.optionorder as option_order,option.createdby AS option_createdby, option.lastmodifiedby AS option_lastmodifiedby, option.createdtime AS option_createdtime, option.lastmodifiedtime AS option_lastmodifiedtime " +
                 "FROM eg_ss_question q " +
                 "JOIN eg_ss_question_weightage qw ON q.uuid = qw.questionuuid " +
                 "JOIN eg_ss_survey_section ss ON qw.sectionuuid = ss.uuid " +

@@ -49,6 +49,7 @@ public class QuestionRowMapperTest {
         when(rs.getString("option_uuid")).thenReturn("optuuid1");
         when(rs.getString("option_text")).thenReturn("optext1");
         when(rs.getDouble("option_weightage")).thenReturn(2.0);
+        when(rs.getLong("option_order")).thenReturn(1L);
         when(rs.getString("option_createdby")).thenReturn("admin1");
         when(rs.getLong("option_createdtime")).thenReturn(1L);
         when(rs.getString("option_lastmodifiedby")).thenReturn("admin1");
@@ -74,7 +75,6 @@ public class QuestionRowMapperTest {
         assertEquals(questionStatement, question.getQuestionStatement());
         assertEquals(status, question.getStatus());
         assertEquals(required, question.getRequired());
-//        assertEquals(Arrays.asList(options.split(",")), question.getOptions());
         assertEquals(type, question.getType());
         assertEquals(categoryId, question.getCategory().getId());
         assertEquals(categoryLabel, question.getCategory().getLabel());
@@ -85,7 +85,6 @@ public class QuestionRowMapperTest {
         verify(rs).getString("questionstatement");
         verify(rs).getString("status");
         verify(rs).getBoolean("required");
-//        verify(rs).getString("options");
         verify(rs).getString("type");
         verify(rs).getString("categoryid");
         verify(rs).getString("category_label");
@@ -139,6 +138,7 @@ public class QuestionRowMapperTest {
         lenient().when(rs.getString("option_uuid")).thenReturn(null);
         lenient().when(rs.getString("option_text")).thenReturn(null);
         lenient().when(rs.getDouble("option_weightage")).thenReturn(0.0);
+        lenient().when(rs.getLong("option_order")).thenReturn(1L);
         lenient().when(rs.getString("option_createdby")).thenReturn(null);
         lenient().when(rs.getLong("option_createdtime")).thenReturn(0L);
         lenient().when(rs.getString("option_lastmodifiedby")).thenReturn(null);
@@ -186,6 +186,7 @@ public class QuestionRowMapperTest {
         when(rs.getString("option_uuid")).thenReturn("option1", "option2", "option3", "option4");
         when(rs.getString("option_text")).thenReturn("Option 1", "Option 2", "Option 3", "Option 4");
         when(rs.getDouble("option_weightage")).thenReturn(10.0, 20.0, 30.0, 40.0);
+        when(rs.getLong("option_order")).thenReturn(1L);
         when(rs.getString("option_createdby")).thenReturn("optionUser1", "optionUser2", "optionUser3", "optionUser4");
         when(rs.getLong("option_createdtime")).thenReturn(1622547800001L, 1622547800002L, 1622547800003L, 1622547800004L);
         when(rs.getString("option_lastmodifiedby")).thenReturn("optionUser3", "optionUser4", "optionUser5", "optionUser6");
@@ -392,22 +393,6 @@ public class QuestionRowMapperTest {
             assertEquals("C1", question.getCategoryId());
             assertEquals("Personal Info", question.getCategory().getLabel());
         }
-
-//        @Test
-//        void testExtractData_QuestionWithOptions() throws SQLException {
-//            when(rs.next()).thenReturn(true, true, false);
-//            
-//            when(rs.getString("uuid")).thenReturn("Q1", "Q1");
-//            when(rs.getString("option_uuid")).thenReturn("O1", "O2");
-//            when(rs.getString("option_text")).thenReturn("Option 1", "Option 2");
-//            when(rs.getDouble("option_weightage")).thenReturn(1.0, 2.0);
-//
-//            QuestionRowMapper questionRowMapper = new QuestionRowMapper();
-//            List<Question> questions = questionRowMapper.extractData(rs);
-//            assertNotNull(questions);
-//            assertEquals(1, questions.size());
-//            assertEquals(2, questions.get(0).getOptions().size());
-//        }
         
         @Test
         void testExtractData_QuestionWithOptions() throws SQLException {
@@ -434,6 +419,7 @@ public class QuestionRowMapperTest {
             when(rs.getString("option_uuid")).thenReturn("O1", "O2");
             when(rs.getString("option_text")).thenReturn("Option 1", "Option 2");
             when(rs.getDouble("option_weightage")).thenReturn(1.0, 2.0);
+            when(rs.getLong("option_order")).thenReturn(1L);
             when(rs.getString("option_createdby")).thenReturn("admin1", "admin2");
             when(rs.getLong("option_createdtime")).thenReturn(111111111L, 222222222L);
             when(rs.getString("option_lastmodifiedby")).thenReturn("admin3", "admin4");

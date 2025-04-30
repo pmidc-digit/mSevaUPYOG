@@ -66,6 +66,7 @@ public class QuestionWeightageWithQuestionRowMapper implements ResultSetExtracto
                         .questionUuid(uuid)
                         .optionText(rs.getString("option_text"))
                         .weightage(rs.getDouble("option_weightage"))
+                        .optionOrder(rs.getLong("option_order"))
                         .auditDetails(optionAuditdetails)
                         .build();
 

@@ -28,6 +28,10 @@ public class QuestionOption {
     @NotBlank(message = "Option text cannot be blank")
     private String optionText;
 
+    @JsonProperty("optionOrder")
+    @NotBlank(message = "Option order cannot be blank")
+    private Long optionOrder;
+
     @Min(value = 1, message = "Weightage must be greater than or equal to 1")
     @Max(value = 100, message = "Weightage must be less than or equal to 100")
     @JsonProperty("weightage")

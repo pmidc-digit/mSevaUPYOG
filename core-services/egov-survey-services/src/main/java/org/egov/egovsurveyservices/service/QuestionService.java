@@ -109,14 +109,21 @@ public class QuestionService {
                     .optionText("NA")
                     .weightage(0.0)
                     .auditDetails(auditDetails)
+                    .optionOrder(1L)
                     .build();
             question.setOptions(Collections.singletonList(defaultOption));
         } else {
-            options.forEach(option -> {
+            for (int i = 0; i < options.size(); i++) {
+                QuestionOption option = options.get(i);
                 option.setUuid(UUID.randomUUID().toString());
                 option.setQuestionUuid(question.getUuid());
                 option.setAuditDetails(auditDetails);
-            });
+
+                // Set optionOrder if not provided by the user
+                if (option.getOptionOrder() == null) {
+                    option.setOptionOrder((long) (i + 1));
+                }
+            }
             question.setOptions(options);
         }
     }

@@ -66,7 +66,7 @@ public class QuestionRowMapper implements ResultSetExtractor<List<Question>>{
 
             // Handle QuestionOption
             String optionUuid = rs.getString("option_uuid");
-            if (optionUuid != null) { // Check if there is an option in the row
+            if (optionUuid != null) {
                 AuditDetails optionAuditdetails = AuditDetails.builder()
                         .createdBy(rs.getString("option_createdby"))
                         .createdTime(rs.getLong("option_createdtime"))
@@ -78,6 +78,7 @@ public class QuestionRowMapper implements ResultSetExtractor<List<Question>>{
                         .questionUuid(uuid)
                         .optionText(rs.getString("option_text"))
                         .weightage(rs.getDouble("option_weightage"))
+                        .optionOrder(rs.getLong("option_order"))
                         .auditDetails(optionAuditdetails)
                         .build();
 

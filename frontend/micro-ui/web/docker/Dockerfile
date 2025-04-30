@@ -10,7 +10,7 @@ RUN yarn add @mseva/digit-ui-module-pgr@1.0.2
 RUN yarn add @mseva/digit-ui-module-noc@1.0.2
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.12
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.2
-RUN yarn add @mseva/digit-ui-module-core@1.0.5
+RUN yarn add @mseva/digit-ui-module-core@1.0.6
 RUN yarn add @mseva/digit-ui-module-common@1.0.5
 RUN yarn add @mseva/digit-ui-module-ws@1.0.2
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.2
@@ -23,7 +23,7 @@ ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192"
 ENV  NODE_OPTIONS "--max_old_space_size=4192 react-scripts build"
-ENV GENERATE_SOURCEMAP "true"
+ENV GENERATE_SOURCEMAP "false"
 
 COPY ${WORK_DIR} .
 RUN ls -lah

@@ -110,8 +110,8 @@ class QuestionServiceTest {
         Question question = Question.builder()
                 .questionStatement("Test Question")
                 .options(Arrays.asList(
-                    new QuestionOption(null, null, "Option 1", 10.0, null),
-                    new QuestionOption(null, null, "Option 2", 20.0, null)
+                    new QuestionOption(null, null, "Option 1",1L, 10.0, null),
+                    new QuestionOption(null, null, "Option 2",1L, 20.0, null)
                 ))
                 .categoryId("123")
                 .build();

@@ -30,6 +30,7 @@ const FillQuestions = (props) => {
     latitude: null,
     longitude: null,
   });
+  const [getFetchAnswers, setFetchAnswers] = useState();
   const [pincode, setPincode] = useState("");
   const [isgeoLoc, setIsGeoLoc] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -91,7 +92,6 @@ const FillQuestions = (props) => {
   // const [userInfo,setUserInfo]=useState([])
 
   // const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
-  // console.log("localities",localities)
   const userType = props.userType;
   const history = useHistory();
   const [questionDetailsContent, setQuestionDetailsContent] = useState(false);
@@ -230,7 +230,7 @@ const FillQuestions = (props) => {
           });
 
           setFormData(result);
-          console.log("status======", status);
+
           if (status === "draft") {
             handleAutoSave();
           } else {
@@ -259,9 +259,9 @@ const FillQuestions = (props) => {
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
+        setFetchAnswers(response);
         setLoading(false);
         if (response?.sectionResponses.length > 0) {
-          console.log("response.status", response.status);
           if (response.status == "Draft") {
             setSubmitted(false);
             if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
@@ -289,7 +289,6 @@ const FillQuestions = (props) => {
             });
             result[section.sectionUuid] = sectionObj;
           });
-
           setFormData(result);
           return;
         } else {
@@ -408,17 +407,14 @@ const FillQuestions = (props) => {
 
   //   //     Digit.Surveys.userSearch(data, filters)
   //   //       .then((response) => {
-  //   //         console.log("response", response);
 
   //   //         if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
   //   //           // setCitizenFound(true)
   //   //           if (response?.user[0]?.gender === null || response?.user[0]?.email === null || response?.user[0]?.dob === null || response?.user[0]?.gender === '' || response?.user[0]?.email === '' || response?.user[0]?.dob === '') {
-  //   //             console.log("hola")
   //   //             setHasCitizenDetails(false)
 
   //   //           }
   //   //           else {
-  //   //             console.log("hola true")
   //   //             const today = new Date();
   //   //             const birthDate = new Date(response?.user[0]?.dob);
   //   //             let age = today.getFullYear() - birthDate.getFullYear();
@@ -529,7 +525,6 @@ const FillQuestions = (props) => {
 
   // const handleFieldChange = (event) => {
   //   const { name, value } = event.target;
-  //   console.log("date value", event.target);
   //   setFormData((prevData) => ({
   //     ...prevData,
   //     [name]: value,
@@ -551,7 +546,7 @@ const FillQuestions = (props) => {
         if ((prevProps.citizenFill && userType.toLowerCase() === "employee") || userType.toLowerCase() === "citizen") {
           prevFormDataRef.current = formData;
           // handleAutoSave();
-          fetchAnswer("draft");
+          if (locality) fetchAnswer("draft");
         }
       }
     }, 10000);
@@ -585,7 +580,6 @@ const FillQuestions = (props) => {
       }
     }
     //const { roles, ...newUserObject } = prevProps.userInfo[0];
-    console.log("locality", locality);
     let payload = {
       User: {
         type: prevProps.userInfo.type,
@@ -669,8 +663,6 @@ const FillQuestions = (props) => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
-  console.log("tenantId", Digit.ULBService.getCurrentPermanentCity(), localStorage.getItem("CITIZEN.CITY"));
 
   const handleSubmitSurvey = () => {
     setLoading(true);
@@ -765,7 +757,6 @@ const FillQuestions = (props) => {
     console.log("data", data);
   };
 
-  //console.log("formState", formState);
   const displayAnswerField = (answerType, question, section) => {
     switch (answerType) {
       case "SHORT_ANSWER_TYPE":
@@ -1364,8 +1355,6 @@ const FillQuestions = (props) => {
     }
   };
 
-  data.sections.map((s) => console.log("data sec", s.title));
-
   const closeToast = () => {
     setShowToast(null);
   };
@@ -1377,7 +1366,6 @@ const FillQuestions = (props) => {
 
   // useEffect(() => {
   //   let locationFetched = false;
-  //   console.log("hii", hasCitizenDetails, (prevProps?.userType).toUpperCase(), isgeoLoc)
   //   if (((prevProps?.userType).toUpperCase() === "EMPLOYEE" && !isgeoLoc && submitted===false) || ((prevProps?.userType).toUpperCase() === "CITIZEN" && hasCitizenDetails && submitted===false)) {
 
   //     // if (!isgeoLoc) {
@@ -1388,14 +1376,11 @@ const FillQuestions = (props) => {
   //       (position) => {
   //         // Update both latitude and longitude in a single state object
   //         setIsGeoLoc(true)
-  //         console.log("isgeolocc")
   //         // isgeoLoc= true
   //         setGeoLocation({
   //           latitude: position.coords.latitude,
   //           longitude: position.coords.longitude,
   //         });
-  //         console.log("Latitude:", position.coords.latitude);
-  //         console.log("Longitude:", position.coords.longitude);
   //         return;
   //       },
   //       (err) => {
@@ -1405,7 +1390,6 @@ const FillQuestions = (props) => {
   //           alert("Location access is mandatory. Without it, we cannot proceed.");
   //           return;
   //         } else {
-  //           console.log("Error fetching location:", err.message);
   //           setIsGeoLoc(false)
 
   //           // isgeoLoc=false
@@ -1423,21 +1407,25 @@ const FillQuestions = (props) => {
   };
 
   useEffect(() => {
-    // On component mount, initialize city from localStorage
-    const storedCity = localStorage.getItem("CITIZEN.CITY");
-    if (storedCity) {
-      setCity(storedCity);
+    if (getFetchAnswers) {
+      // On component mount, initialize city from localStorage
+      const storedCity = getFetchAnswers?.tenantId ? getFetchAnswers?.tenantId : localStorage.getItem("CITIZEN.CITY");
+
+      if (storedCity) {
+        setCity(storedCity);
+      }
     }
-  }, []);
+  }, [getFetchAnswers]);
 
   const handleLocalityChangeCitizen = (e) => {
-    console.log("e====", e);
     setLocality(e.target.value);
   };
 
   useEffect(() => {
-    console.log("selectedCity", locality);
-  }, [locality]);
+    if (getFetchAnswers) {
+      setLocality(getFetchAnswers?.locality);
+    }
+  }, [getFetchAnswers]);
 
   const handleLocalityChange = (e) => {
     setLocality(e);
@@ -1546,7 +1534,6 @@ const FillQuestions = (props) => {
                   t={t}
                   selected={city || null}
                 /> */}
-              {console.log("cities", cities)}
               <select
                 id="dropdown"
                 value={city}

@@ -7,6 +7,7 @@ import { alphabeticalSortFunctionForTenantsBasedOnName } from "../../../../utils
 const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchFormState }) => {
   const { t } = useTranslation();
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
+  const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.SessionStorage.get("citizen.userRequestObject");
   const userUlbs = ulbs
@@ -24,11 +25,13 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
   return (
     <>
       <SearchField>
-        <label>{t("City")} <span style={{ color: "red" }}>*</span></label>
+        <label>
+          {t("City")} <span style={{ color: "red" }}>*</span>
+        </label>
         <Controller
           rules={{ required: t("REQUIRED_FIELD") }}
-          defaultValue={selectedTenat?.[0]}
-          render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
+          defaultValue={tenantId}
+          render={(props) => <Dropdown option={cities} optionKey={"name"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
           name={"tenantIds"}
           control={controlSearchForm}
         />
@@ -42,7 +45,7 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
           inputRef={registerRef({
             maxLength: {
               value: 60,
-              message: t("Survey Name should be less than 60 characters")//t("EXCEEDS_60_CHAR_LIMIT"),
+              message: t("Survey Name should be less than 60 characters"), //t("EXCEEDS_60_CHAR_LIMIT"),
             },
           })}
         />

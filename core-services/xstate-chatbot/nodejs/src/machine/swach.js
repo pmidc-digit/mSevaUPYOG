@@ -320,13 +320,13 @@ const swach = {
         process: {
           onEntry: assign((context, event) => {
             // TODO: Generalised "disagree" intention
-            if (event.message.input.trim()?.toLowerCase() === "1") {
+            if (event.message.input.trim()?.toLowerCase() === "2") {
               context.slots.attendence["locationConfirmed"] = false;
               context.message = {
                 isValid: true,
               };
             } else if (
-              event.message.input.trim()?.toLowerCase() === "2"
+              event.message.input.trim()?.toLowerCase() === "1"
             ) {
               context.slots.attendence["locationConfirmed"] = true;
               context.slots.attendence.city =
@@ -1184,13 +1184,13 @@ const swach = {
                 process: {
                   onEntry: assign((context, event) => {
                     // TODO: Generalised "disagree" intention
-                    if (event.message.input.trim().toLowerCase() === "1") {
+                    if (event.message.input.trim().toLowerCase() === "2") {
                       context.slots.swach["locationConfirmed"] = false;
                       context.message = {
                         isValid: true,
                       };
                     } else if (
-                      event.message.input.trim().toLowerCase() === "2"
+                      event.message.input.trim().toLowerCase() === "1"
                     ) {
                       context.slots.swach["locationConfirmed"] = true;
                       context.slots.swach.city =
@@ -1810,7 +1810,7 @@ const swach = {
               );
             },
             onDone: {
-              target: "#endstate",
+              target: "#swachWelcome",
               actions: assign((context, event) => {
                 let templateList;
                 let complaintDetails = event.data;
@@ -1849,7 +1849,7 @@ const swach = {
         },
         onDone: [
           {
-            target: "#endstate",
+            target: "#swachWelcome",
             cond: (context, event) => {
               return event.data.length > 0;
             },
@@ -1925,7 +1925,7 @@ const swach = {
             }),
           },
           {
-            target: "#endstate",
+            target: "#swachWelcome",
             actions: assign((context, event) => {
               let message = dialog.get_message(
                 messages.swachTrackComplaint.noRecords,
@@ -2048,7 +2048,7 @@ let messages = {
     swachConfirmLocation: {
       confirmCityAndLocality: {
         en_IN:
-          "Is this the correct location of the Observation?\nCity: {{city}}\nLocality: {{locality}}\n\nType and send *1* if it is incorrect\nElse, type and send *2* to confirm and proceed",
+          "Is this the correct location of the Observation?\nCity: {{city}}\nLocality: {{locality}}\n\nType and send *1* if it is correct\nElse, type and send *2* to confirm and proceed",
         hi_IN:
           "क्या यह शिकायत का सही स्थान है?शहर: {{city}}स्थान: {{locality}}\n\nटाइप करें और 1 भेजें यदि यह गलत है\nअन्यथा, पुष्टि करने और आगे बढ़ने के लिए 2 टाइप करें और भेजें",
         pa_IN:
@@ -2056,7 +2056,7 @@ let messages = {
       },
       confirmCity: {
         en_IN:
-          "Is this the correct location of the Observation?\nCity: {{city}}\n\nType and send *1* if it is incorrect\nElse, type and send *2* to confirm and proceed",
+          "Is this the correct location of the Observation?\nCity: {{city}}\n\nType and send *1* if it is correct\nElse, type and send *2* to confirm and proceed",
         hi_IN:
           'क्या यह शिकायत का सही स्थान है? \nशहर: {{city}}\n अगर यह गलत है तो कृपया "No" भेजें।\nअन्यथा किसी भी चरित्र को टाइप करें और आगे बढ़ने के लिए भेजें।',
         pa_IN: "ਕੀ ਇਹ ਸ਼ਿਕਾਇਤ ਦਾ ਸਹੀ ਸਥਾਨ ਹੈ?\nਸ਼ਹਿਰ: {{city}}\n\nਜੇ ਇਹ ਗਲਤ ਹੈ ਤਾਂ 1 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ\nਹੋਰ, ਪੁਸ਼ਟੀ ਕਰਨ ਅਤੇ ਅੱਗੇ ਵਧਣ ਲਈ 2 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ",

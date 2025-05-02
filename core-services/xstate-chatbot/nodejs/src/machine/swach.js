@@ -320,13 +320,13 @@ const swach = {
         process: {
           onEntry: assign((context, event) => {
             // TODO: Generalised "disagree" intention
-            if (event.message.input.trim()?.toLowerCase() === "1") {
+            if (event.message.input.trim()?.toLowerCase() === "2") {
               context.slots.attendence["locationConfirmed"] = false;
               context.message = {
                 isValid: true,
               };
             } else if (
-              event.message.input.trim()?.toLowerCase() === "2"
+              event.message.input.trim()?.toLowerCase() === "1"
             ) {
               context.slots.attendence["locationConfirmed"] = true;
               context.slots.attendence.city =
@@ -664,44 +664,92 @@ const swach = {
       },
     },
 
+    // persistAttendence: {
+    //   id: "persistAttendence",
+    //   invoke: {
+    //     id: "persistAttendence",
+    //     src: (context, event) => {
+    //       // console.log("Swach Persist Attendence ------- context", context);
+    //       return swachService.persistAttendence(
+    //         context.user,
+    //         context.slots.attendence,
+    //         context.attendence,
+    //         context.extraInfo.tenantId
+    //       );
+    //     },
+    //     onDone: {
+    //       target: "#swachWelcome",
+    //       actions: assign((context, event) => {
+    //         // console.log("Swach Persist Attendence ------- event", event);
+    //         if(event.data) {
+    //         let message = dialog.get_message(
+    //           messages.swachAttendance.confirmation,
+    //           context.user.locale
+    //         );
+    //         context.intention = null;
+    //         dialog.sendMessage(context, message);
+    //         }else{
+    //           let message = dialog.get_message(
+    //             dialog.global_messages.system_error,
+    //             context.user.locale
+    //           );
+    //           dialog.sendMessage(context, message);
+    //           context.chatInterface.system_error(event.data);
+    //         }
+    //       }),
+    //     },
+    //   },
+    // },
+    
+    // swachFileComplaint
     persistAttendence: {
       id: "persistAttendence",
       invoke: {
         id: "persistAttendence",
-        src: (context, event) => {
-          // console.log("Swach Persist Attendence ------- context", context);
-          return swachService.persistAttendence(
-            context.user,
-            context.slots.attendence,
-            context.attendence,
-            context.extraInfo.tenantId
-          );
-        },
-        onDone: {
-          target: "#swachWelcome",
-          actions: assign((context, event) => {
-            // console.log("Swach Persist Attendence ------- event", event);
-            if(event.data) {
-            let message = dialog.get_message(
-              messages.swachAttendance.confirmation,
-              context.user.locale
+        src: async (context) => {
+          try {
+            const result = await swachService.persistAttendence(
+              context.user,
+              context.slots.attendence,
+              context.attendence,
+              context.extraInfo.tenantId
             );
-            context.intention = null;
-            dialog.sendMessage(context, message);
-            }else{
-              let message = dialog.get_message(
+    
+            let message;
+            if (result) {
+              message = dialog.get_message(
+                messages.swachAttendance.confirmation,
+                context.user.locale
+              );
+              context.intention = null;
+            } else {
+              message = dialog.get_message(
                 dialog.global_messages.system_error,
                 context.user.locale
               );
-              dialog.sendMessage(context, message);
-              context.chatInterface.system_error(event.data);
+              context.chatInterface.system_error(result);
             }
-          }),
+    
+            await dialog.sendMessage(context, message, true);
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // Optional buffer
+            return { success: true };
+          } catch (err) {
+            let message = dialog.get_message(
+              dialog.global_messages.system_error,
+              context.user.locale
+            );
+            await dialog.sendMessage(context, message, true);
+            context.chatInterface.system_error(err);
+            return { success: false };
+          }
         },
-      },
+        onDone: {
+          target: "#swachWelcome"
+        }
+      }
     },
     
-    // swachFileComplaint
+
     swachFileComplaint: {
       id: "swachFileComplaint",
       initial: "type",
@@ -1184,13 +1232,13 @@ const swach = {
                 process: {
                   onEntry: assign((context, event) => {
                     // TODO: Generalised "disagree" intention
-                    if (event.message.input.trim().toLowerCase() === "1") {
+                    if (event.message.input.trim().toLowerCase() === "2") {
                       context.slots.swach["locationConfirmed"] = false;
                       context.message = {
                         isValid: true,
                       };
                     } else if (
-                      event.message.input.trim().toLowerCase() === "2"
+                      event.message.input.trim().toLowerCase() === "1"
                     ) {
                       context.slots.swach["locationConfirmed"] = true;
                       context.slots.swach.city =
@@ -1797,146 +1845,253 @@ const swach = {
             },
           },
         },
+        // persistSwachComplaint: {
+        //   id: "persistSwachComplaint",
+        //   invoke: {
+        //     id: "persistSwachComplaint",
+        //     src: (context) => {
+        //       // console.log("Swach Persist")
+        //       return swachService.persistSwachComplaint(
+        //         context.user,
+        //         context.slots.swach,
+        //         context.extraInfo
+        //       );
+        //     },
+        //     onDone: {
+        //       target: "#swachWelcome",
+        //       actions: assign((context, event) => {
+        //         let templateList;
+        //         let complaintDetails = event.data;
+        //         let message = dialog.get_message(
+        //           messages.swachFileComplaint.persistSwachComplaint,
+        //           context.user.locale
+        //         );
+        //         message = message.replace(
+        //           "{{complaintNumber}}",
+        //           complaintDetails?.complaintNumber
+        //         );
+        //         // message = message.replace(
+        //         //   "{{complaintLink}}",
+        //         //   complaintDetails?.complaintLink
+        //         // );
+        //         let closingStatement = dialog.get_message(
+        //           messages.swachFileComplaint.closingStatement,
+        //           context.user.locale
+        //         );
+        //         message = message + closingStatement;
+        //         dialog.sendMessage(context, message);
+        //       }),
+        //     },
+        //   },
+        // },
         persistSwachComplaint: {
           id: "persistSwachComplaint",
           invoke: {
             id: "persistSwachComplaint",
-            src: (context) => {
-              // console.log("Swach Persist")
-              return swachService.persistSwachComplaint(
+            src: async (context) => {
+              const complaintDetails = await swachService.persistSwachComplaint(
                 context.user,
                 context.slots.swach,
                 context.extraInfo
               );
+        
+              let templateList;
+              let message = dialog.get_message(
+                messages.swachFileComplaint.persistSwachComplaint,
+                context.user.locale
+              );
+              message = message.replace(
+                "{{complaintNumber}}",
+                complaintDetails?.complaintNumber
+              );
+        
+              // const closingStatement = dialog.get_message(
+              //   messages.swachFileComplaint.closingStatement,
+              //   context.user.locale
+              // );
+        
+              // message = message + closingStatement;
+              message = message;
+        
+              await dialog.sendMessage(context, message, true);
+              await new Promise((resolve) => setTimeout(resolve, 1000)); // optional buffer before moving on
+        
+              return { complaintDetails };
             },
             onDone: {
-              target: "#endstate",
-              actions: assign((context, event) => {
-                let templateList;
-                let complaintDetails = event.data;
-                let message = dialog.get_message(
-                  messages.swachFileComplaint.persistSwachComplaint,
-                  context.user.locale
-                );
-                message = message.replace(
-                  "{{complaintNumber}}",
-                  complaintDetails?.complaintNumber
-                );
-                // message = message.replace(
-                //   "{{complaintLink}}",
-                //   complaintDetails?.complaintLink
-                // );
-                let closingStatement = dialog.get_message(
-                  messages.swachFileComplaint.closingStatement,
-                  context.user.locale
-                );
-                message = message + closingStatement;
-                dialog.sendMessage(context, message);
-              }),
-            },
-          },
-        },
+              target: "#swachWelcome"
+            }
+          }
+        }
+        
       }, // swachFileComplaint.states
     },
 
     // swachTrackComplaint
+    // swachTrackComplaint: {
+    //   id: "swachTrackComplaint",
+    //   invoke: {
+    //     id: "fetchOpenSwachComplaints",
+    //     src: (context) => {
+    //       return swachService.fetchOpenSwachComplaints(context.user);
+    //     },
+    //     onDone: [
+    //       {
+    //         target: "#swachWelcome",
+    //         cond: (context, event) => {
+    //           return event.data.length > 0;
+    //         },
+    //         actions: assign((context, event) => {
+    //           (async () => {
+    //             let templateList;
+    //             let localeList = config.supportedLocales.split(",");
+    //             let localeIndex = localeList.indexOf(context.user.locale);
+    //             templateList =
+    //               config.valueFirstWhatsAppProvider.valuefirstNotificationTrackCompliantTemplateid.split(
+    //                 ","
+    //               );
+
+    //             if (templateList[localeIndex])
+    //               context.extraInfo.templateId = templateList[localeIndex];
+    //             else context.extraInfo.templateId = templateList[0];
+
+    //             let complaints = event.data;
+    //             var preamble = dialog.get_message(
+    //               messages.swachTrackComplaint.results.preamble,
+    //               context.user.locale
+    //             );
+    //             dialog.sendMessage(context, preamble, true);
+    //             await new Promise((resolve) => setTimeout(resolve, 1000));
+    //             for (let i = 0; i < complaints.length; i++) {
+    //               let template = dialog.get_message(
+    //                 messages.swachTrackComplaint.results.complaintTemplate,
+    //                 context.user.locale
+    //               );
+    //               let complaint = complaints[i];
+    //               template = template.replace(
+    //                 "{{complaintType}}",
+    //                 complaint.complaintType
+    //               );
+    //               template = template.replace(
+    //                 "{{filedDate}}",
+    //                 complaint.filedDate
+    //               );
+    //               template = template.replace(
+    //                 "{{complaintStatus}}",
+    //                 complaint.complaintStatus
+    //               );
+    //               // template = template.replace(
+    //               //   "{{complaintLink}}",
+    //               //   complaint.complaintLink
+    //               // );
+
+    //               dialog.sendMessage(context, template, true);
+    //               // params.push(complaint.complaintType);
+    //               // params.push(complaint.complaintNumber);
+    //               // params.push(complaint.filedDate);
+    //               // params.push(complaint.complaintStatus);
+
+    //               // let urlComponemt = complaint.complaintLink.split('/');
+    //               // let bttnUrlComponent = urlComponemt[urlComponemt.length -1];
+
+    //               // var templateContent = {
+    //               //  output: context.extraInfo.templateId,
+    //               //  type: "template",
+    //               //  params: params,
+    //               //  bttnUrlComponent: bttnUrlComponent
+    //               // };
+
+    //               // dialog.sendMessage(context, templateContent, true);
+    //             }
+    //             await new Promise((resolve) => setTimeout(resolve, 1000));
+    //             var closingStatement = dialog.get_message(
+    //               messages.swachTrackComplaint.results.closingStatement,
+    //               context.user.locale
+    //             );
+    //             dialog.sendMessage(context, closingStatement, true);
+    //           })();
+    //         }),
+    //       },
+    //       {
+    //         target: "#swachWelcome",
+    //         actions: assign((context, event) => {
+    //           let message = dialog.get_message(
+    //             messages.swachTrackComplaint.noRecords,
+    //             context.user.locale
+    //           );
+    //           dialog.sendMessage(context, message);
+    //         }),
+    //       },
+    //     ],
+    //   },
+    // },
     swachTrackComplaint: {
       id: "swachTrackComplaint",
       invoke: {
         id: "fetchOpenSwachComplaints",
-        src: (context) => {
-          return swachService.fetchOpenSwachComplaints(context.user);
+        src: async (context) => {
+          const complaints = await swachService.fetchOpenSwachComplaints(context.user);
+    
+          let templateList;
+          let localeList = config.supportedLocales.split(",");
+          let localeIndex = localeList.indexOf(context.user.locale);
+          templateList =
+            config.valueFirstWhatsAppProvider.valuefirstNotificationTrackCompliantTemplateid.split(",");
+    
+          context.extraInfo.templateId = templateList[localeIndex] || templateList[0];
+    
+          if (complaints.length > 0) {
+            const preamble = dialog.get_message(
+              messages.swachTrackComplaint.results.preamble,
+              context.user.locale
+            );
+            await dialog.sendMessage(context, preamble, true);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+            for (let complaint of complaints) {
+              let template = dialog.get_message(
+                messages.swachTrackComplaint.results.complaintTemplate,
+                context.user.locale
+              );
+              template = template
+                .replace("{{complaintType}}", complaint.complaintType)
+                .replace("{{filedDate}}", complaint.filedDate)
+                .replace("{{complaintStatus}}", complaint.complaintStatus);
+    
+              await dialog.sendMessage(context, template, true);
+              await new Promise((resolve) => setTimeout(resolve, 500));
+            }
+    
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+    
+            // const closingStatement = dialog.get_message(
+            //   messages.swachTrackComplaint.results.closingStatement,
+            //   context.user.locale
+            // );
+            // await dialog.sendMessage(context, closingStatement, true);
+          }
+    
+          return { complaints };
         },
         onDone: [
           {
-            target: "#endstate",
-            cond: (context, event) => {
-              return event.data.length > 0;
-            },
-            actions: assign((context, event) => {
-              (async () => {
-                let templateList;
-                let localeList = config.supportedLocales.split(",");
-                let localeIndex = localeList.indexOf(context.user.locale);
-                templateList =
-                  config.valueFirstWhatsAppProvider.valuefirstNotificationTrackCompliantTemplateid.split(
-                    ","
-                  );
-
-                if (templateList[localeIndex])
-                  context.extraInfo.templateId = templateList[localeIndex];
-                else context.extraInfo.templateId = templateList[0];
-
-                let complaints = event.data;
-                var preamble = dialog.get_message(
-                  messages.swachTrackComplaint.results.preamble,
-                  context.user.locale
-                );
-                dialog.sendMessage(context, preamble, true);
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-                for (let i = 0; i < complaints.length; i++) {
-                  let template = dialog.get_message(
-                    messages.swachTrackComplaint.results.complaintTemplate,
-                    context.user.locale
-                  );
-                  let complaint = complaints[i];
-                  template = template.replace(
-                    "{{complaintType}}",
-                    complaint.complaintType
-                  );
-                  template = template.replace(
-                    "{{filedDate}}",
-                    complaint.filedDate
-                  );
-                  template = template.replace(
-                    "{{complaintStatus}}",
-                    complaint.complaintStatus
-                  );
-                  // template = template.replace(
-                  //   "{{complaintLink}}",
-                  //   complaint.complaintLink
-                  // );
-
-                  dialog.sendMessage(context, template, true);
-                  // params.push(complaint.complaintType);
-                  // params.push(complaint.complaintNumber);
-                  // params.push(complaint.filedDate);
-                  // params.push(complaint.complaintStatus);
-
-                  // let urlComponemt = complaint.complaintLink.split('/');
-                  // let bttnUrlComponent = urlComponemt[urlComponemt.length -1];
-
-                  // var templateContent = {
-                  //  output: context.extraInfo.templateId,
-                  //  type: "template",
-                  //  params: params,
-                  //  bttnUrlComponent: bttnUrlComponent
-                  // };
-
-                  // dialog.sendMessage(context, templateContent, true);
-                }
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-                var closingStatement = dialog.get_message(
-                  messages.swachTrackComplaint.results.closingStatement,
-                  context.user.locale
-                );
-                dialog.sendMessage(context, closingStatement, true);
-              })();
-            }),
+            cond: (_, event) => event.data.complaints.length > 0,
+            target: "#swachWelcome"
           },
           {
-            target: "#endstate",
-            actions: assign((context, event) => {
-              let message = dialog.get_message(
+            target: "#swachWelcome",
+            actions: assign((context) => {
+              const message = dialog.get_message(
                 messages.swachTrackComplaint.noRecords,
                 context.user.locale
               );
               dialog.sendMessage(context, message);
-            }),
-          },
-        ],
-      },
-    },
+            })
+          }
+        ]
+      }
+    }
+    
   }, // swach.states
 };
 
@@ -2048,7 +2203,7 @@ let messages = {
     swachConfirmLocation: {
       confirmCityAndLocality: {
         en_IN:
-          "Is this the correct location of the Observation?\nCity: {{city}}\nLocality: {{locality}}\n\nType and send *1* if it is incorrect\nElse, type and send *2* to confirm and proceed",
+          "Is this the correct location of the Observation?\nCity: {{city}}\nLocality: {{locality}}\n\nType and send *1* if it is correct to confirm and proceedt\nElse, type and send *2*.",
         hi_IN:
           "क्या यह शिकायत का सही स्थान है?शहर: {{city}}स्थान: {{locality}}\n\nटाइप करें और 1 भेजें यदि यह गलत है\nअन्यथा, पुष्टि करने और आगे बढ़ने के लिए 2 टाइप करें और भेजें",
         pa_IN:
@@ -2056,7 +2211,7 @@ let messages = {
       },
       confirmCity: {
         en_IN:
-          "Is this the correct location of the Observation?\nCity: {{city}}\n\nType and send *1* if it is incorrect\nElse, type and send *2* to confirm and proceed",
+          "Is this the correct location of the Observation?\nCity: {{city}}\n\nType and send *1* if it is correct  to confirm and proceed\nElse, type and send *2*",
         hi_IN:
           'क्या यह शिकायत का सही स्थान है? \nशहर: {{city}}\n अगर यह गलत है तो कृपया "No" भेजें।\nअन्यथा किसी भी चरित्र को टाइप करें और आगे बढ़ने के लिए भेजें।',
         pa_IN: "ਕੀ ਇਹ ਸ਼ਿਕਾਇਤ ਦਾ ਸਹੀ ਸਥਾਨ ਹੈ?\nਸ਼ਹਿਰ: {{city}}\n\nਜੇ ਇਹ ਗਲਤ ਹੈ ਤਾਂ 1 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ\nਹੋਰ, ਪੁਸ਼ਟੀ ਕਰਨ ਅਤੇ ਅੱਗੇ ਵਧਣ ਲਈ 2 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ",

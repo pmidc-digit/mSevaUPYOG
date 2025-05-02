@@ -708,7 +708,7 @@ const FillQuestions = (props) => {
         status: "Submit",
         locality: locality,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
-        tenantId: localStorage.getItem("CITIZEN.CITY"),
+        // tenantId: localStorage.getItem("CITIZEN.CITY"),
         answers: answerArr,
       },
     };

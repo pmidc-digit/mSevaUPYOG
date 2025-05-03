@@ -5,8 +5,6 @@ import { useTranslation } from "react-i18next";
 const Status = ({ complaints, onAssignmentChange, swachfilters }) => {
   const { t } = useTranslation();
   // const complaintsWithCount = Digit.Hooks.swach.useComplaintStatusCount(complaints);
-  let hasFilters = swachfilters?.applicationStatus?.length;
-
   useEffect(() => {
     onAssignmentChange({target:{checked:true}}, {name:"Pending For Assignment", code:"PENDINGFORASSIGNMENT"});
   },[])
@@ -15,6 +13,8 @@ const Status = ({ complaints, onAssignmentChange, swachfilters }) => {
     { name: "Pending At LME", code: "PENDINGATLME" },
     { name: "Resolved", code: "RESOLVED" },
   ];
+  let hasFilters = swachfilters?.applicationStatus?.length;
+  console.log("swachfilters", swachfilters);
   return (
     <div className="status-container">
       <div className="filter-label">{t("ES_SWACH_FILTER_STATUS")}</div>

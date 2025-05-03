@@ -213,8 +213,8 @@ const NavigationApp = ({ stateCode }) => {
   const processUser = (userResponse) => {
     const { UserRequest: info, ...tokens } = userResponse;
     const isAuthorized =
-      info.roles.some((userRole) => userRole.code === CITIZEN_ROLE_CODE) &&
-      info.roles.some((userRole) => userRole.code === userDetails.thirdPartyCode);
+      info.roles.some((userRole) => userRole.code === CITIZEN_ROLE_CODE) 
+      // && info.roles.some((userRole) => userRole.code === userDetails.thirdPartyCode);
     if (!isAuthorized) {
       showToast(ES_ERROR_USER_NOT_PERMITTED, true);
       return;
@@ -246,6 +246,7 @@ const NavigationApp = ({ stateCode }) => {
       Digit.UserService.setUser(user);
       setCitizenDetail(user?.info, user?.access_token);
       localStorage.setItem("thirdPartyReturnUrl", userDetails?.returnURL);
+      localStorage.setItem("thirdPartyCode", userDetails?.thirdPartyCode);
       handleServiceRedirection(servicePath);
     }
   }, [user]);

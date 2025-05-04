@@ -11,7 +11,6 @@
     "packages/modules/core",
     "packages/modules/commonPt",
     "packages/modules/hrms",
-    "packages/modules/ws",
     "packages/modules/swach",
     "packages/modules/pgr",
     "packages/modules/mCollect",
@@ -71,7 +70,7 @@
     "buildD:obps": "cd packages/modules/obps && yarn build",
     "buildD:engagement": "cd packages/modules/engagement && yarn build",
     "build:noc": "cd packages/modules/noc && yarn build",
-    "build:ws": "cd packages/modules/ws && yarn build",
+    "buildD:ws": "cd packages/modules/ws && yarn build",
     "buildd:bills": "cd packages/modules/bills && yarn build",
     "buildR:reports": "cd packages/modules/reports && yarn build",
     "deploy:jenkins": "./scripts/jenkins.sh"

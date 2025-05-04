@@ -21,8 +21,8 @@ RUN yarn add @mseva/digit-ui-module-tl@1.0.4
 
 ARG WORK_DIR
 WORKDIR /app
-# ENV NODE_OPTIONS "--max-old-space-size=8192"
-ENV  NODE_OPTIONS "--max_old_space_size=2048 react-scripts build"
+# ENV NODE_OPTIONS "--max-old-space-size=8192" 12288
+ENV  NODE_OPTIONS "--max_old_space_size=12288 react-scripts build"
 ENV GENERATE_SOURCEMAP "true"
 
 COPY ${WORK_DIR} .
@@ -31,7 +31,7 @@ RUN ls -lah
 #RUN node web/envs.js
 RUN cd web/ \
     && node envs.js \
-    && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(8192*8192))' \
+    && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(12288*12288))' \
     &&  ./install-deps.sh \
     && yarn install \
     && yarn build 

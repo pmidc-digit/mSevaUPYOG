@@ -212,9 +212,8 @@ const NavigationApp = ({ stateCode }) => {
 
   const processUser = (userResponse) => {
     const { UserRequest: info, ...tokens } = userResponse;
-    const isAuthorized =
-      info.roles.some((userRole) => userRole.code === CITIZEN_ROLE_CODE); 
-      // && info.roles.some((userRole) => userRole.code === userDetails.thirdPartyCode);
+    const isAuthorized = info.roles.some((userRole) => userRole.code === CITIZEN_ROLE_CODE);
+    // && info.roles.some((userRole) => userRole.code === userDetails.thirdPartyCode);
     if (!isAuthorized) {
       showToast(ES_ERROR_USER_NOT_PERMITTED, true);
       return;

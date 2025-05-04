@@ -95,7 +95,7 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
 
   console.log("employeeData: ", useEmployeeData)
 
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
+  const [selectedEmployee, setSelectedEmployee] = useState();
   const [comments, setComments] = useState("");
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -176,11 +176,18 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
               : t("CS_COMMON_RESOLVE")
       }
       actionSaveOnSubmit={() => {
-        if(!comments)
-        setError(t("CS_MANDATORY_COMMENTS"));
+        if(!comments){
+          setError(t("CS_MANDATORY_COMMENTS"));
+          return 
+        }
+        if(selectedAction === "ASSIGN" || selectedAction === "REASSIGN") {
+          if (!selectedEmployee) {
+            setError(t("CS_MANDATORY_EMPLOYEE"));
+            return
+          }
+        }
         // if(selectedAction === "REJECT" && !comments)
         // setError(t("CS_MANDATORY_COMMENTS"));
-        else
         onAssign(selectedEmployee, comments, uploadedFile);
       }}
       error={error}

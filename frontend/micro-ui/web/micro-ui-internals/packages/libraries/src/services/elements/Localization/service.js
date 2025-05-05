@@ -53,7 +53,7 @@ const LocalizationStore = {
       const moduleMessages = LocalizationStore.getCaheData(LOCALE_MODULE(locale, module));
       if (Array.isArray(moduleMessages)) {
         messages.push(...moduleMessages);
-      }
+      }
     });
     return [newModules, messages];
   },

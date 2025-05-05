@@ -12,7 +12,7 @@ const Inbox = () => {
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [searchParams, setSearchParams] = useState({ filters: { wfFilters: { assignee: [{ code: uuid }] } }, search: "", sort: {} });
+  const [searchParams, setSearchParams] = useState({ filters: { wfFilters: { assignee: [{ code: "" }] } }, search: "", sort: {} });
 
   useEffect(() => {
     (async () => {
@@ -46,6 +46,7 @@ const Inbox = () => {
 
   // let complaints = Digit.Hooks.swach.useInboxData(searchParams) || [];
   let { data: complaints, isLoading } = Digit.Hooks.swach.useInboxData({ ...searchParams, offset: pageOffset, limit: pageSize }) ;
+  console.log("complaints ----- ", complaints);
 
   let isMobile = Digit.Utils.browser.isMobile();
 

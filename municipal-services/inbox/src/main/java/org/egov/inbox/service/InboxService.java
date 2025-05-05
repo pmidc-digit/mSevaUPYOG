@@ -36,6 +36,10 @@ import static org.egov.inbox.util.WSConstants.WS;
 import static org.egov.inbox.util.PTRConstants.PTR;
 import static org.egov.inbox.util.AssetConstants.ASSET;
 import static org.egov.inbox.util.EwasteConstants.EWASTE;
+import static org.egov.inbox.util.PGRConstants.PGR;
+import static org.egov.inbox.util.PGRConstants.SWACH;
+import static org.egov.inbox.util.PGRConstants.PGR_APPLICATION_NUMBER_PARAM;
+
 
 import java.util.*;
 import java.util.function.Function;
@@ -103,6 +107,12 @@ public class InboxService {
 
     @Autowired
     private TLInboxFilterService tlInboxFilterService;
+    
+    @Autowired
+    private PGRInboxFilterService pgrInboxFilterService;
+    
+    @Autowired
+    private SWACHInboxFilterService swachInboxFilterService;
 
     @Autowired
     private BPAInboxFilterService bpaInboxFilterService;
@@ -364,6 +374,22 @@ public class InboxService {
                     isSearchResultEmpty = true;
                 }
             }
+            
+            if (!ObjectUtils.isEmpty(processCriteria.getModuleName()) && (processCriteria.getModuleName().equals(PGR))) {
+                totalCount = pgrInboxFilterService.fetchApplicationCountFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                List<String> applicationNumbers = pgrInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
+                        StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    moduleSearchCriteria.put(APPLICATION_NUMBER_PARAM, applicationNumbers);
+                    businessKeys.addAll(applicationNumbers);
+                    moduleSearchCriteria.remove(TLConstants.STATUS_PARAM);
+                    moduleSearchCriteria.remove(LOCALITY_PARAM);
+                    moduleSearchCriteria.remove(OFFSET_PARAM);
+                } else {
+                    isSearchResultEmpty = true;
+                }
+            }
+            
 
            //TODO as on now this does not seem to be required, hence commenting the code
            /* if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
@@ -523,13 +549,32 @@ public class InboxService {
                 businessObjects = fetchModuleObjects(moduleSearchCriteria, businessServiceName, criteria.getTenantId(),
                         requestInfo, srvMap);
             }
+            
             Map<String, Object> businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
-                    .collect(Collectors.toMap(s1 -> ((JSONObject) s1).get(businessIdParam).toString(),
+                    .collect(Collectors.toMap(
+                    		s1 -> ((JSONObject) s1).get(businessIdParam).toString(),
                             s1 -> s1, (e1, e2) -> e1, LinkedHashMap::new));
+            
+//            }
             ArrayList businessIds = new ArrayList();
-            businessIds.addAll(businessMap.keySet());
+            if(processCriteria.getModuleName().equals("pgr-services") || processCriteria.getModuleName().equals("swach-reform")) {
+            	for (Object obj : businessObjects) {
+            	    JSONObject jsonObject = (JSONObject) obj;
+            	    JSONObject serviceObject = jsonObject.optJSONObject("service");
+
+            	    if (serviceObject != null && serviceObject.has("serviceRequestId")) {
+            	        String serviceRequestId = serviceObject.optString("serviceRequestId");
+            	        if (serviceRequestId != null && !serviceRequestId.isEmpty()) {
+            	            businessIds.add(serviceRequestId);
+            	        }
+            	    }
+            	}
+            }
+            else {
+            	businessIds.addAll(businessMap.keySet());
+            }
             processCriteria.setBusinessIds(businessIds);
-            // processCriteria.setOffset(criteria.getOffset());
+            // processCriteria.setOffset(criteria.getOffset());`
             // processCriteria.setLimit(criteria.getLimit());
             processCriteria.setIsProcessCountCall(false);
 

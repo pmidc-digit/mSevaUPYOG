@@ -18,11 +18,12 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
   let setBusinessName;
   const [hidden, setHidden] = useState(true);
   if (!isNaN(index)) {
-    [businessName, setBusinessName] = useState(formData?.businessName || "");
+    [businessName, setBusinessName] = useState(formData?.businessName?.bussinessName || "");
   } else {
-    [businessName, setBusinessName] = useState(formData?.businessName || "");
+    [businessName, setBusinessName] = useState(formData?.businessName?.bussinessName || "");
   }
   const formValue = watch();
+  console.log("businessName",businessName)
   const { errors } = localFormState;
   
   const [error, setError] = useState(null);

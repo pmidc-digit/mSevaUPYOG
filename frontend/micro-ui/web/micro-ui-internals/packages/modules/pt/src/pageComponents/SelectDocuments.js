@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, CardHeader, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
 import { Controller, useFormContext } from "react-hook-form";
+import { iteratee } from "lodash";
 const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -38,7 +39,7 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
   const mutationDocs = data?.PropertyTax?.MutationDocuments;
   const commonDocs = data?.PropertyTax?.Documents;
 
-  const propertyTaxDocuments = isMutation
+  let propertyTaxDocuments = isMutation
     ? mutationDocs?.map?.((doc) => commonDocs.find((e) => doc.code === e.code) || doc)
     : data?.PropertyTax?.Documents;
 
@@ -50,9 +51,12 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
     goNext();
   }, [documents]);
 
+
+
   if (isLoading) {
     return <Loader />;
   }
+
 
   return (
     <div>
@@ -63,6 +67,9 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
         //     return null;
         //   }
         // }
+        if( window.location.href.includes("/citizen") && (document.code==="OWNER.OCCUPANCYPROOF" || document.code==="OWNER.CONSTRUCTIONPROOF")){
+          return null;
+        }
         return (
           <SelectDocument
             key={index}
@@ -118,6 +125,9 @@ function SelectDocument({
   console.log("filteredDocument", filteredDocument);
   console.log("documents", documents);
   console.log("doc", doc);
+  useEffect(()=>{
+
+  },[])
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
       ? {
@@ -351,10 +361,10 @@ function SelectDocument({
     }
   }, [documents]);
   console.log("Dropdown data", dropDownData);
-  console.log("doc code",doc?.code)
+  console.log("doc code",doc?.code,(doc?.code).toUpperCase() !== "OWNER.CONSTRUCTIONPROOF")
   return (
-    <div style={{ marginBottom: "24px" }}>
-      {(doc?.hasDropdown && (((doc?.code).toUpperCase() !== "OWNER.CONSTRUCTIONPROOF") || ((doc?.code).toUpperCase() !== "OWNER.OCCUPANCYPROOF")) )? (
+    <div style={{ marginBottom: "24px" }}> 
+     {(doc?.hasDropdown )? (
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))} <span style={{ color: 'red' }}>*</span></CardLabel>
           <Dropdown
@@ -375,7 +385,7 @@ function SelectDocument({
           />
         </LabelFieldPair>
       ) : null}
-        {(doc?.hasDropdown && (((doc?.code).toUpperCase() !== "OWNER.CONSTRUCTIONPROOF") || ((doc?.code).toUpperCase() !== "OWNER.OCCUPANCYPROOF")) )? (
+        {(doc?.hasDropdown )? (
       <LabelFieldPair>
         <CardLabel className="card-label-smaller"></CardLabel>
         <div className="field">

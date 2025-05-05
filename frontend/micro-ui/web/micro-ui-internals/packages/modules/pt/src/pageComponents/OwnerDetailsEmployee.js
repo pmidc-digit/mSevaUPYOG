@@ -67,6 +67,7 @@ console.log("formData tes test",formData);
   }, [owners]);
 
   useEffect(() => {
+    console.log("formdata",formData)
     if (!formData?.owners) {
       setOwners([createOwnerDetails()]);
     }
@@ -131,7 +132,8 @@ const [showToast, setShowToast] = useState(null);
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
-  
+  console.log("institution",institution)
+  console.log("owner",owner)
 const formState2 = useSelector((state) => state.pt.PTNewApplicationForm);
 console.log("manasa",formState2.formData)
 console.log("man",formData?.ownerShipCategory)
@@ -527,7 +529,8 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   <Controller
                     control={control}
                     name={"designation"}
-                    defaultValue={isEditScreen ? ( institution?.designation || "") : null}
+                    // defaultValue={isEditScreen ? ( institution?.designation || "") : null}
+                    defaultValue={owner?.designation ||  null}
                     rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                     render={(props) => (
                       <TextInput

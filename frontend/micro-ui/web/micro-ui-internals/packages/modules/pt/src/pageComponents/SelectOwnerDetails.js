@@ -191,7 +191,7 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData, ownerInde
           />
         </LabelFieldPair>
         <LabelFieldPair>
-          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_OWNER_EMAILL")}`}</CardLabel>
+          <CardLabel style={editScreen ? { color: "#B1B4B6" } : {}}>{`${t("PT_OWNER_EMAIL")}`}</CardLabel>
           <div className="field">
             <TextInput
               t={t}

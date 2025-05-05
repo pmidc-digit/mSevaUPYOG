@@ -13,6 +13,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
+  const [localities, setLocalities] = useState();
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
 console.log("usertype",window.location.href.includes("employee"))
@@ -40,20 +41,40 @@ console.log("usertype",window.location.href.includes("employee"))
     },
     t
   );
-window.location.href.includes("citizen")?
-   { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-   formValue.address?.city?.code,
-    "revenue",
-    {
-      enabled: !!formValue.address,
-    },
-    t
-   )
-:null
+// window.location.href.includes("citizen")?
+//    { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+//    formValue.address?.city?.code,
+//     "revenue",
+//     {
+//       enabled: !!formValue.address,
+//     },
+//     t
+//    )
+// :null
 
- 
+  useEffect(() => {
+    (async () => {
+      let response = await Digit.LocationService.getLocalities(formValue?.address?.city);
+      let __localityList = [];
+      if (response && response.TenantBoundary.length > 0) {
+        __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+      }
+      setLocalities(__localityList);
+    })();
+  }, [formValue?.address?.city]);
+
+const fetchLocality=()=>{
+  console.log("selected city",selectedCity)
+  let response =  Digit.LocationService.getLocalities(formValue?.address?.city);
+  let __localityList = [];
+  if (response && response.TenantBoundary.length > 0) {
+    __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+  }
+  setLocalities(__localityList);
+}
+
     
-  const [localities, setLocalities] = useState();
+
 
   const [selectedLocality, setSelectedLocality] = useState(formData?.address?.locality);
 
@@ -331,6 +352,7 @@ window.location.href.includes("citizen")?
                 select={(e) => {
                   props.onChange(e);
                   selectLocality(e); // to keep your external state also in sync
+                  fetchLocality()
                 }}
                 // select={props.onChange}
                 onBlur={props.onBlur}

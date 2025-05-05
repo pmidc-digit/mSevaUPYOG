@@ -10,6 +10,8 @@ const CreateProperty = ({ parentRoute }) => {
   const match = useRouteMatch();
   const { t } = useTranslation();
   const { pathname } = useLocation();
+
+  const location = useLocation()
   const [showToast, setShowToast] = useState(null);
   const history = useHistory();
   const stateId = Digit.ULBService.getStateId();
@@ -130,6 +132,7 @@ const CreateProperty = ({ parentRoute }) => {
     setSearchData({ city: params.address.city.code, filters: tempObject });    
     //history.push(`${match.path}/acknowledgement`);
   };
+  console.log("location",location?.state)
   useEffect(() => {  
     if(propertyDataLoading && propertyData?.Properties.length >0)  
     {  
@@ -821,6 +824,9 @@ config.indexRoute = "info";
 
   console.log("config in CreateProperty",config)
   console.log("match path in CreateProperty",match.patch)
+  const onEdit = (step) =>{
+   console.log("on edit step",step)
+  }
   return (
     <div>
       <div>
@@ -830,9 +836,11 @@ config.indexRoute = "info";
         
         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
         return (
+        
           <Route path={`${match.path}/${routeObj.route}`} key={index}>
-            <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={params} onAdd={handleMultiple} />
+            <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={params} onAdd={handleMultiple} onEdit={onEdit} />
           </Route>
+        
         );
       })}
       <Route path={`${match.path}/check`}>
@@ -841,9 +849,11 @@ config.indexRoute = "info";
       <Route path={`${match.path}/acknowledgement`}>
         <PTAcknowledgement data={params} onSuccess={onSuccess} />
       </Route>
+    
       <Route>
         <Redirect to={`${match.path}/${config.indexRoute}`} />
       </Route>
+
     </Switch>
     </div>
     <div>

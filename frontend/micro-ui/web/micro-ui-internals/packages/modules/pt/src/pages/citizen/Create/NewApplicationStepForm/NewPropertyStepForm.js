@@ -9,6 +9,7 @@ import { SET_PtNewApplication } from "../../../../redux/actions/PTNewApplication
 
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
+import { useLocation } from "react-router-dom/cjs/react-router-dom";
 
 //Config for steps
 const createEmployeeConfig = [
@@ -80,23 +81,33 @@ const createEmployeeConfig = [
   
 ];
 
-const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
+let updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: newConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
+
 
 const CreateEmployeeStepForm = () => {
   const history=useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const location = useLocation();
   const [showToast, setShowToast] = useState(null);
   const formState = useSelector((state) => state.pt.PTNewApplicationForm);
   const formData = formState.formData;
-  const step = formState.step;
+  const step = location?.state?.edit===true?location?.state?.currentStepNumber:formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   console.log("Form data", formData)
   console.log("formState: ",formState);
+  useEffect(()=>{
+    if(location?.state?.edit===true){
+   
+     // updatedCreateEmployeeconfig= createEmployeeConfig.filter((item)=>item.stepNumber===location.state.currentStepNumber)
 
+    }
+    },[])
+    console.log("updated config",updatedCreateEmployeeconfig)
   const setStep = (updatedStepNumber) => {
+    console.log("updateStepNumber",updatedStepNumber)
     dispatch(SET_PtNewApplication(updatedStepNumber));
   };
 

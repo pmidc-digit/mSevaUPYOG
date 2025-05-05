@@ -13,6 +13,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
+  const [localities, setLocalities] = useState();
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
 
@@ -39,8 +40,40 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
     },
     t
   );
+// window.location.href.includes("citizen")?
+//    { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+//    formValue.address?.city?.code,
+//     "revenue",
+//     {
+//       enabled: !!formValue.address,
+//     },
+//     t
+//    )
+// :null
 
-  const [localities, setLocalities] = useState();
+  useEffect(() => {
+    (async () => {
+      let response = await Digit.LocationService.getLocalities(formValue?.address?.city);
+      let __localityList = [];
+      if (response && response.TenantBoundary.length > 0) {
+        __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+      }
+      setLocalities(__localityList);
+    })();
+  }, [formValue?.address?.city]);
+
+const fetchLocality=()=>{
+  console.log("selected city",selectedCity)
+  let response =  Digit.LocationService.getLocalities(formValue?.address?.city);
+  let __localityList = [];
+  if (response && response.TenantBoundary.length > 0) {
+    __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+  }
+  setLocalities(__localityList);
+}
+
+    
+
 
   const [selectedLocality, setSelectedLocality] = useState(formData?.address?.locality);
 
@@ -212,6 +245,69 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
           />
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.locality ? errors?.locality?.message : ""}</CardLabelError>
+      </div>
+    );
+  }
+  if (window.location.href.includes("citizen")) {
+    
+    return (
+      <div>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t("MYCITY_CODE_LABEL")} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}
+          </CardLabel>
+          <Controller
+            name={"city"}
+            defaultValue={cities?.length === 1 ? cities[0] : selectedCity}
+            control={control}
+            rules={{
+              required: config.isMandatory && t("City is required"),
+            }}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                selected={props.value}
+                disable={false}
+                option={cities}
+                select={props.onChange}
+                optionKey="i18nKey"
+                onBlur={props.onBlur}
+                t={t}
+              />
+            )}
+          />
+        </LabelFieldPair>
+        <CardLabelError style={errorStyle}>{localFormState.errors.city ? errors?.city?.message : ""}</CardLabelError>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{t("PT_LOCALITY_LABEL")} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
+          <Controller
+            name="locality"
+            defaultValue={selectedLocality}
+            control={control}
+            rules={{
+              required: config.isMandatory?t("Locality is required"):false,
+            }}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                selected={props.value}
+                option={localities}
+                select={(e) => {
+                  props.onChange(e);
+                  selectLocality(e); // to keep your external state also in sync
+                  fetchLocality()
+                }}
+                // select={props.onChange}
+                onBlur={props.onBlur}
+                optionKey="i18nkey"
+                t={t}
+                disable={false}
+                isRequired={true}
+              />
+            )}
+          />
+        </LabelFieldPair>
+        <CardLabelError style={errorStyle}>{localFormState.errors.locality ? errors?.locality?.message : ""}</CardLabelError>
       </div>
     );
   }

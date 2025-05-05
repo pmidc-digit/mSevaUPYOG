@@ -18,11 +18,11 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       {
         key: Date.now(),
         order: 1,
-        floorNo: null,
+        floorNoCitizen: null,
         occupancyType: null,
         tenantId,
         usageCategory: null,
-        builtUpArea: "",
+        builtUpAreaCitizen: "",
         RentedMonths: null,
         ageOfProperty: null,
         structureType: null,
@@ -320,9 +320,9 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       ageOfProperty: unit?.ageOfProperty?.code,
       structureType: unit?.structureType?.code,
       NonRentedMonthsUsage: unit?.NonRentedMonthsUsage?.code,
-      floorNo: unit?.floorNo?.code,
+      floorNoCitizen: unit?.floorNoCitizen?.code,
       constructionDetail: {
-        builtUpArea: unit?.builtUpArea,
+        builtUpAreaCitizen: unit?.builtUpAreaCitizen,
       },
       tenantId: Digit.ULBService.getCurrentTenantId(),
       usageCategory: unit?.usageCategory?.code,
@@ -579,8 +579,8 @@ function Unit({
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
               <Controller
-                name="floorNo"
-                defaultValue={unit.floorNo}
+                name="floorNoCitizen"
+                defaultValue={unit.floorNoCitizen}
                 control={control}
                 render={(props) => (
                   <Dropdown
@@ -603,8 +603,8 @@ function Unit({
               <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
               <div className="field">
                 <Controller
-                  name="builtUpArea"
-                  defaultValue={unit?.builtUpArea}
+                  name="builtUpAreaCitizen"
+                  defaultValue={unit?.builtUpAreaCitizen}
                   control={control}
                   render={(props) => (
                     <TextInput
@@ -668,8 +668,8 @@ function Unit({
             <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
             <div className="field">
               <Controller
-                name="builtUpArea"
-                defaultValue={unit?.builtUpArea}
+                name="builtUpAreaCitizen"
+                defaultValue={unit?.builtUpAreaCitizen}
                 control={control}
                 render={(props) => (
                   <TextInput
@@ -693,8 +693,8 @@ function Unit({
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
             <Controller
-              name="floorNo"
-              defaultValue={unit.floorNo}
+              name="floorNoCitizen"
+              defaultValue={unit.floorNoCitizen}
               control={control}
               render={(props) => (
                 <Dropdown

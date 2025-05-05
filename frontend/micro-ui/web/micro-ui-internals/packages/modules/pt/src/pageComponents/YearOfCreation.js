@@ -29,7 +29,8 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
     trigger,
     getValues,
   } = useForm();
-  const [selectedValue, setSelectedValue] = useState(formData?.yearOfCreation || "");
+  console.log("formdata in yoc",formData)
+  const [selectedValue, setSelectedValue] = useState(formData?.yearOfCreation?.yearOfCreation || "");
   console.log("Our menu---", Menu);
   let proptype = [];
   proptype = Menu?.PropertyTax?.PropertyType;

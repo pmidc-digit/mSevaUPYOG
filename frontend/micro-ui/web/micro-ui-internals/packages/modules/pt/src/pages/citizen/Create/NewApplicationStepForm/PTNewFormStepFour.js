@@ -7,7 +7,12 @@ import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicat
 const PTNewFormStepFour = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+    // if(data.documents.documents?.length!== data.documents.propertyTaxDocumentsLength){
+    //   alert("Upload all the documents");
+    // }
+    // else{
     onGoNext();
+    //}
   }
 
   function onGoBack(data) {

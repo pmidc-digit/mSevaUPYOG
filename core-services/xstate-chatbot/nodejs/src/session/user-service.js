@@ -5,86 +5,106 @@ require('url-search-params-polyfill');
 class UserService {
 
   async getUserForMobileNumber(mobileNumber, tenantId) {
-    console.log("getUserForMobileNumber "+mobileNumber);
-    let user = await this.loginOrCreateUser(mobileNumber, tenantId);
-    user.userId = user.userInfo.uuid;
-    user.mobileNumber = mobileNumber;
-    user.name = user.userInfo.name;
-    user.locale = user.userInfo.locale;
-    return user;
+    console.log("getUserForMobileNumber " + mobileNumber);
+    try {
+      let user = await this.loginOrCreateUser(mobileNumber, tenantId);
+      if (!user || !user.userInfo) throw new Error('User info is incomplete');
+      
+      user.userId = user.userInfo.uuid;
+      user.mobileNumber = mobileNumber;
+      user.name = user.userInfo.name;
+      user.locale = user.userInfo.locale;
+      return user;
+    } catch (error) {
+      console.error('Error in getUserForMobileNumber:', error.message);
+      throw error;
+    }
   }
 
   async loginOrCreateUser(mobileNumber, tenantId) {
-    //let newMobileNumber = mobileNumber.slice(2);
-    console.log("Passed Mobile Number"+mobileNumber)
-    let user = await this.loginUser(mobileNumber, tenantId);
+    console.log("Passed Mobile Number " + mobileNumber);
+    try {
+      let user = await this.loginUser(mobileNumber, tenantId);
+      if (!user) {
+        await this.createUser(mobileNumber, tenantId);
+        user = await this.loginUser(mobileNumber, tenantId);
+      }
 
-    if(user === undefined) {
-      await this.createUser(mobileNumber, tenantId);
-      user = await this.loginUser(mobileNumber, tenantId);
+      if (!user) throw new Error('Unable to login after user creation');
+      
+      user = await this.enrichuserDetails(user);
+      return user;
+    } catch (error) {
+      console.error('Error in loginOrCreateUser:', error.message);
+      throw error;
     }
-
-    user = await this.enrichuserDetails(user);
-    return user;
   }
 
   async enrichuserDetails(user) {
-    let url = config.egovServices.userServiceHost + config.egovServices.userServiceCitizenDetailsPath + '?access_token=' + user.authToken ;
+    let url = `${config.egovServices.userServiceHost}${config.egovServices.userServiceCitizenDetailsPath}?access_token=${user.authToken}`;
     let options = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       }
+    };
+    console.log("User Enrich URL", url);
+
+    try {
+      let response = await fetch(url, options);
+      if (response.status === 200) {
+        let body = await response.json();
+        user.userInfo.name = body.name;
+        user.userInfo.locale = body.locale;
+      } else {
+        console.warn(`User enrichment failed with status ${response.status}`);
+      }
+      return user;
+    } catch (error) {
+      console.error('Error in enrichuserDetails:', error.message);
+      return user; // Return original user even if enrichment fails
     }
-    console.log("User Enrich URL"+url)
-    console.log("User Enrich Data"+ JSON.stringify(options))
-    let response = await fetch(url, options);
-    if(response.status === 200) {
-      let body = await response.json();
-      user.userInfo.name = body.name;
-      user.userInfo.locale = body.locale;
-    } 
-    return user;
   }
 
   async loginUser(mobileNumber, tenantId) {
-    console.log("Into Login User mobileNumber "+ mobileNumber+ "tenant id "+tenantId );
+    console.log("Into Login User mobileNumber", mobileNumber, "tenant id", tenantId);
     let data = new URLSearchParams();
     data.append('grant_type', 'password');
     data.append('scope', 'read');
     data.append('password', config.userService.userServiceHardCodedPassword);
     data.append('userType', 'CITIZEN');
-
     data.append('tenantId', tenantId);
     data.append('username', mobileNumber);
-    console.log("Data befor "+data);
+
     let headers = {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Authorization': config.userService.userLoginAuthorizationHeader
-    }
+    };
 
     let url = config.egovServices.userServiceHost + config.egovServices.userServiceOAuthPath;
     let options = {
       method: 'POST',
       headers: headers,
       body: data
-    }
-    console.log("Data Value "+JSON.stringify(data));
-    console.log("User Login URL"+url)
-   
-    let response = await fetch(url, options);
-    console.log("User Response status"+ response.status)
-   
-    if(response.status === 200) {
-     // console.log("User Response"+ JSON.stringify(await response.json()))
-      let body = await response.json();
-      console.log("User Response"+ JSON.stringify(body))
-      return {
-        authToken: body.access_token,
-        refreshToken: body.refresh_token,
-        userInfo: body.UserRequest
+    };
+
+    try {
+      let response = await fetch(url, options);
+      console.log("User Response status", response.status);
+
+      if (response.status === 200) {
+        let body = await response.json();
+        return {
+          authToken: body.access_token,
+          refreshToken: body.refresh_token,
+          userInfo: body.UserRequest
+        };
+      } else {
+        console.warn(`Login failed for ${mobileNumber} with status ${response.status}`);
+        return undefined;
       }
-    } else {
+    } catch (error) {
+      console.error('Error in loginUser:', error.message);
       return undefined;
     }
   }
@@ -92,14 +112,14 @@ class UserService {
   async createUser(mobileNumber, tenantId) {
     let requestBody = {
       RequestInfo: {
-      "apiId": "Rainmaker",
-      "ver": ".01",
-      "ts": "",
-      "action": "_create",
-      "did": "1",
-      "key": "",
-      "msgId": "20170310130900|en_IN",
-      "authToken": null
+        apiId: "Rainmaker",
+        ver: ".01",
+        ts: "",
+        action: "_create",
+        did: "1",
+        key: "",
+        msgId: "20170310130900|en_IN",
+        authToken: null
       },
       User: {
         otpReference: config.userService.userServiceHardCodedPassword,
@@ -107,7 +127,7 @@ class UserService {
         tenantId: tenantId,
         username: mobileNumber,
       }
-    }
+    };
 
     let url = config.egovServices.userServiceHost + config.egovServices.userServiceCreateCitizenPath;
     let options = {
@@ -116,22 +136,23 @@ class UserService {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(requestBody)
-    }
-    console.log("User Create URL"+url)
-    console.log("User Create Data"+ JSON.stringify(options))
-    let response = await fetch(url, options);
-    if(response.status === 200) {
+    };
+
+    try {
+      let response = await fetch(url, options);
       let responseBody = await response.json();
-      return responseBody;
-    } else {
-      let responseBody = await response.json();
-      console.error(JSON.stringify(responseBody));
-      console.error('User Create Error');
+
+      if (response.status === 200) {
+        return responseBody;
+      } else {
+        console.error(`Create User failed: ${JSON.stringify(responseBody)}`);
+        return undefined;
+      }
+    } catch (error) {
+      console.error('Error in createUser:', error.message);
       return undefined;
     }
-
   }
-
 }
 
 module.exports = new UserService();

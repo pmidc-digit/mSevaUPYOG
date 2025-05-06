@@ -307,328 +307,58 @@ class BillService {
   }
 
   async searchBillsForUser(user) {
-
-    let requestBody = {
-      RequestInfo: {
-        authToken: user.authToken
-      }
+    const requestBody = {
+      RequestInfo: { authToken: user.authToken }
     };
-
-    let billUrl = config.egovServices.egovServicesHost + config.egovServices.billServiceSearchPath;
-    billUrl = billUrl + '?tenantId=' + config.rootTenantId;
-    
-
-    if(user.hasOwnProperty('paramOption') && (user.paramOption!=null) ){
-      if(user.paramOption=='mobile')
-        billUrl +='&mobileNumber='+user.paramInput;
-
-      if(user.paramOption=='consumerNumber' || user.paramOption == 'tlApplicationNumber' || user.paramOption == 'nocApplicationNumber'
-      || user.paramOption=='bpaApplicationNumber' || user.paramOption=='connectionNumber' || user.paramOption=='propertyId')
-        billUrl +='&consumerCode='+user.paramInput;
-
-      billUrl +='&businessService='+user.service;
-    }
-    else{
-      billUrl+='&';
-      billUrl +='mobileNumber='+user.mobileNumber;
-    }
-
-    let options = {
-      method: 'POST',
-      origin: '*',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    }
-    
-    let response = await fetch(billUrl, options);
-    let results,totalBillSize=0,pendingBillSize=0;
-
-    if(response.status === 201) {
-      let responseBody = await response.json();
-      results = await this.prepareBillResult(responseBody, user);
-      totalBillSize=responseBody.Bill.length;
-      pendingBillSize=results.length;
-      
-    } 
-    /*else {
-      console.error('Error in fetching the bill');
-      return undefined;
-    }*/
-    
-    if(totalBillSize==0){
-      return {                        
-        totalBills: 0,             // mobile number not linked with any bills
-        pendingBills: undefined
-      }
-    }
-    else if(pendingBillSize==0){
-      return {
-        totalBills: 2,              // No pending, but previous bills do exist
-        pendingBills: undefined     // This is so that user doesn't get message saying 'your mobile number is not linked', but rather a message saying 'No pending dues'
-      } 
-    }
-    else{
-      return {
-        pendingBills: results,      // Pending bills exist
-        totalBills: pendingBillSize
-      }
-    }
-
-
-  }
-
-  async fetchBillsForUser(user,service){
-    let billSupportedBussinessService;
-
-    if(service){
-      if(service === 'WS')
-      billSupportedBussinessService = ['WS','SW'];
-      if(service === 'PT')
-      billSupportedBussinessService = ['PT'];
-      if(service === 'BPA')
-        billSupportedBussinessService = ['BPA.LOW_RISK_PERMIT_FEE', 'BPA.NC_APP_FEE', 'BPA.NC_SAN_FEE', 'BPA.NC_OC_APP_FEE', 'BPA.NC_OC_SAN_FEE'];
-    }
-    else
-      billSupportedBussinessService = ['WS','SW', 'PT', 'TL', 'FIRENOC', 'BPA.LOW_RISK_PERMIT_FEE', 'BPA.NC_APP_FEE', 'BPA.NC_SAN_FEE', 'BPA.NC_OC_APP_FEE', 'BPA.NC_OC_SAN_FEE'];
-
-    let billResults={
-        pendingBills:[],
-        totalBills:0
-    };
-
-    let self = this;
-
-    for(let service of billSupportedBussinessService){
-      user.service = service;
-
-      if(!user.hasOwnProperty('paramOption') || (user.paramOption==null) ){
-        user.paramOption = 'mobile';
-        user.paramInput = user.mobileNumber;
-      }
-      let results = await self.searchBillsForUser(user);
-      if(results.totalBills !=0 && results.pendingBills){
-        billResults.pendingBills = billResults.pendingBills.concat(results.pendingBills);
-        billResults.totalBills = billResults.totalBills + results.totalBills;
-      }
-    }  
-    
-    if(billResults.totalBills === 0 ||  billResults.pendingBills.length === 0){
-      return {                        
-        totalBills: 0,
-        pendingBills: undefined
-      }
-      
-    }
-
-    let finalResult = [];
-    let billLimit = config.billsAndReceiptsUseCase.billSearchLimit;
-
-    if(billResults.pendingBills.length < billLimit)
-      billLimit = billResults.pendingBills.length;
-
-    for(var i=0; i<billLimit; i++)
-      finalResult = finalResult.concat(billResults.pendingBills[i]); 
-
-
-      return {
-        pendingBills: finalResult,      // Pending bills exist
-        totalBills: billLimit
-      }
-  }
-
-  async fetchBillsForParam(user, service, paramOption, paramInput) {
-      user.service=service;
-      user.paramOption=paramOption;
-      user.paramInput=paramInput;
-
-      let billsForUser;
-      if(service === 'WS' || service === 'BPA')
-        billsForUser = await this.fetchBillsForUser(user,service);
-      else
-        billsForUser = await this.searchBillsForUser(user);
-
-      return billsForUser.pendingBills;
-  }
   
-  async getShortenedURL(finalPath)
-  {
-    var url = config.egovServices.egovServicesHost + config.egovServices.urlShortnerEndpoint;
-    var request = {};
-    request.url = finalPath; 
-    var options = {
-      method: 'POST',
-      body: JSON.stringify(request),
-      headers: {
-        'Content-Type': 'application/json'
+    let billUrl = config.egovServices.egovServicesHost + config.egovServices.billServiceSearchPath;
+    billUrl += `?tenantId=${config.rootTenantId}`;
+  
+    if (user.paramOption && user.paramInput != null) {
+      if (user.paramOption === 'mobile') {
+        billUrl += `&mobileNumber=${user.paramInput}`;
+      } else if (
+        ['consumerNumber', 'tlApplicationNumber', 'nocApplicationNumber', 'bpaApplicationNumber', 'connectionNumber', 'propertyId'].includes(user.paramOption)
+      ) {
+        billUrl += `&consumerCode=${user.paramInput}`;
       }
-    }
-    let response = await fetch(url, options);
-    let data = await response.text();
-    return data;
-  }
-
-  async getPaymentLink(consumerCode,tenantId,businessService,locale, user)
-  {
-    var UIHost = config.egovServices.externalHost;
-    var paymentPath = config.egovServices.msgpaylink;
-    paymentPath = paymentPath.replace(/\$consumercode/g,consumerCode);
-    paymentPath = paymentPath.replace(/\$tenantId/g,tenantId);
-    paymentPath = paymentPath.replace(/\$businessservice/g,businessService);
-    paymentPath = paymentPath.replace(/\$redirectNumber/g,"+"+config.whatsAppBusinessNumber);
-    paymentPath = paymentPath.replace(/\$locale/g,locale);
-    paymentPath = paymentPath.replace(/\$name/g,user.name);
-    paymentPath = paymentPath.replace(/\$mobileNumber/g,user.mobileNumber);
-
-    var finalPath = UIHost + paymentPath;
-    var link = await this.getShortenedURL(finalPath);
-    return link;
-  }
-
-  async getLocality(consumerCodes, authToken, businessService, locale){
-
-    let supportedService = JSON.parse(supportedServiceForLocality);
-    businessService = supportedService[businessService];
-
-    if(!businessService)
-      businessService = supportedService["BPA"];
-    
-
-    let requestBody = {
-      RequestInfo: {
-        authToken: authToken
-      },
-      searchCriteria: {
-        referenceNumber: consumerCodes,
-        limit: 5000,
-        offset: 0
-      }
-    };
-
-    let locationUrl = config.egovServices.searcherHost + 'egov-searcher/locality/'+businessService+'/_get';
-
-    let options = {
-      method: 'POST',
-      origin: '*',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    }
-
-    let response = await fetch(locationUrl,options);
-    let localitySearchResults;
-
-    if(response.status === 200) {
-      localitySearchResults = await response.json();
+      billUrl += `&businessService=${user.service}`;
     } else {
-      console.error('Error in fetching the Locality data');
-      return undefined;
+      billUrl += `&mobileNumber=${user.mobileNumber}`;
     }
-
-    let localities = [];
-    for(let result of localitySearchResults.Localities){
-      if(!localities.includes(result.locality))
-        localities.push(result.locality);
-    }
-
-    let localitiesLocalisationCodes = [];
-    for(let locality of localities) {
-      let localisationCode = 'admin.locality.' + locality;
-      localitiesLocalisationCodes.push(localisationCode);
-    }
-
-    let localisedMessages = await localisationService.getMessagesForCodesAndTenantId(localitiesLocalisationCodes, config.rootTenantId);
-
-    let messageBundle = {};
-    for(let result of localitySearchResults.Localities) {
-      let localisationCode = 'admin.locality.' + result.locality;
-      messageBundle[result.referencenumber] = localisedMessages[localisationCode][locale];
-    }
-
-  return messageBundle;
-
-  }
-
-  async getApplicationNumber(Bills, businessService, authToken, locale){
-
-    let requestBody = {
-      RequestInfo: {
-        authToken: authToken
-      }
-    };
-
-    let options = {
+  
+    const options = {
       method: 'POST',
       origin: '*',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody)
-    }
-
-    
-    let applicationNumbersList = [];
-    let consumerCodeToApplicationMapping={};
-
-    for(let bill of Bills){
-      let url = config.egovServices.externalHost;
-      if(businessService === 'WS'){
-        url = url + config.egovServices.waterConnectionSearch;
+    };
+  
+    try {
+      const response = await fetch(billUrl, options);
+  
+      if (!response.ok) {
+        console.error(`Bill search failed. Status: ${response.status}`, await response.text());
+        return { totalBills: 0, pendingBills: undefined };
       }
-      if(businessService === 'SW'){
-        url = url + config.egovServices.sewerageConnectionSearch;
+  
+      const responseBody = await response.json();
+      const results = await this.prepareBillResult(responseBody, user);
+      const totalBillSize = responseBody.Bill?.length || 0;
+      const pendingBillSize = results?.length || 0;
+  
+      if (totalBillSize === 0) {
+        return { totalBills: 0, pendingBills: undefined };
+      } else if (pendingBillSize === 0) {
+        return { totalBills: totalBillSize, pendingBills: undefined };
+      } else {
+        return { totalBills: pendingBillSize, pendingBills: results };
       }
-
-      url = url + '&tenantId='+bill.tenantId;
-      url = url + '&connectionNumber='+bill.id;
-      let response = await fetch(url,options);
-      let searchResults;
-      
-      if(response.status === 200) {
-        searchResults = await response.json();
-        let applicationNumber;
-        if(businessService === 'WS'){
-          applicationNumber = searchResults.WaterConnection[0].applicationNo
-          applicationNumbersList.push(applicationNumber);
-        }
-        if(businessService === 'SW'){
-          applicationNumber = searchResults.SewerageConnections[0].applicationNo
-          applicationNumbersList.push(applicationNumber);
-        }
-        consumerCodeToApplicationMapping[applicationNumber] = bill.id;
-      }
+  
+    } catch (error) {
+      console.error('Exception occurred during bill search:', error);
+      return { totalBills: 0, pendingBills: undefined };
     }
-
-    let cosumerCodeToLocalityMap = await this.getLocality(applicationNumbersList, authToken, businessService,locale);
-
-    let messageBundle = {};
-    for(var i=0;i<applicationNumbersList.length;i++){
-      let applicationNo = applicationNumbersList[i];
-      if(!(Object.keys(cosumerCodeToLocalityMap).length === 0) && cosumerCodeToLocalityMap[applicationNo])
-        messageBundle[consumerCodeToApplicationMapping[applicationNo]] = cosumerCodeToLocalityMap[applicationNo];
-    }
-    
-    return messageBundle;  
   }
-
-  async getOpenSearchLink(service, name, mobileNumber, locale){
-    var UIHost = config.egovServices.externalHost;
-    var paymentPath;
-    if(service=='WS')
-      paymentPath = config.egovServices.wsOpenSearch;
-    else
-      paymentPath = config.egovServices.ptOpenSearch;
-
-    paymentPath = paymentPath.replace(/\$name/g,name);
-    paymentPath = paymentPath.replace(/\$mobileNumber/g,mobileNumber);
-    paymentPath = paymentPath.replace(/\$locale/g,locale);
-
-    var finalPath = UIHost + paymentPath;
-    var link =  await this.getShortenedURL(finalPath);
-    return link;
-  }
-
 }
 module.exports = new BillService();

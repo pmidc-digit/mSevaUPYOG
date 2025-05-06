@@ -3,7 +3,7 @@ import _ from "lodash";
 import PropTypes from "prop-types";
 import React, { useEffect, useLayoutEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useHistory ,Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 
 const description = {
   description: "PT_SEARCH_OR_DESC",
@@ -37,10 +37,11 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   useEffect(() => {
-    if ( !(searchData?.filters?.mobileNumber && Object.keys(searchData?.filters)?.length == 1) && 
+    if (
+      !(searchData?.filters?.mobileNumber && Object.keys(searchData?.filters)?.length == 1) &&
       propertyData?.Properties.length > 0 &&
-      ptSearchConfig.maxResultValidation &&
-      propertyData?.Properties.length > ptSearchConfig.maxPropertyResult &&
+      ptSearchConfig?.maxResultValidation &&
+      propertyData?.Properties.length > ptSearchConfig?.maxPropertyResult &&
       !errorShown
     ) {
       setShowToast({ error: true, warning: true, label: "ERR_PLEASE_REFINED_UR_SEARCH" });
@@ -143,7 +144,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
           label: t("PT_PROVIDE_ONE_MORE_PARAM"),
           isInsideBox: true,
           placementinbox: 0,
-          isSectionText : true,
+          isSectionText: true,
         },
         {
           label: mobileNumber.label,
@@ -164,7 +165,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
             <div className="tooltip" style={{ paddingLeft: "10px", marginBottom: "-3px" }}>
               {"  "}
               <InfoBannerIcon fill="#0b0c0c" />
-              <span className="tooltiptext" style={{ width: "150px", left: "230%", fontSize:"14px" }}>
+              <span className="tooltiptext" style={{ width: "150px", left: "230%", fontSize: "14px" }}>
                 {t(property.description) + " " + ptSearchConfig?.propertyIdFormat}
               </span>
             </div>
@@ -281,7 +282,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
           label: t("PT_PROVIDE_ONE_MORE_PARAM"),
           isInsideBox: true,
           placementinbox: 0,
-          isSectionText : true,
+          isSectionText: true,
         },
         {
           label: doorNo.label,
@@ -313,7 +314,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
 
   const onPropertySearch = async (data) => {
     if (
-      ptSearchConfig.maxResultValidation &&
+      ptSearchConfig?.maxResultValidation &&
       propertyData?.Properties.length > 0 &&
       propertyData?.Properties.length > ptSearchConfig.maxPropertyResult &&
       errorShown
@@ -322,7 +323,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
       return;
     }
     if (!data?.city?.code) {
-      setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS"});
+      setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS" });
       return;
     }
     if (action == 0) {
@@ -371,14 +372,14 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
       .filter((k) => data[k])
       .reduce((acc, key) => ({ ...acc, [key]: typeof data[key] === "object" ? data[key].code : data[key] }), {});
     let city = tempObject.city;
-    
+
     delete tempObject.addParam;
     delete tempObject.addParam1;
     delete tempObject.city;
     setSearchData({ city: city, filters: tempObject });
     return;
   };
-  
+
   const onFormValueChange = (setValue, data, formState) => {
     if (data?.doorNo && data?.doorNo !== "" && data?.propertyIds !== "") {
       data["propertyIds"] = "";
@@ -406,13 +407,17 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
     return <Loader />;
   }
 
-  let validation = ptSearchConfig.maxResultValidation && !(searchData?.filters?.mobileNumber && Object.keys(searchData?.filters)?.length == 1)   ? propertyData?.Properties.length<ptSearchConfig.maxPropertyResult && (showToast == null || (showToast !== null && !showToast?.error)) : true;
+  let validation =
+    ptSearchConfig?.maxResultValidation && !(searchData?.filters?.mobileNumber && Object.keys(searchData?.filters)?.length == 1)
+      ? propertyData?.Properties.length < ptSearchConfig.maxPropertyResult && (showToast == null || (showToast !== null && !showToast?.error))
+      : true;
 
-  if (propertyData && !propertyDataLoading && !error && validation ) {
+  if (propertyData && !propertyDataLoading && !error && validation) {
     let qs = {};
     qs = { ...searchData.filters, city: searchData.city };
 
-    if ( !(searchData?.filters?.mobileNumber && Object.keys(searchData?.filters)?.length == 1) && 
+    if (
+      !(searchData?.filters?.mobileNumber && Object.keys(searchData?.filters)?.length == 1) &&
       ptSearchConfig?.ptSearchCount &&
       searchData?.filters?.locality &&
       propertyDataLoading &&
@@ -441,7 +446,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
   }
 
   return (
-    <div style={{ marginTop: "16px", marginBottom: "16px" ,backgroundColor:"white", maxWidth:"960px"}}>
+    <div style={{ marginTop: "16px", marginBottom: "16px", backgroundColor: "white", maxWidth: "960px" }}>
       <FormComposer
         onSubmit={onPropertySearch}
         noBoxShadow
@@ -452,9 +457,12 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
         text={t(propsConfig.texts.text)}
         headingStyle={{ fontSize: "32px", marginBottom: "16px", fontFamily: "Roboto Condensed,sans-serif" }}
         onFormValueChange={onFormValueChange}
-        cardStyle={{marginBottom:"0"}}
+        cardStyle={{ marginBottom: "0" }}
       ></FormComposer>
-      <span className="link" style={{display:"flex", justifyContent: isMobile ? "center" : "left", paddingBottom:"16px", paddingLeft: "24px", marginTop: "-24px"}}>
+      <span
+        className="link"
+        style={{ display: "flex", justifyContent: isMobile ? "center" : "left", paddingBottom: "16px", paddingLeft: "24px", marginTop: "-24px" }}
+      >
         <Link to={"/digit-ui/citizen/pt/property/new-application"}>{t("CPT_REG_NEW_PROPERTY")}</Link>
       </span>
       {showToast && (

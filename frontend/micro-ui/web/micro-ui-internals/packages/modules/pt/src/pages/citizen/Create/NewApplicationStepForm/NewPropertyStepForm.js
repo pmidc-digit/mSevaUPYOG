@@ -95,19 +95,17 @@ const CreateEmployeeStepForm = () => {
   const step = location?.state?.edit === true ? location?.state?.currentStepNumber : formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  console.log("Form data", formData);
-  console.log("formState: ", formState);
-
   useEffect(() => {
     if (location?.state?.edit === true) {
       // updatedCreateEmployeeconfig= createEmployeeConfig.filter((item)=>item.stepNumber===location.state.currentStepNumber)
     }
   }, []);
 
-  console.log("updated config", updatedCreateEmployeeconfig);
+  useEffect(() => {
+    console.log("checking data in everystep===", formData);
+  }, [formData]);
 
   const setStep = (updatedStepNumber) => {
-    console.log("updateStepNumber", updatedStepNumber);
     dispatch(SET_PtNewApplication(updatedStepNumber));
   };
 

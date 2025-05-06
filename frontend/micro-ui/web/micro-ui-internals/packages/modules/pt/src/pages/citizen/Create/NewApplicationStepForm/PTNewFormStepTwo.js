@@ -5,31 +5,30 @@ import { FormComposer } from "../../../../../../../react-components/src/hoc/Form
 import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
+  const dispatch = useDispatch();
+
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+    console.log(`Data== in step 2 next is=======`, data);
     onGoNext();
   }
 
   function onGoBack(data) {
+    console.log(`Data== in step 2 back is=======`, data);
     onBackClick(config.key, data);
   }
 
+  const currentStepData = useSelector(function (state) {
+    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
+      ? state.pt.PTNewApplicationForm.formData[config.key]
+      : {};
+  });
+
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in Propety setils in step 2", data,"\n Bool: ",!_.isEqual(data, currentStepData));
+    console.log("data step 2 ==========", data);
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PtNewApplication(config.key, data));
     }
   };
-
-  const currentStepData = useSelector(function (state) {
-    console.log("state in step two ", state);
-    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
-        ? state.pt.PTNewApplicationForm.formData[config.key] 
-        : {};
-});
-  const dispatch = useDispatch();
-
- // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>
@@ -48,4 +47,4 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export {PTNewFormStepTwo};
+export { PTNewFormStepTwo };

@@ -131,7 +131,6 @@ const CreateProperty = ({ parentRoute }) => {
     setSearchData({ city: params.address.city.code, filters: tempObject });
     //history.push(`${match.path}/acknowledgement`);
   };
-  console.log("location", location?.state);
 
   useEffect(() => {
     if (propertyDataLoading && propertyData?.Properties.length > 0) {
@@ -139,7 +138,6 @@ const CreateProperty = ({ parentRoute }) => {
       setShowToast(true);
     } else if (propertyDataLoading && propertyData?.Properties.length === 0) {
       setShowToast(false);
-      console.log("propertyDatapropertyData", propertyData);
       history.push(`${match.path}/acknowledgement`);
     }
   }, [propertyData]);
@@ -211,16 +209,14 @@ const CreateProperty = ({ parentRoute }) => {
   });
 
   config.indexRoute = "info";
-  // console.log("configconfigconfig",config)
 
   const CheckPage = Digit?.ComponentRegistryService?.getComponent("PTCheckPage");
   const PTAcknowledgement = Digit?.ComponentRegistryService?.getComponent("PTAcknowledgement");
 
-  console.log("config in CreateProperty", config);
-  console.log("match path in CreateProperty", match.patch);
   const onEdit = (step) => {
     console.log("on edit step", step);
   };
+
   return (
     <div>
       <div>

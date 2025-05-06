@@ -509,10 +509,20 @@ export const ComplaintDetails = (props) => {
             )}
           </StatusTable>
         )}
+        <h1 style={{ fontSize: "16px", marginBottom: "16px", color: "blue", fontWeight: "bolder" }}>
+          <a
+            href={`https://www.google.com/maps?q=${complaintDetails?.service?.address?.geoLocation?.latitude},${complaintDetails?.service?.address?.geoLocation?.longitude}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View Location on Google Maps
+          </a>
+        </h1>
         {imagesToShowBelowComplaintDetails?.thumbs ? (
           <DisplayPhotos srcs={imagesToShowBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />
         ) : null}
         <BreakLine />
+
         {workflowDetails?.isLoading && <Loader />}
         {!workflowDetails?.isLoading && (
           <React.Fragment>

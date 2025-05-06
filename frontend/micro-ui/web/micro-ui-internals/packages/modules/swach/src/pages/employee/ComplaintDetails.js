@@ -132,6 +132,7 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
   //   }, [file]);
 
   function onSelectEmployee(employee) {
+    console.log("select", employee);
     setSelectedEmployee(employee);
   }
 

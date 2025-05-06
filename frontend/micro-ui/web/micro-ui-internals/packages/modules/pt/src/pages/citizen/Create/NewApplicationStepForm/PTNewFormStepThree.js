@@ -5,30 +5,30 @@ import { FormComposer } from "../../../../../../../react-components/src/hoc/Form
 import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
+  const dispatch = useDispatch();
+
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+    console.log(`Data== in step 3 next is=======`, data);
     onGoNext();
   }
 
   function onGoBack(data) {
+    console.log(`Data== in step 3 back is=======`, data);
     onBackClick(config.key, data);
   }
 
+  const currentStepData = useSelector(function (state) {
+    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key]
+      ? state.pt.PTNewApplicationForm.formData[config.key]
+      : {};
+  });
+
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in personal deatils step 3", data,"\n Bool: ",!_.isEqual(data, currentStepData));
+    console.log("data step 4 ==========", data);
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PtNewApplication(config.key, data));
     }
   };
-
-  const currentStepData = useSelector(function (state) {
-    return state.pt.PTNewApplicationForm.formData && state.pt.PTNewApplicationForm.formData[config.key] 
-        ? state.pt.PTNewApplicationForm.formData[config.key] 
-        : {};
-});
-  const dispatch = useDispatch();
-
- // console.log("currentStepData in  Administrative details: ", currentStepData);
 
   return (
     <React.Fragment>

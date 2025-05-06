@@ -328,7 +328,7 @@ function ApplicationDetailsContent({
 
   const applicationData_pt = applicationDetails.applicationData;
   const propertyIds = applicationDetails.applicationData.propertyId || "";
-  const checkPropertyStatus = applicationDetails.additionalDetails.propertytobestatus;
+  const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
   const PropertyInActive = () => {
     if (checkPropertyStatus == "ACTIVE") {
       updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);

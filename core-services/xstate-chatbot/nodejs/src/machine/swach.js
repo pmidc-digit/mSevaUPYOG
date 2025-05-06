@@ -10,7 +10,7 @@ const { target } = require("./seva");
 const { error } = require("../session/system");
 const { onEntry } = require("./pgr");
 
-// swach
+
 const swach = {
   id: "swach",
   initial: "swachmenu",
@@ -1813,7 +1813,7 @@ const swach = {
                     //   },
                     // },
                     {
-                      target: "#swachLocation",
+                      target: "#swachDescription",
                       cond: (context, event) => {
                         // return (context.message.isValid && !context.message.isImageError);
                         return context.message.isValid;
@@ -1845,45 +1845,62 @@ const swach = {
             },
           },
         },
-        // persistSwachComplaint: {
-        //   id: "persistSwachComplaint",
-        //   invoke: {
-        //     id: "persistSwachComplaint",
-        //     src: (context) => {
-        //       // console.log("Swach Persist")
-        //       return swachService.persistSwachComplaint(
-        //         context.user,
-        //         context.slots.swach,
-        //         context.extraInfo
-        //       );
-        //     },
-        //     onDone: {
-        //       target: "#swachWelcome",
-        //       actions: assign((context, event) => {
-        //         let templateList;
-        //         let complaintDetails = event.data;
-        //         let message = dialog.get_message(
-        //           messages.swachFileComplaint.persistSwachComplaint,
-        //           context.user.locale
-        //         );
-        //         message = message.replace(
-        //           "{{complaintNumber}}",
-        //           complaintDetails?.complaintNumber
-        //         );
-        //         // message = message.replace(
-        //         //   "{{complaintLink}}",
-        //         //   complaintDetails?.complaintLink
-        //         // );
-        //         let closingStatement = dialog.get_message(
-        //           messages.swachFileComplaint.closingStatement,
-        //           context.user.locale
-        //         );
-        //         message = message + closingStatement;
-        //         dialog.sendMessage(context, message);
-        //       }),
-        //     },
-        //   },
-        // },
+        swachDescription: {
+          // get other info
+          id: "swachDescription",
+          initial: "swachDescriptiondetails",
+          states: {
+            swachDescriptiondetails: {
+              id: "swachDescriptiondetails",
+              initial: "question",
+              states: {
+                question: {
+                  onEntry: assign((context, event) => {
+                   // console.log("sdsdgsh")
+                    let message = dialog.get_message(
+                      messages.swachFileComplaint.swachDescription.question,
+                      context.user.locale
+                    );
+                    dialog.sendMessage(context, message);
+                  }),
+                  on: {
+                    USER_MESSAGE: "process",
+                  },
+                },
+                process: {
+                  onEntry: assign((context, event) => {
+                    return (context.intention = dialog.get_intention(
+                      context.grammer,
+                      event
+                    ));
+                  }),
+                  always: [
+                    {
+                      target: "#swachLocation",
+                      cond: (context, event) => {
+                        // return (context.message.isValid && !context.message.isImageError);
+                        return context.message.isValid;
+                      },
+                    },
+                    {
+                      target: "error",
+                    },
+                  ],
+                },
+                error: {
+                  onEntry: assign((context, event) => {
+                    let message = dialog.get_message(
+                      dialog.global_messages.error.retry,
+                      context.user.locale
+                    );
+                    dialog.sendMessage(context, message, false);
+                  }),
+                  always: "question",
+                }
+              },
+            },
+          },
+        },
         persistSwachComplaint: {
           id: "persistSwachComplaint",
           invoke: {
@@ -2256,13 +2273,20 @@ let messages = {
         pa_IN: "ਮਾਫ ਕਰਨਾ, ਮੈਂ ਸਮਝ ਨਹੀਂ ਸਕਿਆ",
       },
     },
+    swachDescription :{
+        question : {
+          en_IN : "Please type your Observation Description",
+          hi_IN: "कृपया अपनी शिकायत की एक फोटो संलग्न करें।",
+          pa_IN: "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦੀ ਇੱਕ ਫੋਟੋ ਜੁੜੀ ਹੋਈ ਭੇਜੋ।",
+        }
+    },
     persistSwachComplaint: {
       en_IN:
-        "Thank You 😃 Your Observation is registered successfully with mSeva.\n\nThe Observation No is : *{{complaintNumber}}*",
+        "Thank You 😃 Your Observation is registered successfully with Swach.\n\nThe Observation No is : *{{complaintNumber}}*",
       hi_IN:
-        "धन्यवाद 😃 आपकी शिकायत mSeva के साथ सफलतापूर्वक दर्ज हो गई है।\nशिकायत संख्या है: {{complaintNumber}}",
+        "धन्यवाद 😃 आपकी शिकायत Swach के साथ सफलतापूर्वक दर्ज हो गई है।\nशिकायत संख्या है: {{complaintNumber}}",
       pa_IN:
-        "ਧੰਨਵਾਦ 😃 ਤੁਹਾਡੀ ਸ਼ਿਕਾਇਤ mSeva ਨਾਲ ਸਫਲਤਾਪੂਰਵਕ ਰਜਿਸਟਰ ਹੋਈ ਹੈ.\nਸ਼ਿਕਾਇਤ ਨੰਬਰ ਹੈ: {{complaintNumber}}",
+        "ਧੰਨਵਾਦ 😃 ਤੁਹਾਡੀ ਸ਼ਿਕਾਇਤ Swach ਨਾਲ ਸਫਲਤਾਪੂਰਵਕ ਰਜਿਸਟਰ ਹੋਈ ਹੈ.\nਸ਼ਿਕਾਇਤ ਨੰਬਰ ਹੈ: {{complaintNumber}}",
     },
     closingStatement: {
       en_IN: '\nIn case of Going to Swach Menu please type and send "Swach"',

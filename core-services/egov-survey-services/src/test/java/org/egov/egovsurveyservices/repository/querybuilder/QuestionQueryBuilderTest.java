@@ -60,7 +60,7 @@ public class QuestionQueryBuilderTest {
                 "FROM eg_ss_question question INNER JOIN eg_ss_category category " +
                 "ON question.categoryid = category.id " +
                 "LEFT JOIN eg_ss_question_option option ON question.uuid = option.questionuuid " +
-                "WHERE question.tenantid = ? AND question.uuid = ? " +
+                "WHERE (question.tenantid = ? or question.tenantid ='pb.punjab' ) AND question.uuid = ? " +
                 "AND question.questionstatement ilike '%question statement%' " +
                 "AND question.createdby = ? AND question.status = ? " +
                 "AND question.categoryid = ? ORDER BY question.createdtime DESC LIMIT 10 OFFSET 0";
@@ -117,7 +117,7 @@ public class QuestionQueryBuilderTest {
 
         String query = queryBuilder.getQuestionSearchQuery(criteria, preparedStmtList);
 
-        String expectedQuery = QuestionQueryBuilder.SELECT_QUESTION_WITH_CATEGORY + " WHERE  question.tenantid = ?  ORDER BY question.createdtime DESC  LIMIT 10 OFFSET 0";
+        String expectedQuery = QuestionQueryBuilder.SELECT_QUESTION_WITH_CATEGORY + " WHERE  (question.tenantid = ? or question.tenantid ='pb.punjab' ) ORDER BY question.createdtime DESC  LIMIT 10 OFFSET 0";
 
         assertEquals(expectedQuery, query);
         assertEquals(1, preparedStmtList.size());

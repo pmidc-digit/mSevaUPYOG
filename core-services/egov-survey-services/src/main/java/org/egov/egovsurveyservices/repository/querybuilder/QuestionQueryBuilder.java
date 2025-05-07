@@ -34,7 +34,7 @@ public class QuestionQueryBuilder {
         StringBuilder query = new StringBuilder(SELECT_QUESTION_WITH_CATEGORY);
         if (!StringUtils.isBlank(criteria.getTenantId())) {
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" question.tenantid = ? ");
+            query.append(" (question.tenantid = ? or question.tenantid ='pb.punjab' )");
             preparedStmtList.add(criteria.getTenantId());
         }
 

@@ -16,7 +16,7 @@ public class CategoryQueryBuilder {
 
         if (!StringUtils.isBlank(criteria.getTenantId())) {
             addClauseIfRequired(query, preparedStmtList);
-            query.append(" category.tenantid = ? ");
+            query.append(" (category.tenantid = ? or category.tenantid = 'pb.punjab')");
             preparedStmtList.add(criteria.getTenantId());
         }
 

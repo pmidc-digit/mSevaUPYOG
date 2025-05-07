@@ -847,7 +847,7 @@ let messages = {
   sevamenu: {
     question: {
       en_IN:
-        "How can we serve you today? Please type and send the number for your option 👇\n\n*1.* File New Complaint\n\n*2.* Track Complaints\n\n*3.* Pay Water & Sewerage Bill\n\n*4.* Pay Property Tax Bill\n\n*5.* View Payments History\n\n*6.* Change Language\n\n 👉  At any stage type and send *mseva* to go back to the main menu.",
+        "How can we serve you today? Please type and send the number for your option 👇\n\n*1.* File New Complaint\n\n*2.* Track Complaints\n\n*3.* Pay Property Tax Bill\n\n*4.* View Payments History\n\n*6.* Change Language\n\n 👉  At any stage type and send *mseva* to go back to the main menu.",
       hi_IN:
         "आज हम आपकी सेवा कैसे कर सकते हैं? कृपया टाइप करें और अपने विकल्प के लिए नंबर भेजें 👇\n\n*1.* शिकायत दर्ज करें\n\n*2.* ट्रैक शिकायतें\n\n*3.* पानी और सीवरेज बिल का भुगतान करें\n\n*4.* संपत्ति कर बिल का भुगतान करें\n\n*5.* भुगतान इतिहास देखें\n\n*6.* भाषा बदलें\n\n👉 किसी भी स्तर पर टाइप करें और मुख्य मेनू पर वापस जाने के लिए mseva भेजें।",
       pa_IN:
@@ -892,9 +892,9 @@ let grammer = {
         recognize: ["2", "track", "existing"],
       },
 
-      { intention: "ws_bills", recognize: ["3", "wsbill"] },
-      { intention: "pt_bills", recognize: ["4", "ptbill"] },
-      { intention: "receipts", recognize: ["5", "receipt"] },
+      //{ intention: "ws_bills", recognize: ["3", "wsbill"] },
+      { intention: "pt_bills", recognize: ["3", "ptbill"] },
+      { intention: "receipts", recognize: ["4", "receipt"] },
       {
         intention: "locale",
         recognize: ["6", "language", "english", "hindi", "punjabi"],

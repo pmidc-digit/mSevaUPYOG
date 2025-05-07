@@ -109,7 +109,7 @@ public class StreetVendingServiceImpl implements StreetVendingService {
 		if (CollectionUtils.isEmpty(applications)) {
 			return new ArrayList<>();
 		}
-		applications = encryptionService.decryptObject(applications, requestInfo);
+//		applications = encryptionService.decryptObject(applications, requestInfo);
 		return applications;
 	}
 
@@ -130,7 +130,7 @@ public class StreetVendingServiceImpl implements StreetVendingService {
 			demandService.createDemand(vendingRequest, extractTenantId(vendingRequest));
 		}
 		StreetVendingDetail originalDetail = copyFieldsToBeEncrypted(vendingRequest.getStreetVendingDetail());
-		encryptionService.encryptObject(vendingRequest);
+//		encryptionService.encryptObject(vendingRequest);
 		streetVendingRepository.update(vendingRequest);
 		StreetVendingDetail streetVendingDetail = vendingRequest.getStreetVendingDetail();
 		streetVendingDetail.setVendorDetail(originalDetail.getVendorDetail());

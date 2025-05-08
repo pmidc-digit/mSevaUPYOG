@@ -52,10 +52,18 @@ class SwachService {
       },
     };
 
-    let response = await fetch(url, options);
-    let data = await response.json();
-
-    return data["MdmsRes"][moduleName][masterName];
+    try{
+      let response = await fetch(url, options);
+      let data = await response.json(); 
+      if(!data || !data["MdmsRes"] || !data["MdmsRes"][moduleName] || !data["MdmsRes"][moduleName][masterName]){
+        console.error("Error in fetching MDMS data ----- ", data);
+        return undefined;
+      }
+      return data["MdmsRes"][moduleName][masterName];
+    }catch(error){
+      console.error("Error in fetching MDMS data ----- ", error);
+      return undefined;
+    }
   }
 
   async fetchSwachFrequentComplaints(tenantId) {
@@ -66,6 +74,10 @@ class SwachService {
       "SwachBharatCategory",
       "$.[?(@.order && @.active == true)]"
     );
+    if(complaintTypeMdmsData == undefined){
+      console.error("Error in fetching SwachFrequentComplaints data ----- ", complaintTypeMdmsData);
+      return {complaintTypes: [], messageBundle: {}};
+    }
     let sortedData = complaintTypeMdmsData
       .slice()
       .sort((a, b) => a.order - b.order);
@@ -95,6 +107,10 @@ class SwachService {
       "SwachBharatCategory",
       "$.[?(@.active == true)].menuPath"
     );
+    if(complaintCategories == undefined){
+      console.error("Error in fetching SwachComplaintCategories data ----- ", complaintCategories);
+      return {complaintCategories: [], messageBundle: {}};
+    }
     complaintCategories = [...new Set(complaintCategories)];
     complaintCategories = complaintCategories.filter(
       (complaintCategory) => complaintCategory != ""
@@ -121,6 +137,10 @@ class SwachService {
       // '$.[?(@.active == true && @.menuPath == "' + category + '")].serviceCode'
       '$.[?(@.active == true && @.menuPath == "' + "SwachCategory" + '")].serviceCode'
     );
+    if(complaintItems == undefined){
+      console.error("Error in fetching SwachComplaintItems data ----- ", complaintItems);
+      return {complaintItems: [], messageBundle: {}};
+    }
     // let localisationPrefix = "SERVICEDEFS.";    //need review
     let localisationPrefix = "SWACHBHARATCATEGORY.";
     let messageBundle = {};
@@ -137,63 +157,85 @@ class SwachService {
   async getCityAndLocalityForGeocode(geocode, tenantId) {
     let latlng = geocode.substring(1, geocode.length - 1); // Remove braces
     console.log("latlng", latlng);
-    let cityAndLocality = await getCityAndLocality(latlng);
-    console.log("cityAndLocality", cityAndLocality);
-    let { cities, messageBundle } = await this.fetchCities(tenantId);
-    if (cityAndLocality.city == "Sahibzada Ajit Singh Nagar") {
-      cityAndLocality.city = "Mohali";
-    }
-    let matchedCity = null;
-    let matchedCityMessageBundle = null;
-    for (let city of cities) {
-      let cityName = messageBundle[city]["en_IN"];
-      if (cityName.toLowerCase() == cityAndLocality.city.toLowerCase()) {
-        matchedCity = city;
-        matchedCityMessageBundle = messageBundle[city];
-        break;
+    try{
+      let cityAndLocality = await getCityAndLocality(latlng);
+      console.log("cityAndLocality", cityAndLocality);
+      let { cities, messageBundle } = await this.fetchCities(tenantId);
+      if (cityAndLocality.city == "Sahibzada Ajit Singh Nagar") {
+        cityAndLocality.city = "Mohali";
       }
-    }
-    if (matchedCity) {
-      let matchedLocality = null;
-      let matchedLocalityMessageBundle = null;
-      // console.log("matchedCity", matchedCity);
-      let { localities, messageBundle } = await this.fetchLocalities(
-        matchedCity
-      );
-      // console.log("messageBundle", messageBundle);
-      // console.log("localities", localities);
-      for (let locality of localities) {
-        let localityName = messageBundle[locality]["en_IN"];
-        // console.log("localityName", localityName);
-        if (
-          localityName?.toLowerCase() == cityAndLocality.locality.toLowerCase()
-        ) {
-          matchedLocality = locality;
-          matchedLocalityMessageBundle = messageBundle[locality];
-          return {
-            city: matchedCity,
-            locality: matchedLocality,
-            matchedCityMessageBundle: matchedCityMessageBundle,
-            matchedLocalityMessageBundle: matchedLocalityMessageBundle,
-          };
+      let matchedCity = null;
+      let matchedCityMessageBundle = null;
+      for (let city of cities) {
+        let cityName = messageBundle[city]["en_IN"];
+        if (cityName.toLowerCase() == cityAndLocality.city.toLowerCase()) {
+          matchedCity = city;
+          matchedCityMessageBundle = messageBundle[city];
+          break;
         }
       }
-      // Matched City found but no matching locality found
-      return {
-        city: matchedCity,
-        matchedCityMessageBundle: matchedCityMessageBundle,
-      };
+      if (matchedCity) {
+        let matchedLocality = null;
+        let matchedLocalityMessageBundle = null;
+        // console.log("matchedCity", matchedCity);
+        let { localities, messageBundle } = await this.fetchLocalities(
+          matchedCity
+        );
+        // console.log("messageBundle", messageBundle);
+        // console.log("localities", localities);
+        for (let locality of localities) {
+          let localityName = messageBundle[locality]["en_IN"];
+          // console.log("localityName", localityName);
+          if (
+            localityName?.toLowerCase() == cityAndLocality.locality.toLowerCase()
+          ) {
+            matchedLocality = locality;
+            matchedLocalityMessageBundle = messageBundle[locality];
+            return {
+              city: matchedCity,
+              locality: matchedLocality,
+              matchedCityMessageBundle: matchedCityMessageBundle,
+              matchedLocalityMessageBundle: matchedLocalityMessageBundle,
+            };
+          }
+        }
+        // Matched City found but no matching locality found
+        return {
+          city: matchedCity,
+          matchedCityMessageBundle: matchedCityMessageBundle,
+        };
+      }
+      return undefined; // No matching city found
+    } catch(error){
+      console.error("Error in fetching city and locality for geocode ----- ", error);
+      return undefined;
     }
-    return undefined; // No matching city found
   } //
 
   async fetchCitiesAndWebpageLink(tenantId, whatsAppBusinessNumber) {
-    let { cities, messageBundle } = await this.fetchCities(tenantId);
-    let link = await this.getCityExternalWebpageLink(
-      tenantId,
-      whatsAppBusinessNumber
-    );
-    return { cities, messageBundle, link };
+    try{
+      let { cities, messageBundle } = await this.fetchCities(tenantId);
+      let link = await this.getCityExternalWebpageLink(
+        tenantId,
+        whatsAppBusinessNumber
+      );
+      if(!link){
+        console.error("Error in fetching the city external webpage link ----- ", link);
+        return { cities, messageBundle, link: "" };
+      }
+      if(!cities || cities.length == 0){
+        console.error("Error in fetching cities data ----- ", cities);
+        return { cities: [], messageBundle: {}, link: "" };
+      }
+      if(!messageBundle || Object.keys(messageBundle).length == 0){
+        console.error("Error in fetching message bundle data ----- ", messageBundle);
+        return { cities: [], messageBundle: {}, link: "" };
+      }
+      return { cities, messageBundle, link };
+    }catch(error){
+      console.error("Error in fetching cities and webpage link ----- ", error);
+      return { cities: [], messageBundle: {}, link: "" };
+    }
   }
 
   async fetchCities(tenantId) {
@@ -203,6 +245,10 @@ class SwachService {
       "citymodule",
       "$.[?(@.module=='SWACH.WHATSAPP')].tenants.*.code"
     );
+    if(cities == undefined){
+      console.error("Error in fetching cities data ----- ", cities);
+      return {cities: [], messageBundle: {}};
+    }
     let messageBundle = {};
     for (let city of cities) {
       let message = localisationService.getMessageBundleForCode(city);
@@ -220,6 +266,10 @@ class SwachService {
       "&phone=+91" +
       whatsAppBusinessNumber;
     let shorturl = await this.getShortenedURL(url);
+    if(!shorturl){
+      console.error("Error in fetching the shortened URL ----- ", shorturl);
+      return undefined;
+    }
     return shorturl;
   }
 
@@ -229,6 +279,18 @@ class SwachService {
       tenantId,
       whatsAppBusinessNumber
     );
+    if(!link){
+      console.error("Error in fetching the locality external webpage link ----- ", link);
+      return { localities, messageBundle, link: "" };
+    }
+    if(!localities || localities.length == 0){
+      console.error("Error in fetching localities data ----- ", localities);
+      return { localities: [], messageBundle: {}, link: "" };
+    }
+    if(!messageBundle || Object.keys(messageBundle).length == 0){
+      console.error("Error in fetching message bundle data ----- ", messageBundle);
+      return { localities: [], messageBundle: {}, link: "" };
+    }
     return { localities, messageBundle, link };
   }
 
@@ -241,6 +303,10 @@ class SwachService {
       "&phone=+91" +
       whatsAppBusinessNumber;
     let shorturl = await this.getShortenedURL(url);
+    if(!shorturl){
+      console.error("Error in fetching the shortened URL ----- ", shorturl);
+      return undefined;
+    }
     return shorturl;
   }
 
@@ -256,6 +322,10 @@ class SwachService {
       masterName,
       filterPath
     );
+    if(boundaryData == undefined){
+      console.error("Error in fetching localities data ----- ", boundaryData);
+      return {localities: [], messageBundle: {}};
+    }
     let localities = [];
     for (let i = 0; i < boundaryData.length; i++) {
       localities.push(boundaryData[i].code);
@@ -298,7 +368,7 @@ class SwachService {
       },
     };
 
-    let response = await fetch(url, options);
+    try{let response = await fetch(url, options);
     // console.log("Get City Response ----- ", response);
 
     let predictedCity = null;
@@ -324,6 +394,9 @@ class SwachService {
     } else {
       console.error("Error in fetching the city");
       return { predictedCityCode, predictedCity, isCityDataMatch };
+    }}catch(error){
+      console.error("Error in fetching the city ----- ", error);
+      return { predictedCityCode: null, predictedCity: null, isCityDataMatch: false };
     }
   }
 
@@ -345,7 +418,7 @@ class SwachService {
       },
     };
 
-    let response = await fetch(url, options);
+    try{let response = await fetch(url, options);
 
     let predictedLocality = null;
     let predictedLocalityCode = null;
@@ -386,6 +459,9 @@ class SwachService {
     } else {
       console.error("Error in fetching the locality");
       return { predictedLocalityCode, predictedLocality, isLocalityDataMatch };
+    }}catch(error){
+      console.error("Error in fetching the locality ----- ", error);
+      return { predictedLocalityCode: null, predictedLocality: null, isLocalityDataMatch: false };
     }
   }
 
@@ -402,7 +478,7 @@ class SwachService {
       complaintLimit = serviceWrappers.length;
     var count = 0;
 
-    for (let serviceWrapper of serviceWrappers) {
+    try{for (let serviceWrapper of serviceWrappers) {
       if (count < complaintLimit) {
         let mobileNumber = serviceWrapper.service.citizen.mobileNumber;
         let serviceRequestId = serviceWrapper.service.serviceRequestId;
@@ -433,6 +509,10 @@ class SwachService {
         count++;
         results["ServiceWrappers"].push(data);
       } else break;
+    }}catch(error){
+      console.error("Error in preparing the swach result ----- ", error);
+      results["ServiceWrappers"] = [];
+      return results["ServiceWrappers"];
     }
     return results["ServiceWrappers"];
   }
@@ -503,7 +583,7 @@ class SwachService {
     //   JSON.stringify(requestBody)
     // );
 
-    let response = await fetch(url, options);
+    try{let response = await fetch(url, options);
 
     // console.log("persistSwachComplaint response ----- ", response);
 
@@ -515,9 +595,12 @@ class SwachService {
       console.error("Error in fetching the complaints");
       return undefined;
     }
-    return results[0];
+    return results[0];}
+    catch(error){
+      console.error("Error in persisting the complaint ----- ", error);
+      return undefined;
+    }
   }
-
   async fetchOpenSwachComplaints(user) {
     let requestBody = JSON.parse(swachSearchRequestBody);
 
@@ -550,7 +633,7 @@ class SwachService {
     
     let response = await fetch(url, options);
 
-    let results;
+    try{let results;
     if (response.status === 200) {
       let responseBody = await response.json();
       results = await this.prepareSwachResult(responseBody, user.locale);
@@ -558,7 +641,11 @@ class SwachService {
       console.error("Error in fetching the complaints");
       return [];
     }
-    return results;
+    return results;}
+    catch(error){
+      console.error("Error in fetching the complaints ----- ", error);
+      return undefined;
+    }
   }
 
   async persistAttendence(user, slots, attendance, extraInfo) {
@@ -590,12 +677,15 @@ class SwachService {
     requestBody["ImageData"]["longitude"] = longitude;
     // requestBody["ImageData"]["imagerurl"] = attendance.image;
 
-    let filestoreId = await this.getFileForFileStoreId(attendance.image, city);
+    try{let filestoreId = await this.getFileForFileStoreId(attendance.image, city);
     if(!filestoreId){
       console.error("Error in getting file store ID");
     }else{
     // console.log("FileStore ID ----- ", filestoreId);
       requestBody["ImageData"]["imagerurl"] = filestoreId;
+    }}
+    catch(error){
+      console.error("Error in getting file store ID ----- ", error);
     }
 
     // console.log("Persist Attendence request ----- ", JSON.stringify(requestBody));
@@ -614,13 +704,16 @@ class SwachService {
       },
     };
 
-    let response = await fetch(url, options);
+    try{let response = await fetch(url, options);
     // console.log("Persist Attendence Response ----- ", response);
     if (response.status === 200) {
       let responseBody = await response.json();
       return responseBody;
     } else {
       console.error("Error in persisting the attendence");
+      return undefined;
+    }}catch(error){
+      console.error("Error in persisting the attendence ----- ", error);
       return undefined;
     }
   }
@@ -638,9 +731,18 @@ class SwachService {
         "Content-Type": "application/json",
       },
     };
-    let response = await fetch(url, options);
-    let data = await response.text();
-    return data;
+    try{
+      let response = await fetch(url, options);
+      if (response.status !== 200) {
+        console.error("Error in fetching the shortened URL ----- ", response);
+        return undefined;
+      }
+      let data = await response.text();
+      return data;
+    }catch(error){
+      console.error("Error in fetching the shortened URL ----- ", error);
+      return undefined;
+    }
   }
 
   async makeCitizenURLForComplaint(serviceRequestId, mobileNumber) {
@@ -652,14 +754,18 @@ class SwachService {
       "&redirectTo=digit-ui/citizen/swach/complaints/" +
       encodedPath +
       "&channel=whatsapp&tag=complaintTrack";
-    let shortURL = await this.getShortenedURL(url);
-    return shortURL;
+    try{let shortURL = await this.getShortenedURL(url);
+    return shortURL;}
+    catch(error){
+      console.error("Error in fetching the shortened URL ----- ", error);
+      return "";
+    }
   }
 
   async downloadImage(url, filename) {
     const writer = fs.createWriteStream(filename);
 
-    const response = await axios({
+    try{const response = await axios({
       url,
       method: "GET",
       responseType: "stream",
@@ -670,7 +776,10 @@ class SwachService {
     return new Promise((resolve, reject) => {
       writer.on("finish", resolve);
       writer.on("error", reject);
-    });
+    });}catch(error){
+      console.error("Error in downloading the image ----- ", error);
+      return undefined;
+    }
   }
 
   async fileStoreAPICall(fileName, fileData, tenantId) {
@@ -719,7 +828,7 @@ class SwachService {
       origin: "*",
     };
 
-    let response = await fetch(url, options);
+    try{let response = await fetch(url, options);
     response = await response.json();
     var fileURL = response["fileStoreIds"][0]["url"].split(",");
     var fileName = geturl.parse(fileURL[0]);
@@ -737,7 +846,11 @@ class SwachService {
       console.error("Error in getting file store ID");
       return undefined;
     }
-    return filestoreId;
+    return filestoreId;}
+    catch(error){
+      console.error("Error in getting file store ID ----- ", error);
+      return undefined;
+    }
   }
 }
 

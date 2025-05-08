@@ -27,11 +27,13 @@ const Filter = (props) => {
 
   const [selectedComplaintType, setSelectedComplaintType] = useState(null);
   const [selectedLocality, setSelectedLocality] = useState(null);
+  const [selectedTenant, setSelectedTenant] = useState(null);
   const [swachfilters, setSwachFilters] = useState(
     searchParams?.filters?.swachfilters || {
       serviceCode: [],
       locality: [],
       applicationStatus: [],
+      tenants: [],
     }
   );
 
@@ -42,6 +44,7 @@ const Filter = (props) => {
   );
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { data: cities } = Digit.Hooks.useTenants();
   // let localities = Digit.Hooks.pgr.useLocalities({ city: tenantId });
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
@@ -60,9 +63,8 @@ const Filter = (props) => {
         let params = swachfilters[property].map((prop) => prop.code).join();
         if (params) {
           pgrQuery[property] = params;
-        }
-        else{
-          delete pgrQuery?.[property]
+        } else {
+          delete pgrQuery?.[property];
         }
       }
     }
@@ -105,6 +107,12 @@ const Filter = (props) => {
     }
   }
 
+  function onSelectTenants(value, type) {
+    if (!ifExists(swachfilters.tenants, value)) {
+      setSwachFilters({ ...swachfilters, tenants: [...swachfilters.tenants, value] });
+    }
+  }
+
   useEffect(() => {
     if (swachfilters.serviceCode.length > 1) {
       setSelectedComplaintType({ i18nKey: `${swachfilters.serviceCode.length} selected` });
@@ -120,6 +128,14 @@ const Filter = (props) => {
       setSelectedLocality(swachfilters.locality[0]);
     }
   }, [swachfilters.locality]);
+
+  useEffect(() => {
+    if (swachfilters.tenants.length > 1) {
+      setSelectedTenant({ name: `${swachfilters.tenants.length} selected` });
+    } else {
+      setSelectedTenant(swachfilters.tenants[0]);
+    }
+  }, [swachfilters.tenants]);
 
   const onRemove = (index, key) => {
     let afterRemove = swachfilters[key].filter((value, i) => {
@@ -149,6 +165,7 @@ const Filter = (props) => {
     setSelectedAssigned("");
     setSelectedComplaintType(null);
     setSelectedLocality(null);
+    setSelectedTenant(null);
   }
 
   const handleFilterSubmit = () => {
@@ -206,6 +223,7 @@ const Filter = (props) => {
               )}
             </div>
             <div>{GetSelectOptions(t("CS_SWACH_LOCALITY"), localities, selectedLocality, onSelectLocality, "i18nkey", onRemove, "locality")}</div>
+            <div>{GetSelectOptions("City", cities, selectedTenant, onSelectTenants, "name", onRemove, "tenants")}</div>
             {<Status complaints={props.complaints} onAssignmentChange={handleAssignmentChange} swachfilters={swachfilters} />}
           </div>
         </div>

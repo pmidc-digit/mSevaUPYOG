@@ -59,6 +59,7 @@ import useSwachComplaintTypes from "./swach/useComplaintTypes";
 import useSwachEmployeeFilter from "./swach/useEmployeeFilter";
 import useSwachInboxData from "./swach/useInboxData";
 import useSwachLocalities from "./swach/useLocalities";
+import useSWACHInbox from "./swach/useInbox";
 import useSwachBharatCategory from "./swach/useSwachBharatCategory";
 import useSwachTenants from "./swach/useTenants";
 // import usePGRMDMS from "./pgr/useMDMS";
@@ -316,6 +317,7 @@ const swach = {
   useComplaintTypes: useSwachComplaintTypes,
   useEmployeeFilter: useSwachEmployeeFilter,
   useInboxData: useSwachInboxData,
+  useInbox: useSWACHInbox,
   useLocalities: useSwachLocalities,
   useSwachBharatCategory: useSwachBharatCategory,
   useTenants: useSwachTenants,

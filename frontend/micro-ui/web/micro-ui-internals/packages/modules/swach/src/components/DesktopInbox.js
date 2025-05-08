@@ -27,6 +27,8 @@ const DesktopInbox = ({
     return value < 0 ? <span className="sla-cell-error">{value || ""}</span> : <span className="sla-cell-success">{value || ""}</span>;
   };
 
+  // console.log("data", data);
+
   const columns = React.useMemo(
     () => [
       {
@@ -39,7 +41,7 @@ const DesktopInbox = ({
               </span>
               {/* <a onClick={() => goTo(row.row.original["serviceRequestId"])}>{row.row.original["serviceRequestId"]}</a> */}
               <br />
-              <span className="complain-no-cell-text">{t(`SWACHBHARATCATEGORY.${row.original["complaintSubType"].toUpperCase()}`)}</span>
+              <span className="complain-no-cell-text">{t(`SWACHBHARATCATEGORY.${row.original["complaintSubType"]?.toUpperCase()}`)}</span>
             </div>
           );
         },
@@ -47,7 +49,8 @@ const DesktopInbox = ({
       {
         Header: t("WF_INBOX_HEADER_LOCALITY"),
         Cell: ({ row }) => {
-          return GetCell(t(Digit.Utils.locale.getLocalityCode(row.original["locality"], row.original["tenantId"])));
+          // return GetCell(t(Digit.Utils.locale.getLocalityCode(row?.original?.locality, row?.original?.tenantId)));
+          return GetCell(row?.original?.locality);
         },
       },
       {
@@ -65,13 +68,27 @@ const DesktopInbox = ({
       {
         Header: t("WF_INBOX_HEADER_SLA_DAYS_REMAINING"),
         Cell: ({ row }) => {
-          return GetSlaCell(row.original["sla"]);
+          const sla = row.original?.sla;
+
+          let bgColor = "";
+          let colr = "";
+          if (sla < 24) {
+            bgColor = "green";
+            colr = "white";
+          } else if (sla <= 48) {
+            bgColor = "yellow";
+            colr = "black";
+          } else {
+            bgColor = "red";
+            colr = "white";
+          }
+          return <div style={{ backgroundColor: bgColor, padding: "4px 8px", borderRadius: "4px", color: "colr" }}>{sla} hrs</div>;
         },
       },
       {
         Header: t("WF_INBOX_HEADER_CREATED_DATE"),
         Cell: ({ row }) => {
-          return GetSlaCell(row.original["createdDate"]);
+          return <div style={{ width: "250px" }}>{GetSlaCell(row.original["createdDate"])}</div>;
         },
       },
     ],
@@ -100,9 +117,10 @@ const DesktopInbox = ({
         data={data}
         columns={columns}
         getCellProps={(cellInfo) => {
+          const header = cellInfo.column.Header;
           return {
             style: {
-              minWidth: cellInfo.column.Header === t("CS_COMMON_COMPLAINT_NO") ? "240px" : "",
+              minWidth: header === t("CS_COMMON_COMPLAINT_NO") ? "240px" : "",
               padding: "20px 18px",
               fontSize: "16px",
             },
@@ -134,7 +152,9 @@ const DesktopInbox = ({
     <div className="inbox-container">
       <div className="filters-container">
         <ComplaintsLink />
-        <div><Filter complaints={data} onFilterChange={onFilterChange} type="desktop" searchParams={searchParams} /></div>
+        <div>
+          <Filter complaints={data} onFilterChange={onFilterChange} type="desktop" searchParams={searchParams} />
+        </div>
       </div>
       <div style={{ flex: 1 }}>
         <SearchComplaint onSearch={onSearch} type="desktop" />

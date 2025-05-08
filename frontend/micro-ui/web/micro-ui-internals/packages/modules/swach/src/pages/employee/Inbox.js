@@ -5,19 +5,22 @@ import { Loader, Header } from "@mseva/digit-ui-react-components";
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 
-const Inbox = () => {
+const Inbox = ({ initialStates = {} }) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { uuid } = Digit.UserService.getUser().info;
   const [pageOffset, setPageOffset] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [totalRecords, setTotalRecords] = useState(0);
-  const [searchParams, setSearchParams] = useState({ filters: { wfFilters: { assignee: [{ code: "" }] } }, search: "", sort: {} });
+  const [sortParams, setSortParams] = useState(initialStates?.sortParams || [{ id: "applicationStatus", desc: false }]);
+  // const [searchParams, setSearchParams] = useState({ filters: { wfFilters: { assignee: [{ code: "" }] } }, search: "", sort: {} });
+  const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
+  let isMobile = Digit.Utils.browser.isMobile();
 
   useEffect(() => {
     (async () => {
-      const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map(e => e.code).join(",")
-      let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0  ? {applicationStatus} : {} );
+      const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
+      let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
       if (response?.count) {
         setTotalRecords(response.count);
       }
@@ -37,30 +40,52 @@ const Inbox = () => {
   };
 
   const handleFilterChange = (filterParam) => {
+    console.log("here");
     setSearchParams({ ...searchParams, filters: filterParam });
   };
+
+  useEffect(() => {
+    console.log("searchParams", searchParams);
+  }, [searchParams]);
 
   const onSearch = (params = "") => {
     setSearchParams({ ...searchParams, search: params });
   };
 
+  let paginationParams = isMobile
+    ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
+    : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+
   // let complaints = Digit.Hooks.swach.useInboxData(searchParams) || [];
-  let { data: complaints, isLoading } = Digit.Hooks.swach.useInboxData({ ...searchParams, offset: pageOffset, limit: pageSize }) ;
-  console.log("complaints ----- ", complaints);
+  // let { data: complaints, isLoading: swachLoading } = Digit.Hooks.swach.useInboxData({ ...searchParams, offset: pageOffset, limit: pageSize });
+  // console.log("complaints ----- ", complaints);
 
-  let isMobile = Digit.Utils.browser.isMobile();
+  let { data: complaints, isLoading, refetch } = Digit.Hooks.swach.useInbox({
+    tenantId,
+    filters: { ...searchParams, ...paginationParams, sortParams },
+    config: {},
+  });
 
-  if (complaints?.length !== null) {
+  // console.log("swachData=======", swachData);
+
+  if (complaints?.table?.length !== null) {
     if (isMobile) {
       return (
-        <MobileInbox data={complaints} isLoading={isLoading} onFilterChange={handleFilterChange} onSearch={onSearch} searchParams={searchParams} />
+        <MobileInbox
+          data={complaints?.table}
+          isLoading={isLoading}
+          onFilterChange={handleFilterChange}
+          onSearch={onSearch}
+          searchParams={searchParams}
+        />
       );
     } else {
       return (
         <div>
           <Header>{t("ES_COMMON_INBOX")}</Header>
+          <div onClick={() => refetch()}>fetch</div>
           <DesktopInbox
-            data={complaints}
+            data={complaints?.table}
             isLoading={isLoading}
             onFilterChange={handleFilterChange}
             onSearch={onSearch}

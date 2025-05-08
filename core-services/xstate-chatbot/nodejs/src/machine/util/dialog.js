@@ -3,7 +3,14 @@ const INTENTION_MORE = 'more';
 const INTENTION_GOBACK = 'goback';
 
 function get_input(event, scrub = true) {
-  return scrub? event.message.input.trim().toLowerCase() : event.message.input;
+  const input = event?.message?.input;
+
+  if (typeof input !== 'string') {
+      throw new TypeError('Invalid input: event.message.input must be a string.');
+    return '';
+  }
+
+  return scrub ? input.trim().toLowerCase() : input;
 }
 function get_message(bundle, locale = 'en_IN') {
   return (bundle[locale] === undefined)? bundle['en_IN'] : bundle[locale];

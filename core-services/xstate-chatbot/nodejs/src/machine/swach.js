@@ -2191,9 +2191,9 @@ let messages = {
       item: {
         question: {
           preamble: {
-            en_IN: "What is the problem you are facing with {{complaint}}?\n",
-            hi_IN: "आपको {{complaint}} से क्या समस्या आ रही है",
-            pa_IN: "{{complaint}} ਨਾਲ ਤੁਸੀਂ ਕਿਸ ਸਮੱਸਿਆ ਦਾ ਸਾਹਮਣਾ ਕਰ ਰਹੇ ਹੋ",
+            en_IN: "What is the problem you are facing ?\n",
+            hi_IN: "आपको क्या समस्या आ रही है ?\n",
+            pa_IN: "ਤੁਹਾਨੂੰ ਕਿਹੜੀ ਸਮੱਸਿਆ ਦਾ ਸਾਹਮਣਾ ਕਰਨਾ ਪੈ ਰਿਹਾ ਹੈ?\n",
           },
         },
       },

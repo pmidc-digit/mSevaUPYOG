@@ -27,8 +27,6 @@ const DesktopInbox = ({
     return value < 0 ? <span className="sla-cell-error">{value || ""}</span> : <span className="sla-cell-success">{value || ""}</span>;
   };
 
-  // console.log("data", data);
-
   const columns = React.useMemo(
     () => [
       {

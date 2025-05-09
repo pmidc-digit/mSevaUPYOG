@@ -33,7 +33,7 @@ const Filter = (props) => {
       serviceCode: [],
       locality: [],
       applicationStatus: [],
-      tenants: [],
+      tenants: null,
     }
   );
 
@@ -44,10 +44,29 @@ const Filter = (props) => {
   );
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
+
   const { data: cities } = Digit.Hooks.useTenants();
   // let localities = Digit.Hooks.pgr.useLocalities({ city: tenantId });
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
+
+  useEffect(() => {
+    // console.log("tenantId", tenantId);
+    // if (tenantId) setSelectedTenant("Abohar");
+    if (cities && cities?.length && tenantId) {
+      const matchedCity = cities?.find((city) => city.code === tenantId);
+      if (matchedCity) {
+        const cityObj = { name: matchedCity?.name, code: matchedCity?.code };
+
+        // Set it in both selectedTenant and swachfilters
+        setSelectedTenant(cityObj);
+        setSwachFilters((prev) => ({
+          ...prev,
+          tenants: cityObj?.code,
+        }));
+      }
+    }
+  }, [tenantId, cities]);
 
   const onRadioChange = (value) => {
     setSelectedAssigned(value);
@@ -90,6 +109,7 @@ const Filter = (props) => {
   const ifExists = (list, key) => {
     return list.filter((object) => object.code === key.code).length;
   };
+
   function applyFiltersAndClose() {
     handleFilterSubmit();
     props.onClose();
@@ -108,9 +128,9 @@ const Filter = (props) => {
   }
 
   function onSelectTenants(value, type) {
-    if (!ifExists(swachfilters.tenants, value)) {
-      setSwachFilters({ ...swachfilters, tenants: [...swachfilters.tenants, value] });
-    }
+    // if (!ifExists(swachfilters.tenants, value)) {
+    setSwachFilters({ ...swachfilters, tenants: value.code });
+    // }
   }
 
   useEffect(() => {
@@ -129,19 +149,25 @@ const Filter = (props) => {
     }
   }, [swachfilters.locality]);
 
-  useEffect(() => {
-    if (swachfilters.tenants.length > 1) {
-      setSelectedTenant({ name: `${swachfilters.tenants.length} selected` });
-    } else {
-      setSelectedTenant(swachfilters.tenants[0]);
-    }
-  }, [swachfilters.tenants]);
+  // useEffect(() => {
+  //   // if (swachfilters.tenants?.length > 1) {
+  //   //   setSelectedTenant({ name: `${swachfilters.tenants.length} selected` });
+  //   // } else {
+  //   setSelectedTenant(swachfilters?.tenants);
+  //   // }
+  // }, [swachfilters.tenants]);
 
   const onRemove = (index, key) => {
-    let afterRemove = swachfilters[key].filter((value, i) => {
-      return i !== index;
-    });
-    setSwachFilters({ ...swachfilters, [key]: afterRemove });
+    // let afterRemove = swachfilters[key].filter((value, i) => {
+    //   return i !== index;
+    // });
+    // setSwachFilters({ ...swachfilters, [key]: afterRemove });
+    if (key === "tenants") {
+      setSwachFilters({ ...swachfilters, tenants: null });
+    } else {
+      let afterRemove = swachfilters[key].filter((_, i) => i !== index);
+      setSwachFilters({ ...swachfilters, [key]: afterRemove });
+    }
   };
 
   const handleAssignmentChange = (e, type) => {
@@ -172,18 +198,33 @@ const Filter = (props) => {
     props.onFilterChange({ pgrQuery: pgrQuery, wfQuery: wfQuery, wfFilters, swachfilters });
   };
 
-  const GetSelectOptions = (lable, options, selected = null, select, optionKey, onRemove, key) => {
+  const GetSelectOptions = (lable, options, selected = null, select, optionKey, onRemove, key, isDisabled) => {
     selected = selected || { [optionKey]: " ", code: "" };
+    const isArray = Array.isArray(swachfilters[key]);
     return (
       <div>
         <div className="filter-label">{lable}</div>
-        {<Dropdown option={options} selected={selected} select={(value) => select(value, key)} optionKey={optionKey} />}
+        {
+          <Dropdown
+            option={options}
+            selected={selected}
+            select={(value) => !isDisabled && select(value, key)}
+            // select={(value) => select(value, key)}
+            optionKey={optionKey}
+            disable={isDisabled}
+          />
+        }
 
         <div className="tag-container">
-          {swachfilters[key].length > 0 &&
-            swachfilters[key].map((value, index) => {
+          {isArray &&
+            swachfilters[key]?.length > 0 &&
+            swachfilters[key].map((value, index) => (
+              <RemoveableTag key={index} text={`${value[optionKey]?.slice(0, 22)} ...`} onClick={() => onRemove(index, key)} />
+            ))}
+          {/* {swachfilters[key]?.length > 0 &&
+            swachfilters[key]?.map((value, index) => {
               return <RemoveableTag key={index} text={`${value[optionKey].slice(0, 22)} ...`} onClick={() => onRemove(index, key)} />;
-            })}
+            })} */}
         </div>
       </div>
     );
@@ -223,7 +264,9 @@ const Filter = (props) => {
               )}
             </div>
             <div>{GetSelectOptions(t("CS_SWACH_LOCALITY"), localities, selectedLocality, onSelectLocality, "i18nkey", onRemove, "locality")}</div>
-            <div>{GetSelectOptions("City", cities, selectedTenant, onSelectTenants, "name", onRemove, "tenants")}</div>
+            <div>
+              {GetSelectOptions("City", cities, selectedTenant, onSelectTenants, "name", onRemove, "tenants", swachfilters?.tenants !== "Punjab")}
+            </div>
             {<Status complaints={props.complaints} onAssignmentChange={handleAssignmentChange} swachfilters={swachfilters} />}
           </div>
         </div>

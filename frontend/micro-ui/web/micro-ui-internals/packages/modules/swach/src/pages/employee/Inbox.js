@@ -40,13 +40,8 @@ const Inbox = ({ initialStates = {} }) => {
   };
 
   const handleFilterChange = (filterParam) => {
-    console.log("here");
     setSearchParams({ ...searchParams, filters: filterParam });
   };
-
-  useEffect(() => {
-    console.log("searchParams", searchParams);
-  }, [searchParams]);
 
   const onSearch = (params = "") => {
     setSearchParams({ ...searchParams, search: params });
@@ -83,7 +78,6 @@ const Inbox = ({ initialStates = {} }) => {
       return (
         <div>
           <Header>{t("ES_COMMON_INBOX")}</Header>
-          <div onClick={() => refetch()}>fetch</div>
           <DesktopInbox
             data={complaints?.table}
             isLoading={isLoading}

@@ -2,7 +2,6 @@ import React from "react";
 import useInbox from "../useInbox";
 
 const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
-  console.log("filters", filters);
   const { pgrQuery = {}, swachfilters = {}, wfFilters = {}, sortBy, sortOrder, limit, offset } = filters;
   //   const { applicationStatus, mobileNumber, serviceRequestId, serviceCode, locality, tenants, sortBy, sortOrder, uuid, limit, offset } = filters;
 
@@ -12,14 +11,14 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
   //   const { applicationStatus = [], serviceCode = [], locality = [], tenants = [] } = swachfilters;
 
   const serviceRequestId = filters?.search?.serviceRequestId;
-  const mobileNumber = filters?.filters?.search?.mobileNumber;
+  const mobileNumber = filters?.search?.mobileNumber;
   const applicationStatus = "";
   const serviceCode = filters?.filters?.pgrQuery?.serviceCode;
   const locality = filters?.filters?.pgrQuery?.locality;
-  const tenants = filters?.filters?.pgrQuery?.tenants;
+  const tenants = filters?.filters?.swachfilters?.tenants;
 
   const _filters = {
-    tenantId,
+    tenantId: tenants,
     processSearchCriteria: {
       moduleName: "swach-reform",
       businessService: ["SBMR"],

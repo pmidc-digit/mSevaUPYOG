@@ -60,7 +60,6 @@ window.process={...window.process}
 const onConcent=async (e)=>{
   const data = await Digit.DigiLockerService.authorization({module:"PT"});
   e.preventDefault()
-  console.log("data",data)
   sessionStorage.setItem("code_verfier",data?.codeverifier)
   //let redirectURL=data?.redirectURL.replace("https://upyog-test.niua.org","http://localhost:3000")
   window.location.href=data?.redirectURL
@@ -101,7 +100,6 @@ if(window.location.href.includes("code"))
     code_verifier: sessionStorage.getItem("code_verfier"),
     code: code, module: "PT"
   }
-  console.log("token",code,TokenReq,sessionStorage.getItem("code_verfier"))
   const data = await Digit.DigiLockerService.token({TokenReq })
   sessionStorage.setItem("DigiLocker.token1",data?.TokenRes?.access_token)
   //sessionStorage.setItem("DigiLocker.token1",data?.)

@@ -13,7 +13,6 @@ const UlbAssesment = ({path}) => {
     const [showToast, setShowToast] = useState(null);
 
     function onSubmit (_data) {
-        console.log("data",_data)
         let payload= {
             "tenantId":_data?.creationReason?.code,
             "assessmentYear":_data?.status?.code
@@ -25,13 +24,11 @@ const UlbAssesment = ({path}) => {
             },
             {
               onError: (error, variables) => {
-                console.log("error:123 ",error)
                 setShowToast({ key: "error", action: error?.response?.data?.Errors[0]?.message || error.message, error : {  message:error?.response?.data?.Errors[0]?.code || error.message } });
                 setTimeout(closeToast, 5000);
               },
               onSuccess: (data, variables) => {
                 sessionStorage.setItem("IsPTAccessDone", data?.Assessments?.[0]?.auditDetails?.lastModifiedTime);
-              console.log("success",data)
                 
               },
             }
@@ -81,7 +78,6 @@ const UlbAssesment = ({path}) => {
           },
         }
       );
-      console.log("mutate",assessmentMutate)
     return <React.Fragment>
         <UlbAssesmentSearch t={t} isLoading={isLoading} tenantId={tenantId} setShowToast={setShowToast} onSubmit={onSubmit} data={  isSuccess && !isLoading ? (searchReult.length>0? searchReult : { display: "ES_COMMON_NO_DATA" } ):""} count={count} financialYearsData={financialYearsData} /> 
         {showToast && (

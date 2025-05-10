@@ -9,8 +9,11 @@ const AllotmentDetails = ({ t, config, onSelect, userType, formData, formState, 
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
 
   const[allotmentNo, setAllotmentNo]=useState(formData?.allottmentDetails?.allotmentNo || "")
-  const [allotmentDate,setAllotmentDate]=useState(formData?.allottmentDetails?.allotmentDate || "")
-  
+  // const [allotmentDate,setAllotmentDate]=useState(formData?.allottmentDetails?.allotmentDate || "")
+  const [allotmentDate, setAllotmentDate] = useState(
+      formData?.allottmentDetails?.allotmentDate ?  new Date(formData?.allottmentDetails?.allotmentDate).toISOString().slice(0, 10) : null
+    );
+
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
   const formValue = watch();
@@ -68,15 +71,18 @@ const setData=(config,data)=>{
   let dataNew ={allotmentNo,allotmentDate}
   onSelect(config, dataNew)
 }
-  useEffect(() => {
-    trigger();
-  }, []);
+  // useEffect(() => {
+  //   trigger();
+  // }, []);
 
   useEffect(() => {
     // Synchronize local state with formData when the component mounts or formData changes
     if (formData?.allottmentDetails) {
       setAllotmentNo(formData.allottmentDetails.allotmentNo || "");
-      setAllotmentDate(formData.allottmentDetails.allotmentDate || "");
+      // setAllotmentDate(formData.allottmentDetails.allotmentDate || "");
+      setAllotmentDate(
+        formData.allottmentDetails.allotmentDate ?  new Date(formData?.allottmentDetails?.allotmentDate).toISOString().slice(0, 10) : null
+      );
     }else {
       setAllotmentNo("");
       setAllotmentDate("");
@@ -90,25 +96,26 @@ const setData=(config,data)=>{
     }
   }, [errors]);
 
-  useEffect(() => {
-    const keys = Object.keys(formValue);
-    const part = {};
-    keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
-    console.log("key",formValue)
-    if (!_.isEqual(formValue, part)) {
-      onSelect(config.key, { ...formData[config.key], ...formValue });
-      for (let key in formValue) {
+  // useEffect(() => {
+  //   const keys = Object.keys(formValue);
+  //   const part = {};
+  //   keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
+  //   console.log("key",formValue)
+  //   if (!_.isEqual(formValue, part)) {
+  //     onSelect(config.key, { ...formData[config.key], ...formValue });
+  //     for (let key in formValue) {
       
-        if (!formValue[key] && !localFormState?.errors[key]) {
-          setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
-        } else if (formValue[key] && localFormState.errors[key]) {
-          clearLocalErrors([key]);
-        }
-      }
-      trigger();
-    } 
-    console.log("formValue",formValue,formData)
-  }, [formValue]);
+  //       if (!formValue[key] && !localFormState?.errors[key]) {
+  //         setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
+  //       } else if (formValue[key] && localFormState.errors[key]) {
+  //         clearLocalErrors([key]);
+  //       }
+  //     }
+  //     trigger();
+  //   } 
+  //   console.log("formValue",formValue,formData)
+  // }, [formValue]);
+
   function selectAllotmentNo(e) {
     setFocusIndex({ index:0 });
     setAllotmentNo(e.target.value);
@@ -183,7 +190,7 @@ const setData=(config,data)=>{
             <Controller
               control={control}
               // defaultValue={formData?.additionalDetails?.[inputs[1].name]}
-              defaultValue={allotmentNo}
+              defaultValue={allotmentDate}
               name={"AllotmentDate"}
               //rules={{ validate: convertValidationToRules(inputs[1]) }}
               // type={"date"}

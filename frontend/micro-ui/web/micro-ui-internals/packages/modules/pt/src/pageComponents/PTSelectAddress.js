@@ -10,6 +10,11 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   let tenantId = Digit.ULBService.getCurrentTenantId();
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
+  const formValue = watch();
+  const { errors } = localFormState;
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
 
   let isEditProperty = formData?.isEditProperty || false;
   if (presentInModifyApplication) isEditProperty = true;
@@ -41,11 +46,22 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
 
   useEffect(() => {
     if (userType === "employee" && presentInModifyApplication && localities?.length) {
+      
       const code = formData?.originalData?.address?.locality?.code;
       const _locality = localities?.filter((e) => e.code === code)[0];
       setValue("locality", _locality);
     }
   }, [localities]);
+
+  useEffect(() => {
+    if(formData?.address?.locality  && localities?.length){
+    const code = formData?.address?.locality?.code;
+    const localityValue = localities?.find((e) => e.code === code)
+    setValue("locality", localityValue);
+    }
+    
+  },[formData,localities,isEditProperty])
+  
 
   useEffect(() => {
     if (cities) {
@@ -95,18 +111,13 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
       onSelect(config.key, { ...formData[config.key], locality: locality });
     }
     
-  console.log("Selected locality being saved:", locality);
   }
 
   function onSubmit() {
     onSelect(config.key, { city: selectedCity, locality: selectedLocality });
   }
 
-  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
-  const formValue = watch();
-  const { errors } = localFormState;
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
-  const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
+ 
 //   useEffect(() => {
 //     onSelect(config.key, selectedValue);
 //   }, [selectedValue]);
@@ -171,9 +182,13 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
             render={(props) => (
               <Dropdown
                 className="form-field"
-                selected={selectedLocality}
+                selected={props.value}
                 option={localities}
-                select={props.onChange}
+                select={(e) => {
+                  props.onChange(e);
+                  selectLocality(e); // to keep your external state also in sync
+                }}
+                // select={props.onChange}
                 onBlur={props.onBlur}
                 optionKey="i18nkey"
                 t={t}
@@ -235,3 +250,4 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
 };
 
 export default PTSelectAddress;
+

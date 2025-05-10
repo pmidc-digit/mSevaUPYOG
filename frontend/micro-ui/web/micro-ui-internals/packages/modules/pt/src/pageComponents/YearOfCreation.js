@@ -30,13 +30,11 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
     getValues,
   } = useForm();
   const [selectedValue, setSelectedValue] = useState(formData?.yearOfCreation || "");
-  console.log("Our menu---", Menu);
   let proptype = [];
   proptype = Menu?.PropertyTax?.PropertyType;
   let i;
   let menu = [];
-  console.log("menu : ", Menu);
-
+  
   useEffect(() => {
     onSelect(config.key, selectedValue);
   }, [selectedValue]);
@@ -64,7 +62,6 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
     }
   })
   FinancialYearOptions.sort((a, b) => parseInt(a.value) - parseInt(b.value));
-  console.log("FinancialYearOptions", FinancialYearOptions);
     // FinancialYearData.map((item) => {
     //   FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
     // });
@@ -87,7 +84,6 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   }
 
 
-  console.log("menu : ", menu);
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
 

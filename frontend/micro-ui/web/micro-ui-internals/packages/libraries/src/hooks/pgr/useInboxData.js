@@ -6,7 +6,6 @@ const useInboxData = (searchParams) => {
   // const user = Digit.UserService.getUser();
   // const tenantId = user?.info?.tenantId;
 
-
   const fetchInboxData = async () => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
     let serviceIds = [];
@@ -29,12 +28,15 @@ const useInboxData = (searchParams) => {
     return combinedRes;
   };
 
-  const result = useQuery(["fetchInboxData", 
-  ...Object.keys(searchParams).map(i =>
-      typeof searchParams[i] === "object" ? Object.keys(searchParams[i]).map(e => searchParams[i][e]) : searchParams[i]
-     )],
-  fetchInboxData,
-  { staleTime: Infinity }
+  const result = useQuery(
+    [
+      "fetchInboxData",
+      ...Object.keys(searchParams).map((i) =>
+        typeof searchParams[i] === "object" ? Object.keys(searchParams[i]).map((e) => searchParams[i][e]) : searchParams[i]
+      ),
+    ],
+    fetchInboxData,
+    { staleTime: Infinity }
   );
   return { ...result, revalidate: () => client.refetchQueries(["fetchInboxData"]) };
 };
@@ -53,14 +55,15 @@ const combineResponses = (complaintDetailsResponse, workflowInstances) => {
       data.push({
         serviceRequestId: complaint.service.serviceRequestId,
         complaintSubType: complaint.service.serviceCode,
-        priorityLevel : complaint.service.priority,
+        priorityLevel: complaint.service.priority,
         locality: complaint.service.address.locality.code,
         status: complaint.service.applicationStatus,
         taskOwner: wfMap[complaint.service.serviceRequestId]?.assignes?.[0]?.name || "-",
         sla: wfMap[complaint.service.serviceRequestId]?.businesssServiceSla,
         tenantId: complaint.service.tenantId,
-      })
-    }});
+      });
+    }
+  });
   return data;
 };
 

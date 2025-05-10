@@ -100,7 +100,6 @@ const setData=(config,data)=>{
     const keys = Object.keys(formValue);
     const part = {};
     keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
-    console.log("key",formValue)
     if (!_.isEqual(formValue, part)) {
       onSelect(config.key, { ...formData[config.key], ...formValue });
       for (let key in formValue) {
@@ -113,7 +112,6 @@ const setData=(config,data)=>{
       }
       trigger();
     } 
-    console.log("formValue",formValue,formData)
   }, [formValue]);
   function selectStreet(e) {
     setFocusIndex({ index:1 });

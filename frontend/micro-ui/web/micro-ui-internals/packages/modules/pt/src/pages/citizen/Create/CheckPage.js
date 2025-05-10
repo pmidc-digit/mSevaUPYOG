@@ -32,7 +32,7 @@ const ActionButton = ({ jumpTo }) => {
 const CheckPage = ({ onSubmit, value = {} }) => {
   const { t } = useTranslation();
   const history = useHistory();
-  console.log("value",value)
+  
   const {
     address,
     isResdential,

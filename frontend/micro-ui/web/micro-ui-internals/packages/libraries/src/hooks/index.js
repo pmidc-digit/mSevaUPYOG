@@ -44,6 +44,7 @@ import useComplaintTable from "./pgr/useComplaintTable";
 import useComplaintTypes from "./pgr/useComplaintTypes";
 import useEmployeeFilter from "./pgr/useEmployeeFilter";
 import useInboxData from "./pgr/useInboxData";
+import useInboxSearchData from "./pgr/useInboxSearchData";
 import useLocalities from "./pgr/useLocalities";
 import useServiceDefs from "./pgr/useServiceDefs";
 import usePGRTenants from "./pgr/useTenants";
@@ -305,6 +306,7 @@ const pgr = {
   useComplaintStatusCount,
   useTradeLicenseBillingslab,
   useMDMS: usePGRMDMS,
+  useInboxSearchData,
 };
 
 const swach = {

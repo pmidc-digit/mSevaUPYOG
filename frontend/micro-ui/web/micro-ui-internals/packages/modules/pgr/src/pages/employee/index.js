@@ -38,7 +38,7 @@ const Complaint = () => {
     editApplication: {
       content: t("CS_PGR_EDIT_APPLICATION"),
       path: match.url + Employee.EditApplication,
-    },    
+    },
   };
   function popupCall(option) {
     setDisplayMenu(false);
@@ -47,10 +47,10 @@ const Complaint = () => {
 
   let location = useLocation().pathname;
 
-  const CreateComplaint = Digit?.ComponentRegistryService?.getComponent('PGRCreateComplaintEmp');
-  const ComplaintDetails = Digit?.ComponentRegistryService?.getComponent('PGRComplaintDetails');
-  const Inbox = Digit?.ComponentRegistryService?.getComponent('PGRInbox');
-  const Response = Digit?.ComponentRegistryService?.getComponent('PGRResponseEmp');
+  const CreateComplaint = Digit?.ComponentRegistryService?.getComponent("PGRCreateComplaintEmp");
+  const ComplaintDetails = Digit?.ComponentRegistryService?.getComponent("PGRComplaintDetails");
+  const Inbox = Digit?.ComponentRegistryService?.getComponent("PGRInbox");
+  const Response = Digit?.ComponentRegistryService?.getComponent("PGRResponseEmp");
   const EditApplication = Digit.ComponentRegistryService.getComponent("PGREditApplication");
   return (
     <React.Fragment>
@@ -84,7 +84,7 @@ const Complaint = () => {
           <Route path={match.url + Employee.ComplaintDetails + ":id*"} component={() => <ComplaintDetails />} />
           <Route path={match.url + Employee.Inbox} component={Inbox} />
           <Route path={match.url + Employee.Response} component={Response} />
-          <Route path={match.url +Employee.EditApplication +":id*"} component={EditApplication} />
+          <Route path={match.url + Employee.EditApplication + ":id*"} component={EditApplication} />
         </Switch>
       </div>
       {/* <ActionBar>

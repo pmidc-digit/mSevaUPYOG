@@ -29,32 +29,32 @@ export const SwachModule = ({ stateCode, userType, tenants }) => {
   Digit.SessionStorage.set("SWACH_TENANTS", tenants);
 
   if (userType === "citizen") {
-    return <></>
+    return  <CitizenApp />;
   } else {
     return <EmployeeApp />;
   }
 };
 
 export const SWACHLinks = ({ matchPath }) => {
-  // const { t } = useTranslation();
-  // const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(PGR_CITIZEN_CREATE_COMPLAINT, {});
+   const { t } = useTranslation();
+   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(PGR_CITIZEN_CREATE_COMPLAINT, {});
 
-  // useEffect(() => {
-  //   clearParams();
-  // }, []);
+   useEffect(() => {
+     clearParams();
+   }, []);
 
-  // const links = [
-  //   {
-  //     link: `${matchPath}/create-complaint/complaint-type`,
-  //     i18nKey: t("CS_COMMON_FILE_A_COMPLAINT"),
-  //   },
-  //   {
-  //     link: `${matchPath}/complaints`,
-  //     i18nKey: t(LOCALE.MY_COMPLAINTS),
-  //   },
-  // ];
+   const links = [
+     {
+       link: `${matchPath}/create-complaint/complaint-type`,
+       i18nKey: t("CS_COMMON_FILE_A_COMPLAINT"),
+   },
+  {
+       link: `${matchPath}/complaints`,
+       i18nKey: t(LOCALE.MY_COMPLAINTS),
+     },
+   ];
 
-  // return <CitizenHomeCard header={t("CS_COMMON_HOME_COMPLAINTS")} links={links} Icon={ComplaintIcon} />;
+   return <CitizenHomeCard header={t("CS_COMMON_HOME_COMPLAINTS")} links={links} Icon={ComplaintIcon} />;
 };
 
 const componentsToRegister = {

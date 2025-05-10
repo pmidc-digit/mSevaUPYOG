@@ -256,14 +256,15 @@ const swach = {
                 //     context.message === "1",
                 // },
                 {
-                  target: "#swachAttendenceGeoLocation",
+                  target: "#swachNLPAttendanceCitySearch",
                   cond: (context, event) =>
                     !event.data, 
                   // && context.message != "1",
                   actions: assign((context, event) => {
                     // console.log("Swach Attendence GeoLocation 2 ------- context", context);
                     let message = dialog.get_message(
-                      dialog.global_messages.error.retry,
+                      // dialog.global_messages.error.retry,
+                      messages.swachAttendance.retry,
                       context.user.locale
                     );
                     dialog.sendMessage(context, message, false);
@@ -584,15 +585,32 @@ const swach = {
                 context.slots.attendence["predictedLocality"] != null &&
                 context.slots.attendence["predictedLocalityCode"] != null,
             },
+            // {
+            //   target: "#swachNLPAttendanceLocalitySearch",
+            //   cond: (context) =>
+            //     !context.slots.attendence["isLocalityDataMatch"] &&
+            //     context.slots.attendence["predictedLocality"] == null &&
+            //     context.slots.attendence["predictedLocalityCode"] == null,
+            //   actions: assign((context, event) => {
+            //     let message = dialog.get_message(
+            //       messages.swachFileComplaint.swachNlpLocalitySearch.noRecord,
+            //       context.user.locale
+            //     );
+            //     dialog.sendMessage(context, message);
+            //   }),
+            // }
             {
-              target: "#swachNLPAttendanceLocalitySearch",
+              target: "#swachConfirmationAttendanceFuzzyLocalitySearch",
               cond: (context) =>
                 !context.slots.attendence["isLocalityDataMatch"] &&
                 context.slots.attendence["predictedLocality"] == null &&
                 context.slots.attendence["predictedLocalityCode"] == null,
               actions: assign((context, event) => {
+                context.slots.attendence["predictedLocalityCode"] = "UNKNOWN";
+                context.slots.attendence["predictedLocality"] = "UNKNOWN";
+                context.slots.attendence["locality"] = "UNKNOWN";
                 let message = dialog.get_message(
-                  messages.swachFileComplaint.swachNlpLocalitySearch.noRecord,
+                  messages.swachAttendance.noRecord,
                   context.user.locale
                 );
                 dialog.sendMessage(context, message);
@@ -1156,27 +1174,41 @@ const swach = {
                       //     !event.data &&
                       //     context.message === "1" &&
                       //     !config.swachUseCase.geoSearch,   //need review
-                      // },
-                      // {
-                      //   target: "#swachNLPCitySearch",
-                      //   cond: (context, event) =>
-                      //     !event.data &&
-                      //     context.message === "1" &&
-                      //     config.swachUseCase.geoSearch,    //need review
+                      //   actions: assign((context, event) => {
+                      //       let message = dialog.get_message(
+                      //         dialog.global_messages.error.retry,
+                      //         context.user.locale
+                      //       );
+                      //       dialog.sendMessage(context, message, false);
+                      //     }),  
                       // },
                       {
-                        target: "#swachGeoLocation",
+                        target: "#swachNLPCitySearch",
                         cond: (context, event) =>
-                          !event.data,
-                        //  && context.message != "1",
+                          !event.data &&
+                          // context.message === "1" &&
+                          config.swachUseCase.geoSearch,    //need review
                         actions: assign((context, event) => {
-                          let message = dialog.get_message(
-                            dialog.global_messages.error.retry,
-                            context.user.locale
-                          );
-                          dialog.sendMessage(context, message, false);
-                        }),
+                            let message = dialog.get_message(
+                              messages.swachAttendance.retry,
+                              context.user.locale
+                            );
+                            dialog.sendMessage(context, message, false);
+                          }),
                       },
+                      // {
+                      //   target: "#swachGeoLocation",
+                      //   cond: (context, event) =>
+                      //     !event.data,
+                      //   //  && context.message != "1",
+                      //   actions: assign((context, event) => {
+                      //     let message = dialog.get_message(
+                      //       dialog.global_messages.error.retry,
+                      //       context.user.locale
+                      //     );
+                      //     dialog.sendMessage(context, message, false);
+                      //   }),
+                      // },
                     ],
                     onError: [
                       {
@@ -1508,16 +1540,33 @@ const swach = {
                         context.slots.swach["predictedLocality"] != null &&
                         context.slots.swach["predictedLocalityCode"] != null,
                     },
+                    // {
+                    //   target: "#swachNlpLocalitySearch",
+                    //   cond: (context) =>
+                    //     !context.slots.swach["isLocalityDataMatch"] &&
+                    //     context.slots.swach["predictedLocality"] == null &&
+                    //     context.slots.swach["predictedLocalityCode"] == null,
+                    //   actions: assign((context, event) => {
+                    //     let message = dialog.get_message(
+                    //       messages.swachFileComplaint.swachNlpLocalitySearch
+                    //         .noRecord,
+                    //       context.user.locale
+                    //     );
+                    //     dialog.sendMessage(context, message);
+                    //   }),
+                    // },
                     {
-                      target: "#swachNlpLocalitySearch",
+                      target: "#swachConfirmationFuzzyLocalitySearch",
                       cond: (context) =>
                         !context.slots.swach["isLocalityDataMatch"] &&
                         context.slots.swach["predictedLocality"] == null &&
                         context.slots.swach["predictedLocalityCode"] == null,
                       actions: assign((context, event) => {
+                        context.slots.swach["predictedLocalityCode"] = "UNKNOWN";
+                        context.slots.swach["predictedLocality"] = "UNKNOWN";
+                        context.slots.swach["locality"] = "UNKNOWN";
                         let message = dialog.get_message(
-                          messages.swachFileComplaint.swachNlpLocalitySearch
-                            .noRecord,
+                          messages.swachAttendance.noRecord,
                           context.user.locale
                         );
                         dialog.sendMessage(context, message);
@@ -2141,6 +2190,19 @@ let messages = {
         "आपकी उपस्थिति सफलतापूर्वक प्रस्तुत की गई है।",
       pa_IN:
         "ਤੁਹਾਡੀ ਹਾਜ਼ਰੀ ਸਫਲਤਾਪੂਰਕ ਪੇਸ਼ ਕੀਤੀ ਗਈ ਹੈ। ",
+    },
+    noRecord: {
+      en_IN:
+        "Provided locality is miss-spelled or not present in our system record.\nMoving Forward with Unknown locality.",
+      hi_IN:
+        "आपके द्वारा दर्ज किया गया स्थान गलत वर्तनी वाला है या हमारे सिस्टम रिकॉर्ड में मौजूद नहीं है।\nअज्ञात स्थानीयता के साथ अग्रेषित किया जा रहा है।",
+      pa_IN:
+        "ਤੁਹਾਡੇ ਦੁਆਰਾ ਦਰਜ ਕੀਤਾ ਗਿਆ ਸਥਾਨ ਗਲਤ ਵਰਤਨੀ ਵਾਲਾ ਹੈ ਜਾਂ ਸਾਡੇ ਸਿਸਟਮ ਦੇ ਰਿਕਾਰਡ ਵਿੱਚ ਮੌਜੂਦ ਨਹੀਂ ਹੈ।\nਅਣਜਾਣ ਸਥਾਨਕਤਾ ਨਾਲ ਅੱਗੇ ਭੇਜਿਆ ਜਾ ਰਿਹਾ ਹੈ।",
+    },
+    retry: {
+      en_IN: "Selected option seems to be invalid 😐",
+      hi_IN: "चुना हुआ विकल्प अमान्य प्रतीत होता है 😐",
+      pa_IN: "ਚੁਣਿਆ ਗਿਆ ਵਿਕਲਪ ਅਵੈਧ ਲੱਗਦਾ ਹੈ 😐",
     }
   },
 

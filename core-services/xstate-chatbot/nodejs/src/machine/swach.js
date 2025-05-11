@@ -219,14 +219,20 @@ const swach = {
           invoke: {
             id: "getSwachAttendenceCityAndLocality",
               src: async (context, event) => {
-                if (event.message.type === "location") {                  
+                if (event?.message.type === "location") {                  
                   context.slots.attendence.geocode = event.message.input;
+                  context.message ={
+                    isValid : true
+                  };
                   return await swachService.getCityAndLocalityForGeocode(
                     event.message.input,
                     context.extraInfo.tenantId
                   );
                 }else{
                   context.message = event.message.input;
+                  context.message ={
+                    isValid : false
+                  };
                   // context.message = "1";
                   return Promise.resolve();
                 }
@@ -243,7 +249,7 @@ const swach = {
               onDone: [
                 {
                   target: "#swachAttendenceConfirmLocation",
-                  cond: (context, event) => event.data,
+                  cond: (context, event) => event.data && context.message.isValid,
                   actions: assign((context, event) => {
                     // console.log("Swach Attendence GeoLocation ------- event", event);
                     context.attendence.detectedLocation = event.data;
@@ -258,13 +264,28 @@ const swach = {
                 {
                   target: "#swachNLPAttendanceCitySearch",
                   cond: (context, event) =>
-                    !event.data, 
+                    !event.data && context.message.isValid, 
                   // && context.message != "1",
                   actions: assign((context, event) => {
                     // console.log("Swach Attendence GeoLocation 2 ------- context", context);
                     let message = dialog.get_message(
                       // dialog.global_messages.error.retry,
                       messages.swachAttendance.retry,
+                      context.user.locale
+                    );
+                    dialog.sendMessage(context, message, false);
+                  }),
+                },
+                {
+                  target: "#swachAttendenceGeoLocationSharingInfo",
+                  cond: (context, event) =>
+                    !event.data && !context.message.isValid, 
+                  // && context.message != "1",
+                  actions: assign((context, event) => {
+                    // console.log("Swach Attendence GeoLocation 2 ------- context", context);
+                    let message = dialog.get_message(
+                      dialog.global_messages.error.retry,
+                      // messages.swachAttendance.retry,
                       context.user.locale
                     );
                     dialog.sendMessage(context, message, false);
@@ -295,14 +316,14 @@ const swach = {
                 context.user.locale
               );
               message = dialog.get_message(
-                messages.swachFileComplaint.swachConfirmLocation
+                messages.swachFileComplaint.swachAttendanceConfirmLocation
                   .confirmCityAndLocality,
                 context.user.locale
               );
               message = message.replace("{{locality}}", localityName);
             } else {
               message = dialog.get_message(
-                messages.swachFileComplaint.swachConfirmLocation
+                messages.swachFileComplaint.swachAttendanceConfirmLocation
                   .confirmCity,
                 context.user.locale
               );
@@ -1140,13 +1161,23 @@ const swach = {
                   invoke: {
                     id: "getSwachCityAndLocality",
                     src: (context, event) => {
-                      if (event.message.type === "location") {
+                      if (event?.message.type === "location") {
                         context.slots.swach.geocode = event.message.input;
+                        context.message ={
+                          isValid : true
+                        };
+                        console.log("Swach City and Locality", context.message.isValid);
                         // console.log("Swach City and Locality")
                         return swachService.getCityAndLocalityForGeocode(
                           event.message.input,
                           context.extraInfo.tenantId
                         );
+                      }else{
+                        context.message = event.message.input;
+                        context.message ={
+                          isValid : false
+                        };
+                        return Promise.resolve();
                       }
                       // if(context.slots.swach.metadata.latitude && context.slots.swach.metadata.longitude) {
                       //   context.slots.swach.geocode = '('+ context.slots.swach.metadata.latitude + ',' + context.slots.swach.metadata.longitude + ')';
@@ -1158,12 +1189,12 @@ const swach = {
                       // }
                       // context.message = event.message.input;
                       // context.message = "1";
-                      return Promise.resolve();
+                      // return Promise.resolve();
                     },
                     onDone: [
                       {
                         target: "#swachConfirmLocation",
-                        cond: (context, event) => event.data,
+                        cond: (context, event) => event.data && context.message.isValid,
                         actions: assign((context, event) => {
                           context.swach.detectedLocation = event.data;
                         }),
@@ -1184,10 +1215,12 @@ const swach = {
                       // },
                       {
                         target: "#swachNLPCitySearch",
-                        cond: (context, event) =>
-                          !event.data &&
-                          // context.message === "1" &&
-                          config.swachUseCase.geoSearch,    //need review
+                        cond: (context, event) =>{
+                          console.log("Swach City and Locality", context.message.isValid);
+                          return !event.data && context.message.isValid &&
+                          config.swachUseCase.geoSearch
+                        },
+                              //need review
                         actions: assign((context, event) => {
                             let message = dialog.get_message(
                               messages.swachAttendance.retry,
@@ -1196,19 +1229,19 @@ const swach = {
                             dialog.sendMessage(context, message, false);
                           }),
                       },
-                      // {
-                      //   target: "#swachGeoLocation",
-                      //   cond: (context, event) =>
-                      //     !event.data,
-                      //   //  && context.message != "1",
-                      //   actions: assign((context, event) => {
-                      //     let message = dialog.get_message(
-                      //       dialog.global_messages.error.retry,
-                      //       context.user.locale
-                      //     );
-                      //     dialog.sendMessage(context, message, false);
-                      //   }),
-                      // },
+                      {
+                        target: "#swachGeoLocationSharingInfo",
+                        cond: (context, event) =>
+                          !event.data && !context.message.isValid,
+                        //  && context.message != "1",
+                        actions: assign((context, event) => {
+                          let message = dialog.get_message(
+                            dialog.global_messages.error.retry,
+                            context.user.locale
+                          );
+                          dialog.sendMessage(context, message, false);
+                        }),
+                      },
                     ],
                     onError: [
                       {
@@ -2179,9 +2212,9 @@ let messages = {
       en_IN:
         "Please type and send the number for your option 👇\n\n*1.* Raise Your Observation.\n\n*2.* Track Your Previous Observations.\n\n*3.* Attendance.\n\n 👉  At any stage type and send *swach* to go back to the Swach menu.",
       hi_IN:
-        "कृपया अपने विकल्प के लिए नंबर टाइप करें और भेजें 👇\n\n1. Swach नई शिकायत दर्ज करें।\n2. Swach पुरानी शिकायतों की स्थिति देखें\n\n*3.* उपस्थिति\n\n👉 किसी भी चरण में mseva या swach टाइप करें और भेजें ताकि मुख्य मेनू पर वापस जा सकें।",
+        "कृपया अपने विकल्प के लिए नंबर टाइप करें और भेजें 👇\n\n*1.* Swach नई शिकायत दर्ज करें।\n\n*2.* Swach पुरानी शिकायतों की स्थिति देखें\n\n*3.* उपस्थिति\n\n👉 किसी भी चरण में mseva या swach टाइप करें और भेजें ताकि मुख्य मेनू पर वापस जा सकें।",
       pa_IN:
-        "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਵਿਕਲਪ ਲਈ ਨੰਬਰ ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ 👇\n\n1. Swach ਨਵੀਂ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰੋ।\n2. Swach ਪੁਰਾਣੀਆਂ ਸ਼ਿਕਾਇਤਾਂ ਦੀ ਸਥਿਤੀ ਵੇਖੋ\n\n*3.* ਦਿੱਖ\n\n👉 ਕਿਸੇ ਵੀ ਪੜਾਅ 'ਤੇ *swach* ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ ਤਾਂ ਕਿ ਮੁੱਖ ਮੀਨੂ 'ਚ ਵਾਪਸ ਜਾ ਸਕੋ।",
+        "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੇ ਵਿਕਲਪ ਲਈ ਨੰਬਰ ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ 👇\n\n*1.* Swach ਨਵੀਂ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰੋ।\n\n*2.* Swach ਪੁਰਾਣੀਆਂ ਸ਼ਿਕਾਇਤਾਂ ਦੀ ਸਥਿਤੀ ਵੇਖੋ\n\n*3.* ਦਿੱਖ\n\n👉 ਕਿਸੇ ਵੀ ਪੜਾਅ 'ਤੇ *swach* ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ ਤਾਂ ਕਿ ਮੁੱਖ ਮੀਨੂ 'ਚ ਵਾਪਸ ਜਾ ਸਕੋ।",
     },
   },
 
@@ -2284,11 +2317,11 @@ let messages = {
     swachAttendenceGeoLocation: {
       question: {
         en_IN:
-          "Please share your location if you are at the Observation site.\n\n👉  Refer the image below to understand steps for sharing the location.",
+          "Please share your location if you are at the Attendance site.\n\n👉  Refer the image below to understand steps for sharing the location.",
         hi_IN:
-          "यदि आप शिकायत स्थल पर हैं तो कृपया अपना स्थान साझा करें।\n\n👉 स्थान साझा करने के चरणों को समझने के लिए नीचे दी गई छवि देखें।",
+          "यदि आप उपस्थिति स्थल पर हैं तो कृपया अपना स्थान साझा करें।\n\n👉 स्थान साझा करने के चरणों को समझने के लिए नीचे दी गई छवि देखें।",
         pa_IN:
-          "ਜੇ ਤੁਸੀਂ ਸ਼ਿਕਾਇਤ ਵਾਲੀ ਥਾਂ ਤੇ ਹੋ ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਸਥਾਨ ਸਾਂਝਾ ਕਰੋ.\n\n👉 ਸਥਾਨ ਨੂੰ ਸਾਂਝਾ ਕਰਨ ਦੇ ਕਦਮਾਂ ਨੂੰ ਸਮਝਣ ਲਈ ਹੇਠ ਦਿੱਤੇ ਚਿੱਤਰ ਨੂੰ ਵੇਖੋ.",
+          "ਜੇ ਤੁਸੀਂ ਹਾਜ਼ਰੀ ਵਾਲੀ ਥਾਂ ਤੇ ਹੋ ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ ਆਪਣਾ ਸਥਾਨ ਸਾਂਝਾ ਕਰੋ.\n\n👉 ਸਥਾਨ ਨੂੰ ਸਾਂਝਾ ਕਰਨ ਦੇ ਕਦਮਾਂ ਨੂੰ ਸਮਝਣ ਲਈ ਹੇਠ ਦਿੱਤੇ ਚਿੱਤਰ ਨੂੰ ਵੇਖੋ.",
       },
     },
     swachConfirmLocation: {
@@ -2304,8 +2337,27 @@ let messages = {
         en_IN:
           "Is this the correct location of the Observation?\nCity: {{city}}\n\nType and send *1* if it is correct  to confirm and proceed\nElse, type and send *2*",
         hi_IN:
-          'क्या यह शिकायत का सही स्थान है? \nशहर: {{city}}\n अगर यह गलत है तो कृपया "No" भेजें।\nअन्यथा किसी भी चरित्र को टाइप करें और आगे बढ़ने के लिए भेजें।',
-        pa_IN: "ਕੀ ਇਹ ਸ਼ਿਕਾਇਤ ਦਾ ਸਹੀ ਸਥਾਨ ਹੈ?\nਸ਼ਹਿਰ: {{city}}\n\nਜੇ ਇਹ ਗਲਤ ਹੈ ਤਾਂ 1 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ\nਹੋਰ, ਪੁਸ਼ਟੀ ਕਰਨ ਅਤੇ ਅੱਗੇ ਵਧਣ ਲਈ 2 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ",
+          "क्या यह शिकायत का सही स्थान है?\nशहर: {{city}}\n\nयदि यह सही है तो पुष्टि करने और आगे बढ़ने के लिए 1 टाइप करें और भेजें\nअन्यथा, 2 टाइप करें और भेजें",
+        pa_IN:
+          "ਕੀ ਇਹ ਸ਼ਿਕਾਇਤ ਦਾ ਸਹੀ ਸਥਾਨ ਹੈ?\nਸ਼ਹਿਰ: {{city}}\n\nਜੇ ਇਹ ਸਹੀ ਹੈ ਤਾਂ ਪੁਸ਼ਟੀ ਕਰਨ ਅਤੇ ਅੱਗੇ ਵਧਣ ਲਈ 1 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ\nਹੋਰ, 2 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ",
+      },
+    },
+    swachAttendanceConfirmLocation: {
+      confirmCityAndLocality: {
+        en_IN:
+          "Is this the correct location of the Attendence?\nCity: {{city}}\nLocality: {{locality}}\n\nType and send *1* if it is correct to confirm and proceedt\nElse, type and send *2*.",
+        hi_IN:
+          "क्या यह उपस्थिति का सही स्थान है?शहर: {{city}}स्थान: {{locality}}\n\nटाइप करें और 1 भेजें यदि यह गलत है\nअन्यथा, पुष्टि करने और आगे बढ़ने के लिए 2 टाइप करें और भेजें",
+        pa_IN:
+          "ਕੀ ਇਹ ਸ਼ਿਕਾਇਤ ਦਾ ਸਹੀ ਸਥਾਨ ਹੈ?ਸ਼ਹਿਰ: {{city}}ਸਥਾਨ: {{locality}}\n\nਟਾਈਪ ਕਰੋ ਅਤੇ 1 ਭੇਜੋ ਜੇ ਇਹ ਗਲਤ ਹੈ\nਹੋਰ, ਪੁਸ਼ਟੀ ਕਰਨ ਅਤੇ ਅੱਗੇ ਵਧਣ ਲਈ ਟਾਈਪ ਕਰੋ ਅਤੇ 2 ਭੇਜੋ",
+      },
+      confirmCity: {
+        en_IN:
+          "Is this the correct location of the Attendence?\nCity: {{city}}\n\nType and send *1* if it is correct  to confirm and proceed\nElse, type and send *2*",
+        hi_IN:
+          "क्या यह उपस्थिति का सही स्थान है?\nशहर: {{city}}\n\nयदि यह सही है तो पुष्टि करने और आगे बढ़ने के लिए 1 टाइप करें और भेजें\nअन्यथा, 2 टाइप करें और भेजें",
+        pa_IN:
+          "ਕੀ ਇਹ ਸ਼ਿਕਾਇਤ ਦਾ ਸਹੀ ਸਥਾਨ ਹੈ?\nਸ਼ਹਿਰ: {{city}}\n\nਜੇ ਇਹ ਸਹੀ ਹੈ ਤਾਂ ਪੁਸ਼ਟੀ ਕਰਨ ਅਤੇ ਅੱਗੇ ਵਧਣ ਲਈ 1 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ\nਹੋਰ, 2 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ",
       },
     },
     city: {
@@ -2350,8 +2402,8 @@ let messages = {
     swachDescription :{
         question : {
           en_IN : "Please type your Observation Description",
-          hi_IN: "कृपया अपनी शिकायत की एक फोटो संलग्न करें।",
-          pa_IN: "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦੀ ਇੱਕ ਫੋਟੋ ਜੁੜੀ ਹੋਈ ਭੇਜੋ।",
+          hi_IN: "कृपया अपनी शिकायत का विवरण टाइप करें",
+          pa_IN: "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦਾ ਵੇਰਵਾ ਟਾਈਪ ਕਰੋ",
         }
     },
     persistSwachComplaint: {

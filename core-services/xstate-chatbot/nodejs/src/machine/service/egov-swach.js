@@ -528,6 +528,7 @@ class SwachService {
     let locality = slots.locality;
     let city = slots.city;
     let userInfo = user.userInfo;
+    let description = slots.description;
 
     
 
@@ -537,6 +538,7 @@ class SwachService {
     requestBody["service"]["address"]["locality"]["code"] = locality;
     requestBody["service"]["serviceCode"] = complaintType;
     requestBody["service"]["accountId"] = userId;
+    requestBody["service"]["description"] = description;
     requestBody["RequestInfo"]["userInfo"] = userInfo;
     requestBody["RequestInfo"]["msgId"] = config.msgId + "|" + user.locale;
 

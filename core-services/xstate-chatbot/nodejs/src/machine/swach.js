@@ -219,14 +219,20 @@ const swach = {
           invoke: {
             id: "getSwachAttendenceCityAndLocality",
               src: async (context, event) => {
-                if (event.message.type === "location") {                  
+                if (event?.message.type === "location") {                  
                   context.slots.attendence.geocode = event.message.input;
+                  context.message ={
+                    isValid : true
+                  };
                   return await swachService.getCityAndLocalityForGeocode(
                     event.message.input,
                     context.extraInfo.tenantId
                   );
                 }else{
                   context.message = event.message.input;
+                  context.message ={
+                    isValid : false
+                  };
                   // context.message = "1";
                   return Promise.resolve();
                 }
@@ -243,7 +249,7 @@ const swach = {
               onDone: [
                 {
                   target: "#swachAttendenceConfirmLocation",
-                  cond: (context, event) => event.data,
+                  cond: (context, event) => event.data && context.message.isValid,
                   actions: assign((context, event) => {
                     // console.log("Swach Attendence GeoLocation ------- event", event);
                     context.attendence.detectedLocation = event.data;
@@ -258,13 +264,28 @@ const swach = {
                 {
                   target: "#swachNLPAttendanceCitySearch",
                   cond: (context, event) =>
-                    !event.data, 
+                    !event.data && context.message.isValid, 
                   // && context.message != "1",
                   actions: assign((context, event) => {
                     // console.log("Swach Attendence GeoLocation 2 ------- context", context);
                     let message = dialog.get_message(
                       // dialog.global_messages.error.retry,
                       messages.swachAttendance.retry,
+                      context.user.locale
+                    );
+                    dialog.sendMessage(context, message, false);
+                  }),
+                },
+                {
+                  target: "#swachAttendenceGeoLocationSharingInfo",
+                  cond: (context, event) =>
+                    !event.data && !context.message.isValid, 
+                  // && context.message != "1",
+                  actions: assign((context, event) => {
+                    // console.log("Swach Attendence GeoLocation 2 ------- context", context);
+                    let message = dialog.get_message(
+                      dialog.global_messages.error.retry,
+                      // messages.swachAttendance.retry,
                       context.user.locale
                     );
                     dialog.sendMessage(context, message, false);
@@ -1140,13 +1161,23 @@ const swach = {
                   invoke: {
                     id: "getSwachCityAndLocality",
                     src: (context, event) => {
-                      if (event.message.type === "location") {
+                      if (event?.message.type === "location") {
                         context.slots.swach.geocode = event.message.input;
+                        context.message ={
+                          isValid : true
+                        };
+                        console.log("Swach City and Locality", context.message.isValid);
                         // console.log("Swach City and Locality")
                         return swachService.getCityAndLocalityForGeocode(
                           event.message.input,
                           context.extraInfo.tenantId
                         );
+                      }else{
+                        context.message = event.message.input;
+                        context.message ={
+                          isValid : false
+                        };
+                        return Promise.resolve();
                       }
                       // if(context.slots.swach.metadata.latitude && context.slots.swach.metadata.longitude) {
                       //   context.slots.swach.geocode = '('+ context.slots.swach.metadata.latitude + ',' + context.slots.swach.metadata.longitude + ')';
@@ -1158,12 +1189,12 @@ const swach = {
                       // }
                       // context.message = event.message.input;
                       // context.message = "1";
-                      return Promise.resolve();
+                      // return Promise.resolve();
                     },
                     onDone: [
                       {
                         target: "#swachConfirmLocation",
-                        cond: (context, event) => event.data,
+                        cond: (context, event) => event.data && context.message.isValid,
                         actions: assign((context, event) => {
                           context.swach.detectedLocation = event.data;
                         }),
@@ -1184,10 +1215,12 @@ const swach = {
                       // },
                       {
                         target: "#swachNLPCitySearch",
-                        cond: (context, event) =>
-                          !event.data &&
-                          // context.message === "1" &&
-                          config.swachUseCase.geoSearch,    //need review
+                        cond: (context, event) =>{
+                          console.log("Swach City and Locality", context.message.isValid);
+                          return !event.data && context.message.isValid &&
+                          config.swachUseCase.geoSearch
+                        },
+                              //need review
                         actions: assign((context, event) => {
                             let message = dialog.get_message(
                               messages.swachAttendance.retry,
@@ -1196,19 +1229,19 @@ const swach = {
                             dialog.sendMessage(context, message, false);
                           }),
                       },
-                      // {
-                      //   target: "#swachGeoLocation",
-                      //   cond: (context, event) =>
-                      //     !event.data,
-                      //   //  && context.message != "1",
-                      //   actions: assign((context, event) => {
-                      //     let message = dialog.get_message(
-                      //       dialog.global_messages.error.retry,
-                      //       context.user.locale
-                      //     );
-                      //     dialog.sendMessage(context, message, false);
-                      //   }),
-                      // },
+                      {
+                        target: "#swachGeoLocationSharingInfo",
+                        cond: (context, event) =>
+                          !event.data && !context.message.isValid,
+                        //  && context.message != "1",
+                        actions: assign((context, event) => {
+                          let message = dialog.get_message(
+                            dialog.global_messages.error.retry,
+                            context.user.locale
+                          );
+                          dialog.sendMessage(context, message, false);
+                        }),
+                      },
                     ],
                     onError: [
                       {

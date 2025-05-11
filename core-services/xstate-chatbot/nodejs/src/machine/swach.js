@@ -1918,6 +1918,17 @@ const swach = {
                 },
                 process: {
                   onEntry: assign((context, event) => {
+                    if (dialog.validateInputType(event, "text")) {
+                      // console.log("Swach Image Upload ------- type image", event.message);
+                      context.slots.swach.description = event.message.input;
+                      context.message = {
+                        isValid: true,
+                      };
+                    }else{
+                      context.message = {
+                        isValid: false,
+                      };
+                    }
                     return (context.intention = dialog.get_intention(
                       context.grammer,
                       event

@@ -86,65 +86,84 @@ export const addUUIDAndAuditDetails = async (request, method = "_update") => {
     ) {
       let owners = FireNOCs[i].fireNOCDetails.applicantDetails.owners;
       let ownerShipType = FireNOCs[i].fireNOCDetails.applicantDetails.ownerShipType;
+      //console.log("ownerShipType", ownerShipType)
       for (var owneriter = 0; owneriter < owners.length; owneriter++) {
         let userResponse = {};
         let userSearchReqCriteria = {};
         let userSearchResponse = {};
-
-        userSearchReqCriteria.userName = method === "_create" ? owners[owneriter].mobileNumber : owners[owneriter].userName ;
-        userSearchReqCriteria.mobileNumber = owners[owneriter].mobileNumber;
-        userSearchReqCriteria.name = owners[owneriter].name;
-        userSearchReqCriteria.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
+        if(owners[owneriter].uuid){
+          userSearchReqCriteria.uuid = [owners[owneriter].uuid]
+        }else{
+          userSearchReqCriteria.userName = method === "_create" ? owners[owneriter].mobileNumber : owners[owneriter].userName;
+          userSearchReqCriteria.mobileNumber = owners[owneriter].mobileNumber;
+          //userSearchReqCriteria.name = owners[owneriter].name;
+          userSearchReqCriteria.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
+        }
         userSearchResponse = await userService.searchUser(
           RequestInfo,
           userSearchReqCriteria
         );
+        //console.log("userSearchResponse", userSearchResponse);
         if (get(userSearchResponse, "user", []).length > 0) {
           let userlegalName = userSearchResponse.user[0].name;
           let userFatherName = userSearchResponse.user[0].fatherOrHusbandName
-           if (ownerShipType === 'INDIVIDUAL.SINGLEOWNER' || ownerShipType === 'INDIVIDUAL.MULTIPLEOWNERS') {
-             if (userlegalName === owners[owneriter].name && (userFatherName === owners[owneriter].fatherOrHusbandName || userFatherName === null || userFatherName === '')) {
+          if (ownerShipType === 'INDIVIDUAL.SINGLEOWNER' || ownerShipType === 'INDIVIDUAL.MULTIPLEOWNERS') {
+            if (userlegalName === owners[owneriter].name && (userFatherName === owners[owneriter].fatherOrHusbandName || userFatherName === null || userFatherName === '')) {
+              //console.log("Update User")
+                userResponse = await userService.updateUser(RequestInfo,
+                 {
+                    ...userSearchResponse.user[0],
+                    ...owners[owneriter]
+                  }
+                );
+            } else {
+              let ownerTemp = addDeactiveUserDetails("pb", owners[owneriter]);
+                //console.log("ownerTemp",ownerTemp)
+                userResponse = await userService.createUser(RequestInfo, ownerTemp);
+            }
+          } else {
+            if (userlegalName === owners[owneriter].name) {
+              //console.log("Update User")
                userResponse = await userService.updateUser(RequestInfo,
-                {
-                   ...userSearchResponse.user[0],
+                 {
+                   ...userSearchResponse.user[owneriter],
                    ...owners[owneriter]
                  }
                );
-             } else {
-               let ownerTemp = addDeactiveUserDetails("pb", owners[owneriter]);
-               userResponse = await userService.createUser(RequestInfo, ownerTemp);
-             }
-           } else {
-            if (userlegalName === owners[owneriter].name) {
-              userResponse = await userService.updateUser(RequestInfo,
-                {
-                  ...userSearchResponse.user[0],
-                  ...owners[owneriter]
-                }
-              );
             } else {
               let ownerTemp = addDeactiveUserDetails('pb', owners[owneriter]);
               userResponse = await userService.createUser(RequestInfo, ownerTemp);
             }
           }
-        } 
-        else {
-          userResponse = await createUser(
+        }else{
+          let ownerDetails = addActiveUserDetails('pb', owners[owneriter]);
+          userResponse = await userService.createUser(
             RequestInfo,
-             owners[owneriter],
-            envVariables.EGOV_DEFAULT_STATE_ID,
-            method
+            ownerDetails
           );
         }
+         if(get(owners[owneriter], "isPrimaryowner")=== true){
+            let chkuserSearchReqCriteria= {}
+            let chkUserSearchResponse={}
+            chkuserSearchReqCriteria.userName =get(owners[owneriter], "mobileNumber");
+            chkuserSearchReqCriteria.mobileNumber = get(owners[owneriter],"mobileNumber");
+            chkuserSearchReqCriteria.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
+            chkUserSearchResponse = await userService.searchUser(
+              RequestInfo,
+              chkuserSearchReqCriteria
+            );
+            applicationAssignee = chkUserSearchResponse.uuid;
+         }
         let ownerUUID = get(owners[owneriter], "ownerUUID");
-        owners[owneriter] = {
-          ...owners[owneriter],
-          ...get(userResponse, "user.0", []),
-          ownerUUID: ownerUUID && method != "_create" ? ownerUUID : uuidv1()
-        };
-        if (get(owners[owneriter], "isPrimaryowner") === true) {
-          applicationAssignee = get(owners[owneriter], "uuid")
-        }
+        //console.log("ownerUUID",ownerUUID)
+         owners[owneriter] = {
+           ...owners[owneriter],
+           ...get(userResponse, "user.0", []),
+           ownerUUID: ownerUUID && method != "_create" ? ownerUUID : uuidv1()
+         };
+        // if (get(owners[owneriter], "isPrimaryowner") === true) {
+        //   applicationAssignee = get(owners[owneriter], "uuid")
+        // }
       }
     }
     let ownervar = FireNOCs[i].fireNOCDetails.applicantDetails.owners.length
@@ -174,10 +193,6 @@ export const addUUIDAndAuditDetails = async (request, method = "_update") => {
 };
 
 const createUser = async (requestInfo, owner, tenantId, method) => {
-  let userSearchReqCriteria = {};
-  let userSearchResponse = {};
-  let userCreateResponse = {};
-  //console.log("Hello Owner"+JSON.stringify(owner))
   if (!owner.uuid) {
     //uuid of user not present
     userSearchReqCriteria.userType = "CITIZEN";
@@ -193,7 +208,7 @@ const createUser = async (requestInfo, owner, tenantId, method) => {
     );
     if (get(userSearchResponse, "user", []).length > 0) {
       //assign to user
-
+        //console.log("hsdgsfshgdvg")
       userCreateResponse = await userService.updateUser(requestInfo, {
         ...userSearchResponse.user[0],
         ...owner
@@ -214,6 +229,7 @@ const createUser = async (requestInfo, owner, tenantId, method) => {
       userSearchReqCriteria
     );
     if (get(userSearchResponse, "user", []).length > 0) {
+
       userCreateResponse = await userService.updateUser(requestInfo, {
         ...userSearchResponse.user[0],
         ...owner
@@ -260,22 +276,73 @@ const addDefaultUserDetails = (tenantId, owner) => {
   ];
   return owner;
 };
-
+const addActiveUserDetails =(tenantId,owner)=>{
+  const activeOwner = {
+    userName : owner.mobileNumber,
+    active : true,
+    tenantId : envVariables.EGOV_DEFAULT_STATE_ID,
+    type : "CITIZEN",
+    mobileNumber : owner.mobileNumber,
+    gender: owner.gender,
+    dob: owner.dob,
+    permanentAddress: owner.correspondenceAddress,
+    correspondenceAddress: owner.correspondenceAddress,
+    name: owner.name,
+    fatherOrHusbandName: owner.fatherOrHusbandName,
+    relationship : owner.relationship,
+    emailId : owner.emailId,
+    roles : [
+      {
+        code: "CITIZEN",
+        name: "Citizen",
+        tenantId: envVariables.EGOV_DEFAULT_STATE_ID
+      }
+    ],
+    isPrimaryowner : owner.isPrimaryowner
+  }
+  return activeOwner;
+}
 const addDeactiveUserDetails = (tenantId, owner) => {
-  // console.log("owner"+JSON.stringify(owner))
+   //console.log("owner"+JSON.stringify(owner))
   //if (!owner.userName || isEmpty(owner.userName))
-  owner.userName = uuidv1();
-  owner.active = true;
-  owner.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
-  owner.type = "CITIZEN";
-  owner.roles = [
-    {
-      code: "CITIZEN",
-      name: "Citizen",
-      tenantId: envVariables.EGOV_DEFAULT_STATE_ID
-    }
-  ];
-  return owner;
+  // owner.userName = uuidv1();
+  // owner.active = true;
+  // owner.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
+  // owner.type = "CITIZEN";
+  // owner.roles = [
+  //   {
+  //     code: "CITIZEN",
+  //     name: "Citizen",
+  //     tenantId: envVariables.EGOV_DEFAULT_STATE_ID
+  //   }
+  // ];
+  // console.log("owner"+JSON.stringify(owner))
+  const tempOwner ={
+    userName : uuidv1(),
+    active : false,
+    tenantId : envVariables.EGOV_DEFAULT_STATE_ID,
+    type : "CITIZEN",
+    mobileNumber : owner.mobileNumber,
+    gender: owner.gender,
+    dob:owner.dob,
+    permanentAddress: owner.permanentAddress,
+    correspondenceAddress: owner.correspondenceAddress,
+    name: owner.name,
+    fatherOrHusbandName: owner.fatherOrHusbandName,
+    relationship : owner.relationship,
+    emailId : owner.emailId,
+    roles : [
+      {
+        code: "CITIZEN",
+        name: "Citizen",
+        tenantId: envVariables.EGOV_DEFAULT_STATE_ID
+      }
+    ],
+    isPrimaryowner : owner.isPrimaryowner
+  }
+
+
+  return tempOwner;
 };
 
 export const updateStatus = (FireNOCs, workflowResponse) => {

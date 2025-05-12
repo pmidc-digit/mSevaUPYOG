@@ -16,11 +16,11 @@ const App = () => {
   const { path, url, ...match } = useRouteMatch();
   const location = useLocation();
   console.log("path",path)
-  const CreateComplaint = Digit?.ComponentRegistryService?.getComponent("PGRCitizenCreateComplaint");
-  const ComplaintsList = Digit?.ComponentRegistryService?.getComponent("PGRComplaintsList");
-  const ComplaintDetailsPage = Digit?.ComponentRegistryService?.getComponent("PGRComplaintDetailsPage");
-  const SelectRating = Digit?.ComponentRegistryService?.getComponent("PGRSelectRating");
-  const Response = Digit?.ComponentRegistryService?.getComponent("PGRResponseCitzen");
+  const CreateComplaint = Digit?.ComponentRegistryService?.getComponent("SWACHCitizenCreateComplaint");
+  const ComplaintsList = Digit?.ComponentRegistryService?.getComponent("SWACHComplaintsList");
+  const ComplaintDetailsPage = Digit?.ComponentRegistryService?.getComponent("SWACHComplaintDetailsPage");
+  // const SelectRating = Digit?.ComponentRegistryService?.getComponent("PGRSelectRating");
+  const Response = Digit?.ComponentRegistryService?.getComponent("SWACHResponseCitzen");
 
   return (
     <React.Fragment>
@@ -31,11 +31,11 @@ const App = () => {
           <PrivateRoute path={`${path}/create-complaint`} component={CreateComplaint} />
           <PrivateRoute path={`${path}/complaints`} exact component={ComplaintsList} />
           <PrivateRoute path={`${path}/complaints/:id*`} component={ComplaintDetailsPage} />
-          <PrivateRoute
+          {/* <PrivateRoute
             path={`${path}/reopen`}
             component={() => <ReopenComplaint match={{ ...match, url, path: `${path}/reopen` }} parentRoute={path} />}
-          />
-          <PrivateRoute path={`${path}/rate/:id*`} component={() => <SelectRating parentRoute={path} />} />
+          /> */}
+          {/* <PrivateRoute path={`${path}/rate/:id*`} component={() => <SelectRating parentRoute={path} />} /> */}
           <PrivateRoute path={`${path}/response`} component={() => <Response match={{ ...match, url, path }} />} />
           {/* <Route path={`${path}/response`}>
           <Response/>

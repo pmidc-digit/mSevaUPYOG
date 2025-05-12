@@ -23,8 +23,8 @@ import TimeLine from "../../components/TimeLine";
 
 const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => {
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || complaintDetails.service.tenantId;
-  let workFlowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: tenantId, id, moduleCode: "PGR" });
-  const { data: ComplainMaxIdleTime, isLoading: ComplainMaxIdleTimeLoading } = Digit.Hooks.pgr.useMDMS.ComplainClosingTime(tenantId?.split(".")[0]);
+  let workFlowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: tenantId, id, moduleCode: "SWACH" });
+  // const { data: ComplainMaxIdleTime, isLoading: ComplainMaxIdleTimeLoading } = Digit.Hooks.swach.useMDMS.ComplainClosingTime(tenantId?.split(".")[0]);
 
   useEffect(() => {
     getWorkFlow(workFlowDetails.data);
@@ -44,7 +44,7 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
         rating={complaintDetails.audit.rating}
         zoomImage={zoomImage}
         complaintDetails={complaintDetails}
-        ComplainMaxIdleTime={ComplainMaxIdleTime}
+        // ComplainMaxIdleTime={ComplainMaxIdleTime}
       />
     )
   );
@@ -55,7 +55,7 @@ const ComplaintDetailsPage = (props) => {
   let { id } = useParams();
 
   let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); // ToDo: fetch from state
-  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id });
+  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId, id });
 
   const [imageShownBelowComplaintDetails, setImageToShowBelowComplaintDetails] = useState({});
 
@@ -118,7 +118,7 @@ const ComplaintDetailsPage = (props) => {
     let tenantId = Digit.ULBService.getCurrentTenantId();
     try {
       setCommentError(null);
-      const res = await Digit.PGRService.update(detailsToSend, tenantId);
+      const res = await Digit.SwachService.update(detailsToSend, tenantId);
       if (res.ServiceWrappers.length) setComment("");
       else throw true;
     } catch (er) {

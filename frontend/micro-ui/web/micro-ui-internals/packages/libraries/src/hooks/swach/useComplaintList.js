@@ -8,5 +8,5 @@ export const useSwachComplaintsList = (tenantId, filters) => {
 };
 
 export const useSwachComplaintsListByMobile = (tenantId, mobileNumber) => {
-  return useComplaintsList(tenantId, { mobileNumber });
+  return useSwachComplaintsList(tenantId, { mobileNumber });
 };

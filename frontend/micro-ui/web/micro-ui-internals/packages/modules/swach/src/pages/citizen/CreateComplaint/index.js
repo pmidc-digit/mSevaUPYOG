@@ -9,8 +9,8 @@ import { FormComposer } from "../../../components/FormComposer";
 import { createComplaint } from "../../../redux/actions/index";
 
 export const CreateComplaint = ({ parentUrl }) => {
+  console.log("parentUrl", parentUrl);
   const cities = Digit.Hooks.swach.useTenants();
-  console.log("cities",cities)
   const { t } = useTranslation();
 
   const getCities = () => cities?.filter((e) => e.code === Digit.ULBService.getCurrentTenantId()) || [];
@@ -42,8 +42,10 @@ const [description, setDescription] = useState("")
   const [property,setPropertyData]=useState(null)
   const [pincodeNotValid, setPincodeNotValid] = useState(false);
   const [params, setParams] = useState({});
-  const tenantId = window.Digit.SessionStorage.get("Employee.tenantId");
-  const menu = Digit.Hooks.pgr.useComplaintTypes({ stateCode: tenantId });
+  const tenantId = window.Digit.SessionStorage.get("Citizen.tenantId");
+  const menu = Digit.Hooks.swach.useComplaintTypes({ stateCode: tenantId });
+
+  console.log("tenantId for Swach",tenantId)
  const  priorityMenu= 
   [
     {
@@ -65,9 +67,8 @@ const [description, setDescription] = useState("")
   ]
   const dispatch = useDispatch();
   const match = useRouteMatch();
-  console.log("Match path",match.path)
   const history = useHistory();
-  const serviceDefinitions = Digit.GetServiceDefinitions;
+  const serviceDefinitions = Digit.GetSwachBharatCategories;
   const client = useQueryClient();
   useEffect(() => {
     if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code && priorityLevel?.code ) {
@@ -98,21 +99,34 @@ const [description, setDescription] = useState("")
     }
   }, [pincode]);
 
-  async function selectedType(value) {
-    debugger;
-    if (value.key !== complaintType.key) {
-      if (value.key === "Others") {
-        setSubType({ name: "" });
-        setComplaintType(value);
-        sessionStorage.setItem("complaintType",JSON.stringify(value))
-        setSubTypeMenu([{ key: "Others", name: t("SWACHBHARATCATEGORY.OTHERS") }]);
-      } else {
-        setSubType({ name: "" });
-        setComplaintType(value);
-        sessionStorage.setItem("complaintType",JSON.stringify(value))
-        setSubTypeMenu(await serviceDefinitions.getSubMenu(tenantId, value, t));
-      }
-    }
+  useEffect(() => {
+    console.log("UseEffect Called")
+    setComplaintType({"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"})
+    selectedType();
+  },[])
+  // async function selectedType(value) {
+  //   if (value.key !== complaintType.key) {
+  //     console.log("selectedType",value)
+  //     // if (value.key === "Others") {
+  //     //   setSubType({ name: "" });
+  //     //   setComplaintType(value);
+  //     //   sessionStorage.setItem("complaintType",JSON.stringify(value))
+  //     //   setSubTypeMenu([{ key: "Others", name: t("SWACHBHARATCATEGORY.OTHERS") }]);
+  //     // } else {
+  //       setSubType({ name: "" });
+  //       setComplaintType(value);
+  //       sessionStorage.setItem("complaintType",JSON.stringify(value))
+  //       setSubTypeMenu(await serviceDefinitions.getSubMenu(tenantId, value, t));
+  //     // }
+  //   }
+  // }
+
+  console.log("setSubTypeMenu",subTypeMenu);
+
+  async function selectedType() {
+    const value = await serviceDefinitions.getSubMenu(tenantId, {"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"}, t)
+   setSubTypeMenu(value);
+   console.log("setSubTypeMenu value",value)
   }
   async function selectedPriorityLevel(value){
     sessionStorage.setItem("priorityLevel", JSON.stringify(value))
@@ -161,7 +175,8 @@ const [description, setDescription] = useState("")
     await dispatch(createComplaint(formData));
     await client.refetchQueries(["fetchInboxData"]);
     localStorage.removeItem("swachProperty");
-    history.push(`/digit-ui/citizen/pgr/response`);
+    // history.push(parentUrl + "/response");
+    history.push("/digit-ui/citizen/swach/response");
   };
 
   const handlePincode = (event) => {
@@ -249,12 +264,12 @@ const [description, setDescription] = useState("")
     {
       head: t("CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS"),
       body: [
-        {
-          label: t("CS_COMPLAINT_DETAILS_COMPLAINT_TYPE"),
-          isMandatory: true,
-          type: "dropdown",
-          populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} />,
-        },
+        // {
+        //   label: t("CS_COMPLAINT_DETAILS_COMPLAINT_TYPE"),
+        //   isMandatory: true,
+        //   type: "dropdown",
+        //   populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} />,
+        // },
         {
           label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
           isMandatory: true,
@@ -380,7 +395,7 @@ const [description, setDescription] = useState("")
       })
       setSelectedLocality(b?.[0])
       setDescription(data?.propertyId)
-      console.log("pgrProperty",localities,data?.propertyId,data)
+      console.log("swachProperty",localities,data?.propertyId,data)
     }
    
   },[propertyId])
@@ -392,6 +407,5 @@ const [description, setDescription] = useState("")
       isDisabled={!canSubmit && !submitted}
       label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
     />
-  
   );
 };

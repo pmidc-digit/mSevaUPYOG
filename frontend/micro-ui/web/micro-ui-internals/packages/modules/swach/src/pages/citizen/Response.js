@@ -46,6 +46,7 @@ const TextPicker = ({ response }) => {
 const Response = (props) => {
   const { t } = useTranslation();
   const appState = useSelector((state) => state)["pgr"];
+  console.log("appState",appState)
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   const [enable, setEnable] = useState(false)

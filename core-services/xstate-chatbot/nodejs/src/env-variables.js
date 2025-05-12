@@ -75,13 +75,13 @@ const envVariables = {
     },
 
     egovServices: {
-        egovServicesHost: process.env.EGOV_SERVICES_HOST || 'https://mseva.lgpunjab.gov.in/',
-        externalHost: process.env.EXTERNAL_HOST || 'https://mseva.lgpunjab.gov.in/',
+        egovServicesHost: process.env.EGOV_SERVICES_HOST || 'https://sdc.lgpunjab.gov.in/',
+        externalHost: process.env.EXTERNAL_HOST || 'https://sdc.lgpunjab.gov.in/',
         //searcherHost: process.env.EGOV_SEARCHER_HOST || "https://mseva.lgpunjab.gov.in/",
         searcherHost: process.env.EGOV_SEARCHER_HOST || "http://egov-searcher.egov:8080/",
 
         //userServiceHost: process.env.USER_SERVICE_HOST || 'http://egov-user:8080/',
-        userServiceHost: process.env.USER_SERVICE_HOST || 'https://mseva.lgpunjab.gov.in/',
+        userServiceHost: process.env.USER_SERVICE_HOST || 'https://sdc.lgpunjab.gov.in/',
         userServiceOAuthPath: process.env.USER_SERVICE_OAUTH_PATH || 'user/oauth/token',
         userServiceCreateCitizenPath: process.env.USER_SERVICE_CREATE_CITIZEN_PATH || 'user/citizen/_create',
         userServiceUpdateProfilePath: process.env.USER_SERVICE_UPDATE_PROFILE_PATH || 'user/profile/_update',

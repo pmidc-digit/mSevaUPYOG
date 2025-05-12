@@ -95,7 +95,7 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
 
   console.log("employeeData: ", useEmployeeData)
 
-  const [selectedEmployee, setSelectedEmployee] = useState();
+  const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [comments, setComments] = useState("");
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
@@ -176,21 +176,12 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
               : t("CS_COMMON_RESOLVE")
       }
       actionSaveOnSubmit={() => {
-        console.log("selectedAction", selectedAction);
-        console.log("selectedEmployee", selectedEmployee);
-        if(!comments){
-          setError(t("CS_MANDATORY_COMMENTS"));
-          return 
-        }
-        if(selectedAction === "ASSIGN" || selectedAction === "REASSIGN") {
-          if (!selectedEmployee) {
-            setError(t("CS_MANDATORY_EMPLOYEE"));
-            return
-          }
-        }
+        if(!comments)
+        setError(t("CS_MANDATORY_COMMENTS"));
         // if(selectedAction === "REJECT" && !comments)
         // setError(t("CS_MANDATORY_COMMENTS"));
-          onAssign(selectedEmployee, comments, uploadedFile);
+        else
+        onAssign(selectedEmployee, comments, uploadedFile);
       }}
       error={error}
       setError={setError}
@@ -244,9 +235,6 @@ export const ComplaintDetails = (props) => {
     workflowDetails.data.initialActionState=workflowDetails?.data?.initialActionState || {...workflowDetails?.data?.actionState } || {} ;
       workflowDetails.data.actionState = { ...workflowDetails.data };
     }
-
-  console.log("comlaintDetails",complaintDetails);
-  console.log("workflowDetails",workflowDetails);
 
   useEffect(()=>{
     if(workflowDetails){

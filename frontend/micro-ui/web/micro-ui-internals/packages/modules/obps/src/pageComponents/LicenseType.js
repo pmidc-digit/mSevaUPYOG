@@ -11,13 +11,13 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     sessionStorage.setItem("BPAREGintermediateValue", null);
   } else formData = formData;
 
-  console.log("formData", formData);
   let index = window.location.href.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [qualificationType, setQualificationType] = useState(() => {
-    return formData?.LicneseType?.qualificationType || "B-Arch"; // Initialize with the value from formData if it exists
-  });
+  // const [qualificationType, setQualificationType] = useState(() => {
+  //   return formData?.LicneseType?.qualificationType || ""; // Initialize with the value from formData if it exists
+  // });
+  const [qualificationType, setQualificationType] = useState(null); //formData?.LicneseType?.qualificationType ||
   const [LicenseType, setLicenseType] = useState(formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || "");
   const [ArchitectNo, setArchitectNo] = useState(formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null);
 
@@ -37,16 +37,25 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       mapQualificationToLicense(qualificationType);
     }
   }, [qualificationType]);
+  useEffect(() => {
+    if (
+      qualificationTypes && // options have loaded
+      formData?.LicneseType?.qualificationType &&
+      !qualificationType // saved string exists
+    ) {
+      const savedName = formData.LicneseType.qualificationType;
+      
+      const matched = qualificationTypes.find((opt) => opt.name === savedName.name);
+
+      if (matched) {
+        setQualificationType(matched);
+        // also re‑map the licenseType if you want to restore that too:
+        mapQualificationToLicense(matched);
+      }
+    }
+  }, [qualificationTypes]);
 
   function getLicenseType() {
-    // let list = [];
-    // let found = false;
-    // data?.StakeholderRegistraition?.TradeTypetoRoleMapping.map((ob) => {
-    //   found = list.some(el => el.i18nKey.includes(ob.tradeType.split(".")[0]));
-    //   if (!found) list.push({ role: ob.role, i18nKey: `TRADELICENSE_TRADETYPE_${ob.tradeType.split(".")[0]}`, tradeType: ob.tradeType })
-    // });
-    // console.log("License Types:", list);
-    // return list;
 
     let list = [];
     let found = false;
@@ -63,30 +72,20 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     });
 
     if (qualificationType?.name === "B-Arch") {
-      console.log("qualificationType in getlicense", qualificationType.name);
       list = list.filter((item) => item.i18nKey.includes("ARCHITECT"));
     } else {
-      list = list.filter((item) => !item.i18nKey.includes("ARCHITECT"));
+      list = list.filter((item) => !item.i18nKey.includes("ARCHITECT") && !item.i18nKey.includes("BUILDER"));
     }
-
     return list;
   }
 
   function mapQualificationToLicense(qualification) {
     let license = null;
+
     // if (qualification === "B-Arch") {
     //   setLicenseType(null);
-    // }
-    // else if (qualification.name === "BE" || qualification.name === "B-Tech") {
-    //   license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
-    // } else if (qualification.name === "Diploma") {
-    //   license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
-    // }else if (qualification.name === "Building designer & supervisor") {
-    //   license = getLicenseType().find((type) => type.i18nKey.includes("DESIGNER"));
-    // }
-    if (qualification === "B-Arch") {
-      setLicenseType(null);
-    } else if (qualification.name === "BE") {
+    // } else
+    if (qualification.name === "BE") {
       // Automatically select "Engineer" license for BE
       license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
     } else if (qualification.name === "B-Tech") {
@@ -104,9 +103,9 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       license = getLicenseType().find((type) => type.i18nKey.includes("SUPERVISOR"));
     }
 
-    if (license) {
-      setLicenseType(license);
-    }
+    // if (license) {
+    // }
+    setLicenseType(license);
   }
 
   const onSkip = () => onSelect();
@@ -134,19 +133,35 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
   function goNext() {
     if (!(formData?.result && formData?.result?.Licenses[0]?.id))
-      onSelect(config.key, { LicenseType, ArchitectNo, selfCertification, qualificationType: qualificationType?.name });
+      onSelect(config.key, {
+        LicenseType,
+        ArchitectNo,
+        selfCertification,
+        // qualificationType: qualificationType?.name
+        qualificationType: qualificationType,
+      });
     else {
       let data = formData?.formData;
       data.LicneseType.LicenseType = LicenseType;
       data.LicneseType.ArchitectNo = ArchitectNo;
       data.LicneseType.selfCertification = selfCertification ? selfCertification : false;
-      data.qualificationType = qualificationType?.name;
+      data.qualificationType = qualificationType;
       onSelect("", formData);
     }
   }
   function selectSelfCertification(e) {
     setSelfCertification(e.target.checked);
   }
+
+  let rawKey = "";
+  let descKey = "";
+  let text = "";
+  if (LicenseType && LicenseType.i18nKey) {
+    rawKey = LicenseType.i18nKey.split("_").pop();
+    descKey = rawKey === "DESIGNER" ? "SUPERVISOR" : rawKey;
+    text = CompetencyDescriptions[descKey];
+  }
+
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
       <div style={{ flex: 1, marginRight: "20px" }}>
@@ -169,9 +184,9 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                 optionKey="name"
                 isMandatory={config.isMandatory}
                 options={qualificationTypes || []}
-                selectedOption={setQualificationType}
+                // selectedOption={setQualificationType}
+                selectedOption={qualificationType}
                 onSelect={(value) => {
-                  console.log("Selected Value:", value);
                   selectQualificationType(value);
                 }}
               />
@@ -280,12 +295,28 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                 paddingLeft: "20px",
               }}
             >
-              {LicenseType &&
+              {/* {LicenseType &&
                 CompetencyDescriptions[LicenseType?.i18nKey.split("_").pop()].split("\n").map((point, index) => (
                   <li key={index} style={{ marginBottom: "8px" }}>
                     {point.trim()}
                   </li>
-                ))}
+                ))} */}
+              {/* {LicenseType &&
+                (() => {
+                  const rawKey = LicenseType.i18nKey.split("_").pop();
+                  const descKey = rawKey === "DESIGNER" ? "SUPERVISOR" : rawKey;
+                  const text = CompetencyDescriptions[descKey];
+                  if (!text) return <p>No competencies defined for {descKey}</p>;
+                  return (
+                    <ul>
+                      {text.split("\n").map((pt, idx) => (
+                        <li key={idx}>{pt.trim()}</li>
+                      ))}
+                    </ul>
+                  );
+                })()} */}
+              {LicenseType &&
+                (!text ? <p>No competencies defined for {descKey}</p> : text.split("\n").map((pt, idx) => <li key={idx}>{pt.trim()}</li>))}
             </ul>
           </div>
         </div>

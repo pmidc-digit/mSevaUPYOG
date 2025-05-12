@@ -12,6 +12,16 @@ export const PGRService = {
       params: { tenantId: tenantId, ...filters },
     });
   },
+
+  Inboxsearch: (tenantId, data = {}) => {
+    return Request({
+      url: Urls.InboxSearch,
+      method: "POST",
+      auth: true,
+      userService: true,
+      data: data,
+    });
+  },
   create: (details, tenantId) =>
     Request({
       url: Urls.PGR_Create,
@@ -51,11 +61,11 @@ export const PGRService = {
 
   PGROpensearch: ({ tenantId, filters }) =>
     Request({
-     url: Urls.pgr_search,
-     useCache: false,
-     method: "POST",
-     auth: false ,
-     userService: false,
-     params: { tenantId, ...filters },
-   }),
+      url: Urls.pgr_search,
+      useCache: false,
+      method: "POST",
+      auth: false,
+      userService: false,
+      params: { tenantId, ...filters },
+    }),
 };

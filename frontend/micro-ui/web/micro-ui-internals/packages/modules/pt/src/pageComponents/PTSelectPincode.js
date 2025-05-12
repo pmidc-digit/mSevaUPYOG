@@ -6,10 +6,10 @@ import Timeline from "../components/TLTimeline";
 const PTSelectPincode = ({ t, config, onSelect, formData = {}, userType, register, errors, setError, formState, clearErrors }) => {
   const tenants = Digit.Hooks.pt.useTenants();
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("modify");
+  const presentInModifyApplication = pathname.includes("edit");
 
   const [pincode, setPincode] = useState(() => {
-    if (presentInModifyApplication && userType === "employee") return formData?.originalData?.address?.pincode || "";
+    if (presentInModifyApplication && userType === "employee") return formData?.LocationDetails?.address?.pincode || "";
     return formData?.address?.pincode || "";
   });
 
@@ -34,10 +34,10 @@ const PTSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   const [error, setLocalError] = useState("");
 
   useEffect(() => {
-    if (formData?.address?.pincode) {
-      setPincode(formData.address.pincode);
+    if (formData?.LocationDetails?.address?.pincode) {
+      setPincode(formData.LocationDetails.address.pincode);
     }
-  }, [formData?.address?.pincode]);
+  }, [formData?.LocationDetails?.address?.pincode]);
 
   function onChange(e) {
     setPincode(e.target.value);
@@ -71,7 +71,14 @@ const PTSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
           <LabelFieldPair key={index}>
             <CardLabel className="card-label-smaller">{t(input.label)}</CardLabel>
             <div className="field">
-              <TextInput key={input.name} value={pincode} onChange={onChange} {...input.validation} disable={presentInModifyApplication} autoFocus={presentInModifyApplication} />
+              <TextInput
+                key={input.name}
+                value={pincode}
+                onChange={onChange}
+                {...input.validation}
+                disable={presentInModifyApplication}
+                autoFocus={presentInModifyApplication}
+              />
             </div>
           </LabelFieldPair>
           {error ? <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{error}</CardLabelError> : null}
@@ -82,17 +89,17 @@ const PTSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   const onSkip = () => onSelect();
   return (
     <React.Fragment>
-    {window.location.href.includes("/citizen") ? <Timeline currentStep={1}/> : null}
-    <FormStep
-      t={t}
-      config={{ ...config, inputs }}
-      onSelect={goNext}
-      _defaultValues={{ pincode }}
-      onChange={onChange}
-      onSkip={onSkip}
-      forcedError={t(pincodeServicability)}
-      isDisabled={!pincode || isEditProperty}
-    ></FormStep>
+      {window.location.href.includes("/citizen") ? <Timeline currentStep={1} /> : null}
+      <FormStep
+        t={t}
+        config={{ ...config, inputs }}
+        onSelect={goNext}
+        _defaultValues={{ pincode }}
+        onChange={onChange}
+        onSkip={onSkip}
+        forcedError={t(pincodeServicability)}
+        isDisabled={!pincode || isEditProperty}
+      ></FormStep>
     </React.Fragment>
   );
 };

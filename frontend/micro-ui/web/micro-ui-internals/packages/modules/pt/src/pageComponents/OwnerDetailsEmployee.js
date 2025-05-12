@@ -22,6 +22,9 @@ const createOwnerDetails = () => ({
 const PTEmployeeOwnershipDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
 
+
+
+
   const { pathname } = useLocation();
   const isEditScreen = pathname.includes("/modify-application/" ) 
   const [owners, setOwners] = useState(formData?.owners || [createOwnerDetails()]);

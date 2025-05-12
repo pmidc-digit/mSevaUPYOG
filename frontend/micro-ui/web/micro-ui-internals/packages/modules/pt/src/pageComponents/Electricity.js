@@ -39,7 +39,6 @@ const Electricity = ({ t, config, onSelect, value, userType, formData, setError:
 
   useEffect(() => {
     if (userType === "employee") {
-      console.log("configkeyEEE", config.key)
       if (electricity !== "undefined" && electricity?.length === 0) setFormError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
       else if (electricity !== "undefined" && electricity?.length < 10 || electricity?.length > 10 || !Number(electricity)) setFormError(config.key, { type: "invalid", message: t("ERR_DEFAULT_INPUT_FIELD_MSG") });
       else clearFormErrors(config.key);

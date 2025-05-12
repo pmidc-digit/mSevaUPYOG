@@ -83,6 +83,7 @@ const Home = ({
       },
     }
   );
+  console.log("modules",modules)
   const isMobile = window.Digit.Utils.browser.isMobile();
   const classname = Digit.Hooks.fsm.useRouteSubscription(pathname);
   const { t } = useTranslation();
@@ -106,7 +107,7 @@ const Home = ({
       </Route>
     ) : null;
   });
-
+  console.log("appRoutes",appRoutes)
   const ModuleLevelLinkHomePages = modules.map(({ code, bannerImage }, index) => {
     let Links = Digit.ComponentRegistryService.getComponent(`${code}Links`) || (() => <React.Fragment />);
     let mdmsDataObj = isLinkDataFetched ? processLinkData(linkData, code, t) : undefined;

@@ -183,7 +183,7 @@ const handleClick=()=>{
 
       setIsEnableLoader(true);
       if (typeof data?.customFunctionToExecute === "function") {
-        console.log("customFunctionToExecute")
+        
        
         data?.customFunctionToExecute({ ...data });
        
@@ -267,7 +267,6 @@ const handleClick=()=>{
     return <Loader />;
   }
   const closeModal = () => {
-    console.log("closeModal")
     setshowModal(true)
   };
 
@@ -283,7 +282,6 @@ const handleClick=()=>{
   sessionStorage.setItem("propertyid",data.Properties[0].propertyId)  ;
   history.push(`/digit-ui/citizen/pgr/create-complaint/complaint-type?propertyId=${property.propertyId}`);
   }
-  console.log("data78", data)
   return (
     <React.Fragment>
       <Header>{t("PT_PROPERTY_INFORMATION")}</Header>

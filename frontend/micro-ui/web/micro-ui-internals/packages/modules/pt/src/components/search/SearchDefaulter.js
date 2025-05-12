@@ -18,7 +18,6 @@ const SearchPTID = ({ tenantId, t, payload, showToast, setShowToast,ptSearchConf
   const [ownerInvalidMobileNumberIndex, setOwnerInvalidMobileNumberIndex] = useState(0);
 const [showDownloads, setShowDownloads] = useState(false);
 const [groupBillrecords, setGroupBillrecords] = useState([]);
-console.log("payload", payload);
 let filters={ ...payload,isDefaulterNoticeSearch:true }
 const args = tenantId ? { tenantId, filters } : { filters };
 const { isLoading, error, data, isSuccess } = useQuery(["propertySearchList", tenantId,filters ], () => Digit.PTService.search(args));
@@ -191,10 +190,8 @@ const { isLoading, error, data, isSuccess } = useQuery(["propertySearchList", te
     return fileURL;
   };
 const downloadNotice = async (document) => {
-    console.log("document",document)
     let fileStoreIds= [document.filestoreid]
     const res = await Digit.UploadServices.Filefetch([document?.filestoreid], tenantId);
-    console.log("ressss",res)
    let documentLink = pdfDownloadLink(res.data, document?.filestoreid);
    window.open(documentLink, "_blank");
   };
@@ -220,7 +217,6 @@ const onViewDownload =async () =>{
     let response = await Digit.PTService.getDefaulterNoticeStatus({offset:0,limit:100});
     setShowDownloads(true)
     setGroupBillrecords(response.groupBillrecords)
-    console.log("response",response)
 }
   const PTEmptyResultInbox = memo(Digit.ComponentRegistryService.getComponent("PTEmptyResultInbox"));
   const getData = (tableData = []) => {

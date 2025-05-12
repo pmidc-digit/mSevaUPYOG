@@ -11,7 +11,10 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
   // const [vasikaNo, setVasikaNo] = useState(formData?.PropertyDetails?.vasikaDetails?.vasikaNo || "");
   // const [vasikaDate, setVasikaDate] = useState(formData?.PropertyDetails?.vasikaDetails?.vasikaDate || "");
   const [vasikaNo, setVasikaNo] = useState(formData?.vasikaDetails?.vasikaNo || "");
-  const [vasikaDate, setVasikaDate] = useState(formData?.vasikaDetails?.vasikaDate || "");
+  // const [vasikaDate, setVasikaDate] = useState(formData?.vasikaDetails?.vasikaDate || "");
+  const [vasikaDate, setVasikaDate] = useState(
+    formData?.vasikaDetails?.vasikaDate ?  new Date(formData?.vasikaDetails?.vasikaDate).toISOString().slice(0, 10) : null
+  );
   
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
@@ -20,7 +23,6 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
   const checkLocation = window.location.href.includes("pt/new-application") || window.location.href.includes("pt/renew-application-details");
   const isRenewal = window.location.href.includes("edit-application") || window.location.href.includes("pt/renew-application-details");
   let validation = {};
- console.log("config.key",config.key)
   let inputs = [
     {
       label: "PT_PROPERTY_ADDRESS_VASIKA_NO",
@@ -73,17 +75,20 @@ const VasikaDetails = ({ t, config, onSelect, userType, formData, formState, set
 const setData = (config, data) => {
   const dataNew = { vasikaNo, vasikaDate };
   // onSelect(config, { ...formData[config.key], ...dataNew });
-  onSelect("PropertyDetails", {
-    ...formData.PropertyDetails,
-    vasikaDetails: dataNew, // Save vasika details here
-  });
+  // onSelect("PropertyDetails", {
+  //   ...formData,
+  //   vasikaDetails: dataNew, // Save vasika details here
+  // });
 };
 // console.log("formData.PropertyDetails.vasikaDetails",formData?.PropertyDetails?.vasikaDetails)
 useEffect(() => {
   // Synchronize local state with formData when the component mounts or formData changes
   if (formData?.vasikaDetails) {
     setVasikaNo(formData.vasikaDetails.vasikaNo || "");
-    setVasikaDate(formData.vasikaDetails.vasikaDate || "");
+    // setVasikaDate(formData.vasikaDetails.vasikaDate || "");
+    setVasikaDate(
+      formData.vasikaDetails.vasikaDate ?  new Date(formData?.vasikaDetails?.vasikaDate).toISOString().slice(0, 10) : null
+    );
   }else {
     setVasikaNo("");
     setVasikaDate("");
@@ -126,6 +131,7 @@ useEffect(() => {
     );
   };
   
+
   const handleVasikaDateChange = (value) => {
     setVasikaDate(value);
     onSelect(config.key, {...formData[config.key], vasikaDate: value },
@@ -236,8 +242,7 @@ useEffect(() => {
           <div className="field">
             <Controller
               control={control}
-              defaultValue={
-                vasikaNo}
+              defaultValue={vasikaNo}
               name="vasikaNo"
               render={(_props) => (
                 <TextInput

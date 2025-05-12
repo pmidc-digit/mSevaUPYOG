@@ -18,7 +18,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepOne",
-    key: "PersonalDetails",
+    key: "LocationDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Next",
@@ -92,8 +92,8 @@ const CreateEmployeeStepForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  console.log("Form data", formData)
-  console.log("formState: ",formState);
+  // console.log("Form data", formData)
+  // console.log("formState: ",formState);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PtNewApplication(updatedStepNumber));

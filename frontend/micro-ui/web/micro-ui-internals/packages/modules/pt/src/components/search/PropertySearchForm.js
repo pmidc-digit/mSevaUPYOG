@@ -75,17 +75,14 @@ const SearchPTID = ({ tenantId, t, onSubmit, onReset, searchBy, PTSearchFields, 
     //     if (arr.length == 2) return { i18nKey: "PROPERTYTAX_BILLING_SLAB_" + arr[1], code: item?.code };
     //     else return { i18nKey: "PROPERTYTAX_BILLING_SLAB_" + item?.code, code: item?.code };
     //   });
-    console.log("usageCategoryMajorMenu",catMenu)
     return catMenu;
   };
   const [usageType, setUsageType] = useState();
   let formValue = watch();
   const fields = PTSearchFields?.[searchBy] || {};
   sessionStorage.removeItem("revalidateddone");
-  console.log("payload",payload,formValue)
- const setProptype =(e)=>{
-  console.log("e",e.code)
-  setUsageType
+  const setProptype =(e)=>{
+   setUsageType
   formValue.propertyType= "bbb"
  }
   return (

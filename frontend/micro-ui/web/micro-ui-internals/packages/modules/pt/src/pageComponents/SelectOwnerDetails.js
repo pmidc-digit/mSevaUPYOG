@@ -9,6 +9,8 @@ const SelectOwnerDetails = ({ t, config, onSelect, userType, formData, ownerInde
   const editScreen = url.includes("/modify-application/");
   const mutationScreen = url.includes("/property-mutation/");
 
+  
+
   let index = mutationScreen ? ownerIndex : window.location.href.charAt(window.location.href.length - 1);
   let validation = {};
   const [name, setName] = useState((formData.owners && formData.owners[index] && formData.owners[index].name) || formData?.owners?.name || "");

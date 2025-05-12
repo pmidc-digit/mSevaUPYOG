@@ -61,7 +61,7 @@ const NavigationApp = ({ stateCode }) => {
 
   const { data: cities, isLoading: isCitiesLoading } = Digit.Hooks.useTenants();
   const getCity = (ULBName) => {
-    const city = cities?.find((city) => city?.name?.toLowerCase() === ULBName?.toLowerCase());
+    const city = cities?.find((city) => city.name.toLowerCase() === ULBName.toLowerCase());
     return city;
   };
 
@@ -71,15 +71,9 @@ const NavigationApp = ({ stateCode }) => {
       showToast(ERROR_MESSAGE, true);
       return;
     }
+
     const queryParams = new URLSearchParams(location.search);
-    const msg = queryParams.get("msg");
-    const params = msg.split("|");
-    if (params.length !== 5) {
-      showToast(INVALID_QUERY_PARAMS_VALUES, true);
-      return;
-    }
-    const [token, fullName, serviceName, dataString, returnUrl] = params;
-    const dataFromURL = { ...JSON.parse(dataString), fullName: fullName, serviceName: serviceName, returnUrl: returnUrl };
+    const dataFromURL = JSON.parse(queryParams.get("data"));
 
     const isMobileNoValid = validateMobileNumber(dataFromURL?.MobileNo?.trim());
     const isFullNameValid = validateFullName(dataFromURL?.fullName?.trim());

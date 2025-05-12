@@ -10,6 +10,7 @@ const axios = require("axios");
 var FormData = require("form-data");
 var geturl = require("url");
 var path = require("path");
+const c = require("express-cluster");
 require("url-search-params-polyfill");
 
 let swachCreateRequestBody =
@@ -525,17 +526,23 @@ class SwachService {
     let authToken = user.authToken;
     let userId = user.userId;
     let complaintType = slots.complaint;
-    let locality = slots.locality;
+    // let locality = slots.locality;
+    let locality = {
+      code: slots.locality,
+      name: slots.predictedLocality,
+    };
     let city = slots.city;
     let userInfo = user.userInfo;
     let description = slots.description;
+
+    console.log("Persist Swach Complaint ----- ", slots);
 
     
 
     requestBody["RequestInfo"]["authToken"] = authToken;
     requestBody["service"]["tenantId"] = city;
     requestBody["service"]["address"]["city"] = city;
-    requestBody["service"]["address"]["locality"]["code"] = locality;
+    requestBody["service"]["address"]["locality"] = locality;
     requestBody["service"]["serviceCode"] = complaintType;
     requestBody["service"]["accountId"] = userId;
     requestBody["service"]["description"] = description;

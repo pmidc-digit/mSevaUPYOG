@@ -1,9 +1,9 @@
 .action-bar-wrap {
   box-shadow: rgba(0, 0, 0, 0.16) 0 -2px 8px;
-  max-width: 480px;
+  // max-width: 480px;
   z-index: 100;
-  height: 80px;
-
+  height: 75px;
+  
   @apply left-0 bottom-0 w-full bg-white py-lg px-xxl fixed text-right;
 
   div {

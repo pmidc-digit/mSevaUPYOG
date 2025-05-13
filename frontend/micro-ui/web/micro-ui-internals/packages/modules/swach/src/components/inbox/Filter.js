@@ -271,16 +271,17 @@ const Filter = (props) => {
           </div>
         </div>
       </div>
-      <ActionBar>
-        {props.type === "mobile" && (
+
+      {props.type === "mobile" && (
+        <ActionBar>
           <ApplyFilterBar
             labelLink={t("ES_COMMON_CLEAR_ALL")}
             buttonLink={t("ES_COMMON_FILTER")}
             onClear={clearAll}
             onSubmit={applyFiltersAndClose}
           />
-        )}
-      </ActionBar>
+        </ActionBar>
+      )}
     </React.Fragment>
   );
 };

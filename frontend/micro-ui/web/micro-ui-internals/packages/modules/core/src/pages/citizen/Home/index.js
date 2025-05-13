@@ -26,8 +26,8 @@ const Home = () => {
   const history = useHistory();
   const citizenInfoString = window.localStorage.getItem("user-info");
   const citizenInfo = citizenInfoString ? JSON.parse(citizenInfoString) : null;
-  const type = citizenInfo?.type === "CITIZEN";
-  const role = citizenInfo?.roles?.[0]?.code === "CITIZEN";
+  const UserType = citizenInfo?.type === "CITIZEN";
+  const UserRole = Array.isArray(citizenInfo?.roles) && citizenInfo?.roles.some(item => item.code === "PESCO");
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
   const { data: { stateInfo, uiHomePage } = {}, isLoading } = Digit.Hooks.useStore.getInitData();
   let isMobile = window.Digit.Utils.browser.isMobile();
@@ -72,7 +72,7 @@ const Home = () => {
       onClick: () => history.push(citizenServicesObj?.sideOption?.navigationUrl),
     },
     options:
-      role && type
+    UserType && UserRole
         ? [
             {
               name: t(citizenServicesObj?.props?.[5]?.label),

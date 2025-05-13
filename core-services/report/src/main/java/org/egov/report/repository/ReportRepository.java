@@ -100,18 +100,18 @@ public class ReportRepository {
         String query = originalQuery;
         Long userId = reportRequest.getRequestInfo().getUserInfo() == null ? null : reportRequest.getRequestInfo().getUserInfo().getId();
         
-        for (SearchParam param : reportRequest.getSearchParams()) {
-            
-            String paramName = String.valueOf(param.getName());
-            String paramInput = String.valueOf(param.getInput());
-
-            
-            if (("tenantId".equalsIgnoreCase(paramName) || "serviceID".equalsIgnoreCase(paramName)) 
-                    && (paramInput == null || paramInput.isEmpty() || "0".equals(paramInput))) {
-                return query;
-            }
-
-        }
+//        for (SearchParam param : reportRequest.getSearchParams()) {
+//            
+//            String paramName = String.valueOf(param.getName());
+//            String paramInput = String.valueOf(param.getInput());
+//
+//            
+//            if (("tenantId".equalsIgnoreCase(paramName) || "serviceID".equalsIgnoreCase(paramName)) 
+//                    && (paramInput == null || paramInput.isEmpty() || "0".equals(paramInput))) {
+//                return query;
+//            }
+//
+//        }
 
         for (SearchColumn param: reportDefinition.getSearchParams()){
             String value = "";

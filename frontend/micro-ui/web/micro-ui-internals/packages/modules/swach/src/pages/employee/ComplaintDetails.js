@@ -87,8 +87,6 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
     true
   );
 
-  console.log("employeeData===", useEmployeeData);
-
   // const employeeData = useEmployeeData
   //   ? useEmployeeData.map((departmentData) => {
   //       return { options: departmentData.employees };
@@ -134,7 +132,6 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
   //   }, [file]);
 
   function onSelectEmployee(employee) {
-    console.log("select", employee);
     setSelectedEmployee(employee);
   }
 
@@ -255,12 +252,12 @@ export const ComplaintDetails = (props) => {
   }
 
   useEffect(() => {
-    console.log("workflowDetails", workflowDetails);
     if (workflowDetails) {
       const { data: { timeline: complaintTimelineData } = {} } = workflowDetails;
       if (complaintTimelineData) {
-        const actionByCitizenOnComplaintCreation = complaintTimelineData?.find((e) => e?.performedAction === "APPLY");
-        const { thumbnailsToShow } = actionByCitizenOnComplaintCreation;
+        // const actionByCitizenOnComplaintCreation = complaintTimelineData;
+
+        const { thumbnailsToShow } = complaintTimelineData;
         thumbnailsToShow ? setImagesToShowBelowComplaintDetails(thumbnailsToShow) : null;
       }
     }
@@ -400,7 +397,7 @@ export const ComplaintDetails = (props) => {
   const getTimelineCaptions = (checkpoint, index, arr) => {
     const { wfComment: comment, thumbnailsToShow } = checkpoint;
     function zoomImageTimeLineWrapper(imageSource, index, thumbnailsToShow) {
-      let newIndex = thumbnailsToShow.thumbs?.findIndex((link) => link === imageSource);
+      let newIndex = thumbnailsToShow?.thumbs?.findIndex((link) => link === imageSource);
       zoomImage((newIndex > -1 && thumbnailsToShow?.fullImage?.[newIndex]) || imageSource);
     }
     const captionForOtherCheckpointsInTL = {
@@ -436,10 +433,10 @@ export const ComplaintDetails = (props) => {
                 ))}
               </div>
             ) : null}
-            {checkpoint.status !== "COMPLAINT_FILED" && thumbnailsToShow?.thumbs?.length > 0 ? (
+            {checkpoint?.status !== "COMPLAINT_FILED" && thumbnailsToShow?.thumbs?.length > 0 ? (
               <div className="TLComments">
                 <h3>{t("CS_COMMON_ATTACHMENTS")}</h3>
-                <DisplayPhotos srcs={thumbnailsToShow.thumbs} onClick={(src, index) => zoomImageTimeLineWrapper(src, index, thumbnailsToShow)} />
+                <DisplayPhotos srcs={thumbnailsToShow?.thumbs} onClick={(src, index) => zoomImageTimeLineWrapper(src, index, thumbnailsToShow)} />
               </div>
             ) : null}
             {caption?.date ? <TLCaption data={caption} /> : null}
@@ -463,7 +460,7 @@ export const ComplaintDetails = (props) => {
         {checkpoint.status !== "COMPLAINT_FILED" && thumbnailsToShow?.thumbs?.length > 0 ? (
           <div className="TLComments">
             <h3>{t("CS_COMMON_ATTACHMENTS")}</h3>
-            <DisplayPhotos srcs={thumbnailsToShow.thumbs} onClick={(src, index) => zoomImageTimeLineWrapper(src, index, thumbnailsToShow)} />
+            <DisplayPhotos srcs={thumbnailsToShow?.thumbs} onClick={(src, index) => zoomImageTimeLineWrapper(src, index, thumbnailsToShow)} />
           </div>
         ) : null}
         {captionForOtherCheckpointsInTL?.date ? <TLCaption data={captionForOtherCheckpointsInTL} /> : null}
@@ -473,8 +470,6 @@ export const ComplaintDetails = (props) => {
       </>
     );
   };
-
-  console.log("complaintDetails", complaintDetails);
 
   return (
     <React.Fragment>
@@ -501,6 +496,9 @@ export const ComplaintDetails = (props) => {
                   last={arr.length - 1 === i}
                 />
               ))}
+            <Row label="Name" text={complaintDetails?.service?.citizen?.name} />
+
+            <Row label="Mobile Number" text={complaintDetails?.service?.citizen?.mobileNumber} />
 
             {1 === 1 ? null : (
               <MediaRow label="CS_COMPLAINT_DETAILS_GEOLOCATION">
@@ -535,8 +533,8 @@ export const ComplaintDetails = (props) => {
                 <ConnectingCheckPoints>
                   {workflowDetails?.data?.timeline &&
                     workflowDetails?.data?.timeline
-                      .slice(0, showAllTimeline ? workflowDetails?.data.timeline.length : 2)
-                      .map((checkpoint, index, arr) => {
+                      ?.slice(0, showAllTimeline ? workflowDetails?.data.timeline.length : 2)
+                      ?.map((checkpoint, index, arr) => {
                         return (
                           <React.Fragment key={index}>
                             <CheckPoint

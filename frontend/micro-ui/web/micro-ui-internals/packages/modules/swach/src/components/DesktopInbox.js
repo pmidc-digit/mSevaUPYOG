@@ -32,6 +32,7 @@ const DesktopInbox = ({
       {
         Header: t("CS_COMMON_COMPLAINT_NO"),
         Cell: ({ row }) => {
+          console.log("row-======", row);
           return (
             <div>
               <span className="link">
@@ -64,23 +65,36 @@ const DesktopInbox = ({
         },
       },
       {
+        Header: t("WF_INBOX_HEADER_CURRENT_EMPLOYEE"),
+        Cell: ({ row }) => {
+          return GetCell(row.original["taskEmployee"]);
+        },
+      },
+      {
+        Header: t("WF_INBOX_HEADER_SLA_HOURS"),
+        Cell: ({ row }) => {
+          return GetCell(row.original["sla"]);
+        },
+      },
+      {
         Header: t("WF_INBOX_HEADER_SLA_DAYS_REMAINING"),
         Cell: ({ row }) => {
-          const sla = row.original?.sla;
+          const totalSla = row.original?.sla;
+          const sla = row.original?.slaElapsed;
 
           let bgColor = "";
           let colr = "";
-          if (sla < 24) {
+          if (sla < totalSla) {
             bgColor = "green";
             colr = "white";
-          } else if (sla <= 48) {
+          } else if (sla <= 2 * totalSla) {
             bgColor = "yellow";
             colr = "black";
           } else {
             bgColor = "red";
             colr = "white";
           }
-          return <div style={{ backgroundColor: bgColor, padding: "4px 8px", borderRadius: "4px", color: "colr" }}>{sla} hrs</div>;
+          return <div style={{ backgroundColor: bgColor, padding: "4px 8px", borderRadius: "4px", color: colr }}>{sla} hrs</div>;
         },
       },
       {

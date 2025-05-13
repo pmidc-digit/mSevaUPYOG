@@ -58,11 +58,24 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
     config: {
       select: (data) => ({
         table: data?.items?.map((complaint) => {
-          const slaInMilliseconds = complaint.ProcessInstance?.businesssServiceSla;
-          // Convert milliseconds to hours
-          const totalHours = Math.floor(slaInMilliseconds / (1000 * 60 * 60));
+          // created date + SLA - current date =>
+          const createdTime = complaint.ProcessInstance?.auditDetails?.createdTime;
+          // const stateSla = complaint.ProcessInstance?.stateSla;
+          const currentTime = Date.now();
+          // const slaEndTime = createdTime + stateSla;
+          const timeLeftInMs = currentTime - createdTime;
+          const timeLeftInHours = timeLeftInMs / (1000 * 60 * 60);
+
+          const roundedHours = parseFloat(timeLeftInHours?.toFixed(1));
+
+          // console.log("roundedHours", roundedHours);
+
+          const slaInMilliseconds = complaint.ProcessInstance?.stateSla;
+          // // Convert milliseconds to hours
+          const totalHours = slaInMilliseconds / (1000 * 60 * 60);
+
+          const roundedtotalHours = parseFloat(totalHours?.toFixed(1));
           // Convert remaining milliseconds to minutes
-          const totalMinutes = Math.floor((slaInMilliseconds % (1000 * 60 * 60)) / (1000 * 60));
           return {
             serviceRequestId: complaint.ProcessInstance?.businessId,
             complaintSubType: complaint?.businessObject?.service?.serviceCode,
@@ -70,7 +83,9 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
             locality: complaint?.businessObject?.service?.address?.locality?.code,
             status: complaint.ProcessInstance?.state?.applicationStatus,
             taskOwner: complaint.ProcessInstance?.assigner?.name || "-",
-            sla: totalHours, // SLA in hours and minutes
+            taskEmployee: complaint.ProcessInstance?.assignes?.[0]?.name || "-",
+            sla: roundedtotalHours, // SLA in hours and minutes
+            slaElapsed: roundedHours,
             // sla: `${totalHours}.${totalMinutes}`, // SLA in hours and minutes
             // sla: complaint.ProcessInstance?.businesssServiceSla,
             tenantId: complaint.ProcessInstance?.tenantId,

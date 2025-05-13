@@ -4,8 +4,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.web.model.NdcSearchCriteria;
+import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -41,12 +43,63 @@ public class NdcQueryBuilder {
 			"doc.uuid AS doc_uuid, doc.applicantid AS doc_applicantid, doc.documenttype, doc.documentattachment, doc.createdby AS doc_createdby, doc.lastmodifiedby AS doc_lastmodifiedby, doc.createdtime AS doc_createdtime, doc.lastmodifiedtime AS doc_lastmodifiedtime " +
 			"FROM eg_ndc_applicants a " +
 			"LEFT JOIN eg_ndc_details d ON a.uuid = d.applicantid " +
-			"LEFT JOIN eg_ndc_documents doc ON a.uuid = doc.applicantid " +
-			"WHERE a.uuid = ?";
+			"LEFT JOIN eg_ndc_documents doc ON a.uuid = doc.applicantid";
 
+
+	public String getNdcApplicationSearchQuery(NdcApplicationSearchCriteria criteria, List<Object> preparedStmtList) {
+		StringBuilder query = new StringBuilder(NDC_QUERY);
+		boolean whereAdded = false;
+
+		if (StringUtils.isNotBlank(criteria.getTenantId())) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.tenantid = ?");
+			preparedStmtList.add(criteria.getTenantId());
+		}
+
+		if (StringUtils.isNotBlank(criteria.getUuid())) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.uuid = ?");
+			preparedStmtList.add(criteria.getUuid());
+		}
+
+		if (criteria.getStatus() != null) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.status = ?");
+			preparedStmtList.add(criteria.getStatus());
+		}
+
+		if (StringUtils.isNotBlank(criteria.getMobileNumber())) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.mobile = ?");
+			preparedStmtList.add(criteria.getMobileNumber());
+		}
+
+		if (StringUtils.isNotBlank(criteria.getName())) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" CONCAT(a.firstname, ' ', a.lastname) ILIKE ?");
+			preparedStmtList.add("%" + criteria.getName() + "%");
+		}
+
+		query.append(" ORDER BY a.createdtime DESC");
+		return query.toString();
+	}
+
+
+	private void addClauseIfRequired(StringBuilder query, boolean whereAdded) {
+		if (whereAdded) {
+			query.append(" AND");
+		} else {
+			query.append(" WHERE");
+		}
+	}
 
 	public String getNdcDetailsQuery(String uuid) {
-		return NDC_QUERY;
+		return NDC_QUERY + " WHERE a.uuid = ?";
 	}
 
 	public String getExistingUuids(String tableName, List<String> uuids) {

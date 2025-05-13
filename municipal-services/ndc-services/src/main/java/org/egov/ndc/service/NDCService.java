@@ -2,6 +2,7 @@ package org.egov.ndc.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.producer.Producer;
@@ -218,5 +219,24 @@ public class NDCService {
 				.append(config.getBillingServicePath()).append(config.getFetchBillPath())
 				.append("?tenantId=").append(tenantId).append("&consumerCode=")
 				.append(consumerCode).append("&businessservice=").append(businessService);
+	}
+
+	public List<NdcApplicationRequest> searchNdcApplications(NdcApplicationSearchCriteria criteria) {
+
+		if (StringUtils.isNotBlank(criteria.getUuid())) {
+			return ndcRepository.fetchNdcApplications(criteria);
+		}
+
+		if (StringUtils.isBlank(criteria.getTenantId())) {
+			throw new CustomException("EG_NDC_TENANT_ID_NULL","Tenant ID must not be null or empty when UUID is not provided");
+		}
+
+		if (StringUtils.isNotBlank(criteria.getMobileNumber()) ||
+				StringUtils.isNotBlank(criteria.getName()) ||
+				criteria.getStatus() != null) {
+			return ndcRepository.fetchNdcApplications(criteria);
+		}
+
+		return new ArrayList<>();
 	}
 }

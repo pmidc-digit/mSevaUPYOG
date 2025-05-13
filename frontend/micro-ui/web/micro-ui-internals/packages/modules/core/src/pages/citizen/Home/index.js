@@ -24,10 +24,14 @@ import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/Stat
 const Home = () => {
   const { t } = useTranslation();
   const history = useHistory();
+  const citizenInfoString = window.localStorage.getItem("user-info");
+  const citizenInfo = citizenInfoString ? JSON.parse(citizenInfoString) : null;
+  const UserType = citizenInfo?.type === "CITIZEN";
+  const UserRole = Array.isArray(citizenInfo?.roles) && citizenInfo?.roles.some(item => item.code === "PESCO");
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
   const { data: { stateInfo, uiHomePage } = {}, isLoading } = Digit.Hooks.useStore.getInitData();
   let isMobile = window.Digit.Utils.browser.isMobile();
-  if(window.Digit.SessionStorage.get("TL_CREATE_TRADE")) window.Digit.SessionStorage.set("TL_CREATE_TRADE",{})
+  if(window.Digit.SessionStorage.get("TL_CREATE_TRADE")) window.Digit.SessionStorage.set("TL_CREATE_TRADE",{});
    
   const conditionsToDisableNotificationCountTrigger = () => {
     if (Digit.UserService?.getUser()?.info?.type === "EMPLOYEE") return false;
@@ -67,38 +71,47 @@ const Home = () => {
       name: t(citizenServicesObj?.sideOption?.name),
       onClick: () => history.push(citizenServicesObj?.sideOption?.navigationUrl),
     },
-    options: [
-      {
-        name: t(citizenServicesObj?.props?.[0]?.label),
-        Icon: <ComplaintIcon />,
-        onClick: () => history.push(citizenServicesObj?.props?.[0]?.navigationUrl),
-      },
-      {
-        name: t(citizenServicesObj?.props?.[1]?.label),
-        Icon: <PTIcon className="fill-path-primary-main" />,
-        onClick: () => history.push(citizenServicesObj?.props?.[1]?.navigationUrl),
-      },
-      {
-        name: t(citizenServicesObj?.props?.[2]?.label),
-        Icon: <CaseIcon className="fill-path-primary-main" />,
-        onClick: () => history.push(citizenServicesObj?.props?.[2]?.navigationUrl),
-      },
-      // {
-      //   name: t(citizenServicesObj?.props?.[1]?.label),
-      //   Icon: <PTRIcon className="fill-path-primary-main" />,
-      //   onClick: () => history.push(citizenServicesObj?.props?.[1]?.navigationUrl),
-      // },
-      // {
-      //     name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
-      //     Icon: <DropIcon/>,
-      //     onClick: () => history.push("/digit-ui/citizen")
-      // },
-      {
-        name: t(citizenServicesObj?.props?.[3]?.label),
-        Icon: <WSICon />,
-        onClick: () => history.push(citizenServicesObj?.props?.[3]?.navigationUrl),
-      },
-    ],
+    options:
+    UserType && UserRole
+        ? [
+            {
+              name: t(citizenServicesObj?.props?.[5]?.label),
+              Icon: <ComplaintIcon />,
+              onClick: () => history.push(citizenServicesObj?.props?.[5]?.navigationUrl),
+            },
+          ]
+        : [
+            {
+              name: t(citizenServicesObj?.props?.[0]?.label),
+              Icon: <ComplaintIcon />,
+              onClick: () => history.push(citizenServicesObj?.props?.[0]?.navigationUrl),
+            },
+            {
+              name: t(citizenServicesObj?.props?.[1]?.label),
+              Icon: <PTIcon className="fill-path-primary-main" />,
+              onClick: () => history.push(citizenServicesObj?.props?.[1]?.navigationUrl),
+            },
+            {
+              name: t(citizenServicesObj?.props?.[2]?.label),
+              Icon: <CaseIcon className="fill-path-primary-main" />,
+              onClick: () => history.push(citizenServicesObj?.props?.[2]?.navigationUrl),
+            },
+            // {
+            //   name: t(citizenServicesObj?.props?.[1]?.label),
+            //   Icon: <PTRIcon className="fill-path-primary-main" />,
+            //   onClick: () => history.push(citizenServicesObj?.props?.[1]?.navigationUrl),
+            // },
+            // {
+            //     name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
+            //     Icon: <DropIcon/>,
+            //     onClick: () => history.push("/digit-ui/citizen")
+            // },
+            {
+              name: t(citizenServicesObj?.props?.[3]?.label),
+              Icon: <WSICon />,
+              onClick: () => history.push(citizenServicesObj?.props?.[3]?.navigationUrl),
+            },
+          ],
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
   const allInfoAndUpdatesProps = {

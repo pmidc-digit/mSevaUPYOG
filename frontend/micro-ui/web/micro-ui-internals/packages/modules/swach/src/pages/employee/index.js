@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Switch, Route, useRouteMatch, useLocation } from "react-router-dom";
-import { ActionBar, Menu, SubmitBar, BreadCrumb } from "@mseva/digit-ui-react-components";
+import { ActionBar, Menu, SubmitBar, BreadCrumb, BackButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 // import { ComplaintDetails } from "./ComplaintDetails";
 // import { CreateComplaint } from "./CreateComplaint";
@@ -54,6 +54,7 @@ const Complaint = () => {
   return (
     <React.Fragment>
       <div className="ground-container">
+      <BackButton>{t("CS_COMMON_BACK")}</BackButton>
         {!location.includes(Employee.Response) && (
           <Switch>
             <Route

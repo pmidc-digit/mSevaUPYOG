@@ -99,9 +99,9 @@ const Filter = (props) => {
     }
     count += wfFilters?.assignee?.length || 0;
 
-    if (props.type !== "mobile") {
+    // if (props.type !== "mobile") {
       handleFilterSubmit();
-    }
+    // }
 
     Digit.inboxFilterCount = count;
   }, [swachfilters, wfFilters]);

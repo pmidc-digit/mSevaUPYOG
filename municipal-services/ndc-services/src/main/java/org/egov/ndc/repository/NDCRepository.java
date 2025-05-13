@@ -1,15 +1,18 @@
 package org.egov.ndc.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.producer.Producer;
 import org.egov.ndc.repository.builder.NdcQueryBuilder;
 import org.egov.ndc.repository.rowmapper.NdcRowMapper;
 import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
+import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -33,9 +36,11 @@ public class NDCRepository {
 	@Autowired
 	private NdcRowMapper rowMapper;
 
+
+
 	public List<NdcApplicationRequest> getApplicationById(String applicantId) {
 		String sql = queryBuilder.getNdcDetailsQuery(applicantId);
-		return jdbcTemplate.query(sql, new Object[]{applicantId}, new NdcRowMapper());
+		return jdbcTemplate.query(sql, new Object[]{applicantId}, rowMapper);
 	}
 
 
@@ -50,5 +55,9 @@ public class NDCRepository {
 		return query != null;
 	}
 
-
+	public List<NdcApplicationRequest> fetchNdcApplications(NdcApplicationSearchCriteria criteria) {
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = queryBuilder.getNdcApplicationSearchQuery(criteria, preparedStmtList);
+		return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+	}
 }

@@ -74,6 +74,12 @@ const Inbox = ({ initialStates = {} }) => {
           onFilterChange={handleFilterChange}
           onSearch={onSearch}
           searchParams={searchParams}
+          onNextPage={fetchNextPage}
+            onPrevPage={fetchPrevPage}
+            onPageSizeChange={handlePageSizeChange}
+            currentPage={Math.floor(pageOffset / pageSize)}
+            totalRecords={totalRecords}
+            pageSizeLimit={pageSize}
         />
       );
     } else {

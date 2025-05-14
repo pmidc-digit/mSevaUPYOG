@@ -39,10 +39,12 @@ const [description, setDescription] = useState("")
   const [selectedLocality, setSelectedLocality] = useState(null);
   const [canSubmit, setSubmitValve] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [property,setPropertyData]=useState(null)
+  const [property,setPropertyData]=useState(null);
   const [pincodeNotValid, setPincodeNotValid] = useState(false);
   const [params, setParams] = useState({});
-  const tenantId = window.Digit.SessionStorage.get("Citizen.tenantId");
+  //const tenantId = SessionStorage.getItem("Digit.Citizen.tenantId");
+  const tenantId = Digit.UserService.getUser()?.info?.tenantId;
+  //console.log("tenantIdHello",tenantId)
   const menu = Digit.Hooks.swach.useComplaintTypes({ stateCode: tenantId });
 
   console.log("tenantId for Swach",tenantId)
@@ -71,7 +73,7 @@ const [description, setDescription] = useState("")
   const serviceDefinitions = Digit.GetSwachBharatCategories;
   const client = useQueryClient();
   useEffect(() => {
-    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code && priorityLevel?.code ) {
+    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code ) {
       setSubmitValve(true);
     } else {
       setSubmitValve(false);
@@ -277,14 +279,14 @@ const [description, setDescription] = useState("")
           menu: { ...subTypeMenu },
           populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
         },
-        {
+        // {
           
-         label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
-            isMandatory: true,
-            type: "dropdown",
-            populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
+        //  label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
+        //     isMandatory: false,
+        //     type: "dropdown",
+        //     populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
           
-        },
+        // },
         {
           //label: t("WS_COMMON_PROPERTY_DETAILS"),
           "isEditConnection": true,

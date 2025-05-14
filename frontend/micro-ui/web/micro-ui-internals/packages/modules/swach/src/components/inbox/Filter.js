@@ -19,13 +19,13 @@ const Filter = (props) => {
 
   const assignedToOptions = useMemo(
     () => [
-      { code: "ASSIGNED_TO_ME", name: t("ASSIGNED_TO_ME"), disabled: tenantId == "pb.punjab" },
+      { code: "ASSIGNED_TO_ME", name: t("ASSIGNED_TO_ME") },
       { code: "ASSIGNED_TO_ALL", name: t("ASSIGNED_TO_ALL") },
     ],
     [t]
   );
 
-  const [selectAssigned, setSelectedAssigned] = useState(tenantId === "pb.punjab" && isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]);
+  const [selectAssigned, setSelectedAssigned] = useState(isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]);
 
   const [selectedComplaintType, setSelectedComplaintType] = useState(null);
   const [selectedLocality, setSelectedLocality] = useState(null);
@@ -45,11 +45,7 @@ const Filter = (props) => {
     }
   );
 
-  useEffect(() => setSelectedAssigned(tenantId === "pb.punjab" && isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]), [
-    t,
-    tenantId,
-    isAssignedToMe,
-  ]);
+  useEffect(() => setSelectedAssigned(isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]), [t, tenantId, isAssignedToMe]);
 
   // let localities = Digit.Hooks.pgr.useLocalities({ city: tenantId });
 
@@ -62,6 +58,7 @@ const Filter = (props) => {
         if (cityObj?.code == "pb.punjab") {
           console.log("here");
           finalCode = "pb.amritsar";
+          localStorage.setItem("punjab-tenantId", "pb.amritsar");
           setSelectedTenant({ name: "Amritsar", code: "pb.amritsar" });
         } else {
           console.log("not here");
@@ -139,6 +136,7 @@ const Filter = (props) => {
 
   function onSelectTenants(value, type) {
     // if (!ifExists(swachfilters.tenants, value)) {
+    localStorage.setItem("punjab-tenantId", value.code);
     setSwachFilters({ ...swachfilters, tenants: value.code });
     // }
   }

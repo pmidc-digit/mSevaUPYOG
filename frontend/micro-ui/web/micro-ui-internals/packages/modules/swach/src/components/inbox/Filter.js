@@ -47,22 +47,26 @@ const Filter = (props) => {
 
   const { data: cities } = Digit.Hooks.useTenants();
   // let localities = Digit.Hooks.pgr.useLocalities({ city: tenantId });
-  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
+
   let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
 
   useEffect(() => {
-    // console.log("tenantId", tenantId);
-    // if (tenantId) setSelectedTenant("Abohar");
     if (cities && cities?.length && tenantId) {
       const matchedCity = cities?.find((city) => city.code === tenantId);
       if (matchedCity) {
         const cityObj = { name: matchedCity?.name, code: matchedCity?.code };
-
+        let finalCode;
+        if (cityObj?.code == "pb.punjab") {
+          finalCode = "pb";
+        } else {
+          finalCode = cityObj?.code;
+        }
         // Set it in both selectedTenant and swachfilters
         setSelectedTenant(cityObj);
+
         setSwachFilters((prev) => ({
           ...prev,
-          tenants: cityObj?.code,
+          tenants: finalCode,
         }));
       }
     }
@@ -181,6 +185,10 @@ const Filter = (props) => {
     }
   };
 
+  useEffect(() => {
+    console.log("swachfilters", swachfilters);
+  }, [swachfilters]);
+
   function clearAll() {
     let swachReset = { serviceCode: [], locality: [], applicationStatus: [] };
     let wfRest = { assigned: [{ code: [] }] };
@@ -263,10 +271,10 @@ const Filter = (props) => {
                 "serviceCode"
               )}
             </div>
-            <div>{GetSelectOptions(t("CS_SWACH_LOCALITY"), localities, selectedLocality, onSelectLocality, "i18nkey", onRemove, "locality")}</div>
             <div>
-              {GetSelectOptions("City", cities, selectedTenant, onSelectTenants, "name", onRemove, "tenants", swachfilters?.tenants !== "Punjab")}
+              {GetSelectOptions(t("CS_SWACH_LOCALITY"), props?.localities, selectedLocality, onSelectLocality, "i18nkey", onRemove, "locality")}
             </div>
+            <div>{GetSelectOptions("City", cities, selectedTenant, onSelectTenants, "name", onRemove, "tenants", tenantId !== "pb.punjab")}</div>
             {<Status complaints={props.complaints} onAssignmentChange={handleAssignmentChange} swachfilters={swachfilters} />}
           </div>
         </div>

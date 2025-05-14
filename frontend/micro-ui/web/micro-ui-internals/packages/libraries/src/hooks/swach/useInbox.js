@@ -10,20 +10,27 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
 
   //   const { applicationStatus = [], serviceCode = [], locality = [], tenants = [] } = swachfilters;
 
+  console.log("filters====", filters);
+
   const serviceRequestId = filters?.search?.serviceRequestId;
   const mobileNumber = filters?.search?.mobileNumber;
   const applicationStatus = "";
   const serviceCode = filters?.filters?.pgrQuery?.serviceCode;
   const locality = filters?.filters?.pgrQuery?.locality;
   const tenants = filters?.filters?.swachfilters?.tenants;
+  const status = filters?.filters?.swachfilters?.applicationStatus;
+  const userId = filters?.filters?.wfQuery?.assignee;
 
   const _filters = {
     tenantId: tenants,
     processSearchCriteria: {
       moduleName: "swach-reform",
       businessService: ["SBMR"],
+      // ...(status ? { status: status } : {}),
+      ...(status?.length > 0 ? { status: status?.map((item) => item?.code) } : {}),
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
-      ...(uuid && Object.keys(uuid).length > 0 ? { assignee: uuid.code === "ASSIGNED_TO_ME" ? USER_UUID : "" } : {}),
+      // ...(uuid && Object.keys(uuid)?.length > 0 ? { assignee: uuid?.code === "ASSIGNED_TO_ME" ? USER_UUID : "" } : {}),
+      ...(userId ? { assignee: userId ? userId : "" } : {}),
     },
     moduleSearchCriteria: {
       ...(mobileNumber ? { mobileNumber: mobileNumber } : {}),
@@ -34,6 +41,7 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
             locality: locality,
           }
         : {}),
+
       //   ...(tenants?.length > 0 ? { tenantId: tenants } : {}),
       ...(sortBy ? { sortBy } : {}),
       ...(sortOrder ? { sortOrder } : {}),
@@ -59,18 +67,16 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
       select: (data) => ({
         table: data?.items?.map((complaint) => {
           // created date + SLA - current date =>
-          const createdTime = complaint.ProcessInstance?.auditDetails?.createdTime;
+          const createdTime = complaint?.ProcessInstance?.auditDetails?.createdTime;
           // const stateSla = complaint.ProcessInstance?.stateSla;
           const currentTime = Date.now();
           // const slaEndTime = createdTime + stateSla;
           const timeLeftInMs = currentTime - createdTime;
           const timeLeftInHours = timeLeftInMs / (1000 * 60 * 60);
 
-          const roundedHours = parseFloat(timeLeftInHours?.toFixed(1));
+          const roundedHours = timeLeftInHours?.toFixed(1);
 
-          // console.log("roundedHours", roundedHours);
-
-          const slaInMilliseconds = complaint.ProcessInstance?.stateSla;
+          const slaInMilliseconds = complaint?.ProcessInstance?.stateSla;
           // // Convert milliseconds to hours
           const totalHours = slaInMilliseconds / (1000 * 60 * 60);
 

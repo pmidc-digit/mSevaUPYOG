@@ -1,7 +1,7 @@
 FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.0.8
+RUN yarn add @mseva/digit-ui-libraries@1.0.13
 RUN yarn add @mseva/digit-ui-module-bills@1.0.4
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.2
 RUN yarn add @mseva/digit-ui-module-dss@1.0.2
@@ -10,20 +10,20 @@ RUN yarn add @mseva/digit-ui-module-pgr@1.0.2
 RUN yarn add @mseva/digit-ui-module-noc@1.0.2
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.13
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.2
-RUN yarn add @mseva/digit-ui-module-core@1.0.8
-RUN yarn add @mseva/digit-ui-module-common@1.0.5
+RUN yarn add @mseva/digit-ui-module-core@1.0.13
+RUN yarn add @mseva/digit-ui-module-common@1.0.10
 RUN yarn add @mseva/digit-ui-module-ws@1.0.2
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.2
-RUN yarn add @mseva/digit-ui-module-ptr@1.0.7
-RUN yarn add @mseva/digit-ui-module-swach@1.0.5
-RUN yarn add @mseva/digit-ui-module-pt@1.0.4
+RUN yarn add @mseva/digit-ui-module-ptr@1.0.13
+RUN yarn add @mseva/digit-ui-module-swach@1.0.15
+RUN yarn add @mseva/digit-ui-module-pt@1.0.6
 RUN yarn add @mseva/digit-ui-module-tl@1.0.4
 
 ARG WORK_DIR
 WORKDIR /app
-# ENV NODE_OPTIONS "--max-old-space-size=8192"
-ENV  NODE_OPTIONS "--max_old_space_size=4192 react-scripts build"
-ENV GENERATE_SOURCEMAP "false"
+# ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192
+ENV  NODE_OPTIONS "--max_old_space_size=12288 react-scripts build"
+ENV GENERATE_SOURCEMAP "true"
 
 COPY ${WORK_DIR} .
 RUN ls -lah
@@ -31,7 +31,7 @@ RUN ls -lah
 #RUN node web/envs.js
 RUN cd web/ \
     && node envs.js \
-    && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(8192*8192))' \
+    && node -e 'console.log(v8.getHeapStatistics().heap_size_limit/(12288*12288))' \
     &&  ./install-deps.sh \
     && yarn install \
     && yarn build 

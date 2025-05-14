@@ -14,7 +14,15 @@ const Status = ({ complaints, onAssignmentChange, swachfilters }) => {
     { name: "Resolved", code: "RESOLVED" },
   ];
   let hasFilters = swachfilters?.applicationStatus?.length;
-  console.log("swachfilters", swachfilters);
+
+  useEffect(() => {
+    onAssignmentChange({target:{checked:true}}, {name:"Pending For Assignment", code:"PENDINGFORASSIGNMENT"});
+  },[])
+  const complaintsWithCount = [
+    { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" },
+    { name: "Pending At LME", code: "PENDINGATLME" },
+    { name: "Resolved", code: "RESOLVED" },
+  ];
   return (
     <div className="status-container">
       <div className="filter-label">{t("ES_SWACH_FILTER_STATUS")}</div>

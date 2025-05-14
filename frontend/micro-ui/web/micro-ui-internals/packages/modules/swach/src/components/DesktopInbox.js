@@ -20,6 +20,7 @@ const DesktopInbox = ({
   pageSizeLimit,
   onPageSizeChange,
   totalRecords,
+  localities,
 }) => {
   const { t } = useTranslation();
   const GetCell = (value) => <span className="cell-text">{value}</span>;
@@ -35,11 +36,13 @@ const DesktopInbox = ({
           return (
             <div>
               <span className="link">
-                <Link to={"/digit-ui/employee/swach/complaint/details/" + row.original["serviceRequestId"]}>{row.original["serviceRequestId"]}</Link>
+                <Link to={"/digit-ui/employee/swach/complaint/details/" + row.original["serviceRequestId"] + "/" + row.original?.tenantId}>
+                  {row.original["serviceRequestId"]}
+                </Link>
               </span>
               {/* <a onClick={() => goTo(row.row.original["serviceRequestId"])}>{row.row.original["serviceRequestId"]}</a> */}
               <br />
-              <span className="complain-no-cell-text">{t(`SWACHBHARATCATEGORY.${row.original["complaintSubType"].toUpperCase()}`)}</span>
+              <span className="complain-no-cell-text">{t(`SWACHBHARATCATEGORY.${row.original["complaintSubType"]?.toUpperCase()}`)}</span>
             </div>
           );
         },
@@ -47,7 +50,11 @@ const DesktopInbox = ({
       {
         Header: t("WF_INBOX_HEADER_LOCALITY"),
         Cell: ({ row }) => {
-          return GetCell(t(Digit.Utils.locale.getLocalityCode(row.original["locality"], row.original["tenantId"])));
+          const localityCode = row?.original?.locality;
+          const locality = localities?.find((loc) => loc?.code == localityCode);
+          const localityName = locality?.name || "";
+          // return GetCell(t(Digit.Utils.locale.getLocalityCode(row?.original?.locality, row?.original?.tenantId)));
+          return <div>{localityName}</div>;
         },
       },
       {
@@ -63,19 +70,47 @@ const DesktopInbox = ({
         },
       },
       {
-        Header: t("WF_INBOX_HEADER_SLA_DAYS_REMAINING"),
+        Header: t("WF_INBOX_HEADER_CURRENT_EMPLOYEE"),
         Cell: ({ row }) => {
-          return GetSlaCell(row.original["sla"]);
+          return GetCell(row.original["taskEmployee"]);
         },
       },
       {
+        // Header: t("WF_INBOX_HEADER_SLA_HOURS"),
+        Header: t("WF_INBOX_HEADER_SLA_DAYS_REMAINING"),
+        Cell: ({ row }) => {
+          return GetCell(row.original["sla"]);
+        },
+      },
+      // {
+      //   Header: t("WF_INBOX_HEADER_SLA_DAYS_REMAINING"),
+      //   Cell: ({ row }) => {
+      //     const totalSla = row.original?.sla;
+      //     const sla = row.original?.slaElapsed;
+
+      //     let bgColor = "";
+      //     let colr = "";
+      //     if (sla < totalSla) {
+      //       bgColor = "green";
+      //       colr = "white";
+      //     } else if (sla <= 2 * totalSla) {
+      //       bgColor = "yellow";
+      //       colr = "black";
+      //     } else {
+      //       bgColor = "red";
+      //       colr = "white";
+      //     }
+      //     return <div style={{ backgroundColor: bgColor, padding: "4px 8px", borderRadius: "4px", color: colr }}>{sla} hrs</div>;
+      //   },
+      // },
+      {
         Header: t("WF_INBOX_HEADER_CREATED_DATE"),
         Cell: ({ row }) => {
-          return GetSlaCell(row.original["createdDate"]);
+          return <div style={{ width: "250px" }}>{GetSlaCell(row.original["createdDate"])}</div>;
         },
       },
     ],
-    [t]
+    [t, localities]
   );
 
   let result;
@@ -100,9 +135,10 @@ const DesktopInbox = ({
         data={data}
         columns={columns}
         getCellProps={(cellInfo) => {
+          const header = cellInfo.column.Header;
           return {
             style: {
-              minWidth: cellInfo.column.Header === t("CS_COMMON_COMPLAINT_NO") ? "240px" : "",
+              minWidth: header === t("CS_COMMON_COMPLAINT_NO") ? "240px" : "",
               padding: "20px 18px",
               fontSize: "16px",
             },
@@ -134,7 +170,9 @@ const DesktopInbox = ({
     <div className="inbox-container">
       <div className="filters-container">
         <ComplaintsLink />
-        <div><Filter complaints={data} onFilterChange={onFilterChange} type="desktop" searchParams={searchParams} /></div>
+        <div>
+          <Filter complaints={data} onFilterChange={onFilterChange} type="desktop" searchParams={searchParams} localities={localities} />
+        </div>
       </div>
       <div style={{ flex: 1 }}>
         <SearchComplaint onSearch={onSearch} type="desktop" />

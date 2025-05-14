@@ -91,6 +91,7 @@ const NavigationApp = ({ stateCode }) => {
       dataFromURL?.serviceName &&
       isMobileNoValid &&
       dataFromURL?.iPin &&
+      dataFromURL?.AppId &&
       dataFromURL?.ULBName &&
       isCityValid &&
       isFullNameValid;
@@ -101,6 +102,7 @@ const NavigationApp = ({ stateCode }) => {
         serviceName: dataFromURL.serviceName.trim(),
         mobileNumber: dataFromURL.MobileNo,
         iPin: dataFromURL.iPin,
+        appId: dataFromURL.AppId, 
         ULBName: dataFromURL.ULBName.toLowerCase().trim(),
         userName: dataFromURL.fullName.trim(),
         returnURL: dataFromURL.returnUrl.trim(),
@@ -212,9 +214,8 @@ const NavigationApp = ({ stateCode }) => {
 
   const processUser = (userResponse) => {
     const { UserRequest: info, ...tokens } = userResponse;
-    const isAuthorized =
-      info.roles.some((userRole) => userRole.code === CITIZEN_ROLE_CODE) &&
-      info.roles.some((userRole) => userRole.code === userDetails.thirdPartyCode);
+    const isAuthorized = info.roles.some((userRole) => userRole.code === CITIZEN_ROLE_CODE);
+    // && info.roles.some((userRole) => userRole.code === userDetails.thirdPartyCode);
     if (!isAuthorized) {
       showToast(ES_ERROR_USER_NOT_PERMITTED, true);
       return;
@@ -246,14 +247,18 @@ const NavigationApp = ({ stateCode }) => {
       Digit.UserService.setUser(user);
       setCitizenDetail(user?.info, user?.access_token);
       localStorage.setItem("thirdPartyReturnUrl", userDetails?.returnURL);
-      handleServiceRedirection(servicePath);
+      localStorage.setItem("thirdPartyCode", userDetails?.thirdPartyCode);
+      localStorage.setItem("iPin", userDetails?.iPin);
+      localStorage.setItem("appid", userDetails?.appId);
+      localStorage.setItem("serviceName", userDetails?.serviceName);
+      handleServiceRedirection(servicePath,userDetails?.serviceName);
     }
   }, [user]);
 
-  const handleServiceRedirection = (servicePath) => {
+  const handleServiceRedirection = (servicePath,serviceName) => {
     //Redirect to the service path:
     const domain = `${window.location.protocol}//${window.location.hostname}:${window.location.port}`;
-    const newURL = `${domain}/citizen/${servicePath}`;
+    const newURL = `${domain}/citizen/${servicePath}?&servicename=${serviceName}`;
     window.location.href = newURL;
     showToast(`${REDIRECTING_TO} ${servicePath}`, false);
   };

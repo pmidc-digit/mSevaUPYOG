@@ -1,55 +1,56 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { TextInput, Label, SubmitBar, LinkLabel, ActionBar, CloseSvg } from "@mseva/digit-ui-react-components";
 
 const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
-  const [complaintNo, setComplaintNo] = useState(searchParams?.search?.serviceRequestId || "");
-  const [mobileNo, setMobileNo] = useState(searchParams?.search?.mobileNumber || "");
-  const { register, errors, handleSubmit, reset } = useForm();
   const { t } = useTranslation();
 
-  const onSubmitInput = (data) => {
-    if (!Object.keys(errors).filter((i) => errors[i]).length) {
-      if (data.serviceRequestId !== "") {
-        onSearch({ serviceRequestId: data.serviceRequestId });
-      } else if (data.mobileNumber !== "") {   
-        onSearch({ mobileNumber: data.mobileNumber });
-      } else {
-        onSearch({});
-      }
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      serviceRequestId: searchParams?.search?.serviceRequestId || "",
+      mobileNumber: searchParams?.search?.mobileNumber || "",
+    },
+  });
 
-      if (type === "mobile") {
-        onClose();
-      }
+  const onSubmit = (data) => {
+    const searchPayload = {};
+
+    if (data.serviceRequestId) searchPayload.serviceRequestId = data.serviceRequestId;
+    if (data.mobileNumber) searchPayload.mobileNumber = data.mobileNumber;
+
+    onSearch(searchPayload);
+    // if (data.serviceRequestId) {
+    //   onSearch({ serviceRequestId: data.serviceRequestId });
+    // } else if (data.mobileNumber) {
+    //   onSearch({ mobileNumber: data.mobileNumber });
+    // } else {
+    //   onSearch({});
+    // }
+
+    if (type === "mobile") {
+      onClose();
     }
   };
 
   function clearSearch() {
     reset();
     onSearch({});
-    setComplaintNo("");
-    setMobileNo("");
   }
 
   const clearAll = () => {
-    return (
-      <LinkLabel className="clear-search-label" onClick={clearSearch}>
-        {t("ES_COMMON_CLEAR_SEARCH")}
-      </LinkLabel>
-    );
+    <LinkLabel className="clear-search-label" onClick={clearSearch}>
+      {t("ES_COMMON_CLEAR_SEARCH")}
+    </LinkLabel>;
   };
 
-  function setComplaint(e) {
-    setComplaintNo(e.target.value);
-  }
-
-  function setMobile(e) {
-    setMobileNo(e.target.value);
-  }
-
   return (
-    <form onSubmit={handleSubmit(onSubmitInput)} style={{ marginLeft: "24px" }}>
+    <form onSubmit={handleSubmit(onSubmit)} style={{ marginLeft: "24px" }}>
       <React.Fragment>
         <div className="search-container" style={{ width: "auto" }}>
           <div className="search-complaint-container">
@@ -61,36 +62,54 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                 </span>
               </div>
             )}
-            <div className="complaint-input-container" style={{display:"grid"}}>
+            <div className="complaint-input-container" style={{ display: "grid" }}>
               <span className="complaint-input">
                 <Label>{t("CS_COMMON_COMPLAINT_NO")}.</Label>
                 <TextInput
+                  // {...register("serviceRequestId", {
+                  //   pattern: {
+                  //     value: /(?!^$)([^\s])/,
+                  //     message: t("INVALID_COMPLAINT_NO"),
+                  //   },
+                  // })}
+                  // style={{ marginBottom: "8px" }}
                   name="serviceRequestId"
-                  value={complaintNo}
-                  onChange={setComplaint}
+                  // value={complaintNo}
+                  // onChange={setComplaint}
                   inputRef={register({
                     pattern: /(?!^$)([^\s])/,
                   })}
                   style={{ marginBottom: "8px" }}
-                ></TextInput>
+                />
+                {errors.serviceRequestId && <p style={{ color: "red", fontSize: "12px" }}>{errors.serviceRequestId.message}</p>}
               </span>
               <span className="mobile-input">
                 <Label>{t("CS_COMMON_MOBILE_NO")}.</Label>
                 <TextInput
+                  // {...register("mobileNumber", {
+                  //   pattern: {
+                  //     value: /^[6-9]\d{9}$/,
+                  //     message: t("INVALID_MOBILE_NO"),
+                  //   },
+                  // })}
                   name="mobileNumber"
-                  value={mobileNo}
-                  onChange={setMobile}
+                  // value={mobileNo}
+                  // onChange={setMobile}
                   inputRef={register({
-                    pattern: /^[6-9]\d{9}$/,
+                    pattern: {
+                      value: /^[6-9]\d{9}$/,
+                      message: "Invalid mobile number",
+                    },
                   })}
-                ></TextInput>
+                />
+                {errors.mobileNumber && <p style={{ color: "red", fontSize: "12px" }}>{errors.mobileNumber.message}</p>}
               </span>
               {type === "desktop" && (
                 <SubmitBar
                   style={{ marginTop: 32, marginLeft: "16px", width: "calc( 100% - 16px )" }}
                   label={t("ES_COMMON_SEARCH")}
                   submit={true}
-                  disabled={Object.keys(errors).filter((i) => errors[i]).length}
+                  // disabled={Object.keys(errors).filter((i) => errors[i]).length}
                 />
               )}
             </div>

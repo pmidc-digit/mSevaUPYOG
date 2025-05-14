@@ -9,21 +9,23 @@ let wfQuery = {};
 
 const Filter = (props) => {
   let { uuid } = Digit.UserService.getUser().info;
-  const { searchParams } = props;
   const { t } = useTranslation();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { data: cities } = Digit.Hooks.useTenants();
+  let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
+  const { searchParams } = props;
+
   const isAssignedToMe = searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
 
   const assignedToOptions = useMemo(
     () => [
-      { code: "ASSIGNED_TO_ME", name: t("ASSIGNED_TO_ME") },
+      { code: "ASSIGNED_TO_ME", name: t("ASSIGNED_TO_ME"), disabled: tenantId == "pb.punjab" },
       { code: "ASSIGNED_TO_ALL", name: t("ASSIGNED_TO_ALL") },
     ],
     [t]
   );
 
-  const [selectAssigned, setSelectedAssigned] = useState(isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]);
-
-  useEffect(() => setSelectedAssigned(isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]), [t]);
+  const [selectAssigned, setSelectedAssigned] = useState(tenantId === "pb.punjab" && isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]);
 
   const [selectedComplaintType, setSelectedComplaintType] = useState(null);
   const [selectedLocality, setSelectedLocality] = useState(null);
@@ -43,12 +45,13 @@ const Filter = (props) => {
     }
   );
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  useEffect(() => setSelectedAssigned(tenantId === "pb.punjab" && isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]), [
+    t,
+    tenantId,
+    isAssignedToMe,
+  ]);
 
-  const { data: cities } = Digit.Hooks.useTenants();
   // let localities = Digit.Hooks.pgr.useLocalities({ city: tenantId });
-
-  let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
 
   useEffect(() => {
     if (cities && cities?.length && tenantId) {
@@ -57,12 +60,15 @@ const Filter = (props) => {
         const cityObj = { name: matchedCity?.name, code: matchedCity?.code };
         let finalCode;
         if (cityObj?.code == "pb.punjab") {
-          finalCode = "pb";
+          console.log("here");
+          finalCode = "pb.amritsar";
+          setSelectedTenant({ name: "Amritsar", code: "pb.amritsar" });
         } else {
+          console.log("not here");
           finalCode = cityObj?.code;
+          setSelectedTenant(cityObj);
         }
         // Set it in both selectedTenant and swachfilters
-        setSelectedTenant(cityObj);
 
         setSwachFilters((prev) => ({
           ...prev,
@@ -104,7 +110,7 @@ const Filter = (props) => {
     count += wfFilters?.assignee?.length || 0;
 
     // if (props.type !== "mobile") {
-      handleFilterSubmit();
+    handleFilterSubmit();
     // }
 
     Digit.inboxFilterCount = count;

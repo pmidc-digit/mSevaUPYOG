@@ -36,7 +36,9 @@ const DesktopInbox = ({
           return (
             <div>
               <span className="link">
-                <Link to={"/digit-ui/employee/swach/complaint/details/" + row.original["serviceRequestId"]}>{row.original["serviceRequestId"]}</Link>
+                <Link to={"/digit-ui/employee/swach/complaint/details/" + row.original["serviceRequestId"] + "/" + row.original?.tenantId}>
+                  {row.original["serviceRequestId"]}
+                </Link>
               </span>
               {/* <a onClick={() => goTo(row.row.original["serviceRequestId"])}>{row.row.original["serviceRequestId"]}</a> */}
               <br />

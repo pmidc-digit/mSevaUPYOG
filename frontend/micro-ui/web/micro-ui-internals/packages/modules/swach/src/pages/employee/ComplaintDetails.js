@@ -233,15 +233,22 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
 };
 
 export const ComplaintDetails = (props) => {
-  let { id } = useParams();
+  const { fullIdAndUlb } = useParams();
+
+  const parts = fullIdAndUlb?.split("/");
+  const ulb = parts[parts.length - 1];
+  const id = parts.slice(0, parts.length - 1).join("/");
+
   const { t } = useTranslation();
   const [fullscreen, setFullscreen] = useState(false);
   const [imageZoom, setImageZoom] = useState(null);
   // const [actionCalled, setActionCalled] = useState(false);
   const [toast, setToast] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const { isLoading, complaintDetails, revalidate: revalidateComplaintDetails } = Digit.Hooks.swach.useComplaintDetails({ tenantId, id });
-  const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId, id, moduleCode: "SWACH", role: "EMPLOYEE" });
+  // const tenantIdPB = localStorage.getItem("punjab-tenantId");
+  // console.log("tenantIdPB", tenantIdPB);
+  const { isLoading, complaintDetails, revalidate: revalidateComplaintDetails } = Digit.Hooks.swach.useComplaintDetails({ tenantId: ulb, id });
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: ulb, id, moduleCode: "SWACH", role: "EMPLOYEE" });
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([]);
 
   // RAIN-5692 PGR : GRO is assigning complaint, Selecting employee and assign. Its not getting assigned.

@@ -38,7 +38,7 @@ const Complaint = () => {
     // editApplication: {
     //   content: t("CS_SWACH_EDIT_APPLICATION"),
     //   path: match.url + Employee.EditApplication,
-    // },    
+    // },
   };
   function popupCall(option) {
     setDisplayMenu(false);
@@ -47,14 +47,14 @@ const Complaint = () => {
 
   let location = useLocation().pathname;
 
-  const Inbox = Digit?.ComponentRegistryService?.getComponent('SWACHInbox');
-  const CreateComplaint = Digit?.ComponentRegistryService?.getComponent('SWACHCreateComplaintEmp');
-  const Response = Digit?.ComponentRegistryService?.getComponent('SWACHResponseEmp');
-  const ComplaintDetails = Digit?.ComponentRegistryService?.getComponent('SWACHComplaintDetails');
+  const Inbox = Digit?.ComponentRegistryService?.getComponent("SWACHInbox");
+  const CreateComplaint = Digit?.ComponentRegistryService?.getComponent("SWACHCreateComplaintEmp");
+  const Response = Digit?.ComponentRegistryService?.getComponent("SWACHResponseEmp");
+  const ComplaintDetails = Digit?.ComponentRegistryService?.getComponent("SWACHComplaintDetails");
   return (
     <React.Fragment>
       <div className="ground-container">
-      <BackButton>{t("CS_COMMON_BACK")}</BackButton>
+        <BackButton>{t("CS_COMMON_BACK")}</BackButton>
         {!location.includes(Employee.Response) && (
           <Switch>
             <Route
@@ -73,7 +73,7 @@ const Complaint = () => {
         )}
         <Switch>
           <Route path={match.url + Employee.CreateComplaint} component={() => <CreateComplaint parentUrl={match.url} />} />
-          <Route path={match.url + Employee.ComplaintDetails + ":id*"} component={() => <ComplaintDetails />} />
+          <Route path={match.url + Employee.ComplaintDetails + ":fullIdAndUlb*"} component={() => <ComplaintDetails />} />
           <Route path={match.url + Employee.Inbox} component={Inbox} />
           <Route path={match.url + Employee.Response} component={Response} />
         </Switch>

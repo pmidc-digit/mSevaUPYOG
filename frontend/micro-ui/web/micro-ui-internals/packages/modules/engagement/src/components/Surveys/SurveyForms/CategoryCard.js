@@ -94,6 +94,9 @@ const CategoryCard = ({ category, checked, readOnly, onDelete, hideQuestionLabel
             let obj = { ...item, selected: false };
             arr.push(obj);
           });
+          
+         arr.sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
+          console.log("arr",arr)
           dispatch(setQuestions(category.id, arr));
           setQuestionsList(arr);
           setShowQuestionTableList(true);

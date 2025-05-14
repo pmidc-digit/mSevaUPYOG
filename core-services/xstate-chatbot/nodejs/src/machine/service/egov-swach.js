@@ -10,7 +10,6 @@ const axios = require("axios");
 var FormData = require("form-data");
 var geturl = require("url");
 var path = require("path");
-const c = require("express-cluster");
 require("url-search-params-polyfill");
 
 let swachCreateRequestBody =
@@ -381,8 +380,11 @@ class SwachService {
         return { predictedCityCode, predictedCity, isCityDataMatch };
       else {
         predictedCityCode = responseBody.city_detected[0];
-        let localisationMessages =
-          await localisationService.getMessageBundleForCode(predictedCityCode);
+        predictedCityCode = predictedCityCode.split(" ");
+        predictedCityCode = predictedCityCode.join("");
+        // console.log("predictedCityCode", predictedCityCode);
+        let localisationMessages =await localisationService.getMessageBundleForCode(predictedCityCode);
+          // console.log("localisationMessages",localisationMessages)
         predictedCity = dialog.get_message(localisationMessages, locale);
         if (locale === "en_IN") {
           if (predictedCity.toLowerCase() === input.toLowerCase())
@@ -534,8 +536,6 @@ class SwachService {
     let city = slots.city;
     let userInfo = user.userInfo;
     let description = slots.description;
-
-    console.log("Persist Swach Complaint ----- ", slots);
 
     
 

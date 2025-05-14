@@ -17,6 +17,8 @@ const Inbox = ({ initialStates = {} }) => {
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
   let isMobile = Digit.Utils.browser.isMobile();
 
+  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
+
   useEffect(() => {
     (async () => {
       const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
@@ -90,6 +92,7 @@ const Inbox = ({ initialStates = {} }) => {
             currentPage={Math.floor(pageOffset / pageSize)}
             totalRecords={totalRecords}
             pageSizeLimit={pageSize}
+            localities={localities}
           />
         </div>
       );

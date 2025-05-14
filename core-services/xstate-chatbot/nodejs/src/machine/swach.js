@@ -342,13 +342,13 @@ const swach = {
         process: {
           onEntry: assign((context, event) => {
             // TODO: Generalised "disagree" intention
-            if (event.message.input.trim()?.toLowerCase() === "2") {
+            if (event.message?.input?.trim()?.toLowerCase() === "2") {
               context.slots.attendence["locationConfirmed"] = false;
               context.message = {
                 isValid: true,
               };
             } else if (
-              event.message.input.trim()?.toLowerCase() === "1"
+              event.message?.input?.trim()?.toLowerCase() === "1"
             ) {
               context.slots.attendence["locationConfirmed"] = true;
               context.slots.attendence.city =
@@ -387,10 +387,17 @@ const swach = {
                 context.message.isValid,
             },
             {
-              target: "process",
+              target: "#swachAttendenceConfirmLocation",
               cond: (context, event) => {
                 return !context.message.isValid;
               },
+              actions: assign((context, event) => {
+                let message = dialog.get_message(
+                  dialog.global_messages.error.retry,
+                  context.user.locale
+                );
+                dialog.sendMessage(context, message, false);
+              }),
             },
           ],
         },
@@ -1297,13 +1304,13 @@ const swach = {
                 process: {
                   onEntry: assign((context, event) => {
                     // TODO: Generalised "disagree" intention
-                    if (event.message.input.trim().toLowerCase() === "2") {
+                    if (event.message?.input?.trim().toLowerCase() === "2") {
                       context.slots.swach["locationConfirmed"] = false;
                       context.message = {
                         isValid: true,
                       };
                     } else if (
-                      event.message.input.trim().toLowerCase() === "1"
+                      event.message?.input?.trim().toLowerCase() === "1"
                     ) {
                       context.slots.swach["locationConfirmed"] = true;
                       context.slots.swach.city =
@@ -1355,10 +1362,17 @@ const swach = {
                         context.message.isValid && config.swachUseCase.geoSearch,     //need review
                     },
                     {
-                      target: "process",
+                      target: "#swachConfirmLocation",
                       cond: (context, event) => {
                         return !context.message.isValid;
                       },
+                      actions: assign((context, event) => {
+                        let message = dialog.get_message(
+                          dialog.global_messages.error.retry,
+                          context.user.locale
+                        );
+                        dialog.sendMessage(context, message, false);
+                      }),
                     },
                   ],
                 },

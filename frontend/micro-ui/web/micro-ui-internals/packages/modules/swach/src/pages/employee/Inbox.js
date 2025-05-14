@@ -17,7 +17,9 @@ const Inbox = ({ initialStates = {} }) => {
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
   let isMobile = Digit.Utils.browser.isMobile();
 
-  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
+  const ttID = localStorage.getItem("punjab-tenantId");
+
+  const { data: localities } = Digit.Hooks.useBoundaryLocalities(ttID, "admin", {}, t);
 
   useEffect(() => {
     (async () => {
@@ -75,11 +77,11 @@ const Inbox = ({ initialStates = {} }) => {
           onSearch={onSearch}
           searchParams={searchParams}
           onNextPage={fetchNextPage}
-            onPrevPage={fetchPrevPage}
-            onPageSizeChange={handlePageSizeChange}
-            currentPage={Math.floor(pageOffset / pageSize)}
-            totalRecords={totalRecords}
-            pageSizeLimit={pageSize}
+          onPrevPage={fetchPrevPage}
+          onPageSizeChange={handlePageSizeChange}
+          currentPage={Math.floor(pageOffset / pageSize)}
+          totalRecords={totalRecords}
+          pageSizeLimit={pageSize}
         />
       );
     } else {

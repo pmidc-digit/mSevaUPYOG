@@ -71,7 +71,7 @@
     "buildD:ptr": "cd packages/modules/ptr && yarn build",
     "build:hrms": "cd packages/modules/hrms && yarn build",
     "buildD:obps": "cd packages/modules/obps && yarn build",
-    "buildD:engagement": "cd packages/modules/engagement && yarn build",
+    "build:engagement": "cd packages/modules/engagement && yarn build",
     "build:noc": "cd packages/modules/noc && yarn build",
     "buildD:ws": "cd packages/modules/ws && yarn build",
     "buildd:bills": "cd packages/modules/bills && yarn build",

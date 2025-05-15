@@ -7,15 +7,31 @@ import { alphabeticalSortFunctionForTenantsBasedOnName } from "../../../../utils
 const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchFormState }) => {
   const { t } = useTranslation();
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
+  const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.SessionStorage.get("citizen.userRequestObject");
-  const userUlbs = ulbs
+ let isTenantFound= true;
+  let userUlbs = ulbs
     .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
+  if(userUlbs?.length===0){
+    isTenantFound = false;
+   userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}] 
+  }
   const selectedTenat = useMemo(() => {
+    if(userUlbs?.length>0 && isTenantFound===true){
+    
     const filtered = ulbs.filter((item) => item.code === tenantId);
     return filtered;
+    }
+    else{
+      
+       const filtered = userUlbs.filter((item) => item.code === tenantId);
+    return filtered;
+    }
   }, [ulbs]);
+
+// console.log("userUlbs",userUlbs,userInfo,ulbs)
 
   /**
    * ToDo how to display default value correctly ask @egov-saurabh
@@ -24,8 +40,17 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
   return (
     <>
       <SearchField>
-        <label>{t("City")} <span style={{ color: "red" }}>*</span></label>
-        <Controller
+        <label>
+          {t("City")} <span style={{ color: "red" }}>*</span>
+        </label>
+        {/* <Controller
+          rules={{ required: t("REQUIRED_FIELD") }}
+          defaultValue={tenantId}
+          render={(props) => <Dropdown option={cities} optionKey={"name"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
+          name={"tenantIds"}
+          control={controlSearchForm}
+        /> */}
+           <Controller
           rules={{ required: t("REQUIRED_FIELD") }}
           defaultValue={selectedTenat?.[0]}
           render={(props) => <Dropdown option={userUlbs} optionKey={"i18nKey"} selected={props.value} select={(e) => props.onChange(e)} t={t} />}
@@ -42,7 +67,7 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
           inputRef={registerRef({
             maxLength: {
               value: 60,
-              message: t("Survey Name should be less than 60 characters")//t("EXCEEDS_60_CHAR_LIMIT"),
+              message: t("Survey Name should be less than 60 characters"), //t("EXCEEDS_60_CHAR_LIMIT"),
             },
           })}
         />

@@ -17,6 +17,8 @@ import { CreateComplaint as CitizenCreateComplaint } from "./pages/citizen/Creat
 import { ComplaintsList } from "./pages/citizen/ComplaintsList";
 import ResponseCitizen from "./pages/citizen/Response";
 import ComplaintDetailsPage from "./pages/citizen/ComplaintDetails";
+import SelectGeolocation from "./pages/citizen/Create/Steps/SelectGeolocation"
+import SelectImages from "./pages/citizen/Create/Steps/SelectImages";
 
 
 export const SWACHReducers = getRootReducer;
@@ -73,6 +75,8 @@ const componentsToRegister = {
   SWACHComplaintsList : ComplaintsList,
   SWACHResponseCitzen : ResponseCitizen,
   SWACHComplaintDetailsPage : ComplaintDetailsPage,
+  SWACHSelectGeolocation: SelectGeolocation,
+  SWACHSelectImages: SelectImages
 };
 
 export const initSWACHComponents = () => {

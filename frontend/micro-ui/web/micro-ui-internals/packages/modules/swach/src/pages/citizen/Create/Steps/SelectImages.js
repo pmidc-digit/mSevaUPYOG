@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { FormStep, ImageUploadHandler, Loader } from "@mseva/digit-ui-react-components";
 
-const SelectImages = ({ t, config, onSelect, onSkip, value }) => {
+const SelectImages = ({ t, config, onSelect, onSkip, value, tenantId }) => {
   // const __initImages = Digit.SessionStorage.get("PGR_CREATE_IMAGES");
   const [uploadedImages, setUploadedImagesIds] = useState(() => {
     // __initImages ? __initImages : null
@@ -12,6 +12,7 @@ const SelectImages = ({ t, config, onSelect, onSkip, value }) => {
   const handleUpload = (ids) => {
     setUploadedImagesIds(ids);
     // Digit.SessionStorage.set("PGR_CREATE_IMAGES", ids);
+    onSelect({ uploadedImages: ids });
   };
 
   // const onSkip = () => onSelect();
@@ -28,7 +29,7 @@ const SelectImages = ({ t, config, onSelect, onSkip, value }) => {
 
   return (
     <FormStep config={config} onSelect={handleSubmit} onSkip={onSkip} t={t}>
-      <ImageUploadHandler tenantId={value.city_complaint?.code} uploadedImages={uploadedImages} onPhotoChange={handleUpload} />
+      <ImageUploadHandler tenantId={tenantId} uploadedImages={uploadedImages} onPhotoChange={handleUpload} />
     </FormStep>
   );
 };

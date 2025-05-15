@@ -248,6 +248,7 @@ export const ComplaintDetails = (props) => {
   // const tenantIdPB = localStorage.getItem("punjab-tenantId");
   // console.log("tenantIdPB", tenantIdPB);
   const { isLoading, complaintDetails, revalidate: revalidateComplaintDetails } = Digit.Hooks.swach.useComplaintDetails({ tenantId: ulb, id });
+  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: ulb, id, moduleCode: "SWACH", role: "EMPLOYEE" });
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([]);
 
@@ -277,6 +278,7 @@ export const ComplaintDetails = (props) => {
   const [rerender, setRerender] = useState(1);
   const [viewTimeline, setViewTimeline] = useState(false);
   const client = useQueryClient();
+
   function popupCall(option) {
     setDisplayMenu(false);
     setPopup(true);
@@ -324,9 +326,11 @@ export const ComplaintDetails = (props) => {
   function zoomImage(imageSource, index) {
     setImageZoom(imageSource);
   }
+
   function zoomImageWrapper(imageSource, index) {
     zoomImage(imagesToShowBelowComplaintDetails?.fullImage[index]);
   }
+
   function onCloseImageZoom() {
     setImageZoom(null);
   }
@@ -387,11 +391,13 @@ export const ComplaintDetails = (props) => {
   if (isLoading || workflowDetails.isLoading || loader) {
     return <Loader />;
   }
+
   const toggleTimeline = () => {
     setShowAllTimeline((prev) => !prev);
   };
 
   if (workflowDetails.isError) return <React.Fragment>{workflowDetails.error}</React.Fragment>;
+
   const handleViewTimeline = () => {
     setViewTimeline(true);
 
@@ -400,6 +406,7 @@ export const ComplaintDetails = (props) => {
       timelineSection.scrollIntoView({ behavior: "smooth" });
     }
   };
+
   const getTimelineCaptions = (checkpoint, index, arr) => {
     const { wfComment: comment, thumbnailsToShow } = checkpoint;
     function zoomImageTimeLineWrapper(imageSource, index, thumbnailsToShow) {
@@ -477,6 +484,13 @@ export const ComplaintDetails = (props) => {
     );
   };
 
+  const localityCode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.locality?.code;
+  const localityObj = localities?.find((loc) => loc?.code == localityCode);
+  const localityName = localityObj?.name || "";
+  const city = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.city || "";
+  const pincode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.pincode || "";
+  const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
+
   return (
     <React.Fragment>
       <Card>
@@ -490,18 +504,23 @@ export const ComplaintDetails = (props) => {
         ) : (
           <StatusTable>
             {complaintDetails &&
-              Object.keys(complaintDetails?.details).map((k, i, arr) => (
-                <Row
-                  key={k}
-                  label={t(k)}
-                  text={
-                    Array.isArray(complaintDetails?.details[k])
-                      ? complaintDetails?.details[k].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
-                      : t(complaintDetails?.details[k]) || "N/A"
-                  }
-                  last={arr.length - 1 === i}
-                />
-              ))}
+              Object.keys(complaintDetails?.details)
+                .filter((k) => k !== "ES_CREATECOMPLAINT_ADDRESS")
+                .map((k, i, arr) => (
+                  <Row
+                    key={k}
+                    label={t(k)}
+                    text={
+                      Array.isArray(complaintDetails?.details[k])
+                        ? complaintDetails?.details[k].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
+                        : t(complaintDetails?.details[k]) || "N/A"
+                    }
+                    // last={arr.length - 1 === i}
+                  />
+                ))}
+
+            <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} />
+
             <Row label="Name" text={complaintDetails?.service?.citizen?.name} />
 
             <Row label="Mobile Number" text={complaintDetails?.service?.citizen?.mobileNumber} />

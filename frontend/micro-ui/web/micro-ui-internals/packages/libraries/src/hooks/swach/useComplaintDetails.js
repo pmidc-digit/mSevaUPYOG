@@ -10,8 +10,6 @@ const getThumbnails = async (ids, tenantId) => {
   }
 };
 
-console.log("here");
-
 const getDetailsRow = ({ id, service, complaintType }) => ({
   CS_COMPLAINT_DETAILS_COMPLAINT_NO: id,
   CS_COMPLAINT_DETAILS_APPLICATION_STATUS: `CS_COMMON_${service.applicationStatus}`,
@@ -20,12 +18,13 @@ const getDetailsRow = ({ id, service, complaintType }) => ({
   // CS_ADDCOMPLAINT_PRIORITY_LEVEL: service?.priority,
   CS_COMPLAINT_ADDTIONAL_DETAILS: service.description,
   CS_COMPLAINT_FILED_DATE: Digit.DateUtils.ConvertTimestampToDate(service.auditDetails.createdTime),
-  ES_CREATECOMPLAINT_ADDRESS: [
-    service.address.landmark,
-    Digit.Utils.locale.getLocalityCode(service.address.locality, service.tenantId),
-    service.address.city,
-    service.address.pincode,
-  ],
+  // ES_CREATECOMPLAINT_ADDRESS: [
+  //   service.address.landmark,
+  //   // Digit.Utils.locale.getLocalityCode(service.address.locality, service.tenantId),
+  //   service.address.city,
+  //   service.address.pincode,
+  // ],
+  ES_CREATECOMPLAINT_ADDRESS: service.address,
 });
 
 const isEmptyOrNull = (obj) => obj === undefined || obj === null || Object.keys(obj).length === 0;

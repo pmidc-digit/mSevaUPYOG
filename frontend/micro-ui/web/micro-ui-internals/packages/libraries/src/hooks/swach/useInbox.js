@@ -10,8 +10,6 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
 
   //   const { applicationStatus = [], serviceCode = [], locality = [], tenants = [] } = swachfilters;
 
-  console.log("filters====", filters);
-
   const serviceRequestId = filters?.search?.serviceRequestId;
   const mobileNumber = filters?.search?.mobileNumber;
   const applicationStatus = "";
@@ -30,7 +28,7 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
       ...(status?.length > 0 ? { status: status?.map((item) => item?.code) } : {}),
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
       // ...(uuid && Object.keys(uuid)?.length > 0 ? { assignee: uuid?.code === "ASSIGNED_TO_ME" ? USER_UUID : "" } : {}),
-      // ...(userId ? { assignee: userId ? userId : "" } : {}),
+      ...(userId ? { assignee: userId ? userId : "" } : {}),
     },
     moduleSearchCriteria: {
       ...(mobileNumber ? { mobileNumber: mobileNumber } : {}),

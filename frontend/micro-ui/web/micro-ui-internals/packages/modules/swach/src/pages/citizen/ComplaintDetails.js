@@ -26,9 +26,21 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
   let workFlowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: tenantId, id, moduleCode: "SWACH" });
   // const { data: ComplainMaxIdleTime, isLoading: ComplainMaxIdleTimeLoading } = Digit.Hooks.swach.useMDMS.ComplainClosingTime(tenantId?.split(".")[0]);
 
+  // useEffect(() => {
+  //   getWorkFlow(workFlowDetails.data);
+  // }, []);
   useEffect(() => {
-    getWorkFlow(workFlowDetails.data);
-  }, [workFlowDetails.data]);
+      if (workFlowDetails) {
+        console.log("workFlowDetails swach citizen", workFlowDetails,complaintDetails);
+        const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
+        if (complaintTimelineData) {
+          // const actionByCitizenOnComplaintCreation = complaintTimelineData;
+  
+          const { thumbnailsToShow } = complaintTimelineData?.[0];
+          thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
+        }
+      }
+  }, [workFlowDetails]);
 
   useEffect(() => {
     workFlowDetails.revalidate();
@@ -70,7 +82,11 @@ const ComplaintDetailsPage = (props) => {
   const [disableComment, setDisableComment] = useState(true);
 
   const [loader, setLoader] = useState(false);
-  const [viewTimeline, setViewTimeline]=useState(false);
+  const [viewTimeline, setViewTimeline] = useState(false);
+
+  useEffect(()=>{
+    console.log("imageShownBelowComplaintDetails",imageShownBelowComplaintDetails);
+  },[imageShownBelowComplaintDetails])
 
   useEffect(() => {
     (async () => {
@@ -100,17 +116,17 @@ const ComplaintDetailsPage = (props) => {
       } 
       setViewTimeline(true);   
   };
-  const onWorkFlowChange = (data) => {
-    let timeline = data?.timeline;
-    timeline && timeline[0].timeLineActions?.filter((e) => e === "COMMENT").length ? setDisableComment(false) : setDisableComment(true);
-    if (timeline) {
-      const actionByCitizenOnComplaintCreation = timeline.find((e) => e?.performedAction === "APPLY");
-      if(actionByCitizenOnComplaintCreation){
-        const { thumbnailsToShow } = actionByCitizenOnComplaintCreation;
-        setImageToShowBelowComplaintDetails(thumbnailsToShow);
-      }
-    }
-  };
+  // const onWorkFlowChange = (data) => {
+  //   let timeline = data?.timeline;
+  //   timeline && timeline[0].timeLineActions?.filter((e) => e === "COMMENT").length ? setDisableComment(false) : setDisableComment(true);
+  //   if (timeline) {
+  //     const actionByCitizenOnComplaintCreation = timeline.find((e) => e?.performedAction === "APPLY");
+  //     if(actionByCitizenOnComplaintCreation){
+  //       const { thumbnailsToShow } = actionByCitizenOnComplaintCreation;
+  //       setImageToShowBelowComplaintDetails(thumbnailsToShow);
+  //     }
+  //   }
+  // };
 
   const submitComment = async () => {
     let detailsToSend = { ...complaintDetails };
@@ -167,16 +183,26 @@ const ComplaintDetailsPage = (props) => {
                   />
                 ))}
               </StatusTable>
+              <h1 style={{ fontSize: "16px", marginBottom: "16px", color: "blue", fontWeight: "bolder" }}>
+                <a
+                  href={`https://www.google.com/maps?q=${complaintDetails?.service?.address?.geoLocation?.latitude},${complaintDetails?.service?.address?.geoLocation?.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Location on Google Maps
+                </a>
+              </h1>
               {imageShownBelowComplaintDetails?.thumbs ? (
                 <DisplayPhotos srcs={imageShownBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />
               ) : null}
               {imageZoom ? <ImageViewer imageSrc={imageZoom} onClose={onCloseImageZoom} /> : null}
             </Card>
             <Card>
-            <div id="timeline">
-              {complaintDetails?.service && (
-                <WorkflowComponent getWorkFlow={onWorkFlowChange} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
-              )}
+              <div id="timeline">
+                {complaintDetails?.service && (
+                  // <WorkflowComponent getWorkFlow={onWorkFlowChange} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
+                  <WorkflowComponent getWorkFlow={setImageToShowBelowComplaintDetails} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
+                )}
               </div>
             </Card>
             {/* <Card>

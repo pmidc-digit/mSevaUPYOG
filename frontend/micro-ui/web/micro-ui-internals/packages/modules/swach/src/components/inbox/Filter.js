@@ -56,12 +56,10 @@ const Filter = (props) => {
         const cityObj = { name: matchedCity?.name, code: matchedCity?.code };
         let finalCode;
         if (cityObj?.code == "pb.punjab") {
-          console.log("here");
           finalCode = "pb.amritsar";
           localStorage.setItem("punjab-tenantId", "pb.amritsar");
           setSelectedTenant({ name: "Amritsar", code: "pb.amritsar" });
         } else {
-          console.log("not here");
           finalCode = cityObj?.code;
           setSelectedTenant(cityObj);
         }
@@ -189,21 +187,24 @@ const Filter = (props) => {
     }
   };
 
-  useEffect(() => {
-    console.log("swachfilters", swachfilters);
-  }, [swachfilters]);
-
   function clearAll() {
     let swachReset = { serviceCode: [], locality: [], applicationStatus: [] };
     let wfRest = { assigned: [{ code: [] }] };
-    setSwachFilters(swachReset);
-    setWfFilters(wfRest);
+    // setSwachFilters(swachReset);
+    setSwachFilters((prev) => ({
+      serviceCode: [],
+      locality: [],
+      applicationStatus: [],
+      tenants: prev.tenants, // Preserve tenants
+    }));
+    setWfFilters({ assigned: [{ code: [] }] });
+    // setWfFilters(wfRest);
     pgrQuery = {};
     wfQuery = {};
     setSelectedAssigned("");
     setSelectedComplaintType(null);
     setSelectedLocality(null);
-    setSelectedTenant(null);
+    // setSelectedTenant(null);
   }
 
   const handleFilterSubmit = () => {

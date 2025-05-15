@@ -263,8 +263,7 @@ export const ComplaintDetails = (props) => {
       const { data: { timeline: complaintTimelineData } = {} } = workflowDetails;
       if (complaintTimelineData) {
         // const actionByCitizenOnComplaintCreation = complaintTimelineData;
-
-        const { thumbnailsToShow } = complaintTimelineData;
+        const { thumbnailsToShow } = complaintTimelineData?.[0];
         thumbnailsToShow ? setImagesToShowBelowComplaintDetails(thumbnailsToShow) : null;
       }
     }
@@ -285,7 +284,7 @@ export const ComplaintDetails = (props) => {
 
   useEffect(() => {
     (async () => {
-      const assignWorkflow = await Digit?.WorkflowService?.getByBusinessId(tenantId, id);
+      const assignWorkflow = await Digit?.WorkflowService?.getByBusinessId(ulb, id);
     })();
   }, [complaintDetails]);
 
@@ -527,7 +526,6 @@ export const ComplaintDetails = (props) => {
           <DisplayPhotos srcs={imagesToShowBelowComplaintDetails?.thumbs} onClick={(source, index) => zoomImageWrapper(source, index)} />
         ) : null}
         <BreakLine />
-
         {workflowDetails?.isLoading && <Loader />}
         {!workflowDetails?.isLoading && (
           <React.Fragment>

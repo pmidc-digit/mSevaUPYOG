@@ -9,7 +9,6 @@ import { FormComposer } from "../../../components/FormComposer";
 import { createComplaint } from "../../../redux/actions/index";
 
 export const CreateComplaint = ({ parentUrl }) => {
-  console.log("parentUrl", parentUrl);
   const cities = Digit.Hooks.swach.useTenants();
   const { t } = useTranslation();
 
@@ -20,8 +19,11 @@ const propetyData=localStorage.getItem("swachProperty")
   const [subType, setSubType] = useState(JSON?.parse(sessionStorage.getItem("subType")) || {});
   const [priorityLevel, setPriorityLevel]=useState(JSON?.parse(sessionStorage.getItem("PriorityLevel"))||{})
   const [pincode, setPincode] = useState("");
-  const [mobileNumber, setMobileNumber] = useState(sessionStorage.getItem("mobileNumber") || "");
-  const [fullName, setFullName] = useState(sessionStorage.getItem("name") || "");
+  // const [mobileNumber, setMobileNumber] = useState(sessionStorage.getItem("mobileNumber") || "");
+  // const [fullName, setFullName] = useState(sessionStorage.getItem("name") || "");
+  const userInfo = JSON.parse(localStorage.getItem("user-info"));
+  const [mobileNumber, setMobileNumber] = useState(userInfo?.mobileNumber || "");
+  const [fullName, setFullName] = useState(userInfo?.name || "");
   const [emailId, setEmail] = useState(sessionStorage.getItem("emailId") || "");
   const [selectedCity, setSelectedCity] = useState(getCities()[0] ? getCities()[0] : null);
 const [propertyId, setPropertyId]= useState("")
@@ -64,7 +66,6 @@ const [description, setDescription] = useState("")
   const SelectGeolocation = Digit?.ComponentRegistryService?.getComponent("SWACHSelectGeolocation");
   const SelectImages = Digit?.ComponentRegistryService?.getComponent("SWACHSelectImages");
 
-  console.log("tenantId for Swach",tenantId)
  const  priorityMenu= 
   [
     {
@@ -119,7 +120,6 @@ const [description, setDescription] = useState("")
   }, [pincode]);
 
   useEffect(() => {
-    console.log("UseEffect Called")
     setComplaintType({"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"})
     selectedType();
   },[])
@@ -140,12 +140,10 @@ const [description, setDescription] = useState("")
   //   }
   // }
 
-  console.log("setSubTypeMenu",subTypeMenu);
 
   async function selectedType() {
     const value = await serviceDefinitions.getSubMenu(tenantId, {"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"}, t)
    setSubTypeMenu(value);
-   console.log("setSubTypeMenu value",value)
   }
   async function selectedPriorityLevel(value){
     sessionStorage.setItem("priorityLevel", JSON.stringify(value))
@@ -165,8 +163,13 @@ const [description, setDescription] = useState("")
   };
 
   function selectLocality(locality) {
-    console.log("ddddddddd",locality)
     setSelectedLocality(locality);
+  }
+
+  function throttle (){
+    setTimeout(()=>{
+      setSubmitted(false);
+    },5000)
   }
 
   const wrapperSubmit = (data) => {
@@ -177,6 +180,7 @@ const [description, setDescription] = useState("")
     }
     setSubmitted(true);
     !submitted && onSubmit(data);
+    !submitted && throttle();
   };
   //On SUbmit
   const onSubmit = async (data) => {
@@ -222,7 +226,6 @@ const [description, setDescription] = useState("")
   const handleMobileNumber = (event) => {
  
     const { value } = event.target;
-    console.log("handleMobileNumber",value)
     setMobileNumber(value);
   
   };
@@ -399,7 +402,6 @@ const [description, setDescription] = useState("")
                 <SelectGeolocation
                   t={t}
                   onSelect={() => {
-                    console.log("tempLocation",tempLocation)
                     if (tempLocation?.current?.location?.longitude !== 76.765040 && tempLocation?.current?.location?.latitude !== 30.730048) {
                       setGeoLocation(tempLocation.current);                      
                     }else{
@@ -425,7 +427,7 @@ const [description, setDescription] = useState("")
       head: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES"),
       body:[
         {
-          label: t("CS_COMPLAINT_DETAILS_GEO_LOCATION"),
+          label: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES_TEXT"),
               type: "component",
               key: "imageSelector",
               withoutLabel: true,
@@ -459,7 +461,6 @@ const [description, setDescription] = useState("")
     },
   ];
     useEffect(()=>{
-      console.log("heloo world",propetyData )
       if(propetyData !== "undefined"   && propetyData !== null)
       {
        let data =JSON.parse(propetyData)

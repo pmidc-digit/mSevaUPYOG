@@ -19,7 +19,9 @@ const Inbox = ({ initialStates = {} }) => {
 
   const ttID = localStorage.getItem("punjab-tenantId");
 
-  const { data: localities } = Digit.Hooks.useBoundaryLocalities(ttID, "admin", {}, t);
+  const tenantIdCheck = ttID || tenantId;
+
+  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantIdCheck, "admin", {}, t);
 
   useEffect(() => {
     (async () => {

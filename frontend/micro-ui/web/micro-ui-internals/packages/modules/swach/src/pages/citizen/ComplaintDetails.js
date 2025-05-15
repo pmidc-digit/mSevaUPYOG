@@ -105,8 +105,10 @@ const ComplaintDetailsPage = (props) => {
     timeline && timeline[0].timeLineActions?.filter((e) => e === "COMMENT").length ? setDisableComment(false) : setDisableComment(true);
     if (timeline) {
       const actionByCitizenOnComplaintCreation = timeline.find((e) => e?.performedAction === "APPLY");
-      const { thumbnailsToShow } = actionByCitizenOnComplaintCreation;
-      setImageToShowBelowComplaintDetails(thumbnailsToShow);
+      if(actionByCitizenOnComplaintCreation){
+        const { thumbnailsToShow } = actionByCitizenOnComplaintCreation;
+        setImageToShowBelowComplaintDetails(thumbnailsToShow);
+      }
     }
   };
 

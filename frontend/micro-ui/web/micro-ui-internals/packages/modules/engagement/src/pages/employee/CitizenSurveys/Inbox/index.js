@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState ,useEffect} from "react";
+import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState} from "react";
 import { InboxComposer, DocumentIcon, Toast, Header } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFieldsComponent";

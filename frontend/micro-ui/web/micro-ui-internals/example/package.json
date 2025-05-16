@@ -23,7 +23,7 @@
     "@mseva/digit-ui-module-bills": "1.0.4",
     "@mseva/digit-ui-module-commonpt": "1.0.2",
     "@mseva/digit-ui-module-ptr": "1.0.15",
-    "@mseva/digit-ui-module-swach": "1.0.19",
+    "@mseva/digit-ui-module-swach": "1.0.20",
     "@mseva/digit-ui-module-pt": "1.0.6",
     "@mseva/digit-ui-module-tl": "1.0.4",
     "http-proxy-middleware": "^1.0.5",

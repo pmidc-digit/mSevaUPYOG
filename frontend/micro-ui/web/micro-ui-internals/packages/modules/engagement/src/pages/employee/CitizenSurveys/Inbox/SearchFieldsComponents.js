@@ -9,14 +9,28 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.SessionStorage.get("citizen.userRequestObject");
-  const userUlbs = ulbs
+  let isTenantFound= true;
+  let userUlbs = ulbs
     .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
+  if(userUlbs?.length===0){
+    isTenantFound = false;
+   userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}] 
+  }
   const selectedTenat = useMemo(() => {
+    if(userUlbs?.length>0 && isTenantFound===true){
+      console.log("hi")
     const filtered = ulbs.filter((item) => item.code === tenantId);
     return filtered;
+    }
+    else{
+      console.log("holla")
+       const filtered = userUlbs.filter((item) => item.code === tenantId);
+    return filtered;
+    }
   }, [ulbs]);
 
+console.log("userUlbs",userUlbs,userInfo,ulbs)
   /**
    * ToDo how to display default value correctly ask @egov-saurabh
    */

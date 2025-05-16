@@ -53,7 +53,8 @@ const ApplicationDetails = (props) => {
     showTimeLine = true,
     oldValue,
     isInfoLabel = false,
-    clearDataDetails
+    clearDataDetails,
+    propertyId
   } = props;
   
   useEffect(() => {
@@ -232,7 +233,7 @@ const ApplicationDetails = (props) => {
         window.location.assign(window.location.href.split("/editApplication")[0]+window.location.href.split("editApplication")[1]);
           }    
   };
-
+  console.log("application Details in template",applicationDetails)
   return (
     <React.Fragment>
       {!isLoading ? (
@@ -253,6 +254,7 @@ const ApplicationDetails = (props) => {
             showTimeLine={showTimeLine}
             oldValue={oldValue}
             isInfoLabel={isInfoLabel}
+             propertyId={propertyId}
           />
           {showModal ? (
             <ActionModal
@@ -292,6 +294,7 @@ const ApplicationDetails = (props) => {
             forcedActionPrefix={forcedActionPrefix}
             ActionBarStyle={ActionBarStyle}
             MenuStyle={MenuStyle}
+           
           />
           ):(<div >
             <SubmitBar style={{ marginRight:20}} label={t("BPA_EDIT_UPDATE")} onSubmit={onSubmit}  id/>

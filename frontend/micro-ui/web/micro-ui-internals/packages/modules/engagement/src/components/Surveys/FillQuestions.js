@@ -37,12 +37,14 @@ const FillQuestions = (props) => {
   // let { data: tenantlocalties, isLoadingLocality } = Digit.Hooks.useBoundaryLocalities(city, "revenue", { enabled: !!city }, t);
   useEffect(() => {
     (async () => {
+     
       let response = await Digit.LocationService.getLocalities(city);
       let __localityList = [];
       if (response && response.TenantBoundary.length > 0) {
         __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
       }
       setLocalityList(__localityList);
+    
     })();
   }, [city]);
   useEffect(() => {
@@ -193,7 +195,30 @@ const FillQuestions = (props) => {
   //     "lastModifiedTime": 1741255647601
   // }];
 
-  const data = prevProps.surveyDetails;
+  let data = prevProps.surveyDetails;
+  console.log("data",data)
+ 
+
+ data = {
+
+...data,
+  sections: data.sections
+    .sort((a, b) => a.sectionOrder - b.sectionOrder)
+    .map(section => ({
+      ...section,
+      questions: section.questions
+        .sort((a, b) => a.qorder - b.qorder)
+        .map(question => ({
+          ...question,
+          question: {
+            ...question.question,
+            options: question.question.options.sort((a, b) => a?.optionOrder - b?.optionOrder)
+          }
+        }))
+    }))
+
+};
+
 
   const fetchAnswer = async (status) => {
     let payload = {
@@ -345,7 +370,7 @@ const FillQuestions = (props) => {
             const birthDate = new Date(response?.user[0]?.dob);
             let age = today.getFullYear() - birthDate.getFullYear();
             const monthDifference = today.getMonth() - birthDate.getMonth();
-
+           console.log("in user")
             if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
               age--;
             }
@@ -362,6 +387,9 @@ const FillQuestions = (props) => {
           }
         } else {
           // setCitizenFound(false)
+          console.log("in user error")
+          alert("ERROR FILE FETCHING CITIZEN DETAILS")
+          return;
           setShowToast({ key: true, isError: true, label: `ERROR FILE FETCHING CITIZEN DETAILS` });
         }
       })
@@ -1321,7 +1349,7 @@ const FillQuestions = (props) => {
         );
     }
   };
-  data.sections.map((s) => console.log("data sec", s.title));
+ // data.sections.map((s) => console.log("data sec", s.title));
   const closeToast = () => {
     setShowToast(null);
   };

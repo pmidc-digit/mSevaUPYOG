@@ -80,6 +80,8 @@ import TransferProof from "./pageComponents/Mutate/transferReasonDocument";
 import UpdateNumber from "./pages/citizen/MyProperties/updateNumber";
 import EmployeeUpdateOwnerNumber from "./pages/employee/updateNumber";
 import PropertyStructureDetails from "./pageComponents/PropertyStructureDetails";
+import PropertyDetailsCitizen from "./pages/citizen/MyProperties/PropertyDetails";
+import {PropertyApplicationDetails}  from "./pages/citizen/MyProperties/PropertyApplicationDetails";
 //import PTCitizenFeedback from "@upyog/digit-ui-module-core/src/components/PTCitizenFeedback";
 
 import EmployeeApp from "./pages/employee";
@@ -251,6 +253,8 @@ const componentsToRegister = {
   PTNewFormStepThreeCitizen,
   PTNewFormStepFourCitizen,
   PTNewFormSummaryStepFiveCitizen,
+  PropertyDetailsCitizen,
+  PropertyApplicationDetails
   
 };
 

@@ -38,7 +38,10 @@ import DocumentsPreview from "./DocumentsPreview";
 import InfoDetails from "./InfoDetails";
 import ViewBreakup from "./ViewBreakup";
 import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bill-details/arrear-summary";
+import AssessmentHistory from "./AssessmentHistory";
 import { getOrderDocuments } from "../../../obps/src/utils";
+import ApplicationHistory from "./ApplicationHistory";
+import PaymentHistory from "./PaymentHistory";
 function ApplicationDetailsContent({
   applicationDetails,
   demandData,
@@ -55,11 +58,13 @@ function ApplicationDetailsContent({
   paymentsList,
   oldValue,
   isInfoLabel = false,
+  propertyId
 }) {
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
+  const [payments,setPayments]=useState([])
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
   console.log("appl", applicationDetails);
@@ -69,15 +74,67 @@ function ApplicationDetailsContent({
   }
 
   const [fetchBillData, updatefetchBillData] = useState({});
+  const [assessmentDetails,setAssessmentDetails] = useState()
+  const [filtered,setFiltered]=useState([])
+    
   const setBillData = async (tenantId, propertyIds, updatefetchBillData, updateCanFetchBillData) => {
     const assessmentData = await Digit.PTService.assessmentSearch({ tenantId, filters: { propertyIds } });
     let billData = {};
+    console.log("assessment data",assessmentData)
+   
     if (assessmentData?.Assessments?.length > 0) {
+      
+const activeRecords = assessmentData.Assessments.filter(a => a.status === 'ACTIVE');
+
+// Helper to normalize timestamp to date only (midnight)
+function normalizeDate(timestamp) {
+  const date = new Date(timestamp);
+  date.setHours(0, 0, 0, 0);
+  return date.getTime();
+}
+
+
+
+const latestMap = new Map();
+
+activeRecords.forEach(record => {
+ 
+const normalizedDate = normalizeDate(record.assessmentDate);
+  const key = `${normalizedDate}_${record.financialYear}`;
+  const existing = latestMap.get(key);
+
+  if (!existing || record.createdDate > existing.createdDate) {
+    latestMap.set(key, record);
+  }
+});
+
+
+console.log("grouped",latestMap)
+
+// Step 3: Convert grouped object to array
+const filteredAssessment=Array.from(latestMap.values());
+setFiltered(filteredAssessment)
+console.log(filteredAssessment);
+
+//       filtered = Object.values(
+//   assessmentData.Assessments
+//     .filter(a => a.status === 'ACTIVE')
+//     .reduce((acc, curr) => {
+//       const key = `${curr.assessmentDate}_${curr.financialYear}`;
+//       if (!acc[key] || curr.createdDate > acc[key].createdDate) {
+//         acc[key] = curr;
+//       }
+//       return acc;
+//     }, {})
+// );
+// console.log("filtered",filtered)
+      setAssessmentDetails(assessmentData?.Assessments)
       billData = await Digit.PaymentService.fetchBill(tenantId, {
         businessService: "PT",
         consumerCode: propertyIds,
       });
     }
+    console.log("bill Data",billData)
     updatefetchBillData(billData);
     updateCanFetchBillData({
       loading: false,
@@ -85,12 +142,17 @@ function ApplicationDetailsContent({
       canLoad: true,
     });
   };
+  console.log("fetch bill data",fetchBillData)
   const [billData, updateCanFetchBillData] = useState({
     loading: false,
     loaded: false,
     canLoad: false,
   });
 
+
+
+
+console.log("filtered",filtered)
   if (applicationData?.status == "ACTIVE" && !billData.loading && !billData.loaded && !billData.canLoad) {
     updateCanFetchBillData({
       loading: false,
@@ -315,8 +377,8 @@ function ApplicationDetailsContent({
   };
 
   const applicationData_pt = applicationDetails.applicationData;
-  const propertyIds = applicationDetails.applicationData.propertyId || "";
-  const checkPropertyStatus = applicationDetails.additionalDetails.propertytobestatus;
+  const propertyIds = applicationDetails?.applicationData?.propertyId || "";
+  const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
   const PropertyInActive = () => {
     if (checkPropertyStatus == "ACTIVE") {
       updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
@@ -347,7 +409,26 @@ function ApplicationDetailsContent({
     alert("access property");
   };
 
-  // console.log("applicationDetails?.applicationDetails",applicationDetails?.applicationDetails)
+   console.log("applicationDetails?.applicationDetails",applicationDetails?.applicationDetails)
+   console.log("infolabel",isInfoLabel)
+   console.log("assessment details",assessmentDetails)
+
+   useEffect(()=>{
+   try{
+   let filters={
+    consumerCodes:propertyId,
+   // tenantId: tenantId
+   }
+   const auth=true
+    Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
+      setPayments(response?.Payments)
+      console.log(response)  
+    })
+   }
+   catch(error){
+   console.log(error)
+   }
+   },[])
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
@@ -563,7 +644,7 @@ function ApplicationDetailsContent({
             <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={applicationDetails?.applicationData} />
           )}
           {detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />}
-          {detail?.additionalDetails?.documents && <PropertyDocuments documents={detail?.additionalDetails?.documents} />}
+          {/* {detail?.additionalDetails?.documents && <PropertyDocuments documents={detail?.additionalDetails?.documents} />} */}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}
@@ -580,8 +661,13 @@ function ApplicationDetailsContent({
           )}
           {detail?.additionalDetails?.estimationDetails && <WSFeeEstimation wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
+        
         </React.Fragment>
       ))}
+        {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
+        <PaymentHistory payments={payments}/>
+        <ApplicationHistory applicationData={applicationDetails?.applicationData}/>
+
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
           <BreakLine />
@@ -642,7 +728,7 @@ function ApplicationDetailsContent({
         </React.Fragment>
       )}
       {/* table for DCB Details */}
-      <CardSectionHeader style={{ marginBottom: "16px", marginTop: "16px", fontSize: "24px" }}>DCB Details</CardSectionHeader>
+      {/* <CardSectionHeader style={{ marginBottom: "16px", marginTop: "16px", fontSize: "24px" }}>DCB Details</CardSectionHeader>
       <table border="1px" style={tableStyles.table}>
         <thead>
           <tr>
@@ -705,7 +791,7 @@ function ApplicationDetailsContent({
       <td style={tableStyles.td}>0.0</td>
       <td style={tableStyles.td}>0.0</td>
     </tr> */}
-          <tr>
+          {/* <tr>
             <th style={tableStyles.th}>Total</th>
             <td style={tableStyles.td}>{totalDemandTax}</td>
             <td style={tableStyles.td}>{totalDemandInterest}</td>
@@ -741,8 +827,10 @@ function ApplicationDetailsContent({
             <th style={tableStyles.th}>Total Balance</th>
             <td style={tableStyles.td}>{totalBalanceTax}</td>
           </tr>
-        </tbody>
-      </table>
+        </tbody> */}
+      {/* </table> */}
+
+
       <ActionBar className="clear-search-container" style={{ display: "block" }}>
         <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />
         <SubmitBar label={"Make Property Inactive"} style={{ marginLeft: "20px" }} onSubmit={PropertyInActive} />

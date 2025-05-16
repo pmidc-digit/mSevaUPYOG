@@ -53,9 +53,9 @@ export const FormComposer = (props) => {
         return <TextArea className="field desktop-w-full" value={value} name={populators.name || ""} {...populators} inputRef={register(populators.validation)} />;
       case "component":
         {
-          
-          if(props?.config?.[1]?.body?.[2]?.isProperty)
-          {
+
+          // if(props?.config?.[1]?.body?.[2]?.isProperty)
+          // {
             return (
               <Controller
                 render={(props) => (
@@ -80,7 +80,7 @@ export const FormComposer = (props) => {
                 control={control}
               />
             );
-          }
+          // }
         }
        
 

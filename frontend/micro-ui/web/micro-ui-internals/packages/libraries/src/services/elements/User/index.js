@@ -25,9 +25,13 @@ export const UserService = {
     return ServiceRequest({
       serviceName: "logoutUser",
       url: Urls.UserLogout,
-      data: { access_token: user?.access_token },
+      data: {},
       auth: true,
-      params: { tenantId: type === "CITIZEN" ? Digit.ULBService.getStateId() : Digit.ULBService.getCurrentTenantId() },
+      params: { tenantId: type === "CITIZEN"
+        ? Digit.ULBService.getStateId()
+        : Digit.ULBService.getCurrentTenantId(),
+      access_token: user?.access_token, // Now added in query params
+       },
     });
   },
   getType: () => {

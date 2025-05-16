@@ -15,7 +15,8 @@ const Filter = (props) => {
   let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
   const { searchParams } = props;
 
-  const isAssignedToMe = searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
+  const isAssignedToMe =
+    tenantId !== "pb.punjab" && searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
 
   const assignedToOptions = useMemo(
     () => [
@@ -25,7 +26,12 @@ const Filter = (props) => {
     [t]
   );
 
-  const [selectAssigned, setSelectedAssigned] = useState(isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]);
+  console.log("tenantId", tenantId);
+
+  const defaultAssignedOption = tenantId === "pb.punjab" ? assignedToOptions[1] : isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1];
+  const defaultAssignee = tenantId === "pb.punjab" ? [{ code: "" }] : [{ code: uuid }];
+
+  const [selectAssigned, setSelectedAssigned] = useState(defaultAssignedOption);
 
   const [selectedComplaintType, setSelectedComplaintType] = useState(null);
   const [selectedLocality, setSelectedLocality] = useState(null);
@@ -41,7 +47,7 @@ const Filter = (props) => {
 
   const [wfFilters, setWfFilters] = useState(
     searchParams?.filters?.wfFilters || {
-      assignee: [{ code: uuid }],
+      assignee: defaultAssignee,
     }
   );
 
@@ -75,8 +81,9 @@ const Filter = (props) => {
 
   const onRadioChange = (value) => {
     setSelectedAssigned(value);
-    uuid = value.code === "ASSIGNED_TO_ME" ? uuid : "";
-    setWfFilters({ ...wfFilters, assignee: [{ code: uuid }] });
+    // uuid = value.code === "ASSIGNED_TO_ME" ? uuid : "";
+    const assigneeCode = value.code === "ASSIGNED_TO_ME" ? uuid : "";
+    setWfFilters({ ...wfFilters, assignee: [{ code: assigneeCode }] });
   };
 
   useEffect(() => {

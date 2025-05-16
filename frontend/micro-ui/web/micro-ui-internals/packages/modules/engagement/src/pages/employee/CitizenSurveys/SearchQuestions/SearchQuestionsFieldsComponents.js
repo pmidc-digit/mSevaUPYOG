@@ -16,26 +16,27 @@ const SearchQuestionsFieldsComponents = ({ registerRef, controlSearchForm, searc
   //   const filtered = ulbs.filter((item) => item.code === tenantId);
   //   return filtered;
   // }, [ulbs]);
+
    let isTenantFound= true;
-   let userUlbs = ulbs
-     .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
-     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
-   if(userUlbs?.length===0){
-     isTenantFound = false;
-    userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}] 
-   }
-   const selectedTenat = useMemo(() => {
-     if(userUlbs?.length>0 && isTenantFound===true){
-     
-     const filtered = ulbs.filter((item) => item.code === tenantId);
-     return filtered;
-     }
-     else{
-       
-        const filtered = userUlbs.filter((item) => item.code === tenantId);
-     return filtered;
-     }
-   }, [ulbs]);
+    let userUlbs = ulbs
+      .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
+      .sort(alphabeticalSortFunctionForTenantsBasedOnName);
+    if(userUlbs?.length===0){
+      isTenantFound = false;
+     userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}] 
+    }
+    const selectedTenat = useMemo(() => {
+      if(userUlbs?.length>0 && isTenantFound===true){
+      
+      const filtered = ulbs.filter((item) => item.code === tenantId);
+      return filtered;
+      }
+      else{
+        
+         const filtered = userUlbs.filter((item) => item.code === tenantId);
+      return filtered;
+      }
+    }, [ulbs]);
   //   const isActiveOptions = [
   //     { id: false, name: "False" },
   //     { id: true, name: "True" },

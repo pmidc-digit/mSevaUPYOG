@@ -102,7 +102,7 @@ const Inbox = ({ parentRoute }) => {
   };
 
   let { data: { Surveys = [], TotalCount } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyInbox(formState);
- const [sortedSurveys,setSortedSurveys]=useState([])
+const [sortedSurveys,setSortedSurveys]=useState([])
    useEffect(()=>{
  if(Surveys.length>0){
    

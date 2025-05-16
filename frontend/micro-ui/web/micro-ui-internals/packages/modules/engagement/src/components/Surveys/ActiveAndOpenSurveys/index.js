@@ -77,7 +77,7 @@ const ActiveAndOpenSurveys = (props) => {
     Digit.Surveys.searchSurvey(payload)
       .then((response) => {
         let tableData = response.Surveys.filter((item) => item.active);
-       tableData=tableData.sort((a,b)=> a.auditDetails.lastModifiedTime- b.auditDetails.lastModifiedTime)
+         tableData=tableData.sort((a,b)=> a.auditDetails.lastModifiedTime- b.auditDetails.lastModifiedTime)
         setData(tableData);
         setCount(tableData.length);
         setLoading(false);

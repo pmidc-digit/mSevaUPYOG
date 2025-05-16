@@ -104,7 +104,7 @@ const SearchQuestions = ({ parentRoute }) => {
   //
   let { data: { Questions = [], Errors = [] } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyQuestionInbox(formState);
   const totalCount = Questions?.length;
-  const [sortedQuestions,setSortedQuestions]=useState([])
+ const [sortedQuestions,setSortedQuestions]=useState([])
   useEffect(()=>{
 if(Questions.length>0){
   
@@ -117,8 +117,6 @@ Questions=sorted
 
 }
   },[Questions])
-
-console.log("Questions",Questions)
   // useEffect(() => {
   //   if (isSearchClicked && (Questions?.length === 0 || Errors?.length > 0)) {
   //     setShowToast({ label: ERR_MESSAGE, isDleteBtn: "true", error: true });

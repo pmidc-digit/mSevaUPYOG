@@ -1,24 +1,26 @@
-import React, {useEffect} from "react";
+import React, { useEffect } from "react";
 import { CheckBox, Loader } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 
+const complaintsWithCount = [
+  { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" },
+  { name: "Pending At LME", code: "PENDINGATLME" },
+  { name: "Resolved", code: "RESOLVED" },
+];
+
 const Status = ({ complaints, onAssignmentChange, swachfilters }) => {
   const { t } = useTranslation();
-  // const complaintsWithCount = Digit.Hooks.swach.useComplaintStatusCount(complaints);
   let hasFilters = swachfilters?.applicationStatus?.length;
+  // const complaintsWithCount = Digit.Hooks.swach.useComplaintStatusCount(complaints);
 
   useEffect(() => {
-    onAssignmentChange({target:{checked:true}}, {name:"Pending For Assignment", code:"PENDINGFORASSIGNMENT"});
-  },[])
-  const complaintsWithCount = [
-    { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" },
-    { name: "Pending At LME", code: "PENDINGATLME" },
-    { name: "Resolved", code: "RESOLVED" },
-  ];
+    onAssignmentChange({ target: { checked: true } }, { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" });
+  }, []);
+
   return (
     <div className="status-container">
       <div className="filter-label">{t("ES_SWACH_FILTER_STATUS")}</div>
-      {complaintsWithCount.length === 0 && <Loader />}
+      {/* {complaintsWithCount.length === 0 && <Loader />} */}
       {complaintsWithCount.map((option, index) => {
         return (
           <CheckBox

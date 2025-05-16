@@ -113,12 +113,13 @@ const SearchCategories = ({ parentRoute }) => {
   useEffect(()=>{
 if(Categories.length>0){
   
+
     const sorted = [...Categories].sort(
       (a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime
     );
+  Categories=sorted
     setSortedCategories(sorted);
-Categories=sorted
-  console.log("sorted",sorted)
+
 }
   },[Categories])
   //Props for links card:

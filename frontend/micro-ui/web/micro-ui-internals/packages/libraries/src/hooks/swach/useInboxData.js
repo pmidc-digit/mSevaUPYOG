@@ -6,7 +6,6 @@ const useSwachInboxData = (searchParams) => {
   // const user = Digit.UserService.getUser();
   // const tenantId = user?.info?.tenantId;
 
-
   const fetchInboxData = async () => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
     let serviceIds = [];
@@ -26,16 +25,19 @@ const useSwachInboxData = (searchParams) => {
         sla: Math.round(data.sla / (24 * 60 * 60 * 1000)),
       }));
     }
-    console.log("combinedRes",combinedRes);
+    console.log("combinedRes", combinedRes);
     return combinedRes;
   };
 
-  const result = useQuery(["fetchInboxData", 
-  ...Object.keys(searchParams).map(i =>
-      typeof searchParams[i] === "object" ? Object.keys(searchParams[i]).map(e => searchParams[i][e]) : searchParams[i]
-     )],
-  fetchInboxData,
-  { staleTime: Infinity }
+  const result = useQuery(
+    [
+      "fetchInboxData",
+      ...Object.keys(searchParams).map((i) =>
+        typeof searchParams[i] === "object" ? Object.keys(searchParams[i]).map((e) => searchParams[i][e]) : searchParams[i]
+      ),
+    ],
+    fetchInboxData,
+    { staleTime: Infinity }
   );
 
   console.log("Search Results", result);
@@ -56,15 +58,24 @@ const combineResponses = (complaintDetailsResponse, workflowInstances) => {
       data.push({
         serviceRequestId: complaint.service.serviceRequestId,
         complaintSubType: complaint.service.serviceCode,
-        priorityLevel : complaint.service.priority,
+        priorityLevel: complaint.service.priority,
         locality: complaint.service.address.locality.code,
         status: complaint.service.applicationStatus,
         taskOwner: wfMap[complaint.service.serviceRequestId]?.assignes?.[0]?.name || "-",
         sla: wfMap[complaint.service.serviceRequestId]?.businesssServiceSla,
         tenantId: complaint.service.tenantId,
-        createdDate: Digit.DateUtils.ConvertEpochToDate(complaint.service.auditDetails.createdTime),
-      })
-    }});
+        // createdDate: Digit.DateUtils.ConvertEpochToDate(complaint.service.auditDetails.createdTime),
+        createdDate: new Date(complaint.service.auditDetails.createdTime).toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        }),
+      });
+    }
+  });
   return data;
 };
 

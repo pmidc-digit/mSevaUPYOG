@@ -16,7 +16,7 @@ const SearchCategoryFieldsComponents = ({ registerRef, controlSearchForm, search
   //   const filtered = ulbs.filter((item) => item.code === tenantId);
   //   return filtered;
   // }, [ulbs]);
- let isTenantFound= true;
+  let isTenantFound= true;
    let userUlbs = ulbs
      .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
      .sort(alphabeticalSortFunctionForTenantsBasedOnName);

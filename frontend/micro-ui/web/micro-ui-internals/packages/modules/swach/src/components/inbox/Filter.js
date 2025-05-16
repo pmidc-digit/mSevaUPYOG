@@ -9,9 +9,14 @@ let wfQuery = {};
 
 const Filter = (props) => {
   let { uuid } = Digit.UserService.getUser().info;
-  const { searchParams } = props;
   const { t } = useTranslation();
-  const isAssignedToMe = searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { data: cities } = Digit.Hooks.useTenants();
+  let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
+  const { searchParams } = props;
+
+  const isAssignedToMe =
+    tenantId !== "pb.punjab" && searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
 
   const assignedToOptions = useMemo(
     () => [
@@ -21,35 +26,64 @@ const Filter = (props) => {
     [t]
   );
 
-  const [selectAssigned, setSelectedAssigned] = useState(isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]);
+  console.log("tenantId", tenantId);
 
-  useEffect(() => setSelectedAssigned(isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]), [t]);
+  const defaultAssignedOption = tenantId === "pb.punjab" ? assignedToOptions[1] : isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1];
+  const defaultAssignee = tenantId === "pb.punjab" ? [{ code: "" }] : [{ code: uuid }];
+
+  const [selectAssigned, setSelectedAssigned] = useState(defaultAssignedOption);
 
   const [selectedComplaintType, setSelectedComplaintType] = useState(null);
   const [selectedLocality, setSelectedLocality] = useState(null);
+  const [selectedTenant, setSelectedTenant] = useState(null);
   const [swachfilters, setSwachFilters] = useState(
     searchParams?.filters?.swachfilters || {
       serviceCode: [],
       locality: [],
       applicationStatus: [],
+      tenants: null,
     }
   );
 
   const [wfFilters, setWfFilters] = useState(
     searchParams?.filters?.wfFilters || {
-      assignee: [{ code: uuid }],
+      assignee: defaultAssignee,
     }
   );
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  useEffect(() => setSelectedAssigned(isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]), [t, tenantId, isAssignedToMe]);
+
   // let localities = Digit.Hooks.pgr.useLocalities({ city: tenantId });
-  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
-  let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
+
+  useEffect(() => {
+    if (cities && cities?.length && tenantId) {
+      const matchedCity = cities?.find((city) => city.code === tenantId);
+      if (matchedCity) {
+        const cityObj = { name: matchedCity?.name, code: matchedCity?.code };
+        let finalCode;
+        if (cityObj?.code == "pb.punjab") {
+          finalCode = "pb.amritsar";
+          localStorage.setItem("punjab-tenantId", "pb.amritsar");
+          setSelectedTenant({ name: "Amritsar", code: "pb.amritsar" });
+        } else {
+          finalCode = cityObj?.code;
+          setSelectedTenant(cityObj);
+        }
+        // Set it in both selectedTenant and swachfilters
+
+        setSwachFilters((prev) => ({
+          ...prev,
+          tenants: finalCode,
+        }));
+      }
+    }
+  }, [tenantId, cities]);
 
   const onRadioChange = (value) => {
     setSelectedAssigned(value);
-    uuid = value.code === "ASSIGNED_TO_ME" ? uuid : "";
-    setWfFilters({ ...wfFilters, assignee: [{ code: uuid }] });
+    // uuid = value.code === "ASSIGNED_TO_ME" ? uuid : "";
+    const assigneeCode = value.code === "ASSIGNED_TO_ME" ? uuid : "";
+    setWfFilters({ ...wfFilters, assignee: [{ code: assigneeCode }] });
   };
 
   useEffect(() => {
@@ -60,9 +94,8 @@ const Filter = (props) => {
         let params = swachfilters[property].map((prop) => prop.code).join();
         if (params) {
           pgrQuery[property] = params;
-        }
-        else{
-          delete pgrQuery?.[property]
+        } else {
+          delete pgrQuery?.[property];
         }
       }
     }
@@ -78,9 +111,9 @@ const Filter = (props) => {
     }
     count += wfFilters?.assignee?.length || 0;
 
-    if (props.type !== "mobile") {
-      handleFilterSubmit();
-    }
+    // if (props.type !== "mobile") {
+    handleFilterSubmit();
+    // }
 
     Digit.inboxFilterCount = count;
   }, [swachfilters, wfFilters]);
@@ -88,6 +121,7 @@ const Filter = (props) => {
   const ifExists = (list, key) => {
     return list.filter((object) => object.code === key.code).length;
   };
+
   function applyFiltersAndClose() {
     handleFilterSubmit();
     props.onClose();
@@ -103,6 +137,13 @@ const Filter = (props) => {
     if (!ifExists(swachfilters.locality, value)) {
       setSwachFilters({ ...swachfilters, locality: [...swachfilters.locality, value] });
     }
+  }
+
+  function onSelectTenants(value, type) {
+    // if (!ifExists(swachfilters.tenants, value)) {
+    localStorage.setItem("punjab-tenantId", value.code);
+    setSwachFilters({ ...swachfilters, tenants: value.code });
+    // }
   }
 
   useEffect(() => {
@@ -121,11 +162,25 @@ const Filter = (props) => {
     }
   }, [swachfilters.locality]);
 
+  // useEffect(() => {
+  //   // if (swachfilters.tenants?.length > 1) {
+  //   //   setSelectedTenant({ name: `${swachfilters.tenants.length} selected` });
+  //   // } else {
+  //   setSelectedTenant(swachfilters?.tenants);
+  //   // }
+  // }, [swachfilters.tenants]);
+
   const onRemove = (index, key) => {
-    let afterRemove = swachfilters[key].filter((value, i) => {
-      return i !== index;
-    });
-    setSwachFilters({ ...swachfilters, [key]: afterRemove });
+    // let afterRemove = swachfilters[key].filter((value, i) => {
+    //   return i !== index;
+    // });
+    // setSwachFilters({ ...swachfilters, [key]: afterRemove });
+    if (key === "tenants") {
+      setSwachFilters({ ...swachfilters, tenants: null });
+    } else {
+      let afterRemove = swachfilters[key].filter((_, i) => i !== index);
+      setSwachFilters({ ...swachfilters, [key]: afterRemove });
+    }
   };
 
   const handleAssignmentChange = (e, type) => {
@@ -142,31 +197,54 @@ const Filter = (props) => {
   function clearAll() {
     let swachReset = { serviceCode: [], locality: [], applicationStatus: [] };
     let wfRest = { assigned: [{ code: [] }] };
-    setSwachFilters(swachReset);
-    setWfFilters(wfRest);
+    // setSwachFilters(swachReset);
+    setSwachFilters((prev) => ({
+      serviceCode: [],
+      locality: [],
+      applicationStatus: [],
+      tenants: prev.tenants, // Preserve tenants
+    }));
+    setWfFilters({ assigned: [{ code: [] }] });
+    // setWfFilters(wfRest);
     pgrQuery = {};
     wfQuery = {};
     setSelectedAssigned("");
     setSelectedComplaintType(null);
     setSelectedLocality(null);
+    // setSelectedTenant(null);
   }
 
   const handleFilterSubmit = () => {
     props.onFilterChange({ pgrQuery: pgrQuery, wfQuery: wfQuery, wfFilters, swachfilters });
   };
 
-  const GetSelectOptions = (lable, options, selected = null, select, optionKey, onRemove, key) => {
+  const GetSelectOptions = (lable, options, selected = null, select, optionKey, onRemove, key, isDisabled) => {
     selected = selected || { [optionKey]: " ", code: "" };
+    const isArray = Array.isArray(swachfilters[key]);
     return (
       <div>
         <div className="filter-label">{lable}</div>
-        {<Dropdown option={options} selected={selected} select={(value) => select(value, key)} optionKey={optionKey} />}
+        {
+          <Dropdown
+            option={options}
+            selected={selected}
+            select={(value) => !isDisabled && select(value, key)}
+            // select={(value) => select(value, key)}
+            optionKey={optionKey}
+            disable={isDisabled}
+          />
+        }
 
         <div className="tag-container">
-          {swachfilters[key].length > 0 &&
-            swachfilters[key].map((value, index) => {
+          {isArray &&
+            swachfilters[key]?.length > 0 &&
+            swachfilters[key].map((value, index) => (
+              <RemoveableTag key={index} text={`${value[optionKey]?.slice(0, 22)} ...`} onClick={() => onRemove(index, key)} />
+            ))}
+          {/* {swachfilters[key]?.length > 0 &&
+            swachfilters[key]?.map((value, index) => {
               return <RemoveableTag key={index} text={`${value[optionKey].slice(0, 22)} ...`} onClick={() => onRemove(index, key)} />;
-            })}
+            })} */}
         </div>
       </div>
     );
@@ -205,21 +283,25 @@ const Filter = (props) => {
                 "serviceCode"
               )}
             </div>
-            <div>{GetSelectOptions(t("CS_SWACH_LOCALITY"), localities, selectedLocality, onSelectLocality, "i18nkey", onRemove, "locality")}</div>
+            <div>
+              {GetSelectOptions(t("CS_SWACH_LOCALITY"), props?.localities, selectedLocality, onSelectLocality, "i18nkey", onRemove, "locality")}
+            </div>
+            <div>{GetSelectOptions("City", cities, selectedTenant, onSelectTenants, "name", onRemove, "tenants", tenantId !== "pb.punjab")}</div>
             {<Status complaints={props.complaints} onAssignmentChange={handleAssignmentChange} swachfilters={swachfilters} />}
           </div>
         </div>
       </div>
-      <ActionBar>
-        {props.type === "mobile" && (
+
+      {props.type === "mobile" && (
+        <ActionBar>
           <ApplyFilterBar
             labelLink={t("ES_COMMON_CLEAR_ALL")}
             buttonLink={t("ES_COMMON_FILTER")}
             onClear={clearAll}
             onSubmit={applyFiltersAndClose}
           />
-        )}
-      </ActionBar>
+        </ActionBar>
+      )}
     </React.Fragment>
   );
 };

@@ -13,6 +13,12 @@ import { ComplaintIcon, CitizenHomeCard, Loader } from "@mseva/digit-ui-react-co
 import { CreateComplaint as CreateComplaintEmp } from "./pages/employee/CreateComplaint";
 import { ComplaintDetails } from "./pages/employee/ComplaintDetails";
 import ResponseEmp from "./pages/employee/Response";
+import { CreateComplaint as CitizenCreateComplaint } from "./pages/citizen/CreateComplaint/index";
+import { ComplaintsList } from "./pages/citizen/ComplaintsList";
+import ResponseCitizen from "./pages/citizen/Response";
+import ComplaintDetailsPage from "./pages/citizen/ComplaintDetails";
+import SelectGeolocation from "./pages/citizen/Create/Steps/SelectGeolocation"
+import SelectImages from "./pages/citizen/Create/Steps/SelectImages";
 
 
 export const SWACHReducers = getRootReducer;
@@ -29,32 +35,32 @@ export const SwachModule = ({ stateCode, userType, tenants }) => {
   Digit.SessionStorage.set("SWACH_TENANTS", tenants);
 
   if (userType === "citizen") {
-    return <></>
+    return <CitizenApp />
   } else {
     return <EmployeeApp />;
   }
 };
 
 export const SWACHLinks = ({ matchPath }) => {
-  // const { t } = useTranslation();
-  // const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(PGR_CITIZEN_CREATE_COMPLAINT, {});
+  const { t } = useTranslation();
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(PGR_CITIZEN_CREATE_COMPLAINT, {});
 
-  // useEffect(() => {
-  //   clearParams();
-  // }, []);
+  useEffect(() => {
+    clearParams();
+  }, []);
 
-  // const links = [
-  //   {
-  //     link: `${matchPath}/create-complaint/complaint-type`,
-  //     i18nKey: t("CS_COMMON_FILE_A_COMPLAINT"),
-  //   },
-  //   {
-  //     link: `${matchPath}/complaints`,
-  //     i18nKey: t(LOCALE.MY_COMPLAINTS),
-  //   },
-  // ];
+  const links = [
+    {
+      link: `${matchPath}/create-complaint/complaint-type`,
+      i18nKey: t("CS_COMMON_FILE_A_COMPLAINT"),
+    },
+    {
+      link: `${matchPath}/complaints`,
+      i18nKey: t(LOCALE.MY_COMPLAINTS),
+    },
+  ];
 
-  // return <CitizenHomeCard header={t("CS_COMMON_HOME_COMPLAINTS")} links={links} Icon={ComplaintIcon} />;
+  return <CitizenHomeCard header={t("CS_COMMON_HOME_COMPLAINTS")} links={links} Icon={ComplaintIcon} />;
 };
 
 const componentsToRegister = {
@@ -65,6 +71,12 @@ const componentsToRegister = {
   SWACHCreateComplaintEmp: CreateComplaintEmp,
   SWACHResponseEmp : ResponseEmp,
   SWACHComplaintDetails : ComplaintDetails,
+  SWACHCitizenCreateComplaint : CitizenCreateComplaint,
+  SWACHComplaintsList : ComplaintsList,
+  SWACHResponseCitzen : ResponseCitizen,
+  SWACHComplaintDetailsPage : ComplaintDetailsPage,
+  SWACHSelectGeolocation: SelectGeolocation,
+  SWACHSelectImages: SelectImages
 };
 
 export const initSWACHComponents = () => {

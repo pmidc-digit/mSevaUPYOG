@@ -18,7 +18,7 @@ const TopBarSideBar = ({
   linkData,
   islinkDataLoading,
 }) => {
-  const [isSidebarOpen, toggleSidebar] = useState(false);
+   const [isSidebarOpen, toggleSidebar] = useState(false);
   const [isSideBarScroll, setSideBarScrollTop] = useState(false);
   const history = useHistory();
   const [showDialog, setShowDialog] = useState(false);

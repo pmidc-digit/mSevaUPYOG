@@ -1,6 +1,8 @@
 import React from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 
+const styles = { overflowX: "scroll", overflowY: "hidden" };
+
 const ComplaintTable = ({ t, columns, data, getCellProps, onNextPage, onPrevPage, currentPage, totalRecords, pageSizeLimit, onPageSizeChange }) => (
   <Table
     t={t}
@@ -13,6 +15,7 @@ const ComplaintTable = ({ t, columns, data, getCellProps, onNextPage, onPrevPage
     totalRecords={totalRecords}
     onPageSizeChange={onPageSizeChange}
     pageSizeLimit={pageSizeLimit}
+    inboxStyles={styles}
   />
 );
 

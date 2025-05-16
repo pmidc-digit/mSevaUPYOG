@@ -10,8 +10,6 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
 
   //   const { applicationStatus = [], serviceCode = [], locality = [], tenants = [] } = swachfilters;
 
-  console.log("filters====", filters);
-
   const serviceRequestId = filters?.search?.serviceRequestId;
   const mobileNumber = filters?.search?.mobileNumber;
   const applicationStatus = "";

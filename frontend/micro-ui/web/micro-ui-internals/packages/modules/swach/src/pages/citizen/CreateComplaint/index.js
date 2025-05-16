@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { Dropdown, Loader } from "@mseva/digit-ui-react-components";
@@ -9,7 +9,6 @@ import { FormComposer } from "../../../components/FormComposer";
 import { createComplaint } from "../../../redux/actions/index";
 
 export const CreateComplaint = ({ parentUrl }) => {
-  console.log("parentUrl", parentUrl);
   const cities = Digit.Hooks.swach.useTenants();
   const { t } = useTranslation();
 
@@ -20,8 +19,11 @@ const propetyData=localStorage.getItem("swachProperty")
   const [subType, setSubType] = useState(JSON?.parse(sessionStorage.getItem("subType")) || {});
   const [priorityLevel, setPriorityLevel]=useState(JSON?.parse(sessionStorage.getItem("PriorityLevel"))||{})
   const [pincode, setPincode] = useState("");
-  const [mobileNumber, setMobileNumber] = useState(sessionStorage.getItem("mobileNumber") || "");
-  const [fullName, setFullName] = useState(sessionStorage.getItem("name") || "");
+  // const [mobileNumber, setMobileNumber] = useState(sessionStorage.getItem("mobileNumber") || "");
+  // const [fullName, setFullName] = useState(sessionStorage.getItem("name") || "");
+  const userInfo = JSON.parse(localStorage.getItem("user-info"));
+  const [mobileNumber, setMobileNumber] = useState(userInfo?.mobileNumber || "");
+  const [fullName, setFullName] = useState(userInfo?.name || "");
   const [emailId, setEmail] = useState(sessionStorage.getItem("emailId") || "");
   const [selectedCity, setSelectedCity] = useState(getCities()[0] ? getCities()[0] : null);
 const [propertyId, setPropertyId]= useState("")
@@ -44,10 +46,26 @@ const [description, setDescription] = useState("")
   const [params, setParams] = useState({});
   //const tenantId = SessionStorage.getItem("Digit.Citizen.tenantId");
   const tenantId = Digit.UserService.getUser()?.info?.tenantId;
+  const tempLocation = useRef(null);
+  const [geoLocation, setGeoLocation] = useState({
+    location:{
+      latitude: 30.730048,
+      longitude: 76.765040,
+    },
+    val: "",
+    place: "",
+  });
+  // const [imageUploaded, setImageUploaded] = useState({
+  //   uploadedImages: null,
+  // });
+  const imageUploaded = useRef({
+    uploadedImages: null,
+  })
   //console.log("tenantIdHello",tenantId)
   const menu = Digit.Hooks.swach.useComplaintTypes({ stateCode: tenantId });
+  const SelectGeolocation = Digit?.ComponentRegistryService?.getComponent("SWACHSelectGeolocation");
+  const SelectImages = Digit?.ComponentRegistryService?.getComponent("SWACHSelectImages");
 
-  console.log("tenantId for Swach",tenantId)
  const  priorityMenu= 
   [
     {
@@ -73,12 +91,12 @@ const [description, setDescription] = useState("")
   const serviceDefinitions = Digit.GetSwachBharatCategories;
   const client = useQueryClient();
   useEffect(() => {
-    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code ) {
+    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code && (geoLocation?.location?.latitude !== 30.730048 || geoLocation?.location?.longitude !== 76.765040)) {
       setSubmitValve(true);
     } else {
       setSubmitValve(false);
     }
-  }, [complaintType, subType, priorityLevel, selectedCity, selectedLocality]);
+  }, [complaintType, subType, priorityLevel, selectedCity, selectedLocality, geoLocation]);
 
   useEffect(() => {
     setLocalities(fetchedLocalities);
@@ -102,7 +120,6 @@ const [description, setDescription] = useState("")
   }, [pincode]);
 
   useEffect(() => {
-    console.log("UseEffect Called")
     setComplaintType({"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"})
     selectedType();
   },[])
@@ -123,12 +140,10 @@ const [description, setDescription] = useState("")
   //   }
   // }
 
-  console.log("setSubTypeMenu",subTypeMenu);
 
   async function selectedType() {
     const value = await serviceDefinitions.getSubMenu(tenantId, {"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"}, t)
    setSubTypeMenu(value);
-   console.log("setSubTypeMenu value",value)
   }
   async function selectedPriorityLevel(value){
     sessionStorage.setItem("priorityLevel", JSON.stringify(value))
@@ -148,18 +163,32 @@ const [description, setDescription] = useState("")
   };
 
   function selectLocality(locality) {
-    console.log("ddddddddd",locality)
     setSelectedLocality(locality);
   }
 
+  function throttle (){
+    setTimeout(()=>{
+      setSubmitted(false);
+    },5000)
+  }
+
   const wrapperSubmit = (data) => {
-    if (!canSubmit) return;
+    if (!canSubmit ) return;
+    if(!imageUploaded?.current?.uploadedImages) {
+      alert("Please Upload Image");
+      return;
+    }
     setSubmitted(true);
     !submitted && onSubmit(data);
+    !submitted && throttle();
   };
   //On SUbmit
   const onSubmit = async (data) => {
     if (!canSubmit) return;
+    if(!imageUploaded?.current?.uploadedImages) {
+      alert("Please Upload Image");
+      return
+    }
     const cityCode = selectedCity.code;
     const city = selectedCity.city.name;
     const district = selectedCity.city.name;
@@ -173,7 +202,13 @@ const [description, setDescription] = useState("")
     const mobileNumber = data?.mobileNumber;
     const name = data?.name;
     const emailId=data?.emailId;
-    const formData = { ...data, cityCode, city, district, region, localityCode, localityName, landmark, complaintType, priorityLevel, mobileNumber, name,emailId};
+    const latitude = geoLocation?.location?.latitude.toString();
+    const longitude = geoLocation?.location?.longitude.toString();
+    const uploadedImages = imageUploaded?.current?.uploadedImages.map((val)=> ({
+        documentType: "PHOTO",
+        filestoreId: val
+    }));
+    const formData = { ...data, cityCode, city, district, region, localityCode, localityName, landmark, complaintType, priorityLevel, mobileNumber, name,emailId, latitude, longitude, uploadedImages };
     await dispatch(createComplaint(formData));
     await client.refetchQueries(["fetchInboxData"]);
     localStorage.removeItem("swachProperty");
@@ -191,7 +226,6 @@ const [description, setDescription] = useState("")
   const handleMobileNumber = (event) => {
  
     const { value } = event.target;
-    console.log("handleMobileNumber",value)
     setMobileNumber(value);
   
   };
@@ -246,21 +280,21 @@ const [description, setDescription] = useState("")
             error: t("CS_ADDCOMPLAINT_NAME_ERROR"),
           },
         },
-        {
-          label: t("ES_MAIL_ID"),
-          isMandatory: false,
-          type: "text",
-          value:emailId,
-          populators: {
-            name: "emailId",
-            onChange: handleEmail,
-            validation: {
-              //required: true,
-              pattern: /[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
-            },
-            error: t("CS_ADDCOMPLAINT_EMAIL_ERROR"),
-          },
-        },
+        // {
+        //   label: t("ES_MAIL_ID"),
+        //   isMandatory: false,
+        //   type: "text",
+        //   value:emailId,
+        //   populators: {
+        //     name: "emailId",
+        //     onChange: handleEmail,
+        //     validation: {
+        //       //required: true,
+        //       pattern: /[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
+        //     },
+        //     error: t("CS_ADDCOMPLAINT_EMAIL_ERROR"),
+        //   },
+        // },
       ],
     },
     {
@@ -294,18 +328,18 @@ const [description, setDescription] = useState("")
           "isModifyConnection": true,
           "isEditByConfigConnection": true,
           "isProperty":subType?.key?.includes("Property")?true:false,
-          component: "CPTPropertySearchNSummary",
-          key: "cpt",
-          type: "component",
-          "body": [
-              {
-                  "component": "CPTPropertySearchNSummary",
-                  "withoutLabel": true,
-                  "key": "cpt",
-                  "type": "component",
-                  "hideInCitizen": true
-              }
-          ]
+          // component: "",
+          // key: "cpt",
+          // type: "component",
+          // "body": [
+          //     {
+          //         "component": "CPTPropertySearchNSummary",
+          //         "withoutLabel": true,
+          //         "key": "cpt",
+          //         "type": "component",
+          //         "hideInCitizen": true
+          //     }
+          // ]
         }
      
       ],
@@ -313,16 +347,16 @@ const [description, setDescription] = useState("")
     {
       head: t("CS_ADDCOMPLAINT_LOCATION"),
       body: [
-        {
-          label: t("CORE_COMMON_PINCODE"),
-          type: "text",
-          populators: {
-            name: "pincode",
-          //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
-            //error: t("CORE_COMMON_PINCODE_INVALID"),
-            onChange: handlePincode,
-          },
-        },
+        // {
+        //   label: t("CORE_COMMON_PINCODE"),
+        //   type: "text",
+        //   populators: {
+        //     name: "pincode",
+        //   //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
+        //     //error: t("CORE_COMMON_PINCODE_INVALID"),
+        //     onChange: handlePincode,
+        //   },
+        // },
         {
           label: t("CS_COMPLAINT_DETAILS_CITY"),
           isMandatory: true,
@@ -356,7 +390,59 @@ const [description, setDescription] = useState("")
             name: "landmark",
           },
         },
+        {
+          label: t("CS_COMPLAINT_DETAILS_GEO_LOCATION"),
+              type: "component",
+              key: "geoLocator",
+              withoutLabel: true,
+              component: (props) => (
+                <div>
+                <div>
+                </div>
+                <SelectGeolocation
+                  t={t}
+                  onSelect={() => {
+                    if (tempLocation?.current?.location?.longitude !== 76.765040 && tempLocation?.current?.location?.latitude !== 30.730048) {
+                      setGeoLocation(tempLocation.current);                      
+                    }else{
+                      alert("Please select a location, before next");
+                    }
+                  }}
+                  value={geoLocation}
+                  onChange={(val, location, place) => {
+                    // setTempLocation({val, location, place});
+                    tempLocation.current = {val, location, place};
+                  }}
+                />
+                {geoLocation.place.length>0?
+                <h3>{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION")+": "+ geoLocation?.place+","+geoLocation?.val}</h3>  : <h1>{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</h1>
+                }
+                </div>
+              ),
+        },
+        
       ],
+    },
+    {
+      head: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES"),
+      body:[
+        {
+          label: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES_TEXT"),
+              type: "component",
+              key: "imageSelector",
+              withoutLabel: true,
+              component: (props) => (
+                <SelectImages
+                value={imageUploaded.current}
+                onSelect={(val) => {
+                  // setImageUploaded(val);
+                  imageUploaded.current = {...val};
+                }}
+                tenantId = {tenantId}
+                />
+              ),
+        },
+      ]
     },
     {
       head: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
@@ -375,7 +461,6 @@ const [description, setDescription] = useState("")
     },
   ];
     useEffect(()=>{
-      console.log("heloo world",propetyData )
       if(propetyData !== "undefined"   && propetyData !== null)
       {
        let data =JSON.parse(propetyData)
@@ -406,7 +491,7 @@ const [description, setDescription] = useState("")
       heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}
       config={config}
       onSubmit={wrapperSubmit}
-      isDisabled={!canSubmit && !submitted}
+      isDisabled={!canSubmit && !submitted && !imageUploaded?.current?.uploadedImages}
       label={t("CS_ADDCOMPLAINT_ADDITIONAL_DETAILS_SUBMIT_COMPLAINT")}
     />
   );

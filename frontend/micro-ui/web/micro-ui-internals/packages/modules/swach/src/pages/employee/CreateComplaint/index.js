@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch } from "react-redux";
 import { Dropdown, Loader } from "@mseva/digit-ui-react-components";
@@ -42,7 +42,24 @@ const [description, setDescription] = useState("")
   const [pincodeNotValid, setPincodeNotValid] = useState(false);
   const [params, setParams] = useState({});
   const tenantId = window.Digit.SessionStorage.get("Employee.tenantId");
+  const tempLocation = useRef(null);
+    const [geoLocation, setGeoLocation] = useState({
+      location:{
+        latitude: 30.730048,
+        longitude: 76.765040,
+      },
+      val: "",
+      place: "",
+    });
+    // const [imageUploaded, setImageUploaded] = useState({
+    //   uploadedImages: null,
+    // });
+    const imageUploaded = useRef({
+      uploadedImages: null,
+    })
   const menu = Digit.Hooks.swach.useComplaintTypes({ stateCode: tenantId });
+  const SelectGeolocation = Digit?.ComponentRegistryService?.getComponent("SWACHSelectGeolocation");
+  const SelectImages = Digit?.ComponentRegistryService?.getComponent("SWACHSelectImages");
  const  priorityMenu= 
   [
     {
@@ -68,12 +85,12 @@ const [description, setDescription] = useState("")
   const serviceDefinitions = Digit.GetSwachBharatCategories;
   const client = useQueryClient();
   useEffect(() => {
-    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code && priorityLevel?.code ) {
+    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code && (geoLocation?.location?.latitude !== 30.730048 || geoLocation?.location?.longitude !== 76.765040)) {
       setSubmitValve(true);
     } else {
       setSubmitValve(false);
     }
-  }, [complaintType, subType, priorityLevel, selectedCity, selectedLocality]);
+  }, [complaintType, subType, priorityLevel, selectedCity, selectedLocality, geoLocation]);
 
   useEffect(() => {
     setLocalities(fetchedLocalities);
@@ -96,21 +113,32 @@ const [description, setDescription] = useState("")
     }
   }, [pincode]);
 
-  async function selectedType(value) {
-    if (value.key !== complaintType.key) {
-      if (value.key === "Others") {
-        setSubType({ name: "" });
-        setComplaintType(value);
-        sessionStorage.setItem("complaintType",JSON.stringify(value))
-        setSubTypeMenu([{ key: "Others", name: t("SWACHBHARATCATEGORY.OTHERS") }]);
-      } else {
-        setSubType({ name: "" });
-        setComplaintType(value);
-        sessionStorage.setItem("complaintType",JSON.stringify(value))
-        setSubTypeMenu(await serviceDefinitions.getSubMenu(tenantId, value, t));
-      }
+  useEffect(() => {
+      console.log("UseEffect Called")
+      setComplaintType({"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"})
+      selectedType();
+    },[])
+
+    async function selectedType() {
+      const value = await serviceDefinitions.getSubMenu(tenantId, {"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"}, t)
+     setSubTypeMenu(value);
+     console.log("setSubTypeMenu value",value)
     }
-  }
+  // async function selectedType(value) {
+  //   if (value.key !== complaintType.key) {
+  //     if (value.key === "Others") {
+  //       setSubType({ name: "" });
+  //       setComplaintType(value);
+  //       sessionStorage.setItem("complaintType",JSON.stringify(value))
+  //       setSubTypeMenu([{ key: "Others", name: t("SWACHBHARATCATEGORY.OTHERS") }]);
+  //     } else {
+  //       setSubType({ name: "" });
+  //       setComplaintType(value);
+  //       sessionStorage.setItem("complaintType",JSON.stringify(value))
+  //       setSubTypeMenu(await serviceDefinitions.getSubMenu(tenantId, value, t));
+  //     }
+  //   }
+  // }
   async function selectedPriorityLevel(value){
     sessionStorage.setItem("priorityLevel", JSON.stringify(value))
     setPriorityLevel(value);
@@ -134,13 +162,21 @@ const [description, setDescription] = useState("")
   }
 
   const wrapperSubmit = (data) => {
-    if (!canSubmit) return;
+    if (!canSubmit ) return;
+    if(!imageUploaded?.current?.uploadedImages) {
+      alert("Please Upload Image");
+      return;
+    }
     setSubmitted(true);
     !submitted && onSubmit(data);
   };
   //On SUbmit
   const onSubmit = async (data) => {
     if (!canSubmit) return;
+    if(!imageUploaded?.current?.uploadedImages) {
+      alert("Please Upload Image");
+      return
+    }
     const cityCode = selectedCity.code;
     const city = selectedCity.city.name;
     const district = selectedCity.city.name;
@@ -154,7 +190,13 @@ const [description, setDescription] = useState("")
     const mobileNumber = data?.mobileNumber;
     const name = data?.name;
     const emailId=data?.emailId;
-    const formData = { ...data, cityCode, city, district, region, localityCode, localityName, landmark, complaintType, priorityLevel, mobileNumber, name,emailId};
+    const latitude = geoLocation?.location?.latitude.toString();
+    const longitude = geoLocation?.location?.longitude.toString();
+    const uploadedImages = imageUploaded?.current?.uploadedImages.map((val)=> ({
+        documentType: "PHOTO",
+        filestoreId: val
+    }));
+    const formData = { ...data, cityCode, city, district, region, localityCode, localityName, landmark, complaintType, priorityLevel, mobileNumber, name,emailId, latitude, longitude, uploadedImages };
     await dispatch(createComplaint(formData));
     await client.refetchQueries(["fetchInboxData"]);
     localStorage.removeItem("swachProperty");
@@ -226,32 +268,32 @@ const [description, setDescription] = useState("")
             error: t("CS_ADDCOMPLAINT_NAME_ERROR"),
           },
         },
-        {
-          label: t("ES_MAIL_ID"),
-          isMandatory: false,
-          type: "text",
-          value:emailId,
-          populators: {
-            name: "emailId",
-            onChange: handleEmail,
-            validation: {
-              //required: true,
-              pattern: /[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
-            },
-            error: t("CS_ADDCOMPLAINT_EMAIL_ERROR"),
-          },
-        },
+        // {
+        //   label: t("ES_MAIL_ID"),
+        //   isMandatory: false,
+        //   type: "text",
+        //   value:emailId,
+        //   populators: {
+        //     name: "emailId",
+        //     onChange: handleEmail,
+        //     validation: {
+        //       //required: true,
+        //       pattern: /[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
+        //     },
+        //     error: t("CS_ADDCOMPLAINT_EMAIL_ERROR"),
+        //   },
+        // },
       ],
     },
     {
       head: t("CS_COMPLAINT_DETAILS_COMPLAINT_DETAILS"),
       body: [
-        {
-          label: t("CS_COMPLAINT_DETAILS_COMPLAINT_TYPE"),
-          isMandatory: true,
-          type: "dropdown",
-          populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} />,
-        },
+        // {
+        //   label: t("CS_COMPLAINT_DETAILS_COMPLAINT_TYPE"),
+        //   isMandatory: true,
+        //   type: "dropdown",
+        //   populators: <Dropdown option={menu} optionKey="name" id="complaintType" selected={complaintType} select={selectedType} />,
+        // },
         {
           label: t("CS_COMPLAINT_DETAILS_COMPLAINT_SUBTYPE"),
           isMandatory: true,
@@ -259,14 +301,14 @@ const [description, setDescription] = useState("")
           menu: { ...subTypeMenu },
           populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
         },
-        {
+        // {
           
-         label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
-            isMandatory: true,
-            type: "dropdown",
-            populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
+        //  label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
+        //     isMandatory: true,
+        //     type: "dropdown",
+        //     populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
           
-        },
+        // },
         {
           //label: t("WS_COMMON_PROPERTY_DETAILS"),
           "isEditConnection": true,
@@ -274,18 +316,18 @@ const [description, setDescription] = useState("")
           "isModifyConnection": true,
           "isEditByConfigConnection": true,
           "isProperty":subType?.key?.includes("Property")?true:false,
-          component: "CPTPropertySearchNSummary",
-          key: "cpt",
-          type: "component",
-          "body": [
-              {
-                  "component": "CPTPropertySearchNSummary",
-                  "withoutLabel": true,
-                  "key": "cpt",
-                  "type": "component",
-                  "hideInCitizen": true
-              }
-          ]
+          // component: "CPTPropertySearchNSummary",
+          // key: "cpt",
+          // type: "component",
+          // "body": [
+          //     {
+          //         "component": "CPTPropertySearchNSummary",
+          //         "withoutLabel": true,
+          //         "key": "cpt",
+          //         "type": "component",
+          //         "hideInCitizen": true
+          //     }
+          // ]
         }
      
       ],
@@ -293,16 +335,16 @@ const [description, setDescription] = useState("")
     {
       head: t("CS_ADDCOMPLAINT_LOCATION"),
       body: [
-        {
-          label: t("CORE_COMMON_PINCODE"),
-          type: "text",
-          populators: {
-            name: "pincode",
-          //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
-            //error: t("CORE_COMMON_PINCODE_INVALID"),
-            onChange: handlePincode,
-          },
-        },
+        // {
+        //   label: t("CORE_COMMON_PINCODE"),
+        //   type: "text",
+        //   populators: {
+        //     name: "pincode",
+        //   //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
+        //     //error: t("CORE_COMMON_PINCODE_INVALID"),
+        //     onChange: handlePincode,
+        //   },
+        // },
         {
           label: t("CS_COMPLAINT_DETAILS_CITY"),
           isMandatory: true,
@@ -336,7 +378,61 @@ const [description, setDescription] = useState("")
             name: "landmark",
           },
         },
+        {
+          label: t("CS_COMPLAINT_DETAILS_GEO_LOCATION"),
+              isMandatory: true,
+              type: "component",
+              key: "geoLocator",
+              withoutLabel: true,
+              component: (props) => (
+                <div>
+                <div>
+                </div>
+                <SelectGeolocation
+                  t={t}
+                  onSelect={() => {
+                    console.log("tempLocation",tempLocation)
+                    if (tempLocation?.current?.location?.longitude !== 76.765040 && tempLocation?.current?.location?.latitude !== 30.730048) {
+                      setGeoLocation(tempLocation.current);                      
+                    }else{
+                      alert("Please select a location, before next");
+                    }
+                  }}
+                  value={geoLocation}
+                  onChange={(val, location, place) => {
+                    // setTempLocation({val, location, place});
+                    tempLocation.current = {val, location, place};
+                  }}
+                />
+                {geoLocation.place.length>0?
+                <h3>{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION")+": "+ geoLocation?.place+","+geoLocation?.val}</h3>  : <h1>{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</h1>
+                }
+                </div>
+              ),
+        },
       ],
+    },
+    {
+      head: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES"),
+      body:[
+        {
+          label: t("CS_COMPLAINT_DETAILS_IMAGE_UPLOAD"),
+              type: "component",
+              isMandatory: true,
+              key: "imageSelector",
+              withoutLabel: true,
+              component: (props) => (
+                <SelectImages
+                value={imageUploaded.current}
+                onSelect={(val) => {
+                  // setImageUploaded(val);
+                  imageUploaded.current = {...val};
+                }}
+                tenantId = {tenantId}
+                />
+              ),
+        },
+      ]
     },
     {
       head: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),

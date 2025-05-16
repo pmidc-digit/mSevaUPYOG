@@ -41,7 +41,7 @@ import {
   initReceiptsComponents,
   ReceiptsModule,
 } from "@mseva/digit-ui-module-receipts";
-import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
+// import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
 import {
   initEngagementComponents,
@@ -110,7 +110,7 @@ initMCollectComponents();
 initHRMSComponents();
 initTLComponents();
 initReceiptsComponents();
-initOBPSComponents();
+// initOBPSComponents();
 initNOCComponents();
 initEngagementComponents();
 initWSComponents();

@@ -398,6 +398,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
   const onPropertySearch = async (data) => {
     if (
       ptSearchConfig?.maxResultValidation &&
+      ptSearchConfig?.maxResultValidation &&
       propertyData?.Properties.length > 0 &&
       propertyData?.Properties.length > ptSearchConfig.maxPropertyResult &&
       errorShown
@@ -406,7 +407,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
       return;
     }
     if (!data?.city?.code) {
-      setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS"});
+      setShowToast({ warning: true, label: "ERR_PT_FILL_VALID_FIELDS" });
       return;
     }
     if (action == 0) {
@@ -455,7 +456,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
       .filter((k) => data[k])
       .reduce((acc, key) => ({ ...acc, [key]: typeof data[key] === "object" ? data[key].code : data[key] }), {});
     let city = tempObject.city;
-    
+
     delete tempObject.addParam;
     delete tempObject.addParam1;
     delete tempObject.city;

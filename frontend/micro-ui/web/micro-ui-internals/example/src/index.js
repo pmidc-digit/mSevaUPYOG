@@ -9,7 +9,7 @@ import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 
 import { PTModule, PTLinks, PTComponents, PTReducers } from "@mseva/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@mseva/digit-ui-module-mcollect";
-// import { TLModule, TLLinks } from "@mseva/digit-ui-module-tl";
+import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
 import { initSWACHComponents } from "@mseva/digit-ui-module-swach";
@@ -17,9 +17,8 @@ import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-receipts";
 // import { initReportsComponents } from "@mseva/digit-ui-module-reports";
 import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
-import { initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
-import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
+// import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
@@ -113,9 +112,8 @@ const initDigitUI = () => {
     PTRLinks,
     CommonPTModule,
     ...PTRComponents,
-
-    // TLModule,
-    // TLLinks,
+    TLModule,
+    TLLinks,
   });
   initFSMComponents();
   initPGRComponents();
@@ -126,7 +124,7 @@ const initDigitUI = () => {
   initTLComponents();
   initReceiptsComponents();
   // initReportsComponents();
-  initOBPSComponents();
+  // initOBPSComponents();
   initEngagementComponents();
   initNOCComponents();
   initWSComponents();

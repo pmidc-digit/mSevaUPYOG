@@ -61,8 +61,20 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
     }
   }, [financialYearsData]);
 
+  const { data: EmployeeStatusData } = Digit.Hooks.useCustomMDMS(tenantId, "common-masters", [{ name: "Department" }]);
+
   useEffect(() => {
-    setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name })));
+    if (approverData && EmployeeStatusData) {
+      const departments = EmployeeStatusData["common-masters"].Department;
+      setApprovers(
+        approverData?.Employees?.map((employee) => {
+          const deptCode = employee?.assignments?.[0]?.department;
+          const matchedDept = departments?.find((d) => d?.code === deptCode);
+          console.log("matchedDept===", matchedDept);
+          return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` };
+        })
+      );
+    }
   }, [approverData]);
 
   function selectFile(e) {

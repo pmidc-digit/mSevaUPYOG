@@ -24,13 +24,13 @@ const SWACHCard = () => {
   </svg>
 
   let propsForCSR =[
-    {
-      label: t("ES_SWACH_NEW_COMPLAINT"),
-      link: `/digit-ui/employee/swach/complaint/create`,
-       role: "CSR" 
-      // have to change in roleactions
-      //   role: "PGR-ADMIN"
-    }
+    // {
+    //   label: t("ES_SWACH_NEW_COMPLAINT"),
+    //   link: `/digit-ui/employee/swach/complaint/create`,
+    //    role: "CSR" 
+    //   // have to change in roleactions
+    //   //   role: "PGR-ADMIN"
+    // }
   ]
   
   console.log("PGR role access",propsForCSR.filter(link => link.role && Digit.Utils.didEmployeeHasRole(link.role) ))

@@ -207,8 +207,27 @@ const FillQuestions = (props) => {
   //     "lastModifiedTime": 1741255647601
   // }];
 
-  const data = prevProps.surveyDetails;
+  let data = prevProps.surveyDetails;
+  console.log("data",data)
 
+ data = {
+ 
+...data,
+  sections: data.sections
+    .sort((a, b) => a.sectionOrder - b.sectionOrder)
+    .map(section => ({
+      ...section,
+      questions: section.questions
+        .sort((a, b) => a.qorder - b.qorder)
+        .map(question => ({
+          ...question,
+          question: {
+            ...question.question,
+            options: question.question.options.sort((a, b) => a?.optionOrder - b?.optionOrder)
+          }
+        }))
+    }))
+};
   const fetchAnswer = async (status) => {
     setLoading(true);
     let payload = {

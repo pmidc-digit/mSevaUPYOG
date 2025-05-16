@@ -13,13 +13,12 @@ const TopBarSideBar = ({
   mobileView,
   handleUserDropdownSelection,
   logoUrl,
-  // showSidebar = true,
+  showSidebar = true,
   showLanguageChange,
   linkData,
   islinkDataLoading,
 }) => {
-  const showSidebar = false;
-  const [isSidebarOpen, toggleSidebar] = useState(false);
+   const [isSidebarOpen, toggleSidebar] = useState(false);
   const [isSideBarScroll, setSideBarScrollTop] = useState(false);
   const history = useHistory();
   const [showDialog, setShowDialog] = useState(false);

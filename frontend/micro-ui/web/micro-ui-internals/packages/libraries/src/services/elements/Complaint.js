@@ -106,6 +106,8 @@ export const Complaint = {
     mobileNumber,
     emailId,
     name,
+    latitude,
+    longitude
   }) => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const defaultData = {
@@ -127,7 +129,10 @@ export const Complaint = {
             code: localityCode,
             name: localityName,
           },
-          geoLocation: {},
+          geoLocation: {
+            latitude,
+            longitude
+          },
         },
       },
       workflow: {

@@ -17,7 +17,9 @@ const createComplaint = ({
   mobileNumber,
   name,
   emailId,
-  additionalDetails
+  additionalDetails,
+  latitude,
+  longitude,
 }) => async (dispatch, getState) => {
   const response = await Digit.Complaint.createSwach({
     cityCode,
@@ -36,7 +38,9 @@ const createComplaint = ({
     mobileNumber,
     name,
     emailId,
-    additionalDetails
+    additionalDetails,
+    latitude,
+    longitude
   });
   dispatch({
     type: CREATE_COMPLAINT,

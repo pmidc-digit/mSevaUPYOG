@@ -12,10 +12,10 @@ const SelectGeolocation = ({ onSelect, onSkip, value, t, onChange }) => {
       onSave={() => onSelect()}
       isPTDefault={false}
       PTdefaultcoord={false}
-      position={{
-        latitude: value.location.latitude,
-        longitude: value.location.longitude,
-      }}
+       position={{
+         latitude: value?.location?.latitude,
+         longitude: value?.location?.longitude,
+       }}
       onChange={(val, location, place) => {
         onChange(val, location, place)
       }}

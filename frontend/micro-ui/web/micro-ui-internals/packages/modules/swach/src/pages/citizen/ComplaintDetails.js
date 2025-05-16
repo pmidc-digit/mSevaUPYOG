@@ -44,7 +44,7 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
 
   useEffect(() => {
     workFlowDetails.revalidate();
-  }, []);
+  }, [workFlowDetails]);
 
   return (
     !workFlowDetails.isLoading && (

@@ -12,7 +12,8 @@ export const CreateComplaint = ({ parentUrl }) => {
   const cities = Digit.Hooks.swach.useTenants();
   const { t } = useTranslation();
 
-  const getCities = () => cities?.filter((e) => e.code === Digit.ULBService.getCurrentTenantId()) || [];
+  //const getCities = () => cities?.filter((e) => e.code === Digit.ULBService.getCurrentTenantId()) || [];
+  const getCities = () => cities || [];
   const propetyData=localStorage.getItem("swachProperty")
   const [complaintType, setComplaintType] = useState(JSON?.parse(sessionStorage.getItem("complaintType")) || {});
   const [subTypeMenu, setSubTypeMenu] = useState([]);
@@ -48,12 +49,12 @@ export const CreateComplaint = ({ parentUrl }) => {
   const tenantId = Digit.UserService.getUser()?.info?.tenantId;
   const tempLocation = useRef(null);
    const [geoLocation, setGeoLocation] = useState({
-       location:{
-         latitude: 30.730048,
-         longitude: 76.765040,
-       },
-       val: "",
-       place: "",
+      //  location:{
+      //    latitude: 30.730048,
+      //    longitude: 76.765040,
+      //  },
+      //  val: "",
+      //  place: "",
    });
   const imageUploaded = useRef({
     uploadedImages: null,
@@ -64,12 +65,13 @@ export const CreateComplaint = ({ parentUrl }) => {
         const { latitude, longitude } = position.coords;
         const newGeoLocation = {
           location: {
-            latitude : latitude,
-            longitude: longitude,
+            latitude : latitude ? latitude : 30.730048,
+            longitude: longitude ? longitude : 76.765040,
           },
           val: "",
           place: "test",
         };
+        console.log("newGeoLocation",newGeoLocation)
         setGeoLocation(newGeoLocation); 
       },
       (error) => {

@@ -44,6 +44,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   //   dispatch(UPDATE_PtNewApplication(config.key, data));
   // };
 
+  const tenantId = Digit.ULBService.getCurrentTenantId();
   const onSubmit = async (data) => {
     console.log("FormData received:", data);
 
@@ -52,6 +53,8 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       const additionalDetails = {
         structureType: unit?.constructionDetail?.structureType || null,
         ageOfProperty: unit?.constructionDetail?.ageOfProperty || null,
+        rentedformonths: unit?.RentedMonths, 
+        usageForDueMonths: unit?.NonRentedMonthsUsage
       };
       return { ...unit, additionalDetails };
     });
@@ -59,10 +62,10 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
     const owners = Array.isArray(data?.ownerShipDetails?.owners) ? data?.ownerShipDetails?.owners : [];
     // Construct the payload
     const formData = {
-      tenantId: data?.LocationDetails?.address?.city?.code,
+      tenantId: tenantId,
       address: {
         ...data?.LocationDetails?.address,
-        city: data?.LocationDetails?.address?.city?.name,
+        city: data?.LocationDetails?.address?.city?.code,
         locality: {
           code: data?.LocationDetails?.address?.locality?.code,
           area: data?.LocationDetails?.address?.locality?.area,
@@ -148,7 +151,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       documents: data?.DocummentDetails?.documents?.documents,
       applicationStatus: "CREATE",
     };
-    console.log("Documents: ", data.DocummentDetails.documents.documents);
+
 
     // Add institution details if ownership is not individual
     if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
@@ -176,7 +179,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
     // Set the form data and search data
     // setFormData(formData);
     // setSearchData({ city: formData.tenantId, filters: searchData });
-    const tenantId = formData.tenantId;
+    // const tenantId = formData.tenantId;
     try {
       const response = await Digit.PTService.create({ Property: { ...formData } }, tenantId);
 

@@ -239,7 +239,7 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
   if (property && property.owners && property.owners.length > 0) {
     let ownersTemp = [];
     let owners = [];
-    property.owners.map((owner) => {
+    property?.owners.map((owner) => {
       owner.documentUid = owner.documents ? owner.documents[0].documentUid : "NA";
       owner.documentType = owner.documents ? owner.documents[0].documentType : "NA";
       if (owner.status == "ACTIVE") {
@@ -252,7 +252,7 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
     property.ownersInit = owners;
     property.ownersTemp = ownersTemp;
   }
-  property.ownershipCategoryTemp = property.ownershipCategory;
+  property.ownershipCategoryTemp = property?.ownershipCategory;
   property.ownershipCategoryInit = "NA";
   // Set Institution/Applicant info card visibility
   if (get(application, "Properties[0].ownershipCategory", "").startsWith("INSTITUTION")) {
@@ -267,11 +267,11 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
       .sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime)[propertyIndex];
     // Removed filter(property => property.status == 'ACTIVE') condition to match result in qa env
     // const previousActiveProperty = propertiesAudit.sort((x, y) => y.auditDetails.lastModifiedTime - x.auditDetails.lastModifiedTime)[propertyIndex];
-    property.ownershipCategoryInit = previousActiveProperty.ownershipCategory;
-    property.ownersInit = previousActiveProperty.owners.filter((owner) => owner.status == "ACTIVE");
+    property.ownershipCategoryInit = previousActiveProperty?.ownershipCategory;
+    property.ownersInit = previousActiveProperty?.owners.filter((owner) => owner.status == "ACTIVE");
 
-    if (property.ownershipCategoryInit.startsWith("INSTITUTION")) {
-      property.institutionInit = previousActiveProperty.institution;
+    if (property?.ownershipCategoryInit?.startsWith("INSTITUTION")) {
+      property.institutionInit = previousActiveProperty?.institution;
     }
   }
 

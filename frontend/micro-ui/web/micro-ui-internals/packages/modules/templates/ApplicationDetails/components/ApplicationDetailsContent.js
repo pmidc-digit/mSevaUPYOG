@@ -62,7 +62,7 @@ function ApplicationDetailsContent({
   const [showToast, setShowToast] = useState(null);
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
-  console.log("appl", applicationDetails);
+  console.log("applicationDetails: ", applicationDetails);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -150,7 +150,7 @@ function ApplicationDetailsContent({
         name: checkpoint?.assignes?.[0]?.name,
         mobileNumber:
           applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid &&
-          applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            applicationData?.processInstance?.assignes?.[0]?.mobileNumber
             ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
             : checkpoint?.assignes?.[0]?.mobileNumber,
         comment: t(checkpoint?.comment),
@@ -314,9 +314,9 @@ function ApplicationDetailsContent({
     // }
   };
 
-  const applicationData_pt = applicationDetails.applicationData;
-  const propertyIds = applicationDetails.applicationData.propertyId || "";
-  const checkPropertyStatus = applicationDetails.additionalDetails.propertytobestatus;
+  const applicationData_pt = applicationDetails?.applicationData;
+  const propertyIds = applicationDetails?.applicationData?.propertyId || "";
+  const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
   const PropertyInActive = () => {
     if (checkPropertyStatus == "ACTIVE") {
       updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
@@ -336,11 +336,15 @@ function ApplicationDetailsContent({
   // const PropertyActive = () => updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
 
   const EditProperty = () => {
-    const pID = applicationDetails?.applicationData?.propertyId;
-    if (pID) {
-      history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
+    const canEditProperty = applicationDetails?.applicationData?.status==="ACTIVE";
+    if (canEditProperty) {
+      const pID = applicationDetails?.applicationData?.propertyId;
+      if (pID) {
+        history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
+      }
+    } else {
+      setShowToast({ isError: true, label: " This action cannot be done on Inactive property or the property in workflow" });
     }
-    // alert("edit property");
   };
 
   const AccessProperty = () => {
@@ -622,8 +626,7 @@ function ApplicationDetailsContent({
                                 isCompleted={index === 0}
                                 info={checkpoint.comment}
                                 label={t(
-                                  `${timelineStatusPrefix}${
-                                    checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
+                                  `${timelineStatusPrefix}${checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
                                   }${timelineStatusPostfix}`
                                 )}
                                 customChild={getTimelineCaptions(checkpoint, index, workflowDetails?.data?.timeline)}

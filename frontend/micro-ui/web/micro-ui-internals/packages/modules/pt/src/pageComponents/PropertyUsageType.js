@@ -18,10 +18,8 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
       ? { code: `${formData?.usageCategoryMajor?.code}`, i18nKey: `PROPERTYTAX_BILLING_SLAB_OTHERS` }
       : formData?.usageCategoryMajor
   );
-  // console.log("usageCategoryMajor",usageCategoryMajor)
-  //   const { data: Menu, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "OccupancyType");
+
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const { data: Menu = {}, isLoading: menuLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "UsageCategory") || {};
   let usagecat = [];
@@ -57,13 +55,13 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
     }
   }
 
-  useEffect(() => {
-    if (!menuLoading && presentInModifyApplication && userType === "employee") {
-      const original = formData?.usageCategoryMajor;
-      const selectedOption = usageCategoryMajorMenu(usagecat).filter((e) => e.code === original)[0];
-      setPropertyPurpose(selectedOption);
-    }
-  }, [menuLoading]);
+  // useEffect(() => {
+  //   if (!menuLoading && presentInModifyApplication && userType === "employee") {
+  //     const original = formData?.usageCategoryMajor;
+  //     const selectedOption = usageCategoryMajorMenu(usagecat).filter((e) => e.code === original)[0];
+  //     setPropertyPurpose(selectedOption);
+  //   }
+  // }, [menuLoading]);
   // pt.PTNewApplicationForm.formData.PropertyDetails.usageCategoryMajor
     // useEffect(() => {
     //   if (formData?.PropertyDetails?.usageCategoryMajor?.code && usageCategoryMajorMenu(usagecat)?.length) {
@@ -86,19 +84,19 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
     //   console.log("code is out ")
     // }, [formData, usageCategoryMajor  ]);
     
-    useEffect(() => {
+    // useEffect(() => {
 
-      console.log("code is coming innn ")
-      if (formData?.usageCategoryMajor?.code || usageCategoryMajorMenu(usagecat)?.length) {
-        const code = formData?.usageCategoryMajor?.code;
-        console.log("here is code -in if's",code)
-        const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
-        console.log("code in Majorbuiltdingtype",Majorbuiltdingtype)
-        setValue("PropertyUsageType", Majorbuiltdingtype);
-        // setPropertyPurpose(Majorbuiltdingtype)
-      }
-      console.log("code is out ")
-    }, [formData, usageCategoryMajor  ]);
+    //   console.log("code is coming innn ")
+    //   if (formData?.usageCategoryMajor?.code || usageCategoryMajorMenu(usagecat)?.length) {
+    //     const code = formData?.usageCategoryMajor?.code;
+    //     console.log("here is code -in if's",code)
+    //     const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
+    //     console.log("code in Majorbuiltdingtype",Majorbuiltdingtype)
+    //     setValue("PropertyUsageType", Majorbuiltdingtype);
+    //     // setPropertyPurpose(Majorbuiltdingtype)
+    //   }
+    //   console.log("code is out ")
+    // }, [formData]);
 
 
 
@@ -152,7 +150,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
                 <Dropdown
                   className="form-field"
                   // selected={getPropertyTypeMenu(proptype)?.length === 1 ? getPropertyTypeMenu(proptype)[0] : BuildingType}
-                  selected={props.value}
+                  selected={usageCategoryMajor}
                   // selected={usageCategoryMajor}
                   option={usageCategoryMajorMenu(usagecat)}
                   select={(e) => {

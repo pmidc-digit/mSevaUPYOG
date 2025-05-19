@@ -101,6 +101,7 @@ const EditPropertyStepForm = ({ applicationData }) => {
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PtNewApplication(updatedStepNumber));
   };
+  console.log("Application Data: ",applicationData);
   const defaultValues = mapApplicationDataToDefaultValues(applicationData);
   // console.log("default Values in EditPropertyStepForm are: ", defaultValues);
 
@@ -111,12 +112,15 @@ const EditPropertyStepForm = ({ applicationData }) => {
     clearSuccessData();
   }, []);
 
+  const [ready,setReady]=useState(false);
   useEffect(() => {
     console.log("deafult vaules in useEffect: ", defaultValues);
 
     Object.entries(defaultValues).forEach(([key, value]) => {
       dispatch(UPDATE_PtNewApplication(key, value));
     });
+    setReady(true);
+    
   }, []);
   const handleSubmit = () => {
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
@@ -129,10 +133,14 @@ const EditPropertyStepForm = ({ applicationData }) => {
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
+  if(!ready){
+    return null;
+  }
+
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}
+        {t("EDIT_PT_APPLICATION")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (

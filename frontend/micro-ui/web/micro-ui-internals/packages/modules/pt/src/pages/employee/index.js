@@ -152,7 +152,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const NewPropertyStepForm = Digit?.ComponentRegistryService?.getComponent('NewPropertyStepForm')
   const EditPropertyStepForm = Digit?.ComponentRegistryService?.getComponent('EditPropertyStepForm')
   const OwnerTransfershipStepForm = Digit?.ComponentRegistryService?.getComponent('OwnerTransfershipStepForm')
-  const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
+  const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PTApplicationDetailsEmployee");
   const PropertyDetails = Digit?.ComponentRegistryService?.getComponent("PTPropertyDetails");
   const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("PTAssessmentDetails");
   const EditApplication = Digit?.ComponentRegistryService?.getComponent("PTEditApplication");

@@ -194,7 +194,7 @@ const componentsToRegister = {
   PTMyPayments,
   SelectPTUnits,
   PTNewApplication: NewApplication,
-  ApplicationDetails: ApplicationDetails,
+  PTApplicationDetailsEmployee: ApplicationDetails,
   PTPropertyDetails: PropertyDetails,
   PTAssessmentDetails: AssessmentDetails,
   PTEditApplication: EditApplication,

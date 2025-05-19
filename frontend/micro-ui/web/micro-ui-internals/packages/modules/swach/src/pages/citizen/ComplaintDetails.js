@@ -44,7 +44,7 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
 
   useEffect(() => {
     workFlowDetails.revalidate();
-  }, []);
+  }, [workFlowDetails]);
 
   return (
     !workFlowDetails.isLoading && (
@@ -186,7 +186,6 @@ const ComplaintDetailsPage = (props) => {
               <h1 style={{ fontSize: "16px", marginBottom: "16px", color: "blue", fontWeight: "bolder" }}>
                 <a
                   href={`https://www.google.com/maps?q=${complaintDetails?.service?.address?.geoLocation?.latitude},${complaintDetails?.service?.address?.geoLocation?.longitude}`}
-                  target="_blank"
                   rel="noopener noreferrer"
                 >
                   View Location on Google Maps

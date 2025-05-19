@@ -17,20 +17,21 @@
     "micro-ui-internals/packages/modules/pgr",
     "micro-ui-internals/packages/modules/mCollect",
     "micro-ui-internals/packages/modules/pt",
-    "micro-ui-internals/packages/modules/tl"
+    "micro-ui-internals/packages/modules/tl",
+    "micro-ui-internals/packages/modules/obps"
   ],
   "engines": {
     "node": ">=14"
   },
   "dependencies": {
     "@mseva/digit-ui-react-components": "1.0.3",
-    "@pmidc/upyog-css": "1.0.16",
-    "@mseva/digit-ui-module-ptr": "1.0.15",
+    "@pmidc/upyog-css": "1.0.15",
+    "@mseva/digit-ui-module-ptr": "1.0.16",
     "@mseva/digit-ui-libraries": "1.0.15",
     "@mseva/digit-ui-module-bills": "1.0.4",
     "@mseva/digit-ui-module-common": "1.0.12",
     "@mseva/digit-ui-module-commonpt": "1.0.2",
-    "@mseva/digit-ui-module-core": "1.0.14",
+    "@mseva/digit-ui-module-core": "1.0.15",
     "@mseva/digit-ui-module-dss": "1.0.2",
     "@mseva/digit-ui-module-engagement": "1.1.16",
     "@mseva/digit-ui-module-fsm": "1.0.2",
@@ -41,8 +42,9 @@
     "@mseva/digit-ui-module-swach": "1.0.22",
     "@mseva/digit-ui-module-receipts": "1.0.1",
     "@mseva/digit-ui-module-ws": "1.0.2",
-    "@mseva/digit-ui-module-pt": "1.0.6",
+    "@mseva/digit-ui-module-pt": "1.0.7",
     "@mseva/digit-ui-module-tl": "1.0.4",
+    "@mseva/digit-ui-module-obps": "1.0.5",
     "babel-loader": "8.1.0",
     "qrcode": "^1.5.3",
     "react": "17.0.2",

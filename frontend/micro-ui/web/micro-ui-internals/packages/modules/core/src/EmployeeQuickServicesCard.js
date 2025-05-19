@@ -66,6 +66,9 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
       case "NDC":
         return true;
 
+      case "HRMS":
+        return true;
+
       default:
         return null;
     }
@@ -97,6 +100,8 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <PGRIcon />;
       case "NDC":
         return <TLIcon />;
+      case "HRMS":
+        return <WSICon />;
       default:
         return <PTIcon />;
     }

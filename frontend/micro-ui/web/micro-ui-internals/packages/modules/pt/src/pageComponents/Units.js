@@ -22,7 +22,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
         occupancyType: null,
         tenantId,
         usageCategory: null,
-        builtUpAreaCitizen: "",
+        builtUpArea: "",
         RentedMonths: null,
         ageOfProperty: null,
         structureType: null,
@@ -230,6 +230,10 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
     }
   }, [isLoading]);
 
+  // useEffect(()=>{
+  //   console.log("formData", formData);
+  // },[formData])
+
   const calculateNumberOfFloors = () => {
     if (formData?.PropertyType?.code !== "BUILTUP.INDEPENDENTPROPERTY") {
       if (formState.errors[config.key]?.type === "units_missing") clearErrors(config.key);
@@ -322,7 +326,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       NonRentedMonthsUsage: unit?.NonRentedMonthsUsage?.code,
       floorNoCitizen: unit?.floorNoCitizen?.code,
       constructionDetail: {
-        builtUpAreaCitizen: unit?.builtUpAreaCitizen,
+        builtUpArea: unit?.builtUpArea,
       },
       tenantId: Digit.ULBService.getCurrentTenantId(),
       usageCategory: unit?.usageCategory?.code,
@@ -604,8 +608,8 @@ function Unit({
               <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
               <div className="field">
                 <Controller
-                  name="builtUpAreaCitizen"
-                  defaultValue={unit?.builtUpAreaCitizen}
+                  name="builtUpArea"
+                  defaultValue={unit?.builtUpArea}
                   control={control}
                   render={(props) => (
                     <TextInput
@@ -669,8 +673,8 @@ function Unit({
             <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
             <div className="field">
               <Controller
-                name="builtUpAreaCitizen"
-                defaultValue={unit?.builtUpAreaCitizen}
+                name="builtUpArea"
+                defaultValue={unit?.builtUpArea}
                 control={control}
                 render={(props) => (
                   <TextInput
@@ -738,7 +742,7 @@ function Unit({
         </div>
       )}
 
-      {/* <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
+      <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
           <CardLabel className="card-label-smaller">{t("PT_FORM2_USAGE_TYPE") + " *"}</CardLabel>
           <Controller
             name="usageCategory"
@@ -757,13 +761,13 @@ function Unit({
               />
             )}
           />
-        </LabelFieldPair>  */}
+        </LabelFieldPair> 
 
-      {/* {!["RESIDENTIAL"].includes(usageType?.code) ? (
+      {!["RESIDENTIAL"].includes(usageType?.code) ? (
           <CardLabelError style={errorStyle}>{localFormState.touched.usageCategory ? errors?.usageCategory?.message : ""}</CardLabelError>
-        ) : null} */}
+        ) : null}
 
-      {/* <LabelFieldPair>
+      <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY") + " *"}</CardLabel>
           <Controller
             name="occupancyType"
@@ -784,7 +788,7 @@ function Unit({
             )}
           />
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{localFormState.touched.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError> */}
+        <CardLabelError style={errorStyle}>{localFormState.touched.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError>
 
 
       {formValue.occupancyType?.code === "RENTED" ? (
@@ -861,7 +865,7 @@ function Unit({
           ) : null}
         </React.Fragment>
       ) : null}
-      {/* {formData?.PropertyType?.code == "VACANT" && ( 
+      {formData?.PropertyType?.code == "VACANT" && ( 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
             <div className="field">
@@ -886,8 +890,8 @@ function Unit({
               />
             </div>
           </LabelFieldPair>
-        )} */}
-      {/* <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError> */}
+        )}
+      <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError>
     </div>
   );
 }

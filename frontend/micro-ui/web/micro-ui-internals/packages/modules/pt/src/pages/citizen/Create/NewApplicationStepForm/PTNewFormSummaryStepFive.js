@@ -67,7 +67,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       usageCategory: data?.PropertyDetails?.usageCategoryMajor?.code,
       usageCategoryMajor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[0],
       usageCategoryMinor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[1] || null,
-      landArea: Number(data?.PropertyDetails?.landArea || 0),
+      landArea: Number(data?.PropertyDetails?.landArea || 2),
       superBuiltUpArea: Number(data?.PropertyDetails?.landArea || 0),
       propertyType: data?.PropertyDetails?.PropertyType?.code,
       noOfFloors: Number(data?.PropertyDetails?.noOfFloors || 0),

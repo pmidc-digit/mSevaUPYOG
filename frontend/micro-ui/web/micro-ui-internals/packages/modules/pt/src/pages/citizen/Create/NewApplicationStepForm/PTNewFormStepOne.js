@@ -21,6 +21,8 @@ const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     }
   }
 
+  console.log("Config in step 1", config);
+
   function onGoBack(data) {
     onBackClick(config.key, data);
   }

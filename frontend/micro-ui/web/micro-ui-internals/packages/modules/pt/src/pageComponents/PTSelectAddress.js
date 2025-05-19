@@ -33,8 +33,11 @@ console.log("usertype",window.location.href.includes("employee"))
     return formData?.address?.city || null;
   });
 
+  console.log("is citizen href", window.location.href.includes("citizen"));
+
+  console.log("selectedCity",selectedCity)
   let { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-    selectedCity?.code,
+    selectedCity?.districtTenantCode,
     "revenue",
     {
       enabled: !!selectedCity,
@@ -137,6 +140,7 @@ const fetchLocality=()=>{
   }, [selectedCity, formData?.address?.pincode, fetchedLocalities]);
 
   function selectCity(city) {
+    console.log("Selected City", city);
     setSelectedLocality(null);
     setLocalities(null);
     setSelectedCity(city);
@@ -326,7 +330,10 @@ const fetchLocality=()=>{
                 selected={props.value}
                 disable={false}
                 option={cities}
-                select={props.onChange}
+                select={(val)=>{
+                  selectCity(val.city)
+                  props.onChange(val)
+                }}
                 optionKey="i18nKey"
                 onBlur={props.onBlur}
                 t={t}
@@ -352,7 +359,7 @@ const fetchLocality=()=>{
                 select={(e) => {
                   props.onChange(e);
                   selectLocality(e); // to keep your external state also in sync
-                  fetchLocality()
+                  // fetchLocality()
                 }}
                 // select={props.onChange}
                 onBlur={props.onBlur}

@@ -57,16 +57,40 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   });
 
   let FinancialYearOptions = [];
-  const currentYear = new Date().getFullYear();
-  const seenYears = new Set();
-  FinancialYearData &&
-    FinancialYearData.forEach((item) => {
-      const year = parseInt(item.name); // Assuming `item.name` contains the year as a string
-      if (year <= currentYear && !seenYears.has(year)) { // Check if the year is unique
-        seenYears.add(year); // Add the year to the Set
-        FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
-      }
-    })
+  // const currentYear = new Date().getFullYear();
+  // const seenYears = new Set();
+  // FinancialYearData &&
+  //   FinancialYearData.forEach((item) => {
+  //     const year = parseInt(item.name); // Assuming `item.name` contains the year as a string
+  //     if (year <= currentYear && !seenYears.has(year)) { // Check if the year is unique
+  //       seenYears.add(year); // Add the year to the Set
+  //       FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
+  //     }
+  //   })
+
+  const currentYear = new Date().getFullYear(); // 2025
+const seenYears = new Set();
+
+FinancialYearData &&
+  FinancialYearData.forEach((item) => {
+    const startYear = parseInt(item.name); // Assuming item.name is like '2024'
+    const endYear = startYear + 1;
+    const formattedYear = `${startYear}-${(endYear % 100).toString().padStart(2, '0')}`;
+
+    // Add only if year is currentYear or previous year (e.g., 2024 or 2025 for currentYear = 2025)
+    if (
+      (startYear === currentYear || startYear === currentYear - 1) &&
+      !seenYears.has(formattedYear)
+    ) {
+      seenYears.add(formattedYear);
+      FinancialYearOptions.push({
+        i18nKey: formattedYear,
+        code: item.code,
+        value: formattedYear,
+      });
+    }
+  });
+  console.log("Financial Year Data", FinancialYearData)
   FinancialYearOptions.sort((a, b) => parseInt(a.value) - parseInt(b.value));
   console.log("FinancialYearOptions", FinancialYearOptions);
   // FinancialYearData.map((item) => {

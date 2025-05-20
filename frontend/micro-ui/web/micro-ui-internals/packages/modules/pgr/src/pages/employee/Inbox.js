@@ -16,19 +16,25 @@ const Inbox = () => {
 
   useEffect(() => {
     (async () => {
-      const applicationStatus = searchParams?.filters?.pgrfilters?.applicationStatus?.map(e => e.code).join(",")
-      let response = await Digit.PGRService.count(tenantId, applicationStatus?.length > 0  ? {applicationStatus} : {} );
+      const applicationStatus = searchParams?.filters?.pgrfilters?.applicationStatus?.map((e) => e.code).join(",");
+      let response = await Digit.PGRService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
       if (response?.count) {
         setTotalRecords(response.count);
       }
     })();
-  }, [searchParams]); 
+  }, [searchParams]);
 
   console.log("PGR Called Here");
 
-  useEffect(()=>{
-    console.log("searchParams", searchParams)
-  },[searchParams])
+  useEffect(() => {
+    console.log("searchParams", searchParams);
+  }, [searchParams]);
+
+  console.log("PGR Called Here");
+
+  useEffect(() => {
+    console.log("searchParams", searchParams);
+  }, [searchParams]);
 
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + 10);
@@ -54,10 +60,9 @@ const Inbox = () => {
   const queryParams = useMemo(() => {
     return { ...searchParams, offset: pageOffset, limit: pageSize };
   }, [searchParams, pageOffset, pageSize]);
-
   // let complaints = Digit.Hooks.pgr.useInboxData(searchParams) || [];
   // let { data: complaints, isLoading } = Digit.Hooks.pgr.useInboxData({ ...searchParams, offset: pageOffset, limit: pageSize }) ;
-  let { data: complaints, isLoading } = Digit.Hooks.pgr.useInboxData(queryParams) ;
+  let { data: complaints, isLoading } = Digit.Hooks.pgr.useInboxData(queryParams);
 
   let isMobile = Digit.Utils.browser.isMobile();
 

@@ -10,13 +10,17 @@ const complaintsWithCount = [
 
 const Status = ({ complaints, onAssignmentChange, swachfilters }) => {
   const { t } = useTranslation();
-  let hasFilters = swachfilters?.applicationStatus?.length;
   // const complaintsWithCount = Digit.Hooks.swach.useComplaintStatusCount(complaints);
-
   useEffect(() => {
     onAssignmentChange({ target: { checked: true } }, { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" });
   }, []);
-
+  const complaintsWithCount = [
+    { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" },
+    { name: "Pending At LME", code: "PENDINGATLME" },
+    { name: "Resolved", code: "RESOLVED" },
+  ];
+  let hasFilters = swachfilters?.applicationStatus?.length;
+  console.log("swachfilters", swachfilters);
   return (
     <div className="status-container">
       <div className="filter-label">{t("ES_SWACH_FILTER_STATUS")}</div>

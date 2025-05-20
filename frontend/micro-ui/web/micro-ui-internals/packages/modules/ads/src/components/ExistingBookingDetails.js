@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 // The ExistingBookingDetails component displays a list of existing booking applications.
 // It allows users to view and select an existing booking for further actions.
 
-export const ExistingBookingDetails = ({ onSubmit,setExistingDataSet,Searchdata }) => {
+export const ExistingBookingDetails = ({ onSubmit, setExistingDataSet, Searchdata }) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const [filters, setFilters] = useState(null);
@@ -14,7 +14,7 @@ export const ExistingBookingDetails = ({ onSubmit,setExistingDataSet,Searchdata 
 
   // Slot search data for Ads (Advertisement)
   const slotSearchData = Digit.Hooks.ads.useADSSlotSearch();
-  
+
   // Prepare form data for Advertisement Service
   const formdata = {
     advertisementSlotSearchCriteria: Searchdata.map((item) => ({
@@ -30,12 +30,12 @@ export const ExistingBookingDetails = ({ onSubmit,setExistingDataSet,Searchdata 
     })),
   };
 
-  const setchbData = async(application) => {
-    const result=await slotSearchData.mutateAsync(formdata);
+  const setchbData = async (application) => {
+    const result = await slotSearchData.mutateAsync(formdata);
     const timerValue = result?.advertisementSlotAvailabiltityDetails[0].timerValue;
     const newSessionData = {
       documents: {
-        documents: application?.documents?.map(doc => ({
+        documents: application?.documents?.map((doc) => ({
           documentDetailId: doc?.documentDetailId,
           documentType: doc?.documentType,
           fileStoreId: doc?.fileStoreId,
@@ -46,8 +46,8 @@ export const ExistingBookingDetails = ({ onSubmit,setExistingDataSet,Searchdata 
         houseNo: application?.address?.houseNo,
         streetName: application?.address?.streetName,
         landmark: application?.address?.landmark,
-        addressline1 : application?.address?.addressLine1,
-        addressline2 : application?.address?.addressLine2,
+        addressline1: application?.address?.addressLine1,
+        addressline2: application?.address?.addressLine2,
       },
       applicant: {
         applicantName: application?.applicantDetail?.applicantName,
@@ -55,19 +55,20 @@ export const ExistingBookingDetails = ({ onSubmit,setExistingDataSet,Searchdata 
         alternateNumber: application?.applicantDetail?.applicantAlternateMobileNo,
         emailId: application?.applicantDetail?.applicantEmailId,
       },
-      timervalue:{
-        timervalue:timerValue || 0
+      timervalue: {
+        timervalue: timerValue || 0,
       },
-      draftId:result?.draftId || ""
+      draftId: result?.draftId || "",
     };
     setExistingDataSet(newSessionData);
-    setIsDataSet(true);  // Set the flag to true after data is set
+    setIsDataSet(true); // Set the flag to true after data is set
   };
 
   useEffect(() => {
-    if (isDataSet) { // If data is set, call onSubmit
+    if (isDataSet) {
+      // If data is set, call onSubmit
       onSubmit();
-      setIsDataSet(false);  // Reset the flag after onSubmit is called
+      setIsDataSet(false); // Reset the flag after onSubmit is called
     }
   }, [isDataSet, onSubmit]);
 
@@ -83,7 +84,7 @@ export const ExistingBookingDetails = ({ onSubmit,setExistingDataSet,Searchdata 
   }
   let initialFilters = !isNaN(parseInt(filter))
     ? { limit: "3", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
-    : { limit: "3", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId,mobileNumber:user?.mobileNumber };
+    : { limit: "3", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId, mobileNumber: user?.mobileNumber };
 
   useEffect(() => {
     setFilters(initialFilters);
@@ -98,37 +99,36 @@ export const ExistingBookingDetails = ({ onSubmit,setExistingDataSet,Searchdata 
 
   const filteredApplications = data?.bookingApplication || [];
   const applicationContainerStyle = {
-    padding: '10px',
-    margin: '10px 0',
-    border: '1px solid #ccc',
-    transition: 'background-color 0.3s ease, box-shadow 0.3s ease',
+    padding: "10px",
+    margin: "10px 0",
+    border: "1px solid #ccc",
+    transition: "background-color 0.3s ease, box-shadow 0.3s ease",
   };
 
   const applicationContainerHoverStyle = {
-    boxShadow: '1px 4px 4px 7px rgba(0, 0, 0, 0.5)', // Black shadow with 50% opacity
+    boxShadow: "1px 4px 4px 7px rgba(0, 0, 0, 0.5)", // Black shadow with 50% opacity
   };
   return (
     <React.Fragment>
       <div>
         {filteredApplications.length > 0 &&
           filteredApplications.map((application, index) => (
-<div key={index}>
-              
-  <Card
-       style={{ ...applicationContainerStyle, cursor: "pointer" }}
-       onMouseEnter={(e) => {
-         e.currentTarget.style.backgroundColor = applicationContainerHoverStyle.backgroundColor;
-         e.currentTarget.style.boxShadow = applicationContainerHoverStyle.boxShadow;
-       }}
-       onMouseLeave={(e) => {
-         e.currentTarget.style.backgroundColor = '';
-         e.currentTarget.style.boxShadow = '';
-       }}
-    onClick={() => {
-      // Trigger the setchbData function with the clicked application data
-      setchbData(application);
-    }}
-  >
+            <div key={index}>
+              <Card
+                style={{ ...applicationContainerStyle, cursor: "pointer" }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = applicationContainerHoverStyle.backgroundColor;
+                  e.currentTarget.style.boxShadow = applicationContainerHoverStyle.boxShadow;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = "";
+                  e.currentTarget.style.boxShadow = "";
+                }}
+                onClick={() => {
+                  // Trigger the setchbData function with the clicked application data
+                  setchbData(application);
+                }}
+              >
                 <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
                 <KeyNote keyValue={t("ADS_APPLICANT_NAME")} note={application?.applicantDetail?.applicantName} />
                 <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
@@ -136,9 +136,7 @@ export const ExistingBookingDetails = ({ onSubmit,setExistingDataSet,Searchdata 
             </div>
           ))}
         {filteredApplications.length === 0 && !isLoading && (
-          <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-            {t("ADS_NO_APPLICATION_FOUND_MSG")}
-          </p>
+          <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("ADS_NO_APPLICATION_FOUND_MSG")}</p>
         )}
       </div>
     </React.Fragment>

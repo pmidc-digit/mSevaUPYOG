@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { FilterAction, Card, DetailsCard, PopUp, SearchAction } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
@@ -11,6 +11,10 @@ export const ComplaintCard = ({ data, onFilterChange, onSearch, serviceRequestId
   const [popup, setPopup] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [filterCount, setFilterCount] = useState(Digit.inboxFilterCount || 1);
+
+  useEffect(() => {
+    handlePopupAction("FILTER")
+  },[])
 
   const handlePopupAction = (type) => {
     if (type === "SEARCH") {

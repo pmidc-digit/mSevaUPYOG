@@ -3,7 +3,7 @@ import React from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 /*
  * ApplicationTable component renders a table to display application data.
- * It supports pagination, sorting, and customizable cell properties, 
+ * It supports pagination, sorting, and customizable cell properties,
  * making it easy to navigate and manage tabular information.
  */
 

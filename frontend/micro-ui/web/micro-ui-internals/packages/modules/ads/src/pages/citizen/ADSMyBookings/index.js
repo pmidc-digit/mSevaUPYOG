@@ -32,7 +32,7 @@ export const ADSMyApplications = () => {
 
   let initialFilters = !isNaN(parseInt(filter))
     ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
-    : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId, mobileNumber:user?.mobileNumber };
+    : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0", tenantId, mobileNumber: user?.mobileNumber };
 
   useEffect(() => {
     setFilters(initialFilters);
@@ -60,6 +60,8 @@ export const ADSMyApplications = () => {
   const statusOptions = [
     { i18nKey: "Booked", code: "BOOKED", value: t("ADS_BOOKED") },
     { i18nKey: "Booking in Progres", code: "BOOKING_CREATED", value: t("ADS_BOOKING_IN_PROGRES") },
+    { i18nKey: "Pending For Payment", code: "PENDING_FOR_PAYMENT", value: t("PENDING_FOR_PAYMENT") },
+    { i18nKey: "Booking Expired", code: "BOOKING_EXPIRED", value: t("BOOKING_EXPIRED") },
     { i18nKey: "Cancelled", code: "CANCELLED", value: t("CANCELLED") },
   ];
 
@@ -113,8 +115,8 @@ export const ADSMyApplications = () => {
             </div>
           </div>
           <Link to="/digit-ui/citizen/ads/bookad/searchads">
-              <SubmitBar style={{borderRadius:"30px",width:"20%" }} label={t("ADS_NEW_BOOKING")+" +"} />
-            </Link>
+            <SubmitBar style={{ borderRadius: "30px", width: "20%" }} label={t("ADS_NEW_BOOKING") + " +"} />
+          </Link>
         </div>
       </Card>
       <div>

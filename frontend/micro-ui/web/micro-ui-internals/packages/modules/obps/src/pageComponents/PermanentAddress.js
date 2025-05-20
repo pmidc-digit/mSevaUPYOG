@@ -29,7 +29,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode || "");
   const [ulbType, setUlbType] = useState("");
-  const [selectedUlbTypes, setSelectedUlbTypes] = useState([]);
+  const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
 
   console.log("formData", formData);
   // console.log("data: newConfig", newConfig);
@@ -98,7 +98,10 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       onSelect(config.key, { PermanentAddress: PermanentAddress, Pincode: pinCode, Ulb: selectedUlbTypes });
     else {
       let data = formData?.formData;
+      console.log("data", data);
       data.LicneseDetails.PermanentAddress = PermanentAddress;
+      data.LicneseDetails.Ulb = selectedUlbTypes;
+      data.LicneseDetails.Pincode = pinCode;
       onSelect("", formData);
     }
   };

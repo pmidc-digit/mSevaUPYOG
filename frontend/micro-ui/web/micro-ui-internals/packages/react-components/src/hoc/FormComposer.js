@@ -35,6 +35,7 @@ export const FormComposer = (props) => {
     setError,
     clearErrors,
     unregister,
+    setApi,
   } = useForm({
     defaultValues: props.defaultValues,
   });
@@ -43,7 +44,13 @@ export const FormComposer = (props) => {
 
   useEffect(() => {
     const iseyeIconClicked = sessionStorage.getItem("eyeIconClicked");
-    if (props?.appData && !(props?.appData?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails) && iseyeIconClicked && Object.keys(props?.appData)?.length > 0 && (!(_.isEqual(props?.appData?.ConnectionHolderDetails?.[0],formData?.ConnectionHolderDetails?.[0] ))) ) {
+    if (
+      props?.appData &&
+      !props?.appData?.ConnectionHolderDetails?.[0]?.sameAsOwnerDetails &&
+      iseyeIconClicked &&
+      Object.keys(props?.appData)?.length > 0 &&
+      !_.isEqual(props?.appData?.ConnectionHolderDetails?.[0], formData?.ConnectionHolderDetails?.[0])
+    ) {
       reset({ ...props?.appData });
     }
   }, [props?.appData, formData, props?.appData?.ConnectionHolderDetails]);
@@ -81,7 +88,7 @@ export const FormComposer = (props) => {
             ) : null}
             <TextInput
               // className="field"
-               className="fieldNew"
+              className="fieldNew"
               {...populators}
               inputRef={register(populators.validation)}
               isRequired={isMandatory}
@@ -94,8 +101,7 @@ export const FormComposer = (props) => {
       case "textarea":
         // if (populators.defaultValue) setTimeout(setValue(populators?.name, populators.defaultValue));
         return (
-          <TextArea 
-          className="field" name={populators?.name || ""} {...populators} inputRef={register(populators.validation)} disable={disable} />
+          <TextArea className="field" name={populators?.name || ""} {...populators} inputRef={register(populators.validation)} disable={disable} />
         );
       case "mobileNumber":
         return (
@@ -134,6 +140,7 @@ export const FormComposer = (props) => {
                 clearErrors={clearErrors}
                 formState={formState}
                 onBlur={props.onBlur}
+                setApi={setApi}
               />
             )}
             name={config.key}
@@ -226,7 +233,7 @@ export const FormComposer = (props) => {
           <CardSectionHeader style={props?.sectionHeadStyle ? props?.sectionHeadStyle : {}} id={section.headId}>
             {t(section.head)}
           </CardSectionHeader>
-          <div style={props?.lineStyle? props?.lineStyle:{}}></div>
+          <div style={props?.lineStyle ? props?.lineStyle : {}}></div>
         </>
       );
     } else {
@@ -320,8 +327,8 @@ export const FormComposer = (props) => {
       e.preventDefault();
     }
   };
-  console.log(props)
-  
+  console.log(props);
+
   const buttonStyle = {
     next: {
       backgroundColor: "#3f51b5",
@@ -336,7 +343,7 @@ export const FormComposer = (props) => {
       color: "#3f51b5",
       border: "1px solid #3f51b5",
       padding: "10px 10px",
-      margin:"10px",
+      margin: "10px",
       cursor: "pointer",
     },
   };
@@ -344,20 +351,24 @@ export const FormComposer = (props) => {
   const handleBackClick = () => {
     props.onBackClick && props.onBackClick(formData);
   };
-const styles={boxShadow:'none',padding: "20px 48px 48px"}
+  const styles = { boxShadow: "none", padding: "20px 48px 48px" };
   return (
     <form onSubmit={handleSubmit(onSubmit)} onKeyDown={(e) => checkKeyDown(e)} id={props.formId} className={props.className}>
-      <Card 
-      
-      style={props?.box===true? styles: null}
-      // style={getCardStyles()} 
-      // className={props?.cardClassName ? props.cardClassName : ""}
+      <Card
+        style={props?.box === true ? styles : null}
+        // style={getCardStyles()}
+        // className={props?.cardClassName ? props.cardClassName : ""}
       >
         {!props.childrenAtTheBottom && props.children}
-        {props.heading && <CardSubHeader 
-        className="headerStyle"
-        // style={{ ...props.headingStyle }}
-        > {props.heading} </CardSubHeader>}
+        {props.heading && (
+          <CardSubHeader
+            className="headerStyle"
+            // style={{ ...props.headingStyle }}
+          >
+            {" "}
+            {props.heading}{" "}
+          </CardSubHeader>
+        )}
         {props.description && <CardLabelDesc className="descStyle"> {props.description} </CardLabelDesc>}
         {props.text && <CardText className="labelStyle">{props.text}</CardText>}
         {formFields}
@@ -368,21 +379,20 @@ const styles={boxShadow:'none',padding: "20px 48px 48px"}
           </div>
         )}
         {props.submitInForm && (
-          <SubmitBar label={t(props.label)} 
-          style={{ ...props?.buttonStyle }}
-           submit="submit" disabled={isDisabled} 
-           className="submitButtonNew"
-          //className="submitButton" 
+          <SubmitBar
+            label={t(props.label)}
+            style={{ ...props?.buttonStyle }}
+            submit="submit"
+            disabled={isDisabled}
+            className="submitButtonNew"
+            //className="submitButton"
           />
         )}
-        
+
         {!props.submitInForm && props.label && (
           <ActionBar>
             {props.currentStep > 1 && (
-              <button style={buttonStyle.back} 
-               onClick={handleBackClick}
-               className="submit-bar"
-              >
+              <button style={buttonStyle.back} onClick={handleBackClick} className="submit-bar">
                 {t("COMMON_BACK")}
               </button>
             )}

@@ -51,6 +51,7 @@
     padding: 0px 20px 0px 20px;
     margin: auto;
     cursor: pointer;
+    display:none;
     img {
       width: 100%;
     }
@@ -89,7 +90,8 @@
   img {
     height: 33vw;
     background: linear-gradient(#000000,#000000);
-    @apply w-full object-cover;
+    @apply object-cover;
+    width:100vw;
   }
   h1 {
     position: absolute;

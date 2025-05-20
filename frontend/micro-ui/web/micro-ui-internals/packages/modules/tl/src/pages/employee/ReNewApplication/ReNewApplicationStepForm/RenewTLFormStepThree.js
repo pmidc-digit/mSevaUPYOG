@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_tlNewApplication } from "../../../../redux/action/tlNewApplicationActions";
+import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import _ from "lodash";
 
 const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
@@ -15,20 +15,19 @@ const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.Documents);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
 
-
   function validateDocuments(data) {
     const requiredTypes = ["OWNERIDPROOF", "OWNERSHIPPROOF", "OWNERSELF"];
     const uploadedDocs = data?.documents?.documents || [];
-  
-    const uploadedTypes = uploadedDocs.map(doc => doc?.documentType);
-    const missingTypes = requiredTypes.filter(type => !uploadedTypes.includes(type));
-  
+
+    const uploadedTypes = uploadedDocs.map((doc) => doc?.documentType);
+    const missingTypes = requiredTypes.filter((type) => !uploadedTypes.includes(type));
+
     return missingTypes;
   }
 
   const goNext = () => {
     console.log("localStepData in step 3: formData:", localStepData);
-    
+
     const missingDocs = validateDocuments(localStepData);
 
     if (missingDocs.length > 0) {

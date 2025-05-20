@@ -17,6 +17,8 @@ import {
   usePaymentSearch,
   useBulkPdfDetails,
 } from "./payment";
+import { useMCollectRecieptSearch } from "./mcollect/mCollect";
+
 import { useUserSearch } from "./userSearch";
 import { useApplicationsForBusinessServiceSearch } from "./useApplicationForBillSearch";
 import useBoundaryLocalities from "./useLocalities";
@@ -57,6 +59,7 @@ import useSwachComplaintTypes from "./swach/useComplaintTypes";
 import useSwachEmployeeFilter from "./swach/useEmployeeFilter";
 import useSwachInboxData from "./swach/useInboxData";
 import useSwachLocalities from "./swach/useLocalities";
+import useSWACHInbox from "./swach/useInbox";
 import useSwachBharatCategory from "./swach/useSwachBharatCategory";
 import useSwachTenants from "./swach/useTenants";
 // import usePGRMDMS from "./pgr/useMDMS";
@@ -197,7 +200,6 @@ import useDistricts from "./obps/useDistricts";
 import useULBList from "./obps/useULBList";
 import useUlbType from "./obps/useUlbType";
 
-
 import useEventInbox from "./events/useEventInbox";
 import useEventDetails from "./events/useEventDetails";
 import { useEngagementMDMS } from "./engagement/useMdms";
@@ -233,7 +235,7 @@ import WSuseSearch from "./ws/useSearch";
 import useOldValue from "./ws/useOldValue";
 import useSewSearch from "./ws/useSewSearch";
 import useSearchWS from "./ws/useSearchWS";
-import useBulkSearchWS from "./ws/useBulkSearchWS"
+import useBulkSearchWS from "./ws/useBulkSearchWS";
 import useMypaymentWS from "./ws/useMypaymentWS";
 import useWSDetailsPage from "./ws/useWSDetailsPage";
 import useWSApplicationActions from "./ws/useApplicationActions";
@@ -284,8 +286,23 @@ import useServiceSearchPTR from "./ptr/useServiceSearchPTR";
 import usePetDocumentSearch from "./ptr/usePetDocumentSearch";
 import useMyPetPayments from "./ptr/useMyPetPayments";
 import useTenantsPTR from "./ptr/useTenants";
-
+import useSVDoc from "./sv/useSVDoc";
+import useSvCreateApi from "./sv/useSvCreateApi";
+import useTenantsSV from "./sv/useTenants";
+import useSVApplicationDetail from "./sv/useSVApplicationDetail";
+import useSvSearchApplication from "./sv/useSvSearchApplication";
+import useSVApplicationAction from "./sv/useSVApplicationAction";
 import createTokenAPI from "./digiLockerApi/createTokenAPI";
+
+// ads
+import useADSSlotSearch from "./ads/useADSSlotSearch";
+import useADSSearch from "./ads/useADSSearch";
+import useADSApplicationDetail from "./ads/useADSApplicationDetail";
+import useADSCreateAPI from "./ads/useADSCreateAPI";
+import useTenantsADS from "./ads/useTenants";
+import useADSDocumentsMDMS from "./ads/useADSDocumentsMDMS";
+import useADSDocumentSearch from "./ads/useADSDocumentSearch";
+import useADSDemandEstimation from "./ads/useADSDemandEstimation";
 
 const pgr = {
   useComplaintDetails,
@@ -315,6 +332,7 @@ const swach = {
   useComplaintTypes: useSwachComplaintTypes,
   useEmployeeFilter: useSwachEmployeeFilter,
   useInboxData: useSwachInboxData,
+  useInbox: useSWACHInbox,
   useLocalities: useSwachLocalities,
   useSwachBharatCategory: useSwachBharatCategory,
   useTenants: useSwachTenants,
@@ -338,8 +356,7 @@ const ptr = {
   useServiceSearchPTR,
   usePetDocumentSearch,
   useMyPetPayments,
-  useTenants: useTenantsPTR
- 
+  useTenants: useTenantsPTR,
 };
 
 const fsm = {
@@ -489,7 +506,7 @@ const obps = {
   useBPATaxDocuments,
   useDistricts,
   useULBList,
-  useUlbType
+  useUlbType,
 };
 
 const events = {
@@ -507,6 +524,28 @@ const engagement = {
   useDocUpdate,
 };
 
+const sv = {
+  useSVDoc,
+  useSvCreateApi,
+  useTenants: useTenantsSV,
+  useSvSearchApplication,
+  useSVApplicationDetail,
+  useSVApplicationAction,
+  useSvSearchApplication,
+};
+
+// for using tenant for city and document and search
+const ads = {
+  useTenants: useTenantsADS,
+  useADSDocumentsMDMS,
+  useADSDocumentSearch,
+  useADSCreateAPI,
+  useADSSlotSearch,
+  useADSSearch,
+  useADSDemandEstimation,
+  useADSApplicationDetail,
+};
+
 const survey = {
   useCreate: useSurveyCreate,
   useUpdate: useSurveyUpdate,
@@ -516,7 +555,7 @@ const survey = {
   useShowResults: useSurveyShowResults,
   useSurveyInbox,
   useSurveyCategoryInbox,
-  useSurveyQuestionInbox
+  useSurveyQuestionInbox,
 };
 
 const noc = {
@@ -592,6 +631,7 @@ const Hooks = {
   useModuleTenants,
   useRecieptSearch,
   useRecieptSearchNew,
+  useMCollectRecieptSearch,
   usePaymentSearch,
   useNewInboxGeneral,
   useEvents,
@@ -635,7 +675,9 @@ const Hooks = {
   useBulkPdfDetails,
   useBillAmendmentInbox,
   useAudit,
-  createTokenAPI
+  createTokenAPI,
+  sv,
+  ads,
 };
 
 export default Hooks;

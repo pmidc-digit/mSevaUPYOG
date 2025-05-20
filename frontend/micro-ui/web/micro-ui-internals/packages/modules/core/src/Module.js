@@ -42,7 +42,7 @@ const DigitUIWrapper = ({ stateCode, enabledModules, moduleReducers }) => {
 };
 
 export const DigitUI = ({ stateCode, registry, enabledModules, moduleReducers }) => {
-  const [privacy, setPrivacy] = useState(Digit.Utils.getPrivacyObject() || {});
+  const [privacy, setPrivacy] = useState(()=>Digit.Utils.getPrivacyObject() || {});
   const userType = Digit.UserService.getType();
   const queryClient = new QueryClient({
     defaultOptions: {

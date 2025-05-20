@@ -1,4 +1,4 @@
-import { Card, KeyNote, SubmitBar, Toast,CardSubHeader } from "@mseva/digit-ui-react-components";
+import { Card, KeyNote, SubmitBar, Toast, CardSubHeader } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 
 import { useTranslation } from "react-i18next";
@@ -6,8 +6,8 @@ import { Link, useHistory } from "react-router-dom";
 
 /*
  * AdsApplication component displays the details of a specific advertisement application.
- * It shows key information such as booking number, applicant name, advertisement name, 
- * booking dates, and application status. The component also includes functionality for 
+ * It shows key information such as booking number, applicant name, advertisement name,
+ * booking dates, and application status. The component also includes functionality for
  * making payments and navigating to the application details page.
  */
 
@@ -42,20 +42,20 @@ const formatTime = (seconds) => {
 };
 */
   const slotSearchData = Digit.Hooks.ads.useADSSlotSearch();
-    let formdata = {
-      advertisementSlotSearchCriteria:application?.cartDetails.map((item) => ({
-        bookingId: application?.bookingId,
-        addType: item?.addType,
-        bookingStartDate: item?.bookingDate,
-        bookingEndDate: item?.bookingDate,
-        faceArea: item?.faceArea,
-        tenantId: tenantId,
-        location: item?.location,
-        nightLight: item?.nightLight,
-        isTimerRequired: true,
-      })),
-    };
-   
+  let formdata = {
+    advertisementSlotSearchCriteria: application?.cartDetails.map((item) => ({
+      bookingId: application?.bookingId,
+      addType: item?.addType,
+      bookingStartDate: item?.bookingDate,
+      bookingEndDate: item?.bookingDate,
+      faceArea: item?.faceArea,
+      tenantId: tenantId,
+      location: item?.location,
+      nightLight: item?.nightLight,
+      isTimerRequired: true,
+    })),
+  };
+
   const getBookingDateRange = (bookingSlotDetails) => {
     if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
       return t("CS_NA");
@@ -70,29 +70,29 @@ const formatTime = (seconds) => {
     }
   };
 
-      const handleMakePayment = async () => {
-        try {
-          // Await the mutation and capture the result directly
-          const result = await slotSearchData.mutateAsync(formdata);
-          let SlotSearchData={
-            bookingId:application?.bookingId,
-            tenantId: tenantId,
-            cartDetails:application?.cartDetails,
-          };
-          const isSlotBooked = result?.advertisementSlotAvailabiltityDetails?.some((slot) => slot.slotStaus === "BOOKED");
-          const timerValue=result?.advertisementSlotAvailabiltityDetails[0].timerValue;
-          if (isSlotBooked) {
-            setShowToast({ error: true, label: t("ADS_ADVERTISEMENT_ALREADY_BOOKED") });
-          } else {
-            history.push({
-              pathname: `/digit-ui/citizen/payment/my-bills/${"adv-services"}/${application?.bookingNo}`,
-              state: { tenantId: application?.tenantId, bookingNo: application?.bookingNo, timerValue:timerValue, SlotSearchData:SlotSearchData },
-            });
-          }
-      } catch (error) {
-        setShowToast({ error: true, label: t("CS_SOMETHING_WENT_WRONG") });
-      }
+  const handleMakePayment = async () => {
+    try {
+      // Await the mutation and capture the result directly
+      const result = await slotSearchData.mutateAsync(formdata);
+      let SlotSearchData = {
+        bookingId: application?.bookingId,
+        tenantId: tenantId,
+        cartDetails: application?.cartDetails,
       };
+      const isSlotBooked = result?.advertisementSlotAvailabiltityDetails?.some((slot) => slot.slotStaus === "BOOKED");
+      const timerValue = result?.advertisementSlotAvailabiltityDetails[0].timerValue;
+      if (isSlotBooked) {
+        setShowToast({ error: true, label: t("ADS_ADVERTISEMENT_ALREADY_BOOKED") });
+      } else {
+        history.push({
+          pathname: `/digit-ui/citizen/payment/my-bills/${"adv-services"}/${application?.bookingNo}`,
+          state: { tenantId: application?.tenantId, bookingNo: application?.bookingNo, timerValue: timerValue, SlotSearchData: SlotSearchData },
+        });
+      }
+    } catch (error) {
+      setShowToast({ error: true, label: t("CS_SOMETHING_WENT_WRONG") });
+    }
+  };
   useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => {
@@ -104,9 +104,9 @@ const formatTime = (seconds) => {
   }, [showToast]);
   return (
     <Card>
-       {/* <div style={{ display: "flex", justifyContent: "space-between" }}> */}
-       <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
-            {/* { timeRemaining>0 && (<CardSubHeader 
+      {/* <div style={{ display: "flex", justifyContent: "space-between" }}> */}
+      <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
+      {/* { timeRemaining>0 && (<CardSubHeader 
               style={{ 
                 textAlign: 'right', 
                 fontSize: "24px"
@@ -122,7 +122,9 @@ const formatTime = (seconds) => {
         <Link to={`/digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}`}>
           <SubmitBar label={buttonLabel} />
         </Link>
-        {(application.bookingStatus === "BOOKING_CREATED" || application.bookingStatus === "PAYMENT_FAILED" || application.bookingStatus === "PENDING_FOR_PAYMENT")  && (
+        {(application.bookingStatus === "BOOKING_CREATED" ||
+          application.bookingStatus === "PAYMENT_FAILED" ||
+          application.bookingStatus === "PENDING_FOR_PAYMENT") && (
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} />
         )}
       </div>

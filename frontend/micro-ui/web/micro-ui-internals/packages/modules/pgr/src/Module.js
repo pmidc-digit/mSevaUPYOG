@@ -20,6 +20,7 @@ import ComplaintDetailsPage from "./pages/citizen/ComplaintDetails";
 import SelectRating from "./pages/citizen/Rating/SelectRating";
 import ResponseCitizen from "./pages/citizen/Response";
 import EditApplication from "./pages/employee/EditApplication";
+import { CreateComplaint as CitizenCreateComplaint } from "./pages/citizen/CreateComplaint/index";
 
 
 export const PGRReducers = getRootReducer;
@@ -73,6 +74,7 @@ const componentsToRegister = {
   PGRInbox : Inbox,
   PGRResponseEmp : ResponseEmp,
   PGRCreateComplaintCitizen : CreateComplaintCitizen,
+  PGRCitizenCreateComplaint : CitizenCreateComplaint,
   PGRComplaintsList : ComplaintsList,
   PGRComplaintDetailsPage : ComplaintDetailsPage,
   PGRSelectRating : SelectRating,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import {
   CardLabel,
   LabelFieldPair,
@@ -31,24 +31,35 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   let { pathname, state } = useLocation();
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
   const isEditScreen = pathname.includes("/modify-application/");
-  const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
-  const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application") || window.location.href.includes("/citizen/tl/tradelicence/new-application");
-  const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
+  const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
+  const isEmpNewApplication =
+    window.location.href.includes("/employee/tl/new-application") || window.location.href.includes("/citizen/tl/tradelicence/new-application");
+  const isEmpRenewLicense =
+    window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
   const search = useLocation().search;
   const urlPropertyId = new URLSearchParams(search).get("propertyId");
-  const [propertyId, setPropertyId] = useState(formData?.cptId?.id || (urlPropertyId !== "null" ?urlPropertyId:"") || "");
-  const [searchPropertyId, setSearchPropertyId] = useState(urlPropertyId !== "null" ?urlPropertyId:"");
+  const [propertyId, setPropertyId] = useState(formData?.cptId?.id || (urlPropertyId !== "null" ? urlPropertyId : "") || "");
+  const [searchPropertyId, setSearchPropertyId] = useState(urlPropertyId !== "null" ? urlPropertyId : "");
   const [showToast, setShowToast] = useState(null);
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const serachParams = window.location.href.includes("?")? window.location.href.substring(window.location.href.indexOf("?")+1,window.location.href.length) : "";
+  const serachParams = window.location.href.includes("?")
+    ? window.location.href.substring(window.location.href.indexOf("?") + 1, window.location.href.length)
+    : "";
+  const myElementRef = useRef(null);
 
   const { isLoading, isError, error, data: propertyDetails } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: searchPropertyId }, tenantId: tenantId },
-    { filters: { propertyIds: searchPropertyId }, tenantId: tenantId, enabled: searchPropertyId ? true : false, privacy : Digit.Utils.getPrivacyObject() }
+    {
+      filters: { propertyIds: searchPropertyId },
+      tenantId: tenantId,
+      enabled: searchPropertyId ? true : false,
+      privacy: Digit.Utils.getPrivacyObject(),
+    }
   );
 
   useEffect(() => {
-    if (propertyId && (window.location.href.includes("/renew-application-details/") || window.location.href.includes("/edit-application-details/"))) setSearchPropertyId(propertyId);
+    if (propertyId && (window.location.href.includes("/renew-application-details/") || window.location.href.includes("/edit-application-details/")))
+      setSearchPropertyId(propertyId);
   }, [propertyId]);
 
   useEffect(() => {
@@ -58,9 +69,9 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   }, [error, propertyDetails]);
   useEffect(() => {
     onSelect(config.key, { ...formData[config.key], details: propertyDetails?.Properties[0] });
-    sessionStorage.setItem("Digit_FSM_PT",JSON.stringify(propertyDetails?.Properties[0]))
-    localStorage.setItem("pgrProperty",JSON.stringify(propertyDetails?.Properties[0]))
-    sessionStorage.setItem("wsProperty", JSON.stringify(propertyDetails?.Properties[0]))
+    sessionStorage.setItem("Digit_FSM_PT", JSON.stringify(propertyDetails?.Properties[0]));
+    localStorage.setItem("pgrProperty", JSON.stringify(propertyDetails?.Properties[0]));
+    sessionStorage.setItem("wsProperty", JSON.stringify(propertyDetails?.Properties[0]));
   }, [propertyDetails, pathname]);
 
   const searchProperty = () => {
@@ -68,22 +79,25 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
       setShowToast({ error: true, label: "PT_ENTER_PROPERTY_ID_AND_SEARCH" });
     }
     setSearchPropertyId(propertyId);
-    if(window.location.pathname.includes("/tl/new-application")){
-      history.push(`/digit-ui/employee/tl/new-application?propertyId=${propertyId}`)
-      const scrollConst =  1600 
+    if (window.location.pathname.includes("/tl/new-application")) {
+      history.push(`/digit-ui/employee/tl/new-application?propertyId=${propertyId}`);
+      const scrollConst = 1600;
       setTimeout(() => window.scrollTo(0, scrollConst), 0);
     }
 
-    if(window.location.pathname.includes("/tl/tradelicence/new-application")){
-      history.push(`/digit-ui/citizen/tl/tradelicence/new-application?propertyId=${propertyId}`)
-      const scrollConst =  1600 
+    if (window.location.pathname.includes("/tl/tradelicence/new-application")) {
+      history.push(`/digit-ui/citizen/tl/tradelicence/new-application?propertyId=${propertyId}`);
+      const scrollConst = 1600;
       setTimeout(() => window.scrollTo(0, scrollConst), 0);
+      // const offsetTop= myElementRef.current.offsetTop;
+      // setTimeout(() => window.scrollTo({top: offsetTop, behavior: "smooth"}),0);
+      // const element=document.getElementById("search-property-field");
+      // element.scrollIntoView({behavior:"smooth"})
     }
 
-    else if (window.location.pathname.includes("/ws/new-application"))
-      history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`)
-      const scrollConst =  460; 
-      setTimeout(() => window.scrollTo(0, scrollConst), 0);
+    if (window.location.pathname.includes("/ws/new-application")) history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`);
+    const scrollConst = 460;
+    setTimeout(() => window.scrollTo(0, scrollConst), 0);
   };
 
   if (isEditScreen) {
@@ -99,143 +113,192 @@ const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError
   }
   const getInputStyles = () => {
     if (window.location.href.includes("/ws/")) {
-      return { fontWeight: "700" }
+      return { fontWeight: "700" };
     } else return {};
-  }
+  };
 
   const getOwnerNames = (propertyData) => {
-    const getActiveOwners = propertyData?.owners?.filter(owner => owner?.active);
-    const getOwnersList = getActiveOwners.sort((a,b)=> a?.additionalDetails?.ownerSequence- b?.additionalDetails?.ownerSequence)?.map(activeOwner => activeOwner?.name)?.join(",");
+    const getActiveOwners = propertyData?.owners?.filter((owner) => owner?.active);
+    const getOwnersList = getActiveOwners
+      .sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)
+      ?.map((activeOwner) => activeOwner?.name)
+      ?.join(",");
     return getOwnersList ? getOwnersList : t("NA");
-  }
+  };
 
   let clns = "";
-  if (window.location.href.includes("/ws/")) clns = ":"
+  if (window.location.href.includes("/ws/")) clns = ":";
 
-  const isPropertyIdMandatory=window.location.pathname.includes("/ws/new-application");
-
+  const isPropertyIdMandatory = window.location.pathname.includes("/ws/new-application");
 
   const propertyIdInput = {
-      label: "PROPERTY_ID",
-      type: "text",
-      name: "id",
-      validation: {
-        isRequired: true,
-        // pattern: Digit.Utils.getPattern('Name'),
-        // title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
-      },
-      isMandatory: isPropertyIdMandatory,
-    };
+    label: "PROPERTY_ID",
+    type: "text",
+    name: "id",
+    validation: {
+      isRequired: true,
+      // pattern: Digit.Utils.getPattern('Name'),
+      // title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
+    },
+    isMandatory: isPropertyIdMandatory,
+  };
 
-    function setValue(value, input) {
-      onSelect(config.key, { ...formData[config.key], [input]: value });
+  function setValue(value, input) {
+    onSelect(config.key, { ...formData[config.key], [input]: value });
+  }
+
+  function getValue(input) {
+    return formData && formData[config.key] ? formData[config.key][input] : undefined;
+  }
+
+  function handleSearchProperty() {
+    if (window.location.href.includes("digit-ui/citizen")) {
+      history.push(`/digit-ui/citizen/commonpt/property/citizen-search?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state });
     }
-
-    function getValue(input){
-      return formData && formData[config.key] ? formData[config.key][input] : undefined
+    if (window.location.href.includes("digit-ui/employee")) {
+      history.push(`/digit-ui/employee/commonpt/search?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state });
     }
+  }
 
+  function handleCreateProperty() {
+    if (window.location.href.includes("digit-ui/citizen")) {
+      history.push(`/digit-ui/citizen/commonpt/property/new-application?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state });
+    }
+    if (window.location.href.includes("digit-ui/employee")) {
+      history.push(`/digit-ui/employee/commonpt/new-application?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state });
+    }
+  }
+
+  function handleViewProperty() {
+    if (window.location.href.includes("digit-ui/citizen")) {
+    }
+    if (window.location.href.includes("digit-ui/employee")) {
+    }
+  }
 
   return (
     <React.Fragment>
-     {(window.location.href.includes("/tl/") ? (!(formData?.tradedetils?.[0]?.structureType?.code === "MOVABLE") && (isEmpNewApplication || isEmpRenewLicense) ) : true) && <div>
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller" style={getInputStyles()}>{`${t(propertyIdInput.label)}`}{propertyIdInput.isMandatory?"*":null}</CardLabel>
-        <div className="field" style={{ marginTop: "20px", display: "flex" }}>
-          <TextInput
-            key={propertyIdInput.name}
-            value= {getValue(propertyIdInput.name)}//{propertyId}
-            onChange={(e) => {
-              setPropertyId(e.target.value);
-              // onSelect(config.key, { id: e.target.value });
-              setValue(e.target.value, propertyIdInput.name);
-            }}
-            disable={false}
-            defaultValue={undefined}
-            style={{ width: "80%", float: "left", marginRight: "20px" }}
-            {...propertyIdInput.validation}
-          />
-          <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
-            {`${t("PT_SEARCH")}`}
-          </button>
-        </div>
-      </LabelFieldPair>
-      <span onClick={() => history.push(`/digit-ui/employee/commonpt/search?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state })}>
-        <LinkButton label={t("CPT_SEARCH_PROPERTY")} style={{ color: "#a82227", display: "inline-block" }} />
-      </span>
-      &nbsp; {window.location.href.includes("/pgr/")?"":"|"}
-       &nbsp;
-      {window.location.href.includes("/pgr/")?"":
-      <span onClick={() => history.push(`/digit-ui/employee/commonpt/new-application?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state })}>
-        <LinkButton label={t("CPT_CREATE_PROPERTY")} style={{ color: "#a82227", display: "inline-block" }} />
-      </span>}
-      {propertyDetails && propertyDetails?.Properties.length ? (
-        <React.Fragment>
-          <header className="card-section-header" style={{ marginBottom: "5px", marginTop: "20px" }}>
-            {t("PT_DETAILS")}
-          </header>
-          <StatusTable>
-            <div style={isMobile ? {} : { maxWidth: "60%" }}>
-              <Row
-                className="border-none"
-                labelStyle={isMobile ? { width: "40%" } : {}}
-                label={t(`PROPERTY_ID`)}
-                text={propertyDetails?.Properties[0]?.propertyId}
+      {(window.location.href.includes("/tl/")
+        ? !(formData?.tradedetils?.[0]?.structureType?.code === "MOVABLE") && (isEmpNewApplication || isEmpRenewLicense)
+        : true) && (
+        <div>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller" style={getInputStyles()}>
+              {`${t(propertyIdInput.label)}`}
+              {propertyIdInput.isMandatory ? "*" : null}
+            </CardLabel>
+            <div className="field" style={{ marginTop: "20px", display: "flex" }} ref={myElementRef} id="search-property-field">
+              <TextInput
+                key={propertyIdInput.name}
+                value={getValue(propertyIdInput.name)} //{propertyId}
+                onChange={(e) => {
+                  setPropertyId(e.target.value);
+                  // onSelect(config.key, { id: e.target.value });
+                  setValue(e.target.value, propertyIdInput.name);
+                }}
+                disable={false}
+                defaultValue={undefined}
+                style={{ width: "80%", float: "left", marginRight: "20px" }}
+                {...propertyIdInput.validation}
               />
-              <Row
-                className="border-none"
-                labelStyle={isMobile ? { width: "40%" } : {}}
-                label={t(`OWNER_NAME`)}
-                text={getOwnerNames(propertyDetails?.Properties[0])}
-              />
-               {/* <span style={{ display: "inline-flex", width: "fit-content"}}> */}
-              <Row
-                className="border-none"
-                labelStyle={isMobile ? { width: "40%" } : {}}
-                textStyle={{ wordBreak: "break-word" }}
-                label={t(`PROPERTY_ADDRESS`)}
-                text={propertyAddress}
-                privacy={{ 
-                  uuid:propertyDetails?.Properties[0]?.owners?.[0]?.uuid, 
-                  fieldName: ["doorNo","street","landmark"], 
-                  model: "Property",
-                  showValue: true,
-                  loadData: {
-                    serviceName: "/property-services/property/_search",
-                    requestBody: {},
-                    requestParam: { tenantId:propertyDetails?.Properties[0]?.tenantId, propertyIds:propertyDetails?.Properties[0]?.propertyId },
-                    jsonPath: "Properties[0].address.street",
-                    d: (res) => {
-                      let resultString = (_.get(res,"Properties[0].address.doorNo") ?  `${_.get(res,"Properties[0].address.doorNo")}, ` : "") + (_.get(res,"Properties[0].address.street")? `${_.get(res,"Properties[0].address.street")}, ` : "") + (_.get(res,"Properties[0].address.landmark") ? `${_.get(res,"Properties[0].address.landmark")}`:"")
-                      return resultString;
-                    },
-                    isArray: false,
-                  },
-          
-                 }}
-              />
+              <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
+                {`${t("PT_SEARCH")}`}
+              </button>
             </div>
-          </StatusTable>
-            <Link to={`/digit-ui/employee/commonpt/view-property?propertyId=${propertyId}&tenantId=${tenantId}&from=${window.location.pathname?.includes("employee/ws/new-application") ? "ES_COMMON_WS_NEW_CONNECTION" : window.location.pathname?.includes("employee/ws/modify-application") ?"WS_MODIFY_CONNECTION_BUTTON": window.location.pathname?.includes("employee/tl/new-application")
-        ?"ES_TITLE_NEW_TRADE_LICESE_APPLICATION"
-        :"WF_EMPLOYEE_NEWTL_RENEWAL_SUBMIT_BUTTON"}`}>
-            <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")} style={{ color: "#a82227", textAlign: "Left" }} />
-          </Link>
-        </React.Fragment>
-      ) : null}
-      {showToast && (
-        <Toast
-          isDleteBtn={true}
-          labelstyle={{ width: "100%" }}
-          error={showToast.error}
-          warning={showToast.warning}
-          label={t(showToast.label)}
-          onClose={() => {
-            setShowToast(null);
-          }}
-        />
+          </LabelFieldPair>
+          <span onClick={handleSearchProperty}>
+            <LinkButton label={t("CPT_SEARCH_PROPERTY")} style={{ color: "#a82227", display: "inline-block" }} />
+          </span>
+          &nbsp; {window.location.href.includes("/pgr/") ? "" : "|"}
+          &nbsp;
+          {window.location.href.includes("/pgr/") ? (
+            ""
+          ) : (
+            <span onClick={handleCreateProperty}>
+              <LinkButton label={t("CPT_CREATE_PROPERTY")} style={{ color: "#a82227", display: "inline-block" }} />
+            </span>
+          )}
+          {propertyDetails && propertyDetails?.Properties.length ? (
+            <React.Fragment>
+              <header className="card-section-header" style={{ marginBottom: "5px", marginTop: "20px" }}>
+                {t("PT_DETAILS")}
+              </header>
+              <StatusTable>
+                <div style={isMobile ? {} : { maxWidth: "60%" }}>
+                  <Row
+                    className="border-none"
+                    labelStyle={isMobile ? { width: "40%" } : {}}
+                    label={t(`PROPERTY_ID`)}
+                    text={propertyDetails?.Properties[0]?.propertyId}
+                  />
+                  <Row
+                    className="border-none"
+                    labelStyle={isMobile ? { width: "40%" } : {}}
+                    label={t(`OWNER_NAME`)}
+                    text={getOwnerNames(propertyDetails?.Properties[0])}
+                  />
+                  {/* <span style={{ display: "inline-flex", width: "fit-content"}}> */}
+                  <Row
+                    className="border-none"
+                    labelStyle={isMobile ? { width: "40%" } : {}}
+                    textStyle={{ wordBreak: "break-word" }}
+                    label={t(`PROPERTY_ADDRESS`)}
+                    text={propertyAddress}
+                    privacy={{
+                      uuid: propertyDetails?.Properties[0]?.owners?.[0]?.uuid,
+                      fieldName: ["doorNo", "street", "landmark"],
+                      model: "Property",
+                      showValue: true,
+                      loadData: {
+                        serviceName: "/property-services/property/_search",
+                        requestBody: {},
+                        requestParam: { tenantId: propertyDetails?.Properties[0]?.tenantId, propertyIds: propertyDetails?.Properties[0]?.propertyId },
+                        jsonPath: "Properties[0].address.street",
+                        d: (res) => {
+                          let resultString =
+                            (_.get(res, "Properties[0].address.doorNo") ? `${_.get(res, "Properties[0].address.doorNo")}, ` : "") +
+                            (_.get(res, "Properties[0].address.street") ? `${_.get(res, "Properties[0].address.street")}, ` : "") +
+                            (_.get(res, "Properties[0].address.landmark") ? `${_.get(res, "Properties[0].address.landmark")}` : "");
+                          return resultString;
+                        },
+                        isArray: false,
+                      },
+                    }}
+                  />
+                </div>
+              </StatusTable>
+              <Link
+                to={`/digit-ui/${
+                  window.location.href.includes("employee") ? "employee" : "citizen"
+                }/commonpt/view-property?propertyId=${propertyId}&tenantId=${tenantId}&from=${
+                  window.location.pathname?.includes("employee/ws/new-application")
+                    ? "ES_COMMON_WS_NEW_CONNECTION"
+                    : window.location.pathname?.includes("employee/ws/modify-application")
+                    ? "WS_MODIFY_CONNECTION_BUTTON"
+                    : window.location.pathname?.includes("employee/tl/new-application")
+                    ? "ES_TITLE_NEW_TRADE_LICESE_APPLICATION"
+                    : window.location.pathname?.includes("/citizen/tl/tradelicence/new-application")
+                    ? "CITIZEN_TL_NEW_APPLICATION":""
+                }`}
+              >
+                <LinkButton label={t("CPT_COMPLETE_PROPERTY_DETAILS")} style={{ color: "#a82227", textAlign: "Left" }} />
+              </Link>
+            </React.Fragment>
+          ) : null}
+          {showToast && (
+            <Toast
+              isDleteBtn={true}
+              labelstyle={{ width: "100%" }}
+              error={showToast.error}
+              warning={showToast.warning}
+              label={t(showToast.label)}
+              onClose={() => {
+                setShowToast(null);
+              }}
+            />
+          )}
+        </div>
       )}
-      </div>}
     </React.Fragment>
   );
 };

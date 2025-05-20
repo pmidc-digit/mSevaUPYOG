@@ -1,4 +1,4 @@
-import { Header, CitizenHomeCard,CHBIcon } from "@mseva/digit-ui-react-components";
+import { Header, CitizenHomeCard } from "@mseva/digit-ui-react-components";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouteMatch } from "react-router-dom";
@@ -6,6 +6,7 @@ import { useRouteMatch } from "react-router-dom";
 import CitizenApp from "./pages/citizen";
 import ADSCreate from "./pages/citizen/Create";
 import ADSSearch from "./pageComponents/ADSearch";
+import { CHBIcon } from "./components/CHBIcon";
 import ADSCitizenDetails from "./pageComponents/ADSCitizenDetails";
 import ADSAddress from "./pageComponents/ADSAddress";
 import ADSDocumentDetails from "./pageComponents/ADSDocumentDetails";
@@ -33,7 +34,7 @@ const componentsToRegister = {
   ApplicationDetails: ApplicationDetails,
   ADSApplicationDetails: ADSApplicationDetails,
   ADSSearchApplication,
-  ADSRequiredDoc
+  ADSRequiredDoc,
 };
 
 // Function to add components to the registry

@@ -11,15 +11,18 @@ import {
   Localities,
   CardLabel,
   Dropdown,
+  Loader,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import Dialog from "../Modal/Dialog";
+
 const FillQuestions = (props) => {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({});
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [city, setCity] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [localityList, setLocalityList] = useState(null);
   const [openQuesDetailsDialog, setOpenQuesDetailsDialog] = useState(false);
@@ -27,6 +30,7 @@ const FillQuestions = (props) => {
     latitude: null,
     longitude: null,
   });
+  const [getFetchAnswers, setFetchAnswers] = useState();
   const [pincode, setPincode] = useState("");
   const [isgeoLoc, setIsGeoLoc] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -37,26 +41,36 @@ const FillQuestions = (props) => {
   // let { data: tenantlocalties, isLoadingLocality } = Digit.Hooks.useBoundaryLocalities(city, "revenue", { enabled: !!city }, t);
   useEffect(() => {
     (async () => {
+      setLoading(true);
       let response = await Digit.LocationService.getLocalities(city);
+      setLoading(false);
       let __localityList = [];
       if (response && response.TenantBoundary.length > 0) {
+        setLoading(true);
         __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+        setLoading(false);
       }
       setLocalityList(__localityList);
     })();
   }, [city]);
+
   useEffect(() => {
     (async () => {
       if ((prevProps?.userType).toUpperCase() === "EMPLOYEE") {
+        setLoading(true);
         let response = await Digit.LocationService.getLocalities(prevProps.citizenData.city?.code);
+        setLoading(false);
         let __localityList = [];
         if (response && response.TenantBoundary.length > 0) {
+          setLoading(true);
           __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+          setLoading(false);
         }
         setLocalityList(__localityList);
       }
     })();
   }, []);
+
   const {
     register: register,
     control: control,
@@ -78,7 +92,6 @@ const FillQuestions = (props) => {
   // const [userInfo,setUserInfo]=useState([])
 
   // const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
-  // console.log("localities",localities)
   const userType = props.userType;
   const history = useHistory();
   const [questionDetailsContent, setQuestionDetailsContent] = useState(false);
@@ -111,6 +124,7 @@ const FillQuestions = (props) => {
     );
     setQuestionDetailsContent(content);
   }
+
   const prevFormDataRef = useRef({});
   // const data=
   //  [{
@@ -193,15 +207,36 @@ const FillQuestions = (props) => {
   //     "lastModifiedTime": 1741255647601
   // }];
 
-  const data = prevProps.surveyDetails;
+  let data = prevProps.surveyDetails;
+  console.log("data",data)
 
+ data = {
+ 
+...data,
+  sections: data.sections
+    .sort((a, b) => a.sectionOrder - b.sectionOrder)
+    .map(section => ({
+      ...section,
+      questions: section.questions
+        .sort((a, b) => a.qorder - b.qorder)
+        .map(question => ({
+          ...question,
+          question: {
+            ...question.question,
+            options: question.question.options.sort((a, b) => a?.optionOrder - b?.optionOrder)
+          }
+        }))
+    }))
+};
   const fetchAnswer = async (status) => {
+    setLoading(true);
     let payload = {
       surveyUuid: data.uuid,
       citizenId: prevProps.userInfo.uuid,
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
+        setLoading(false);
         if (response?.sectionResponses.length > 0) {
           let result = {};
 
@@ -214,7 +249,7 @@ const FillQuestions = (props) => {
           });
 
           setFormData(result);
-          console.log("status======", status);
+
           if (status === "draft") {
             handleAutoSave();
           } else {
@@ -230,19 +265,22 @@ const FillQuestions = (props) => {
         }
       });
     } catch (error) {
+      setLoading(false);
       return error;
     }
   };
 
   const fetchSurveyAnswers = async () => {
+    setLoading(true);
     let payload = {
       surveyUuid: data.uuid,
       citizenId: prevProps.userInfo.uuid,
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
+        setFetchAnswers(response);
+        setLoading(false);
         if (response?.sectionResponses.length > 0) {
-          console.log("response.status", response.status);
           if (response.status == "Draft") {
             setSubmitted(false);
             if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
@@ -270,7 +308,6 @@ const FillQuestions = (props) => {
             });
             result[section.sectionUuid] = sectionObj;
           });
-
           setFormData(result);
           return;
         } else {
@@ -282,6 +319,7 @@ const FillQuestions = (props) => {
         }
       });
     } catch (error) {
+      setLoading(false);
       return error;
     }
   };
@@ -317,7 +355,9 @@ const FillQuestions = (props) => {
     );
     // }
   };
+
   const fetchUserDetails = async () => {
+    setLoading(true);
     // if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
     const data = {
       userName: prevProps?.userInfo?.mobileNumber,
@@ -329,14 +369,15 @@ const FillQuestions = (props) => {
 
     Digit.Surveys.userSearch(data, filters)
       .then((response) => {
+        setLoading(false);
         if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
           // setCitizenFound(true)
           if (
             response?.user[0]?.gender === null ||
-            response?.user[0]?.email === null ||
+            response?.user[0]?.emailId === null ||
             response?.user[0]?.dob === null ||
             response?.user[0]?.gender === "" ||
-            response?.user[0]?.email === "" ||
+            response?.user[0]?.emailId === "" ||
             response?.user[0]?.dob === ""
           ) {
             setHasCitizenDetails(false);
@@ -366,10 +407,12 @@ const FillQuestions = (props) => {
         }
       })
       .catch((error) => {
+        setLoading(false);
         return error;
       });
     //}
   };
+
   // useEffect(() => {
   //   // const fetchUserDetails = async () => {
   //   //   if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
@@ -383,17 +426,14 @@ const FillQuestions = (props) => {
 
   //   //     Digit.Surveys.userSearch(data, filters)
   //   //       .then((response) => {
-  //   //         console.log("response", response);
 
   //   //         if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
   //   //           // setCitizenFound(true)
   //   //           if (response?.user[0]?.gender === null || response?.user[0]?.email === null || response?.user[0]?.dob === null || response?.user[0]?.gender === '' || response?.user[0]?.email === '' || response?.user[0]?.dob === '') {
-  //   //             console.log("hola")
   //   //             setHasCitizenDetails(false)
 
   //   //           }
   //   //           else {
-  //   //             console.log("hola true")
   //   //             const today = new Date();
   //   //             const birthDate = new Date(response?.user[0]?.dob);
   //   //             let age = today.getFullYear() - birthDate.getFullYear();
@@ -461,6 +501,7 @@ const FillQuestions = (props) => {
   //   console.log(error);
   // }
   //   },[])
+
   const handleCheckboxChange = (section, event) => {
     const { value, checked } = event.target;
     setFormData((prevData) => {
@@ -487,6 +528,7 @@ const FillQuestions = (props) => {
       },
     }));
   };
+
   const handleFieldChange = (sectionId, questionId, value) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -499,20 +541,22 @@ const FillQuestions = (props) => {
       },
     }));
   };
+
   // const handleFieldChange = (event) => {
   //   const { name, value } = event.target;
-  //   console.log("date value", event.target);
   //   setFormData((prevData) => ({
   //     ...prevData,
   //     [name]: value,
   //   }));
   // };
+
   const handleDropdownChange = (name, event) => {
     setFormData((prevData) => ({
       ...prevData,
       [name]: event,
     }));
   };
+
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -521,7 +565,7 @@ const FillQuestions = (props) => {
         if ((prevProps.citizenFill && userType.toLowerCase() === "employee") || userType.toLowerCase() === "citizen") {
           prevFormDataRef.current = formData;
           // handleAutoSave();
-          fetchAnswer("draft");
+          if (locality) fetchAnswer("draft");
         }
       }
     }, 10000);
@@ -530,6 +574,7 @@ const FillQuestions = (props) => {
   }, [formData]);
 
   const handleAutoSave = async () => {
+    setLoading(true);
     let answerArr = [];
     //  let geolocationStr= geoLocation.latitude.concat(geoLocation.longitude;
     for (const sectionId in formData) {
@@ -539,7 +584,6 @@ const FillQuestions = (props) => {
           surveyUuid: data.uuid,
           questionUuid: questionId,
           sectionUuid: sectionId,
-
           comments: formData[sectionId][questionId]?.comments || "",
           answerDetails: [
             {
@@ -555,7 +599,6 @@ const FillQuestions = (props) => {
       }
     }
     //const { roles, ...newUserObject } = prevProps.userInfo[0];
-
     let payload = {
       User: {
         type: prevProps.userInfo.type,
@@ -567,9 +610,10 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
+        tenantId: city,
+        locality: locality,
+        // tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
         status: "Draft",
-        locality: locality || null,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         answers: answerArr,
       },
@@ -577,6 +621,7 @@ const FillQuestions = (props) => {
 
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
+        setLoading(false);
         if (response?.SubmitResponse !== undefined) {
           // return;
         } else {
@@ -584,6 +629,7 @@ const FillQuestions = (props) => {
         }
       });
     } catch (error) {
+      setLoading(false);
       return error;
     }
   };
@@ -636,7 +682,9 @@ const FillQuestions = (props) => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
   const handleSubmitSurvey = () => {
+    setLoading(true);
     let answerArr = [];
     let geolocationStr = geoLocation.latitude + geoLocation.longitude;
     for (const sectionId in formData) {
@@ -647,6 +695,7 @@ const FillQuestions = (props) => {
           questionUuid: questionId,
           sectionUuid: sectionId,
           comments: formData[sectionId][questionId]?.comments || "",
+          tenantId: localStorage.getItem("CITIZEN.CITY"),
           // answer: [formData[sectionId][questionId].answer],
           answerDetails: [
             {
@@ -674,17 +723,18 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
+        tenantId: city,
         status: "Submit",
-        locality: locality || null,
+        locality: locality,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
-
+        // tenantId: localStorage.getItem("CITIZEN.CITY"),
         answers: answerArr,
       },
     };
 
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
+        setLoading(false);
         if (response?.SubmitResponse !== undefined) {
           userType.toUpperCase() === "EMPLOYEE"
             ? history.push("/digit-ui/employee/engagement/surveys/submit-response", {
@@ -704,6 +754,7 @@ const FillQuestions = (props) => {
         }
       });
     } catch (error) {
+      setLoading(false);
       return error;
     }
   };
@@ -720,10 +771,11 @@ const FillQuestions = (props) => {
       return;
     }
   };
+
   const onSubmit = (data) => {
     console.log("data", data);
   };
-  //console.log("formState", formState);
+
   const displayAnswerField = (answerType, question, section) => {
     switch (answerType) {
       case "SHORT_ANSWER_TYPE":
@@ -1321,10 +1373,11 @@ const FillQuestions = (props) => {
         );
     }
   };
-  data.sections.map((s) => console.log("data sec", s.title));
+
   const closeToast = () => {
     setShowToast(null);
   };
+
   const [location, setLocation] = useState({
     latitude: null,
     longitude: null,
@@ -1332,7 +1385,6 @@ const FillQuestions = (props) => {
 
   // useEffect(() => {
   //   let locationFetched = false;
-  //   console.log("hii", hasCitizenDetails, (prevProps?.userType).toUpperCase(), isgeoLoc)
   //   if (((prevProps?.userType).toUpperCase() === "EMPLOYEE" && !isgeoLoc && submitted===false) || ((prevProps?.userType).toUpperCase() === "CITIZEN" && hasCitizenDetails && submitted===false)) {
 
   //     // if (!isgeoLoc) {
@@ -1343,14 +1395,11 @@ const FillQuestions = (props) => {
   //       (position) => {
   //         // Update both latitude and longitude in a single state object
   //         setIsGeoLoc(true)
-  //         console.log("isgeolocc")
   //         // isgeoLoc= true
   //         setGeoLocation({
   //           latitude: position.coords.latitude,
   //           longitude: position.coords.longitude,
   //         });
-  //         console.log("Latitude:", position.coords.latitude);
-  //         console.log("Longitude:", position.coords.longitude);
   //         return;
   //       },
   //       (err) => {
@@ -1360,7 +1409,6 @@ const FillQuestions = (props) => {
   //           alert("Location access is mandatory. Without it, we cannot proceed.");
   //           return;
   //         } else {
-  //           console.log("Error fetching location:", err.message);
   //           setIsGeoLoc(false)
 
   //           // isgeoLoc=false
@@ -1373,17 +1421,39 @@ const FillQuestions = (props) => {
   // }, [prevProps?.userType, hasCitizenDetails]);
 
   const handleCityChange = (e) => {
-    setCity(e.target.value);
+    const selectedCity = e.target.value;
+    setCity(selectedCity);
   };
+
+  useEffect(() => {
+    if (getFetchAnswers) {
+      // On component mount, initialize city from localStorage
+      const storedCity = getFetchAnswers?.tenantId ? getFetchAnswers?.tenantId : localStorage.getItem("CITIZEN.CITY");
+
+      if (storedCity) {
+        setCity(storedCity);
+      }
+    }
+  }, [getFetchAnswers]);
+
   const handleLocalityChangeCitizen = (e) => {
     setLocality(e.target.value);
   };
+
+  useEffect(() => {
+    if (getFetchAnswers) {
+      setLocality(getFetchAnswers?.locality);
+    }
+  }, [getFetchAnswers]);
+
   const handleLocalityChange = (e) => {
     setLocality(e);
   };
+
   function handleOnSubmitDialog() {
     setOpenQuesDetailsDialog(false);
   }
+
   function handleOnCancelDialog() {
     setOpenQuesDetailsDialog(false);
   }
@@ -1483,10 +1553,11 @@ const FillQuestions = (props) => {
                   t={t}
                   selected={city || null}
                 /> */}
-
               <select
                 id="dropdown"
                 value={city}
+                // value={localStorage.getItem("CITIZEN.CITY")}
+                // value={formData[section.uuid]?.[question.uuid]?.answer}
                 onChange={(e) => {
                   handleCityChange(e);
                 }}
@@ -1494,15 +1565,17 @@ const FillQuestions = (props) => {
                 <option value="">--Please choose a city--</option>
                 {cities.map((option, index) => (
                   <option key={index} value={option.code}>
-                    {option?.code}
+                    {option?.name}
                   </option>
                 ))}
               </select>
+
               {errors && errors["city"] && (
                 <CardLabelError style={{ marginTop: "0px", marginBottom: "0px", color: "red", fontWeight: "500" }}>
                   {errors?.["city"].answerRequired}
                 </CardLabelError>
               )}
+
               <CardLabel>
                 {`${t("LOCALITY")}`} <span className="check-page-link-button">*</span>
               </CardLabel>
@@ -1620,6 +1693,7 @@ const FillQuestions = (props) => {
         >
           Fill your details : Name, Gender, DOB and Email are required
         </button>
+        {loading && <Loader />}
       </div>
     ) : null
 

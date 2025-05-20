@@ -11,6 +11,7 @@ export const MCollectService = {
       userService: true,
       params: { tenantId, ...filters },
     }),
+
   create: (details, tenantId) =>
     Request({
       url: Urls.mcollect.create,
@@ -21,6 +22,7 @@ export const MCollectService = {
       auth: true,
       userService: true,
     }),
+
   generateBill: (consumerCode, tenantId, businessService, operation) =>
     Request({
       url: Urls.mcollect.fetch_bill,
@@ -31,6 +33,7 @@ export const MCollectService = {
       auth: true,
       userService: true,
     }),
+
   search_bill: (tenantId, filters) =>
     Request({
       url: filters?.businesService !== "PT" ? Urls.mcollect.search_bill : Urls.mcollect.search_bill_pt,
@@ -41,6 +44,45 @@ export const MCollectService = {
       userService: false,
       //params: { tenantId, ...filters },
     }),
+
+  recieptSearch: (tenantId, businessService, params) => {
+    console.log("🔍 [MCollectService.recieptSearch] Params:", {
+      tenantId,
+      businessService,
+      ...params,
+    });
+
+    return Request({
+      url: Urls.mcollect.reciept_search,
+      urlParams: { businessService },
+      method: "POST",
+      auth: true,
+      params: { tenantId, ...params },
+    });
+  },
+
+  generatePdf: (tenantId, data = {}, key) =>
+    Request({
+      url: Urls.mcollect.generate_pdf,
+      useCache: false,
+      method: "POST",
+      auth: true,
+      userService: true,
+      locale: true,
+      params: { tenantId, key },
+      data: data,
+    }),
+
+  file_fetch: (tenantId, fileStoreIds) =>
+    Request({
+      url: Urls.mcollect.file_fetch,
+      useCache: false,
+      method: "GET",
+      auth: true,
+      userService: true,
+      params: { tenantId, fileStoreIds },
+    }),
+
   update: (details, tenantId) =>
     Request({
       url: Urls.mcollect.update,
@@ -51,6 +93,7 @@ export const MCollectService = {
       auth: true,
       userService: true,
     }),
+
   downloadPdf: (challanNo, tenantId) =>
     Request({
       url: Urls.mcollect.download_pdf,
@@ -63,6 +106,7 @@ export const MCollectService = {
       userService: true,
       userDownload: true,
     }),
+
   receipt_download: (bussinessService, consumerCode, tenantId) =>
     Request({
       url: Urls.mcollect.receipt_download,
@@ -75,6 +119,7 @@ export const MCollectService = {
       userService: true,
       userDownload: true,
     }),
+
   count: (tenantId) =>
     Request({
       url: Urls.mcollect.count,
@@ -84,14 +129,14 @@ export const MCollectService = {
       userService: true,
       params: { tenantId },
     }),
+
   MCollectOpenSearch: ({ tenantId, filters }) =>
     Request({
       url: Urls.mcollect.search,
       useCache: false,
       method: "POST",
-      auth: false ,
+      auth: false,
       userService: false,
       params: { tenantId, ...filters },
-  }),
-
+    }),
 };

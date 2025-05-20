@@ -55,8 +55,6 @@ import { CFService } from "./services/elements/CF";
 
 import { CustomService } from "./services/elements/CustomService";
 import { PTRService } from "./services/elements/PTR";
-import { SVService } from "./services/elements/SV";
-import { ADSServices } from "./services/elements/ADS";
 
 const setupLibraries = (Library, props) => {
   window.Digit = window.Digit || {};

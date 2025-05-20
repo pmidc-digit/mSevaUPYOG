@@ -10,6 +10,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { cardBodyStyle } from "../utils";
 import { useLocation } from "react-router-dom";
+import { Controller, useForm } from "react-hook-form";
 
 const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState, setError, clearErrors, onBlur }) => {
   const [usageCategoryMajor, setPropertyPurpose] = useState(
@@ -17,9 +18,8 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
       ? { code: `${formData?.usageCategoryMajor?.code}`, i18nKey: `PROPERTYTAX_BILLING_SLAB_OTHERS` }
       : formData?.usageCategoryMajor
   );
-  //   const { data: Menu, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "OccupancyType");
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
   const stateId = Digit.ULBService.getStateId();
   const { data: Menu = {}, isLoading: menuLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "UsageCategory") || {};
   let usagecat = [];
@@ -28,7 +28,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
   let menu = [];
 
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("modify");
+  const presentInModifyApplication = pathname.includes("edit");
 
   function usageCategoryMajorMenu(usagecat) {
     if (userType === "employee") {
@@ -55,13 +55,50 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
     }
   }
 
-  useEffect(() => {
-    if (!menuLoading && presentInModifyApplication && userType === "employee") {
-      const original = formData?.originalData?.usageCategory;
-      const selectedOption = usageCategoryMajorMenu(usagecat).filter((e) => e.code === original)[0];
-      setPropertyPurpose(selectedOption);
-    }
-  }, [menuLoading]);
+  // useEffect(() => {
+  //   if (!menuLoading && presentInModifyApplication && userType === "employee") {
+  //     const original = formData?.usageCategoryMajor;
+  //     const selectedOption = usageCategoryMajorMenu(usagecat).filter((e) => e.code === original)[0];
+  //     setPropertyPurpose(selectedOption);
+  //   }
+  // }, [menuLoading]);
+  // pt.PTNewApplicationForm.formData.PropertyDetails.usageCategoryMajor
+    // useEffect(() => {
+    //   if (formData?.PropertyDetails?.usageCategoryMajor?.code && usageCategoryMajorMenu(usagecat)?.length) {
+    //     const code = formData?.PropertyDetails?.usageCategoryMajor?.code;
+    //     const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
+    //     setValue("MajorPropertyType", Majorbuiltdingtype);
+    //   }
+    // }, [formData, usageCategoryMajor]);
+    // useEffect(() => {
+
+    //   console.log("code is coming innn ")
+    //   if (formData?.PropertyDetails?.usageCategoryMajor?.code || usageCategoryMajorMenu(usagecat)?.length) {
+    //     const code = formData?.PropertyDetails?.usageCategoryMajor?.code;
+    //     console.log("here is code -in if's",code)
+    //     const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
+    //     console.log("code in Majorbuiltdingtype",Majorbuiltdingtype)
+    //     setValue("MajorPropertyType", Majorbuiltdingtype);
+    //     // setPropertyPurpose(Majorbuiltdingtype)
+    //   }
+    //   console.log("code is out ")
+    // }, [formData, usageCategoryMajor  ]);
+    
+    // useEffect(() => {
+
+    //   console.log("code is coming innn ")
+    //   if (formData?.usageCategoryMajor?.code || usageCategoryMajorMenu(usagecat)?.length) {
+    //     const code = formData?.usageCategoryMajor?.code;
+    //     console.log("here is code -in if's",code)
+    //     const Majorbuiltdingtype = usageCategoryMajorMenu(usagecat)?.find((e) => e.code === code);
+    //     console.log("code in Majorbuiltdingtype",Majorbuiltdingtype)
+    //     setValue("PropertyUsageType", Majorbuiltdingtype);
+    //     // setPropertyPurpose(Majorbuiltdingtype)
+    //   }
+    //   console.log("code is out ")
+    // }, [formData]);
+
+
 
   const onSkip = () => onSelect();
 
@@ -101,19 +138,33 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
     return (
       <React.Fragment>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_ASSESMENT_INFO_USAGE_TYPE") + " *"}</CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={usageCategoryMajor}
-            disable={usageCategoryMajorMenu(usagecat)?.length === 1}
-            option={usageCategoryMajorMenu(usagecat)}
-            select={(e) => {
-              selectPropertyPurpose(e);
-            }}
-            optionKey="i18nKey"
-            onBlur={onBlur}
-            t={t}
-          />
+          <CardLabel className="card-label-smaller">{t("PT_ASSESMENT_INFO_USAGE_TYPE")} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
+          <Controller
+              name="PropertyUsageType"
+              // defaultValue={usageCategoryMajor}
+              control={control}
+              rules={{
+                required: config.isMandatory && t("Property Usage Type is required"),
+              }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  // selected={getPropertyTypeMenu(proptype)?.length === 1 ? getPropertyTypeMenu(proptype)[0] : BuildingType}
+                  selected={usageCategoryMajor}
+                  // selected={usageCategoryMajor}
+                  option={usageCategoryMajorMenu(usagecat)}
+                  select={(e) => {
+                    props.onChange(e);
+                    selectPropertyPurpose(e); // to keep your external state also in sync
+                  }}
+                  // select={props.onChange}
+                  onBlur={props.onBlur}
+                  optionKey="i18nKey"
+                  t={t}
+                  // disable={isEditProperty ? isEditProperty : false}
+                />
+              )}
+            />
         </LabelFieldPair>
         {formState.touched[config.key] ? (
           <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
@@ -146,3 +197,4 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
 };
 
 export default PropertyUsageType;
+

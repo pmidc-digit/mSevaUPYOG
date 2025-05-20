@@ -1,4 +1,4 @@
-import { CardLabel,LabelFieldPair, TextInput, CardLabelError } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, TextInput, CardLabelError } from "@mseva/digit-ui-react-components";
 //import  FormStep  from "@mseva/digit-ui-react-components/src/molecules/FormStep";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
@@ -8,6 +8,9 @@ import { Controller, useForm } from "react-hook-form";
 const BusinessName = ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
   //let index = window.location.href.charAt(window.location.href.length - 1);
   let index = window.location.href.split("/").pop();
+
+  console.log("formdata testing==", formData);
+
   let validation = {};
   const onSkip = () => onSelect();
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
@@ -26,14 +29,14 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
     validateBusinessName();
   }, [businessName])
 
-  const handleBusinessNameChange=(value)=> {
+  const handleBusinessNameChange = (value) => {
     setBusinessName(value);
-    onSelect(config.key, {...formData[config.key], businessName: value })
+    onSelect(config.key, { ...formData[config.key], businessName: value })
     validateBusinessName();
   }
 
   //}
-  const goNext=()=> {
+  const goNext = () => {
     sessionStorage.setItem("businessName", businessName.i18nKey);
     onSelect("businessName", { businessName });
   };
@@ -41,12 +44,12 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
 
   useEffect(() => {
     if (userType === "employee") {
-    //console.log("configkeyEEE", config.key)
-    //    if (remarks !== "undefined" && remarks?.length === 0) setFormError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
-    //    else if (remarks !== "undefined" && remarks?.length < 10 || remarks?.length > 10 || !Number(remarks)) setFormError(config.key, { type: "invalid", message: t("ERR_DEFAULT_INPUT_FIELD_MSG") });
-    if(businessName !== "undefined" && businessName?.length === 0){
+      //console.log("configkeyEEE", config.key)
+      //    if (remarks !== "undefined" && remarks?.length === 0) setFormError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
+      //    else if (remarks !== "undefined" && remarks?.length < 10 || remarks?.length > 10 || !Number(remarks)) setFormError(config.key, { type: "invalid", message: t("ERR_DEFAULT_INPUT_FIELD_MSG") });
+      if (businessName !== "undefined" && businessName?.length === 0) {
         setFormError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
-    }else clearFormErrors(config.key);
+      } else clearFormErrors(config.key);
 
       onSelect(config.key, businessName);
     }
@@ -63,24 +66,24 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
       label: "PT_BUSINESS_NAME_LABEL",
       type: "text",
       name: "businessName",
-      isMandatory : "true",
-       validation: {
-         required: true,
-         minLength: 1,
-       }
+      isMandatory: "true",
+      validation: {
+        isRequired: config.isMandatory,
+        minLength: 1,
+      }
     },
 
 
   ];
-  const validateBusinessName=()=>{
+  const validateBusinessName = () => {
     //  if(new RegExp(/^\d{10}$/).test(electricity) || electricity===""){
     //    setError("");
     //  }
 
-    if (businessName === ""){
-        setError("Please Enter Business Name")
+    if (businessName === "") {
+      setError("Please Enter Business Name")
     }
-    
+
   };
   // const handleBusinessNameChange=(e)=>{
   //   const value=e.target.value;
@@ -99,9 +102,9 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
       return (
         <React.Fragment>
           <LabelFieldPair key={index}>
-            <CardLabel className="card-label-smaller">{t(input.label) + "  *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t(input.label)} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
             <div className="field">
-{/* 
+              {/* 
               <TextInput
                 key={input.name}
                 id={input.name}
@@ -117,21 +120,25 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
               // autoFocus={presentInModifyApplication}
               /> */}
               <Controller
-              control={control}
-              defaultValue={businessName}
-              name="bussinessName"
-              render={(_props) => (
-                <TextInput
-                  id="bussinessName"
-                  value={businessName}
-                  onChange={(e) => {
-                    handleBusinessNameChange(e.target.value);
-                    _props.onChange(e.target.value);
-                  }}
+                control={control}
+                defaultValue={businessName}
+                name="bussinessName"
+                rules={{
+                  required: config.isMandatory && t("Business Name is required"),
+                }}
+                render={(_props) => (
+                  <TextInput
+                    id="bussinessName"
+                    value={businessName}
+                    onChange={(e) => {
+                      handleBusinessNameChange(e.target.value);
+                      _props.onChange(e.target.value);
+                    }}
+                    {...input.validation}
                   // onBlur={_props.onBlur}
-                />
-              )}
-            />
+                  />
+                )}
+              />
 
             </div>
           </LabelFieldPair>
@@ -146,9 +153,9 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
   }
   return (
     <React.Fragment>
-    <div>BusinessName</div>
+      <div>BusinessName</div>
 
-     
+
       {/* {window.location.href.includes("/citizen") ? <Timeline currentStep={1} /> : null}
       
       <FormStep

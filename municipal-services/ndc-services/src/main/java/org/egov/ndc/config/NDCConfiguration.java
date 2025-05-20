@@ -91,9 +91,9 @@ public class NDCConfiguration {
 
 	@Value("${persister.update.ndc.topic}")
 	private String updateTopic;
-//
-//	@Value("${persister.update.ndc.workflow.topic}")
-//	private String updateWorkflowTopic;
+
+	@Value("${persister.delete.ndc.topic}")
+	private String deleteTopic;
 	
 	@Value("${egov.ndc.pagination.default.limit}")
 	private Integer defaultLimit;

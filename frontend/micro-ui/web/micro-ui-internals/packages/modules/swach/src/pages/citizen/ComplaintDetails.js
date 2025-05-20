@@ -168,7 +168,7 @@ const ComplaintDetailsPage = (props) => {
         {Object.keys(complaintDetails).length > 0 ? (
           <React.Fragment>
             <Card>
-              <CardSubHeader>{t(`SERVICEDEFS.${complaintDetails.audit.serviceCode.toUpperCase()}`)}</CardSubHeader>
+              <CardSubHeader>{t(`SWACHBHARATCATEGORY.${complaintDetails.audit.serviceCode.toUpperCase()}`)}</CardSubHeader>
               <StatusTable>
                 {Object.keys(complaintDetails.details).map((flag, index, arr) => (
                   <Row

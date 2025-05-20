@@ -31,6 +31,9 @@ public class ApplicantRequest {
     @JsonProperty("applicationStatus")
     private String applicationStatus;
 
+    @JsonProperty("active")
+    private Boolean active;
+
     @JsonProperty("createdby")
     private String createdby;
 

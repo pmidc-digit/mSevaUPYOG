@@ -3,15 +3,15 @@ import { FormStep, TextInput, CardLabel, MobileNumber, Card, CardSubHeader } fro
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/ADSTimeline";
 import ADSCartAndCancellationPolicyDetails from "../components/ADSCartAndCancellationPolicyDetails";
-import {TimerValues} from "../components/TimerValues";
+import { TimerValues } from "../components/TimerValues";
 
 /*
- * The ADSCitizenDetails component is responsible for gathering and validating 
- * applicant information, including name, mobile number, alternate number, 
+ * The ADSCitizenDetails component is responsible for gathering and validating
+ * applicant information, including name, mobile number, alternate number,
  * and email address. It provides a structured form step for user input.
  */
 
-const ADSCitizenDetails = ({ t, config, onSelect, userType, formData,value=formData.adslist}) => {
+const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = formData.adslist }) => {
   const { pathname: url } = useLocation();
 
   let index = window.location.href.charAt(window.location.href.length - 1);
@@ -21,18 +21,28 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData,value=formD
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const mutation = Digit.Hooks.ads.useADSCreateAPI();
   const [applicantName, setName] = useState(
-    (formData.applicant && formData.applicant[index] && formData.applicant[index].applicantName) || formData?.applicant?.applicantName || value?.existingDataSet?.applicant?.applicantName || ""
+    (formData.applicant && formData.applicant[index] && formData.applicant[index].applicantName) ||
+      formData?.applicant?.applicantName ||
+      value?.existingDataSet?.applicant?.applicantName ||
+      ""
   );
   const [emailId, setEmail] = useState(
-    (formData.applicant && formData.applicant[index] && formData.applicant[index].emailId) || formData?.applicant?.emailId || value?.existingDataSet?.applicant?.emailId  ||""
+    (formData.applicant && formData.applicant[index] && formData.applicant[index].emailId) ||
+      formData?.applicant?.emailId ||
+      value?.existingDataSet?.applicant?.emailId ||
+      ""
   );
   const [mobileNumber, setMobileNumber] = useState(
-    (formData.applicant && formData.applicant[index] && formData.applicant[index].mobileNumber) ||  value?.existingDataSet?.applicant?.mobileNumber  ||
+    (formData.applicant && formData.applicant[index] && formData.applicant[index].mobileNumber) ||
+      value?.existingDataSet?.applicant?.mobileNumber ||
       formData?.applicant?.mobileNumber ||
       user?.mobileNumber
   );
   const [alternateNumber, setAltMobileNumber] = useState(
-    (formData.applicant && formData.applicant[index] && formData.applicant[index].alternateNumber) || formData?.applicant?.alternateNumber ||  value?.existingDataSet?.applicant?.alternateNumber || ""
+    (formData.applicant && formData.applicant[index] && formData.applicant[index].alternateNumber) ||
+      formData?.applicant?.alternateNumber ||
+      value?.existingDataSet?.applicant?.alternateNumber ||
+      ""
   );
   function setApplicantName(e) {
     const input = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Remove non-alphabetic characters and non-space characters
@@ -54,15 +64,15 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData,value=formD
     let applicantData = formData.applicant && formData.applicant[index];
     // Create the formdata object
     let cartDetails = value?.cartDetails.map((slot) => {
-      return { 
-        addType:slot.addTypeCode,
-        faceArea:slot.faceAreaCode,
-        location:slot.locationCode,
-        nightLight:slot.nightLight==="Yes"? true : false,
-        bookingDate:slot.bookingDate,
+      return {
+        addType: slot.addTypeCode,
+        faceArea: slot.faceAreaCode,
+        location: slot.locationCode,
+        nightLight: slot.nightLight === "Yes" ? true : false,
+        bookingDate: slot.bookingDate,
         bookingFromTime: "06:00",
         bookingToTime: "05:59",
-        status:"BOOKING_CREATED"
+        status: "BOOKING_CREATED",
       };
     });
     const formdata = {
@@ -79,7 +89,7 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData,value=formD
       },
       isDraftApplication: true,
     };
-  
+
     // Trigger the mutation
     mutation.mutate(formdata, {
       onSuccess: (data) => {
@@ -87,16 +97,16 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData,value=formD
         // Now, only execute the logic you want after the mutation is successful
         let applicantStep;
         if (userType === "citizen") {
-          applicantStep = { ...applicantData, applicantName, mobileNumber, alternateNumber, emailId,draftId: newDraftId};
+          applicantStep = { ...applicantData, applicantName, mobileNumber, alternateNumber, emailId, draftId: newDraftId };
           onSelect(config.key, { ...formData[config.key], ...applicantStep }, false, index);
         } else {
-          applicantStep = { ...applicantData, applicantName, mobileNumber, alternateNumber, emailId,draftId: newDraftId };
+          applicantStep = { ...applicantData, applicantName, mobileNumber, alternateNumber, emailId, draftId: newDraftId };
           onSelect(config.key, applicantStep, false, index);
         }
       },
     });
   };
-  
+
   const onSkip = () => onSelect();
 
   useEffect(() => {
@@ -109,15 +119,16 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData,value=formD
     <React.Fragment>
       {window.location.href.includes("/citizen") ? <Timeline currentStep={1} /> : null}
       <Card>
-      <div style={{ position: "relative" }}>
-        <CardSubHeader style={{ position: "absolute",right:0}}>
-        <TimerValues 
-          timerValues={value?.existingDataSet?.timervalue?.timervalue} 
-          SlotSearchData={value?.cartDetails} 
-        />
-        </CardSubHeader>
-        <ADSCartAndCancellationPolicyDetails/>
-      </div>
+        <div style={{ position: "relative" }}>
+          <CardSubHeader style={{ position: "absolute", right: 0 }}>
+            <TimerValues
+              timerValues={value?.existingDataSet?.timervalue?.timervalue}
+              SlotSearchData={value?.cartDetails}
+              draftId={value?.existingDataSet?.draftId}
+            />
+          </CardSubHeader>
+          <ADSCartAndCancellationPolicyDetails />
+        </div>
       </Card>
       <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!applicantName || !mobileNumber || !emailId}>
         <div>

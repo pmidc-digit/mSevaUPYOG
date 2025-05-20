@@ -185,8 +185,22 @@
                         }
                     }
                 }
+    
+           @media (min-width: 641px) and (max-width: 1024px) {
+            .employee-dashboard-quick-service-card {
+              width: 48% !important;
+             }
+            }
+
+           @media (max-width: 640px) {
+            .employee-dashboard-quick-service-card {
+              width: 96% !important;
+            }
+           }
 
             }
         }
     }
+
+   
 }

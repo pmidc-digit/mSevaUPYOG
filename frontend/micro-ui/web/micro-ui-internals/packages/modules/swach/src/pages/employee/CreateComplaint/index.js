@@ -405,7 +405,7 @@ const [description, setDescription] = useState("")
                   }}
                 />
                 {geoLocation.place.length>0?
-                <h3>{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION")+": "+ geoLocation?.place+","+geoLocation?.val}</h3>  : <h1>{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</h1>
+                <h3>{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION")+" : "+ geoLocation?.place+","+geoLocation?.val}</h3>  : <h1>{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</h1>
                 }
                 </div>
               ),

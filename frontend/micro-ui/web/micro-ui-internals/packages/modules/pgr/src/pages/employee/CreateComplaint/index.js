@@ -68,7 +68,9 @@ const [description, setDescription] = useState("")
   const serviceDefinitions = Digit.GetServiceDefinitions;
   const client = useQueryClient();
   useEffect(() => {
-    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code && priorityLevel?.code ) {
+    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code 
+      // && priorityLevel?.code 
+    ) {
       setSubmitValve(true);
     } else {
       setSubmitValve(false);
@@ -86,7 +88,7 @@ const [description, setDescription] = useState("")
       setSelectedCity(city);
       setSelectedLocality(null);
       const __localityList = fetchedLocalities;
-      const __filteredLocalities = __localityList.filter((city) => city["pincode"] == pincode);
+      const __filteredLocalities = __localityList?.filter((city) => city["pincode"] == pincode);
       setLocalities(__filteredLocalities);
     } else if (pincode === "" || pincode === null) {
       setPincodeNotValid(false);
@@ -148,13 +150,14 @@ const [description, setDescription] = useState("")
     const localityCode = selectedLocality.code;
     const localityName = selectedLocality.name;
     const landmark = data?.landmark;
+    const houseNoAndStreetName = data?.houseNoAndStreetName;
     const { key } = subType;
     const complaintType = key;
     //const prioritylevel=priorityLevel.code;
     const mobileNumber = data?.mobileNumber;
     const name = data?.name;
     const emailId=data?.emailId;
-    const formData = { ...data, cityCode, city, district, region, localityCode, localityName, landmark, complaintType, priorityLevel, mobileNumber, name,emailId};
+    const formData = { ...data, cityCode, city, district, region, localityCode, localityName, landmark, houseNoAndStreetName, complaintType, priorityLevel, mobileNumber, name,emailId};
     await dispatch(createComplaint(formData));
     await client.refetchQueries(["fetchInboxData"]);
     localStorage.removeItem("pgrProperty");
@@ -226,21 +229,21 @@ const [description, setDescription] = useState("")
             error: t("CS_ADDCOMPLAINT_NAME_ERROR"),
           },
         },
-        {
-          label: t("ES_MAIL_ID"),
-          isMandatory: false,
-          type: "text",
-          value:emailId,
-          populators: {
-            name: "emailId",
-            onChange: handleEmail,
-            validation: {
-              //required: true,
-              pattern: /[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
-            },
-            error: t("CS_ADDCOMPLAINT_EMAIL_ERROR"),
-          },
-        },
+        // {
+        //   label: t("ES_MAIL_ID"),
+        //   isMandatory: false,
+        //   type: "text",
+        //   value:emailId,
+        //   populators: {
+        //     name: "emailId",
+        //     onChange: handleEmail,
+        //     validation: {
+        //       //required: true,
+        //       pattern: /[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/,
+        //     },
+        //     error: t("CS_ADDCOMPLAINT_EMAIL_ERROR"),
+        //   },
+        // },
       ],
     },
     {
@@ -259,14 +262,14 @@ const [description, setDescription] = useState("")
           menu: { ...subTypeMenu },
           populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
         },
-        {
+        // {
           
-         label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
-            isMandatory: true,
-            type: "dropdown",
-            populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
+        //  label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
+        //     isMandatory: true,
+        //     type: "dropdown",
+        //     populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
           
-        },
+        // },
         {
           //label: t("WS_COMMON_PROPERTY_DETAILS"),
           "isEditConnection": true,
@@ -293,16 +296,16 @@ const [description, setDescription] = useState("")
     {
       head: t("CS_ADDCOMPLAINT_LOCATION"),
       body: [
-        {
-          label: t("CORE_COMMON_PINCODE"),
-          type: "text",
-          populators: {
-            name: "pincode",
-          //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
-            //error: t("CORE_COMMON_PINCODE_INVALID"),
-            onChange: handlePincode,
-          },
-        },
+        // {
+        //   label: t("CORE_COMMON_PINCODE"),
+        //   type: "text",
+        //   populators: {
+        //     name: "pincode",
+        //   //  validation: { pattern: /^[1-9][0-9]{5}$/, validate: isPincodeValid },
+        //     //error: t("CORE_COMMON_PINCODE_INVALID"),
+        //     onChange: handlePincode,
+        //   },
+        // },
         {
           label: t("CS_COMPLAINT_DETAILS_CITY"),
           isMandatory: true,
@@ -328,6 +331,13 @@ const [description, setDescription] = useState("")
           populators: (
             <Dropdown isMandatory selected={selectedLocality} optionKey="i18nkey" id="locality" option={localities} select={selectLocality} t={t} />
           ),
+        },
+        {
+          label: t("CS_COMPLAINT_DETAILS_HOUSE_NO_STREET_NAME"),
+          type: "text",
+          populators: {
+            name: "houseNoAndStreetName",
+          },
         },
         {
           label: t("CS_COMPLAINT_DETAILS_LANDMARK"),
@@ -372,7 +382,7 @@ const [description, setDescription] = useState("")
      
       setPincode(data?.address?.pincode || "")
       
-      let b= localities.filter((item)=>{
+      let b= localities?.filter((item)=>{
         return item.code === data?.address?.locality?.code
       })
       setSelectedLocality(b?.[0])

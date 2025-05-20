@@ -55,6 +55,8 @@ import { CFService } from "./services/elements/CF";
 
 import { CustomService } from "./services/elements/CustomService";
 import { PTRService } from "./services/elements/PTR";
+import { SVService } from "./services/elements/SV";
+import { ADSServices } from "./services/elements/ADS";
 
 const setupLibraries = (Library, props) => {
   window.Digit = window.Digit || {};
@@ -112,7 +114,8 @@ const initLibraries = () => {
   setupLibraries("Customizations", {});
   setupLibraries("Utils", Utils);
   setupLibraries("Download", Download);
-
+  setupLibraries("SVService", SVService);
+  setupLibraries("ADSServices", ADSServices);
   setupLibraries("NOCService", NOCService);
   setupLibraries("NOCSearch", NOCSearch);
   setupLibraries("AccessControlService", AccessControlService);

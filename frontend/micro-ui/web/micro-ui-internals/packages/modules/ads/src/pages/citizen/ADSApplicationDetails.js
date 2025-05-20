@@ -88,7 +88,7 @@ const ADSApplicationDetails = () => {
     const month = Digit.Utils.date.monthNames[date.getMonth()];
     documentDate = `${date.getDate()} ${month} ${date.getFullYear()}`;
   }
-// in progress
+  // in progress
   async function getRecieptSearch({ tenantId, payments, ...params }) {
     let application = data?.bookingApplication?.[0];
     let fileStoreId = application?.paymentReceiptFilestoreId;
@@ -158,7 +158,7 @@ const ADSApplicationDetails = () => {
     ads_details?.cartDetails?.map((slot) => ({
       addType: `${t(slot.addType)}`,
       faceArea: `${t(slot.faceArea)}`,
-      nightLight: `${t(slot.nightLight===true?"Yes":"No")}`,
+      nightLight: `${t(slot.nightLight === true ? "Yes" : "No")}`,
       bookingDate: `${t(slot.bookingDate)}`,
       bookingStatus: `${t(slot.status)}`,
     })) || [];
@@ -182,24 +182,22 @@ const ADSApplicationDetails = () => {
           </StatusTable>
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_PAYMENT_DETAILS")}</CardSubHeader>
           <StatusTable>
-            <Row 
-              className="border-none" 
-              label={t("ADS_TOTAL_AMOUNT")} 
+            <Row
+              className="border-none"
+              label={t("ADS_TOTAL_AMOUNT")}
               text={
-                billData?.Bill?.[0]?.totalAmount > 0
-                  ? (
-                      <span >
-                       ₹ {billData?.Bill?.[0]?.totalAmount || t("CS_NA")}  <strong style={{ color: '#a82227' }}>({t("PENDING_PAYMENT")})</strong>
-                      </span>
-                    )
-                  : (
-                      <span >
-                      ₹ {reciept_data?.Payments?.[0]?.totalAmountPaid || t("CS_NA")}   <strong style={{ color: 'green' }}>({t("PAYMENT_PAID")})</strong>
-                      </span>
-                    )
+                billData?.Bill?.[0]?.totalAmount > 0 ? (
+                  <span>
+                    ₹ {billData?.Bill?.[0]?.totalAmount || t("CS_NA")} <strong style={{ color: "#a82227" }}>({t("PENDING_PAYMENT")})</strong>
+                  </span>
+                ) : (
+                  <span>
+                    ₹ {reciept_data?.Payments?.[0]?.totalAmountPaid || t("CS_NA")} <strong style={{ color: "green" }}>({t("PAYMENT_PAID")})</strong>
+                  </span>
+                )
               }
-            />          
-            </StatusTable>
+            />
+          </StatusTable>
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("ADS_APPLICANT_NAME")} text={ads_details?.applicantDetail?.applicantName || t("CS_NA")} />
@@ -242,9 +240,9 @@ const ADSApplicationDetails = () => {
           />
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
           <StatusTable>
-              {docs.map((doc, index) => (
-                <ADSDocument value={docs} Code={doc?.documentType} index={index} />
-              ))}
+            {docs.map((doc, index) => (
+              <ADSDocument value={docs} Code={doc?.documentType} index={index} />
+            ))}
           </StatusTable>
         </Card>
       </div>

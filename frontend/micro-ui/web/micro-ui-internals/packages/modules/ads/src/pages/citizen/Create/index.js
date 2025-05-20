@@ -14,7 +14,6 @@ import { data } from "jquery";
  * It handles user input, navigates between steps, and manages session storage for form data.
  */
 
-
 const ADSCreate = ({ parentRoute }) => {
   const queryClient = useQueryClient();
   const match = useRouteMatch();
@@ -120,7 +119,7 @@ const ADSCreate = ({ parentRoute }) => {
         <CheckPage onSubmit={chbcreate} value={params} />
       </Route>
       <Route path={`${match.path}/acknowledgement`}>
-      <ADSAcknowledgement data={params} onSuccess={onSuccess} />
+        <ADSAcknowledgement data={params} onSuccess={onSuccess} />
       </Route>
       <Route>
         <Redirect to={`${match.path}/${config.indexRoute}`} />

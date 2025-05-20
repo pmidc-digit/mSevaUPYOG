@@ -30,21 +30,21 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
   //   getWorkFlow(workFlowDetails.data);
   // }, []);
   useEffect(() => {
-      if (workFlowDetails) {
-        console.log("workFlowDetails swach citizen", workFlowDetails,complaintDetails);
-        const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
-        if (complaintTimelineData) {
-          // const actionByCitizenOnComplaintCreation = complaintTimelineData;
-  
-          const { thumbnailsToShow } = complaintTimelineData?.[0];
-          thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
-        }
+    if (workFlowDetails) {
+      console.log("workFlowDetails swach citizen", workFlowDetails, complaintDetails);
+      const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
+      if (complaintTimelineData) {
+        // const actionByCitizenOnComplaintCreation = complaintTimelineData;
+
+        const { thumbnailsToShow } = complaintTimelineData?.[0];
+        thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
       }
+    }
   }, [workFlowDetails]);
 
   useEffect(() => {
     workFlowDetails.revalidate();
-  }, []);
+  }, [workFlowDetails]);
 
   return (
     !workFlowDetails.isLoading && (
@@ -84,9 +84,9 @@ const ComplaintDetailsPage = (props) => {
   const [loader, setLoader] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
 
-  useEffect(()=>{
-    console.log("imageShownBelowComplaintDetails",imageShownBelowComplaintDetails);
-  },[imageShownBelowComplaintDetails])
+  useEffect(() => {
+    console.log("imageShownBelowComplaintDetails", imageShownBelowComplaintDetails);
+  }, [imageShownBelowComplaintDetails]);
 
   useEffect(() => {
     (async () => {
@@ -186,7 +186,6 @@ const ComplaintDetailsPage = (props) => {
               <h1 style={{ fontSize: "16px", marginBottom: "16px", color: "blue", fontWeight: "bolder" }}>
                 <a
                   href={`https://www.google.com/maps?q=${complaintDetails?.service?.address?.geoLocation?.latitude},${complaintDetails?.service?.address?.geoLocation?.longitude}`}
-                  target="_blank"
                   rel="noopener noreferrer"
                 >
                   View Location on Google Maps
@@ -201,7 +200,12 @@ const ComplaintDetailsPage = (props) => {
               <div id="timeline">
                 {complaintDetails?.service && (
                   // <WorkflowComponent getWorkFlow={onWorkFlowChange} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
-                  <WorkflowComponent getWorkFlow={setImageToShowBelowComplaintDetails} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
+                  <WorkflowComponent
+                    getWorkFlow={setImageToShowBelowComplaintDetails}
+                    complaintDetails={complaintDetails}
+                    id={id}
+                    zoomImage={zoomImage}
+                  />
                 )}
               </div>
             </Card>

@@ -88,7 +88,10 @@ const ApplicationDetails = (props) => {
         }
       } else if (!action?.redirectionUrl && action?.action!="EDIT PAY 2") {
         setShowModal(true);
-      } else {
+      } else if(action?.redirectionUrl?.state?.applicationData?.workflowCode === "DIRECTRENEWAL"){
+        console.log("Got Inside Direct");
+        setShowModal(true);
+      }else {
         history.push({
           pathname: action.redirectionUrl?.pathname,
           state: { ...action.redirectionUrl?.state },
@@ -111,9 +114,13 @@ const ApplicationDetails = (props) => {
   };
 
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
-    if(data?.Property?.workflow?.comment?.length == 0 || data?.Licenses?.[0]?.comment?.length == 0 || data?.WaterConnection?.comment?.length == 0 || data?.SewerageConnection?.comment?.length == 0 || data?.BPA?.comment?.length == 0)
+    if(data?.Property?.workflow?.comment?.length == 0 || (data?.Licenses?.[0]?.action === "INITIATE"? data?.Licenses?.[0]?.additionalDetail?.validityYears?.length == 0 : data?.Licenses?.[0]?.comment?.length == 0) || data?.WaterConnection?.comment?.length == 0 || data?.SewerageConnection?.comment?.length == 0 || data?.BPA?.comment?.length == 0)
     {
-     alert(t("Please fill in the comments before submitting"))
+      if(data?.Licenses?.[0]?.action === "INITIATE"){
+        alert(t("Please fill in the validity before submitting"))
+      }else {
+        alert(t("Please fill in the comments before submitting"))
+      }
     }
     else if( data?.BPA?.businessService=="BPA" && !data?.BPA?.additionalDetails?.blockingReason && data?.BPA?.workflow?.action=="BLOCK"){
       alert(t("Please select Blocking reason"))
@@ -183,6 +190,11 @@ const ApplicationDetails = (props) => {
                 setShowToast({ key: "success", label: t("ES_MODIFYWSCONNECTION_REJECT_UPDATE_SUCCESS") })
               }
               return
+            }
+            if(data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber){
+              setShowToast({ key: "success", action: selectedAction });
+              history.replace(`/digit-ui/employee/tl/application-details/${data?.Licenses[0]?.applicationNumber}`);
+              return;
             }
             setShowToast({ key: "success", action: selectedAction });
             clearDataDetails && setTimeout(clearDataDetails, 3000);

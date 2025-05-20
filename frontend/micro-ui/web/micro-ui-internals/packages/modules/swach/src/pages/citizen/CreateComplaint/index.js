@@ -12,12 +12,13 @@ export const CreateComplaint = ({ parentUrl }) => {
   const cities = Digit.Hooks.swach.useTenants();
   const { t } = useTranslation();
 
-  const getCities = () => cities?.filter((e) => e.code === Digit.ULBService.getCurrentTenantId()) || [];
-const propetyData=localStorage.getItem("swachProperty") 
+  //const getCities = () => cities?.filter((e) => e.code === Digit.ULBService.getCurrentTenantId()) || [];
+  const getCities = () => cities || [];
+  const propetyData = localStorage.getItem("swachProperty");
   const [complaintType, setComplaintType] = useState(JSON?.parse(sessionStorage.getItem("complaintType")) || {});
   const [subTypeMenu, setSubTypeMenu] = useState([]);
   const [subType, setSubType] = useState(JSON?.parse(sessionStorage.getItem("subType")) || {});
-  const [priorityLevel, setPriorityLevel]=useState(JSON?.parse(sessionStorage.getItem("PriorityLevel"))||{})
+  const [priorityLevel, setPriorityLevel] = useState(JSON?.parse(sessionStorage.getItem("PriorityLevel")) || {});
   const [pincode, setPincode] = useState("");
   // const [mobileNumber, setMobileNumber] = useState(sessionStorage.getItem("mobileNumber") || "");
   // const [fullName, setFullName] = useState(sessionStorage.getItem("name") || "");
@@ -26,81 +27,119 @@ const propetyData=localStorage.getItem("swachProperty")
   const [fullName, setFullName] = useState(userInfo?.name || "");
   const [emailId, setEmail] = useState(sessionStorage.getItem("emailId") || "");
   const [selectedCity, setSelectedCity] = useState(getCities()[0] ? getCities()[0] : null);
-const [propertyId, setPropertyId]= useState("")
-const [description, setDescription] = useState("")
+  const [propertyId, setPropertyId] = useState("");
+  const [description, setDescription] = useState("");
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-    getCities()[0]?.code,
+    selectedCity?.code,
     "admin",
     {
-      enabled: !!getCities()[0],
+      enabled: !!selectedCity,
     },
     t
   );
+  console.log("fetchedLocalities", fetchedLocalities);
+  console.log("getcities", getCities()[0]);
+  console.log("selectedCity+++", selectedCity);
+  // const fetchedLocalities = useMemo(() => {
+  //   return Digit.Hooks.useBoundaryLocalities(
+  //     getCities()[0]?.code,
+  //     "admin",
+  //     {
+  //       enabled: !!getCities()[0],
+  //     },
+  //     t
+  //   );
+  // }, [selectedCity]);
 
-  const [localities, setLocalities] = useState(fetchedLocalities);
+  // const [localities, setLocalities] = useState(fetchedLocalities);
   const [selectedLocality, setSelectedLocality] = useState(null);
   const [canSubmit, setSubmitValve] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [property,setPropertyData]=useState(null);
+  const [property, setPropertyData] = useState(null);
   const [pincodeNotValid, setPincodeNotValid] = useState(false);
   const [params, setParams] = useState({});
   //const tenantId = SessionStorage.getItem("Digit.Citizen.tenantId");
   const tenantId = Digit.UserService.getUser()?.info?.tenantId;
   const tempLocation = useRef(null);
   const [geoLocation, setGeoLocation] = useState({
-    location:{
-      latitude: 30.730048,
-      longitude: 76.765040,
-    },
-    val: "",
-    place: "",
+    //  location:{
+    //    latitude: 30.730048,
+    //    longitude: 76.765040,
+    //  },
+    //  val: "",
+    //  place: "",
   });
-  // const [imageUploaded, setImageUploaded] = useState({
-  //   uploadedImages: null,
-  // });
   const imageUploaded = useRef({
     uploadedImages: null,
-  })
-  //console.log("tenantIdHello",tenantId)
+  });
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        const newGeoLocation = {
+          location: {
+            latitude: latitude ? latitude : 30.730048,
+            longitude: longitude ? longitude : 76.76504,
+          },
+          val: "",
+          place: "test",
+        };
+        // console.log("newGeoLocation", newGeoLocation);
+        setGeoLocation(newGeoLocation);
+      },
+      (error) => {
+        console.error("Error getting location:", error.message);
+      }
+    );
+  }, []);
   const menu = Digit.Hooks.swach.useComplaintTypes({ stateCode: tenantId });
   const SelectGeolocation = Digit?.ComponentRegistryService?.getComponent("SWACHSelectGeolocation");
   const SelectImages = Digit?.ComponentRegistryService?.getComponent("SWACHSelectImages");
 
- const  priorityMenu= 
-  [
-    {
-      "name": "LOW",
-      "code": "LOW",
-      "active": true
-    },
-    {
-      "name": "MEDIUM",
-      "code": "MEDIUM",
-      "active": true
-    },
-    {
-      "name": "HIGH",
-      "code": "HIGH",
-      "active": true
-    }
+  const localities = useMemo(() => {
+    console.log("fetchedLocalities_in use memo", fetchedLocalities);
+    return fetchedLocalities;
+  }, [selectedCity, fetchedLocalities]);
 
-  ]
+  const priorityMenu = [
+    {
+      name: "LOW",
+      code: "LOW",
+      active: true,
+    },
+    {
+      name: "MEDIUM",
+      code: "MEDIUM",
+      active: true,
+    },
+    {
+      name: "HIGH",
+      code: "HIGH",
+      active: true,
+    },
+  ];
   const dispatch = useDispatch();
   const match = useRouteMatch();
   const history = useHistory();
   const serviceDefinitions = Digit.GetSwachBharatCategories;
   const client = useQueryClient();
   useEffect(() => {
-    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code && (geoLocation?.location?.latitude !== 30.730048 || geoLocation?.location?.longitude !== 76.765040)) {
+    if (
+      complaintType?.key &&
+      subType?.key &&
+      selectedCity?.code &&
+      selectedLocality?.code &&
+      (geoLocation?.location?.latitude !== 30.730048 || geoLocation?.location?.longitude !== 76.76504)
+    ) {
       setSubmitValve(true);
     } else {
       setSubmitValve(false);
     }
   }, [complaintType, subType, priorityLevel, selectedCity, selectedLocality, geoLocation]);
 
-  useEffect(() => {
-    setLocalities(fetchedLocalities);
-  }, [fetchedLocalities]);
+  // useEffect(() => {
+  //   setLocalities(fetchedLocalities);
+  // }, [fetchedLocalities]);
 
   useEffect(() => {
     const city = cities.find((obj) => obj.pincode?.find((item) => item == pincode));
@@ -110,19 +149,19 @@ const [description, setDescription] = useState("")
       setSelectedLocality(null);
       const __localityList = fetchedLocalities;
       const __filteredLocalities = __localityList.filter((city) => city["pincode"] == pincode);
-      setLocalities(__filteredLocalities);
+      // setLocalities(__filteredLocalities);
     } else if (pincode === "" || pincode === null) {
       setPincodeNotValid(false);
-      setLocalities(fetchedLocalities);
+      // setLocalities(fetchedLocalities);
     } else {
       setPincodeNotValid(true);
     }
   }, [pincode]);
 
   useEffect(() => {
-    setComplaintType({"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"})
+    setComplaintType({ name: "SWACHBHARATCATEGORY.SWACHCATEGORY", key: "SwachCategory" });
     selectedType();
-  },[])
+  }, []);
   // async function selectedType(value) {
   //   if (value.key !== complaintType.key) {
   //     console.log("selectedType",value)
@@ -140,41 +179,42 @@ const [description, setDescription] = useState("")
   //   }
   // }
 
-
   async function selectedType() {
-    const value = await serviceDefinitions.getSubMenu(tenantId, {"name": "SWACHBHARATCATEGORY.SWACHCATEGORY","key": "SwachCategory"}, t)
-   setSubTypeMenu(value);
+    const value = await serviceDefinitions.getSubMenu(tenantId, { name: "SWACHBHARATCATEGORY.SWACHCATEGORY", key: "SwachCategory" }, t);
+    setSubTypeMenu(value);
   }
-  async function selectedPriorityLevel(value){
-    sessionStorage.setItem("priorityLevel", JSON.stringify(value))
+  async function selectedPriorityLevel(value) {
+    sessionStorage.setItem("priorityLevel", JSON.stringify(value));
     setPriorityLevel(value);
     //setPriorityMenu(await serviceDefinitions.getSubMen)
   }
 
   function selectedSubType(value) {
-    sessionStorage.setItem("subType",JSON.stringify(value))
+    sessionStorage.setItem("subType", JSON.stringify(value));
     setSubType(value);
   }
 
   // city locality logic
   const selectCity = async (city) => {
     // if (selectedCity?.code !== city.code) {}
+    setSelectedCity(city);
+
     return;
   };
-
+  console.log("selectedCity", selectedCity);
   function selectLocality(locality) {
     setSelectedLocality(locality);
   }
 
-  function throttle (){
-    setTimeout(()=>{
+  function throttle() {
+    setTimeout(() => {
       setSubmitted(false);
-    },5000)
+    }, 5000);
   }
 
   const wrapperSubmit = (data) => {
-    if (!canSubmit ) return;
-    if(!imageUploaded?.current?.uploadedImages) {
+    if (!canSubmit) return;
+    if (!imageUploaded?.current?.uploadedImages) {
       alert("Please Upload Image");
       return;
     }
@@ -185,9 +225,9 @@ const [description, setDescription] = useState("")
   //On SUbmit
   const onSubmit = async (data) => {
     if (!canSubmit) return;
-    if(!imageUploaded?.current?.uploadedImages) {
+    if (!imageUploaded?.current?.uploadedImages) {
       alert("Please Upload Image");
-      return
+      return;
     }
     const cityCode = selectedCity.code;
     const city = selectedCity.city.name;
@@ -201,14 +241,31 @@ const [description, setDescription] = useState("")
     //const prioritylevel=priorityLevel.code;
     const mobileNumber = data?.mobileNumber;
     const name = data?.name;
-    const emailId=data?.emailId;
+    const emailId = data?.emailId;
     const latitude = geoLocation?.location?.latitude.toString();
     const longitude = geoLocation?.location?.longitude.toString();
-    const uploadedImages = imageUploaded?.current?.uploadedImages.map((val)=> ({
-        documentType: "PHOTO",
-        filestoreId: val
+    const uploadedImages = imageUploaded?.current?.uploadedImages.map((val) => ({
+      documentType: "PHOTO",
+      filestoreId: val,
     }));
-    const formData = { ...data, cityCode, city, district, region, localityCode, localityName, landmark, complaintType, priorityLevel, mobileNumber, name,emailId, latitude, longitude, uploadedImages };
+    const formData = {
+      ...data,
+      cityCode,
+      city,
+      district,
+      region,
+      localityCode,
+      localityName,
+      landmark,
+      complaintType,
+      priorityLevel,
+      mobileNumber,
+      name,
+      emailId,
+      latitude,
+      longitude,
+      uploadedImages,
+    };
     await dispatch(createComplaint(formData));
     await client.refetchQueries(["fetchInboxData"]);
     localStorage.removeItem("swachProperty");
@@ -224,10 +281,8 @@ const [description, setDescription] = useState("")
     }
   };
   const handleMobileNumber = (event) => {
- 
     const { value } = event.target;
     setMobileNumber(value);
-  
   };
   const handleName = (event) => {
     const { value } = event.target;
@@ -241,7 +296,25 @@ const [description, setDescription] = useState("")
     const { value } = event.target;
     setDescription(value);
   };
-  
+
+  // console.log(
+  //   "selectedCity",
+  //   selectedCity,
+  //   "selectedLocality",
+  //   selectedLocality,
+  //   "localities",
+  //   localities,
+  //   "pincode",
+  //   pincode,
+  //   "mobileNumber",
+  //   mobileNumber,
+  //   "fullName",
+  //   fullName,
+  //   "description",
+  //   description,
+  //   "geoLocation",
+  //   geoLocation
+  // );
   const isPincodeValid = () => !pincodeNotValid;
 
   const config = [
@@ -252,14 +325,14 @@ const [description, setDescription] = useState("")
           label: t("ES_CREATECOMPLAINT_MOBILE_NUMBER"),
           isMandatory: true,
           type: "text",
-          value:mobileNumber,
+          value: mobileNumber,
           onChange: handleMobileNumber,
           populators: {
             name: "mobileNumber",
             onChange: handleMobileNumber,
             validation: {
               required: true,
-              pattern: /^[6-9]\d{9}$/,  
+              pattern: /^[6-9]\d{9}$/,
             },
             componentInFront: <div className="employee-card-input employee-card-input--front">+91</div>,
             error: t("CORE_COMMON_MOBILE_ERROR"),
@@ -269,7 +342,7 @@ const [description, setDescription] = useState("")
           label: t("ES_CREATECOMPLAINT_COMPLAINT_NAME"),
           isMandatory: true,
           type: "text",
-          value:fullName,
+          value: fullName,
           populators: {
             name: "name",
             onChange: handleName,
@@ -314,20 +387,20 @@ const [description, setDescription] = useState("")
           populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
         },
         // {
-          
+
         //  label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
         //     isMandatory: false,
         //     type: "dropdown",
         //     populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
-          
+
         // },
         {
           //label: t("WS_COMMON_PROPERTY_DETAILS"),
-          "isEditConnection": true,
-          "isCreateConnection": true,
-          "isModifyConnection": true,
-          "isEditByConfigConnection": true,
-          "isProperty":subType?.key?.includes("Property")?true:false,
+          isEditConnection: true,
+          isCreateConnection: true,
+          isModifyConnection: true,
+          isEditByConfigConnection: true,
+          isProperty: subType?.key?.includes("Property") ? true : false,
           // component: "",
           // key: "cpt",
           // type: "component",
@@ -340,8 +413,7 @@ const [description, setDescription] = useState("")
           //         "hideInCitizen": true
           //     }
           // ]
-        }
-     
+        },
       ],
     },
     {
@@ -361,18 +433,7 @@ const [description, setDescription] = useState("")
           label: t("CS_COMPLAINT_DETAILS_CITY"),
           isMandatory: true,
           type: "dropdown",
-          populators: (
-            <Dropdown
-              isMandatory
-              selected={selectedCity}
-              freeze={true}
-              option={getCities()}
-              id="city"
-              select={selectCity}
-              optionKey="i18nKey"
-              t={t}
-            />
-          ),
+          populators: <Dropdown isMandatory selected={selectedCity} option={getCities()} id="city" select={selectCity} optionKey="i18nKey" t={t} />,
         },
         {
           label: t("CS_CREATECOMPLAINT_MOHALLA"),
@@ -392,57 +453,57 @@ const [description, setDescription] = useState("")
         },
         {
           label: t("CS_COMPLAINT_DETAILS_GEO_LOCATION"),
-              type: "component",
-              key: "geoLocator",
-              withoutLabel: true,
-              component: (props) => (
-                <div>
-                <div>
-                </div>
-                <SelectGeolocation
-                  t={t}
-                  onSelect={() => {
-                    if (tempLocation?.current?.location?.longitude !== 76.765040 && tempLocation?.current?.location?.latitude !== 30.730048) {
-                      setGeoLocation(tempLocation.current);                      
-                    }else{
-                      alert("Please select a location, before next");
-                    }
-                  }}
-                  value={geoLocation}
-                  onChange={(val, location, place) => {
-                    // setTempLocation({val, location, place});
-                    tempLocation.current = {val, location, place};
-                  }}
-                />
-                {geoLocation.place.length>0?
-                <h3>{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION")+": "+ geoLocation?.place+","+geoLocation?.val}</h3>  : <h1>{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</h1>
-                }
-                </div>
-              ),
+          type: "component",
+          key: "geoLocator",
+          withoutLabel: true,
+          component: (props) => (
+            <div>
+              <div></div>
+              <SelectGeolocation
+                t={t}
+                onSelect={() => {
+                  // if (tempLocation?.current?.location?.longitude !== 76.765040 && tempLocation?.current?.location?.latitude !== 30.730048) {
+                  setGeoLocation(tempLocation.current);
+                  // } else {
+                  //  alert("Please select a location, before next");
+                  // }
+                }}
+                value={geoLocation}
+                onChange={(val, location, place) => {
+                  // setTempLocation({val, location, place});
+                  tempLocation.current = { val, location, place };
+                }}
+              />
+              {geoLocation?.place?.length > 0 ? (
+                <h3>{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION") + ": " + geoLocation?.place + "," + geoLocation?.val}</h3>
+              ) : (
+                <h1>{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</h1>
+              )}
+            </div>
+          ),
         },
-        
       ],
     },
     {
       head: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES"),
-      body:[
+      body: [
         {
           label: t("CS_COMPLAINT_DETAILS_UPLOAD_IMAGES_TEXT"),
-              type: "component",
-              key: "imageSelector",
-              withoutLabel: true,
-              component: (props) => (
-                <SelectImages
-                value={imageUploaded.current}
-                onSelect={(val) => {
-                  // setImageUploaded(val);
-                  imageUploaded.current = {...val};
-                }}
-                tenantId = {tenantId}
-                />
-              ),
+          type: "component",
+          key: "imageSelector",
+          withoutLabel: true,
+          component: (props) => (
+            <SelectImages
+              value={imageUploaded.current}
+              onSelect={(val) => {
+                // setImageUploaded(val);
+                imageUploaded.current = { ...val };
+              }}
+              tenantId={selectCity ? selectedCity.code : "pb"}
+            />
+          ),
         },
-      ]
+      ],
     },
     {
       head: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
@@ -451,7 +512,7 @@ const [description, setDescription] = useState("")
           label: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
           type: "textarea",
           onChange: handleDescription,
-          value:description,
+          value: description,
           populators: {
             name: "description",
             onChange: handleDescription,
@@ -460,32 +521,29 @@ const [description, setDescription] = useState("")
       ],
     },
   ];
-    useEffect(()=>{
-      if(propetyData !== "undefined"   && propetyData !== null)
-      {
-       let data =JSON.parse(propetyData)
-       console.log("stp 1",propetyData)
-       setPropertyData(data)
-        setPropertyId(data?.propertyId)
-      }
-    },[])
-  useEffect(()=>{
-    console.log("step 2",propetyData,property,typeof(propetyData))
-    if(property !== "undefined" && property !== null )
-    {
-      let data =property
-     
-      setPincode(data?.address?.pincode || "")
-      
-      let b= localities.filter((item)=>{
-        return item.code === data?.address?.locality?.code
-      })
-      setSelectedLocality(b?.[0])
-      setDescription(data?.propertyId)
-      console.log("swachProperty",localities,data?.propertyId,data)
+  useEffect(() => {
+    if (propetyData !== "undefined" && propetyData !== null) {
+      let data = JSON.parse(propetyData);
+      // console.log("stp 1", propetyData);
+      setPropertyData(data);
+      setPropertyId(data?.propertyId);
     }
-   
-  },[propertyId])
+  }, []);
+  useEffect(() => {
+    // console.log("step 2", propetyData, property, typeof propetyData);
+    if (property !== "undefined" && property !== null) {
+      let data = property;
+
+      setPincode(data?.address?.pincode || "");
+
+      let b = localities.filter((item) => {
+        return item.code === data?.address?.locality?.code;
+      });
+      setSelectedLocality(b?.[0]);
+      setDescription(data?.propertyId);
+      // console.log("swachProperty", localities, data?.propertyId, data);
+    }
+  }, [propertyId]);
   return (
     <FormComposer
       heading={t("ES_CREATECOMPLAINT_NEW_COMPLAINT")}

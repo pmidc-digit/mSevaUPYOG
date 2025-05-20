@@ -30,16 +30,16 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
   //   getWorkFlow(workFlowDetails.data);
   // }, []);
   useEffect(() => {
-      if (workFlowDetails) {
-        console.log("workFlowDetails swach citizen", workFlowDetails,complaintDetails);
-        const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
-        if (complaintTimelineData) {
-          // const actionByCitizenOnComplaintCreation = complaintTimelineData;
-  
-          const { thumbnailsToShow } = complaintTimelineData?.[0];
-          thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
-        }
+    if (workFlowDetails) {
+      console.log("workFlowDetails swach citizen", workFlowDetails, complaintDetails);
+      const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
+      if (complaintTimelineData) {
+        // const actionByCitizenOnComplaintCreation = complaintTimelineData;
+
+        const { thumbnailsToShow } = complaintTimelineData?.[0];
+        thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
       }
+    }
   }, [workFlowDetails]);
 
   useEffect(() => {
@@ -84,9 +84,9 @@ const ComplaintDetailsPage = (props) => {
   const [loader, setLoader] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
 
-  useEffect(()=>{
-    console.log("imageShownBelowComplaintDetails",imageShownBelowComplaintDetails);
-  },[imageShownBelowComplaintDetails])
+  useEffect(() => {
+    console.log("imageShownBelowComplaintDetails", imageShownBelowComplaintDetails);
+  }, [imageShownBelowComplaintDetails]);
 
   useEffect(() => {
     (async () => {
@@ -200,7 +200,12 @@ const ComplaintDetailsPage = (props) => {
               <div id="timeline">
                 {complaintDetails?.service && (
                   // <WorkflowComponent getWorkFlow={onWorkFlowChange} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
-                  <WorkflowComponent getWorkFlow={setImageToShowBelowComplaintDetails} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
+                  <WorkflowComponent
+                    getWorkFlow={setImageToShowBelowComplaintDetails}
+                    complaintDetails={complaintDetails}
+                    id={id}
+                    zoomImage={zoomImage}
+                  />
                 )}
               </div>
             </Card>

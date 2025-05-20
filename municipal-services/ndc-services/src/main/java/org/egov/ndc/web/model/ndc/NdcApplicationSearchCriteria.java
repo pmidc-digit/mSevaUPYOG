@@ -15,5 +15,6 @@ public class NdcApplicationSearchCriteria {
     private String status;
     private String mobileNumber;
     private String name;
+    private Boolean active;
 
 }

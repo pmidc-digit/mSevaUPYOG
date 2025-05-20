@@ -59,6 +59,9 @@ public class NDCService {
 		applicant.setLastmodifiedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
 		applicant.setCreatedtime(System.currentTimeMillis());
 		applicant.setLastmodifiedtime(System.currentTimeMillis());
+		if(applicant.getActive()==null) {
+			applicant.setActive(true);
+		}
 
 		// Save NDC details
 		List<NdcDetailsRequest> ndcDetails = ndcApplicationRequest.getNdcDetails();
@@ -92,17 +95,9 @@ public class NDCService {
 		if(ObjectUtils.isEmpty(ndcApplicationRequest.getApplicant().getUuid())){
 			throw new CustomException("APPLICANT_UUID_NULL", "Applicant uuid is null");
 		}
-//		List<NdcApplicationRequest> existingApplications = ndcRepository.getApplicationById(ndcApplicationRequest.getApplicant().getUuid());
-		if(ndcRepository.checkApplicantExists(ndcApplicationRequest.getApplicant().getUuid()) == false) {
+		if(!ndcRepository.checkApplicantExists(ndcApplicationRequest.getApplicant().getUuid())) {
 			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
 		}
-//		if (existingApplications == null || existingApplications.isEmpty()) {
-//			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
-//		}
-
-//		NdcApplicationRequest existingApplication = existingApplications.get(0);
-//		if(!existingApplication.getApplicant().getUuid().equals(ndcApplicationRequest.getApplicant().getUuid()))
-//			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
 
 		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
 		applicant.setLastmodifiedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
@@ -232,7 +227,7 @@ public class NDCService {
 		}
 
 		if (StringUtils.isNotBlank(criteria.getMobileNumber()) ||
-				StringUtils.isNotBlank(criteria.getName()) ||
+				StringUtils.isNotBlank(criteria.getName()) || criteria.getActive()!=null||
 				criteria.getStatus() != null) {
 			return ndcRepository.fetchNdcApplications(criteria);
 		}

@@ -48,6 +48,7 @@ public class NdcRowMapper implements ResultSetExtractor<List<NdcApplicationReque
 						.email(rs.getString("email"))
 						.address(rs.getString("address"))
 						.applicationStatus(rs.getString("applicationstatus"))
+						.active(rs.getBoolean("active"))
 						.createdby(rs.getString("a_createdby"))
 						.lastmodifiedby(rs.getString("a_lastmodifiedby"))
 						.createdtime(rs.getLong("a_createdtime"))

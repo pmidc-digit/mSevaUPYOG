@@ -92,6 +92,20 @@ public class NDCController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PutMapping("/_delete")
+	public ResponseEntity<NdcApplicationResponse> deleteNdcApplication(@RequestBody NdcDeleteRequest ndcDeleteRequest) {
+		NdcApplicationRequest request = ndcService.deleteNdcApplication(ndcDeleteRequest);
+		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
+
+		NdcApplicationResponse response = NdcApplicationResponse.builder()
+				.applicant(request.getApplicant())
+				.ndcDetails(request.getNdcDetails())
+				.documents(request.getDocuments())
+				.responseInfo(responseInfo).build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 	@PostMapping("/_search")
 	public ResponseEntity<NdcApplicationSearchResponse> searchNdcApplications(
 			@RequestBody RequestInfo requestInfo,

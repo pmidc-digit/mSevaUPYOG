@@ -137,6 +137,26 @@ public class NDCService {
 		return ndcApplicationRequest;
 	}
 
+	public NdcApplicationRequest deleteNdcApplication(NdcDeleteRequest ndcDeleteRequest) {
+
+		if(ObjectUtils.isEmpty(ndcDeleteRequest.getUuid())){
+			throw new CustomException("APPLICANT_UUID_NULL", "Applicant uuid is null");
+		}
+		if(!ndcRepository.checkApplicantExists(ndcDeleteRequest.getUuid())) {
+			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
+		}
+		NdcApplicationRequest ndcApplicationRequest = searchNdcApplications(NdcApplicationSearchCriteria.builder().uuid(ndcDeleteRequest.getUuid()).build()).get(0);
+		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
+		applicant.setLastmodifiedby(ndcDeleteRequest.getRequestInfo().getUserInfo().getUuid());
+		applicant.setLastmodifiedtime(System.currentTimeMillis());
+		applicant.setActive(ndcDeleteRequest.getActive());
+		ndcApplicationRequest.setApplicant(applicant);
+		// Push to delete topic
+		producer.push(config.getDeleteTopic(), applicant);
+
+		return ndcApplicationRequest;
+	}
+
 
 	private Set<String> getExistingUuids(String tableName, List<String> uuids) {
 		if (uuids == null || uuids.isEmpty()) {

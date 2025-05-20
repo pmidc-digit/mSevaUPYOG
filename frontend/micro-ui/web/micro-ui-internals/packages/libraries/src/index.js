@@ -53,9 +53,10 @@ import AccessControlService from "./services/elements/Access";
 import BillServices from "./services/elements/Bill";
 import { CFService } from "./services/elements/CF";
 
-import {CustomService} from "./services/elements/CustomService";    
-import { PTRService } from "./services/elements/PTR";     
-
+import { CustomService } from "./services/elements/CustomService";
+import { PTRService } from "./services/elements/PTR";
+import { SVService } from "./services/elements/SV";
+import { ADSServices } from "./services/elements/ADS";
 
 const setupLibraries = (Library, props) => {
   window.Digit = window.Digit || {};
@@ -68,7 +69,7 @@ const initLibraries = () => {
   setupLibraries("PersistantStorage", PersistantStorage);
   setupLibraries("UserService", UserService);
   setupLibraries("ULBService", ULBService);
-  setupLibraries("PTRService", PTRService); 
+  setupLibraries("PTRService", PTRService);
   setupLibraries("Config", { mergeConfig });
   setupLibraries("Services", { useStore });
   setupLibraries("Enums", Enums);
@@ -83,12 +84,12 @@ const initLibraries = () => {
   setupLibraries("CFService", CFService);
   setupLibraries("CustomService", CustomService);
   setupLibraries("TLService", TLService);
-  setupLibraries("DigiLockerService",DigiLockerService)
+  setupLibraries("DigiLockerService", DigiLockerService);
   setupLibraries("Surveys", Surveys);
   setupLibraries("HRMSService", HrmsService);
   setupLibraries("ReceiptsService", ReceiptsService);
   setupLibraries("MCollectService", MCollectService);
-  setupLibraries("ReportsService", ReportsService)
+  setupLibraries("ReportsService", ReportsService);
   setupLibraries("PaymentService", PaymentService);
   setupLibraries("EDCRService", EDCRService);
   setupLibraries("OBPSService", OBPSService);
@@ -113,12 +114,13 @@ const initLibraries = () => {
   setupLibraries("Customizations", {});
   setupLibraries("Utils", Utils);
   setupLibraries("Download", Download);
-
+  setupLibraries("SVService", SVService);
+  setupLibraries("ADSServices", ADSServices);
   setupLibraries("NOCService", NOCService);
   setupLibraries("NOCSearch", NOCSearch);
   setupLibraries("AccessControlService", AccessControlService);
   setupLibraries("BillServices", BillServices);
-  setupLibraries("AuditService",AuditService);
+  setupLibraries("AuditService", AuditService);
   return new Promise((resolve) => {
     initI18n(resolve);
   });

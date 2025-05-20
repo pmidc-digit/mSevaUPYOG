@@ -51,6 +51,24 @@ const GetCitiesWithi18nKeys = (MdmsRes, moduleCode) => {
   return cities;
 };
 
+const getSVDocuments = (MdmsRes) => {
+  MdmsRes["StreetVending"].Documents.filter((Documents) => Documents.active).map((dropdownData) => {
+    return {
+      ...Documents,
+      i18nKey: `${dropdownData.code}`,
+    };
+  });
+};
+
+const getADSDocuments = (MdmsRes) => {
+  MdmsRes["Advertisement"].Documents.filter((Documents) => Documents.active).map((dropdownData) => {
+    return {
+      ...Documents,
+      i18nKey: `${dropdownData.code}`,
+    };
+  });
+};
+
 const initRequestBody = (tenantId) => ({
   MdmsCriteria: {
     tenantId,
@@ -149,9 +167,9 @@ const getBillsGenieKey = (tenantId, moduleCode) => ({
         masterDetails: [{ name: "tenants" }, { name: "citymodule" }],
       },
       {
-      moduleName: "common-masters",
-      masterDetails: [{name: "uiCommonPay"}]
-      }
+        moduleName: "common-masters",
+        masterDetails: [{ name: "uiCommonPay" }],
+      },
     ],
   },
 });
@@ -209,6 +227,38 @@ const getSanitationTypeCriteria = (tenantId, moduleCode) => ({
 });
 
 const getPetDocumentsRequiredScreenCategory = (tenantId, moduleCode) => ({
+  details: {
+    tenantId: tenantId,
+    moduleDetails: [
+      {
+        moduleName: moduleCode,
+        masterDetails: [
+          {
+            name: "Documents",
+          },
+        ],
+      },
+    ],
+  },
+});
+
+const getSVDocumentsCategory = (tenantId, moduleCode) => ({
+  details: {
+    tenantId: tenantId,
+    moduleDetails: [
+      {
+        moduleName: moduleCode,
+        masterDetails: [
+          {
+            name: "Documents",
+          },
+        ],
+      },
+    ],
+  },
+});
+
+const getADSDocumentsCategory = (tenantId, moduleCode) => ({
   details: {
     tenantId: tenantId,
     moduleDetails: [
@@ -435,7 +485,7 @@ const PTRBreedType = (MdmsRes) => {
   MdmsRes["PetService"].BreedType.filter((BreedType) => BreedType.active).map((breedone) => {
     return {
       ...breedone,
-      i18nKey:  `PTR_PET_TYPE_${breedone.code}`,
+      i18nKey: `PTR_PET_TYPE_${breedone.code}`,
     };
   });
 };
@@ -881,32 +931,31 @@ const getGenderTypeList = (tenantId, moduleCode, type) => ({
 });
 
 const getMeterStatusTypeList = (tenantId) => ({
-    moduleDetails: [
-      {
-        moduleName: "ws-services-calculation",
-        masterDetails: [
-          {
-            name: "MeterStatus",
-            filter: `$.*.name`
-          },
-        ],
-      },
-    ],
-
+  moduleDetails: [
+    {
+      moduleName: "ws-services-calculation",
+      masterDetails: [
+        {
+          name: "MeterStatus",
+          filter: `$.*.name`,
+        },
+      ],
+    },
+  ],
 });
 
 const getBillingPeriodValidation = (tenantId) => ({
-    moduleDetails: [
-      {
-        moduleName: "ws-services-masters",
-        masterDetails: [
-          {
-            name: "billingPeriod",
-            filter: "*"
-          },
-        ],
-      },
-    ],
+  moduleDetails: [
+    {
+      moduleName: "ws-services-masters",
+      masterDetails: [
+        {
+          name: "billingPeriod",
+          filter: "*",
+        },
+      ],
+    },
+  ],
 });
 
 const getDssDashboardCriteria = (tenantId, moduleCode) => ({
@@ -1158,53 +1207,53 @@ const getWSTaxHeadMasterCritera = (tenantId, moduleCode, type) => ({
 });
 
 const getHowItWorksJSON = (tenantId) => ({
-      moduleDetails: [
-      {
-        moduleName: "common-masters",
-        masterDetails: [
-          {
-            name: "howItWorks",
-          },
-        ],
-      },
-    ],
+  moduleDetails: [
+    {
+      moduleName: "common-masters",
+      masterDetails: [
+        {
+          name: "howItWorks",
+        },
+      ],
+    },
+  ],
 });
 
 const getFAQsJSON = (tenantId) => ({
   moduleDetails: [
-  {
-    moduleName: "common-masters",
-    masterDetails: [
-      {
-        name: "faqs",
-      },
-    ],
-  },
-],
+    {
+      moduleName: "common-masters",
+      masterDetails: [
+        {
+          name: "faqs",
+        },
+      ],
+    },
+  ],
 });
 const getDSSFAQsJSON = (tenantId) => ({
   moduleDetails: [
-  {
-    moduleName: "dss-dashboard",
-    masterDetails: [
-      {
-        name: "FAQs",
-      },
-    ],
-  },
-],
+    {
+      moduleName: "dss-dashboard",
+      masterDetails: [
+        {
+          name: "FAQs",
+        },
+      ],
+    },
+  ],
 });
 const getDSSAboutJSON = (tenantId) => ({
   moduleDetails: [
-  {
-    moduleName: "dss-dashboard",
-    masterDetails: [
-      {
-        name: "About",
-      },
-    ],
-  },
-],
+    {
+      moduleName: "dss-dashboard",
+      masterDetails: [
+        {
+          name: "About",
+        },
+      ],
+    },
+  ],
 });
 
 const getStaticData = () => ({
@@ -1248,7 +1297,7 @@ const GetPropertyType = (MdmsRes) =>
     i18nKey: `PROPERTYTYPE_MASTERS_${item.code}`,
     code: item.code,
   }));
- 
+
 const GetPropertySubtype = (MdmsRes) =>
   MdmsRes["FSM"].PropertyType.filter((property) => property.active && property.propertyType).map((item) => ({
     ...item,
@@ -1267,12 +1316,11 @@ const GetVehicleType = (MdmsRes) =>
     });
 
 const GetVehicleMakeModel = (MdmsRes) =>
-  MdmsRes["Vehicle"].VehicleMakeModel.filter((vehicle) => vehicle.active)
-    .map((vehicleDetails) => {
-      return {
-        ...vehicleDetails,
-        i18nKey: `COMMON_MASTER_VEHICLE_${vehicleDetails.code}`,
-      };
+  MdmsRes["Vehicle"].VehicleMakeModel.filter((vehicle) => vehicle.active).map((vehicleDetails) => {
+    return {
+      ...vehicleDetails,
+      i18nKey: `COMMON_MASTER_VEHICLE_${vehicleDetails.code}`,
+    };
   });
 
 const GetSlumLocalityMapping = (MdmsRes, tenantId) =>
@@ -1651,11 +1699,17 @@ const transformResponse = (type, MdmsRes, moduleCode, tenantId) => {
     case "Documents":
       return getPetDocumentsRequiredScreen(MdmsRes);
     case "PetType":
-      return getPetType(MdmsRes); 
+      return getPetType(MdmsRes);
     case "BreedType":
-      return getBreedType(MdmsRes); 
+      return getBreedType(MdmsRes);
     case "PTRGendertype":
       return PTRGenderType(MdmsRes);
+
+    case "Documents":
+      return getSVDocuments(MdmsRes);
+
+    case "Documents":
+      return getADSDocuments(MdmsRes);
 
     case "PTRPetType":
       return PTRPetType(MdmsRes);
@@ -1664,7 +1718,7 @@ const transformResponse = (type, MdmsRes, moduleCode, tenantId) => {
       return PTRBreedType(MdmsRes);
 
     case "Districts":
-    return getdistrict(MdmsRes);
+      return getdistrict(MdmsRes);
 
     case "Ulb":
       return getulb(MdmsRes);
@@ -1678,12 +1732,6 @@ const transformResponse = (type, MdmsRes, moduleCode, tenantId) => {
 
     case "BPAUlbType":
       return BPAUlbType(MdmsRes);
-
-   
-
-   
-
-
 
     default:
       return MdmsRes;
@@ -1829,6 +1877,14 @@ export const MdmsService = {
     return MdmsService.getDataByCriteria(tenantId, getPetDocumentsRequiredScreenCategory(tenantId, moduleCode), moduleCode);
   },
 
+  getSVDocuments: (tenantId, moduleCode) => {
+    return MdmsService.getDataByCriteria(tenantId, getSVDocumentsCategory(tenantId, moduleCode), moduleCode);
+  },
+
+  getADSDocuments: (tenantId, moduleCode) => {
+    return MdmsService.getDataByCriteria(tenantId, getADSDocumentsCategory(tenantId, moduleCode), moduleCode);
+  },
+
   getdistrict: (tenantId, moduleCode, type) => {
     return MdmsService.getDataByCriteria(tenantId, getdistricttype(tenantId, moduleCode, type), moduleCode);
   },
@@ -1838,7 +1894,6 @@ export const MdmsService = {
   getulbls: (tenantId, moduleCode, type) => {
     return MdmsService.getDataByCriteria(tenantId, getulblist(tenantId, moduleCode, type), moduleCode);
   },
-
 
   getPetType: (tenantId, moduleCode, type) => {
     return MdmsService.getDataByCriteria(tenantId, getPetTypeList(tenantId, moduleCode, type), moduleCode);
@@ -2055,11 +2110,11 @@ export const MdmsService = {
   getDSSFAQsJSONData: (tenantId) => {
     return MdmsService.call(tenantId, getDSSFAQsJSON(tenantId));
   },
-  
+
   getDSSAboutJSONData: (tenantId) => {
     return MdmsService.call(tenantId, getDSSAboutJSON(tenantId));
   },
   getStaticDataJSON: (tenantId) => {
     return MdmsService.call(tenantId, getStaticData());
-  }
+  },
 };

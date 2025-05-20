@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CardLabel, CardLabelDesc, CardSubHeader, Modal,CardText,DeleteIcon } from "@mseva/digit-ui-react-components";
+import { CardLabel, CardLabelDesc, CardSubHeader, Modal, CardText, DeleteIcon } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import ApplicationTable from "./ApplicationTable";
 
@@ -40,13 +40,13 @@ const ADSCartAndCancellationPolicyDetails = () => {
   const handleDelete = (index) => {
     // Make a shallow copy of the current params state to ensure immutability
     const updatedParams = { ...params };
-  
+
     // Check if adslist exists and if cartDetails is an array
     if (updatedParams?.adslist?.cartDetails) {
       // Create a new array with the item at the given index removed
       updatedParams.adslist.cartDetails = updatedParams.adslist.cartDetails.filter((_, idx) => idx !== index);
     }
-  
+
     // Update the state with the modified params
     setParams(updatedParams);
   };
@@ -65,9 +65,7 @@ const ADSCartAndCancellationPolicyDetails = () => {
     {
       Header: t("ADS_NIGHT_LIGHT"),
       accessor: "nightLight",
-      Cell: ({ value }) => (
-        <div>{value ? t("Yes") : t("No")}</div>
-      ),
+      Cell: ({ value }) => <div>{value ? t("Yes") : t("No")}</div>,
     },
     { Header: t("BOOKING_DATE"), accessor: "bookingDate" },
     {
@@ -82,21 +80,21 @@ const ADSCartAndCancellationPolicyDetails = () => {
     // { Header: t("TOTAL_PRICE"), accessor: "price" },
   ];
   let cartDetails = params?.adslist?.cartDetails.map((details) => {
-    return { 
-      addType:details.addTypeCode,
-      faceArea:details.faceAreaCode,
-      location:details.locationCode,
-      nightLight:details.nightLight,
-      bookingDate:details.bookingDate,
+    return {
+      addType: details.addTypeCode,
+      faceArea: details.faceAreaCode,
+      location: details.locationCode,
+      nightLight: details.nightLight,
+      bookingDate: details.bookingDate,
       bookingFromTime: "06:00",
       bookingToTime: "05:59",
-      status: "BOOKING_CREATED"
-    }; });
+      status: "BOOKING_CREATED",
+    };
+  });
 
   let formdata = {
-    tenantId:tenantId,
-    cartDetails:cartDetails,
-    
+    tenantId: tenantId,
+    cartDetails: cartDetails,
   };
   let mutation = Digit.Hooks.ads.useADSDemandEstimation();
 
@@ -111,7 +109,6 @@ const ADSCartAndCancellationPolicyDetails = () => {
   const handlePriceBreakupClick = () => {
     setShowPriceBreakup(!showPriceBreakup);
   };
-
 
   const handleCancellationPolicyClick = () => {
     setShowCancellationPolicy((prev) => !prev);
@@ -154,34 +151,41 @@ const ADSCartAndCancellationPolicyDetails = () => {
               marginBottom: "10px", // Space below "View Cart"
             }}
           >
-            <div class="container" style={{
-              width:"1px",
-            }}>            <div style={{
-              width:"20px",
-                position:"relative"
-            }}>
-              <div style={{
-                  position:"absolute",
-                  top:"-4px",
-                  right:"-93px",
-                  // backgroundColor: "#FFFFFF",
-                  color: "#008000",
-                  padding:"5px",
-                  borderRadius: "30px",
-                  width:"30px",
-                  height:"30px",
-                  textAlign:"center"
-              }}>
-              <div> {params?.adslist?.cartDetails.length}</div>
-
+            <div
+              class="container"
+              style={{
+                width: "1px",
+              }}
+            >
+              {" "}
+              <div
+                style={{
+                  width: "20px",
+                  position: "relative",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "-4px",
+                    right: "-93px",
+                    // backgroundColor: "#FFFFFF",
+                    color: "#008000",
+                    padding: "5px",
+                    borderRadius: "30px",
+                    width: "30px",
+                    height: "30px",
+                    textAlign: "center",
+                  }}
+                >
+                  <div> {params?.adslist?.cartDetails.length}</div>
+                </div>
               </div>
             </div>
-          </div> 
             View Cart
-            
           </div>
-           
-                  <div
+
+          <div
             onClick={handleCancellationPolicyClick}
             style={{
               cursor: "pointer",
@@ -194,7 +198,7 @@ const ADSCartAndCancellationPolicyDetails = () => {
             Terms and Conditions
           </div>
         </div>
-        <div  onClick={handlePriceBreakupClick} style={{ cursor: "pointer", fontSize: "20px", color: "#a82227" }}>
+        <div onClick={handlePriceBreakupClick} style={{ cursor: "pointer", fontSize: "20px", color: "#a82227" }}>
           Total Booking Amount: <strong>{totalBookingAmount} INR</strong>
         </div>
       </div>
@@ -266,45 +270,48 @@ const ADSCartAndCancellationPolicyDetails = () => {
       )}
       {showPriceBreakup && (
         <Modal
-          headerBarMain={<CardSubHeader style={{ color: '#a82227', margin: '25px' }}>Price Breakup</CardSubHeader>}
+          headerBarMain={<CardSubHeader style={{ color: "#a82227", margin: "25px" }}>Price Breakup</CardSubHeader>}
           headerBarEnd={<CloseBtn onClick={handlePriceBreakupClick} />}
-          popupStyles={{ backgroundColor: "#fff", position: 'relative', maxHeight: '90vh', width: '60%', overflowY: 'auto' }}
+          popupStyles={{ backgroundColor: "#fff", position: "relative", maxHeight: "90vh", width: "60%", overflowY: "auto" }}
           children={
             <div>
-              <CardLabelDesc style={{ marginBottom: '15px' }}>Estimate Price Details</CardLabelDesc>
+              <CardLabelDesc style={{ marginBottom: "15px" }}>Estimate Price Details</CardLabelDesc>
               <ul>
-                {mutation.data?.demands[0]?.demandDetails && mutation.data?.demands[0]?.demandDetails.map((demands, index) => (
-                  <li key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <CardText>{t(`${demands.taxHeadMasterCode}`)}</CardText>
-                    <CardText>Rs {demands.taxAmount}</CardText>
-                  </li>
-                ))}
+                {mutation.data?.demands[0]?.demandDetails &&
+                  mutation.data?.demands[0]?.demandDetails.map((demands, index) => (
+                    <li key={index} style={{ display: "flex", justifyContent: "space-between" }}>
+                      <CardText>{t(`${demands.taxHeadMasterCode}`)}</CardText>
+                      <CardText>Rs {demands.taxAmount}</CardText>
+                    </li>
+                  ))}
               </ul>
               <hr />
-              <div style={{ fontWeight: 'bold', marginTop: '10px', display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ fontWeight: "bold", marginTop: "10px", display: "flex", justifyContent: "space-between" }}>
                 <CardLabelDesc>Total</CardLabelDesc>
-                <CardLabelDesc>Rs {mutation.data?.demands[0]?.demandDetails && calculateTotalAmount(mutation.data?.demands[0]?.demandDetails)}</CardLabelDesc>
+                <CardLabelDesc>
+                  Rs {mutation.data?.demands[0]?.demandDetails && calculateTotalAmount(mutation.data?.demands[0]?.demandDetails)}
+                </CardLabelDesc>
               </div>
             </div>
           }
-          actionCancelLabel={null}  // Hide Cancel button
-          actionCancelOnSubmit={null}  // No action for Cancel
-          actionSaveLabel={null}  // Hide Save button
-          actionSaveOnSubmit={null}  // No action for Save
-          actionSingleLabel={null}  // Hide Submit button
-          actionSingleSubmit={null}  // No action for Submit
+          actionCancelLabel={null} // Hide Cancel button
+          actionCancelOnSubmit={null} // No action for Cancel
+          actionSaveLabel={null} // Hide Save button
+          actionSaveOnSubmit={null} // No action for Save
+          actionSingleLabel={null} // Hide Submit button
+          actionSingleSubmit={null} // No action for Submit
           error={null}
           setError={() => {}}
           formId="modalForm"
           isDisabled={false}
-          hideSubmit={true}  // Ensure submit is hidden
+          hideSubmit={true} // Ensure submit is hidden
           style={{}}
           // popupModuleMianStyles={{ padding: "10px" }}
-          headerBarMainStyle={{position: "sticky",top: 0, backgroundColor: "#f5f5f5" }}
+          headerBarMainStyle={{ position: "sticky", top: 0, backgroundColor: "#f5f5f5" }}
           isOBPSFlow={false}
-          popupModuleActionBarStyles={{ display: 'none' }}  // Hide Action Bar
-          isOpen={showPriceBreakup}  // Pass isOpen prop
-          onClose={handlePriceBreakupClick}  // Pass onClose prop
+          popupModuleActionBarStyles={{ display: "none" }} // Hide Action Bar
+          isOpen={showPriceBreakup} // Pass isOpen prop
+          onClose={handlePriceBreakupClick} // Pass onClose prop
         />
       )}
     </div>

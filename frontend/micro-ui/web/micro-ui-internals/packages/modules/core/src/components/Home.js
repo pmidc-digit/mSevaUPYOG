@@ -82,6 +82,10 @@ const iconSelector = (code) => {
       return <BillsIcon className="fill-path-primary-main" />;
     case "PTR":
       return <PTRIcon className="fill-path-primary-main" />;
+    case "SV":
+      return <PTRIcon className="fill-path-primary-main" />;
+    case "ADS":
+      return <PTRIcon className="fill-path-primary-main" />;
     default:
       return <PTIcon className="fill-path-primary-main" />;
   }

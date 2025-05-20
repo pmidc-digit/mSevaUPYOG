@@ -74,6 +74,15 @@ module.exports = function (app) {
     "/billing-service/bill/v2/_fetchbill",
     "/collection-services/payments/pet-services/_search",
     "/requester-services-dx",
+    "/sv-services/street-vending/_create",
+    "/sv-services/street-vending/_search",
+    "/sv-services/street-vending/_update",
+    "/sv-services/street-vending/_deletedraft",
+    "/adv-services/booking/v1/_create",
+    "/adv-services/booking/v1/_search",
+    "/adv-services/booking/v1/_update",
+    "/adv-services/booking/v1/_slot-search",
+    "/adv-services/booking/v1/_estimate",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

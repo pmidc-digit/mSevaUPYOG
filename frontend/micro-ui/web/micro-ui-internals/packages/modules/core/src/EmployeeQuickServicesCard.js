@@ -69,6 +69,12 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
       case "HRMS":
         return true;
 
+      case "SV":
+        return true;
+
+      case "ADS":
+        return true;
+
       default:
         return null;
     }
@@ -102,6 +108,11 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <TLIcon />;
       case "HRMS":
         return <WSICon />;
+      case "SV":
+        return <BillsIcon />;
+
+      case "ADS":
+        return <BillsIcon />;
       default:
         return <PTIcon />;
     }

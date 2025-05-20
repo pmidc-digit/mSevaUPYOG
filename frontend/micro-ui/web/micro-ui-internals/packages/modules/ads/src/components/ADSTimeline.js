@@ -10,7 +10,7 @@ const getAction = (flow) => {
       actions = [];
       break;
     default:
-      actions = ["ADS_APPLICANT_DETAILS","ADS_ADDRESS_DETAILS","ADS_UPLOAD_DOCUMENTS","ADS_SUMMARY"];
+      actions = ["ADS_APPLICANT_DETAILS", "ADS_ADDRESS_DETAILS", "ADS_UPLOAD_DOCUMENTS", "ADS_SUMMARY"];
   }
 };
 /*

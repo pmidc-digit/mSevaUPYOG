@@ -110,7 +110,6 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <WSICon />;
       case "SV":
         return <BillsIcon />;
-
       case "ADS":
         return <BillsIcon />;
       default:

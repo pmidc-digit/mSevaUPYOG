@@ -1,6 +1,6 @@
 {
   "name": "@pmidc/upyog-css",
-  "version": "1.0.16",
+  "version": "1.0.17",
   "license": "MIT",
   "main": "dist/index.css",
   "engines": {
@@ -58,6 +58,6 @@
   "directories": {
     "example": "example"
   },
-  "author": "aashish",
+  "author": "",
   "description": ""
 }

@@ -19,7 +19,9 @@
     "packages/modules/mCollect",
     "packages/modules/pt",
     "packages/modules/tl",
-    "packages/modules/obps"
+    "packages/modules/obps",
+    "packages/modules/sv",
+    "packages/modules/ads"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",
@@ -55,6 +57,8 @@
     "dev:ws": "cd packages/modules/ws && yarn start",
     "dev:example": "cd example && yarn start",
     "dev:ptr": "cd packages/modules/ptr && yarn start",
+    "dev:sv": "cd packages/modules/sv && yarn start",
+    "dev:ads": "cd packages/modules/ads && yarn start",
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
     "build:components": "cd packages/react-components && yarn build",
@@ -77,6 +81,8 @@
     "buildD:ws": "cd packages/modules/ws && yarn build",
     "buildd:bills": "cd packages/modules/bills && yarn build",
     "buildR:reports": "cd packages/modules/reports && yarn build",
+    "build:sv": "cd packages/modules/sv && yarn build",
+    "build:ads": "cd packages/modules/ads && yarn build",
     "deploy:jenkins": "./scripts/jenkins.sh"
   },
   "devDependencies": {

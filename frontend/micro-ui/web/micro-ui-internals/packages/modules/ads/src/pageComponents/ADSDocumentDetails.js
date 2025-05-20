@@ -1,65 +1,84 @@
 import React, { useEffect, useState } from "react";
-import { CardLabel, Dropdown, UploadFile, Toast, Loader, FormStep, LabelFieldPair,Card,CardSubHeader,CardLabelDesc} from "@mseva/digit-ui-react-components";
+import {
+  CardLabel,
+  Dropdown,
+  UploadFile,
+  Toast,
+  Loader,
+  FormStep,
+  LabelFieldPair,
+  Card,
+  CardSubHeader,
+  CardLabelDesc,
+} from "@mseva/digit-ui-react-components";
 import Timeline from "../components/ADSTimeline";
 import ADSCartAndCancellationPolicyDetails from "../components/ADSCartAndCancellationPolicyDetails";
-import {TimerValues} from "../components/TimerValues";
+import { TimerValues } from "../components/TimerValues";
 /**
  * ADSDocumentDetails component allows users to upload required documents
  * for the ADS application. It manages document state, validates uploads,
  * and integrates with a document selection dropdown.
  */
 
-const ADSDocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState,value=formData.adslist}) => {
-  const [documents, setDocuments] = useState(formData?.documents?.documents ||  value?.existingDataSet?.documents?.documents  || []);
+const ADSDocumentDetails = ({
+  t,
+  config,
+  onSelect,
+  userType,
+  formData,
+  setError: setFormError,
+  clearErrors: clearFormErrors,
+  formState,
+  value = formData.adslist,
+}) => {
+  const [documents, setDocuments] = useState(formData?.documents?.documents || value?.existingDataSet?.documents?.documents || []);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
 
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const mutation = Digit.Hooks.ads.useADSCreateAPI();
- const stateId = Digit.ULBService.getStateId();
-  
+  const stateId = Digit.ULBService.getStateId();
 
   const { isLoading, data } = Digit.Hooks.ads.useADSDocumentsMDMS(stateId, "Advertisement", "Documents");
-  
 
   const handleSubmit = () => {
     let cartDetails = value?.cartDetails.map((slot) => {
-      return { 
-        addType:slot.addTypeCode,
-        faceArea:slot.faceAreaCode,
-        location:slot.locationCode,
-        nightLight:slot.nightLight==="Yes"? true : false,
-        bookingDate:slot.bookingDate,
+      return {
+        addType: slot.addTypeCode,
+        faceArea: slot.faceAreaCode,
+        location: slot.locationCode,
+        nightLight: slot.nightLight === "Yes" ? true : false,
+        bookingDate: slot.bookingDate,
         bookingFromTime: "06:00",
         bookingToTime: "05:59",
-        status:"BOOKING_CREATED"
+        status: "BOOKING_CREATED",
       };
     });
-     // Create the formdata object
-     const formdata = {
+    // Create the formdata object
+    const formdata = {
       bookingApplication: {
         tenantId: tenantId,
-        draftId:formData?.applicant?.draftId,
+        draftId: formData?.applicant?.draftId,
         applicantDetail: {
-          applicantName:formData?.applicant?.applicantName,
+          applicantName: formData?.applicant?.applicantName,
           applicantMobileNo: formData?.applicant?.mobileNumber,
-          applicantAlternateMobileNo:formData?.applicant?.alternateNumber,
-          applicantEmailId:formData?.applicant?.emailId,
+          applicantAlternateMobileNo: formData?.applicant?.alternateNumber,
+          applicantEmailId: formData?.applicant?.emailId,
         },
-        addressdetails:{
-          pincode:formData?.address?.pincode,
-          city:formData?.address?.city?.city?.name,
-          cityCode:formData?.address?.city?.city?.code,
-          locality:formData?.address?.locality?.i18nKey,
-          localityCode:formData?.address?.locality?.code,
-          streetName:formData?.address?.streetName,
-          addressLine1:formData?.address?.addressline1,
-          addressLine2:formData?.address?.addressline2,
-          houseNo:formData?.address?.houseNo,
-          landmark:formData?.address?.landmark,
+        addressdetails: {
+          pincode: formData?.address?.pincode,
+          city: formData?.address?.city?.city?.name,
+          cityCode: formData?.address?.city?.city?.code,
+          locality: formData?.address?.locality?.i18nKey,
+          localityCode: formData?.address?.locality?.code,
+          streetName: formData?.address?.streetName,
+          addressLine1: formData?.address?.addressline1,
+          addressLine2: formData?.address?.addressline2,
+          houseNo: formData?.address?.houseNo,
+          landmark: formData?.address?.landmark,
         },
-        documents:documents,
+        documents: documents,
         cartDetails: cartDetails,
         bookingStatus: "BOOKING_CREATED",
       },
@@ -79,7 +98,7 @@ const ADSDocumentDetails = ({ t, config, onSelect, userType, formData, setError:
     let count = 0;
     data?.Advertisement?.Documents.map((doc) => {
       doc.hasDropdown = true;
-      
+
       let isRequired = false;
       documents.map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
@@ -94,15 +113,16 @@ const ADSDocumentDetails = ({ t, config, onSelect, userType, formData, setError:
     <div>
       <Timeline currentStep={3} />
       <Card>
-      <div style={{ position: "relative" }}>
-        <CardSubHeader style={{ position: "absolute",right:0}}>
-        <TimerValues 
-          timerValues={value?.existingDataSet?.timervalue?.timervalue} 
-          SlotSearchData={value?.cartDetails} 
-        />
-        </CardSubHeader>
-        <ADSCartAndCancellationPolicyDetails/>
-      </div>
+        <div style={{ position: "relative" }}>
+          <CardSubHeader style={{ position: "absolute", right: 0 }}>
+            <TimerValues
+              timerValues={value?.existingDataSet?.timervalue?.timervalue}
+              SlotSearchData={value?.cartDetails}
+              draftId={value?.existingDataSet?.draftId}
+            />
+          </CardSubHeader>
+          <ADSCartAndCancellationPolicyDetails />
+        </div>
       </Card>
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
@@ -132,7 +152,6 @@ const ADSDocumentDetails = ({ t, config, onSelect, userType, formData, setError:
   );
 };
 
-
 function ADSSelectDocument({
   t,
   document: doc,
@@ -141,20 +160,24 @@ function ADSSelectDocument({
   documents,
   action,
   formData,
-  
+
   id,
-  
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  
+
   const user = Digit.UserService.getUser().info;
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
-    ? { ...filteredDocument, active: true, code: filteredDocument?.documentType, i18nKey:"ADS_" +filteredDocument?.documentType.replaceAll(".", "_") }
-    : doc?.dropdownData?.length > 0
-        ? doc?.dropdownData[0]
-        : {}
+      ? {
+          ...filteredDocument,
+          active: true,
+          code: filteredDocument?.documentType,
+          i18nKey: "ADS_" + filteredDocument?.documentType.replaceAll(".", "_"),
+        }
+      : doc?.dropdownData?.length > 0
+      ? doc?.dropdownData[0]
+      : {}
   );
 
   const [file, setFile] = useState(null);
@@ -166,16 +189,12 @@ function ADSSelectDocument({
     setFile(e.target.files[0]);
   }
   const { dropdownData } = doc;
-  
+
   var dropDownData = dropdownData;
-   
+
   const [isHidden, setHidden] = useState(false);
 
-  
-  const LoadingSpinner = () => (
-    <div className="loading-spinner"
-    />
-  );
+  const LoadingSpinner = () => <div className="loading-spinner" />;
 
   useEffect(() => {
     if (selectedDocument?.code) {
@@ -197,7 +216,6 @@ function ADSSelectDocument({
         ];
       });
     }
-    
   }, [uploadedFile, selectedDocument]);
 
   useEffect(() => {
@@ -234,8 +252,7 @@ function ADSSelectDocument({
             }
           } catch (err) {
             setError(t("CS_FILE_UPLOAD_ERROR"));
-          }
-          finally{
+          } finally {
             setIsUploading(false);
           }
         }
@@ -251,13 +268,15 @@ function ADSSelectDocument({
     <div style={{ marginBottom: "24px" }}>
       {doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("ADS_"+(doc?.code.replaceAll(".", "_"))) } <span className="check-page-link-button">*</span></CardLabel>
+          <CardLabel className="card-label-smaller">
+            {t("ADS_" + doc?.code.replaceAll(".", "_"))} <span className="check-page-link-button">*</span>
+          </CardLabel>
           <Dropdown
             className="form-field"
             selected={selectedDocument}
-            style={{width:user.type==="EMPLOYEE"?"50%":"100%"}}
-            placeholder={"Select " + t("ADS_"+(doc?.code.replaceAll(".", "_"))) }
-            option={dropDownData.map((e) => ({ ...e, i18nKey:"ADS_" + e.code?.replaceAll(".", "_") }))}
+            style={{ width: user.type === "EMPLOYEE" ? "50%" : "100%" }}
+            placeholder={"Select " + t("ADS_" + doc?.code.replaceAll(".", "_"))}
+            option={dropDownData.map((e) => ({ ...e, i18nKey: "ADS_" + e.code?.replaceAll(".", "_") }))}
             select={handleADSSelectDocument}
             optionKey="i18nKey"
             t={t}
@@ -273,14 +292,21 @@ function ADSSelectDocument({
               setUploadedFile(null);
             }}
             id={id}
-            message={isUploading ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <LoadingSpinner />
-                <span>Uploading...</span>
-              </div>
-            ) : uploadedFile ? "1 File Uploaded" : "No File Uploaded"}            textStyles={{ width: "100%" }}
+            message={
+              isUploading ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <LoadingSpinner />
+                  <span>Uploading...</span>
+                </div>
+              ) : uploadedFile ? (
+                "1 File Uploaded"
+              ) : (
+                "No File Uploaded"
+              )
+            }
+            textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png"   //  to accept document of all kind
+            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
             buttonType="button"
             error={!uploadedFile}
           />

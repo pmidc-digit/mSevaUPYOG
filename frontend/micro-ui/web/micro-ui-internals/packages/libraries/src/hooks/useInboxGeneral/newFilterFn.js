@@ -50,8 +50,6 @@ export const filterFunctions = {
     return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder };
   },
   PTR: (filtersArg) => {
-    
-
     let { uuid } = Digit.UserService.getUser()?.info || {};
 
     const searchFilters = {};
@@ -65,7 +63,7 @@ export const filterFunctions = {
     if (filtersArg?.applicationNumbers) {
       searchFilters.applicationNumber = applicationNumbers;
     }
-    
+
     if (applicationStatus && applicationStatus?.[0]?.applicationStatus) {
       workflowFilters.status = applicationStatus.map((status) => status.uuid);
       if (applicationStatus?.some((e) => e.nonActionableRole)) {
@@ -82,7 +80,6 @@ export const filterFunctions = {
       searchFilters.mobileNumber = mobileNumber;
     }
 
-
     if (services) {
       workflowFilters.businessService = services;
     }
@@ -90,8 +87,56 @@ export const filterFunctions = {
     searchFilters["creationReason"] = ["CREATE"];
     workflowFilters["moduleName"] = "pet-services";
 
-
-   
     return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder };
+  },
+  SV: (filtersArg) => {
+    console.log("filtersArgssIN NEWFILTERFN", filtersArg);
+    let { uuid } = Digit.UserService.getUser()?.info || {};
+
+    const searchFilters = {};
+    const workflowFilters = {};
+
+    const { applicationNumber, services, mobileNumber, limit, offset, sortBy, sortOrder, vendingType, vendingZone, applicationStatus, status } =
+      filtersArg || {};
+
+    if (applicationStatus && applicationStatus?.[0]?.applicationStatus) {
+      workflowFilters.status = applicationStatus.map((status) => status.uuid);
+      if (applicationStatus?.some((e) => e.nonActionableRole)) {
+        searchFilters.fetchNonActionableRecords = true;
+      }
+    }
+    if (status && status?.[0]?.status) {
+      workflowFilters.status = status.map((status) => status.uuid);
+      if (status?.some((e) => e.nonActionableRole)) {
+        searchFilters.fetchNonActionableRecords = true;
+      }
+    }
+
+    if (filtersArg?.uuid && filtersArg?.uuid.code === "ASSIGNED_TO_ME") {
+      workflowFilters.assignee = uuid;
+    }
+    if (mobileNumber) {
+      searchFilters.mobileNumber = mobileNumber;
+    }
+    if (vendingType) {
+      searchFilters.vendingType = vendingType;
+    }
+    if (vendingZone) {
+      searchFilters.vendingZone = vendingZone;
+    }
+    if (status) {
+      searchFilters.status = status;
+    }
+    if (applicationNumber) {
+      searchFilters.applicationNumber = applicationNumber;
+    }
+    if (services) {
+      workflowFilters.businessService = services;
+    }
+    searchFilters["isInboxSearch"] = true;
+    searchFilters["creationReason"] = [""];
+    workflowFilters["moduleName"] = "sv-services";
+
+    return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder, isDraftApplication: false };
   },
 };

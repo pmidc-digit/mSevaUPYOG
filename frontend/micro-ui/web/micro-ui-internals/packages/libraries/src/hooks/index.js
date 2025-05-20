@@ -286,8 +286,23 @@ import useServiceSearchPTR from "./ptr/useServiceSearchPTR";
 import usePetDocumentSearch from "./ptr/usePetDocumentSearch";
 import useMyPetPayments from "./ptr/useMyPetPayments";
 import useTenantsPTR from "./ptr/useTenants";
-
+import useSVDoc from "./sv/useSVDoc";
+import useSvCreateApi from "./sv/useSvCreateApi";
+import useTenantsSV from "./sv/useTenants";
+import useSVApplicationDetail from "./sv/useSVApplicationDetail";
+import useSvSearchApplication from "./sv/useSvSearchApplication";
+import useSVApplicationAction from "./sv/useSVApplicationAction";
 import createTokenAPI from "./digiLockerApi/createTokenAPI";
+
+// ads
+import useADSSlotSearch from "./ads/useADSSlotSearch";
+import useADSSearch from "./ads/useADSSearch";
+import useADSApplicationDetail from "./ads/useADSApplicationDetail";
+import useADSCreateAPI from "./ads/useADSCreateAPI";
+import useTenantsADS from "./ads/useTenants";
+import useADSDocumentsMDMS from "./ads/useADSDocumentsMDMS";
+import useADSDocumentSearch from "./ads/useADSDocumentSearch";
+import useADSDemandEstimation from "./ads/useADSDemandEstimation";
 
 const pgr = {
   useComplaintDetails,
@@ -509,6 +524,28 @@ const engagement = {
   useDocUpdate,
 };
 
+const sv = {
+  useSVDoc,
+  useSvCreateApi,
+  useTenants: useTenantsSV,
+  useSvSearchApplication,
+  useSVApplicationDetail,
+  useSVApplicationAction,
+  useSvSearchApplication,
+};
+
+// for using tenant for city and document and search
+const ads = {
+  useTenants: useTenantsADS,
+  useADSDocumentsMDMS,
+  useADSDocumentSearch,
+  useADSCreateAPI,
+  useADSSlotSearch,
+  useADSSearch,
+  useADSDemandEstimation,
+  useADSApplicationDetail,
+};
+
 const survey = {
   useCreate: useSurveyCreate,
   useUpdate: useSurveyUpdate,
@@ -639,6 +676,8 @@ const Hooks = {
   useBillAmendmentInbox,
   useAudit,
   createTokenAPI,
+  sv,
+  ads,
 };
 
 export default Hooks;

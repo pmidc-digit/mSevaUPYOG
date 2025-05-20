@@ -26,6 +26,9 @@ import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
+import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
+import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
+
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@mseva/digit-ui-module-pgr";
 // import { Body, TopBar } from "@mseva/digit-ui-react-components";
@@ -65,6 +68,7 @@ const enabledModules = [
   "PTR",
   "ADS",
   "Swach",
+  "SV",
 ];
 
 const initTokens = (stateCode) => {
@@ -114,6 +118,12 @@ const initDigitUI = () => {
     ...PTRComponents,
     TLModule,
     TLLinks,
+    SVModule,
+    SVLinks,
+    ...SVComponents,
+    ADSLinks,
+    ADSModule,
+    ...ADSComponents,
   });
   initFSMComponents();
   initPGRComponents();

@@ -23,7 +23,7 @@ const CloseBtn = (props) => {
  * allowing users to view, delete items, and see the total price of the cart.
  */
 
-const ADSCartDetails = ({ onClose,cartDetails, setCartDetails }) => {
+const ADSCartDetails = ({ onClose, cartDetails, setCartDetails }) => {
   const { t } = useTranslation();
   const { pathname: url } = useLocation();
 
@@ -51,17 +51,11 @@ const ADSCartDetails = ({ onClose,cartDetails, setCartDetails }) => {
     {
       Header: t("ADS_NIGHT_LIGHT"),
       accessor: "nightLight",
-      Cell: ({ value }) => (
-        <div>{value ? t("Yes") : t("No")}</div>
-      ),
+      Cell: ({ value }) => <div>{value ? t("Yes") : t("No")}</div>,
     },
     { Header: t("BOOKING_DATE"), accessor: "bookingDate" },
     { Header: t("UNIT_PRICE"), accessor: "price" },
-    { Header: t("ADS_STATUS"), accessor: "status",
-      Cell: ({ value }) => (
-        <div className="sla-cell-success">{value}</div>
-      ),
-     },
+    { Header: t("ADS_STATUS"), accessor: "status", Cell: ({ value }) => <div className="sla-cell-success">{value}</div> },
     {
       Header: t("DELETE_KEY"),
       accessor: "delete",
@@ -75,11 +69,11 @@ const ADSCartDetails = ({ onClose,cartDetails, setCartDetails }) => {
 
   return (
     <Modal
-      headerBarMain={<CardSubHeader style={{ color: '#a82227', margin: '25px' }}>My Cart</CardSubHeader>}
+      headerBarMain={<CardSubHeader style={{ color: "#a82227", margin: "25px" }}>My Cart</CardSubHeader>}
       headerBarEnd={<CloseBtn onClick={onClose} />}
-      popupStyles={{ backgroundColor: "#fff", position: 'relative', maxHeight: '80vh', width: '80%', overflowY: 'auto' }}
+      popupStyles={{ backgroundColor: "#fff", position: "relative", maxHeight: "80vh", width: "80%", overflowY: "auto" }}
       popupModuleMianStyles={{ padding: "10px" }}
-      hideSubmit={true} 
+      hideSubmit={true}
       headerBarMainStyle={{ position: "sticky", top: 0, backgroundColor: "#f5f5f5" }}
       formId="modal-action"
     >
@@ -97,17 +91,19 @@ const ADSCartDetails = ({ onClose,cartDetails, setCartDetails }) => {
         isPaginationRequired={false}
         totalRecords={cartDetails.length}
       />
-      <div style={{
-            position: "sticky", // Keeps it fixed relative to the modal
-            bottom: 0,
-            backgroundColor: "#fff",
-            padding: "15px 20px",
-            fontSize: "18px",
-            fontWeight: "bold",
-            boxShadow: "0 -2px 5px rgba(0,0,0,0.1)", // Optional for a better UI
-            zIndex: 10, // Ensures it stays on top of other content
-          }}>
-        Total Price: {calculateTotalPrice()} 
+      <div
+        style={{
+          position: "sticky", // Keeps it fixed relative to the modal
+          bottom: 0,
+          backgroundColor: "#fff",
+          padding: "15px 20px",
+          fontSize: "18px",
+          fontWeight: "bold",
+          boxShadow: "0 -2px 5px rgba(0,0,0,0.1)", // Optional for a better UI
+          zIndex: 10, // Ensures it stays on top of other content
+        }}
+      >
+        Total Price: {calculateTotalPrice()}
       </div>
     </Modal>
   );

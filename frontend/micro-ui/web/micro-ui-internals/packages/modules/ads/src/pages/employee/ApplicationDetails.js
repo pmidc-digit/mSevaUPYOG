@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 import { useParams } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
 
-
 const ApplicationDetails = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -13,17 +12,14 @@ const ApplicationDetails = () => {
   const [showToast, setShowToast] = useState(null);
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
   const [showOptions, setShowOptions] = useState(false);
-  
+
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ads.useADSApplicationDetail(t, tenantId, bookingNo);
-  
 
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
-  const { isLoading: auditDataLoading, isError: isAuditError, data,refetch} = Digit.Hooks.ads.useADSSearch(
-    {
-      tenantId,
-      filters: { bookingNo: bookingNo, audit: true },
-    },
-  );
+  const { isLoading: auditDataLoading, isError: isAuditError, data, refetch } = Digit.Hooks.ads.useADSSearch({
+    tenantId,
+    filters: { bookingNo: bookingNo, audit: true },
+  });
 
   const closeToast = () => {
     setShowToast(null);
@@ -32,10 +28,8 @@ const ApplicationDetails = () => {
   useEffect(() => {
     if (applicationDetails) {
       setAppDetailsToShow(_.cloneDeep(applicationDetails));
-    
     }
   }, [applicationDetails]);
-
 
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -48,39 +42,35 @@ const ApplicationDetails = () => {
   );
   async function getRecieptSearch({ tenantId, payments, ...params }) {
     let application = data?.bookingApplication?.[0];
-    let fileStoreId = application?.paymentReceiptFilestoreId
+    let fileStoreId = application?.paymentReceiptFilestoreId;
     if (!fileStoreId) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "advservice-receipt");
-    const updatedApplication = {
-      ...application,
-      paymentReceiptFilestoreId: response?.filestoreIds[0]
-    };
-    await mutation.mutateAsync({
-      bookingApplication: updatedApplication
-    });
-    fileStoreId = response?.filestoreIds[0];
-    refetch();
+      let response = { filestoreIds: [payments?.fileStoreId] };
+      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "advservice-receipt");
+      const updatedApplication = {
+        ...application,
+        paymentReceiptFilestoreId: response?.filestoreIds[0],
+      };
+      await mutation.mutateAsync({
+        bookingApplication: updatedApplication,
+      });
+      fileStoreId = response?.filestoreIds[0];
+      refetch();
     }
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
-  };
+  }
 
   async function getPermissionLetter({ tenantId, payments, ...params }) {
     let application = data?.bookingApplication?.[0];
     let fileStoreId = application?.permissionLetterFilestoreId;
     if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { bookingApplication: [application] }, 
-        "advpermissionletter"
-      );
+      const response = await Digit.PaymentService.generatePdf(tenantId, { bookingApplication: [application] }, "advpermissionletter");
       const updatedApplication = {
         ...application,
-        permissionLetterFilestoreId: response?.filestoreIds[0]
+        permissionLetterFilestoreId: response?.filestoreIds[0],
       };
       await mutation.mutateAsync({
-        bookingApplication: updatedApplication
+        bookingApplication: updatedApplication,
       });
       fileStoreId = response?.filestoreIds[0];
       refetch();
@@ -91,10 +81,10 @@ const ApplicationDetails = () => {
 
   let dowloadOptions = [];
   if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
-  dowloadOptions.push({
-    label: t("ADS_FEE_RECEIPT"),
-    onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-  });
+    dowloadOptions.push({
+      label: t("ADS_FEE_RECEIPT"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+    });
 
   if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
     dowloadOptions.push({
@@ -102,26 +92,25 @@ const ApplicationDetails = () => {
       onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
 
-
   return (
     <div>
-        <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
-          <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("ADS_BOOKING_DETAILS")}</Header>
-          <div style={{zIndex: "10",display:"flex",flexDirection:"row-reverse",alignItems:"center",marginTop:"-25px"}}>
-          <div style={{zIndex: "10",  position: "relative"}}>
-        {dowloadOptions && dowloadOptions.length > 0 && (
-          <MultiLink
-            className="multilinkWrapper"
-            onHeadClick={() => setShowOptions(!showOptions)}
-            displayOptions={showOptions}
-            options={dowloadOptions}
-            downloadBtnClassName={"employee-download-btn-className"}
-            optionsClassName={"employee-options-btn-className"}
-          // ref={menuRef}
-          />
-        )}
-      </div>
-      </div>
+      <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
+        <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("ADS_BOOKING_DETAILS")}</Header>
+        <div style={{ zIndex: "10", display: "flex", flexDirection: "row-reverse", alignItems: "center", marginTop: "-25px" }}>
+          <div style={{ zIndex: "10", position: "relative" }}>
+            {dowloadOptions && dowloadOptions.length > 0 && (
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+                downloadBtnClassName={"employee-download-btn-className"}
+                optionsClassName={"employee-options-btn-className"}
+                // ref={menuRef}
+              />
+            )}
+          </div>
+        </div>
       </div>
       <ApplicationDetailsTemplate
         applicationDetails={appDetailsToShow?.applicationData}
@@ -133,8 +122,6 @@ const ApplicationDetails = () => {
         closeToast={closeToast}
         MenuStyle={{ color: "#FFFFFF", fontSize: "18px" }}
       />
-      
-
     </div>
   );
 };

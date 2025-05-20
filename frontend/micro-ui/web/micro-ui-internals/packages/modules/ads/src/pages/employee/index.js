@@ -10,7 +10,6 @@ import SearchApp from "./SearchApp";
  * including displaying a back button.
  */
 
-
 // to do, ApplicationDetail page pending
 const EmployeeApp = ({ path, url, userType }) => {
   const { t } = useTranslation();
@@ -43,11 +42,10 @@ const EmployeeApp = ({ path, url, userType }) => {
                 {/* <CHBBreadCrumbs location={location} /> */}
               </div>
             ) : null}
-            
+
             <PrivateRoute path={`${path}/bookad`} component={ADSCreate} />
             <PrivateRoute path={`${path}/my-applications`} component={(props) => <SearchApp {...props} parentRoute={path} />} />
             <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
-
           </div>
         </React.Fragment>
       </AppContainer>

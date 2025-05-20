@@ -58,83 +58,78 @@ function ApplicationDetailsContent({
   paymentsList,
   oldValue,
   isInfoLabel = false,
-  propertyId
+  propertyId,
 }) {
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
-  const [payments,setPayments]=useState([])
+  const [payments, setPayments] = useState([]);
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
-  console.log("appl", applicationDetails);
+  console.log("applicationDetails: ", applicationDetails);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
 
   const [fetchBillData, updatefetchBillData] = useState({});
-  const [assessmentDetails,setAssessmentDetails] = useState()
-  const [filtered,setFiltered]=useState([])
-    
+  const [assessmentDetails, setAssessmentDetails] = useState();
+  const [filtered, setFiltered] = useState([]);
+
   const setBillData = async (tenantId, propertyIds, updatefetchBillData, updateCanFetchBillData) => {
     const assessmentData = await Digit.PTService.assessmentSearch({ tenantId, filters: { propertyIds } });
     let billData = {};
-    console.log("assessment data",assessmentData)
-   
+    console.log("assessment data", assessmentData);
+
     if (assessmentData?.Assessments?.length > 0) {
-      
-const activeRecords = assessmentData.Assessments.filter(a => a.status === 'ACTIVE');
+      const activeRecords = assessmentData.Assessments.filter((a) => a.status === "ACTIVE");
 
-// Helper to normalize timestamp to date only (midnight)
-function normalizeDate(timestamp) {
-  const date = new Date(timestamp);
-  date.setHours(0, 0, 0, 0);
-  return date.getTime();
-}
+      // Helper to normalize timestamp to date only (midnight)
+      function normalizeDate(timestamp) {
+        const date = new Date(timestamp);
+        date.setHours(0, 0, 0, 0);
+        return date.getTime();
+      }
 
+      const latestMap = new Map();
 
+      activeRecords.forEach((record) => {
+        const normalizedDate = normalizeDate(record.assessmentDate);
+        const key = `${normalizedDate}_${record.financialYear}`;
+        const existing = latestMap.get(key);
 
-const latestMap = new Map();
+        if (!existing || record.createdDate > existing.createdDate) {
+          latestMap.set(key, record);
+        }
+      });
 
-activeRecords.forEach(record => {
- 
-const normalizedDate = normalizeDate(record.assessmentDate);
-  const key = `${normalizedDate}_${record.financialYear}`;
-  const existing = latestMap.get(key);
+      console.log("grouped", latestMap);
 
-  if (!existing || record.createdDate > existing.createdDate) {
-    latestMap.set(key, record);
-  }
-});
+      // Step 3: Convert grouped object to array
+      const filteredAssessment = Array.from(latestMap.values());
+      setFiltered(filteredAssessment);
+      console.log(filteredAssessment);
 
-
-console.log("grouped",latestMap)
-
-// Step 3: Convert grouped object to array
-const filteredAssessment=Array.from(latestMap.values());
-setFiltered(filteredAssessment)
-console.log(filteredAssessment);
-
-//       filtered = Object.values(
-//   assessmentData.Assessments
-//     .filter(a => a.status === 'ACTIVE')
-//     .reduce((acc, curr) => {
-//       const key = `${curr.assessmentDate}_${curr.financialYear}`;
-//       if (!acc[key] || curr.createdDate > acc[key].createdDate) {
-//         acc[key] = curr;
-//       }
-//       return acc;
-//     }, {})
-// );
-// console.log("filtered",filtered)
-      setAssessmentDetails(assessmentData?.Assessments)
+      //       filtered = Object.values(
+      //   assessmentData.Assessments
+      //     .filter(a => a.status === 'ACTIVE')
+      //     .reduce((acc, curr) => {
+      //       const key = `${curr.assessmentDate}_${curr.financialYear}`;
+      //       if (!acc[key] || curr.createdDate > acc[key].createdDate) {
+      //         acc[key] = curr;
+      //       }
+      //       return acc;
+      //     }, {})
+      // );
+      // console.log("filtered",filtered)
+      setAssessmentDetails(assessmentData?.Assessments);
       billData = await Digit.PaymentService.fetchBill(tenantId, {
         businessService: "PT",
         consumerCode: propertyIds,
       });
     }
-    console.log("bill Data",billData)
+    console.log("bill Data", billData);
     updatefetchBillData(billData);
     updateCanFetchBillData({
       loading: false,
@@ -142,17 +137,14 @@ console.log(filteredAssessment);
       canLoad: true,
     });
   };
-  console.log("fetch bill data",fetchBillData)
+  console.log("fetch bill data", fetchBillData);
   const [billData, updateCanFetchBillData] = useState({
     loading: false,
     loaded: false,
     canLoad: false,
   });
 
-
-
-
-console.log("filtered",filtered)
+  console.log("filtered", filtered);
   if (applicationData?.status == "ACTIVE" && !billData.loading && !billData.loaded && !billData.canLoad) {
     updateCanFetchBillData({
       loading: false,
@@ -376,7 +368,7 @@ console.log("filtered",filtered)
     // }
   };
 
-  const applicationData_pt = applicationDetails.applicationData;
+  const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = applicationDetails?.applicationData?.propertyId || "";
   const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
   const PropertyInActive = () => {
@@ -398,37 +390,40 @@ console.log("filtered",filtered)
   // const PropertyActive = () => updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
 
   const EditProperty = () => {
-    const pID = applicationDetails?.applicationData?.propertyId;
-    if (pID) {
-      history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
+    const canEditProperty = applicationDetails?.applicationData?.status === "ACTIVE";
+    if (canEditProperty) {
+      const pID = applicationDetails?.applicationData?.propertyId;
+      if (pID) {
+        history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
+      }
+    } else {
+      setShowToast({ isError: true, label: " This action cannot be done on Inactive property or the property in workflow" });
     }
-    // alert("edit property");
   };
 
   const AccessProperty = () => {
     alert("access property");
   };
 
-   console.log("applicationDetails?.applicationDetails",applicationDetails?.applicationDetails)
-   console.log("infolabel",isInfoLabel)
-   console.log("assessment details",assessmentDetails)
+  console.log("applicationDetails?.applicationDetails", applicationDetails?.applicationDetails);
+  console.log("infolabel", isInfoLabel);
+  console.log("assessment details", assessmentDetails);
 
-   useEffect(()=>{
-   try{
-   let filters={
-    consumerCodes:propertyId,
-   // tenantId: tenantId
-   }
-   const auth=true
-    Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-      setPayments(response?.Payments)
-      console.log(response)  
-    })
-   }
-   catch(error){
-   console.log(error)
-   }
-   },[])
+  useEffect(() => {
+    try {
+      let filters = {
+        consumerCodes: propertyId,
+        // tenantId: tenantId
+      };
+      const auth = true;
+      Digit.PTService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+        setPayments(response?.Payments);
+        console.log(response);
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
@@ -661,12 +656,11 @@ console.log("filtered",filtered)
           )}
           {detail?.additionalDetails?.estimationDetails && <WSFeeEstimation wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
-        
         </React.Fragment>
       ))}
-        {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
-        <PaymentHistory payments={payments}/>
-        <ApplicationHistory applicationData={applicationDetails?.applicationData}/>
+      {assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
+      <PaymentHistory payments={payments} />
+      <ApplicationHistory applicationData={applicationDetails?.applicationData} />
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
@@ -791,7 +785,7 @@ console.log("filtered",filtered)
       <td style={tableStyles.td}>0.0</td>
       <td style={tableStyles.td}>0.0</td>
     </tr> */}
-          {/* <tr>
+      {/* <tr>
             <th style={tableStyles.th}>Total</th>
             <td style={tableStyles.td}>{totalDemandTax}</td>
             <td style={tableStyles.td}>{totalDemandInterest}</td>
@@ -829,7 +823,6 @@ console.log("filtered",filtered)
           </tr>
         </tbody> */}
       {/* </table> */}
-
 
       <ActionBar className="clear-search-container" style={{ display: "block" }}>
         <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />

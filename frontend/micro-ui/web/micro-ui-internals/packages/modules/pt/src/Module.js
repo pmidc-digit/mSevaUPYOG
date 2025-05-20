@@ -81,7 +81,7 @@ import UpdateNumber from "./pages/citizen/MyProperties/updateNumber";
 import EmployeeUpdateOwnerNumber from "./pages/employee/updateNumber";
 import PropertyStructureDetails from "./pageComponents/PropertyStructureDetails";
 import PropertyDetailsCitizen from "./pages/citizen/MyProperties/PropertyDetails";
-import {PropertyApplicationDetails}  from "./pages/citizen/MyProperties/PropertyApplicationDetails";
+import { PropertyApplicationDetails } from "./pages/citizen/MyProperties/PropertyApplicationDetails";
 //import PTCitizenFeedback from "@upyog/digit-ui-module-core/src/components/PTCitizenFeedback";
 
 import EmployeeApp from "./pages/employee";
@@ -123,15 +123,15 @@ import OwnerTransfershipStepForm from "../src/pages/employee/PropertyMutation/Ow
 import PTOwnerTransfershipStepTwo from "../src/pages/employee/PropertyMutation/OwnerTransfership/PTOwnerTransfershipStepTwo";
 import PTOwnerTransfershipSummaryStepThree from "../src/pages/employee/PropertyMutation/OwnerTransfership/PTOwnerTransfershipSummaryStepThree";
 import PropertyCheckboxQuestions from "./pageComponents/PropertyCheckboxQuestions";
+import PTCreateDocsRequired from "./pageComponents/PTCreateDocsRequired";
 
-import {NewApplication as NewApplicationCitizen }from "./pages/citizen/Create/NewApplication";
-import CreateEmployeeStepForm  from "./pages/citizen/Create/NewApplicationStepForm/NewPropertyStepForm" 
-import {PTNewFormStepOne as PTNewFormStepOneCitizen} from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepOne";
-import {PTNewFormStepTwo as PTNewFormStepTwoCitizen} from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepTwo";
-import {PTNewFormStepThree as PTNewFormStepThreeCitizen} from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepThree";
-import {PTNewFormStepFour as PTNewFormStepFourCitizen} from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepFour";
-import {PTNewFormSummaryStepFive as PTNewFormSummaryStepFiveCitizen} from "../src/pages/citizen/Create/NewApplicationStepForm/PTNewFormSummaryStepFive";
-
+import { NewApplication as NewApplicationCitizen } from "./pages/citizen/Create/NewApplication";
+import CreateEmployeeStepForm from "./pages/citizen/Create/NewApplicationStepForm/NewPropertyStepForm";
+import { PTNewFormStepOne as PTNewFormStepOneCitizen } from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepOne";
+import { PTNewFormStepTwo as PTNewFormStepTwoCitizen } from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepTwo";
+import { PTNewFormStepThree as PTNewFormStepThreeCitizen } from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepThree";
+import { PTNewFormStepFour as PTNewFormStepFourCitizen } from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepFour";
+import { PTNewFormSummaryStepFive as PTNewFormSummaryStepFiveCitizen } from "../src/pages/citizen/Create/NewApplicationStepForm/PTNewFormSummaryStepFive";
 
 export const PTReducers = getRootReducer;
 
@@ -204,7 +204,7 @@ const componentsToRegister = {
   PTMyPayments,
   SelectPTUnits,
   PTNewApplication: NewApplication,
-  ApplicationDetails: ApplicationDetails,
+  PTApplicationDetailsEmployee: ApplicationDetails,
   PTPropertyDetails: PropertyDetails,
   PTAssessmentDetails: AssessmentDetails,
   PTEditApplication: EditApplication,
@@ -254,8 +254,9 @@ const componentsToRegister = {
   PTNewFormStepFourCitizen,
   PTNewFormSummaryStepFiveCitizen,
   PropertyDetailsCitizen,
-  PropertyApplicationDetails
-  
+  PropertyApplicationDetails,
+
+  PTCreateDocsRequired,
 };
 
 const addComponentsToRegistry = () => {

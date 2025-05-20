@@ -8,10 +8,7 @@ const PTSelectPincode = ({ t, config, onSelect, formData = {}, userType, registe
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("edit");
 
-  const [pincode, setPincode] = useState(() => {
-    if (presentInModifyApplication && userType === "employee") return formData?.LocationDetails?.address?.pincode || "";
-    return formData?.address?.pincode || "";
-  });
+  const [pincode, setPincode] = useState(formData?.address?.pincode || "");
 
   let isEditProperty = formData?.isEditProperty || false;
   if (formData?.isUpdateProperty) isEditProperty = true;

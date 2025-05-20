@@ -137,15 +137,15 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
 
   let nonrentedusage = [
     {
-      i18nKey: "NON_RENT_SELFOCCUPIED",
+      i18nKey: "SELFOCCUPIED",
       name: "Non Rent Self occupied",
-      code: "NonRentSelfOccupied",
+      code: "SELFOCCUPIED",
       active: true,
     },
     {
-      i18nKey: "NON_RENT_UNOCCUPIED",
+      i18nKey: "UNOCCUPIED",
       name: "Non rent Un occupied",
-      code: "NonRentUnOccupied",
+      code: "UNOCCUPIED",
       active: true,
     },
   ];
@@ -207,7 +207,8 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       let defaultUnits = formData?.units
         ?.filter((e) => e.active)
         ?.map((unit, index) => {
-          let { occupancyType, usageCategory: uc, constructionDetail, floorNo, arv } = unit;
+          let { occupancyType, usageCategory: uc, constructionDetail, floorNo, arv,
+            RentedMonths, NonRentedMonthsUsage } = unit;
           occupancyType = occupencyOptions.filter((e) => e?.code === occupancyType)[0];
           let usageCategory = usageCategoryMajorMenu(usagecat).filter((e) => e?.code === uc)[0];
           floorNo = getfloorlistdata(floorlist).filter((e) => e?.code == floorNo)[0];
@@ -223,6 +224,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
             builtUpArea,
             existingUsageCategory: uc,
             arv,
+            RentedMonths, NonRentedMonthsUsage
           };
         });
       setUnits(defaultUnits || []);
@@ -458,7 +460,7 @@ function Unit({
   ]);
 
 
-  console.log("coming in this file ");
+  console.log("Unit: ", unit);
 
 
 

@@ -250,7 +250,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   <Controller
                     control={control}
                     name={"institution.name"}
-                    defaultValue={isEditScreen ? ( institution?.name ? institution.name : owner?.name) : null}
+                    defaultValue={isEditScreen ? ( institution?.name ? institution.name : owner?.name) : owner?.institution?.name}
                     rules={{
                       required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                       validate: {
@@ -653,7 +653,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       setFocusIndex({ index: owner.key, type: "correspondenceAddress" });
                     }}
                     onBlur={props.onBlur}
-                    isRequired={true}
+                    isRequired={!isIndividualTypeOwner}
                   />
                 )}
               />

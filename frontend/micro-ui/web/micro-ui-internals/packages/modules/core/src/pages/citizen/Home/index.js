@@ -79,7 +79,7 @@ const Home = () => {
     },
   });
 
-  if (!tIDCheck) {
+  if (!citizenToken) {
     localCheck ? history.push(`/digit-ui/citizen/select-language`) : history.push(`/digit-ui/citizen/select-location`);
   }
 

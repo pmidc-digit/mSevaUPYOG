@@ -43,7 +43,7 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
 
   useEffect(() => {
     workFlowDetails.revalidate();
-  }, [workFlowDetails]);
+  }, []);//this is causing the issue
 
   return (
     !workFlowDetails.isLoading && (
@@ -91,9 +91,6 @@ const ComplaintDetailsPage = (props) => {
   const pincode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.pincode || "";
 
   const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
-  // useEffect(()=>{
-  //   console.log("imageShownBelowComplaintDetails",imageShownBelowComplaintDetails);
-  // },[imageShownBelowComplaintDetails])
 
   useEffect(() => {
     (async () => {

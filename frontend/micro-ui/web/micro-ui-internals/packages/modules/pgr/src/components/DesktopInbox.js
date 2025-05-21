@@ -12,7 +12,7 @@ const DesktopInbox = ({
   data,
   onFilterChange,
   onSearch,
-  isLoading,
+  isLoading=false,
   searchParams,
   onNextPage,
   onPrevPage,
@@ -20,6 +20,7 @@ const DesktopInbox = ({
   pageSizeLimit,
   onPageSizeChange,
   totalRecords,
+  localities
 }) => {
   const { t } = useTranslation();
   const GetCell = (value) => <span className="cell-text">{value}</span>;
@@ -35,11 +36,13 @@ const DesktopInbox = ({
           return (
             <div>
               <span className="link">
-                <Link to={"/digit-ui/employee/pgr/complaint/details/" + row.original["serviceRequestId"]}>{row.original["serviceRequestId"]}</Link>
+                <Link to={"/digit-ui/employee/pgr/complaint/details/" + row.original["serviceRequestId"] + "/" + row.original?.tenantId} >
+                {row.original["serviceRequestId"]}
+                </Link>
               </span>
               {/* <a onClick={() => goTo(row.row.original["serviceRequestId"])}>{row.row.original["serviceRequestId"]}</a> */}
               <br />
-              <span className="complain-no-cell-text">{t(`SERVICEDEFS.${row.original["complaintSubType"].toUpperCase()}`)}</span>
+              <span className="complain-no-cell-text">{t(`SERVICEDEFS.${row.original["complaintSubType"]?.toUpperCase()}`)}</span>
             </div>
           );
         },

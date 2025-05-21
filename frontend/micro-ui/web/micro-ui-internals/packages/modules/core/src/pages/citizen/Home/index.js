@@ -25,19 +25,51 @@ const Home = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const citizenInfoString = window.localStorage.getItem("user-info");
+  const localCheck = window.localStorage.getItem("Employee.locale");
+  const tIDCheck = window.localStorage.getItem("Employee.tenant-id");
   const citizenInfo = citizenInfoString ? JSON.parse(citizenInfoString) : null;
   const UserType = citizenInfo?.type === "CITIZEN";
+  const userInfoObj = Digit.UserService?.getUser();
   const UserRole = Array.isArray(citizenInfo?.roles) && citizenInfo?.roles.some((item) => item.code === "PESCO");
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
   const { data: { stateInfo, uiHomePage } = {}, isLoading } = Digit.Hooks.useStore.getInitData();
   let isMobile = window.Digit.Utils.browser.isMobile();
   if (window.Digit.SessionStorage.get("TL_CREATE_TRADE")) window.Digit.SessionStorage.set("TL_CREATE_TRADE", {});
 
+  const parseValue = (value) => {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      return value;
+    }
+  };
+
   const conditionsToDisableNotificationCountTrigger = () => {
     if (Digit.UserService?.getUser()?.info?.type === "EMPLOYEE") return false;
     if (!Digit.UserService?.getUser()?.access_token) return false;
     return true;
   };
+
+  const getFromStorage = (key) => {
+    const value = window.localStorage.getItem(key);
+    return value && value !== "undefined" ? parseValue(value) : null;
+  };
+
+  const token = getFromStorage("token");
+  const citizenToken = getFromStorage("Citizen.token");
+  const userType = token === citizenToken ? "citizen" : "employee";
+  const citizenInfoMain = getFromStorage("Citizen.user-info");
+  const employeeToken = getFromStorage("Employee.token");
+  const employeeInfo = getFromStorage("Employee.user-info");
+
+  const getUserDetails = (access_token, info) => ({ token: access_token, access_token, info });
+
+  const userDetails = userType === "citizen" ? getUserDetails(citizenToken, citizenInfoMain) : getUserDetails(employeeToken, employeeInfo);
+
+  window.Digit.SessionStorage.set("User", userDetails);
+
+  console.log("citizenInfo", citizenInfo);
+  console.log("localCheck", localCheck, tIDCheck);
 
   const { data: EventsData, isLoading: EventsDataLoading } = Digit.Hooks.useEvents({
     tenantId,
@@ -47,10 +79,8 @@ const Home = () => {
     },
   });
 
-  if (!tenantId) {
-    Digit.SessionStorage.get("locale") === null
-      ? history.push(`/digit-ui/citizen/select-language`)
-      : history.push(`/digit-ui/citizen/select-location`);
+  if (!tIDCheck) {
+    localCheck ? history.push(`/digit-ui/citizen/select-language`) : history.push(`/digit-ui/citizen/select-location`);
   }
 
   const appBannerWebObj = uiHomePage?.appBannerDesktop;

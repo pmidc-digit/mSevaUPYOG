@@ -18,6 +18,28 @@ export const AppModules = ({ stateCode, userType, modules, appTenants }) => {
   const { path } = useRouteMatch();
   const location = useLocation();
 
+  const parseValue = (value) => {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      return value;
+    }
+  };
+
+  const getFromStorage = (key) => {
+    const value = window.localStorage.getItem(key);
+    return value && value !== "undefined" ? parseValue(value) : null;
+  };
+
+  const employeeToken = getFromStorage("Employee.token");
+  const employeeInfo = getFromStorage("Employee.user-info");
+
+  const getUserDetails = (access_token, info) => ({ token: access_token, access_token, info });
+
+  const userDetails = getUserDetails(employeeToken, employeeInfo);
+
+  window.Digit.SessionStorage.set("User", userDetails);
+
   const user = Digit.UserService.getUser();
 
   if (!user || !user?.access_token || !user?.info) {
@@ -30,9 +52,11 @@ export const AppModules = ({ stateCode, userType, modules, appTenants }) => {
       <Route key={index} path={`${path}/${code.toLowerCase()}`}>
         <Module stateCode={stateCode} moduleCode={code} userType={userType} tenants={getTenants(tenants, appTenants)} />
       </Route>
-    ) :   <Route key={index} path={`${path}/${code.toLowerCase()}`}>
-    <Redirect to={{ pathname: "/digit-ui/employee/user/error?type=notfound", state: { from: location.pathname + location.search } }} />
-  </Route>;
+    ) : (
+      <Route key={index} path={`${path}/${code.toLowerCase()}`}>
+        <Redirect to={{ pathname: "/digit-ui/employee/user/error?type=notfound", state: { from: location.pathname + location.search } }} />
+      </Route>
+    );
   });
 
   return (

@@ -470,9 +470,9 @@ export const CreateComplaint = ({ parentUrl }) => {
                 }}
               />
               {geoLocation?.place?.length > 0 ? (
-                <h2 style={{fontWeight: 600}}>{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION") + ": " + geoLocation?.place + "," + geoLocation?.val}</h2>
+                <div className="font-Weigth-bold">{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION") + ": " + geoLocation?.place + "," + geoLocation?.val}</div>
               ) : (
-                <h1 style={{fontWeight: 600}}>{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</h1>
+                <div className="font-Weigth-bold">{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</div>
               )}
             </div>
           ),

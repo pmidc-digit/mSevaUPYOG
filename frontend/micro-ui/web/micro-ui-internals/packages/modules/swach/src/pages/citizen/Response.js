@@ -1,4 +1,4 @@
-import React ,{useState}from "react";
+import React, { useState } from "react";
 import { Card, Banner, CardText, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Link } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -39,35 +39,47 @@ const TextPicker = ({ response }) => {
   const { t } = useTranslation();
   if (complaints && complaints.response && complaints.response.responseInfo) {
     const { action } = complaints.response.ServiceWrappers[0].workflow;
-    return action === "RATE" ? <CardText>{t("CS_COMMON_RATING_SUBMIT_TEXT")}</CardText> : <CardText>{t("CS_COMMON_TRACK_COMPLAINT_TEXT")}</CardText>;
+    return action === "RATE" ? <CardText>{t("CS_COMMON_RATING_SUBMIT_TEXT")}</CardText> : "";
+    // <CardText>{t("CS_COMMON_TRACK_COMPLAINT_TEXT")}</CardText>
   }
 };
 
 const Response = (props) => {
   const { t } = useTranslation();
   const appState = useSelector((state) => state)["pgr"];
-  console.log("appState",appState)
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
-  const [enable, setEnable] = useState(false)
-  let id= appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId
-  const { isLoading, error, isError, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId:localStorage.getItem("CITIZEN.CITY"), id },{ enabled: enable ? true : false});
-console.log("appStateappState",appState)
-const complaintDetails = appState
+  const [enable, setEnable] = useState(false);
+  let id = appState?.complaints?.response?.ServiceWrappers?.[0]?.service?.serviceRequestId;
+  const { isLoading, error, isError, revalidate } = Digit.Hooks.pgr.useComplaintDetails(
+    { tenantId: localStorage.getItem("CITIZEN.CITY"), id },
+    { enabled: enable ? true : false }
+  );
+  const complaintDetails = appState;
   const handleDownloadPdf = async (e) => {
     const tenantInfo = tenants.find((tenant) => tenant.code === localStorage.getItem("CITIZEN.CITY"));
-    e.preventDefault()
-    setEnable(true)
-   // const data = await getPGRcknowledgementData({complaintDetails, tenantInfo, t})
-   // console.log("data",data)
-   // Digit.Utils.pdf.generate(data);
+    e.preventDefault();
+    setEnable(true);
+    // const data = await getPGRcknowledgementData({complaintDetails, tenantInfo, t})
+    // Digit.Utils.pdf.generate(data);
   };
   return (
     <Card>
       {appState.complaints.response && <BannerPicker response={appState} />}
       {appState.complaints.response && <TextPicker response={appState} />}
-     
-      {appState.complaints.response?.ServiceWrappers?.[0]?.workflow.action == "RATE" ?"": <div style={{marginBottom:"10px"}}><SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={(e) =>{handleDownloadPdf(e)}} /></div>}
+
+      {/* {appState.complaints.response?.ServiceWrappers?.[0]?.workflow.action == "RATE" ? (
+        ""
+      ) : (
+        <div style={{ marginBottom: "10px" }}>
+          <SubmitBar
+            label={t("PT_DOWNLOAD_ACK_FORM")}
+            onSubmit={(e) => {
+              handleDownloadPdf(e);
+            }}
+          />
+        </div>
+      )} */}
       <Link to="/digit-ui/citizen">
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>

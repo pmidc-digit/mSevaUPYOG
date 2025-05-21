@@ -25,11 +25,8 @@ const Home = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const citizenInfoString = window.localStorage.getItem("user-info");
-  const localCheck = window.localStorage.getItem("Employee.locale");
-  const tIDCheck = window.localStorage.getItem("Employee.tenant-id");
   const citizenInfo = citizenInfoString ? JSON.parse(citizenInfoString) : null;
   const UserType = citizenInfo?.type === "CITIZEN";
-  const userInfoObj = Digit.UserService?.getUser();
   const UserRole = Array.isArray(citizenInfo?.roles) && citizenInfo?.roles.some((item) => item.code === "PESCO");
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
   const { data: { stateInfo, uiHomePage } = {}, isLoading } = Digit.Hooks.useStore.getInitData();
@@ -42,9 +39,6 @@ const Home = () => {
     return true;
   };
 
-  console.log("citizenInfo", citizenInfo);
-  console.log("localCheck", localCheck, tIDCheck);
-
   const { data: EventsData, isLoading: EventsDataLoading } = Digit.Hooks.useEvents({
     tenantId,
     variant: "whats-new",
@@ -53,8 +47,10 @@ const Home = () => {
     },
   });
 
-  if (!tIDCheck) {
-    localCheck ? history.push(`/digit-ui/citizen/select-language`) : history.push(`/digit-ui/citizen/select-location`);
+  if (!tenantId) {
+    Digit.SessionStorage.get("locale") === null
+      ? history.push(`/digit-ui/citizen/select-language`)
+      : history.push(`/digit-ui/citizen/select-location`);
   }
 
   const appBannerWebObj = uiHomePage?.appBannerDesktop;

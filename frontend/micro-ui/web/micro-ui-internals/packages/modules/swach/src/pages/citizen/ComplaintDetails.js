@@ -30,21 +30,20 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
   //   getWorkFlow(workFlowDetails.data);
   // }, []);
   useEffect(() => {
-    if (workFlowDetails) {
-      console.log("workFlowDetails swach citizen", workFlowDetails, complaintDetails);
-      const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
-      if (complaintTimelineData) {
-        // const actionByCitizenOnComplaintCreation = complaintTimelineData;
-
-        const { thumbnailsToShow } = complaintTimelineData?.[0];
-        thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
+      if (workFlowDetails) {
+        const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
+        if (complaintTimelineData) {
+          // const actionByCitizenOnComplaintCreation = complaintTimelineData;
+  
+          const { thumbnailsToShow } = complaintTimelineData?.[0];
+          thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
+        }
       }
-    }
   }, [workFlowDetails]);
 
   useEffect(() => {
     workFlowDetails.revalidate();
-  }, [workFlowDetails]);
+  }, []);//this is causing the issue
 
   return (
     !workFlowDetails.isLoading && (
@@ -84,9 +83,14 @@ const ComplaintDetailsPage = (props) => {
   const [loader, setLoader] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
 
-  useEffect(() => {
-    console.log("imageShownBelowComplaintDetails", imageShownBelowComplaintDetails);
-  }, [imageShownBelowComplaintDetails]);
+  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
+  const localityCode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.locality?.code;
+  const localityObj = localities?.find((loc) => loc?.code == localityCode);
+  const localityName = localityObj?.name || "";
+  const city = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.city || "";
+  const pincode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.pincode || "";
+
+  const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
 
   useEffect(() => {
     (async () => {
@@ -170,7 +174,9 @@ const ComplaintDetailsPage = (props) => {
             <Card>
               <CardSubHeader>{t(`SWACHBHARATCATEGORY.${complaintDetails.audit.serviceCode.toUpperCase()}`)}</CardSubHeader>
               <StatusTable>
-                {Object.keys(complaintDetails.details).map((flag, index, arr) => (
+                {Object.keys(complaintDetails.details)
+                .filter((k) => k !== "ES_CREATECOMPLAINT_ADDRESS")
+                .map((flag, index, arr) => (
                   <Row
                     key={index}
                     label={t(flag)}
@@ -179,9 +185,10 @@ const ComplaintDetailsPage = (props) => {
                         ? complaintDetails.details[flag].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
                         : t(complaintDetails.details[flag]) || "N/A"
                     }
-                    last={index === arr.length - 1}
+                    // last={index === arr.length - 1}
                   />
                 ))}
+                <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} />
               </StatusTable>
               <h1 style={{ fontSize: "16px", marginBottom: "16px", color: "blue", fontWeight: "bolder" }}>
                 <a

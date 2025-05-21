@@ -37,9 +37,6 @@ export const CreateComplaint = ({ parentUrl }) => {
     },
     t
   );
-  console.log("fetchedLocalities", fetchedLocalities);
-  console.log("getcities", getCities()[0]);
-  console.log("selectedCity+++", selectedCity);
   // const fetchedLocalities = useMemo(() => {
   //   return Digit.Hooks.useBoundaryLocalities(
   //     getCities()[0]?.code,
@@ -82,7 +79,7 @@ export const CreateComplaint = ({ parentUrl }) => {
             longitude: longitude ? longitude : 76.76504,
           },
           val: "",
-          place: "test",
+          place: "",
         };
         // console.log("newGeoLocation", newGeoLocation);
         setGeoLocation(newGeoLocation);
@@ -97,7 +94,6 @@ export const CreateComplaint = ({ parentUrl }) => {
   const SelectImages = Digit?.ComponentRegistryService?.getComponent("SWACHSelectImages");
 
   const localities = useMemo(() => {
-    console.log("fetchedLocalities_in use memo", fetchedLocalities);
     return fetchedLocalities;
   }, [selectedCity, fetchedLocalities]);
 
@@ -201,7 +197,6 @@ export const CreateComplaint = ({ parentUrl }) => {
 
     return;
   };
-  console.log("selectedCity", selectedCity);
   function selectLocality(locality) {
     setSelectedLocality(locality);
   }
@@ -457,8 +452,8 @@ export const CreateComplaint = ({ parentUrl }) => {
           key: "geoLocator",
           withoutLabel: true,
           component: (props) => (
-            <div>
-              <div></div>
+            <div >
+              {/* <div></div> */}
               <SelectGeolocation
                 t={t}
                 onSelect={() => {
@@ -475,9 +470,9 @@ export const CreateComplaint = ({ parentUrl }) => {
                 }}
               />
               {geoLocation?.place?.length > 0 ? (
-                <h3>{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION") + ": " + geoLocation?.place + "," + geoLocation?.val}</h3>
+                <div className="font-Weigth-bold">{t("CS_COMPLAINT_DETAILS_SELECTED_LOCATION") + ": " + geoLocation?.place + "," + geoLocation?.val}</div>
               ) : (
-                <h1>{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</h1>
+                <div className="font-Weigth-bold">{t("CS_COMPLAINT_DETAILS_NO_LOCATION_SELECTED")}</div>
               )}
             </div>
           ),

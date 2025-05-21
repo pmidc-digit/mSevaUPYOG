@@ -1,3 +1,5 @@
+import { add } from "lodash";
+
 export const Complaint = {
   create: async ({
     cityCode,
@@ -5,6 +7,7 @@ export const Complaint = {
     priorityLevel,
     description,
     landmark,
+    houseNoAndStreetName,
     city,
     district,
     region,
@@ -28,6 +31,7 @@ export const Complaint = {
         source: Digit.Utils.browser.isWebview() ? "mobile" : "web",
         address: {
           landmark: landmark,
+          street: houseNoAndStreetName || "",
           city: city,
           district: district,
           region: region,

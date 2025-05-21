@@ -257,6 +257,22 @@ const Urls = {
   bills: {
     cancelBill: "/billing-service/bill/v2/_cancelbill",
   },
+
+  sv: {
+    create: "/sv-services/street-vending/_create",
+    search: "/sv-services/street-vending/_search",
+    update: "/sv-services/street-vending/_update",
+    deleteDraft: "/sv-services/street-vending/_deletedraft",
+  },
+
+  ads: {
+    create: "/adv-services/booking/v1/_create",
+    search: "/adv-services/booking/v1/_search",
+    update: "/adv-services/booking/v1/_update",
+    slot_search: "/adv-services/booking/v1/_slot-search",
+    estimateCreate: "/adv-services/booking/v1/_estimate",
+  },
+
   access_control: "/access/v1/actions/mdms/_get",
   billgenie: "/egov-searcher",
   audit: "/inbox/v1/elastic/_search",

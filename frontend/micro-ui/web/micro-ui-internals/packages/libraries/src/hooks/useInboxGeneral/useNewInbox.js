@@ -2,10 +2,10 @@ import { useTranslation } from "react-i18next";
 import { useQuery, useQueryClient } from "react-query";
 import { FSMService } from "../../services/elements/FSM";
 import { PTService } from "../../services/elements/PT";
-
 import { filterFunctions } from "./newFilterFn";
 import { getSearchFields } from "./searchFields";
 import { InboxGeneral } from "../../services/elements/InboxService";
+import { SVService } from "../../services/elements/SV";
 
 const inboxConfig = (tenantId, filters) => ({
   PT: {
@@ -24,7 +24,7 @@ const inboxConfig = (tenantId, filters) => ({
     fetchFilters: filterFunctions.PTR,
     _searchFn: () => PTRService.search({ tenantId, filters }),
   },
-  
+
   FSM: {
     services: ["FSM"],
     searchResponseKey: "fsm",
@@ -32,6 +32,14 @@ const inboxConfig = (tenantId, filters) => ({
     businessIdAliasForSearch: "applicationNo",
     fetchFilters: filterFunctions.FSM,
     _searchFn: () => FSMService.search(tenantId, filters),
+  },
+  SV: {
+    services: ["street-vending"],
+    searchResponseKey: "SVDetails",
+    businessIdsParamForSearch: "applicationNo",
+    businessIdAliasForSearch: "applicationNo",
+    fetchFilters: filterFunctions.SV,
+    _searchFn: () => SVService.search({ tenantId, filters }),
   },
 });
 

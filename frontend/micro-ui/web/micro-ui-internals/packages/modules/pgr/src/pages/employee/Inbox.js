@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Header } from "@mseva/digit-ui-react-components";
 
@@ -24,8 +24,8 @@ const Inbox = ({initialStates={}}) => {
 
   useEffect(() => {
     (async () => {
-      const applicationStatus = searchParams?.filters?.pgrfilters?.applicationStatus?.map(e => e.code).join(",")
-      let response = await Digit.PGRService.count(tenantId, applicationStatus?.length > 0  ? {applicationStatus} : {} );
+      const applicationStatus = searchParams?.filters?.pgrfilters?.applicationStatus?.map((e) => e.code).join(",");
+      let response = await Digit.PGRService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
       if (response?.count) {
         setTotalRecords(response.count);
       }
@@ -49,9 +49,13 @@ const Inbox = ({initialStates={}}) => {
   };
 
   const onSearch = (params = "") => {
+    console.log("params", params);
     setSearchParams({ ...searchParams, search: params });
   };
 
+  const queryParams = useMemo(() => {
+    return { ...searchParams, offset: pageOffset, limit: pageSize };
+  }, [searchParams, pageOffset, pageSize]);
   // let complaints = Digit.Hooks.pgr.useInboxData(searchParams) || [];
   //let { data: complaints, isLoading } = Digit.Hooks.pgr.useInboxData({ ...searchParams, offset: pageOffset, limit: pageSize }) ;
 

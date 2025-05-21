@@ -41,7 +41,7 @@ import {
   initReceiptsComponents,
   ReceiptsModule,
 } from "@mseva/digit-ui-module-receipts";
-// import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
+import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initNOCComponents } from "@mseva/digit-ui-module-noc";
 import {
   initEngagementComponents,
@@ -54,6 +54,9 @@ import {
   CommonPTModule,
 } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
+import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
+import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
+
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
 initLibraries();
@@ -83,6 +86,8 @@ const enabledModules = [
   "Birth",
   "Death",
   "Swach",
+  "SV",
+  "ADS",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -101,6 +106,12 @@ window.Digit.ComponentRegistryService.setupRegistry({
   PTRLinks,
   CommonPTModule,
   ...PTRComponents,
+  SVModule,
+  SVLinks,
+  ...SVComponents,
+  ADSLinks,
+  ADSModule,
+  ...ADSComponents,
 });
 initPGRComponents();
 initSWACHComponents();
@@ -110,7 +121,7 @@ initMCollectComponents();
 initHRMSComponents();
 initTLComponents();
 initReceiptsComponents();
-// initOBPSComponents();
+initOBPSComponents();
 initNOCComponents();
 initEngagementComponents();
 initWSComponents();

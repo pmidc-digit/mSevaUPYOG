@@ -1,7 +1,7 @@
-import { Banner, Card, Loader, Row, StatusTable, SubmitBar,Toast } from "@mseva/digit-ui-react-components";
-import React, {useState, useEffect } from "react";
+import { Banner, Card, Loader, Row, StatusTable, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useRouteMatch,useHistory } from "react-router-dom";
+import { Link, useRouteMatch, useHistory } from "react-router-dom";
 import { ADSDataConvert } from "../../../utils";
 
 const GetActionMessage = (props) => {
@@ -32,9 +32,9 @@ const BannerPicker = (props) => {
 };
 
 /**
- * ADSAcknowledgement component displays the acknowledgment of an advertisement 
- * booking request. It shows the status of the booking operation, including 
- * success or failure messages.The component handles the mutation of 
+ * ADSAcknowledgement component displays the acknowledgment of an advertisement
+ * booking request. It shows the status of the booking operation, including
+ * success or failure messages.The component handles the mutation of
  * booking data and manages loading states effectively.
  */
 const ADSAcknowledgement = ({ data, onSuccess }) => {
@@ -62,30 +62,45 @@ const ADSAcknowledgement = ({ data, onSuccess }) => {
       isTimerRequired: true,
     })),
   };
- 
-    const handleMakePayment = async () => {
-      try {
-        // Await the mutation and capture the result directly
-        const result = await slotSearchData.mutateAsync(formdata);
-        let SlotSearchData={
-          bookingId: mutation.data?.bookingApplication[0].bookingId,
-          tenantId: tenantId,
-          cartDetails: mutation.data?.bookingApplication[0]?.cartDetails,
-        };
-        const isSlotBooked = result?.advertisementSlotAvailabiltityDetails?.some((slot) => slot.slotStaus === "BOOKED");
-        const timerValue=result?.advertisementSlotAvailabiltityDetails[0].timerValue;
-        if (isSlotBooked) {
-          setShowToast({ error: true, label: t("ADS_ADVERTISEMENT_ALREADY_BOOKED") });
-        } else {
-          history.push({
-            pathname: `/digit-ui/citizen/payment/my-bills/${"adv-services"}/${ mutation.data?.bookingApplication[0]?.bookingNo}`,
-            state: { tenantId:tenantId, bookingNo: mutation.data?.bookingApplication[0]?.bookingNo, timerValue:timerValue , SlotSearchData:SlotSearchData},
-          });
-        }
+
+  const handleMakePayment = async () => {
+    try {
+      // Await the mutation and capture the result directly
+      const result = await slotSearchData.mutateAsync(formdata);
+      let SlotSearchData = {
+        bookingId: mutation.data?.bookingApplication[0].bookingId,
+        tenantId: tenantId,
+        cartDetails: mutation.data?.bookingApplication[0]?.cartDetails,
+      };
+      const isSlotBooked = result?.advertisementSlotAvailabiltityDetails?.some((slot) => slot.slotStaus === "BOOKED");
+      const timerValue = result?.advertisementSlotAvailabiltityDetails[0].timerValue;
+      if (isSlotBooked) {
+        setShowToast({ error: true, label: t("ADS_ADVERTISEMENT_ALREADY_BOOKED") });
+      } else if (user.type === "CITIZEN") {
+        history.push({
+          pathname: `/digit-ui/citizen/payment/my-bills/${"adv-services"}/${mutation.data?.bookingApplication[0]?.bookingNo}`,
+          state: {
+            tenantId: tenantId,
+            bookingNo: mutation.data?.bookingApplication[0]?.bookingNo,
+            timerValue: timerValue,
+            SlotSearchData: SlotSearchData,
+          },
+        });
+      } else if (user.type === "EMPLOYEE") {
+        history.push({
+          pathname: `/digit-ui/employee/payment/collect/${"adv-services"}/${mutation.data?.bookingApplication[0]?.bookingNo}`,
+          state: {
+            tenantId: tenantId,
+            bookingNo: mutation.data?.bookingApplication[0]?.bookingNo,
+            timerValue: timerValue,
+            SlotSearchData: SlotSearchData,
+          },
+        });
+      }
     } catch (error) {
       setShowToast({ error: true, label: t("CS_SOMETHING_WENT_WRONG") });
     }
-    };
+  };
   useEffect(() => {
     try {
       data.tenantId = tenantId;
@@ -96,8 +111,7 @@ const ADSAcknowledgement = ({ data, onSuccess }) => {
     } catch (err) {}
   }, []);
 
-  
-useEffect(() => {
+  useEffect(() => {
     if (showToast) {
       const timer = setTimeout(() => {
         setShowToast(null);
@@ -114,40 +128,39 @@ useEffect(() => {
         {mutation.isSuccess && <Row rowContainerStyle={rowContainerStyle} last textStyle={{ whiteSpace: "pre", width: "60%" }} />}
       </StatusTable>
       {mutation.isSuccess && (
-      <div style={{ display: 'flex', flexDirection: 'row', gap: '20px' }}>
-        {user.type==="EMPLOYEE" &&(<Link to={`/digit-ui/employee`}>
-        <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-         </Link>)}
-         {user.type==="CITIZEN" &&(<Link to={`/digit-ui/citizen`}>
-        <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-         </Link>)}
-        {user.type==="EMPLOYEE" &&(
-         <Link to={`/digit-ui/employee/payment/collect/${"adv-services"}/${mutation.data?.bookingApplication[0].bookingNo}`}>
-          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} />
-          </Link> )}
-          {user.type==="CITIZEN" &&(
-            <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} />)}
-      </div>
-    )}
-    {!mutation.isSuccess && user.type==="CITIZEN" &&(
-      <Link to={`/digit-ui/citizen`}>
-      <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-       </Link>
-     )}
-     {!mutation.isSuccess && user.type==="EMPLOYEE" &&(
-      <Link to={`/digit-ui/employee`}>
-      <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-       </Link>
-     )}
-     {showToast && (
-             <Toast
-               error={showToast.error}
-               warning={showToast.warning}
-               label={t(showToast.label)}
-               onClose={() => {
-                 setShowToast(null);
-               }}
-             />
+        <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+          {user.type === "EMPLOYEE" && (
+            <Link to={`/digit-ui/employee`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+            </Link>
+          )}
+          {user.type === "CITIZEN" && (
+            <Link to={`/digit-ui/citizen`}>
+              <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+            </Link>
+          )}
+          <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} />
+        </div>
+      )}
+      {!mutation.isSuccess && user.type === "CITIZEN" && (
+        <Link to={`/digit-ui/citizen`}>
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+        </Link>
+      )}
+      {!mutation.isSuccess && user.type === "EMPLOYEE" && (
+        <Link to={`/digit-ui/employee`}>
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+        </Link>
+      )}
+      {showToast && (
+        <Toast
+          error={showToast.error}
+          warning={showToast.warning}
+          label={t(showToast.label)}
+          onClose={() => {
+            setShowToast(null);
+          }}
+        />
       )}
     </Card>
   );

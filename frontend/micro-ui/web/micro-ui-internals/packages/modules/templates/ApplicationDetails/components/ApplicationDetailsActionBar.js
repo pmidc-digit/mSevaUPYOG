@@ -33,6 +33,7 @@ function ApplicationDetailsActionBar({ workflowDetails, displayMenu, onActionSel
     isSingleButton = false;
   }
 
+  console.log("workflow details: ",workflowDetails);
   return (
     <React.Fragment>
       {!workflowDetails?.isLoading && isMenuBotton && !isSingleButton && (

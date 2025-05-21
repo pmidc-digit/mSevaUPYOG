@@ -32,7 +32,7 @@ export const SuccessfulPayment = (props) => {
 
   props.setLink(combineResponseFSM);
   let { consumerCode, receiptNumber, businessService } = useParams();
-  console.log("consummennene",consumerCode);
+  console.log("consummennene", consumerCode);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   receiptNumber = receiptNumber.replace(/%2F/g, "/");
   const { data = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
@@ -44,11 +44,11 @@ export const SuccessfulPayment = (props) => {
     { enabled: businessService?.includes("BPA") ? true : false }
   );
   const cities = Digit.Hooks.useTenants();
-  let ulbType=""
-  const loginCity=JSON.parse(sessionStorage.getItem("Digit.User"))?.value?.info?.tenantId
-  if(cities.data!==undefined){
-    const selectedTenantData = cities.data.find(item => item.city.districtTenantCode=== loginCity);
-    ulbType=selectedTenantData.city.ulbGrade 
+  let ulbType = "";
+  const loginCity = JSON.parse(sessionStorage.getItem("Digit.User"))?.value?.info?.tenantId;
+  if (cities.data !== undefined) {
+    const selectedTenantData = cities.data.find((item) => item.city.districtTenantCode === loginCity);
+    ulbType = selectedTenantData.city.ulbGrade;
   }
 
   const FSM_EDITOR = Digit.UserService.hasAccess("FSM_EDITOR_EMP") || false;
@@ -67,10 +67,10 @@ export const SuccessfulPayment = (props) => {
         if (!payments.Payments[0]?.fileStoreId) {
           response = await Digit.PaymentService.generatePdf(state, { Payments: payments.Payments }, generatePdfKey);
         }
-      }
+      };
 
       // call the function
-      fetchData()
+      fetchData();
       queryClient.clear();
     };
   }, []);
@@ -120,7 +120,7 @@ export const SuccessfulPayment = (props) => {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
     }
   };
-  
+
   // const printpetCertificate = async () => {
   //   const tenantId = Digit.ULBService.getCurrentTenantId();
   //   const state = Digit.ULBService.getStateId();
@@ -134,7 +134,6 @@ export const SuccessfulPayment = (props) => {
   //     window.open(fileStore[response.filestoreIds[0]], "_blank");
   //   }
   // };
-  
 
   const convertDateToEpoch = (dateString, dayStartOrEnd = "dayend") => {
     //example input format : "2018-10-02"
@@ -174,6 +173,32 @@ export const SuccessfulPayment = (props) => {
     }
   };
 
+  const svCertificate = async () => {
+    //const tenantId = Digit.ULBService.getCurrentTenantId();
+    const state = tenantId;
+    const applicationDetails = await Digit.SVService.search({ tenantId, filters: { applicationNumber: consumerCode, isDraftApplication: false } });
+    const generatePdfKeyForTL = "svcertificate";
+
+    if (applicationDetails) {
+      let response = await Digit.PaymentService.generatePdf(state, { SVDetail: [applicationDetails?.SVDetail?.[0]] }, generatePdfKeyForTL);
+      const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
+      window.open(fileStore[response.filestoreIds[0]], "_blank");
+    }
+  };
+
+  const svIdCard = async () => {
+    //const tenantId = Digit.ULBService.getCurrentTenantId();
+    const state = tenantId;
+    const applicationDetails = await Digit.SVService.search({ tenantId, filters: { applicationNumber: consumerCode, isDraftApplication: false } });
+    const generatePdfKeyForTL = "svidentitycard";
+
+    if (applicationDetails) {
+      let response = await Digit.PaymentService.generatePdf(state, { SVDetail: [applicationDetails?.SVDetail?.[0]] }, generatePdfKeyForTL);
+      const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
+      window.open(fileStore[response.filestoreIds[0]], "_blank");
+    }
+  };
+
   const printPdf = (blob) => {
     const fileURL = URL.createObjectURL(blob);
     var myWindow = window.open(fileURL);
@@ -184,13 +209,13 @@ export const SuccessfulPayment = (props) => {
       });
     }
   };
- 
+
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: data?.[0]?.tenantId,
     id: data?.[0]?.applicationNo,
     moduleCode: "OBPS",
   });
-  
+
   const getPermitOccupancyOrderSearch = async (order, mode = "download") => {
     let queryObj = { applicationNo: data?.[0]?.applicationNo };
     let bpaResponse = await Digit.OBPSService.BPASearch(data?.[0]?.tenantId, queryObj);
@@ -204,28 +229,36 @@ export const SuccessfulPayment = (props) => {
     let reqData = { ...bpaData, edcrDetail: [{ ...edcrData }] };
     const state = Digit.ULBService.getStateId();
 
-    let count=0;
-    for(let i=0;i<workflowDetails?.data?.processInstances?.length;i++){
-      const newDate=new Date(workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime);
-    const formattedDate=format(newDate, 'dd-MM-yyyy HH:mm:ss');
-    console.log("formatteddate2", formattedDate)
-      if((workflowDetails?.data?.processInstances[i]?.action==="POST_PAYMENT_APPLY" ||workflowDetails?.data?.processInstances[i]?.action==="PAY" ) && (workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus==="APPROVAL_INPROGRESS")   && count==0 ){
-          reqData.additionalDetails.submissionDate=workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
-          reqData.additionalDetails.formattedSubmissionDate=formattedDate;
-          count=1;
-        }
+    let count = 0;
+    for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+      const newDate = new Date(workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime);
+      const formattedDate = format(newDate, "dd-MM-yyyy HH:mm:ss");
+      console.log("formatteddate2", formattedDate);
+      if (
+        (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+          workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+        workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+        count == 0
+      ) {
+        reqData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+        reqData.additionalDetails.formattedSubmissionDate = formattedDate;
+        count = 1;
+      }
     }
-        
-    if(reqData?.additionalDetails?.approvedColony=="NO"){
-      reqData.additionalDetails.permitData= "The plot has been officially regularized under No."+reqData?.additionalDetails?.NocNumber +"  dated dd/mm/yyyy, registered in the name of <name as per the NOC>. This regularization falls within the jurisdiction of "+ state +".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions"
+
+    if (reqData?.additionalDetails?.approvedColony == "NO") {
+      reqData.additionalDetails.permitData =
+        "The plot has been officially regularized under No." +
+        reqData?.additionalDetails?.NocNumber +
+        "  dated dd/mm/yyyy, registered in the name of <name as per the NOC>. This regularization falls within the jurisdiction of " +
+        state +
+        ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
+    } else if (reqData?.additionalDetails?.approvedColony == "YES") {
+      reqData.additionalDetails.permitData = "The building plan falls under approved colony " + reqData?.additionalDetails?.nameofApprovedcolony;
+    } else {
+      reqData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
     }
-    else if(reqData?.additionalDetails?.approvedColony=="YES" ){
-      reqData.additionalDetails.permitData="The building plan falls under approved colony "+reqData?.additionalDetails?.nameofApprovedcolony
-    }
-    else{
-      reqData.additionalDetails.permitData="The building plan falls under Lal Lakir"
-    }
-    
+
     let response = await Digit.PaymentService.generatePdf(bpaData?.tenantId, { Bpa: [reqData] }, order);
     const fileStore = await Digit.PaymentService.printReciept(bpaData?.tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
@@ -246,61 +279,58 @@ export const SuccessfulPayment = (props) => {
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
 
     if (!payments.Payments[0]?.fileStoreId) {
-      let assessmentYear="",assessmentYearForReceipt="";
-      let count=0;
-      let toDate,fromDate;
-	  if(payments.Payments[0].paymentDetails[0].businessService=="PT"){
-       
-      payments.Payments[0].paymentDetails[0].bill.billDetails.map(element => {
+      let assessmentYear = "",
+        assessmentYearForReceipt = "";
+      let count = 0;
+      let toDate, fromDate;
+      if (payments.Payments[0].paymentDetails[0].businessService == "PT") {
+        payments.Payments[0].paymentDetails[0].bill.billDetails.map((element) => {
+          if (element.amount > 0 || element.amountPaid > 0) {
+            count = count + 1;
+            toDate = convertEpochToDate(element.toPeriod).split("/")[2];
+            fromDate = convertEpochToDate(element.fromPeriod).split("/")[2];
+            assessmentYear =
+              assessmentYear == ""
+                ? fromDate + "-" + toDate + "(Rs." + element.amountPaid + ")"
+                : assessmentYear + "," + fromDate + "-" + toDate + "(Rs." + element.amountPaid + ")";
+            assessmentYearForReceipt = fromDate + "-" + toDate;
+          }
+        });
 
-          if(element.amount >0 || element.amountPaid>0)
-          { count=count+1;
-            toDate=convertEpochToDate(element.toPeriod).split("/")[2];
-            fromDate=convertEpochToDate(element.fromPeriod).split("/")[2];
-            assessmentYear=assessmentYear==""?fromDate+"-"+toDate+"(Rs."+element.amountPaid+")":assessmentYear+","+fromDate+"-"+toDate+"(Rs."+element.amountPaid+")";
-            assessmentYearForReceipt=fromDate+"-"+toDate;
-          }
-    
-          });
-  
-          if(count==0)
-          {
-            let toDate=convertEpochToDate( payments.Payments[0].paymentDetails[0].bill.billDetails[0].toPeriod).split("/")[2];
-            let fromDate=convertEpochToDate( payments.Payments[0].paymentDetails[0].bill.billDetails[0].fromPeriod).split("/")[2];
-            assessmentYear=assessmentYear==""?fromDate+"-"+toDate:assessmentYear+","+fromDate+"-"+toDate; 
-            assessmentYearForReceipt=fromDate+"-"+toDate;
-          }
-          
-          const details = {
-          "assessmentYears": assessmentYear
+        if (count == 0) {
+          let toDate = convertEpochToDate(payments.Payments[0].paymentDetails[0].bill.billDetails[0].toPeriod).split("/")[2];
+          let fromDate = convertEpochToDate(payments.Payments[0].paymentDetails[0].bill.billDetails[0].fromPeriod).split("/")[2];
+          assessmentYear = assessmentYear == "" ? fromDate + "-" + toDate : assessmentYear + "," + fromDate + "-" + toDate;
+          assessmentYearForReceipt = fromDate + "-" + toDate;
+        }
+
+        const details = {
+          assessmentYears: assessmentYear,
+        };
+        payments.Payments[0].paymentDetails[0].additionalDetails = details;
+        printRecieptNew(payments);
+      } else if (payments.Payments[0].paymentDetails[0].businessService.includes("BPA")) {
+        const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
+        const updatedpayments = {
+          ...payments,
+          payments: payments.Payments.map((payment, index) => {
+            if (index === 0) {
+              return {
+                ...payment,
+                additionalDetails: {
+                  ...payment.additionalDetails,
+                  designation: designation,
+                  ulbType: ulbType,
+                },
+              };
             }
-            payments.Payments[0].paymentDetails[0].additionalDetails=details; 
-            printRecieptNew(payments)
-        }
-        else if(payments.Payments[0].paymentDetails[0].businessService.includes("BPA")){
-          const designation=(ulbType==="Municipal Corporation") ? "Municipal Commissioner" : "Executive Officer"
-          const updatedpayments={
-            ...payments,
-            payments:payments.Payments.map((payment, index)=>{
-              if(index===0){
-                return{
-                  ...payment,
-                  additionalDetails:{
-                    ...payment.additionalDetails,
-                    designation:designation,
-                    ulbType:ulbType
-                  }
-                }
-              }
-              return payment;
-            })
-          }
-          response = await Digit.PaymentService.generatePdf(state, { Payments: updatedpayments.payments }, generatePdfKey);
-        }
-        else {
-          response = await Digit.PaymentService.generatePdf(state, { Payments: payments.Payments }, generatePdfKey);
-        }
-      
+            return payment;
+          }),
+        };
+        response = await Digit.PaymentService.generatePdf(state, { Payments: updatedpayments.payments }, generatePdfKey);
+      } else {
+        response = await Digit.PaymentService.generatePdf(state, { Payments: payments.Payments }, generatePdfKey);
+      }
     }
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response.filestoreIds[0]], "_blank");
@@ -308,209 +338,226 @@ export const SuccessfulPayment = (props) => {
 
   const printDisconnectionRecipet = async () => {
     let tenantid = tenantId ? tenantId : Digit.ULBService.getCurrentTenantId();
-    let consumercode =  window.location.href.substring(window.location.href.lastIndexOf(consumerCode),window.location.href.lastIndexOf("?"));
+    let consumercode = window.location.href.substring(window.location.href.lastIndexOf(consumerCode), window.location.href.lastIndexOf("?"));
     await Digit.Utils.downloadReceipt(consumercode, businessService, "consolidatedreceipt", tenantid);
-  }
+  };
   const printRecieptNew = async (payment) => {
-    console.log("paymentpayment",payment,payment.Payments[0].paymentDetails[0].receiptNumber,payment.Payments[0])
+    console.log("paymentpayment", payment, payment.Payments[0].paymentDetails[0].receiptNumber, payment.Payments[0]);
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const state = Digit.ULBService.getStateId();
-    let paymentArray=[];
+    let paymentArray = [];
     const payments = await Digit.PaymentService.getReciept(tenantId, "PT", { receiptNumbers: payment.Payments[0].paymentDetails[0].receiptNumber });
     let response = { filestoreIds: [payments.Payments[0]?.fileStoreId] };
     if (true) {
-      let assessmentYear="",assessmentYearForReceipt="";
-      let count=0;
-      let toDate,fromDate;
-    if(payments.Payments[0].paymentDetails[0].businessService=="PT"){
-       let arrearRow={};  let arrearArray=[];
-          let taxRow={};  let taxArray=[];
-         
-  
-          let roundoff=0,tax=0,firecess=0,cancercess=0,penalty=0,rebate=0,interest=0,usage_exemption=0,special_category_exemption=0,adhoc_penalty=0,adhoc_rebate=0,total=0;
-          let roundoffT=0,taxT=0,firecessT=0,cancercessT=0,penaltyT=0,rebateT=0,interestT=0,usage_exemptionT=0,special_category_exemptionT=0,adhoc_penaltyT=0,adhoc_rebateT=0,totalT=0;
-  
-     
-      payments.Payments[0].paymentDetails[0].bill.billDetails.map(element => {
-  
-          if(element.amount >0 || element.amountPaid>0)
-          { count=count+1;
-            toDate=convertEpochToDate(element.toPeriod).split("/")[2];
-            fromDate=convertEpochToDate(element.fromPeriod).split("/")[2];
-            assessmentYear=assessmentYear==""?fromDate+"-"+toDate+"(Rs."+element.amountPaid+")":assessmentYear+","+fromDate+"-"+toDate+"(Rs."+element.amountPaid+")";
-            assessmentYearForReceipt=fromDate+"-"+toDate;
-          
-       element.billAccountDetails.map(ele => {
-      if(ele.taxHeadCode == "PT_TAX")
-    {tax=ele.adjustedAmount;
-      taxT=ele.amount}
-    else if(ele.taxHeadCode == "PT_TIME_REBATE")
-    {rebate=ele.adjustedAmount;
-      rebateT=ele.amount;}
-    else if(ele.taxHeadCode == "PT_CANCER_CESS")
-    {cancercess=ele.adjustedAmount;
-    cancercessT=ele.amount;}
-    else if(ele.taxHeadCode == "PT_FIRE_CESS")
-    {firecess=ele.adjustedAmount;
-      firecessT=ele.amount;}
-    else if(ele.taxHeadCode == "PT_TIME_INTEREST")
-    {interest=ele.adjustedAmount;
-      interestT=ele.amount;}
-    else if(ele.taxHeadCode == "PT_TIME_PENALTY")
-    {penalty=ele.adjustedAmount;
-      penaltyT=ele.amount;}
-    else if(ele.taxHeadCode == "PT_OWNER_EXEMPTION")
-    {special_category_exemption=ele.adjustedAmount;
-      special_category_exemptionT=ele.amount;}	
-    else if(ele.taxHeadCode == "PT_ROUNDOFF")
-    {roundoff=ele.adjustedAmount;
-      roundoffT=ele.amount;}	
-    else if(ele.taxHeadCode == "PT_UNIT_USAGE_EXEMPTION")
-    {usage_exemption=ele.adjustedAmount;
-      usage_exemptionT=ele.amount;}	
-    else if(ele.taxHeadCode == "PT_ADHOC_PENALTY")
-    {adhoc_penalty=ele.adjustedAmount;
-      adhoc_penaltyT=ele.amount;}
-    else if(ele.taxHeadCode == "PT_ADHOC_REBATE")
-    {adhoc_rebate=ele.adjustedAmount;
-      adhoc_rebateT=ele.amount;}
-  
-    totalT=totalT+ele.amount;
-    });
-  arrearRow={
-  "year":assessmentYearForReceipt,
-  "tax":tax,
-  "firecess":firecess,
-  "cancercess":cancercess,
-  "penalty":penalty,
-  "rebate": rebate,
-  "interest":interest,
-  "usage_exemption":usage_exemption,
-  "special_category_exemption": special_category_exemption,
-  "adhoc_penalty":adhoc_penalty,
-  "adhoc_rebate":adhoc_rebate,
-  "roundoff":roundoff,
-  "total":element.amountPaid
-  };
-  taxRow={
-    "year":assessmentYearForReceipt,
-    "tax":taxT,
-    "firecess":firecessT,
-    "cancercess":cancercessT,
-    "penalty":penaltyT,
-    "rebate": rebateT,
-    "interest":interestT,
-    "usage_exemption":usage_exemptionT,
-    "special_category_exemption": special_category_exemptionT,
-    "adhoc_penalty":adhoc_penaltyT,
-    "adhoc_rebate":adhoc_rebateT,
-    "roundoff":roundoffT,
-    "total":element.amount
-    };
-  arrearArray.push(arrearRow);
-  taxArray.push(taxRow);
-            } 
-   
-    
-          });
-  
-          if(count==0)
-          {
-            let toDate=convertEpochToDate( payments.Payments[0].paymentDetails[0].bill.billDetails[0].toPeriod).split("/")[2];
-            let fromDate=convertEpochToDate( payments.Payments[0].paymentDetails[0].bill.billDetails[0].fromPeriod).split("/")[2];
-            assessmentYear=assessmentYear==""?fromDate+"-"+toDate:assessmentYear+","+fromDate+"-"+toDate; 
-            assessmentYearForReceipt=fromDate+"-"+toDate;
-         
-          
-            payments.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails.map(ele => {
-         
-        if(ele.taxHeadCode == "PT_TAX")
-        {tax=ele.adjustedAmount;
-        taxT=ele.amount}
-        else if(ele.taxHeadCode == "PT_TIME_REBATE")
-        {rebate=ele.adjustedAmount;
-        rebateT=ele.amount;}
-        else if(ele.taxHeadCode == "PT_CANCER_CESS")
-        {cancercess=ele.adjustedAmount;
-        cancercessT=ele.amount;}
-        else if(ele.taxHeadCode == "PT_FIRE_CESS")
-        {firecess=ele.adjustedAmount;
-        firecessT=ele.amount;}
-        else if(ele.taxHeadCode == "PT_TIME_INTEREST")
-        {interest=ele.adjustedAmount;
-        interestT=ele.amount;}
-        else if(ele.taxHeadCode == "PT_TIME_PENALTY")
-        {penalty=ele.adjustedAmount;
-        penaltyT=ele.amount;}
-        else if(ele.taxHeadCode == "PT_OWNER_EXEMPTION")
-        {special_category_exemption=ele.adjustedAmount;
-        special_category_exemptionT=ele.amount;}	
-        else if(ele.taxHeadCode == "PT_ROUNDOFF")
-        {roundoff=ele.adjustedAmount;
-        roundoffT=ele.amount;}	
-        else if(ele.taxHeadCode == "PT_UNIT_USAGE_EXEMPTION")
-        {usage_exemption=ele.adjustedAmount;
-        usage_exemptionT=ele.amount;}	
-        else if(ele.taxHeadCode == "PT_ADHOC_PENALTY")
-        {adhoc_penalty=ele.adjustedAmount;
-        adhoc_penaltyT=ele.amount;}
-        else if(ele.taxHeadCode == "PT_ADHOC_REBATE")
-        {adhoc_rebate=ele.adjustedAmount;
-        adhoc_rebateT=ele.amount;}
-      
-        total=total+ele.adjustedAmount;
-        totalT=totalT+ele.amount;
-  
+      let assessmentYear = "",
+        assessmentYearForReceipt = "";
+      let count = 0;
+      let toDate, fromDate;
+      if (payments.Payments[0].paymentDetails[0].businessService == "PT") {
+        let arrearRow = {};
+        let arrearArray = [];
+        let taxRow = {};
+        let taxArray = [];
+
+        let roundoff = 0,
+          tax = 0,
+          firecess = 0,
+          cancercess = 0,
+          penalty = 0,
+          rebate = 0,
+          interest = 0,
+          usage_exemption = 0,
+          special_category_exemption = 0,
+          adhoc_penalty = 0,
+          adhoc_rebate = 0,
+          total = 0;
+        let roundoffT = 0,
+          taxT = 0,
+          firecessT = 0,
+          cancercessT = 0,
+          penaltyT = 0,
+          rebateT = 0,
+          interestT = 0,
+          usage_exemptionT = 0,
+          special_category_exemptionT = 0,
+          adhoc_penaltyT = 0,
+          adhoc_rebateT = 0,
+          totalT = 0;
+
+        payments.Payments[0].paymentDetails[0].bill.billDetails.map((element) => {
+          if (element.amount > 0 || element.amountPaid > 0) {
+            count = count + 1;
+            toDate = convertEpochToDate(element.toPeriod).split("/")[2];
+            fromDate = convertEpochToDate(element.fromPeriod).split("/")[2];
+            assessmentYear =
+              assessmentYear == ""
+                ? fromDate + "-" + toDate + "(Rs." + element.amountPaid + ")"
+                : assessmentYear + "," + fromDate + "-" + toDate + "(Rs." + element.amountPaid + ")";
+            assessmentYearForReceipt = fromDate + "-" + toDate;
+
+            element.billAccountDetails.map((ele) => {
+              if (ele.taxHeadCode == "PT_TAX") {
+                tax = ele.adjustedAmount;
+                taxT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_TIME_REBATE") {
+                rebate = ele.adjustedAmount;
+                rebateT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_CANCER_CESS") {
+                cancercess = ele.adjustedAmount;
+                cancercessT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_FIRE_CESS") {
+                firecess = ele.adjustedAmount;
+                firecessT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_TIME_INTEREST") {
+                interest = ele.adjustedAmount;
+                interestT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_TIME_PENALTY") {
+                penalty = ele.adjustedAmount;
+                penaltyT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_OWNER_EXEMPTION") {
+                special_category_exemption = ele.adjustedAmount;
+                special_category_exemptionT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_ROUNDOFF") {
+                roundoff = ele.adjustedAmount;
+                roundoffT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_UNIT_USAGE_EXEMPTION") {
+                usage_exemption = ele.adjustedAmount;
+                usage_exemptionT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_ADHOC_PENALTY") {
+                adhoc_penalty = ele.adjustedAmount;
+                adhoc_penaltyT = ele.amount;
+              } else if (ele.taxHeadCode == "PT_ADHOC_REBATE") {
+                adhoc_rebate = ele.adjustedAmount;
+                adhoc_rebateT = ele.amount;
+              }
+
+              totalT = totalT + ele.amount;
+            });
+            arrearRow = {
+              year: assessmentYearForReceipt,
+              tax: tax,
+              firecess: firecess,
+              cancercess: cancercess,
+              penalty: penalty,
+              rebate: rebate,
+              interest: interest,
+              usage_exemption: usage_exemption,
+              special_category_exemption: special_category_exemption,
+              adhoc_penalty: adhoc_penalty,
+              adhoc_rebate: adhoc_rebate,
+              roundoff: roundoff,
+              total: element.amountPaid,
+            };
+            taxRow = {
+              year: assessmentYearForReceipt,
+              tax: taxT,
+              firecess: firecessT,
+              cancercess: cancercessT,
+              penalty: penaltyT,
+              rebate: rebateT,
+              interest: interestT,
+              usage_exemption: usage_exemptionT,
+              special_category_exemption: special_category_exemptionT,
+              adhoc_penalty: adhoc_penaltyT,
+              adhoc_rebate: adhoc_rebateT,
+              roundoff: roundoffT,
+              total: element.amount,
+            };
+            arrearArray.push(arrearRow);
+            taxArray.push(taxRow);
+          }
         });
-      arrearRow={
-      "year":assessmentYearForReceipt,
-      "tax":tax,
-      "firecess":firecess,
-      "cancercess":cancercess,
-      "penalty":penalty,
-      "interest":interest,
-      "usage_exemption":usage_exemption,
-      "special_category_exemption": special_category_exemption,
-      "adhoc_penalty":adhoc_penalty,
-      "adhoc_rebate":adhoc_rebate,
-      "roundoff":roundoff,
-      "total": payments.Payments[0].paymentDetails[0].bill.billDetails[0].amountPaid
-  
-      };
-      taxRow={
-        "year":assessmentYearForReceipt,
-        "tax":taxT,
-        "firecess":firecessT,
-        "cancercess":cancercessT,
-        "penalty":penaltyT,
-        "rebate": rebateT,
-        "interest":interestT,
-        "usage_exemption":usage_exemptionT,
-        "special_category_exemption": special_category_exemptionT,
-        "adhoc_penalty":adhoc_penaltyT,
-        "adhoc_rebate":adhoc_rebateT,
-        "roundoff":roundoffT,
-        "total": payments.Payments[0].paymentDetails[0].bill.billDetails[0].amount
-      };
-      arrearArray.push(arrearRow);
-      taxArray.push(taxRow);
-      
-  }  
-          
-          const details = {
-        "assessmentYears": assessmentYear,
-        "arrearArray":arrearArray,
-        "taxArray": taxArray
+
+        if (count == 0) {
+          let toDate = convertEpochToDate(payments.Payments[0].paymentDetails[0].bill.billDetails[0].toPeriod).split("/")[2];
+          let fromDate = convertEpochToDate(payments.Payments[0].paymentDetails[0].bill.billDetails[0].fromPeriod).split("/")[2];
+          assessmentYear = assessmentYear == "" ? fromDate + "-" + toDate : assessmentYear + "," + fromDate + "-" + toDate;
+          assessmentYearForReceipt = fromDate + "-" + toDate;
+
+          payments.Payments[0].paymentDetails[0].bill.billDetails[0].billAccountDetails.map((ele) => {
+            if (ele.taxHeadCode == "PT_TAX") {
+              tax = ele.adjustedAmount;
+              taxT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_TIME_REBATE") {
+              rebate = ele.adjustedAmount;
+              rebateT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_CANCER_CESS") {
+              cancercess = ele.adjustedAmount;
+              cancercessT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_FIRE_CESS") {
+              firecess = ele.adjustedAmount;
+              firecessT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_TIME_INTEREST") {
+              interest = ele.adjustedAmount;
+              interestT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_TIME_PENALTY") {
+              penalty = ele.adjustedAmount;
+              penaltyT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_OWNER_EXEMPTION") {
+              special_category_exemption = ele.adjustedAmount;
+              special_category_exemptionT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_ROUNDOFF") {
+              roundoff = ele.adjustedAmount;
+              roundoffT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_UNIT_USAGE_EXEMPTION") {
+              usage_exemption = ele.adjustedAmount;
+              usage_exemptionT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_ADHOC_PENALTY") {
+              adhoc_penalty = ele.adjustedAmount;
+              adhoc_penaltyT = ele.amount;
+            } else if (ele.taxHeadCode == "PT_ADHOC_REBATE") {
+              adhoc_rebate = ele.adjustedAmount;
+              adhoc_rebateT = ele.amount;
             }
-            payments.Payments[0].paymentDetails[0].additionalDetails=details;
-            
-            
+
+            total = total + ele.adjustedAmount;
+            totalT = totalT + ele.amount;
+          });
+          arrearRow = {
+            year: assessmentYearForReceipt,
+            tax: tax,
+            firecess: firecess,
+            cancercess: cancercess,
+            penalty: penalty,
+            interest: interest,
+            usage_exemption: usage_exemption,
+            special_category_exemption: special_category_exemption,
+            adhoc_penalty: adhoc_penalty,
+            adhoc_rebate: adhoc_rebate,
+            roundoff: roundoff,
+            total: payments.Payments[0].paymentDetails[0].bill.billDetails[0].amountPaid,
+          };
+          taxRow = {
+            year: assessmentYearForReceipt,
+            tax: taxT,
+            firecess: firecessT,
+            cancercess: cancercessT,
+            penalty: penaltyT,
+            rebate: rebateT,
+            interest: interestT,
+            usage_exemption: usage_exemptionT,
+            special_category_exemption: special_category_exemptionT,
+            adhoc_penalty: adhoc_penaltyT,
+            adhoc_rebate: adhoc_rebateT,
+            roundoff: roundoffT,
+            total: payments.Payments[0].paymentDetails[0].bill.billDetails[0].amount,
+          };
+          arrearArray.push(arrearRow);
+          taxArray.push(taxRow);
         }
-    
-         paymentArray[0]=payments.Payments[0]
-        console.log("payments",payments)
+
+        const details = {
+          assessmentYears: assessmentYear,
+          arrearArray: arrearArray,
+          taxArray: taxArray,
+        };
+        payments.Payments[0].paymentDetails[0].additionalDetails = details;
+      }
+
+      paymentArray[0] = payments.Payments[0];
+      console.log("payments", payments);
       response = await Digit.PaymentService.generatePdf(state, { Payments: paymentArray }, generatePdfKey);
-      console.log("responseresponse",response)
+      console.log("responseresponse", response);
     }
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response.filestoreIds[0]], "_blank");
@@ -524,7 +571,11 @@ export const SuccessfulPayment = (props) => {
         <CardText>{getCardText()}</CardText>
         {generatePdfKey ? (
           <div style={{ display: "flex" }}>
-            <div className="primary-label-btn d-grid" style={{ marginLeft: "unset", marginRight: "20px" }} onClick={IsDisconnectionFlow === "true"? printDisconnectionRecipet : printReciept}>
+            <div
+              className="primary-label-btn d-grid"
+              style={{ marginLeft: "unset", marginRight: "20px" }}
+              onClick={IsDisconnectionFlow === "true" ? printDisconnectionRecipet : printReciept}
+            >
               <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">
                 <path d="M0 0h24v24H0z" fill="none" />
                 <path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z" />
@@ -540,6 +591,52 @@ export const SuccessfulPayment = (props) => {
                 {t("CS_COMMON_PRINT_CERTIFICATE")}
               </div>
             ) : null}
+
+            {businessService == "sv-services" ? (
+              <div
+                className="primary-label-btn d-grid"
+                style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+                onClick={printReciept}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("SV_FEE_RECIEPT")}
+              </div>
+            ) : null}
+            {businessService == "sv-services" ? (
+              <div
+                className="primary-label-btn d-grid"
+                style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+                onClick={svCertificate}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("SV_CERTIFICATE")}
+              </div>
+            ) : null}
+            {businessService == "sv-services" ? (
+              <div
+                className="primary-label-btn d-grid"
+                style={{ marginLeft: "unset", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}
+                onClick={svIdCard}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+                </svg>
+                {t("SV_ID_CARD")}
+              </div>
+            ) : null}
+
+            {businessService == "sv-services" && (
+              <Link to={`/digit-ui/citizen`}>
+                <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "15px" }} />
+              </Link>
+            )}
             {/* {businessService == "pet-services" ? (
               <div className="primary-label-btn d-grid" style={{ marginLeft: "unset" }} onClick={printpetCertificate}>
                 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24">

@@ -7,6 +7,7 @@ import * as pt from "./pt";
 import * as privacy from "./privacy";
 import PDFUtil, { downloadReceipt, downloadPDFFromLink, downloadBill, getFileUrl } from "./pdf";
 import getFileTypeFromFileStoreURL from "./fileType";
+import {compressImage} from "./CompressImage"
 
 const GetParamFromUrl = (key, fallback, search) => {
   if (typeof window !== "undefined") {
@@ -309,4 +310,5 @@ export default {
   swAccess,
   svAccess,
   ...privacy,
+  compressImage,
 };

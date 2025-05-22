@@ -3,6 +3,9 @@ import { useTranslation } from "react-i18next";
 import Toast from "./Toast";
 import UploadImages from "./UploadImages";
 
+const maxImageSize = process.env.IMAGE_MAX_UPLOAD_SIZE || 11534336;
+const imageSize = process.env.IMAGE_UPLOAD_SIZE || 2097152;
+
 export const ImageUploadHandler = (props) => {
   // const __initImageIds = Digit.SessionStorage.get("PGR_CREATE_IMAGES");
   // const __initThumbnails = Digit.SessionStorage.get("PGR_CREATE_THUMBNAILS");
@@ -35,10 +38,14 @@ export const ImageUploadHandler = (props) => {
     }
   }, [uploadedImagesIds]);
 
-  useEffect(() => {
-    if (imageFile && imageFile.size > 2097152) {
-      setError("File is too large");
+  useEffect(async () => {
+    if (imageFile && imageFile.size > maxImageSize) {
+        setError("Image Size Should be less than 10MB")
     } else {
+      if(imageFile && imageFile.size > imageSize){
+        let compressImageFile = await Digit.Utils.compressImage(imageFile);
+        setImage(compressImageFile);
+      }else
       setImage(imageFile);
     }
   }, [imageFile]);

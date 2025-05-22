@@ -442,7 +442,7 @@ export const ComplaintDetails = (props) => {
           <Loader />
         ) : (
           <StatusTable>
-            {complaintDetails &&
+            {complaintDetails?.details &&
               Object.keys(complaintDetails?.details).map((k, i, arr) => (
                 <Row
                   key={k}

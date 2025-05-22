@@ -24,7 +24,7 @@ RUN yarn add @mseva/upyog-ui-module-ads@1.0.4
 
 ARG WORK_DIR
 WORKDIR /app
-# ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192
+# ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192 test
 ENV  NODE_OPTIONS "--max_old_space_size=12288 react-scripts build"
 ENV GENERATE_SOURCEMAP "true"
 

@@ -37,7 +37,7 @@ console.log("usertype",window.location.href.includes("employee"))
 
   console.log("selectedCity",selectedCity)
   let { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-    selectedCity?.districtTenantCode,
+    selectedCity?.code,
     "revenue",
     {
       enabled: !!selectedCity,
@@ -331,7 +331,7 @@ const fetchLocality=()=>{
                 disable={false}
                 option={cities}
                 select={(val)=>{
-                  selectCity(val.city)
+                  selectCity(val)
                   props.onChange(val)
                 }}
                 optionKey="i18nKey"

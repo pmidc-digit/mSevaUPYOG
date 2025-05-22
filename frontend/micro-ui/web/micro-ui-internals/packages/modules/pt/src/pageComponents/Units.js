@@ -1,6 +1,6 @@
 import { CardLabel, CardLabelError, DeleteIcon, Dropdown, LabelFieldPair, Loader, TextInput } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import { stringReplaceAll } from "../utils";
@@ -13,23 +13,79 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   let isMobile = window.Digit.Utils.browser.isMobile();
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [units, setUnits] = useState(
-    formData?.units || [
-      {
-        key: Date.now(),
-        order: 1,
-        floorNoCitizen: null,
-        occupancyType: null,
-        tenantId,
-        usageCategory: null,
-        builtUpArea: "",
-        RentedMonths: null,
-        ageOfProperty: null,
-        structureType: null,
-        NonRentedMonthsUsage: null,
-      },
-    ]
-  );
+  const isNotFirst = useRef(false)
+
+  // const [units, setUnits] = useState(
+  //   formData?.units || [
+  //     {
+  //       key: Date.now(),
+  //       order: 1,
+  //       floorNoCitizen: null,
+  //       occupancyType: null,
+  //       tenantId,
+  //       usageCategory: null,
+  //       builtUpArea: "",
+  //       RentedMonths: null,
+  //       ageOfProperty: null,
+  //       structureType: null,
+  //       NonRentedMonthsUsage: null,
+  //     },
+  //   ]
+  // );
+
+  const [units, setUnits] = useState(()=> formData?.units || []);
+
+  useEffect(()=>{
+    console.log("isNotFirst and Units", isNotFirst.current, formData.units, formData, units);
+    if(!isNotFirst.current){
+      isNotFirst.current = true;
+      return;
+    }
+    if(formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY"){
+      alert(t("UNITS_CHANGE_MESSAGE"))
+      console.log("isNotFirst and Units if Independent property", isNotFirst.current, formData.units, formData, units);
+      setUnits(()=>{
+        const numberOfFloors = formData?.noOfFloors || 0;
+    
+        return Array.from({ length: numberOfFloors }, (_, index) => ({
+          key: Date.now() + index, // ensure unique keys
+          order: index + 1,
+          floorNoCitizen: null,
+          occupancyType: null,
+          tenantId,
+          usageCategory: null,
+          builtUpArea: "",
+          RentedMonths: null,
+          ageOfProperty: null,
+          structureType: null,
+          NonRentedMonthsUsage: null,
+        }));
+      })
+    }
+    else if(formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY"){
+      alert(t("UNITS_CHANGE_MESSAGE"))
+      console.log("isNotFirst and Units if Flat/Part", isNotFirst.current, formData.units, formData, units);
+      setUnits([
+        {
+          key: Date.now(),
+          order: 1,
+          floorNoCitizen: null,
+          occupancyType: null,
+          tenantId,
+          usageCategory: null,
+          builtUpArea: "",
+          RentedMonths: null,
+          ageOfProperty: null,
+          structureType: null,
+          NonRentedMonthsUsage: null,
+        },
+      ])
+    }
+  },[formData.noOfFloors, formData.PropertyType])
+
+  useEffect(()=>{
+    console.log("isNotFirst and Units Units-Updated", units, formData);
+  },[units])
 
   console.log("here???????")
   const stateId = Digit.ULBService.getStateId();
@@ -47,6 +103,8 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       "SubOwnerShipCategory",
       "OwnerShipCategory",
     ]) || {};
+
+  console.log("Menu in Units", Menu);
 
   let usagecat = [];
   usagecat = Menu?.PropertyTax?.UsageCategory?.filter((e) => e?.code !== "MIXED") || [];
@@ -227,6 +285,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
             RentedMonths, NonRentedMonthsUsage
           };
         });
+      console.log("defaultUnits", defaultUnits);
       setUnits(defaultUnits || []);
       setLoader(false);
     }
@@ -376,7 +435,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
 
   useEffect(() => {
     goNext();
-    calculateNumberOfFloors();
+    // calculateNumberOfFloors();
   }, [units, formData.PropertyType, formData.landarea]);
 
   if (loader && presentInModifyApplication) return <Loader />;
@@ -411,7 +470,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           {...{ formState, setError, clearErrors, usageCategoryMajorMenu, subUsageCategoryMenu }}
         />
       ))}
-      <label onClick={handleAddUnit} style={{ color: "orange", width: "175px", cursor: "pointer", }}>{t("PT_ADD_UNIT")}</label>
+      {!(formData?.usageCategoryMajor?.PropertyUsageType?.code === "RESIDENTIAL" && formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY") && <label onClick={handleAddUnit} style={{ color: "orange", width: "175px", cursor: "pointer", }}>{t("PT_ADD_UNIT")}</label>}
       {["units_missing", "landArea extended"].includes(formState.errors?.[config.key]?.type) ? (
         <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
           {`${t(formState.errors?.[config.key].message.split(".")[0])}` +
@@ -485,20 +544,20 @@ function Unit({
 
   const formValue = watch();
 
-  useEffect(() => {
-    const code = formData?.usageCategoryMajor?.code;
-    if (code !== usageType?.code && code !== "MIXED") {
-      setUsageType(formData?.usageCategoryMajor);
-    }
-  }, [formData?.usageCategoryMajor?.code]);
+  // useEffect(() => {
+  //   const code = formData?.usageCategoryMajor?.code;
+  //   if (code !== usageType?.code && code !== "MIXED") {
+  //     setUsageType(formData?.usageCategoryMajor);
+  //   }
+  // }, [formData?.usageCategoryMajor?.code]);
 
-  useEffect(() => {
-    if (usageType?.code === "RESIDENTIAL") {
-      setValue("usageCategory", usageType);
-    } else {
-      if (formValue.usageCategory?.code === "RESIDENTIAL") setValue("usageCategory", null);
-    }
-  }, [usageType]);
+  // useEffect(() => {
+  //   if (usageType?.code === "RESIDENTIAL") {
+  //     setValue("usageCategory", usageType);
+  //   } else {
+  //     if (formValue.usageCategory?.code === "RESIDENTIAL") setValue("usageCategory", null);
+  //   }
+  // }, [usageType]);
 
   useEffect(() => {
     let keys = Object.keys(formValue);
@@ -720,7 +779,7 @@ function Unit({
           <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
 
           {/* Occupancy Type Component */}
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY") + " *"}</CardLabel>
             <Controller
               name="occupancyType"
@@ -740,11 +799,11 @@ function Unit({
               )}
             />
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.errors.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError>
+          <CardLabelError style={errorStyle}>{localFormState.errors.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError> */}
         </div>
       )}
 
-      <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
+      {/* <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
           <CardLabel className="card-label-smaller">{t("PT_FORM2_USAGE_TYPE") + " *"}</CardLabel>
           <Controller
             name="usageCategory"
@@ -763,11 +822,11 @@ function Unit({
               />
             )}
           />
-        </LabelFieldPair> 
+        </LabelFieldPair>  */}
 
-      {!["RESIDENTIAL"].includes(usageType?.code) ? (
+      {/* {!["RESIDENTIAL"].includes(usageType?.code) ? (
           <CardLabelError style={errorStyle}>{localFormState.touched.usageCategory ? errors?.usageCategory?.message : ""}</CardLabelError>
-        ) : null}
+        ) : null} */}
 
       <LabelFieldPair>
           <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY") + " *"}</CardLabel>
@@ -867,7 +926,7 @@ function Unit({
           ) : null}
         </React.Fragment>
       ) : null}
-      {formData?.PropertyType?.code == "VACANT" && ( 
+      {/* {formData?.PropertyType?.code == "VACANT" && ( 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
             <div className="field">
@@ -893,7 +952,7 @@ function Unit({
             </div>
           </LabelFieldPair>
         )}
-      <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError>
+      <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError> */}
     </div>
   );
 }

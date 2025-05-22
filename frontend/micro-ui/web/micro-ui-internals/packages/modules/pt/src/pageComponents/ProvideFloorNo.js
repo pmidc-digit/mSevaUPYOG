@@ -1,5 +1,5 @@
 import { CardLabel, FormStep, RadioOrSelect } from "@mseva/digit-ui-react-components";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { stringReplaceAll } from "../utils";
 
 const ProvideFloorNo = ({ t, config, onSelect, userType, formData }) => {
@@ -8,17 +8,24 @@ const ProvideFloorNo = ({ t, config, onSelect, userType, formData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   //const [SubUsageTypeOfRentedArea, setSelfOccupied] = useState(formData?.ProvideSubUsageTypeOfRentedArea);
-  const [Floorno, setFloorno] = useState(formData?.Floorno || "");
+  const [Floorno, setFloorno] = useState(formData?.noOfFloors ? {
+    i18nKey: formData?.noOfFloors.toString(), code: formData?.noOfFloors
+  }: {});
 
-  const { data: floordata } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "Floor") || {};
-  let floorlist = [];
-  floorlist = floordata?.PropertyTax?.Floor;
-  let i;
+  // const { data: floordata } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "Floor") || {};
+  // let floorlist = [];
+  // floorlist = floordata?.PropertyTax?.Floor;
+  // let i;
   let data = [];
 
-  function getfloorlistdata(floorlist) {
-    for (i = 0; Array.isArray(floorlist) && i < floorlist.length; i++) {
-      data.push({ i18nKey: "PROPERTYTAX_FLOOR_" + stringReplaceAll(floorlist[i].code, "-", "_") });
+  function getfloorlistdata() {
+    // for (i = 0; Array.isArray(floorlist) && i < floorlist.length; i++) {
+    //   data.push({ i18nKey: "PROPERTYTAX_FLOOR_" + stringReplaceAll(floorlist[i].code, "-", "_") });
+    // }
+    // return data;
+
+    for (let i = 1; i <= 25; i++) {
+      data.push({ i18nKey: i.toString(), code: i });
     }
     return data;
   }
@@ -32,21 +39,23 @@ const ProvideFloorNo = ({ t, config, onSelect, userType, formData }) => {
     onSelect(config.key, Floorno);
   }
   return (
-    <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!Floorno}>
-      <CardLabel>{t("PT_FLOOR_NUMBER_LABEL")}</CardLabel>
-      <div className={"form-pt-dropdown-only"}>
-        {data && (
+    <div>
+      {formData?.usageCategoryMajor && formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY" && <div>
+        <CardLabel>{t("PT_FLOOR_NUMBER_LABEL")}</CardLabel>
           <RadioOrSelect
             t={t}
             optionKey="i18nKey"
             isMandatory={config.isMandatory}
-            options={getfloorlistdata(floorlist) || {}}
+            // options={getfloorlistdata(floorlist) || {}}
+            options={getfloorlistdata() || {}}
             selectedOption={Floorno}
-            onSelect={selectFloorno}
+            onSelect={(val)=>{
+              onSelect("noOfFloors", val.code, config);
+              selectFloorno(val)
+            }}
           />
-        )}
-      </div>
-    </FormStep>
+      </div>}
+    </div>
   );
 };
 

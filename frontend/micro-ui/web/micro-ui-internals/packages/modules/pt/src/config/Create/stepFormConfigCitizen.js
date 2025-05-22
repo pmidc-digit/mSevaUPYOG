@@ -152,6 +152,13 @@ export const newConfig = [
       {
         type: "component",
         isMandatory: true,
+        component: "ProvideFloorNo",
+        key: "noOfFloors",
+        withoutLabel: true,
+      },
+      {
+        type: "component",
+        isMandatory: true,
         component: "BusinessName",
         key: "businessName",
         withoutLabel: true,

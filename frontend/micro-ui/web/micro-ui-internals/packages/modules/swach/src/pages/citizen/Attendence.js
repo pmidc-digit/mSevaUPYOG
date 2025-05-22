@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LinkButton, Button } from "@mseva/digit-ui-react-components";
 
@@ -23,13 +23,13 @@ import TimeLine from "../../components/TimeLine";
 const Attendence = (props) => {
   let { t } = useTranslation();
   let { id } = useParams();
-
+ const history = useHistory();
   let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); // ToDo: fetch from state
   const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId, id });
-  const { mutate: submitAttendance, isLoading: isMutating }= Digit.Hooks.swach.useAttendence();
+  const { mutate: submitAttendance, isLoading: isMutating } = Digit.Hooks.swach.useAttendence();
   const SelectImages = Digit?.ComponentRegistryService?.getComponent("SWACHSelectImages");
+  const [toast, setToast] = useState({ show: false, type: "", message: "" });
 
-  console.log("complaints details", complaintDetails);
 
   const [imageZoom, setImageZoom] = useState(null);
 
@@ -53,7 +53,14 @@ const Attendence = (props) => {
       }
     })();
   }, []);
-
+useEffect(() => {
+    if (toast.show && toast.type === "success") {
+      const timer = setTimeout(() => {
+        history.push("/digit-ui/citizen/swach-home");
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast, history]);
   const auditCitizen = complaintDetails?.audit?.citizen || {};
   const attendanceFields = [
     { label: "Name", value: auditCitizen.name || "N/A" },
@@ -103,84 +110,6 @@ const Attendence = (props) => {
     RequestInfo: { apiId: "Rainmaker", authToken: "", userInfo: {}, msgId: "", plainAccessRequest: {} },
     ImageData: { tenantId: "", useruuid: "", latitude: "", longitude: "", locality: "", imagerurl: "" },
   };
-  // async function persistAttendence(user, slots, attendance) {
-  //   const template = {
-  //     RequestInfo: { apiId: "Rainmaker", authToken: "", userInfo: {}, msgId: "", plainAccessRequest: {} },
-  //     ImageData: { tenantId: "", useruuid: "", latitude: "", longitude: "", locality: "", imagerurl: "" },
-  //   };
-  //   const requestBody = { ...template };
-  //   requestBody.RequestInfo.authToken = user.authToken;
-  //   requestBody.RequestInfo.userInfo = user.userInfo;
-  //   // requestBody.RequestInfo.msgId = `${user.msgIdPrefix}|${user.locale}`;
-
-  //   requestBody.ImageData.tenantId = slots.city;
-  //   requestBody.ImageData.locality = slots.locality;
-  //   requestBody.ImageData.latitude = slots.latitude;
-  //   requestBody.ImageData.longitude = slots.longitude;
-  //   requestBody.ImageData.useruuid = user.userInfo.uuid;
-  //   //   requestBody.ImageData.imagerurl  = attendance.image;
-  //   // const url = "https://mseva-uat.lgpunjab.gov.in/swach-services/v2/request/image/_create";
-  //   const res = await fetch(Swach_attendence, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(requestBody),
-  //   });
-  //   if (res.ok) return res.json();
-  //   throw new Error(`HTTP ${res.status}`);
-  // }
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLoader(true);
-
-  //   // 1. Build your “user” object
-  //   const digiUser = Digit.UserService.getUser() || {};
-  //   console.log("Digi User:", digiUser);
-  //   const user = {
-  //     authToken: digiUser.access_token,
-  //     userInfo: digiUser,
-  //     locale: digiUser.locale,
-  //   //   msgIdPrefix: config.msgId, // whatever you had in your original config
-  //   };
-
-  //   // 2. Build your “slots” object
-  //   const addr = complaintDetails.details.ES_CREATECOMPLAINT_ADDRESS;
-  //   const lat = addr.geoLocation.latitude;
-  //   const lng = addr.geoLocation.longitude;
-  //   const slots = {
-  //     city: addr.tenantId,
-  //     locality: address,
-  //     latitude: location.latitude,
-  //     longitude: location.longitude,
-  //     uuid:complaintDetails?.audit?.citizen?.uuid,
-  //     imageUrl:""
-  //   };
-
-  //   // 3. Grab the filestoreId from your workflow docs
-  //   const docs = complaintDetails.workflow.verificationDocuments || [];
-  //   const attendance = { image: docs[0]?.fileStoreId || "" };
-
-  //   // 4. Call your API helper
-  //   try {
-  //     const resp = await persistAttendence(user, slots, attendance);
-  //   //   Toast.success(t("ATTENDENCE_SUBMIT_SUCCESS"));
-  //     console.log("Persist Attendence Response:", resp);
-  //   } catch (err) {
-  //   //   Toast.error(t("ATTENDENCE_SUBMIT_FAILED"));
-  //     console.error("Persist Attendence Error:", err);
-  //   } finally {
-  //     setLoader(false);
-  //   }
-
-  //   // const attendanceData = {
-  //   //   name: auditCitizen.name || "N/A",
-  //   //   mobileNumber: auditCitizen.mobileNumber || "N/A",
-  //   //   address: address,
-  //   //   currentTime: currentTime,
-  //   // };
-  //   // // Replace this with your API call or logic
-  //   // console.log("Attendance Submitted:", attendanceData);
-  // };
 
   const handleSubmit = () => {
     const digiUser = Digit.UserService.getUser() || {};
@@ -201,52 +130,43 @@ const Attendence = (props) => {
     submitAttendance(
       { user, slots, attendance },
       {
-        onSuccess: () => Toast.success(t("ATTENDENCE_SUBMIT_SUCCESS")),
-        onError: () => Toast.error(t("ATTENDENCE_SUBMIT_FAILED")),
+        onSuccess: () => setToast({ show: true, type: "success", message: t("ATTENDENCE_SUBMIT_SUCCESS") }),
+        onError: () => setToast({ show: true, type: "error", message: t("ATTENDENCE_SUBMIT_FAILED") }),
       }
     );
   };
 
   return (
     <React.Fragment>
+      {toast.show && <Toast error={toast.type === "error"} label={toast.message} onClose={() => setToast({ ...toast, show: false })} />}
       <div className="complaint-summary">
         <div style={{ display: "flex", justifyContent: "space-between", maxWidth: "960px" }}></div>
-       
+
         <Card>
           <CardSubHeader>{`Attendence`}</CardSubHeader>
           <StatusTable>
             {attendanceFields.map((field, idx) => (
               <Row key={idx} label={field.label} text={field.value} />
             ))}
-            {/* <Row
-          label="Current Location"
-          text={
-            location.latitude && location.longitude
-              ? `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`
-              : "Fetching..."
-          }
-          // last={index === arr.length - 1}
-        /> */}
             <Row label="Current Address" text={address} />
             <Row label="Current Time" text={currentTime} />
-            
           </StatusTable>
           <div style={{ margin: "16px 0" }}>
-  <SelectImages
-  key={uploadedImages.length > 0 ? uploadedImages[0] : "empty"}
-    value={{ uploadedImages: uploadedImages.length > 0 ? [uploadedImages[uploadedImages.length - 1]] : [] }}
-    // value={{ uploadedImages }}
-    // onSelect={(val) => setUploadedImages(val.uploadedImages)}
-    onSelect={(val) => {
-      if (val.uploadedImages && val.uploadedImages.length > 0) {
-        setUploadedImages([val.uploadedImages[val.uploadedImages.length - 1]]);
-      } else {
-        setUploadedImages([]);
-      }
-    }}
-    tenantId={tenantId}
-  />
-</div>
+            <SelectImages
+              key={uploadedImages.length > 0 ? uploadedImages[0] : "empty"}
+              value={{ uploadedImages: uploadedImages.length > 0 ? [uploadedImages[uploadedImages.length - 1]] : [] }}
+              // value={{ uploadedImages }}
+              // onSelect={(val) => setUploadedImages(val.uploadedImages)}
+              onSelect={(val) => {
+                if (val.uploadedImages && val.uploadedImages.length > 0) {
+                  setUploadedImages([val.uploadedImages[val.uploadedImages.length - 1]]);
+                } else {
+                  setUploadedImages([]);
+                }
+              }}
+              tenantId={tenantId}
+            />
+          </div>
         </Card>
         <ButtonSelector label="Submit" onSubmit={handleSubmit}></ButtonSelector>
       </div>

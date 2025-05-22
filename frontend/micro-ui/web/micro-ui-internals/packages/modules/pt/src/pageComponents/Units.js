@@ -544,20 +544,20 @@ function Unit({
 
   const formValue = watch();
 
-  // useEffect(() => {
-  //   const code = formData?.usageCategoryMajor?.code;
-  //   if (code !== usageType?.code && code !== "MIXED") {
-  //     setUsageType(formData?.usageCategoryMajor);
-  //   }
-  // }, [formData?.usageCategoryMajor?.code]);
+  useEffect(() => {
+    const code = formData?.usageCategoryMajor?.code;
+    if (code !== usageType?.code && code !== "MIXED") {
+      setUsageType(formData?.usageCategoryMajor);
+    }
+  }, [formData?.usageCategoryMajor?.code]);
 
-  // useEffect(() => {
-  //   if (usageType?.code === "RESIDENTIAL") {
-  //     setValue("usageCategory", usageType);
-  //   } else {
-  //     if (formValue.usageCategory?.code === "RESIDENTIAL") setValue("usageCategory", null);
-  //   }
-  // }, [usageType]);
+  useEffect(() => {
+    if (usageType?.code === "RESIDENTIAL") {
+      setValue("usageCategory", usageType);
+    } else {
+      if (formValue.usageCategory?.code === "RESIDENTIAL") setValue("usageCategory", null);
+    }
+  }, [usageType]);
 
   useEffect(() => {
     let keys = Object.keys(formValue);

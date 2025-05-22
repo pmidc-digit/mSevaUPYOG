@@ -2,25 +2,25 @@ FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
 RUN yarn add @mseva/digit-ui-libraries@1.0.16
-RUN yarn add @mseva/digit-ui-module-bills@1.0.4
-RUN yarn add @mseva/digit-ui-module-fsm@1.0.2
-RUN yarn add @mseva/digit-ui-module-dss@1.0.2
-RUN yarn add @mseva/digit-ui-module-mcollect@1.0.3
-RUN yarn add @mseva/digit-ui-module-pgr@1.0.2
-RUN yarn add @mseva/digit-ui-module-noc@1.0.2
-RUN yarn add @mseva/digit-ui-module-engagement@1.1.16
-RUN yarn add @mseva/digit-ui-module-hrms@1.0.2
-RUN yarn add @mseva/digit-ui-module-core@1.0.20
-RUN yarn add @mseva/digit-ui-module-common@1.0.13
-RUN yarn add @mseva/digit-ui-module-ws@1.0.2
-RUN yarn add @mseva/digit-ui-module-commonpt@1.0.2
-RUN yarn add @mseva/digit-ui-module-ptr@1.0.22
-RUN yarn add @mseva/digit-ui-module-swach@1.0.23
-RUN yarn add @mseva/digit-ui-module-pt@1.0.12
-RUN yarn add @mseva/digit-ui-module-tl@1.0.4
-RUN yarn add @mseva/digit-ui-module-obps@1.0.5
-RUN yarn add @mseva/digit-ui-module-sv@1.0.2
-RUN yarn add @mseva/upyog-ui-module-ads@1.0.4
+RUN yarn add @mseva/digit-ui-module-bills@1.0.5
+RUN yarn add @mseva/digit-ui-module-fsm@1.0.3
+RUN yarn add @mseva/digit-ui-module-dss@1.0.3
+RUN yarn add @mseva/digit-ui-module-mcollect@1.0.4
+RUN yarn add @mseva/digit-ui-module-pgr@1.0.3
+RUN yarn add @mseva/digit-ui-module-noc@1.0.3
+RUN yarn add @mseva/digit-ui-module-engagement@1.1.17
+RUN yarn add @mseva/digit-ui-module-hrms@1.0.3
+RUN yarn add @mseva/digit-ui-module-core@1.0.22
+RUN yarn add @mseva/digit-ui-module-common@1.0.15
+RUN yarn add @mseva/digit-ui-module-ws@1.0.3
+RUN yarn add @mseva/digit-ui-module-commonpt@1.0.3
+RUN yarn add @mseva/digit-ui-module-ptr@1.0.24
+RUN yarn add @mseva/digit-ui-module-swach@1.0.25
+RUN yarn add @mseva/digit-ui-module-pt@1.0.13
+RUN yarn add @mseva/digit-ui-module-tl@1.0.5
+RUN yarn add @mseva/digit-ui-module-obps@1.0.7
+RUN yarn add @mseva/digit-ui-module-sv@1.0.4
+RUN yarn add @mseva/upyog-ui-module-ads@1.0.6
 
 ARG WORK_DIR
 WORKDIR /app

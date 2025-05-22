@@ -49,6 +49,15 @@ export const SwachService = {
     });
   },
 
+  SwachAttendence: ({ tenantId, filters }) =>
+    Request({
+     url: Urls.Swach_attendence,
+     useCache: false,
+     method: "POST",
+     auth: false ,
+     userService: false,
+     params: { tenantId, ...filters },
+   }),
   SwachOpensearch: ({ tenantId, filters }) =>
     Request({
      url: Urls.Swach_search,

@@ -19,6 +19,7 @@ import ResponseCitizen from "./pages/citizen/Response";
 import ComplaintDetailsPage from "./pages/citizen/ComplaintDetails";
 import SelectGeolocation from "./pages/citizen/Create/Steps/SelectGeolocation"
 import SelectImages from "./pages/citizen/Create/Steps/SelectImages";
+import Attendence from "./pages/citizen/Attendence";
 
 
 export const SWACHReducers = getRootReducer;
@@ -76,7 +77,8 @@ const componentsToRegister = {
   SWACHResponseCitzen : ResponseCitizen,
   SWACHComplaintDetailsPage : ComplaintDetailsPage,
   SWACHSelectGeolocation: SelectGeolocation,
-  SWACHSelectImages: SelectImages
+  SWACHSelectImages: SelectImages,
+  Attendence
 };
 
 export const initSWACHComponents = () => {

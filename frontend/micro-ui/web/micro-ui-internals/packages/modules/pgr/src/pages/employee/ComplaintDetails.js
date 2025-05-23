@@ -214,7 +214,13 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
 };
 
 export const ComplaintDetails = (props) => {
-  let { id } = useParams();
+  // let { id } = useParams();
+   const { fullIdAndUlb } = useParams();
+  //console.log("PGR: fullIdAndUlb", fullIdAndUlb);
+  const parts = fullIdAndUlb?.split("/");
+  const ulb = parts[parts.length - 1];
+  const id = parts.slice(0, parts.length - 1).join("/");
+
   const { t } = useTranslation();
   const [fullscreen, setFullscreen] = useState(false);
   const [imageZoom, setImageZoom] = useState(null);
@@ -222,7 +228,8 @@ export const ComplaintDetails = (props) => {
   const [toast, setToast] = useState(false);
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { isLoading, complaintDetails, revalidate: revalidateComplaintDetails } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id });
-  const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId, id, moduleCode: "PGR", role: "EMPLOYEE" });
+ // console.log("PGR : tenantId", ulb, "id", id);
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId:ulb, id, moduleCode: "PGR", role: "EMPLOYEE" });
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([])
   
   // RAIN-5692 PGR : GRO is assigning complaint, Selecting employee and assign. Its not getting assigned.
@@ -442,7 +449,7 @@ export const ComplaintDetails = (props) => {
           <Loader />
         ) : (
           <StatusTable>
-            {complaintDetails &&
+            {complaintDetails?.details &&
               Object.keys(complaintDetails?.details).map((k, i, arr) => (
                 <Row
                   key={k}

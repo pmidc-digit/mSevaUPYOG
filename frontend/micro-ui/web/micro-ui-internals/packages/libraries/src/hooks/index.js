@@ -57,6 +57,7 @@ import useSwachComplaintStatus from "./swach/useComplaintStatus";
 import useSwachComplaintTable from "./swach/useComplaintTable";
 import useSwachComplaintTypes from "./swach/useComplaintTypes";
 import useSwachEmployeeFilter from "./swach/useEmployeeFilter";
+import useAttendence from "./swach/useAttendence";
 import useSwachInboxData from "./swach/useInboxData";
 import useSwachLocalities from "./swach/useLocalities";
 import useSWACHInbox from "./swach/useInbox";
@@ -331,6 +332,7 @@ const swach = {
   useComplaintTable: useSwachComplaintTable,
   useComplaintTypes: useSwachComplaintTypes,
   useEmployeeFilter: useSwachEmployeeFilter,
+  useAttendence,
   useInboxData: useSwachInboxData,
   useInbox: useSWACHInbox,
   useLocalities: useSwachLocalities,

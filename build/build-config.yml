@@ -408,7 +408,13 @@ config:
       - work-dir: "core-services/nlp-engine"
         image-name: "nlp-engine"
         dockerfile: "core-services/nlp-engine/Dockerfile"
-
+  
+  - name: "builds/upyog/core-services/nlp-engine"
+    build:
+      - work-dir: "core-services/nlp-engine"
+        image-name: "nlp-engine"
+        dockerfile: "core-services/nlp-engine/Dockerfile"
+  
   - name: "builds/upyog/core-services/xstate-chatbot"
     build:
       - work-dir: "core-services/xstate-chatbot/nodejs"

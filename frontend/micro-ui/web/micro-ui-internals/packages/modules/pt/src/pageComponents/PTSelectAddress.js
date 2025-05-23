@@ -326,7 +326,10 @@ const fetchLocality=()=>{
                 selected={props.value}
                 disable={false}
                 option={cities}
-                select={props.onChange}
+                select={(val)=>{
+                  selectCity(val)
+                  props.onChange(val)
+                }}
                 optionKey="i18nKey"
                 onBlur={props.onBlur}
                 t={t}
@@ -352,7 +355,7 @@ const fetchLocality=()=>{
                 select={(e) => {
                   props.onChange(e);
                   selectLocality(e); // to keep your external state also in sync
-                  fetchLocality()
+                  // fetchLocality()
                 }}
                 // select={props.onChange}
                 onBlur={props.onBlur}

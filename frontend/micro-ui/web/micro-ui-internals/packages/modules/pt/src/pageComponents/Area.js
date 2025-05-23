@@ -174,6 +174,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
     console.log("formData: ", formData);
     // console.log("config",config);
     return inputs?.map((input, index) => {
+      if(formData?.usageCategoryMajor && formData?.PropertyType?.code === "VACANT"){
       return (
         formData?.usageCategoryMajor && formData?.PropertyType?.code === "VACANT" && (
           <React.Fragment>
@@ -198,8 +199,8 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
                   rules={{ required: t("REQUIRED_FIELD") }}
                   render={(props) => (
                     <TextInput
-                      key={input.name}
-                      id={input.name}
+                      // key={input.name}
+                      // id={input.name}
                       value={floorarea}
                       onChange={onChange}
                       {...input.validation}
@@ -218,6 +219,51 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
           </React.Fragment>
         )
       );
+    }
+     else if(formData?.usageCategoryMajor && formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY") {
+      return (
+          <React.Fragment>
+            <LabelFieldPair key={index}>
+              <CardLabel className="card-label-smaller">
+                {t(input.label)} {config.isMandatory && <span style={{ color: "red" }}>*</span>}
+              </CardLabel>
+              <div className="field">
+                {/* <TextInput
+                key={input.name}
+                id={input.name}
+                value={floorarea}
+                onChange={onChange}
+                {...input.validation}
+                onBlur={onBlur}
+                // autoFocus={presentInModifyApplication}
+              /> */}
+                <Controller
+                  name={"LandArea"}
+                  control={control}
+                  defaultValue={floorarea}
+                  rules={{ required: t("REQUIRED_FIELD") }}
+                  render={(props) => (
+                    <TextInput
+                      // key={input.name}
+                      // id={input.name}
+                      value={floorarea}
+                      onChange={onChange}
+                      {...input.validation}
+                      onBlur={onBlur}
+                    // autoFocus={presentInModifyApplication}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            {formState.touched[config.key] ? (
+              <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+                {formState.errors?.[config.key]?.message}
+              </CardLabelError>
+            ) : null}
+          </React.Fragment>
+      );
+    }
     });
   }
 

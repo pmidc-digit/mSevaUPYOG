@@ -1,24 +1,16 @@
 import React, { useState, useEffect } from "react";
-import {
-  FormStep,
-  RadioOrSelect,
-  RadioButtons,
-  LabelFieldPair,
-  Dropdown,
-  CardLabel,
-  CardLabelError,
-  Loader,
-} from "@mseva/digit-ui-react-components";
+import { FormStep, RadioOrSelect, RadioButtons, LabelFieldPair, Dropdown, CardLabel, CardLabelError, Loader } from "@mseva/digit-ui-react-components";
 import { cardBodyStyle } from "../utils";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/TLTimeline";
+import { Controller, useForm } from "react-hook-form";
 
 const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlur, formState, setError, clearErrors }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const isUpdateProperty = formData?.isUpdateProperty || false;
   let isEditProperty = formData?.isEditProperty || false;
-  const [ownershipCategory, setOwnershipCategory] = useState(formData?.ownershipCategory);
+  const [ownershipCategory, setOwnershipCategory] = useState(formData?.ownerShipDetails?.ownershipCategory);
   const [loader, setLoader] = useState(true);
   const { data: SubOwnerShipCategoryOb, isLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "SubOwnerShipCategory");
   const { data: OwnerShipCategoryOb, isLoading: ownerShipCatLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "OwnerShipCategory");
@@ -28,7 +20,37 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   let SubOwnerShipCategory = {};
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
+  const mutateScreen = url.includes("/property-mutate/");
 
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
+
+  console.log("formData in SelectOwnerShipDetails 1", formData);
+  const formValue = watch();
+  const { errors } = localFormState;
+     useEffect(() => {
+        if (window.location.href.includes("citizen")) {
+          let keys = Object.keys(formValue);
+          const part = {};
+          keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
+          if (!_.isEqual(formValue, part)) onSelect(config.key, { ...formData[config.key], ...formValue });
+          for (let key in formValue) {
+            if (!formValue[key] && !localFormState?.errors[key]) {
+              setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
+            } else if (formValue[key] && localFormState.errors[key]) {
+              clearLocalErrors([key]);
+            }
+          }
+        }
+      }, [formValue]);
+    
+      useEffect(() => {
+        if (window.location.href.includes("citizen")) {
+          const errorsPresent = !!Object.keys(localFormState.errors).lengtha;
+          if (errorsPresent && !formState.errors?.[config.key]) setError(config.key, { type: "required" });
+          else if (!errorsPresent && formState.errors?.[config.key]) clearErrors(config.key);
+        }
+      }, [localFormState]);
+      console.log("localFormState",localFormState?.errors)
   useEffect(() => {
     if (!isLoading && SubOwnerShipCategoryOb && OwnerShipCategoryOb) {
       const preFilledPropertyType = SubOwnerShipCategoryOb.filter(
@@ -39,7 +61,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   }, [formData?.ownershipCategory, SubOwnerShipCategoryOb]);
 
   useEffect(() => {
-    if (userType === "employee" && editScreen && !isLoading && !ownerShipCatLoading && OwnerShipCategoryOb) {
+    if (userType === "employee" && editScreen && mutateScreen && !isLoading && !ownerShipCatLoading && OwnerShipCategoryOb) {
       const arr = getDropdwonForProperty(ownerShipdropDown);
       const defaultValue = arr.filter((e) => e.code === formData?.originalData?.ownershipCategory)[0];
       selectedValue(defaultValue);
@@ -122,6 +144,17 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   }
 
   useEffect(() => {
+    if (formData?.ownershipCategory?.code && getDropdwonForProperty(ownerShipdropDown)?.length) {
+      const code = formData?.ownershipCategory?.code;
+
+      const Ownertype = getDropdwonForProperty(ownerShipdropDown)?.find((e) => e.code === code);
+      console.log("SetValues Ownertype", Ownertype);
+      setValue("SelectOwnerShipDetails", Ownertype);
+      // setPropertyPurpose(Majorbuiltdingtype)
+    }
+  }, [formData, ownerShipdropDown]);
+
+  useEffect(() => {
     if (userType === "employee") {
       if (!ownershipCategory) setError(config.key, { type: "required", message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
       else clearErrors(config.key);
@@ -129,18 +162,111 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
     }
   }, [ownershipCategory]);
 
-  if (userType === "employee" && editScreen && loader) {
+  console.log("formData in SelectOwnerShipDetails 2", formData);
+
+  if (userType === "employee" && editScreen && mutateScreen && loader) {
     return <Loader />;
   }
 
   if (userType === "employee") {
     return (
       <React.Fragment>
+        {/* {mutateScreen && (
+          <div className="employee-data-table">
+            <div className="row">
+              <h2>NAME</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>Guardian Name</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>MOBILE NO</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>EMAIL ID</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>CATEGORY</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+            <div className="row">
+              <h2>Correspondence Address</h2>
+              <div className="value">
+                <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}></span>
+              </div>
+            </div>
+          </div>
+        )} */}
+        {mutateScreen && (
+          <div className="employee-data-table">
+            {(() => {
+              // Retrieve data from sessionStorage
+              const ownerTransferData = JSON.parse(sessionStorage.getItem("ownerTransferData")) || {};
+              const owners = ownerTransferData?.ownershipCategory?.owners || [];
+
+              // Dynamically render rows for each owner
+              return owners.map((owner, index) => (
+                <React.Fragment key={index}>
+                  <div className="row">
+                    <h2>NAME</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.name || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>Guardian Name</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.fatherOrHusbandName || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>MOBILE NO</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.mobileNumber || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>EMAIL ID</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.emailId || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>CATEGORY</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.category || "N/A"}</span>
+                    </div>
+                  </div>
+                  <div className="row">
+                    <h2>Correspondence Address</h2>
+                    <div className="value">
+                      <span style={{ display: "inline-flex", width: "fit-content", marginLeft: "10px" }}>{owner.correspondenceAddress || "N/A"}</span>
+                    </div>
+                  </div>
+                </React.Fragment>
+              ));
+            })()}
+          </div>
+        )}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
-            {t("PT_PROVIDE_OWNERSHIP_DETAILS") + " *"}
+            {t("PT_PROVIDE_OWNERSHIP_DETAILS")} <span style={{ color: 'red' }}>*</span>
           </CardLabel>
-          <Dropdown
+          {/* <Dropdown
             className="form-field"
             selected={getDropdwonForProperty(ownerShipdropDown)?.length === 1 ? getDropdwonForProperty(ownerShipdropDown)[0] : ownershipCategory}
             disable={getDropdwonForProperty(ownerShipdropDown)?.length === 1 || editScreen}
@@ -149,11 +275,38 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
             optionKey="i18nKey"
             onBlur={onBlur}
             t={t}
+          /> */}
+          <Controller
+            name="SelectOwnerShipDetails"
+            defaultValue={ownershipCategory}
+            control={control}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                // selected={getDropdwonForProperty(ownerShipdropDown)?.length === 1 ? getDropdwonForProperty(ownerShipdropDown)[0] : ownershipCategory}
+                disable={getDropdwonForProperty(ownerShipdropDown)?.length === 1 || editScreen}
+                selected={props.value}
+                option={getDropdwonForProperty(ownerShipdropDown)}
+                select={(e) => {
+                  props.onChange(e);
+                  selectedValue(e); // to keep your external state also in sync
+                }}
+                onBlur={props.onBlur}
+                optionKey="i18nKey"
+                t={t}
+              />
+            )}
           />
         </LabelFieldPair>
-        {formState.touched?.[config.key] ? (
+        {/* {formState.touched?.[config.key] ? (
           <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
             {formState.errors[config.key]?.message}
+          </CardLabelError>
+        ) : null} */}
+                {localFormState?.errors?.SelectOwnerShipDetails
+ ? (
+          <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
+            {localFormState?.errors?.SelectOwnerShipDetails?.message}
           </CardLabelError>
         ) : null}
       </React.Fragment>
@@ -162,7 +315,11 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   return (
     <React.Fragment>
-      {window.location.href.includes("/citizen/pt/property/property-mutation") ? <Timeline currentStep={1} flow="PT_MUTATE" /> : <Timeline currentStep={2} />}
+      {window.location.href.includes("/citizen/pt/property/property-mutation") ? (
+        <Timeline currentStep={1} flow="PT_MUTATE" />
+      ) : (
+        <Timeline currentStep={2} />
+      )}
       <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} isDisabled={!ownershipCategory}>
         <div>
           <RadioButtons

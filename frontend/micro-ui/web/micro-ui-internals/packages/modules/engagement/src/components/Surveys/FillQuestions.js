@@ -51,6 +51,7 @@ const FillQuestions = (props) => {
         setLoading(false);
       }
       setLocalityList(__localityList);
+    
     })();
   }, [city]);
 
@@ -386,7 +387,7 @@ const FillQuestions = (props) => {
             const birthDate = new Date(response?.user[0]?.dob);
             let age = today.getFullYear() - birthDate.getFullYear();
             const monthDifference = today.getMonth() - birthDate.getMonth();
-
+           console.log("in user")
             if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
               age--;
             }
@@ -403,6 +404,9 @@ const FillQuestions = (props) => {
           }
         } else {
           // setCitizenFound(false)
+          console.log("in user error")
+          alert("ERROR FILE FETCHING CITIZEN DETAILS")
+          return;
           setShowToast({ key: true, isError: true, label: `ERROR FILE FETCHING CITIZEN DETAILS` });
         }
       })

@@ -68,18 +68,25 @@ export const Request = async ({
   multipartData = {},
   reqTimestamp = false,
   plainAccessRequest = null,
+  isUserInfo
 }) => {
   if (method.toUpperCase() === "POST" || method.toUpperCase() === "PUT") {
     const ts = new Date().getTime();
+    console.log("auth",Digit.UserService.getUser()?.access_token)
     data.RequestInfo = {
       apiId: "Rainmaker",
     };
-    if (auth || !!Digit.UserService.getUser()?.access_token) {
+    if ((auth || !!Digit.UserService.getUser()?.access_token) ){
+      // && isUserInfo!==false) {
       data.RequestInfo = { ...data.RequestInfo, ...requestInfo() };
     }
-    if (userService) {
+    // if (userService && isUserInfo!==false) {
+      if (userService ) {
       data.RequestInfo = { ...data.RequestInfo, ...userServiceData() };
     }
+    // if (userService && isUserInfo===false) {
+    //   data.RequestInfo = { ...data.RequestInfo };
+    // }
     if (locale) {
       data.RequestInfo = { ...data.RequestInfo, msgId: `${ts}|${Digit.StoreData.getCurrentLanguage()}` };
     }

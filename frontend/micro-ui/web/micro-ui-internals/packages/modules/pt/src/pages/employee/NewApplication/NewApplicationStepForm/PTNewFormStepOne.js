@@ -30,7 +30,7 @@ const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
 });
   const dispatch = useDispatch();
 
-
+console.log("dataaa in EMp")
   return (
     <React.Fragment>
       <FormComposer

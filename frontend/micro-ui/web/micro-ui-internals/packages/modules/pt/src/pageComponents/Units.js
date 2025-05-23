@@ -33,7 +33,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   //   ]
   // );
 
-  const [units, setUnits] = useState(()=> formData?.units || []);
+  const [units, setUnits] = useState(formData?.units || []);
 
   useEffect(()=>{
     console.log("isNotFirst and Units", isNotFirst.current, formData.units, formData, units);
@@ -42,7 +42,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       return;
     }
     if(formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY"){
-      alert(t("UNITS_CHANGE_MESSAGE"))
+
       console.log("isNotFirst and Units if Independent property", isNotFirst.current, formData.units, formData, units);
       setUnits(()=>{
         const numberOfFloors = formData?.noOfFloors || 0;
@@ -63,7 +63,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       })
     }
     else if(formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY"){
-      alert(t("UNITS_CHANGE_MESSAGE"))
+
       console.log("isNotFirst and Units if Flat/Part", isNotFirst.current, formData.units, formData, units);
       setUnits([
         {
@@ -84,8 +84,11 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   },[formData.noOfFloors, formData.PropertyType])
 
   useEffect(()=>{
-    console.log("isNotFirst and Units Units-Updated", units, formData);
-  },[units])
+    // console.log("isNotFirst and Units Units-Updated", units, formData);
+    if(formData?.units?.length > 0 && formData?.units[0]?.occupancyType?.length > 0){
+      setUnits(formData?.units);
+    }
+  },[])
 
   console.log("here???????")
   const stateId = Digit.ULBService.getStateId();
@@ -380,17 +383,19 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
 
   function goNext() {
     let unitsData = units?.map((unit) => ({
-      occupancyType: unit?.occupancyType?.code,
-      RentedMonths: unit?.RentedMonths?.code,
-      ageOfProperty: unit?.ageOfProperty?.code,
-      structureType: unit?.structureType?.code,
-      NonRentedMonthsUsage: unit?.NonRentedMonthsUsage?.code,
-      floorNoCitizen: unit?.floorNoCitizen?.code,
-      constructionDetail: {
+      order: unit?.order,
+      occupancyType: unit?.occupancyType,
+      RentedMonths: unit?.RentedMonths,
+      ageOfProperty: unit?.ageOfProperty,
+      structureType: unit?.structureType,
+      NonRentedMonthsUsage: unit?.NonRentedMonthsUsage,
+      floorNoCitizen: unit?.floorNoCitizen,
+      arv: unit?.arv,
+      // constructionDetail: {
         builtUpArea: unit?.builtUpArea,
-      },
+      // },
       tenantId: Digit.ULBService.getCurrentTenantId(),
-      usageCategory: unit?.usageCategory?.code,
+      usageCategory: unit?.usageCategory,
     }));
     unitsData = unitsData?.map((unit, index) => {
       if (unit.occupancyType === "RENTED") return { ...unit, arv: units[index].arv };
@@ -434,6 +439,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   }, [formData?.PropertyType]);
 
   useEffect(() => {
+    console.log("units before goNext function", units);
     goNext();
     // calculateNumberOfFloors();
   }, [units, formData.PropertyType, formData.landarea]);
@@ -859,13 +865,14 @@ function Unit({
             <div className="field">
               <Controller
                 name="arv"
-                defaultValue={unit.arv}
+                defaultValue={unit?.arv}
                 control={control}
                 render={(props) => (
                   <TextInput
                     type="text"
-                    name="unit-area"
+                    // name="unit-area"
                     onChange={(e) => {
+                      console.log("change arv", e.target.value)
                       props.onChange(e.target.value);
                       setFocusIndex({ index, type: "arv" });
                     }}
@@ -900,7 +907,7 @@ function Unit({
             />
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.errors.Rentedmonths ? errors?.Rentedmonths?.message : ""}</CardLabelError>
-          {formValue?.RentedMonths?.code === "1" || formValue?.RentedMonths?.code === "2" || formValue?.RentedMonths?.code === "3" || formValue?.RentedMonths?.code === "4" || formValue?.RentedMonths?.code === "5" || formValue?.RentedMonths?.code === "6" || formValue?.RentedMonths?.code === "7" || formValue?.RentedMonths?.code === "8" || formValue?.RentedMonths?.code === "9" || formValue?.RentedMonths?.code === "10" || formValue?.RentedMonths?.code === "11" ? (
+          {unit?.RentedMonths?.code === "1" || unit?.RentedMonths?.code === "2" || unit?.RentedMonths?.code === "3" || unit?.RentedMonths?.code === "4" || unit?.RentedMonths?.code === "5" || unit?.RentedMonths?.code === "6" || unit?.RentedMonths?.code === "7" || unit?.RentedMonths?.code === "8" || unit?.RentedMonths?.code === "9" || unit?.RentedMonths?.code === "10" || unit?.RentedMonths?.code === "11" ? (
             <React.Fragment>
               <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("PT_FORM2_NONRENTED_MONTHS_USAGE") + " *"}</CardLabel>

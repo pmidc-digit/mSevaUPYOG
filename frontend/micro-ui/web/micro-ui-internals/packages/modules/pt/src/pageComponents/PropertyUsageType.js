@@ -157,7 +157,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
             {t("PT_ASSESMENT_INFO_USAGE_TYPE")} {config.isMandatory && <span style={{ color: "red" }}>*</span>}
           </CardLabel>
           <Controller
-            name="PropertyUsageType"
+            name={config.key}
             // defaultValue={usageCategoryMajor}
             control={control}
             rules={{
@@ -171,7 +171,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
                 // selected={usageCategoryMajor}
                 option={usageCategoryMajorMenu(usagecat)}
                 select={(e) => {
-                  props.onChange(e);
+                  // props.onChange(e);
                   selectPropertyPurpose(e); // to keep your external state also in sync
                 }}
                 // select={props.onChange}
@@ -199,7 +199,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
             {t("PT_ASSESMENT_INFO_USAGE_TYPE")} {config.isMandatory && <span style={{ color: "red" }}>*</span>}
           </CardLabel>
           <Controller
-            name="PropertyUsageType"
+            name={config.key}
             // defaultValue={usageCategoryMajor}
             control={control}
             rules={{
@@ -209,11 +209,11 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
               <Dropdown
                 className="form-field"
                 // selected={getPropertyTypeMenu(proptype)?.length === 1 ? getPropertyTypeMenu(proptype)[0] : BuildingType}
-                selected={props.value}
-                // selected={usageCategoryMajor}
+                // selected={props.value}
+                selected={usageCategoryMajor}
                 option={usageCategoryMajorMenu(usagecat)}
                 select={(e) => {
-                  props.onChange(e);
+                  // props.onChange(e);
                   selectPropertyPurpose(e); // to keep your external state also in sync
                 }}
                 // select={props.onChange}

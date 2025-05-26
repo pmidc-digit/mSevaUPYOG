@@ -49,16 +49,16 @@ const UserProfile = ({ stateCode, userType, cityDetails }) => {
   const tenant = Digit.ULBService.getCurrentTenantId();
   const userInfo = Digit.UserService.getUser()?.info || {};
   const [userDetails, setUserDetails] = useState(null);
-  const [name, setName] = useState(userInfo?.name ? userInfo.name : "");
+  const [name, setName] = useState(userInfo?.name ? userInfo?.name : "");
   const dateOfBirth= userDetails?.dob
   console.log("ddd", dateOfBirth)
   const formattedDob=(dateOfBirth!==undefined) ?format(new Date(dateOfBirth), 'MM/dd/yyyy') : ""
   //const dateOfBirth1= (dateOfBirth!==undefined) ?dateOfBirth.split("-").reverse().join("-") : ""
   const [dob, setDob] = useState(dateOfBirth);
-  const [email, setEmail] = useState(userInfo?.emailId ? userInfo.emailId : "");
+  const [email, setEmail] = useState(userInfo?.emailId ? userInfo?.emailId : "");
   const [gender, setGender] = useState(userDetails?.gender);
-  const [city, setCity] = useState(userInfo?.permanentCity ? userInfo.permanentCity : cityDetails.name);
-  const [mobileNumber, setMobileNo] = useState(userInfo?.mobileNumber ? userInfo.mobileNumber : "");
+  const [city, setCity] = useState(userInfo?.permanentCity ? userInfo?.permanentCity : cityDetails?.name);
+  const [mobileNumber, setMobileNo] = useState(userInfo?.mobileNumber ? userInfo?.mobileNumber : "");
   const [profilePic, setProfilePic] = useState(userDetails?.photo ? userDetails?.photo : "");
   const [profileImg, setProfileImg] = useState("");
   const [openUploadSlide, setOpenUploadSide] = useState(false);

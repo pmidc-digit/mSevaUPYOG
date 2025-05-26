@@ -34,6 +34,7 @@ const App = () => {
   const CreateEmployeeStepForm= Digit?.ComponentRegistryService?.getComponent("CreateEmployeeStepForm");
   const PropertyDetailsCitizen = Digit?.ComponentRegistryService?.getComponent("PropertyDetailsCitizen")
   const PropertyApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PropertyApplicationDetails");
+  const PTResponseCitizen = Digit?.ComponentRegistryService?.getComponent("PTResponseCitizen");
 
   return (
     <span className={"pt-citizen"}style={{width:"100%"}}>
@@ -58,6 +59,7 @@ const App = () => {
           <PrivateRoute path={`${path}/assessment-details/:id`} component={() => <AssessmentDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/application-preview/:id`} component={(props) => <PropertyApplicationDetails {...props} t={t} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseCitizen {...props} t={t} parentRoute={path} />} />
          
         </AppContainer>
       </Switch>

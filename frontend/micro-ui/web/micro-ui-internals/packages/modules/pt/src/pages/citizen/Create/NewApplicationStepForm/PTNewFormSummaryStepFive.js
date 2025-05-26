@@ -1,11 +1,13 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory, useLocation } from "react-router-dom";
 //
 import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
-import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { RESET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
 
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
@@ -14,18 +16,24 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const goNext = async (data) => {
     console.log("Full form data submitted: ", formData);
     onSubmit(formData); // Call the onSubmit function with the form data
-    const res = await onSubmit(formData); // wait for the API response
+    try {const res = await onSubmit(formData); // wait for the API response
     console.log("API response: ", res);
 
     // Check if the API call was successful
-    if (res) {
-      console.log("Submission successful, moving to next step.");
-      onGoNext();
+    if (res.isSuccess) {
+      console.log("Submission successful, moving to next step.", res.response);
+      const applicationNumber = res?.response?.Properties?.[0]?.acknowldgementNumber;
+      dispatch(RESET_PtNewApplication());
+      history.replace(`/digit-ui/citizen/pt/property/response/${applicationNumber}`);
+      // onGoNext();
     } else {
-      console.error("Submission failed, not moving to next step.", res);
+      console.error("Submission failed, not moving to next step.", res.response);
+    }}catch(error){
+        alert(`Error: ${error.message}`);
+        console.error("Submission failed, not moving to next step.", error);
     }
 
-    onGoNext();
+    // onGoNext();
   };
 
   // Function to handle the "Back" button click
@@ -45,21 +53,57 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
     const tenantId = data?.PersonalDetails?.address?.city?.code;
     const allDocuments = data?.DocumentDetails?.documents || [];
   
-    const updatedUnits = data?.PropertyDetails?.units?.map((unit) => ({
-      floorNo: unit?.floorNoCitizen?.code,
-      occupancyType: unit?.occupancyType?.code,
-      arv: unit?.arv,
-      unitType: unit?.subUsageType?.code?.split(".").slice(-1)[0],
-      usageCategory: unit?.subUsageType?.code,
-      tenantId: tenantId,
-      constructionDetail: {
-        builtUpArea: Number(unit?.builtUpArea),
-      },
-      additionalDetails: {
-        rentedformonths: unit?.RentedMonths?.code ? Number(unit.RentedMonths.code) : null,
-        usageForDueMonths: unit?.NonRentedMonthsUsage?.code || null,
-      },
-    }));
+    let updatedUnits = [];
+
+    const usageCategoryMajorCode = data?.PropertyDetails?.usageCategoryMajor?.code;
+
+    if (usageCategoryMajorCode !== "NONRESIDENTIAL.OTHERS") {
+      updatedUnits = data?.PropertyDetails?.units?.map((unit) => {
+        let usageCategory;
+
+        if (usageCategoryMajorCode === "RESIDENTIAL") {
+          usageCategory = "RESIDENTIAL";
+        } else if (usageCategoryMajorCode === "MIXED") {
+          usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL"
+            ? "RESIDENTIAL"
+            : unit?.subUsageType?.code;
+        } else {
+          usageCategory = unit?.subUsageType?.code;
+        }
+
+        return {
+          floorNo: unit?.floorNoCitizen?.code,
+          occupancyType: unit?.occupancyType?.code,
+          arv: unit?.arv,
+          unitType: unit?.subUsageType?.code?.split(".").slice(-1)[0],
+          usageCategory,
+          tenantId: tenantId,
+          constructionDetail: {
+            builtUpArea: Number(unit?.builtUpArea),
+          },
+          additionalDetails: {
+            rentedformonths: unit?.RentedMonths?.code ? Number(unit.RentedMonths.code) : null,
+            usageForDueMonths: unit?.NonRentedMonthsUsage?.code || null,
+          },
+        };
+      });
+    }
+
+    const propertyTypeCode = data?.PropertyDetails?.PropertyType?.code;
+    const userEnteredFloors = Number(data?.PropertyDetails?.noOfFloors || 0);
+
+    // Extract max floor number from units (assuming floorNo is numeric or convertible)
+    const unitFloors = data?.PropertyDetails?.units?.map((unit) =>
+      Number(unit?.floorNoCitizen?.code)
+    ).filter((n) => !isNaN(n));
+
+    const maxUnitFloor = unitFloors?.length ? Math.max(...unitFloors) : 0;
+
+    const noOfFloors =
+      propertyTypeCode === "BUILTUP.SHAREDPROPERTY"
+        ? 2
+        : Math.max(userEnteredFloors, maxUnitFloor);
+
   
     const permanentAddress = `${data?.PersonalDetails?.address?.doorNo}, ${data?.PersonalDetails?.address?.buildingName}, ${data?.PersonalDetails?.address?.street}, ${data?.PersonalDetails?.address?.locality?.name}, ${data?.PersonalDetails?.address?.city?.name}, ${data?.PersonalDetails?.address?.pincode}`;
   
@@ -112,7 +156,8 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       landArea: Number(data?.PropertyDetails?.landarea || 0),
       superBuiltUpArea: Number(data?.PropertyDetails?.landarea || 0),
       propertyType: data?.PropertyDetails?.PropertyType?.code,
-      noOfFloors: Number(data?.PropertyDetails?.noOfFloors || 0),
+      // noOfFloors: Number(data?.PropertyDetails?.noOfFloors || 0),
+      noOfFloors: noOfFloors,
       ownershipCategory: data?.ownerShipDetails?.ownershipCategory?.code,
       surveyId: data?.PersonalDetails?.surveyId,
       existingPropertyId: data?.PersonalDetails?.existingPropertyId,
@@ -158,7 +203,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
     console.log("Search Data:", searchData);
   
     const response = await Digit.PTService.create({ Property: formData }, tenantId);
-    return response?.ResponseInfo?.status === "successful";
+    return {isSuccess: response?.ResponseInfo?.status === "successful", response: response};
   };
   
 

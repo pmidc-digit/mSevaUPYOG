@@ -395,6 +395,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       NonRentedMonthsUsage: unit?.NonRentedMonthsUsage,
       floorNoCitizen: unit?.floorNoCitizen,
       subUsageType: unit?.subUsageType,
+      usageCategoryType: unit?.usageCategoryType,
       arv: unit?.arv,
       // constructionDetail: {
         builtUpArea: unit?.builtUpArea,
@@ -561,11 +562,14 @@ function Unit({
     const code = formData?.usageCategoryMajor?.code;
     if (code !== usageType?.code && code !== "MIXED") {
       setUsageType(formData?.usageCategoryMajor);
+    }else if (code === "MIXED") {
+      setUsageType(unit?.usageCategoryType || null);
     }
   }, [formData?.usageCategoryMajor?.code]);
 
   useEffect(() => {
     if (usageType?.code === "RESIDENTIAL") {
+      console.log("usageCategory is set to RESIDENTIAL", usageType)
       setValue("usageCategory", usageType);
     } else {
       if (formValue.usageCategory?.code === "RESIDENTIAL") setValue("usageCategory", null);
@@ -716,15 +720,24 @@ function Unit({
 
             <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + "*"}</CardLabel>
+            <Controller
+              name="usageCategoryType"
+              defaultValue={subUsageCategoryMenu(usageType)?.filter((e) => e?.code === unit.existingUsageCategory)[0]}
+              control={control}
+              render={(props) => (
             <Dropdown
               className="form-field"
               selected={usageType}
               disable={formData?.usageCategoryMajor?.code !== "MIXED"}
               option={usageCategoryMajorMenu(usagecat)}
-              select={setUsageType}
+              // select={setUsageType}
+              select={(e) => {
+                  props.onChange(e);     // Update form state
+                  setUsageType(e);       // Update local state if needed
+                }}
               optionKey="i18nKey"
               t={t}
-            />
+            />)} />
           </LabelFieldPair> 
           
           {!(usageType?.code === "RESIDENTIAL") &&<div>
@@ -783,7 +796,7 @@ function Unit({
       {formData?.PropertyType?.code == "BUILTUP.SHAREDPROPERTY" && (
         <div>
           {/* Usage Type Component */}
-          <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
+          {/* <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
             <CardLabel className="card-label-smaller">{t("PT_FORM2_USAGE_TYPE") + " *"}</CardLabel>
             <Controller
               name="usageCategory"
@@ -802,9 +815,9 @@ function Unit({
                 />
               )}
             />
-          </LabelFieldPair>
+          </LabelFieldPair> */}
 
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + "*"}</CardLabel>
             <Dropdown
               className="form-field"
@@ -815,6 +828,28 @@ function Unit({
               optionKey="i18nKey"
               t={t}
             />
+          </LabelFieldPair>  */}
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + "*"}</CardLabel>
+            <Controller
+              name="usageCategoryType"
+              defaultValue={subUsageCategoryMenu(usageType)?.filter((e) => e?.code === unit.existingUsageCategory)[0]}
+              control={control}
+              render={(props) => (
+            <Dropdown
+              className="form-field"
+              selected={usageType}
+              disable={formData?.usageCategoryMajor?.code !== "MIXED"}
+              option={usageCategoryMajorMenu(usagecat)}
+              // select={setUsageType}
+              select={(e) => {
+                  props.onChange(e);     // Update form state
+                  setUsageType(e);       // Update local state if needed
+                }}
+              optionKey="i18nKey"
+              t={t}
+            />)} />
           </LabelFieldPair> 
           
           {!(usageType?.code === "RESIDENTIAL") &&<div>

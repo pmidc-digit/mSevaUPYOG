@@ -42,6 +42,9 @@ const useAttendence= () => {
         // optionally invalidate or refetch relevant queries
         queryClient.invalidateQueries("complaintDetails");
       },
+      onError: (error, variables, context) => {
+      if (context && context.onError) context.onError(error);
+    },
     }
   );
 

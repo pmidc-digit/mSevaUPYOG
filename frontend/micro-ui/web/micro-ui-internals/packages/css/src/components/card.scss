@@ -1,7 +1,8 @@
 .card {
   @apply bg-white m-sm px-md pt-md pb-lg shadow-card;
   border-radius: 4px;
-  width:95vw;
+  max-width:95vw;
+  width: 100%;
 
   .card-header {
     @apply text-text-primary text-heading-xl font-bold font-rc align-middle text-left mb-md;
@@ -418,4 +419,16 @@
 
 .owner-details-child{
   width: 50%;
+}
+
+.location-card .card{
+  max-width:85vw;
+  width: 100%;
+  margin: 0;
+}
+
+.image-card .card{
+  max-width:85vw;
+  width: 100%;
+  margin: 0;
 }

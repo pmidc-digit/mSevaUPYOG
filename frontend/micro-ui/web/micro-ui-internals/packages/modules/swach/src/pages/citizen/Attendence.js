@@ -23,13 +23,12 @@ import TimeLine from "../../components/TimeLine";
 const Attendence = (props) => {
   let { t } = useTranslation();
   let { id } = useParams();
- const history = useHistory();
+  const history = useHistory();
   let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); // ToDo: fetch from state
   const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId, id });
   const { mutate: submitAttendance, isLoading: isMutating } = Digit.Hooks.swach.useAttendence();
   const SelectImages = Digit?.ComponentRegistryService?.getComponent("SWACHSelectImages");
   const [toast, setToast] = useState({ show: false, type: "", message: "" });
-
 
   const [imageZoom, setImageZoom] = useState(null);
 
@@ -53,7 +52,7 @@ const Attendence = (props) => {
       }
     })();
   }, []);
-useEffect(() => {
+  useEffect(() => {
     if (toast.show && toast.type === "success") {
       const timer = setTimeout(() => {
         history.push("/digit-ui/citizen/swach-home");
@@ -61,10 +60,13 @@ useEffect(() => {
       return () => clearTimeout(timer);
     }
   }, [toast, history]);
+  const userInfo = JSON.parse(localStorage.getItem("user-info"));
+  const [mobileNumber, setMobileNumber] = useState(userInfo?.mobileNumber || "");
+  const [fullName, setFullName] = useState(userInfo?.name || "");
   const auditCitizen = complaintDetails?.audit?.citizen || {};
   const attendanceFields = [
-    { label: "Name", value: auditCitizen.name || "N/A" },
-    { label: "Mobile Number", value: auditCitizen.mobileNumber || "N/A" },
+    { label: "Name", value: fullName || "N/A" },
+    { label: "Mobile Number", value: mobileNumber || "N/A" },
   ];
   const [uploadedImages, setUploadedImages] = useState([]);
 

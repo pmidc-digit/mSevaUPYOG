@@ -21,6 +21,7 @@ const App = () => {
   const ComplaintDetailsPage = Digit?.ComponentRegistryService?.getComponent("SWACHComplaintDetailsPage");
   // const SelectRating = Digit?.ComponentRegistryService?.getComponent("PGRSelectRating");
   const Response = Digit?.ComponentRegistryService?.getComponent("SWACHResponseCitzen");
+  const AttendencePage = Digit?.ComponentRegistryService?.getComponent("Attendence");
 
   return (
     <React.Fragment>
@@ -31,6 +32,7 @@ const App = () => {
           <PrivateRoute path={`${path}/create-complaint`} component={CreateComplaint} />
           <PrivateRoute path={`${path}/complaints`} exact component={ComplaintsList} />
           <PrivateRoute path={`${path}/complaints/:id*`} component={ComplaintDetailsPage} />
+          <PrivateRoute path={`${path}/Attendence`} component={AttendencePage} />
           {/* <PrivateRoute
             path={`${path}/reopen`}
             component={() => <ReopenComplaint match={{ ...match, url, path: `${path}/reopen` }} parentRoute={path} />}

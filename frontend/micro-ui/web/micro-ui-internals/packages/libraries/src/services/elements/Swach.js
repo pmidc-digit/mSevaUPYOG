@@ -58,4 +58,14 @@ export const SwachService = {
      userService: false,
      params: { tenantId, ...filters },
    }),
+   
+    SwachAttendence: ({ tenantId, filters }) =>
+    Request({
+     url: Urls.Swach_attendence,
+     useCache: false,
+     method: "POST",
+     auth: false ,
+     userService: false,
+     params: { tenantId, ...filters },
+   }),
 };

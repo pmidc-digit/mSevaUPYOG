@@ -9,17 +9,42 @@ const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
   function goNext(data) {
     console.log(`Data== in step ${config.currStepNumber} is=======`, data);
-    let f = 0;
-    config.currStepConfig[0].body.map((item) => {
+    // let f = 0;
+    // config.currStepConfig[0].body.map((item) => {
       // if(item.isMandatory && (data[item.key]===''||data[item.key]===undefined)){
       //   f=1;
       //   return
       // }
-    });
-    if (f === 0) {
-      onGoNext();
-    }
+    // });
+    const missingFields = validateStepOneFields(data);
+
+  if (missingFields.length > 0) {
+    alert(`Please fill the following mandatory fields:\n- ${missingFields.join("\n- ")}`);
+    return;
   }
+    // if (f === 0) {
+      onGoNext();
+    // }
+  }
+
+  const validateStepOneFields = (data) => {
+    const missingFields = [];
+  
+    if (!data?.address?.city?.code) {
+      missingFields.push("City");
+    }
+  
+    if (!data?.address?.locality?.code) {
+      missingFields.push("Locality");
+    }
+  
+    if (!data?.yearOfCreation?.yearOfCreation?.code) {
+      missingFields.push("Year of Creation");
+    }
+  
+    return missingFields;
+  };
+  
 
   function onGoBack(data) {
     onBackClick(config.key, data);

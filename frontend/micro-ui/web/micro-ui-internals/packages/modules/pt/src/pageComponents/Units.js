@@ -59,6 +59,8 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           ageOfProperty: null,
           structureType: null,
           NonRentedMonthsUsage: null,
+          arv: null,
+          subUsageType: null
         }));
       })
     }
@@ -78,10 +80,12 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           ageOfProperty: null,
           structureType: null,
           NonRentedMonthsUsage: null,
+          arv: null,
+          subUsageType: null
         },
       ])
     }
-  },[formData.noOfFloors, formData.PropertyType])
+  },[formData.noOfFloors, formData.PropertyType, formData.usageCategoryMajor])
 
   useEffect(()=>{
     // console.log("isNotFirst and Units Units-Updated", units, formData);
@@ -390,6 +394,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       structureType: unit?.structureType,
       NonRentedMonthsUsage: unit?.NonRentedMonthsUsage,
       floorNoCitizen: unit?.floorNoCitizen,
+      subUsageType: unit?.subUsageType,
       arv: unit?.arv,
       // constructionDetail: {
         builtUpArea: unit?.builtUpArea,
@@ -476,7 +481,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           {...{ formState, setError, clearErrors, usageCategoryMajorMenu, subUsageCategoryMenu }}
         />
       ))}
-      {!(formData?.usageCategoryMajor?.PropertyUsageType?.code === "RESIDENTIAL" && formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY") && <label onClick={handleAddUnit} style={{ color: "orange", width: "175px", cursor: "pointer", }}>{t("PT_ADD_UNIT")}</label>}
+      {!((formData?.usageCategoryMajor?.code === "RESIDENTIAL" || formData?.usageCategoryMajor?.code === "NONRESIDENTIAL.OTHERS") && formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY") && <label onClick={handleAddUnit} style={{ color: "orange", width: "175px", cursor: "pointer", }}>{t("PT_ADD_UNIT")}</label>}
       {["units_missing", "landArea extended"].includes(formState.errors?.[config.key]?.type) ? (
         <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
           {`${t(formState.errors?.[config.key].message.split(".")[0])}` +
@@ -531,6 +536,8 @@ function Unit({
 
   let usagecat = [];
   usagecat = usageMenu?.PropertyTax?.UsageCategory?.filter((e) => e?.code !== "MIXED") || [];
+
+  console.log("usagecatdemo", usagecat)
 
   const [usageType, setUsageType] = useState(() => {
     const { existingUsageCategory } = unit;
@@ -596,6 +603,20 @@ function Unit({
       clearErrors("units");
     }
   }, [formValue]);
+
+  function getSubUsageTypeOptions (usagecode){
+    if(usagecode?.code){
+      const filteredArray = usagecat.filter((val) => val?.code?.startsWith(usagecode?.code+"."))
+      const sortedByName = filteredArray.sort((a, b) => a.name.localeCompare(b.name));
+      const arrayWithCode = sortedByName.map((val) => {
+        return { i18nKey: "PROPERTYTAX_USAGE_" + stringReplaceAll(val?.code, "-", "_"), code: val?.code, }
+      })
+      console.log("Filtered SubUsageTypeCode", arrayWithCode)
+      return arrayWithCode;
+    }
+    return []
+  }
+
   const { errors } = localFormState;
   const errorStyle = isMobile
     ? { width: "70%", marginLeft: "4%", fontSize: "12px" }
@@ -618,6 +639,29 @@ function Unit({
         //   X
         // </div>
         null}
+      {formData?.usageCategoryMajor?.code === "NONRESIDENTIAL.OTHERS"? <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
+              <Controller
+                name="floorNoCitizen"
+                defaultValue={unit.floorNoCitizen}
+                control={control}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    selected={props.value}
+                    disable={false}
+                    option={getfloorlistdata(floorlist) || []}
+                    select={props.onChange}
+                    optionKey="i18nKey"
+                    onBlur={props.onBlur}
+                    t={t}
+                  />
+                )}
+              />
+            </LabelFieldPair>
+            <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
+      </div> : <div>
       <div style={{ marginTop: "30px" }}>
         {/* {formData?.PropertyType?.code == "BUILTUP.INDEPENDENTPROPERTY" && (
             <div>
@@ -670,6 +714,43 @@ function Unit({
             </LabelFieldPair>
             <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
 
+            <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + "*"}</CardLabel>
+            <Dropdown
+              className="form-field"
+              selected={usageType}
+              disable={formData?.usageCategoryMajor?.code !== "MIXED"}
+              option={usageCategoryMajorMenu(usagecat)}
+              select={setUsageType}
+              optionKey="i18nKey"
+              t={t}
+            />
+          </LabelFieldPair> 
+          
+          {!(usageType?.code === "RESIDENTIAL") &&<div>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_SUB_USAGE_TYPE") + "*"}</CardLabel>
+            <Controller
+              name="subUsageType"
+              defaultValue={unit.subUsageType}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={false}
+                  option={getSubUsageTypeOptions(usageType) || []}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
+          </div>}
+
             {/* Built-Up Area Component */}
             <LabelFieldPair>
               <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
@@ -701,18 +782,6 @@ function Unit({
 
       {formData?.PropertyType?.code == "BUILTUP.SHAREDPROPERTY" && (
         <div>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + " *"}</CardLabel>
-            <Dropdown
-              className="form-field"
-              selected={usageType}
-              disable={formData?.usageCategoryMajor?.code !== "MIXED"}
-              option={usageCategoryMajorMenu(usagecat)}
-              select={setUsageType}
-              optionKey="i18nKey"
-              t={t}
-            />
-          </LabelFieldPair>
           {/* Usage Type Component */}
           <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
             <CardLabel className="card-label-smaller">{t("PT_FORM2_USAGE_TYPE") + " *"}</CardLabel>
@@ -734,6 +803,43 @@ function Unit({
               )}
             />
           </LabelFieldPair>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + "*"}</CardLabel>
+            <Dropdown
+              className="form-field"
+              selected={usageType}
+              disable={formData?.usageCategoryMajor?.code !== "MIXED"}
+              option={usageCategoryMajorMenu(usagecat)}
+              select={setUsageType}
+              optionKey="i18nKey"
+              t={t}
+            />
+          </LabelFieldPair> 
+          
+          {!(usageType?.code === "RESIDENTIAL") &&<div>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_SUB_USAGE_TYPE") + "*"}</CardLabel>
+            <Controller
+              name="subUsageType"
+              defaultValue={unit.subUsageType}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={false}
+                  option={getSubUsageTypeOptions(usageType) || []}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
+          </div>}
 
           {/* Built-Up Area Component */}
           <LabelFieldPair>
@@ -858,7 +964,7 @@ function Unit({
         <CardLabelError style={errorStyle}>{localFormState.touched.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError>
 
 
-      {formValue.occupancyType?.code === "RENTED" ? (
+      {formValue.occupancyType?.code === "RENTED" ||formValue.occupancyType?.code === "PG"? (
         <React.Fragment>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PT_FORM2_TOTAL_ANNUAL_RENT") + " *"}</CardLabel>
@@ -960,6 +1066,7 @@ function Unit({
           </LabelFieldPair>
         )}
       <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError> */}
+      </div>}
     </div>
   );
 }

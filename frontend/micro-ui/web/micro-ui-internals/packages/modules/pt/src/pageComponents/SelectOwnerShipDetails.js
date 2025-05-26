@@ -143,16 +143,30 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
     onSelect(config.key, ownershipCategory, "", index, null, { routeKey: ownershipCategory?.value });
   }
 
+  // useEffect(() => {
+  //   if (formData?.ownershipCategory?.code && getDropdwonForProperty(ownerShipdropDown)?.length) {
+  //     const code = formData?.ownershipCategory?.code;
+
+  //     const Ownertype = getDropdwonForProperty(ownerShipdropDown)?.find((e) => e.code === code);
+  //     console.log("SetValues Ownertype", Ownertype);
+  //     setValue("SelectOwnerShipDetails", Ownertype);
+  //     // setPropertyPurpose(Majorbuiltdingtype)
+  //   }
+  // }, [formData, ownerShipdropDown]);
+
   useEffect(() => {
     if (formData?.ownershipCategory?.code && getDropdwonForProperty(ownerShipdropDown)?.length) {
       const code = formData?.ownershipCategory?.code;
-
       const Ownertype = getDropdwonForProperty(ownerShipdropDown)?.find((e) => e.code === code);
-      console.log("SetValues Ownertype", Ownertype);
-      setValue("SelectOwnerShipDetails", Ownertype);
-      // setPropertyPurpose(Majorbuiltdingtype)
+  
+      // Only update if it has actually changed
+      const current = watch("SelectOwnerShipDetails");
+      if (!_.isEqual(current, Ownertype)) {
+        setValue("SelectOwnerShipDetails", Ownertype);
+      }
     }
-  }, [formData, ownerShipdropDown]);
+  }, [formData?.ownershipCategory?.code, ownerShipdropDown]);
+  
 
   useEffect(() => {
     if (userType === "employee") {

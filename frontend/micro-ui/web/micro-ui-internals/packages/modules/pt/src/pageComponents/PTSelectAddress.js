@@ -25,8 +25,8 @@ console.log("usertype",window.location.href.includes("employee"))
     // userType === "employee"
     window.location.href.includes("employee")
       ? allCities.filter((city) => city.code === tenantId)
-      : pincode
-      ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode))
+      // : pincode
+      // ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode))
       : allCities;
 
   const [selectedCity, setSelectedCity] = useState(() => {

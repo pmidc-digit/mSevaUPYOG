@@ -13,7 +13,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   // Function to handle the "Next" button click
   const goNext = async (data) => {
     console.log("Full form data submitted: ", formData);
-    // onSubmit(formData); // Call the onSubmit function with the form data
+    onSubmit(formData); // Call the onSubmit function with the form data
     const res = await onSubmit(formData); // wait for the API response
     console.log("API response: ", res);
 
@@ -41,21 +41,63 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
 
   const onSubmit = async (data) => {
     console.log("FormData received:", data);
-
-    // Map the `units` array to include additional details
-    const updatedUnits = data?.PropertyDetails?.units?.map((unit) => {
-      const additionalDetails = {
-        structureType: unit?.constructionDetail?.structureType || null,
-        ageOfProperty: unit?.constructionDetail?.ageOfProperty || null,
+  
+    const tenantId = data?.PersonalDetails?.address?.city?.code;
+    const allDocuments = data?.DocumentDetails?.documents || [];
+  
+    const updatedUnits = data?.PropertyDetails?.units?.map((unit) => ({
+      floorNo: unit?.floorNoCitizen?.code,
+      occupancyType: unit?.occupancyType?.code,
+      arv: unit?.arv,
+      unitType: unit?.subUsageType?.code?.split(".").slice(-1)[0],
+      usageCategory: unit?.subUsageType?.code,
+      tenantId: tenantId,
+      constructionDetail: {
+        builtUpArea: Number(unit?.builtUpArea),
+      },
+      additionalDetails: {
+        rentedformonths: unit?.RentedMonths?.code ? Number(unit.RentedMonths.code) : null,
+        usageForDueMonths: unit?.NonRentedMonthsUsage?.code || null,
+      },
+    }));
+  
+    const permanentAddress = `${data?.PersonalDetails?.address?.doorNo}, ${data?.PersonalDetails?.address?.buildingName}, ${data?.PersonalDetails?.address?.street}, ${data?.PersonalDetails?.address?.locality?.name}, ${data?.PersonalDetails?.address?.city?.name}, ${data?.PersonalDetails?.address?.pincode}`;
+  
+    const owners = Array.isArray(data?.ownerShipDetails?.owners) ? data.ownerShipDetails.owners.map((owner, index) => {
+      const isIndividual = data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL");
+  
+      const baseOwner = {
+        name: owner?.name,
+        mobileNumber: owner?.mobileNumber,
+        emailId: owner?.emailId,
+        correspondenceAddress: "",
+        isCorrespondenceAddress: owner?.isCorrespondenceAddress || false,
+        ownerType: owner?.ownerType?.code,
       };
-      return { ...unit, additionalDetails };
-    });
-
-    const owners = Array.isArray(data?.ownerShipDetails?.owners) ? data?.ownerShipDetails?.owners : [];
-    // Construct the payload
+  
+      if (isIndividual) {
+        baseOwner.permanentAddress = permanentAddress;
+        baseOwner.relationship = owner?.relationship?.code;
+        baseOwner.fatherOrHusbandName = owner?.fatherOrHusbandName;
+        baseOwner.gender = owner?.gender?.code;
+        baseOwner.additionalDetails = {
+          ownerSequence: index,
+          ownerName: owner?.name,
+        };
+      } else {
+        baseOwner.designation = owner?.designation;
+      }
+  
+      baseOwner.documents = [
+        allDocuments.find((d) => d.documentType?.includes("IDENTITYPROOF")),
+        allDocuments.find((d) => d.documentType?.includes("ADDRESSPROOF")),
+      ].filter(Boolean);
+  
+      return baseOwner;
+    }) : [];
+  
     const formData = {
-      tenantId: data?.PersonalDetails?.address?.city?.code,
-      // tenantId: PersonalDetails.address.city.code
+      tenantId: tenantId,
       address: {
         ...data?.PersonalDetails?.address,
         city: data?.PersonalDetails?.address?.city?.name,
@@ -65,108 +107,45 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
         },
       },
       usageCategory: data?.PropertyDetails?.usageCategoryMajor?.code,
-      usageCategoryMajor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[0],
-      usageCategoryMinor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[1] || null,
-      landArea: Number(data?.PropertyDetails?.landArea || 0),
-      superBuiltUpArea: Number(data?.PropertyDetails?.landArea || 0),
+      usageCategoryMajor: data?.PropertyDetails?.usageCategoryMajor?.code?.split(".")[0],
+      usageCategoryMinor: data?.PropertyDetails?.usageCategoryMajor?.code?.split(".")[1] || null,
+      landArea: Number(data?.PropertyDetails?.landarea || 0),
+      superBuiltUpArea: Number(data?.PropertyDetails?.landarea || 0),
       propertyType: data?.PropertyDetails?.PropertyType?.code,
       noOfFloors: Number(data?.PropertyDetails?.noOfFloors || 0),
       ownershipCategory: data?.ownerShipDetails?.ownershipCategory?.code,
-      additionalDetails: {
-        ageOfProperty: data?.PropertyDetails?.propertyStructureDetails?.ageOfProperty,
-        structureType: data?.PropertyDetails?.propertyStructureDetails?.structureType,
-        electricity: data?.PersonalDetails?.electricity,
-        uid: data?.PersonalDetails?.uid,
-      },
       surveyId: data?.PersonalDetails?.surveyId,
       existingPropertyId: data?.PersonalDetails?.existingPropertyId,
-      owners: owners?.map((owner, index) => {
-        const {
-          name,
-          mobileNumber,
-          designation,
-          altContactNumber,
-          emailId,
-          correspondenceAddress,
-          isCorrespondenceAddress,
-          ownerType,
-          fatherOrHusbandName,
-        } = owner;
-
-        let __owner;
-        if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
-          __owner = {
-            name,
-            mobileNumber,
-            designation,
-            altContactNumber,
-            emailId,
-            correspondenceAddress,
-            isCorrespondenceAddress,
-            ownerType,
-          };
-        } else {
-          __owner = {
-            name,
-            mobileNumber,
-            correspondenceAddress,
-            permanentAddress: data?.PersonalDetails?.address?.locality?.name,
-            relationship: owner?.relationship?.code,
-            fatherOrHusbandName,
-            gender: owner?.gender?.code,
-            emailId,
-            additionalDetails: { ownerSequence: index, ownerName: owner?.name },
-          };
-        }
-
-        if (!__owner?.correspondenceAddress) __owner.correspondenceAddress = "";
-
-        const _owner = {
-          ...__owner,
-          ownerType: owner?.ownerType?.code,
-        };
-
-        if (_owner.ownerType !== "NONE") {
-          const { documentType, documentUid } = owner?.documents || {};
-          _owner.documents = [
-            { documentUid, documentType: documentType?.code, fileStoreId: documentUid },
-            data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF")),
-          ];
-        } else {
-          _owner.documents = [data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF"))];
-        }
-
-        return _owner;
-      }),
+      owners,
       additionalDetails: {
+        businessName: data?.PropertyDetails?.businessName?.businessName,
+        yearConstruction: data?.PersonalDetails?.yearOfCreation?.yearOfCreation?.code,
+        remarks: data?.PropertyDetails?.remarks,
         vasikaNo: data?.PropertyDetails?.vasikaDetails?.vasikaNo,
         vasikaDate: data?.PropertyDetails?.vasikaDetails?.vasikaDate,
         allotmentNo: data?.PropertyDetails?.allottmentDetails?.allotmentNo,
         allotmentDate: data?.PropertyDetails?.allottmentDetails?.allotmentDate,
-        businessName: data?.PropertyDetails?.businessName,
-        yearConstruction: data?.PersonalDetails?.yearOfCreation?.code,
-        remarks: data?.PropertyDetails?.remarks,
+        inflammable: data?.PropertyDetails?.propertyCheckboxQuestions?.hasInflammableMaterial,
+        heightAbove36Feet: data?.PropertyDetails?.propertyCheckboxQuestions?.isPropertyHeightMoreThan36Feet,
       },
-      channel: "CFC_COUNTER", // required
-      creationReason: "CREATE", // required
-      source: "MUNICIPAL_RECORDS", // required
+      channel: "CFC_COUNTER",
+      creationReason: "CREATE",
+      source: "MUNICIPAL_RECORDS",
       units: data?.PropertyDetails?.PropertyType?.code !== "VACANT" ? updatedUnits : [],
-      documents: data?.DocummentDetails?.documents?.documents,
+      documents: allDocuments,
       applicationStatus: "CREATE",
     };
-
-    // Add institution details if ownership is not individual
-    if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
+  
+    if (!data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL")) {
       formData.institution = {
         name: data?.ownerShipDetails?.owners?.[0]?.institution?.name,
         type: data?.ownerShipDetails?.owners?.[0]?.institution?.type?.code,
         designation: data?.ownerShipDetails?.owners?.[0]?.designation,
         nameOfAuthorizedPerson: data?.ownerShipDetails?.owners?.[0]?.name,
-        tenantId: data?.PersonalDetails?.address?.city?.code,
+        tenantId,
       };
     }
-
-    // Prepare search data for duplicate property validation
+  
     const searchData = {
       mobileNumber: formData.owners?.[0]?.mobileNumber,
       name: formData.owners?.[0]?.name,
@@ -174,21 +153,165 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       locality: formData.address?.locality?.code,
       isRequestForDuplicatePropertyValidation: true,
     };
-
+  
     console.log("Final Payload:", formData);
     console.log("Search Data:", searchData);
-
-    // Set the form data and search data
-    // setFormData(formData);
-    // setSearchData({ city: formData.tenantId, filters: searchData });
-const tenantId = formData.tenantId;
-    const response = await Digit.PTService.create({ Property: { ...formData } }, tenantId);
-    // if(response?.ResponseInfo?.status === "successful"){
-    //   dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
-    //   console.log("response in step 2: ", response.Licenses[0]);
-    // }
+  
+    const response = await Digit.PTService.create({ Property: formData }, tenantId);
     return response?.ResponseInfo?.status === "successful";
   };
+  
+
+//   const onSubmit = async (data) => {
+//     console.log("FormData received:", data);
+
+//     // Map the `units` array to include additional details
+//     const updatedUnits = data?.PropertyDetails?.units?.map((unit) => {
+//       const additionalDetails = {
+//         structureType: unit?.constructionDetail?.structureType || null,
+//         ageOfProperty: unit?.constructionDetail?.ageOfProperty || null,
+//       };
+//       return { ...unit, additionalDetails };
+//     });
+
+//     const owners = Array.isArray(data?.ownerShipDetails?.owners) ? data?.ownerShipDetails?.owners : [];
+//     // Construct the payload
+//     const formData = {
+//       tenantId: data?.PersonalDetails?.address?.city?.code,
+//       // tenantId: PersonalDetails.address.city.code
+//       address: {
+//         ...data?.PersonalDetails?.address,
+//         city: data?.PersonalDetails?.address?.city?.name,
+//         locality: {
+//           code: data?.PersonalDetails?.address?.locality?.code,
+//           area: data?.PersonalDetails?.address?.locality?.area,
+//         },
+//       },
+//       usageCategory: data?.PropertyDetails?.usageCategoryMajor?.code,
+//       usageCategoryMajor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[0],
+//       usageCategoryMinor: data?.PropertyDetails?.usageCategoryMajor?.code.split(".")[1] || null,
+//       landArea: Number(data?.PropertyDetails?.landArea || 0),
+//       superBuiltUpArea: Number(data?.PropertyDetails?.landArea || 0),
+//       propertyType: data?.PropertyDetails?.PropertyType?.code,
+//       noOfFloors: Number(data?.PropertyDetails?.noOfFloors || 0),
+//       ownershipCategory: data?.ownerShipDetails?.ownershipCategory?.code,
+//       additionalDetails: {
+//         ageOfProperty: data?.PropertyDetails?.propertyStructureDetails?.ageOfProperty,
+//         structureType: data?.PropertyDetails?.propertyStructureDetails?.structureType,
+//         electricity: data?.PersonalDetails?.electricity,
+//         uid: data?.PersonalDetails?.uid,
+//       },
+//       surveyId: data?.PersonalDetails?.surveyId,
+//       existingPropertyId: data?.PersonalDetails?.existingPropertyId,
+//       owners: owners?.map((owner, index) => {
+//         const {
+//           name,
+//           mobileNumber,
+//           designation,
+//           altContactNumber,
+//           emailId,
+//           correspondenceAddress,
+//           isCorrespondenceAddress,
+//           ownerType,
+//           fatherOrHusbandName,
+//         } = owner;
+
+//         let __owner;
+//         if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
+//           __owner = {
+//             name,
+//             mobileNumber,
+//             designation,
+//             altContactNumber,
+//             emailId,
+//             correspondenceAddress,
+//             isCorrespondenceAddress,
+//             ownerType,
+//           };
+//         } else {
+//           __owner = {
+//             name,
+//             mobileNumber,
+//             correspondenceAddress,
+//             permanentAddress: data?.PersonalDetails?.address?.locality?.name,
+//             relationship: owner?.relationship?.code,
+//             fatherOrHusbandName,
+//             gender: owner?.gender?.code,
+//             emailId,
+//             additionalDetails: { ownerSequence: index, ownerName: owner?.name },
+//           };
+//         }
+
+//         if (!__owner?.correspondenceAddress) __owner.correspondenceAddress = "";
+
+//         const _owner = {
+//           ...__owner,
+//           ownerType: owner?.ownerType?.code,
+//         };
+
+//         if (_owner.ownerType !== "NONE") {
+//           const { documentType, documentUid } = owner?.documents || {};
+//           _owner.documents = [
+//             { documentUid, documentType: documentType?.code, fileStoreId: documentUid },
+//             data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF")),
+//           ];
+//         } else {
+//           _owner.documents = [data?.DocummentDetails?.documents?.documents?.find((e) => e.documentType?.includes("OWNER.IDENTITYPROOF"))];
+//         }
+
+//         return _owner;
+//       }),
+//       additionalDetails: {
+//         vasikaNo: data?.PropertyDetails?.vasikaDetails?.vasikaNo,
+//         vasikaDate: data?.PropertyDetails?.vasikaDetails?.vasikaDate,
+//         allotmentNo: data?.PropertyDetails?.allottmentDetails?.allotmentNo,
+//         allotmentDate: data?.PropertyDetails?.allottmentDetails?.allotmentDate,
+//         businessName: data?.PropertyDetails?.businessName,
+//         yearConstruction: data?.PersonalDetails?.yearOfCreation?.code,
+//         remarks: data?.PropertyDetails?.remarks,
+//       },
+//       channel: "CFC_COUNTER", // required
+//       creationReason: "CREATE", // required
+//       source: "MUNICIPAL_RECORDS", // required
+//       units: data?.PropertyDetails?.PropertyType?.code !== "VACANT" ? updatedUnits : [],
+//       documents: data?.DocummentDetails?.documents?.documents,
+//       applicationStatus: "CREATE",
+//     };
+
+//     // Add institution details if ownership is not individual
+//     if (!data?.ownerShipDetails?.ownershipCategory?.code.includes("INDIVIDUAL")) {
+//       formData.institution = {
+//         name: data?.ownerShipDetails?.owners?.[0]?.institution?.name,
+//         type: data?.ownerShipDetails?.owners?.[0]?.institution?.type?.code,
+//         designation: data?.ownerShipDetails?.owners?.[0]?.designation,
+//         nameOfAuthorizedPerson: data?.ownerShipDetails?.owners?.[0]?.name,
+//         tenantId: data?.PersonalDetails?.address?.city?.code,
+//       };
+//     }
+
+//     // Prepare search data for duplicate property validation
+//     const searchData = {
+//       mobileNumber: formData.owners?.[0]?.mobileNumber,
+//       name: formData.owners?.[0]?.name,
+//       doorNo: formData.address?.doorNo,
+//       locality: formData.address?.locality?.code,
+//       isRequestForDuplicatePropertyValidation: true,
+//     };
+
+//     console.log("Final Payload:", formData);
+//     console.log("Search Data:", searchData);
+
+//     // Set the form data and search data
+//     // setFormData(formData);
+//     // setSearchData({ city: formData.tenantId, filters: searchData });
+// const tenantId = formData.tenantId;
+//     const response = await Digit.PTService.create({ Property: { ...formData } }, tenantId);
+//     // if(response?.ResponseInfo?.status === "successful"){
+//     //   dispatch(UPDATE_tlNewApplication("CreatedResponse", response.Licenses[0]));
+//     //   console.log("response in step 2: ", response.Licenses[0]);
+//     // }
+//     return response?.ResponseInfo?.status === "successful";
+//   };
   return (
     <React.Fragment>
       <FormComposer

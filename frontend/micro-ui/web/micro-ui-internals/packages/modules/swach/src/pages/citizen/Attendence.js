@@ -25,7 +25,6 @@ const Attendence = (props) => {
   let { id } = useParams();
   const history = useHistory();
   let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); // ToDo: fetch from state
-  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.swach.useComplaintDetails({ tenantId, id });
   const { mutate: submitAttendance, isLoading: isMutating } = Digit.Hooks.swach.useAttendence();
   const SelectImages = Digit?.ComponentRegistryService?.getComponent("SWACHSelectImages");
   const [toast, setToast] = useState({ show: false, type: "", message: "" });
@@ -35,23 +34,7 @@ const Attendence = (props) => {
   const [loader, setLoader] = useState(false);
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
-  const localityCode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.locality?.code;
-  const localityObj = localities?.find((loc) => loc?.code == localityCode);
-  const localityName = localityObj?.name || "";
-  const city = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.city || "";
-  const pincode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.pincode || "";
-
-  const addressText = [localityName, city, pincode]?.filter(Boolean).join(", ");
-
-  useEffect(() => {
-    (async () => {
-      if (complaintDetails) {
-        setLoader(true);
-        await revalidate();
-        setLoader(false);
-      }
-    })();
-  }, []);
+  
   useEffect(() => {
     if (toast.show && toast.type === "success") {
       const timer = setTimeout(() => {
@@ -60,10 +43,9 @@ const Attendence = (props) => {
       return () => clearTimeout(timer);
     }
   }, [toast, history]);
-  const userInfo = JSON.parse(localStorage.getItem("user-info"));
+  const userInfo = Digit.SessionStorage.get("User")?.info
   const [mobileNumber, setMobileNumber] = useState(userInfo?.mobileNumber || "");
   const [fullName, setFullName] = useState(userInfo?.name || "");
-  const auditCitizen = complaintDetails?.audit?.citizen || {};
   const attendanceFields = [
     { label: "Name", value: fullName || "N/A" },
     { label: "Mobile Number", value: mobileNumber || "N/A" },
@@ -101,13 +83,13 @@ const Attendence = (props) => {
     }
   }, [location]);
 
-  if (isLoading || loader) {
-    return <Loader />;
-  }
+  // if (isLoading || loader) {
+  //   return <Loader />;
+  // }
 
-  if (isError) {
-    return <h2>Error</h2>;
-  }
+  // if (isError) {
+  //   return <h2>Error</h2>;
+  // }
   const attendanceRequestBody = {
     RequestInfo: { apiId: "Rainmaker", authToken: "", userInfo: {}, msgId: "", plainAccessRequest: {} },
     ImageData: { tenantId: "", useruuid: "", latitude: "", longitude: "", locality: "", imagerurl: "" },
@@ -116,16 +98,14 @@ const Attendence = (props) => {
   const handleSubmit = () => {
     const digiUser = Digit.UserService.getUser() || {};
     const user = { authToken: digiUser.access_token, userInfo: digiUser };
-    const addr = complaintDetails.details.ES_CREATECOMPLAINT_ADDRESS;
-
     const slots = {
-      city: addr.tenantId,
+      city: tenantId,
       locality: address,
       latitude: location.latitude,
       longitude: location.longitude,
     };
 
-    const docs = complaintDetails.workflow.verificationDocuments || [];
+    // const docs = complaintDetails.workflow.verificationDocuments || [];
     const attendance = { image: uploadedImages[0] || "" };
     // const attendance = { image: docs[0]?.fileStoreId || "" };
 

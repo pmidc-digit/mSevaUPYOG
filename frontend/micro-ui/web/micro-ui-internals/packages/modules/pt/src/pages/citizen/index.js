@@ -6,6 +6,7 @@ import Search from "../employee/Search";
 import { useTranslation } from "react-i18next";
 import { PTMyPayments } from "./MyPayments";
 import PaymentDetails from "../../utils/PaymentDetails"
+
 const hideBackButtonConfig = [
   { screenPath: "property/new-application/acknowledgement" },
   { screenPath: "property/edit-application/acknowledgement" },
@@ -29,12 +30,13 @@ const App = () => {
   const MutateProperty = Digit?.ComponentRegistryService?.getComponent("PTMutateProperty");
   const PropertyInformation = Digit?.ComponentRegistryService?.getComponent("PropertyInformation");
   const PropertyOwnerHistory = Digit?.ComponentRegistryService?.getComponent("PropertyOwnerHistory");
-  const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("PTAssessmentDetails");
+  const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("AssessmentDetailsCitizen");
   const NewApplicationCitizen = Digit?.ComponentRegistryService?.getComponent("NewApplicationCitizen");
   const CreateEmployeeStepForm= Digit?.ComponentRegistryService?.getComponent("CreateEmployeeStepForm");
   const PropertyDetailsCitizen = Digit?.ComponentRegistryService?.getComponent("PropertyDetailsCitizen")
   const PropertyApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PropertyApplicationDetails");
-
+    const SubmitResponse = Digit?.ComponentRegistryService?.getComponent("SubmitResponse");
+  console.log("citizen path",path)
   return (
     <span className={"pt-citizen"}style={{width:"100%"}}>
       <Switch>
@@ -55,10 +57,10 @@ const App = () => {
           {/* <PrivateRoute path={`${path}/property/transfer-ownership`} component={MutateProperty}></PrivateRoute> */}
           <PrivateRoute path={`${path}/property/owner-history/:tenantId/:propertyIds`} component={PropertyOwnerHistory}></PrivateRoute>
           {/* <Redirect to={`/`}></Redirect> */}
-          <PrivateRoute path={`${path}/assessment-details/:id`} component={() => <AssessmentDetails parentRoute={path} />} />
+          <PrivateRoute path={`${path}/property/assessment-details/:id`} component={() => <AssessmentDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/application-preview/:id`} component={(props) => <PropertyApplicationDetails {...props} t={t} parentRoute={path} />} />
-         
+           <PrivateRoute path={`${path}/property/pt-acknowledgement`} component={SubmitResponse}></PrivateRoute>
         </AppContainer>
       </Switch>
     </span>

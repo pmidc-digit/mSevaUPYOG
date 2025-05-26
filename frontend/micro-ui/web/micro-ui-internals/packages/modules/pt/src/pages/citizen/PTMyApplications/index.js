@@ -163,7 +163,7 @@ export const PTMyApplications = () => {
       );
   const onSubmit = async () => {
   
-    const filters={}
+    const filters={tenantId:tenantId}
     if(formValues?.applicationNumber!==''){
       filters.acknowledgementIds=formValues.applicationNumber
      }

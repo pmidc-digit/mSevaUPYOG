@@ -12,6 +12,8 @@ import {
   LinkButton,
   ActionBar,
   SubmitBar,
+  Modal,
+  CheckBox
 } from "@mseva/digit-ui-react-components";
 import { PTService } from "../../../../libraries/src/services/elements/PT";
 import { values } from "lodash";
@@ -58,83 +60,134 @@ function ApplicationDetailsContent({
   paymentsList,
   oldValue,
   isInfoLabel = false,
-  propertyId
+  propertyId,
+  setIsCheck,
+  isCheck
 }) {
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
-  const [payments,setPayments]=useState([])
+  const [payments, setPayments] = useState([])
+  const [showAccess, setShowAccess] = useState(false);
+  const [selectedYear, setSelectedYear] = useState()
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
   console.log("appl", applicationDetails);
+  let { data: FinancialYearData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "egf-master", [{ name: "FinancialYear" }], {
+    select: (data) => {
+      const formattedData = data?.["egf-master"]?.["FinancialYear"];
 
+      return formattedData;
+    },
+  });
+  if (FinancialYearData?.length > 0) {
+    FinancialYearData = FinancialYearData.filter(
+      (record, index, self) =>
+        index === self.findIndex((r) => r.code === record.code)
+    );
+    FinancialYearData = FinancialYearData.sort((a, b) => b.endingDate - a.endingDate)
+  }
+  console.log("financial year", FinancialYearData)
+  const setModal = () => {
+    console.log("in Apply")
+
+    // onSelect()
+
+  }
+  const closeModalTwo = () => {
+    setShowAccess(false)
+  }
+
+  const Heading = (props) => {
+    return <h1 className="heading-m">{props.label}</h1>;
+  };
+
+  const Close = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF">
+      <path d="M0 0h24v24H0V0z" fill="none" />
+      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
+    </svg>
+  );
+
+  const CloseBtn = (props) => {
+    return (
+      <div className="icon-bg-secondary" onClick={props.onClick}>
+        <Close />
+      </div>
+    );
+  };
+  const closeModal = (e) => {
+    console.log("in Print")
+    setShowAccess(false)
+
+  }
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
 
   const [fetchBillData, updatefetchBillData] = useState({});
-  const [assessmentDetails,setAssessmentDetails] = useState()
-  const [filtered,setFiltered]=useState([])
-    
+  const [assessmentDetails, setAssessmentDetails] = useState()
+  const [filtered, setFiltered] = useState([])
+
   const setBillData = async (tenantId, propertyIds, updatefetchBillData, updateCanFetchBillData) => {
     const assessmentData = await Digit.PTService.assessmentSearch({ tenantId, filters: { propertyIds } });
     let billData = {};
-    console.log("assessment data",assessmentData)
-   
+    console.log("assessment data", assessmentData)
+
     if (assessmentData?.Assessments?.length > 0) {
-      
-const activeRecords = assessmentData.Assessments.filter(a => a.status === 'ACTIVE');
 
-// Helper to normalize timestamp to date only (midnight)
-function normalizeDate(timestamp) {
-  const date = new Date(timestamp);
-  date.setHours(0, 0, 0, 0);
-  return date.getTime();
-}
+      const activeRecords = assessmentData.Assessments.filter(a => a.status === 'ACTIVE');
 
-
-
-const latestMap = new Map();
-
-activeRecords.forEach(record => {
- 
-const normalizedDate = normalizeDate(record.assessmentDate);
-  const key = `${normalizedDate}_${record.financialYear}`;
-  const existing = latestMap.get(key);
-
-  if (!existing || record.createdDate > existing.createdDate) {
-    latestMap.set(key, record);
-  }
-});
+      // Helper to normalize timestamp to date only (midnight)
+      function normalizeDate(timestamp) {
+        const date = new Date(timestamp);
+        date.setHours(0, 0, 0, 0);
+        return date.getTime();
+      }
 
 
-console.log("grouped",latestMap)
 
-// Step 3: Convert grouped object to array
-const filteredAssessment=Array.from(latestMap.values());
-setFiltered(filteredAssessment)
-console.log(filteredAssessment);
+      const latestMap = new Map();
 
-//       filtered = Object.values(
-//   assessmentData.Assessments
-//     .filter(a => a.status === 'ACTIVE')
-//     .reduce((acc, curr) => {
-//       const key = `${curr.assessmentDate}_${curr.financialYear}`;
-//       if (!acc[key] || curr.createdDate > acc[key].createdDate) {
-//         acc[key] = curr;
-//       }
-//       return acc;
-//     }, {})
-// );
-// console.log("filtered",filtered)
+      activeRecords.forEach(record => {
+
+        const normalizedDate = normalizeDate(record.assessmentDate);
+        const key = `${normalizedDate}_${record.financialYear}`;
+        const existing = latestMap.get(key);
+
+        if (!existing || record.createdDate > existing.createdDate) {
+          latestMap.set(key, record);
+        }
+      });
+
+
+      console.log("grouped", latestMap)
+
+      // Step 3: Convert grouped object to array
+      const filteredAssessment = Array.from(latestMap.values());
+      setFiltered(filteredAssessment)
+      console.log(filteredAssessment);
+
+      //       filtered = Object.values(
+      //   assessmentData.Assessments
+      //     .filter(a => a.status === 'ACTIVE')
+      //     .reduce((acc, curr) => {
+      //       const key = `${curr.assessmentDate}_${curr.financialYear}`;
+      //       if (!acc[key] || curr.createdDate > acc[key].createdDate) {
+      //         acc[key] = curr;
+      //       }
+      //       return acc;
+      //     }, {})
+      // );
+      // console.log("filtered",filtered)
       setAssessmentDetails(assessmentData?.Assessments)
       billData = await Digit.PaymentService.fetchBill(tenantId, {
         businessService: "PT",
         consumerCode: propertyIds,
       });
     }
-    console.log("bill Data",billData)
+    console.log("bill Data", billData)
     updatefetchBillData(billData);
     updateCanFetchBillData({
       loading: false,
@@ -142,7 +195,7 @@ console.log(filteredAssessment);
       canLoad: true,
     });
   };
-  console.log("fetch bill data",fetchBillData)
+  console.log("fetch bill data", fetchBillData)
   const [billData, updateCanFetchBillData] = useState({
     loading: false,
     loaded: false,
@@ -152,7 +205,7 @@ console.log(filteredAssessment);
 
 
 
-console.log("filtered",filtered)
+  console.log("filtered", filtered)
   if (applicationData?.status == "ACTIVE" && !billData.loading && !billData.loaded && !billData.canLoad) {
     updateCanFetchBillData({
       loading: false,
@@ -212,7 +265,7 @@ console.log("filtered",filtered)
         name: checkpoint?.assignes?.[0]?.name,
         mobileNumber:
           applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid &&
-          applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            applicationData?.processInstance?.assignes?.[0]?.mobileNumber
             ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
             : checkpoint?.assignes?.[0]?.mobileNumber,
         comment: t(checkpoint?.comment),
@@ -380,18 +433,28 @@ console.log("filtered",filtered)
   const propertyIds = applicationDetails?.applicationData?.propertyId || "";
   const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
   const PropertyInActive = () => {
-    if (checkPropertyStatus == "ACTIVE") {
-      updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
-    } else {
-      alert("Property is already inactive.");
+    if (window.location.href.includes("/citizen")) {
+      alert("Action to Inactivate property is not allowed for citizen");
+    }
+    else {
+      if (checkPropertyStatus == "ACTIVE") {
+        updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+      } else {
+        alert("Property is already inactive.");
+      }
     }
   };
 
   const PropertyActive = () => {
-    if (checkPropertyStatus == "INACTIVE") {
-      updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
-    } else {
-      alert("Property is already active.");
+    if (window.location.href.includes("/citizen")) {
+      alert("Action to activate property is not allowed for citizen");
+    }
+    else {
+      if (checkPropertyStatus == "INACTIVE") {
+        updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
+      } else {
+        alert("Property is already active.");
+      }
     }
   };
   // const PropertyInActive = () => updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
@@ -406,29 +469,31 @@ console.log("filtered",filtered)
   };
 
   const AccessProperty = () => {
-    alert("access property");
+    //alert("access property");
+    setShowAccess(true)
   };
 
-   console.log("applicationDetails?.applicationDetails",applicationDetails?.applicationDetails)
-   console.log("infolabel",isInfoLabel)
-   console.log("assessment details",assessmentDetails)
+  console.log("applicationDetails?.applicationDetails", applicationDetails?.applicationDetails)
+  console.log("infolabel", isInfoLabel)
+  console.log("assessment details", assessmentDetails)
 
-   useEffect(()=>{
-   try{
-   let filters={
-    consumerCodes:propertyId,
-   // tenantId: tenantId
-   }
-   const auth=true
-    Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-      setPayments(response?.Payments)
-      console.log(response)  
-    })
-   }
-   catch(error){
-   console.log(error)
-   }
-   },[])
+  useEffect(() => {
+    try {
+      let filters = {
+        consumerCodes: propertyId,
+        // tenantId: tenantId
+      }
+      const auth = true
+      Digit.PTService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+        setPayments(response?.Payments)
+        console.log(response)
+      })
+    }
+    catch (error) {
+      console.log(error)
+    }
+  }, [])
+
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
@@ -504,7 +569,7 @@ console.log("filtered",filtered)
                         labelStyle={{ wordBreak: "break-all" }}
                         textStyle={{ wordBreak: "break-all" }}
                         key={t(value.title)}
-                        label={t(value.title)}
+                        label={value?.labelComp?`<div>${t(value.title)} ${value?.labelComp}</div>`:"t(value.title)"}
                         text={<img src={t(value.value)} alt="" privacy={value?.privacy} />}
                       />
                     );
@@ -574,7 +639,7 @@ console.log("filtered",filtered)
                           textStyle={{ wordBreak: "break-all" }}
                         />
                       )}
-                      {value.title === "PT_TOTAL_DUES" ? <ArrearSummary bill={fetchBillData.Bill?.[0]} /> : ""}
+                      {/* {value.title === "PT_TOTAL_DUES" ? <ArrearSummary bill={fetchBillData.Bill?.[0]} /> : ""} */}
                     </div>
                   );
                 })}
@@ -661,12 +726,24 @@ console.log("filtered",filtered)
           )}
           {detail?.additionalDetails?.estimationDetails && <WSFeeEstimation wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
           {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
-        
+          {/* {detail?.additionalDetails?.owners && (
+            <PropertyOwners owners={detail?.additionalDetails?.owners} />
+          )} */}
+          {detail.title === "Property Documents" && detail?.additionalDetails?.assessmentDocuments === null ? <p>0</p> : <PropertyDocuments documents={detail?.additionalDetails?.assessmentDocuments} />}
+          {detail.title === "DECLARATION" && detail?.additionalDetails?.declaration &&
+           <div>
+           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CheckBox onChange={(e)=>{setIsCheck(e.target.checked)}} /><p>{detail?.additionalDetails?.declaration}</p></div>
+
+              {isCheck===false && <p style={{color:'red'}}>{t("PT_CHECK_DECLARATION_BOX")}</p>}
+              </div>
+              }
         </React.Fragment>
       ))}
-        {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
-        <PaymentHistory payments={payments}/>
-        <ApplicationHistory applicationData={applicationDetails?.applicationData}/>
+   
+      {(!window.location.href.includes("/assessment-details")) && <AssessmentHistory assessmentData={filtered} applicationData={applicationDetails?.applicationData}/>}
+      {!window.location.href.includes("/assessment-details") && <PaymentHistory payments={payments} />}
+      {!window.location.href.includes("/assessment-details") && <ApplicationHistory applicationData={applicationDetails?.applicationData} />}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
@@ -708,8 +785,7 @@ console.log("filtered",filtered)
                                 isCompleted={index === 0}
                                 info={checkpoint.comment}
                                 label={t(
-                                  `${timelineStatusPrefix}${
-                                    checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
+                                  `${timelineStatusPrefix}${checkpoint?.performedAction === "REOPEN" ? checkpoint?.performedAction : checkpoint?.[statusAttribute]
                                   }${timelineStatusPostfix}`
                                 )}
                                 customChild={getTimelineCaptions(checkpoint, index, workflowDetails?.data?.timeline)}
@@ -791,7 +867,7 @@ console.log("filtered",filtered)
       <td style={tableStyles.td}>0.0</td>
       <td style={tableStyles.td}>0.0</td>
     </tr> */}
-          {/* <tr>
+      {/* <tr>
             <th style={tableStyles.th}>Total</th>
             <td style={tableStyles.td}>{totalDemandTax}</td>
             <td style={tableStyles.td}>{totalDemandInterest}</td>
@@ -838,6 +914,45 @@ console.log("filtered",filtered)
         <SubmitBar label={"Access Property"} style={{ marginLeft: "20px" }} onSubmit={AccessProperty} />
       </ActionBar>
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
+      {showAccess &&
+        <Modal
+          headerBarMain={<Heading label={t("PT_FINANCIAL_YEAR_PLACEHOLDER")} />}
+          headerBarEnd={<CloseBtn onClick={closeModalTwo} />}
+          actionCancelLabel={"Cancel"}
+          actionCancelOnSubmit={closeModal}
+          actionSaveLabel={"Access"}
+          actionSaveOnSubmit={setModal}
+          formId="modal-action"
+          popupStyles={{ width: '60%', marginTop: '5px' }}
+        >
+          <React.Fragment>
+            {/* <Card style={{marginLeft:'2px'}} > */}
+            {FinancialYearData?.length > 0 &&
+
+              <>
+
+                {FinancialYearData.map((option, index) => (
+                  <div key={index} style={{ marginBottom: '8px' }}>
+                    <label>
+                      <input
+                        type="radio"
+                        value={option.code}
+                        checked={selectedYear === option.code}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                        name="custom-radio"
+                      />
+                      {option.name}
+                    </label>
+                  </div>
+                ))}
+              </>
+
+            }
+
+            {/* </Card> */}
+          </React.Fragment>
+        </Modal>
+      }
     </Card>
   );
 }

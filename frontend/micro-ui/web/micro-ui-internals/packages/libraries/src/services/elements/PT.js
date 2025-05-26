@@ -186,6 +186,27 @@ export const PTService = {
         params: { ...filters },
         isUserInfo:false
       }),
+
+    billingSlabSearch: (tenantId, filters) =>
+    Request({
+      url: Urls.pt.billingslab,
+      useCache: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId, ...filters },
+      auth: true,
+    }),
+
+      assessmentUpdate: (details, tenantId) =>
+    Request({
+      url: Urls.pt.assessment_update,
+      data: details,
+      useCache: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId },
+      auth: true,
+    }),
 };
 
 // export const PTService = {

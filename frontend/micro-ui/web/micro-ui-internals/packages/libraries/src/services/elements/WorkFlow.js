@@ -118,9 +118,9 @@ export const WorkflowService = {
     if (workflow && workflow.ProcessInstances) {
       const processInstances = workflow.ProcessInstances;
       const nextStates = processInstances[0]?.nextActions.map((action) => ({ action: action?.action, nextState: processInstances[0]?.state.uuid }));
-      const nextActions = nextStates.map((id) => ({
-        action: id.action,
-        state: businessServiceResponse?.find((state) => state.uuid === id.nextState),
+      const nextActions = nextStates?.map((id) => ({
+        action: id?.action,
+        state: businessServiceResponse?.find((state) => state?.uuid === id?.nextState),
       }));
       /* To check state is updatable and provide edit option*/
       const currentState = businessServiceResponse?.find((state) => state.uuid === processInstances[0]?.state.uuid);

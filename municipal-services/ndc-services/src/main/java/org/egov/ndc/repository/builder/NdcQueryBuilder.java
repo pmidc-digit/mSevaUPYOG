@@ -1,19 +1,12 @@
 package org.egov.ndc.repository.builder;
 
-import java.util.Arrays;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
-import org.egov.ndc.config.NDCConfiguration;
-import org.egov.ndc.web.model.NdcSearchCriteria;
-import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
-import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
@@ -22,8 +15,6 @@ public class NdcQueryBuilder {
 	private final String paginationWrapper = "SELECT * FROM "
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY ndc_lastModifiedTime DESC) offset_ FROM " + "({})"
 			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
-	
-	private final String countWrapper = "SELECT COUNT(DISTINCT(ndc_id)) FROM ({INTERNAL_QUERY}) as ndc_count";
 
 	private static final String NDC_QUERY = "SELECT a.uuid AS a_uuid, a.firstname,a.tenantid, a.lastname, a.mobile, a.email, a.address, a.applicationstatus,a.active, a.createdby AS a_createdby, a.lastmodifiedby AS a_lastmodifiedby, a.createdtime AS a_createdtime, a.lastmodifiedtime AS a_lastmodifiedtime, " +
 			"d.uuid AS d_uuid, d.applicantid AS d_applicantid, d.businessservice, d.consumercode, d.additionaldetails, d.dueamount, d.status, " +
@@ -79,7 +70,7 @@ public class NdcQueryBuilder {
 			preparedStmtList.add("%" + criteria.getName() + "%");
 		}
 
-		query.append(" ORDER BY a.createdtime DESC");
+		query.append(" ORDER BY a.createdtime DESC ");
 		return query.toString();
 	}
 
@@ -90,10 +81,6 @@ public class NdcQueryBuilder {
 		} else {
 			query.append(" WHERE");
 		}
-	}
-
-	public String getNdcDetailsQuery(String uuid) {
-		return NDC_QUERY + " WHERE a.uuid = ?";
 	}
 
 	public String getExistingUuids(String tableName, List<String> uuids) {

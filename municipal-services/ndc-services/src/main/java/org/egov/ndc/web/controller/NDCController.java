@@ -43,14 +43,12 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.ndc.config.ResponseInfoFactory;
 import org.egov.ndc.service.NDCService;
-import org.egov.ndc.web.model.RequestInfoWrapper;
 import org.egov.ndc.web.model.ndc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -124,16 +122,6 @@ public class NDCController {
 				.build();
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-
-	@PostMapping("/dues/_pending")
-	public ResponseEntity<DuesDetailsResponse> checkPendingDues(@Valid @ModelAttribute PendingDuesRequest pendingDuesRequest,
-																@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) {
-		DuesDetails noDues = ndcService.checkNoDuesForProperty(pendingDuesRequest,requestInfoWrapper.getRequestInfo());
-		DuesDetailsResponse duesDetailsResponse = DuesDetailsResponse.builder()
-				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
-				.duesDetails(noDues).build();
-		return new ResponseEntity<>(duesDetailsResponse, HttpStatus.OK);
 	}
 
 }

@@ -37,13 +37,6 @@ public class NDCRepository {
 	private NdcRowMapper rowMapper;
 
 
-
-	public List<NdcApplicationRequest> getApplicationById(String applicantId) {
-		String sql = queryBuilder.getNdcDetailsQuery(applicantId);
-		return jdbcTemplate.query(sql, new Object[]{applicantId}, rowMapper);
-	}
-
-
 	public Set<String> getExistingUuids(String tableName, List<String> uuids) {
 		String sql = queryBuilder.getExistingUuids(tableName, uuids);
 		return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("uuid")).stream().collect(Collectors.toSet());

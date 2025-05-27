@@ -87,6 +87,7 @@ public class WorkflowIntegrator {
 		obj.put(BUSINESSSERVICEKEY, bussinessServiceValue);
 		obj.put(MODULENAMEKEY, NDCConstants.NDC_MODULE);
 		obj.put(ACTIONKEY, ndc.getWorkflow().getAction());
+		ndc.setAction(ndc.getWorkflow().getAction());
 		
 		if(ndc.getWorkflow().getComment() != null)
 		  obj.put(COMMENTKEY, ndc.getWorkflow().getComment());

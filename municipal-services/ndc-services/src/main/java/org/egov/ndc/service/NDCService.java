@@ -90,7 +90,7 @@ public class NDCService {
 		}
 		System.out.println(ndcApplicationRequest);
 
-		workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
+//		workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
 
 		producer.push(config.getSaveTopic(), ndcApplicationRequest);
 
@@ -99,11 +99,11 @@ public class NDCService {
 
 	public NdcApplicationRequest updateNdcApplication(NdcApplicationRequest ndcApplicationRequest) {
 
-		if(ObjectUtils.isEmpty(ndcApplicationRequest.getApplicant().getUuid())){
-			throw new CustomException("APPLICANT_UUID_NULL", "Applicant uuid is null");
+		if(ndcApplicationRequest.getApplicant()==null || ObjectUtils.isEmpty(ndcApplicationRequest.getApplicant().getUuid())){
+			throw new CustomException("APPLICANT_UUID_NULL", "Applicant details or uuid is null");
 		}
 		if(!ndcRepository.checkApplicantExists(ndcApplicationRequest.getApplicant().getUuid())) {
-			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
+			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant details or uuid is not found.");
 		}
 
 		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
@@ -139,7 +139,7 @@ public class NDCService {
 		}
 
 		log.info("ndc request :", ndcApplicationRequest);
-		workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
+//		workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
 		// Push to update topic
 		producer.push(config.getUpdateTopic(), ndcApplicationRequest);
 
@@ -188,8 +188,10 @@ public class NDCService {
 				StringUtils.isNotBlank(criteria.getName()) || criteria.getActive()!=null||
 				criteria.getStatus() != null) {
 			return ndcRepository.fetchNdcApplications(criteria);
+		}else{
+			throw new CustomException("EG_NDC_TENANT_ID_NULL_PARAM_NULL","Parameter missing with Tenant ID or empty when UUID is not provided");
 		}
 
-		return new ArrayList<>();
+//		return new ArrayList<>();
 	}
 }

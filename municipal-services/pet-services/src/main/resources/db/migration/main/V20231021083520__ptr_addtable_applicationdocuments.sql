@@ -14,5 +14,10 @@ CREATE TABLE IF NOT EXISTS public.eg_ptr_applicationdocuments
     createdby character varying(64) COLLATE pg_catalog."default" NOT NULL,
     lastmodifiedby character varying(64) COLLATE pg_catalog."default",
     createdtime bigint,
-    lastmodifiedtime bigint 
+    lastmodifiedtime bigint,
+    CONSTRAINT uk_eg_ptr_applicationdocument PRIMARY KEY (id),
+    CONSTRAINT fk_eg_ptr_applicationdocument FOREIGN KEY (petapplicationid)
+        REFERENCES public.eg_ptr_registration (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION 
 );

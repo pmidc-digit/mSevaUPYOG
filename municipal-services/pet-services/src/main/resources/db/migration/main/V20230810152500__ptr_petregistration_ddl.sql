@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS public.eg_ptr_registration
     expireflag boolean,
     pettoken character varying(64) COLLATE pg_catalog."default",
     previousapplicationnumber character varying(64) COLLATE pg_catalog."default",
-    propertyid character varying(64) COLLATE pg_catalog."default"
+    propertyid character varying(64) COLLATE pg_catalog."default",
+	CONSTRAINT eg_ptr_registration_pk PRIMARY KEY (id)
     
 );
 
@@ -46,7 +47,12 @@ CREATE TABLE IF NOT EXISTS public.eg_ptr_petdetails
     petcolor character varying(64) COLLATE pg_catalog."default",
     adoptiondate bigint,
     birthdate bigint,
-    identificationmark character varying(256) COLLATE pg_catalog."default"
+    identificationmark character varying(256) COLLATE pg_catalog."default",
+    CONSTRAINT uk_eg_ptr_petdetails PRIMARY KEY (id),
+    CONSTRAINT fk_eg_ptr_petdetails FOREIGN KEY (petdetailsid)
+        REFERENCES public.eg_ptr_registration (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
     
 );
 
@@ -77,5 +83,10 @@ CREATE TABLE IF NOT EXISTS public.eg_ptr_address
     createdby character varying(64) COLLATE pg_catalog."default",
     lastmodifiedby character varying(64) COLLATE pg_catalog."default",
     createdtime bigint,
-    lastmodifiedtime bigint  
+    lastmodifiedtime bigint,
+    CONSTRAINT uk_eg_ptr_address PRIMARY KEY (id),
+    CONSTRAINT fk_eg_ptr_address FOREIGN KEY (registrationid)
+        REFERENCES public.eg_ptr_registration (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE  
 );

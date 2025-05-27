@@ -13,6 +13,7 @@ import org.egov.ndc.web.model.RequestInfoWrapper;
 import org.egov.ndc.web.model.bill.BillResponse;
 import org.egov.ndc.web.model.ndc.*;
 import org.egov.ndc.web.model.property.PropertyResponse;
+import org.egov.ndc.workflow.WorkflowIntegrator;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -28,6 +29,9 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class NDCService {
+
+	@Autowired
+	private WorkflowIntegrator workflowIntegrator;
 
 	@Autowired
 	private NDCRepository ndcRepository;
@@ -85,6 +89,8 @@ public class NDCService {
 			}
 		}
 
+		workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
+
 		producer.push(config.getSaveTopic(), ndcApplicationRequest);
 
 		return ndcApplicationRequest;
@@ -131,6 +137,7 @@ public class NDCService {
 			}
 		}
 
+		workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
 		// Push to update topic
 		producer.push(config.getUpdateTopic(), ndcApplicationRequest);
 

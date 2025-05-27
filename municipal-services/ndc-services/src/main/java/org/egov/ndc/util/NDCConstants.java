@@ -8,7 +8,8 @@ public class NDCConstants {
 	public static final String SEARCH_MODULE = "rainmaker-ndcsrv";
 	
 	public static final String NDC_MODULE = "NDC";
-	
+	public static final String NDC_BUSINESS_SERVICE = "ndc-services";
+
 	public static final String NDC_TYPE = "NdcType";
 	
 	// mdms path codes

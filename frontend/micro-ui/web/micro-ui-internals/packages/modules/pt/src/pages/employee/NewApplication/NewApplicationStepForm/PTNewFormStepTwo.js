@@ -6,8 +6,89 @@ import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicat
 
 const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
+    console.log("data in step two", data);
+    const missingFields = validateEmployeeStepTwoFields(data);
+    if (missingFields.length > 0) {
+      alert(`Please fill the following mandatory fields:\n- ${missingFields.join("\n- ")}`);
+      return;
+    }
     onGoNext();
   }
+
+  const validateEmployeeStepTwoFields = (data) => {
+    const missingFields = [];
+  
+    const propertyType = data?.PropertyType?.code;
+    const usageCategory = data?.usageCategoryMajor?.code;
+    const units = data?.units || [];
+  
+    // 🔒 Always mandatory
+    if (!propertyType) missingFields.push("Property Type");
+    if (!usageCategory) missingFields.push("Usage Category");
+    if (!data?.businessName) missingFields.push("Business Name");
+  
+    // 🔁 Shared Unit Validation Logic
+    const validateUnitCommonFields = (unit, index) => {
+      const prefix = `Unit ${index + 1}`;
+      const occupancyCode = unit?.occupancyType?.code;
+      const rentedMonths = unit?.RentedMonths?.code;
+  
+      if (!unit?.floorNoCitizen?.code) missingFields.push(`${prefix} - Floor No`);
+  
+      // Sub Usage is only mandatory for non-RESIDENTIAL/MIXED/OTHERS
+      if (
+        usageCategory !== "RESIDENTIAL" &&
+        usageCategory !== "MIXED" &&
+        usageCategory !== "NONRESIDENTIAL.OTHERS"
+      ) {
+        if (!unit?.subUsageType) missingFields.push(`${prefix} - Sub Usage Type`);
+      }
+  
+      // For NONRESIDENTIAL.OTHERS, only floorNo is needed (already checked above)
+      if (usageCategory === "NONRESIDENTIAL.OTHERS") return;
+  
+      if (!unit?.occupancyType?.code) missingFields.push(`${prefix} - Occupancy Type`);
+      if (!unit?.builtUpArea) missingFields.push(`${prefix} - Built-up Area`);
+  
+      if (occupancyCode === "RENTED" || occupancyCode === "PG") {
+        if (!unit?.arv) missingFields.push(`${prefix} - ARV`);
+        if (!rentedMonths) missingFields.push(`${prefix} - Rented Months`);
+  
+        if (rentedMonths !== "12" && !unit?.NonRentedMonthsUsage?.code) {
+          missingFields.push(`${prefix} - Non-Rented Months Usage`);
+        }
+      }
+    };
+  
+    // 🧠 Conditional Logic per Property Type
+    switch (propertyType) {
+      case "BUILTUP.INDEPENDENTPROPERTY":
+        if (!data?.landarea) missingFields.push("Land Area");
+        if (data?.noOfFloors === undefined || data?.noOfFloors === null) {
+          missingFields.push("No. of Floors");
+        }
+        if (units.length !== Number(data?.noOfFloors)) {
+          missingFields.push("Number of unit entries must match No. of Floors");
+        }
+        units.forEach(validateUnitCommonFields);
+        break;
+  
+      case "BUILTUP.SHAREDPROPERTY":
+        if (units.length < 1) missingFields.push("At least one Unit is required");
+        units.forEach(validateUnitCommonFields);
+        break;
+  
+      case "VACANT":
+        if (!data?.landarea) missingFields.push("Land Area");
+        break;
+  
+      default:
+        break;
+    }
+  
+    return missingFields;
+  };
+  
 
   function onGoBack(data) {
     onBackClick(config.key, data);

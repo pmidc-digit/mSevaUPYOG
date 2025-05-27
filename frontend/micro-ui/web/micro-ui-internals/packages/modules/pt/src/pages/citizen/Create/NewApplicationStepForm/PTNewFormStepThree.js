@@ -23,6 +23,11 @@ const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   
     const ownershipCategory = data?.ownershipCategory?.code;
     const owners = data?.owners || [];
+
+    if (!ownershipCategory) {
+      missingFields.push("Ownership Category is required");
+      return missingFields; // Skip further checks if this is missing
+    }
   
     // Rule 1: Validate owners count based on ownershipCategory
     if (ownershipCategory === "INDIVIDUAL.SINGLEOWNER" && owners.length !== 1) {

@@ -76,6 +76,13 @@ export const config = [
       },
       {
         type: "component",
+        isMandatory: true,
+        component: "ProvideFloorNo",
+        key: "noOfFloors",
+        withoutLabel: true,
+      },
+      {
+        type: "component",
         component: "VasikaDetails",
         key: "vasikaDetails",
         withoutLabel: true,

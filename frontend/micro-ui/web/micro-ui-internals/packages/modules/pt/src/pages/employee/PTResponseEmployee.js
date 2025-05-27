@@ -3,7 +3,7 @@ import { Card, Banner, CardText, SubmitBar } from "@mseva/digit-ui-react-compone
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-const PTResponseCitizen = () => {
+const PTResponseEmployee = () => {
   const { t } = useTranslation();
   const { id: applicationNumber } = useParams(); // Same as PropertyApplicationDetails
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -32,11 +32,11 @@ const PTResponseCitizen = () => {
         <SubmitBar label={t("PT_DOWNLOAD_ACK_FORM")} onSubmit={(e) => handleDownloadPdf(e)} />
       </div> */}
 
-      <Link to="/digit-ui/citizen">
+      <Link to="/digit-ui/employee">
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>
     </Card>
   );
 };
 
-export default PTResponseCitizen;
+export default PTResponseEmployee;

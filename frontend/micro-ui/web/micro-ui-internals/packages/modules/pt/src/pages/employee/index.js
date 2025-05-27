@@ -162,6 +162,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const isRes = window.location.href.includes("pt/response");
   const isLocation = window.location.href.includes("pt") || window.location.href.includes("application");
   const isNewRegistration = window.location.href.includes("new-application") || window.location.href.includes("modify-application") || window.location.href.includes("pt/application-details");
+  const PTResponseEmployee = Digit?.ComponentRegistryService?.getComponent("PTResponseEmployee");
   return (
     <Switch>
       <React.Fragment>
@@ -204,6 +205,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/property-mutate/:id`} component={() => <TransferOwnership parentRoute={path} />} />
           <PrivateRoute path={`${path}/property-mutate-docs-required/:id`} component={() => <DocsRequired parentRoute={path} />} />
           <PrivateRoute path={`${path}/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseEmployee {...props} t={t} parentRoute={path} />} />
           <PrivateRoute
           
             path={`${path}/searchold`}

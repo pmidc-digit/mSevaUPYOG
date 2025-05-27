@@ -3,6 +3,7 @@ import { LocationSearchCard } from "@mseva/digit-ui-react-components";
 
 const SelectGeolocation = ({ onSelect, onSkip, value, t, onChange }) => {
   return (
+    <div className="location-card" >
     <LocationSearchCard
       header={t("CS_SWACH_SELECT_GEOLOCATION_HEADER")}
       cardText={t("CS_ADDCOMPLAINT_SELECT_GEOLOCATION_TEXT")}
@@ -20,6 +21,7 @@ const SelectGeolocation = ({ onSelect, onSkip, value, t, onChange }) => {
         onChange(val, location, place)
       }}
     />
+    </div>
   );
 };
 

@@ -14,7 +14,7 @@ import {
   WhatsNewCard,
   OBPSIcon,
   WSICon,
-  PTRIcon
+  PTRIcon,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -27,12 +27,12 @@ const Home = () => {
   const citizenInfoString = window.localStorage.getItem("user-info");
   const citizenInfo = citizenInfoString ? JSON.parse(citizenInfoString) : null;
   const UserType = citizenInfo?.type === "CITIZEN";
-  const UserRole = Array.isArray(citizenInfo?.roles) && citizenInfo?.roles.some(item => item.code === "PESCO");
+  const UserRole = Array.isArray(citizenInfo?.roles) && citizenInfo?.roles.some((item) => item.code === "PESCO");
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true);
   const { data: { stateInfo, uiHomePage } = {}, isLoading } = Digit.Hooks.useStore.getInitData();
   let isMobile = window.Digit.Utils.browser.isMobile();
-  if(window.Digit.SessionStorage.get("TL_CREATE_TRADE")) window.Digit.SessionStorage.set("TL_CREATE_TRADE",{});
-   
+  if (window.Digit.SessionStorage.get("TL_CREATE_TRADE")) window.Digit.SessionStorage.set("TL_CREATE_TRADE", {});
+
   const conditionsToDisableNotificationCountTrigger = () => {
     if (Digit.UserService?.getUser()?.info?.type === "EMPLOYEE") return false;
     if (!Digit.UserService?.getUser()?.access_token) return false;
@@ -47,10 +47,33 @@ const Home = () => {
     },
   });
 
-  if (!tenantId) {
-    Digit.SessionStorage.get("locale") === null
-      ? history.push(`/digit-ui/citizen/select-language`)
-      : history.push(`/digit-ui/citizen/select-location`);
+  const parseValue = (value) => {
+    try {
+      return JSON.parse(value);
+    } catch (e) {
+      return value;
+    }
+  };
+
+  const getFromStorage = (key) => {
+    const value = window.localStorage.getItem(key);
+    return value && value !== "undefined" ? parseValue(value) : null;
+  };
+
+  const citizenToken = getFromStorage("Citizen.token");
+  const citizenInfoMain = getFromStorage("Citizen.user-info");
+  const langSelect = getFromStorage("locale");
+
+  console.log("citizenInfoMain", citizenInfoMain, "langSelect", langSelect);
+
+  const getUserDetails = (access_token, info) => ({ token: access_token, access_token, info });
+
+  const userDetails = getUserDetails(citizenToken, citizenInfoMain);
+
+  window.Digit.SessionStorage.set("User", userDetails);
+
+  if (!citizenToken) {
+    langSelect === null ? history.push(`/digit-ui/citizen/select-language`) : history.push(`/digit-ui/citizen/select-location`);
   }
 
   const appBannerWebObj = uiHomePage?.appBannerDesktop;
@@ -72,7 +95,7 @@ const Home = () => {
       onClick: () => history.push(citizenServicesObj?.sideOption?.navigationUrl),
     },
     options:
-    UserType && UserRole
+      UserType && UserRole
         ? [
             {
               name: t(citizenServicesObj?.props?.[5]?.label),
@@ -148,39 +171,52 @@ const Home = () => {
     ],
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
-  sessionStorage.removeItem("type" );
+  sessionStorage.removeItem("type");
   sessionStorage.removeItem("pincode");
   sessionStorage.removeItem("tenantId");
   sessionStorage.removeItem("localityCode");
-  sessionStorage.removeItem("landmark"); 
+  sessionStorage.removeItem("landmark");
   sessionStorage.removeItem("propertyid");
 
   return isLoading ? (
     <Loader />
   ) : (
-    <div className="HomePageContainer" style={{width:"100%"}}>
+    <div className="HomePageContainer" style={{ width: "100%" }}>
       {/* <div className="SideBarStatic">
         <StaticCitizenSideBar />
       </div> */}
       <div className="HomePageWrapper">
-        {<div className="BannerWithSearch">
-          {isMobile ? <img src={"https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"} /> : <img src={"https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"} />}
-          {/* <div className="Search">
+        {
+          <div className="BannerWithSearch">
+            {isMobile ? (
+              <img src={"https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"} />
+            ) : (
+              <img src={"https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"} />
+            )}
+            {/* <div className="Search">
             <StandaloneSearchBar placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER")} />
           </div> */}
-          <div className="ServicesSection">
-          <CardBasedOptions style={{marginTop:"-30px"}} {...allCitizenServicesProps} />
-          <CardBasedOptions style={isMobile ? {marginTop:"-30px"} : {marginTop:"-30px"}} {...allInfoAndUpdatesProps} />
-        </div>
-        </div>}
-
+            <div className="ServicesSection">
+              <CardBasedOptions style={{ marginTop: "-30px" }} {...allCitizenServicesProps} />
+              <CardBasedOptions style={isMobile ? { marginTop: "-30px" } : { marginTop: "-30px" }} {...allInfoAndUpdatesProps} />
+            </div>
+          </div>
+        }
 
         {(whatsAppBannerMobObj || whatsAppBannerWebObj) && (
           <div className="WhatsAppBanner">
             {isMobile ? (
-              <img src={"https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+%281920x500%29B+%282%29.jpg"} onClick={() => handleClickOnWhatsAppBanner(whatsAppBannerMobObj)} style={{"width":"100%"}}/>
+              <img
+                src={"https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+%281920x500%29B+%282%29.jpg"}
+                onClick={() => handleClickOnWhatsAppBanner(whatsAppBannerMobObj)}
+                style={{ width: "100%" }}
+              />
             ) : (
-              <img src={"https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+%281920x500%29B+%282%29.jpg"} onClick={() => handleClickOnWhatsAppBanner(whatsAppBannerWebObj)} style={{"width":"100%"}}/>
+              <img
+                src={"https://nugp-assets.s3.ap-south-1.amazonaws.com/nugp+asset/Banner+UPYOG+%281920x500%29B+%282%29.jpg"}
+                onClick={() => handleClickOnWhatsAppBanner(whatsAppBannerWebObj)}
+                style={{ width: "100%" }}
+              />
             )}
           </div>
         )}

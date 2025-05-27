@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.ndc.web.model.Workflow;
 
 import java.util.ArrayList;
 import java.util.List;

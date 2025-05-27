@@ -65,8 +65,8 @@ public class NDCController {
 	private NDCService ndcService;
 
 	@PostMapping("/_create")
-	public ResponseEntity<NdcApplicationResponse> createNdcApplication(@RequestBody NdcApplicationRequest ndcApplicationRequest) {
-		NdcApplicationRequest request = ndcService.createNdcApplication(ndcApplicationRequest);
+	public ResponseEntity<NdcApplicationResponse> createNdcApplication(@RequestParam(required = false) boolean skipWorkFlow,@RequestBody NdcApplicationRequest ndcApplicationRequest) {
+		NdcApplicationRequest request = ndcService.createNdcApplication(skipWorkFlow,ndcApplicationRequest);
 		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
 
 		NdcApplicationResponse response = NdcApplicationResponse.builder()
@@ -79,8 +79,8 @@ public class NDCController {
 	}
 
 	@PutMapping("/_update")
-	public ResponseEntity<NdcApplicationResponse> updateNdcApplication(@RequestBody NdcApplicationRequest ndcApplicationRequest) {
-		NdcApplicationRequest request = ndcService.updateNdcApplication(ndcApplicationRequest);
+	public ResponseEntity<NdcApplicationResponse> updateNdcApplication(@RequestParam(required = false) boolean skipWorkFlow,@RequestBody NdcApplicationRequest ndcApplicationRequest) {
+		NdcApplicationRequest request = ndcService.updateNdcApplication(skipWorkFlow, ndcApplicationRequest);
 		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
 
 		NdcApplicationResponse response = NdcApplicationResponse.builder()

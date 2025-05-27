@@ -3,26 +3,20 @@ package org.egov.ndc.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.egov.common.contract.request.RequestInfo;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.producer.Producer;
 import org.egov.ndc.repository.NDCRepository;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.util.NDCConstants;
-import org.egov.ndc.web.model.RequestInfoWrapper;
-import org.egov.ndc.web.model.bill.BillResponse;
 import org.egov.ndc.web.model.ndc.*;
-import org.egov.ndc.web.model.property.PropertyResponse;
 import org.egov.ndc.workflow.WorkflowIntegrator;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -54,7 +48,7 @@ public class NDCService {
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
 
-	public NdcApplicationRequest createNdcApplication(NdcApplicationRequest ndcApplicationRequest) {
+	public NdcApplicationRequest createNdcApplication(boolean skipWorkFlow, NdcApplicationRequest ndcApplicationRequest) {
 		// Save applicant data
 		String applicantId = UUID.randomUUID().toString();
 		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
@@ -88,15 +82,17 @@ public class NDCService {
 				document.setLastmodifiedtime(System.currentTimeMillis());
 			}
 		}
+		System.out.println(ndcApplicationRequest);
 
-		workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
-
+		if(!skipWorkFlow) {
+			workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
+		}
 		producer.push(config.getSaveTopic(), ndcApplicationRequest);
 
 		return ndcApplicationRequest;
 	}
 
-	public NdcApplicationRequest updateNdcApplication(NdcApplicationRequest ndcApplicationRequest) {
+	public NdcApplicationRequest updateNdcApplication(boolean skipWorkFlow,NdcApplicationRequest ndcApplicationRequest) {
 
 		if(ndcApplicationRequest.getApplicant()==null || ObjectUtils.isEmpty(ndcApplicationRequest.getApplicant().getUuid())){
 			throw new CustomException("APPLICANT_UUID_NULL", "Applicant details or uuid is null");
@@ -137,7 +133,10 @@ public class NDCService {
 			}
 		}
 
-		workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
+		log.info("ndc request :", ndcApplicationRequest);
+		if(!skipWorkFlow) {
+			workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
+		}
 		// Push to update topic
 		producer.push(config.getUpdateTopic(), ndcApplicationRequest);
 
@@ -159,6 +158,7 @@ public class NDCService {
 		applicant.setActive(ndcDeleteRequest.getActive());
 		ndcApplicationRequest.setApplicant(applicant);
 		// Push to delete topic
+		System.out.println(applicant);
 		producer.push(config.getDeleteTopic(), applicant);
 
 		return ndcApplicationRequest;

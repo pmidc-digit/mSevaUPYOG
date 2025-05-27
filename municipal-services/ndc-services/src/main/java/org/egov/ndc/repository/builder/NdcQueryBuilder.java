@@ -54,7 +54,7 @@ public class NdcQueryBuilder {
 		if (criteria.getStatus() != null) {
 			addClauseIfRequired(query, whereAdded);
 			whereAdded = true;
-			query.append(" a.status = ?");
+			query.append(" a.applicationstatus = ?");
 			preparedStmtList.add(criteria.getStatus());
 		}
 

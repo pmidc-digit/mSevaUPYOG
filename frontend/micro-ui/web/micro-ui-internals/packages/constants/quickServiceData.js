@@ -125,11 +125,11 @@ export const quickServiceModules = {
     },
     {
       moduleCode: "PTR",
-      moduleName: "Grivance",
+      moduleName: "PET",
       bgColor: "#00cccd",
       labelKey: "",
       icon: "",
-      routes: "/digit-ui/employee/engagement/surveys/inbox",
+      routes: "/digit-ui/employee/ptr/petservice/inbox",
       isCitizen: false,
       description: "",
       subHeading: "",

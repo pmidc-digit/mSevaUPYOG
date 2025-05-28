@@ -21,7 +21,8 @@
     "micro-ui-internals/packages/modules/obps",
     "micro-ui-internals/packages/modules/sv",
     "micro-ui-internals/packages/modules/ads",
-    "micro-ui-internals/packages/modules/ptr"
+    "micro-ui-internals/packages/modules/ptr",
+    "micro-ui-internals/packages/modules/chb"
   ],
   "engines": {
     "node": ">=14"
@@ -50,6 +51,7 @@
     "@mseva/digit-ui-module-obps": "1.0.5",
     "@mseva/digit-ui-module-sv": "1.0.3",
     "@mseva/upyog-ui-module-ads": "1.0.5",
+    "@mseva/upyog-ui-module-chb": "1.0.0",
     "babel-loader": "8.1.0",
     "qrcode": "^1.5.3",
     "react": "17.0.2",

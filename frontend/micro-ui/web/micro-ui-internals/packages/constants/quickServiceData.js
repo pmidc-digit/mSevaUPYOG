@@ -167,5 +167,16 @@ export const quickServiceModules = {
       description: "",
       subHeading: "",
     },
+    {
+      moduleCode: "CHB",
+      moduleName: "Community Hall Booking",
+      bgColor: "#3e4b5b",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/chb/inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+    },
   ],
 };

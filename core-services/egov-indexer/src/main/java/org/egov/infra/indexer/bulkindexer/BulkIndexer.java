@@ -1,10 +1,12 @@
 package org.egov.infra.indexer.bulkindexer;
 
+import java.util.Base64;
 import java.util.Map;
 
 import org.egov.infra.indexer.util.IndexerUtils;
 import org.egov.infra.indexer.web.contract.Index;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -26,6 +28,18 @@ public class BulkIndexer {
 
 	@Autowired
 	private IndexerUtils indexerUtils;
+	
+	@Value("${elasticsearch.username}")
+	private String username;
+
+	@Value("${elasticsearch.password}")
+	private String password;
+	
+	@Value("${egov.elasticsearch.api.auth}")
+	private String apiAuth;
+
+	@Value("${egov.elasticsearch.api.type.auth}")
+	private String typeAuth;
 
 	/**
 	 * Methods that makes a REST API call to /_bulk API of the ES. This method
@@ -41,7 +55,10 @@ public class BulkIndexer {
 		try {
 			log.debug("Record being indexed: " + indexJson);
 			final HttpHeaders headers = new HttpHeaders();
-			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+//			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+			headers.setContentType(MediaType.APPLICATION_JSON);
+	        String base64Creds = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+	        headers.add(apiAuth, typeAuth + " " + base64Creds);
 			final HttpEntity<String> entity = new HttpEntity<>(indexJson, headers);
 			Object response = restTemplate.postForObject(url.toString(), entity, Map.class);
 			if (url.contains("_bulk")) {

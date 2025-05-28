@@ -28,6 +28,7 @@ import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
 import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
+import { CHBModule, CHBLinks, CHBComponents } from "@mseva/upyog-ui-module-chb";
 
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@mseva/digit-ui-module-pgr";
@@ -35,7 +36,6 @@ import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
 //import "@upyog-niua/upyog-css/example/index.css";
 import "@pmidc/upyog-css";
 // import * as comps from "@mseva/digit-ui-react-components";
-// import { subFormRegistry } from "@upyog/digit-ui-libraries";
 
 import { pgrCustomizations, pgrComponents } from "./pgr";
 
@@ -69,6 +69,7 @@ const enabledModules = [
   "ADS",
   "Swach",
   "SV",
+  "CHB",
 ];
 
 const initTokens = (stateCode) => {
@@ -124,6 +125,9 @@ const initDigitUI = () => {
     ADSLinks,
     ADSModule,
     ...ADSComponents,
+    CHBModule,
+    CHBLinks,
+    ...CHBComponents,
   });
   initFSMComponents();
   initPGRComponents();

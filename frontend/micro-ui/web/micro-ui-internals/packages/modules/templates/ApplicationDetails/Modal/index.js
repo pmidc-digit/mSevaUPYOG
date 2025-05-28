@@ -7,8 +7,9 @@ import BPAActionModal from "./BPAActionModal";
 import NOCActionModal from "./NOCActionModal";
 import WNSActionModal from "./WNSActionModal";
 import PTRActionModal from "./PTRActionModal";
-import DirectTLModal from "./DirectTLModal"
+import DirectTLModal from "./DirectTLModal";
 import SVActionModal from "./SVActionModal";
+import CHBActionModal from "./CHBActionModal";
 
 const ActionModal = (props) => {
   if (props?.businessService.includes("PT")) {
@@ -21,9 +22,9 @@ const ActionModal = (props) => {
   if (props?.businessService.includes("NewTL") || props?.businessService.includes("TL") || props?.businessService.includes("EDITRENEWAL")) {
     return <TLActionModal {...props} />;
   }
-  
-  if(props?.businessService.includes("DIRECTRENEWAL")){
-    return <DirectTLModal {...props} />
+
+  if (props?.businessService.includes("DIRECTRENEWAL")) {
+    return <DirectTLModal {...props} />;
   }
 
   if (props?.moduleCode.includes("BPAREG")) {
@@ -44,6 +45,10 @@ const ActionModal = (props) => {
 
   if (props?.businessService.includes("street-vending")) {
     return <SVActionModal {...props} />;
+  }
+
+  if (props?.businessService.includes("chb")) {
+    return <CHBActionModal {...props} />;
   }
   // return <FSMActionModal {...props} />;
 };

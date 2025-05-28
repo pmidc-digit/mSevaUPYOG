@@ -13,7 +13,8 @@ import { configWSApproverApplication } from "./WSApproverApplication";
 import { configWSDisConnectApplication } from "./WSDisconnectApplication";
 import { configPTRApproverApplication } from "./PTRApproverApplication";
 import { configSVApproverApplication } from "./SVApproverApplication";
-import { configTLDirectRenewApplication } from "./TLDirectRenewApplication"
+import { configTLDirectRenewApplication } from "./TLDirectRenewApplication";
+import { configCHBApproverApplication } from "./CHBApproverApplication";
 
 export {
   configAssignDso,
@@ -31,5 +32,6 @@ export {
   configWSDisConnectApplication,
   configPTRApproverApplication,
   configSVApproverApplication,
-  configTLDirectRenewApplication
+  configTLDirectRenewApplication,
+  configCHBApproverApplication,
 };

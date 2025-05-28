@@ -24,7 +24,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
           console.log("Submission successful, moving to next step.", res.response);
           const applicationNumber = res?.response?.Properties?.[0]?.acknowldgementNumber;
           dispatch(RESET_PtNewApplication());
-          history.replace(`/digit-ui/citizen/pt/property/response/${applicationNumber}`);
+          history.replace(`/digit-ui/employee/pt/property/response/${applicationNumber}`);
           // onGoNext();
         } else {
           console.error("Submission failed, not moving to next step.", res.response);
@@ -109,7 +109,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
           name: owner?.name,
           mobileNumber: owner?.mobileNumber,
           emailId: owner?.emailId,
-          correspondenceAddress: "",
+          correspondenceAddress: owner?.correspondenceAddress,
           isCorrespondenceAddress: owner?.isCorrespondenceAddress || false,
           ownerType: owner?.ownerType?.code,
         };

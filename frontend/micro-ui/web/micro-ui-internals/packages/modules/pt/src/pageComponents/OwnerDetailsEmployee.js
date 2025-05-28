@@ -228,7 +228,31 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
     return () => clearTimeout(getData)
   }, [uuid])
 
-  console.log("InstitutionNayan", institution, formData, isEditScreen);
+  // console.log("InstitutionNayan", institution, formData, isEditScreen);
+
+  function getAddressEmployee () {
+    let str = "";
+    str = formState2?.formData?.LocationDetails?.address?.doorNo? str + formState2?.formData?.LocationDetails?.address?.doorNo + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.buildingName? str + " " + formState2?.formData?.LocationDetails?.address?.buildingName + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.street? str + " " + formState2?.formData?.LocationDetails?.address?.street + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.locality?.name? str + " " + formState2?.formData?.LocationDetails?.address?.locality?.name + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.city?.name? str + " " + formState2?.formData?.LocationDetails?.address?.city?.name + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.pincode? str + " " + formState2?.formData?.LocationDetails?.address?.pincode  : str
+    
+    return str;
+  }
+
+  function getAddressCitizen () {
+    let str = "";
+    str = formState2?.formData?.PersonalDetails?.address?.doorNo? str + formState2?.formData?.PersonalDetails?.address?.doorNo + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.buildingName? str + " " + formState2?.formData?.PersonalDetails?.address?.buildingName + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.street? str + " " + formState2?.formData?.PersonalDetails?.address?.street + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.locality?.name? str + " " + formState2?.formData?.PersonalDetails?.address?.locality?.name + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.city?.name? str + " " + formState2?.formData?.PersonalDetails?.address?.city?.name + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.pincode? str + " " + formState2?.formData?.PersonalDetails?.address?.pincode  : str
+    
+    return str;
+  }
 
 
   return (
@@ -664,7 +688,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                 render={(props) => (
                   <TextInput
-                    value={isSamePropAddress?formState2.formData.PersonalDetails.address.locality?.code : props.value}
+                    value={props.value}
                     disable={isEditScreen}
                     autoFocus={focusIndex.index === owner?.key && focusIndex.type === "correspondenceAddress"}
                     onChange={(e) => {
@@ -681,14 +705,25 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
           <CardLabelError style={errorStyle}>
             {localFormState.touched.correspondenceAddress ? errors?.correspondenceAddress?.message : ""}
           </CardLabelError>
-      <CheckBox
-            onChange={(e) => setIsSamePropAddress(e.target.checked)}
-            checked={isSamePropAddress}
-            label={t("Same as Property Address?")}
-            pageType={"employee"}
-            style={{ marginTop: "-5px" }}
+          <Controller
+                control={control}
+                name={"isSamePropAddress"}
+                defaultValue={owner?.isSamePropAddress}
+                // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                render={(props) => (
+                  <CheckBox
+                    onChange={(e) => {
+                      setValue("correspondenceAddress", !owner?.isSamePropAddress? window.location.href.includes("employee")? getAddressEmployee() : getAddressCitizen() : "")
+                      // setIsSamePropAddress(e.target.checked)
+                      props.onChange(e.target.checked)
+                    }}
+                    checked={owner?.isSamePropAddress}
+                    label={t("Same as Property Address?")}
+                    pageType={"employee"}
+                    style={{ marginTop: "-5px" }}
+                  />
+                )}
           />
-
 {formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.MULTIPLEOWNERS" || formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.SINGLEOWNER" &&(
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("Ownership Percentage")} {isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>

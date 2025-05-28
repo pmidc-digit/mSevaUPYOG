@@ -34,7 +34,7 @@ const Attendence = (props) => {
   const [loader, setLoader] = useState(false);
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
-  
+
   useEffect(() => {
     if (toast.show && toast.type === "success") {
       const timer = setTimeout(() => {
@@ -43,7 +43,7 @@ const Attendence = (props) => {
       return () => clearTimeout(timer);
     }
   }, [toast, history]);
-  const userInfo = Digit.SessionStorage.get("User")?.info
+  const userInfo = Digit.SessionStorage.get("User")?.info;
   const [mobileNumber, setMobileNumber] = useState(userInfo?.mobileNumber || "");
   const [fullName, setFullName] = useState(userInfo?.name || "");
   const attendanceFields = [
@@ -150,7 +150,9 @@ const Attendence = (props) => {
             />
           </div>
         </Card>
-        <ButtonSelector label="Submit" onSubmit={handleSubmit}></ButtonSelector>
+        <ButtonSelector label="Submit" onSubmit={handleSubmit} 
+        isDisabled={address === "Fetching address..." || !address || address === "Unavailable"}
+></ButtonSelector>
       </div>
     </React.Fragment>
   );

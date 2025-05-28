@@ -1,0 +1,133 @@
+.swach {
+  width: 60vw !important;
+  .card {
+    .employee-card-input--front {
+      background-color: white;
+    }
+    input[name="mobileNumber"] {
+      max-width: 490px;
+    }
+  }
+  .mandatory-asterisk {
+  color: red;
+  font-weight: bold;
+}
+  .image-card .card {
+    width: 540px;
+  }
+  .break-line {
+    margin-top: 20px;
+    margin-bottom: 40px;
+  }
+  .card-section-header {
+    margin-top: 10px;
+  }
+  .label-field-pair {
+    margin-top: 10px;
+  }
+  .select-wrap .select {
+    border: 1px solid #b4b4b4;
+    border-radius: 8px;
+  }
+  textarea[name="landmark"] {
+    border: 1px solid #b4b4b4;
+  }
+  textarea[name="description"] {
+    border: 1px solid #b4b4b4;
+  }
+  .select-active {
+    input[type="text"] {
+      margin-top: 0px;
+    }
+  }
+  .font-Weigth-bold {
+    font-weight: 600 !important;
+    margin-top: 20px !important;
+  }
+  .location-card .card-header {
+    margin-left: 10px;
+    font-size: 20px;
+    /* background-color: red; */
+    line-height: 40px;
+  }
+}
+@media (min-width: 320px) and (max-width: 768px) {
+  .swach .card {
+    width: 95vw;
+  }
+  .swach .location-card .card {
+    width: 540px;
+  }
+  .swach .image-card .card {
+    width: 540px;
+  }
+  .swach .break-line {
+    margin-top: 20px;
+    margin-bottom: 40px;
+  }
+  /* .swach .location-card .card-header {
+      margin-left: 10px;
+      font-size: 15px;
+      line-height: 40px;
+    
+  } */
+}
+
+@media (min-width: 320px) and (max-width: 425px) {
+  .swach textarea[name="landmark"] {
+    max-width: 490px;
+  }
+  .swach textarea[name="description"] {
+    max-width: 490px;
+  }
+  /* .swach .location-card {
+    .card-header {
+      margin-left: 10px;
+      font-size: 15px;
+      line-height: 40px;
+    }
+  } */
+}
+
+@media (min-width: 426px) and (max-width: 768px) {
+  .swach textarea[name="landmark"] {
+    width: 540px;
+    position: relative;
+  }
+  .swach textarea[name="description"] {
+    width: 540px;
+  }
+  /* .swach .location-card {
+    .card-header {
+      margin-left: 10px;
+      font-size: 18px;
+      line-height: 40px;
+    }
+  } */
+}
+
+.citizen-home-container .select-active {
+  input[type="text"] {
+    margin-top: 0px;
+  }
+}
+
+/* @media (min-width: 768px) {
+  .swach .location-card .card-header {
+    margin-left: 10px;
+    font-size: 20px;
+    line-height: 40px;
+  }
+} */
+
+/* @media (min-width: 768px) {
+  .swach .location-card .card-header {
+    margin-left: 10px;
+    font-size: 20px;
+    line-height: 40px;
+  }
+} */
+.mandatory-asterisk {
+  color: red;
+  font-weight: bold;
+}

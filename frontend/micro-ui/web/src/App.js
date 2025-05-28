@@ -90,6 +90,7 @@ const enabledModules = [
   "SV",
   "ADS",
   "CHB",
+  "PTR",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,

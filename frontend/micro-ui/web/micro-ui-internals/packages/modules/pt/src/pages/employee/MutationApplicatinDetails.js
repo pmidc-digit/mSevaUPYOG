@@ -440,8 +440,8 @@ const MutationApplicationDetails = ({ propertyId, acknowledgementIds, workflowDe
                       )}
                     </CardSubHeader>
                     <StatusTable>
-                      <Row label={t("PT_INSTITUTION_NAME")} text={transferorInstitution?.name || t("CS_NA")} />
-                      <Row label={t("PT_TYPE_OF_INSTITUTION")} text={`${t(transferorInstitution?.type)}` || t("CS_NA")} />
+                      <Row label={t("PT_INSTITUTION_NAME")} text={transferorInstitution?.institutionName || t("CS_NA")} />
+                      <Row label={t("PT_TYPE_OF_INSTITUTION")} text={`${t(transferorInstitution?.institutionType)}` || t("CS_NA")} />
                       <Row label={t("PT_NAME_AUTHORIZED_PERSON")} text={transferorInstitution?.nameOfAuthorizedPerson || t("CS_NA")} />
                       <Row label={t("PT_LANDLINE_NUMBER")} text={owner?.altContactNumber || t("CS_NA")} />
                       <Row label={t("PT_FORM3_MOBILE_NUMBER")} text={owner?.mobileNumber || t("CS_NA")} />

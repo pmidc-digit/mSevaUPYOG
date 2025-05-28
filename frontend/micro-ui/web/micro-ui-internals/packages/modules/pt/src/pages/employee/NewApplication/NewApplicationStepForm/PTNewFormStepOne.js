@@ -33,6 +33,15 @@ const PTNewFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
       // Note: On employee side it's directly data.yearOfCreation.code (no nested yearOfCreation inside it)
       missingFields.push("Year of Creation");
     }
+    const pincode = data?.address?.pincode;
+    if (pincode) {
+      const isValidLength = /^\d{6}$/.test(pincode);
+      const isNumeric = !isNaN(Number(pincode));
+  
+      if (!isValidLength || !isNumeric) {
+        missingFields.push("Pincode must be a 6-digit number");
+      }
+    }
   
     return missingFields;
   };

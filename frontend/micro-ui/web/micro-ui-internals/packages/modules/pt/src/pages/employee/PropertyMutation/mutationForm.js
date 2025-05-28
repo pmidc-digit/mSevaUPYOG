@@ -72,7 +72,7 @@ const MutationForm = ({ applicationData, tenantId }) => {
               gender,
               ownerType,
               relationship,
-              inistitutetype: owner?.institution?.type?.code,
+              institutionType: owner?.institutionType,
               landlineNumber: owner?.altContactNumber,
               ...obj,
               status: "ACTIVE",
@@ -102,10 +102,10 @@ const MutationForm = ({ applicationData, tenantId }) => {
     if (!submitData.Property.ownershipCategory.includes("INDIVIDUAL")) {
       submitData.Property.institution = {
         nameOfAuthorizedPerson: data.owners[0].name,
-        name: data.owners[0].institution.name,
+        name: data.owners[0].institutionName,
         designation: data.owners[0].designation,
         tenantId: data.originalData.tenantId,
-        type: data.owners[0].institution.type.code,
+        type: data.owners[0].institutionType,
       };
     }
 

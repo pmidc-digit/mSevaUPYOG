@@ -30,7 +30,14 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
     getValues,
   } = useForm();
   console.log("formdata in yoc",formData)
-  const [selectedValue, setSelectedValue] = useState(formData?.yearOfCreation?.yearOfCreation || "");
+  const [selectedValue, setSelectedValue] = useState(()=>{
+    if(window.location.href.includes("employee")){
+      return formData?.yearOfCreation || ""
+    }
+    else{
+      return formData?.yearOfCreation?.yearOfCreation || ""
+    }
+  });
   console.log("Our menu---", Menu);
   const formValue = watch();
   const { errors } = localFormState;

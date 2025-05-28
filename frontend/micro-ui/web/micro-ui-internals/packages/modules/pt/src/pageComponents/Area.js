@@ -119,7 +119,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
       isMandatory: "true",
       validation: {
         pattern: "^[0-9]+(\\.[0-9]+)?$",
-        isRequired: config.isMandatory,
+        // isRequired: config.isMandatory,
         title: t("T_PLOT_SIZE_SQUARE_FEET_LABEL"),
       },
     },
@@ -196,7 +196,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
                   name={"LandArea"}
                   control={control}
                   defaultValue={floorarea}
-                  rules={{ required: t("REQUIRED_FIELD") }}
+                  // rules={{ required: t("REQUIRED_FIELD") }}
                   render={(props) => (
                     <TextInput
                       // key={input.name}
@@ -241,7 +241,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
                   name={"LandArea"}
                   control={control}
                   defaultValue={floorarea}
-                  rules={{ required: t("REQUIRED_FIELD") }}
+                  // rules={{ required: t("REQUIRED_FIELD") }}
                   render={(props) => (
                     <TextInput
                       // key={input.name}

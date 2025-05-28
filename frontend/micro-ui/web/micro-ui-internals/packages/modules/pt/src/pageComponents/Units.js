@@ -645,7 +645,7 @@ function Unit({
         null}
       {formData?.usageCategoryMajor?.code === "NONRESIDENTIAL.OTHERS"? <div>
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
+              <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR")}<span style={{ color: "red" }}>*</span></CardLabel>
               <Controller
                 name="floorNoCitizen"
                 defaultValue={unit.floorNoCitizen}
@@ -697,7 +697,7 @@ function Unit({
           <div>
             {/* Floor Selection Component */}
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
+              <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR")}<span style={{ color: "red" }}>*</span></CardLabel>
               <Controller
                 name="floorNoCitizen"
                 defaultValue={unit.floorNoCitizen}
@@ -719,7 +719,7 @@ function Unit({
             <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
 
             <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + "*"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER")}<span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               name="usageCategoryType"
               defaultValue={subUsageCategoryMenu(usageType)?.filter((e) => e?.code === unit.existingUsageCategory)[0]}
@@ -742,7 +742,7 @@ function Unit({
           
           {!(usageType?.code === "RESIDENTIAL") &&<div>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_SUB_USAGE_TYPE") + "*"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_SUB_USAGE_TYPE")}<span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               name="subUsageType"
               defaultValue={unit.subUsageType}
@@ -766,7 +766,7 @@ function Unit({
 
             {/* Built-Up Area Component */}
             <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
+              <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA")}<span style={{ color: "red" }}>*</span></CardLabel>
               <div className="field">
                 <Controller
                   name="builtUpArea"
@@ -831,7 +831,7 @@ function Unit({
           </LabelFieldPair>  */}
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + "*"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER")}<span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               name="usageCategoryType"
               defaultValue={subUsageCategoryMenu(usageType)?.filter((e) => e?.code === unit.existingUsageCategory)[0]}
@@ -854,7 +854,7 @@ function Unit({
           
           {!(usageType?.code === "RESIDENTIAL") &&<div>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_SUB_USAGE_TYPE") + "*"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_SUB_USAGE_TYPE")}<span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               name="subUsageType"
               defaultValue={unit.subUsageType}
@@ -878,7 +878,7 @@ function Unit({
 
           {/* Built-Up Area Component */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA")}<span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 name="builtUpArea"
@@ -904,7 +904,7 @@ function Unit({
 
           {/* Floor Selection Component */}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR")}<span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               name="floorNoCitizen"
               defaultValue={unit.floorNoCitizen}
@@ -976,7 +976,7 @@ function Unit({
         ) : null} */}
 
       <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY") + " *"}</CardLabel>
+          <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY")}<span style={{ color: "red" }}>*</span></CardLabel>
           <Controller
             name="occupancyType"
             defaultValue={unit?.occupancyType}
@@ -1002,7 +1002,7 @@ function Unit({
       {formValue.occupancyType?.code === "RENTED" ||formValue.occupancyType?.code === "PG"? (
         <React.Fragment>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM2_TOTAL_ANNUAL_RENT") + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_TOTAL_ANNUAL_RENT")}<span style={{ color: "red" }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 name="arv"
@@ -1028,7 +1028,7 @@ function Unit({
           <CardLabelError style={errorStyle}>{localFormState.errors.arv ? errors?.arv?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM2_RENTED_MONTHS") + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_RENTED_MONTHS")}<span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
               name="RentedMonths"
               defaultValue={unit.RentedMonths}
@@ -1051,7 +1051,7 @@ function Unit({
           {unit?.RentedMonths?.code === "1" || unit?.RentedMonths?.code === "2" || unit?.RentedMonths?.code === "3" || unit?.RentedMonths?.code === "4" || unit?.RentedMonths?.code === "5" || unit?.RentedMonths?.code === "6" || unit?.RentedMonths?.code === "7" || unit?.RentedMonths?.code === "8" || unit?.RentedMonths?.code === "9" || unit?.RentedMonths?.code === "10" || unit?.RentedMonths?.code === "11" ? (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_FORM2_NONRENTED_MONTHS_USAGE") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_FORM2_NONRENTED_MONTHS_USAGE")}<span style={{ color: "red" }}>*</span></CardLabel>
                 <Controller
                   name="NonRentedMonthsUsage"
                   defaultValue={unit.NonRentedMonthsUsage}

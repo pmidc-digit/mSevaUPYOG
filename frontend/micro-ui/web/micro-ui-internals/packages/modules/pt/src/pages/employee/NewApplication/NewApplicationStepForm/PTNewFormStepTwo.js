@@ -22,12 +22,12 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     const usageCategory = data?.usageCategoryMajor?.code;
     const units = data?.units || [];
   
-    // 🔒 Always mandatory
+    
     if (!propertyType) missingFields.push("Property Type");
     if (!usageCategory) missingFields.push("Usage Category");
     if (!data?.businessName) missingFields.push("Business Name");
   
-    // 🔁 Shared Unit Validation Logic
+    
     const validateUnitCommonFields = (unit, index) => {
       const prefix = `Unit ${index + 1}`;
       const occupancyCode = unit?.occupancyType?.code;
@@ -35,7 +35,7 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   
       if (!unit?.floorNoCitizen?.code) missingFields.push(`${prefix} - Floor No`);
   
-      // Sub Usage is only mandatory for non-RESIDENTIAL/MIXED/OTHERS
+      
       if (
         usageCategory !== "RESIDENTIAL" &&
         usageCategory !== "MIXED" &&
@@ -48,10 +48,18 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (usageCategory === "NONRESIDENTIAL.OTHERS") return;
   
       if (!unit?.occupancyType?.code) missingFields.push(`${prefix} - Occupancy Type`);
-      if (!unit?.builtUpArea) missingFields.push(`${prefix} - Built-up Area`);
+      if (!unit?.builtUpArea) {
+        missingFields.push(`${prefix} - Built-up Area`);
+      } else if (isNaN(Number(unit?.builtUpArea))) {
+        missingFields.push(`${prefix} - Built-up Area must be a valid number`);
+      }
   
       if (occupancyCode === "RENTED" || occupancyCode === "PG") {
-        if (!unit?.arv) missingFields.push(`${prefix} - ARV`);
+        if (!unit?.arv) {
+          missingFields.push(`${prefix} - Annual Rent Value`);
+        } else if (isNaN(Number(unit?.arv))) {
+          missingFields.push(`${prefix} - Annual Rent Value must be a valid number`);
+        }
         if (!rentedMonths) missingFields.push(`${prefix} - Rented Months`);
   
         if (rentedMonths !== "12" && !unit?.NonRentedMonthsUsage?.code) {
@@ -63,7 +71,11 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     // 🧠 Conditional Logic per Property Type
     switch (propertyType) {
       case "BUILTUP.INDEPENDENTPROPERTY":
-        if (!data?.landarea) missingFields.push("Land Area");
+        if (!data?.landarea) {
+          missingFields.push("Land Area");
+        } else if (isNaN(Number(data?.landarea))) {
+          missingFields.push("Land Area must be a valid number");
+        }
         if (data?.noOfFloors === undefined || data?.noOfFloors === null) {
           missingFields.push("No. of Floors");
         }

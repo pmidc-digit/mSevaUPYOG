@@ -35,6 +35,9 @@ const PTResponseEmployee = () => {
       <Link to="/digit-ui/employee">
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>
+      <Link to="/digit-ui/employee/pt/inbox">
+        <SubmitBar label={t("CORE_COMMON_GO_TO_PT_HOME")} />
+      </Link>
     </Card>
   );
 };

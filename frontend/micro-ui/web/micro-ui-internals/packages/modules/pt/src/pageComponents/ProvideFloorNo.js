@@ -41,7 +41,7 @@ const ProvideFloorNo = ({ t, config, onSelect, userType, formData }) => {
   return (
     <div>
       {formData?.usageCategoryMajor && formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY" && <div>
-        <CardLabel>{t("PT_FLOOR_NUMBER_LABEL")}</CardLabel>
+        <CardLabel>{t("PT_FLOOR_NUMBER_LABEL")} {config.isMandatory && <span style={{ color: "red" }}>*</span>}</CardLabel>
           <RadioOrSelect
             t={t}
             optionKey="i18nKey"

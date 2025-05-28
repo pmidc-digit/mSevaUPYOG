@@ -17,6 +17,8 @@ const createOwnerDetails = () => ({
   ownerType: "",
   gender: "",
   isCorrespondenceAddress: false,
+  institutionName: null,
+  institutionType: null,
   key: Date.now(),
 });
 
@@ -139,14 +141,16 @@ console.log("manasa",formState2.formData)
 console.log("man",formData?.ownerShipCategory)
 const [isSamePropAddress,setIsSamePropAddress] = useState(false)
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  owner["institution"] = { name: owner?.institution?.name ? formValue?.institution?.name : institution?.name };
-  owner["institution"].type = {
-    active: true,
-    code: formValue?.institution?.type?.code || institution?.type?.code,
-    i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`,
-    name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`),
-  };
-  owner.designation = owner?.designation ? formValue?.designation : institution?.designation;
+  // owner["institution"] = { name: owner?.institution?.name ? formValue?.institution?.name : institution?.name };
+  // owner["institution"].type = {
+  //   active: true,
+  //   code: formValue?.institution?.type?.code || institution?.type?.code,
+  //   // i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`,
+  //   // name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`),
+  //   i18nKey: `${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`,
+  //   name: t(`${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`),
+  // };
+  // owner.designation = owner?.designation ? formValue?.designation : institution?.designation;
   const specialDocsMenu = useMemo(
     () =>
       mdmsData?.PropertyTax?.Documents?.filter((e) => e.code === "OWNER.SPECIALCATEGORYPROOF")?.[0]
@@ -224,6 +228,8 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
     return () => clearTimeout(getData)
   }, [uuid])
 
+  console.log("InstitutionNayan", institution, formData, isEditScreen);
+
 
   return (
     <React.Fragment>
@@ -249,10 +255,11 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 <div className="field">
                   <Controller
                     control={control}
-                    name={"institution.name"}
-                    defaultValue={isEditScreen ? ( institution?.name ? institution.name : owner?.name) : null}
+                    name={"institutionName"}
+                    // defaultValue={isEditScreen ? ( institution?.name ? institution.name : owner?.name) : ( formValue?.institutionName ? formValue?.institutionName : null)}
+                    defaultValue={owner?.institutionName ||  null}
                     rules={{
-                      required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                      // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                       validate: {
                         pattern: (v) => (/^[a-zA-Z_@./()#&+-\s]*$/.test(v) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
                       },
@@ -261,17 +268,22 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       <TextInput
                         value={props.value}
                         disable={isEditScreen}
-                        name={"institution.name"}
-                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institution.name"}
+                        name={"institutionName"}
+                        // autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institution.name"}
+                        // onChange={(e) => {
+                        //   props.onChange(e.target.value);
+                        //   setFocusIndex({ index: owner.key, type: "institution.name"});
+                        // }}
+                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institutionName"}
                         onChange={(e) => {
                           props.onChange(e.target.value);
-                          setFocusIndex({ index: owner.key, type: "institution.name"});
+                          setFocusIndex({ index: owner.key, type: "institutionName" });
                         }}
                         onBlur={(e) => {
                           setFocusIndex({ index: -1 });
                           props.onBlur(e);
                         }}
-                        isRequired={true}
+                        // isRequired={true}
                       />
                     )}
                   />
@@ -284,19 +296,26 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_TYPE")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
-                  name={"institution.type"}
-                  defaultValue={isEditScreen ? {
-                    active: true,
-                    code: institution?.type,
-                    i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`,
-                    name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`),
-                  } : null}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  name={"institutionType"}
+                  defaultValue={owner?.institutionType ||  null}
+                  // defaultValue={isEditScreen ? {
+                  //   active: true,
+                  //   code: institution?.type,
+                  //   i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`,
+                  //   name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`),
+                  // } : null}
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
                       selected={props.value}
-                      select={props.onChange}
+                      name={"institutionType"}
+                      // select={props.onChange}
+                      autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institutionType"}
+                      select={(e) => {
+                        props.onChange(e);
+                        setFocusIndex({ index: owner.key, type: "institutionType" });
+                      }}
                       onBlur={props.onBlur}
                       option={institutionTypeMenu}
                       optionKey="i18nKey"
@@ -320,7 +339,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 name={"name"}
                 defaultValue={owner?.name}
                 rules={{
-                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                  // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                  
                 }}
                 render={(props) => (
@@ -336,7 +355,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    isRequired={true}
+                    // isRequired={true}
                   />
                 )}
               />
@@ -352,7 +371,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   control={control}
                   name={"gender"}
                   defaultValue={owner?.gender}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
@@ -388,7 +407,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       isIndividualTypeOwner
                         ? {}
                         : {
-                            required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                            // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                             validate: { pattern: (e) => (/^[0-9]{11}$/i.test(e) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) },
                           }
                     }
@@ -421,7 +440,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 name={"mobileNumber"}
                 defaultValue={owner?.mobileNumber}
                 rules={{
-                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                  // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                   validate: (v) => (/^[6789]\d{9}$/.test(v) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
                 }}
                 render={(props) => (
@@ -451,7 +470,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                     name={"fatherOrHusbandName"}
                     defaultValue={owner?.fatherOrHusbandName}
                     rules={{
-                      required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                      // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                       validate: { pattern: (val) => (/^[a-zA-Z ]+$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) },
                     }}
                     render={(props) => (
@@ -464,7 +483,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                           setFocusIndex({ index: owner.key, type: "fatherOrHusbandName" });
                         }}
                         onBlur={props.onBlur}
-                        isRequired={true}
+                        // isRequired={true}
                       />
                     )}
                   />
@@ -479,7 +498,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   control={control}
                   name={"relationship"}
                   defaultValue={owner?.relationship}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
@@ -504,7 +523,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   control={control}
                   name={"ownerType"}
                   defaultValue={owner?.ownerType}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
@@ -531,7 +550,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                     name={"designation"}
                     // defaultValue={isEditScreen ? ( institution?.designation || "") : null}
                     defaultValue={owner?.designation ||  null}
-                    rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                    // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                     render={(props) => (
                       <TextInput
                         value={props.value}
@@ -542,7 +561,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                           setFocusIndex({ index: owner.key, type: "designation" });
                         }}
                         onBlur={props.onBlur}
-                        isRequired={true}
+                        // isRequired={true}
                       />
                     )}
                   />
@@ -560,7 +579,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   control={control}
                   name={"documents.documentType"}
                   defaultValue={owner?.documents?.documentType}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
@@ -585,7 +604,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                     control={control}
                     name={"documents.documentUid"}
                     defaultValue={owner?.documents?.documentUid}
-                    rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                    // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                     render={(props) => (
                       <TextInput
                         value={props.value}
@@ -598,7 +617,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                         }}
                         labelStyle={{ marginTop: "unset" }}
                         onBlur={props.onBlur}
-                        isRequired={true}
+                        // isRequired={true}
                       />
                     )}
                   />
@@ -642,7 +661,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 control={control}
                 name={"correspondenceAddress"}
                 defaultValue={owner?.correspondenceAddress}
-                rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                 render={(props) => (
                   <TextInput
                     value={isSamePropAddress?formState2.formData.PersonalDetails.address.locality?.code : props.value}
@@ -653,7 +672,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       setFocusIndex({ index: owner.key, type: "correspondenceAddress" });
                     }}
                     onBlur={props.onBlur}
-                    isRequired={true}
+                    // isRequired={true}
                   />
                 )}
               />
@@ -678,7 +697,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 control={control}
                 name={"ownershipPercentage"}
                 defaultValue={owner?.ownershipPercentage}
-                rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                 render={(props) => (
                   <TextInput
                     value={props.value}
@@ -689,7 +708,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       setFocusIndex({ index: owner.key, type: "ownershipPercentage" });
                     }}
                     onBlur={props.onBlur}
-                    isRequired={true}
+                    // isRequired={true}
                   />
                 )}
               />

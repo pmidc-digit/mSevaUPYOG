@@ -15,7 +15,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   // Function to handle the "Next" button click
   const goNext = async (data) => {
     console.log("Full form data submitted: ", formData);
-    onSubmit(formData); // Call the onSubmit function with the form data
+    // onSubmit(formData); // Call the onSubmit function with the form data
     try {const res = await onSubmit(formData); // wait for the API response
     console.log("API response: ", res);
 
@@ -130,6 +130,7 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
         };
       } else {
         baseOwner.designation = owner?.designation;
+        baseOwner.altContactNumber = owner?.altContactNumber;
       }
   
       baseOwner.documents = [
@@ -183,8 +184,8 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   
     if (!data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL")) {
       formData.institution = {
-        name: data?.ownerShipDetails?.owners?.[0]?.institution?.name,
-        type: data?.ownerShipDetails?.owners?.[0]?.institution?.type?.code,
+        name: data?.ownerShipDetails?.owners?.[0]?.institutionName,
+        type: data?.ownerShipDetails?.owners?.[0]?.institutionType?.code,
         designation: data?.ownerShipDetails?.owners?.[0]?.designation,
         nameOfAuthorizedPerson: data?.ownerShipDetails?.owners?.[0]?.name,
         tenantId,

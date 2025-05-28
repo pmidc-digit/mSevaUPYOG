@@ -17,8 +17,13 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
   let businessName;
   let setBusinessName;
   const [hidden, setHidden] = useState(true);
-  if (!isNaN(index)) {
-    [businessName, setBusinessName] = useState(formData?.businessName?.bussinessName || "");
+  // if (!isNaN(index)) {
+  //   [businessName, setBusinessName] = useState(formData?.businessName?.bussinessName || "");
+  // } else {
+  //   [businessName, setBusinessName] = useState(formData?.businessName?.bussinessName || "");
+  // }
+  if (window.location.href.includes("employee")) {
+    [businessName, setBusinessName] = useState(formData?.businessName || "");
   } else {
     [businessName, setBusinessName] = useState(formData?.businessName?.bussinessName || "");
   }
@@ -72,7 +77,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
       name: "businessName",
       isMandatory: "true",
       validation: {
-        isRequired: config.isMandatory,
+        // isRequired: config.isMandatory,
         minLength: 1,
       }
     },
@@ -152,7 +157,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
                 defaultValue={businessName}
                 name="bussinessName"
                 rules={{
-                  required: config.isMandatory && t("Business Name is required"),
+                  // required: config.isMandatory && t("Business Name is required"),
                 }}
                 render={(_props) => (
                   <TextInput
@@ -206,7 +211,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
                 defaultValue={businessName}
                 name="bussinessName"
                 rules={{
-                  required: config.isMandatory && t("Business Name is required"),
+                  // required: config.isMandatory && t("Business Name is required"),
                 }}
                 render={(_props) => (
                   <TextInput

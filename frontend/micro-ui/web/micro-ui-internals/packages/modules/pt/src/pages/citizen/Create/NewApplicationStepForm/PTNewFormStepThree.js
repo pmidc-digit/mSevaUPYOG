@@ -26,10 +26,10 @@ const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
 
     if (!ownershipCategory) {
       missingFields.push("Ownership Category is required");
-      return missingFields; // Skip further checks if this is missing
+      return missingFields;
     }
   
-    // Rule 1: Validate owners count based on ownershipCategory
+    
     if (ownershipCategory === "INDIVIDUAL.SINGLEOWNER" && owners.length !== 1) {
       missingFields.push("Only one owner is allowed for Single Owner");
     }
@@ -38,19 +38,26 @@ const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
       missingFields.push("Multiple owners are required for Multiple Owner category");
     }
   
-    // Rule 2: Loop through owners for validations
+    
     owners.forEach((owner, index) => {
       const prefix = `Owner ${index + 1}`;
   
       if (["INDIVIDUAL.SINGLEOWNER", "INDIVIDUAL.MULTIPLEOWNERS"].includes(ownershipCategory)) {
         if (!owner?.name) missingFields.push(`${prefix} - Name`);
         if (!owner?.gender?.code) missingFields.push(`${prefix} - Gender`);
-        if (!owner?.mobileNumber) missingFields.push(`${prefix} - Mobile Number`);
+        if (!owner?.mobileNumber) {
+          missingFields.push(`${prefix} - Mobile Number`);
+        } else {
+          const isValidMobile = /^[6789]\d{9}$/.test(owner.mobileNumber);
+          if (!isValidMobile) {
+            missingFields.push(`${prefix} - Mobile Number must start with 6/7/8/9 and be 10 digits`);
+          }
+        }
         if (!owner?.fatherOrHusbandName) missingFields.push(`${prefix} - Father/Husband Name`);
         if (!owner?.relationship?.code) missingFields.push(`${prefix} - Relationship`);
         if (!owner?.ownerType?.code) missingFields.push(`${prefix} - Owner Type`);
   
-        // Conditional doc check if ownerType is not NONE
+        
         if (owner?.ownerType?.code !== "NONE") {
           if (!owner?.documents?.documentType) missingFields.push(`${prefix} - Document Type`);
           if (!owner?.documents?.documentUid) missingFields.push(`${prefix} - Document UID`);
@@ -58,11 +65,25 @@ const PTNewFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
       }
   
       if (["INSTITUTIONALPRIVATE", "INSTITUTIONALGOVERNMENT"].includes(ownershipCategory)) {
-        if (!owner?.institution?.name) missingFields.push(`${prefix} - Institution Name`);
-        if (!owner?.institution?.type?.name) missingFields.push(`${prefix} - Institution Type`);
+        if (!owner?.institutionName) missingFields.push(`${prefix} - Institution Name`);
+        if (!owner?.institutionType?.name) missingFields.push(`${prefix} - Institution Type`);
         if (!owner?.name) missingFields.push(`${prefix} - Contact Person Name`);
-        if (!owner?.altContactNumber) missingFields.push(`${prefix} - Alternate Contact Number`);
-        if (!owner?.mobileNumber) missingFields.push(`${prefix} - Mobile Number`);
+        if (!owner?.altContactNumber) {
+          missingFields.push(`${prefix} - Landline Number`);
+        } else {
+          const isValidAltContact = /^[0-9]{11}$/.test(owner.altContactNumber);
+          if (!isValidAltContact) {
+            missingFields.push(`${prefix} - Landline Number must be 11 digits`);
+          }
+        }
+        if (!owner?.mobileNumber) {
+          missingFields.push(`${prefix} - Mobile Number`);
+        } else {
+          const isValidMobile = /^[6789]\d{9}$/.test(owner.mobileNumber);
+          if (!isValidMobile) {
+            missingFields.push(`${prefix} - Mobile Number must start with 6/7/8/9 and be 10 digits`);
+          }
+        }
         if (!owner?.designation) missingFields.push(`${prefix} - Designation`);
         if (!owner?.correspondenceAddress) missingFields.push(`${prefix} - Correspondence Address`);
       }

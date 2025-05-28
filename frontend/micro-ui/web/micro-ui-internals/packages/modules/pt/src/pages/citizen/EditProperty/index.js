@@ -32,9 +32,9 @@ const getPropertyEditDetails = (data = { }) => {
       document["proofIdentity"] = data?.owners[0]?.documents[0];
     }
     (data.owners[0].designation = data?.institution?.designation),
-      (data.owners[0].inistitutionName = data?.institution?.name),
+      (data.owners[0].institutionName = data?.institution?.institutionName),
       (data.owners[0].name = data?.institution?.nameOfAuthorizedPerson),
-      (data.owners[0].inistitutetype = { value: data?.institution.type, code: data?.institution.type }),
+      (data.owners[0].institutionType = { value: data?.institutionType, code: data?.institutionType }),
       (data.owners[0].documents = document);
     data.owners[0].permanentAddress = data?.owners[0]?.correspondenceAddress;
     data.owners[0].isCorrespondenceAddress = data?.owners[0]?.isCorrespondenceAddress;

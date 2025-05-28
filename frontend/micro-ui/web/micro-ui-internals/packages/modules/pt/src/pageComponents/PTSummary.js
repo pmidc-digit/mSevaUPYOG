@@ -363,11 +363,11 @@ const PTSummary = ({ formData, t}) => {
                 <div key={index}>
                   <LabelFieldPair>
                     <CardLabel>{t("Name of Institution")}</CardLabel>
-                    <div>{owner.institution?.name || "NA"}</div>
+                    <div>{owner?.institutionName || "NA"}</div>
                   </LabelFieldPair>
                   <LabelFieldPair>
                     <CardLabel>{t("Designation")}</CardLabel>
-                    <div>{owner.designation || "NA"}</div>
+                    <div>{owner?.designation || "NA"}</div>
                   </LabelFieldPair>
                   <LabelFieldPair>
                     <CardLabel>{t("Type of Institution")}</CardLabel>

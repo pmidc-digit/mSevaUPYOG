@@ -35,6 +35,9 @@ const PTResponseCitizen = () => {
       <Link to="/digit-ui/citizen">
         <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
       </Link>
+      <Link to="/digit-ui/citizen/pt-home">
+        <SubmitBar label={t("CORE_COMMON_GO_TO_PT_HOME")} />
+      </Link>
     </Card>
   );
 };

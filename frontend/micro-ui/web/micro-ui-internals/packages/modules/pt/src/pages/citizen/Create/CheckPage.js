@@ -130,14 +130,14 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                     <StatusTable>
                       <Row
                         label={t("PT_COMMON_INSTITUTION_NAME")}
-                        text={`${t(checkForNA(owner?.inistitutionName))}`}
+                        text={`${t(checkForNA(owner?.institutionName))}`}
                         actionButton={
                           <ActionButton jumpTo={`${`/digit-ui/citizen/pt/property/${typeOfApplication}/inistitution-details/`}${index}`} />
                         }
                       />
                       <Row
                         label={t("PT_TYPE_OF_INSTITUTION")}
-                        text={`${t(checkForNA(owner?.inistitutetype?.code))}`}
+                        text={`${t(checkForNA(owner?.institutionType?.code))}`}
                         actionButton={
                           <ActionButton jumpTo={`${`/digit-ui/citizen/pt/property/${typeOfApplication}/inistitution-details/`}${index}`} />
                         }

@@ -98,11 +98,11 @@ public class NDCService {
 
 	public NdcApplicationRequest updateNdcApplication(NdcApplicationRequest ndcApplicationRequest) {
 
-		if(ObjectUtils.isEmpty(ndcApplicationRequest.getApplicant().getUuid())){
-			throw new CustomException("APPLICANT_UUID_NULL", "Applicant uuid is null");
+		if(ndcApplicationRequest.getApplicant()==null || ObjectUtils.isEmpty(ndcApplicationRequest.getApplicant().getUuid())){
+			throw new CustomException("APPLICANT_UUID_NULL", "Applicant details or uuid is null");
 		}
 		if(!ndcRepository.checkApplicantExists(ndcApplicationRequest.getApplicant().getUuid())) {
-			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
+			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant details or uuid is not found.");
 		}
 
 		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
@@ -172,77 +172,6 @@ public class NDCService {
 		return ndcRepository.getExistingUuids(tableName, uuids);
 	}
 
-
-	public DuesDetails checkNoDuesForProperty(PendingDuesRequest pendingDuesRequest, RequestInfo requestInfo) {
-		DuesDetails duesDetails = new DuesDetails();
-		// Check property details
-		BigDecimal propertyNoDues = checkNoDues(pendingDuesRequest, requestInfo, config.getPropertyServicePath(), config.getPropertySearchPath(), NDCConstants.PROPERTY_BUSINESS_SERVICE_CODE);
-		duesDetails.setPropertyDues(propertyNoDues);
-
-		// Check water connection details
-		BigDecimal waterNoDues = checkNoDues(pendingDuesRequest, requestInfo, config.getWaterConnectionServicePath(), config.getWaterSearchPath(), NDCConstants.WATER_TAX_SERVICE_CODE);
-		duesDetails.setPropertyDues(waterNoDues);
-
-		// Check sewerage connection details
-		BigDecimal sewerageNoDues = checkNoDues(pendingDuesRequest, requestInfo, config.getSewerageConnectionServicePath(), config.getSewerageSearchPath(), NDCConstants.SEWERAGE_TAX_SERVICE_CODE);
-		duesDetails.setPropertyDues(sewerageNoDues);
-
-		return duesDetails;
-	}
-
-	public BigDecimal checkNoDues(PendingDuesRequest pendingDuesRequest, RequestInfo requestInfo, String servicePath, String searchPath, String businessService) {
-		// Check if the entity exists
-		StringBuilder url = buildUrl(servicePath, searchPath, pendingDuesRequest.getTenantId(), pendingDuesRequest.getMobileNumber(), pendingDuesRequest.getPropertyId(), pendingDuesRequest.getFullName());
-
-		LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(url, pendingDuesRequest);
-		PropertyResponse propertyResponse = mapper.convertValue(responseMap, PropertyResponse.class);
-		if (propertyResponse == null || CollectionUtils.isEmpty(propertyResponse.getProperties()) || !propertyResponse.getProperties().get(0).getPropertyId().equals(pendingDuesRequest.getPropertyId())) {
-			throw new CustomException("Entity not found", "Entity not found");
-		}
-
-		// Check if dues exist
-		return getDues(pendingDuesRequest, requestInfo, businessService);
-	}
-
-	private BigDecimal getDues(PendingDuesRequest pendingDuesRequest, RequestInfo requestInfo, String businessService) {
-		BillResponse billResponse = fetchBill(pendingDuesRequest.getTenantId(), pendingDuesRequest.getPropertyId(), businessService, requestInfo);
-		if (billResponse == null || CollectionUtils.isEmpty(billResponse.getBill()) || billResponse.getBill().get(0).getTotalAmount().equals(BigDecimal.valueOf(0.0))) {
-			return BigDecimal.valueOf(0.0);
-		} else {
-			return billResponse.getBill().get(0).getTotalAmount();
-		}
-	}
-
-	public BillResponse fetchBill(String tenantId, String connectionNo, String businessService, RequestInfo requestInfo) {
-		BillResponse billResponse;
-		try {
-			Object result = serviceRequestRepository.fetchResult(getFetchBillURL(tenantId, connectionNo, businessService), RequestInfoWrapper.builder().requestInfo(requestInfo).build());
-			billResponse = mapper.convertValue(result, BillResponse.class);
-		} catch (Exception ex) {
-			throw new CustomException("FETCH_BILL_ERRORCODE", "Error while fetching the bill for " + businessService + " " + ex.getMessage());
-		}
-		return billResponse;
-	}
-
-	private StringBuilder buildUrl(String servicePath, String searchPath, String tenantId, String mobileNumber, String propertyId, String fullName) {
-		StringBuilder urlBuilder = new StringBuilder(servicePath).append(searchPath);
-		urlBuilder.append("?tenantId=").append(tenantId);
-		urlBuilder.append("&mobileNumber=").append(mobileNumber);
-		urlBuilder.append("&propertyIds=").append(propertyId);
-		if (fullName != null && !fullName.isEmpty()) {
-			urlBuilder.append("&name=").append(fullName);
-		}
-		return urlBuilder;
-	}
-
-	private StringBuilder getFetchBillURL(String tenantId, String consumerCode,String businessService) {
-
-		return new StringBuilder()
-				.append(config.getBillingServicePath()).append(config.getFetchBillPath())
-				.append("?tenantId=").append(tenantId).append("&consumerCode=")
-				.append(consumerCode).append("&businessservice=").append(businessService);
-	}
-
 	public List<NdcApplicationRequest> searchNdcApplications(NdcApplicationSearchCriteria criteria) {
 
 		if (StringUtils.isNotBlank(criteria.getUuid())) {
@@ -257,8 +186,10 @@ public class NDCService {
 				StringUtils.isNotBlank(criteria.getName()) || criteria.getActive()!=null||
 				criteria.getStatus() != null) {
 			return ndcRepository.fetchNdcApplications(criteria);
+		}else{
+			throw new CustomException("EG_NDC_TENANT_ID_NULL_PARAM_NULL","Parameter missing with Tenant ID or empty when UUID is not provided");
 		}
 
-		return new ArrayList<>();
+//		return new ArrayList<>();
 	}
 }

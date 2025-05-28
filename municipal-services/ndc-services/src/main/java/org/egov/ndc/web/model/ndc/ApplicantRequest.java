@@ -35,14 +35,8 @@ public class ApplicantRequest {
     @JsonProperty("active")
     private Boolean active;
 
-    @JsonProperty("workFlowCode")
-    private Boolean workFlowCode;
-
-    @JsonProperty("status")
-    private Boolean status;
-
     @JsonProperty("action")
-    private Boolean action;
+    private String action;
 
     @JsonProperty("createdby")
     private String createdby;

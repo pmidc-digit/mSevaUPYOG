@@ -58,6 +58,9 @@ public class NDCRepository {
 	public List<NdcApplicationRequest> fetchNdcApplications(NdcApplicationSearchCriteria criteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
 		String query = queryBuilder.getNdcApplicationSearchQuery(criteria, preparedStmtList);
+		System.out.println(query);
+		log.info(query);
+		log.info(preparedStmtList.toString());
 		return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
 	}
 }

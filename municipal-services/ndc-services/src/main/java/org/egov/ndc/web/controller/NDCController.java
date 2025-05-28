@@ -126,14 +126,4 @@ public class NDCController {
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("/dues/_pending")
-	public ResponseEntity<DuesDetailsResponse> checkPendingDues(@Valid @ModelAttribute PendingDuesRequest pendingDuesRequest,
-																@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) {
-		DuesDetails noDues = ndcService.checkNoDuesForProperty(pendingDuesRequest,requestInfoWrapper.getRequestInfo());
-		DuesDetailsResponse duesDetailsResponse = DuesDetailsResponse.builder()
-				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true))
-				.duesDetails(noDues).build();
-		return new ResponseEntity<>(duesDetailsResponse, HttpStatus.OK);
-	}
-
 }

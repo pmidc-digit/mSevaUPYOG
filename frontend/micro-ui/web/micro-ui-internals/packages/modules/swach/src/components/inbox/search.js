@@ -74,6 +74,7 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                   // })}
                   // style={{ marginBottom: "8px" }}
                   name="serviceRequestId"
+                  placeholder="Complaint No."
                   // value={complaintNo}
                   // onChange={setComplaint}
                   inputRef={register({
@@ -93,6 +94,7 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
                   //   },
                   // })}
                   name="mobileNumber"
+                  placeholder="Mobile No."
                   // value={mobileNo}
                   // onChange={setMobile}
                   inputRef={register({

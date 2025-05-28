@@ -40,6 +40,14 @@ export const SwachService = {
       method: "POST",
       params: { tenantId, ...params },
     }),
+  AssigneeWithCount: (tenantId, params) =>
+    Request({
+      url: Urls.Swach_Assignee_Count,
+      useCache: true,
+      auth: true,
+      method: "POST",
+      params: { tenantId, ...params },
+    }),
 
   employeeSearch: (tenantId, roles, isActive) => {
     return Request({

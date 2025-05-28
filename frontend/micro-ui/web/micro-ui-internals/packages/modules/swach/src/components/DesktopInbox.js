@@ -25,6 +25,28 @@ const DesktopInbox = ({
   const { t } = useTranslation();
   const GetCell = (value) => <span className="cell-text">{value}</span>;
   const GetSlaCell = (value) => {
+    // return value < 0 ? (
+    //   <span className="sla-cell-error" style={{ color: "#a82227" }}>
+    //     {value || ""}
+    //   </span>
+    // ) : (
+    //   <span className="sla-cell-success">{value}</span>
+    // );
+      if (value < 0) {
+    return (
+      <span className="sla-cell-error" style={{ color: "#a82227", padding:0}}>
+        {Math.abs(value)} hours left
+      </span>
+    );
+  } else {
+    return (
+      <span className="sla-cell-success" style={{padding:0}}>
+        {value} hour overdue
+      </span>
+    );
+  }
+  };
+  const GetDateSlaCell = (value) => {
     return value < 0 ? <span className="sla-cell-error">{value || ""}</span> : <span className="sla-cell-success">{value || ""}</span>;
   };
 
@@ -79,7 +101,7 @@ const DesktopInbox = ({
         // Header: t("WF_INBOX_HEADER_SLA_HOURS"),
         Header: t("WF_INBOX_HEADER_SLA_DAYS_REMAINING"),
         Cell: ({ row }) => {
-          return GetCell(row.original["sla"]);
+          return GetSlaCell(row.original["sla"]);
         },
       },
       // {
@@ -106,7 +128,7 @@ const DesktopInbox = ({
       {
         Header: t("WF_INBOX_HEADER_CREATED_DATE"),
         Cell: ({ row }) => {
-          return <div style={{ width: "250px" }}>{GetSlaCell(row.original["createdDate"])}</div>;
+          return <div style={{ width: "250px" }}>{GetDateSlaCell(row.original["createdDate"])}</div>;
         },
       },
     ],

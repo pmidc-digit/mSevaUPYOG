@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Header } from "@mseva/digit-ui-react-components";
-
+import {Params_Count}from "../../constants/Employee"
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 
@@ -26,9 +26,18 @@ const Inbox = ({ initialStates = {} }) => {
   useEffect(() => {
     (async () => {
       const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
-      let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+      const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.map((e) => e.code).join(",");
+      if (assigneeCode==uuid) {
+        let response = await Digit.Hooks.swach.useCount(tenantId, Params_Count,assigneeCode);
+      if (response) {
+        setTotalRecords(response);
+      }
+      }
+      else{
+        let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
       if (response?.count) {
         setTotalRecords(response.count);
+      }
       }
     })();
   }, [searchParams, pageOffset, pageSize]);

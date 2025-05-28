@@ -50,6 +50,7 @@ import usePGRTenants from "./pgr/useTenants";
 import usePGRMDMS from "./pgr/useMDMS";
 import useComplaintSubType from "./pgr/useComplaintSubType";
 import useComplaintStatusCount from "./pgr/useComplaintStatusWithCount";
+import usePGRInbox from "./pgr/useInbox";
 
 import useSwachComplaintDetails from "./swach/useComplaintDetails";
 import { useSwachComplaintsList, useSwachComplaintsListByMobile } from "./swach/useComplaintList";
@@ -322,6 +323,7 @@ const pgr = {
   useComplaintStatusCount,
   useTradeLicenseBillingslab,
   useMDMS: usePGRMDMS,
+  useInbox:usePGRInbox
 };
 
 const swach = {

@@ -9,7 +9,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   console.log("formData in unit component", formData);
 
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("modify") || pathname.includes("edit");
+  const presentInModifyApplication = pathname.includes("modify") || pathname.includes("edit-application");
   let isMobile = window.Digit.Utils.browser.isMobile();
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -33,7 +33,9 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   //   ]
   // );
 
-  const [units, setUnits] = useState(formData?.units || []);
+  const [units, setUnits] = useState(()=> {
+    console.log("initialUnits", formData?.units)
+    return formData?.units || []});
 
   useEffect(()=>{
     console.log("isNotFirst and Units", isNotFirst.current, formData.units, formData, units);
@@ -41,7 +43,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       isNotFirst.current = true;
       return;
     }
-    if(formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY"){
+    if(formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY" && !presentInModifyApplication){
 
       console.log("isNotFirst and Units if Independent property", isNotFirst.current, formData.units, formData, units);
       setUnits(()=>{
@@ -64,7 +66,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
         }));
       })
     }
-    else if(formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY"){
+    else if(formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY" && !presentInModifyApplication){
 
       console.log("isNotFirst and Units if Flat/Part", isNotFirst.current, formData.units, formData, units);
       setUnits([
@@ -277,6 +279,8 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           occupancyType = occupencyOptions.filter((e) => e?.code === occupancyType)[0];
           let usageCategory = usageCategoryMajorMenu(usagecat).filter((e) => e?.code === uc)[0];
           floorNo = getfloorlistdata(floorlist).filter((e) => e?.code == floorNo)[0];
+          RentedMonths = rentedmonths.find((val) => val.code === RentedMonths?.toString());
+          NonRentedMonthsUsage = nonrentedusage.find((val) => val.code === NonRentedMonthsUsage)
           let key = Date.now() + index;
           let order = index + 1;
           let builtUpArea = constructionDetail.builtUpArea;
@@ -289,7 +293,9 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
             builtUpArea,
             existingUsageCategory: uc,
             arv,
-            RentedMonths, NonRentedMonthsUsage
+            RentedMonths, NonRentedMonthsUsage,
+            usageCategoryType: usageCategory,
+            floorNoCitizen: floorNo
           };
         });
       console.log("defaultUnits", defaultUnits);
@@ -395,13 +401,13 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       NonRentedMonthsUsage: unit?.NonRentedMonthsUsage,
       floorNoCitizen: unit?.floorNoCitizen,
       subUsageType: unit?.subUsageType,
-      usageCategoryType: unit?.usageCategoryType,
+      usageCategory: unit?.usageCategory,
       arv: unit?.arv,
       // constructionDetail: {
         builtUpArea: unit?.builtUpArea,
       // },
       tenantId: Digit.ULBService.getCurrentTenantId(),
-      usageCategory: unit?.usageCategory,
+      usageCategoryType: unit?.usageCategoryType,
     }));
     unitsData = unitsData?.map((unit, index) => {
       if (unit.occupancyType === "RENTED") return { ...unit, arv: units[index].arv };

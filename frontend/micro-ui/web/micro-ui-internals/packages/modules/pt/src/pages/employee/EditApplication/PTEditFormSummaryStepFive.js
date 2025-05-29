@@ -31,6 +31,163 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
     onBackClick(config.key, data);
   };
 
+  const onSubmit = async (data) => {
+    console.log("FormData received:", data);
+  
+    const tenantId = data?.LocationDetails?.address?.city?.code;
+    const allDocuments = data?.DocummentDetails?.documents?.documents || [];
+  
+    let updatedUnits = [];
+    const usageCategoryMajorCode = data?.PropertyDetails?.usageCategoryMajor?.code;
+  
+    if (usageCategoryMajorCode !== "NONRESIDENTIAL.OTHERS") {
+      updatedUnits = data?.PropertyDetails?.units?.map((unit) => {
+        let usageCategory;
+  
+        if (usageCategoryMajorCode === "RESIDENTIAL") {
+          usageCategory = "RESIDENTIAL";
+        } else if (usageCategoryMajorCode === "MIXED") {
+          usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL"
+            ? "RESIDENTIAL"
+            : unit?.subUsageType?.code;
+        } else {
+          usageCategory = unit?.subUsageType?.code;
+        }
+  
+        return {
+          floorNo: unit?.floorNoCitizen?.code,
+          occupancyType: unit?.occupancyType?.code,
+          arv: unit?.arv,
+          unitType: unit?.subUsageType?.code?.split(".").slice(-1)[0],
+          usageCategory,
+          tenantId: tenantId,
+          constructionDetail: {
+            builtUpArea: Number(unit?.builtUpArea),
+          },
+          additionalDetails: {
+            rentedformonths: unit?.RentedMonths?.code ? Number(unit.RentedMonths.code) : null,
+            usageForDueMonths: unit?.NonRentedMonthsUsage?.code || null,
+          },
+        };
+      });
+    }
+  
+    const propertyTypeCode = data?.PropertyDetails?.PropertyType?.code;
+    const userEnteredFloors = Number(data?.PropertyDetails?.noOfFloors || 0);
+  
+    const unitFloors = data?.PropertyDetails?.units?.map((unit) =>
+      Number(unit?.floorNoCitizen?.code)
+    ).filter((n) => !isNaN(n));
+    const maxUnitFloor = unitFloors?.length ? Math.max(...unitFloors) : 0;
+  
+    const noOfFloors =
+      propertyTypeCode === "BUILTUP.SHAREDPROPERTY"
+        ? 2
+        : Math.max(userEnteredFloors, maxUnitFloor);
+  
+    const permanentAddress = `${data?.LocationDetails?.address?.doorNo}, ${data?.LocationDetails?.address?.buildingName}, ${data?.LocationDetails?.address?.street}, ${data?.LocationDetails?.address?.locality?.name}, ${data?.LocationDetails?.address?.city?.name}, ${data?.LocationDetails?.address?.pincode}`;
+  
+    const owners = Array.isArray(data?.ownerShipDetails?.owners)
+      ? data.ownerShipDetails.owners.map((owner, index) => {
+          const isIndividual = data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL");
+  
+          const baseOwner = {
+            name: owner?.name,
+            mobileNumber: owner?.mobileNumber,
+            emailId: owner?.emailId,
+            correspondenceAddress: owner?.correspondenceAddress,
+            isCorrespondenceAddress: owner?.isCorrespondenceAddress || false,
+            ownerType: owner?.ownerType?.code,
+          };
+  
+          if (isIndividual) {
+            baseOwner.permanentAddress = permanentAddress;
+            baseOwner.relationship = owner?.relationship?.code;
+            baseOwner.fatherOrHusbandName = owner?.fatherOrHusbandName;
+            baseOwner.gender = owner?.gender?.code;
+            baseOwner.additionalDetails = {
+              ownerSequence: index,
+              ownerName: owner?.name,
+            };
+          } else {
+            baseOwner.designation = owner?.designation;
+            baseOwner.altContactNumber = owner?.altContactNumber;
+          }
+  
+          baseOwner.documents = [
+            allDocuments.find((d) => d.documentType?.includes("IDENTITYPROOF")),
+            allDocuments.find((d) => d.documentType?.includes("ADDRESSPROOF")),
+          ].filter(Boolean);
+  
+          return baseOwner;
+        })
+      : [];
+  
+    const formData = {
+      tenantId: tenantId,
+      address: {
+        ...data?.LocationDetails?.address,
+        city: data?.LocationDetails?.address?.city?.name,
+        locality: {
+          code: data?.LocationDetails?.address?.locality?.code,
+          area: data?.LocationDetails?.address?.locality?.area,
+        },
+      },
+      usageCategory: usageCategoryMajorCode,
+      usageCategoryMajor: usageCategoryMajorCode?.split(".")[0],
+      usageCategoryMinor: usageCategoryMajorCode?.split(".")[1] || null,
+      landArea: Number(data?.PropertyDetails?.landarea || 0),
+      superBuiltUpArea: Number(data?.PropertyDetails?.landarea || 0),
+      propertyType: propertyTypeCode,
+      noOfFloors,
+      ownershipCategory: data?.ownerShipDetails?.ownershipCategory?.code,
+      surveyId: data?.LocationDetails?.surveyId,
+      existingPropertyId: data?.LocationDetails?.existingPropertyId,
+      owners,
+      additionalDetails: {
+        businessName: data?.PropertyDetails?.businessName,
+        yearConstruction: data?.LocationDetails?.yearOfCreation?.code,
+        remarks: data?.PropertyDetails?.remarks,
+        vasikaNo: data?.PropertyDetails?.vasikaDetails?.vasikaNo,
+        vasikaDate: data?.PropertyDetails?.vasikaDetails?.vasikaDate,
+        allotmentNo: data?.PropertyDetails?.allottmentDetails?.allotmentNo,
+        allotmentDate: data?.PropertyDetails?.allottmentDetails?.allotmentDate,
+        inflammable: data?.PropertyDetails?.propertyCheckboxQuestions?.hasInflammableMaterial,
+        heightAbove36Feet: data?.PropertyDetails?.propertyCheckboxQuestions?.isPropertyHeightMoreThan36Feet,
+      },
+      channel: "CFC_COUNTER", // ✅ required
+      creationReason: "UPDATE", // ✅ required
+      source: "MUNICIPAL_RECORDS", // ✅ required
+      status: "ACTIVE", // ✅ required
+      units: propertyTypeCode !== "VACANT" ? updatedUnits : [],
+      documents: allDocuments,
+    };
+  
+    if (!data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL")) {
+      formData.institution = {
+        name: data?.ownerShipDetails?.owners?.[0]?.institutionName,
+        type: data?.ownerShipDetails?.owners?.[0]?.institutionType?.code,
+        designation: data?.ownerShipDetails?.owners?.[0]?.designation,
+        nameOfAuthorizedPerson: data?.ownerShipDetails?.owners?.[0]?.name,
+        tenantId,
+      };
+    }
+  
+    const searchData = {
+      mobileNumber: formData.owners?.[0]?.mobileNumber,
+      name: formData.owners?.[0]?.name,
+      doorNo: formData.address?.doorNo,
+      locality: formData.address?.locality?.code,
+      isRequestForDuplicatePropertyValidation: true,
+    };
+  
+    console.log("Final Payload:", formData);
+    console.log("Search Data:", searchData);
+  
+    const response = await Digit.PTService.update({ Property: formData }, tenantId);
+    return {isSuccess: response?.ResponseInfo?.status === "successful", response: response};
+  };
+
   // Function to handle form value changes
   // const onFormValueChange = (setValue = true, data) => {
   //   console.log("onFormValueChange data summary in step 5: ", data);

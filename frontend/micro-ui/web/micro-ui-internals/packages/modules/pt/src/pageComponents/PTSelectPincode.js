@@ -6,10 +6,10 @@ import Timeline from "../components/TLTimeline";
 const PTSelectPincode = ({ t, config, onSelect, formData = {}, userType, register, errors, setError, formState, clearErrors }) => {
   const tenants = Digit.Hooks.pt.useTenants();
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("edit");
+  const presentInModifyApplication = pathname.includes("edit-application");
 
   const [pincode, setPincode] = useState(() => {
-    if (presentInModifyApplication && userType === "employee") return formData?.LocationDetails?.address?.pincode || "";
+    // if (presentInModifyApplication && userType === "employee") return formData?.LocationDetails?.address?.pincode || "";
     return formData?.address?.pincode || "";
   });
 

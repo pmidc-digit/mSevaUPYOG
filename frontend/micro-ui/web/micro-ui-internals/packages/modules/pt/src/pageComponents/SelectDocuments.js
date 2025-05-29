@@ -4,9 +4,20 @@ import { useLocation } from "react-router-dom";
 import { Controller, useFormContext } from "react-hook-form";
 import { iteratee } from "lodash";
 const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+  const { pathname } = useLocation();
+  const isEditScreen = pathname.includes("/edit-application/");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
+  const [documents, setDocuments] = useState(() => {
+    if(isEditScreen){
+      if(Array.isArray(formData?.documents)){
+        return formData?.documents || []
+      }
+      return formData?.documents?.documents || [] 
+    }else{
+     return formData?.documents?.documents || [] 
+    }
+  });
 
   const [error, setError] = useState(null);
 
@@ -15,9 +26,8 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
   console.log("formData in selecet document component", formData);
   // console.log("formData.documents?.documents", formData.documents.documents);
 
-  const { pathname } = useLocation();
   // const isEditScreen = pathname.includes("/edit-application/");
-  const isEditScreen = pathname.includes("/modify-application/");
+  
   const isMutation = pathname.includes("/property-mutate/");
 
   // if (isEditScreen) action = "update";

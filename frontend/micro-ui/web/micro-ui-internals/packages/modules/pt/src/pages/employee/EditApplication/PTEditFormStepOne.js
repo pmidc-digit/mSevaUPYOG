@@ -7,8 +7,44 @@ import { UPDATE_PtNewApplication } from "../../../redux/actions/PTNewApplication
 const PTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
+
+    const missingFields = validateEmployeeStepOneFields(data);
+
+    if (missingFields.length > 0) {
+      alert(`Please fill the following mandatory fields:\n- ${missingFields.join("\n- ")}`);
+      return;
+    }
+    
     onGoNext();
   }
+
+  const validateEmployeeStepOneFields = (data) => {
+    const missingFields = [];
+  
+    if (!data?.address?.city?.code) {
+      missingFields.push("City");
+    }
+  
+    if (!data?.address?.locality?.code) {
+      missingFields.push("Locality");
+    }
+  
+    if (!data?.yearOfCreation?.code) {
+      // Note: On employee side it's directly data.yearOfCreation.code (no nested yearOfCreation inside it)
+      missingFields.push("Year of Creation");
+    }
+    const pincode = data?.address?.pincode;
+    if (pincode) {
+      const isValidLength = /^\d{6}$/.test(pincode);
+      const isNumeric = !isNaN(Number(pincode));
+  
+      if (!isValidLength || !isNumeric) {
+        missingFields.push("Pincode must be a 6-digit number");
+      }
+    }
+  
+    return missingFields;
+  };
 
   function onGoBack(data) {
     onBackClick(config.key, data);

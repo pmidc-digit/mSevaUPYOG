@@ -29,7 +29,7 @@ console.log("formData tes test",formData);
 
 
   const { pathname } = useLocation();
-  const isEditScreen = pathname.includes("/modify-application/" ) 
+  const isEditScreen = pathname.includes("/edit-application/") 
   const [owners, setOwners] = useState(formData?.owners || [createOwnerDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
 
@@ -75,6 +75,53 @@ console.log("formData tes test",formData);
     }
   }, [formData?.ownershipCategory?.code]);
 
+  const relationshipTypes = [{ i18nKey: "PT_FORM3_FATHER", code: "FATHER" },{ i18nKey: "PT_FORM3_HUSBAND", code: "HUSBAND" }]
+
+  const ownerTypesMenu = useMemo(
+    () =>
+      mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
+        i18nKey: `${e.code.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_")}`,
+        code: e.code,
+      })) || [],
+    [mdmsData]
+  );
+
+  const institutionTypeMenu = useMemo(() => {
+    const code = formData?.ownershipCategory?.code;
+    const arr = mdmsData?.PropertyTax?.SubOwnerShipCategory?.filter((e) => e?.ownerShipCategory?.includes(code));
+    return arr?.map((e) => ({ ...e, i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code?.replaceAll(".", "_")}` }));
+  }, [mdmsData, formData?.ownershipCategory]);
+
+  useEffect(()=>{
+    if(Menu && isEditScreen){
+      let defaultOwners = formData?.owners?.map((owner,index) => {
+        let { relationship, gender, ownerType } = owner;
+        let institutionType = owner?.institutionType;
+        // let institutionType = owner?.owner;
+        if(!relationship?.code){
+          relationship = relationshipTypes.find((val) => val.code === relationship?.toUpperCase());
+        }
+        if(!formData?.ownershipCategory?.code?.includes("INDIVIDUAL") && institutionType){
+          institutionType = institutionTypeMenu.find((val) => val.code === institutionType)
+        }
+        gender = menu.find((val) => val.code === gender);
+        ownerType = ownerTypesMenu.find((val) => val.code === ownerType);
+
+
+        return {
+          ...owner,
+          relationship,
+          gender,
+          ownerType,
+          institutionType
+        }
+      })
+
+      setOwners(defaultOwners || []);
+      
+    }
+  },[Menu, isLoading])
+
   const commonProps = {
     focusIndex,
     allOwners: owners,
@@ -90,6 +137,8 @@ console.log("formData tes test",formData);
     config,
     menu,
     isEditScreen,
+    ownerTypesMenu,
+    institutionTypeMenu
   };
 
   // if (isEditScreen) {
@@ -126,6 +175,8 @@ const OwnerForm = (_props) => {
     formState,
     menu,
     isEditScreen,
+    ownerTypesMenu,
+    institutionTypeMenu
   } = _props;
   const { originalData = {} } = formData;
   const { institution = {} } = originalData;
@@ -162,14 +213,14 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
     [mdmsData, formValue]
   );
 
-  const ownerTypesMenu = useMemo(
-    () =>
-      mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
-        i18nKey: `${e.code.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_")}`,
-        code: e.code,
-      })) || [],
-    [mdmsData]
-  );
+  // const ownerTypesMenu = useMemo(
+  //   () =>
+  //     mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
+  //       i18nKey: `${e.code.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_")}`,
+  //       code: e.code,
+  //     })) || [],
+  //   [mdmsData]
+  // );
 
   if (ownerTypesMenu?.length > 0) {
     ownerTypesMenu ? ownerTypesMenu.sort((a, b) => a.code.localeCompare(b.code)) : "";
@@ -181,11 +232,11 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
   }
   const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
 
-  const institutionTypeMenu = useMemo(() => {
-    const code = formData?.ownershipCategory?.code;
-    const arr = mdmsData?.PropertyTax?.SubOwnerShipCategory?.filter((e) => e?.ownerShipCategory?.includes(code));
-    return arr?.map((e) => ({ ...e, i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code?.replaceAll(".", "_")}` }));
-  }, [mdmsData, formData?.ownershipCategory]);
+  // const institutionTypeMenu = useMemo(() => {
+  //   const code = formData?.ownershipCategory?.code;
+  //   const arr = mdmsData?.PropertyTax?.SubOwnerShipCategory?.filter((e) => e?.ownerShipCategory?.includes(code));
+  //   return arr?.map((e) => ({ ...e, i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code?.replaceAll(".", "_")}` }));
+  // }, [mdmsData, formData?.ownershipCategory]);
 
   useEffect(() => {
     trigger();
@@ -228,7 +279,6 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
     return () => clearTimeout(getData)
   }, [uuid])
 
-  // console.log("InstitutionNayan", institution, formData, isEditScreen);
 
   function getAddressEmployee () {
     let str = "";
@@ -332,7 +382,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   render={(props) => (
                     <Dropdown
                       className="form-field"
-                      selected={props.value}
+                      selected={owner?.institutionType || props.value}
                       name={"institutionType"}
                       // select={props.onChange}
                       autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institutionType"}
@@ -394,14 +444,14 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                 <Controller
                   control={control}
                   name={"gender"}
-                  defaultValue={owner?.gender}
+                  defaultValue={owner?.gender}              
                   // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
-                      selected={props.value}
+                      selected={owner?.gender || props.value}
                       select={props.onChange}
-                      disable={isEditScreen}
+                      // disable={isEditScreen}
                       onBlur={props.onBlur}
                       /*option={[
                         { i18nKey: "PT_FORM3_MALE", code: "Male" },
@@ -526,7 +576,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   render={(props) => (
                     <Dropdown
                       className="form-field"
-                      selected={props.value}
+                      selected={owner?.relationship || props.value}
                       select={props.onChange}
                       onBlur={props.onBlur}
                       disable={isEditScreen}
@@ -551,7 +601,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   render={(props) => (
                     <Dropdown
                       className="form-field"
-                      selected={props.value}
+                      selected={owner?.ownerType || props.value}
                       select={props.onChange}
                       onBlur={props.onBlur}
                       option={ownerTypesMenu}
@@ -718,6 +768,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                       props.onChange(e.target.checked)
                     }}
                     checked={owner?.isSamePropAddress}
+                    disable={isEditScreen}
                     label={t("Same as Property Address?")}
                     pageType={"employee"}
                     style={{ marginTop: "-5px" }}

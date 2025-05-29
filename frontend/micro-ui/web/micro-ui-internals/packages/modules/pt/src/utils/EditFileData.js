@@ -5,15 +5,22 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
   const address = applicationData?.LocationDetails?.address || {};
   const locality = { ...applicationData?.address?.locality };
   const city = address?.city || {};
-  const yearOfCreation = applicationData?.LocationDetails?.yearOfCreation || {};
+  const yearOfCreation = {
+    code: applicationData?.additionalDetails?.yearConstruction || "",
+    i18nKey: applicationData?.additionalDetails?.yearConstruction || "",
+    value: applicationData?.additionalDetails?.yearConstruction || "",
+  }
+
+  const institution = applicationData?.institution;
+  // applicationData?.LocationDetails?.yearOfCreation || {};
 
   // Extract Property Details
   const propertyDetails = applicationData?.PropertyDetails || {};
   const vasikaDetails = propertyDetails?.vasikaDetails || {};
   const allotmentDetails = propertyDetails?.allottmentDetails || {};
-  const units = applicationData?.units || [];
+  let units = applicationData?.units.map((val) => {return {...val, usageCategoryType: val?.usageCategory, RentedMonths: val?.additionalDetails?.rentedformonths, NonRentedMonthsUsage: val?.additionalDetails?.usageForDueMonths }}) || [];
 
-  console.log("units", units);
+  
 
   console.log("applicationData?.units", applicationData?.units);
 
@@ -27,10 +34,10 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
   return {
     LocationDetails: {
       address: {
-        doorNo: applicationData.address.doorNo || "",
-        buildingName: applicationData.address.buildingName || "",
-        street: applicationData.address.street || "",
-        pincode: applicationData.address.pincode || "",
+        doorNo: applicationData?.address?.doorNo || "",
+        buildingName: applicationData?.address?.buildingName || "",
+        street: applicationData?.address?.street || "",
+        pincode: applicationData?.address?.pincode || "",
         locality: {
           code: locality.code || "",
           name: locality.name || "",
@@ -85,9 +92,9 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
         allotmentDate: applicationData?.additionalDetails?.allotmentDate || "",
       },
       businessName: applicationData?.additionalDetails?.businessName || "",
-      remarks: applicationData?.additionalDetails?.remrks || "",
+      remarks: applicationData?.additionalDetails?.remarks || "",
       noOfFloors: applicationData?.noOfFloors || "",
-      units: applicationData?.units || [],
+      units: units || [],
       // units: applicationData?.owners,
       // checkData: applicationData?.units,
     },
@@ -106,6 +113,10 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
         emailId: owner?.emailId || "",
         permanentAddress: owner?.permanentAddress || "",
         relationship: owner?.relationship,
+        institutionName: institution?.name,
+        institutionType: institution?.type,
+        altContactNumber: owner?.altContactNumber,
+        designation: institution?.designation,
         // {
         //   code: owner?.relationship?.code || "",
         //   i18nKey: owner?.relationship?.i18nKey || ""

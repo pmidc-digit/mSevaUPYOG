@@ -13,23 +13,28 @@ import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 
 const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState, setError, clearErrors, onBlur }) => {
+  const { pathname } = useLocation();
+  const presentInModifyApplication = pathname.includes("edit-application");
   const [usageCategoryMajor, setPropertyPurpose] = useState(
-    formData?.usageCategoryMajor && formData?.usageCategoryMajor?.code === "NONRESIDENTIAL.OTHERS"
+    () => 
+    {
+      if(!presentInModifyApplication)
+      return formData?.usageCategoryMajor && formData?.usageCategoryMajor?.code === "NONRESIDENTIAL.OTHERS"
       ? { code: `${formData?.usageCategoryMajor?.code}`, i18nKey: `PROPERTYTAX_BILLING_SLAB_OTHERS` }
-      : formData?.usageCategoryMajor
+      : formData?.usageCategoryMajor}
   );
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
   const stateId = Digit.ULBService.getStateId();
 
   const { errors } = localFormState;
   const { data: Menu = {}, isLoading: menuLoading } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", "UsageCategory") || {};
+  console.log("EmployeeSideEditProperty", formData, Menu?.PropertyTax?.UsageCategory);
   let usagecat = [];
   usagecat = Menu?.PropertyTax?.UsageCategory || [];
   let i;
   let menu = [];
   const formValue = watch();
-  const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("edit");
+  const isUserEmployee = window.location.href.includes("employee");
   useEffect(() => {
     if (window.location.href.includes("citizen")) {
       let keys = Object.keys(formValue);
@@ -78,13 +83,14 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
     }
   }
 
-  // useEffect(() => {
-  //   if (!menuLoading && presentInModifyApplication && userType === "employee") {
-  //     const original = formData?.usageCategoryMajor;
-  //     const selectedOption = usageCategoryMajorMenu(usagecat).filter((e) => e.code === original)[0];
-  //     setPropertyPurpose(selectedOption);
-  //   }
-  // }, [menuLoading]);
+  useEffect(() => {
+    if (!menuLoading && presentInModifyApplication && isUserEmployee) {
+      const original = formData?.usageCategoryMajor?.code;
+      const selectedOption = usageCategoryMajorMenu(usagecat).filter((e) => e.code === original)[0];
+      console.log("EmployeeSideEditProperty orignal", formData?.usageCategoryMajor)
+      setPropertyPurpose(selectedOption);
+    }
+  }, [Menu]);
   // pt.PTNewApplicationForm.formData.PropertyDetails.usageCategoryMajor
   // useEffect(() => {
   //   if (formData?.PropertyDetails?.usageCategoryMajor?.code && usageCategoryMajorMenu(usagecat)?.length) {

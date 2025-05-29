@@ -14,7 +14,7 @@ const Status = ({ complaints, onAssignmentChange, swachfilters }) => {
     { name: "Resolved", code: "RESOLVED" },
   ];
   let hasFilters = swachfilters?.applicationStatus?.length;
-  console.log("swachfilters", swachfilters);
+  // console.log("swachfilters", swachfilters);
   return (
     <div className="status-container">
       <div className="filter-label">{t("ES_SWACH_FILTER_STATUS")}</div>

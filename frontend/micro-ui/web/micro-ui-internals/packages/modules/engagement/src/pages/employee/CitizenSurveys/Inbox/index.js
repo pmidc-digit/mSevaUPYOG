@@ -214,7 +214,7 @@ const [sortedSurveys,setSortedSurveys]=useState([])
       onPageSizeChange,
       formState,
       totalCount: TotalCount,
-      table: Surveys,
+      table: sortedSurveys,
       noResultsMessage: "CS_SURVEYS_NOT_FOUND",
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
@@ -223,7 +223,7 @@ const [sortedSurveys,setSortedSurveys]=useState([])
     },
   });
 
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table: Surveys, setShowToast, });
+  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table: sortedSurveys, setShowToast, });
 
   //For the card displayed after clicking the delete survey button:
   //On clicking delete button under "Delete Survey" column in a table row, a toast with Yes & No buttons is opened:

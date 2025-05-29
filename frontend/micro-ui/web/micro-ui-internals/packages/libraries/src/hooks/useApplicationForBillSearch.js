@@ -5,6 +5,7 @@ import { MCollectService } from "../services/elements/MCollect";
 import { PTRService } from "../services/elements/PTR";
 import { SVService } from "../services/elements/SV";
 import { ADSServices } from "../services/elements/ADS";
+import { CHBServices } from "../services/elements/CHB";
 
 const fsmApplications = async (tenantId, filters) => {
   return (await FSMService.search(tenantId, { ...filters, limit: 10000 })).fsm;
@@ -32,6 +33,10 @@ const advtApplications = async (tenantId, filters) => {
 };
 const tlApplications = async (tenantId, filters) => {
   return (await TLService.search_bill({ tenantId, filters })).Bills;
+};
+
+const chbApplications = async (tenantId, filters) => {
+  return (await CHBServices.search({ tenantId, filters })).hallsBookingApplication;
 };
 
 const refObj = (tenantId, filters) => {
@@ -96,6 +101,11 @@ const refObj = (tenantId, filters) => {
       key: "bookingNo",
       label: "ADS_BOOKING_NO",
     },
+    chb: {
+      searchFn: () => chbApplications(null, { ...filters, bookingNo: consumerCodes }),
+      key: "bookingNo",
+      label: "CHB_BOOKING_NO",
+    },
   };
 };
 
@@ -116,6 +126,15 @@ export const useApplicationsForBusinessServiceSearch = ({ tenantId, businessServ
   }
   if (window.location.href.includes("pet-services")) {
     _key = "ptr";
+  }
+  if (window.location.href.includes("sv-services")) {
+    _key = "street";
+  }
+  if (window.location.href.includes("adv-services")) {
+    _key = "ads";
+  }
+  if (window.location.href.includes("chb-services")) {
+    _key = "chb";
   }
 
   /* key from application ie being used as consumer code in bill */

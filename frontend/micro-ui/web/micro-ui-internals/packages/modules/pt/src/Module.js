@@ -80,7 +80,6 @@ import TransferProof from "./pageComponents/Mutate/transferReasonDocument";
 import UpdateNumber from "./pages/citizen/MyProperties/updateNumber";
 import EmployeeUpdateOwnerNumber from "./pages/employee/updateNumber";
 import PropertyStructureDetails from "./pageComponents/PropertyStructureDetails";
-//import PTCitizenFeedback from "@upyog/digit-ui-module-core/src/components/PTCitizenFeedback";
 
 import EmployeeApp from "./pages/employee";
 import PTCard from "./components/PTCard";
@@ -98,7 +97,6 @@ import DocsRequired from "./pages/employee/PropertyMutation/docsRequired";
 import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
 import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
 import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
-// PTAcknowledgementCF from "@upyog/digit-ui-module-core/src/components/PTAcknowledgementCF";
 //import PTCitizenFeedbackPopUp from "./pageComponents/PTCitizenFeedbackPopUp";
 
 import PTSelectLandmark from "./pageComponents/PTSelectLandmark";
@@ -109,7 +107,7 @@ import PTNewFormStepThree from "../src/pages/employee/NewApplication/NewApplicat
 import PTNewFormStepFour from "../src/pages/employee/NewApplication/NewApplicationStepForm/PTNewFormStepFour";
 import PTNewFormSummaryStepFive from "../src/pages/employee/NewApplication/NewApplicationStepForm/PTNewFormSummaryStepFive";
 import getRootReducer from "./redux/reducers";
-import PTSummary from "../src/pageComponents/PTSummary"
+import PTSummary from "../src/pageComponents/PTSummary";
 
 export const PTReducers = getRootReducer;
 
@@ -211,7 +209,7 @@ const componentsToRegister = {
   PTNewFormStepThree,
   PTNewFormStepFour,
   PTNewFormSummaryStepFive,
-  PTSummary
+  PTSummary,
 };
 
 const addComponentsToRegistry = () => {

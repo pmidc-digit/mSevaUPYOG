@@ -360,7 +360,8 @@ const FillQuestions = (props) => {
     setLoading(true);
     // if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
     const data = {
-      userName: prevProps?.userInfo?.mobileNumber,
+      //userName: prevProps?.userInfo?.mobileNumber,
+       uuid: [prevProps?.userInfo?.uuid],
       tenantId: prevProps?.userInfo?.tenantId,
     };
     const filters = {

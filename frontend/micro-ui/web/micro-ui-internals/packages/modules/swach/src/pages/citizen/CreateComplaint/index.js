@@ -291,7 +291,6 @@ export const CreateComplaint = ({ parentUrl }) => {
     const { value } = event.target;
     setDescription(value);
   };
-
   const isPincodeValid = () => !pincodeNotValid;
 
   const config = [
@@ -379,7 +378,6 @@ export const CreateComplaint = ({ parentUrl }) => {
           populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
         },
         // {
-
         //  label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
         //     isMandatory: false,
         //     type: "dropdown",
@@ -453,7 +451,7 @@ export const CreateComplaint = ({ parentUrl }) => {
             name: "landmark",
           },
         },
-        
+
         {
           label: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
           type: "textarea",
@@ -464,8 +462,7 @@ export const CreateComplaint = ({ parentUrl }) => {
             onChange: handleDescription,
           },
         },
-   
-    
+
         {
           label: t("CS_COMPLAINT_DETAILS_GEO_LOCATION"),
           type: "component",
@@ -521,7 +518,6 @@ export const CreateComplaint = ({ parentUrl }) => {
         },
       ],
     },
-    
   ];
   useEffect(() => {
     if (propetyData !== "undefined" && propetyData !== null) {

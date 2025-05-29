@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment,useRef } from "react";
+import React, { useState, useEffect, Fragment, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
   BreakLine,
@@ -102,7 +102,7 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
   const [error, setError] = useState(null);
   const cityDetails = Digit.ULBService.getCurrentUlb();
   const [selectedReopenReason, setSelectedReopenReason] = useState(null);
-  
+
   useEffect(() => {
     (async () => {
       setError(null);
@@ -251,13 +251,12 @@ export const ComplaintDetails = (props) => {
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: ulb, id, moduleCode: "SWACH", role: "EMPLOYEE" });
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([]);
-console.log("workflowDetails", workflowDetails);
+  console.log("workflowDetails", workflowDetails);
   if (workflowDetails && workflowDetails?.data) {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
-const menuRef   = useRef(null);
-
+  const menuRef = useRef(null);
 
   useEffect(() => {
     if (workflowDetails) {
@@ -278,20 +277,20 @@ const menuRef   = useRef(null);
   const [rerender, setRerender] = useState(1);
   const [viewTimeline, setViewTimeline] = useState(false);
   const client = useQueryClient();
-useEffect(() => {
-  if (!displayMenu) return;
+  useEffect(() => {
+    if (!displayMenu) return;
 
-  function handleClickOutside(event) {
-    if (menuRef .current && !menuRef .current.contains(event.target)) {
-      setDisplayMenu(false);
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setDisplayMenu(false);
+      }
     }
-  }
 
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, [displayMenu]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [displayMenu]);
   function popupCall(option) {
     setDisplayMenu(false);
     setPopup(true);
@@ -619,9 +618,10 @@ useEffect(() => {
       {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 0 && (
         <ActionBar>
           {displayMenu && workflowDetails?.data?.nextActions ? (
-            <div ref={menuRef }>
-            <Menu options={workflowDetails?.data?.nextActions.map((action) => action.action)} t={t} onSelect={onActionSelect} />
-          </div>) : null}
+            <div ref={menuRef}>
+              <Menu options={workflowDetails?.data?.nextActions.map((action) => action.action)} t={t} onSelect={onActionSelect} />
+            </div>
+          ) : null}
           <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>
       )}

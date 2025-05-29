@@ -307,6 +307,22 @@ import useADSDocumentsMDMS from "./ads/useADSDocumentsMDMS";
 import useADSDocumentSearch from "./ads/useADSDocumentSearch";
 import useADSDemandEstimation from "./ads/useADSDemandEstimation";
 
+import useSpecialCategory from "./chb/useSpecialCategory";
+import useResidentType from "./chb/useResidentType";
+import usePurpose from "./chb/usePurpose";
+import useChbCreateAPI from "./chb/useChbCreateAPI";
+import useChbDocumentsMDMS from "./chb/useChbDocumentsMDMS";
+import useChbDocumentSearch from "./chb/useChbDocumentSearch";
+import useChbApplicationDetail from "./chb/useChbApplicationDetail";
+import useChbSearch from "./chb/useChbSearch";
+import useTenantsCHB from "./chb/useTenants";
+import useChbApplicationAction from "./chb/useChbApplicationAction";
+import useServiceSearchCHB from "./chb/useServiceSearchCHB";
+import useChbCommunityHalls from "./chb/useChbCommunityHalls";
+import useChbHallCode from "./chb/useChbHallCode";
+import useChbSlotSearch from "./chb/useChbSlotSearch";
+import useDemandEstimation from "./chb/useDemandEstimation";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -324,7 +340,7 @@ const pgr = {
   useComplaintStatusCount,
   useTradeLicenseBillingslab,
   useMDMS: usePGRMDMS,
-  useInbox:usePGRInbox
+  useInbox: usePGRInbox,
 };
 
 const swach = {
@@ -552,6 +568,24 @@ const ads = {
   useADSApplicationDetail,
 };
 
+const chb = {
+  useSpecialCategory,
+  useResidentType,
+  usePurpose,
+  useChbCreateAPI,
+  useChbDocumentsMDMS,
+  useChbDocumentSearch,
+  useChbApplicationDetail,
+  useChbSearch,
+  useTenants: useTenantsCHB,
+  useChbApplicationAction,
+  useServiceSearchCHB,
+  useChbCommunityHalls,
+  useChbHallCode,
+  useChbSlotSearch,
+  useDemandEstimation,
+};
+
 const survey = {
   useCreate: useSurveyCreate,
   useUpdate: useSurveyUpdate,
@@ -684,6 +718,7 @@ const Hooks = {
   createTokenAPI,
   sv,
   ads,
+  chb,
 };
 
 export default Hooks;

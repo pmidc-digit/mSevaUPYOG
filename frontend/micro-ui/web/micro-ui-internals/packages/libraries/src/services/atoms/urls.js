@@ -274,6 +274,14 @@ const Urls = {
     estimateCreate: "/adv-services/booking/v1/_estimate",
   },
 
+  chb: {
+    create: "/chb-services/booking/v1/_create",
+    search: "/chb-services/booking/v1/_search",
+    update: "/chb-services/booking/v1/_update",
+    slot_search: "/chb-services/booking/v1/_slot-search",
+    estimateCreate: "/chb-services/booking/v1/_estimate",
+  },
+
   access_control: "/access/v1/actions/mdms/_get",
   billgenie: "/egov-searcher",
   audit: "/inbox/v1/elastic/_search",

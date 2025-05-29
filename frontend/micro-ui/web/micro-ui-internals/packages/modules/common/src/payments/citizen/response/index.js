@@ -67,6 +67,9 @@ const WrapPaymentComponent = (props) => {
   //   { tenantId, consumerCode, businessService: business_service },
   //   { enabled: allowFetchBill, retry: false, staleTime: Infinity, refetchOnWindowFocus: false }
   // );
+
+  const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
+
   const newTenantId = business_service.includes("WS.ONE_TIME_FEE" || "SW.ONE_TIME_FEE") ? Digit.ULBService.getStateId() : tenantId;
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
@@ -412,6 +415,49 @@ const WrapPaymentComponent = (props) => {
       let to = new Date(toPeriod).getFullYear().toString();
       return "FY " + from + "-" + to;
     } else return "N/A";
+  };
+
+  const printPermissionLetter = async () => {
+    //const tenantId = Digit.ULBService.getCurrentTenantId();
+    const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+    let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.permissionLetterFilestoreId;
+    const generatePdfKeyForTL = "chbpermissionletter";
+    if (!fileStoreId) {
+      const response = await Digit.PaymentService.generatePdf(
+        tenantId,
+        { hallsBookingApplication: [applicationDetails?.hallsBookingApplication[0]] },
+        generatePdfKeyForTL
+      );
+      const updatedApplication = {
+        ...applicationDetails?.hallsBookingApplication[0],
+        permissionLetterFilestoreId: response?.filestoreIds[0],
+      };
+      await mutation.mutateAsync({
+        hallsBookingApplication: updatedApplication,
+      });
+      fileStoreId = response?.filestoreIds[0];
+    }
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+    window.open(fileStore[fileStoreId], "_blank");
+  };
+
+  const printCHBReceipt = async () => {
+    const applicationDetails = await Digit.CHBServices.search({ tenantId, filters: { bookingNo: consumerCode } });
+    let fileStoreId = applicationDetails?.hallsBookingApplication?.[0]?.paymentReceiptFilestoreId;
+    if (!fileStoreId) {
+      let response = { filestoreIds: [payments?.fileStoreId] };
+      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...paymentData }] }, "chbservice-receipt");
+      const updatedApplication = {
+        ...applicationDetails?.hallsBookingApplication[0],
+        paymentReceiptFilestoreId: response?.filestoreIds[0],
+      };
+      await mutation.mutateAsync({
+        hallsBookingApplication: updatedApplication,
+      });
+      fileStoreId = response?.filestoreIds[0];
+    }
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+    window.open(fileStore[fileStoreId], "_blank");
   };
 
   let bannerText;
@@ -791,9 +837,34 @@ const WrapPaymentComponent = (props) => {
           </div>
         ) : null}
 
+        {business_service == "chb-services" ? (
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "20px", marginRight: "20px", marginTop: "15px", marginBottom: "15px" }}>
+            <div className="primary-label-btn d-grid" onClick={printCHBReceipt}>
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                <path d="M0 0h24v24H0V0z" fill="none" />
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+              </svg>
+              {t("CHB_FEE_RECEIPT")}
+            </div>
+            <div className="primary-label-btn d-grid" onClick={printPermissionLetter}>
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#a82227">
+                <path d="M0 0h24v24H0V0z" fill="none" />
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5z" />
+              </svg>
+              {t("CHB_PERMISSION_LETTER")}
+            </div>
+          </div>
+        ) : null}
+
         {business_service == "sv-services" && (
           <Link to={`/digit-ui/citizen`}>
             <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} style={{ marginTop: "15px" }} />
+          </Link>
+        )}
+
+        {business_service == "chb-services" && (
+          <Link to={`/digit-ui/citizen`}>
+            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
           </Link>
         )}
 

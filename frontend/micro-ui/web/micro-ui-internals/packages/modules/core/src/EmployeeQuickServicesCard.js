@@ -75,6 +75,9 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
       case "ADS":
         return true;
 
+      case "CHB":
+        return true;
+
       default:
         return null;
     }
@@ -111,6 +114,8 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
       case "SV":
         return <BillsIcon />;
       case "ADS":
+        return <BillsIcon />;
+      case "CHB":
         return <BillsIcon />;
       default:
         return <PTIcon />;

@@ -23,6 +23,8 @@ const Inbox = ({
 }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
+  console.log("here");
+
   const { t } = useTranslation();
   const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
   const [TableConfig, setTableConfig] = useState(() => Digit.ComponentRegistryService?.getComponent("PTRInboxTableConfig"));
@@ -56,11 +58,6 @@ const Inbox = ({
         middlewaresWf,
         middlewareSearch,
       });
-
-
-     
-
-
 
   useEffect(() => {
     setPageOffset(0);
@@ -107,7 +104,7 @@ const Inbox = ({
           searchParams={searchParams}
           sortParams={sortParams}
           linkPrefix={`${parentRoute}/application-details/`}
-          tableConfig={rest?.tableConfig ? res?.tableConfig:TableConfig(t)["PTR"]}
+          tableConfig={rest?.tableConfig ? res?.tableConfig : TableConfig(t)["PTR"]}
           filterComponent={filterComponent}
           EmptyResultInboxComp={EmptyResultInboxComp}
           useNewInboxAPI={useNewInboxAPI}
@@ -118,12 +115,10 @@ const Inbox = ({
       return (
         <div>
           {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
-         
-          
+
           <PTRDesktopInbox
             moduleCode={moduleCode}
             data={data}
-            
             tableConfig={TableConfig(t)["PTR"]}
             isLoading={hookLoading}
             defaultSearchParams={initialStates.searchParams}
@@ -153,4 +148,3 @@ const Inbox = ({
 };
 
 export default Inbox;
-

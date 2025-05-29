@@ -102,7 +102,6 @@ import DocsRequired from "./pages/employee/PropertyMutation/docsRequired";
 import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
 import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
 import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
-// PTAcknowledgementCF from "@upyog/digit-ui-module-core/src/components/PTAcknowledgementCF";
 //import PTCitizenFeedbackPopUp from "./pageComponents/PTCitizenFeedbackPopUp";
 
 import PTSelectLandmark from "./pageComponents/PTSelectLandmark";

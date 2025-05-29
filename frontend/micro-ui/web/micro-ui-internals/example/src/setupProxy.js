@@ -83,6 +83,11 @@ module.exports = function (app) {
     "/adv-services/booking/v1/_update",
     "/adv-services/booking/v1/_slot-search",
     "/adv-services/booking/v1/_estimate",
+    "/chb-services/booking/v1/_create",
+    "/chb-services/booking/v1/_search",
+    "/chb-services/booking/v1/_update",
+    "/chb-services/booking/v1/_slot-search",
+    "/chb-services/booking/v1/_estimate",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

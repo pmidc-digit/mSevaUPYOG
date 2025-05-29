@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Header } from "@mseva/digit-ui-react-components";
-
+import {Params_Count}from "../../constants/Employee"
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 
@@ -25,11 +25,34 @@ const Inbox = ({ initialStates = {} }) => {
 
   useEffect(() => {
     (async () => {
+      // debugger;
       const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
-      let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+      // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.map((e) => e.code).join(",");
+      const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
+       let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+        console.log("useCount response in inbox else block", response);
       if (response?.count) {
         setTotalRecords(response.count);
       }
+      // console.log("application Status",applicationStatus)
+      // console.log("assigneeCode", assigneeCode);
+      // console.log("uuid", uuid);
+      // //  if (!assigneeCode) return;
+      // if (assigneeCode==uuid) {
+      //   // let response = await Digit.Hooks.swach.useCount(tenantId, Params_Count,assigneeCode,applicationStatus?.length > 0 ?  applicationStatus : {});
+      //   let response = await Digit.Hooks.swach.useCount(tenantId, Params_Count,assigneeCode, applicationStatus);
+      // console.log("useCount response in inbox in  if block", response);
+      // if (response) {
+      //   setTotalRecords(response);
+      // }
+      // }
+      // else{
+      //   let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+      //   console.log("useCount response in inbox else block", response);
+      // if (response?.count) {
+      //   setTotalRecords(response.count);
+      // }
+      // }
     })();
   }, [searchParams, pageOffset, pageSize]);
 

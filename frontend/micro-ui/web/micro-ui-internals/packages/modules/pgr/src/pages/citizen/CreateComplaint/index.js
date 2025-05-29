@@ -45,7 +45,17 @@ const [description, setDescription] = useState("")
   //const tenantId = window.Digit.SessionStorage.get("Employee.tenantId");
   const tenantId = Digit.UserService.getUser()?.info?.tenantId;
   const menu = Digit.Hooks.pgr.useComplaintTypes({ stateCode: tenantId });
- const  priorityMenu= 
+  const tempLocation = useRef(null);
+  const [geoLocation, setGeoLocation] = useState({});
+
+  const SelectGeolocation = Digit?.ComponentRegistryService?.getComponent("PGRSelectGeolocation");
+  const SelectImages = Digit?.ComponentRegistryService?.getComponent("PGRSelectImages");
+  
+  const localities = useMemo(() => {
+      return fetchedLocalities;
+  }, [selectedCity, fetchedLocalities]);
+
+  const  priorityMenu= 
   [
     {
       "name": "LOW",
@@ -127,12 +137,12 @@ const [description, setDescription] = useState("")
   async function selectedType(value) {
     if (value.key !== complaintType.key) {
       if (value.key === "Others") {
-        // setSubType({ name: "" });
+        setSubType({ name: "" });
         setComplaintType(value);
         sessionStorage.setItem("complaintType",JSON.stringify(value))
-        // setSubTypeMenu([{ key: "Others", name: t("SERVICEDEFS.OTHERS") }]);
+        setSubTypeMenu([{ key: "Others", name: t("SERVICEDEFS.OTHERS") }]);
       } else {
-        // setSubType({ name: "" });
+        setSubType({ name: "" });
         setComplaintType(value);
         sessionStorage.setItem("complaintType",JSON.stringify(value))
         setSubTypeMenu(await serviceDefinitions.getSubMenu(tenantId, value, t));

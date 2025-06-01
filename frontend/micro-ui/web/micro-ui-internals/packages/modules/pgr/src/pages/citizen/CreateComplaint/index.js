@@ -27,7 +27,7 @@ export const CreateComplaint = ({ parentUrl }) => {
 const [propertyId, setPropertyId]= useState("")
 const [description, setDescription] = useState("")
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
-    getCities()[0]?.code,
+    selectedCity?.code,
     "admin",
     {
       enabled: !! selectedCity
@@ -168,8 +168,14 @@ const [description, setDescription] = useState("")
   };
 
   function selectLocality(locality) {
-    console.log("ddddddddd",locality)
+    //console.log("ddddddddd",locality)
     setSelectedLocality(locality);
+  }
+
+  function throttle() {
+    setTimeout(() => {
+      setSubmitted(false);
+    }, 5000);
   }
 
   const wrapperSubmit = (data) => {

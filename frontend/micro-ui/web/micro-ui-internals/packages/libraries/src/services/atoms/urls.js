@@ -30,6 +30,7 @@ const Urls = {
   ChangePassword1: "/user/password/_update",
   UserProfileUpdate: "/user/profile/_update",
   EmployeeSearch: "/egov-hrms/employees/_search",
+  Swach_Assignee_Count :"/egov-workflow-v2/egov-wf/process/_count",
 
   InboxSearch: "/inbox/v1/_search",
 

@@ -21,10 +21,11 @@ import {
 
 import TimeLine from "../../components/TimeLine";
 
-const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => {
-  const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || complaintDetails.service.tenantId;
-  let workFlowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: tenantId, id, moduleCode: "PGR" });
-  const { data: ComplainMaxIdleTime, isLoading: ComplainMaxIdleTimeLoading } = Digit.Hooks.pgr.useMDMS.ComplainClosingTime(tenantId?.split(".")[0]);
+const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage, ulb }) => {
+  //const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || complaintDetails.service.tenantId;
+  const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId ;
+  let workFlowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: ulb, id, moduleCode: "PGR" });
+  const { data: ComplainMaxIdleTime, isLoading: ComplainMaxIdleTimeLoading } = Digit.Hooks.pgr.useMDMS.ComplainClosingTime(tenantId);
 
   useEffect(() => {
     getWorkFlow(workFlowDetails.data);
@@ -52,10 +53,15 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
 
 const ComplaintDetailsPage = (props) => {
   let { t } = useTranslation();
-  let { id } = useParams();
+  let { fullUrlAndUlb} = useParams();
 
-  let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); // ToDo: fetch from state
-  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id });
+  const parts = fullUrlAndUlb?.split("/");
+  const ulb = parts[parts.length - 1];
+  const id = parts.slice(0, parts.length - 1).join("/");
+
+  //let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId(); // ToDo: fetch from state
+  const tenantId = Digit.SessionStorage.get("User")?.info?.tenantId ;
+  const { isLoading, error, isError, complaintDetails, revalidate } = Digit.Hooks.pgr.useComplaintDetails({ tenantId, id});
 
   const [imageShownBelowComplaintDetails, setImageToShowBelowComplaintDetails] = useState({});
 
@@ -173,7 +179,7 @@ const ComplaintDetailsPage = (props) => {
             <Card>
             <div id="timeline">
               {complaintDetails?.service && (
-                <WorkflowComponent getWorkFlow={onWorkFlowChange} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
+                <WorkflowComponent getWorkFlow={onWorkFlowChange} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} ulb={ulb} />
               )}
               </div>
             </Card>

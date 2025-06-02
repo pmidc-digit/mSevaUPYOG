@@ -453,6 +453,19 @@ export const CreateComplaint = ({ parentUrl }) => {
             name: "landmark",
           },
         },
+        
+        {
+          label: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
+          type: "textarea",
+          onChange: handleDescription,
+          value: description,
+          populators: {
+            name: "description",
+            onChange: handleDescription,
+          },
+        },
+   
+    
         {
           label: t("CS_COMPLAINT_DETAILS_GEO_LOCATION"),
           type: "component",
@@ -508,21 +521,7 @@ export const CreateComplaint = ({ parentUrl }) => {
         },
       ],
     },
-    {
-      head: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
-      body: [
-        {
-          // label: t("CS_COMPLAINT_DETAILS_ADDITIONAL_DETAILS"),
-          type: "textarea",
-          onChange: handleDescription,
-          value: description,
-          populators: {
-            name: "description",
-            onChange: handleDescription,
-          },
-        },
-      ],
-    },
+    
   ];
   useEffect(() => {
     if (propetyData !== "undefined" && propetyData !== null) {

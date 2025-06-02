@@ -29,7 +29,7 @@ export const getActionButton = (businessService, receiptNumber) => {
       }}
     >
       {" "}
-      {t(`${"UC_DOWNLOAD_RECEIPT"}`)}{" "}
+      {t(`${"CS_COMMON_DOWNLOAD_RECEIPT"}`)}{" "}
     </a>
   );
 };

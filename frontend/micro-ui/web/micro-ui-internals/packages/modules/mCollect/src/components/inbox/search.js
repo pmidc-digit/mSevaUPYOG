@@ -44,7 +44,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
     const mobileViewStyles = mobileView ? { margin: 0 } : {};
     return (
       <LinkLabel style={{ display: "inline", ...mobileViewStyles }} onClick={clearSearch}>
-        {t("UC_CLEAR_SEARCH_LABEL")}
+        {t("CS_COMMON_CLEAR_SEARCH")}
       </LinkLabel>
     );
   };
@@ -62,47 +62,49 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </span>
               </div>
             )}
-            <div className={"complaint-input-container for-pt " + (!(type === "desktop" && !mobileView ) ? "for-search" : "")} style={{ width: "100%",display:"grid" }}>
+            <div
+              className={"complaint-input-container for-pt " + (!(type === "desktop" && !mobileView) ? "for-search" : "")}
+              style={{ width: "100%", display: "grid" }}
+            >
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
                   <div key={input.name} className="input-fields">
-                  <span key={index} className={"complaint-input"}>  {/* //{index === 0 ? "complaint-input" : "mobile-input"} */}
-                    <Label>{input.label}</Label>
-                    {input.type !== "date" ? (
-                      <div className="field-container">
-                        {input?.componentInFront ? (
-                          <span className="citizen-card-input citizen-card-input--front" style={{ flex: "none" }}>
-                            {input?.componentInFront}
-                          </span>
-                        ) : null}
-                        <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
-                      </div>
-                    ) : (
-                      <Controller
-                        render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
-                        name={input.name}
-                        control={control}
-                        defaultValue={null}
-                      />
-                    )}{" "}
-                  </span>
+                    <span key={index} className={"complaint-input"}>
+                      {" "}
+                      {/* //{index === 0 ? "complaint-input" : "mobile-input"} */}
+                      <Label>{input.label}</Label>
+                      {input.type !== "date" ? (
+                        <div className="field-container">
+                          {input?.componentInFront ? (
+                            <span className="citizen-card-input citizen-card-input--front" style={{ flex: "none" }}>
+                              {input?.componentInFront}
+                            </span>
+                          ) : null}
+                          <TextInput {...input} inputRef={register} watch={watch} shouldUpdate={true} />
+                        </div>
+                      ) : (
+                        <Controller
+                          render={(props) => <DatePicker date={props.value} onChange={props.onChange} />}
+                          name={input.name}
+                          control={control}
+                          defaultValue={null}
+                        />
+                      )}{" "}
+                    </span>
                   </div>
                 ))}
-                {type === "desktop" && !mobileView && (
-                  <div style={{ gridColumn: "2/3", textAlign: "right", paddingTop: "10px" }} className="input-fields">
+              {type === "desktop" && !mobileView && (
+                <div style={{ gridColumn: "2/3", textAlign: "right", paddingTop: "10px" }} className="input-fields">
                   <div>{clearAll()}</div>
-                  </div>
-                )}
-                {type === "desktop" && !mobileView &&
-              <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
-                <SubmitBar
-                  className="submit-bar-search"
-                  label={t("UC_SEARCH_LABEL")}
-                  submit
-                />
-                {!isInboxPage && <div>{clearAll()}</div>}
-              </div>}
+                </div>
+              )}
+              {type === "desktop" && !mobileView && (
+                <div style={{ maxWidth: "unset", marginLeft: "unset" }} className="search-submit-wrapper">
+                  <SubmitBar className="submit-bar-search" label={t("CS_INBOX_SEARCH")} submit />
+                  {!isInboxPage && <div>{clearAll()}</div>}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -111,7 +113,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
             <button className="clear-search" style={{ flex: 1 }}>
               {clearAll(mobileView)}
             </button>
-            <SubmitBar label={t("UC_SEARCH_LABEL")} style={{ flex: 1 }} submit={true} />
+            <SubmitBar label={t("CS_INBOX_SEARCH")} style={{ flex: 1 }} submit={true} />
           </ActionBar>
         )}
       </React.Fragment>

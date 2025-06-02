@@ -132,7 +132,7 @@ const DesktopInbox = ({
       <div className="filters-container">
         <ComplaintsLink />
         <div>
-          <Filter complaints={data} onFilterChange={onFilterChange} type="desktop" searchParams={searchParams} />
+          <Filter complaints={data} onFilterChange={onFilterChange} type="desktop" searchParams={searchParams} localities={localities}/>
         </div>
       </div>
       <div style={{ flex: 1 }}>

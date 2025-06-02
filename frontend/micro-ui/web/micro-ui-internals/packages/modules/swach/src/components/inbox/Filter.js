@@ -13,8 +13,9 @@ const Filter = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: cities } = Digit.Hooks.useTenants();
   let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
+  const  cityChange = Digit.SessionStorage.get("Employee.tenantId");
+  console.log("cityChange", cityChange);
   const { searchParams } = props;
-
   const isAssignedToMe =
     tenantId !== "pb.punjab" && searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
 
@@ -126,7 +127,11 @@ const Filter = (props) => {
     props.onClose();
   }
   function complaintType(_type) {
-    const type = { i18nKey: t("SERVICEDEFS." + _type.serviceCode.toUpperCase()), code: _type.serviceCode };
+    // const type = { i18nKey: t("SERVICEDEFS." + _type.serviceCode.toUpperCase()), code: _type.serviceCode };
+    const type = { 
+    i18nKey: _type.i18nKey, 
+    code: _type.serviceCode 
+  };
     if (!ifExists(swachfilters.serviceCode, type)) {
       setSwachFilters({ ...swachfilters, serviceCode: [...swachfilters.serviceCode, type] });
     }

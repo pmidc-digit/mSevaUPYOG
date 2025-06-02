@@ -10,23 +10,30 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   let tenantId = Digit.ULBService.getCurrentTenantId();
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
-
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
+  const formValue = watch();
+  const { errors } = localFormState;
+  const [localities, setLocalities] = useState();
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
+console.log("usertype",window.location.href.includes("employee"))
   let isEditProperty = formData?.isEditProperty || false;
   if (presentInModifyApplication) isEditProperty = true;
   if (formData?.isUpdateProperty) isEditProperty = true;
   const { pincode, city } = formData?.address || "";
   const cities =
-    userType === "employee"
+    // userType === "employee"
+    window.location.href.includes("employee")
       ? allCities.filter((city) => city.code === tenantId)
-      : pincode
-      ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode))
+      // : pincode
+      // ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode))
       : allCities;
 
   const [selectedCity, setSelectedCity] = useState(() => {
     return formData?.address?.city || null;
   });
 
-  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+  let { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
     "revenue",
     {
@@ -34,18 +41,67 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
     },
     t
   );
+// window.location.href.includes("citizen")?
+//    { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+//    formValue.address?.city?.code,
+//     "revenue",
+//     {
+//       enabled: !!formValue.address,
+//     },
+//     t
+//    )
+// :null
 
-  const [localities, setLocalities] = useState();
+  useEffect(() => {
+    (async () => {
+      let response = await Digit.LocationService.getLocalities(formValue?.address?.city);
+      let __localityList = [];
+      if (response && response.TenantBoundary.length > 0) {
+        __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+      }
+      setLocalities(__localityList);
+    })();
+  }, [formValue?.address?.city]);
+
+const fetchLocality=()=>{
+  console.log("selected city",selectedCity)
+  let response =  Digit.LocationService.getLocalities(formValue?.address?.city);
+  let __localityList = [];
+  if (response && response.TenantBoundary.length > 0) {
+    __localityList = Digit.LocalityService.get(response.TenantBoundary[0]);
+  }
+  setLocalities(__localityList);
+}
+
+    
+
 
   const [selectedLocality, setSelectedLocality] = useState(formData?.address?.locality);
 
   useEffect(() => {
-    if (userType === "employee" && presentInModifyApplication && localities?.length) {
+    if (window.location.href.includes("employee") && presentInModifyApplication && localities?.length) {
+      console.log("coming here");
+      
       const code = formData?.originalData?.address?.locality?.code;
+      console.log("coming here code",code);
       const _locality = localities?.filter((e) => e.code === code)[0];
+      console.log("coming here _locality",_locality);
       setValue("locality", _locality);
     }
   }, [localities]);
+
+
+-
+
+  useEffect(() => {
+    if(formData?.address?.locality  && localities?.length){
+    const code = formData?.address?.locality?.code;
+    const localityValue = localities?.find((e) => e.code === code)
+    setValue("locality", localityValue);
+    }
+    
+  },[formData,localities,isEditProperty])
+  
 
   useEffect(() => {
     if (cities) {
@@ -73,7 +129,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
 
       if (filteredLocalityList.length === 1) {
         setSelectedLocality(filteredLocalityList[0]);
-        if (userType === "employee") {
+        if (window.location.href.includes("employee")) {
           onSelect(config.key, { ...formData[config.key], locality: filteredLocalityList[0] });
         }
       }
@@ -91,7 +147,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
     //   formData.address["locality"] = locality;
     // }
     setSelectedLocality(locality);
-    if (userType === "employee") {
+    if (window.location.href.includes("employee")) {
       onSelect(config.key, { ...formData[config.key], locality: locality });
     }
     
@@ -102,11 +158,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
     onSelect(config.key, { city: selectedCity, locality: selectedLocality });
   }
 
-  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
-  const formValue = watch();
-  const { errors } = localFormState;
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
-  const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
+ 
 //   useEffect(() => {
 //     onSelect(config.key, selectedValue);
 //   }, [selectedValue]);
@@ -115,7 +167,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
 //     setSelectedValue(e);
 //   }
   useEffect(() => {
-    if (userType === "employee") {
+    if (window.location.href.includes("employee")) {
       let keys = Object.keys(formValue);
       const part = {};
       keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
@@ -131,30 +183,89 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   }, [formValue]);
 
   useEffect(() => {
-    if (userType === "employee") {
+    if (formValue.address?.city && fetchedLocalities) {
+      let __localityList = fetchedLocalities;
+      let filteredLocalityList = [];
+
+      if (formData?.address?.locality) {
+        setSelectedLocality(formData.address.locality);
+      }
+
+      if (formData?.address?.pincode) {
+        filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == formData.address.pincode));
+        if (!formData?.address?.locality) setSelectedLocality();
+      }
+      setLocalities(() => (filteredLocalityList.length > 0 ? filteredLocalityList : __localityList));
+
+      if (filteredLocalityList.length === 1) {
+        setSelectedLocality(filteredLocalityList[0]);
+        if (window.location.href.includes("employee")) {
+          onSelect(config.key, { ...formData[config.key], locality: filteredLocalityList[0] });
+        }
+      }
+    }
+  }, [formValue.address, fetchedLocalities]);
+
+  useEffect(() => {
+    if (window.location.href.includes("employee")) {
       const errorsPresent = !!Object.keys(localFormState.errors).lengtha;
       if (errorsPresent && !formState.errors?.[config.key]) setError(config.key, { type: "required" });
       else if (!errorsPresent && formState.errors?.[config.key]) clearErrors(config.key);
     }
   }, [localFormState]);
 
-  if (userType === "employee") {
+
+
+  useEffect(() => {
+    if (window.location.href.includes("citizen")) {
+      let keys = Object.keys(formValue);
+      const part = {};
+      keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
+      if (!_.isEqual(formValue, part)) onSelect(config.key, { ...formData[config.key], ...formValue });
+      for (let key in formValue) {
+        if (!formValue[key] && !localFormState?.errors[key]) {
+          setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
+        } else if (formValue[key] && localFormState.errors[key]) {
+          clearLocalErrors([key]);
+        }
+      }
+    }
+  }, [formValue]);
+
+  useEffect(() => {
+    if (window.location.href.includes("citizen")) {
+      const errorsPresent = !!Object.keys(localFormState.errors).lengtha;
+      if (errorsPresent && !formState.errors?.[config.key]) setError(config.key, { type: "required" });
+      else if (!errorsPresent && formState.errors?.[config.key]) clearErrors(config.key);
+    }
+  }, [localFormState]);
+
+  console.log("config",config)
+  console.log("localFormState",localFormState)
+
+  if (window.location.href.includes("employee")) {
+    const disableCityDropdown=isEditProperty ? isEditProperty : cities?.length === 1;
     return (
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("MYCITY_CODE_LABEL") + " *"}</CardLabel>
+          <CardLabel className="card-label-smaller">
+            {t("MYCITY_CODE_LABEL")} {config.isMandatory.city && <span style={{ color: 'red' }}>*</span>}
+          </CardLabel>
           <Controller
             name={"city"}
             defaultValue={cities?.length === 1 ? cities[0] : selectedCity}
             control={control}
+            rules={{
+              required: config.isMandatory.city && t("City is required"),
+            }}
             render={(props) => (
               <Dropdown
                 className="form-field"
                 selected={props.value}
-                disable={isEditProperty ? isEditProperty : cities?.length === 1}
+                disable={disableCityDropdown}
                 option={cities}
                 select={props.onChange}
-                optionKey="code"
+                optionKey="i18nKey"
                 onBlur={props.onBlur}
                 t={t}
               />
@@ -163,26 +274,100 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.city ? errors?.city?.message : ""}</CardLabelError>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_LOCALITY_LABEL") + " *"}</CardLabel>
+          <CardLabel className="card-label-smaller">{t("PT_LOCALITY_LABEL")} {config.isMandatory.locality && <span style={{ color: 'red' }}>*</span>}</CardLabel>
           <Controller
             name="locality"
             defaultValue={selectedLocality}
             control={control}
+            rules={{
+              required: config.isMandatory.locality?t("Locality is required"):false,
+            }}
             render={(props) => (
               <Dropdown
                 className="form-field"
-                selected={selectedLocality}
+                selected={props.value}
                 option={localities}
-                select={props.onChange}
+                select={(e) => {
+                  props.onChange(e);
+                  selectLocality(e); // to keep your external state also in sync
+                }}
+                // select={props.onChange}
                 onBlur={props.onBlur}
                 optionKey="i18nkey"
                 t={t}
                 disable={isEditProperty ? isEditProperty : false}
+                isRequired={true}
               />
             )}
           />
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.locality ? errors?.locality?.message : ""}</CardLabelError>
+      </div>
+    );
+  }
+  if (window.location.href.includes("citizen")) {
+    
+    return (
+      <div>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">
+            {t("MYCITY_CODE_LABEL")} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}
+          </CardLabel>
+          <Controller
+            name={"city"}
+            defaultValue={cities?.length === 1 ? cities[0] : selectedCity}
+            control={control}
+            rules={{
+              required: config.isMandatory && t("City is required"),
+            }}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                selected={props.value}
+                disable={false}
+                option={cities}
+                select={(val)=>{
+                  selectCity(val)
+                  props.onChange(val)
+                }}
+                optionKey="i18nKey"
+                onBlur={props.onBlur}
+                t={t}
+              />
+            )}
+          />
+        </LabelFieldPair>
+        <CardLabelError style={errorStyle}>{localFormState.errors.city ? errors?.city?.message : ""}</CardLabelError>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{t("PT_LOCALITY_LABEL")} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
+          <Controller
+            name="locality"
+            defaultValue={selectedLocality}
+            control={control}
+            rules={{
+              required: config.isMandatory?t("Locality is required"):false,
+            }}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                selected={props.value}
+                option={localities}
+                select={(e) => {
+                  props.onChange(e);
+                  selectLocality(e); // to keep your external state also in sync
+                  // fetchLocality()
+                }}
+                // select={props.onChange}
+                onBlur={props.onBlur}
+                optionKey="i18nkey"
+                t={t}
+                disable={false}
+                isRequired={true}
+              />
+            )}
+          />
+        </LabelFieldPair>
+        <CardLabelError style={errorStyle}>{localFormState.errors.locality ? errors?.locality?.message : ""}</CardLabelError>
       </div>
     );
   }
@@ -235,3 +420,4 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
 };
 
 export default PTSelectAddress;
+

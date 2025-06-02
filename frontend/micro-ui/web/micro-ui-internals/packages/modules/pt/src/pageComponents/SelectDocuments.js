@@ -1,29 +1,36 @@
 import React, { useEffect, useState } from "react";
-import {
-  CardLabel,
-  LabelFieldPair,
-  Dropdown,
-  UploadFile,
-  Toast,
-  Loader,
-  CardHeader,
-  CardSectionHeader,
-} from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, CardHeader, CardSectionHeader } from "@mseva/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
-
+import { Controller, useFormContext } from "react-hook-form";
+import { iteratee } from "lodash";
 const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+  const { pathname } = useLocation();
+  const isEditScreen = pathname.includes("/edit-application/");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
+  const [documents, setDocuments] = useState(() => {
+    if(isEditScreen){
+      if(Array.isArray(formData?.documents)){
+        return formData?.documents || []
+      }
+      return formData?.documents?.documents || [] 
+    }else{
+     return formData?.documents?.documents || [] 
+    }
+  });
+
   const [error, setError] = useState(null);
 
   let action = "create";
 
-  const { pathname } = useLocation();
-  const isEditScreen = pathname.includes("/modify-application/");
+  console.log("formData in selecet document component", formData);
+  // console.log("formData.documents?.documents", formData.documents.documents);
+
+  // const isEditScreen = pathname.includes("/edit-application/");
+  
   const isMutation = pathname.includes("/property-mutate/");
 
-  if (isEditScreen) action = "update";
+  // if (isEditScreen) action = "update";
 
   const propertyInitialValues = JSON.parse(sessionStorage.getItem("PropertyInitials"));
 
@@ -39,11 +46,10 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
     "MutationDocuments",
   ]);
 
-
   const mutationDocs = data?.PropertyTax?.MutationDocuments;
   const commonDocs = data?.PropertyTax?.Documents;
 
-  const propertyTaxDocuments = isMutation
+  let propertyTaxDocuments = isMutation
     ? mutationDocs?.map?.((doc) => commonDocs.find((e) => doc.code === e.code) || doc)
     : data?.PropertyTax?.Documents;
 
@@ -55,9 +61,12 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
     goNext();
   }, [documents]);
 
+
+
   if (isLoading) {
     return <Loader />;
   }
+
 
   return (
     <div>
@@ -68,6 +77,9 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
         //     return null;
         //   }
         // }
+        if( window.location.href.includes("/citizen") && (document.code==="OWNER.OCCUPANCYPROOF" || document.code==="OWNER.CONSTRUCTIONPROOF")){
+          return null;
+        }
         return (
           <SelectDocument
             key={index}
@@ -88,6 +100,7 @@ const SelectDocuments = ({ t, config, onSelect, userType, formData, setError: se
           />
         );
       })}
+      {console.log("propertyTaxDocuments", propertyTaxDocuments)}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
     </div>
   );
@@ -110,19 +123,42 @@ function SelectDocument({
   id,
   propertyInitialValues,
 }) {
-  const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+  // const filteredDocument = documents?.find((item) => item?.documentType == doc?.code);
+  const filteredDocument = documents?.find((item) => {
+    const documentTypeParts = item?.documentType.split(".");
+    const truncatedDocumentType = documentTypeParts.slice(0, 2).join(".");
+    console.log("In find:", "type:", truncatedDocumentType, "\n doc:", doc, "\n bool: ", truncatedDocumentType === doc?.code);
+    return truncatedDocumentType === doc?.code;
+  });
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  console.log("dropdowndata1", doc?.dropdownData);
+  console.log("filteredDocument", filteredDocument);
+  console.log("documents", documents);
+  console.log("doc", doc);
+  useEffect(()=>{
+
+  },[])
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
-      ? { ...filteredDocument, active: filteredDocument?.status === "ACTIVE", code: filteredDocument?.documentType }
+      ? {
+          ...filteredDocument,
+          active: filteredDocument?.status === "ACTIVE",
+          code: filteredDocument?.documentType,
+          i18nKey: (filteredDocument?.documentType).replaceAll(".", "_"),
+        }
       : doc?.dropdownData?.length === 1
       ? doc?.dropdownData[0]
       : {}
   );
+
+  console.log("selectedDocument in componene6", selectedDocument);
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
 
-  const handleSelectDocument = (value) => setSelectedDocument(value);
+  const handleSelectDocument = (value) => {
+    setSelectedDocument(value);
+    console.log("selecr doc value", value);
+  };
 
   function selectfile(e) {
     setFile(e.target.files[0]);
@@ -188,7 +224,7 @@ function SelectDocument({
 
   useEffect(() => {
     if (action === "update") {
-      const originalDoc = formData?.originalData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
+      const originalDoc = formData?.documents?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
       const docType = dropDownData
         .filter((e) => e.code === originalDoc?.documentType)
         .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
@@ -240,6 +276,7 @@ function SelectDocument({
 
   if (filterCondition) {
     const { filterValue, jsonPath, onArray, arrayAttribute, formDataPath, formArrayAttrPath } = filterCondition;
+
     if (action === "create") {
       const value = formDataPath?.reduce((acc, key) => {
         if (key.charAt(0).toUpperCase() + key.slice(1) === "PropertyType") return acc["PropertyType"];
@@ -260,9 +297,9 @@ function SelectDocument({
     }
 
     if (action === "update") {
-      const a = fromRawData ? jsonPath : jsonPath?.split("Properties[0].propertyDetails[0].")[1];
+      const a = fromRawData ? jsonPath : jsonPath?.split("Properties?.[0]?.propertyDetails[0].")[1];
       const keyArr = a?.split(".")?.map((e) => (e.includes("[") ? e.split("[")[1]?.split("]")[0] : e));
-      const value = keyArr.reduce((acc, curr) => acc[curr], formData?.originalData);
+      const value = keyArr.reduce((acc, curr) => acc[curr], formData?.documents.documents);
       const formDataValue = formDataPath?.reduce((acc, key) => {
         if (key.charAt(0).toUpperCase() + key.slice(1) === "PropertyType") return acc["PropertyType"];
         return acc?.[key];
@@ -289,12 +326,12 @@ function SelectDocument({
       if (enabledActions?.[action].disableUpload) {
         if (onArray) {
           const keyForArr = parentArrayJsonPath?.split("Properties[0].propertyDetails[0].")[1].split(".");
-          const arr = keyForArr.reduce((acc, key) => acc[key], formData?.originalData);
+          const arr = keyForArr.reduce((acc, key) => acc[key], formData?.documents?.documents);
           const valueMap = arr.map((val) => parentJsonpath.split(".").reduce((acc, key) => acc[key], val));
           dropDownData = dropdownData.filter((e) => e.parentValue.some((val) => valueMap.includes(val)));
         } else {
           const keyForArr = parentJsonpath?.split("Properties[0].propertyDetails[0].")[1].split(".");
-          const value = keyForArr.reduce((acc, key) => acc[key], formData?.originalData);
+          const value = keyForArr.reduce((acc, key) => acc[key], formData?.documents?.documents);
           dropDownData = dropdownData.filter((e) => e.parentValue.includes(value));
         }
       } else {
@@ -321,15 +358,36 @@ function SelectDocument({
     dropDownData = dropDownData.filter((e) => e.code?.split(".")[2] === formData?.additionalDetails?.reasonForTransfer?.code);
   }
 
+  useEffect(() => {
+    if (!selectedDocument?.code) {
+      const existingDoc = documents?.find((item) => item.documentType === doc?.code);
+      if (existingDoc) {
+        const matchedDropdown = doc?.dropdownData?.find((d) => d.code === existingDoc.documentType);
+        if (matchedDropdown) {
+          setSelectedDocument({ ...matchedDropdown, i18nKey: matchedDropdown.code?.replaceAll(".", "_") });
+          setUploadedFile(existingDoc.fileStoreId);
+        }
+      }
+    }
+  }, [documents]);
+  console.log("Dropdown data", dropDownData);
+  console.log("doc code",doc?.code,(doc?.code).toUpperCase() !== "OWNER.CONSTRUCTIONPROOF")
   return (
-    <div style={{ marginBottom: "24px" }}>
-      {doc?.hasDropdown ? (
+    <div style={{ marginBottom: "24px" }}> 
+     {(doc?.hasDropdown )? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
+          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))} <span style={{ color: 'red' }}>*</span></CardLabel>
           <Dropdown
             className="form-field"
             selected={selectedDocument}
-            disable={dropDownData?.length === 0 || (propertyInitialValues?.documents && propertyInitialValues?.documents.length>0 && propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length>0? enabledActions?.[action].disableDropdown : false)}
+            disable={
+              dropDownData?.length === 0 ||
+              (propertyInitialValues?.documents &&
+              propertyInitialValues?.documents.length > 0 &&
+              propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length > 0
+                ? enabledActions?.[action].disableDropdown
+                : false)
+            }
             option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
             select={handleSelectDocument}
             optionKey="i18nKey"
@@ -337,6 +395,7 @@ function SelectDocument({
           />
         </LabelFieldPair>
       ) : null}
+        {(doc?.hasDropdown )? (
       <LabelFieldPair>
         <CardLabel className="card-label-smaller"></CardLabel>
         <div className="field">
@@ -349,12 +408,19 @@ function SelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            disabled={(propertyInitialValues?.documents && propertyInitialValues?.documents.length>0 && propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length>0? enabledActions?.[action].disableUpload : false) || !selectedDocument?.code}
+            disabled={
+              (propertyInitialValues?.documents &&
+              propertyInitialValues?.documents.length > 0 &&
+              propertyInitialValues?.documents.filter((document) => document.documentType.includes(doc?.code)).length > 0
+                ? enabledActions?.[action].disableUpload
+                : false) || !selectedDocument?.code
+            }
             buttonType="button"
             error={!uploadedFile}
           />
         </div>
       </LabelFieldPair>
+        ):null}
     </div>
   );
 }

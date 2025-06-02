@@ -49,11 +49,11 @@ const LocalizationStore = {
     const newModules = modules.filter((module) => !storedModules.includes(module));
     const messages = [];
     storedModules.forEach((module) => {
+      // messages.push(...LocalizationStore.getCaheData(LOCALE_MODULE(locale, module)));
       const moduleMessages = LocalizationStore.getCaheData(LOCALE_MODULE(locale, module));
       if (Array.isArray(moduleMessages)) {
         messages.push(...moduleMessages);
       }
-      // messages.push(...LocalizationStore.getCaheData(LOCALE_MODULE(locale, module)));
     });
     return [newModules, messages];
   },

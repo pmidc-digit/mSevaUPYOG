@@ -29,8 +29,19 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
     trigger,
     getValues,
   } = useForm();
-  const [selectedValue, setSelectedValue] = useState(formData?.yearOfCreation || "");
+  console.log("formdata in yoc",formData)
+  const [selectedValue, setSelectedValue] = useState(()=>{
+    if(window.location.href.includes("employee")){
+      return formData?.yearOfCreation || ""
+    }
+    else{
+      return formData?.yearOfCreation?.yearOfCreation || ""
+    }
+  });
   console.log("Our menu---", Menu);
+  const formValue = watch();
+  const { errors } = localFormState;
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   let proptype = [];
   proptype = Menu?.PropertyTax?.PropertyType;
   let i;
@@ -43,7 +54,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
 
   const onChange = (e) => {
     setSelectedValue(e);
-  }
+  }
   const { data: FinancialYearData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "egf-master", [{ name: "FinancialYear" }], {
     select: (data) => {
       const formattedData = data?.["egf-master"]?.["FinancialYear"];
@@ -54,22 +65,22 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
 
   let FinancialYearOptions = [];
   const currentYear = new Date().getFullYear();
-  const seenYears = new Set(); 
+  const seenYears = new Set();
   FinancialYearData &&
-  FinancialYearData.forEach((item) => {
-    const year = parseInt(item.name); // Assuming `item.name` contains the year as a string
-    if (year <= currentYear && !seenYears.has(year)) { // Check if the year is unique
-      seenYears.add(year); // Add the year to the Set
-      FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
-    }
-  })
+    FinancialYearData.forEach((item) => {
+      const year = parseInt(item.name); // Assuming `item.name` contains the year as a string
+      if (year <= currentYear && !seenYears.has(year)) { // Check if the year is unique
+        seenYears.add(year); // Add the year to the Set
+        FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
+      }
+    })
   FinancialYearOptions.sort((a, b) => parseInt(a.value) - parseInt(b.value));
   console.log("FinancialYearOptions", FinancialYearOptions);
-    // FinancialYearData.map((item) => {
-    //   FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
-    // });
+  // FinancialYearData.map((item) => {
+  //   FinancialYearOptions.push({ i18nKey: `${item.name}`, code: `${item.code}`, value: `${item.name}` });
+  // });
   function getPropertyTypeMenu(proptype) {
-    if (userType === "employee") {
+    if ( window.location.href.includes("employee")) {
       return proptype
         ?.filter((e) => e.code === "VACANT" || e.code.split(".").length > 1)
         ?.map((item) => ({ i18nKey: "COMMON_PROPTYPE_" + stringReplaceAll(item?.code, ".", "_"), code: item?.code }))
@@ -103,7 +114,7 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   }
 
   useEffect(() => {
-    if (presentInModifyApplication && userType === "employee" && Menu) {
+    if (presentInModifyApplication &&  window.location.href.includes("employee") && Menu) {
       const original = formData?.originalData?.propertyType;
       const defaultVal = getPropertyTypeMenu(proptype)?.filter((e) => e.code === original)[0];
       setBuildingType(defaultVal);
@@ -111,12 +122,37 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   }, [isLoading]);
 
   useEffect(() => {
-    if (userType === "employee") {
+    if ( window.location.href.includes("employee")) {
       goNext();
       if (!BuildingType) setError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
       else clearErrors(config.key);
     }
   }, [BuildingType]);
+
+   useEffect(() => {
+      if (window.location.href.includes("citizen")) {
+        let keys = Object.keys(formValue);
+        const part = {};
+        keys.forEach((key) => (part[key] = formData[config.key]?.[key]));
+        if (!_.isEqual(formValue, part)) onSelect(config.key, { ...formData[config.key], ...formValue });
+        for (let key in formValue) {
+          if (!formValue[key] && !localFormState?.errors[key]) {
+            setLocalError(key, { type: `${key.toUpperCase()}_REQUIRED`, message: t(`CORE_COMMON_REQUIRED_ERRMSG`) });
+          } else if (formValue[key] && localFormState.errors[key]) {
+            clearLocalErrors([key]);
+          }
+        }
+      }
+    }, [formValue]);
+  
+    useEffect(() => {
+      if (window.location.href.includes("citizen")) {
+        const errorsPresent = !!Object.keys(localFormState.errors).lengtha;
+        if (errorsPresent && !formState.errors?.[config.key]) setError(config.key, { type: "required" });
+        else if (!errorsPresent && formState.errors?.[config.key]) clearErrors(config.key);
+      }
+    }, [localFormState]);
+  
 
   const inputs = [
     {
@@ -130,50 +166,75 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
   if (isLoading) {
     return <Loader />;
   }
-
-  if (userType === "employee") {
+  console.log("localFormState",localFormState?.errors)
+  if ( window.location.href.includes("employee")) {
     return inputs?.map((input, index) => {
       return (
         <React.Fragment key={index}>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t(input.label) + " *"}</CardLabel>
-            {/* <Dropdown
-              className="form-field"
-              selected={BuildingType}
-              // disable={getPropertyTypeMenu(proptype)?.length === 1}
-              option={FinancialYearOptions}
-              select={selectBuildingType}
-              optionKey="i18nKey"
-              onBlur={onBlur}
-              t={t}
-            /> */}
-
-<Controller
-            name={config.key}
-            control={control}
-            defaultValue={selectedValue}
-            rules={{ required: t("REQUIRED_FIELD") }}
-            render={(props) => (
-              <Dropdown
-                className="form-field"
-                selected={selectedValue}
-                disable={false}
-                option={FinancialYearOptions}
-                errorStyle={localFormState.touched.tradeSubType && errors?.tradeSubType?.message ? true : false}
-                select={(e) => {
-                  props.onChange(e);
-                  onChange(e);
-                }}
-                optionKey="i18nKey"
-                onBlur={props.onBlur}  
-                t={t}
-              />
-            )}
-          />
+            <CardLabel className="card-label-smaller">{t(input.label)} {config.isMandatory && <span style={{ color: "red" }}>*</span>}</CardLabel>
+            <Controller
+              name={config.key}
+              control={control}
+              defaultValue={selectedValue}
+              rules={{ required: config.isMandatory ? t("REQUIRED_FIELD") : false }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={selectedValue}
+                  option={FinancialYearOptions}
+                  errorStyle={localFormState.touched.tradeSubType && errors?.tradeSubType?.message ? true : false}
+                  select={(e) => {
+                    props.onChange(e);
+                    onChange(e);
+                  }}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
           </LabelFieldPair>
           {formState.touched[config.key] ? (
             <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
               {formState.errors?.[config.key]?.message}
+            </CardLabelError>
+          ) : null}
+        </React.Fragment>
+      );
+    });
+  }
+  if ( window.location.href.includes("citizen")) {
+    return inputs?.map((input, index) => {
+      return (
+        <React.Fragment key={index}>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t(input.label)} {config.isMandatory && <span style={{ color: "red" }}>*</span>}</CardLabel>
+            <Controller
+              name={config.key}
+              control={control}
+              defaultValue={selectedValue}
+              rules={{ required: config.isMandatory ? t("REQUIRED_FIELD") : false }}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={selectedValue}
+                  option={FinancialYearOptions}
+                 // errorStyle={localFormState?.errors?.yearOfCreation && errors?.yearOfCreation?.message ? true : false}
+                  select={(e) => {
+                    props.onChange(e);
+                    onChange(e);
+                  }}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          {localFormState?.errors?.yearOfCreation ? (
+            <CardLabelError style={errorStyle}>
+              {errors?.["yearOfCreation"]?.message}
             </CardLabelError>
           ) : null}
         </React.Fragment>

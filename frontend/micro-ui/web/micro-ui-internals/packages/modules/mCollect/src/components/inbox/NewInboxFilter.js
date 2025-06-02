@@ -1,5 +1,15 @@
 import React, { useState } from "react";
-import { Dropdown, RadioButtons, ActionBar, RemoveableTag, CloseSvg, CheckBox, Localities, SubmitBar, RefreshSVG } from "@mseva/digit-ui-react-components";
+import {
+  Dropdown,
+  RadioButtons,
+  ActionBar,
+  RemoveableTag,
+  CloseSvg,
+  CheckBox,
+  Localities,
+  SubmitBar,
+  RefreshSVG,
+} from "@mseva/digit-ui-react-components";
 
 import { useTranslation } from "react-i18next";
 
@@ -8,11 +18,11 @@ import ServiceCategory from "./ServiceCategory";
 import _ from "lodash";
 import { stringReplaceAll } from "../../utils";
 
-const Filter = ({ searchParams, onFilterChange,onRefresh, defaultSearchParams, ...props }) => {
+const Filter = ({ searchParams, onFilterChange, onRefresh, defaultSearchParams, ...props }) => {
   const { t } = useTranslation();
 
   const [_searchParams, setSearchParams] = useState(() => searchParams);
-  const [ clearCheck, setclearCheck] = useState(false);
+  const [clearCheck, setclearCheck] = useState(false);
   const [selectedCategories, setselectedCategories] = useState([]);
 
   const localParamChange = (filterParam) => {
@@ -32,16 +42,16 @@ const Filter = ({ searchParams, onFilterChange,onRefresh, defaultSearchParams, .
   };
 
   const Refresh = () => {
-    onRefresh(defaultSearchParams,true);
+    onRefresh(defaultSearchParams, true);
     setclearCheck(true);
-  }
+  };
 
   return (
     <React.Fragment>
       <div className="filter">
         <div className="filter-card">
           <div className="heading" style={{ alignItems: "center" }}>
-            <div className="filter-label" style={{ display: "flex", alignItems: "center", marginTop:"auto"}}>
+            <div className="filter-label" style={{ display: "flex", alignItems: "center", marginTop: "auto" }}>
               <span>
                 <svg width="17" height="17" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
@@ -50,7 +60,7 @@ const Filter = ({ searchParams, onFilterChange,onRefresh, defaultSearchParams, .
                   />
                 </svg>
               </span>
-              <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("UC_FILTERS_LABEL")}:</span>
+              <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("COMMON_TABLE_FILTERS")}:</span>
             </div>
             <div className="clearAll" onClick={clearAll}>
               {t("ES_COMMON_CLEAR_ALL")}
@@ -67,14 +77,14 @@ const Filter = ({ searchParams, onFilterChange,onRefresh, defaultSearchParams, .
               </span>
             )}
             {props.type === "mobile" && (
-            <div>
-              <span onClick={props.Close}>
-                <CloseSvg />
-              </span>
-              <span className="clear-search" onClick={Refresh} style={{ border: "1px solid #e0e0e0", padding: "6px", marginTop:"5px" }}>
-                <RefreshSVG />
-              </span>
-            </div>
+              <div>
+                <span onClick={props.Close}>
+                  <CloseSvg />
+                </span>
+                <span className="clear-search" onClick={Refresh} style={{ border: "1px solid #e0e0e0", padding: "6px", marginTop: "5px" }}>
+                  <RefreshSVG />
+                </span>
+              </div>
             )}
           </div>
           <div>
@@ -103,13 +113,17 @@ const Filter = ({ searchParams, onFilterChange,onRefresh, defaultSearchParams, .
                   let filterParam = [];
                   let selectedCategory = [];
                   _searchParams["businessService"] = [];
-                  e && e.map((ob) => {
-                    filterParam.push(ob?.[1]?.code);
-                    selectedCategory.push({"code":ob?.[1]?.code, "i18nKey":`BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(ob?.[1]?.code,".","_").toUpperCase()}`});
-                  })
+                  e &&
+                    e.map((ob) => {
+                      filterParam.push(ob?.[1]?.code);
+                      selectedCategory.push({
+                        code: ob?.[1]?.code,
+                        i18nKey: `BILLINGSERVICE_BUSINESSSERVICE_${stringReplaceAll(ob?.[1]?.code, ".", "_").toUpperCase()}`,
+                      });
+                    });
                   let _new = { ..._searchParams, businessService: [...filterParam] };
-                  setSearchParams({..._new})
-                  setselectedCategories([...selectedCategory])
+                  setSearchParams({ ..._new });
+                  setselectedCategories([...selectedCategory]);
                   // if (e.target.checked) localParamChange({ businessService: [..._searchParams?.businessService, businessService?.code] });
                   // else localParamChange({ businessService: _searchParams?.businessService.filter((e) => e !== businessService?.code) });
                 }}

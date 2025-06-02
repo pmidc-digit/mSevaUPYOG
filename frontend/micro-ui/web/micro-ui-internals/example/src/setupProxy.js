@@ -88,6 +88,15 @@ module.exports = function (app) {
     "/chb-services/booking/v1/_update",
     "/chb-services/booking/v1/_slot-search",
     "/chb-services/booking/v1/_estimate",
+    "/asset-services/v1/assets/_create",
+    "/asset-services/v1/assets/_search",
+    "/asset-services/v1/assets/_update",
+    "/asset-services/v1/assets/assignment/_create",
+    "/asset-services/v1/assets/assignment/_update",
+    "/asset-services/v1/assets/_search",
+    "/asset-services/v1/assets/depreciation/_process",
+    "/asset-services/v1/assets/depreciation/list",
+    "/asset-services/v1/disposal/_create",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

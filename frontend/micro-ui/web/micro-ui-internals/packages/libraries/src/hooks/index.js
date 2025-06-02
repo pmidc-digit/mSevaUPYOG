@@ -323,6 +323,22 @@ import useChbHallCode from "./chb/useChbHallCode";
 import useChbSlotSearch from "./chb/useChbSlotSearch";
 import useDemandEstimation from "./chb/useDemandEstimation";
 
+// asset hooks here
+import useAssetClassification from "./asset/useAssetClassification";
+import useAssetType from "./asset/useAssetType";
+import useAssetDocumentsMDMS from "./asset/useAssetDocumentsMDMS";
+import useAssetSubType from "./asset/useAssetSubType";
+import useAssetdetail from "./asset/useAssetdetail";
+import useAssetCreateAPI from "./asset/useAssetCreateAPI";
+import useAssetApplicationDetail from "./asset/useAssetApplicationDetail";
+import useASSETSearch from "./asset/useASSETSearch";
+import useTenantsASSET from "./asset/useTenants";
+import useASSETApplicationAction from "./asset/useASSETApplicationAction";
+import useAssetparentSubType from "./asset/useAssetparentSubType";
+import useAssignCreateAPI from "./asset/useAssignCreateAPI";
+import useReturnAPI from "./asset/useReturnAPI";
+import useEditUpdateAPI from "./asset/useEditUpdateAPI";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -586,6 +602,23 @@ const chb = {
   useDemandEstimation,
 };
 
+const asset = {
+  useAssetClassification,
+  useAssetType,
+  useAssetDocumentsMDMS,
+  useAssetSubType,
+  useAssetdetail,
+  useAssetCreateAPI,
+  useAssetApplicationDetail,
+  useASSETApplicationAction,
+  useASSETSearch,
+  useAssetparentSubType,
+  useTenants: useTenantsASSET,
+  useAssignCreateAPI,
+  useReturnAPI,
+  useEditUpdateAPI,
+};
+
 const survey = {
   useCreate: useSurveyCreate,
   useUpdate: useSurveyUpdate,
@@ -719,6 +752,7 @@ const Hooks = {
   sv,
   ads,
   chb,
+  asset,
 };
 
 export default Hooks;

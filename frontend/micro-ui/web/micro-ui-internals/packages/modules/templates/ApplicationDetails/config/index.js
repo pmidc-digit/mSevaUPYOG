@@ -15,6 +15,7 @@ import { configPTRApproverApplication } from "./PTRApproverApplication";
 import { configSVApproverApplication } from "./SVApproverApplication";
 import { configTLDirectRenewApplication } from "./TLDirectRenewApplication";
 import { configCHBApproverApplication } from "./CHBApproverApplication";
+import { configASSETApproverApplication } from "./ASSETApproverApplication";
 
 export {
   configAssignDso,
@@ -34,4 +35,5 @@ export {
   configSVApproverApplication,
   configTLDirectRenewApplication,
   configCHBApproverApplication,
+  configASSETApproverApplication,
 };

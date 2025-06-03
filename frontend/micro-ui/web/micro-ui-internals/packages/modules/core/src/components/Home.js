@@ -88,6 +88,8 @@ const iconSelector = (code) => {
       return <PTRIcon className="fill-path-primary-main" />;
     case "CHB":
       return <PTRIcon className="fill-path-primary-main" />;
+    case "ASSET":
+      return <PTRIcon className="fill-path-primary-main" />;
     default:
       return <PTIcon className="fill-path-primary-main" />;
   }

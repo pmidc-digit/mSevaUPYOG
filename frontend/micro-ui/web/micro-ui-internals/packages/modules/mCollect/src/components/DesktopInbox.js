@@ -7,9 +7,9 @@ import ApplicationTable from "./inbox/ApplicationTable";
 import InboxLinks from "./inbox/InboxLink";
 import SearchApplication from "./inbox/search";
 
-
 const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
   const { data } = props;
+  console.log("data", data);
   const { t } = useTranslation();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
 
@@ -45,7 +45,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
   const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
   const inboxColumns = () => [
     {
-      Header: t("UC_CHALLAN_NUMBER"),
+      Header: t("UC_CHALLAN_NO"),
       Cell: ({ row }) => {
         return (
           <div>
@@ -74,14 +74,14 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       mobileCell: (original) => GetMobCell(`BILLINGSERVICE_BUSINESSSERVICE_${original?.["businessService"]}`),
     },
     {
-      Header: t("UC_RECIEPT_NUMBER_LABEL"),
+      Header: t("UC_RECEPIT_NO_LABEL"),
       Cell: ({ row }) => {
         return row.original?.["receiptNumber"] ? GetCell(`${row.original?.["receiptNumber"]}`) : "-";
       },
       mobileCell: (original) => GetMobCell(original?.["receiptNumber"]) || "-",
     },
     {
-      Header: t("UC_DUE_DATE"),
+      Header: t("WS_COMMON_TABLE_COL_DUE_DATE_LABEL"),
       Cell: ({ row }) => {
         const dueDate = row.original?.dueDate === "NA" ? t("CS_NA") : convertEpochToDate(row.original?.dueDate);
         return GetCell(t(`${dueDate}`));
@@ -89,7 +89,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       mobileCell: (original) => GetMobCell(convertEpochToDate(original?.["dueDate"])),
     },
     {
-      Header: t("UC_TOTAL_AMOUNT"),
+      Header: t("UC_COMMON_TOTAL_AMT"),
       Cell: ({ row }) => {
         return GetCell(t(`${row.original?.totalAmount}`));
       },
@@ -104,7 +104,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
       mobileCell: (original) => GetMobCell(original?.workflowData?.state?.["state"]),
     },
     {
-      Header: t("UC_TABLE_COL_ACTION"),
+      Header: t("WS_COMMON_TABLE_COL_ACTION"),
       Cell: ({ row }) => {
         const amount = row.original?.totalAmount;
         let action = "ACTIVE";
@@ -187,7 +187,7 @@ const DesktopInbox = ({ tableConfig, filterComponent, columns, ...props }) => {
   }
 
   return (
-    <div className="inbox-container" style={{overflow: "auto"}}>
+    <div className="inbox-container" style={{ overflow: "auto" }}>
       {!props.isSearch && (
         <div className="filters-container">
           <InboxLinks parentRoute={props.parentRoute} businessService={props.businessService} />

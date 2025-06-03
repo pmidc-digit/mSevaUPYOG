@@ -54,8 +54,8 @@ export const FormComposer = (props) => {
       case "component":
         {
           
-          if(props?.config?.[1]?.body?.[2]?.isProperty)
-          {
+          // if(props?.config?.[1]?.body?.[2]?.isProperty)
+          // {
             return (
               <Controller
                 render={(props) => (
@@ -80,7 +80,7 @@ export const FormComposer = (props) => {
                 control={control}
               />
             );
-          }
+          //}
         }
        
 

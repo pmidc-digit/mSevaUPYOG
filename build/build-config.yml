@@ -23,7 +23,7 @@ config:
       - work-dir: "m-sewa/"
         image-name: "maintain"
         dockerfile: "m-sewa/Dockerfile"
- # Business Services
+ # Business Services       
   - name: "builds/upyog/business-services/billing-service"
     build:
       - work-dir: "business-services/billing-service"
@@ -268,6 +268,14 @@ config:
       - work-dir: "core-services/egov-survey-services/src/main/resources/db"
         image-name: "egov-survey-services-db"
 
+  - name: "builds/upyog/municipal-services/ndc-services"
+    build:
+      - work-dir: "municipal-services/ndc-services"
+        image-name: "ndc-services"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "municipal-services/ndc-services/src/main/resources/db"
+        image-name: "ndc-services-db"
+  
   - name: "builds/upyog/core-services/service-request"
     build:
       - work-dir: "core-services/service-request"
@@ -280,14 +288,14 @@ config:
     build:
       - work-dir: "core-services/report"
         image-name: "report"
-        dockerfile: "build/maven/Dockerfile"
-
+        dockerfile: "build/maven/Dockerfile"  
+        
   - name: "builds/upyog/core-services/report-v2"
     build:
       - work-dir: "core-services/report-v2"
         image-name: "report-v2"
-        dockerfile: "build/maven/Dockerfile"
-
+        dockerfile: "build/maven/Dockerfile"  
+        
   - name: "builds/upyog/core-services/tenant"
     build:
       - work-dir: "core-services/tenant"
@@ -320,7 +328,7 @@ config:
         image-name: "egov-user-event"
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/egov-user-event/src/main/resources/db"
-        image-name: "egov-user-event-db"
+        image-name: "egov-user-event-db"       
 
   - name: "builds/upyog/core-services/pdf-service"
     build:
@@ -382,7 +390,7 @@ config:
     build:
       - work-dir: "core-services/libraries/mdms-client"
         image-name: "mdms-client"
-
+  
   - name: "builds/upyog/core-services/libraries/services-common"
     build:
       - work-dir: "core-services/libraries/services-common"
@@ -408,13 +416,13 @@ config:
       - work-dir: "core-services/nlp-engine"
         image-name: "nlp-engine"
         dockerfile: "core-services/nlp-engine/Dockerfile"
-
+  
   - name: "builds/upyog/core-services/nlp-engine"
     build:
       - work-dir: "core-services/nlp-engine"
         image-name: "nlp-engine"
         dockerfile: "core-services/nlp-engine/Dockerfile"
-
+  
   - name: "builds/upyog/core-services/xstate-chatbot"
     build:
       - work-dir: "core-services/xstate-chatbot/nodejs"
@@ -429,7 +437,7 @@ config:
       - work-dir: "core-services/xstate-webchat/nodejs/db"
         image-name: "xstate-webchat-db"
 
-
+        
   - name: "builds/upyog/core-services/xstate-webchat"
     build:
       - work-dir: "core-services/xstate-webchat/nodejs"
@@ -485,7 +493,7 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/pgr-services/src/main/resources/db"
         image-name: "pgr-services-db"
-
+  
   - name: "builds/upyog/municipal-services/swach-services"
     build:
       - work-dir: "municipal-services/swach-services"
@@ -741,7 +749,7 @@ config:
         dockerfile: "build/maven/Dockerfile"
         
 # Frontend
-
+     
   - name: builds/upyog/frontend/mono-ui/citizen
     build:
       - work-dir: frontend/mono-ui/web/rainmaker/
@@ -841,7 +849,7 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/pet-services/src/main/resources/db"
         image-name: "pet-services-db"        
-
+  
   - name: "builds/upyog/municipal-services/chb-services"
     build:
       - work-dir: "municipal-services/community-hall-booking"
@@ -856,7 +864,7 @@ config:
         image-name: "adv-services"
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/advertisement-service/src/main/resources/db"
-        image-name: "adv-services-db"
+        image-name: "adv-services-db"  
 
   - name: "builds/upyog/municipal-services/asset-services"
     build:
@@ -870,18 +878,18 @@ config:
     build:
       - work-dir: "municipal-services/asset-calculator"
         image-name: "asset-calculator"
-        dockerfile: "build/maven/Dockerfile"
+        dockerfile: "build/maven/Dockerfile"  
       - work-dir: "municipal-services/asset-calculator/src/main/resources/db"
-        image-name: "asset-calculator-db"
-
+        image-name: "asset-calculator-db"      
+  
   - name: "builds/upyog/municipal-services/pet-services"
     build:
       - work-dir: "municipal-services/pet-services"
         image-name: "pet-services"
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/pet-services/src/main/resources/db"
-        image-name: "pet-services-db"
-
+        image-name: "pet-services-db"  
+   
   - name: "builds/upyog/municipal-services/sv-services"
     build:
       - work-dir: "municipal-services/street-vending"
@@ -889,4 +897,4 @@ config:
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
-
+        

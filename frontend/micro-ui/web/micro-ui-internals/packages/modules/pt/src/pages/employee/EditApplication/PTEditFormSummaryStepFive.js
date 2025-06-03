@@ -2,7 +2,7 @@ import React,{useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
 import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
-import { UPDATE_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
+import { UPDATE_PtNewApplication, RESET_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
 
 const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -13,18 +13,35 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const goNext = async (data) => {
     console.log("Full form data submitted: ", formData);
     // onSubmit(formData); // Call the onSubmit function with the form data
-    const res = await onSubmit(formData); // wait for the API response
-    console.log("API response: ", res);
+    // const res = await onSubmit(formData); // wait for the API response
+    // console.log("API response: ", res);
 
-    // Check if the API call was successful
-    if (res) {
-      console.log("Submission successful, moving to next step.");
-      onGoNext();
-    } else {
-      console.error("Submission failed, not moving to next step.", res);
-    }
+    // // Check if the API call was successful
+    // if (res) {
+    //   console.log("Submission successful, moving to next step.");
+    //   onGoNext();
+    // } else {
+    //   console.error("Submission failed, not moving to next step.", res);
+    // }
 
-    onGoNext();
+    try {const res = await onSubmit(formData); // wait for the API response
+      console.log("API response: ", res);
+  
+      // Check if the API call was successful
+      if (res.isSuccess) {
+        console.log("Submission successful, moving to next step.", res.response);
+        const applicationNumber = res?.response?.Properties?.[0]?.acknowldgementNumber;
+        dispatch(RESET_PtNewApplication());
+        history.replace(`/digit-ui/employee/pt/property/response/${applicationNumber}`);
+        // onGoNext();
+      } else {
+        console.error("Submission failed, not moving to next step.", res.response);
+      }}catch(error){
+          alert(`Error: ${error.message}`);
+          console.error("Submission failed, not moving to next step.", error);
+      }
+
+    // onGoNext();
   };
 
   const onGoBack = (data) => {
@@ -95,9 +112,10 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
             name: owner?.name,
             mobileNumber: owner?.mobileNumber,
             emailId: owner?.emailId,
-            correspondenceAddress: owner?.correspondenceAddress,
-            isCorrespondenceAddress: owner?.isCorrespondenceAddress || false,
+            correspondenceAddress: owner?.correspondenceAddress || null,
+            isCorrespondenceAddress: owner?.isSamePropAddress || false,
             ownerType: owner?.ownerType?.code,
+            ownerShipPercentage: owner?.ownershipPercentage || null,
           };
   
           if (isIndividual) {

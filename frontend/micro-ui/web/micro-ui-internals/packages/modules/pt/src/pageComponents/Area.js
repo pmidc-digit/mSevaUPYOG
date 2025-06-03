@@ -171,7 +171,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
     //     onSelect(config.key, undefined);
     //   }
     // }, [formData]);
-    console.log("formData: ", formData);
+    // console.log("formData: ", formData);
     // console.log("config",config);
     return inputs?.map((input, index) => {
       if(formData?.usageCategoryMajor && formData?.PropertyType?.code === "VACANT"){

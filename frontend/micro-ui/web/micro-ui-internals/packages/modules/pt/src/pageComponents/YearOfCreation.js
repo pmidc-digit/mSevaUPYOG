@@ -34,6 +34,9 @@ const YearOfCreation = ({ t, config, onSelect, userType, formData, setError, cle
     if(window.location.href.includes("employee")){
       return formData?.yearOfCreation || ""
     }
+    else if(window.location.href.includes("citizen") && window.location.href.includes("edit-application")){
+      return formData?.yearOfCreation || ""
+    }
     else{
       return formData?.yearOfCreation?.yearOfCreation || ""
     }

@@ -84,7 +84,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
   }
 
   useEffect(() => {
-    if (!menuLoading && presentInModifyApplication && isUserEmployee) {
+    if (!menuLoading && presentInModifyApplication) {
       const original = formData?.usageCategoryMajor?.code;
       const selectedOption = usageCategoryMajorMenu(usagecat).filter((e) => e.code === original)[0];
       console.log("EmployeeSideEditProperty orignal", formData?.usageCategoryMajor)

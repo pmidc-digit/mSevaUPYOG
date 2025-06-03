@@ -133,6 +133,12 @@ import {PTNewFormStepThree as PTNewFormStepThreeCitizen} from "./pages/citizen/C
 import {PTNewFormStepFour as PTNewFormStepFourCitizen} from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepFour";
 import {PTNewFormSummaryStepFive as PTNewFormSummaryStepFiveCitizen} from "../src/pages/citizen/Create/NewApplicationStepForm/PTNewFormSummaryStepFive";
 
+import CitizenEditPropertyStepForm from "./pages/citizen/EditProperty/CitizenEditPropertyStepForm";
+import CitizenPTEditFormStepOne from "./pages/citizen/EditProperty/CitizenPTEditFormStepOne";
+import CitizenPTEditFormStepTwo from "./pages/citizen/EditProperty/CitizenPTEditFormStepTwo";
+import CitizenPTEditFormStepThree from "./pages/citizen/EditProperty/CitizenPTEditFormStepThree";
+import CitizenPTEditFormStepFour from "./pages/citizen/EditProperty/CitizenPTEditFormStepFour";
+import CitizenPTEditFormSummaryStepFive from "./pages/citizen/EditProperty/CitizenPTEditFormSummaryStepFive"
 
 export const PTReducers = getRootReducer;
 
@@ -257,7 +263,13 @@ const componentsToRegister = {
   PropertyDetailsCitizen,
   PropertyApplicationDetails,
   PTResponseCitizen,
-  PTResponseEmployee
+  PTResponseEmployee,
+  CitizenEditPropertyStepForm,
+  CitizenPTEditFormStepOne,
+  CitizenPTEditFormStepTwo,
+  CitizenPTEditFormStepThree,
+  CitizenPTEditFormStepFour,
+  CitizenPTEditFormSummaryStepFive
   
 };
 

@@ -109,9 +109,10 @@ const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
           name: owner?.name,
           mobileNumber: owner?.mobileNumber,
           emailId: owner?.emailId,
-          correspondenceAddress: owner?.correspondenceAddress,
-          isCorrespondenceAddress: owner?.isCorrespondenceAddress || false,
+          correspondenceAddress: owner?.correspondenceAddress || null,
+          isCorrespondenceAddress: owner?.isSamePropAddress || false,
           ownerType: owner?.ownerType?.code,
+          ownerShipPercentage: owner?.ownershipPercentage || null,
         };
 
         if (isIndividual) {

@@ -24,8 +24,11 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
   // }
   if (window.location.href.includes("employee")) {
     [businessName, setBusinessName] = useState(formData?.businessName || "");
-  } else {
-    [businessName, setBusinessName] = useState(formData?.businessName?.bussinessName || "");
+  }else if( window.location.href.includes("citizen") && window.location.href.includes("edit-application")) {
+    [businessName, setBusinessName] = useState(formData?.businessName || "");
+  }
+   else {
+    [businessName, setBusinessName] = useState(formData?.businessName?.businessName || "");
   }
   const formValue = watch();
   console.log("businessName",businessName)
@@ -39,6 +42,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
   }, [businessName])
 
   const handleBusinessNameChange = (value) => {
+    console.log("valuehandleBusinessNameChange", value)
     setBusinessName(value);
     onSelect(config.key, { ...formData[config.key], businessName: value })
     validateBusinessName();
@@ -155,13 +159,13 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
               <Controller
                 control={control}
                 defaultValue={businessName}
-                name="bussinessName"
+                name="businessName"
                 rules={{
                   // required: config.isMandatory && t("Business Name is required"),
                 }}
                 render={(_props) => (
                   <TextInput
-                    id="bussinessName"
+                    id="businessName"
                     value={businessName}
                     onChange={(e) => {
                       handleBusinessNameChange(e.target.value);
@@ -209,13 +213,13 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
               <Controller
                 control={control}
                 defaultValue={businessName}
-                name="bussinessName"
+                name="businessName"
                 rules={{
                   // required: config.isMandatory && t("Business Name is required"),
                 }}
                 render={(_props) => (
                   <TextInput
-                    id="bussinessName"
+                    id="businessName"
                     value={businessName}
                     onChange={(e) => {
                       handleBusinessNameChange(e.target.value);

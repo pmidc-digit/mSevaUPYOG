@@ -9,7 +9,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   const allCities = Digit.Hooks.pt.useTenants();
   let tenantId = Digit.ULBService.getCurrentTenantId();
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("modify");
+  const presentInModifyApplication = pathname.includes("edit");
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
@@ -17,6 +17,7 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
 console.log("usertype",window.location.href.includes("employee"))
+console.log("usertypeMANASA",formData?.address?.locality )
   let isEditProperty = formData?.isEditProperty || false;
   if (presentInModifyApplication) isEditProperty = true;
   if (formData?.isUpdateProperty) isEditProperty = true;
@@ -89,6 +90,16 @@ const fetchLocality=()=>{
       setValue("locality", _locality);
     }
   }, [localities]);
+
+  // useEffect(() => {
+  //   if(window.location.href.includes("citizen") && presentInModifyApplication){
+  //     console.log("coming here citizen", formData?.address?.locality);
+      
+  //     setSelectedLocality(formData?.address?.locality);
+  //   }
+  // }, [formData?.address?.locality]);
+
+  console.log("formData in PTSelectAddress", selectedLocality);
 
 
 -
@@ -324,7 +335,7 @@ const fetchLocality=()=>{
               <Dropdown
                 className="form-field"
                 selected={props.value}
-                disable={false}
+                // disable={false}
                 option={cities}
                 select={(val)=>{
                   selectCity(val)
@@ -332,6 +343,7 @@ const fetchLocality=()=>{
                 }}
                 optionKey="i18nKey"
                 onBlur={props.onBlur}
+                disable={isEditProperty ? isEditProperty : false}
                 t={t}
               />
             )}
@@ -350,18 +362,17 @@ const fetchLocality=()=>{
             render={(props) => (
               <Dropdown
                 className="form-field"
-                selected={props.value}
+                selected={selectedLocality || props.value}
                 option={localities}
                 select={(e) => {
                   props.onChange(e);
                   selectLocality(e); // to keep your external state also in sync
-                  // fetchLocality()
                 }}
                 // select={props.onChange}
                 onBlur={props.onBlur}
                 optionKey="i18nkey"
                 t={t}
-                disable={false}
+                disable={isEditProperty ? isEditProperty : false}
                 isRequired={true}
               />
             )}

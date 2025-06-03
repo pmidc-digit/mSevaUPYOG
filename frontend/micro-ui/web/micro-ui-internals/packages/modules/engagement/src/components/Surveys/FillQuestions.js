@@ -37,7 +37,7 @@ const FillQuestions = (props) => {
   const prevProps = props.location.state;
   // let isgeoLoc = false
   const [hasCitizenDetails, setHasCitizenDetails] = useState(null);
-
+  console.log("city",localStorage.getItem("CITIZEN.CITY"))
   // let { data: tenantlocalties, isLoadingLocality } = Digit.Hooks.useBoundaryLocalities(city, "revenue", { enabled: !!city }, t);
   useEffect(() => {
     (async () => {
@@ -611,7 +611,9 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: city,
+        //tenantId: city,
+        tenantId: city===null? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:localStorage.getItem("CITIZEN.CITY"): city,
+        city:city===null? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:localStorage.getItem("CITIZEN.CITY"): city,
         locality: locality,
         // tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
         status: "Draft",
@@ -696,8 +698,10 @@ const FillQuestions = (props) => {
           questionUuid: questionId,
           sectionUuid: sectionId,
           comments: formData[sectionId][questionId]?.comments || "",
-          tenantId: localStorage.getItem("CITIZEN.CITY"),
-          // answer: [formData[sectionId][questionId].answer],
+         // tenantId: localStorage.getItem("CITIZEN.CITY"),
+           tenantId: window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code : localStorage.getItem("CITIZEN.CITY"),
+        
+           // answer: [formData[sectionId][questionId].answer],
           answerDetails: [
             {
               answerType: formData[sectionId][questionId].answerType,
@@ -724,10 +728,12 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: city,
+       // tenantId: city,
         status: "Submit",
         locality: locality,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
+        tenantId: city===null? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:localStorage.getItem("CITIZEN.CITY"): city,
+         city:city===null? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:localStorage.getItem("CITIZEN.CITY"): city,
         // tenantId: localStorage.getItem("CITIZEN.CITY"),
         answers: answerArr,
       },
@@ -1436,7 +1442,7 @@ const FillQuestions = (props) => {
       }
     }
   }, [getFetchAnswers]);
-
+  console.log("city",city)
   const handleLocalityChangeCitizen = (e) => {
     setLocality(e.target.value);
   };

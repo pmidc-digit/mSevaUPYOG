@@ -20,152 +20,95 @@ const Inbox = ({
   middlewareSearch,
 }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-
-  let isMcollectAppChanged = Digit.SessionStorage.get("isMcollectAppChanged");
   const { t } = useTranslation();
   const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
   const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
   const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: false }]);
-  const { isLoading, isError: isCountError, error: counterror, data: countData } = Digit.Hooks.mcollect.useMCollectCount(tenantId);
-
-  const [searchParams, setSearchParams] = useState(() => {
-    return initialStates.searchParams || {};
-  });
-
+  const { isLoading, data: countData } = Digit.Hooks.mcollect.useMCollectCount(tenantId);
+  const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
   const [businessIdToOwnerMappings, setBusinessIdToOwnerMappings] = useState({});
-  const [isLoader, setIsLoader] = useState(true);
+  const [isLoader, setIsLoader] = useState(false);
 
-  let isMobile = window.Digit.Utils.browser.isMobile();
-  let paginationParams = isMobile
+  const isMobile = window.Digit.Utils.browser.isMobile();
+  const paginationParams = isMobile
     ? { limit: 100, offset: 0, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
     : { limit: pageSize, offset: pageOffset, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
-  // const { isLoading: hookLoading, searchResponseKey, data, ...rest } = Digit.Hooks.useInboxMCollect({
-  //   tenantId,
-  //   businessService,
-  //   isInbox,
-  //   filters: { ...searchParams, ...paginationParams, sortParams },
-  //   rawWfHandler,
-  //   rawSearchHandler,
-  //   combineResponse,
-  //   wfConfig,
-  //   searchConfig,
-  //   middlewaresWf,
-  //   middlewareSearch,
-  // });
 
-  const { isLoading: hookLoading, isError, error, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
+  const isMcollectAppChanged = Digit.SessionStorage.get("isMcollectAppChanged");
+
+  const { isLoading: hookLoading, data, ...rest } = Digit.Hooks.mcollect.useMCollectSearch({
     tenantId,
     filters: { ...searchParams, ...paginationParams },
     isMcollectAppChanged,
   });
 
-  useEffect(() => {
-    if (!hookLoading && !data?.challans?.length > 0) setIsLoader(false);
-    // if (!hookLoading && data?.challans?.length > 0) setIsLoader(false);
-    else if (hookLoading || data?.challans?.length) setIsLoader(true);
-  }, [hookLoading, data]);
-  let formedData = [];
-  let res;
-  let businessIdToOwnerMapping = {};
+  // useEffect(() => {
+  //   if (!hookLoading && !data?.challans?.length) setIsLoader(false);
+  //   else if (hookLoading || data?.challans?.length) setIsLoader(true);
+  // }, [hookLoading, data]);
 
   useEffect(() => {
-    async function fetchMyAPI() {
-      let businessIds = [];
+    async function fetchBills() {
       let businessServiceMap = {};
-      let challanNumbers = [];
-      let challanNums = [];
 
       data?.challans?.forEach((item) => {
-        challanNums = businessServiceMap[item.businessService] || [];
-        challanNumbers = challanNums;
-        //adding this new condition untill this ADVT.canopy_Fee business service records comes successful from api (cureently geeting 400 bad request)
         if (item.businessService !== "ADVT.Canopy_Fee") {
-          challanNums.push(item.challanNo);
-          businessServiceMap[item.businessService] = challanNums;
+          if (!businessServiceMap[item.businessService]) businessServiceMap[item.businessService] = [];
+          businessServiceMap[item.businessService].push(item.challanNo);
         }
       });
+
       let processInstanceArray = [];
-
-      for (var key in businessServiceMap) {
-        let consumerCodes = businessServiceMap[key].toString();
-
-        res = await Digit.PaymentService.fetchBill(tenantId, { consumerCode: consumerCodes, businessService: key });
-        processInstanceArray = processInstanceArray.concat(res.Bill);
-        businessIdToOwnerMapping = {};
-        processInstanceArray
-          .filter((record) => record?.businessService)
-          .forEach((item) => {
-            businessIdToOwnerMapping[item?.consumerCode] = {
-              businessService: item?.businessService,
-              // totalAmount: item.totalAmount || 0,
-              otalAmount: item?.billDetails[0]?.totalAmount || 0,
-              dueDate: item?.billDetails[0]?.expiryDate,
-              //dueDate: item?.expiryDate,
-            };
-          });
+      for (let key in businessServiceMap) {
+        const consumerCodes = businessServiceMap[key].join(",");
+        const res = await Digit.PaymentService.fetchBill(tenantId, { consumerCode: consumerCodes, businessService: key });
+        processInstanceArray = [...processInstanceArray, ...(res?.Bill || [])];
       }
 
+      const mapping = {};
+      processInstanceArray.forEach((item) => {
+        mapping[item?.consumerCode] = {
+          businessService: item?.businessService,
+          totalAmount: item?.billDetails?.[0]?.totalAmount || 0,
+          dueDate: item?.billDetails?.[0]?.expiryDate,
+        };
+      });
+
+      setBusinessIdToOwnerMappings(mapping);
       setIsLoader(false);
-      setBusinessIdToOwnerMappings(businessIdToOwnerMapping);
     }
-    if (data?.challans && data?.challans?.length > 0) {
-      setIsLoader(true);
-      fetchMyAPI();
+
+    if (data?.challans?.length > 0) {
+      fetchBills();
     }
   }, [data]);
 
-  data?.challans?.map((data) => {
-    formedData.push({
-      challanNo: data?.challanNo,
-      name: data?.citizen?.name,
-      applicationStatus: data?.applicationStatus,
-      businessService: data?.businessService,
-      totalAmount: businessIdToOwnerMappings[data.challanNo]?.totalAmount || 0,
-      dueDate: businessIdToOwnerMappings[data.challanNo]?.dueDate || "NA",
-      tenantId: data?.tenantId,
-      receiptNumber: data?.receiptNumber,
-    });
-  });
+  const formedData = (data?.challans || []).map((item) => ({
+    challanNo: item?.challanNo,
+    name: item?.citizen?.name,
+    applicationStatus: item?.applicationStatus,
+    businessService: item?.businessService,
+    totalAmount: businessIdToOwnerMappings[item.challanNo]?.totalAmount || 0,
+    dueDate: businessIdToOwnerMappings[item.challanNo]?.dueDate || "NA",
+    tenantId: item?.tenantId,
+    receiptNumber: item?.receiptNumber,
+  }));
 
   useEffect(() => {
     setPageOffset(0);
   }, [searchParams]);
 
-  const fetchNextPage = () => {
-    setPageOffset((prevState) => prevState + pageSize);
-  };
-
-  const fetchPrevPage = () => {
-    setPageOffset((prevState) => prevState - pageSize);
-  };
-
-  const fetchLastPage = () => {
-    setPageOffset(data?.totalCount && Math.ceil(data?.totalCount / 10) * 10 - pageSize);
-  };
-
-  const fetchFirstPage = () => {
-    setPageOffset((prevState) => 0);
-  };
+  const fetchNextPage = () => setPageOffset((prev) => prev + pageSize);
+  const fetchPrevPage = () => setPageOffset((prev) => prev - pageSize);
+  const fetchLastPage = () => setPageOffset(data?.totalCount ? Math.ceil(data.totalCount / 10) * 10 - pageSize : 0);
+  const fetchFirstPage = () => setPageOffset(0);
 
   const handleFilterChange = (filterParam) => {
     let keys_to_delete = filterParam.delete;
-    let _new = {};
-    if (isMobile) {
-      _new = { ...filterParam };
-      // setSearchParams({
-      //   businessService: [],
-      //   status: []
-      // })
-    } else {
-      _new = { ...searchParams, ...filterParam };
-    }
-    // let _new = { ...searchParams, ...filterParam };
-    // if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
-    // delete filterParam.delete;
+    let _new = isMobile ? { ...filterParam } : { ...searchParams, ...filterParam };
     if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
     delete _new.delete;
-    delete filterParam.delete;
-    setSearchParams({ ..._new });
+    setSearchParams(_new);
   };
 
   const handleSort = useCallback((args) => {
@@ -173,30 +116,20 @@ const Inbox = ({
     setSortParams(args);
   }, []);
 
-  const handlePageSizeChange = (e) => {
-    setPageSize(Number(e.target.value));
-  };
+  const handlePageSizeChange = (e) => setPageSize(Number(e.target.value));
 
-  const getSearchFields = () => {
-    return [
-      {
-        label: t("UC_CHALLAN_NUMBER"),
-        name: "challanNo",
-      },
-      {
-        label: t("UC_MOBILE_NUMBER_LABEL"),
-        name: "mobileNumber",
-        maxlength: 10,
-        pattern: "[6-9][0-9]{9}",
-        title: t("ES_SEARCH_APPLICATION_MOBILE_INVALID"),
-        componentInFront: "+91",
-      },
-      {
-        label: t("UC_RECIEPT_NUMBER_LABEL"),
-        name: "receiptNumber",
-      },
-    ];
-  };
+  const getSearchFields = () => [
+    { label: t("UC_CHALLAN_NO"), name: "challanNo" },
+    {
+      label: t("UC_MOBILE_NO_LABEL"),
+      name: "mobileNumber",
+      maxlength: 10,
+      pattern: "[6-9][0-9]{9}",
+      title: t("ES_SEARCH_APPLICATION_MOBILE_INVALID"),
+      componentInFront: "+91",
+    },
+    { label: t("UC_RECEPIT_NO_LABEL"), name: "receiptNumber" },
+  ];
 
   if (rest?.data?.length !== null) {
     if (isMobile) {
@@ -213,16 +146,14 @@ const Inbox = ({
           parentRoute={parentRoute}
           searchParams={searchParams}
           sortParams={sortParams}
-          //linkPrefix={`${parentRoute}/application-details/`}
           tableConfig={rest?.tableConfig}
           filterComponent={filterComponent}
         />
-        // <div></div>
       );
     } else {
       return (
         <div>
-          {isInbox && <Header>{t("UC_SEARCH_MCOLLECT_HEADER")}</Header>}
+          {isInbox && <Header>{t("ACTION_TEST_NATIONAL_MCOLLECT")}</Header>}
           <DesktopInbox
             businessService={businessService}
             data={formedData}
@@ -253,6 +184,8 @@ const Inbox = ({
       );
     }
   }
+
+  return null;
 };
 
 export default Inbox;

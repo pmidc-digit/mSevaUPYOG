@@ -29,11 +29,12 @@ import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
 import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
 import { CHBModule, CHBLinks, CHBComponents } from "@mseva/upyog-ui-module-chb";
+import { ASSETComponents, ASSETLinks, ASSETModule } from "@mseva/upyog-ui-module-asset";
 
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@mseva/digit-ui-module-pgr";
 // import { Body, TopBar } from "@mseva/digit-ui-react-components";
-//import "@upyog-niua/upyog-css/example/index.css";
+//import "@mseva-niua/upyog-css/example/index.css";
 import "@pmidc/upyog-css";
 // import * as comps from "@mseva/digit-ui-react-components";
 
@@ -70,6 +71,7 @@ const enabledModules = [
   "Swach",
   "SV",
   "CHB",
+  "ASSET",
 ];
 
 const initTokens = (stateCode) => {
@@ -128,6 +130,9 @@ const initDigitUI = () => {
     CHBModule,
     CHBLinks,
     ...CHBComponents,
+    ASSETModule,
+    ASSETLinks,
+    ...ASSETComponents,
   });
   initFSMComponents();
   initPGRComponents();

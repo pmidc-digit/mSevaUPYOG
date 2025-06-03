@@ -7,6 +7,8 @@ import { getSearchFields } from "./searchFields";
 import { InboxGeneral } from "../../services/elements/InboxService";
 import { SVService } from "../../services/elements/SV";
 import { CHBServices } from "../../services/elements/CHB";
+import { ASSETService } from "../../services/elements/ASSET";
+import { PTRService } from "../../services/elements/PTR";
 
 const inboxConfig = (tenantId, filters) => ({
   PT: {
@@ -49,6 +51,14 @@ const inboxConfig = (tenantId, filters) => ({
     businessIdAliasForSearch: "bookingNo",
     fetchFilters: filterFunctions.CHB,
     _searchFn: () => CHBServices.search({ tenantId, filters }),
+  },
+  ASSET: {
+    services: ["asset-create"],
+    searchResponseKey: "Asset",
+    businessIdsParamForSearch: "applicationNo",
+    businessIdAliasForSearch: "applicationNo",
+    fetchFilters: filterFunctions.ASSET,
+    _searchFn: () => ASSETService.search({ tenantId, filters }),
   },
 });
 

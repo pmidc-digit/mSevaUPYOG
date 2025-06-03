@@ -30,7 +30,7 @@ const App = () => {
           {/* <AppContainer> */}
           <PrivateRoute path={`${path}/create-complaint`} component={CreateComplaint} />
           <PrivateRoute path={`${path}/complaints`} exact component={ComplaintsList} />
-          <PrivateRoute path={`${path}/complaints/:id*`} component={ComplaintDetailsPage} />
+          <PrivateRoute path={`${path}/complaints/:fullUrlAndUlb*`} component={ComplaintDetailsPage} />
           <PrivateRoute
             path={`${path}/reopen`}
             component={() => <ReopenComplaint match={{ ...match, url, path: `${path}/reopen` }} parentRoute={path} />}

@@ -23,7 +23,7 @@ const Filter = ({ searchParams, onFilterChange, onSearch, removeParam, ...props 
       <div className="filter">
         <div className="filter-card">
           <div className="heading">
-            <div className="filter-label">{t("UC_FILTERS_LABEL")}:</div>
+            <div className="filter-label">{t("COMMON_TABLE_FILTERS")}:</div>
             <div className="clearAll" onClick={clearAll}>
               {t("ES_COMMON_CLEAR_ALL")}
             </div>

@@ -68,13 +68,13 @@ const [description, setDescription] = useState("")
   const serviceDefinitions = Digit.GetServiceDefinitions;
   const client = useQueryClient();
   useEffect(() => {
-    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code && priorityLevel?.code 
+    if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code 
     ) {
       setSubmitValve(true);
     } else {
       setSubmitValve(false);
     }
-  }, [complaintType, subType, priorityLevel, selectedCity, selectedLocality]);
+  }, [complaintType, subType, selectedCity, selectedLocality]);
 
   useEffect(() => {
     setLocalities(fetchedLocalities);
@@ -261,14 +261,14 @@ const [description, setDescription] = useState("")
           menu: { ...subTypeMenu },
           populators: <Dropdown option={subTypeMenu} optionKey="name" id="complaintSubType" selected={subType} select={selectedSubType} />,
         },
-        {
+        // {
           
-         label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
-            isMandatory: true,
-            type: "dropdown",
-            populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
+        //  label: t("CS_COMPLAINT_DETAILS_COMPLAINT_PRIORITY_LEVEL"),
+        //     isMandatory: true,
+        //     type: "dropdown",
+        //     populators: <Dropdown option={priorityMenu} optionKey="name" id="priorityLevel" selected={priorityLevel} select={selectedPriorityLevel} />,
           
-        },
+        // },
         {
           //label: t("WS_COMMON_PROPERTY_DETAILS"),
           "isEditConnection": true,

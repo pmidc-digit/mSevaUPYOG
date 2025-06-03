@@ -5,14 +5,14 @@
 ## Install
 
 ```bash
-npm install --save @upyog/digit-ui-libraries
+npm install --save @mseva/digit-ui-libraries
 ```
 
 ## Usage
 
 ```jsx
 import React from "react";
-import initLibraries from "@upyog/digit-ui-libraries";
+import initLibraries from "@mseva/digit-ui-libraries";
 
 import defaultConfig from "./config";
 

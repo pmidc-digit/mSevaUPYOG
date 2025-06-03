@@ -13,8 +13,8 @@ const Filter = (props) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: cities } = Digit.Hooks.useTenants();
   let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
+  const  cityChange = Digit.SessionStorage.get("Employee.tenantId");
   const { searchParams } = props;
-
   const isAssignedToMe =
     tenantId !== "pb.punjab" && searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
 
@@ -78,6 +78,28 @@ const Filter = (props) => {
     }
   }, [tenantId, cities]);
 
+useEffect(() => { 
+  if (cities && cities?.length && cityChange) {
+    const matchedCity = cities?.find((city) => city.code === cityChange);
+    if (matchedCity) {
+      const cityObj = { name: matchedCity?.name, code: matchedCity?.code };
+       let finalCode;
+      if (cityObj?.code === "pb.punjab") {
+          finalCode = "pb.amritsar";
+          localStorage.setItem("punjab-tenantId", "pb.amritsar");
+          setSelectedTenant({ name: "Amritsar", code: "pb.amritsar" });
+      } else {
+        finalCode = cityObj?.code;
+        setSelectedTenant(cityObj);
+      }
+      setSwachFilters((prev) => ({
+          ...prev,
+          tenants: finalCode,
+        }));
+    }
+  }
+}, [cityChange, cities]);
+
   const onRadioChange = (value) => {
     setSelectedAssigned(value);
     // uuid = value.code === "ASSIGNED_TO_ME" ? uuid : "";
@@ -126,7 +148,11 @@ const Filter = (props) => {
     props.onClose();
   }
   function complaintType(_type) {
-    const type = { i18nKey: t("SERVICEDEFS." + _type.serviceCode.toUpperCase()), code: _type.serviceCode };
+    // const type = { i18nKey: t("SERVICEDEFS." + _type.serviceCode.toUpperCase()), code: _type.serviceCode };
+    const type = { 
+    i18nKey: _type.i18nKey, 
+    code: _type.serviceCode 
+  };
     if (!ifExists(swachfilters.serviceCode, type)) {
       setSwachFilters({ ...swachfilters, serviceCode: [...swachfilters.serviceCode, type] });
     }

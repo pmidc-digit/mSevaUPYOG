@@ -208,26 +208,25 @@ const FillQuestions = (props) => {
   // }];
 
   let data = prevProps.surveyDetails;
-  console.log("data",data)
+  console.log("data", data);
 
- data = {
- 
-...data,
-  sections: data.sections
-    .sort((a, b) => a.sectionOrder - b.sectionOrder)
-    .map(section => ({
-      ...section,
-      questions: section.questions
-        .sort((a, b) => a.qorder - b.qorder)
-        .map(question => ({
-          ...question,
-          question: {
-            ...question.question,
-            options: question.question.options.sort((a, b) => a?.optionOrder - b?.optionOrder)
-          }
-        }))
-    }))
-};
+  data = {
+    ...data,
+    sections: data.sections
+      .sort((a, b) => a.sectionOrder - b.sectionOrder)
+      .map((section) => ({
+        ...section,
+        questions: section.questions
+          .sort((a, b) => a.qorder - b.qorder)
+          .map((question) => ({
+            ...question,
+            question: {
+              ...question.question,
+              options: question.question.options.sort((a, b) => a?.optionOrder - b?.optionOrder),
+            },
+          })),
+      })),
+  };
   const fetchAnswer = async (status) => {
     setLoading(true);
     let payload = {
@@ -611,8 +610,14 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: city,
+        // tenantId: city,
         locality: locality,
+        tenantId:
+          city === null
+            ? window.location.href.includes("/employee")
+              ? prevProps?.citizenData?.city?.code
+              : localStorage.getItem("CITIZEN.CITY")
+            : city,
         // tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
         status: "Draft",
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
@@ -696,7 +701,8 @@ const FillQuestions = (props) => {
           questionUuid: questionId,
           sectionUuid: sectionId,
           comments: formData[sectionId][questionId]?.comments || "",
-          tenantId: localStorage.getItem("CITIZEN.CITY"),
+          // tenantId: localStorage.getItem("CITIZEN.CITY"),
+          tenantId: window.location.href.includes("/employee") ? prevProps?.citizenData?.city?.code : localStorage.getItem("CITIZEN.CITY"),
           // answer: [formData[sectionId][questionId].answer],
           answerDetails: [
             {
@@ -724,7 +730,13 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: city,
+        // tenantId: city,
+        tenantId:
+          city === null
+            ? window.location.href.includes("/employee")
+              ? prevProps?.citizenData?.city?.code
+              : localStorage.getItem("CITIZEN.CITY")
+            : city,
         status: "Submit",
         locality: locality,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,

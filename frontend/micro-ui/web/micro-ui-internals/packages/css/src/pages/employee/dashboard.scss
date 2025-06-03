@@ -1,206 +1,203 @@
 .employee-dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 20px;
+
+  .employee-dashboard-welcome-card {
+    height: 160px;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 20px;
+    position: relative;
+
+    .employee-dashboard-welcome-card-entire-content {
+      width: 374px;
+      height: 108px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      top: 32px;
+      left: 32px;
+    }
+
+    .employee-dashboard-welcome-card-heading {
+      font-family: "Noto Sans";
+      font-weight: 500;
+      font-size: 28px;
+      line-height: 32px;
+      letter-spacing: 0%;
+      color: #ffffff;
+      text-transform: uppercase;
+    }
+
+    .employee-dashboard-welcome-card-content {
+      color: #ffffff;
+      font-family: "Noto Sans";
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      letter-spacing: 0.25px;
+    }
+  }
+
+  .employee-dashboard-card-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 20px;
+
+    @media (min-width: 600px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .employee-dashboard-card {
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+
+    .employee-dashboard-card-heading-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 5px;
+    }
+
+    .employee-dashboard-card-heading {
+      font-size: 22px;
+      color: #ffffff;
+      font-family: "Noto Sans";
+      font-weight: 400;
+      line-height: 28px;
+      letter-spacing: 0%;
+    }
+
+    .employee-dashboard-card-content {
+      color: #ffffff;
+      font-family: "Noto Sans";
+      font-weight: 400;
+      font-size: 14px;
+      line-height: 20px;
+      letter-spacing: 0.25px;
+      max-height: 300px;
+      overflow: auto;
+    }
+  }
+
+  .employee-dashboard-table-and-services {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    margin: 20px;
 
-    .employee-dashboard-welcome-card {
-        height: 160px;
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 20px;
-        position: relative;
-
-        .employee-dashboard-welcome-card-entire-content {
-            width: 374px;
-            height: 108px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            top: 32px;
-            left: 32px;
-        }
-
-        .employee-dashboard-welcome-card-heading {
-            font-family: "Noto Sans";
-            font-weight: 500;
-            font-size: 28px;
-            line-height: 32px;
-            letter-spacing: 0%;
-            color: #FFFFFF;
-            text-transform: uppercase;
-        }
-
-        .employee-dashboard-welcome-card-content {
-            color: #FFFFFF;
-            font-family: "Noto Sans";
-            font-weight: 400;
-            font-size: 14px;
-            line-height: 20px;
-            letter-spacing: 0.25px;
-        }
+    @media (min-width: 1024px) {
+      flex-direction: row;
     }
 
-    .employee-dashboard-card-grid {
-        display: grid;
-        grid-template-columns: repeat(1, 1fr);
-        gap: 20px;
+    .employee-dashboard-table-container {
+      flex: 2;
 
-        @media (min-width: 600px) {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        @media (min-width: 1024px) {
-            grid-template-columns: repeat(4, 1fr);
-        }
-    }
-
-    .employee-dashboard-card {
-        padding: 20px;
-        border-radius: 12px;
-        position: relative;
-
-        .employee-dashboard-card-heading-container {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            gap: 5px;
-        }
-
-        .employee-dashboard-card-heading {
-            font-size: 22px;
-            color: #FFFFFF;
-            font-family: "Noto Sans";
-            font-weight: 400;
-            line-height: 28px;
-            letter-spacing: 0%;
-        }
-
-        .employee-dashboard-card-content {
-            color: #FFFFFF;
-            font-family: "Noto Sans";
-            font-weight: 400;
-            font-size: 14px;
-            line-height: 20px;
-            letter-spacing: 0.25px;
-            max-height: 300px;
-            overflow: auto;
-        }
-    }
-
-    .employee-dashboard-table-and-services {
+      .employee-dashboard-table-header {
         display: flex;
-        flex-direction: column;
-        gap: 20px;
+        justify-content: space-between;
 
-        @media (min-width: 1024px) {
-            flex-direction: row;
+        .employee-dashboard-table-title {
+          color: "white";
+          font-family: "Manrope";
+          font-weight: 700;
+          font-size: 20px;
+          line-height: 27.32px;
+          letter-spacing: 0%;
         }
 
-        .employee-dashboard-table-container {
-            flex: 2;
-
-            .employee-dashboard-table-header {
-                display: flex;
-                justify-content: space-between;
-
-                .employee-dashboard-table-title {
-                    color: "white";
-                    font-family: "Manrope";
-                    font-weight: 700;
-                    font-size: 20px;
-                    line-height: 27.32px;
-                    letter-spacing: 0%;
-                }
-
-                .employee-dashboard-view-all-link {
-                    color: blue;
-                }
-            }
-
-            .employee-dashboard-table-content {
-                overflow: auto;
-                width: 100%;
-            }
+        .employee-dashboard-view-all-link {
+          color: blue;
         }
+      }
 
-        .employee-dashboard-quick-services-container {
-            flex: 1;
-
-            .employee-dashboard-quick-services-header {
-                display: flex;
-                justify-content: space-between;
-
-                .employee-dashboard-quick-services-title {
-                    color: "#000";
-                    font-family: "Manrope";
-                    font-weight: 700;
-                    font-size: 20px;
-                    line-height: 27.32px;
-                    letter-spacing: 0%;
-                    padding: 2rem 0.5rem;
-                }
-
-                .employee-dashboard-view-all-link {
-                    color: blue;
-                }
-            }
-
-            .employee-dashboard-module-card-wrapper {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 16px;
-
-                .employee-dashboard-quick-service-card {
-                    width: 32%;
-                    height: 102px;
-                    padding: 8px 16px;
-                    border-radius: 8px;
-                    background: #FFFFFF;
-                    box-shadow: 0px 4px 22px 0px #9F9F9F26;
-
-                    .employee-dashboard-quick-service-card-content {
-                        display: flex;
-                        flex-direction: row;
-                        align-items: center;
-                        gap: 16px;
-
-                        .employee-dashboard-quick-service-card-module-icon {
-                            display: flex;
-                            justify-content: center;     
-                            align-items: center;         
-                            height: 100px;              
-                            width: 100px;              
-                            padding-top: 5px;
-                            border-radius: 8px 0 0 8px;
-                          }
-
-                        .employee-dashboard-quick-service-card-module-name {
-                            font-family: Noto Sans;
-                            font-weight: 500;
-                            font-size: 16px;
-                            line-height: 24px;
-                            letter-spacing: 0.15px;
-                            color: #1E293B;
-                        }
-                    }
-                }
-    
-           @media (min-width: 641px) and (max-width: 1024px) {
-            .employee-dashboard-quick-service-card {
-              width: 48% !important;
-             }
-            }
-
-           @media (max-width: 640px) {
-            .employee-dashboard-quick-service-card {
-              width: 96% !important;
-            }
-           }
-
-            }
-        }
+      .employee-dashboard-table-content {
+        overflow: auto;
+        width: 100%;
+      }
     }
 
-   
+    .employee-dashboard-quick-services-container {
+      flex: 1;
+
+      .employee-dashboard-quick-services-header {
+        display: flex;
+        justify-content: space-between;
+
+        .employee-dashboard-quick-services-title {
+          color: "#000";
+          font-family: "Manrope";
+          font-weight: 700;
+          font-size: 20px;
+          line-height: 27.32px;
+          letter-spacing: 0%;
+          padding: 2rem 0.5rem;
+        }
+
+        .employee-dashboard-view-all-link {
+          color: blue;
+        }
+      }
+
+      .employee-dashboard-module-card-wrapper {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+
+        .employee-dashboard-quick-service-card {
+          width: 32%;
+          height: 102px;
+          padding: 8px 16px;
+          border-radius: 8px;
+          background: #ffffff;
+          box-shadow: 0px 4px 22px 0px #9f9f9f26;
+
+          .employee-dashboard-quick-service-card-content {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 16px;
+
+            .employee-dashboard-quick-service-card-module-icon {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              height: 100px;
+              width: 100px;
+              padding-top: 5px;
+              border-radius: 8px 0 0 8px;
+            }
+
+            .employee-dashboard-quick-service-card-module-name {
+              font-family: Noto Sans;
+              font-weight: 500;
+              font-size: 16px;
+              line-height: 24px;
+              letter-spacing: 0.15px;
+              color: #1e293b;
+            }
+          }
+        }
+
+        @media (min-width: 641px) and (max-width: 1024px) {
+          .employee-dashboard-quick-service-card {
+            width: 48% !important;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .employee-dashboard-quick-service-card {
+            width: 96% !important;
+          }
+        }
+      }
+    }
+  }
 }

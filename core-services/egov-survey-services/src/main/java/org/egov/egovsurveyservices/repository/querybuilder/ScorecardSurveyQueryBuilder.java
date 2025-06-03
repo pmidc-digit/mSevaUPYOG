@@ -235,7 +235,8 @@ public class ScorecardSurveyQueryBuilder {
                 "JOIN public.eg_ss_survey_response AS surveyresponse " +
                 "ON answer.surveyresponseuuid = surveyresponse.uuid " +  
                 "WHERE surveyresponse.surveyuuid = ? " +
-                "AND surveyresponse.citizenid = ?";
+                "AND surveyresponse.citizenid = ? " +
+                "AND surveyresponse.tenantid = ?";
     }
 
     public String getSurveyResponseDetails() {

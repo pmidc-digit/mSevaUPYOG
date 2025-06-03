@@ -102,11 +102,12 @@ public class ScorecardSurveyRepository {
         }
     }
 
-    public List<AnswerNew> getAnswers(String surveyUuid, String citizenId) {
+    public List<AnswerNew> getAnswers(String surveyUuid, String citizenId, String tenantId) {
         String query=surveyQueryBuilder.getAnswers();
         List<Object> preparedStmtList = new ArrayList<>();
         preparedStmtList.add(surveyUuid);
         preparedStmtList.add(citizenId);
+        preparedStmtList.add(tenantId);
         return jdbcTemplate.query(query, preparedStmtList.toArray(), new AnswerRowMapper());
     }
 

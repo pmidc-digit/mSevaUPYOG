@@ -267,11 +267,12 @@ public class ScorecardSurveyRepositoryTest {
     public void testGetAnswers_Found() {
         String surveyUuid = "survey1";
         String citizenId = "citizen1";
+        String tenantId = "tenantId";
         String query = "SELECT * FROM answer WHERE surveyuuid = ? AND citizenid = ?";
         when(surveyQueryBuilder.getAnswers()).thenReturn(query);
         when(jdbcTemplate.query(eq(query), any(Object[].class), any(AnswerRowMapper.class))).thenReturn(Collections.singletonList(AnswerNew.builder().build()));
 
-        List<AnswerNew> result = scorecardSurveyRepository.getAnswers(surveyUuid, citizenId);
+        List<AnswerNew> result = scorecardSurveyRepository.getAnswers(surveyUuid, citizenId, tenantId);
 
         assertNotNull(result);
         assertEquals(1, result.size());

@@ -21,4 +21,9 @@ public class AnswerFetchCriteria {
     @NotBlank
     @JsonProperty("citizenId")
     private String citizenId;
+
+    @NotBlank
+    @JsonProperty("tenantId")
+    private String tenantId;
+
 }

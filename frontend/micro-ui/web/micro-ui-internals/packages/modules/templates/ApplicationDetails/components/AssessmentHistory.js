@@ -1,8 +1,10 @@
+import { property } from 'lodash';
 import React, { useState } from 'react'
-
-const AssessmentHistory = ({ assessmentData }) => {
-
-
+import { useHistory, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+const AssessmentHistory = ({ assessmentData,applicationData }) => {
+    const history = useHistory();
+    const {t} = useTranslation()
     const [isOpen, setIsOpen] = useState(false);
 
     const toggleAccordion = () => {
@@ -46,7 +48,10 @@ function formatAssessmentDate(timestamp) {
             </div>
             {isOpen && (
                 <div className="accordion-body" style={{ padding: " 15px", backgroundColor: "#fff" }}>
-                    {assessmentData.map((assessment, index) => (
+                       {assessmentData.length===0 ? (
+                <div style={{color:'red', fontSize:'16px'}}>No Assessments found</div>
+             ):
+                    assessmentData.map((assessment, index) => (
                         <div key={index} className="assessment-item" style={{ marginBottom: "15px" }}>
                             <div className="assessment-row" style={{
 
@@ -96,14 +101,16 @@ function formatAssessmentDate(timestamp) {
                             <button onClick={() => alert(`Cancelled ${assessment.assessmentNumber}`)}>Cancel</button> */}
                             
 <div className="button-group" style={{display:'flex',gap:'10px'}}>
-          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} onClick={() => alert(`Re-assessing ${assessment.number}`)}>Re-assess</button>
-          <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}onClick={() => alert(`Cancelled ${assessment.number}`)}>Cancel</button>
+          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} onClick={() => { history.push({pathname:`/digit-ui/citizen/pt/property/assessment-details/${assessment.assessmentNumber}`,state:{Assessment:{channel:applicationData.channel,financialYear:assessment.financialYear,propertyId:assessment.propertyId,source:applicationData.source},submitLabel:t("PT_REASSESS_PROPERTY_BUTTON"),reAssess:true}})}}>Re-assess</button>
+          <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}onClick={() => alert(`You are not allowed to perform this operation!!}`)}>Cancel</button>
         </div>
 </div>
                           {index!==(assessmentData.length - 1) &&  <hr />}
                         </div>
-                    ))}
+                    ))
+                }
                 </div>
+              
             )}
         </div>
     );

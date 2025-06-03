@@ -124,6 +124,7 @@ import OwnerTransfershipStepForm from "../src/pages/employee/PropertyMutation/Ow
 import PTOwnerTransfershipStepTwo from "../src/pages/employee/PropertyMutation/OwnerTransfership/PTOwnerTransfershipStepTwo";
 import PTOwnerTransfershipSummaryStepThree from "../src/pages/employee/PropertyMutation/OwnerTransfership/PTOwnerTransfershipSummaryStepThree";
 import PropertyCheckboxQuestions from "./pageComponents/PropertyCheckboxQuestions";
+import {AssessmentDetails as AssessmentDetailsCitizen} from "./pages/citizen/MyProperties/AssessmentDetails";
 
 import {NewApplication as NewApplicationCitizen }from "./pages/citizen/Create/NewApplication";
 import CreateEmployeeStepForm  from "./pages/citizen/Create/NewApplicationStepForm/NewPropertyStepForm" 
@@ -132,7 +133,7 @@ import {PTNewFormStepTwo as PTNewFormStepTwoCitizen} from "./pages/citizen/Creat
 import {PTNewFormStepThree as PTNewFormStepThreeCitizen} from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepThree";
 import {PTNewFormStepFour as PTNewFormStepFourCitizen} from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepFour";
 import {PTNewFormSummaryStepFive as PTNewFormSummaryStepFiveCitizen} from "../src/pages/citizen/Create/NewApplicationStepForm/PTNewFormSummaryStepFive";
-
+import SubmitResponse from "./components/Response/submit";
 import CitizenEditPropertyStepForm from "./pages/citizen/EditProperty/CitizenEditPropertyStepForm";
 import CitizenPTEditFormStepOne from "./pages/citizen/EditProperty/CitizenPTEditFormStepOne";
 import CitizenPTEditFormStepTwo from "./pages/citizen/EditProperty/CitizenPTEditFormStepTwo";
@@ -262,6 +263,8 @@ const componentsToRegister = {
   PTNewFormSummaryStepFiveCitizen,
   PropertyDetailsCitizen,
   PropertyApplicationDetails,
+  AssessmentDetailsCitizen,
+  SubmitResponse,
   PTResponseCitizen,
   PTResponseEmployee,
   CitizenEditPropertyStepForm,

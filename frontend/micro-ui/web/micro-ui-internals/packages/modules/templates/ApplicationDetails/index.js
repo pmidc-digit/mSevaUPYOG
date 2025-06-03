@@ -54,7 +54,9 @@ const ApplicationDetails = (props) => {
     oldValue,
     isInfoLabel = false,
     clearDataDetails,
-    propertyId
+    propertyId,
+    setIsCheck,
+    isCheck
   } = props;
   
   useEffect(() => {
@@ -267,6 +269,9 @@ const ApplicationDetails = (props) => {
             oldValue={oldValue}
             isInfoLabel={isInfoLabel}
              propertyId={propertyId}
+             setIsCheck={setIsCheck}
+             isCheck={isCheck}
+            
           />
           {showModal ? (
             <ActionModal

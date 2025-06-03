@@ -92,6 +92,8 @@ const Urls = {
     cfsearch: "/service-request/service/v1/_search",
     defaulterNotice: "/egov-pdf/download/PT/ptdefaulternotice",
     getDefaulterNoticeStatus: "/pdf-service/v1/_getBulkDefaulterNoticeRecordsDetails",
+    billingslab: "/pt-calculator-v2/billingslab/_search",
+    assessment_update:"/property-services/assessment/_update"
   },
 
   dss: {

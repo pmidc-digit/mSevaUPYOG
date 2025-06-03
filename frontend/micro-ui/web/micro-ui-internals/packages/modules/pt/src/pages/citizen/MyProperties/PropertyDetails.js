@@ -1,11 +1,12 @@
-import { EditIcon, Header, LinkLabel, Loader, Modal } from "@mseva/digit-ui-react-components";
-import _ from "lodash";
+import { EditIcon, Header, LinkLabel, Loader, Modal,CardSectionHeader ,MultiLink,InfoIcon} from "@mseva/digit-ui-react-components";
+import _, { property, values } from "lodash";
 import React, { useEffect, useState,Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
 import PropertyOwnerHistory from "./propertyOwnerHistory";
 import { TransferOwnership } from "../../../pageComponents/TransferOwnership";
+import getPTAcknowledgementData from "../../../getPTAcknowledgementData";
 //import usePropertyAPI from "../../../../../libraries/src/hooks/pt/usePropertyAPI"
 
 const Close = () => (
@@ -48,6 +49,22 @@ const PropertyDetails = () => {
     businessService: "PT",
     consumerCode: applicationNumber,
   });
+  // useEffect(()=>{
+  //   let consumerCodes=applicationNumber
+  //   try{
+  //   Digit.PTService.fetchPaymentDetails({tenantId,consumerCodes})
+  //   .then(
+  //     (response) =>
+  //     {
+  //       console.log("response",response)
+  //     }
+  //   )
+  //   }
+  //   catch(error){
+  //    console.log(error)
+  //   }
+  // },[])
+  console.log("fetchBillData",fetchBillData)
 console.log("applicationDetails",applicationDetails)
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.pt.usePropertySearch(
     {
@@ -207,27 +224,52 @@ console.log("workflowDetails",workflowDetails)
     });
   }
   useEffect(() => {
-    if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title !== "PT_TOTAL_DUES") {
+    // if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title !== "PT_TOTAL_DUES") {
+     if (fetchBillData && fetchBillData?.Bill?.length>0) {
+      let dateString=fetchBillData?.Bill?.[0]?.billDetails?.map(detail => {
+    const fromYear = new Date(detail.fromPeriod).getFullYear();
+    const toYear = new Date(detail.toPeriod).getFullYear();
+    return `${fromYear}-${toYear}(Rs.${detail.amount})`;
+  }).join(',');
+
       appDetailsToShow?.applicationDetails?.unshift({
-        title: " ",
+       title:" ",
         asSectionHeader: true,
+       // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
           <LinkLabel
             onClick={() => history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`})}
             style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
           >
-            {t("PT_VIEW_PAYMENT")}
+            {/* {t("PT_VIEW_PAYMENT")} */}
+             {t("PT_PAY_PAYMENT")}
           </LinkLabel>
         ),
         values: [
+          // {
+          //   title: "PT_PROPERTY_PTUID",
+          //   value: applicationNumber,
+          // },
           {
-            title: "PT_PROPERTY_PTUID",
-            value: applicationNumber,
-          },
-          {
-            title: "PT_TOTAL_DUES",
+            title:"PT_TOTAL_DUES",
+            labelComp: <span style={{
+
+  marginLeft: "8px",
+  cursor: "pointer",
+  fontSize: "16px",
+  color: "#555",
+  hoverColor:'#000'
+}}><InfoIcon /></span>,
             value: fetchBillData?.Bill?.[0]?.totalAmount ? `₹ ${fetchBillData?.Bill[0]?.totalAmount}` : "N/A",
+
           },
+          {
+            title:"",
+            value:dateString
+
+          
+          }
+
         ],
       });
     }
@@ -246,32 +288,39 @@ console.log("workflowDetails",workflowDetails)
       data: {
         ...workflowDetails?.data,
         actionState: {
-          nextActions: PT_CEMP
-            ? [
+          nextActions: 
+          // PT_CEMP
+          //   ?
+             [
               {
                 action: "ASSESS_PROPERTY",
                 forcedName: "PT_ASSESS",
                 showFinancialYearsModal: true,
                 customFunctionToExecute: (data) => {
                   delete data.customFunctionToExecute;
+                  if(window.location.href.includes("/citizen")){
+                     history.replace({ pathname: `/digit-ui/citizen/pt/property/assessment-details/${applicationNumber}`, state: { ...data,submitLabel:t("PT_ASSESS_PROPERTY_BUTTON") } });
+                  }
+                  else{
                   history.replace({ pathname: `/digit-ui/employee/pt/ptsearch/assessment-details/${applicationNumber}`, state: { ...data } });
+                  }
                 },
                 tenantId: Digit.ULBService.getStateId(),
               },
-              {
-                action: !fetchBillData?.Bill[0]?.totalAmount ? "MUTATE_PROPERTY" : "PT_TOTALDUES_PAY",
-                forcedName: "PT_OWNERSHIP_TRANSFER",
-                AmountDueForPay: fetchBillData?.Bill[0]?.totalAmount,
-                isWarningPopUp: !fetchBillData?.Bill[0]?.totalAmount ? false : true,
-                redirectionUrl: {
-                  pathname: !fetchBillData?.Bill[0]?.totalAmount
-                    ? `/digit-ui/employee/pt/property-mutate-docs-required/${applicationNumber}`
-                    : `/digit-ui/employee/payment/collect/PT/${applicationNumber}`,
-                  // state: { workflow: { action: "OPEN", moduleName: "PT", businessService } },
-                  state: null,
-                },
-                tenantId: Digit.ULBService.getStateId(),
-              },
+              // {
+              //   action: !fetchBillData?.Bill[0]?.totalAmount ? "MUTATE_PROPERTY" : "PT_TOTALDUES_PAY",
+              //   forcedName: "PT_OWNERSHIP_TRANSFER",
+              //   AmountDueForPay: fetchBillData?.Bill[0]?.totalAmount,
+              //   isWarningPopUp: !fetchBillData?.Bill[0]?.totalAmount ? false : true,
+              //   redirectionUrl: {
+              //     pathname: !fetchBillData?.Bill[0]?.totalAmount
+              //       ? `/digit-ui/employee/pt/property-mutate-docs-required/${applicationNumber}`
+              //       : `/digit-ui/employee/payment/collect/PT/${applicationNumber}`,
+              //     // state: { workflow: { action: "OPEN", moduleName: "PT", businessService } },
+              //     state: null,
+              //   },
+              //   tenantId: Digit.ULBService.getStateId(),
+              // },
               {
                 action: "INACTIVE_PROPERTY",
                 forcedName: "PT_INACTIVE_PROPERTY",
@@ -295,12 +344,12 @@ console.log("workflowDetails",workflowDetails)
                 tenantId: Digit.ULBService.getStateId(),
               },
             ]
-            : [],
+            // : [],
         },
       },
     };
   }
-
+console.log("workflow details",workflowDetails)
   if (appDetailsToShow?.applicationData?.status === "ACTIVE" && PT_CEMP) {
     if (businessService == "PT.CREATE") setBusinessService("PT.UPDATE");
     if (!workflowDetails?.data?.actionState?.nextActions?.find((e) => e.action === "UPDATE")) {
@@ -323,9 +372,43 @@ console.log("workflowDetails",workflowDetails)
     appDetailsToShow?.applicationData?.owners.sort((item, item2) => { return item?.additionalDetails?.ownerSequence - item2?.additionalDetails?.ownerSequence })
     
   console.log("appDetailsToShow",appDetailsToShow)
+  //   const [showOptions, setShowOptions] = useState(false);
+  //   let dowloadOptions = [];
+  //     const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  // const { tenants } = storeData || {};
+  // const getAcknowledgementData = async () => {
+  //   const applications = appDetailsToShow?.applicationDetails || {};
+  //   const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
+  //   const acknowldgementDataAPI = await getPTAcknowledgementData({ ...applications }, tenantInfo, t);
+  //   Digit.Utils.pdf.generate(acknowldgementDataAPI);
+  //   //setAcknowldgementData(acknowldgementDataAPI);
+  // };
+  // dowloadOptions.push({
+  //   label: appDetailsToShow?.applicationData?.creationReason === "MUTATION" ? t("MT_APPLICATION") : t("PT_APPLICATION_ACKNOWLEDGMENT"),
+  //   onClick: () => getAcknowledgementData(),
+  // });
   return (
     <div>
-      <Header>{t("PT_PROPERTY_INFORMATION")}</Header>
+      {/* <Header>{t("PT_PROPERTY_INFORMATION")}</Header> */}
+         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+          <div style={{display:'flex',gap:'10px'}}>
+      <CardSectionHeader>{t("PT_PROPERTY_INFORMATION")}</CardSectionHeader>
+      <h1 style={{fontSize:'18px',border:'1px solid grey',padding:'8px',backgroundColor:'grey',color:'white'}}>Application No: {applicationNumber}</h1>
+     </div>
+    <div className="button-group" style={{display:'flex',gap:'10px'}}>
+          <button style={{display:"flex",borderRadius:'8px',backgroundColor:'#2947a3',padding:'10px',color:'white'}} >Download</button>
+    {/* {dowloadOptions && dowloadOptions.length > 0 && (
+            <MultiLink
+              className="multilinkWrapper"
+              onHeadClick={() => setShowOptions(!showOptions)}
+              displayOptions={showOptions}
+              options={dowloadOptions}
+            />
+          )} */}
+          <button style={{display:"flex",borderRadius:'8px',border:'1px solid red',padding:'10px'}}>Print</button>
+        </div>
+      </div>
+   
       <ApplicationDetailsTemplate
         applicationDetails={appDetailsToShow}
         isLoading={isLoading}

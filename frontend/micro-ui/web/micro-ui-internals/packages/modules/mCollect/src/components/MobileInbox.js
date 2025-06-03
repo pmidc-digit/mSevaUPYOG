@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 const MobileInbox = ({
   data,
-  defaultSearchParams={},
+  defaultSearchParams = {},
   isLoading,
   isSearch,
   searchFields,
@@ -111,7 +111,7 @@ const MobileInbox = ({
                     }}
                   >
                     {" "}
-                    {t(`${"UC_DOWNLOAD_RECEIPT"}`)}{" "}
+                    {t(`${"CS_COMMON_DOWNLOAD_RECEIPT"}`)}{" "}
                   </a>
                 </Link>
               </span>
@@ -141,14 +141,20 @@ const MobileInbox = ({
     <div style={{ padding: 0 }}>
       <div className="inbox-container">
         <div className="filters-container">
-          {!isSearch && <ApplicationLinks linkPrefix={parentRoute} allLinks = {[
-          {
-            text: t("UC_GENERATE_NEW_CHALLAN"),
-            link: "/digit-ui/employee/mcollect/new-application",
-            roles: [],
-          }]} 
-          headerText={t("ACTION_TEST_MCOLLECT")}
-          isMobile={true} />}
+          {!isSearch && (
+            <ApplicationLinks
+              linkPrefix={parentRoute}
+              allLinks={[
+                {
+                  text: t("UC_GENERATE_NEW_CHALLAN"),
+                  link: "/digit-ui/employee/mcollect/new-application",
+                  roles: [],
+                },
+              ]}
+              headerText={t("ACTION_TEST_MCOLLECT")}
+              isMobile={true}
+            />
+          )}
           <ApplicationCard
             t={t}
             data={getData()}

@@ -10,6 +10,7 @@ import PTRActionModal from "./PTRActionModal";
 import DirectTLModal from "./DirectTLModal";
 import SVActionModal from "./SVActionModal";
 import CHBActionModal from "./CHBActionModal";
+import ASSETActionModal from "./ASSETActionModal";
 
 const ActionModal = (props) => {
   if (props?.businessService.includes("PT")) {
@@ -49,6 +50,10 @@ const ActionModal = (props) => {
 
   if (props?.businessService.includes("chb")) {
     return <CHBActionModal {...props} />;
+  }
+
+  if (props?.businessService.includes("asset-create")) {
+    return <ASSETActionModal {...props} />;
   }
   // return <FSMActionModal {...props} />;
 };

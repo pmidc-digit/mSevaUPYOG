@@ -57,6 +57,11 @@ import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
 import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
 import { CHBModule, CHBLinks, CHBComponents } from "@mseva/upyog-ui-module-chb";
+import {
+  ASSETComponents,
+  ASSETLinks,
+  ASSETModule,
+} from "@mseva/upyog-ui-module-asset";
 
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
@@ -91,6 +96,7 @@ const enabledModules = [
   "ADS",
   "CHB",
   "PTR",
+  "ASSET",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -118,6 +124,9 @@ window.Digit.ComponentRegistryService.setupRegistry({
   CHBModule,
   CHBLinks,
   ...CHBComponents,
+  ASSETModule,
+  ASSETLinks,
+  ...ASSETComponents,
 });
 initPGRComponents();
 initSWACHComponents();

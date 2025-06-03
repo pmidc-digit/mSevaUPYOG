@@ -30,7 +30,7 @@ const Urls = {
   ChangePassword1: "/user/password/_update",
   UserProfileUpdate: "/user/profile/_update",
   EmployeeSearch: "/egov-hrms/employees/_search",
-  Swach_Assignee_Count :"/egov-workflow-v2/egov-wf/process/_count",
+  Swach_Assignee_Count: "/egov-workflow-v2/egov-wf/process/_count",
 
   InboxSearch: "/inbox/v1/_search",
 
@@ -280,6 +280,18 @@ const Urls = {
     update: "/chb-services/booking/v1/_update",
     slot_search: "/chb-services/booking/v1/_slot-search",
     estimateCreate: "/chb-services/booking/v1/_estimate",
+  },
+
+  asset: {
+    create: "/asset-services/v1/assets/_create",
+    search: "/asset-services/v1/assets/_search",
+    update: "/asset-services/v1/assets/_update",
+    assign: "/asset-services/v1/assets/assignment/_create",
+    depriciationProcess: "/asset-services/v1/assets/depreciation/_process", //this api for assetDepriciationProcess
+    depriciationList: "/asset-services/v1/assets/depreciation/list", // this api for list of assetDepriciation
+    return_asset: "/asset-services/v1/assets/assignment/_update",
+    assets_Reciept_Search: "/asset-services/v1/assets/_search", //This url use for  Assets Recipt Detail QR Code
+    assetDisposedCreate: "/asset-services/v1/disposal/_create",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

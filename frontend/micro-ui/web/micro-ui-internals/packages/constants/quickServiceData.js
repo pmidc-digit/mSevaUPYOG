@@ -178,5 +178,16 @@ export const quickServiceModules = {
       description: "",
       subHeading: "",
     },
+    {
+      moduleCode: "ASSET",
+      moduleName: "Asset Module",
+      bgColor: "#3e4b5b",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/asset/assetservice/inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+    },
   ],
 };

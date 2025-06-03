@@ -14,7 +14,6 @@ const Filter = (props) => {
   const { data: cities } = Digit.Hooks.useTenants();
   let serviceDefs = Digit.Hooks.swach.useSwachBharatCategory(tenantId, "Swach");
   const  cityChange = Digit.SessionStorage.get("Employee.tenantId");
-  console.log("cityChange", cityChange);
   const { searchParams } = props;
   const isAssignedToMe =
     tenantId !== "pb.punjab" && searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
@@ -78,6 +77,28 @@ const Filter = (props) => {
       }
     }
   }, [tenantId, cities]);
+
+useEffect(() => { 
+  if (cities && cities?.length && cityChange) {
+    const matchedCity = cities?.find((city) => city.code === cityChange);
+    if (matchedCity) {
+      const cityObj = { name: matchedCity?.name, code: matchedCity?.code };
+       let finalCode;
+      if (cityObj?.code === "pb.punjab") {
+          finalCode = "pb.amritsar";
+          localStorage.setItem("punjab-tenantId", "pb.amritsar");
+          setSelectedTenant({ name: "Amritsar", code: "pb.amritsar" });
+      } else {
+        finalCode = cityObj?.code;
+        setSelectedTenant(cityObj);
+      }
+      setSwachFilters((prev) => ({
+          ...prev,
+          tenants: finalCode,
+        }));
+    }
+  }
+}, [cityChange, cities]);
 
   const onRadioChange = (value) => {
     setSelectedAssigned(value);

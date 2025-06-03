@@ -169,7 +169,7 @@ const DesktopInbox = ({
         onNextPage={onNextPage}
         onPrevPage={onPrevPage}
         totalRecords={totalRecords}
-        onPageSizeChagne={onPageSizeChange}
+        onPageSizeChange={onPageSizeChange}
         currentPage={currentPage}
         pageSizeLimit={pageSizeLimit}
       />

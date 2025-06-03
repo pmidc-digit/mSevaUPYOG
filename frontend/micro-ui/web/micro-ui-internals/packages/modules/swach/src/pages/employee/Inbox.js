@@ -30,10 +30,12 @@ const Inbox = ({ initialStates = {} }) => {
       // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.map((e) => e.code).join(",");
       const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
        let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
-        console.log("useCount response in inbox else block", response);
+        // console.log("useCount response in inbox else block", response);
       if (response?.count) {
         setTotalRecords(response.count);
       }
+      // Do not remove the below commented code
+
       // console.log("application Status",applicationStatus)
       // console.log("assigneeCode", assigneeCode);
       // console.log("uuid", uuid);
@@ -57,14 +59,15 @@ const Inbox = ({ initialStates = {} }) => {
   }, [searchParams, pageOffset, pageSize]);
 
   const fetchNextPage = () => {
-    setPageOffset((prevState) => prevState + 10);
-  };
+  setPageOffset((prevState) => prevState + pageSize);
+};
 
-  const fetchPrevPage = () => {
-    setPageOffset((prevState) => prevState - 10);
-  };
+const fetchPrevPage = () => {
+  setPageOffset((prevState) => Math.max(0, prevState - pageSize));
+};
 
   const handlePageSizeChange = (e) => {
+      setPageOffset(0);
     setPageSize(Number(e.target.value));
   };
 

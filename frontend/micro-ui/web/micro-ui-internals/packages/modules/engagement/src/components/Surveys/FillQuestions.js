@@ -37,7 +37,7 @@ const FillQuestions = (props) => {
   const prevProps = props.location.state;
   // let isgeoLoc = false
   const [hasCitizenDetails, setHasCitizenDetails] = useState(null);
-
+  console.log("city", localStorage.getItem("CITIZEN.CITY"));
   // let { data: tenantlocalties, isLoadingLocality } = Digit.Hooks.useBoundaryLocalities(city, "revenue", { enabled: !!city }, t);
   useEffect(() => {
     (async () => {
@@ -360,7 +360,7 @@ const FillQuestions = (props) => {
     // if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
     const data = {
       //userName: prevProps?.userInfo?.mobileNumber,
-       uuid: [prevProps?.userInfo?.uuid],
+      uuid: [prevProps?.userInfo?.uuid],
       tenantId: prevProps?.userInfo?.tenantId,
     };
     const filters = {
@@ -610,7 +610,19 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        // tenantId: city,
+        //tenantId: city,
+        tenantId:
+          city === null
+            ? window.location.href.includes("/employee")
+              ? prevProps?.citizenData?.city?.code
+              : localStorage.getItem("CITIZEN.CITY")
+            : city,
+        city:
+          city === null
+            ? window.location.href.includes("/employee")
+              ? prevProps?.citizenData?.city?.code
+              : localStorage.getItem("CITIZEN.CITY")
+            : city,
         locality: locality,
         tenantId:
           city === null
@@ -703,6 +715,7 @@ const FillQuestions = (props) => {
           comments: formData[sectionId][questionId]?.comments || "",
           // tenantId: localStorage.getItem("CITIZEN.CITY"),
           tenantId: window.location.href.includes("/employee") ? prevProps?.citizenData?.city?.code : localStorage.getItem("CITIZEN.CITY"),
+
           // answer: [formData[sectionId][questionId].answer],
           answerDetails: [
             {
@@ -731,15 +744,21 @@ const FillQuestions = (props) => {
       SurveyResponse: {
         surveyUuid: data.uuid,
         // tenantId: city,
+        status: "Submit",
+        locality: locality,
+        coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
         tenantId:
           city === null
             ? window.location.href.includes("/employee")
               ? prevProps?.citizenData?.city?.code
               : localStorage.getItem("CITIZEN.CITY")
             : city,
-        status: "Submit",
-        locality: locality,
-        coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
+        city:
+          city === null
+            ? window.location.href.includes("/employee")
+              ? prevProps?.citizenData?.city?.code
+              : localStorage.getItem("CITIZEN.CITY")
+            : city,
         // tenantId: localStorage.getItem("CITIZEN.CITY"),
         answers: answerArr,
       },
@@ -1448,7 +1467,7 @@ const FillQuestions = (props) => {
       }
     }
   }, [getFetchAnswers]);
-
+  console.log("city", city);
   const handleLocalityChangeCitizen = (e) => {
     setLocality(e.target.value);
   };

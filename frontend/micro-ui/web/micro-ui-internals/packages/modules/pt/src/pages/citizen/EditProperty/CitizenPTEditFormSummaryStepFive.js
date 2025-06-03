@@ -1,7 +1,7 @@
 import React,{useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
 //
-import { FormComposer } from "../../../../../../react-components/src/hoc/FormComposer";
+import { FormComposer } from "@mseva/digit-ui-react-components";
 import { UPDATE_PtNewApplication, RESET_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
 
 const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {

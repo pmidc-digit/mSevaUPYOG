@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 //
-import { FormComposer } from "../../../../../../../react-components/src/hoc/FormComposer";
+import { FormComposer } from "@mseva/digit-ui-react-components";
 import { RESET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 const PTNewFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {

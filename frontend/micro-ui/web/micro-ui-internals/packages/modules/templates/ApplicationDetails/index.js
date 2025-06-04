@@ -53,7 +53,8 @@ const ApplicationDetails = (props) => {
     showTimeLine = true,
     oldValue,
     isInfoLabel = false,
-    clearDataDetails
+    clearDataDetails,
+    propertyId
   } = props;
   
   useEffect(() => {
@@ -265,6 +266,7 @@ const ApplicationDetails = (props) => {
             showTimeLine={showTimeLine}
             oldValue={oldValue}
             isInfoLabel={isInfoLabel}
+            propertyId={propertyId}
           />
           {showModal ? (
             <ActionModal

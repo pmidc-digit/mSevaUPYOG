@@ -16,7 +16,8 @@ const ActiveAndOpenSurveys = (props) => {
   const tenantId = userType.toLowerCase() === "employee" ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY"); //passing static value for testing
 
   if (userUlbs?.length === 0 || tenantId === "pb.punjab") {
-    let adduserUlbs = { i18nKey: `TENANT_TENANTS_${userInfo?.tenantId.replace(".", "_").toUpperCase()}`, code: `${userInfo?.tenantId}` };
+    // let adduserUlbs = { i18nKey: `TENANT_TENANTS_${userInfo?.tenantId.replace(".", "_").toUpperCase()}`, code: `${userInfo?.tenantId}` };
+    let adduserUlbs = { i18nKey: `TENANT_TENANTS_${tenantId.replace(".", "_").toUpperCase()}`, code: `${tenantId}` };
     if (tenantId === "pb.punjab") {
       userUlbs = [adduserUlbs, ...ulbs];
     } else {

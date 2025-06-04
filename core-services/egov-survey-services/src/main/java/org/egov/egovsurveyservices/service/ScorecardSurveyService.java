@@ -303,7 +303,7 @@ public class ScorecardSurveyService {
             throw new CustomException("EG_SS_SURVEY_UUID_CITIZEN_UUID_ERR","surveyUuid and citizenUuid cannot be null");
         }
             List<AnswerNew> answers = surveyRepository.getAnswers(criteria.getSurveyUuid(),criteria.getCitizenId(),criteria.getTenantId());
-        List<SurveyResponseNew> surveyResponseStatus = surveyRepository.getSurveyResponseDetails(criteria.getSurveyUuid(), criteria.getCitizenId());
+        List<SurveyResponseNew> surveyResponseStatus = surveyRepository.getSurveyResponseDetails(criteria.getSurveyUuid(), criteria.getCitizenId(), criteria.getTenantId());
         SurveyResponseNew surveyResponseNew;
         if (surveyResponseStatus.isEmpty()) {
             surveyResponseNew = null;

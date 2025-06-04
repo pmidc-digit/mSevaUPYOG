@@ -111,10 +111,10 @@ public class ScorecardSurveyRepository {
         return jdbcTemplate.query(query, preparedStmtList.toArray(), new AnswerRowMapper());
     }
 
-    public List<SurveyResponseNew> getSurveyResponseDetails(String surveyUuid, String citizenId) {
+    public List<SurveyResponseNew> getSurveyResponseDetails(String surveyUuid, String citizenId, String tenantId) {
         String query = surveyQueryBuilder.getSurveyResponseDetails();
         try {
-            return jdbcTemplate.query(query, new Object[]{surveyUuid, citizenId}, new SurveyResponseRowMapper());
+            return jdbcTemplate.query(query, new Object[]{surveyUuid, citizenId, tenantId}, new SurveyResponseRowMapper());
         } catch (EmptyResultDataAccessException e) {
             return null; // No existing response found
         }

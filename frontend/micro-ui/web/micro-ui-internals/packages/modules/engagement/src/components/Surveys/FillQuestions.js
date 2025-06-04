@@ -232,6 +232,7 @@ const FillQuestions = (props) => {
     let payload = {
       surveyUuid: data.uuid,
       citizenId: prevProps.userInfo.uuid,
+      tenantId: city === null ? (window.location.href.includes("/employee") ? prevProps?.citizenData?.city?.code : city) : city,
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
@@ -274,6 +275,12 @@ const FillQuestions = (props) => {
     let payload = {
       surveyUuid: data.uuid,
       citizenId: prevProps.userInfo.uuid,
+      tenantId:
+        city === null || city === undefined
+          ? window.location.href.includes("/employee")
+            ? prevProps?.citizenData?.city?.code
+            : localStorage.getItem("CITIZEN.CITY")
+          : city,
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {

@@ -35,13 +35,13 @@ const DesktopInbox = ({
     if (value < 0) {
       return (
         <span className="sla-cell-error" style={{ color: "#a82227", padding: 0 }}>
-          {Math.abs(value)} hours left
+          {Math.abs(value)} hours overdue
         </span>
       );
     } else {
       return (
         <span className="sla-cell-success" style={{ padding: 0 }}>
-          {value} hour overdue
+          {value} hour left
         </span>
       );
     }

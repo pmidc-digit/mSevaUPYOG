@@ -85,7 +85,16 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
             complaintSubType: complaint?.businessObject?.service?.serviceCode,
             priorityLevel: complaint.ProcessInstance?.priority,
             locality: complaint?.businessObject?.service?.address?.locality?.code,
-            status: complaint.ProcessInstance?.state?.applicationStatus,
+            status: (() => {
+              const stateValue = complaint?.ProcessInstance?.state?.state;
+              if (stateValue === "PENDINGFORREASSIGNMENT") {
+                return "PENDINGFORREASSIGNMENT";
+              }
+              if (stateValue === "REJECTED") {
+                return "REJECTED";
+              }
+              return complaint?.ProcessInstance?.state?.applicationStatus;
+            })(),
             taskOwner: complaint.ProcessInstance?.assigner?.name || "-",
             taskEmployee: complaint.ProcessInstance?.assignes?.[0]?.name || "-",
             sla: roundedtotalHours, // SLA in hours and minutes

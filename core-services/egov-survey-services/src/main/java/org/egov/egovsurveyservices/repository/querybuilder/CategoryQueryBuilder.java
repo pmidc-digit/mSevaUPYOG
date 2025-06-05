@@ -15,9 +15,12 @@ public class CategoryQueryBuilder {
         query.append(" FROM eg_ss_category category");
 
         if (!StringUtils.isBlank(criteria.getTenantId())) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" (category.tenantid = ? or category.tenantid = 'pb.punjab')");
-            preparedStmtList.add(criteria.getTenantId());
+            if(!(criteria.getTenantId().equalsIgnoreCase("pb.punjab")
+                    ||criteria.getTenantId().equalsIgnoreCase("pb"))) {
+                addClauseIfRequired(query, preparedStmtList);
+                query.append(" (category.tenantid = ? or category.tenantid = 'pb.punjab' or category.tenantid = 'pb')");
+                preparedStmtList.add(criteria.getTenantId());
+            }
         }
 
         if (!StringUtils.isBlank(criteria.getId())) {

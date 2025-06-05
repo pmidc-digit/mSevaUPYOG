@@ -103,10 +103,13 @@ public class ScorecardSurveyQueryBuilder {
         }
 
         if (criteria.getTenantId() != null) {
-            query.append(whereAdded ? " AND " : " WHERE ");
-            query.append("( survey.tenantid = ? or survey.tenantid = 'pb.punjab' )");
-            preparedStmtList.add(criteria.getTenantId());
-            whereAdded = true;
+            if(!(criteria.getTenantId().equalsIgnoreCase("pb.punjab")
+            ||criteria.getTenantId().equalsIgnoreCase("pb"))) {
+                query.append(whereAdded ? " AND " : " WHERE ");
+                query.append("( survey.tenantid = ? or survey.tenantid = 'pb.punjab' or survey.tenantid = 'pb' )");
+                preparedStmtList.add(criteria.getTenantId());
+                whereAdded = true;
+            }
         }
 
         if (criteria.getTitle() != null) {

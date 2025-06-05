@@ -33,9 +33,12 @@ public class QuestionQueryBuilder {
     public String getQuestionSearchQuery(QuestionSearchCriteria criteria, List<Object> preparedStmtList) {
         StringBuilder query = new StringBuilder(SELECT_QUESTION_WITH_CATEGORY);
         if (!StringUtils.isBlank(criteria.getTenantId())) {
-            addClauseIfRequired(query, preparedStmtList);
-            query.append(" (question.tenantid = ? or question.tenantid ='pb.punjab' )");
-            preparedStmtList.add(criteria.getTenantId());
+            if(!(criteria.getTenantId().equalsIgnoreCase("pb.punjab")
+                    ||criteria.getTenantId().equalsIgnoreCase("pb"))) {
+                addClauseIfRequired(query, preparedStmtList);
+                query.append(" (question.tenantid = ? or question.tenantid ='pb.punjab' or question.tenantid ='pb' )");
+                preparedStmtList.add(criteria.getTenantId());
+            }
         }
 
         if (!StringUtils.isBlank(criteria.getUuid())) {

@@ -47,23 +47,7 @@ public class QuestionQueryBuilderTest {
 
         String query = queryBuilder.getQuestionSearchQuery(criteria, preparedStmtList);
         
-        String expectedQuery = "SELECT question.uuid, question.tenantid, question.surveyid, " +
-                "question.questionstatement, question.status, question.type, question.required, " +
-                "question.qorder, question.categoryid, question.createdby, question.lastmodifiedby, " +
-                "question.createdtime, question.lastmodifiedtime, category.id as category_id, " +
-                "category.label as category_label, category.isactive as category_isactive, " +
-                "category.tenantid as category_tenantid, option.uuid AS option_uuid, " +
-                "option.optiontext AS option_text, option.weightage AS option_weightage, " +
-                "option.optionorder as option_order, " +
-                "option.createdby AS option_createdby, option.lastmodifiedby AS option_lastmodifiedby, " +
-                "option.createdtime AS option_createdtime, option.lastmodifiedtime AS option_lastmodifiedtime " +
-                "FROM eg_ss_question question INNER JOIN eg_ss_category category " +
-                "ON question.categoryid = category.id " +
-                "LEFT JOIN eg_ss_question_option option ON question.uuid = option.questionuuid " +
-                "WHERE (question.tenantid = ? or question.tenantid ='pb.punjab' ) AND question.uuid = ? " +
-                "AND question.questionstatement ilike '%question statement%' " +
-                "AND question.createdby = ? AND question.status = ? " +
-                "AND question.categoryid = ? ORDER BY question.createdtime DESC LIMIT 10 OFFSET 0";
+        String expectedQuery = "SELECT question.uuid, question.tenantid, question.surveyid, question.questionstatement, question.status, question.type, question.required, question.qorder, question.categoryid, question.createdby, question.lastmodifiedby, question.createdtime, question.lastmodifiedtime, category.id as category_id, category.label as category_label, category.isactive as category_isactive, category.tenantid as category_tenantid, option.uuid AS option_uuid, option.optiontext AS option_text, option.weightage AS option_weightage, option.optionorder as option_order, option.createdby AS option_createdby, option.lastmodifiedby AS option_lastmodifiedby, option.createdtime AS option_createdtime, option.lastmodifiedtime AS option_lastmodifiedtime FROM eg_ss_question question INNER JOIN eg_ss_category category ON question.categoryid = category.id LEFT JOIN eg_ss_question_option option ON question.uuid = option.questionuuid WHERE (question.tenantid = ? or question.tenantid ='pb.punjab' or question.tenantid ='pb' ) AND question.uuid = ? AND question.questionstatement ilike '%question statement%' AND question.createdby = ? AND question.status = ? AND question.categoryid = ? ORDER BY question.createdtime DESC LIMIT 10 OFFSET 0";
 
         assertEquals(expectedQuery.replaceAll("\\s+", " ").trim(), query.replaceAll("\\s+", " ").trim());
 
@@ -117,7 +101,7 @@ public class QuestionQueryBuilderTest {
 
         String query = queryBuilder.getQuestionSearchQuery(criteria, preparedStmtList);
 
-        String expectedQuery = QuestionQueryBuilder.SELECT_QUESTION_WITH_CATEGORY + " WHERE  (question.tenantid = ? or question.tenantid ='pb.punjab' ) ORDER BY question.createdtime DESC  LIMIT 10 OFFSET 0";
+        String expectedQuery = QuestionQueryBuilder.SELECT_QUESTION_WITH_CATEGORY + " WHERE  (question.tenantid = ? or question.tenantid ='pb.punjab' or question.tenantid ='pb' ) ORDER BY question.createdtime DESC  LIMIT 10 OFFSET 0";
 
         assertEquals(expectedQuery, query);
         assertEquals(1, preparedStmtList.size());

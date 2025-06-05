@@ -45,7 +45,7 @@ public class CategoryQueryBuilderTest {
 
         String query = queryBuilder.getCategorySearchQuery(criteria, preparedStmtList);
 
-        String expectedQuery = "SELECT category.id, category.label, category.isactive, category.tenantid, category.createdby, category.lastmodifiedby, category.createdtime, category.lastmodifiedtime  FROM eg_ss_category category WHERE  (category.tenantid = ? or category.tenantid = 'pb.punjab') AND  category.id = ?  AND  category.label ilike '%category label%' AND  category.createdby = ?  AND  category.isactive = ?  ORDER BY category.createdtime DESC  LIMIT 10 OFFSET 0";
+        String expectedQuery = "SELECT category.id, category.label, category.isactive, category.tenantid, category.createdby, category.lastmodifiedby, category.createdtime, category.lastmodifiedtime  FROM eg_ss_category category WHERE  (category.tenantid = ? or category.tenantid = 'pb.punjab' or category.tenantid = 'pb') AND  category.id = ?  AND  category.label ilike '%category label%' AND  category.createdby = ?  AND  category.isactive = ?  ORDER BY category.createdtime DESC  LIMIT 10 OFFSET 0";
         assertEquals(expectedQuery, query);
         assertEquals(4, preparedStmtList.size());
         assertEquals(tenantId, preparedStmtList.get(0));
@@ -91,7 +91,7 @@ public class CategoryQueryBuilderTest {
 
         String query = queryBuilder.getCategorySearchQuery(criteria, preparedStmtList);
 
-        String expectedQuery = "SELECT category.id, category.label, category.isactive, category.tenantid, category.createdby, category.lastmodifiedby, category.createdtime, category.lastmodifiedtime  FROM eg_ss_category category WHERE  (category.tenantid = ? or category.tenantid = 'pb.punjab') ORDER BY category.createdtime DESC  LIMIT 10 OFFSET 0";
+        String expectedQuery = "SELECT category.id, category.label, category.isactive, category.tenantid, category.createdby, category.lastmodifiedby, category.createdtime, category.lastmodifiedtime  FROM eg_ss_category category WHERE  (category.tenantid = ? or category.tenantid = 'pb.punjab' or category.tenantid = 'pb') ORDER BY category.createdtime DESC  LIMIT 10 OFFSET 0";
 
         assertEquals(expectedQuery, query);
         assertEquals(1, preparedStmtList.size());

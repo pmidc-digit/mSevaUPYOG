@@ -52,7 +52,7 @@ public class ScorecardSurveyQueryBuilderTest {
         criteria.setTenantId("test-tenant");
         String query = queryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
 
-        assertTrue(query.contains("WHERE ( survey.tenantid = ? or survey.tenantid = 'pb.punjab' )"));
+        assertTrue(query.contains("WHERE ( survey.tenantid = ? or survey.tenantid = 'pb.punjab' or survey.tenantid = 'pb'"));
         assertEquals(1, preparedStmtList.size());
         assertEquals("test-tenant", preparedStmtList.get(0));
     }
@@ -76,7 +76,7 @@ public class ScorecardSurveyQueryBuilderTest {
         String query = queryBuilder.getSurveySearchQuery(criteria, preparedStmtList);
 
         assertTrue(query.contains("WHERE survey.uuid = ?"));
-        assertTrue(query.contains("AND ( survey.tenantid = ? or survey.tenantid = 'pb.punjab' )"));
+        assertTrue(query.contains("AND ( survey.tenantid = ? or survey.tenantid = 'pb.punjab' or survey.tenantid = 'pb'"));
         assertTrue(query.contains("AND survey.title ILIKE ?"));
         assertEquals(3, preparedStmtList.size());
         assertEquals("test-uuid", preparedStmtList.get(0));

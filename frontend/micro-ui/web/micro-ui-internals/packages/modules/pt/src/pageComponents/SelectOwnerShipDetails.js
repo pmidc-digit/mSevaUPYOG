@@ -19,7 +19,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   let OwnerShipCategory = {};
   let SubOwnerShipCategory = {};
   const { pathname: url } = useLocation();
-  const editScreen = url.includes("/modify-application/");
+  const editScreen = url.includes("/edit-application/");
   const mutateScreen = url.includes("/property-mutate/");
 
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue } = useForm();

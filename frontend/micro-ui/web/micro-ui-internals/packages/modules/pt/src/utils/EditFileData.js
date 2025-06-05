@@ -138,5 +138,6 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
       documents: documents,
       additionalDetails: applicationData?.additionalDetails,
     },
+    applicationData: applicationData || {}
   };
 };

@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { newConfig } from "../../../../config/Create/stepFormConfigCitizen";
-import { SET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { SET_PtNewApplication, RESET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
@@ -99,6 +99,7 @@ const CreateEmployeeStepForm = () => {
     if (location?.state?.edit === true) {
       // updatedCreateEmployeeconfig= createEmployeeConfig.filter((item)=>item.stepNumber===location.state.currentStepNumber)
     }
+    dispatch(RESET_PtNewApplication());
   }, []);
 
   useEffect(() => {

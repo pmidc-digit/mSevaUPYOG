@@ -4,6 +4,7 @@ export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => 
     // Extract Location Details
     const address = applicationData?.address || {};
     const locality = applicationData?.address?.locality || {};
+    const tenantId = applicationData?.tenantId || "";
     console.log("locality in mapApplicationDataToDefaultValuesForCitizen: ", applicationData?.address?.locality, locality);
     const city = address?.city || {};
     const yearOfCreation = {
@@ -46,7 +47,8 @@ export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => 
             latitude: locality.latitude || null,
             longitude: locality.longitude || null,
             area: locality.area || "",
-            i18nKey: locality.name || "",
+            // i18nKey: locality.i18nKey || "",
+            i18nKey: "Azad Nagar - B1"
           },
           // locality: {
           //   code: applicationData.address.locality.code || "",
@@ -58,7 +60,7 @@ export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => 
           //   i18nKey: applicationData.address.locality.i18nkey || ""
           // },
           city: {
-            code: city || "",
+            code: tenantId || "",
             name: city || "",
             i18nKey: city || "",
           },
@@ -92,7 +94,9 @@ export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => 
           allotmentNo: applicationData?.additionalDetails?.allotmentNo || "",
           allotmentDate: applicationData?.additionalDetails?.allotmentDate || "",
         },
-        businessName: applicationData?.additionalDetails?.businessName || "",
+        businessName:{
+          businessName: applicationData?.additionalDetails?.businessName || ""
+        },
         remarks: applicationData?.additionalDetails?.remarks || "",
         noOfFloors: applicationData?.noOfFloors || "",
         units: units || [],
@@ -108,6 +112,7 @@ export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => 
         //   i18nKey: ownershipCategory?.i18nKey || "",
         // },
         owners: owners.map((owner) => ({
+          ...owner,
           name: owner?.name || "",
           mobileNumber: owner?.mobileNumber || "",
           fatherOrHusbandName: owner?.fatherOrHusbandName || "",
@@ -140,6 +145,7 @@ export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => 
         documents: documents,
         additionalDetails: applicationData?.additionalDetails,
       },
+      applicationData: applicationData || {}
     };
   };
   

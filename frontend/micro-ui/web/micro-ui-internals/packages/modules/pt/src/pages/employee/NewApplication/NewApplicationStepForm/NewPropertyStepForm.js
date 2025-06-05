@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { config } from "../../../../config/Create/employeeStepFormConfig";
-import { SET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { SET_PtNewApplication, RESET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
@@ -94,6 +94,10 @@ const CreateEmployeeStepForm = () => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // console.log("Form data", formData)
   // console.log("formState: ",formState);
+
+  useEffect(() => {
+    dispatch(RESET_PtNewApplication());
+  }, []);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PtNewApplication(updatedStepNumber));

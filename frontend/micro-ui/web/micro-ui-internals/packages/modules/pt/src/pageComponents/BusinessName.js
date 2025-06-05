@@ -24,8 +24,8 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
   // }
   if (window.location.href.includes("employee")) {
     [businessName, setBusinessName] = useState(formData?.businessName || "");
-  }else if( window.location.href.includes("citizen") && window.location.href.includes("edit-application")) {
-    [businessName, setBusinessName] = useState(formData?.businessName || "");
+  // }else if( window.location.href.includes("citizen") && window.location.href.includes("edit-application")) {
+  //   [businessName, setBusinessName] = useState(formData?.businessName || "");
   }
    else {
     [businessName, setBusinessName] = useState(formData?.businessName?.businessName || "");

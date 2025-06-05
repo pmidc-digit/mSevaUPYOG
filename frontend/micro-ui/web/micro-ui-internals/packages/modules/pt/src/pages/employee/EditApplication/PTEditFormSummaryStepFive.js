@@ -53,6 +53,8 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   
     const tenantId = data?.LocationDetails?.address?.city?.code;
     const allDocuments = data?.DocummentDetails?.documents?.documents || [];
+    const applicationData = data?.applicationData || {};
+    const workflow = {...data?.applicationData?.workflow, action: "OPEN"};
   
     let updatedUnits = [];
     const usageCategoryMajorCode = data?.PropertyDetails?.usageCategoryMajor?.code;
@@ -109,6 +111,7 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
           const isIndividual = data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL");
   
           const baseOwner = {
+            ...owner,
             name: owner?.name,
             mobileNumber: owner?.mobileNumber,
             emailId: owner?.emailId,
@@ -202,7 +205,7 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
     console.log("Final Payload:", formData);
     console.log("Search Data:", searchData);
   
-    const response = await Digit.PTService.update({ Property: formData }, tenantId);
+    const response = await Digit.PTService.update({...applicationData,...formData, workflow}, tenantId);
     return {isSuccess: response?.ResponseInfo?.status === "successful", response: response};
   };
 

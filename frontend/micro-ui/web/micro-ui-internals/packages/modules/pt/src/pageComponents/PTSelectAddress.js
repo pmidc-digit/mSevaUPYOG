@@ -17,7 +17,6 @@ const PTSelectAddress = ({ t, config, onSelect, userType, formData, setError, cl
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   const [localityValue, setLocalityValue] = useState(formData?.address?.locality || "");
 console.log("usertype",window.location.href.includes("employee"))
-console.log("usertypeMANASA",formData?.address?.locality )
   let isEditProperty = formData?.isEditProperty || false;
   if (presentInModifyApplication) isEditProperty = true;
   if (formData?.isUpdateProperty) isEditProperty = true;
@@ -357,12 +356,12 @@ const fetchLocality=()=>{
             defaultValue={selectedLocality}
             control={control}
             rules={{
-              required: config.isMandatory?t("Locality is required"):false,
+              required: config.isMandatory.locality?t("Locality is required"):false,
             }}
             render={(props) => (
               <Dropdown
                 className="form-field"
-                selected={selectedLocality || props.value}
+                selected={props.value}
                 option={localities}
                 select={(e) => {
                   props.onChange(e);

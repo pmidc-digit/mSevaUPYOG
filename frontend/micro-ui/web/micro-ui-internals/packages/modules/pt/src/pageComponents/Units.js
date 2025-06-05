@@ -39,6 +39,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
 
   useEffect(()=>{
     console.log("isNotFirst and Units", isNotFirst.current, formData.units, formData, units);
+    debugger;
     if(!isNotFirst.current){
       isNotFirst.current = true;
       return;
@@ -268,23 +269,52 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
     return floorListData;
   }
 
+  function findUsageType(unit){
+    const { usageCategory } = unit;
+    if ([usageCategory, formData?.usageCategoryMajor?.code].includes("RESIDENTIAL")) {
+      console.log("usageCategory is set to RESIDENTIAL", usageCategory, formData?.usageCategoryMajor?.code)
+      return usageCategoryMajorMenu(usagecat).filter((e) => e?.code === "RESIDENTIAL")[0];
+    }
+
+    if (formData?.usageCategoryMajor?.code !== "MIXED" && usageCategory) {
+      const codeArr = usageCategory?.split(".");
+      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    } else if (usageCategory) {
+      const codeArr = usageCategory?.split(".");
+      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    }
+  }
+
   useEffect(() => {
-    if (!isLoading && presentInModifyApplication && Menu) {
+    if (!isLoading && presentInModifyApplication && Menu ) {
       // usage subUsage unit Occupancy
+      console.log("formdatain Units useEffect", formData?.units);
       let defaultUnits = formData?.units
         ?.filter((e) => e.active)
         ?.map((unit, index) => {
           let { occupancyType, usageCategory: uc, constructionDetail, floorNo, arv,
             RentedMonths, NonRentedMonthsUsage } = unit;
-          occupancyType = occupencyOptions.filter((e) => e?.code === occupancyType)[0];
-          let usageCategory = usageCategoryMajorMenu(usagecat).filter((e) => e?.code === uc)[0];
-          floorNo = getfloorlistdata(floorlist).filter((e) => e?.code == floorNo)[0];
-          RentedMonths = rentedmonths.find((val) => val.code === RentedMonths?.toString());
-          NonRentedMonthsUsage = nonrentedusage.find((val) => val.code === NonRentedMonthsUsage)
+          occupancyType = occupencyOptions?.filter((e) => e?.code === occupancyType)[0] || unit?.occupancyType;
+          const usageType = findUsageType(unit);
+          let usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === uc)?.[0] || unit?.usageCategory;
+          let subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => e?.code === uc)?.[0] || unit?.subUsageType;
+          console.log("usageCategoryValueInUnits 1", subUsageType);
+          if(subUsageType){
+            subUsageType = { i18nKey: "PROPERTYTAX_USAGE_" + stringReplaceAll(subUsageType?.code, "-", "_"), code: subUsageType?.code, }
+          }
+          console.log("usageCategoryValueInUnits 2", subUsageType);
+          floorNo = getfloorlistdata(floorlist)?.filter((e) => e?.code == floorNo)[0] || unit?.floorNoCitizen;
+          RentedMonths = rentedmonths?.find((val) => val.code === RentedMonths?.toString()) || unit?.RentedMonths;
+          NonRentedMonthsUsage = nonrentedusage?.find((val) => val.code === NonRentedMonthsUsage) || unit?.NonRentedMonthsUsage;
           let key = Date.now() + index;
           let order = index + 1;
-          let builtUpArea = constructionDetail.builtUpArea;
+          let builtUpArea = constructionDetail?.builtUpArea || unit?.builtUpArea;
           return {
+            // ...unit,
             floorNo,
             occupancyType,
             usageCategory,
@@ -295,7 +325,9 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
             arv,
             RentedMonths, NonRentedMonthsUsage,
             usageCategoryType: usageCategory,
-            floorNoCitizen: floorNo
+            floorNoCitizen: floorNo,
+            subUsageType,
+            active: true,
           };
         });
       console.log("defaultUnits", defaultUnits);
@@ -382,17 +414,23 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   };
 
   const subUsageCategoryMenu = (category) => {
+    console.log("subUsageCategoryMenu category", category);
     const menu = usagecat
       .filter((cat) => cat?.code.includes(category?.code) && cat?.code.split(".").length === 4)
       .map((item) => {
+        console.log("subUsageCategoryMenu item", item);
         const codeArr = item?.code.split(".");
         return { i18nKey: `COMMON_PROPSUBUSGTYPE_NONRESIDENTIAL_${codeArr[1]}_${codeArr[3]}`, code: item?.code };
       });
+    console.log("subUsageCategoryMenu menu", menu);
     return menu;
   };
 
   function goNext() {
+    debugger;
+    console.log("goNextfunctioncalledwithunits", units);
     let unitsData = units?.map((unit) => ({
+      // ...unit,
       order: unit?.order,
       occupancyType: unit?.occupancyType,
       RentedMonths: unit?.RentedMonths,
@@ -408,11 +446,13 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       // },
       tenantId: Digit.ULBService.getCurrentTenantId(),
       usageCategoryType: unit?.usageCategoryType,
+      active: true,
     }));
     unitsData = unitsData?.map((unit, index) => {
       if (unit.occupancyType === "RENTED") return { ...unit, arv: units[index].arv };
       return unit;
     });
+    console.log("goNextfunctioncalledwithunits unitsData in goNext", unitsData);
     onSelect(config.key, unitsData);
   }
 
@@ -552,10 +592,13 @@ function Unit({
       return usageCategoryMajorMenu(usagecat).filter((e) => e?.code === "RESIDENTIAL")[0];
     }
 
-    if (formData?.usageCategoryMajor?.code !== "MIXED") {
+    else if (formData?.usageCategoryMajor?.code !== "MIXED" && existingUsageCategory) {
+      const codeArr = existingUsageCategory?.split(".");
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
     } else if (existingUsageCategory) {
       const codeArr = existingUsageCategory?.split(".");
-      const val = usageCategoryMajorMenu(usagecat).filter((e) => e?.code === codeArr[0] + "." + codeArr[1])[0];
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
     }
   });

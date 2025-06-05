@@ -52,14 +52,15 @@ public class QuestionService {
             throw new IllegalArgumentException("Maximum " + applicationProperties.getMaxCreateLimit() + " questions allowed per request.");
         }
 
-        questionRequest.getQuestions().forEach(question -> {
+        long counter = 0;
+        for (Question question : questionRequest.getQuestions()) {
             categoryExistsById(question.getCategoryId());
-            enrichCreateRequest(question, requestInfo);
+            enrichCreateRequest(question, requestInfo, counter++);
             // Validate options length
 //            if (question.getOptions() != null && question.getOptions().stream().anyMatch(opt -> opt.length() > 200)) {
 //                throw new IllegalArgumentException("Maximum 200 characters allowed only for a question's option");
 //            }
-        });
+        }
 
         producer.push(applicationProperties.getSaveQuestionTopic(), questionRequest);
         return generateResponse(questionRequest);
@@ -90,12 +91,13 @@ public class QuestionService {
 
     }
 
-    private void enrichCreateRequest(Question question, RequestInfo requestInfo) {
+    private void enrichCreateRequest(Question question, RequestInfo requestInfo,long counter) {
+        long currentTime = System.currentTimeMillis() + counter;
         AuditDetails auditDetails = AuditDetails.builder()
                 .createdBy(requestInfo.getUserInfo().getUuid())
                 .lastModifiedBy(requestInfo.getUserInfo().getUuid())
-                .createdTime(new Date().getTime())
-                .lastModifiedTime(new Date().getTime())
+                .createdTime(currentTime)
+                .lastModifiedTime(currentTime)
                 .build();
         question.setUuid(UUID.randomUUID().toString());
         question.setAuditDetails(auditDetails);

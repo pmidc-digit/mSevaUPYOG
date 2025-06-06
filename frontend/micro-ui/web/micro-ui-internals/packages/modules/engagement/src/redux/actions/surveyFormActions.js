@@ -15,6 +15,7 @@ import {
   NEXT_STEP,
   PREVIOUS_STEP,
   SET_STEP_DATA,
+  RESET_FORM,
 } from "./types";
 
 export const updateSurveyForm = (key, value) => ({
@@ -61,3 +62,4 @@ export const nextStep = () => ({ type: NEXT_STEP });
 export const previousStep = () => ({ type: PREVIOUS_STEP });
 export const setStepData = (step, data) => ({ type: SET_STEP_DATA, step, data });
 export const autoCalculateCategoriesWeight = (categoryWeight) => ({ type: AUTO_CALCULATE_CATEGORY, categoryWeight });
+export const resetForm = () => ({ type: RESET_FORM });

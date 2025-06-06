@@ -1,13 +1,27 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { TextInput, Dropdown, CheckBox, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { format, parseISO } from 'date-fns';
+import { format, parseISO } from "date-fns";
 const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, Otp, setGetOtp }) => {
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [showToast, setShowToast] = useState(null);
   const { t } = useTranslation();
-  console.log("cities", cities)
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const defaultCity = cities?.filter((ulb) => tenantId === ulb?.code);
+  console.log("cities", cities);
+
+  useEffect(() => {
+    console.log("defaultCity", defaultCity);
+    // if (tenantId === "pb.punjab" && formData?.citizenFound === null) {
+    setFormData((prevData) => ({
+      ...prevData,
+      ["city"]: defaultCity?.[0],
+    }));
+    // }
+  }, []);
+
   let menu = [];
+
   const { data: Menu } = Digit.Hooks.pt.useGenderMDMS(stateCode, "common-masters", "GenderType");
   Menu &&
     Menu.map((genderDetails) => {
@@ -20,11 +34,10 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
     { label: "Male", value: "Male" },
     { label: "Female", value: "Female" },
     { label: "Other", value: "Other" },
-
-  ]
+  ];
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
-    console.log("date e", event)
+    console.log("date e", event);
     console.log("date value", event.target);
     setFormData((prevData) => ({
       ...prevData,
@@ -33,7 +46,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
   };
   const handleDateChange = (event) => {
     const { name, value } = event.target;
-    console.log("date e", event)
+    console.log("date e", event);
     console.log("date value", event.target);
 
     setFormData((prevData) => ({
@@ -42,19 +55,19 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
     }));
   };
   const handleDropdownChange = (name, event) => {
-   console.log("dropdown e",event)
+    console.log("dropdown e", event);
     setFormData((prevData) => ({
       ...prevData,
       [name]: event,
     }));
   };
   const handleDropdownChangeNew = (name, event) => {
-    console.log("dropdown e",event)
-     setFormData((prevData) => ({
-       ...prevData,
-       [name]: event.target.value,
-     }));
-   };
+    console.log("dropdown e", event);
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: event.target.value,
+    }));
+  };
   const getOtp = () => {
     const payload = {
       otp: {
@@ -63,35 +76,32 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
         tenantId: `${stateCode}`,
         mobileNumber: formData.mobile,
         type: "register",
-
       },
     };
     try {
-      Digit.UserService.sendOtp(payload, stateCode)
-        .then((response) => {
-          console.log(response)
-          if (response?.isSuccessful === true) {
-            setGetOtp(true)
-          }
-          else {
-            setShowToast({ key: true, isError: true, label: `${response}` });
-            setGetOtp(false)
-          }
-        })
+      Digit.UserService.sendOtp(payload, stateCode).then((response) => {
+        console.log(response);
+        if (response?.isSuccessful === true) {
+          setGetOtp(true);
+        } else {
+          setShowToast({ key: true, isError: true, label: `${response}` });
+          setGetOtp(false);
+        }
+      });
     } catch (err) {
       console.log(err);
-      setGetOtp(false)
+      setGetOtp(false);
     }
-
-  }
+  };
 
   const handleFetchDetails = () => {
+    console.log("formData", formData);
     let newErrors = {};
     if (!formData.mobile) newErrors.mobile = "Mobile number is required";
     else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";
     if (!formData.city) newErrors.city = "City is required";
-    setErrors(newErrors)
-    console.log("errors", newErrors.mobile)
+    setErrors(newErrors);
+    console.log("errors", newErrors.mobile);
     if (newErrors?.mobile === undefined && newErrors?.city === undefined) {
       const data = {
         userName: formData?.mobile,
@@ -107,30 +117,25 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
 
           if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
             // setCitizenFound(true)
-            const formattedDate = format(parseISO(response.user[0]?.dob), 'dd/MM/yyyy');
+            const formattedDate = format(parseISO(response.user[0]?.dob), "dd/MM/yyyy");
             setFormData((prevData) => ({
               ...prevData,
-              "citizenFound": true,
-              "name": response.user[0]?.name,
-              ["email"]: response.user[0]?.emailId, 
+              citizenFound: true,
+              name: response.user[0]?.name,
+              ["email"]: response.user[0]?.emailId,
               ["gender"]: response.user[0]?.gender,
               ["dob"]: response.user[0]?.dob,
-              "register": false,
+              register: false,
               // "city": response.user[0]?.permanentCity,
-              "user": response.user[0],
+              user: response.user[0],
             }));
-
-
-
           } else {
             setFormData((prevData) => ({
               ...prevData,
-              "citizenFound": false
-
+              citizenFound: false,
             }));
             // setCitizenFound(false)
             setShowToast({ key: true, isError: true, label: `CITIZEN NOT FOUND FOR THE GIVEN DETAILS` });
-
           }
         })
         .catch((error) => {
@@ -138,12 +143,14 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
         });
     }
   };
-  console.log("menu", menu)
+  console.log("menu", menu);
   return (
     <div style={{ border: "2px solid #ccc", padding: "15px", borderRadius: "4px" }}>
       <h2>Citizen Details</h2>
       <div style={{ border: "1px solid #ccc" }}></div>
-      <h3>Mobile Number <span style={{ color: "red" }}>*</span></h3>
+      <h3>
+        Mobile Number <span style={{ color: "red" }}>*</span>
+      </h3>
       <input
         type="text"
         name="mobile"
@@ -165,32 +172,40 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
         placeholder={"Select City"}
         optionKey="i18nKey"
         t={t}
-        selected={formData.city || null}
+        disable={tenantId === "pb.punjab" ? false : true}
+        selected={tenantId === "pb.punjab" ? formData?.city : defaultCity?.[0]}
+        // selected={formData.city || null}
       />
       {errors.city && <span className="error">{errors.city}</span>}
       <label onClick={handleFetchDetails}>Fetch Details</label>
 
-      {formData.citizenFound === false &&
-        <div style={{ display: "flex", flexDirection: "row", columnGap: '10px' }}>
+      {formData.citizenFound === false && (
+        <div style={{ display: "flex", flexDirection: "row", columnGap: "10px" }}>
           <h3>Do you want to register?</h3>
-          <label style={{ backgroundColor: "green" }}
+          <label
+            style={{ backgroundColor: "green" }}
             onClick={() => {
               setFormData((prevData) => ({
                 ...prevData,
-                "register": true,
+                register: true,
               }));
-            }
-
-            }>Yes</label>
-          <label style={{ backgroundColor: "red" }} onClick={() => {
-            setFormData((prevData) => ({
-              ...prevData,
-              ["register"]: false,
-            }));
-          }
-          }>No</label>
+            }}
+          >
+            Yes
+          </label>
+          <label
+            style={{ backgroundColor: "red" }}
+            onClick={() => {
+              setFormData((prevData) => ({
+                ...prevData,
+                ["register"]: false,
+              }));
+            }}
+          >
+            No
+          </label>
         </div>
-      }
+      )}
       {(formData.register === true || formData.citizenFound === true) && (
         <>
           <h3>Citizen Name</h3>
@@ -206,7 +221,6 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
           />
           {errors.name && <span className="error">{errors.name}</span>}
 
-
           <h3>Citizen Gender</h3>
           {/* <Dropdown
             style={{ width: "100%" }}
@@ -221,14 +235,14 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
             name="gender"
             id="gender"
           />     */}
-           <select id="dropdown" value={formData?.gender} onChange={(e) => handleDropdownChangeNew("gender", e)}>
-        <option value="">--Please choose an option--</option>
-        {menu.map((option, index) => (
-          <option key={index} value={option.value}>
-            {option.value}
-          </option>
-        ))}
-      </select>
+          <select id="dropdown" value={formData?.gender} onChange={(e) => handleDropdownChangeNew("gender", e)}>
+            <option value="">--Please choose an option--</option>
+            {menu.map((option, index) => (
+              <option key={index} value={option.value}>
+                {option.value}
+              </option>
+            ))}
+          </select>
           {errors.gender && <span className="error">{errors.gender}</span>}
 
           <h3>Citizen Email</h3>
@@ -240,31 +254,30 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
             onChange={handleFieldChange}
             placeholder="Citizen Email"
             defaultValue={formData.email}
-          // required
-          // maxLength={100}
+            // required
+            // maxLength={100}
           />
           {errors.email && <span className="error">{errors.email}</span>}
           <h3>Citizen Date of Birth</h3>
           <input name="dob" type="date" onChange={handleDateChange} defaultValue={formData.dob} value={formData.dob} />
           {errors.dob && <span className="error">{errors.dob}</span>}
-          {formData.register === true && (<label onClick={() => getOtp()}>Get OTP</label>)}
+          {formData.register === true && <label onClick={() => getOtp()}>Get OTP</label>}
         </>
       )}
-      {Otp === true ?
+      {Otp === true ? (
         <>
-          <h3 style={{ marginTop: '20px' }}>OTP</h3>
+          <h3 style={{ marginTop: "20px" }}>OTP</h3>
           <input
             type="text"
             name="otp"
             value={formData.otp}
             onChange={handleFieldChange}
             placeholder="Enter Otp"
-          // required
+            // required
           />
           {errors.otp && <span className="error">{errors.otp}</span>}
         </>
-        :
-        null}
+      ) : null}
 
       {/* <h3>Date of Birth</h3>
       <TextInput name="dob" value={formData.dob} type="date" onChange={handleFieldChange} style={{ height: "100" }} />

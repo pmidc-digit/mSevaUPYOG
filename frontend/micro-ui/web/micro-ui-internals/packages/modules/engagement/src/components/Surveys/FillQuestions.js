@@ -1600,6 +1600,7 @@ const FillQuestions = (props) => {
                 onChange={(e) => {
                   handleCityChange(e);
                 }}
+                disabled={localStorage.getItem("CITIZEN.CITY") === "pb.punjab" ? false : true}
               >
                 <option value="">--Please choose a city--</option>
                 {cities.map((option, index) => (

@@ -56,7 +56,12 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
     const tenantId = data?.LocationDetails?.address?.city?.code;
     const allDocuments = data?.DocummentDetails?.documents?.documents || [];
     const applicationData = data?.applicationData || {};
-    const workflow = {...data?.applicationData?.workflow, action: "OPEN"};
+    // const workflow = {...data?.applicationData?.workflow, action: "OPEN"};
+    const workflow = {
+      businessService: data?.applicationData?.workflow?.businessService || "",
+      moduleName: data?.applicationData?.workflow?.moduleName || "", 
+      action: "OPEN"
+    };
   
     let updatedUnits = [];
     const usageCategoryMajorCode = data?.PropertyDetails?.usageCategoryMajor?.code;
@@ -68,14 +73,21 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
         if (usageCategoryMajorCode === "RESIDENTIAL") {
           usageCategory = "RESIDENTIAL";
         } else if (usageCategoryMajorCode === "MIXED") {
-          usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL"
+          if(unit?.usageCategoryType?.code){
+            usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL"
             ? "RESIDENTIAL"
             : unit?.subUsageType?.code;
+          }else if (unit?.usageCategory?.code){
+            usageCategory = unit?.usageCategory?.code === "RESIDENTIAL"
+            ? "RESIDENTIAL"
+            : unit?.usageCategory?.code;
+          }
         } else {
           usageCategory = unit?.subUsageType?.code;
         }
   
         return {
+          ...unit,
           floorNo: unit?.floorNoCitizen?.code,
           occupancyType: unit?.occupancyType?.code,
           arv: unit?.arv,
@@ -150,10 +162,15 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
       tenantId: tenantId,
       address: {
         ...data?.LocationDetails?.address,
+        tenantId: tenantId,
         city: data?.LocationDetails?.address?.city?.name,
         locality: {
           code: data?.LocationDetails?.address?.locality?.code,
           area: data?.LocationDetails?.address?.locality?.area,
+        },
+        geoLocation: {
+          latitude: 0,
+          longitude: 0
         },
       },
       usageCategory: usageCategoryMajorCode,

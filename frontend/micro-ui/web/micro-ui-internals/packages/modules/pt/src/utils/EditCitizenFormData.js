@@ -94,9 +94,9 @@ export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => 
           allotmentNo: applicationData?.additionalDetails?.allotmentNo || "",
           allotmentDate: applicationData?.additionalDetails?.allotmentDate || "",
         },
-        businessName:{
-          businessName: applicationData?.additionalDetails?.businessName || ""
-        },
+        // businessName:{
+          businessName: applicationData?.additionalDetails?.businessName?.businessName || "",
+        // },
         remarks: applicationData?.additionalDetails?.remarks || "",
         noOfFloors: applicationData?.noOfFloors || "",
         units: units || [],

@@ -39,7 +39,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
 
   useEffect(()=>{
     console.log("isNotFirst and Units", isNotFirst.current, formData.units, formData, units);
-    debugger;
+    // debugger;
     if(!isNotFirst.current){
       isNotFirst.current = true;
       return;
@@ -276,13 +276,27 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       return usageCategoryMajorMenu(usagecat).filter((e) => e?.code === "RESIDENTIAL")[0];
     }
 
-    if (formData?.usageCategoryMajor?.code !== "MIXED" && usageCategory) {
+    if (formData?.usageCategoryMajor?.code !== "MIXED" && usageCategory && typeof usageCategory === "string") {
+      console.log("usageCategoryBeforeError", usageCategory);
       const codeArr = usageCategory?.split(".");
       console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
       const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
-    } else if (usageCategory) {
+    } else if (usageCategory && typeof usageCategory === "string") {
+      console.log("usageCategoryBeforeError", usageCategory);
       const codeArr = usageCategory?.split(".");
+      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    }else if(formData?.usageCategoryMajor?.code !== "MIXED" && usageCategory?.code){
+      console.log("usageCategoryBeforeError", usageCategory);
+      const codeArr = usageCategory?.code?.split(".");
+      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    }else if(usageCategory && usageCategory?.code){
+      console.log("usageCategoryBeforeError", usageCategory);
+      const codeArr = usageCategory?.code?.split(".");
       console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
       const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
@@ -299,14 +313,26 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           let { occupancyType, usageCategory: uc, constructionDetail, floorNo, arv,
             RentedMonths, NonRentedMonthsUsage } = unit;
           occupancyType = occupencyOptions?.filter((e) => e?.code === occupancyType)[0] || unit?.occupancyType;
-          const usageType = findUsageType(unit);
-          let usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === uc)?.[0] || unit?.usageCategory;
-          let subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => e?.code === uc)?.[0] || unit?.subUsageType;
-          console.log("usageCategoryValueInUnits 1", subUsageType);
+          const usageType = findUsageType(unit) ;
+          let subUsageType, usageCategory;
+          // let usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === uc)?.[0] || unit?.usageCategory;
+          // console.log("usageTypeusageCategoryValueInUnits", usageType, uc);
+          // let usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => uc?.startsWith(e?.code))?.[0] || unit?.usageCategory;
+          // console.log("usageCategoryValueInUnits", usageCategoryMajorMenu(usagecat), uc, usageType);
+          // let subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => e?.code === uc)?.[0] || unit?.subUsageType;
+          // console.log("usageCategoryValueInUnits 1", subUsageType);
+          if(typeof uc === "string"){
+            usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => uc?.startsWith(e?.code))?.[0] || unit?.usageCategory;
+            subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => uc?.startsWith(e?.code))?.[0] || unit?.subUsageType;
+          }else if(typeof uc === "object" && uc?.code){
+            usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => uc?.code?.startsWith(e?.code))?.[0] || unit?.usageCategory;
+            subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => uc?.code?.startsWith(e?.code))?.[0] || unit?.subUsageType;
+          }
           if(subUsageType){
             subUsageType = { i18nKey: "PROPERTYTAX_USAGE_" + stringReplaceAll(subUsageType?.code, "-", "_"), code: subUsageType?.code, }
           }
           console.log("usageCategoryValueInUnits 2", subUsageType);
+          console.log("usageCategoryValueInUnits3",unit, );
           floorNo = getfloorlistdata(floorlist)?.filter((e) => e?.code == floorNo)[0] || unit?.floorNoCitizen;
           RentedMonths = rentedmonths?.find((val) => val.code === RentedMonths?.toString()) || unit?.RentedMonths;
           NonRentedMonthsUsage = nonrentedusage?.find((val) => val.code === NonRentedMonthsUsage) || unit?.NonRentedMonthsUsage;
@@ -314,7 +340,7 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           let order = index + 1;
           let builtUpArea = constructionDetail?.builtUpArea || unit?.builtUpArea;
           return {
-            // ...unit,
+            ...unit,
             floorNo,
             occupancyType,
             usageCategory,
@@ -427,10 +453,10 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   };
 
   function goNext() {
-    debugger;
+    // debugger;
     console.log("goNextfunctioncalledwithunits", units);
     let unitsData = units?.map((unit) => ({
-      // ...unit,
+      ...unit,
       order: unit?.order,
       occupancyType: unit?.occupancyType,
       RentedMonths: unit?.RentedMonths,
@@ -592,12 +618,20 @@ function Unit({
       return usageCategoryMajorMenu(usagecat).filter((e) => e?.code === "RESIDENTIAL")[0];
     }
 
-    else if (formData?.usageCategoryMajor?.code !== "MIXED" && existingUsageCategory) {
+    else if (formData?.usageCategoryMajor?.code !== "MIXED" && typeof existingUsageCategory === "string") {
       const codeArr = existingUsageCategory?.split(".");
       const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
-    } else if (existingUsageCategory) {
+    } else if (typeof existingUsageCategory === "string") {
       const codeArr = existingUsageCategory?.split(".");
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    }else if (formData?.usageCategoryMajor?.code !== "MIXED" && typeof existingUsageCategory === "object") {
+      const codeArr = existingUsageCategory?.code?.split(".");
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    } else if (typeof existingUsageCategory === "object") {
+      const codeArr = existingUsageCategory?.code?.split(".");
       const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
     }

@@ -162,7 +162,7 @@ export const config = [
     body: [
       {
         type: "component",
-        component: "PTSummary",
+        component: "PTSummaryEmployee",
         key: "PTSummary",
         withoutLabel: true,
       },

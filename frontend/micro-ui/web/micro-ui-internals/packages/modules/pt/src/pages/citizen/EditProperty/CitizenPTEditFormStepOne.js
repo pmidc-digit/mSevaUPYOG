@@ -71,7 +71,7 @@ const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData);
 useEffect(() => {
   setLocalStepData(reduxStepData);
 },[reduxStepData])
-console.log("reduxStepData in step one: ", localStepData);
+// console.log("reduxStepData in step one: ", localStepData);
   const dispatch = useDispatch();
 
 

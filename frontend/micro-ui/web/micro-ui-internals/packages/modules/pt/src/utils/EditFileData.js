@@ -5,6 +5,7 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
   const address = applicationData?.LocationDetails?.address || {};
   const locality = { ...applicationData?.address?.locality };
   const city = address?.city || {};
+  const tenantId = applicationData?.tenantId || "";
   const yearOfCreation = {
     code: applicationData?.additionalDetails?.yearConstruction || "",
     i18nKey: applicationData?.additionalDetails?.yearConstruction || "",
@@ -57,9 +58,9 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
         //   i18nKey: applicationData.address.locality.i18nkey || ""
         // },
         city: {
-          code: city.code || "",
-          name: city.name || "",
-          i18nKey: city.i18nKey || "",
+          code: tenantId || "",
+          name: city || "",
+          i18nKey: city || "",
         },
       },
       existingPropertyId: applicationData?.existingPropertyId || "", //NA
@@ -107,6 +108,7 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
       //   i18nKey: ownershipCategory?.i18nKey || "",
       // },
       owners: owners.map((owner) => ({
+        ...owner,
         name: owner?.name || "",
         mobileNumber: owner?.mobileNumber || "",
         fatherOrHusbandName: owner?.fatherOrHusbandName || "",
@@ -132,6 +134,7 @@ export const mapApplicationDataToDefaultValues = (applicationData) => {
         //   i18nKey: owner?.gender?.i18nKey || ""
         // },
         correspondenceAddress: owner?.correspondenceAddress || "",
+        ownershipPercentage: owner?.ownershipPercentage || "",
       })),
     },
     DocummentDetails: {

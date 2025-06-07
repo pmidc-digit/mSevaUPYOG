@@ -12,10 +12,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles : []
     },
     {
       moduleCode: "Swach",
-      moduleName: "Grivance",
+      moduleName: "Swach",
       bgColor: "#00cccd",
       labelKey: "",
       icon: "",
@@ -23,10 +24,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "PT",
-      moduleName: "Grivance",
+      moduleName: "Property Tax",
       bgColor: "#4B49AC",
       labelKey: "",
       icon: "",
@@ -34,10 +36,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "OBPS",
-      moduleName: "Grivance",
+      moduleName: "Online Building Plan",
       bgColor: "#00cccd",
       labelKey: "",
       icon: "",
@@ -45,10 +48,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "TL",
-      moduleName: "Grivance",
+      moduleName: "Trade License",
       bgColor: "#3e4b5b",
       labelKey: "",
       icon: "",
@@ -56,10 +60,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "Payment",
-      moduleName: "Grivance",
+      moduleName: "Payment",
       bgColor: "#0a3622",
       labelKey: "",
       icon: "",
@@ -67,10 +72,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "HRMS",
-      moduleName: "Grivance",
+      moduleName: "HRMS",
       bgColor: "#4B49AC",
       labelKey: "",
       icon: "",
@@ -78,10 +84,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "SW",
-      moduleName: "Grivance",
+      moduleName: "Sewerage Tax",
       bgColor: "#00cccd",
       labelKey: "",
       icon: "",
@@ -89,10 +96,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "WS",
-      moduleName: "Grivance",
+      moduleName: "Water Tax",
       bgColor: "#ffab2d",
       labelKey: "",
       icon: "",
@@ -100,10 +108,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "MCollect",
-      moduleName: "Grivance",
+      moduleName: "MCollect",
       bgColor: "#3e4b5b  ",
       labelKey: "",
       icon: "",
@@ -111,10 +120,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "Engagement",
-      moduleName: "Grivance",
+      moduleName: "Citizen Score Card",
       bgColor: "#0a3622",
       labelKey: "",
       icon: "",
@@ -122,10 +132,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "PTR",
-      moduleName: "PET",
+      moduleName: "PTR",
       bgColor: "#00cccd",
       labelKey: "",
       icon: "",
@@ -133,6 +144,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "NDC",
@@ -144,6 +156,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "SV",
@@ -155,6 +168,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "ADS",
@@ -166,6 +180,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
     {
       moduleCode: "CHB",
@@ -177,10 +192,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[] 
     },
     {
       moduleCode: "ASSET",
-      moduleName: "Asset Module",
+      moduleName: "Asset",
       bgColor: "#3e4b5b",
       labelKey: "",
       icon: "",
@@ -188,6 +204,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
+      roles :[]
     },
   ],
 };

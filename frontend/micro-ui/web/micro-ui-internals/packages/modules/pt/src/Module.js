@@ -133,7 +133,7 @@ import {PTNewFormStepThree as PTNewFormStepThreeCitizen} from "./pages/citizen/C
 import {PTNewFormStepFour as PTNewFormStepFourCitizen} from "./pages/citizen/Create/NewApplicationStepForm/PTNewFormStepFour";
 import {PTNewFormSummaryStepFive as PTNewFormSummaryStepFiveCitizen} from "../src/pages/citizen/Create/NewApplicationStepForm/PTNewFormSummaryStepFive";
 import SubmitResponse from "./components/Response/submit";
-
+import { PaymentCollectionDetails as CollectPayment} from "./components/PaymentCollectionDetails"
 export const PTReducers = getRootReducer;
 
 const componentsToRegister = {
@@ -257,7 +257,8 @@ const componentsToRegister = {
   PropertyDetailsCitizen,
   PropertyApplicationDetails,
   AssessmentDetailsCitizen,
-  SubmitResponse
+  SubmitResponse,
+  CollectPayment
   
 };
 

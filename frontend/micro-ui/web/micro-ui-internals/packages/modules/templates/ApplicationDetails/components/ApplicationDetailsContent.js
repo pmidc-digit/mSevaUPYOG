@@ -131,7 +131,7 @@ function ApplicationDetailsContent({
   const [filtered, setFiltered] = useState([])
 
   const setBillData = async (tenantId, propertyIds, updatefetchBillData, updateCanFetchBillData) => {
-    const assessmentData = await Digit.PTService.assessmentSearch({ tenantId, filters: { propertyIds } });
+    const assessmentData = await Digit.PTService.assessmentSearch({ tenantId:applicationDetails?.tenantId, filters: { propertyIds } });
     let billData = {};
     console.log("assessment data", assessmentData)
 
@@ -182,7 +182,7 @@ function ApplicationDetailsContent({
       // );
       // console.log("filtered",filtered)
       setAssessmentDetails(assessmentData?.Assessments)
-      billData = await Digit.PaymentService.fetchBill(tenantId, {
+      billData = await Digit.PaymentService.fetchBill(applicationDetails?.tenantId, {
         businessService: "PT",
         consumerCode: propertyIds,
       });
@@ -484,7 +484,7 @@ function ApplicationDetailsContent({
         // tenantId: tenantId
       }
       const auth = true
-      Digit.PTService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+      Digit.PTService.paymentsearch({ tenantId: applicationDetails?.tenantId, filters: filters, auth: auth }).then((response) => {
         setPayments(response?.Payments)
         console.log(response)
       })
@@ -493,7 +493,7 @@ function ApplicationDetailsContent({
       console.log(error)
     }
   }, [])
-
+console.log("details",applicationDetails?.applicationDetails)
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
@@ -569,7 +569,7 @@ function ApplicationDetailsContent({
                         labelStyle={{ wordBreak: "break-all" }}
                         textStyle={{ wordBreak: "break-all" }}
                         key={t(value.title)}
-                        label={value?.labelComp?`<div>${t(value.title)} ${value?.labelComp}</div>`:"t(value.title)"}
+                        label={value?.labelComp?`<div>${t(value.title)} ${value?.labelComp}</div>`:`${t(value.title)}`}
                         text={<img src={t(value.value)} alt="" privacy={value?.privacy} />}
                       />
                     );

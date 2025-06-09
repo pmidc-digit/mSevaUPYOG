@@ -44,7 +44,7 @@ const SearchQuestions = ({ parentRoute }) => {
 
   const tableOrderFormDefaultValues = {
     sortBy: "",
-    limit: 10,
+    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
     offset: 0,
     sortOrder: "DESC",
   };
@@ -101,13 +101,226 @@ const SearchQuestions = ({ parentRoute }) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
   };
 
-  //
-  let { data: { Questions = [], Errors = [] } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyQuestionInbox(formState);
-  const totalCount = Questions?.length;
- const [sortedQuestions,setSortedQuestions]=useState([])
-  useEffect(()=>{
-if(Questions.length>0){
+ // const[Questions,setQuestions] = useState([])
+ // const [isInboxLoading,setIsInboxLoading]=useState(true)
+  let { data: { Questions = [], totalCount} = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyQuestionInbox(formState);
+  //const totalCount = Questions?.length;
+ const [sortedQuestions,setSortedQuestions]=useState(Questions)
+  console.log("Questions",Questions)
+//   Questions=[
+//   {
+//     "uuid": "6f08d759-6813-47ce-a0d0-75f091eaddb8",
+//     "tenantId": "pb.punjab",
+//     "questionStatement": "TEST 3",
+//     "auditDetails": {
+//       "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//       "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//       "createdTime": 1747308479084,
+//       "lastModifiedTime": 1747308479084
+//     },
+//     "status": "ACTIVE",
+//     "type": "DROP_DOWN_MENU_ANSWER_TYPE",
+//     "categoryId": "5cfd82c9-2a1b-4f53-b05e-0d468bf7bbb8",
+//     "category": {
+//       "id": "5cfd82c9-2a1b-4f53-b05e-0d468bf7bbb8",
+//       "label": "Public Review"
+//     },
+//     "options": [
+//       {
+//         "uuid": "db38cdc2-b1ad-4ce9-992d-aa87360be5f1",
+//         "questionUuid": "6f08d759-6813-47ce-a0d0-75f091eaddb8",
+//         "optionText": "M",
+//         "optionOrder": 1,
+//         "weightage": 0,
+//         "auditDetails": {
+//           "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "createdTime": 1747308479084,
+//           "lastModifiedTime": 1747308479084
+//         }
+//       },
+//       {
+//         "uuid": "8558a280-974e-4296-838a-64ee507d90ff",
+//         "questionUuid": "6f08d759-6813-47ce-a0d0-75f091eaddb8",
+//         "optionText": "N",
+//         "optionOrder": 2,
+//         "weightage": 0,
+//         "auditDetails": {
+//           "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "createdTime": 1747308479084,
+//           "lastModifiedTime": 1747308479084
+//         }
+//       }
+//     ]
+//   },
+//   {
+//     "uuid": "6b2a0f3c-c888-4b1c-8f5c-06b896f18b54",
+//     "tenantId": "pb.punjab",
+//     "questionStatement": "TEST 2",
+//     "auditDetails": {
+//       "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//       "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//       "createdTime": 1747308479084,
+//       "lastModifiedTime": 1747308479084
+//     },
+//     "status": "ACTIVE",
+//     "type": "CHECKBOX_ANSWER_TYPE",
+//     "categoryId": "5cfd82c9-2a1b-4f53-b05e-0d468bf7bbb8",
+//     "category": {
+//       "id": "5cfd82c9-2a1b-4f53-b05e-0d468bf7bbb8",
+//       "label": "Public Review"
+//     },
+//     "options": [
+//       {
+//         "uuid": "8a064d63-0050-43e2-86b6-3415780b3cd9",
+//         "questionUuid": "6b2a0f3c-c888-4b1c-8f5c-06b896f18b54",
+//         "optionText": "A",
+//         "optionOrder": 1,
+//         "weightage": 0,
+//         "auditDetails": {
+//           "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "createdTime": 1747308479084,
+//           "lastModifiedTime": 1747308479084
+//         }
+//       },
+//       {
+//         "uuid": "820ce9c9-fc9a-4a8d-b0d6-3918bf368df8",
+//         "questionUuid": "6b2a0f3c-c888-4b1c-8f5c-06b896f18b54",
+//         "optionText": "B",
+//         "optionOrder": 2,
+//         "weightage": 0,
+//         "auditDetails": {
+//           "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "createdTime": 1747308479084,
+//           "lastModifiedTime": 1747308479084
+//         }
+//       },
+//       {
+//         "uuid": "5594c3d8-cdcc-496c-a8e9-47c9d40d4f78",
+//         "questionUuid": "6b2a0f3c-c888-4b1c-8f5c-06b896f18b54",
+//         "optionText": "ABC",
+//         "optionOrder": 3,
+//         "weightage": 0,
+//         "auditDetails": {
+//           "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "createdTime": 1747308479084,
+//           "lastModifiedTime": 1747308479084
+//         }
+//       }
+//     ]
+//   },
+//   {
+//     "uuid": "18b77f8d-f264-42a7-83ef-efe3c47b6878",
+//     "tenantId": "pb.punjab",
+//     "questionStatement": "Test 1",
+//     "auditDetails": {
+//       "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//       "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//       "createdTime": 1747308479084,
+//       "lastModifiedTime": 1747308479084
+//     },
+//     "status": "ACTIVE",
+//     "type": "MULTIPLE_ANSWER_TYPE",
+//     "categoryId": "5cfd82c9-2a1b-4f53-b05e-0d468bf7bbb8",
+//     "category": {
+//       "id": "5cfd82c9-2a1b-4f53-b05e-0d468bf7bbb8",
+//       "label": "Public Review"
+//     },
+//     "options": [
+//       {
+//         "uuid": "8fbdc75c-9c42-4c11-a401-92bdae215ccf",
+//         "questionUuid": "18b77f8d-f264-42a7-83ef-efe3c47b6878",
+//         "optionText": "A",
+//         "optionOrder": 1,
+//         "weightage": 0,
+//         "auditDetails": {
+//           "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "createdTime": 1747308479084,
+//           "lastModifiedTime": 1747308479084
+//         }
+//       },
+//       {
+//         "uuid": "466cf1de-b005-428b-b2f4-2a9dab4aa884",
+//         "questionUuid": "18b77f8d-f264-42a7-83ef-efe3c47b6878",
+//         "optionText": "B",
+//         "optionOrder": 2,
+//         "weightage": 0,
+//         "auditDetails": {
+//           "createdBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "lastModifiedBy": "3dda9495-4311-4218-b8eb-475395ee3879",
+//           "createdTime": 1747308479084,
+//           "lastModifiedTime": 1747308479084
+//         }
+//       }
+//     ]
+//   }
+// ]
+//   if(Questions?.length>0){
   
+
+//     const sorted = [...Questions].sort(
+//       (a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime
+//     );
+// Questions=sorted;
+// console.log("sorted",sorted)
+//   }
+
+//   useEffect(()=>{
+//     console.log("Qus",Questions)
+// if(sortedQuestions.length>0){
+  
+
+//     const sorted = [...sortedQuestions].sort(
+//       (a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime
+//     );
+// Questions=sorted
+//     setSortedQuestions(sorted);
+// console.log("sorted",sorted)
+
+// }
+//   },[sortedQuestions])
+// useEffect(()=>{
+//   console.log("formState",formState)
+//      let filters = {
+//       // categoryId:category.selectCategory.id
+//       categoryId: formState?.searchForm?.categoryName?.value||"",
+//       tenantId: formState?.searchForm?.tenantIds?.code,
+//       questionStatement: formState?.searchForm?.questionStatement||"",
+//       status: "ACTIVE",
+//     };
+//   try{
+//    Digit.Surveys.searchQuestions(filters).then((response) => {
+//           if (response?.Questions?.length > 0) {
+//             let arr = response?.Questions;
+  
+          
+//            arr.sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
+//             console.log("arr",arr)
+//             setQuestions(arr)
+//             setIsInboxLoading(false)
+           
+//             // setShowToast({ key: true, label: "Category successfully retrieved." });
+//           } else {
+           
+//           }
+//         });
+      
+//       } catch (error) {
+//         dispatch(setQuestions(category.id, []));
+//         // dispatch(addQuestions(category.id, []));
+//         setQuestionsList([]);
+//         setShowQuestionTableList(false);
+//       }
+// },[formState])
+  useEffect(()=>{
+    
+if(Questions.length>0){
+  console.log("helllooo")
 
     const sorted = [...Questions].sort(
       (a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime
@@ -116,7 +329,11 @@ Questions=sorted
     setSortedQuestions(sorted);
 
 }
+else{
+  setSortedQuestions([])
+}
   },[Questions])
+  console.log("sorted Qus",sortedQuestions)
   // useEffect(() => {
   //   if (isSearchClicked && (Questions?.length === 0 || Errors?.length > 0)) {
   //     setShowToast({ label: ERR_MESSAGE, isDleteBtn: "true", error: true });
@@ -187,7 +404,7 @@ Questions=sorted
 
   //
   const onSearchFormSubmit = (data) => {
-    console.log("onSearchFormSubmit:", data);
+   
     //setIsSearchClicked(true);
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, offset: 0 } });
     data.hasOwnProperty("") ? delete data?.[""] : null;
@@ -215,6 +432,16 @@ Questions=sorted
     resetFilterFormDefaultValues: filterFormDefaultValues,
     onFilterFormReset,
   };
+   const onSortingByData = (e) => {
+    if (e.length > 0) {
+      const [{ id, desc }] = e;
+      const sortOrder = desc ? "DESC" : "ASC";
+      const sortBy = id;
+      if (!(formState.tableForm.sortBy === sortBy && formState.tableForm.sortOrder === sortOrder)) {
+        dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortBy: id, sortOrder: desc ? "DESC" : "ASC" } });
+      }
+    }
+  };
 
   const propsForInboxTable = useQuestionsInboxTableConfig({
     ...{
@@ -222,7 +449,7 @@ Questions=sorted
       onPageSizeChange,
       formState,
       totalCount: totalCount,
-      table: Questions,
+      table: sortedQuestions,
       noResultsMessage: "No Questions found",
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
@@ -231,9 +458,10 @@ Questions=sorted
       questionDetailsContent,
       setOpenQuesDetailsDialog,
       setQuestionDetailsContent,
+      onSortingByData
     },
   });
-  const propsForInboxMobileCards = useQuestionsInboxMobileCardsData({ parentRoute, table: Questions, setShowToast });
+  const propsForInboxMobileCards = useQuestionsInboxMobileCardsData({ parentRoute, table: sortedQuestions, setShowToast });
 
   //For the card displayed after clicking the delete question button:
   //On clicking delete button under "Delete Question" column in a table row, a toast with Yes & No buttons is opened:

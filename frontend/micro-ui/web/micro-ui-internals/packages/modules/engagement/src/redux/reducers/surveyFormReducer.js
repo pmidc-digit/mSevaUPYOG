@@ -20,6 +20,7 @@ import {
   GO_PREV,
   GO_NEXT,
   AUTO_CALCULATE_CATEGORY,
+  RESET_FORM,
 } from "../actions/types";
 
 const initialState = {
@@ -197,7 +198,8 @@ const surveyFormReducer = (state = initialState, action) => {
         ...state,
         goNext: true,
       };
-
+       case RESET_FORM:
+      return initialState;
     case AUTO_CALCULATE_CATEGORY:
       return {
         ...state,

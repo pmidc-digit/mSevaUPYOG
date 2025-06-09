@@ -1,6 +1,6 @@
 import { Loader, Modal, FormComposer } from "@mseva/digit-ui-react-components";
-import React, { useState, useEffect } from "react";
-
+import React, { useState, useEffect, act } from "react";
+import { Link, useHistory } from "react-router-dom";
 import { configPTRejectApplication, configPTVerifyApplication, configPTApproverApplication, configPTAssessProperty } from "../config";
 import * as predefinedConfig from "../config";
 
@@ -55,7 +55,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
   const [disableActionSubmit, setDisableActionSubmit] = useState(false);
-
+  const history = useHistory();
   useEffect(() => {
     if (financialYearsData && financialYearsData["egf-master"]) {
       setFinancialYears(financialYearsData["egf-master"]?.["FinancialYear"]);
@@ -93,18 +93,20 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   }, [file]);
 
   function submit(data) {
+    console.log("data in PTACTIONModal",data,action)
     if (action?.action == "INACTIVE_PROPERTY"){
       // console.log("dataaaaa123",data)
       let workflow = { action: "OPEN", comment: data?.comments, businessService:"PT.CREATE", moduleName: "PT" };
-      applicationData.creationReason = "STATUS"
+      //applicationData.creationReason = "STATUS"
       submitAction({
         customFunctionToExecute: action?.customFunctionToExecute,
         Property: {
-          ...applicationData,
+       //   ...applicationData,
           workflow,
         },
       });
           }
+
     else if (!action?.showFinancialYearsModal) {
       let workflow = { action: action?.action, comment: data?.comments, businessService, moduleName: moduleCode };
       workflow["assignes"] = action?.isTerminateState || !selectedApprover ? [] : [selectedApprover];
@@ -138,9 +140,35 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       });
     }
   }
+  useEffect(()=>{
+    if(action && action?.action==="PT_ACTIVE_PROPERTY"){
+          if (window.location.href.includes("/citizen")) {
+                  alert("Action to activate property is not allowed for citizen");
+                  
+                     }
+                  
+    }
+        if(action && action?.action==="PT_INACTIVE_PROPERTY"){
+          if (window.location.href.includes("/citizen")) {
+                  alert("Action to Inactivate property is not allowed for citizen");
+                  
+                     }
+                  
+    }
+            if(action && action?.action==="PT_EDIT_PROPERTY"){
+          if (window.location.href.includes("/citizen")) {
+               const pID = applicationData?.propertyId;
+    if (pID) {
+      history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
+    }
+                  
+                     }
+                  
+    }
+  },[action])
 
   useEffect(() => {
-    if (action) {
+    if (action && action?.action !== "PT_ACTIVE_PROPERTY" && action?.action !== "PT_INACTIVE_PROPERTY") {
       if (action?.showFinancialYearsModal) {
         setConfig(
           configPTAssessProperty({
@@ -167,6 +195,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
         );
       }
     }
+
   }, [action, approvers, financialYears, selectedFinancialYear, uploadedFile]);
 
   return action && config.form ? (

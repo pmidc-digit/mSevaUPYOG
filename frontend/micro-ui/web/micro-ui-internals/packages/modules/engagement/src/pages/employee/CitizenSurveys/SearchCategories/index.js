@@ -118,10 +118,12 @@ if(Categories.length>0){
       (a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime
     );
   Categories=sorted
+  console.log("sorted categories",sorted)
     setSortedCategories(sorted);
 
 }
   },[Categories])
+  console.log("categories",Categories)
   //Props for links card:
   const PropsForInboxLinks = {
     logoIcon: <DocumentIcon />,
@@ -219,7 +221,7 @@ if(Categories.length>0){
       onPageSizeChange,
       formState,
       totalCount: totalCount,
-      table: Categories,
+      table: sortedCategories,
       noResultsMessage: "No Categories found",
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
@@ -227,7 +229,7 @@ if(Categories.length>0){
     },
   });
 
-  const propsForInboxMobileCards = useCategoryInboxMobileCardsData({ parentRoute, table: Categories,   setShowToast });
+  const propsForInboxMobileCards = useCategoryInboxMobileCardsData({ parentRoute, table: sortedCategories,   setShowToast });
 
   //const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 

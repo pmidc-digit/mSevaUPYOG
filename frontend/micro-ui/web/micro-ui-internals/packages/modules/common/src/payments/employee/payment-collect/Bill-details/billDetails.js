@@ -6,7 +6,7 @@ import { BillDetailsKeyNoteConfig } from "./billDetailsConfig";
 export const BillDetailsFormConfig = (props, t) => ({
   PT: [
     {
-      head: t("ES_BILL_DETAILS_PT_DETAILS_HEADING"),
+      head: t("Payment Collection Details"),
       body: [
         {
           withoutLabel: true,
@@ -187,7 +187,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data, isLoading } = Digit.Hooks.useFetchPayment({ tenantId, businessService, consumerCode });
   const checkFSM = window.location.href.includes("FSM");
-
+  console.log("businessService", businessService)
   const { isLoading: isDataLoading, data: applicationData } = Digit.Hooks.fsm.useSearch(
     tenantId,
     { applicationNos: consumerCode },
@@ -209,7 +209,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
   const getTotalFSM = () => (application?.totalAmount ? application?.totalAmount : 0);
   const getAdvanceAmount = () => (applicationData?.advanceAmount ? applicationData?.advanceAmount : 0);
   //const dueAmountTobePaid = () => ( bill?.totalAmount ? bill?.totalAmount - applicationData?.advanceAmount:0);
-  const dueAmountTobePaid = () => ( application?.totalAmount ? application?.totalAmount - applicationData?.advanceAmount:0);
+  const dueAmountTobePaid = () => (application?.totalAmount ? application?.totalAmount - applicationData?.advanceAmount : 0);
   const getAmountPerTrip = () => (application?.additionalDetails?.tripAmount ? application?.additionalDetails?.tripAmount : 0);
 
   const arrears =
@@ -326,6 +326,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
 
   const renderArrearDetailsForWNS = () => {
     return (
+
       <table className="table-fixed-column-common-pay">
         <thead>
           <tr>
@@ -364,6 +365,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
             })}
         </tbody>
       </table>
+
     );
   };
 
@@ -417,8 +419,24 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
           ) : null}
         </StatusTable>
       ) : (
-        <StatusTable style={{ paddingTop: "46px" }}>
+        <StatusTable style={{ paddingTop: "20px" }}>
+              <div style={{display:'flex',columnGap:'50%',alignItems:'center'}}>
+          <h3 style={{
+            marginBottom: "15px",
+            color: "#0d43a7",
+            fontSize: "24px",
+            lineHeight: "28px",
+            fontFamily: "Noto Sans,sans-serif",
+            fontSize: "24px",
+            lineHeight: "32px",
+            fontWeight: "500",
+            fontFamily: "Noto Sans,sans-serif"
+          }}>
+            Fee Details</h3>
+             <h3 style={{fontWeight:'bold',fontSize:'20px'}}>Total Amount : {"Rs " + Number(getTotal()).toFixed(2)}</h3> 
+             </div>
           <Row label={t("ES_PAYMENT_TAXHEADS")} textStyle={{ fontWeight: "bold" }} text={t("ES_PAYMENT_AMOUNT")} />
+        
           <hr style={{ width: "40%" }} className="underline" />
           {billDetails?.billAccountDetails
             ?.sort((a, b) => a.order - b.order)
@@ -431,7 +449,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
                 text={"₹ " + amountDetails.amount?.toFixed(2)}
               />
             ))}
-
+         
           {arrears?.toFixed?.(2) ? (
             <Row
               labelStyle={{ fontWeight: "normal" }}
@@ -447,19 +465,40 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
             textStyle={{ fontWeight: "bold", textAlign: "right", maxWidth: "100px" }}
             text={"₹ " + Number(getTotal()).toFixed(2)}
           />
-
+      
           {!showDetails && !ModuleWorkflow && businessService !== "TL" && yearWiseBills?.length > 1 && (
             <Fragment>
+                  <h3 style={{
+            marginBottom: "5px",
+            color: "#0d43a7",
+            fontSize: "24px",
+            lineHeight: "28px",
+            fontFamily: "Noto Sans,sans-serif",
+            fontSize: "24px",
+            lineHeight: "32px",
+            fontWeight: "500",
+            fontFamily: "Noto Sans,sans-serif"
+          }}>Arrear Details</h3>
               {businessService === "WS" || "SW" ? (
                 <div className="row last">
-                  <div style={{ maxWidth: "100px" }} onClick={() => setShowDetails(true)} className="filter-button value">
+                  <div style={{ maxWidth: "100px", display: "inline",
+               
+                border: "1px solid",
+                padding: "8px",
+                minWidth: "150px",
+                borderRadius: "8px" }} onClick={() => setShowDetails(true)} className="filter-button value">
                     {t("ES_COMMON_VIEW_DETAILS")}
                   </div>
                 </div>
               ) : (
                 <div className="row last">
                   <h2></h2>
-                  <div style={{ textAlign: "right", maxWidth: "100px" }} onClick={() => setShowDetails(true)} className="filter-button value">
+                  <div style={{ textAlign: "right", maxWidth: "100px" , display: "inline",
+               
+                border: "1px solid",
+                padding: "8px",
+                minWidth: "150px",
+                borderRadius: "8px"}} onClick={() => setShowDetails(true)} className="filter-button value">
                     {t("ES_COMMON_VIEW_DETAILS")}
                   </div>
                 </div>
@@ -470,12 +509,27 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
       )}
       {showDetails && yearWiseBills?.length > 1 && !ModuleWorkflow && businessService !== "TL" && (
         <React.Fragment>
+          <h3 style={{
+            marginBottom: "5px",
+            color: "#0d43a7",
+            fontSize: "24px",
+            lineHeight: "28px",
+            fontFamily: "Noto Sans,sans-serif",
+            fontSize: "24px",
+            lineHeight: "32px",
+            fontWeight: "500",
+            fontFamily: "Noto Sans,sans-serif"
+          }}>Arrear Details</h3>
           <div style={{ maxWidth: "95%", display: "inline-block", textAlign: "right" }}>
             <div style={{ display: "flex", padding: "10px", paddingLeft: "unset", maxWidth: "95%" }}>
               <div style={{ backgroundColor: "#EEEEEE", overflowX: "auto" }}>
                 {businessService === "WS" || "SW" ? (
+
                   renderArrearDetailsForWNS()
+
+
                 ) : (
+
                   <table className="table-fixed-column-common-pay">
                     <thead>
                       <tr>
@@ -514,15 +568,28 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
                         })}
                     </tbody>
                   </table>
+
                 )}
               </div>
             </div>
             {businessService === "WS" || "SW" ? (
-              <div style={{ float: "left" }} onClick={() => setShowDetails(false)} className="filter-button">
+              <div style={{ float: "left", display: "inline",
+                
+                border: "1px solid",
+                padding: "8px",
+                minWidth: "100px",
+                borderRadius: "8px" }} onClick={() => setShowDetails(false)} className="filter-button">
                 {t("ES_COMMON_HIDE_DETAILS")}
               </div>
             ) : (
-              <div style={{ float: "right" }} onClick={() => setShowDetails(false)} className="filter-button">
+              <div style={{
+                float: "right", display: "inline",
+                
+                border: "1px solid",
+                padding: "8px",
+                minWidth: "100px",
+                borderRadius: "8px"
+              }} onClick={() => setShowDetails(false)} className="filter-button">
                 {t("ES_COMMON_HIDE_DETAILS")}
               </div>
             )}
@@ -552,7 +619,7 @@ const BillDetails = ({ businessService, consumerCode, _amount, onChange }) => {
                 className="text-indent-xl"
                 onChange={(e) => onChangeAmount(e.target.value)}
                 value={amount}
-                disable={businessService === "WS" || "SW"?false:getTotal() === 0}
+                disable={businessService === "WS" || "SW" ? false : getTotal() === 0}
               />
             ) : (
               <TextInput style={{ width: "30%" }} className="text-indent-xl" value={getTotal()} disable={true} />

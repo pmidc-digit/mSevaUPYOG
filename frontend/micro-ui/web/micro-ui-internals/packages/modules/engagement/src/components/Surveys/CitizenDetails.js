@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useEffect, useState } from "react";
 import { TextInput, Dropdown, CheckBox, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from 'date-fns';
@@ -6,7 +6,19 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [showToast, setShowToast] = useState(null);
   const { t } = useTranslation();
-  console.log("cities", cities)
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const defaultCity = cities?.filter((ulb) => tenantId === ulb?.code)
+  console.log("cities", cities,tenantId,formData,defaultCity)
+
+  useEffect(()=>{
+    if(tenantId==="pb.punjab" && formData?.citizenFound===null){
+     
+        setFormData((prevData) => ({
+      ...prevData,
+      ["city"]: defaultCity?.[0],
+    }));
+  }
+  },[defaultCity])
   let menu = [];
   const { data: Menu } = Digit.Hooks.pt.useGenderMDMS(stateCode, "common-masters", "GenderType");
   Menu &&
@@ -165,7 +177,9 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
         placeholder={"Select City"}
         optionKey="i18nKey"
         t={t}
-        selected={formData.city || null}
+       // selected={formData?.city || null}
+       disable={tenantId==="pb.punjab"?false:true}
+       selected={tenantId==="pb.punjab"?formData?.city:defaultCity?.[0]}
       />
       {errors.city && <span className="error">{errors.city}</span>}
       <label onClick={handleFetchDetails}>Fetch Details</label>

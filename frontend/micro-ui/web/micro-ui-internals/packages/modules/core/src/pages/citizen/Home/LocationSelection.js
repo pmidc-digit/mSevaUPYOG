@@ -38,7 +38,7 @@ const LocationSelection = () => {
 
   function onSubmit() {
     if (selectedCity) {
-      Digit.SessionStorage.set("CITIZEN.COMMON.HOME.CITY", selectedCity);
+      Digit.SessionStorage.set("CITIZEN.COMMON.HOME.CITY", selectedCity?.code);
       localStorage.setItem("CITIZEN.CITY", selectedCity?.code);
       const redirectBackTo = location.state?.redirectBackTo;
       if (redirectBackTo) {

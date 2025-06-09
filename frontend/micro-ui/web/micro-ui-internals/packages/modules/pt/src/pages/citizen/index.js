@@ -1,5 +1,5 @@
 import { AppContainer, BackButton, PrivateRoute } from "@mseva/digit-ui-react-components";
-import React from "react";
+import React ,{useState}from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { shouldHideBackButton } from "../../utils";
 import Search from "../employee/Search";
@@ -36,7 +36,10 @@ const App = () => {
   const PropertyDetailsCitizen = Digit?.ComponentRegistryService?.getComponent("PropertyDetailsCitizen")
   const PropertyApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PropertyApplicationDetails");
     const SubmitResponse = Digit?.ComponentRegistryService?.getComponent("SubmitResponse");
+        const CollectPayment = Digit?.ComponentRegistryService?.getComponent("CollectPayment");
   console.log("citizen path",path)
+     const [link, setLink] = useState(null);
+    const commonProps = { stateCode:"pb", cityCode:"testing", moduleCode:"payment", setLink };
   return (
     <span className={"pt-citizen"}style={{width:"100%"}}>
       <Switch>
@@ -61,6 +64,7 @@ const App = () => {
           <PrivateRoute path={`${path}/property/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/application-preview/:id`} component={(props) => <PropertyApplicationDetails {...props} t={t} parentRoute={path} />} />
            <PrivateRoute path={`${path}/property/pt-acknowledgement`} component={SubmitResponse}></PrivateRoute>
+            <PrivateRoute path={`${path}/property/payment/collect/:businessService/:consumerCode`}component={() => <CollectPayment {...commonProps} basePath={path}/>} />
         </AppContainer>
       </Switch>
     </span>

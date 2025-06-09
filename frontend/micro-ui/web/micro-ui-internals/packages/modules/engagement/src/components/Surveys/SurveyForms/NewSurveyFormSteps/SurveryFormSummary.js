@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer } from "@mseva/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
 //
-import { goPrev, updateSurveyForm } from "../../../../redux/actions/surveyFormActions";
+import { goPrev, resetForm, updateSurveyForm } from "../../../../redux/actions/surveyFormActions";
 
 
 const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
@@ -66,7 +66,9 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
               Digit.Surveys.createSurvey(filters).then((response) => {
                 if(response?.Surveys?.length>0)
                 {
+                  dispatch(resetForm())
                   history.push("/digit-ui/employee/engagement/surveys/create-response", {message:"SURVEY_FORM_CREATED",response:response?.Surveys,isSuccess:true})
+                  
                  // alert("Survey Successfully Created");
                  // setShowToast({ key: true, label: "Survey successfully created" });
                 }
@@ -88,6 +90,7 @@ const SurveryFormSummary = ({ config, onGoNext, onBackClick, t }) => {
     function onGoBack(data) {
         onBackClick(config.key, data);
         dispatch(goPrev())
+       
     }
 
     const onFormValueChange = (setValue = true, data) => {

@@ -231,14 +231,60 @@ console.log("workflowDetails",workflowDetails)
     const toYear = new Date(detail.toPeriod).getFullYear();
     return `${fromYear}-${toYear}(Rs.${detail.amount})`;
   }).join(',');
+//  let newDetail=  {  title:" ",
+//         asSectionHeader: true,
+//        // additionalDetails:{billingInfo:fetchBillData?.Bill},
+//         belowComponent: () => (
+//           <LinkLabel
+//             onClick={() => history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`})}
+//             style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
+//           >
+//             {/* {t("PT_VIEW_PAYMENT")} */}
+//              {t("PT_PAY_PAYMENT")}
+//           </LinkLabel>
+//         ),
+//         values: [
+//           // {
+//           //   title: "PT_PROPERTY_PTUID",
+//           //   value: applicationNumber,
+//           // },
+//           {
+//             title:"PT_TOTAL_DUES",
+//             labelComp: <span style={{
 
+//   marginLeft: "8px",
+//   cursor: "pointer",
+//   fontSize: "16px",
+//   color: "#555",
+//   hoverColor:'#000'
+// }}><InfoIcon /></span>,
+//             value: fetchBillData?.Bill?.[0]?.totalAmount ? `₹ ${fetchBillData?.Bill[0]?.totalAmount}` : "N/A",
+
+//           },
+//           {
+//             title:"",
+//             value:dateString
+
+          
+//           }
+
+//         ],}
+// setAppDetailsToShow(prevState => ({
+//   ...prevState,
+//   applicationDetails: [newDetail, ...(prevState.applicationDetails || [])]
+// }));
+  console.log("in useEffect return",appDetailsToShow)
+   
       appDetailsToShow?.applicationDetails?.unshift({
        title:" ",
         asSectionHeader: true,
        // additionalDetails:{billingInfo:fetchBillData?.Bill},
         belowComponent: () => (
           <LinkLabel
-            onClick={() => history.push({ pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`})}
+            onClick={() => history.push({ 
+              // pathname: `/digit-ui/employee/pt/payment-details/${applicationNumber}`
+               pathname: `/digit-ui/citizen/pt/property/payment/collect/PT/${applicationNumber}`
+            })}
             style={isMobile ? { marginTop: "15px", marginLeft: "0px" } : { marginTop: "15px" }}
           >
             {/* {t("PT_VIEW_PAYMENT")} */}
@@ -273,9 +319,13 @@ console.log("workflowDetails",workflowDetails)
         ],
       });
     }
+   
     return () => {
-      if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title == "PT_TOTAL_DUES" && !(sessionStorage.getItem("revalidateddone") === "done")) {
+      if (appDetailsToShow?.applicationDetails?.[0]?.values?.[1].title == "PT_TOTAL_DUES" 
+        && !(sessionStorage.getItem("revalidateddone") === "done")
+      ) {
         appDetailsToShow?.applicationDetails.shift();
+       
         sessionStorage.setItem("revalidateddone", "done");
         revalidate();
       }
@@ -321,13 +371,30 @@ console.log("workflowDetails",workflowDetails)
               //   },
               //   tenantId: Digit.ULBService.getStateId(),
               // },
-              {
-                action: "INACTIVE_PROPERTY",
-                forcedName: "PT_INACTIVE_PROPERTY",
-                showInactiveYearModel: true,
+                 {
+                action: "PT_ACTIVE_PROPERTY",
+                forcedName: "PT_ACTIVE_PROPERTY",
+                
                 customFunctionToExecute: (data) => {
-                history.push("/digit-ui/employee/pt/response", { Property: data.Property, key: "UPDATE", action: "SUBMIT" });
+                 
                 },
+              },
+                  {
+                action: "PT_EDIT_PROPERTY",
+                forcedName: "PT_EDIT_PROPERTY",
+                
+                customFunctionToExecute: (data) => {
+                 
+                },
+              },
+              {
+                action: "PT_INACTIVE_PROPERTY",
+                forcedName: "PT_INACTIVE_PROPERTY",
+              
+                customFunctionToExecute: (data) => {
+                //history.push("/digit-ui/employee/pt/response", { Property: data.Property, key: "UPDATE", action: "SUBMIT" });
+                },
+             
                 // redirectionUrl: {
                  
                 //   state: { workflow: { action: "OPEN", moduleName: "PT", businessService: "PT.CREATE" } },

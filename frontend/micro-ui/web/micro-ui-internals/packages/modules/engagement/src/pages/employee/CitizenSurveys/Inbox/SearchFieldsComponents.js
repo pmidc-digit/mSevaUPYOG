@@ -9,19 +9,27 @@ const SearchFormFieldsComponents = ({ registerRef, controlSearchForm, searchForm
   const ulbs = Digit.SessionStorage.get("ENGAGEMENT_TENANTS");
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const userInfo = Digit.SessionStorage.get("citizen.userRequestObject");
+  //const userInfo = Digit.SessionStorage.get("citizen.userRequestObject");
+    const userInfo = Digit.UserService.getUser().info;
  let isTenantFound= true;
-  let userUlbs = ulbs
+  let userUlbs =  ulbs
     .filter((ulb) => userInfo?.info?.roles?.some((role) => role?.tenantId === ulb?.code))
     .sort(alphabeticalSortFunctionForTenantsBasedOnName);
-  if(userUlbs?.length===0){
+  if(userUlbs?.length===0 ||tenantId==="pb.punjab"){
     isTenantFound = false;
-   userUlbs=[{ i18nKey: `TENANT_TENANTS_${userInfo?.info?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.info.tenantId}`}] 
+  let adduserUlbs={ i18nKey: `TENANT_TENANTS_${userInfo?.tenantId.replace(".", "_").toUpperCase()}`,code:`${userInfo?.tenantId}`}
+   if(tenantId==="pb.punjab"){
+    userUlbs=[adduserUlbs,...ulbs]
+   }
+   else{
+   userUlbs=[adduserUlbs]
+   }
   }
+   console.log("ulbs",ulbs,userUlbs,userInfo,tenantId)
   const selectedTenat = useMemo(() => {
     if(userUlbs?.length>0 && isTenantFound===true){
     
-    const filtered = ulbs.filter((item) => item.code === tenantId);
+    const filtered =  ulbs.filter((item) => item.code === tenantId);
     return filtered;
     }
     else{

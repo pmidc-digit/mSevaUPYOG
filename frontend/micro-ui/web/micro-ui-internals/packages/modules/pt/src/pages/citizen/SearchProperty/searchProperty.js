@@ -665,7 +665,7 @@ const SearchProperty = ({ config: propsConfig, onSelect }) => {
   return (
     <>
      {/* <div style={{ marginTop: "16px", marginBottom: "16px" ,backgroundColor:"white", maxWidth:"99%"}}> */}
-      <Card style={{ marginTop: "16px", marginBottom: "16px" ,backgroundColor:"white", maxWidth:"99%"}}>
+      <Card style={{ marginTop: "16px", marginBottom: "16px" ,backgroundColor:"white", maxWidth:"99"}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
          <h1 style={{fontSize:'20px'}}> Search Property </h1>
          <SubmitBar label="Add New Property" onSubmit={handleRedirect} />

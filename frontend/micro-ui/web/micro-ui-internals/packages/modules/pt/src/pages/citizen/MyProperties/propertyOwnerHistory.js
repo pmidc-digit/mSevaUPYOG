@@ -8,6 +8,7 @@ import { useParams } from "react-router-dom";
 const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
   const { t } = useTranslation();
   const { propertyIds } = useParams();
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const audit = true;
   const { isLoading, isError, error, data } = Digit.Hooks.pt.usePropertySearch({
@@ -70,7 +71,7 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
     if (properties.length === 0) {
       properties.push(ownerProperty);
     }
-    properties = getUniqueList(properties);
+   // properties = getUniqueList(properties);
     console.log("properties",properties)
     properties &&
       properties.length > 0 &&

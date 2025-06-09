@@ -25,6 +25,7 @@ const FillQuestions = (props) => {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [localityList, setLocalityList] = useState(null);
+   console.log("city",localStorage.getItem("CITIZEN.CITY"))
   const [openQuesDetailsDialog, setOpenQuesDetailsDialog] = useState(false);
   const [geoLocation, setGeoLocation] = useState({
     latitude: null,
@@ -96,7 +97,7 @@ const FillQuestions = (props) => {
   const userType = props.userType;
   const history = useHistory();
   const [questionDetailsContent, setQuestionDetailsContent] = useState(false);
-
+ 
   function handleDisplayQuesDetails() {
     setOpenQuesDetailsDialog(true);
     const content = (
@@ -234,6 +235,7 @@ const FillQuestions = (props) => {
     let payload = {
       surveyUuid: data.uuid,
       citizenId: prevProps.userInfo.uuid,
+      tenantId: city===null? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:city: city
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
@@ -276,6 +278,7 @@ const FillQuestions = (props) => {
     let payload = {
       surveyUuid: data.uuid,
       citizenId: prevProps.userInfo.uuid,
+       tenantId: (city===null || city===undefined)? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:localStorage.getItem("CITIZEN.CITY"): city
     };
     try {
       Digit.Surveys.getAnswers(payload).then((response) => {
@@ -361,7 +364,8 @@ const FillQuestions = (props) => {
     setLoading(true);
     // if ((prevProps?.userType).toUpperCase() === "CITIZEN") {
     const data = {
-      userName: prevProps?.userInfo?.mobileNumber,
+      //userName: prevProps?.userInfo?.mobileNumber,
+      uuid: [prevProps?.userInfo?.uuid],
       tenantId: prevProps?.userInfo?.tenantId,
     };
     const filters = {
@@ -589,6 +593,7 @@ const FillQuestions = (props) => {
           questionUuid: questionId,
           sectionUuid: sectionId,
           comments: formData[sectionId][questionId]?.comments || "",
+          tenantId: window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code : city,
           answerDetails: [
             {
               answerType: formData[sectionId][questionId].answerType,
@@ -614,7 +619,8 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: city,
+        tenantId: city===null? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:localStorage.getItem("CITIZEN.CITY"): city,
+        city:city===null? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:localStorage.getItem("CITIZEN.CITY"): city,
         locality: locality,
         // tenantId: (prevProps?.userType).toUpperCase() === "EMPLOYEE" ? prevProps?.citizenData?.city?.code : city?.code,
         status: "Draft",
@@ -629,11 +635,13 @@ const FillQuestions = (props) => {
         if (response?.SubmitResponse !== undefined) {
           // return;
         } else {
+          
           setShowToast({ key: true, isError: true, label: `${response?.Errors?.message}` });
         }
       });
     } catch (error) {
       setLoading(false);
+      
       return error;
     }
   };
@@ -686,10 +694,11 @@ const FillQuestions = (props) => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+console.log("data",data)
   const handleSubmitSurvey = () => {
     setLoading(true);
     let answerArr = [];
+  
     let geolocationStr = geoLocation.latitude + geoLocation.longitude;
     for (const sectionId in formData) {
       for (const questionId in formData[sectionId]) {
@@ -699,7 +708,7 @@ const FillQuestions = (props) => {
           questionUuid: questionId,
           sectionUuid: sectionId,
           comments: formData[sectionId][questionId]?.comments || "",
-          tenantId: localStorage.getItem("CITIZEN.CITY"),
+          tenantId: window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code : city,
           // answer: [formData[sectionId][questionId].answer],
           answerDetails: [
             {
@@ -727,7 +736,8 @@ const FillQuestions = (props) => {
 
       SurveyResponse: {
         surveyUuid: data.uuid,
-        tenantId: city,
+        tenantId: city===null? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:localStorage.getItem("CITIZEN.CITY"): city,
+        city:city===null? window.location.href.includes("/employee")? prevProps?.citizenData?.city?.code:localStorage.getItem("CITIZEN.CITY"): city,
         status: "Submit",
         locality: locality,
         coordinates: `${geoLocation.latitude},${geoLocation.longitude}`,
@@ -738,6 +748,7 @@ const FillQuestions = (props) => {
 
     try {
       Digit.Surveys.submitSurvey(payload).then((response) => {
+      
         setLoading(false);
         if (response?.SubmitResponse !== undefined) {
           userType.toUpperCase() === "EMPLOYEE"
@@ -754,15 +765,18 @@ const FillQuestions = (props) => {
 
           return;
         } else {
+         console.log("error")
+         alert(`${response?.Errors?.message}`)
           setShowToast({ key: true, isError: true, label: `${response?.Errors?.message}` });
         }
       });
     } catch (error) {
       setLoading(false);
+     
       return error;
     }
   };
-
+console.log("tenantId",tenantId)
   const handleSubmit = (event) => {
     event.preventDefault();
     if ((prevProps.citizenFill && (prevProps?.userType).toLowerCase() === "employee") || (prevProps?.userType).toLowerCase() === "citizen") {
@@ -1439,7 +1453,7 @@ const FillQuestions = (props) => {
       }
     }
   }, [getFetchAnswers]);
-
+  console.log("city",city,localStorage.getItem("CITIZEN.CITY"),prevProps?.citizenData?.city)
   const handleLocalityChangeCitizen = (e) => {
     setLocality(e.target.value);
   };
@@ -1476,7 +1490,9 @@ const FillQuestions = (props) => {
       />
     ) : (((prevProps?.userType).toUpperCase() === "EMPLOYEE" || prevProps?.citizenFill) && isgeoLoc === true) ||
       ((prevProps?.userType).toUpperCase() === "CITIZEN" && hasCitizenDetails === true && isgeoLoc === true) ? (
+        
       <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
+            {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
         <div className="category-card">
           <div>
             <h2 style={{ fontSize: "20px", fontWeight: "bold", color: "black" }}>
@@ -1560,6 +1576,7 @@ const FillQuestions = (props) => {
               <select
                 id="dropdown"
                 value={city}
+                disabled={localStorage.getItem("CITIZEN.CITY")==="pb.punjab"?false:true}
                 // value={localStorage.getItem("CITIZEN.CITY")}
                 // value={formData[section.uuid]?.[question.uuid]?.answer}
                 onChange={(e) => {

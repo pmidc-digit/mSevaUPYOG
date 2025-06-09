@@ -95,7 +95,7 @@ export const mapApplicationDataToDefaultValuesForCitizen = (applicationData) => 
           allotmentDate: applicationData?.additionalDetails?.allotmentDate || "",
         },
         // businessName:{
-          businessName: applicationData?.additionalDetails?.businessName?.businessName || "",
+          businessName: applicationData?.additionalDetails || "",
         // },
         remarks: applicationData?.additionalDetails?.remarks || "",
         noOfFloors: applicationData?.noOfFloors || "",

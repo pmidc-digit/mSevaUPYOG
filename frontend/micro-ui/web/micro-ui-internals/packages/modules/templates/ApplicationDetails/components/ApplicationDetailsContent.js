@@ -353,23 +353,31 @@ console.log(filteredAssessment);
     // }
   };
 
-  const applicationData_pt = applicationDetails.applicationData;
+  const applicationData_pt = applicationDetails?.applicationData;
   const propertyIds = applicationDetails?.applicationData?.propertyId || "";
   const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
   const PropertyInActive = () => {
-    if (checkPropertyStatus == "ACTIVE") {
-      updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
-    } else {
-      alert("Property is already inactive.");
+    if(window.location.href.includes("employee")){
+      if (checkPropertyStatus == "ACTIVE") {
+        updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+      } else {
+        alert("Property is already inactive.");
+      }
+    }else{
+      alert("You are not authorized to change the property status.");
     }
   };
 
   const PropertyActive = () => {
-    if (checkPropertyStatus == "INACTIVE") {
-      updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
-    } else {
-      alert("Property is already active.");
-    }
+    if(window.location.href.includes("employee")){
+      if (checkPropertyStatus == "INACTIVE") {
+        updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
+      } else {
+        alert("Property is already active.");
+      }
+    }else{
+      alert("You are not authorized to change the property status.");
+    }  
   };
   // const PropertyInActive = () => updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
   // const PropertyActive = () => updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
@@ -377,7 +385,29 @@ console.log(filteredAssessment);
   const EditProperty = () => {
     const pID = applicationDetails?.applicationData?.propertyId;
     if (pID) {
-      history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
+      if(window.location.href.includes("employee")){
+        if(applicationDetails?.applicationData?.status === "INACTIVE"){
+          alert("Property is inactive, cannot edit.");
+          return;
+        }else if(applicationDetails?.applicationData?.status === "INWORKFLOW"){
+          alert("Property is in workflow, cannot edit.");
+          return;
+        }
+        else if(applicationDetails?.applicationData?.status === "ACTIVE"){
+          history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
+        } 
+      }else{
+        if(applicationDetails?.applicationData?.status === "INACTIVE"){
+          alert("Property is inactive, cannot edit.");
+          return;
+        }else if(applicationDetails?.applicationData?.status === "INWORKFLOW"){
+          alert("Property is in workflow, cannot edit.");
+          return;
+        }
+        else if(applicationDetails?.applicationData?.status === "ACTIVE"){
+          history.push({ pathname: `/digit-ui/citizen/pt/property/edit-application/${pID}` });
+        }
+      }
     }
     // alert("edit property");
   };
@@ -386,7 +416,7 @@ console.log(filteredAssessment);
     alert("access property");
   };
 
-   console.log("applicationDetails?.applicationDetails",applicationDetails?.applicationDetails)
+   console.log("applicationDetails?.applicationDetails",applicationDetails)
    console.log("infolabel",isInfoLabel)
    console.log("assessment details",assessmentDetails)
 
@@ -808,12 +838,12 @@ console.log(filteredAssessment);
       {/* </table> */}
 
 
-      <ActionBar className="clear-search-container" style={{ display: "block" }}>
+      {window.location.href.includes("/pt/")?<ActionBar className="clear-search-container" style={{ display: "block" }}>
         <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />
         <SubmitBar label={"Make Property Inactive"} style={{ marginLeft: "20px" }} onSubmit={PropertyInActive} />
         <SubmitBar label={"Edit Property"} style={{ marginLeft: "20px" }} onSubmit={EditProperty} />
         <SubmitBar label={"Access Property"} style={{ marginLeft: "20px" }} onSubmit={AccessProperty} />
-      </ActionBar>
+      </ActionBar>:<div></div>}
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </Card>
   );

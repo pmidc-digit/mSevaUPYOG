@@ -20,6 +20,7 @@ import ComplaintDetailsPage from "./pages/citizen/ComplaintDetails";
 import SelectGeolocation from "./pages/citizen/Create/Steps/SelectGeolocation";
 import SelectImages from "./pages/citizen/Create/Steps/SelectImages";
 import Attendence from "./pages/citizen/Attendence";
+import ViewAttendence from "./pages/citizen/ViewAttendence";
 
 export const SWACHReducers = getRootReducer;
 
@@ -78,6 +79,7 @@ const componentsToRegister = {
   SWACHSelectGeolocation: SelectGeolocation,
   SWACHSelectImages: SelectImages,
   Attendence,
+  ViewAttendence,
 };
 
 export const initSWACHComponents = () => {

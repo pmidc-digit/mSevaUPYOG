@@ -68,6 +68,7 @@ import useSwachTenants from "./swach/useTenants";
 import useSwachComplaintSubType from "./swach/useComplaintSubType";
 import useSwachComplaintStatusCount from "./swach/useComplaintStatusWithCount";
 import useCount from "./swach/useCount";
+import useViewAttendence from "./swach/useViewAttendence";
 
 import useTenantsFSM from "./fsm/useTenants";
 import useDesludging from "./fsm/useDesludging";
@@ -378,6 +379,7 @@ const swach = {
   useComplaintStatusCount: useSwachComplaintStatusCount,
   useTradeLicenseBillingslab,
   useCount,
+  useViewAttendence
   // useMDMS: usePGRMDMS,
 };
 

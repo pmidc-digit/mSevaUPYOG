@@ -98,14 +98,18 @@ console.log("formData tes test",formData);
         let { relationship, gender, ownerType } = owner;
         let institutionType = owner?.institutionType;
         // let institutionType = owner?.owner;
-        if(!relationship?.code){
+        if(!relationship?.code && relationship){
           relationship = relationshipTypes.find((val) => val.code === relationship?.toUpperCase());
         }
-        if(!formData?.ownershipCategory?.code?.includes("INDIVIDUAL") && institutionType){
+        if(!formData?.ownershipCategory?.code?.includes("INDIVIDUAL") && !institutionType?.code && institutionType){
           institutionType = institutionTypeMenu.find((val) => val.code === institutionType)
         }
-        gender = menu.find((val) => val.code === gender);
-        ownerType = ownerTypesMenu.find((val) => val.code === ownerType);
+        if(!gender?.code && gender){
+          gender = menu.find((val) => val.code === gender);
+        }
+        if(!ownerType?.code && ownerType){
+          ownerType = ownerTypesMenu.find((val) => val.code === ownerType);
+        }
 
 
         return {
@@ -188,7 +192,6 @@ const [showToast, setShowToast] = useState(null);
   console.log("institution",institution)
   console.log("owner",owner)
 const formState2 = useSelector((state) => state.pt.PTNewApplicationForm);
-console.log("manasa",formState2.formData)
 console.log("man",formData?.ownerShipCategory)
 const [isSamePropAddress,setIsSamePropAddress] = useState(false)
   const tenantId = Digit.ULBService.getCurrentTenantId();

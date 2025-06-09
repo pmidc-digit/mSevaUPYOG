@@ -1,11 +1,13 @@
 import React,{useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory, useLocation } from "react-router-dom";
 //
 import { FormComposer } from "@mseva/digit-ui-react-components";
 import { UPDATE_PtNewApplication, RESET_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
 
 const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
 
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
@@ -51,8 +53,16 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const onSubmit = async (data) => {
     console.log("FormData received:", data);
   
-    const tenantId = data?.LocationDetails?.address?.city?.code;
+    const tenantId = data?.LocationDetails1?.address?.city?.code;
     const allDocuments = data?.DocummentDetails?.documents?.documents || [];
+    const applicationData = data?.applicationData || {};
+    console.log("applicationData in step 5: ", applicationData);
+    // const workflow = {...data?.applicationData?.workflow, action: "OPEN"};
+    const workflow = {
+      businessService: data?.applicationData?.workflow?.businessService || "",
+      moduleName: data?.applicationData?.workflow?.moduleName || "", 
+      action: "OPEN"
+    };
   
     let updatedUnits = [];
     const usageCategoryMajorCode = data?.PropertyDetails?.usageCategoryMajor?.code;
@@ -64,14 +74,21 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
         if (usageCategoryMajorCode === "RESIDENTIAL") {
           usageCategory = "RESIDENTIAL";
         } else if (usageCategoryMajorCode === "MIXED") {
-          usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL"
+          if(unit?.usageCategoryType?.code){
+            usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL"
             ? "RESIDENTIAL"
             : unit?.subUsageType?.code;
+          }else if (unit?.usageCategory?.code){
+            usageCategory = unit?.usageCategory?.code === "RESIDENTIAL"
+            ? "RESIDENTIAL"
+            : unit?.usageCategory?.code;
+          }
         } else {
           usageCategory = unit?.subUsageType?.code;
         }
   
         return {
+          ...unit,
           floorNo: unit?.floorNoCitizen?.code,
           occupancyType: unit?.occupancyType?.code,
           arv: unit?.arv,
@@ -102,13 +119,14 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
         ? 2
         : Math.max(userEnteredFloors, maxUnitFloor);
   
-    const permanentAddress = `${data?.LocationDetails?.address?.doorNo}, ${data?.LocationDetails?.address?.buildingName}, ${data?.LocationDetails?.address?.street}, ${data?.LocationDetails?.address?.locality?.name}, ${data?.LocationDetails?.address?.city?.name}, ${data?.LocationDetails?.address?.pincode}`;
+    const permanentAddress = `${data?.LocationDetails1?.address?.doorNo}, ${data?.LocationDetails1?.address?.buildingName}, ${data?.LocationDetails1?.address?.street}, ${data?.LocationDetails1?.address?.locality?.name}, ${data?.LocationDetails1?.address?.city?.name}, ${data?.LocationDetails1?.address?.pincode}`;
   
     const owners = Array.isArray(data?.ownerShipDetails?.owners)
       ? data.ownerShipDetails.owners.map((owner, index) => {
           const isIndividual = data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL");
   
           const baseOwner = {
+            ...owner,
             name: owner?.name,
             mobileNumber: owner?.mobileNumber,
             emailId: owner?.emailId,
@@ -140,15 +158,22 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
           return baseOwner;
         })
       : [];
+
+      console.log("Owners in step 5: ", owners);
   
     const formData = {
       tenantId: tenantId,
       address: {
-        ...data?.LocationDetails?.address,
-        city: data?.LocationDetails?.address?.city?.name,
+        ...data?.LocationDetails1?.address,
+        tenantId: tenantId,
+        city: data?.LocationDetails1?.address?.city?.name,
         locality: {
-          code: data?.LocationDetails?.address?.locality?.code,
-          area: data?.LocationDetails?.address?.locality?.area,
+          code: data?.LocationDetails1?.address?.locality?.code,
+          area: data?.LocationDetails1?.address?.locality?.area,
+        },
+        geoLocation: {
+          latitude: 0,
+          longitude: 0
         },
       },
       usageCategory: usageCategoryMajorCode,
@@ -159,12 +184,12 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
       propertyType: propertyTypeCode,
       noOfFloors,
       ownershipCategory: data?.ownerShipDetails?.ownershipCategory?.code,
-      surveyId: data?.LocationDetails?.surveyId,
-      existingPropertyId: data?.LocationDetails?.existingPropertyId,
+      surveyId: data?.LocationDetails1?.surveyId,
+      existingPropertyId: data?.LocationDetails1?.existingPropertyId,
       owners,
       additionalDetails: {
         businessName: data?.PropertyDetails?.businessName,
-        yearConstruction: data?.LocationDetails?.yearOfCreation?.code,
+        yearConstruction: data?.LocationDetails1?.yearOfCreation?.code,
         remarks: data?.PropertyDetails?.remarks,
         vasikaNo: data?.PropertyDetails?.vasikaDetails?.vasikaNo,
         vasikaDate: data?.PropertyDetails?.vasikaDetails?.vasikaDate,
@@ -202,7 +227,7 @@ const PTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
     console.log("Final Payload:", formData);
     console.log("Search Data:", searchData);
   
-    const response = await Digit.PTService.update({ Property: formData }, tenantId);
+    const response = await Digit.PTService.update({Property: {...applicationData,...formData, workflow}}, tenantId);
     return {isSuccess: response?.ResponseInfo?.status === "successful", response: response};
   };
 

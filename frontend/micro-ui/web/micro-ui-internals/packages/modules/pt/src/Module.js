@@ -139,7 +139,9 @@ import CitizenPTEditFormStepOne from "./pages/citizen/EditProperty/CitizenPTEdit
 import CitizenPTEditFormStepTwo from "./pages/citizen/EditProperty/CitizenPTEditFormStepTwo";
 import CitizenPTEditFormStepThree from "./pages/citizen/EditProperty/CitizenPTEditFormStepThree";
 import CitizenPTEditFormStepFour from "./pages/citizen/EditProperty/CitizenPTEditFormStepFour";
-import CitizenPTEditFormSummaryStepFive from "./pages/citizen/EditProperty/CitizenPTEditFormSummaryStepFive"
+import CitizenPTEditFormSummaryStepFive from "./pages/citizen/EditProperty/CitizenPTEditFormSummaryStepFive";
+import PTSummaryEdit from "./pageComponents/PTSummaryEdit";
+import PTSummaryEmployee from "./pageComponents/PTSummaryEmployee";
 import {TransferOwnership as TransferOwnershipModal} from './pageComponents/TransferOwnership'
 
 export const PTReducers = getRootReducer;
@@ -274,6 +276,8 @@ const componentsToRegister = {
   CitizenPTEditFormStepThree,
   CitizenPTEditFormStepFour,
   CitizenPTEditFormSummaryStepFive,
+  PTSummaryEdit,
+  PTSummaryEmployee,
   TransferOwnershipModal
   
 };

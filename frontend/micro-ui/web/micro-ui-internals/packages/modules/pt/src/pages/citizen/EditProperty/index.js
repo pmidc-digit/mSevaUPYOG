@@ -10,8 +10,8 @@ const EditProperty = () => {
 
   let { id: applicationNumber } = useParams();
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, applicationNumber);
-console.log("applicationDetailsManasa-------------", applicationDetails);
+  const { isLoading, data: applicationDetails } = Digit.Hooks.pt.useApplicationDetail(t, tenantId, applicationNumber, {}, {}, {audit: true});
+console.log("applicationDetails-------------", applicationDetails);
   // return applicationDetails && !isLoading ? <EditForm applicationData={applicationDetails?.applicationData} tenantId={tenantId} /> : null;
   return applicationDetails && !isLoading ? <CitizenEditPropertyStepForm applicationData={applicationDetails?.applicationData} tenantId={tenantId} /> : null;
   // return <div>Hello</div>

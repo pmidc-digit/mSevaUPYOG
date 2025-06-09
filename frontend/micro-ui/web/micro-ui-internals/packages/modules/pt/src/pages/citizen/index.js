@@ -49,11 +49,11 @@ const App = () => {
           <Route path={`${path}/property/search-results`} component={SearchResultsComponent} />
           <PrivateRoute path={`${path}/property/application/:acknowledgementIds/:tenantId`} component={PTApplicationDetails}></PrivateRoute>
           <PrivateRoute path={`${path}/property/my-applications`} component={PTMyApplications}></PrivateRoute>
-          {/* <PrivateRoute path={`${path}/property/my-properties`} component={MyProperties}></PrivateRoute> */}
+          <PrivateRoute path={`${path}/property/my-properties`} component={MyProperties}></PrivateRoute>
           <PrivateRoute path={`${path}/property/my-payments`} component={PTMyPayments}></PrivateRoute>
           <PrivateRoute path={`${path}/property/property-mutation`} component={MutateProperty}></PrivateRoute>
           <PrivateRoute path={`${path}/property/properties/:propertyIds`} component={PropertyInformation}></PrivateRoute>
-          <PrivateRoute path={`${path}/property/my-properties/:id`} component={PropertyDetailsCitizen}></PrivateRoute>
+          <PrivateRoute path={`${path}/property/my-property/:id`} component={PropertyDetailsCitizen}></PrivateRoute>
           <PrivateRoute path={`${path}/payment-details/:id`} component={() => <PaymentDetails parentRoute={path} />} />
           {/* <PrivateRoute path={`${path}/property/transfer-ownership`} component={MutateProperty}></PrivateRoute> */}
           <PrivateRoute path={`${path}/property/owner-history/:tenantId/:propertyIds`} component={PropertyOwnerHistory}></PrivateRoute>

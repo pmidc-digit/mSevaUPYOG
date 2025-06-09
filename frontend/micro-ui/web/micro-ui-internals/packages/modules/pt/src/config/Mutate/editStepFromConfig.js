@@ -786,7 +786,7 @@ export const editStepFormConfig = [
         stepNumber: 5,
         body: [
           {
-            component: "PTSummary",
+            component: "PTSummaryEdit",
             withoutLabel: true,
             key: "PTSummary",
             type: "component",

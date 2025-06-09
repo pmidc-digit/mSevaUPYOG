@@ -1,11 +1,13 @@
 import React,{useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useHistory, useLocation } from "react-router-dom";
 //
 import { FormComposer } from "@mseva/digit-ui-react-components";
 import { UPDATE_PtNewApplication, RESET_PtNewApplication } from "../../../redux/actions/PTNewApplicationActions";
 
 const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
 
   // Retrieve the entire formData object from the Redux store
   const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
@@ -32,7 +34,7 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
         console.log("Submission successful, moving to next step.", res.response);
         const applicationNumber = res?.response?.Properties?.[0]?.acknowldgementNumber;
         dispatch(RESET_PtNewApplication());
-        history.replace(`/digit-ui/employee/pt/property/response/${applicationNumber}`);
+        history.replace(`/digit-ui/citizen/pt/property/response/${applicationNumber}`);
         // onGoNext();
       } else {
         console.error("Submission failed, not moving to next step.", res.response);
@@ -53,6 +55,13 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
   
     const tenantId = data?.LocationDetails?.address?.city?.code;
     const allDocuments = data?.DocummentDetails?.documents?.documents || [];
+    const applicationData = data?.applicationData || {};
+    // const workflow = {...data?.applicationData?.workflow, action: "OPEN"};
+    const workflow = {
+      businessService: data?.applicationData?.workflow?.businessService || "",
+      moduleName: data?.applicationData?.workflow?.moduleName || "", 
+      action: "OPEN"
+    };
   
     let updatedUnits = [];
     const usageCategoryMajorCode = data?.PropertyDetails?.usageCategoryMajor?.code;
@@ -64,14 +73,21 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
         if (usageCategoryMajorCode === "RESIDENTIAL") {
           usageCategory = "RESIDENTIAL";
         } else if (usageCategoryMajorCode === "MIXED") {
-          usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL"
+          if(unit?.usageCategoryType?.code){
+            usageCategory = unit?.usageCategoryType?.code === "RESIDENTIAL"
             ? "RESIDENTIAL"
             : unit?.subUsageType?.code;
+          }else if (unit?.usageCategory?.code){
+            usageCategory = unit?.usageCategory?.code === "RESIDENTIAL"
+            ? "RESIDENTIAL"
+            : unit?.usageCategory?.code;
+          }
         } else {
           usageCategory = unit?.subUsageType?.code;
         }
   
         return {
+          ...unit,
           floorNo: unit?.floorNoCitizen?.code,
           occupancyType: unit?.occupancyType?.code,
           arv: unit?.arv,
@@ -109,6 +125,7 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
           const isIndividual = data?.ownerShipDetails?.ownershipCategory?.code?.includes("INDIVIDUAL");
   
           const baseOwner = {
+            ...owner,
             name: owner?.name,
             mobileNumber: owner?.mobileNumber,
             emailId: owner?.emailId,
@@ -145,10 +162,15 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
       tenantId: tenantId,
       address: {
         ...data?.LocationDetails?.address,
+        tenantId: tenantId,
         city: data?.LocationDetails?.address?.city?.name,
         locality: {
           code: data?.LocationDetails?.address?.locality?.code,
           area: data?.LocationDetails?.address?.locality?.area,
+        },
+        geoLocation: {
+          latitude: 0,
+          longitude: 0
         },
       },
       usageCategory: usageCategoryMajorCode,
@@ -202,7 +224,7 @@ const CitizenPTEditFormSummaryStepFive = ({ config, onGoNext, onBackClick, t }) 
     console.log("Final Payload:", formData);
     console.log("Search Data:", searchData);
   
-    const response = await Digit.PTService.update({ Property: formData }, tenantId);
+    const response = await Digit.PTService.update({ Property: {...applicationData,...formData, workflow} }, tenantId);
     return {isSuccess: response?.ResponseInfo?.status === "successful", response: response};
   };
 

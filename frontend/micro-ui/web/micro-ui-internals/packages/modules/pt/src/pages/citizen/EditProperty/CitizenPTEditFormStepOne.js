@@ -8,12 +8,12 @@ const CitizenPTEditFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
 
-    // const missingFields = validateEmployeeStepOneFields(data);
+    const missingFields = validateEmployeeStepOneFields(data);
 
-    // if (missingFields.length > 0) {
-    //   alert(`Please fill the following mandatory fields:\n- ${missingFields.join("\n- ")}`);
-    //   return;
-    // }
+    if (missingFields.length > 0) {
+      alert(`Please fill the following mandatory fields:\n- ${missingFields.join("\n- ")}`);
+      return;
+    }
     
     onGoNext();
   }
@@ -71,7 +71,7 @@ const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData);
 useEffect(() => {
   setLocalStepData(reduxStepData);
 },[reduxStepData])
-console.log("reduxStepData in step one: ", localStepData);
+// console.log("reduxStepData in step one: ", localStepData);
   const dispatch = useDispatch();
 
 

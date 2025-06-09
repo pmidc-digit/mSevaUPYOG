@@ -114,7 +114,7 @@ export const PTMyApplications = () => {
                      const propertyId = row?.propertyId;
                      return (
                        <span className="link">
-                         <Link to={`/digit-ui/citizen/pt/property/my-properties/${propertyId}`}>{propertyId}</Link>
+                         <Link to={`/digit-ui/citizen/pt/property/my-property/${propertyId}`}>{propertyId}</Link>
                        </span>
                        // <span className="cell-text" style={{ color: "blue", textDecoration: "underline", cursor: "pointer" }} onClick={() => downloadPDF(row)}>
                        //   {challanNumber}

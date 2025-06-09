@@ -1,6 +1,6 @@
 import { EditIcon, Header, LinkLabel, Loader, Modal } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails";
@@ -30,6 +30,7 @@ const PropertyDetails = () => {
   const [appDetailsToShow, setAppDetailsToShow] = useState({});
   const [enableAudit, setEnableAudit] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showOwnershipModal, setShowOwnershipModal] = useState(false);
   const [showUpdateNo, setShowUpdateNo] = useState(false);
   const PT_CEMP = Digit.UserService.hasAccess(["PT_CEMP"]) || false;
   const [businessService, setBusinessService] = useState("PT.CREATE");
@@ -64,6 +65,8 @@ const PropertyDetails = () => {
     retry: false,
     enable: false,
   });
+
+  const TransferOwnershipModal = Digit?.ComponentRegistryService?.getComponent("TransferOwnershipModal");
 
   React.useEffect(() => {
     const onResize = () => {
@@ -173,6 +176,7 @@ const PropertyDetails = () => {
         return {
           ...e,
           Component: () => (
+            <>
             <LinkLabel
               onClick={() => {
                 setShowModal((prev) => !prev);
@@ -181,6 +185,15 @@ const PropertyDetails = () => {
             >
               {t("PT_VIEW_HISTORY")}
             </LinkLabel>
+            <LinkLabel
+              onClick={() => {
+                setShowOwnershipModal((prev) => !prev);
+              }}
+             style={{ display: "inline", marginLeft: "25px",border:'1px solid',padding:'8px',minWidth:'150px',borderRadius:'8px',backgroundColor:'#2947a3',color:'white' }}
+            >
+            {t("PT_OWNERSHIP_TRANSFER")}
+            </LinkLabel>
+            </>
           ),
         };
       }
@@ -321,6 +334,7 @@ const PropertyDetails = () => {
         showTimeLine={false}
         timelineStatusPrefix={"ES_PT_COMMON_STATUS_"}
         forcedActionPrefix={"WF_EMPLOYEE_PT.CREATE"}
+        propertyId={applicationNumber}
       />
       {showModal ? (
         <Modal
@@ -379,6 +393,7 @@ const PropertyDetails = () => {
           {!showUpdateNo && <OwnerHistory propertyId={applicationNumber} userType={"employee"} />}
         </Modal>
       ) : null}
+      {showOwnershipModal ? (<TransferOwnershipModal propertyId={applicationNumber}/>):null}
     </div>
   );
 };

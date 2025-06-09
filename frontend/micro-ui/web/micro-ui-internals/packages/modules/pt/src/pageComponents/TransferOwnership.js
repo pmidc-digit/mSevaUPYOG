@@ -1,9 +1,11 @@
 import { Card, CardHeader, CardSubHeader, CardText, Loader, SubmitBar,Modal } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState,Fragment,useRef } from "react";
+import { useRouteMatch, useHistory } from "react-router-dom";
 import { cardBodyStyle, stringReplaceAll } from "../utils";
 import { useTranslation } from "react-i18next";
-export const TransferOwnership = () => {
+export const TransferOwnership = ({propertyId}) => {
   const {t} =useTranslation()
+  const history = useHistory();
   const printRef = useRef();
     let { data: mutationDocuments } = Digit.Hooks.useCommonMDMS(Digit.ULBService.getStateId(), "PropertyTax", ["MutationDocuments"], {
     select: (data) => {
@@ -59,6 +61,7 @@ const content = printRef.current.innerHTML;
 
     //  onConcent(e)
     }
+
     const setModal=()=>{
       console.log("in Apply")
     
@@ -70,7 +73,9 @@ const content = printRef.current.innerHTML;
     }
     const [showToast, setShowToast] = useState(true);
     
-
+    const handleSubmit=()=>{
+       history.replace(`/digit-ui/employee/pt/property-mutate/${propertyId}`);  
+    }
 
 
   return (
@@ -82,7 +87,7 @@ const content = printRef.current.innerHTML;
           actionCancelLabel={"Print"}
           actionCancelOnSubmit={closeModal}
           actionSaveLabel={"Transfer Ownership"}
-          actionSaveOnSubmit={setModal}
+          actionSaveOnSubmit={handleSubmit}
           formId="modal-action"
           popupStyles={{width:'60%',marginTop:'5px'}}
         > 

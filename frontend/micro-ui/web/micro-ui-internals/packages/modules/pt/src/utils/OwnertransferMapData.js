@@ -9,6 +9,11 @@ export const OwnertransferMapData = (applicationData) => {
         fatherOrHusbandName: owner?.fatherOrHusbandName || "",
         emailId: owner?.emailId || "",
         correspondenceAddress: owner?.correspondenceAddress || "",
+        gender:owner?.gender || "",
+        ownershipPercentage:owner?.ownershipPercentage || "",
+        ownershipType:owner?.ownerType || "",
+        usageCategory: applicationData?.usageCategory || "",
+
       })),
     },
   };

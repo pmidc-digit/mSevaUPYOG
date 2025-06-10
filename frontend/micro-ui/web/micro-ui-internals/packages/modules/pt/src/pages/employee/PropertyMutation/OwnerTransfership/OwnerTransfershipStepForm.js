@@ -68,7 +68,7 @@ const CreateEmployeeStepForm = ({ applicationData }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // console.log("Form data", formData)
   // console.log("formState: ",formState);
-  console.log("applicationData in ownership transefership", applicationData);
+  //console.log("applicationData in ownership transefership", applicationData);
   const defaultValues = OwnertransferMapData(applicationData);
   useEffect(() => {
     console.log("deafult vaules in useEffect ownerTransfer: ", defaultValues);

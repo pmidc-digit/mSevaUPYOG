@@ -6,7 +6,10 @@ import { UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicat
 
 const PTOwnerTransfershipSummaryStepThree = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
-  console.log("form data in summary", formData);
+  //console.log("form data in summary of PT: ", formData);
+  const currentStepData=formData[config.key];
+
+  
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     onGoNext();

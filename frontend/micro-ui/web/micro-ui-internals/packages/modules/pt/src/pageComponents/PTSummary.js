@@ -1,14 +1,18 @@
 import React, { Fragment } from "react";
 import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { useLocation ,useHistory} from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { SET_PtNewApplication } from "../redux/actions/PTNewApplicationActions";
-const PTSummary = ({ formData, t}) => {
-  console.log("form data in summary component", formData);
+const PTSummary = ({formData, t}) => {
+  // console.log("form data in summary component of PT", formData);
   const { pathname: url } = useLocation();
     const history = useHistory();
     const dispatch=useDispatch()
   const mutateScreen = url.includes("/property-mutate/");
+
+  //const formData = useSelector((state) => state.pt.PTNewApplicationForm.formData || {});
+  console.log("form data in summary component of PT", formData);
+
   const onEdit = (step) =>{
     console.log("on edit step",step)
     if(step==="PersonalDetails"){
@@ -121,28 +125,75 @@ const PTSummary = ({ formData, t}) => {
     <>
       {mutateScreen ? (
         <div className="application-summary">
-          {/* <h2>{t("Transferor Details")}</h2> */}
-        
 
-          {/* Ownership Category Section */}
-          {/* <div className="summary-section">
+          {/* <h2>{t("Transferor Details")}</h2> */}
+          <div className="summary-section">
             <div className="section-header">
-              <h3>{t("Ownership Category")}</h3>
+              <h3>{t("Transferor Details")}</h3>
+            </div>
+            <div className="section-content">
+              {/* <LabelFieldPair>
+                <CardLabel>{t("Ownership Category")}</CardLabel>
+                <div>{formData?.ownershipCategory?.label || "NA"}</div>
+              </LabelFieldPair> */}
+
+              {formData?.ownershipCategory?.owners?.map((owner, index) => (
+                <div key={index}>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Name")}</CardLabel>
+                    <div>{owner.name || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Mobile Number")}</CardLabel>
+                    <div>{owner.mobileNumber || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Guardian Name")}</CardLabel>
+                    <div>{owner.fatherOrHusbandName || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Email ID")}</CardLabel>
+                    <div>{owner.emailId || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Gender")}</CardLabel>
+                    <div>{owner.gender || "NA"}</div>
+                  </LabelFieldPair>
+                  <LabelFieldPair>
+                    <CardLabel>{t("Correspondence Address")}</CardLabel>
+                    <div>{owner.correspondenceAddress || "NA"}</div>
+                  </LabelFieldPair>
+                   <LabelFieldPair>
+                    <CardLabel>{t("Ownership Percentage")}</CardLabel>
+                    <div>{owner.ownershipPercentage || "NA"}</div>
+                  </LabelFieldPair>
+                   <LabelFieldPair>
+                    <CardLabel>{t("Ownership Type")}</CardLabel>
+                    <div>{owner.ownershipType || "NA"}</div>
+                  </LabelFieldPair>
+                   <LabelFieldPair>
+                    <CardLabel>{t("Category")}</CardLabel>
+                    <div>{owner.usageCategory || "NA"}</div>
+                  </LabelFieldPair>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        
+           
+
+           {/* <h2>{t("Transferee Details")}</h2> */}
+          <div className="summary-section">
+            <div className="section-header">
+              <h3>{t("Transferee Details")}</h3>
             </div>
             <div className="section-content">
               <LabelFieldPair>
                 <CardLabel>{t("Ownership Category")}</CardLabel>
                 <div>{formData?.TransferorDetails?.ownershipCategory?.label || "NA"}</div>
               </LabelFieldPair>
-            </div>
-          </div> */}
 
-          {/* Owners Section */}
-          {/* <div className="summary-section">
-            <div className="section-header">
-              <h3>{t("Owner Details")}</h3>
-            </div>
-            <div className="section-content">
               {formData?.TransferorDetails?.owners?.map((owner, index) => (
                 <div key={index}>
                   <LabelFieldPair>
@@ -163,7 +214,7 @@ const PTSummary = ({ formData, t}) => {
                   </LabelFieldPair>
                   <LabelFieldPair>
                     <CardLabel>{t("Gender")}</CardLabel>
-                    <div>{owner.gender?.i18nKey || "NA"}</div>
+                    <div>{owner.gender?.code || "NA"}</div>
                   </LabelFieldPair>
                   <LabelFieldPair>
                     <CardLabel>{t("Correspondence Address")}</CardLabel>
@@ -172,12 +223,13 @@ const PTSummary = ({ formData, t}) => {
                 </div>
               ))}
             </div>
-          </div> */}
+          </div>
 
-          {/* Additional Details Section */}
-          {/* <div className="summary-section">
+
+          {/* <h2>{t("Registration Details")}</h2> */}
+          <div className="summary-section">
             <div className="section-header">
-              <h3>{t("Additional Details")}</h3>
+              <h3>{t("Registration Details")}</h3>
             </div>
             <div className="section-content">
               <LabelFieldPair>
@@ -200,11 +252,15 @@ const PTSummary = ({ formData, t}) => {
                 <CardLabel>{t("Market Value")}</CardLabel>
                 <div>{formData?.TransferorDetails?.additionalDetails?.marketValue || "NA"}</div>
               </LabelFieldPair>
+              <LabelFieldPair>
+                <CardLabel>{t("Remarks")}</CardLabel>
+                <div>{formData?.TransferorDetails?.remarks || "NA"}</div>
+              </LabelFieldPair>
             </div>
-          </div> */}
+          </div>
 
           {/* Document Details Section */}
-          {/* <div className="summary-section">
+          <div className="summary-section">
             <div className="section-header">
               <h3>{t("Document Details")}</h3>
             </div>
@@ -216,20 +272,8 @@ const PTSummary = ({ formData, t}) => {
                 </LabelFieldPair>
               ))}
             </div>
-          </div> */}
+          </div>
 
-          {/* Remarks Section */}
-          {/* <div className="summary-section">
-            <div className="section-header">
-              <h3>{t("Remarks")}</h3>
-            </div>
-            <div className="section-content">
-              <LabelFieldPair>
-                <CardLabel>{t("Remarks")}</CardLabel>
-                <div>{formData?.TransferorDetails?.remarks || "NA"}</div>
-              </LabelFieldPair>
-            </div>
-          </div> */}
         </div>
       ) : (
         <div className="application-summary">

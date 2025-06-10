@@ -43,14 +43,11 @@ const ViewAttendence = () => {
       <Header>{t("VIEW_ATTENDANCE")}</Header>
       {data?.Attendance?.map((attendance) => (
         <Card key={attendance.id} className="attendancecard"
-        // style={{ marginBottom: "16px" }}
         >
           <CardSubHeader>{attendance.dateOfAttendance || "N/A"}</CardSubHeader>
           <div className="tablechart" 
-          // style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "16px" }}
           >
             <div className="tablechartinner" 
-            // style={{ flex: "1 1 300px", minWidth: "300px" }}
             >
               <StatusTable>
                 <Row label="Name" text={attendance.userDetail?.name || "N/A"} />
@@ -62,13 +59,11 @@ const ViewAttendence = () => {
 
             {attendance.imagerUrl && (
               <div className="attendanceimage" 
-              // style={{ flex: "1 1 300px", minWidth: "300px", display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}
               >
                 <img
                   src={`${window.location.origin}/filestore/v1/files/id?tenantId=${tenantId}&fileStoreId=${attendance.imagerUrl}`}
                   alt="Attendance"
                   className="attendanceimg"
-                  // style={{ maxWidth: "100%", maxHeight: "300px", objectFit: "contain" }}
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = "https://via.placeholder.com/300?text=Image+Not+Available";

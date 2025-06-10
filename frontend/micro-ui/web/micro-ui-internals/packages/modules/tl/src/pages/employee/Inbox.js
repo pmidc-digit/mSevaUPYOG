@@ -74,10 +74,12 @@ const Inbox = ({ parentRoute, businessService = "TL", initialStates = {}, filter
       {
         label: t("TL_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
         name: "applicationNumber",
+        placeholder: t("TL_HOME_SEARCH_RESULTS_APP_NO_PLACEHOLDER")
       },
       {
         label: t("CORE_COMMON_MOBILE_NUMBER"),
         name: "mobileNumber",
+        placeholder: t("TL_HOME_SEARCH_RESULTS_OWN_MOB_PLACEHOLDER"),
         maxlength: 10,
 
         pattern: Digit.Utils.getPattern("MobileNo"),

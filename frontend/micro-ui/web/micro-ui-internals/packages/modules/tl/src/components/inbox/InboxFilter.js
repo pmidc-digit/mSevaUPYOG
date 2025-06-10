@@ -48,7 +48,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statuses, .
                   />
                 </svg>
               </span>
-              <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("ES_COMMON_FILTER_BY")}</span>
+              <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("ES_COMMON_NEW_FILTER_BY")}</span>
             </div>
             <div className="clearAll" onClick={clearAll}>
               {t("ES_COMMON_CLEAR_ALL")}
@@ -82,7 +82,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statuses, .
             />
             <div>
               <div className="filter-label" style={{ fontWeight: "normal" }}>
-                {t("ES_INBOX_LOCALITY")}:
+                {t("TL_HOME_SEARCH_RESULTS__LOCALITY")}:
               </div>
               <Localities selectLocality={selectLocality} tenantId={tenantId} boundaryType="revenue" />
               <div className="tag-container">

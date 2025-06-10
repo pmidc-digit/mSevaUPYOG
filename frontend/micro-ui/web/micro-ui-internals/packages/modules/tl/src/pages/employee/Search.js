@@ -92,6 +92,7 @@ const Search = ({ path }) => {
     filters: { businessIds: searchReult?.map((license) => license?.applicationNumber).join(",")},
     config: { ...workFlowConfig }
   });
+  console.log("searchReult in TL: ", searchReult)
 
   return (
     <Search
@@ -108,7 +109,7 @@ const Search = ({ path }) => {
             currentOwner: "NA"
           }
       })) : { display: "ES_COMMON_NO_DATA" }) : ""}
-      count={count}
+      
     />
   );
 };

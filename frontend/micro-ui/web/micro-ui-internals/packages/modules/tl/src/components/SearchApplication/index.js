@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useEffect } from "react"
 import { useForm, Controller } from "react-hook-form";
-import { SearchForm, Table, Card, Header } from "@mseva/digit-ui-react-components";
+import { SearchForm, Table, Card, Header, CardSectionHeader, CardSectionSubText  } from "@mseva/digit-ui-react-components";
 import { Link } from "react-router-dom";
 import { convertEpochToDateDMY } from  "../../utils";
 import SearchFields from "./SearchFields";
@@ -83,10 +83,10 @@ const SearchApplication = ({tenantId, t, onSubmit, data, count }) => {
         {
             Header: t("TL_APPLICATION_TYPE_LABEL"),
             disableSortBy: true,
-            accessor: (row) => GetCell(t(`TL_LOCALIZATION_APPLICATIONTYPE_${row?.workflowCode}`)),
+            accessor: (row) => GetCell(row.applicationType || ""),
         },
         {
-            Header: t("TL_LICENSE_NUMBERL_LABEL"),
+            Header: t("TL_COMMON_TABLE_COL_LIC_NO"),
             disableSortBy: true,
             accessor: (row) => GetCell(row.licenseNumber || "-"),
         },
@@ -105,20 +105,21 @@ const SearchApplication = ({tenantId, t, onSubmit, data, count }) => {
           accessor: (row) => GetCell(row.tradeLicenseDetail.owners.additionalDetails!==null? (row.tradeLicenseDetail.owners.sort((a,b)=>a?.additionalDetails?.ownerSequence-b?.additionalDetails?.ownerSequence).map(o=>o.name).join(",")): row.tradeLicenseDetail.owners.map( o => o.name ). join(",") || ""),
           disableSortBy: true,
         },
-        {
-          Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
-          accessor: (row) => GetCell(row.CurrentOwners[0]?.currentOwner || ""),
-          disableSortBy: true,
-        },
+        // {
+        //   Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
+        //   accessor: (row) => GetCell(row.CurrentOwners[0]?.currentOwner || ""),
+        //   disableSortBy: true,
+        // },
         {
           Header: t("TL_COMMON_TABLE_COL_STATUS"),
-          accessor: (row) =>GetCell(t( row?.workflowCode&&row?.status&&`WF_${row?.workflowCode?.toUpperCase()}_${row.status}`|| "NA") ),
+          accessor: (row) =>GetCell(row.status || "NA" ),
           disableSortBy: true,
         }
       ]), [] )
 
     return <React.Fragment>
-                <Header>{t("TL_SEARCH_APPLICATIONS")}</Header>
+                <Header>{t("TL_HOME_SEARCH_RESULTS_HEADING")}</Header>
+                <CardSectionSubText>{t("TL_HOME_SEARCH_RESULTS_DESC")}</CardSectionSubText>
                 <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
                   <SearchFields {...{register, control, reset, tenantId, t, previousPage}} />
                 </SearchForm>

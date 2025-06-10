@@ -65,12 +65,13 @@ const DesktopInbox = ({ tableConfig, filterComponent,columns, isLoading, setSear
         return GetCell(t(row.original["businessService"]?`WF_${row.original["businessService"]?.toUpperCase()}_${row.original?.["status"]}`:`NA`));
       },
     },
+    // {
+    //   Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
+    //   Cell: ({ row }) => {
+    //     return GetCell(t(`${row.original?.owner}`));
+    //   }
+    // },
     {
-      Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
-      Cell: ({ row }) => {
-        return GetCell(t(`${row.original?.owner}`));
-      }
-    },{
     Header: t("WF_INBOX_HEADER_SLA_DAYS_REMAINING"),
     Cell: ({ row }) => {
       return GetSlaCell(row.original["sla"])

@@ -63,9 +63,6 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
       case "Swach":
         return true;
 
-      case "NDC":
-        return true;
-
       case "HRMS":
         return true;
 
@@ -73,6 +70,9 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return true;
 
       case "ADS":
+        return true;
+
+      case "NDC":
         return true;
 
       default:
@@ -94,6 +94,8 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <MCollectIcon />;
       case "PGR":
         return <PGRIcon />;
+      case "NDC":
+        return <PGRIcon />;
       case "TL":
         return <TLIcon />;
       case "OBPS":
@@ -104,8 +106,6 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <PTIcon />;
       case "Swach":
         return <PGRIcon />;
-      case "NDC":
-        return <TLIcon />;
       case "HRMS":
         return <WSICon />;
       case "SV":

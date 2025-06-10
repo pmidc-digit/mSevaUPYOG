@@ -28,7 +28,8 @@ import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
 import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
-
+import { NDCReducers } from "@mseva/digit-ui-module-ndc";
+import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@mseva/digit-ui-module-pgr";
 // import { Body, TopBar } from "@mseva/digit-ui-react-components";
@@ -69,6 +70,7 @@ const enabledModules = [
   "ADS",
   "Swach",
   "SV",
+  "NDC",
 ];
 
 const initTokens = (stateCode) => {
@@ -140,6 +142,7 @@ const initDigitUI = () => {
   initWSComponents();
   initCommonPTComponents();
   initBillsComponents();
+  initNDCComponents();
   // initCustomisationComponents();
 
   const moduleReducers = (initData) => ({
@@ -150,6 +153,7 @@ const initDigitUI = () => {
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData),
     tl: TLReducers(initData),
+    ndc: NDCReducers(initData),
   });
 
   window.Digit.Customizations = {

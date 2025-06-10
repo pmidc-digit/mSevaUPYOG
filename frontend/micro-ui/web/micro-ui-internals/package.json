@@ -21,7 +21,8 @@
     "packages/modules/tl",
     "packages/modules/obps",
     "packages/modules/sv",
-    "packages/modules/ads"
+    "packages/modules/ads",
+    "packages/modules/ndc"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",
@@ -59,6 +60,7 @@
     "dev:ptr": "cd packages/modules/ptr && yarn start",
     "dev:sv": "cd packages/modules/sv && yarn start",
     "dev:ads": "cd packages/modules/ads && yarn start",
+    "dev:ndc": "cd packages/modules/ndc && yarn start",
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
     "build:components": "cd packages/react-components && yarn build",
@@ -83,6 +85,7 @@
     "buildR:reports": "cd packages/modules/reports && yarn build",
     "build:sv": "cd packages/modules/sv && yarn build",
     "build:ads": "cd packages/modules/ads && yarn build",
+    "build:ndc": "cd packages/modules/ndc && yarn build",
     "deploy:jenkins": "./scripts/jenkins.sh"
   },
   "devDependencies": {

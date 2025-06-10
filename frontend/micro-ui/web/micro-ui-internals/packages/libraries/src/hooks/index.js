@@ -304,6 +304,9 @@ import useADSDocumentsMDMS from "./ads/useADSDocumentsMDMS";
 import useADSDocumentSearch from "./ads/useADSDocumentSearch";
 import useADSDemandEstimation from "./ads/useADSDemandEstimation";
 
+// ndc
+import useNDCInbox from "./ndc/useInbox";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -565,6 +568,10 @@ const noc = {
   useNOCSearchApplication,
 };
 
+const ndc = {
+  useInbox: useNDCInbox,
+};
+
 const ws = {
   WSSearchMdmsTypes,
   usewsTenants,
@@ -678,6 +685,7 @@ const Hooks = {
   createTokenAPI,
   sv,
   ads,
+  ndc,
 };
 
 export default Hooks;

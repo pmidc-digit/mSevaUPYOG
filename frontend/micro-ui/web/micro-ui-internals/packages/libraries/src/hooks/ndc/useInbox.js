@@ -1,6 +1,6 @@
 import useInbox from "../useInbox";
 
-const useNOCInbox = ({ tenantId, filters, config = {} }) => {
+const useNDCInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm } = filters;
   let { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
   const { sourceRefId, applicationNo } = searchForm;
@@ -89,4 +89,4 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
   });
 };
 
-export default useNOCInbox;
+export default useNDCInbox;

@@ -19,7 +19,7 @@ const Inbox = ({ parentRoute }) => {
   };
 
   const filterFormDefaultValues = {
-    moduleName: "noc-services",
+    moduleName: "ndc-services",
     applicationStatus: [],
     businessService: null,
     locality: [],
@@ -111,7 +111,7 @@ const Inbox = ({ parentRoute }) => {
     t
   );
 
-  const { isLoading: isInboxLoading, data: { table = [], statuses, totalCount } = {} } = Digit.Hooks.noc.useInbox({
+  const { isLoading: isInboxLoading, data: { table = [], statuses, totalCount } = {} } = Digit.Hooks.ndc.useInbox({
     tenantId,
     filters: { ...formState },
   });

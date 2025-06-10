@@ -21,6 +21,7 @@ RUN yarn add @mseva/digit-ui-module-tl@1.0.4
 RUN yarn add @mseva/digit-ui-module-obps@1.0.5
 RUN yarn add @mseva/digit-ui-module-sv@1.0.2
 RUN yarn add @mseva/upyog-ui-module-ads@1.0.4
+RUN yarn add @mseva/digit-ui-module-ndc@1.0.0
 
 ARG WORK_DIR
 WORKDIR /app

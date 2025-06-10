@@ -56,7 +56,8 @@ import {
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
 import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
-
+import { NDCReducers } from "@mseva/digit-ui-module-ndc";
+import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
 initLibraries();
@@ -88,6 +89,7 @@ const enabledModules = [
   "Swach",
   "SV",
   "ADS",
+  "NDC",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -127,6 +129,7 @@ initEngagementComponents();
 initWSComponents();
 initCommonPTComponents();
 initBillsComponents();
+initNDCComponents();
 // initReportsComponents();
 initCustomisationComponents();
 
@@ -138,6 +141,7 @@ const moduleReducers = (initData) => ({
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),
   swach: SWACHReducers(initData),
+  ndc: NDCReducers(initData),
 });
 
 function App() {

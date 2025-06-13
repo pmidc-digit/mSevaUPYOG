@@ -22,9 +22,32 @@ const ReasonPage = (props) => {
   function onSave() {
     if (selected === null) {
       setValid(false);
-    } else {
-      history.push(`${props.match.path}/upload-photo/${id}`);
-    }
+    } else 
+    // {
+    //   history.push(`${props.match.path}/upload-photo/${id}`);
+    // }
+  //   {
+  //   const basePath = props.match.path.split("/:id")[0];
+  //   history.push(`${basePath}/upload-photo/${id}`);
+  // }
+  // {
+  //   // Extract the current complaint ID and navigate to upload-photo step
+  //   const currentUrlParts = window.location.pathname.split('/');
+  //   const basePathParts = currentUrlParts.slice(0, currentUrlParts.indexOf('reopen') + 1);
+  //   const complaintIdParts = currentUrlParts.slice(currentUrlParts.indexOf('reopen') + 1);
+    
+  //   const newPath = [...basePathParts, 'upload-photo', ...complaintIdParts].join('/');
+  //   history.push(newPath);
+  // }
+  {
+    const basePath = window.location.pathname.split('/reopen/')[0];
+    const complaintId = id; // from useParams()
+    
+    const newURL = `${basePath}/reopen/upload-photo/${complaintId}`;
+    console.log("Navigating to:", newURL);
+    history.push(newURL);
+    console.log("History after push:");
+  }
   }
 
   return (

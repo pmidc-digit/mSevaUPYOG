@@ -32,9 +32,22 @@ const UploadPhoto = (props) => {
   function save() {
     if (verificationDocuments === null) {
       setValid(false);
-    } else {
-      history.push(`${props.match.path}/addional-details/${id}`);
-    }
+    } else 
+    // {
+    //   history.push(`${props.match.path}/addional-details/${id}`);
+    // }
+    {
+    const parts = window.location.pathname.split('/');
+    const uploadIndex = parts.indexOf('upload-photo');
+    
+    const newParts = [
+      ...parts.slice(0, uploadIndex),
+      'addional-details',
+      ...parts.slice(uploadIndex + 1)
+    ];
+    
+    history.push(newParts.join('/'));
+  }
   }
 
   function skip() {
@@ -48,6 +61,7 @@ const UploadPhoto = (props) => {
 
   return (
     <React.Fragment>
+      <h1>Hello from the upload photo</h1>
       <Card>
         <ImageUploadHandler
           header={t(`${LOCALIZATION_KEY.CS_ADDCOMPLAINT}_UPLOAD_PHOTO`)}

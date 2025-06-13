@@ -18,6 +18,7 @@ const AddtionalDetails = (props) => {
   const [showToast, setShowToast] = useState(false)
   const [error, setError] = useState(null);
   const {complaintDetails} = props
+  console.log("complaintDetails in component", complaintDetails);
   useEffect(() => {
     if (appState.complaints) {
       const { response } = appState.complaints;

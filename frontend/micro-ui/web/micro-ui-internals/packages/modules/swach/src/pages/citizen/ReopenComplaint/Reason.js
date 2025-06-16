@@ -22,41 +22,20 @@ const ReasonPage = (props) => {
   function onSave() {
     if (selected === null) {
       setValid(false);
-    } else 
-    // {
-    //   history.push(`${props.match.path}/upload-photo/${id}`);
-    // }
-  //   {
-  //   const basePath = props.match.path.split("/:id")[0];
-  //   history.push(`${basePath}/upload-photo/${id}`);
-  // }
-  // {
-  //   // Extract the current complaint ID and navigate to upload-photo step
-  //   const currentUrlParts = window.location.pathname.split('/');
-  //   const basePathParts = currentUrlParts.slice(0, currentUrlParts.indexOf('reopen') + 1);
-  //   const complaintIdParts = currentUrlParts.slice(currentUrlParts.indexOf('reopen') + 1);
-    
-  //   const newPath = [...basePathParts, 'upload-photo', ...complaintIdParts].join('/');
-  //   history.push(newPath);
-  // }
-  {
-    const basePath = window.location.pathname.split('/reopen/')[0];
-    const complaintId = id; // from useParams()
-    
-    const newURL = `${basePath}/reopen/upload-photo/${complaintId}`;
-    console.log("Navigating to:", newURL);
-    history.push(newURL);
-    console.log("History after push:");
-  }
+    }
+    else {
+      const basePath = window.location.pathname.split("/reopen/")[0];
+      const complaintId = id; 
+
+      const newURL = `${basePath}/reopen/upload-photo/${complaintId}`;
+      history.push(newURL);
+    }
   }
 
   return (
     <Card>
       <CardHeader>{t(`${LOCALIZATION_KEY.CS_REOPEN}_COMPLAINT`)}</CardHeader>
       <CardText>
-        {/* Select the option related to your complaint from the list given below.
-        If the complaint type you are looking for is not listed select others.{" "} */}
-        {/* {t(`${TRANSLATION_KEY}_OPTION_ONE`)} */}
       </CardText>
       {valid ? null : <CardLabelError>{t(`${LOCALIZATION_KEY.CS_ADDCOMPLAINT}_ERROR_REOPEN_REASON`)}</CardLabelError>}
       <RadioButtons

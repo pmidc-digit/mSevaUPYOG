@@ -16,7 +16,15 @@ const UploadPhoto = (props) => {
   const handleUpload = (ids) => {
     setDocState(ids);
   };
+  const cities = Digit.Hooks.swach.useTenants();
+  const getCities = () => cities || [];
+  const [selectedCity, setSelectedCity] = useState(getCities()[0] ? getCities()[0] : null);
+  const selectCity = async (city) => {
+    // if (selectedCity?.code !== city.code) {}
+    setSelectedCity(city);
 
+    return;
+  };
   const setDocState = (ids) => {
     if (ids?.length) {
       const documents = ids.map((id) => ({
@@ -32,22 +40,18 @@ const UploadPhoto = (props) => {
   function save() {
     if (verificationDocuments === null) {
       setValid(false);
-    } else 
+    }
     // {
     //   history.push(`${props.match.path}/addional-details/${id}`);
     // }
-    {
-    const parts = window.location.pathname.split('/');
-    const uploadIndex = parts.indexOf('upload-photo');
-    
-    const newParts = [
-      ...parts.slice(0, uploadIndex),
-      'addional-details',
-      ...parts.slice(uploadIndex + 1)
-    ];
-    
-    history.push(newParts.join('/'));
-  }
+    else {
+      const parts = window.location.pathname.split("/");
+      const uploadIndex = parts.indexOf("upload-photo");
+
+      const newParts = [...parts.slice(0, uploadIndex), "addional-details", ...parts.slice(uploadIndex + 1)];
+
+      history.push(newParts.join("/"));
+    }
   }
 
   function skip() {
@@ -61,11 +65,11 @@ const UploadPhoto = (props) => {
 
   return (
     <React.Fragment>
-      <h1>Hello from the upload photo</h1>
       <Card>
         <ImageUploadHandler
           header={t(`${LOCALIZATION_KEY.CS_ADDCOMPLAINT}_UPLOAD_PHOTO`)}
-          tenantId={props?.complaintDetails?.service?.tenantId}
+          // tenantId={props?.complaintDetails?.service?.tenantId}
+          tenantId={selectCity ? selectedCity.code : "pb"}
           cardText=""
           onPhotoChange={handleUpload}
           uploadedImages={null}

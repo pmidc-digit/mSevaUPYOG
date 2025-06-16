@@ -2,6 +2,7 @@ import { Loader } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useRouteMatch } from "react-router-dom";
 import EmployeeApp from "./pages/employee";
+import CitizenApp from "./pages/citizen";
 import ApplicationOverview from "./pages/employee/ApplicationOverview";
 import NOCCard from "./pages/employee/EmployeeCard";
 import Inbox from "./pages/employee/Inbox";
@@ -10,6 +11,16 @@ import PropertyDetailsForm from "./pages/employee/createNDCApplication/propertyD
 import PropertyDetailsStep1 from "./pages/employee/createNDCApplication/PropertyDetailsStep1";
 import PropertyDetailsStep2 from "./pages/employee/createNDCApplication/propertyDetailsStep2";
 import PropertyDetailsFormUser from "./pages/employee/createNDCApplication/propertyDetailsFormUser";
+import {NewNDCStepForm as NewNDCStepFormCitizen} from "./pages/citizen/createNCDApplication/NewNDCStepForm";
+import { NewNDCStepFormOne as NewNDCStepFormOneCitizen } from "./pages/citizen/createNCDApplication/NewNDCStepFormOne";
+import SelectNDCReason from "./pageComponents/SelectNDCReason";
+import {PropertyDetailsForm as PropertyDetailsFormCitizen} from "./pageComponents/PropertyDetailsForm";
+import {PropertySearchNSummary as NDCPropertySearch} from "./components/NDCPropertySearch"
+import SelectNDCDocuments from "./pageComponents/SelectNDCDocuments"
+import { NewNDCStepFormTwo as NewNDCStepFormTwoCitizen } from "./pages/citizen/createNCDApplication/NewNDCStepFormTwo";
+import NDCSummary from "./pageComponents/NDCSummary"
+import { NDCNewFormSummaryStepThreeCitizen } from "./pages/citizen/createNCDApplication/NDCNewFormSummaryStepThreeCitizen";
+import { PayWSBillModal } from "./pageComponents/PayWSBillModal";
 
 import getRootReducer from "./redux/reducers";
 
@@ -28,7 +39,7 @@ const NDCModule = ({ stateCode, userType, tenants }) => {
   }
 
   if (userType === "citizen") {
-    return <div></div>;
+    return <CitizenApp />;
   }
 
   return <EmployeeApp path={path} stateCode={stateCode} />;
@@ -44,6 +55,16 @@ const componentsToRegister = {
   PropertyDetailsStep1,
   PropertyDetailsStep2,
   PropertyDetailsFormUser,
+  NewNDCStepFormCitizen,
+  SelectNDCReason,
+  NewNDCStepFormOneCitizen,
+  PropertyDetailsFormCitizen,
+  NDCPropertySearch,
+  SelectNDCDocuments,
+  NewNDCStepFormTwoCitizen,
+  NDCSummary,
+  NDCNewFormSummaryStepThreeCitizen,
+  PayWSBillModal
 };
 
 export const initNDCComponents = () => {

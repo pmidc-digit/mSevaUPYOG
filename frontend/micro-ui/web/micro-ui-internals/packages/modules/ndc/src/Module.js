@@ -21,6 +21,10 @@ import { NewNDCStepFormTwo as NewNDCStepFormTwoCitizen } from "./pages/citizen/c
 import NDCSummary from "./pageComponents/NDCSummary"
 import { NDCNewFormSummaryStepThreeCitizen } from "./pages/citizen/createNCDApplication/NDCNewFormSummaryStepThreeCitizen";
 import { PayWSBillModal } from "./pageComponents/PayWSBillModal";
+import { NewNDCStepForm as NewNDCStepFormEmployee } from "./pages/employee/createNDCApplication/createNDCApplicationStepperForm/NewNDCStepForm";
+import { NewNDCStepFormOne as NewNDCStepFormOneEmployee } from "./pages/employee/createNDCApplication/createNDCApplicationStepperForm/NewNDCStepFormOne";
+import { NewNDCStepFormTwo as NewNDCStepFormTwoEmployee } from "./pages/employee/createNDCApplication/createNDCApplicationStepperForm/NewNDCStepFormTwo";
+import { NDCNewFormSummaryStepThreeEmployee } from "./pages/employee/createNDCApplication/createNDCApplicationStepperForm/NDCNewFormSummaryStepThreeEmployee";
 
 import getRootReducer from "./redux/reducers";
 
@@ -64,7 +68,11 @@ const componentsToRegister = {
   NewNDCStepFormTwoCitizen,
   NDCSummary,
   NDCNewFormSummaryStepThreeCitizen,
-  PayWSBillModal
+  PayWSBillModal,
+  NewNDCStepFormEmployee,
+  NewNDCStepFormOneEmployee,
+  NewNDCStepFormTwoEmployee,
+  NDCNewFormSummaryStepThreeEmployee
 };
 
 export const initNDCComponents = () => {

@@ -1,7 +1,7 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { updateNDCForm } from "../../../redux/actions/NDCFormActions";
+import { updateNDCForm } from "../../../../redux/actions/NDCFormActions";
 import { useState } from "react";
 
 export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {

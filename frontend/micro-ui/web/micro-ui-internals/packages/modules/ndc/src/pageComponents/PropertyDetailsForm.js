@@ -91,10 +91,13 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   
     console.log("Filtered cptDetails in PropertyDetails Page", combinedObject);
   }, [formData?.cpt?.details]);
+
+  console.log("PropertyDetails: ", propertyDetails);
   
 
   useEffect(() => {
     // console.log("BillDataForW&S", waterConnectionBillData, sewerageConnectionBillData)
+    if(!formData?.PropertyDetails?.waterConnection?.length>0){
     setPropertyDetails((prev) => {
       const waterConnection = waterConnectionData?.map((item) => ({ connectionNo: item?.connectionNo, isEdit: false, billData: {}, isLoading: false }));
 
@@ -103,9 +106,11 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         waterConnection: waterConnection,
       };
     });
+  }
   }, [waterConnectionData, waterConnectionLoading]);
 
   useEffect(() => {
+    if(!formData?.PropertyDetails?.sewerageConnection?.length>0){
     setPropertyDetails((prev) => {
       const sewerageConnection = sewerageConnectionData?.map((item) => ({ connectionNo: item?.connectionNo, isEdit: false, billData: {},isLoading: false }));
 
@@ -114,6 +119,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         sewerageConnection: sewerageConnection,
       };
     });
+  }
   }, [sewerageConnectionData, sewerageConnectionLoading]);
 
   useEffect(() => {
@@ -200,7 +206,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")} * `}</CardLabel>
             {waterConnectionLoading? <Loader />:<div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               {propertyDetails?.waterConnection?.map((item, index) => (
-                <div style={{ display: "flex", flexDirection: "row" }}>
+                <div key={index} style={{ display: "flex", flexDirection: "row" }}>
                   <Controller
                     key={index}
                     control={control}
@@ -274,7 +280,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             <CardLabel className="card-label-smaller">{`${t("NDC_SEWERAGE_CONNECTION")} * `}</CardLabel>
             {sewerageConnectionLoading?<Loader /> :<div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               {propertyDetails?.sewerageConnection?.map((item, index) => (
-                <div style={{ display: "flex", flexDirection: "row" }}>
+                <div key={index} style={{ display: "flex", flexDirection: "row" }}>
                   <Controller
                     key={index}
                     control={control}

@@ -49,6 +49,7 @@ const EmployeeApp = ({ path }) => {
   console.log("here in ndc");
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCApplicationOverview");
   const Inbox = Digit?.ComponentRegistryService?.getComponent("NDCInbox");
+  const NewNDCStepForm = Digit.ComponentRegistryService.getComponent("NewNDCStepFormEmployee");
 
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -64,7 +65,7 @@ const EmployeeApp = ({ path }) => {
         {/* <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} />
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} /> */}
         <Route path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/create`} component={(props) => <CreateNDCApplicationStep {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/create`} component={(props) => <NewNDCStepForm {...props} parentRoute={path} />} />
         {/* <PrivateRoute path={`${path}/response`} component={Response} />  */}
       </Switch>
     </Fragment>

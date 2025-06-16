@@ -13,7 +13,7 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
     "Documents",
   ]);
 
-  console.log("Documents data:", data);
+  // console.log("Documents data:", stateId, tenantId);
 
   const ndcDocuments = data?.PropertyTax?.Documents;
 

@@ -65,11 +65,17 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
     }
   );
 
+  const isfirstRender = useRef(true);
+
   useEffect(() => {
     if (propertyDetailsFetch && propertyDetailsFetch?.Properties && propertyDetailsFetch?.Properties?.length > 0) {
       setPropertyDetails(propertyDetailsFetch);
       setShowToast(null);
     } else {
+      if(isfirstRender.current){
+        isfirstRender.current = false;
+        return;
+      }
       if(!formData?.cpt?.details){
         console.log("Property Id not found in response", propertyId);
         setPropertyDetails({});

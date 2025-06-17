@@ -1,27 +1,28 @@
 import React, { useState, useEffect } from "react";
 
-import { FilterAction, Card, DetailsCard, PopUp, SearchAction } from "@mseva/digit-ui-react-components";
+import { FilterAction, Card, PopUp, SearchAction } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import Filter from "./Filter";
 import SearchComplaint from "./search";
 import { LOCALE } from "../../constants/Localization";
+import DetailsCard from "./DetailsCard"
 
-export const ComplaintCard = ({ data, onFilterChange, onSearch, serviceRequestIdKey, searchParams }) => {
+export const ComplaintCard = ({ data, onFilterChange, onSearch, serviceRequestIdKey, searchParams, localities, tenantIdsList }) => {
   const { t } = useTranslation();
   const [popup, setPopup] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState(null);
   const [filterCount, setFilterCount] = useState(Digit.inboxFilterCount || 1);
 
-  useEffect(() => {
-    handlePopupAction("FILTER")
-  },[])
+  // useEffect(() => {
+  //   handlePopupAction("FILTER")
+  // },[])
 
   const handlePopupAction = (type) => {
     if (type === "SEARCH") {
       setSelectedComponent(<SearchComplaint type="mobile" onClose={handlePopupClose} onSearch={onSearch} searchParams={searchParams} />);
     } else if (type === "FILTER") {
       setSelectedComponent(
-        <Filter complaints={data} onFilterChange={onFilterChange} onClose={handlePopupClose} type="mobile" searchParams={searchParams} />
+        <Filter complaints={data} onFilterChange={onFilterChange} onClose={handlePopupClose} type="mobile" searchParams={searchParams} localities={localities}/>
       );
     }
     setPopup(true);
@@ -46,7 +47,8 @@ export const ComplaintCard = ({ data, onFilterChange, onSearch, serviceRequestId
       </Card>
     );
   } else if (data && data?.length > 0) {
-    result = <DetailsCard data={data} serviceRequestIdKey={serviceRequestIdKey} linkPrefix={"/digit-ui/employee/swach/complaint/details/"} />;
+    console.log("DataInDetailsCard", data);
+    result = <DetailsCard data={data} serviceRequestIdKey={serviceRequestIdKey} linkPrefix={"/digit-ui/employee/swach/complaint/details/"} tenantIdsList={tenantIdsList}/>;
   } else {
     result = (
       <Card style={{ marginTop: 20 }}>

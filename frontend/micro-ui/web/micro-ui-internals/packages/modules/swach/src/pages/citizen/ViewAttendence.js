@@ -24,6 +24,7 @@ const ViewAttendence = () => {
   const { t } = useTranslation();
   const user =  userInfo?.uuid
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
+  const [addresses, setAddresses] = useState({});
  const getTodayTimestamp = () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); 
@@ -34,6 +35,40 @@ const ViewAttendence = () => {
     userIds: user,
     fromDate: getTodayTimestamp(),
   });
+const fetchAddress = async (lat, long) => {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`
+    );
+    const result = await response.json();
+    return result.display_name || "Address not available";
+  } catch (error) {
+    console.error("Error fetching address:", error);
+    return "Address not available";
+  }
+};
+useEffect(() => {
+  const fetchAllAddresses = async () => {
+    if (data?.Attendance) {
+      const addressPromises = data.Attendance.map(async (attendance) => {
+        if (attendance.latitude && attendance.longitude) {
+          const address = await fetchAddress(attendance.latitude, attendance.longitude);
+          return { id: attendance.id, address };
+        }
+        return { id: attendance.id, address: "Address not available" };
+      });
+
+      const resolvedAddresses = await Promise.all(addressPromises);
+      const addressMap = resolvedAddresses.reduce((acc, curr) => {
+        acc[curr.id] = curr.address;
+        return acc;
+      }, {});
+      setAddresses(addressMap);
+    }
+  };
+
+  fetchAllAddresses();
+}, [data]);
 
   if (isLoading) return <Loader />;
   if (error) return <div>Error: {error.message}</div>;
@@ -53,7 +88,7 @@ const ViewAttendence = () => {
                 <Row label="Name" text={attendance.userDetail?.name || "N/A"} />
                 <Row label="Mobile" text={attendance.userDetail?.mobileNumber || "N/A"} />
                 <Row label="Date & Time" text={new Date(attendance.createdTime).toLocaleString()} />
-                <Row label="Location" text={attendance.locality || "N/A"} />
+                <Row label="Location" text={addresses[attendance.id] || "Fetching address..."} />
               </StatusTable>
             </div>
 

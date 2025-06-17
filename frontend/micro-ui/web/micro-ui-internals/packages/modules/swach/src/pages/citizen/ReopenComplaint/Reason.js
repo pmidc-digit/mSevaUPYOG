@@ -44,10 +44,10 @@ const ReasonPage = (props) => {
         selectedOption={selected}
         // selected={(value) => setSelected(value)}
         options={[
-          t(`${LOCALIZATION_KEY.CS_REOPEN}_OPTION_ONE`),
-          t(`${LOCALIZATION_KEY.CS_REOPEN}_OPTION_TWO`),
-          t(`${LOCALIZATION_KEY.CS_REOPEN}_OPTION_THREE`),
-          t(`${LOCALIZATION_KEY.CS_REOPEN}_OPTION_FOUR`),
+          t(`${LOCALIZATION_KEY.CS_REOPEN}_NO_ACTION_TAKEN`),
+          t(`${LOCALIZATION_KEY.CS_REOPEN}_ISSUE_NOT_RESOLVED`),
+          t(`${LOCALIZATION_KEY.CS_REOPEN}_PARTIAL_RESOLUTION`),
+          t(`${LOCALIZATION_KEY.CS_REOPEN}_PROBLEM_RECURRED`),
         ]}
       />
 

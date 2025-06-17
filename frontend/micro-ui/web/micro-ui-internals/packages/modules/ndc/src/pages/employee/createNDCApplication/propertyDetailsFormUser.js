@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from "react";
-import { TextInput, Header, ActionBar, SubmitBar, Loader, InfoIcon, Toast } from "@mseva/digit-ui-react-components";
-import { useForm, FormProvider, useFieldArray } from "react-hook-form";
+import { ActionBar, SubmitBar, Toast, UploadFile } from "@mseva/digit-ui-react-components";
+import { useForm, FormProvider } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { Loader } from "../../../utils/Loader";
+import { updateNDCForm } from "../../../redux/actions/NDCFormActions";
 
-// Keep below values in localisation:
-const SURVEY_CATEGORY = "Create Category";
-const CATEGORY_CREATED = "Category created successfully";
-const ERR_MESSAGE = "Something went wrong";
-
-const PropertyDetailsFormUser = ({ onBackClick }) => {
+const PropertyDetailsFormUser = ({ onBackClick, onGoNext }) => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const dispatch = useDispatch();
+
   const [isLoading, setIsLoading] = useState(false);
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [file, setFile] = useState(null);
   const [showToast, setShowToast] = useState(null);
+  const [error, setError] = useState(null);
+
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const cityDetails = Digit.ULBService.getCurrentUlb();
+  const formStateValues = useSelector((state) => state.ndc.NDCForm);
 
   const methods = useForm({
     defaultValues: {
-      propertyID: "",
-      waterConnectionNumbers: [{ value: "" }],
-      sewageConnectionNumbers: [{ value: "" }],
       propertyType: "",
       propertyUsageType: "",
       propertyLocationType: "",
@@ -35,233 +37,127 @@ const PropertyDetailsFormUser = ({ onBackClick }) => {
     formState: { errors },
   } = methods;
 
-  const { fields: waterFields, append: addWater, remove: removeWater } = useFieldArray({
-    control,
-    name: "waterConnectionNumbers",
+  // State for each file
+  const [files, setFiles] = useState({
+    registry: null,
+    sanctionedPlan: null,
+    waterReceipt: null,
+    propertyReceipt: null,
+    identityProof: null,
+    addressProof: null,
+    authorityLetter: null,
   });
 
-  const { fields: sewageFields, append: addSewage, remove: removeSewage } = useFieldArray({
-    control,
-    name: "sewageConnectionNumbers",
+  const [fileStoreIds, setFileStoreIds] = useState({
+    registry: null,
+    sanctionedPlan: null,
+    waterReceipt: null,
+    propertyReceipt: null,
+    identityProof: null,
+    addressProof: null,
+    authorityLetter: null,
   });
+
+  const closeToast = () => setShowToast(null);
+
+  const uploadFile = async (key, fileObj) => {
+    if (fileObj.size >= 5242880) {
+      setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const res = await Digit.UploadServices.Filestorage("property-upload", fileObj, cityDetails.code);
+      const storeId = res?.data?.files?.[0]?.fileStoreId;
+      setIsLoading(false);
+      if (storeId) {
+        setFileStoreIds((prev) => ({ ...prev, [key]: storeId }));
+        setError(null);
+      } else {
+        setError(t("CS_FILE_UPLOAD_ERROR"));
+      }
+    } catch (err) {
+      setIsLoading(false);
+      setError(t("CS_FILE_UPLOAD_ERROR"));
+    }
+  };
+
+  const handleFileChange = (e, key) => {
+    const selectedFile = e.target.files[0];
+    setFiles((prev) => ({ ...prev, [key]: selectedFile }));
+    uploadFile(key, selectedFile);
+  };
+
+  const handleDelete = (key) => {
+    setFiles((prev) => ({ ...prev, [key]: null }));
+    setFileStoreIds((prev) => ({ ...prev, [key]: null }));
+  };
+
+  const renderUploadField = (label, key) => (
+    <div className="surveydetailsform-wrapper">
+      <label>
+        {label} <span style={{ color: "red" }}>*</span>
+      </label>
+      <UploadFile
+        id={`upload-${key}`}
+        accept=".jpg"
+        onUpload={(e) => handleFileChange(e, key)}
+        onDelete={() => handleDelete(key)}
+        message={fileStoreIds[key] ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("CS_ACTION_NO_FILEUPLOADED")}
+      />
+    </div>
+  );
 
   const onSubmit = async (data) => {
-    console.log("Submitted Data:", data);
+    console.log("Form Submitted:", data);
+    const fullData = {
+      ...data,
+      documents: fileStoreIds,
+    };
+    console.log("fullData", fullData);
+    dispatch(updateNDCForm("PropertyDetailsStep2", fullData));
+    onGoNext();
   };
 
   useEffect(() => {
-    console.log("errors", errors);
-  }, [errors]);
-
-  const closeToast = () => {
-    setShowToast(null);
-  };
+    console.log("here", formStateValues?.formData?.PropertyDetailsStep2);
+    // if (formStateValues?.formData?.PropertyDetailsStep2) {
+    //   console.log("here", formStateValues);
+    //   const data = formStateValues?.formData?.PropertyDetailsStep2;
+    //   Object?.entries(data)?.forEach(([key, value]) => {
+    //     setValue(key, value);
+    //   });
+    // }
+  }, [formStateValues]);
 
   return (
     <div className="pageCard">
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Property ID <span style={{ color: "red" }}>*</span>
-            </label>
-            <TextInput
-              name="propertyID"
-              type="text"
-              inputRef={register({
-                required: "This field is required",
-                maxLength: {
-                  value: 500,
-                  message: "Category length should be less than or equal to 500 characters",
-                },
-              })}
-            />
-
-            {errors.propertyID && <p style={{ color: "red" }}>{errors.propertyID.message}</p>}
-          </div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Water Connection Number <span style={{ color: "red" }}>*</span>
-            </label>
-            {waterFields.map((field, index) => (
-              <div key={field.id} className="dynamic-field" style={{ display: "flex", gap: "10px" }}>
-                <TextInput {...register(`waterConnectionNumbers.${index}.value`, { required: "This field is required" })} />
-                {index > 0 && (
-                  <button type="button" onClick={() => removeWater(index)}>
-                    ❌
-                  </button>
-                )}
-              </div>
-            ))}
-            <button type="button" onClick={() => addWater({ value: "" })}>
-              ➕ Add
-            </button>
-          </div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Sewage Connection Number <span style={{ color: "red" }}>*</span>
-            </label>
-            {sewageFields.map((field, index) => (
-              <div key={field.id} className="dynamic-field" style={{ display: "flex", gap: "10px" }}>
-                <TextInput {...register(`sewageConnectionNumbers.${index}.value`, { required: "This field is required" })} />
-                {index > 0 && (
-                  <button type="button" onClick={() => removeSewage(index)}>
-                    ❌
-                  </button>
-                )}
-              </div>
-            ))}
-            <button type="button" onClick={() => addSewage({ value: "" })}>
-              ➕ Add
-            </button>
-          </div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Property Type <span style={{ color: "red" }}>*</span>
-            </label>
-            <TextInput
-              name="address"
-              type="text"
-              inputRef={register({
-                required: "This field is required",
-                maxLength: {
-                  value: 500,
-                  message: "Category length should be less than or equal to 500 characters",
-                },
-              })}
-            />
-            {errors.propertyType && <p style={{ color: "red" }}>{errors.propertyType.message}</p>}
-          </div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Property Usage Type <span style={{ color: "red" }}>*</span>
-            </label>
-            <TextInput
-              name="address"
-              type="text"
-              inputRef={register({
-                required: "This field is required",
-                maxLength: {
-                  value: 500,
-                  message: "Category length should be less than or equal to 500 characters",
-                },
-              })}
-            />
-            {errors.propertyUsageType && <p style={{ color: "red" }}>{errors.propertyUsageType.message}</p>}
-          </div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Property Location Type <span style={{ color: "red" }}>*</span>
-            </label>
-            <TextInput
-              name="address"
-              type="text"
-              inputRef={register({
-                required: "This field is required",
-                maxLength: {
-                  value: 500,
-                  message: "Category length should be less than or equal to 500 characters",
-                },
-              })}
-            />
-            {errors.propertyLocationType && <p style={{ color: "red" }}>{errors.propertyLocationType.message}</p>}
-          </div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              No of Floors <span style={{ color: "red" }}>*</span>
-            </label>
-            <TextInput
-              name="numberOfFloors"
-              type="text"
-              inputRef={register({
-                required: "This field is required",
-                maxLength: {
-                  value: 500,
-                  message: "Category length should be less than or equal to 500 characters",
-                },
-              })}
-            />
-            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
-          </div>
           <div>Upload Files</div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Copy of Property Registry <span style={{ color: "red" }}>*</span>
-            </label>
-            <input
-              name="numberOfFloors"
-              type="file"
-              inputRef={register({
-                required: "This field is required",
-                maxLength: {
-                  value: 500,
-                  message: "Category length should be less than or equal to 500 characters",
-                },
-              })}
-            />
-            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
-          </div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Approved Building Plan <span style={{ color: "red" }}>*</span>
-            </label>
-            <input
-              name="numberOfFloors"
-              type="file"
-              inputRef={register({
-                required: "This field is required",
-                maxLength: {
-                  value: 500,
-                  message: "Category length should be less than or equal to 500 characters",
-                },
-              })}
-            />
-            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
-          </div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Last Water Tax Receipt <span style={{ color: "red" }}>*</span>
-            </label>
-            <input
-              name="numberOfFloors"
-              type="file"
-              inputRef={register({
-                required: "This field is required",
-                maxLength: {
-                  value: 500,
-                  message: "Category length should be less than or equal to 500 characters",
-                },
-              })}
-            />
-            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
-          </div>
-          <div className="surveydetailsform-wrapper">
-            <label>
-              Last Property Tax Receipt <span style={{ color: "red" }}>*</span>
-            </label>
-            <input
-              name="numberOfFloors"
-              type="file"
-              inputRef={register({
-                required: "This field is required",
-                maxLength: {
-                  value: 500,
-                  message: "Category length should be less than or equal to 500 characters",
-                },
-              })}
-            />
-            {errors.numberOfFloors && <p style={{ color: "red" }}>{errors.numberOfFloors.message}</p>}
-          </div>
+
+          {renderUploadField("Copy of Property Registry", "registry")}
+          {renderUploadField("Copy of Sanctioned building plan / site plan / sanction letter / any other relevant document", "sanctionedPlan")}
+          {renderUploadField("Last water tax receipt", "waterReceipt")}
+          {renderUploadField("Last property tax receipt", "propertyReceipt")}
+          {renderUploadField("Identity Proof", "identityProof")}
+          {renderUploadField("Address Proof", "addressProof")}
+          {renderUploadField(
+            "Authority letter / Power of Attorney - application in case of joint ownership or if applicant is not the owner",
+            "authorityLetter"
+          )}
+
           <ActionBar>
-            <SubmitBar label="Submit" submit="submit" />
+            <SubmitBar label="Back" onSubmit={() => onBackClick()} />
+            <SubmitBar style={{ marginLeft: "20px" }} label="Next" submit="submit" />
           </ActionBar>
-          {/* <button type="submit">Submit</button> */}
-          <button onClick={() => onBackClick()}>Back</button>
         </form>
+        {isLoading && <Loader />}
       </FormProvider>
 
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"true"} />}
-      {isLoading && <Loader />}
+
+      {error && <Toast error={true} label={error} onClose={() => setError(null)} />}
     </div>
   );
 };

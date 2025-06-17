@@ -26,12 +26,25 @@ const createEmployeeConfig = [
   },
   {
     head: "PROPERTY_DETAILS",
-    stepLabel: "Property Details",
+    stepLabel: "Document Details",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
     component: "PropertyDetailsStep2",
     key: "PropertyDetailsStep2",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next Step",
+    },
+  },
+  {
+    head: "Summary",
+    stepLabel: "Summary",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "ndcDetailsSummary",
+    key: "ndcDetailsSummary",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Submit",
@@ -59,7 +72,7 @@ const CreateNDCApplicationStep = () => {
 
   const handleSubmit = (data) => {
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
-    console.log("data=====", data);
+    console.log("data=====???????", data);
     // onSubmit(data, tenantId, setShowToast, history);
   };
 

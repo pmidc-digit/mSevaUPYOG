@@ -273,6 +273,11 @@ const Urls = {
     estimateCreate: "/adv-services/booking/v1/_estimate",
   },
 
+  ndc: {
+    create: "/ndc-services/booking/v1/_create",
+    search: "/ndc-services/booking/v1/_search",
+  },
+
   access_control: "/access/v1/actions/mdms/_get",
   billgenie: "/egov-searcher",
   audit: "/inbox/v1/elastic/_search",

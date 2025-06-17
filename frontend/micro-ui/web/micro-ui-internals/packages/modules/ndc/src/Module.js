@@ -10,7 +10,7 @@ import PropertyDetailsForm from "./pages/employee/createNDCApplication/propertyD
 import PropertyDetailsStep1 from "./pages/employee/createNDCApplication/PropertyDetailsStep1";
 import PropertyDetailsStep2 from "./pages/employee/createNDCApplication/propertyDetailsStep2";
 import PropertyDetailsFormUser from "./pages/employee/createNDCApplication/propertyDetailsFormUser";
-
+import ndcDetailsSummary from "./pages/employee/createNDCApplication/ndcDetailsSummary";
 import getRootReducer from "./redux/reducers";
 
 export const NDCReducers = getRootReducer;
@@ -43,6 +43,7 @@ const componentsToRegister = {
   PropertyDetailsForm,
   PropertyDetailsStep1,
   PropertyDetailsStep2,
+  ndcDetailsSummary,
   PropertyDetailsFormUser,
 };
 

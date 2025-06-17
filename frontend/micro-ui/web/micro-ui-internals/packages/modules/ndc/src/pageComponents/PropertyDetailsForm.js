@@ -31,8 +31,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   const { t } = useTranslation();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
-  const [showToast, setShowToast] = useState(false);
-  const [error, setError] = useState("");
+  const [showToast, setShowToast] = useState(null);
+  // const [error, setError] = useState("");
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedBillData, setSelectedBillData] = useState({})
   const propertyId = formData?.cpt?.details?.propertyId;
@@ -165,6 +165,11 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     })
 
     if(result?.Bill?.length > 0){
+      if(result?.Bill[0]?.totalAmount>0){
+        setShowToast({ error: true, label: t("Dues Found. Please Pay") });
+      }else{
+        setShowToast({ error: false, label: t("No Dues Found") })
+      }
       if(bussinessService === "WS"){
         const updated = [...propertyDetails.waterConnection];
         updated[index].billData = result?.Bill[0];
@@ -183,17 +188,79 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         }))
       }
     }else if(result?.Bill){
-      setError(t("No Bills Found For this consumer number"));
+      setShowToast({ error: true, label: t("No Bills Found For this consumer number") })
+      if(bussinessService === "WS"){
+        const updated = [...propertyDetails.waterConnection];
+        updated[index].isLoading = false;
+        setPropertyDetails((prev) => ({
+          ...prev,
+          waterConnection: updated
+        }))
+      }else if(bussinessService === "SW"){
+        const updated = [...propertyDetails.sewerageConnection];
+        updated[index].isLoading = false;
+        setPropertyDetails((prev) => ({
+          ...prev,
+          sewerageConnection: updated
+        }))
+      }
+      // setError(t("No Bills Found For this consumer number"));
     }else{
-      setError(t("Invalid Consumer Number"));
+      setShowToast({ error: true, label: t("Invalid Consumer Number") })
+      if(bussinessService === "WS"){
+        const updated = [...propertyDetails.waterConnection];
+        updated[index].isLoading = false;
+        setPropertyDetails((prev) => ({
+          ...prev,
+          waterConnection: updated
+        }))
+      }else if(bussinessService === "SW"){
+        const updated = [...propertyDetails.sewerageConnection];
+        updated[index].isLoading = false;
+        setPropertyDetails((prev) => ({
+          ...prev,
+          sewerageConnection: updated
+        }))
+      }
+      // setError(t("Invalid Consumer Number"));
     }
 
   }
 
   const closeToast = () => {
-    setShowToast(false);
-    setError("");
+    setShowToast(null);
+    // setError("");
   };
+
+  function redirectToPayBill(billData, index, isEdit){
+    const userType = window.location.href.includes("employee") ? "employee" : "citizen";
+    
+    let service
+    if(billData?.businessService === "WS"){
+      service = "WATER"
+    }else{
+      service = "SEWERAGE"
+    }
+    
+    const payUrl = "https://sdc-uat.lgpunjab.gov.in"+`/${userType}/wns/viewBill?connectionNumber=${billData?.consumerCode}&tenantId=${billData?.tenantId}&service=${service}`;
+    window.open(payUrl, "_blank");
+    
+    if(billData?.businessService === "WS"){
+      const updated = [...propertyDetails.waterConnection];
+      updated[index] = { connectionNo: billData?.consumerCode, isEdit: isEdit, billData: {}, isLoading: false }
+      setPropertyDetails((prev) => ({
+        ...prev,
+        waterConnection: updated
+      }))
+    }else if(billData?.businessService === "SW"){
+      const updated = [...propertyDetails.sewerageConnection];
+      updated[index] = { connectionNo: billData?.consumerCode, isEdit: isEdit, billData: {}, isLoading: false }
+      setPropertyDetails((prev) => ({
+        ...prev,
+        sewerageConnection: updated
+      }))
+    }
+  }
 
   const PayWSBillModal = Digit?.ComponentRegistryService?.getComponent("PayWSBillModal");
 
@@ -218,6 +285,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                         onChange={(e) => {
                           // Update local state
                           const updated = [...propertyDetails.waterConnection];
+                          updated[index] = { connectionNo: "", isEdit: true, billData: {}, isLoading: false }
                           updated[index].connectionNo = e.target.value;
                           setPropertyDetails((prev) => ({
                             ...prev,
@@ -239,9 +307,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     {`${t("Check Status")}`}
                   </button>}
 
-                  {item?.connectionNo && item?.billData?.totalAmount && <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {
-                    setSelectedBillData(item?.billData);
-                    setShowPayModal(true);
+                  {item?.connectionNo && item?.billData?.totalAmount>0 && <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {
+                    // setSelectedBillData(item?.billData);
+                    // setShowPayModal(true);
+                    redirectToPayBill(item?.billData, index, item.isEdit)
                   }}>
                     {`${t("PAY")}`}
                   </button>}
@@ -292,6 +361,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                         onChange={(e) => {
                           // Update local state
                           const updated = [...propertyDetails.sewerageConnection];
+                          updated[index] = { connectionNo: "", isEdit: true, billData: {}, isLoading: false }
                           updated[index].connectionNo = e.target.value;
                           setPropertyDetails((prev) => ({
                             ...prev,
@@ -309,14 +379,15 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
                   {item.isLoading? <Loader /> :<div>
                   {item?.connectionNo && !item?.billData?.id && <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {
-                    fetchBill("SW",item.connectionNo, index)
+                    fetchBill("SW",item.connectionNo, index, item.isEdit)
                   }}>
                     {`${t("Check Status")}`}
                   </button>}
 
-                  {item?.connectionNo && item?.billData?.totalAmount && <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {
-                    setSelectedBillData(item?.billData);
-                    setShowPayModal(true);
+                  {item?.connectionNo && item?.billData?.totalAmount>0 && <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {
+                    // setSelectedBillData(item?.billData);
+                    // setShowPayModal(true);
+                    redirectToPayBill(item?.billData, index, )
                   }}>
                     {`${t("PAY")}`}
                   </button>}
@@ -475,7 +546,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       </LabelFieldPair>
       </div>
       )}
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast?.error} label={showToast?.label} onClose={closeToast} />}
       {showPayModal && <PayWSBillModal setShowToast={() => {setShowPayModal(false); setSelectedBillData({})}} billData={selectedBillData} />}
     </div>
   );

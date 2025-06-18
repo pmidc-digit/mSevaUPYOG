@@ -319,7 +319,7 @@ const addDeactiveUserDetails = (tenantId, owner) => {
   // console.log("owner"+JSON.stringify(owner))
   const tempOwner ={
     userName : uuidv1(),
-    active : false,
+    active : true,
     tenantId : envVariables.EGOV_DEFAULT_STATE_ID,
     type : "CITIZEN",
     mobileNumber : owner.mobileNumber,

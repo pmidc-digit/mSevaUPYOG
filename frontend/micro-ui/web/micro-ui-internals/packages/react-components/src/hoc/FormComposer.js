@@ -393,7 +393,7 @@ export const FormComposer = (props) => {
           <ActionBar>
             {props.currentStep > 1 && (
               <button style={buttonStyle.back} onClick={handleBackClick} className="submit-bar">
-                {t("COMMON_BACK")}
+                {t("TL_COMMON_BUTTON_PREV_STEP")}
               </button>
             )}
             <SubmitBar label={t(props.label)} submit="submit" disabled={isDisabled} />

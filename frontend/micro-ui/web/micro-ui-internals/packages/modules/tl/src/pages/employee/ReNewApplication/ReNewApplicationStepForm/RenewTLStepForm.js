@@ -22,7 +22,7 @@ const renewEmployeeConfig = [
     key: "TraidDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {
@@ -35,7 +35,7 @@ const renewEmployeeConfig = [
     key: "OwnerDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {
@@ -48,7 +48,7 @@ const renewEmployeeConfig = [
     key: "Documents",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_SUBMIT",
+      submitBarLabel: "TL_RENEWAL_BUTTON_SUBMIT",
     },
   },
   {
@@ -61,7 +61,7 @@ const renewEmployeeConfig = [
     key: "SummaryTL",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "Submit",
+      submitBarLabel: "TL_RENEWAL_BUTTON_SUBMIT",
     },
   },
 ];

@@ -78,7 +78,7 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
     <React.Fragment>
       <div style={{ marginTop: "16px", border: "1px solid #D6D5D4", padding: "16px", background: "#FAFAFA" }}>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("TL_VALID_FOR_NO_OF_YEARS")} *`}</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("TL_TRADE_VALIDITY_NO_OF_YEAR")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             name={"validityYears"}
             control={control}
@@ -98,6 +98,7 @@ const TLTradeValidityEmployee = ({ config, formData, onSelect }) => {
                 optionKey="i18nKey"
                 onBlur={props.onBlur}  
                 t={t}
+                placeholder={t("TL_TRADE_VALIDITY_NO_OF_YEAR_PLACEHOLDER")}
               />
             )}
           />

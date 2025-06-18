@@ -83,7 +83,8 @@ export const updateApiResponse = async ({ body }, next = {}) => {
 
   payloads.push({
     topic: envVariables.KAFKA_TOPICS_FIRENOC_UPDATE,
-    messages: JSON.stringify(body)
+    messages: JSON.stringify(body),
+    key : body.FireNOCs[0].fireNOCDetails.id
   });
 
   //check approved list
@@ -95,7 +96,8 @@ export const updateApiResponse = async ({ body }, next = {}) => {
   if (approvedList.length > 0) {
     payloads.push({
       topic: envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW,
-      messages: JSON.stringify({ RequestInfo, FireNOCs: approvedList })
+      messages: JSON.stringify({ RequestInfo, FireNOCs: approvedList }),
+       key : body.FireNOCs[0].fireNOCDetails.id
     });
   }
   console.log(JSON.stringify(body));

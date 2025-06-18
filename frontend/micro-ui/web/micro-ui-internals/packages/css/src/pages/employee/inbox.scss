@@ -123,6 +123,7 @@
       .filter-card {
         @apply bg-white;
         padding: 10px;
+        padding-bottom: 50px;
         .filter-card-close-button {
           @apply flex flex-row-reverse;
         }

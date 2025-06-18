@@ -56,7 +56,6 @@ const SearchComplaint = ({ onSearch, type, onClose, searchParams }) => {
           <div className="search-complaint-container">
             {type === "mobile" && (
               <div className="complaint-header">
-                <h2> {t("CS_COMMON_SEARCH_BY")}:</h2>
                 <span onClick={onClose}>
                   <CloseSvg />
                 </span>

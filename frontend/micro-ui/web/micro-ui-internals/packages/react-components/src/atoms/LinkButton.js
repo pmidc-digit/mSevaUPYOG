@@ -30,10 +30,9 @@ LinkButton.defaultProps = {
     borderRadius: "8px",
     cursor: "pointer",
     padding: "8px 16px",
-    display: "inline-flex",
+    display: "inline-block",
     height: "35px",
     fontSize: "18px",
-    alignItems: "center",
   },
 };
 

@@ -20,7 +20,7 @@ const useSWACHInbox = ({ tenantId, filters = {}, config }) => {
   const userId = filters?.filters?.wfQuery?.assignee;
 
   const _filters = {
-    tenantId: tenants,
+    tenantId: tenantId,
     processSearchCriteria: {
       moduleName: "swach-reform",
       businessService: ["SBMR"],

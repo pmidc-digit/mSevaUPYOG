@@ -8,11 +8,12 @@ const complaintsWithCount = [
   { name: "Resolved", code: "RESOLVED" },
 ];
 
-const Status = ({ complaints, onAssignmentChange, swachfilters }) => {
+const Status = ({ complaints, onAssignmentChange, swachfilters, type }) => {
   const { t } = useTranslation();
   // const complaintsWithCount = Digit.Hooks.swach.useComplaintStatusCount(complaints);
   useEffect(() => {
-    onAssignmentChange({ target: { checked: true } }, { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" });
+    if(type !== "mobile")
+      onAssignmentChange({ target: { checked: true } }, { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" });
   }, []);
   const complaintsWithCount = [
     { name: "Pending For Assignment", code: "PENDINGFORASSIGNMENT" },

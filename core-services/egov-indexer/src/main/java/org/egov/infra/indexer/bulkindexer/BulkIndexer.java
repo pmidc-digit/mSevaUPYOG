@@ -29,17 +29,17 @@ public class BulkIndexer {
 	@Autowired
 	private IndexerUtils indexerUtils;
 	
-	@Value("${elasticsearch.username}")
-	private String username;
-
-	@Value("${elasticsearch.password}")
-	private String password;
-	
-	@Value("${egov.elasticsearch.api.auth}")
-	private String apiAuth;
-
-	@Value("${egov.elasticsearch.api.type.auth}")
-	private String typeAuth;
+//	@Value("${elasticsearch.username}")
+//	private String username;
+//
+//	@Value("${elasticsearch.password}")
+//	private String password;
+//	
+//	@Value("${egov.elasticsearch.api.auth}")
+//	private String apiAuth;
+//
+//	@Value("${egov.elasticsearch.api.type.auth}")
+//	private String typeAuth;
 
 	/**
 	 * Methods that makes a REST API call to /_bulk API of the ES. This method
@@ -55,10 +55,10 @@ public class BulkIndexer {
 		try {
 			log.debug("Record being indexed: " + indexJson);
 			final HttpHeaders headers = new HttpHeaders();
-//			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-			headers.setContentType(MediaType.APPLICATION_JSON);
-	        String base64Creds = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
-	        headers.add(apiAuth, typeAuth + " " + base64Creds);
+			headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+//			headers.setContentType(MediaType.APPLICATION_JSON);
+//	        String base64Creds = Base64.getEncoder().encodeToString((username + ":" + password).getBytes());
+//	        headers.add(apiAuth, typeAuth + " " + base64Creds);
 			final HttpEntity<String> entity = new HttpEntity<>(indexJson, headers);
 			Object response = restTemplate.postForObject(url.toString(), entity, Map.class);
 			if (url.contains("_bulk")) {

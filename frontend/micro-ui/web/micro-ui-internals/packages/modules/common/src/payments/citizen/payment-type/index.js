@@ -35,11 +35,11 @@ export const SelectPaymentType = (props) => {
   const { pathname, search } = useLocation();
   const menu = ["RAZORPAY"];
   let { consumerCode, businessService } = useParams();
-  const tenantId = __tenantId || Digit.ULBService.getCurrentTenantId();
+  const tenantId = state?.tenantId || __tenantId || Digit.ULBService.getCurrentTenantId();
   const propertyId = state?.propertyId;
   const stateTenant = Digit.ULBService.getStateId();
   const { control, handleSubmit, setValue } = useForm();
-  // const { data: menu, isLoading } = Digit.Hooks.useCommonMDMS(tenantId, "DIGIT-UI", "PaymentGateway");
+  // const { data: menu, isLoading } = Digit.Hooks.useCommonMDMS(stateTenant, "DIGIT-UI", "PaymentGateway");
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
     {}

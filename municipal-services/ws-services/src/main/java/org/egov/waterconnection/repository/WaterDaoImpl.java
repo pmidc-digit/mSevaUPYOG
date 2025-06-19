@@ -143,6 +143,8 @@ public class WaterDaoImpl implements WaterDao {
 		else {
 			waterConnectionProducer.push(wsConfiguration.getWorkFlowUpdateTopic(), waterConnectionRequest);
 		}
+		
+		waterConnectionProducer.push(wsConfiguration.getGisWaterTopic(), waterConnectionRequest);
 	}
 	
 	/**

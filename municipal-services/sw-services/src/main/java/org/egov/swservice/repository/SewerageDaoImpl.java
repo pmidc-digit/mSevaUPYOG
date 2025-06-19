@@ -139,6 +139,9 @@ public class SewerageDaoImpl implements SewerageDao {
 		}  else {
 			sewarageConnectionProducer.push(swConfiguration.getWorkFlowUpdateTopic(), sewerageConnectionRequest);
 		}
+		
+		sewarageConnectionProducer.push(swConfiguration.getGissewerageTopic(), sewerageConnectionRequest);
+		
 	}
 
 	/**

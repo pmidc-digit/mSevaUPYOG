@@ -237,5 +237,22 @@ public class SWConfiguration {
     
     @Value("${egov.billing.service.host}")
 	private String businesserviceHost;
+    
+    
+
+    @Value("${gis.host}")
+    private String gisHost;
+
+    @Value("${gis.create.path}")
+    private String giscreatePath;
+    
+    @Value("${gis.search.path}")
+    private String gissearchPath;
+    
+    @Value("${gis.authtoken}")
+    private String gisAuthToken;
+    
+    @Value("${gis.save.sewerage.topic}")
+    private String gissewerageTopic;
 
 }

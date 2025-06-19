@@ -260,4 +260,21 @@ public class WSConfiguration {
 	@Value("${egov.fetch.bill.endpoint}")
 	private String fetchBillEndPoint;
 	
+	
+	
+	 
+    @Value("${gis.host}")
+    private String gisHost;
+
+    @Value("${gis.create.path}")
+    private String giscreatePath;
+    
+    @Value("${gis.search.path}")
+    private String gissearchPath;
+    
+    @Value("${gis.authtoken}")
+    private String gisAuthToken;
+    
+    @Value("${gis.save.water.topic}")
+    private String gisWaterTopic;
 }

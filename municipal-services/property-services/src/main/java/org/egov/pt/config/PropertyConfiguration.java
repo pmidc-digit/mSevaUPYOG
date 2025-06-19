@@ -51,6 +51,13 @@ public class PropertyConfiguration {
     
     @Value("${persister.update.property.topic}")
     private String updatePropertyTopic;
+    
+    @Value("${gis.save.property.topic}")
+    private String gisPropertyTopic;
+    
+    
+    @Value("${egov.gis.assessment.create.topic}")
+    private String gisassessmentTopic;
 
     @Value("${persister.cancel.property.topic}")
     private String cancelPropertyTopic;
@@ -227,6 +234,16 @@ public class PropertyConfiguration {
     @Value("${pt.business.codes}")
     private List<String> businessServiceList;
 
+    
+    @Value("${gis.host}")
+    private String gisHost;
+
+    @Value("${gis.create.path}")
+    private String giscreatePath;
+    
+    @Value("${gis.search.path}")
+    private String gissearchPath;
+
     @Value("${workflow.host}")
     private String wfHost;
 
@@ -385,5 +402,9 @@ public class PropertyConfiguration {
 
     @Value("${persister.update.property.audit.oldData.topic}")
     private String updatePropertyAuditEncTopic;
+    
+    @Value("${gis.authtoken}")
+    private String gisAuthToken;
+    
 
 }

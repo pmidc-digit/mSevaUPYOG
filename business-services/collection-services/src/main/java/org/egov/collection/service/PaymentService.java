@@ -347,7 +347,11 @@ public class PaymentService {
 		paymentRepository.savePayment(payment);
 
 		producer.producer(applicationProperties.getCreatePaymentTopicName(), paymentRequest);
+		 if (payment.getPaymentDetails().get(0).getBusinessService() != null && payment.getPaymentDetails().get(0).getBusinessService().equals("PT") )
+				{
+				producer.producer(applicationProperties.getGisTopicName(), paymentRequest);
 
+				}
 		return payment;
 	}
 

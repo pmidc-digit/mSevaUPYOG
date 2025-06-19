@@ -209,6 +209,9 @@ public class ApplicationProperties {
 
     // Payment properties
 
+    @Value("${kafka.topics.gis.update}")
+    private String gisTopicName;
+    
     @Value("${kafka.topics.payment.create.name}")
     private String createPaymentTopicName;
     

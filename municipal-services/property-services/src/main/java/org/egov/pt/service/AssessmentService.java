@@ -89,10 +89,13 @@ public class AssessmentService {
 			calculationService.calculateTax(request, property);
 		}
 		producer.push(props.getCreateAssessmentTopic(), request);
+		
+		producer.push(props.getGisassessmentTopic(), request);
 
 		return request.getAssessment();
 	}
 
+	
 
 	/**
 	 * Method to update an assessment asynchronously.

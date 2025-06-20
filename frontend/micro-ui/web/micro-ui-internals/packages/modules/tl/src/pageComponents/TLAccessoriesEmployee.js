@@ -316,14 +316,17 @@ const AccessoriersForm = (_props) => {
                                     option={sortDropdownNames(accessories,"i18nKey",t) || []}
                                     optionKey="i18nKey"
                                     t={t}
-                                  
+                                    placeholder={t("TL_NEW_TRADE_DETAILS_ACC_PLACEHOLDER")}
                                 />
                             )}
                         />
                     </LabelFieldPair>
                     {/* <CardLabelError style={errorStyle}>{localFormState.touched.accessoryCategory ? errors?.name?.message : ""}</CardLabelError> */}
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{getValues("uom") ? `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")} * ` : `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")} `}</CardLabel>
+                        <CardLabel className="card-label-smaller">
+                            {getValues("uom") ? `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}` : `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")} `}
+                            <span className={getValues("uom") ? "requiredField":""}>{getValues("uom") ? "*" : ""}</span>
+                            </CardLabel>
                         <div className="field">
                             <Controller
                                 control={control}
@@ -343,6 +346,7 @@ const AccessoriersForm = (_props) => {
                                         disable={true}
                                         onBlur={props.onBlur}
                                         style={{ background: "#FAFAFA" }}
+                                        placeholder={t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}
                                     />
                                 )}
                             />
@@ -350,7 +354,10 @@ const AccessoriersForm = (_props) => {
                     </LabelFieldPair>
                     {/* <CardLabelError style={errorStyle}>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError> */}
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{accessor?.accessoryCategory?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} *  ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")}  `}</CardLabel>
+                        <CardLabel className="card-label-smaller">
+                            {accessor?.accessoryCategory?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")}  `}
+                            <span className={accessor?.accessoryCategory?.uom ? "requiredField":""}>{accessor?.accessoryCategory?.uom ? "*" : ""}</span>
+                            </CardLabel>
                         <div className="field">
                             <Controller
                                 control={control}
@@ -371,6 +378,7 @@ const AccessoriersForm = (_props) => {
                                         disable={isRenewal ? !enableUOM : false}
                                         onBlur={props.onBlur}
                                         style={{ background: "#FAFAFA" }}
+                                        placeholder={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_PLACEHOLDER")}
                                     />
                                 )}
                             />
@@ -378,7 +386,10 @@ const AccessoriersForm = (_props) => {
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}>{localFormState.touched.uomValue ? errors?.uomValue?.message : ""}</CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{accessor?.accessoryCategory?.code ? `${t("TL_NEW_TRADE_ACCESSORY_COUNT")} * ` : `${t("TL_NEW_TRADE_ACCESSORY_COUNT")} `}</CardLabel>
+                        <CardLabel className="card-label-smaller">
+                            {accessor?.accessoryCategory?.code ? `${t("TL_NEW_TRADE_ACCESSORY_COUNT")}` : `${t("TL_NEW_TRADE_ACCESSORY_COUNT")} `}
+                            <span className={accessor?.accessoryCategory?.code ? "requiredField":""}>{accessor?.accessoryCategory?.code ? "*" : ""}</span>
+                            </CardLabel>
                         <div className="field">
                             <Controller
                                 control={control}
@@ -399,6 +410,7 @@ const AccessoriersForm = (_props) => {
                                         disable={isRenewal ? !enableUOM : false}
                                         //disable={accessor?.id}
                                         style={{ background: "#FAFAFA" }}
+                                        placeholder={t("TL_NEW_TRADE_ACCESSORY_COUNT_PLACEHOLDER")}
                                     />
                                 )}
                             />

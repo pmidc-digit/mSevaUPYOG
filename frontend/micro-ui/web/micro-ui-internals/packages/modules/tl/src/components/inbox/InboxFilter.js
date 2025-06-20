@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Dropdown, RadioButtons, ActionBar, RemoveableTag, CloseSvg, CheckBox, Localities, SubmitBar } from "@mseva/digit-ui-react-components";
 
 import { useTranslation } from "react-i18next";
@@ -6,61 +6,197 @@ import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
 const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statuses, ...props }) => {
+  let pgrQuery = {};
+  let wfQuery = {};
   const { t } = useTranslation();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  let { uuid } = Digit.UserService.getUser().info;
+  const isAssignedToMe =
+    tenantId !== "pb.punjab" && searchParams?.filters?.wfFilters?.assignee && searchParams?.filters?.wfFilters?.assignee[0]?.code ? true : false;
 
-  const [_searchParams, setSearchParams] = useState(() => searchParams);
+  const assignedToOptions = useMemo(
+    () => [
+      { code: "ASSIGNED_TO_ME", name: t("ASSIGNED_TO_ME") },
+      { code: "ASSIGNED_TO_ALL", name: t("ASSIGNED_TO_ALL") },
+    ],
+    [t]
+  );
 
-  const localParamChange = (filterParam) => {
-    let keys_to_delete = filterParam.delete;
-    let _new = { ..._searchParams, ...filterParam };
-    if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
-    delete filterParam.delete;
-    setSearchParams({ ..._new });
+  //const defaultAssignedOption = tenantId === "pb.punjab" ? assignedToOptions[1] : isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1];
+  //const defaultAssignee = tenantId === "pb.punjab" ? [{ code: "" }] : [{ code: uuid }];
+  const defaultAssignedOption = assignedToOptions[1];
+  const defaultAssignee = [{ code: "" }];
+
+  const [selectAssigned, setSelectedAssigned] = useState(defaultAssignedOption);
+
+  const [selectedLocality, setSelectedLocality] = useState(null);
+  const [selectedTenant, setSelectedTenant] = useState(null);
+  const [tlfilters, setTLFilters] = useState(
+    searchParams?.filters?.tlfilters || {
+      serviceCode: [],
+      locality: [],
+      applicationStatus: [],
+      tenants: null,
+    }
+  );
+
+  const [wfFilters, setWfFilters] = useState(
+    searchParams?.filters?.wfFilters || {
+      assignee: defaultAssignee,
+    }
+  );
+
+  useEffect(() => setSelectedAssigned(isAssignedToMe ? assignedToOptions[0] : assignedToOptions[1]), [t, tenantId, isAssignedToMe]);
+
+  const onRadioChange = (value) => {
+    setSelectedAssigned(value);
+    // uuid = value.code === "ASSIGNED_TO_ME" ? uuid : "";
+    const assigneeCode = value.code === "ASSIGNED_TO_ME" ? uuid : "";
+    setWfFilters({ ...wfFilters, assignee: [{ code: assigneeCode }] });
+  };
+
+  useEffect(() => {
+    let count = 0;
+    for (const property in tlfilters) {
+      if (Array.isArray(tlfilters[property])) {
+        count += tlfilters[property].length;
+        let params = tlfilters[property].map((prop) => prop.code).join();
+        if (params) {
+          pgrQuery[property] = params;
+        } else {
+          delete pgrQuery?.[property];
+        }
+      }
+    }
+    for (const property in wfFilters) {
+      if (Array.isArray(wfFilters[property])) {
+        let params = wfFilters[property].map((prop) => prop.code).join();
+        if (params) {
+          wfQuery[property] = params;
+        } else {
+          wfQuery = {};
+        }
+      }
+    }
+    count += wfFilters?.assignee?.length || 0;
+
+    // if (props.type !== "mobile") {
+    handleFilterSubmit();
+    // }
+
+    Digit.inboxFilterCount = count;
+  }, [tlfilters, wfFilters]);
+
+  const ifExists = (list, key) => {
+    return list.filter((object) => object.code === key.code).length;
+  };
+
+  useEffect(() => {
+    if (tlfilters.locality.length > 1) {
+      setSelectedLocality({ name: `${tlfilters.locality.length} selected` });
+    } else {
+      setSelectedLocality(tlfilters.locality[0]);
+    }
+  }, [tlfilters.locality]);
+
+  const handleFilterSubmit = () => {
+    onFilterChange({ pgrQuery: pgrQuery, wfQuery: wfQuery, wfFilters, tlfilters });
+  };
+
+  function onSelectLocality(value, type) {
+    if (!ifExists(tlfilters.locality, value)) {
+      setTLFilters({ ...tlfilters, locality: [...tlfilters.locality, value] });
+    }
+  }
+
+  const onRemove = (index, key) => {
+    if (key === "tenants") {
+      setTLFilters({ ...tlfilters, tenants: null });
+    } else {
+      let afterRemove = tlfilters[key].filter((_, i) => i !== index);
+      setTLFilters({ ...tlfilters, [key]: afterRemove });
+    }
+  };
+
+  const handleAssignmentChange = (e, type) => {
+    if (e.target.checked) {
+      setTLFilters({ ...tlfilters, applicationStatus: [...tlfilters.applicationStatus, { code: type.applicationstatus }] });
+    } else {
+      const filteredStatus = tlfilters.applicationStatus.filter((value) => {
+        return value.code !== type.applicationstatus;
+      });
+      setTLFilters({ ...tlfilters, applicationStatus: filteredStatus });
+    }
   };
 
   const clearAll = () => {
-    setSearchParams({applicationStatus:[]});
-    onFilterChange({applicationStatus:[]});
+    setTLFilters((prev) => ({
+      serviceCode: [],
+      locality: [],
+      applicationStatus: [],
+      tenants: prev.tenants, // Preserve tenants
+    }));
+    setWfFilters({ assigned: [{ code: [] }] });
+    // setWfFilters(wfRest);
+    pgrQuery = {};
+    wfQuery = {};
+    setSelectedAssigned("");
+    //setSelectedComplaintType(null);
+    setSelectedLocality(null);
   };
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const onServiceSelect = (e, label) => {
+  //   if (e.target.checked)
+  //     localParamChange({ applicationStatus: [...(searchParams?.applicationStatus ? searchParams.applicationStatus : []), label] });
+  //   else localParamChange({ applicationStatus: searchParams?.applicationStatus.filter((o) => o !== label) });
+  // };
 
-  const onServiceSelect = (e, label) => {
-    if (e.target.checked) localParamChange({ applicationStatus: [...(_searchParams?.applicationStatus ? _searchParams.applicationStatus : [] ), label] });
-    else localParamChange({ applicationStatus: _searchParams?.applicationStatus.filter((o) => o !== label) });
+  // const selectLocality = (d) => {
+  //   localParamChange({ locality: [...(searchParams?.locality || []), d] });
+  // };
+
+  const GetSelectOptions = (lable, options, selected = null, select, optionKey, onRemove, key, isDisabled) => {
+    selected = selected || { [optionKey]: " ", code: "" };
+    const isArray = Array.isArray(tlfilters[key]);
+    return (
+      <div>
+        <div className="filter-label">{lable}</div>
+        {
+          <Dropdown
+            option={options}
+            selected={selected}
+            select={(value) => !isDisabled && select(value, key)}
+            // select={(value) => select(value, key)}
+            optionKey={optionKey}
+            disable={isDisabled}
+          />
+        }
+
+        <div className="tag-container">
+          {isArray &&
+            tlfilters[key]?.length > 0 &&
+            tlfilters[key].map((value, index) => (
+              <RemoveableTag key={index} text={`${value[optionKey]?.slice(0, 22)} ...`} onClick={() => onRemove(index, key)} />
+            ))}
+        </div>
+      </div>
+    );
   };
 
-  const selectLocality = (d) => {
-    localParamChange({ locality: [ ...(_searchParams?.locality || []) , d ] });
-  };
+  console.log("statuses is TLFilter ", statuses);
 
   return (
     <React.Fragment>
       <div className="filter">
         <div className="filter-card">
-          <div className="heading" style={{ alignItems: "center" }}>
-            <div className="filter-label" style={{ display: "flex", alignItems: "center" }}>
-              <span>
-                <svg width="17" height="17" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M0.66666 2.48016C3.35999 5.9335 8.33333 12.3335 8.33333 12.3335V20.3335C8.33333 21.0668 8.93333 21.6668 9.66666 21.6668H12.3333C13.0667 21.6668 13.6667 21.0668 13.6667 20.3335V12.3335C13.6667 12.3335 18.6267 5.9335 21.32 2.48016C22 1.60016 21.3733 0.333496 20.2667 0.333496H1.71999C0.613327 0.333496 -0.01334 1.60016 0.66666 2.48016Z"
-                    fill="#505A5F"
-                  />
-                </svg>
-              </span>
-              <span style={{ marginLeft: "8px", fontWeight: "normal" }}>{t("ES_COMMON_FILTER_BY")}</span>
-            </div>
+          <div className="heading">
+            <div className="filter-label">{t("ES_COMMON_FILTER_BY")}:</div>
             <div className="clearAll" onClick={clearAll}>
               {t("ES_COMMON_CLEAR_ALL")}
             </div>
             {props.type === "desktop" && (
-              <span className="clear-search" onClick={clearAll} style={{ border: "1px solid #e0e0e0", padding: "6px" }}>
-                <svg width="17" height="17" viewBox="0 0 16 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M8 5V8L12 4L8 0V3C3.58 3 0 6.58 0 11C0 12.57 0.46 14.03 1.24 15.26L2.7 13.8C2.25 12.97 2 12.01 2 11C2 7.69 4.69 5 8 5ZM14.76 6.74L13.3 8.2C13.74 9.04 14 9.99 14 11C14 14.31 11.31 17 8 17V14L4 18L8 22V19C12.42 19 16 15.42 16 11C16 9.43 15.54 7.97 14.76 6.74Z"
-                    fill="#505A5F"
-                  />
-                </svg>
+              <span className="clear-search" onClick={clearAll}>
+                {t("ES_COMMON_CLEAR_ALL")}
               </span>
             )}
             {props.type === "mobile" && (
@@ -70,60 +206,55 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statuses, .
             )}
           </div>
           <div>
-            <RadioButtons
-              onSelect={(d) => localParamChange({ uuid: d })}
-              selectedOption={_searchParams?.uuid || { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" }}
-              t={t}
-              optionsKey="name"
-              options={[
-                { code: "ASSIGNED_TO_ME", name: "ES_INBOX_ASSIGNED_TO_ME" },
-                { code: "ASSIGNED_TO_ALL", name: "ES_INBOX_ASSIGNED_TO_ALL" },
-              ]}
-            />
+            <RadioButtons onSelect={onRadioChange} selectedOption={selectAssigned} t={t} optionsKey="name" options={assignedToOptions} />
             <div>
-              <div className="filter-label" style={{ fontWeight: "normal" }}>
-                {t("ES_INBOX_LOCALITY")}:
-              </div>
-              <Localities selectLocality={selectLocality} tenantId={tenantId} boundaryType="revenue" />
-              <div className="tag-container">
-                {_searchParams?.locality?.map((locality, index) => {
-                  return (
-                    <RemoveableTag
-                      key={index}
-                      // text={locality.name}
-                      text={t(`${locality.i18nkey}`)}
-                      onClick={() => {
-                        localParamChange({ locality: _searchParams?.locality.filter((loc) => loc.code !== locality.code) });
-                      }}
-                    />
-                  );
-                })}
-              </div>
+              {GetSelectOptions(
+                t("TL_HOME_SEARCH_RESULTS__LOCALITY"),
+                props?.localities,
+                selectedLocality,
+                onSelectLocality,
+                "i18nkey",
+                onRemove,
+                "locality"
+              )}
             </div>
             <div>
               <div className="filter-label" style={{ fontWeight: "normal" }}>
                 {t("CS_INBOX_STATUS_FILTER")}
               </div>
-              {statuses?.map((e, index) => {
-                const checked = _searchParams?.applicationStatus?.includes(e.statusid);
+              {statuses?.map((option, index) => {
+                // const checked = searchParams?.applicationStatus?.includes(e.statusid);
+                let hasFilters = tlfilters?.applicationStatus?.length;
                 return (
                   <CheckBox
                     key={index + "service"}
-                    label={t(`CS_COMMON_INBOX_${e.businessservice.toUpperCase()}`)+" - "+t(`WF_NEWTL_${e.applicationstatus}`)+" "+`(${e.count})`}
-                    value={e.statusid}
-                    checked={checked}
-                    onChange={(event) => onServiceSelect(event, e.statusid)}
+                    label={
+                      t(`CS_COMMON_INBOX_${option.businessservice.toUpperCase()}`) +
+                      " - " +
+                      t(`WF_NEWTL_${option.applicationstatus}`) +
+                      " " +
+                      `(${option.count})`
+                    }
+                    //value={option.statusid}
+                    checked={
+                      hasFilters
+                        ? tlfilters.applicationStatus.filter((e) => e.code === option.applicationstatus).length !== 0
+                          ? true
+                          : false
+                        : false
+                    }
+                    onChange={(e) => handleAssignmentChange(e, option)}
                   />
                 );
               })}
             </div>
-            <div>
+            {/* <div>
               <SubmitBar
-                disabled={_.isEqual(_searchParams, searchParams)}
-                onSubmit={() => onFilterChange(_searchParams)}
+                disabled={_.isEqual(searchParams, searchParams)}
+                onSubmit={() => onFilterChange(searchParams)}
                 label={t("ES_COMMON_APPLY")}
               />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

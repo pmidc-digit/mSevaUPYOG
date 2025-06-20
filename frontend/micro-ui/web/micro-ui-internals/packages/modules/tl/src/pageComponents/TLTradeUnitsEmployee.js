@@ -309,7 +309,7 @@ function checkBillingSlab(value){
                         </div>
                     ) : null}
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{`${t("TRADELICENSE_TRADECATEGORY_LABEL")} * `}</CardLabel>
+                        <CardLabel className="card-label-smaller">{`${t("TRADELICENSE_TRADECATEGORY_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                         <Controller
                             control={control}
                             name={"tradeCategory"}
@@ -350,13 +350,14 @@ function checkBillingSlab(value){
                                         props.onBlur(e);
                                       }}
                                     t={t}
+                                    placeholder={t("TL_NEW_TRADE_DETAILS_TRADE_CAT_PLACEHOLDER")}
                                 />
                             )}
                         />
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}>{localFormState.touched.tradeCategory ? errors?.tradeCategory?.message : ""}</CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{`${t("TRADELICENSE_TRADETYPE_LABEL")} * `}</CardLabel>
+                        <CardLabel className="card-label-smaller">{`${t("TRADELICENSE_TRADETYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                         <Controller
                             control={control}
                             name={"tradeType"}
@@ -395,13 +396,14 @@ function checkBillingSlab(value){
                                     optionKey="i18nKey"
                                     onBlur={props.onBlur}
                                     t={t}
+                                    placeholder={t("TL_NEW_TRADE_DETAILS_TRADE_TYPE_PLACEHOLDER")}
                                 />
                             )}
                         />
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}>{localFormState.touched.tradeType ? errors?.tradeType?.message : ""}</CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_TRADE_SUB_TYPE")} * `}</CardLabel>
+                        <CardLabel className="card-label-smaller">{`${t("PDF_STATIC_LABEL_CONSOLIDATED_TLAPP_TRADE_SUB_TYPE")}`}<span className="requiredField">*</span></CardLabel>
                         <Controller
                             control={control}
                             name={"tradeSubType"}
@@ -426,13 +428,16 @@ function checkBillingSlab(value){
                                     optionKey="i18nKey"
                                     onBlur={props.onBlur}
                                     t={t}
+                                    placeholder={t("TRADELICENSE_TRADESUBTYPE_PLACEHOLDER")}
                                 />
                             )}
                         />
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}> {localFormState.touched.tradeSubType || localFormState.touched.uomValue || (isRenewal && getValues("tradeSubType")) ? errors?.tradeSubType?.message : ""} </CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")} * ` : `${t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}`}</CardLabel>
+                        <CardLabel className="card-label-smaller">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}` : `${t("TL_NEW_TRADE_DETAILS_UOM_LABEL")}`}
+                            <span className={unit?.tradeSubType?.uom ? "requiredField":""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
+                        </CardLabel>
                         <div className="field">
                             <Controller
                                 control={control}
@@ -452,6 +457,7 @@ function checkBillingSlab(value){
                                         disable={true}
                                         onBlur={props.onBlur}
                                         style={{ background: "#FAFAFA" }}
+                                        placeholder={t("TL_NEW_TRADE_DETAILS_UOM_UOM_PLACEHOLDER")}
                                     />
                                 )}
                             />
@@ -459,7 +465,9 @@ function checkBillingSlab(value){
                     </LabelFieldPair>
                     <CardLabelError style={errorStyle}>{localFormState.touched.uom ? errors?.uom?.message : ""}</CardLabelError>
                     <LabelFieldPair>
-                        <CardLabel className="card-label-smaller">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} * ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}</CardLabel>
+                        <CardLabel className="card-label-smaller">{unit?.tradeSubType?.uom ? `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} ` : `${t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} `}
+                        <span className={unit?.tradeSubType?.uom ? "requiredField":""}>{unit?.tradeSubType?.uom ? "*" : ""}</span>
+                        </CardLabel>
                         <div className="field">
                             <Controller
                                 control={control}
@@ -479,6 +487,7 @@ function checkBillingSlab(value){
                                         disable={!(unit?.tradeSubType?.uom)}
                                         onBlur={props.onBlur}
                                         style={{ background: "#FAFAFA" }}
+                                        placeholder={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_PLACEHOLDER")}
                                     />
                                 )}
                             />

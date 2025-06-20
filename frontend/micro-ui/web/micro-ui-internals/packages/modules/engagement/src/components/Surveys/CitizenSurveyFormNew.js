@@ -1,47 +1,46 @@
-import React, { useState, useEffect } from 'react'
-import { Controller, useFormContext,useForm } from "react-hook-form";
-import {TextInput, Dropdown, CheckBox ,Toast} from '@mseva/digit-ui-react-components';
-import CitizenDetails from './CitizenDetails';
+import React, { useState, useEffect } from "react";
+import { Controller, useFormContext, useForm, get } from "react-hook-form";
+import { TextInput, Dropdown, CheckBox, Toast } from "@mseva/digit-ui-react-components";
+import CitizenDetails from "./CitizenDetails";
+
 const CitizenSurveyFormNew = () => {
   const [formData, setFormData] = useState({
-   name:"",
-   mobile:"",
-   relationName:"",
-   relation:null,
-   address:"",
-   email:"",
-   dob:'',
+    name: "",
+    mobile: "",
+    relationName: "",
+    relation: null,
+    address: "",
+    email: "",
+    dob: "",
     section1: {
       checkboxes: [],
-      shortText: ''
+      shortText: "",
     },
     section2: {
-      multipleChoice: ''
-    }
+      multipleChoice: "",
+    },
   });
- const {control: controlForm}=useForm({defaultValues:formData})
-  const relationList=[
-    {label:"Father",value:"Father"},
-    {label:"Husband",value:"Husband"}
-  ]
+  const { control: controlForm } = useForm({ defaultValues: formData });
+  const relationList = [
+    { label: "Father", value: "Father" },
+    { label: "Husband", value: "Husband" },
+  ];
 
-  useEffect(() => {
-    const savedData = localStorage.getItem('surveyFormData');
-    if (savedData) {
-      setFormData(JSON.parse(savedData));
-    }
-  }, []);
+  // useEffect(() => {
+  //   const savedData = localStorage.getItem('surveyFormData');
+  //   if (savedData) {
+  //     setFormData(JSON.parse(savedData));
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    localStorage.setItem('surveyFormData', JSON.stringify(formData));
-  }, [formData]);
+  // useEffect(() => {
+  //   localStorage.setItem('surveyFormData', JSON.stringify(formData));
+  // }, [formData]);
 
   const handleCheckboxChange = (section, event) => {
     const { value, checked } = event.target;
     setFormData((prevData) => {
-      const newCheckboxes = checked
-        ? [...prevData[section].checkboxes, value]
-        : prevData[section].checkboxes.filter((item) => item !== value);
+      const newCheckboxes = checked ? [...prevData[section].checkboxes, value] : prevData[section].checkboxes.filter((item) => item !== value);
       return { ...prevData, [section]: { ...prevData[section], checkboxes: newCheckboxes } };
     });
   };
@@ -50,62 +49,63 @@ const CitizenSurveyFormNew = () => {
     const { name, value } = event.target;
     setFormData((prevData) => ({
       ...prevData,
-      [section]: { ...prevData[section], [name]: value }
+      [section]: { ...prevData[section], [name]: value },
     }));
   };
 
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
-    console.log("date value",event.target)
+    console.log("date value", event.target);
     setFormData((prevData) => ({
       ...prevData,
-       [name]: value 
+      [name]: value,
     }));
   };
- console.log("formData",formData)
-  const handleDropdownChange=(name,event)=>{
+  console.log("formData", formData);
+  const handleDropdownChange = (name, event) => {
     setFormData((prevData) => ({
       ...prevData,
-       [name]: event 
+      [name]: event,
     }));
-  }
+  };
   const [errors, setErrors] = useState({});
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = 'Name is required';
-    else if (!/^[A-Za-z\s]+$/.test(formData.name)) newErrors.name = 'Name can only contain alphabets and spaces';
-    if (!formData.relationName) newErrors.relationName = 'Father/Husband Name is required';
-    else if (!/^[A-Za-z\s]+$/.test(formData.relationName)) newErrors.relationName = 'Relation Name can only contain alphabets and spaces';
-    if (!formData.email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
-    if (!formData.mobile) newErrors.mobile = 'Mobile number is required';
-    else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = 'Mobile number is invalid';
-    if (!formData.relation) newErrors.relation = 'Relation is required';
-    if (!formData.address) newErrors.address = 'Address is required';
-    if (!formData.dob) newErrors.dob = 'Date of Birth is required';
-    if (!formData.section1.checkboxes.length>0) newErrors.checkboxes = 'This question is required to answer';
-    if (!formData.section1.shortText) newErrors.shortText = 'This question is required to answer';
-    if (!formData.section2.multipleChoice) newErrors.multipleChoice = 'This question is required to answer';
+    if (!formData.name) newErrors.name = "Name is required";
+    else if (!/^[A-Za-z\s]+$/.test(formData.name)) newErrors.name = "Name can only contain alphabets and spaces";
+    if (!formData.relationName) newErrors.relationName = "Father/Husband Name is required";
+    else if (!/^[A-Za-z\s]+$/.test(formData.relationName)) newErrors.relationName = "Relation Name can only contain alphabets and spaces";
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
+    if (!formData.mobile) newErrors.mobile = "Mobile number is required";
+    else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";
+    if (!formData.relation) newErrors.relation = "Relation is required";
+    if (!formData.address) newErrors.address = "Address is required";
+    if (!formData.dob) newErrors.dob = "Date of Birth is required";
+    if (!formData.section1.checkboxes.length > 0) newErrors.checkboxes = "This question is required to answer";
+    if (!formData.section1.shortText) newErrors.shortText = "This question is required to answer";
+    if (!formData.section2.multipleChoice) newErrors.multipleChoice = "This question is required to answer";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-
   const handleSubmit = (event) => {
     event.preventDefault();
-    if(validateForm()){
-    console.log('Form submitted:', formData);
+    if (validateForm()) {
+      console.log("Form submitted:", formData);
     }
   };
 
   return (
-    <div className="create-survey-page" style={{ background: 'white', display: 'block', padding: '15px' }}>
+    <div className="create-survey-page" style={{ background: "white", display: "block", padding: "15px" }}>
       <div className="category-card">
-        <h1 style={{ fontWeight: 'bold', fontSize: '20px' }}>Survey Title : Citizen Survey</h1>
-        <div><h1 style={{ fontWeight: 'bold', fontSize: '20px' }}>Survey Description :  This is a sample citizen survey</h1></div>
+        <h1 style={{ fontWeight: "bold", fontSize: "20px" }}>Survey Title : Citizen Survey</h1>
+        <div>
+          <h1 style={{ fontWeight: "bold", fontSize: "20px" }}>Survey Description : This is a sample citizen survey</h1>
+        </div>
         <form onSubmit={handleSubmit}>
-        <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} relationList={relationList}/>
-        {/* <div style={{border:'2px solid #ccc',padding:'15px',borderRadius:'4px'}}>
+          <CitizenDetails formData={formData} setFormData={setFormData} errors={errors} relationList={relationList} />
+          {/* <div style={{border:'2px solid #ccc',padding:'15px',borderRadius:'4px'}}>
           <h2>Citizen Details</h2>
           <div style={{border:'1px solid #ccc'}}></div>
         <h3>Name</h3>
@@ -145,9 +145,9 @@ const CitizenSurveyFormNew = () => {
           // disable={disableInputs}
           //disable={readOnly||false}
           />} */}
-        {/* /> */}
-       
-             {/* <h3>Father/Husband Name</h3>
+          {/* /> */}
+
+          {/* <h3>Father/Husband Name</h3>
       <input
         type="text"
         name="relationName"
@@ -193,7 +193,7 @@ const CitizenSurveyFormNew = () => {
       //  required
       />
        {errors.email && <span className="error">{errors.email}</span>}
-        </div> */} 
+        </div> */}
           <div>
             <h2>Section 1</h2>
             <div>
@@ -207,15 +207,15 @@ const CitizenSurveyFormNew = () => {
                   checked={formData.section1.checkboxes.includes('option1')}
 
                 /> */}
-                <div style={{display:'flex',alignItems:'center'}}>
-                <input
-                  type="checkbox"
-                  value="option1"
-                  style={{width:'20px',height:'20px',marginRight:'10px'}}
-                  checked={formData.section1.checkboxes.includes('option1')}
-                  onChange={(e) => handleCheckboxChange('section1', e)}
-                />
-                Option 1
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="checkbox"
+                    value="option1"
+                    style={{ width: "20px", height: "20px", marginRight: "10px" }}
+                    checked={formData.section1.checkboxes.includes("option1")}
+                    onChange={(e) => handleCheckboxChange("section1", e)}
+                  />
+                  Option 1
                 </div>
 
                 {/* <CheckBox
@@ -225,15 +225,15 @@ const CitizenSurveyFormNew = () => {
                   checked={formData.section1.checkboxes.includes('option1')}
 
                 /> */}
-                <div style={{display:'flex',alignItems:'center'}}>
-                <input
-                  type="checkbox"
-                  value="option2"
-                  style={{width:'20px',height:'20px',marginRight:'10px',color:'#0d43a7'}}
-                  checked={formData.section1.checkboxes.includes('option2')}
-                  onChange={(e) => handleCheckboxChange('section1', e)}
-                />
-                Option 2
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <input
+                    type="checkbox"
+                    value="option2"
+                    style={{ width: "20px", height: "20px", marginRight: "10px", color: "#0d43a7" }}
+                    checked={formData.section1.checkboxes.includes("option2")}
+                    onChange={(e) => handleCheckboxChange("section1", e)}
+                  />
+                  Option 2
                 </div>
                 {errors.checkboxes && <span className="error">{errors.checkboxes}</span>}
               </div>
@@ -244,11 +244,11 @@ const CitizenSurveyFormNew = () => {
                 <input
                   type="text"
                   name="shortText"
-                  placeholder='enter here'
+                  placeholder="enter here"
                   value={formData.section1.shortText}
-                  onChange={(e) => handleInputChange('section1', e)}
+                  onChange={(e) => handleInputChange("section1", e)}
                 />
-                 {errors.shortText && <span className="error">{errors.shortText}</span>}
+                {errors.shortText && <span className="error">{errors.shortText}</span>}
               </div>
             </div>
           </div>
@@ -257,11 +257,7 @@ const CitizenSurveyFormNew = () => {
             <div>
               <h3>Give your rating?</h3>
               <div>
-                <select
-                  name="multipleChoice"
-                  value={formData.section2.multipleChoice}
-                  onChange={(e) => handleInputChange('section2', e)}
-                >
+                <select name="multipleChoice" value={formData.section2.multipleChoice} onChange={(e) => handleInputChange("section2", e)}>
                   <option value="">Select an option</option>
                   <option value="choice1">Choice 1</option>
                   <option value="choice2">Choice 2</option>
@@ -271,27 +267,33 @@ const CitizenSurveyFormNew = () => {
             </div>
           </div>
           <button type="submit">Submit</button>
-          <button style={{backgroundColor:'none', marginLeft:'10px'}} onClick={()=>setFormData({
-     name:"",
-     mobile:"",
-     relationName:"",
-     relation:null,
-     address:"",
-     email:"",
-     dob:'',
-    section1: {
-      checkboxes: [],
-      shortText: ''
-    },
-    section2: {
-      multipleChoice: ''
-    }
-  })}>Reset</button>
+          <button
+            style={{ backgroundColor: "none", marginLeft: "10px" }}
+            onClick={() =>
+              setFormData({
+                name: "",
+                mobile: "",
+                relationName: "",
+                relation: null,
+                address: "",
+                email: "",
+                dob: "",
+                section1: {
+                  checkboxes: [],
+                  shortText: "",
+                },
+                section2: {
+                  multipleChoice: "",
+                },
+              })
+            }
+          >
+            Reset
+          </button>
         </form>
       </div>
     </div>
   );
+};
 
-}
-
-export default CitizenSurveyFormNew
+export default CitizenSurveyFormNew;

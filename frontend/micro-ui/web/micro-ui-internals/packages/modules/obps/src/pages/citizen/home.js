@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 
 const BPACitizenHomeScreen = ({ parentRoute }) => {
+  console.log("cominfg here only");
   const userInfo = Digit.UserService.getUser();
   const userRoles = userInfo?.info?.roles?.map((roleData) => roleData.code);
   const stateCode = Digit.ULBService.getStateId();
@@ -69,12 +70,12 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
     filters: { filterForm: {}, searchForm: {}, tableForm: { limit: 10, offset: 0 } },
   });
 
-  useEffect(()=>{
-    if (location.pathname === "/digit-ui/citizen/obps/home"){
-      Digit.SessionStorage.del("OBPS.INBOX")
-      Digit.SessionStorage.del("STAKEHOLDER.INBOX")
+  useEffect(() => {
+    if (location.pathname === "/digit-ui/citizen/obps/home") {
+      Digit.SessionStorage.del("OBPS.INBOX");
+      Digit.SessionStorage.del("STAKEHOLDER.INBOX");
     }
-  },[location.pathname])
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!bpaLoading) {
@@ -190,11 +191,11 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
       {homeDetails.map((data) => {
         return (
           <div>
-            {data.name === "employeeCard" ? (
+            {/* {data.name === "employeeCard" ? (
               <EmployeeModuleCard {...data} />
             ) : (
               <CitizenHomeCard header={data.title} links={data.links} Icon={() => data.Icon} styles={data?.styles} />
-            )}
+            )} */}
           </div>
         );
       })}

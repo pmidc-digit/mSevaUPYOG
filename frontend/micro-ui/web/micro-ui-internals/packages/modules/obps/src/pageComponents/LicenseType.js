@@ -1,4 +1,4 @@
-import { CardLabel, FormStep, RadioOrSelect, TextInput, OpenLinkContainer, BackButton, CheckBox } from "@mseva/digit-ui-react-components";
+import { CardLabel, FormStep, RadioOrSelect, TextInput, OpenLinkContainer, BackButton, CheckBox, Dropdown } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { stringReplaceAll } from "../utils";
 import Timeline from "../components/Timeline";
@@ -11,8 +11,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     sessionStorage.setItem("BPAREGintermediateValue", null);
   } else formData = formData;
 
-  console.log("formData", formData);
-  let index = window.location.href.split("/").pop();
+  let index = window.location.href?.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [qualificationType, setQualificationType] = useState(() => {
@@ -23,10 +22,18 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
   const { data: qualificationTypes, isLoading: isQualificationLoading, error: qualificationError } = useQualificationTypes(tenantId);
   const { data, isLoading } = Digit.Hooks.obps.useMDMS(stateId, "StakeholderRegistraition", "TradeTypetoRoleMapping");
+
+  const { data: EmployeeStatusData } = Digit.Hooks.useCustomMDMS(stateId, "StakeholderRegistraition", [{ name: "TradeTypetoRoleMapping" }]);
+
+  // console.log("EmployeeStatusData", EmployeeStatusData);
+
+  const formattedData = EmployeeStatusData?.StakeholderRegistraition?.TradeTypetoRoleMapping;
+
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   const [selfCertification, setSelfCertification] = useState(formData?.selfCertification || formData?.formData?.selfCertification || null);
   let validation = {};
+
   const [errorMessage, setErrorMessage] = useState("");
   if (isopenlink)
     window.onunload = function () {
@@ -51,57 +58,60 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     let list = [];
     let found = false;
 
-    data?.StakeholderRegistraition?.TradeTypetoRoleMapping.map((ob) => {
-      found = list.some((el) => el.i18nKey.includes(ob.tradeType.split(".")[0]));
-      if (!found) {
-        list.push({
-          role: ob.role,
-          i18nKey: `TRADELICENSE_TRADETYPE_${ob.tradeType.split(".")[0]}`,
-          tradeType: ob.tradeType,
-        });
+    formattedData?.forEach((item) => {
+      if (item?.isActive === "true") {
+        console.log("item=====", item);
+        const mainType = item?.tradeType?.split(".")[0];
+        const i18nKey = `TRADELICENSE_TRADETYPE_${mainType}`;
+
+        const alreadyExists = list.some((el) => el.i18nKey === i18nKey);
+
+        if (!alreadyExists) {
+          list.push({
+            role: item.role,
+            i18nKey,
+            tradeType: item.tradeType,
+            code: item?.code,
+          });
+        }
       }
     });
 
-    if (qualificationType?.name === "B-Arch") {
-      console.log("qualificationType in getlicense", qualificationType.name);
-      list = list.filter((item) => item.i18nKey.includes("ARCHITECT"));
-    } else {
-      list = list.filter((item) => !item.i18nKey.includes("ARCHITECT"));
-    }
+    // data?.StakeholderRegistraition?.TradeTypetoRoleMapping.map((ob) => {
+    //   found = list.some((el) => el.i18nKey.includes(ob.tradeType.split(".")[0]));
+    //   if (!found) {
+    //     list.push({
+    //       role: ob.role,
+    //       i18nKey: `TRADELICENSE_TRADETYPE_${ob.tradeType.split(".")[0]}`,
+    //       tradeType: ob.tradeType,
+    //     });
+    //   }
+    // });
+
+    console.log("list", list);
+
+    // if (qualificationType?.name === "B-Arch") {
+    //   console.log("qualificationType in getlicense", qualificationType.name);
+    //   list = list.filter((item) => item.i18nKey.includes("ARCHITECT"));
+    // } else {
+    //   list = list.filter((item) => !item.i18nKey.includes("ARCHITECT"));
+    // }
 
     return list;
   }
 
   function mapQualificationToLicense(qualification) {
     let license = null;
-    // if (qualification === "B-Arch") {
-    //   setLicenseType(null);
-    // }
-    // else if (qualification.name === "BE" || qualification.name === "B-Tech") {
-    //   license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
-    // } else if (qualification.name === "Diploma") {
-    //   license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
-    // }else if (qualification.name === "Building designer & supervisor") {
-    //   license = getLicenseType().find((type) => type.i18nKey.includes("DESIGNER"));
-    // }
-    if (qualification === "B-Arch") {
-      setLicenseType(null);
-    } else if (qualification.name === "BE") {
-      // Automatically select "Engineer" license for BE
+    console.log("qualification", qualification);
+
+    if (qualification.name == "B-Arch") {
+      license = getLicenseType().find((type) => type.i18nKey.includes("ARCHITECT"));
+    } else if (qualification.name == "BE/B-Tech") {
       license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
-    } else if (qualification.name === "B-Tech") {
-      // Allow all license types for B-Tech by not pre-selecting any license
-      // license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
-      if (!LicenseType || !getLicenseType().some((type) => type.i18nKey === LicenseType.i18nKey)) {
-        license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
-      }
-    } else if (qualification.name === "Diploma") {
-      // license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
-      if (!LicenseType || !getLicenseType().some((type) => type.i18nKey === LicenseType.i18nKey)) {
-        license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
-      }
-    } else if (qualification.name == "Building designer & supervisor") {
+    } else if (qualification.name == "Diploma in Civil Engineering/Architect") {
       license = getLicenseType().find((type) => type.i18nKey.includes("SUPERVISOR"));
+    } else if (qualification.name == "Town and Country Planning") {
+      license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
     }
 
     if (license) {
@@ -164,29 +174,29 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
             <CardLabel>{"Qualification*"}</CardLabel>
             <div className={"form-pt-dropdown-only"}>
               {/* {data && ( */}
-              <RadioOrSelect
+              <Dropdown
                 t={t}
                 optionKey="name"
                 isMandatory={config.isMandatory}
-                options={qualificationTypes || []}
-                selectedOption={setQualificationType}
-                onSelect={(value) => {
-                  console.log("Selected Value:", value);
+                option={qualificationTypes || []}
+                selected={setQualificationType}
+                select={(value) => {
                   selectQualificationType(value);
                 }}
               />
-              {/* )} */}
             </div>
+
             <CardLabel>{t("BPA_LICENSE_TYPE")}*</CardLabel>
             <div className={"form-pt-dropdown-only"}>
               {data && (
-                <RadioOrSelect
+                <Dropdown
                   t={t}
-                  optionKey="i18nKey"
+                  optionKey="code"
                   isMandatory={config.isMandatory}
-                  options={getLicenseType(qualificationType) || {}}
-                  selectedOption={LicenseType}
-                  onSelect={selectLicenseType}
+                  option={getLicenseType(qualificationType) || {}}
+                  selected={LicenseType}
+                  select={selectLicenseType}
+                  disable={true}
                 />
               )}
             </div>
@@ -222,10 +232,42 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                 )}
               </div>
             )}
+
+            {LicenseType && LicenseType?.i18nKey.includes("TOWNPLANNER") && (
+              <div>
+                <CardLabel>{`${t("BPA_COUNCIL_NUMBER")}*`}</CardLabel>
+                <TextInput
+                  t={t}
+                  type={"text"}
+                  isMandatory={false}
+                  optionKey="i18nKey"
+                  name="ArchitectNo"
+                  value={ArchitectNo}
+                  onChange={selectArchitectNo}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+                {errorMessage && (
+                  <div
+                    style={{
+                      color: "#d32f2f",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    {errorMessage}
+                  </div>
+                )}
+              </div>
+            )}
+
             {LicenseType &&
               (LicenseType?.i18nKey.includes("ARCHITECT") ||
                 LicenseType?.i18nKey.includes("_ENGINEER") ||
-                LicenseType?.i18nKey.includes("DESIGNER") ||
                 LicenseType?.i18nKey.includes("SUPERVISOR")) && (
                 <div>
                   <CheckBox
@@ -234,7 +276,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                         ? "[DECLARATION UNDER SELF-CERTIFICATION SCHEME ('Residential') (BY ARCHITECT)]"
                         : LicenseType?.i18nKey.includes("_ENGINEER")
                         ? "[DECLARATION UNDER SELF-CERTIFICATION SCHEME ('Residential') (BY ENGINEER)]"
-                        : LicenseType?.i18nKey.includes("DESIGNER")
+                        : LicenseType?.i18nKey.includes("SUPERVISOR")
                         ? "[DECLARATION UNDER SELF-CERTIFICATION SCHEME ('Residential') (BY DESIGNER)]"
                         : "[DECLARATION UNDER SELF-CERTIFICATION SCHEME ('Residential') (BY SUPERVISOR)]"
                     }
@@ -281,7 +323,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
               }}
             >
               {LicenseType &&
-                CompetencyDescriptions[LicenseType?.i18nKey.split("_").pop()].split("\n").map((point, index) => (
+                CompetencyDescriptions[LicenseType?.i18nKey?.split("_").pop()]?.split("\n")?.map((point, index) => (
                   <li key={index} style={{ marginBottom: "8px" }}>
                     {point.trim()}
                   </li>

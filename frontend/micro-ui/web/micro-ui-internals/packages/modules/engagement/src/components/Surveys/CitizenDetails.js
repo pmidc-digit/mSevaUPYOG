@@ -1,32 +1,42 @@
-import React, { Fragment, useState, useEffect } from "react";
+import React, { Fragment, useState, useEffect, useMemo } from "react";
 import { TextInput, Dropdown, CheckBox, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { format, parseISO } from "date-fns";
-const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, Otp, setGetOtp }) => {
+
+const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, Otp, setGetOtp, setUser }) => {
   const { data: cities, isLoading } = Digit.Hooks.useTenants();
   const [showToast, setShowToast] = useState(null);
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const defaultCity = cities?.filter((ulb) => tenantId === ulb?.code);
-  console.log("cities", cities);
+  // const defaultCity = cities?.filter((ulb) => tenantId === ulb?.code);
+  const defaultCity = useMemo(() => cities?.filter((ulb) => tenantId === ulb?.code), [cities, tenantId]);
 
   useEffect(() => {
-    console.log("defaultCity", defaultCity);
-    // if (tenantId === "pb.punjab" && formData?.citizenFound === null) {
-    setFormData((prevData) => ({
-      ...prevData,
-      ["city"]: defaultCity?.[0],
-    }));
-    // }
-  }, []);
-
-  let menu = [];
+    if (defaultCity && defaultCity.length > 0) {
+      setFormData((prevData) => ({
+        ...prevData,
+        city: defaultCity[0],
+      }));
+    }
+  }, [defaultCity]);
 
   const { data: Menu } = Digit.Hooks.pt.useGenderMDMS(stateCode, "common-masters", "GenderType");
-  Menu &&
-    Menu.map((genderDetails) => {
-      menu.push({ i18nKey: `PT_COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
-    });
+
+  const menu = useMemo(() => {
+    return (
+      Menu?.map((genderDetails) => ({
+        i18nKey: `PT_COMMON_GENDER_${genderDetails.code}`,
+        code: genderDetails.code,
+        value: genderDetails.code,
+      })) || []
+    );
+  }, [Menu]);
+
+  // Menu &&
+  //   Menu.map((genderDetails) => {
+  //     menu.push({ i18nKey: `PT_COMMON_GENDER_${genderDetails.code}`, code: `${genderDetails.code}`, value: `${genderDetails.code}` });
+  //   });
+
   const closeToast = () => {
     setShowToast(null);
   };
@@ -37,32 +47,28 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
   ];
   const handleFieldChange = (event) => {
     const { name, value } = event.target;
-    console.log("date e", event);
-    console.log("date value", event.target);
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
+
   const handleDateChange = (event) => {
     const { name, value } = event.target;
-    console.log("date e", event);
-    console.log("date value", event.target);
 
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
+
   const handleDropdownChange = (name, event) => {
-    console.log("dropdown e", event);
     setFormData((prevData) => ({
       ...prevData,
       [name]: event,
     }));
   };
   const handleDropdownChangeNew = (name, event) => {
-    console.log("dropdown e", event);
     setFormData((prevData) => ({
       ...prevData,
       [name]: event.target.value,
@@ -80,7 +86,6 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
     };
     try {
       Digit.UserService.sendOtp(payload, stateCode).then((response) => {
-        console.log(response);
         if (response?.isSuccessful === true) {
           setGetOtp(true);
         } else {
@@ -89,35 +94,50 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
         }
       });
     } catch (err) {
-      console.log(err);
       setGetOtp(false);
     }
   };
 
-  const handleFetchDetails = () => {
-    console.log("formData", formData);
-    let newErrors = {};
+  const validateForm = () => {
+    const newErrors = {};
     if (!formData.mobile) newErrors.mobile = "Mobile number is required";
     else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";
+
     if (!formData.city) newErrors.city = "City is required";
+
+    return newErrors;
+  };
+
+  const handleFetchDetails = () => {
+    const newErrors = validateForm();
     setErrors(newErrors);
-    console.log("errors", newErrors.mobile);
-    if (newErrors?.mobile === undefined && newErrors?.city === undefined) {
+
+    // let newErrors = {};
+    // if (!formData.mobile) newErrors.mobile = "Mobile number is required";
+    // else if (!/^\d{10}$/.test(formData.mobile)) newErrors.mobile = "Mobile number is invalid";
+    // if (!formData.city) newErrors.city = "City is required";
+    // setErrors(newErrors);
+
+    if (Object.keys(newErrors).length === 0) {
       const data = {
         userName: formData?.mobile,
         tenantId: (formData?.city?.code).split(".")[0],
       };
+
       const filters = {
         tenantId: (formData?.city?.code).split(".")[0],
       };
 
       Digit.Surveys.userSearch(data, filters)
         .then((response) => {
+          setUser(response?.user?.[0]);
+          console.log("response=====", response?.user?.[0]);
           console.log("response", response.user[0]?.emailId);
 
           if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
             // setCitizenFound(true)
-            const formattedDate = format(parseISO(response.user[0]?.dob), "dd/MM/yyyy");
+            console.log("coming here na");
+            // const formattedDate = format(parseISO(response.user[0]?.dob), "dd/MM/yyyy");
             setFormData((prevData) => ({
               ...prevData,
               citizenFound: true,
@@ -130,6 +150,7 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
               user: response.user[0],
             }));
           } else {
+            console.log("not here");
             setFormData((prevData) => ({
               ...prevData,
               citizenFound: false,
@@ -143,7 +164,11 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
         });
     }
   };
-  console.log("menu", menu);
+
+  useEffect(() => {
+    console.log("UPDATED formData", formData);
+  }, [formData]);
+
   return (
     <div style={{ border: "2px solid #ccc", padding: "15px", borderRadius: "4px" }}>
       <h2>Citizen Details</h2>
@@ -259,8 +284,10 @@ const CitizenDetails = ({ formData, setFormData, errors, setErrors, stateCode, O
           />
           {errors.email && <span className="error">{errors.email}</span>}
           <h3>Citizen Date of Birth</h3>
+
           <input name="dob" type="date" onChange={handleDateChange} defaultValue={formData.dob} value={formData.dob} />
           {errors.dob && <span className="error">{errors.dob}</span>}
+
           {formData.register === true && <label onClick={() => getOtp()}>Get OTP</label>}
         </>
       )}

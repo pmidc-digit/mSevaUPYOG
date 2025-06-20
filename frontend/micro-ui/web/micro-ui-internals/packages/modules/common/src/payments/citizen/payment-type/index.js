@@ -14,7 +14,8 @@ import {
   CardText,
   LabelFieldPair,
   Dropdown,
-  TextInput
+  TextInput,
+  MobileNumber
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
@@ -33,13 +34,16 @@ export const SelectPaymentType = (props) => {
   const { t } = useTranslation();
   const history = useHistory();
   const { pathname, search } = useLocation();
-  const menu = ["RAZORPAY"];
+  // const menu = ["RAZORPAY"];
   let { consumerCode, businessService } = useParams();
   const tenantId = state?.tenantId || __tenantId || Digit.ULBService.getCurrentTenantId();
   const propertyId = state?.propertyId;
   const stateTenant = Digit.ULBService.getStateId();
   const { control, handleSubmit, setValue } = useForm();
-  // const { data: menu, isLoading } = Digit.Hooks.useCommonMDMS(stateTenant, "DIGIT-UI", "PaymentGateway");
+  const moduleName = tenantId?.split(".")?.[1];
+  // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
+  const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
+  const menu = menuList?.testing?.PaymentGateway
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
     {}
@@ -61,14 +65,20 @@ export const SelectPaymentType = (props) => {
   const userOptions = ["OWNER", "OTHER"]
 
   const onSubmit = async (d) => {
-    if(d?.name === ""){
-      setShowOwnerToast({key: true, label: t("PAYMENT_NAME_MANDATORY_MESSAGE")})
+    if (!d?.name || d?.name.trim() === "") {
+      setShowOwnerToast({ key: true, label: t("PAYMENT_NAME_MANDATORY_MESSAGE") });
       return;
     }
-    if(d?.mobileNumber === ""){
-      setShowOwnerToast({key: true, label: t("PAYMENT_MOBILE_NUMBER_MANDATORY_MESSAGE")})
+
+    const mobileRegex = /^[6-9]\d{9}$/;
+    if (!d?.mobileNumber || d?.mobileNumber.trim() === "") {
+      setShowOwnerToast({ key: true, label: t("PAYMENT_MOBILE_NUMBER_MANDATORY_MESSAGE") });
+      return;
+    } else if (!mobileRegex.test(d.mobileNumber)) {
+      setShowOwnerToast({ key: true, label: t("ERR_INVALID_MOBILE") });
       return;
     }
+
     const filterData = {
       Transaction: {
         tenantId: billDetails?.tenantId,
@@ -94,7 +104,14 @@ export const SelectPaymentType = (props) => {
           // emailId: "sriranjan.srivastava@owc.com"
         },
         // success
-        callbackUrl: window.location.href.includes("mcollect") || wrkflow === "WNS"
+        // callbackUrl: window.location.href.includes("mcollect") || wrkflow === "WNS"
+        //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
+        //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
+        callbackUrl: (paymentAmount === 0 || billDetails.totalAmount === 0) ? 
+        window.location.href.includes("mcollect") || wrkflow === "WNS"
+          ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
+          : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`:
+        window.location.href.includes("mcollect") || wrkflow === "WNS"
           ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
           : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
         additionalDetails: {
@@ -107,6 +124,15 @@ export const SelectPaymentType = (props) => {
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
       console.log("data=========",data);
+
+      if(paymentAmount === 0 || billDetails.totalAmount === 0){
+        const redirectionURL = data?.Transaction?.callbackUrl.split(`${window.location.host}`)?.[1]
+        history.replace(redirectionURL, {
+          transactionData: data?.Transaction
+        })
+        // window.location = data?.Transaction?.callbackUrl
+        return;
+      }
       
       const redirectUrl = data?.Transaction?.redirectUrl;
       // if (d?.paymentType == "AXIS") {
@@ -225,12 +251,12 @@ export const SelectPaymentType = (props) => {
             <CardSectionHeader> ₹ { paymentAmount !== undefined ? Number(paymentAmount).toFixed(2) : Number(billDetails?.totalAmount).toFixed(2)}</CardSectionHeader>
           </div>
           <CardLabel>{t("PAYMENT_CS_SELECT_METHOD")}</CardLabel>
-          {menu?.length && (
+          {menuList?.[moduleName]?.PaymentGateway?.length && (
             <Controller
-              name="paymentType"
-              defaultValue={menu[0]}
+              name="paymentType"  
+              defaultValue={menuList?.[moduleName]?.PaymentGateway?.[0]?.gateway}
               control={control}
-              render={(props) => <RadioButtons selectedOption={props.value} options={menu} onSelect={props.onChange} />}
+              render={(props) => <RadioButtons selectedOption={props.value} options={menuList?.testing?.PaymentGateway?.map((item)=> item?.gateway)} onSelect={props.onChange} />}
             />
           )}
         </Card>
@@ -290,20 +316,21 @@ export const SelectPaymentType = (props) => {
                 name={"mobileNumber"}
                 defaultValue={mobileNumber || billDetails?.mobileNumber || ""}
                 render={(props) => (
-                  <TextInput
+                  <MobileNumber
                     value={props.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
+                      props.onChange(e);
                     }}
+                    componentInFront={<div className="employee-card-input employee-card-input--front numberdisplay">+91</div>}
                   />
                 )}
               />
             </div>
           </LabelFieldPair>
         </Card>
-        <Card>
-          {!showToast && <SubmitBar label={t("PAYMENT_CS_BUTTON_LABEL")} submit={true} />}
-        </Card>
+        {!showToast && <Card>
+          <SubmitBar label={t("PAYMENT_CS_BUTTON_LABEL")} submit={true} />
+        </Card>}
       </form>
       <InfoBanner label={t("CS_COMMON_INFO")} text={t("CS_PAYMENT_REDIRECT_NOTICE")} />
       {showToast && (

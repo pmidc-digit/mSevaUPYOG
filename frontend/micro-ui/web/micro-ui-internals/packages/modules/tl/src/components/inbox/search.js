@@ -107,7 +107,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
     const mobileViewStyles = mobileView ? { margin: 0 } : {};
     return (
       <LinkLabel style={{ display: "inline", ...mobileViewStyles }} onClick={clearSearch}>
-        {t("ES_COMMON_CLEAR_SEARCH")}
+        {t("ES_COMMON_NEW_CLEAR_SEARCH")}
       </LinkLabel>
     );
   };
@@ -135,7 +135,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                       {!input.type ? (
                         <Controller
                           render={(props) => {
-                            return <TextInput onChange={props.onChange} value={props.value} />;
+                            return <TextInput onChange={props.onChange} value={props.value} placeholder={input.placeholder}/>;
                           }}
                           name={input.name}
                           control={control}
@@ -145,7 +145,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                         <Controller
                           render={(props) => {
                             const Comp = fieldComponents?.[input.type];
-                            return <Comp onChange={props.onChange} value={props.value} />;
+                            return <Comp onChange={props.onChange} value={props.value} placeholder={input.placeholder}/>;
                           }}
                           name={input.name}
                           control={control}

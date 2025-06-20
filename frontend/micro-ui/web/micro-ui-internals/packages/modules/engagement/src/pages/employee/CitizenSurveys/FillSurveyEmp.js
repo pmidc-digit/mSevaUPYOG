@@ -249,7 +249,7 @@ const FillSurvey = ({ stateCode }) => {
             ...(isDobChanged && { dob: formData.dob }),
           };
           try {
-            const { responseInfo, user } = await Digit.UserService.updateUser(requestData, tenantId);
+            const { responseInfo, user } = await Digit.UserService.updateUser(requestData, getUser?.tenantId);
             console.log("User updated:", user);
           } catch (error) {
             console.error("Error updating user:", error);

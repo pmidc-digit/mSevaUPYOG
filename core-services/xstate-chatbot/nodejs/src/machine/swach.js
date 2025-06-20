@@ -1540,12 +1540,22 @@ const swach = {
                   invoke: {
                     id: "swachNlpLocalitySearch",
                     src: (context, event) => {
-                      // console.log("Swach Get Locality")
-                      return swachService.getLocality(
-                        event.message.input,
-                        context.slots.swach["city"],
-                        context.user.locale
-                      );
+                      try {
+                        if (event && event.message && event.message.input) {
+                          return swachService.getLocality(
+                            event.message.input,
+                            context.slots.swach["city"],
+                            context.user.locale
+                          );
+                        } else {
+                          // Handle missing event.message or event.message.input gracefully
+                          return Promise.resolve(null);
+                        }
+                      } catch (error) {
+                        // Log or handle unexpected errors gracefully
+                        console.error("Error in swachNlpLocalitySearch src function:", error);
+                        return Promise.resolve(null);
+                      }
                     },
                     onDone: {
                       target: "route",

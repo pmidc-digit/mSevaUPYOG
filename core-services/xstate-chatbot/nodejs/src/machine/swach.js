@@ -10,7 +10,6 @@ const { target } = require("./seva");
 const { error } = require("../session/system");
 const { onEntry } = require("./pgr");
 
-
 const swach = {
   id: "swach",
   initial: "swachmenu",
@@ -20,7 +19,7 @@ const swach = {
     context.swach = { slots: {} };
     context.attendence = {};
     context.slots.attendence = {};
-    context.grammer = []
+    context.grammer = [];
   }),
   states: {
     swachmenu: {
@@ -47,8 +46,7 @@ const swach = {
             },
             {
               target: "#swachAttendance",
-              cond: (context) =>
-                context.intention == "attendence",
+              cond: (context) => context.intention == "attendence",
             },
             {
               target: "error",
@@ -76,8 +74,7 @@ const swach = {
             },
             {
               target: "#swachAttendance",
-              cond: (context) =>
-                context.intention == "attendence",
+              cond: (context) => context.intention == "attendence",
             },
             {
               target: "error",
@@ -123,10 +120,10 @@ const swach = {
               context.attendence.image = event.message.input;
               // context.attendence.metadata = event.message.metadata;
               // if(event.message.metadata && event.message.metadata.latitude && event.message.metadata.longitude) {
-                context.message = {
-                  isValid: true,
-                  // isImageError: false,
-                };
+              context.message = {
+                isValid: true,
+                // isImageError: false,
+              };
               // } else{
               //   context.message = {
               //     isValid: true,
@@ -134,11 +131,10 @@ const swach = {
               //   };
               // }
               // console.log("Swach Image Upload ------- context", context);
-            } 
-            else {
+            } else {
               context.message = {
                 isValid: false,
-              }
+              };
             }
           }),
           always: [
@@ -183,7 +179,6 @@ const swach = {
         //   }),
         //   always: "question",
         // }
-        
       }, // states of swachAttendance
     },
 
@@ -192,7 +187,7 @@ const swach = {
       onEntry: assign((context, event) => {
         var message = {
           type: "image",
-          output: config.swachUseCase.informationImageFilestoreId,    //need review
+          output: config.swachUseCase.informationImageFilestoreId, //need review
         };
         dialog.sendMessage(context, message);
       }),
@@ -218,88 +213,88 @@ const swach = {
         process: {
           invoke: {
             id: "getSwachAttendenceCityAndLocality",
-              src: async (context, event) => {
-                if (event?.message.type === "location") {                  
-                  context.slots.attendence.geocode = event.message.input;
-                  context.message ={
-                    isValid : true
-                  };
-                  return await swachService.getCityAndLocalityForGeocode(
-                    event.message.input,
-                    context.extraInfo.tenantId
-                  );
-                }else{
-                  context.message = event.message.input;
-                  context.message ={
-                    isValid : false
-                  };
-                  // context.message = "1";
-                  return Promise.resolve();
-                }
+            src: async (context, event) => {
+              if (event?.message.type === "location") {
+                context.slots.attendence.geocode = event.message.input;
+                context.message = {
+                  isValid: true,
+                };
+                return await swachService.getCityAndLocalityForGeocode(
+                  event.message.input,
+                  context.extraInfo.tenantId
+                );
+              } else {
+                context.message = event.message.input;
+                context.message = {
+                  isValid: false,
+                };
+                // context.message = "1";
+                return Promise.resolve();
+              }
 
-                // if(context.slots.swach.metadata.latitude && context.slots.swach.metadata.longitude) {
-                //   context.slots.swach.geocode = '('+ context.slots.swach.metadata.latitude + ',' + context.slots.swach.metadata.longitude + ')';
-                //   console.log("Swach City and Locality", context.slots.swach.geocode);
-                //   // return swachService.getCityAndLocalityForGeocode(
-                //   //   context.slots.swach.geocode,
-                //   //   context.extraInfo.tenantId
-                //   // )
-                // }
+              // if(context.slots.swach.metadata.latitude && context.slots.swach.metadata.longitude) {
+              //   context.slots.swach.geocode = '('+ context.slots.swach.metadata.latitude + ',' + context.slots.swach.metadata.longitude + ')';
+              //   console.log("Swach City and Locality", context.slots.swach.geocode);
+              //   // return swachService.getCityAndLocalityForGeocode(
+              //   //   context.slots.swach.geocode,
+              //   //   context.extraInfo.tenantId
+              //   // )
+              // }
+            },
+            onDone: [
+              {
+                target: "#swachAttendenceConfirmLocation",
+                cond: (context, event) => event.data && context.message.isValid,
+                actions: assign((context, event) => {
+                  // console.log("Swach Attendence GeoLocation ------- event", event);
+                  context.attendence.detectedLocation = event.data;
+                }),
               },
-              onDone: [
-                {
-                  target: "#swachAttendenceConfirmLocation",
-                  cond: (context, event) => event.data && context.message.isValid,
-                  actions: assign((context, event) => {
-                    // console.log("Swach Attendence GeoLocation ------- event", event);
-                    context.attendence.detectedLocation = event.data;
-                  }),
-                },
-                // {
-                //   target: "#swachNLPAttendanceCitySearch",
-                //   cond: (context, event) =>
-                //     !event.data &&
-                //     context.message === "1",
-                // },
-                {
-                  target: "#swachNLPAttendanceCitySearch",
-                  cond: (context, event) =>
-                    !event.data && context.message.isValid, 
-                  // && context.message != "1",
-                  actions: assign((context, event) => {
-                    // console.log("Swach Attendence GeoLocation 2 ------- context", context);
-                    let message = dialog.get_message(
-                      // dialog.global_messages.error.retry,
-                      messages.swachAttendance.retry,
-                      context.user.locale
-                    );
-                    dialog.sendMessage(context, message, false);
-                  }),
-                },
-                {
-                  target: "#swachAttendenceGeoLocationSharingInfo",
-                  cond: (context, event) =>
-                    !event.data && !context.message.isValid, 
-                  // && context.message != "1",
-                  actions: assign((context, event) => {
-                    // console.log("Swach Attendence GeoLocation 2 ------- context", context);
-                    let message = dialog.get_message(
-                      dialog.global_messages.error.retry,
-                      // messages.swachAttendance.retry,
-                      context.user.locale
-                    );
-                    dialog.sendMessage(context, message, false);
-                  }),
-                },
-              ],
-              onError: [
-                {
-                  target: "#swachNLPAttendanceCitySearch",
-                },
-              ],
-          }
+              // {
+              //   target: "#swachNLPAttendanceCitySearch",
+              //   cond: (context, event) =>
+              //     !event.data &&
+              //     context.message === "1",
+              // },
+              {
+                target: "#swachNLPAttendanceCitySearch",
+                cond: (context, event) =>
+                  !event.data && context.message.isValid,
+                // && context.message != "1",
+                actions: assign((context, event) => {
+                  // console.log("Swach Attendence GeoLocation 2 ------- context", context);
+                  let message = dialog.get_message(
+                    // dialog.global_messages.error.retry,
+                    messages.swachAttendance.retry,
+                    context.user.locale
+                  );
+                  dialog.sendMessage(context, message, false);
+                }),
+              },
+              {
+                target: "#swachAttendenceGeoLocationSharingInfo",
+                cond: (context, event) =>
+                  !event.data && !context.message.isValid,
+                // && context.message != "1",
+                actions: assign((context, event) => {
+                  // console.log("Swach Attendence GeoLocation 2 ------- context", context);
+                  let message = dialog.get_message(
+                    dialog.global_messages.error.retry,
+                    // messages.swachAttendance.retry,
+                    context.user.locale
+                  );
+                  dialog.sendMessage(context, message, false);
+                }),
+              },
+            ],
+            onError: [
+              {
+                target: "#swachNLPAttendanceCitySearch",
+              },
+            ],
+          },
         },
-      }
+      },
     },
 
     swachAttendenceConfirmLocation: {
@@ -347,9 +342,7 @@ const swach = {
               context.message = {
                 isValid: true,
               };
-            } else if (
-              event.message?.input?.trim()?.toLowerCase() === "1"
-            ) {
+            } else if (event.message?.input?.trim()?.toLowerCase() === "1") {
               context.slots.attendence["locationConfirmed"] = true;
               context.slots.attendence.city =
                 context.attendence.detectedLocation.city;
@@ -380,11 +373,10 @@ const swach = {
               cond: (context, event) =>
                 context.message.isValid &&
                 context.slots.attendence["locationConfirmed"],
-            },            
+            },
             {
               target: "#swachNLPAttendanceCitySearch",
-              cond: (context, event) =>
-                context.message.isValid,
+              cond: (context, event) => context.message.isValid,
             },
             {
               target: "#swachAttendenceConfirmLocation",
@@ -434,23 +426,19 @@ const swach = {
               target: "route",
               cond: (context, event) => event.data,
               actions: assign((context, event) => {
-                let {
-                  predictedCityCode,
-                  predictedCity,
-                  isCityDataMatch,
-                } = event.data;
+                let { predictedCityCode, predictedCity, isCityDataMatch } =
+                  event.data;
                 context.slots.attendence["predictedCityCode"] =
                   predictedCityCode;
                 context.slots.attendence["predictedCity"] = predictedCity;
-                context.slots.attendence["isCityDataMatch"] =
-                  isCityDataMatch;
+                context.slots.attendence["isCityDataMatch"] = isCityDataMatch;
                 context.slots.attendence["city"] = predictedCityCode;
               }),
             },
             onError: {
               target: "#system_error",
             },
-        },
+          },
         },
         route: {
           onEntry: assign((context, event) => {}),
@@ -482,7 +470,7 @@ const swach = {
                 );
                 dialog.sendMessage(context, message);
               }),
-            }
+            },
           ],
         },
         swachConfirmationAttendanceFuzzyCitySearch: {
@@ -544,7 +532,7 @@ const swach = {
             }, // error
           },
         },
-    },
+      },
     },
 
     swachNLPAttendanceLocalitySearch: {
@@ -585,7 +573,8 @@ const swach = {
                 } = event.data;
                 context.slots.attendence["predictedLocalityCode"] =
                   predictedLocalityCode;
-                context.slots.attendence["predictedLocality"] = predictedLocality;
+                context.slots.attendence["predictedLocality"] =
+                  predictedLocality;
                 context.slots.attendence["isLocalityDataMatch"] =
                   isLocalityDataMatch;
                 context.slots.attendence["locality"] = predictedLocalityCode;
@@ -643,7 +632,7 @@ const swach = {
                 );
                 dialog.sendMessage(context, message);
               }),
-            }
+            },
           ],
         },
         swachConfirmationAttendanceFuzzyLocalitySearch: {
@@ -653,7 +642,8 @@ const swach = {
             question: {
               onEntry: assign((context, event) => {
                 let message = dialog.get_message(
-                  messages.swachFileComplaint.swachNlpLocalitySearch.confirmation,
+                  messages.swachFileComplaint.swachNlpLocalitySearch
+                    .confirmation,
                   context.user.locale
                 );
                 // console.log("Final Context ------ ", context);
@@ -690,7 +680,6 @@ const swach = {
                   target: "error",
                 },
               ],
-                
             },
             error: {
               onEntry: assign((context, event) => {
@@ -704,9 +693,9 @@ const swach = {
                 );
               }),
               always: "question",
-            }
-          }
-        }
+            },
+          },
+        },
       },
     },
 
@@ -746,7 +735,7 @@ const swach = {
     //     },
     //   },
     // },
-    
+
     // swachFileComplaint
     persistAttendence: {
       id: "persistAttendence",
@@ -760,7 +749,7 @@ const swach = {
               context.attendence,
               context.extraInfo.tenantId
             );
-    
+
             let message;
             if (result) {
               message = dialog.get_message(
@@ -775,7 +764,7 @@ const swach = {
               );
               context.chatInterface.system_error(result);
             }
-    
+
             await dialog.sendMessage(context, message, true);
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Optional buffer
             return { success: true };
@@ -790,11 +779,10 @@ const swach = {
           }
         },
         onDone: {
-          target: "#swachWelcome"
-        }
-      }
+          target: "#swachWelcome",
+        },
+      },
     },
-    
 
     swachFileComplaint: {
       id: "swachFileComplaint",
@@ -1049,25 +1037,25 @@ const swach = {
                               dialog.constructListPromptAndGrammer(
                                 complaintItems,
                                 messageBundle,
-                                context.user.locale,
+                                context.user.locale
                                 // false,
                                 // true
                               );
 
-                              // let lengthOfList = grammer.length;
-                              // let otherTypeGrammer = {
-                              //   intention: "Others",
-                              //   recognize: [(lengthOfList + 1).toString()],
-                              // };
-                              // prompt +=
-                              //   `\n*${lengthOfList + 1}.* ` +
-                              //   dialog.get_message(
-                              //     messages.swachFileComplaint
-                              //       .swachComplaintType2Step.category.question
-                              //       .otherType,
-                              //     context.user.locale
-                              //   );
-                              // grammer.push(otherTypeGrammer);
+                            // let lengthOfList = grammer.length;
+                            // let otherTypeGrammer = {
+                            //   intention: "Others",
+                            //   recognize: [(lengthOfList + 1).toString()],
+                            // };
+                            // prompt +=
+                            //   `\n*${lengthOfList + 1}.* ` +
+                            //   dialog.get_message(
+                            //     messages.swachFileComplaint
+                            //       .swachComplaintType2Step.category.question
+                            //       .otherType,
+                            //     context.user.locale
+                            //   );
+                            // grammer.push(otherTypeGrammer);
 
                             // console.log("Constructed Prompt:", prompt); // Debugging
                             // console.log("Constructed Grammar:", grammer); // Debugging
@@ -1141,7 +1129,7 @@ const swach = {
               onEntry: assign((context, event) => {
                 var message = {
                   type: "image",
-                  output: config.swachUseCase.informationImageFilestoreId,    //need review
+                  output: config.swachUseCase.informationImageFilestoreId, //need review
                 };
                 dialog.sendMessage(context, message);
               }),
@@ -1167,41 +1155,65 @@ const swach = {
                 process: {
                   invoke: {
                     id: "getSwachCityAndLocality",
-                    src: (context, event) => {
-                      if (event?.message.type === "location") {
-                        context.slots.swach.geocode = event.message.input;
-                        context.message ={
-                          isValid : true
-                        };
-                        console.log("Swach City and Locality", context.message.isValid);
-                        // console.log("Swach City and Locality")
-                        return swachService.getCityAndLocalityForGeocode(
-                          event.message.input,
-                          context.extraInfo.tenantId
+                    src: async (context, event) => {
+                      try {
+                        if (event?.message.type === "location") {
+                          context.slots.swach.geocode = event.message.input;
+                          context.message = {
+                            isValid: true,
+                          };
+                          console.log(
+                            "Swach City and Locality",
+                            context.message.isValid
+                          );
+                          // console.log("Swach City and Locality")
+                          return await swachService.getCityAndLocalityForGeocode(
+                            event.message.input,
+                            context.extraInfo.tenantId
+                          );
+                        } else {
+                          // context.message = event.message.input;
+                          const userInput = event.message?.input || ""; 
+                          console.log(
+                            "Non-location input received:",
+                            userInput
+                          );
+
+                          context.message = {
+                            isValid: false,
+                            userInput: userInput, 
+                            error: "Expected location type",
+                          };
+                          return Promise.resolve();
+                        }
+                        // if(context.slots.swach.metadata.latitude && context.slots.swach.metadata.longitude) {
+                        //   context.slots.swach.geocode = '('+ context.slots.swach.metadata.latitude + ',' + context.slots.swach.metadata.longitude + ')';
+                        //   console.log("Swach City and Locality", context.slots.swach.geocode);
+                        //   // return swachService.getCityAndLocalityForGeocode(
+                        //   //   context.slots.swach.geocode,
+                        //   //   context.extraInfo.tenantId
+                        //   // )
+                        // }
+                        // context.message = event.message.input;
+                        // context.message = "1";
+                        // return Promise.resolve();
+                      } catch (error) {
+                        console.error(
+                          "Error in getSwachCityAndLocality:",
+                          error
                         );
-                      }else{
-                        context.message = event.message.input;
-                        context.message ={
-                          isValid : false
+                        context.message = {
+                          isValid: false,
+                          
                         };
-                        return Promise.resolve();
+                        return Promise.resolve(); 
                       }
-                      // if(context.slots.swach.metadata.latitude && context.slots.swach.metadata.longitude) {
-                      //   context.slots.swach.geocode = '('+ context.slots.swach.metadata.latitude + ',' + context.slots.swach.metadata.longitude + ')';
-                      //   console.log("Swach City and Locality", context.slots.swach.geocode);
-                      //   // return swachService.getCityAndLocalityForGeocode(
-                      //   //   context.slots.swach.geocode,
-                      //   //   context.extraInfo.tenantId
-                      //   // )
-                      // }
-                      // context.message = event.message.input;
-                      // context.message = "1";
-                      // return Promise.resolve();
                     },
                     onDone: [
                       {
                         target: "#swachConfirmLocation",
-                        cond: (context, event) => event.data && context.message.isValid,
+                        cond: (context, event) =>
+                          event.data && context.message.isValid,
                         actions: assign((context, event) => {
                           context.swach.detectedLocation = event.data;
                         }),
@@ -1218,23 +1230,29 @@ const swach = {
                       //         context.user.locale
                       //       );
                       //       dialog.sendMessage(context, message, false);
-                      //     }),  
+                      //     }),
                       // },
                       {
                         target: "#swachNLPCitySearch",
-                        cond: (context, event) =>{
-                          console.log("Swach City and Locality", context.message.isValid);
-                          return !event.data && context.message.isValid &&
-                          config.swachUseCase.geoSearch
+                        cond: (context, event) => {
+                          console.log(
+                            "Swach City and Locality",
+                            context.message.isValid
+                          );
+                          return (
+                            !event.data &&
+                            context.message.isValid &&
+                            config.swachUseCase.geoSearch
+                          );
                         },
-                              //need review
+                        //need review
                         actions: assign((context, event) => {
-                            let message = dialog.get_message(
-                              messages.swachAttendance.retry,
-                              context.user.locale
-                            );
-                            dialog.sendMessage(context, message, false);
-                          }),
+                          let message = dialog.get_message(
+                            messages.swachAttendance.retry,
+                            context.user.locale
+                          );
+                          dialog.sendMessage(context, message, false);
+                        }),
                       },
                       {
                         target: "#swachGeoLocationSharingInfo",
@@ -1253,11 +1271,12 @@ const swach = {
                     onError: [
                       {
                         target: "#swachCity",
-                        cond: (context, event) => !config.swachUseCase.geoSearch,   //need review
+                        cond: (context, event) =>
+                          !config.swachUseCase.geoSearch, //need review
                       },
                       {
                         target: "#swachNLPCitySearch",
-                        cond: (context, event) => config.swachUseCase.geoSearch,    //need review
+                        cond: (context, event) => config.swachUseCase.geoSearch, //need review
                       },
                     ],
                   },
@@ -1341,25 +1360,27 @@ const swach = {
                       target: "#swachLocality",
                       cond: (context, event) =>
                         context.message.isValid &&
-                        !config.swachUseCase.geoSearch &&   //need review
+                        !config.swachUseCase.geoSearch && //need review
                         context.slots.swach["locationConfirmed"],
                     },
                     {
                       target: "#swachNlpLocalitySearch",
                       cond: (context, event) =>
                         context.message.isValid &&
-                        config.swachUseCase.geoSearch &&    //need review
+                        config.swachUseCase.geoSearch && //need review
                         context.slots.swach["locationConfirmed"],
                     },
                     {
                       target: "#swachCity",
                       cond: (context, event) =>
-                        context.message.isValid && !config.swachUseCase.geoSearch,    //need review
+                        context.message.isValid &&
+                        !config.swachUseCase.geoSearch, //need review
                     },
                     {
                       target: "#swachNLPCitySearch",
                       cond: (context, event) =>
-                        context.message.isValid && config.swachUseCase.geoSearch,     //need review
+                        context.message.isValid &&
+                        config.swachUseCase.geoSearch, //need review
                     },
                     {
                       target: "#swachConfirmLocation",
@@ -1619,7 +1640,8 @@ const swach = {
                         context.slots.swach["predictedLocality"] == null &&
                         context.slots.swach["predictedLocalityCode"] == null,
                       actions: assign((context, event) => {
-                        context.slots.swach["predictedLocalityCode"] = "UNKNOWN";
+                        context.slots.swach["predictedLocalityCode"] =
+                          "UNKNOWN";
                         context.slots.swach["predictedLocality"] = "UNKNOWN";
                         context.slots.swach["locality"] = "UNKNOWN";
                         let message = dialog.get_message(
@@ -1879,10 +1901,10 @@ const swach = {
                       };
                       // context.slots.swach.metadata = event.message.metadata;
                       // if(event.message.metadata && event.message.metadata.latitude && event.message.metadata.longitude) {
-                        // context.message = {
-                        //   isValid: true,
-                        //   isImageError: false,
-                        // };
+                      // context.message = {
+                      //   isValid: true,
+                      //   isImageError: false,
+                      // };
                       // } else{
                       //   context.message = {
                       //     isValid: true,
@@ -1890,8 +1912,7 @@ const swach = {
                       //   };
                       // }
                       // console.log("Swach Image Upload ------- context", context);
-                    } 
-                    else {
+                    } else {
                       // console.log("Swach Image Upload ------- type not image", event.message.input);
                       // let parsed = event.message.input;
                       // let isValid = parsed === "1";
@@ -1901,7 +1922,7 @@ const swach = {
                       // };
                       context.message = {
                         isValid: false,
-                      }
+                      };
                     }
                   }),
                   always: [
@@ -1946,7 +1967,7 @@ const swach = {
                     dialog.sendMessage(context, message, false);
                   }),
                   always: "question",
-                }
+                },
               },
             },
           },
@@ -1962,7 +1983,7 @@ const swach = {
               states: {
                 question: {
                   onEntry: assign((context, event) => {
-                   // console.log("sdsdgsh")
+                    // console.log("sdsdgsh")
                     let message = dialog.get_message(
                       messages.swachFileComplaint.swachDescription.question,
                       context.user.locale
@@ -1981,7 +2002,7 @@ const swach = {
                       context.message = {
                         isValid: true,
                       };
-                    }else{
+                    } else {
                       context.message = {
                         isValid: false,
                       };
@@ -2013,7 +2034,7 @@ const swach = {
                     dialog.sendMessage(context, message, false);
                   }),
                   always: "question",
-                }
+                },
               },
             },
           },
@@ -2028,7 +2049,7 @@ const swach = {
                 context.slots.swach,
                 context.extraInfo
               );
-        
+
               let templateList;
               let message = dialog.get_message(
                 messages.swachFileComplaint.persistSwachComplaint,
@@ -2038,26 +2059,25 @@ const swach = {
                 "{{complaintNumber}}",
                 complaintDetails?.complaintNumber
               );
-        
+
               // const closingStatement = dialog.get_message(
               //   messages.swachFileComplaint.closingStatement,
               //   context.user.locale
               // );
-        
+
               // message = message + closingStatement;
               message = message;
-        
+
               await dialog.sendMessage(context, message, true);
               await new Promise((resolve) => setTimeout(resolve, 1000)); // optional buffer before moving on
-        
+
               return { complaintDetails };
             },
             onDone: {
-              target: "#swachWelcome"
-            }
-          }
-        }
-        
+              target: "#swachWelcome",
+            },
+          },
+        },
       }, // swachFileComplaint.states
     },
 
@@ -2164,16 +2184,21 @@ const swach = {
       invoke: {
         id: "fetchOpenSwachComplaints",
         src: async (context) => {
-          const complaints = await swachService.fetchOpenSwachComplaints(context.user);
-    
+          const complaints = await swachService.fetchOpenSwachComplaints(
+            context.user
+          );
+
           let templateList;
           let localeList = config.supportedLocales.split(",");
           let localeIndex = localeList.indexOf(context.user.locale);
           templateList =
-            config.valueFirstWhatsAppProvider.valuefirstNotificationTrackCompliantTemplateid.split(",");
-    
-          context.extraInfo.templateId = templateList[localeIndex] || templateList[0];
-    
+            config.valueFirstWhatsAppProvider.valuefirstNotificationTrackCompliantTemplateid.split(
+              ","
+            );
+
+          context.extraInfo.templateId =
+            templateList[localeIndex] || templateList[0];
+
           if (complaints.length > 0) {
             const preamble = dialog.get_message(
               messages.swachTrackComplaint.results.preamble,
@@ -2181,7 +2206,7 @@ const swach = {
             );
             await dialog.sendMessage(context, preamble, true);
             await new Promise((resolve) => setTimeout(resolve, 1000));
-    
+
             for (let complaint of complaints) {
               let template = dialog.get_message(
                 messages.swachTrackComplaint.results.complaintTemplate,
@@ -2191,26 +2216,26 @@ const swach = {
                 .replace("{{complaintType}}", complaint.complaintType)
                 .replace("{{filedDate}}", complaint.filedDate)
                 .replace("{{complaintStatus}}", complaint.complaintStatus);
-    
+
               await dialog.sendMessage(context, template, true);
               await new Promise((resolve) => setTimeout(resolve, 500));
             }
-    
+
             await new Promise((resolve) => setTimeout(resolve, 1000));
-    
+
             // const closingStatement = dialog.get_message(
             //   messages.swachTrackComplaint.results.closingStatement,
             //   context.user.locale
             // );
             // await dialog.sendMessage(context, closingStatement, true);
           }
-    
+
           return { complaints };
         },
         onDone: [
           {
             cond: (_, event) => event.data.complaints.length > 0,
-            target: "#swachWelcome"
+            target: "#swachWelcome",
           },
           {
             target: "#swachWelcome",
@@ -2220,12 +2245,11 @@ const swach = {
                 context.user.locale
               );
               dialog.sendMessage(context, message);
-            })
-          }
-        ]
-      }
-    }
-    
+            }),
+          },
+        ],
+      },
+    },
   }, // swach.states
 };
 
@@ -2244,20 +2268,14 @@ let messages = {
 
   swachAttendance: {
     question: {
-      en_IN:
-        "Please attach your attendance selfie and send it to us.",
-      hi_IN:
-        "कृपया उपस्थिति की छवि संलग्न करें और हमें भेजें।",
-      pa_IN:
-        "ਕਿਰਪਾ ਕਰਕੇ ਹਾਜ਼ਰੀ ਦੀ ਤਸਵੀਰ ਜੁੜੀ ਹੋਈ ਹੈ ਅਤੇ ਸਾਨੂੰ ਭੇਜੋ।",
+      en_IN: "Please attach your attendance selfie and send it to us.",
+      hi_IN: "कृपया उपस्थिति की छवि संलग्न करें और हमें भेजें।",
+      pa_IN: "ਕਿਰਪਾ ਕਰਕੇ ਹਾਜ਼ਰੀ ਦੀ ਤਸਵੀਰ ਜੁੜੀ ਹੋਈ ਹੈ ਅਤੇ ਸਾਨੂੰ ਭੇਜੋ।",
     },
     confirmation: {
-      en_IN:
-        "Your Attendence have been successfully submitted. ",
-      hi_IN:
-        "आपकी उपस्थिति सफलतापूर्वक प्रस्तुत की गई है।",
-      pa_IN:
-        "ਤੁਹਾਡੀ ਹਾਜ਼ਰੀ ਸਫਲਤਾਪੂਰਕ ਪੇਸ਼ ਕੀਤੀ ਗਈ ਹੈ। ",
+      en_IN: "Your Attendence have been successfully submitted. ",
+      hi_IN: "आपकी उपस्थिति सफलतापूर्वक प्रस्तुत की गई है।",
+      pa_IN: "ਤੁਹਾਡੀ ਹਾਜ਼ਰੀ ਸਫਲਤਾਪੂਰਕ ਪੇਸ਼ ਕੀਤੀ ਗਈ ਹੈ। ",
     },
     noRecord: {
       en_IN:
@@ -2271,7 +2289,7 @@ let messages = {
       en_IN: "Selected option seems to be invalid 😐",
       hi_IN: "चुना हुआ विकल्प अमान्य प्रतीत होता है 😐",
       pa_IN: "ਚੁਣਿਆ ਗਿਆ ਵਿਕਲਪ ਅਵੈਧ ਲੱਗਦਾ ਹੈ 😐",
-    }
+    },
   },
 
   // swach file complaint
@@ -2299,7 +2317,7 @@ let messages = {
               "Please type and send the number to select a Observation type from the list below 👇\n",
             hi_IN:
               "नीचे दी गई सूची से शिकायत प्रकार चुनने के लिए विकल्प संख्या टाइप करें और भेजें 👇",
-            pa_IN: 
+            pa_IN:
               "ਕਿਰਪਾ ਕਰਕੇ ਹੇਠਾਂ ਦਿੱਤੀ ਸੂਚੀ ਵਿੱਚੋਂ ਸ਼ਿਕਾਇਤ ਦੇ ਕਿਸਮ ਨੂੰ ਚੁਣਨ ਲਈ ਨੰਬਰ ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ 👇",
           },
           otherType: {
@@ -2312,11 +2330,14 @@ let messages = {
       newCategory: {
         question: {
           preamble: {
-            en_IN: "To confirm and raise an observation, please type and send *1*.",
-            hi_IN: "पुष्टि करने और शिकायत दर्ज करने के लिए कृपया 1 टाइप करें और भेजें।",
-            pa_IN: "ਪੁਸ਼ਟੀ ਕਰਨ ਅਤੇ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰਨ ਲਈ ਕਿਰਪਾ ਕਰਕੇ 1 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ।",
-          }
-        }
+            en_IN:
+              "To confirm and raise an observation, please type and send *1*.",
+            hi_IN:
+              "पुष्टि करने और शिकायत दर्ज करने के लिए कृपया 1 टाइप करें और भेजें।",
+            pa_IN:
+              "ਪੁਸ਼ਟੀ ਕਰਨ ਅਤੇ ਸ਼ਿਕਾਇਤ ਦਰਜ ਕਰਨ ਲਈ ਕਿਰਪਾ ਕਰਕੇ 1 ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ।",
+          },
+        },
       },
       item: {
         question: {
@@ -2410,12 +2431,9 @@ let messages = {
     }, // locality
     swachImageUpload: {
       question: {
-        en_IN:
-          "Please attach a photo of your Observation.",
-        hi_IN:
-          "कृपया अपनी शिकायत की एक फोटो संलग्न करें।",
-        pa_IN: 
-          "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦੀ ਇੱਕ ਫੋਟੋ ਜੁੜੀ ਹੋਈ ਭੇਜੋ।",
+        en_IN: "Please attach a photo of your Observation.",
+        hi_IN: "कृपया अपनी शिकायत की एक फोटो संलग्न करें।",
+        pa_IN: "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦੀ ਇੱਕ ਫੋਟੋ ਜੁੜੀ ਹੋਈ ਭੇਜੋ।",
       },
       error: {
         en_IN: "Sorry, I didn't understand",
@@ -2423,12 +2441,12 @@ let messages = {
         pa_IN: "ਮਾਫ ਕਰਨਾ, ਮੈਂ ਸਮਝ ਨਹੀਂ ਸਕਿਆ",
       },
     },
-    swachDescription :{
-        question : {
-          en_IN : "Please type your Observation Description",
-          hi_IN: "कृपया अपनी शिकायत का विवरण टाइप करें",
-          pa_IN: "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦਾ ਵੇਰਵਾ ਟਾਈਪ ਕਰੋ",
-        }
+    swachDescription: {
+      question: {
+        en_IN: "Please type your Observation Description",
+        hi_IN: "कृपया अपनी शिकायत का विवरण टाइप करें",
+        pa_IN: "ਕਿਰਪਾ ਕਰਕੇ ਆਪਣੀ ਸ਼ਿਕਾਇਤ ਦਾ ਵੇਰਵਾ ਟਾਈਪ ਕਰੋ",
+      },
     },
     persistSwachComplaint: {
       en_IN:
@@ -2441,16 +2459,14 @@ let messages = {
     closingStatement: {
       en_IN: '\nIn case of Going to Swach Menu please type and send "Swach"',
       hi_IN: '\nस्वच मेनू पर जाने के लिए कृपया "Swach" टाइप करें और भेजें',
-      pa_IN: "\nਜੇਕਰ ਤੁਸੀਂ ਸਵਚ ਮੀਨੂ 'ਤੇ ਜਾਣਾ ਚਾਹੁੰਦੇ ਹੋ ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ 'Swach' ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ",
+      pa_IN:
+        "\nਜੇਕਰ ਤੁਸੀਂ ਸਵਚ ਮੀਨੂ 'ਤੇ ਜਾਣਾ ਚਾਹੁੰਦੇ ਹੋ ਤਾਂ ਕਿਰਪਾ ਕਰਕੇ 'Swach' ਟਾਈਪ ਕਰੋ ਅਤੇ ਭੇਜੋ",
     },
     swachCityFuzzySearch: {
       question: {
-        en_IN:
-          "Enter the name of your city.",
-        hi_IN:
-          "अपने शहर का नाम दर्ज करें। ",
-        pa_IN:
-          "ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਨਾਮ ਦਰਜ ਕਰੋ. ",
+        en_IN: "Enter the name of your city.",
+        hi_IN: "अपने शहर का नाम दर्ज करें। ",
+        pa_IN: "ਆਪਣੇ ਸ਼ਹਿਰ ਦਾ ਨਾਮ ਦਰਜ ਕਰੋ. ",
       },
       confirmation: {
         en_IN:

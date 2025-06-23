@@ -110,6 +110,7 @@ const fetchPrevPage = () => {
           currentPage={Math.floor(pageOffset / pageSize)}
           totalRecords={totalRecords}
           pageSizeLimit={pageSize}
+          localities={localities}
         />
       );
     } else {

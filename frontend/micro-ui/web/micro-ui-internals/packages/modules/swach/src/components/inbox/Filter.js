@@ -44,7 +44,7 @@ const Filter = (props) => {
   );
 
   const [wfFilters, setWfFilters] = useState(
-    searchParams?.filters?.wfFilters || {
+    searchParams?.filters?.wfFilters || props.type === "mobile"? {} : {
       assignee: defaultAssignee,
     }
   );
@@ -131,9 +131,9 @@ useEffect(() => {
     }
     count += wfFilters?.assignee?.length || 0;
 
-    // if (props.type !== "mobile") {
+    if (props.type !== "mobile") {
     handleFilterSubmit();
-    // }
+    }
 
     Digit.inboxFilterCount = count;
   }, [swachfilters, wfFilters]);
@@ -311,7 +311,7 @@ useEffect(() => {
               {GetSelectOptions(t("CS_SWACH_LOCALITY"), props?.localities, selectedLocality, onSelectLocality, "i18nkey", onRemove, "locality")}
             </div>
             <div>{GetSelectOptions("City", cities, selectedTenant, onSelectTenants, "name", onRemove, "tenants", tenantId !== "pb.punjab")}</div>
-            {<Status complaints={props.complaints} onAssignmentChange={handleAssignmentChange} swachfilters={swachfilters} />}
+            {<Status complaints={props.complaints} onAssignmentChange={handleAssignmentChange} swachfilters={swachfilters} type={props?.type}/>}
           </div>
         </div>
       </div>

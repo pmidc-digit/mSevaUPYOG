@@ -8,13 +8,36 @@ import PropTypes from "prop-types";
 import Filter from "./inbox/Filter";
 
 const GetSlaCell = (value) => {
-  return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
+  // return value < 0 ? (
+  //   <span className="sla-cell-error" style={{ color: "#a82227" }}>
+  //     {value || ""}
+  //   </span>
+  // ) : (
+  //   <span className="sla-cell-success">{value}</span>
+  // );
+  if (value < 0) {
+    return (
+      <span className="sla-cell-error" style={{ color: "#a82227", padding: 0 }}>
+        {Math.abs(value)} hours overdue
+      </span>
+    );
+  } else {
+    return (
+      <span className="sla-cell-success" style={{ padding: 0 }}>
+        {value} hour left
+      </span>
+    );
+  }
+};
+
+const GetDateSlaCell = (value) => {
+  return value < 0 ? <span className="sla-cell-error">{value || ""}</span> : <span className="sla-cell-success">{value || ""}</span>;
 };
 
 let pgrQuery = {};
 let wfQuery = {};
 
-const MobileInbox = ({ data, onFilterChange, onSearch, isLoading, searchParams }) => {
+const MobileInbox = ({ data, onFilterChange, onSearch, isLoading, searchParams, localities }) => {
   const { t } = useTranslation();
   // let { uuid } = Digit.UserService.getUser().info;
   // const [swachfilters, setSwachFilters] = useState(
@@ -49,33 +72,41 @@ const MobileInbox = ({ data, onFilterChange, onSearch, isLoading, searchParams }
   // }));
 
   const localizedData = useMemo(() => {
-    return data?.map(({ locality, tenantId, serviceRequestId, complaintSubType, sla, status, taskOwner }) => ({
+    return data?.map(({ locality, tenantId, serviceRequestId, complaintSubType, sla, status, taskOwner, taskEmployee, createdDate }) => ({
       [t("CS_COMMON_COMPLAINT_NO")]: serviceRequestId,
       [t("CS_ADDCOMPLAINT_COMPLAINT_SUB_TYPE")]: t(`SWACHBHARATCATEGORY.${complaintSubType.toUpperCase()}`),
       [t("WF_INBOX_HEADER_LOCALITY")]: t(Digit.Utils.locale.getLocalityCode(locality, tenantId)),
       [t("CS_COMPLAINT_DETAILS_CURRENT_STATUS")]: t(`CS_COMMON_${status}`),
       [t("WF_INBOX_HEADER_CURRENT_OWNER")]: taskOwner,
+      [t("WF_INBOX_HEADER_CURRENT_EMPLOYEE")]: taskEmployee,
       [t("WF_INBOX_HEADER_SLA_DAYS_REMAINING")]: GetSlaCell(sla),
+      [t("WF_INBOX_HEADER_CREATED_DATE")]: GetDateSlaCell(createdDate),
       // status,
     }));
   }, [data, t]);
 
+  const tenantIdsList = useMemo(() => {
+    return data?.map((obj) => obj.tenantId);
+  })
+
   let result;
   if (isLoading) {
     result = <Loader />;
-  } else if (data && data?.length === 0) {
-      result = (
-        <Card style={{ marginTop: 20 }}>
-          {t(LOCALE.NO_COMPLAINTS_EMPLOYEE)
-            .split("\\n")
-            .map((text, index) => (
-              <p key={index} style={{ textAlign: "center" }}>
-                {text}
-              </p>
-            ))}
-        </Card>
-      );
-    } else {
+  } 
+  // else if (data && data?.length === 0) {
+  //     result = (
+  //       <Card style={{ marginTop: 20 }}>
+  //         {t(LOCALE.NO_COMPLAINTS_EMPLOYEE)
+  //           .split("\\n")
+  //           .map((text, index) => (
+  //             <p key={index} style={{ textAlign: "center" }}>
+  //               {text}
+  //             </p>
+  //           ))}
+  //       </Card>
+  //     );
+  //   }
+     else {
     result = (
       <ComplaintCard
         data={localizedData}
@@ -83,6 +114,8 @@ const MobileInbox = ({ data, onFilterChange, onSearch, isLoading, searchParams }
         serviceRequestIdKey={t("CS_COMMON_COMPLAINT_NO")}
         onSearch={onSearch}
         searchParams={searchParams}
+        localities={localities}
+        tenantIdsList = {tenantIdsList}
       />
     );
   }

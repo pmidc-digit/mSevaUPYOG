@@ -344,10 +344,10 @@ public class PaymentService {
 		String payerId = createUser(paymentRequest);
 		if (!StringUtils.isEmpty(payerId))
 			payment.setPayerId(payerId);
-		paymentRepository.savePayment(payment);
+//		paymentRepository.savePayment(payment);
 
 		producer.producer(applicationProperties.getCreatePaymentTopicName(), paymentRequest);
-		 if (payment.getPaymentDetails().get(0).getBusinessService() != null && payment.getPaymentDetails().get(0).getBusinessService().equals("PT") )
+		 if (payment.getPaymentDetails().get(0).getBusinessService() != null && (payment.getPaymentDetails().get(0).getBusinessService().equals("PT") || payment.getPaymentDetails().get(0).getBusinessService().equals("WS") || payment.getPaymentDetails().get(0).getBusinessService().equals("SW")  ) )
 				{
 				producer.producer(applicationProperties.getGisTopicName(), paymentRequest);
 

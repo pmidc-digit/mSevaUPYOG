@@ -2,23 +2,22 @@ package org.egov.waterconnection.consumer;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
 
 import org.egov.common.contract.request.RequestInfo;
-
 import org.egov.waterconnection.config.WSConfiguration;
 import org.egov.waterconnection.repository.ServiceRequestRepository;
 import org.egov.waterconnection.repository.WaterDaoImpl;
 import org.egov.waterconnection.web.models.*;
-import org.egov.waterconnection.web.models.collection.Bill;
 import org.egov.waterconnection.web.models.collection.BillDetail;
 import org.egov.waterconnection.web.models.collection.PaymentDetail;
 import org.egov.waterconnection.web.models.collection.PaymentRequest;
-import org.egov.waterconnection.util.EncryptionDecryptionUtil;
 import org.egov.waterconnection.validator.ValidateProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -33,287 +32,347 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
 
 import lombok.extern.slf4j.Slf4j;
+//... [imports remain unchanged]
 
 @Slf4j
 @Component
 public class WaterGisIntegrationConsumer {
 
-    @Autowired
-    private ObjectMapper mapper;
+ private static final String ASSESSMENT_YEAR = "assessmentyear";
+ private static final String AMOUNT_PAID = "amountpaid";
+ private static final String BILL_AMOUNT = "billamount";
+ private static final String CONNECTION_NO = "connectionno";
+ private static final String TENANT_ID = "tenantid";
 
-    @Autowired
-    private WSConfiguration configs;
+ @Autowired
+ private ObjectMapper mapper;
 
-    @Autowired
-    private ServiceRequestRepository serviceRequestRepository;
+ @Autowired
+ private WSConfiguration configs;
 
-    @Autowired
-    private WaterDaoImpl waterDaoImpl;
+ @Autowired
+ private ServiceRequestRepository serviceRequestRepository;
 
-    @Autowired
-    private EncryptionDecryptionUtil encryptionDecryptionUtil;
+ @Autowired
+ private WaterDaoImpl waterDaoImpl;
 
-	@Autowired
-	private ValidateProperty validateProperty;
-    
-    @KafkaListener(topics = { "${gis.water.receipt.topic}" })
-    public void listenWaterPaymentUpdate(final HashMap<String, Object> record, 
-            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) throws JsonProcessingException {
-        
-        PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
-        RequestInfo requestInfo = paymentRequest.getRequestInfo();
+ @Autowired
+ private ValidateProperty validateProperty;
 
-        List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
-        Map<String, BigDecimal> yearToAmountMap = new HashMap<>();
-        String year = null;
-        
-        BillDetail billDetail = paymentDetails.get(0).getBill().getBillDetails().get(0);
-        if (billDetail != null) {
-            Long fromEpoch = billDetail.getFromPeriod();
-            Long toEpoch = billDetail.getToPeriod();
-            BigDecimal amount = billDetail.getAmountPaid();
+ @KafkaListener(topics = { "${gis.water.receipt.topic}" })
+ public void listenWaterPaymentUpdate(final HashMap<String, Object> record,
+         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) throws JsonProcessingException {
 
-            if (fromEpoch != null && toEpoch != null && amount != null) {
-                int fromYear = Instant.ofEpochMilli(fromEpoch).atZone(ZoneId.systemDefault()).toLocalDate().getYear();
-                int toYear = Instant.ofEpochMilli(toEpoch).atZone(ZoneId.systemDefault()).toLocalDate().getYear();
-                year = fromYear + "-" + String.valueOf(toYear).substring(2);
-                yearToAmountMap.put(year, amount);
-            }
-        }
+     try {
+         PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
+         RequestInfo requestInfo = paymentRequest.getRequestInfo();
+         List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
 
-        SearchCriteria criteria = SearchCriteria.builder()
-                .connectionNumber(Sets.newHashSet(paymentDetails.get(0).getBill().getConsumerCode()))
-                .tenantId(paymentRequest.getPayment().getTenantId())
-                .build();
+         if (paymentDetails == null || paymentDetails.isEmpty()) {
+             log.warn("No payment details found in payment request");
+             return;
+         }
 
-        List<WaterConnection> waterConnections = waterDaoImpl.getWaterConnectionList(criteria, requestInfo);
-        log.info("Water Connections: " + waterConnections.toString());
-        
-        if (waterConnections.isEmpty()) {
-            log.error("No water connection found for consumer code: " + paymentDetails.get(0).getBill().getConsumerCode());
-            return;
-        }
+         Map<String, BigDecimal> yearToAmountPaidMap = new HashMap<>();
+         Map<String, BigDecimal> yearToBillAmountMap = new HashMap<>();
+         Map<String, Long[]> yearToPeriodMap = new HashMap<>();
 
-        WaterConnection waterConnection = encryptionDecryptionUtil.decryptObject(
-                waterConnections.get(0), 
-                "WaterConnection", 
-                WaterConnection.class, 
-                requestInfo);
+         for (PaymentDetail paymentDetail : paymentDetails) {
+             if (paymentDetail.getBill() != null) {
+                 for (BillDetail billDetail : paymentDetail.getBill().getBillDetails()) {
+                     if (billDetail.getFromPeriod() != null && billDetail.getToPeriod() != null) {
+                         LocalDate fromDate = Instant.ofEpochMilli(billDetail.getFromPeriod())
+                                 .atZone(ZoneId.systemDefault()).toLocalDate();
+                         LocalDate toDate = Instant.ofEpochMilli(billDetail.getToPeriod())
+                                 .atZone(ZoneId.systemDefault()).toLocalDate();
 
-        StringBuilder url = new StringBuilder(configs.getGisHost().concat(configs.getGiscreatePath()));
-        StringBuilder searchUrl = new StringBuilder(configs.getGisHost().concat(configs.getGissearchPath()));
-        boolean hasParams = false;
+                         String yearKey = String.format("%04d-%02d to %04d-%02d",
+                                 fromDate.getYear(), fromDate.getMonthValue(),
+                                 toDate.getYear(), toDate.getMonthValue());
 
-        if (waterConnection.getConnectionNo() != null) {
-            searchUrl.append("?connectionno=").append(waterConnection.getConnectionNo());
-            hasParams = true;
-        }
-        if (waterConnection.getTenantId() != null) {
-            searchUrl.append(hasParams ? "&" : "?").append("tenantid=").append(waterConnection.getTenantId());
-        }
+                         BigDecimal currentPaid = billDetail.getAmountPaid() != null ?
+                                 billDetail.getAmountPaid() : BigDecimal.ZERO;
+                         BigDecimal currentBill = billDetail.getAmount() != null ?
+                                 billDetail.getAmount() : BigDecimal.ZERO;
 
-        Optional<Object> gisResponse = serviceRequestRepository.saveGisData(searchUrl, waterConnection);
-        if (gisResponse.isPresent()) {
-            Map<String, Object> waterConnectionJson = extractWaterTaxJson(
-                    null, 
-                    waterConnection, 
-                     
-                    paymentRequest, 
-                    yearToAmountMap, 
-                    null,
-                    gisResponse);
-            
-            waterConnectionJson.put("assessmentyear", year);
-            waterConnectionJson.put("createdtime", System.currentTimeMillis());
-            waterConnectionJson.put("lastmodifiedtime", System.currentTimeMillis());
+                         yearToAmountPaidMap.merge(yearKey, currentPaid, BigDecimal::add);
+                         yearToBillAmountMap.merge(yearKey, currentBill, BigDecimal::add);
+                         yearToPeriodMap.putIfAbsent(yearKey, new Long[]{billDetail.getFromPeriod(), billDetail.getToPeriod()});
+                     }
+                 }
+             }
+         }
 
-            Optional<Object> saveResponse = serviceRequestRepository.saveGisData(url, waterConnectionJson);
-            if (saveResponse.isPresent()) {
-                log.info("Successfully updated watertax record for connection: " + waterConnection.getConnectionNo());
-            } else {
-                log.warn("No response received from GIS Save service.");
-            }
-        } else {
-            log.warn("No response received from GIS service.");
-        }
-    }
+         String consumerCode = paymentDetails.get(0).getBill().getConsumerCode();
+         String tenantId = paymentRequest.getPayment().getTenantId();
 
-    @KafkaListener(topics = { "${gis.save.water.topic}" })
-    public void listenWaterConnectionUpdate(final HashMap<String, Object> record, 
-            @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+         WaterConnection waterConnection = getWaterConnection(consumerCode, tenantId, requestInfo);
+         if (waterConnection == null) {
+             log.error("No valid water connection found for consumer code: {}", consumerCode);
+             return;
+         }
 
-        try {
-            StringBuilder url = new StringBuilder(configs.getGisHost().concat(configs.getGiscreatePath()));
-            Map<String, Object> waterConnectionJson = new HashMap<>();
-            WaterConnection waterConnection = null;
+         Property property = validateProperty(waterConnection, requestInfo);
+         if (property == null) {
+             log.error("Property validation failed for connection: {}", waterConnection.getConnectionNo());
+             return;
+         }
 
-            if (topic.equalsIgnoreCase(configs.getGisWaterTopic())) {
-                WaterConnectionRequest waterConnectionRequest = mapper.convertValue(record, WaterConnectionRequest.class);
-                if (waterConnectionRequest.getWaterConnection() != null) {
-                    log.info("Processing water connection for GIS: " + waterConnectionRequest);
-                    
-            		Property property = validateProperty.getOrValidateProperty(waterConnectionRequest);
-					if (property == null) {
-						log.error("Property not found for water connection: " + waterConnectionRequest.getWaterConnection().getConnectionNo());
-						return;
-					}
-                    waterConnection = waterConnectionRequest.getWaterConnection();
-                    waterConnectionJson = extractWaterTaxJson(
-                            waterConnectionRequest, null, null,  null, property, Optional.empty());
-                }
-            }
+         Optional<Object> gisSearchResponse = searchGisRecords(waterConnection, tenantId);
+         Object gisData = gisSearchResponse.orElse(null);
 
-            if (!waterConnectionJson.isEmpty()) {
-                waterConnectionJson.put("createdtime", System.currentTimeMillis());
-                waterConnectionJson.put("lastmodifiedtime", System.currentTimeMillis());
-                
-                Optional<Object> saveResponse = serviceRequestRepository.saveGisData(url, waterConnectionJson);
-                if (saveResponse.isPresent()) {
-                    log.info("Successfully created/updated watertax record");
-                }
-            }
-        } catch (final Exception e) {
-            log.error("Error while processing GIS update: ", e);
-        }
-    }
+         for (Map.Entry<String, BigDecimal> entry : yearToAmountPaidMap.entrySet()) {
+             String yearKey = entry.getKey();
+             BigDecimal currentAmountPaid = entry.getValue();
+             BigDecimal billAmount = yearToBillAmountMap.getOrDefault(yearKey, BigDecimal.ZERO);
+             Long[] period = yearToPeriodMap.get(yearKey);
 
-    private Map<String, Object> extractWaterTaxJson(
-            WaterConnectionRequest waterConnectionRequest,
-            WaterConnection waterConnection,
-            PaymentRequest paymentRequest,
-            Map<String, BigDecimal> yearToAmountMap,
-            Property property,
-            Optional<Object> gisResponse) {
+             if (period == null) continue;
 
-        Map<String, Object> waterTaxJson = new HashMap<>();
+             BigDecimal previousAmountPaid = (gisData != null) ? getPreviousAmountFromGis(gisData, yearKey) : BigDecimal.ZERO;
+             BigDecimal totalAmountPaid = previousAmountPaid.add(currentAmountPaid);
 
-        // Determine the source of water connection
-        if (waterConnection == null) {
-            if (waterConnectionRequest != null && waterConnectionRequest.getWaterConnection() != null) {
-                waterConnection = waterConnectionRequest.getWaterConnection();
-            } 
-          
-            } 
-            else if (paymentRequest != null) {
-                SearchCriteria criteria = SearchCriteria.builder()
-                        .connectionNumber(Sets.newHashSet(
-                                paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode()))
-                        .tenantId(paymentRequest.getPayment().getTenantId())
-                        .build();
+             Map<String, BigDecimal> amountMap = new HashMap<>();
+             amountMap.put(AMOUNT_PAID, totalAmountPaid);
+             amountMap.put(BILL_AMOUNT, billAmount);
 
-                List<WaterConnection> waterConnections = waterDaoImpl.getWaterConnectionList(
-                        criteria, paymentRequest.getRequestInfo());
+             Map<String, Object> waterJson = buildWaterTaxJson(
+                     null,
+                     waterConnection,
+                     paymentRequest,
+                     property,
+                     Optional.ofNullable(gisData),
+                     amountMap);
 
-                if (!waterConnections.isEmpty()) {
-                    waterConnection = waterConnections.get(0);
-                }
-            }
-		String assessmentYear=null;
-		String assessmentYearMatched = null;
+             waterJson.put(ASSESSMENT_YEAR, yearKey);
+             waterJson.put("createdtime", System.currentTimeMillis());
+             waterJson.put("lastmodifiedtime", System.currentTimeMillis());
 
-        Address address = property.getAddress();
-		Locality locality = (address != null) ? address.getLocality() : null;
+             saveGisRecord(waterJson);
+         }
 
-		// Build full address string
-		StringBuilder fullAddress = new StringBuilder();
-		if (address != null) {
-			if (address.getDoorNo() != null)
-				fullAddress.append(address.getDoorNo()).append(", ");
-			if (address.getPlotNo() != null)
-				fullAddress.append("Plot ").append(address.getPlotNo()).append(", ");
-			if (address.getBuildingName() != null)
-				fullAddress.append(address.getBuildingName()).append(", ");
-			if (address.getStreet() != null)
-				fullAddress.append(address.getStreet()).append(", ");
-			if (locality != null && locality.getName() != null)
-				fullAddress.append(locality.getName()).append(", ");
-			if (address.getLandmark() != null)
-				fullAddress.append("Landmark: ").append(address.getLandmark()).append(", ");
-			if (address.getCity() != null)
-				fullAddress.append(address.getCity()).append(", ");
-			if (address.getDistrict() != null)
-				fullAddress.append(address.getDistrict()).append(", ");
-			if (address.getRegion() != null)
-				fullAddress.append(address.getRegion()).append(", ");
-			if (address.getState() != null)
-				fullAddress.append(address.getState()).append(", ");
-			if (address.getCountry() != null)
-				fullAddress.append(address.getCountry()).append(", ");
-			if (address.getPincode() != null)
-				fullAddress.append("PIN - ").append(address.getPincode()).append(", ");
-		}
-		if (fullAddress.length() > 2) {
-			fullAddress.setLength(fullAddress.length() - 2); // Remove trailing comma and space
-		}
-        // Basic connection info
-        waterTaxJson.put("connectionno", waterConnection.getConnectionNo());
-        waterTaxJson.put("tenantid", waterConnection.getTenantId());
-        waterTaxJson.put("propertyid", waterConnection.getPropertyId());
-        waterTaxJson.put("surveyid", property != null ? property.getSurveyId() : null);
-        waterTaxJson.put("oldpropertyid", property != null ? property.getOldPropertyId() : null);
-        
-        // Address related fields
-        waterTaxJson.put("address", fullAddress != null ? fullAddress.toString() : null);
-        waterTaxJson.put("localityname", locality != null ? locality.getName() : null);
-        waterTaxJson.put("blockname", locality != null ? locality.getName() : null);
-        
-        // Property characteristics
-        waterTaxJson.put("nooffloors", property != null ? property.getNoOfFloors() : null);
-        waterTaxJson.put("plotsize", property != null ? property.getLandArea() : null);
-        waterTaxJson.put("superbuilduparea", property != null ? property.getSuperBuiltUpArea() : null);
-        waterTaxJson.put("propertytype", property != null ? property.getPropertyType() : null);
-        waterTaxJson.put("propertyusagetype", property != null ? property.getUsageCategory() : null);
-        waterTaxJson.put("ownershipcategory",property != null ? property.getOwnershipCategory() : null);
+     } catch (Exception e) {
+         log.error("Error processing water payment update: ", e);
+     }
+ }
 
-        // Payment related fields (if available)
-       if (paymentRequest != null) {
-			// Handle payment related fields
-			BigDecimal amountPaid = BigDecimal.ZERO;
-			if (gisResponse != null && gisResponse.isPresent()) {
-				try {
-					String jsonResponse = new ObjectMapper().writeValueAsString(gisResponse.get());
-					JsonNode dataArray = new ObjectMapper().readTree(jsonResponse);
-					if (dataArray.isArray()) {
-						for (JsonNode entry : dataArray) {
-							 assessmentYear = entry.path("assessmentyear").asText();
-							if (assessmentYear != null && !assessmentYear.isEmpty()) {
-								if (yearToAmountMap != null && yearToAmountMap.containsKey(assessmentYear)) {
-									amountPaid = yearToAmountMap.get(assessmentYear);
-									assessmentYearMatched = assessmentYear;
-									log.info("Matched assessment year: " + assessmentYear + " with amount: " + amountPaid);
-									break;
-								}
-							}
-						}
-					}
-				} catch (Exception e) {
-					log.info("Failed to parse GIS response: " + e.getMessage());
-				}
-			}
+ @KafkaListener(topics = { "${gis.save.water.topic}" })
+ public void listenWaterConnectionUpdate(final HashMap<String, Object> record,
+                                         @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+     try {
+         if (!topic.equalsIgnoreCase(configs.getGisWaterTopic())) return;
 
-			List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
-			if (paymentDetails != null && !paymentDetails.isEmpty()) {
-				PaymentDetail paymentDetail = paymentDetails.get(0);
-				waterTaxJson.put("paymentdate", paymentDetail.getReceiptDate());
-				waterTaxJson.put("receiptnumber", paymentDetail.getReceiptNumber());
-				if (assessmentYearMatched!= null && !assessmentYearMatched.isEmpty()) {
-					waterTaxJson.put("assessmentyear", assessmentYearMatched);
-				waterTaxJson.put("amountpaid", amountPaid);
-				waterTaxJson.put("billamount", paymentDetail.getBill().getTotalAmount());
-				}
-				 else {
-					log.info("Year to Amount Map: " + assessmentYear);
-					waterTaxJson.put("amountpaid", paymentRequest.getPayment().getTotalAmountPaid());
+         WaterConnectionRequest waterConnectionRequest = mapper.convertValue(record, WaterConnectionRequest.class);
+         if (waterConnectionRequest.getWaterConnection() == null) {
+             log.warn("No water connection found in request");
+             return;
+         }
 
-				}
-			} else {
-				waterTaxJson.put("paymentdate", null);
-				waterTaxJson.put("receiptnumber", null);
-			}
+         Property property = validateProperty.getOrValidateProperty(waterConnectionRequest);
+         if (property == null) {
+             log.error("Property not found for water connection: {}", 
+                     waterConnectionRequest.getWaterConnection().getConnectionNo());
+             return;
+         }
 
+         Map<String, Object> waterConnectionJson = buildWaterTaxJson(
+                 waterConnectionRequest, 
+                 null, 
+                 null, 
+                 property, 
+                 Optional.empty());
 
-		}
-       
-        return waterTaxJson;
-    }
+         if (!waterConnectionJson.isEmpty()) {
+             saveGisRecord(waterConnectionJson);
+         }
+     } catch (Exception e) {
+         log.error("Error processing water connection update: ", e);
+     }
+ }
+
+ private WaterConnection getWaterConnection(String consumerCode, String tenantId, RequestInfo requestInfo) {
+     SearchCriteria criteria = SearchCriteria.builder()
+             .connectionNumber(Sets.newHashSet(consumerCode))
+             .tenantId(tenantId)
+             .build();
+
+     List<WaterConnection> connections = waterDaoImpl.getWaterConnectionList(criteria, requestInfo);
+     return connections.isEmpty() ? null : connections.get(0);
+ }
+
+ private Property validateProperty(WaterConnection connection, RequestInfo requestInfo) {
+     WaterConnectionRequest request = WaterConnectionRequest.builder()
+             .waterConnection(connection)
+             .requestInfo(requestInfo)
+             .build();
+     return validateProperty.getOrValidateProperty(request);
+ }
+
+ private Optional<Object> searchGisRecords(WaterConnection connection, String tenantId) {
+     StringBuilder searchUrl = new StringBuilder(configs.getGisHost())
+             .append(configs.getGissearchPath())
+             .append("?").append(CONNECTION_NO).append("=").append(connection.getConnectionNo())
+             .append("&").append(TENANT_ID).append("=").append(tenantId);
+
+     return serviceRequestRepository.saveGisData(searchUrl, connection);
+ }
+
+ private BigDecimal getPreviousAmountFromGis(Object gisResponse, String yearKey) {
+     try {
+         String jsonResponse = mapper.writeValueAsString(gisResponse);
+         JsonNode dataArray = mapper.readTree(jsonResponse);
+         if (dataArray.isArray()) {
+             for (JsonNode entry : dataArray) {
+                 if (yearKey.equals(entry.path(ASSESSMENT_YEAR).asText())) {
+                     JsonNode amountNode = entry.path(AMOUNT_PAID);
+                     if (!amountNode.isMissingNode()) {
+                         return new BigDecimal(amountNode.asText());
+                     }
+                 }
+             }
+         }
+     } catch (Exception e) {
+         log.error("Error extracting previous amount for period {}: {}", yearKey, e.getMessage());
+     }
+     return BigDecimal.ZERO;
+ }
+
+ private Map<String, Object> buildWaterTaxJson(WaterConnectionRequest request,
+                                               WaterConnection connection,
+                                               PaymentRequest paymentRequest,
+                                               Property property,
+                                               Optional<Object> gisResponse) {
+     return buildWaterTaxJson(request, connection, paymentRequest, property, gisResponse, null);
+ }
+
+ private Map<String, Object> buildWaterTaxJson(WaterConnectionRequest request,
+                                               WaterConnection connection,
+                                               PaymentRequest paymentRequest,
+                                               Property property,
+                                               Optional<Object> gisResponse,
+                                               Map<String, BigDecimal> amountMap) {
+     if (connection == null) {
+         if (request != null) {
+             connection = request.getWaterConnection();
+         } else if (paymentRequest != null) {
+             connection = getConnectionFromPayment(paymentRequest);
+         }
+     }
+
+     Map<String, Object> json = new HashMap<>();
+     json.put("connectionno", connection.getConnectionNo());
+     json.put("tenantid", connection.getTenantId());
+     json.put("propertyid", connection.getPropertyId());
+
+     if (property != null) {
+         addPropertyDetails(json, property);
+         addAddressDetails(json, property);
+     }
+
+     if (paymentRequest != null && amountMap != null) {
+         addPaymentDetails(json, paymentRequest, amountMap, gisResponse);
+     }
+
+     return json;
+ }
+
+ private void addPropertyDetails(Map<String, Object> json, Property property) {
+     json.put("surveyid", property.getSurveyId());
+     json.put("oldpropertyid", property.getOldPropertyId());
+     json.put("nooffloors", property.getNoOfFloors());
+     json.put("plotsize", property.getLandArea());
+     json.put("superbuilduparea", property.getSuperBuiltUpArea());
+     json.put("propertytype", property.getPropertyType());
+     json.put("propertyusagetype", property.getUsageCategory());
+     json.put("ownershipcategory", property.getOwnershipCategory());
+ }
+
+ private void addAddressDetails(Map<String, Object> json, Property property) {
+     Address address = property.getAddress();
+     if (address == null) return;
+
+     Locality locality = address.getLocality();
+     String localityName = locality != null ? locality.getName() : null;
+
+     json.put("address", buildFullAddress(address));
+     json.put("localityname", localityName);
+     json.put("blockname", localityName);
+ }
+
+ private String buildFullAddress(Address address) {
+     StringBuilder sb = new StringBuilder();
+     appendAddressPart(sb, address.getDoorNo());
+     appendAddressPart(sb, "Plot " + address.getPlotNo());
+     appendAddressPart(sb, address.getBuildingName());
+     appendAddressPart(sb, address.getStreet());
+
+     if (address.getLocality() != null) {
+         appendAddressPart(sb, address.getLocality().getName());
+     }
+
+     appendAddressPart(sb, "Landmark: " + address.getLandmark());
+     appendAddressPart(sb, address.getCity());
+     appendAddressPart(sb, address.getDistrict());
+     appendAddressPart(sb, address.getRegion());
+     appendAddressPart(sb, address.getState());
+     appendAddressPart(sb, address.getCountry());
+     appendAddressPart(sb, "PIN - " + address.getPincode());
+
+     if (sb.length() > 0) sb.setLength(sb.length() - 2);
+     return sb.toString();
+ }
+
+ private void appendAddressPart(StringBuilder sb, String part) {
+     if (part != null && !part.isEmpty()) {
+         sb.append(part).append(", ");
+     }
+ }
+
+ private void addPaymentDetails(Map<String, Object> json,
+                                PaymentRequest paymentRequest,
+                                Map<String, BigDecimal> amountMap,
+                                Optional<Object> gisResponse) {
+     List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
+     if (paymentDetails == null || paymentDetails.isEmpty()) {
+         json.put("paymentdate", null);
+         json.put("receiptnumber", null);
+         return;
+     }
+
+     PaymentDetail detail = paymentDetails.get(0);
+     json.put("paymentdate", detail.getReceiptDate());
+     json.put("receiptnumber", detail.getReceiptNumber());
+
+     if (amountMap != null) {
+         json.put(AMOUNT_PAID, amountMap.getOrDefault(AMOUNT_PAID, BigDecimal.ZERO));
+         json.put(BILL_AMOUNT, amountMap.getOrDefault(BILL_AMOUNT, BigDecimal.ZERO));
+     }
+ }
+
+ private WaterConnection getConnectionFromPayment(PaymentRequest paymentRequest) {
+     String consumerCode = paymentRequest.getPayment().getPaymentDetails().get(0).getBill().getConsumerCode();
+     String tenantId = paymentRequest.getPayment().getTenantId();
+
+     SearchCriteria criteria = SearchCriteria.builder()
+             .connectionNumber(Sets.newHashSet(consumerCode))
+             .tenantId(tenantId)
+             .build();
+
+     List<WaterConnection> connections = waterDaoImpl.getWaterConnectionList(
+             criteria, paymentRequest.getRequestInfo());
+
+     return connections.isEmpty() ? null : connections.get(0);
+ }
+
+ private void saveGisRecord(Map<String, Object> record) {
+     StringBuilder url = new StringBuilder(configs.getGisHost())
+             .append(configs.getGiscreatePath());
+
+     Optional<Object> response = serviceRequestRepository.saveGisData(url, record);
+     if (response.isPresent()) {
+         log.info("Successfully saved GIS record for connection: {}", record.get("connectionno"));
+     } else {
+         log.warn("Failed to save GIS record for connection: {}", record.get("connectionno"));
+     }
+ }
 }

@@ -337,7 +337,15 @@ public class PropertyService {
 			 * If no workflow then update property directly with mutation information
 			 */
 			producer.push(config.getUpdatePropertyTopic(), request);
-		}
+			
+			if (request.getProperty().getWorkflow().getAction().equalsIgnoreCase("APPROVE")) {
+				
+				producer.push(config.getGisPropertyTopic(), request);
+
+			} 
+	//	}
+
+		
 	}
 
 	/*

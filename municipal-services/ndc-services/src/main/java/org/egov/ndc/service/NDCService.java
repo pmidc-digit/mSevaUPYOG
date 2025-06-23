@@ -122,8 +122,11 @@ public class NDCService {
 		if (documents != null) {
 			Set<String> existingDocumentUuids = getExistingUuids("eg_ndc_documents", documents.stream().map(DocumentRequest::getUuid).collect(Collectors.toList()));
 			for (DocumentRequest document : documents) {
-				if (document.getUuid() == null || !existingDocumentUuids.contains(document.getUuid())) {
-					document.setUuid(UUID.randomUUID().toString());
+				if (document.getUuid() == null ){
+					throw new CustomException("DOCUMENT_ID_ERR", "Please provide a valid document id.");
+				}
+				if( !existingDocumentUuids.contains(document.getUuid())) {
+					document.setUuid(document.getUuid());
 					document.setApplicantId(applicant.getUuid());
 					document.setCreatedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
 					document.setCreatedtime(System.currentTimeMillis());

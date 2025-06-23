@@ -31,7 +31,7 @@ public class NdcQueryBuilder {
 		if (StringUtils.isNotBlank(criteria.getTenantId())) {
 			addClauseIfRequired(query, whereAdded);
 			whereAdded = true;
-			query.append(" a.tenantid = ?");
+			query.append("( a.tenantid = ? or a.tenantid = 'pb.punjab' )");
 			preparedStmtList.add(criteria.getTenantId());
 		}
 

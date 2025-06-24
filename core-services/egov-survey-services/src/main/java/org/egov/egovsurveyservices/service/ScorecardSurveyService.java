@@ -1,15 +1,15 @@
 package org.egov.egovsurveyservices.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.*;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
-
 import org.apache.commons.lang3.StringUtils;
+import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.User;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
 import org.egov.egovsurveyservices.repository.QuestionRepository;
@@ -18,6 +18,8 @@ import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
 import org.egov.egovsurveyservices.web.models.enums.SurveyStatus;
+import org.egov.egovsurveyservices.web.models.user.UserSearchRequest;
+import org.egov.egovsurveyservices.web.models.user.UserSearchResponseContent;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,6 +38,9 @@ public class ScorecardSurveyService {
     private Producer producer;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private QuestionRepository questionRepository;
 
     @Autowired
@@ -49,6 +54,13 @@ public class ScorecardSurveyService {
 
     @Autowired
     private ApplicationProperties applicationProperties;
+
+    @Autowired
+    private ObjectMapper mapper;
+    /**
+     * Validates the request object and checks if all questions exist in the database
+     *
+     * @param surveyRequest Request object containing details of survey
 
     /**
      * Creates the survey based on the request object and pushes to Create Scorecard Survey Topic
@@ -183,6 +195,16 @@ public class ScorecardSurveyService {
         surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);
         String uuid = answerRequest.getUser().getUuid();
         surveyValidator.validateAnswers(surveyResponse);
+        Map<String, UserSearchResponseContent> stringUserMap=null;
+        UserSearchResponseContent user;
+        try {
+            stringUserMap = userService.searchUser(answerRequest.getRequestInfo(), Collections.singletonList(uuid));
+            user = stringUserMap.get(uuid);
+        } catch (Exception e) {
+            user = new UserSearchResponseContent();
+            user.setUuid(uuid);
+        }
+        surveyResponse.setUserDetails(mapper.convertValue(user, JsonNode.class));
 
         AuditDetails auditDetails = AuditDetails.builder()
                 .createdBy(uuid)
@@ -190,6 +212,7 @@ public class ScorecardSurveyService {
                 .createdTime(System.currentTimeMillis())
                 .lastModifiedTime(System.currentTimeMillis())
                 .build();
+        UserSearchResponseContent finalUser = user;
         List<ScorecardSectionResponse> enrichedSectionResponses = surveyResponse.getAnswers().stream()
                 .collect(Collectors.groupingBy(AnswerNew::getSectionUuid)).entrySet().stream()
                 .map(entry -> {
@@ -236,11 +259,11 @@ public class ScorecardSurveyService {
                                         detail.setAnswerUuid(answer.getUuid());
                                         detail.setAuditDetails(auditDetails);
                                         detail.setAnswerType(question.getType().toString());
+                                        detail.setUserDetails(mapper.convertValue(finalUser, JsonNode.class));
                                     });
                                 }
 
                                 surveyResponse.setCitizenId(uuid);
-
                                 return ScorecardQuestionResponse.builder()
                                         .questionUuid(answer.getQuestionUuid())
                                         .questionStatement(question.getQuestionStatement())

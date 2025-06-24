@@ -2,6 +2,7 @@ package org.egov.egovsurveyservices.web.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 import org.egov.egovsurveyservices.web.models.enums.SurveyStatus;
 
@@ -32,4 +33,6 @@ public class SurveyResponseNew {
     private SurveyStatus status;
     @JsonProperty("answers")
     private List<AnswerNew> answers;
+    @JsonProperty("userDetails")
+    private Object userDetails;
 }

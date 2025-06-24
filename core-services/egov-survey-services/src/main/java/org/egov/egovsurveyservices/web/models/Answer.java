@@ -2,6 +2,7 @@ package org.egov.egovsurveyservices.web.models;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
 
 import java.util.List;

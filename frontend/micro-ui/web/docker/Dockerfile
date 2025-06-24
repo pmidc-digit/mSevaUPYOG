@@ -1,7 +1,7 @@
 FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.0.28
+RUN yarn add @mseva/digit-ui-libraries@1.0.29
 RUN yarn add @mseva/digit-ui-module-bills@1.0.5
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.3
 RUN yarn add @mseva/digit-ui-module-dss@1.0.3
@@ -17,7 +17,7 @@ RUN yarn add @mseva/digit-ui-module-commonpt@1.0.3
 RUN yarn add @mseva/digit-ui-module-ptr@1.0.36
 RUN yarn add @mseva/digit-ui-module-swach@1.0.35
 RUN yarn add @mseva/digit-ui-module-pt@1.0.17
-RUN yarn add @mseva/digit-ui-module-tl@1.0.6
+RUN yarn add @mseva/digit-ui-module-tl@1.0.7
 RUN yarn add @mseva/digit-ui-module-obps@1.0.7
 RUN yarn add @mseva/digit-ui-module-sv@1.0.13
 RUN yarn add @mseva/upyog-ui-module-ads@1.0.15

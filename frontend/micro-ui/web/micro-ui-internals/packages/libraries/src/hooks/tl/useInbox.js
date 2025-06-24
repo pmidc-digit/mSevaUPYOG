@@ -83,7 +83,7 @@ const useTLInbox = ({ tenantId, filters = {}, config }) => {
           status: application.businessObject.status,
           owner: application.ProcessInstance?.assigner?.name,
           sla: application?.businessObject?.status.match(/^(EXPIRED|APPROVED|CANCELLED)$/)
-            ? "CS_NA"
+            ? "0"
             : Math.round(application.ProcessInstance?.businesssServiceSla / (24 * 60 * 60 * 1000)),
         })),
         totalCount: data.totalCount,

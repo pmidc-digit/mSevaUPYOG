@@ -67,10 +67,10 @@ const ApplicationDetails = (props) => {
       if(action?.action=="EDIT PAY 2" && window.location.href.includes("bpa")){
         window.location.assign(window.location.href.split("bpa")[0]+"editApplication/bpa"+window.location.href.split("bpa")[1]);
       }
-      if(action?.isToast){
-        setShowToast({ key: "error", error: { message: action?.toastMessage } });
-        setTimeout(closeToast, 5000);
-      }
+      // if(action?.isToast){
+      //   setShowToast({ key: "error", error: { message: action?.toastMessage } });
+      //   setTimeout(closeToast, 5000);
+      // }
       else if (action?.isWarningPopUp) {
         setWarningPopUp(true);
       } else if (action?.redirectionUrll) {

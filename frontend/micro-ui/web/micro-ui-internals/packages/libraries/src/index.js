@@ -58,6 +58,8 @@ import { PTRService } from "./services/elements/PTR";
 import { SVService } from "./services/elements/SV";
 import { ADSServices } from "./services/elements/ADS";
 
+import { NDCService } from "./services/elements/NDC";
+
 const setupLibraries = (Library, props) => {
   window.Digit = window.Digit || {};
   window.Digit[Library] = window.Digit[Library] || {};
@@ -121,6 +123,7 @@ const initLibraries = () => {
   setupLibraries("AccessControlService", AccessControlService);
   setupLibraries("BillServices", BillServices);
   setupLibraries("AuditService", AuditService);
+  setupLibraries("NDCService", NDCService);
   return new Promise((resolve) => {
     initI18n(resolve);
   });

@@ -23,17 +23,27 @@ function SelectNDCReason({ config, onSelect, userType, formData, setError, formS
   const { t } = useTranslation();
   // const firstTimeRef = useRef(true);
 
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS("pb", "NDC", [{ name: "Reasons" }]);
   const ndcReasonOptions = useMemo(() => {
-    return [
-      { i18nKey: "NDC_REASON_1", code: "NDC_REASON_1" },
-      { i18nKey: "NDC_REASON_2", code: "NDC_REASON_2" },
-      { i18nKey: "NDC_REASON_3", code: "NDC_REASON_3" },
-    ];
-  }, []);
+      const MenuListOfReasons = []
+      if(menuList?.NDC?.Reasons?.length > 0){
+        menuList?.NDC?.Reasons?.map((val) => {
+          MenuListOfReasons.push({
+            i18nKey: val?.code,
+            code: val?.code
+          })
+        })
+      }
+      return MenuListOfReasons
+  }, [menuList]);
 
   useEffect(() => {
     onSelect("NDCReason", ndcReason, config);
   },[ndcReason])
+
+  if(isLoading){
+    return (<Loader />)
+  }
   
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };

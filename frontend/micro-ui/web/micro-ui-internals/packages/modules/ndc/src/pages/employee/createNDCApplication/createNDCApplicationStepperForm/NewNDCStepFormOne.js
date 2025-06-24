@@ -17,7 +17,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const missingFields = validateStepData(currentStepData);
 
     if (missingFields.length > 0) {
-      setError(`Please fill the following fields: ${missingFields.join(", ")}`);
+      setError(`Please fill the following fields: ${missingFields[0]}`);
       setShowToast(true);
       return;
     }
@@ -35,6 +35,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const NDCReason = data?.NDCReason || {};
 
     // Mandatory Field Checks
+    if (!cpt?.id) missingFields.push("Property ID");
+    if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push("Please Search Property ID");
     if (!propertyDetails?.firstName) missingFields.push("First Name");
     if (!propertyDetails?.lastName) missingFields.push("Last Name");
     if (!propertyDetails?.mobileNumber) missingFields.push("Mobile Number");
@@ -43,8 +45,30 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     if (propertyDetails?.waterConnection?.length === 0) missingFields.push("Water Connection");
     if (propertyDetails?.sewerageConnection?.length === 0) missingFields.push("Sewerage Connection");
     if (!NDCReason?.code) missingFields.push("NDC Reason");
-    if (!cpt?.id) missingFields.push("CPT ID");
-    if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push("CPT Details");
+
+    if(propertyDetails?.waterConnection?.length > 0){
+      propertyDetails?.waterConnection?.map((value, index) => {
+        if(!value?.billData?.id) invalidFields.push(`Please Check Status of Water Connection ${value?.connectionNo}`);
+      })
+    }
+
+    if(propertyDetails?.sewerageConnection?.length > 0){
+      propertyDetails?.sewerageConnection?.map((value, index) => {
+        if(!value?.billData?.id) invalidFields.push(`Please Check Status of Sewerage Connection ${value?.connectionNo}`);
+      })
+    }
+
+    if(propertyDetails?.waterConnection?.length > 0){
+      propertyDetails?.waterConnection?.map((value, index) => {
+        if(value?.billData?.id && value?.billData?.totalAmount > 0) invalidFields.push(`Please Pay Dues of Water Connection ${value?.connectionNo}`);
+      })
+    }
+
+    if(propertyDetails?.sewerageConnection?.length > 0){
+      propertyDetails?.sewerageConnection?.map((value, index) => {
+        if(value?.billData?.id && value?.billData?.totalAmount > 0) invalidFields.push(`Please Pay Dues of Sewerage Connection ${value?.connectionNo}`);
+      })
+    }
 
     // Format Validations
     const nameRegex = /^[A-Za-z\s]+$/;

@@ -9,13 +9,13 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
 
   const { action = "create" } = Digit.Hooks.useQueryParams();
 
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "PropertyTax", [
+  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", [
     "Documents",
   ]);
 
-  // console.log("Documents data:", stateId, tenantId);
+  console.log("Documents data:", data);
 
-  const ndcDocuments = data?.PropertyTax?.Documents;
+  const ndcDocuments = data?.NDC?.Documents;
 
   const goNext = () => {
     onSelect(config.key, { documents, ndcDocumentsLength: ndcDocuments?.length });
@@ -86,7 +86,7 @@ function SelectDocument({
     setFile(e.target.files[0]);
   }
   const { dropdownData } = doc;
-  const { dropdownFilter, enabledActions, filterCondition } = doc?.additionalDetails;
+  // const { dropdownFilter, enabledActions, filterCondition } = doc?.additionalDetails;
   var dropDownData = dropdownData;
   let hideInput = false;
 
@@ -171,42 +171,42 @@ function SelectDocument({
     })();
   }, [file]);
 
-  if (filterCondition) {
-    const { filterValue, jsonPath, onArray, arrayAttribute, formDataPath, formArrayAttrPath } = filterCondition;
-    if (action === "create") {
-      const value = formDataPath?.reduce((acc, key) => {
-        if (key.charAt(0).toUpperCase() + key.slice(1) === "PropertyType") return acc["PropertyType"];
-        return acc?.[key];
-      }, formData);
-      if (value) {
-        if (onArray) {
-          const valueArr = value?.map((e) => formArrayAttrPath?.reduce((acc, f) => acc?.[f], e) || e);
-          hideInput = valueArr?.some((e) => filterValue.includes(e));
-        } else {
-          hideInput = filterValue?.includes(value);
-        }
-        if (hideInput !== isHidden) setHidden(hideInput);
-        if (hideInput) return null;
-      }
-    }
-  }
+  // if (filterCondition) {
+  //   const { filterValue, jsonPath, onArray, arrayAttribute, formDataPath, formArrayAttrPath } = filterCondition;
+  //   if (action === "create") {
+  //     const value = formDataPath?.reduce((acc, key) => {
+  //       if (key.charAt(0).toUpperCase() + key.slice(1) === "PropertyType") return acc["PropertyType"];
+  //       return acc?.[key];
+  //     }, formData);
+  //     if (value) {
+  //       if (onArray) {
+  //         const valueArr = value?.map((e) => formArrayAttrPath?.reduce((acc, f) => acc?.[f], e) || e);
+  //         hideInput = valueArr?.some((e) => filterValue.includes(e));
+  //       } else {
+  //         hideInput = filterValue?.includes(value);
+  //       }
+  //       if (hideInput !== isHidden) setHidden(hideInput);
+  //       if (hideInput) return null;
+  //     }
+  //   }
+  // }
 
-  if (dropdownFilter) {
-    const { formDataPath, formArrayAttrPath, onArray } = dropdownFilter;
-    if (action === "create") {
-      const arr = formDataPath;
-      const value = arr?.reduce((acc, key) => acc?.[key], formData);
-      const attrForFormArray = formArrayAttrPath;
+  // if (dropdownFilter) {
+  //   const { formDataPath, formArrayAttrPath, onArray } = dropdownFilter;
+  //   if (action === "create") {
+  //     const arr = formDataPath;
+  //     const value = arr?.reduce((acc, key) => acc?.[key], formData);
+  //     const attrForFormArray = formArrayAttrPath;
 
-      if (value) {
-        if (!onArray) dropDownData = dropdownData.filter((e) => e.parentValue.includes(value));
-        else {
-          const valueMap = value.map((e) => attrForFormArray?.reduce((acc, key) => acc[key], e) || e);
-          dropDownData = dropdownData.filter((e) => e.parentValue.some((val) => valueMap.includes(val)));
-        }
-      }
-    }
-  }
+  //     if (value) {
+  //       if (!onArray) dropDownData = dropdownData.filter((e) => e.parentValue.includes(value));
+  //       else {
+  //         const valueMap = value.map((e) => attrForFormArray?.reduce((acc, key) => acc[key], e) || e);
+  //         dropDownData = dropdownData.filter((e) => e.parentValue.some((val) => valueMap.includes(val)));
+  //       }
+  //     }
+  //   }
+  // }
 
   return (
     <div style={{ marginBottom: "24px" }}>

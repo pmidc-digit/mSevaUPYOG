@@ -29,7 +29,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     getValues,
   } = useForm();
   const { t } = useTranslation();
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const tenantId = window.location.href.includes("citizen")? window.localStorage.getItem("CITIZEN.CITY"):  window.localStorage.getItem("Employee.tenant-id");
 
   const [showToast, setShowToast] = useState(null);
   // const [error, setError] = useState("");
@@ -442,6 +442,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                   // setFocusIndex({ index: -1 });
                   props.onBlur(e);
                 }}
+                disabled={formData?.cpt?.details?.owners?.[0]?.name?.split(" ")?.[0]?.length>0}
               />
             )}
           />
@@ -467,6 +468,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                   // setFocusIndex({ index: -1 });
                   props.onBlur(e);
                 }}
+                disabled={formData?.cpt?.details?.owners?.[0]?.name?.split(" ")?.[1]?.length>0}
               />
             )}
           />
@@ -491,6 +493,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                   // setFocusIndex({ index: -1 });
                   props.onBlur(e);
                 }}
+                disabled={formData?.cpt?.details?.owners?.[0]?.email?.length>0}
               />
             )}
           />
@@ -515,6 +518,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                   // setFocusIndex({ index: -1 });
                   props.onBlur(e);
                 }}
+                disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber?.length>0}
               />
             )}
           />
@@ -539,6 +543,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                   // setFocusIndex({ index: -1 });
                   props.onBlur(e);
                 }}
+                disabled={formData?.cpt?.details?.owners?.[0]?.permanentAddress?.length>0}
               />
             )}
           />

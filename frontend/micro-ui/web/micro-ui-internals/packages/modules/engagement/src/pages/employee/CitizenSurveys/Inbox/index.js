@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState} from "react";
+import React, { Fragment, useCallback, useEffect, useMemo, useReducer, useState } from "react";
 import { InboxComposer, DocumentIcon, Toast, Header } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFieldsComponent";
@@ -37,7 +37,7 @@ const Inbox = ({ parentRoute }) => {
   };
   const tableOrderFormDefaultValues = {
     sortBy: "",
-    limit:  window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
     offset: 0,
     sortOrder: "DESC",
   };
@@ -102,19 +102,14 @@ const Inbox = ({ parentRoute }) => {
   };
 
   let { data: { Surveys = [], TotalCount } = {}, isLoading: isInboxLoading } = Digit.Hooks.survey.useSurveyInbox(formState);
-const [sortedSurveys,setSortedSurveys]=useState([])
-   useEffect(()=>{
- if(Surveys.length>0){
-   
- 
-     const sorted = [...Surveys].sort(
-       (a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime
-     );
- Surveys=sorted
-     setSortedSurveys(sorted);
- 
- }
-   },[Surveys])
+  const [sortedSurveys, setSortedSurveys] = useState([]);
+  useEffect(() => {
+    if (Surveys.length > 0) {
+      const sorted = [...Surveys].sort((a, b) => a.auditDetails.lastModifiedTime - b.auditDetails.lastModifiedTime);
+      Surveys = sorted;
+      setSortedSurveys(sorted);
+    }
+  }, [Surveys]);
   const PropsForInboxLinks = {
     logoIcon: <DocumentIcon />,
     headerText: "CS_COMMON_SURVEYS",
@@ -214,16 +209,16 @@ const [sortedSurveys,setSortedSurveys]=useState([])
       onPageSizeChange,
       formState,
       totalCount: TotalCount,
-      table: Surveys,
+      table: sortedSurveys,
       noResultsMessage: "CS_SURVEYS_NOT_FOUND",
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
       setShowToast,
-      onSortingByData
+      onSortingByData,
     },
   });
 
-  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table: Surveys, setShowToast, });
+  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table: sortedSurveys, setShowToast });
 
   //For the card displayed after clicking the delete survey button:
   //On clicking delete button under "Delete Survey" column in a table row, a toast with Yes & No buttons is opened:

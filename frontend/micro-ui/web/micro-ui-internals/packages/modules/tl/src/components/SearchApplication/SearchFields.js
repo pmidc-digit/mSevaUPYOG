@@ -1,15 +1,25 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState, useEffect } from "react";
 import { Controller, useWatch } from "react-hook-form";
 import { TextInput, SubmitBar, DatePicker, SearchField, Dropdown, Loader } from "@mseva/digit-ui-react-components";
 
 const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) => {
   let validation = {};
   const allCities = Digit.Hooks.tl.useTenants();
-  const cities = allCities.filter((city) => city.code === tenantId)
+  //const cities = allCities.filter((city) => city.code === tenantId)
+  const getCities = () => allCities?.filter((e) => e.code === Digit.ULBService.getCurrentTenantId()) || [];
+
   const { data: applicationTypes, isLoading: applicationTypesLoading } = Digit.Hooks.tl.useMDMS.applicationTypes(tenantId);
 
-  const applicationType = useWatch({ control, name: "applicationType" });
+  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+    getCities()[0]?.code,
+    "admin",
+    {
+      enabled: !!getCities()[0],
+    },
+    t
+  );
 
+  const applicationType = useWatch({ control, name: "applicationType" });
   let businessServices = [];
   if (applicationType && applicationType?.code === "RENEWAL") businessServices = ["EDITRENEWAL", "DIRECTRENEWAL"];
   else if (applicationType && applicationType?.code === "NEW") businessServices = ["NewTL"];
@@ -17,6 +27,9 @@ const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) =
 
   const { data: statusData, isLoading } = Digit.Hooks.useApplicationStatusGeneral({ businessServices, tenantId }, {});
   let applicationStatuses = [];
+
+  // console.log("statusData in TL: ", statusData);
+  // console.log("applicationStatuses in TL: ", applicationStatuses);
 
   statusData &&
     statusData?.otherRoleStates?.map((status) => {
@@ -34,7 +47,7 @@ const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) =
     <>
       <SearchField>
         <label>{t("TL_HOME_SEARCH_RESULTS_APP_NO_LABEL")}</label>
-        <TextInput name="applicationNumber" inputRef={register({})} />
+        <TextInput name="applicationNumber" inputRef={register({})} placeholder={t("TL_HOME_SEARCH_RESULTS_APP_NO_PLACEHOLDER")} />
       </SearchField>
       {applicationTypesLoading ? (
         <Loader />
@@ -45,32 +58,47 @@ const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) =
             control={control}
             name="applicationType"
             render={(props) => (
-              <Dropdown selected={props.value} select={props.onChange} onBlur={props.onBlur} option={applicationTypes} optionKey="i18nKey" t={t} />
+              <Dropdown
+                selected={props.value}
+                select={props.onChange}
+                onBlur={props.onBlur}
+                option={applicationTypes}
+                optionKey="i18nKey"
+                t={t}
+                placeholder={t("TL_APPLICATION_TYPE_PLACEHOLDER")}
+              />
             )}
           />
         </SearchField>
       )}
       <SearchField>
-        <label>{t("TL_APPLICATION_FROM_DATE")}</label>
+        <label>{t("TL_COMMON_FROM_DATE_LABEL")}</label>
         <Controller render={(props) => <DatePicker date={props.value} onChange={props.onChange} />} name="fromDate" control={control} />
       </SearchField>
       <SearchField>
-        <label>{t("TL_APPLICATION_TO_DATE")}</label>
+        <label>{t("TL_COMMON_TO_DATE_LABEL")}</label>
         <Controller render={(props) => <DatePicker date={props.value} onChange={props.onChange} />} name="toDate" control={control} />
       </SearchField>
       <SearchField>
-        <label>{t("TL_TRADE_LICENSE_LABEL")}</label>
-        <TextInput name="licenseNumbers" inputRef={register({})} />
+        <label>{t("TL_HOME_SEARCH_RESULTS_TL_NO_LABEL")}</label>
+        <TextInput name="licenseNumbers" inputRef={register({})} placeholder={t("TL_HOME_SEARCH_RESULTS_TL_NO_PLACEHOLDER")} />
       </SearchField>
       <SearchField>
-        <label>{t("TL_TRADE_OWNER_S_NUMBER_LABEL")}</label>
-        <TextInput name="mobileNumber" inputRef={register({})}  type="mobileNumber" componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>} maxlength={10} 
-        // {...(validation = {pattern: "[6-9]{1}[0-9]{9}",type: "tel",title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),})}
+        <label>{t("TL_HOME_SEARCH_RESULTS_OWN_MOB_LABEL")}</label>
+        <TextInput
+          name="mobileNumber"
+          inputRef={register({ pattern: { value: /^[6-9]\d{9}$/, message: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") } })}
+          type="mobileNumber"
+          componentInFront={<div className="TL_HOME_SEARCH_RESULTS_OWN_MOB_PLACEHOLDER">+91</div>}
+          maxlength={10}
+          placeholder={t("TL_HOME_SEARCH_RESULTS_OWN_MOB_PLACEHOLDER")}
+          maxLength={10}
+          // {...(validation = {pattern: "[6-9]{1}[0-9]{9}",type: "tel",title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),})}
         />
       </SearchField>
       <SearchField>
-        <label>{t("TL_TRADE_OWNER_S_NAME_LABEL")}</label>
-        <TextInput name="name" inputRef={register({})} />
+        <label>{t("TL_LOCALIZATION_OWNER_NAME")}</label>
+        <TextInput name="name" inputRef={register({})} placeholder={t("TL_REPORT_APPL_STATUS_PLACEHOLDER")} />
       </SearchField>
       {isLoading ? (
         <Loader />
@@ -81,23 +109,39 @@ const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) =
             control={control}
             name="status"
             render={(props) => (
-              <Dropdown selected={props.value} select={props.onChange} onBlur={props.onBlur} option={applicationStatuses} optionKey="i18nKey" t={t} />
+              <Dropdown
+                selected={props.value}
+                select={props.onChange}
+                onBlur={props.onBlur}
+                option={applicationStatuses}
+                optionKey="i18nKey"
+                t={t}
+                placeholder={t("TL_HOME_SEARCH_RESULTS_APP_STATUS_PLACEHOLDER")}
+              />
             )}
           />
         </SearchField>
       )}
-      
-        <SearchField>
-          <label>{t("TL_LOCALIZATION_LOCALITY")}</label>
-          <Controller
-            control={control}
-            name="locality"
-            render={(props) => (
-              <Dropdown selected={props.value} select={props.onChange} onBlur={props.onBlur} option={allCities} optionKey="i18nKey" t={t} />
-            )}
-          />
-        </SearchField>
-      
+
+      <SearchField>
+        <label>{t("TL_HOME_SEARCH_RESULTS__LOCALITY")}</label>
+        <Controller
+          control={control}
+          name="locality"
+          render={(props) => (
+            <Dropdown
+              selected={props.value}
+              select={props.onChange}
+              onBlur={props.onBlur}
+              option={fetchedLocalities}
+              optionKey="i18nkey"
+              t={t}
+              placeholder={t("TL_HOME_SEARCH_RESULTS_LOCALITY__PLACEHOLDER")}
+            />
+          )}
+        />
+      </SearchField>
+
       {/* <SearchField>
         <label>{t("TL_LOCALIZATION_TRADE_NAME")}</label>
         <TextInput name="tradeName" inputRef={register({})} />
@@ -124,7 +168,7 @@ const SearchFields = ({ register, control, reset, tenantId, t, previousPage }) =
             previousPage();
           }}
         >
-          {t(`ES_COMMON_CLEAR_ALL`)}
+          {t(`ES_COMMON_NEW_CLEAR_ALL`)}
         </p>
       </SearchField>
     </>

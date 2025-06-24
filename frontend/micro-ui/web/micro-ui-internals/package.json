@@ -83,7 +83,7 @@
     "build:obps": "cd packages/modules/obps && yarn build",
     "build:engagement": "cd packages/modules/engagement && yarn build",
     "build:noc": "cd packages/modules/noc && yarn build",
-    "buildD:ws": "cd packages/modules/ws && yarn build",
+    "build:ws": "cd packages/modules/ws && yarn build",
     "buildd:bills": "cd packages/modules/bills && yarn build",
     "buildR:reports": "cd packages/modules/reports && yarn build",
     "buildD:sv": "cd packages/modules/sv && yarn build",

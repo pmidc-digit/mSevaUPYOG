@@ -32,19 +32,19 @@ const DesktopInbox = ({
     // ) : (
     //   <span className="sla-cell-success">{value}</span>
     // );
-      if (value < 0) {
-    return (
-      <span className="sla-cell-error" style={{ color: "#a82227", padding:0}}>
-        {Math.abs(value)} hours left
-      </span>
-    );
-  } else {
-    return (
-      <span className="sla-cell-success" style={{padding:0}}>
-        {value} hour overdue
-      </span>
-    );
-  }
+    if (value < 0) {
+      return (
+        <span className="sla-cell-error" style={{ color: "#a82227", padding: 0 }}>
+          {Math.abs(value)} hours overdue
+        </span>
+      );
+    } else {
+      return (
+        <span className="sla-cell-success" style={{ padding: 0 }}>
+          {value} hour left
+        </span>
+      );
+    }
   };
   const GetDateSlaCell = (value) => {
     return value < 0 ? <span className="sla-cell-error">{value || ""}</span> : <span className="sla-cell-success">{value || ""}</span>;
@@ -169,7 +169,7 @@ const DesktopInbox = ({
         onNextPage={onNextPage}
         onPrevPage={onPrevPage}
         totalRecords={totalRecords}
-        onPageSizeChagne={onPageSizeChange}
+        onPageSizeChange={onPageSizeChange}
         currentPage={currentPage}
         pageSizeLimit={pageSizeLimit}
       />

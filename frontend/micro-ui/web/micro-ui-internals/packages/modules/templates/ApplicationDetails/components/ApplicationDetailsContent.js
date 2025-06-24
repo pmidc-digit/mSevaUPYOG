@@ -11,7 +11,7 @@ import {
   StatusTable,
   LinkButton,
   ActionBar,
-  SubmitBar,
+  SubmitBar,,
 } from "@mseva/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useEffect, useState } from "react";
@@ -35,10 +35,11 @@ import WSFeeEstimation from "./WSFeeEstimation";
 // import WSInfoLabel from "../../../ws/src/pageComponents/WSInfoLabel";
 import DocumentsPreview from "./DocumentsPreview";
 import InfoDetails from "./InfoDetails";
-import ViewBreakup from"./ViewBreakup";
-import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bill-details/arrear-summary"
+import ViewBreakup from "./ViewBreakup";
+import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bill-details/arrear-summary";
 import AssessmentHistory from "./AssessmentHistory";
-import { getOrderDocuments  } from "../../../obps/src/utils";
+import { getOrderDocuments } from "../../../obps/src/utils";
+import DcbTable from "./DcbTable";
 import ApplicationHistory from "./ApplicationHistory";
 import PaymentHistory from "./PaymentHistory";
 function ApplicationDetailsContent({
@@ -57,7 +58,7 @@ function ApplicationDetailsContent({
   paymentsList,
   oldValue,
   isInfoLabel = false,
-  propertyId
+  propertyId,
 }) {
   const { t } = useTranslation();
   const history = useHistory();
@@ -65,6 +66,9 @@ function ApplicationDetailsContent({
   const [showToast, setShowToast] = useState(null);
   const [payments,setPayments]=useState([])
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
+  let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
+  const ownersSequences = applicationDetails?.applicationData?.owners;
+  console.log("appl", applicationDetails);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -164,9 +168,9 @@ console.log(filteredAssessment);
       };
       return <TLCaption data={caption} />;
     } else if (window.location.href.includes("/obps/") || window.location.href.includes("/noc/") || window.location.href.includes("/ws/")) {
-      const privacy = { 
-        uuid: checkpoint?.assignes?.[0]?.uuid, 
-        fieldName: "mobileNumber", 
+      const privacy = {
+        uuid: checkpoint?.assignes?.[0]?.uuid,
+        fieldName: "mobileNumber",
         model: "User",
         showValue: false,
         loadData: {
@@ -179,7 +183,7 @@ console.log(filteredAssessment);
             let resultstring = "";
             resultstring = `+91 ${_.get(res, `ProcessInstances[${index}].assignes[0].mobileNumber`)}`;
             return resultstring;
-          }
+          },
         },
       };
       const previousCheckpoint = timeline[index - 1];
@@ -193,22 +197,20 @@ console.log(filteredAssessment);
         wfComment: previousCheckpoint ? previousCheckpoint.wfComment : [],
         thumbnailsToShow: checkpoint?.thumbnailsToShow,
       };
-      
-  
+
       return <TLCaption data={caption} OpenImage={OpenImage} privacy={privacy} />;
     } else {
-  
       const caption = {
         date: convertEpochToDateDMY(applicationData?.auditDetails?.lastModifiedTime),
         name: checkpoint?.assignes?.[0]?.name,
         wfComment: checkpoint?.wfComment,
         mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
       };
-      
+
       return <TLCaption data={caption} />;
     }
   };
-
+  
 
   const getTranslatedValues = (dataValue, isNotTranslated) => {
     if (dataValue) {
@@ -248,11 +250,12 @@ console.log(filteredAssessment);
      border:'2px solid black',
      width:'100%',
      fontFamily:'sans-serif'
+
     },
-    td:{
+    td: {
       padding: "10px",
-      border:'1px solid black',
-      textAlign: 'center'
+      border: "1px solid black",
+      textAlign: "center",
     },
     th: {
       padding: "10px",
@@ -666,9 +669,9 @@ console.log(filteredAssessment);
               </Link>
             </div>
           )}
-          {detail?.additionalDetails?.estimationDetails && <WSFeeEstimation wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
-          {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
-        
+          {detail?.additionalDetails?.estimationDetails && <WSFeeEstimation wsAdditionalDetails={detail} workflowDetails={workflowDetails}/>}
+          {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails}/>}
+          
         </React.Fragment>
       ))}
         {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }

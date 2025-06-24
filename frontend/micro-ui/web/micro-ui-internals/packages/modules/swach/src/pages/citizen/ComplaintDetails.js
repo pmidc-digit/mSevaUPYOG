@@ -30,15 +30,15 @@ const WorkflowComponent = ({ complaintDetails, id, getWorkFlow, zoomImage }) => 
   //   getWorkFlow(workFlowDetails.data);
   // }, []);
   useEffect(() => {
-      if (workFlowDetails) {
-        const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
-        if (complaintTimelineData) {
-          // const actionByCitizenOnComplaintCreation = complaintTimelineData;
-  
-          const { thumbnailsToShow } = complaintTimelineData?.[0];
-          thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
-        }
+    if (workFlowDetails) {
+      const { data: { timeline: complaintTimelineData } = {} } = workFlowDetails;
+      if (complaintTimelineData) {
+        // const actionByCitizenOnComplaintCreation = complaintTimelineData;
+
+        const { thumbnailsToShow } = complaintTimelineData?.[0];
+        thumbnailsToShow ? getWorkFlow(thumbnailsToShow) : null;
       }
+    }
   }, [workFlowDetails]);
 
   useEffect(() => {
@@ -82,7 +82,7 @@ const ComplaintDetailsPage = (props) => {
 
   const [loader, setLoader] = useState(false);
   const [viewTimeline, setViewTimeline] = useState(false);
-const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
+  const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   const localityCode = complaintDetails?.details?.ES_CREATECOMPLAINT_ADDRESS?.locality?.code;
   const localityObj = localities?.find((loc) => loc?.code == localityCode);
   const localityName = localityObj?.name || "";
@@ -114,13 +114,13 @@ const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin"
   function onCloseImageZoom() {
     setImageZoom(null);
   }
-  
-  const handleViewTimeline=()=>{ 
-    const timelineSection=document.getElementById('timeline');
-      if(timelineSection){
-        timelineSection.scrollIntoView({behavior: 'smooth'});
-      } 
-      setViewTimeline(true);   
+
+  const handleViewTimeline = () => {
+    const timelineSection = document.getElementById("timeline");
+    if (timelineSection) {
+      timelineSection.scrollIntoView({ behavior: "smooth" });
+    }
+    setViewTimeline(true);
   };
   // const onWorkFlowChange = (data) => {
   //   let timeline = data?.timeline;
@@ -165,11 +165,11 @@ const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin"
   return (
     <React.Fragment>
       <div className="complaint-summary">
-        <div style={{display:"flex",justifyContent:"space-between",maxWidth:"960px"}}>
-        <Header>{t(`${LOCALIZATION_KEY.CS_HEADER}_COMPLAINT_SUMMARY`)}</Header>
-        <div style={{ color:"#A52A2A"}}>
-        <LinkButton label={t("VIEW_TIMELINE")}  onClick={handleViewTimeline} ></LinkButton>
-        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", maxWidth: "960px" }}>
+          <Header>{t(`${LOCALIZATION_KEY.CS_HEADER}_COMPLAINT_SUMMARY`)}</Header>
+          <div style={{ color: "#A52A2A" }}>
+            <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline}></LinkButton>
+          </div>
         </div>
         {Object.keys(complaintDetails).length > 0 ? (
           <React.Fragment>
@@ -177,20 +177,20 @@ const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin"
               <CardSubHeader>{t(`SERVICEDEFS.${complaintDetails.audit.serviceCode.toUpperCase()}`)}</CardSubHeader>
               <StatusTable>
                 {Object.keys(complaintDetails.details)
-                .filter((k) => k !== "ES_CREATECOMPLAINT_ADDRESS")
-                .map((flag, index, arr) => (
-                  <Row
-                    key={index}
-                    label={t(flag)}
-                    text={
-                      Array.isArray(complaintDetails.details[flag])
-                        ? complaintDetails.details[flag].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
-                        : t(complaintDetails.details[flag]) || "N/A"
-                    }
-                    // last={index === arr.length - 1}
-                  />
-                ))}
-                 <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} />
+                  .filter((k) => k !== "ES_CREATECOMPLAINT_ADDRESS")
+                  .map((flag, index, arr) => (
+                    <Row
+                      key={index}
+                      label={t(flag)}
+                      text={
+                        Array.isArray(complaintDetails.details[flag])
+                          ? complaintDetails.details[flag].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
+                          : t(complaintDetails.details[flag]) || "N/A"
+                      }
+                      // last={index === arr.length - 1}
+                    />
+                  ))}
+                <Row label={t("ES_CREATECOMPLAINT_ADDRESS")} text={addressText} />
               </StatusTable>
               <h1 style={{ fontSize: "16px", marginBottom: "16px", color: "blue", fontWeight: "bolder" }}>
                 <a
@@ -209,7 +209,12 @@ const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin"
               <div id="timeline">
                 {complaintDetails?.service && (
                   // <WorkflowComponent getWorkFlow={onWorkFlowChange} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
-                  <WorkflowComponent getWorkFlow={setImageToShowBelowComplaintDetails} complaintDetails={complaintDetails} id={id} zoomImage={zoomImage} />
+                  <WorkflowComponent
+                    getWorkFlow={setImageToShowBelowComplaintDetails}
+                    complaintDetails={complaintDetails}
+                    id={id}
+                    zoomImage={zoomImage}
+                  />
                 )}
               </div>
             </Card>

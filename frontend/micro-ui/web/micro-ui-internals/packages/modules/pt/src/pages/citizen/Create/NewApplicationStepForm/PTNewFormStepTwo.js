@@ -28,7 +28,14 @@ const PTNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   
     if (!propertyType) missingFields.push("Property Type");
     if (!usageCategory) missingFields.push("Usage Category");
-    if (!data?.businessName?.businessName) missingFields.push("Business Name");
+    // if (!data?.businessName?.businessName) missingFields.push("Business Name");
+    const isResidentialProperty = 
+    usageCategory === "RESIDENTIAL" || 
+    data?.usageCategoryMajor?.i18nKey === "PROPERTYTAX_BILLING_SLAB_RESIDENTIAL";
+  
+  if (!isResidentialProperty && !data?.businessName?.businessName) {
+    missingFields.push("Business Name");
+  }
   
     const validateUnitCommonFields = (unit, index) => {
       const prefix = `Unit ${index + 1}`;

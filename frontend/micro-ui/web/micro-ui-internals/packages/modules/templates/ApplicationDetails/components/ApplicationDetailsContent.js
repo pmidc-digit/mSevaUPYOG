@@ -11,7 +11,7 @@ import {
   StatusTable,
   LinkButton,
   ActionBar,
-  SubmitBar,,
+  SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useEffect, useState } from "react";
@@ -65,7 +65,6 @@ function ApplicationDetailsContent({
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
   const [payments,setPayments]=useState([])
-  let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
   console.log("appl", applicationDetails);

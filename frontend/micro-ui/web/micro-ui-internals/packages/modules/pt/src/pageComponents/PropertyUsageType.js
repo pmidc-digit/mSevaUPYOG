@@ -138,6 +138,13 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
 
   function selectPropertyPurpose(value) {
     setPropertyPurpose(value);
+
+    if (value?.i18nKey === "PROPERTYTAX_BILLING_SLAB_OTHERS") {
+    value.i18nKey = "PROPERTYTAX_BILLING_SLAB_NONRESIDENTIAL";
+    onSelect(config.key, value);
+  } else {
+    onSelect(config.key, value);
+  }
   }
 
   function goNext() {

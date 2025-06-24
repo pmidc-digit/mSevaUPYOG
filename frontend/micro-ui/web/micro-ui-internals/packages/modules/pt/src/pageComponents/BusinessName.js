@@ -10,7 +10,11 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
   let index = window.location.href.split("/").pop();
 
   console.log("formdata testing==", formData);
-
+  const isResidentialProperty = 
+  (formData?.usageCategoryMajor?.code === "RESIDENTIAL") || 
+  (formData?.usageCategoryMajor?.i18nKey === "PROPERTYTAX_BILLING_SLAB_RESIDENTIAL");
+  
+  const isMandatory = !isResidentialProperty;
   let validation = {};
   const onSkip = () => onSelect();
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
@@ -45,7 +49,8 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
     console.log("valuehandleBusinessNameChange", value)
     setBusinessName(value);
     onSelect(config.key, { ...formData[config.key], businessName: value })
-    validateBusinessName();
+    if (isMandatory) validateBusinessName();
+    
   }
 
   //}
@@ -60,13 +65,15 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
       //console.log("configkeyEEE", config.key)
       //    if (remarks !== "undefined" && remarks?.length === 0) setFormError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
       //    else if (remarks !== "undefined" && remarks?.length < 10 || remarks?.length > 10 || !Number(remarks)) setFormError(config.key, { type: "invalid", message: t("ERR_DEFAULT_INPUT_FIELD_MSG") });
-      if (businessName !== "undefined" && businessName?.length === 0) {
+      
+      if (isMandatory && businessName !== "undefined" && businessName?.length === 0) {
         setFormError(config.key, { type: "required", message: t("CORE_COMMON_REQUIRED_ERRMSG") });
-      } else clearFormErrors(config.key);
-
+      } else {
+        clearFormErrors(config.key);
+      }
       onSelect(config.key, businessName);
     }
-  }, [businessName]);
+  }, [businessName,isMandatory]);
 
   useEffect(() => {
     if (presentInModifyApplication &&  (window.location.href.includes("employee")|| window.location.href.includes("citizen"))) {
@@ -74,12 +81,20 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
     }
   }, []);
 
+  useEffect(() => {
+    if (isMandatory) {
+      validateBusinessName();
+    } else {
+      setError(null); 
+    }
+  }, [businessName, isMandatory]) 
+
   const inputs = [
     {
       label: "PT_BUSINESS_NAME_LABEL",
       type: "text",
       name: "businessName",
-      isMandatory: "true",
+      isMandatory: isMandatory,
       validation: {
         // isRequired: config.isMandatory,
         minLength: 1,
@@ -93,8 +108,10 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
     //    setError("");
     //  }
 
-    if (businessName === "") {
+     if (isMandatory && businessName === "") {
       setError("Please Enter Business Name")
+    } else {
+      setError(null);
     }
 
   };
@@ -193,7 +210,8 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
       return (
         <React.Fragment>
           <LabelFieldPair key={index}>
-            <CardLabel className="card-label-smaller">{t(input.label)} {config.isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
+            <CardLabel className="card-label-smaller">{t(input.label)} 
+              {isMandatory && <span style={{ color: 'red' }}>*</span>}</CardLabel>
             <div className="field">
               {/* 
               <TextInput
@@ -215,7 +233,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
                 defaultValue={businessName}
                 name="businessName"
                 rules={{
-                  // required: config.isMandatory && t("Business Name is required"),
+                  required: isMandatory && t("Business Name is required"),
                 }}
                 render={(_props) => (
                   <TextInput
@@ -233,7 +251,7 @@ const BusinessName = ({ t, config, onSelect, value, userType, formData, setError
 
             </div>
           </LabelFieldPair>
-          {localFormState?.errors?.bussinessName ? (
+          {localFormState?.errors?.bussinessName && isMandatory ? (
             <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
               {localFormState?.errors?.bussinessName?.message}
             </CardLabelError>

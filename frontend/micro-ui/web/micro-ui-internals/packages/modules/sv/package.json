@@ -1,7 +1,7 @@
 {
   "name": "@mseva/digit-ui-module-sv",
   "author": "Shivank Shukla & Khalid Rashid",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",

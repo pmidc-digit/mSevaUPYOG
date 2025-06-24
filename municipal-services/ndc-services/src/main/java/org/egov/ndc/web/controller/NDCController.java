@@ -43,6 +43,7 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.ndc.config.ResponseInfoFactory;
 import org.egov.ndc.service.NDCService;
+import org.egov.ndc.web.model.RequestInfoWrapper;
 import org.egov.ndc.web.model.ndc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -53,7 +54,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/v1/ndc")
+@RequestMapping("/ndc")
 public class NDCController {
 	
 	@Autowired
@@ -106,10 +107,10 @@ public class NDCController {
 
 	@PostMapping("/_search")
 	public ResponseEntity<NdcApplicationSearchResponse> searchNdcApplications(
-			@RequestBody RequestInfo requestInfo,
+			@RequestBody RequestInfoWrapper requestInfoWrapper,
 			@ModelAttribute NdcApplicationSearchCriteria criteria) {
 		List<NdcApplicationRequest> applications = ndcService.searchNdcApplications(criteria);
-		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(requestInfo, true);
+		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
 
 		List<NdcApplicationRequest> applicationRequests = applications.stream()
 				.peek(app -> app.setRequestInfo(null))

@@ -345,18 +345,18 @@ const OwnerForm1 = (_props) => {
     <div style={{ marginBottom: "16px" }}>
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
-          {`${t("TL_FINANCIAL_YEAR_LABEL")}`} <span className="requiredField">*</span>
+          {`${t("TL_FINANCIAL_YEAR_LABEL")}`}<span className="requiredField">*</span>
         </CardLabel>
 
         <Controller
           name="financialYear"
           rules={{ required: t("REQUIRED_FIELD") }}
-          defaultValue={tradedetail?.financialYear}
+          defaultValue={isRenewal ? financialYearOptions[0] : tradedetail?.financialYear}
           control={control}
           render={(props) => (
             <Dropdown
               className="form-field"
-              selected={props.value}
+              selected={isRenewal ? financialYearOptions[0] : props.value}
               errorStyle={localFormState.touched.financialYear && errors?.financialYear?.message ? true : false}
               // disable={financialYearOptions?.length === 1}
               option={financialYearOptions}
@@ -364,7 +364,7 @@ const OwnerForm1 = (_props) => {
               optionKey="i18nKey"
               onBlur={props.onBlur}
               placeholder={t("TL_FINANCIAL_YEAR_PLACEHOLDER")}
-              // disable={isRenewal}
+              disable={isRenewal}
               t={t}
             />
           )}
@@ -419,7 +419,7 @@ const OwnerForm1 = (_props) => {
                   setFocusIndex({ index: -1 });
                   props.onBlur(e);
                 }}
-                disable={isRenewal}
+                //disable={isRenewal}
                 placeholder={t("TL_NEW_TRADE_DETAILS_TRADE_NAME_PLACEHOLDER")}
               />
             )}
@@ -476,7 +476,7 @@ const OwnerForm1 = (_props) => {
             <Dropdown
               className="form-field"
               selected={getValues("structureSubType")}
-              disable={false}
+              disable={isRenewal}
               option={structureSubTypeOptions}
               select={(e) => {
                 if (e?.code != tradedetail?.structureSubType?.code && isRenewal)
@@ -595,7 +595,7 @@ const OwnerForm1 = (_props) => {
       <CardLabelError style={errorStyle}>{localFormState.touched.noOfEmployees ? errors?.noOfEmployees?.message : ""}</CardLabelError>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("TL_LOCALIZATION_RECEIPT_NO")} `}</CardLabel>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_OLD_RECEIPT_NO")} `}</CardLabel>
         <div className="field">
           <Controller
             name="oldReceiptNo"
@@ -613,6 +613,7 @@ const OwnerForm1 = (_props) => {
                 errorStyle={localFormState.touched.oldReceiptNo && errors?.oldReceiptNo?.message ? true : false}
                 onBlur={props.onBlur}
                 disable={isRenewal}
+                placeholder={t("TL_NEW_TRADE_DETAILS_OLD_RECEIPT_NO_PLACEHOLDER")}
               />
             )}
           />

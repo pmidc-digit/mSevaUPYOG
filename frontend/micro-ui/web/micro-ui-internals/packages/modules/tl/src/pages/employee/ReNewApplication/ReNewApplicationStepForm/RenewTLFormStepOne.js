@@ -103,7 +103,7 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
         config={config.currStepConfig}
         onSubmit={goNext}
         onFormValueChange={onFormValueChange}
-        label={t(config.texts.submitBarLabel)}
+        label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />

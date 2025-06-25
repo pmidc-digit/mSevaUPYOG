@@ -23,6 +23,7 @@ import { useParams, useHistory, useLocation, Redirect } from "react-router-dom";
 import { stringReplaceAll } from "../bills/routes/bill-details/utils";
 import $ from "jquery";
 import { makePayment } from "./payGov";
+import _ from "lodash";
 
 export const SelectPaymentType = (props) => {
   const { state = {} } = useLocation();
@@ -242,7 +243,7 @@ export const SelectPaymentType = (props) => {
   }
 
   function getQueryVariable(variable) {
-    const query = get(getOrderData, "Transaction.redirectUrl");
+    const query = _.get(getOrderData, "Transaction.redirectUrl");
     var vars = query.split("&");
     for (var i = 0; i < vars.length; i++) {
       var pair = vars[i].split("=");
@@ -252,10 +253,10 @@ export const SelectPaymentType = (props) => {
   }
   const options = {
     key: getQueryVariable('merchant_key'),
-    amount: get(getOrderData, "Transaction.txnAmount") * 100,
+    amount: _.get(getOrderData, "Transaction.txnAmount") * 100,
     //currency: getQueryVariable('currency'),
     name: "mSeva | Punjab",
-    description: get(getOrderData, "Transaction.businessService") + " Charge Collection",
+    description: _.get(getOrderData, "Transaction.businessService") + " Charge Collection",
     image: "https://mseva.lgpunjab.gov.in/citizen/browser-icon.png",
     order_id: getQueryVariable('orderId'),
     handler: async function (response) {
@@ -265,12 +266,12 @@ export const SelectPaymentType = (props) => {
         razorpaySignature: response.razorpay_signature,
       };
 
-      window.location = get(getOrderData, "Transaction.callbackUrl") + "&razorpayPaymentId=" + data.razorpayPaymentId + "&razorpayOrderId=" + data.razorpayOrderId + "&razorpaySignature=" + data.razorpaySignature;
+      window.location = _.get(getOrderData, "Transaction.callbackUrl") + "&razorpayPaymentId=" + data.razorpayPaymentId + "&razorpayOrderId=" + data.razorpayOrderId + "&razorpaySignature=" + data.razorpaySignature;
     },
     prefill: {
-      name: get(getOrderData, "Transaction.user.userName"),
-      email: get(getOrderData, "Transaction.user.emailId"),
-      contact: get(getOrderData, "Transaction.user.mobileNumber"),
+      name: _.get(getOrderData, "Transaction.user.userName"),
+      email: _.get(getOrderData, "Transaction.user.emailId"),
+      contact: _.get(getOrderData, "Transaction.user.mobileNumber"),
     },
     theme: {
       color: "#61dafb",
@@ -280,6 +281,20 @@ export const SelectPaymentType = (props) => {
   const paymentObject = new window.Razorpay(options);
   paymentObject.open();
 }
+
+  function loadScript(src) {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.onload = () => {
+        resolve(true);
+      };
+      script.onerror = () => {
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  }
 
   if (authorization === "true" && !userInfo.access_token) {
     localStorage.clear();

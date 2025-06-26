@@ -83,6 +83,7 @@ module.exports = function (app) {
     "/adv-services/booking/v1/_update",
     "/adv-services/booking/v1/_slot-search",
     "/adv-services/booking/v1/_estimate",
+    "/ndc-services",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

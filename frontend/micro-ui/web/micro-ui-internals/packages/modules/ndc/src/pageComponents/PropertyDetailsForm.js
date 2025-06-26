@@ -166,9 +166,9 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
     if(result?.Bill?.length > 0){
       if(result?.Bill[0]?.totalAmount>0){
-        setShowToast({ error: true, label: t("Dues Found. Please Pay") });
+        setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
       }else{
-        setShowToast({ error: false, label: t("No Dues Found") })
+        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") })
       }
       if(bussinessService === "WS"){
         const updated = [...propertyDetails.waterConnection];
@@ -188,7 +188,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         }))
       }
     }else if(result?.Bill){
-      setShowToast({ error: true, label: t("No Bills Found For this consumer number") })
+      setShowToast({ error: true, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") })
       if(bussinessService === "WS"){
         const updated = [...propertyDetails.waterConnection];
         updated[index].isLoading = false;
@@ -206,7 +206,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       }
       // setError(t("No Bills Found For this consumer number"));
     }else{
-      setShowToast({ error: true, label: t("Invalid Consumer Number") })
+      setShowToast({ error: true, label: t("INVALID_CONSUMER_NUMBER") })
       if(bussinessService === "WS"){
         const updated = [...propertyDetails.waterConnection];
         updated[index].isLoading = false;
@@ -242,7 +242,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       service = "SEWERAGE"
     }
     
-    const payUrl = "https://sdc-uat.lgpunjab.gov.in"+`/${userType}/wns/viewBill?connectionNumber=${billData?.consumerCode}&tenantId=${billData?.tenantId}&service=${service}`;
+    const payUrl = `/${userType}/wns/viewBill?connectionNumber=${billData?.consumerCode}&tenantId=${billData?.tenantId}&service=${service}`;
     window.open(payUrl, "_blank");
     
     if(billData?.businessService === "WS"){
@@ -304,7 +304,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                   {item?.connectionNo && !item?.billData?.id && <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {
                     fetchBill("WS",item.connectionNo, index)
                   }}>
-                    {`${t("Check Status")}`}
+                    {`${t("CHECK_STATUS")}`}
                   </button>}
 
                   {item?.connectionNo && item?.billData?.totalAmount>0 && <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {
@@ -312,7 +312,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     // setShowPayModal(true);
                     redirectToPayBill(item?.billData, index, item.isEdit)
                   }}>
-                    {`${t("PAY")}`}
+                    {`${t("PAY_DUES")}`}
                   </button>}
                   
 
@@ -342,7 +342,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
               addWaterConnection();
             }}
           >
-            {`${t("ADD WATER")}`}
+            {`${t("ADD_WATER")}`}
           </button>
 
           <LabelFieldPair>
@@ -381,7 +381,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                   {item?.connectionNo && !item?.billData?.id && <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {
                     fetchBill("SW",item.connectionNo, index, item.isEdit)
                   }}>
-                    {`${t("Check Status")}`}
+                    {`${t("CHECK_STATUS")}`}
                   </button>}
 
                   {item?.connectionNo && item?.billData?.totalAmount>0 && <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {
@@ -389,7 +389,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     // setShowPayModal(true);
                     redirectToPayBill(item?.billData, index, )
                   }}>
-                    {`${t("PAY")}`}
+                    {`${t("PAY_DUES")}`}
                   </button>}
                   
 
@@ -419,7 +419,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
               addSewerageConnection();
             }}
           >
-            {`${t("ADD Sewerage")}`}
+            {`${t("ADD_SEWERAGE")}`}
           </button>
         
 

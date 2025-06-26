@@ -16,19 +16,17 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
     console.log("API response: ", res);
 
     // Check if the API call was successful
-    if (res.isSuccess) {
-      console.log("Submission successful, moving to next step.", res.response);
+    if (res?.isSuccess) {
+      console.log("Submission successful, moving to next step.", res?.response);
       
       // onGoNext();
     } else {
-      console.error("Submission failed, not moving to next step.", res.response);
+      console.error("Submission failed, not moving to next step.", res?.response);
     }
     }catch(error){
-        alert(`Error: ${error.message}`);
+        alert(`Error: ${error?.message}`);
         console.error("Submission failed, not moving to next step.", error);
     }
-
-    // onGoNext();
   };
 
   function mapToNDCPayload(inputData) {
@@ -96,7 +94,7 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
           payload.Documents.push({
             uuid: doc?.documentUid,
             documentType: doc?.documentType,
-            documentAttachment: doc?.documentAttachment
+            documentAttachment: doc?.fileStoreId
           })
         })
 
@@ -108,12 +106,12 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
     const finalPayload = mapToNDCPayload(data);
     console.log("finalPayload",finalPayload);
 
-    const response = await Digit.NDCService.NDCcreate({tenantId, filters: { skipWorkFlow: true },data: finalPayload });
+    const response = await Digit.NDCService.NDCcreate({tenantId, filters: { skipWorkFlow: true },details: finalPayload });
 
     if (response?.ResponseInfo?.status === "successful") {
       return  response
     }else{
-      console.error(error);
+      console.error("API Failed");
     }
 
   }

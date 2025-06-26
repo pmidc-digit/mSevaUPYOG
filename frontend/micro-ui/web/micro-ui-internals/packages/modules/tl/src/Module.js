@@ -32,6 +32,7 @@ import TLSelectStreet from "./pageComponents/TLSelectStreet";
 import TLSelectLandmark from "./pageComponents/TLSelectLandMark";
 import TLSelectOwnerAddress from "./pageComponents/TLSelectOwnerAddress";
 import PropertySearchSummary from "./pageComponents/PropertySearchSummary";
+import NewApplicationModal from "./pageComponents/NewApplicationModal";
 
 import TLOwnerDetailsEmployee from "./pageComponents/TLOwnerDetailsEmployee";
 import TLTradeDetailsEmployee from "./pageComponents/TLTradeDetailsEmployee";
@@ -196,6 +197,7 @@ const componentsToRegister = {
   TLNewFormStepThreeCitizen,
   TLNewSummaryStepFourCitizen,
   TLPropertySearchSummary: PropertySearchSummary,
+  TLNewApplicationModal: NewApplicationModal
 };
 
 export const initTLComponents = () => {

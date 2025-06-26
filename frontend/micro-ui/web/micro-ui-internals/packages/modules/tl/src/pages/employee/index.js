@@ -101,7 +101,7 @@ const TLBreadCrumb = ({ location }) => {
     },
     {
       path: sessionStorage.getItem("applicationNumber") ? `/digit-ui/employee/tl/application-details/${sessionStorage.getItem("applicationNumber")}` : "",
-      content: t("TL_DETAILS_HEADER_LABEL"),
+      content: t("TL_TRADE_LICENSE_DETAILS_LABEL"),
       show: isApplicationDetails ||
       breadCrumbUrls.includes("inbox/appDetails") || 
       breadCrumbUrls.includes("home/license/appDetails") || 

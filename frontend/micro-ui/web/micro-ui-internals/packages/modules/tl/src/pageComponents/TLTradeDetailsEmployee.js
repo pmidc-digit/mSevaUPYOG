@@ -320,273 +320,285 @@ const OwnerForm1 = (_props) => {
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
-      <div style={{ marginBottom: "16px" }}>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_FINANCIAL_YEAR_LABEL")} * `}</CardLabel>
-            <Controller
-              name="financialYear"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              defaultValue={tradedetail?.financialYear}
-              control={control}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  selected={props.value}
-                  errorStyle={(localFormState.touched.financialYear && errors?.financialYear?.message) ? true : false}
-                  // disable={financialYearOptions?.length === 1}
-                  option={financialYearOptions}
-                  select={props.onChange}
-                  optionKey="i18nKey"
-                  onBlur={props.onBlur}
-                  // disable={isRenewal}
-                  t={t}
-                />
-              )}
-            />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.financialYear ? errors?.financialYear?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL")} * `}</CardLabel>
-            <Controller
-              name="licenseType"
-              // defaultValue={tradedetail?.licenseType}
-              defaultValue={licenseTypeValue}
-              control={control}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  selected={licenseTypeValue} //{licenseTypeList[1]}
-                  // selected={licenseTypeNewValue} 
-                  disable={true}
-                  option={licenseTypeList}
-                  select={(e)=>{
-                    props.onChange(e)
-                  }}
-                  optionKey="i18nKey"
-                  onBlur={props.onBlur}
-                  t={t}
-                  errorStyle={(localFormState.touched.licenseType && errors?.licenseType?.message) ? true : false}
-                />
-              )}
-            />
-          </LabelFieldPair>
+    <div style={{ marginBottom: "16px" }}>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {`${t("TL_FINANCIAL_YEAR_LABEL")}`}<span className="requiredField">*</span>
+        </CardLabel>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_COMMON_TABLE_COL_TRD_NAME")} * `}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name={"tradeName"}
-                defaultValue={tradedetail?.tradeName}
-                rules={{ required: t("REQUIRED_FIELD"), validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "name"}
-                    errorStyle={(localFormState.touched.tradeName && errors?.tradeName?.message) ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: tradedetail.key, type: "tradeName" });
-                    }}
-                    onBlur={(e) => {
-                      setFocusIndex({ index: -1 });
-                      props.onBlur(e);
-                    }}
-                    disable={isRenewal}
-                  />
-                )}
+        <Controller
+          name="financialYear"
+          rules={{ required: t("REQUIRED_FIELD") }}
+          defaultValue={isRenewal ? financialYearOptions[0] : tradedetail?.financialYear}
+          control={control}
+          render={(props) => (
+            <Dropdown
+              className="form-field"
+              selected={isRenewal ? financialYearOptions[0] : props.value}
+              errorStyle={localFormState.touched.financialYear && errors?.financialYear?.message ? true : false}
+              // disable={financialYearOptions?.length === 1}
+              option={financialYearOptions}
+              select={props.onChange}
+              optionKey="i18nKey"
+              onBlur={props.onBlur}
+              placeholder={t("TL_FINANCIAL_YEAR_PLACEHOLDER")}
+              disable={isRenewal}
+              t={t}
+            />
+          )}
+        />
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.financialYear ? errors?.financialYear?.message : ""}</CardLabelError>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+        <Controller
+          name="licenseType"
+          // defaultValue={tradedetail?.licenseType}
+          defaultValue={licenseTypeValue}
+          control={control}
+          render={(props) => (
+            <Dropdown
+              className="form-field"
+              selected={licenseTypeValue} //{licenseTypeList[1]}
+              // selected={licenseTypeNewValue}
+              disable={true}
+              option={licenseTypeList}
+              select={(e) => {
+                props.onChange(e);
+              }}
+              optionKey="i18nKey"
+              onBlur={props.onBlur}
+              t={t}
+              errorStyle={localFormState.touched.licenseType && errors?.licenseType?.message ? true : false}
+              placeholder={t("TL_NEW_TRADE_DETAILS_LIC_TYPE_PLACEHOLDER")}
+            />
+          )}
+        />
+      </LabelFieldPair>
+
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_COMMON_TABLE_COL_TRD_NAME")}`}<span className="requiredField">*</span></CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name={"tradeName"}
+            defaultValue={tradedetail?.tradeName}
+            rules={{ required: t("REQUIRED_FIELD"), validate: { pattern: (val) => (/^[-@.\/#&+\w\s]*$/.test(val) ? true : t("INVALID_NAME")) } }}
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "name"}
+                errorStyle={localFormState.touched.tradeName && errors?.tradeName?.message ? true : false}
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                  setFocusIndex({ index: tradedetail.key, type: "tradeName" });
+                }}
+                onBlur={(e) => {
+                  setFocusIndex({ index: -1 });
+                  props.onBlur(e);
+                }}
+                //disable={isRenewal}
+                placeholder={t("TL_NEW_TRADE_DETAILS_TRADE_NAME_PLACEHOLDER")}
               />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.tradeName ? errors?.tradeName?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_STRUCT_TYPE_LABEL")} * `}</CardLabel>
-            <Controller
-              name="structureType"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              defaultValue={tradedetail?.structureType}
-              control={control}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  selected={props.value}
-                  disable={isRenewal}
-                  option={selectedStructureTypeOptions}
-                  errorStyle={(localFormState.touched.structureType && errors?.structureType?.message) ? true : false}
-                  select={(e) => {
-                    let selectedOption = e?.code?.split('.')[0];
-                    let structureSubTypeOption = [];
-                    structureTypeOptions.map(data => {
-                      if (selectedOption === data?.code?.split('.')[0]) {
-                        structureSubTypeOption.push({
-                          code: data?.code,
-                          i18nKey: t(`COMMON_MASTERS_STRUCTURETYPE_${stringReplaceAll(data?.code?.toUpperCase(), ".", "_")}`),
-                        })
-                      }
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.tradeName ? errors?.tradeName?.message : ""}</CardLabelError>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_STRUCT_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+        <Controller
+          name="structureType"
+          rules={{ required: t("REQUIRED_FIELD") }}
+          defaultValue={tradedetail?.structureType}
+          control={control}
+          render={(props) => (
+            <Dropdown
+              className="form-field"
+              selected={props.value}
+              disable={isRenewal}
+              option={selectedStructureTypeOptions}
+              errorStyle={localFormState.touched.structureType && errors?.structureType?.message ? true : false}
+              select={(e) => {
+                let selectedOption = e?.code?.split(".")[0];
+                let structureSubTypeOption = [];
+                structureTypeOptions.map((data) => {
+                  if (selectedOption === data?.code?.split(".")[0]) {
+                    structureSubTypeOption.push({
+                      code: data?.code,
+                      i18nKey: t(`COMMON_MASTERS_STRUCTURETYPE_${stringReplaceAll(data?.code?.toUpperCase(), ".", "_")}`),
                     });
-                    setValue("structureSubType", "");
-                    setStructureSubTypeOptions(structureSubTypeOption);
-                    props.onChange(e);
-                  }}
-                  optionKey="i18nKey"
-                  onBlur={props.onBlur}
-                  t={t}
-                />
-              )}
+                  }
+                });
+                setValue("structureSubType", "");
+                setStructureSubTypeOptions(structureSubTypeOption);
+                props.onChange(e);
+              }}
+              optionKey="i18nKey"
+              onBlur={props.onBlur}
+              t={t}
+              placeholder={t("TL_NEW_TRADE_DETAILS_STRUCT_TYPE_PLACEHOLDER")}
             />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_STRUCT_SUB_TYPE_LABEL")} * `}</CardLabel>
-            <Controller
-              name="structureSubType"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              defaultValue={tradedetail?.structureSubType}
-              control={control}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  selected={getValues("structureSubType")}
-                  disable={false}
-                  option={structureSubTypeOptions}
-                  select={(e) => {
-                    if(e?.code != tradedetail?.structureSubType?.code && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true});
-                    props.onChange(e)
-                  }}
-                  optionKey="i18nKey"
-                  onBlur={props.onBlur}
-                  t={t}
-                  errorStyle={(localFormState.touched.structureSubType && errors?.structureSubType?.message) ? true : false}
-                />
-              )}
+          )}
+        />
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.structureType ? errors?.structureType?.message : ""}</CardLabelError>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_STRUCT_SUB_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+        <Controller
+          name="structureSubType"
+          rules={{ required: t("REQUIRED_FIELD") }}
+          defaultValue={tradedetail?.structureSubType}
+          control={control}
+          render={(props) => (
+            <Dropdown
+              className="form-field"
+              selected={getValues("structureSubType")}
+              disable={isRenewal}
+              option={structureSubTypeOptions}
+              select={(e) => {
+                if (e?.code != tradedetail?.structureSubType?.code && isRenewal)
+                  setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                props.onChange(e);
+              }}
+              optionKey="i18nKey"
+              onBlur={props.onBlur}
+              t={t}
+              errorStyle={localFormState.touched.structureSubType && errors?.structureSubType?.message ? true : false}
+              placeholder={t("TL_NEW_TRADE_DETAILS_STRUCT_SUB_TYPE_PLACEHOLDER")}
             />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.structureSubType ? errors?.structureSubType?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_TRADE_COMM_DATE_LABEL")} * `}</CardLabel>
-            <div className="field">
-              <Controller
-                name="commencementDate"
-                rules={{ required: t("REQUIRED_FIELD") }}
-                defaultValue={tradedetail?.commencementDate}
-                control={control}
-                render={(props) => (
-                  <DatePicker
-                    date={props.value}
-                    // date={CommencementDate} 
-                    name="CommencementDate"
-                    onChange={props.onChange}
-                    disabled={isRenewal}
-                  />
-                )}
+          )}
+        />
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.structureSubType ? errors?.structureSubType?.message : ""}</CardLabelError>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_TRADE_COMM_DATE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+        <div className="field">
+          <Controller
+            name="commencementDate"
+            rules={{ required: t("REQUIRED_FIELD") }}
+            defaultValue={tradedetail?.commencementDate}
+            control={control}
+            render={(props) => (
+              <DatePicker
+                date={props.value}
+                // date={CommencementDate}
+                name="CommencementDate"
+                onChange={props.onChange}
+                disabled={isRenewal}
               />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.commencementDate ? errors?.commencementDate?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_LABEL")} `}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="gstNo"
-                defaultValue={tradedetail?.gstNo}
-                rules={{ validate: (e) => ((e && getPattern("GSTNo").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
-                render={(props) => (
-                  <TextInput
-                    value={props.value}
-                    autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "gstNo"}
-                    errorStyle={(localFormState.touched.gstNo && errors?.gstNo?.message) ? true : false}
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: tradedetail?.key, type: "gstNo" });
-                    }}
-                    labelStyle={{ marginTop: "unset" }}
-                    onBlur={props.onBlur}
-                    disable={isRenewal}
-                  />
-                )}
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.commencementDate ? errors?.commencementDate?.message : ""}</CardLabelError>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_LABEL")} `}</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="gstNo"
+            defaultValue={tradedetail?.gstNo}
+            rules={{ validate: (e) => ((e && getPattern("GSTNo").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "gstNo"}
+                errorStyle={localFormState.touched.gstNo && errors?.gstNo?.message ? true : false}
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                  setFocusIndex({ index: tradedetail?.key, type: "gstNo" });
+                }}
+                labelStyle={{ marginTop: "unset" }}
+                onBlur={props.onBlur}
+                disable={isRenewal}
+                placeholder={t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_PLACEHOLDER")}
               />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.gstNo ? errors?.gstNo?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL")} `}</CardLabel>
-            <div className="field">
-              <Controller
-                name="operationalArea"
-                rules={{ validate: (e) => ((e && getPattern("OperationalArea").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
-                defaultValue={tradedetail?.operationalArea}
-                control={control}
-                render={(props) => (
-                  <TextInput
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: tradedetail?.key, type: "operationalArea" });
-                    }}
-                    value={props.value}
-                    autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "operationalArea"}
-                    errorStyle={(localFormState.touched.operationalArea && errors?.operationalArea?.message) ? true : false}
-                    onBlur={props.onBlur}
-                    disable={isRenewal}
-                  />
-                )}
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.gstNo ? errors?.gstNo?.message : ""}</CardLabelError>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL")} `}</CardLabel>
+        <div className="field">
+          <Controller
+            name="operationalArea"
+            rules={{ validate: (e) => ((e && getPattern("OperationalArea").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
+            defaultValue={tradedetail?.operationalArea}
+            control={control}
+            render={(props) => (
+              <TextInput
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                  setFocusIndex({ index: tradedetail?.key, type: "operationalArea" });
+                }}
+                value={props.value}
+                autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "operationalArea"}
+                errorStyle={localFormState.touched.operationalArea && errors?.operationalArea?.message ? true : false}
+                onBlur={props.onBlur}
+                disable={isRenewal}
+                placeholder={t("TL_NEW_TRADE_DETAILS_OPR_AREA_PLACEHOLDER")}
               />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.operationalArea ? errors?.operationalArea?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL")} `}</CardLabel>
-            <div className="field">
-              <Controller
-                name="noOfEmployees"
-                rules={{ validate: (e) => ((e && getPattern("NoOfEmp").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
-                defaultValue={tradedetail?.noOfEmployees}
-                control={control}
-                render={(props) => (
-                  <TextInput
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: tradedetail?.key, type: "noOfEmployees" });
-                    }}
-                    value={props.value}
-                    autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "noOfEmployees"}
-                    errorStyle={(localFormState.touched.noOfEmployees && errors?.noOfEmployees?.message) ? true : false}
-                    onBlur={props.onBlur}
-                    disable={isRenewal}
-                  />
-                )}
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.operationalArea ? errors?.operationalArea?.message : ""}</CardLabelError>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL")} `}</CardLabel>
+        <div className="field">
+          <Controller
+            name="noOfEmployees"
+            rules={{ validate: (e) => ((e && getPattern("NoOfEmp").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
+            defaultValue={tradedetail?.noOfEmployees}
+            control={control}
+            render={(props) => (
+              <TextInput
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                  setFocusIndex({ index: tradedetail?.key, type: "noOfEmployees" });
+                }}
+                value={props.value}
+                autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "noOfEmployees"}
+                errorStyle={localFormState.touched.noOfEmployees && errors?.noOfEmployees?.message ? true : false}
+                onBlur={props.onBlur}
+                disable={isRenewal}
+                placeholder={t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_PLACEHOLDER")}
               />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.noOfEmployees ? errors?.noOfEmployees?.message : ""}</CardLabelError>
-          
-        
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_LOCALIZATION_RECEIPT_NO")} `}</CardLabel>
-            <div className="field">
-              <Controller
-                name="oldReceiptNo"
-                rules={{ validate: (e) => ((e && getPattern("OldLicenceNo").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
-                defaultValue={tradedetail?.oldReceiptNo}
-                control={control}
-                render={(props) => (
-                  <TextInput
-                    onChange={(e) => {
-                      props.onChange(e.target.value);
-                      setFocusIndex({ index: tradedetail?.key, type: "oldReceiptNo" });
-                    }}
-                    value={props.value}
-                    autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "oldReceiptNo"}
-                    errorStyle={(localFormState.touched.oldReceiptNo && errors?.oldReceiptNo?.message) ? true : false}
-                    onBlur={props.onBlur}
-                    disable={isRenewal}
-                  />
-                )}
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.noOfEmployees ? errors?.noOfEmployees?.message : ""}</CardLabelError>
+
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_OLD_RECEIPT_NO")} `}</CardLabel>
+        <div className="field">
+          <Controller
+            name="oldReceiptNo"
+            rules={{ validate: (e) => ((e && getPattern("OldLicenceNo").test(e)) || !e ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) }}
+            defaultValue={tradedetail?.oldReceiptNo}
+            control={control}
+            render={(props) => (
+              <TextInput
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                  setFocusIndex({ index: tradedetail?.key, type: "oldReceiptNo" });
+                }}
+                value={props.value}
+                autoFocus={focusIndex.index === tradedetail?.key && focusIndex.type === "oldReceiptNo"}
+                errorStyle={localFormState.touched.oldReceiptNo && errors?.oldReceiptNo?.message ? true : false}
+                onBlur={props.onBlur}
+                disable={isRenewal}
+                placeholder={t("TL_NEW_TRADE_DETAILS_OLD_RECEIPT_NO_PLACEHOLDER")}
               />
-            </div>
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.oldReceiptNo ? errors?.oldReceiptNo?.message : ""}</CardLabelError>
-      </div>
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.oldReceiptNo ? errors?.oldReceiptNo?.message : ""}</CardLabelError>
+    </div>
   );
 };
 

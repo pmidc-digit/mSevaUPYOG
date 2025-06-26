@@ -106,14 +106,15 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (addr.pincode) address.pincode = addr.pincode;
     } else if (Traid?.address) {
       address.city = Traid.address.city?.code || tenantId;
-      address.locality = { code: Traid.address.locality || null };
+      address.locality = { code: Traid.address.locality?.code || null };
       if (Traid.address.doorNo) address.doorNo = Traid.address.doorNo;
       if (Traid.address.street) address.street = Traid.address.street;
       if (Traid.address.pincode) address.pincode = Traid.address.pincode;
+      if (Traid.address.buildingName) address.buildingName = Traid.address.buildingName;
     }
-    if (TraidDetails.address.geoLocation.latitude) {
-      address.latitude = TraidDetails.address.geoLocation.latitude;
-      address.longitude = TraidDetails.address.geoLocation.longitude;
+    if (TraidDetails?.address?.geoLocation?.latitude) {
+      address.latitude = TraidDetails?.address?.geoLocation?.latitude;
+      address.longitude = TraidDetails.address.geoLocation?.longitude;
     }
 
     // Prepare owners

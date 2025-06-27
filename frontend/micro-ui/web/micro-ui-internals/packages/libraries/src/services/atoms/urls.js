@@ -275,6 +275,7 @@ const Urls = {
 
   ndc: {
     create: "/ndc-services/ndc/_create",
+    search: "/ndc-services/ndc/_search"
   },
 
   access_control: "/access/v1/actions/mdms/_get",

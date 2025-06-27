@@ -66,7 +66,7 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} /> */}
         <Route path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/create`} component={(props) => <NewNDCStepForm {...props} parentRoute={path} />} />
-        {/* <PrivateRoute path={`${path}/response`} component={Response} />  */}
+        <PrivateRoute path={`${path}/response/:id`} component={Response} /> 
       </Switch>
     </Fragment>
   );

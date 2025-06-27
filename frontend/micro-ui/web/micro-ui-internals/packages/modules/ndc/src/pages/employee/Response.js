@@ -14,6 +14,10 @@ const Response = (props) => {
     history.push(`/digit-ui/employee`);
   }
 
+  const onGoToNDC = () => {
+    history.push(`/digit-ui/employee/ndc/inbox`);
+  }
+
   return (
     <div>
       <Card>
@@ -30,6 +34,10 @@ const Response = (props) => {
           <SubmitBar
             label={t("CORE_COMMON_GO_TO_HOME")}
             onSubmit={onSubmit}
+          />
+          <SubmitBar
+            label={t("CORE_COMMON_GO_TO_NDC")}
+            onSubmit={onGoToNDC}
           />
         </ActionBar>
       </Card>

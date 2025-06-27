@@ -3,14 +3,24 @@ import Urls from "../atoms/urls";
 
 export const NDCService = {
     NDCcreate: ({ tenantId, filters, details }) => {
-        Request({
+        return Request({
             url: Urls.ndc.create,
             data: details,
-            useCache: false,
+            useCache: true,
             method: "POST",
             params: { tenantId, ...filters },
             auth: true,
             userService: true,
         })
-    },
+    }, 
+    NDCsearch: ({tenantId, filters}) =>
+    Request({
+      url: Urls.ndc.search,
+      useCache: false,
+      setTimeParam: false,
+      userService: true,
+      method: "POST",
+      params: { tenantId, ...filters },
+      auth: true,
+    }),
 }

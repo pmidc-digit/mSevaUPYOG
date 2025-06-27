@@ -25,6 +25,8 @@ import { NewNDCStepForm as NewNDCStepFormEmployee } from "./pages/employee/creat
 import { NewNDCStepFormOne as NewNDCStepFormOneEmployee } from "./pages/employee/createNDCApplication/createNDCApplicationStepperForm/NewNDCStepFormOne";
 import { NewNDCStepFormTwo as NewNDCStepFormTwoEmployee } from "./pages/employee/createNDCApplication/createNDCApplicationStepperForm/NewNDCStepFormTwo";
 import { NDCNewFormSummaryStepThreeEmployee } from "./pages/employee/createNDCApplication/createNDCApplicationStepperForm/NDCNewFormSummaryStepThreeEmployee";
+import MyApplications from "./pages/citizen/Applications/Application"
+import NDCResponseCitizen from "./pages/citizen/NDCResponseCitizen"
 
 import getRootReducer from "./redux/reducers";
 
@@ -72,7 +74,9 @@ const componentsToRegister = {
   NewNDCStepFormEmployee,
   NewNDCStepFormOneEmployee,
   NewNDCStepFormTwoEmployee,
-  NDCNewFormSummaryStepThreeEmployee
+  NDCNewFormSummaryStepThreeEmployee,
+  MyApplications,
+  NDCResponseCitizen
 };
 
 export const initNDCComponents = () => {

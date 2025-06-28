@@ -141,22 +141,22 @@ useEffect(async ()=>{
     <React.Fragment>
     <Card>
       <KeyNote keyValue={t("TL_LOCALIZATION_TRADE_NAME")} note={application.tradeName} />
-      <KeyNote keyValue={t("TL_LICENSE_NUMBERL_LABEL")} note={application.licenseNumber} />
+      <KeyNote keyValue={t("TL_HOME_SEARCH_RESULTS_TL_NO_LABEL")} note={application.licenseNumber} />
       <KeyNote
         keyValue={t("TL_LOCALIZATION_OWNER_NAME")}
         note={ownersSequences.map((owners, index) => (
           <div key="index">{index == owners.length - 1 ? owners?.name + "," : owners.name}</div>
         ))}
       />
-      <KeyNote
-        keyValue={t("TL_LOCALIZATION_LICENSE_STATUS")}
+      {/* <KeyNote
+        keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
         note={
           application.status === "APPROVED"
             ? t("TL_ACTIVE_STATUS_MSG") + " " + convertEpochToDateCitizen(application.validTo)
             : t("TL_EXPIRED_STATUS_MSG") + convertEpochToDateCitizen(application.validTo) + " " + t("TL_EXPIRED_STATUS_MSG_1")
         }
-      />
-      {isrenewalspresent ?<KeyNote keyValue={`${t("TL_RENEWAL_PRESENT_ERROR")}`} />:<SubmitBar label={t("TL_RENEW_LABEL")} onSubmit={onsubmit} />}
+      /> */}
+      {isrenewalspresent ?<KeyNote keyValue={`${t("TL_RENEWAL_PRESENT_ERROR")}`} />:<SubmitBar label={t("TL_VIEW_DETAILS_RENEWAL")} onSubmit={onsubmit} />}
     </Card>
     {showToast && (
         <Toast

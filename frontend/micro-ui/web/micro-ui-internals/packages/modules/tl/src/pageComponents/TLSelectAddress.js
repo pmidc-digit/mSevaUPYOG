@@ -6,7 +6,18 @@ import Timeline from "../components/TLTimeline";
 
 const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const allCities = Digit.Hooks.tl.useTenants();
-  const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
+  
+  const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
+
+  let tenantId;
+  if(currentUserType === "CITIZEN"){
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  }else{
+    tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+  }
+
+
+  //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
   //let isEditProperty = formData?.isEditProperty || false;
   const isEdit = window.location.href.includes("/edit-application/") || window.location.href.includes("renew-trade");
   //if (formData?.isUpdateProperty) isEditProperty = true;

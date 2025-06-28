@@ -51,7 +51,18 @@ const TLTradeDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const [structureSubTypeOptions, setStructureSubTypeOptions] = useState([]);
   const [owners, setOwners] = useState(formData?.owners || [createTradeDetailsDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-  const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
+
+  const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
+
+  let tenantId;
+  if(currentUserType === "CITIZEN"){
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+
+  }else{
+    tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+  }
+
+  //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
   const [licenseTypeList, setLicenseTypeList] = useState([]);
@@ -60,7 +71,6 @@ const TLTradeDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const { isLoading: menuLoading, data: Menu = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "StructureType");
 
   const { data: FinaceMenu = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "egf-master", ["FinancialYear"]);
-
   const { data: billingSlabData } = Digit.Hooks.tl.useTradeLicenseBillingslab({ tenantId, filters: {} });
 
   const addNewOwner = () => {

@@ -262,7 +262,6 @@ const FillSurvey = ({ stateCode }) => {
 
         console.log("formData", formData);
 
-        return;
         history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
           citizenFill: true,
           citizenData: formData,

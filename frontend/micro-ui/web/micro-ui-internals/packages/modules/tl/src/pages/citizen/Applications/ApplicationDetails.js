@@ -27,8 +27,8 @@ const getAddress = (address, t) => {
 
 const TLApplicationDetails = () => {
   const { t } = useTranslation();
-  const { id } = useParams();
-  const { tenantId } = useParams();
+  const { id, tenantId } = useParams();
+  //const { tenantId } = useParams();
   const history = useHistory();
   const [bill, setBill] = useState(null);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -77,12 +77,16 @@ const TLApplicationDetails = () => {
   const [showOptions, setShowOptions] = useState(false);
   useEffect(() => {}, [application, errorApplication]);
 
-  const businessService = application?.[0]?.businessService;
-  const { isLoading: iswfLoading, data: wfdata } = Digit.Hooks.useWorkflowDetails({
-    tenantId: application?.[0]?.tenantId,
-    id: id,
-    moduleCode: businessService,
-  });
+
+const businessService = application?.[0]?.businessService;
+const { isLoading: iswfLoading, data: wfdata }=Digit.Hooks.useWorkflowDetails({ 
+   tenantId: tenantId,
+   id: id,
+   moduleCode: businessService,
+}, {
+   enabled: application,
+});
+
   
   let workflowDocs = [];
   if (wfdata) {
@@ -103,9 +107,9 @@ const TLApplicationDetails = () => {
       } 
       setViewTimeline(true);   
   };
-  if (isLoading || iswfLoading) {
-    return <Loader />;
-  }
+  // if (isLoading || iswfLoading) {
+  //   return <Loader />;
+  // }
 
   if (application?.applicationDetails?.length === 0) {
     history.goBack();
@@ -255,21 +259,22 @@ const TLApplicationDetails = () => {
                 return application?.tradeLicenseDetail?.subOwnerShipCategory.includes("INSTITUTIONAL") ? (
                   <div key={index} style={multiBoxStyle}>
                     <CardSectionHeader style={multiHeaderStyle}>{`${t("TL_PAYMENT_PAID_BY_PLACEHOLDER")} - ` + (index + 1)}</CardSectionHeader>
-                    <Row
+                    {/* <Row
                       className="border-none"
                       label={`${t("TL_INSTITUTION_NAME_LABEL")}`}
                       text={t(application?.tradeLicenseDetail?.institution?.instituionName)}
                       textStyle={{ wordBreak:"break-word" }}
-                    />
+                    /> */}
                     <Row
-                      label={`${t("TL_INSTITUTION_TYPE_LABEL")}`}
+                      className="border-none"
+                      label={`${t("COMMON-MASTERS_SUBOWNERSHIP_LABEL")}`}
                       text={t(`TL_${application?.tradeLicenseDetail?.subOwnerShipCategory}`)}
                       textStyle={{ wordBreak:"break-word" }}
                     />
-                    <Row className="border-none" label={`${t("TL_MOBILE_NUMBER_LABEL")}`} text={t(ele.mobileNumber)} textStyle={{ whiteSpace: "pre" }} />
+                    <Row className="border-none" label={`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`} text={t(ele.mobileNumber)} textStyle={{ whiteSpace: "pre" }} />
                     <Row
                       className="border-none"
-                      label={`${t("TL_TELEPHONE_NUMBER_LABEL")}`}
+                      label={`${t("TL_NEW_OWNER_PHONE_LABEL")}`}
                       text={t(application?.tradeLicenseDetail?.institution?.contactNo || t("CS_NA"))}
                       textStyle={{ wordBreak:"break-word" }}
                     />
@@ -279,7 +284,7 @@ const TLApplicationDetails = () => {
                       text={t(ele.fatherOrHusbandName || application?.tradeLicenseDetail?.institution?.name)}
                       textStyle={{ wordBreak:"break-word" }}
                     />
-                    <Row className="border-none" label={`${t("TL_LOCALIZATION_EMAIL_ID")}`} text={t(ele.emailId || t("CS_NA"))} textStyle={{ wordBreak:"break-word" }} />
+                    <Row className="border-none" label={`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")}`} text={t(ele.emailId || t("CS_NA"))} textStyle={{ wordBreak:"break-word" }} />
                   </div>
                 ) : (
                   <div key={index} style={multiBoxStyle}>
@@ -433,7 +438,8 @@ const TLApplicationDetails = () => {
             </div>
           );
         })}
-      </Card>
+      </Card>): <Loader /> 
+      
     </React.Fragment>
   );
 };

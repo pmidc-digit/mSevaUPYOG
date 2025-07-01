@@ -30,7 +30,7 @@
   },
   "dependencies": {
     "@mseva/digit-ui-react-components": "1.0.4",
-    "@pmidc/upyog-css": "1.0.25",
+    "@pmidc/upyog-css": "1.0.26",
     "@mseva/digit-ui-module-ptr": "1.0.37",
     "@mseva/digit-ui-libraries": "1.0.29",
     "@mseva/digit-ui-module-bills": "1.0.5",

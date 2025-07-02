@@ -40,6 +40,7 @@ public class QuestionRowMapperTest {
         Type type = Type.MULTIPLE_ANSWER_TYPE;
         String categoryId = "category-id";
         String categoryLabel = "Category Label";
+        when(rs.getString("section_id")).thenReturn("1", "2","3","4");
         when(rs.getString("uuid")).thenReturn(uuid);
         when(rs.getString("tenantid")).thenReturn(tenantId);
         when(rs.getString("surveyid")).thenReturn(surveyId);
@@ -163,10 +164,9 @@ public class QuestionRowMapperTest {
         boolean required = true;
         Type type = Type.MULTIPLE_ANSWER_TYPE;
 
-        // Stubbing for rs.next() to return two questions with two options
         when(rs.next()).thenReturn(true, true, true, false);
 
-        // Stubbing Question-related fields
+        when(rs.getString("section_id")).thenReturn("1", "2","3","4");
         when(rs.getString("uuid")).thenReturn("1", "1", "2", "2"); // Ensuring UUID consistency
         when(rs.getString("tenantid")).thenReturn(tenantId, tenantId, tenantId, tenantId);
         when(rs.getString("surveyid")).thenReturn(surveyId, surveyId, surveyId, surveyId);
@@ -182,7 +182,6 @@ public class QuestionRowMapperTest {
         when(rs.getLong("lastmodifiedtime")).thenReturn(1622547800000L, 1622547800000L, 1622547800001L, 1622547800001L);
         when(rs.getString("category_label")).thenReturn("Category 1", "Category 1", "Category 2", "Category 2");
 
-        // Stubbing QuestionOption-related fields correctly
         when(rs.getString("option_uuid")).thenReturn("option1", "option2", "option3", "option4");
         when(rs.getString("option_text")).thenReturn("Option 1", "Option 2", "Option 3", "Option 4");
         when(rs.getDouble("option_weightage")).thenReturn(10.0, 20.0, 30.0, 40.0);
@@ -192,17 +191,14 @@ public class QuestionRowMapperTest {
         when(rs.getString("option_lastmodifiedby")).thenReturn("optionUser3", "optionUser4", "optionUser5", "optionUser6");
         when(rs.getLong("option_lastmodifiedtime")).thenReturn(1622547800003L, 1622547800004L, 1622547800005L, 1622547800006L);
 
-        // Act
         QuestionRowMapper questionRowMapper = new QuestionRowMapper();
         List<Question> questions = questionRowMapper.extractData(rs);
 
-        // Assert
         assertEquals(2, questions.size());
 
         Question question1 = questions.get(0);
         Question question2 = questions.get(1);
 
-        // Verify question 1
         assertEquals("1", question1.getUuid());
         assertEquals(tenantId, question1.getTenantId());
         assertEquals(surveyId, question1.getSurveyId());
@@ -214,20 +210,17 @@ public class QuestionRowMapperTest {
         assertEquals("category1", question1.getCategory().getId());
         assertEquals(1, question1.getOptions().size());
 
-        // Verify options for question 1
         QuestionOption option1 = question1.getOptions().get(0);
         assertEquals("option1", option1.getUuid());
         assertEquals("Option 1", option1.getOptionText());
         assertEquals(10.0, option1.getWeightage());
 
-        // Verify question 2
         assertEquals("2", question2.getUuid());
         assertEquals("someCategoryId1", question2.getCategoryId());
         assertEquals("Category 1", question2.getCategory().getLabel());
         assertEquals("category1", question2.getCategory().getId());
         assertEquals(2, question2.getOptions().size());
 
-        // Verify options for question 2
         QuestionOption option3 = question2.getOptions().get(0);
         assertEquals("option2", option3.getUuid());
         assertEquals("Option 2", option3.getOptionText());
@@ -238,74 +231,6 @@ public class QuestionRowMapperTest {
         assertEquals("Option 3", option4.getOptionText());
         assertEquals(30.0, option4.getWeightage());
     }
-
-
-
-//
-//    @Test
-//    public void testExtractData_MultipleData_conditionalCoverage() throws SQLException, DataAccessException { //failing
-//        String tenantId = "default";
-//        String surveyId = "survey-123";
-//        String questionStatement = "What is your name?";
-//        Status status = Status.ACTIVE;
-//        boolean required = true;
-//        String options = "option1,option2";
-//        Type type = Type.MULTIPLE_ANSWER_TYPE;
-//
-//        when(rs.next()).thenReturn(true,true,false);
-//        when(rs.getString("uuid")).thenReturn("1","1");
-//        when(rs.getString("tenantid")).thenReturn(tenantId);
-//        when(rs.getString("surveyid")).thenReturn(surveyId);
-//        when(rs.getString("questionstatement")).thenReturn(questionStatement);
-//        when(rs.getString("status")).thenReturn(status.toString());
-//        when(rs.getBoolean("required")).thenReturn(required);
-//        when(rs.getString("options")).thenReturn(options);
-//        when(rs.getString("type")).thenReturn(type.toString());
-//        when(rs.getString("categoryid")).thenReturn("category1","category2");
-//        when(rs.getString("category_id")).thenReturn("category1","category2");
-//        when(rs.getString("createdby")).thenReturn("creator");
-//        when(rs.getLong("createdtime")).thenReturn(1L);
-//        when(rs.getString("lastmodifiedby")).thenReturn("creator");
-//        when(rs.getLong("lastmodifiedtime")).thenReturn(1L);
-//
-//        QuestionRowMapper questionRowMapper = new QuestionRowMapper();
-//        List<Question> questions = questionRowMapper.extractData(rs);
-//
-//        assertEquals(1, questions.size());
-//    }
-//
-//    @Test
-//    public void testExtractData_MultipleData_conditionalCoverage2() throws SQLException, DataAccessException { //failing
-//        String tenantId = "default";
-//        String surveyId = "survey-123";
-//        String questionStatement = "What is your name?";
-//        Status status = Status.ACTIVE;
-//        boolean required = true;
-//        String options = "option1,option2";
-//        Type type = Type.MULTIPLE_ANSWER_TYPE;
-//
-//        when(rs.next()).thenReturn(true,true,false);
-//        when(rs.getString("uuid")).thenReturn("1","1");
-//        when(rs.getString("tenantid")).thenReturn(tenantId);
-//        when(rs.getString("surveyid")).thenReturn(surveyId);
-//        when(rs.getString("questionstatement")).thenReturn(questionStatement);
-//        when(rs.getString("status")).thenReturn(status.toString());
-//        when(rs.getBoolean("required")).thenReturn(required);
-//        when(rs.getString("options")).thenReturn(options);
-//        when(rs.getString("type")).thenReturn(type.toString());
-//        when(rs.getString("categoryid")).thenReturn("category1");
-//        when(rs.getString("category_id")).thenReturn("category1");
-//        when(rs.getString("category_label")).thenThrow(new SQLException("Database Error"));
-//        when(rs.getString("createdby")).thenReturn("creator");
-//        when(rs.getLong("createdtime")).thenReturn(1L);
-//        when(rs.getString("lastmodifiedby")).thenReturn("creator");
-//        when(rs.getLong("lastmodifiedtime")).thenReturn(1L);
-//
-//        QuestionRowMapper questionRowMapper = new QuestionRowMapper();
-//        List<Question> questions = questionRowMapper.extractData(rs);
-//
-//        assertEquals(1, questions.size());
-//    }
 
         @Test
         void testExtractData_SingleQuestionNoOptions() throws SQLException {
@@ -341,19 +266,6 @@ public class QuestionRowMapperTest {
             assertEquals("C1", question.getCategoryId());
             assertEquals("Personal Info", question.getCategory().getLabel());
         }
-
-//        @Test
-//        void testExtractData_MultipleQuestions() throws SQLException {
-//            when(rs.next()).thenReturn(true, true, false);
-//            
-//            when(rs.getString("uuid")).thenReturn("Q1", "Q2");
-//            when(rs.getString("tenantid")).thenReturn("tenant1", "tenant2");
-//            
-//            QuestionRowMapper questionRowMapper = new QuestionRowMapper();
-//            List<Question> questions = questionRowMapper.extractData(rs);
-//            assertNotNull(questions);
-//            assertEquals(2, questions.size());
-//        }
         
         @Test
         void testExtractData_SingleQuestion() throws SQLException {
@@ -375,11 +287,9 @@ public class QuestionRowMapperTest {
             when(rs.getLong("createdtime")).thenReturn(123456789L);
             when(rs.getLong("lastmodifiedtime")).thenReturn(987654321L);
 
-            // Execute row mapper
             QuestionRowMapper questionRowMapper = new QuestionRowMapper();
             List<Question> questions = questionRowMapper.extractData(rs);
 
-            // Assertions
             assertNotNull(questions);
             assertEquals(1, questions.size(), "Expected one question, but got: " + questions.size());
 
@@ -396,10 +306,9 @@ public class QuestionRowMapperTest {
         
         @Test
         void testExtractData_QuestionWithOptions() throws SQLException {
-            // Simulate two rows in the ResultSet for the same question with different options
             when(rs.next()).thenReturn(true, true, false);
 
-            // Common Question Fields (Same for both rows)
+            when(rs.getString("section_id")).thenReturn("1", "2","3","4");
             when(rs.getString("uuid")).thenReturn("Q1", "Q1");
             when(rs.getString("tenantid")).thenReturn("tenant1", "tenant1");
             when(rs.getString("surveyid")).thenReturn("survey1", "survey1");
@@ -456,25 +365,12 @@ public class QuestionRowMapperTest {
             assertEquals("Option 2", option2.getOptionText());
             assertEquals(2.0, option2.getWeightage());
         }
-
-//        @Test
-//        void testExtractData_NoOptions() throws SQLException {
-//            when(rs.next()).thenReturn(true).thenReturn(false);
-//            when(rs.getString("uuid")).thenReturn("Q1");
-//            when(rs.getString("option_uuid")).thenReturn(null);
-//
-//            QuestionRowMapper questionRowMapper = new QuestionRowMapper();
-//            List<Question> questions = questionRowMapper.extractData(rs);
-//            assertNotNull(questions);
-//            assertEquals(1, questions.size());
-//            assertTrue(questions.get(0).getOptions().isEmpty());
-//        }
         
         @Test
         void testExtractData_NoOptions() throws SQLException {
             when(rs.next()).thenReturn(true).thenReturn(false);
-            
-            // Stub all required fields
+
+            when(rs.getString("section_id")).thenReturn("1", "2","3","4");
             when(rs.getString("uuid")).thenReturn("Q1");
             when(rs.getString("tenantid")).thenReturn("tenant1");
             when(rs.getString("surveyid")).thenReturn("survey1");

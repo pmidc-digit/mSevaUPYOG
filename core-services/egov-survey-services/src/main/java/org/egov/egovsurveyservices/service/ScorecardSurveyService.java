@@ -3,6 +3,7 @@ package org.egov.egovsurveyservices.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -13,7 +14,9 @@ import org.egov.common.contract.request.User;
 import org.egov.egovsurveyservices.config.ApplicationProperties;
 import org.egov.egovsurveyservices.producer.Producer;
 import org.egov.egovsurveyservices.repository.QuestionRepository;
+import org.egov.egovsurveyservices.repository.QuestionWeightageRepository;
 import org.egov.egovsurveyservices.repository.ScorecardSurveyRepository;
+import org.egov.egovsurveyservices.repository.SectionRepository;
 import org.egov.egovsurveyservices.utils.ScorecardSurveyUtil;
 import org.egov.egovsurveyservices.validators.ScorecardSurveyValidator;
 import org.egov.egovsurveyservices.web.models.*;
@@ -42,6 +45,12 @@ public class ScorecardSurveyService {
 
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private QuestionWeightageRepository questionWeightageRepository;
+
+    @Autowired
+    private SectionRepository sectionRepository;
 
     @Autowired
     private EnrichmentService enrichmentService;
@@ -195,6 +204,11 @@ public class ScorecardSurveyService {
         surveyValidator.validateUserTypeForAnsweringScorecardSurvey(answerRequest);
         String uuid = answerRequest.getUser().getUuid();
         surveyValidator.validateAnswers(surveyResponse);
+
+        List<Section> sections = sectionRepository.getSectionsBySurveyId(answerRequest.getSurveyResponse().getSurveyUuid());
+        Map<String, BigDecimal> sectionWeightageMap = sections.stream()
+                .collect(Collectors.toMap(Section::getUuid, Section::getWeightage));
+
         Map<String, UserSearchResponseContent> stringUserMap=null;
         UserSearchResponseContent user;
         try {
@@ -241,8 +255,15 @@ public class ScorecardSurveyService {
                                 if (StringUtils.isBlank(question.getQuestionStatement())) {
                                     throw new CustomException("EG_SS_QUESTION_NOT_FOUND", "question not found with id " + answer.getQuestionUuid());
                                 }
+                                answer.setQuestionStatement(question.getQuestionStatement());
+                                answer.setSectionUuid(entry.getKey());
+                                BigDecimal sectionWeightage = sectionWeightageMap.getOrDefault(answer.getSectionUuid(), BigDecimal.valueOf(0.0));
+                                answer.setSectionWeightage(sectionWeightage);
                                 answer.setUuid(uuidToUse);
                                 answer.setAuditDetails(auditDetails);
+
+                                BigDecimal questionWeightage = questionWeightageRepository.getQuestionWeightage(answer.getQuestionUuid(), answer.getSectionUuid());
+                                answer.setQuestionWeightage(BigDecimal.valueOf(questionWeightage != null ? questionWeightage.doubleValue() : 0.0));
                                 if (answer.getAnswerDetails() != null) {
                                     answer.getAnswerDetails().forEach(detail -> {
                                         detail.setAnswerUuid(answer.getUuid());

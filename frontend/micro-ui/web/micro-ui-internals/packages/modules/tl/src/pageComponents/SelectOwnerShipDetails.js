@@ -136,7 +136,8 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
         </LabelFieldPair>}
         <LabelFieldPair>
           <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
-            {`${t("TL_NEW_OWNER_DETAILS_OWNERSHIP_TYPE_LABEL")} * `}
+            {`${t("TL_NEW_OWNER_DETAILS_OWNERSHIP_TYPE_LABEL")}`}
+            <span className="requiredField">*</span>
           </CardLabel>
           <Dropdown
             className="form-field"
@@ -146,11 +147,13 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
             select={setOwnershipTypeMain}
             optionKey="i18nKey"
             t={t}
+            placeholder={t("COMMON-MASTERS_OWNERSHIP_LABEL")}
           />
         </LabelFieldPair>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller" style={editScreen ? { color: "#B1B4B6" } : {}}>
-            {`${t("TL_NEW_OWNER_DETAILS_OWNERSHIP_SUB_TYPE_LABEL")} * `}
+            {`${t("COMMON-MASTERS_SUBOWNERSHIP_LABEL")}`}
+            <span className="requiredField">*</span>
           </CardLabel>
           <Dropdown
             className="form-field"
@@ -162,6 +165,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
             optionKey="i18nKey"
             onBlur={onBlur}
             t={t}
+            placeholder={t("COMMON-MASTERS_SUBOWNERSHIP_PLACEHOLDER")}
           />
         </LabelFieldPair>
         {formState.touched?.[config.key] ? (

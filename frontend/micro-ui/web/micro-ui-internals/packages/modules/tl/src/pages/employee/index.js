@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Switch, useLocation, Link } from "react-router-dom";
-import { PrivateRoute, BreadCrumb } from "@mseva/digit-ui-react-components";
+import { PrivateRoute, BreadCrumb, BackButton } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import Inbox from "./Inbox";
 // import NewApplication from "./NewApplication";
@@ -101,7 +101,7 @@ const TLBreadCrumb = ({ location }) => {
     },
     {
       path: sessionStorage.getItem("applicationNumber") ? `/digit-ui/employee/tl/application-details/${sessionStorage.getItem("applicationNumber")}` : "",
-      content: t("TL_DETAILS_HEADER_LABEL"),
+      content: t("TL_TRADE_LICENSE_DETAILS_LABEL"),
       show: isApplicationDetails ||
       breadCrumbUrls.includes("inbox/appDetails") || 
       breadCrumbUrls.includes("home/license/appDetails") || 
@@ -160,8 +160,9 @@ const EmployeeApp = ({ path, url, userType }) => {
   const NewTLStepForm = Digit?.ComponentRegistryService?.getComponent('NewTLStepForm')
   const RenewTLStepForm = Digit?.ComponentRegistryService?.getComponent('RenewTLStepForm')
   return (
+    <React.Fragment>
+      <BackButton>{t("CS_COMMON_BACK")}</BackButton>
     <Switch>
-      <React.Fragment>
       <div className="ground-container" style={locationCheck ? {width: "100%", marginLeft: "0px"} : {marginLeft: "0px"}}>
           <div style={locationCheck ? {marginLeft: "15px"} : {}}>
             <TLBreadCrumb location={location} />
@@ -202,8 +203,9 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/search/:variant`} component={(props) => <Search {...props} parentRoute={path} />} />
           
         </div>
-      </React.Fragment>
+      
     </Switch>
+    </React.Fragment>
   );
 };
 

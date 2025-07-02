@@ -191,7 +191,7 @@ const OwnerForm = (_props) => {
             {typeOfOwner === "INSTITUTIONAL" && (
               <React.Fragment>
                 <LabelFieldPair>
-                  <CardLabel>{`${t("TL_INSTITUTION_NAME_LABEL")}*`}</CardLabel>
+                  <CardLabel>{`${t("TL_INSTITUTION_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -204,7 +204,7 @@ const OwnerForm = (_props) => {
                           type={"text"}
                           isMandatory={false}
                           value={props.value}
-                          disable={isSameAsPropertyOwner}
+                          //disable={isRenewal}
                           autoFocus={focusIndex.index === owner?.key && focusIndex.type === "instituionName"}
                           errorStyle={localFormState.touched.instituionName && errors?.instituionName?.message ? true : false}
                           onChange={(e)=>{
@@ -220,7 +220,7 @@ const OwnerForm = (_props) => {
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}> {localFormState.touched.instituionName ? errors?.instituionName?.message : ""}</CardLabelError>
                 <LabelFieldPair>
-                  <CardLabel>{`${t("TL_INSTITUTION_TYPE_LABEL")}*`}</CardLabel>
+                  <CardLabel>{`${t("TL_INSTITUTION_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -233,7 +233,7 @@ const OwnerForm = (_props) => {
                           errorStyle={localFormState.touched.subOwnerShipCategory && errors?.subOwnerShipCategory?.message ? true : false}
                           autoFocus={focusIndex.index === owner?.key && focusIndex.type === "subOwnerShipCategory"}
                           selected={props.value}
-                          disable={isSameAsPropertyOwner}
+                          //disable={isRenewal}
                           select={(e) => {
                             if (e?.code != owner?.subOwnerShipCategory?.code && isRenewal)
                               setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
@@ -242,6 +242,7 @@ const OwnerForm = (_props) => {
                           }}
                           onBlur={props.onBlur}
                           optionKey="i18nKey"
+                          placeholder={t("TL_TYPE_OF_SUB_OWNERSHIP_PLACEHOLDER")}
                         />
                       )}
                     ></Controller>
@@ -250,7 +251,7 @@ const OwnerForm = (_props) => {
                 <CardLabelError style={errorStyle}>{localFormState.touched.subOwnerShipCategory ? errors?.subOwnerShipCategory?.message : ""}</CardLabelError>
                 <CardSectionHeader>{t("TL_AUTHORIZED_PERSON_DETAILS")}</CardSectionHeader>
                 <LabelFieldPair>
-                  <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}*`}</CardLabel>
+                  <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -264,7 +265,7 @@ const OwnerForm = (_props) => {
                           isMandatory={false}
                           name="name"
                           value={props.value}
-                          disable={isSameAsPropertyOwner}
+                         // disable={isRenewal}
                           errorStyle={localFormState.touched.name && errors?.name?.message ? true : false}
                           autoFocus={focusIndex.index === owner?.key && focusIndex.type === "name"}
                           onChange={(e)=>{
@@ -273,6 +274,7 @@ const OwnerForm = (_props) => {
                             setFocusIndex({ index: owner.key, type: "name" });
                           }}
                           onBlur={props.onBlur}
+                          placeholder={t("TL_NEW_OWNER_DETAILS_NAME_PLACEHOLDER")}
                         />
                       )}
                     ></Controller>
@@ -294,7 +296,7 @@ const OwnerForm = (_props) => {
                           isMandatory={false}
                           name="designation"
                           value={props.value}
-                          disable={isSameAsPropertyOwner}
+                          //disable={isRenewal}
                           errorStyle={localFormState.touched.designation && errors?.designation?.message ? true : false}
                           autoFocus={focusIndex.index === owner?.key && focusIndex.type === "designation"}
                           onChange={(e)=>{
@@ -303,6 +305,7 @@ const OwnerForm = (_props) => {
                             setFocusIndex({ index: owner.key, type: "designation" });
                           }}
                           onBlur={props.onBlur}
+                          placeholder={t("TL_NEW_OWNER_DESIG_PLACEHOLDER")}
                         />
                       )}
                     ></Controller>
@@ -310,7 +313,7 @@ const OwnerForm = (_props) => {
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.designation ? errors?.designation?.message : ""}</CardLabelError>
                 <LabelFieldPair>
-                  <CardLabel>{`${t("TL_MOBILE_NUMBER_LABEL")}*`}</CardLabel>
+                  <CardLabel>{`${t("TL_MOBILE_NUMBER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <div className="field">
                     <Controller
                      control={control}
@@ -324,7 +327,7 @@ const OwnerForm = (_props) => {
                         isMandatory={false}
                         name="mobileNumber"
                         value={props.value}
-                        disable={isSameAsPropertyOwner}
+                       // disable={isRenewal}
                         errorStyle={localFormState.touched.mobileNumber && errors?.mobileNumber?.message ? true : false}
                         autoFocus={focusIndex.index === owner?.key && focusIndex.type === "mobileNumber"}
                         onChange={(e)=>{
@@ -333,6 +336,7 @@ const OwnerForm = (_props) => {
                           setFocusIndex({ index: owner.key, type: "mobileNumber" });
                         }}
                         onBlur={props.onBlur}
+                        placeholder={t("TL_NEW_OWNER_DETAILS_MOB_NO_PLACEHOLDER")}
                       />
                      )}
                     ></Controller>
@@ -355,7 +359,7 @@ const OwnerForm = (_props) => {
                         maxLength={11}
                         name="altContactNumber"
                         value={owner.altContactNumber}
-                        disable={isSameAsPropertyOwner}
+                        //disable={isRenewal}
                         errorStyle={localFormState.touched.altContactNumber && errors?.altContactNumber?.message ? true : false}
                         autoFocus={focusIndex.index === owner?.key && focusIndex.type === "altContactNumber"}
                         onChange={(e)=>{
@@ -364,6 +368,7 @@ const OwnerForm = (_props) => {
                           setFocusIndex({ index: owner.key, type: "altContactNumber" });
                         }}
                         onBlur={props.onBlur}
+                        placeholder={t("TL_NEW_OWNER_PHONE_PLACEHOLDER")}
                       />
                      )}></Controller>
                   </div>
@@ -384,7 +389,7 @@ const OwnerForm = (_props) => {
                         isMandatory={false}
                         name={"emailId"}
                         value={props.value}
-                        disable={isSameAsPropertyOwner}
+                        //disable={isRenewal}
                         errorStyle={localFormState.touched.emailId && errors?.emailId?.message ? true : false}
                         autoFocus={focusIndex.index === owner?.key && focusIndex.type === "emailId"}
                         onChange={(e)=>{
@@ -393,6 +398,7 @@ const OwnerForm = (_props) => {
                           setFocusIndex({ index: owner.key, type: "emailId" });
                         }}
                         onBlur={props.onBlur}
+                        placeholder={t("TL_NEW_OWNER_DETAILS_EMAIL_PLACEHOLDER")}
                       />
                      )}
                     ></Controller>
@@ -404,7 +410,7 @@ const OwnerForm = (_props) => {
             {typeOfOwner !== "INSTITUTIONAL" && (
               <React.Fragment>
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">{`${ t("TL_LOCALIZATION_TRADE_OWNER_NAME")} * `}</CardLabel>
+                  <CardLabel className="card-label-smaller">{`${ t("TL_LOCALIZATION_TRADE_OWNER_NAME")}`}<span className="requiredField">*</span></CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -427,8 +433,9 @@ const OwnerForm = (_props) => {
                             setFocusIndex({ index: -1 });
                             props.onBlur(e);
                           }}
-                          disable={isSameAsPropertyOwner}
+                         // disable={isRenewal}
                           style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                          placeholder={t("TL_NEW_OWNER_DETAILS_NAME_PLACEHOLDER")}
                         />
                       )}
                     />
@@ -439,7 +446,7 @@ const OwnerForm = (_props) => {
                   <CardLabel>{`${t("TL_NEW_OWNER_DETAILS_NAME_LABEL")}`}</CardLabel>
                 </LabelFieldPair> */}
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")} * `}</CardLabel>
+                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -457,9 +464,10 @@ const OwnerForm = (_props) => {
                           }}
                           labelStyle={{ marginTop: "unset", border: "1px solid #464646", borderRight: "none" }}
                           onBlur={props.onBlur}
-                          disable={isSameAsPropertyOwner}
+                          //disable={isRenewal}
                           errorStyle={localFormState.touched.mobileNumber && errors?.mobileNumber?.message ? true : false}
                           style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                          placeholder={t("TL_NEW_OWNER_DETAILS_MOB_NO_PLACEHOLDER")}
                         />
                       )}
                     />
@@ -467,7 +475,7 @@ const OwnerForm = (_props) => {
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.mobileNumber ? errors?.mobileNumber?.message : ""}</CardLabelError>
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")} * `}</CardLabel>
+                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <div className="field">
                     <Controller
                       control={control}
@@ -486,8 +494,9 @@ const OwnerForm = (_props) => {
                             // props.onChange(e);
                             setFocusIndex({ index: owner.key, type: "fatherOrHusbandName" });
                           }}
-                          disable={isSameAsPropertyOwner}
+                          //disable={isRenewal}
                           onBlur={props.onBlur}
+                          placeholder={t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}
                         />
                       )}
                     />
@@ -497,7 +506,7 @@ const OwnerForm = (_props) => {
                   {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}{" "}
                 </CardLabelError>
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">{`${t("TL_COMMON_RELATIONSHIP_LABEL")} * `}</CardLabel>
+                  <CardLabel className="card-label-smaller">{`${t("TL_COMMON_RELATIONSHIP_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <Controller
                     control={control}
                     name={"relationship"}
@@ -514,20 +523,21 @@ const OwnerForm = (_props) => {
                           props.onChange(e);
                         }}
                         onBlur={props.onBlur}
-                        disable={isSameAsPropertyOwner}
+                        //disable={isRenewal}
                         option={[
                           { i18nKey: "COMMON_RELATION_FATHER", code: "FATHER" },
                           { i18nKey: "COMMON_RELATION_HUSBAND", code: "HUSBAND" },
                         ]}
                         optionKey="i18nKey"
                         t={t}
+                        placeholder={t("TL_NEW_OWNER_DETAILS_FATHER_NAME_PLACEHOLDER")}
                       />
                     )}
                   />
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
                 <LabelFieldPair>
-                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")} * `}</CardLabel>
+                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`}<span className="requiredField">*</span></CardLabel>
                   <Controller
                     control={control}
                     name={"gender"}
@@ -537,7 +547,7 @@ const OwnerForm = (_props) => {
                       <Dropdown
                         className="form-field"
                         selected={props.value}
-                        disable={isSameAsPropertyOwner}
+                       // disable={isRenewal}
                         errorStyle={localFormState.touched.gender && errors?.gender?.message ? true : false}
                         select={(e) => {
                           if (e?.code != owner?.gender?.code && isRenewal) setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
@@ -547,6 +557,7 @@ const OwnerForm = (_props) => {
                         option={genderTypeMenu}
                         optionKey="i18nKey"
                         t={t}
+                        placeholder={t("TL_NEW_OWNER_DETAILS_GENDER_PLACEHOLDER")}
                       />
                     )}
                   />
@@ -573,8 +584,9 @@ const OwnerForm = (_props) => {
                           }}
                           labelStyle={{ marginTop: "unset" }}
                           onBlur={props.onBlur}
-                          disable={isSameAsPropertyOwner}
+                          //disable={isRenewal}
                           style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                          placeholder={t("TL_NEW_OWNER_DETAILS_EMAIL_PLACEHOLDER")}
                         />
                       )}
                     />
@@ -599,11 +611,12 @@ const OwnerForm = (_props) => {
                           props.onChange(e);
                         }}
                         onBlur={props.onBlur}
-                        disable={isSameAsPropertyOwner}
+                        //disable={isRenewal}
                         option={ownerTypesMenu ? ownerTypesMenu.sort((a, b) => a.name.localeCompare(b.name)) : []}
 
                         optionKey="i18nKey"
                         t={t}
+                        placeholder={t("TL_NEW_OWNER_DETAILS_SPL_OWN_CAT_PLACEHOLDER")}
                       />
                     )}
                   />
@@ -628,8 +641,9 @@ const OwnerForm = (_props) => {
                             setFocusIndex({ index: owner.key, type: "permanentAddress" });
                           }}
                           onBlur={props.onBlur}
-                          disable={isSameAsPropertyOwner}
+                         // disable={isRenewal}
                           style={isMulitpleOwners ? { background: "#FAFAFA" } : ""}
+                          placeholder={t("TL_NEW_OWNER_DETAILS_ADDR_PLACEHOLDER")}
                         />
                       )}
                     />

@@ -16,8 +16,8 @@ export const config = [
     head: "TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER",
     stepNumber: 1,
     body: [
-      { 
-        name:"",
+      {
+        name: "",
         type: "component",
         component: "TLTradeUnitsEmployee",
         key: "tradeUnits",
@@ -30,7 +30,7 @@ export const config = [
     stepNumber: 1,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLAccessoriesEmployee",
         key: "accessories",
@@ -43,7 +43,7 @@ export const config = [
     stepNumber: 1,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLTradeVlidityEmployee",
         key: "validityYears",
@@ -56,27 +56,27 @@ export const config = [
     stepNumber: 1,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
-        component: "CPTPropertySearchNSummary",
+        component: "TLPropertySearchSummary",
         key: "cpt",
         withoutLabel: true,
       },
     ],
   },
   {
-    head: "ES_NEW_APPLICATION_LOCATION_DETAILS",
+    head: "TL_NEW_TRADE_DETAILS_HEADER_TRADE_LOC_DETAILS",
     stepNumber: 1,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLSelectAddress",
         key: "address",
-        withoutLabel: true,       
+        withoutLabel: true,
       },
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLSelectStreet",
         key: "address",
@@ -87,6 +87,7 @@ export const config = [
             type: "text",
             name: "street",
             disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
+            placeholder: "TL_NEW_TRADE_DETAILS_SRT_NAME_PLACEHOLDER"
             // "validation": {
             //     "maxlength": 256,
             //     "title": "CORE_COMMON_STREET_INVALID"
@@ -97,6 +98,7 @@ export const config = [
             type: "text",
             name: "buildingName",
             disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
+            placeholder: "TL_NEW_TRADE_DETAILS_BLDG_NAME_PLACEHOLDER"
             // "validation": {
             //     "maxlength": 256,
             //     "title": "CORE_COMMON_DOOR_INVALID"
@@ -106,6 +108,7 @@ export const config = [
             label: "TL_NEW_TRADE_DETAILS_DOOR_NO_LABEL",
             type: "text",
             name: "doorNo",
+            placeholder: "TL_NEW_TRADE_DETAILS_DOOR_NO_PLACEHOLDER"
             //disable: false,
             // "validation": {
             //     "maxlength": 256,
@@ -116,6 +119,7 @@ export const config = [
             label: "TL_NEW_TRADE_DETAILS_ELEC_CON_NO_LABEL",
             type: "text",
             name: "electricityNo",
+            placeholder: "TL_NEW_TRADE_DETAILS_ELEC_CON_NO_PLACEHOLDER"
             //disable:false,
             // "validation": {
             //     "maxlength": 256,
@@ -125,7 +129,7 @@ export const config = [
         ],
       },
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLSelectPincode",
         key: "address",
@@ -152,26 +156,26 @@ export const config = [
     stepNumber: 2,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "SelectOwnerShipDetails",
         key: "ownershipCategory",
         withoutLabel: true,
       },
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLSelectOwnerAddress",
         key: "owners",
         withoutLabel: true,
       },
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLOwnerDetailsEmployee",
         key: "owners",
         withoutLabel: true,
-      }
+      },
     ],
   },
   {
@@ -179,7 +183,7 @@ export const config = [
     stepNumber: 3,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLDocumentsEmployee",
         key: "documents",
@@ -192,7 +196,7 @@ export const config = [
     stepNumber: 4,
     body: [
       {
-        name:"",
+        name: "",
         type: "component",
         component: "TLSummaryPage",
         key: "SummaryTL",

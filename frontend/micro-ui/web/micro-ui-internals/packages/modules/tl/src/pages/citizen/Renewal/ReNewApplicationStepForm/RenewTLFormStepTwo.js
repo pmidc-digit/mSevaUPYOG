@@ -7,7 +7,7 @@ import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicati
 import _ from "lodash";
 import { convertDateToEpoch } from "../../../../utils";
 
-const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
+export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
   const dispatch = useDispatch();
   const tenants = Digit.Hooks.tl.useTenants();
@@ -156,7 +156,7 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       commencementDate: convertDateToEpoch(Traid?.tradedetils?.[0]?.commencementDate),
       issuedDate: applicationData?.issuedDate,
       applicationDate: applicationData?.applicationDate,
-      financialYear: Traid?.tradedetils?.[0]?.financialYear?.code,
+      financialYear: Traid?.tradedetils?.[0]?.financialYear?.code?.split("FY")?.[1],
       licenseType: Traid?.tradedetils?.[0]?.licenseType?.code || "PERMANENT",
       businessService: applicationData?.businessService || "TL",
       // wfDocuments: applicationDocuments,
@@ -262,5 +262,3 @@ const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     </React.Fragment>
   );
 };
-
-export default RenewTLFormStepTwo;

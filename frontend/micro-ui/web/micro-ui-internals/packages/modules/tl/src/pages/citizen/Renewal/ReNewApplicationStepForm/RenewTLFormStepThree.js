@@ -6,7 +6,7 @@ import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import _ from "lodash";
 
-const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
+export const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
@@ -69,5 +69,3 @@ const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
     </React.Fragment>
   );
 };
-
-export default RenewTLFormStepThree;

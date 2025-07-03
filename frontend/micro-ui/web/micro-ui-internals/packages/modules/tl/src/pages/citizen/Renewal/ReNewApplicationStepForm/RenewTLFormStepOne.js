@@ -6,7 +6,7 @@ import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicationActions";
 import _ from "lodash";
 
-const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
+export const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
@@ -15,6 +15,10 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
   //     const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData.TraidDetails);
   const reduxStepData = useSelector((state) => state.tl.tlNewApplicationForm.formData.TraidDetails);
   const [localStepData, setLocalStepData] = useState(reduxStepData);
+
+  useEffect(() => {
+    setLocalStepData(reduxStepData);
+  },[reduxStepData]);
 
   function validateStepData(data) {
     const { tradedetils, tradeUnits, validityYears, address, cpt, accessories } = data;
@@ -45,8 +49,8 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     if (accessories && accessories.length > 0) {
       accessories.forEach((item, index) => {
         if (item?.accessoryCategory?.code) {
-          if (!item?.uom) missingFields.push(`UOM (Item ${index + 1})`);
-          if (!item?.uomValue) missingFields.push(`UOM Value (Item ${index + 1})`);
+          // if (!item?.uom) missingFields.push(`UOM (Item ${index + 1})`);
+          // if (!item?.uomValue) missingFields.push(`UOM Value (Item ${index + 1})`);
           if (!item?.count) missingFields.push(`Accessory Count (Item ${index + 1})`);
         }
       });
@@ -80,6 +84,8 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     onGoNext();
   };
 
+
+  console.log("RenewTLFormStepOne localStepData: ", reduxStepData, localStepData);
   const onGoBack = () => {
     onBackClick(config.key, localStepData);
   };
@@ -98,18 +104,18 @@ const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
 
   return (
     <React.Fragment>
-      <FormComposer
-        defaultValues={localStepData}
-        config={config.currStepConfig}
-        onSubmit={goNext}
-        onFormValueChange={onFormValueChange}
-        label={t(`${config.texts.submitBarLabel}`)}
-        currentStep={config.currStepNumber}
-        onBackClick={onGoBack}
-      />
-      {showToast && <Toast error={true} label={error} onClose={closeToast} />}
+      {localStepData && <div>
+        <FormComposer
+          defaultValues={localStepData}
+          config={config.currStepConfig}
+          onSubmit={goNext}
+          onFormValueChange={onFormValueChange}
+          label={t(`${config.texts.submitBarLabel}`)}
+          currentStep={config.currStepNumber}
+          onBackClick={onGoBack}
+        />
+        {showToast && <Toast error={true} label={error} onClose={closeToast} />}
+      </div>}
     </React.Fragment>
   );
 };
-
-export default RenewTLFormStepOne;

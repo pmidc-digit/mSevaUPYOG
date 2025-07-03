@@ -3,11 +3,11 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
-
-const InboxLinks = ({ parentRoute, businessService, allLinks, headerText, classNameForMobileView="" }) => {
+const InboxLinks = ({ parentRoute, businessService, allLinks, headerText, classNameForMobileView = "" }) => {
   const { t } = useTranslation();
 
   const [links, setLinks] = useState([]);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
 
   const { roles: userRoles } = Digit.UserService.getUser().info;
 
@@ -27,6 +27,8 @@ const InboxLinks = ({ parentRoute, businessService, allLinks, headerText, classN
     </div>
   );
 
+  const TLNewApplicationModal = Digit?.ComponentRegistryService?.getComponent("TLNewApplicationModal");
+
   return (
     <Card className="employeeCard filter inboxLinks">
       <div className={`complaint-links-container ${classNameForMobileView}`}>
@@ -34,8 +36,18 @@ const InboxLinks = ({ parentRoute, businessService, allLinks, headerText, classN
         <div className="body">
           {links.map(({ link, text, hyperlink = false, accessTo = [] }, index) => {
             return (
+              // <span className="link" key={index}>
+              //   link: "/digit-ui/employee/tl/new-application",
+              //   {hyperlink ? <a href={link}>{t(text)}</a> : <Link to={link}>{t(text)}</Link>}
+              // </span>
+
               <span className="link" key={index}>
-                {hyperlink ? <a href={link}>{t(text)}</a> : <Link to={link}>{t(text)}</Link>}
+                
+                { link === "/digit-ui/employee/tl/new-application" ?  <span onClick={()=>setShowApplicationModal(true)}>{t(text)}</span>
+                : hyperlink ? ( <a href={link}>{t(text)}</a> ) : ( <Link to={link}>{t(text)}</Link>)
+                }
+
+                {showApplicationModal ? (<TLNewApplicationModal />):null}
               </span>
             );
           })}

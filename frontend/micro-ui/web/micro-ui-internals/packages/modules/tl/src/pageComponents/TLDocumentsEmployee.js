@@ -43,9 +43,9 @@ const TLDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     goNext();
   }, [documents]);
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  // if (isLoading) {
+  //   return <Loader />;
+  // }
 
   return (
     <div>

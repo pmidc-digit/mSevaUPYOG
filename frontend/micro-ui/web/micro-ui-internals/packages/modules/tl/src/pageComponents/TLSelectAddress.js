@@ -6,7 +6,18 @@ import Timeline from "../components/TLTimeline";
 
 const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const allCities = Digit.Hooks.tl.useTenants();
-  const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
+  
+  const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
+
+  let tenantId;
+  if(currentUserType === "CITIZEN"){
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  }else{
+    tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+  }
+
+
+  //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
   //let isEditProperty = formData?.isEditProperty || false;
   const isEdit = window.location.href.includes("/edit-application/") || window.location.href.includes("renew-trade");
   //if (formData?.isUpdateProperty) isEditProperty = true;
@@ -31,12 +42,21 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
 
   const [localities, setLocalities] = useState();
 
-  const [selectedLocality, setSelectedLocality] = useState();
+  const [selectedLocality, setSelectedLocality] = useState(formData?.address?.locality || null);
 
   const [isErrors, setIsErrors] = useState(false);
 
+
+  useEffect(()=>{
+    if(localities && typeof selectedLocality === "string" && checkingLocationForRenew){
+      const foundLocality = localities?.find((item) => item.code === selectedLocality)
+      setSelectedLocality(foundLocality)
+      setValue("locality",foundLocality);
+    }
+  },[localities])
+
   useEffect(() => {
-    if (cities) {
+    if (cities && currentUserType === "EMPLOYEE") {
       if (cities.length === 1) {
         setSelectedCity(cities[0]);
       }
@@ -55,6 +75,8 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
       });
     }
   }, [formData?.tradeUnits?.[0]?.tradeCategory?.code]);
+
+  console.log("formDataInTLSelectState", formData)
 
   useEffect(() => {
     if (selectedCity && fetchedLocalities) {
@@ -150,7 +172,7 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
     }
   }, [errors]);
 
-  let checkingLocationForRenew = window.location.href.includes("renew-application-details");
+  let checkingLocationForRenew = window.location.href.includes("renew-application-details") || window.location.href.includes("renew-trade");
   if (window.location.href.includes("edit-application-details")) checkingLocationForRenew = true;
   if (userType === "employee") {
     return (
@@ -182,16 +204,21 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
           <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_MOHALLA_LABEL")}`}<span className="requiredField">*</span></CardLabel>
           <Controller
             name="locality"
-            defaultValue={formData?.address?.locality || null}
+            defaultValue={selectedLocality || formData?.address?.locality || null}
             control={control}
             rules={{ required: t("REQUIRED_FIELD") }}
             render={(props) => (
               <Dropdown
                 className="form-field"
+                // selected={
+                //   checkingLocationForRenew || formData?.cpt?.details
+                //     ? { ...formData?.cpt?.details?.address?.locality, i18nkey: formData?.cpt?.details?.address?.locality?.name }
+                //     : props.value || { ...formData?.cpt?.details?.address?.locality, i18nkey: formData?.cpt?.details?.address?.locality?.name }
+                // }
                 selected={
-                  checkingLocationForRenew || formData?.cpt?.details
-                    ? { ...formData?.cpt?.details?.address?.locality, i18nkey: formData?.cpt?.details?.address?.locality?.name }
-                    : props.value || { ...formData?.cpt?.details?.address?.locality, i18nkey: formData?.cpt?.details?.address?.locality?.name }
+                  formData?.cpt?.details?.address ? 
+                  { ...formData?.cpt?.details?.address?.locality, i18nkey: formData?.cpt?.details?.address?.locality?.name }
+                  : checkingLocationForRenew ? selectedLocality || formData?.address?.locality : props.value
                 }
                 option={localities}
                 select={props.onChange}

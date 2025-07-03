@@ -6,7 +6,16 @@ import { UPDATE_tlNewApplication } from "../../../../redux/action/TLNewApplicati
 import { convertDateToEpoch } from "../../../../utils";
 
 const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
-  const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
+  //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
+  const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
+
+  let tenantId;
+  if(currentUserType === "CITIZEN"){
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+
+  }else{
+    tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+  }
   const tenants = Digit.Hooks.tl.useTenants();
   const [canSubmit, setSubmitValve] = useState(false);
   const history = useHistory();
@@ -87,7 +96,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
   const validateOwnerDetails = (data) => {
     const { ownershipCategory, owners } = data;
-    if (!ownershipCategory?.value || !owners?.length) return false;
+    if (!ownershipCategory?.code || !owners?.length) return false;
     return owners.every(
       (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
     );
@@ -179,11 +188,13 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       address.locality = { code: TraidDetails.address.locality?.code || null };
       if (TraidDetails.address.doorNo) address.doorNo = TraidDetails.address.doorNo;
       if (TraidDetails.address.street) address.street = TraidDetails.address.street;
+      if (TraidDetails.address.buildingName) address.buildingName = TraidDetails.address.buildingName;
+      if (TraidDetails.address.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
       if (TraidDetails.address.pincode) address.pincode = TraidDetails.address.pincode;
     }
-    if (TraidDetails.address.geoLocation.latitude) {
-      address.latitude = TraidDetails.address.geoLocation.latitude;
-      address.longitude = TraidDetails.address.geoLocation.longitude;
+    if (TraidDetails.address?.geoLocation?.latitude) {
+      address.latitude = TraidDetails.address?.geoLocation?.latitude;
+      address.longitude = TraidDetails.address?.geoLocation?.longitude;
     }
 
     let owners = [];
@@ -208,7 +219,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let applicationDocuments = TraidDetails?.documents?.documents || [];
     let commencementDate = convertDateToEpoch(TraidDetails?.tradedetils?.[0]?.commencementDate);
     let financialYear = TraidDetails?.tradedetils?.[0]?.financialYear?.code;
-    let gstNo = TraidDetails?.tradedetils?.[0]?.gstNo || "";
+    let gstNo = TraidDetails?.tradedetils?.[0]?.gstNo || "";//
     let noOfEmployees = Number(TraidDetails?.tradedetils?.[0]?.noOfEmployees) || "";
     let operationalArea = Number(TraidDetails?.tradedetils?.[0]?.operationalArea) || "";
     let structureType = TraidDetails?.tradedetils?.[0]?.structureSubType?.code || "";
@@ -216,6 +227,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let subOwnerShipCategory = OwnerDetails?.ownershipCategory?.code || "";
     let licenseType = TraidDetails?.tradedetils?.[0]?.licenseType?.code || "PERMANENT";
     let validityYears = TraidDetails?.validityYears?.code || 1;
+    let oldReceiptNo = Number(TraidDetails?.tradedetils?.[0]?.oldReceiptNo) || "";
 
     console.log("trade type");
 
@@ -237,9 +249,10 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       },
     };
 
-    if (gstNo) formData.tradeLicenseDetail.additionalDetail.gstNo = gstNo;
+    if (gstNo) formData.tradeLicenseDetail.gstNo = gstNo;
     if (noOfEmployees) formData.tradeLicenseDetail.noOfEmployees = noOfEmployees;
     if (operationalArea) formData.tradeLicenseDetail.operationalArea = operationalArea;
+    if (oldReceiptNo) formData.tradeLicenseDetail.oldReceiptNo = oldReceiptNo;
     if (accessories?.length > 0) formData.tradeLicenseDetail.accessories = accessories;
     if (tradeUnits?.length > 0) formData.tradeLicenseDetail.tradeUnits = tradeUnits;
     if (owners?.length > 0) formData.tradeLicenseDetail.owners = owners;

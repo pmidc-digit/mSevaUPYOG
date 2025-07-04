@@ -24,6 +24,8 @@ import { stringReplaceAll } from "../bills/routes/bill-details/utils";
 import $ from "jquery";
 import { makePayment } from "./payGov";
 import _ from "lodash";
+import { MERCHENT_KEY, ORDER_ID, POPUP_DIPSPLAY_IMAGE, POPUP_DIPSPLAY_NAME, RAZORPAY_CALLBACK_URL_KEYS, RAZORPAY_LOADSCRIPT_URL, TRANSACTION_AMMOUNT, TRANSACTION_BUSINESSSERVICE, TRANSACTION_CALLBACKURL, TRANSACTION_REDIRECTURL, TRANSACTION_USER_EMAIL, TRANSACTION_USER_MOBILE, TRANSACTION_USERNAME } from "../../../constants/razorpayConstants"
+import { gatewayType } from "../../../constants/gatewayTypeConstants";
 
 export const SelectPaymentType = (props) => {
   const { state = {} } = useLocation();
@@ -41,10 +43,12 @@ export const SelectPaymentType = (props) => {
   const propertyId = state?.propertyId;
   const stateTenant = Digit.ULBService.getStateId();
   const { control, handleSubmit, setValue } = useForm();
-  const moduleName = tenantId?.split(".")?.[1];
+  // const moduleName = tenantId?.split(".")?.[1];
+  const moduleName = "testing"; //need to change this back to testing -> tenantId?.split(".")?.[1];
   // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
-  const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
-  const menu = menuList?.testing?.PaymentGateway
+  // const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
+  const { data: menuList } = Digit.Hooks.useCustomMDMS("pb.testing", "testing", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
+  const [isPaymentLoading, setPaymentLoading] = useState(false);
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
     {}
@@ -80,6 +84,11 @@ export const SelectPaymentType = (props) => {
       return;
     }
 
+    setPaymentLoading(true);
+
+    console.log("process.env.BASE_URL", process.env)
+    const baseURL = process.env.REACT_APP_PROXY_API
+
     const filterData = {
       Transaction: {
         tenantId: billDetails?.tenantId,
@@ -108,13 +117,20 @@ export const SelectPaymentType = (props) => {
         // callbackUrl: window.location.href.includes("mcollect") || wrkflow === "WNS"
         //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
         //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
+        // callbackUrl: (paymentAmount === 0 || billDetails.totalAmount === 0) ? 
+        // window.location.href.includes("mcollect") || wrkflow === "WNS"
+        //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
+        //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`:
+        // window.location.href.includes("mcollect") || wrkflow === "WNS"
+        //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
+        //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
         callbackUrl: (paymentAmount === 0 || billDetails.totalAmount === 0) ? 
         window.location.href.includes("mcollect") || wrkflow === "WNS"
-          ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
-          : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`:
+          ? `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
+          : `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`:
         window.location.href.includes("mcollect") || wrkflow === "WNS"
-          ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
-          : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
+          ? `${baseURL}digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
+          : `${baseURL}digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
         additionalDetails: {
           isWhatsapp: false,
           paidBy: d?.paidBy // Need To change
@@ -127,11 +143,8 @@ export const SelectPaymentType = (props) => {
       console.log("data=========",data);
 
       if(paymentAmount === 0 || billDetails.totalAmount === 0){
-        const redirectionURL = data?.Transaction?.callbackUrl.split(`${window.location.host}`)?.[1]
-        history.replace(redirectionURL, {
-          transactionData: data?.Transaction
-        })
-        // window.location = data?.Transaction?.callbackUrl
+        setPaymentLoading(false);
+        window.location.href = data?.Transaction?.callbackUrl
         return;
       }
       
@@ -221,20 +234,26 @@ export const SelectPaymentType = (props) => {
       //   }
       // }
      // window.location = redirectUrl;
-     displayRazorpay(data);
+     if(d?.paymentType === gatewayType.RAZORPAY){
+        displayRazorpay(data);
+     }else{
+       //Do Nothing
+       setPaymentLoading(false);
+     }
     } catch (error) {
       let messageToShow = "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER";
       if (error.response?.data?.Errors?.[0]) {
         const { code, message } = error.response?.data?.Errors?.[0];
         messageToShow = code;
       }
+      setPaymentLoading(false);
       setShowToast({ key: true, label: t(messageToShow) });
     }
   };
 
   async function displayRazorpay(getOrderData) {
   const res = await loadScript(
-    "https://checkout.razorpay.com/v1/checkout.js"
+    RAZORPAY_LOADSCRIPT_URL
   );
 
   if (!res) {
@@ -243,7 +262,7 @@ export const SelectPaymentType = (props) => {
   }
 
   function getQueryVariable(variable) {
-    const query = _.get(getOrderData, "Transaction.redirectUrl");
+    const query = _.get(getOrderData, TRANSACTION_REDIRECTURL);
     var vars = query.split("&");
     for (var i = 0; i < vars.length; i++) {
       var pair = vars[i].split("=");
@@ -252,13 +271,13 @@ export const SelectPaymentType = (props) => {
     return (false);
   }
   const options = {
-    key: getQueryVariable('merchant_key'),
-    amount: _.get(getOrderData, "Transaction.txnAmount") * 100,
+    key: getQueryVariable(MERCHENT_KEY),
+    amount: _.get(getOrderData, TRANSACTION_AMMOUNT) * 100,
     //currency: getQueryVariable('currency'),
-    name: "mSeva | Punjab",
-    description: _.get(getOrderData, "Transaction.businessService") + " Charge Collection",
-    image: "https://mseva.lgpunjab.gov.in/citizen/browser-icon.png",
-    order_id: getQueryVariable('orderId'),
+    name: POPUP_DIPSPLAY_NAME,
+    description: _.get(getOrderData, TRANSACTION_BUSINESSSERVICE) + " Charge Collection",
+    image: POPUP_DIPSPLAY_IMAGE,
+    order_id: getQueryVariable(ORDER_ID),
     handler: async function (response) {
       const data = {
         razorpayPaymentId: response.razorpay_payment_id,
@@ -266,12 +285,12 @@ export const SelectPaymentType = (props) => {
         razorpaySignature: response.razorpay_signature,
       };
 
-      window.location = _.get(getOrderData, "Transaction.callbackUrl") + "&razorpayPaymentId=" + data.razorpayPaymentId + "&razorpayOrderId=" + data.razorpayOrderId + "&razorpaySignature=" + data.razorpaySignature;
+      window.location = _.get(getOrderData, TRANSACTION_CALLBACKURL) + RAZORPAY_CALLBACK_URL_KEYS.PAYMENT_ID + data.razorpayPaymentId + RAZORPAY_CALLBACK_URL_KEYS.ORDER_ID + data.razorpayOrderId + RAZORPAY_CALLBACK_URL_KEYS.SIGNATURE + data.razorpaySignature;
     },
     prefill: {
-      name: _.get(getOrderData, "Transaction.user.userName"),
-      email: _.get(getOrderData, "Transaction.user.emailId"),
-      contact: _.get(getOrderData, "Transaction.user.mobileNumber"),
+      name: _.get(getOrderData, TRANSACTION_USERNAME),
+      email: _.get(getOrderData, TRANSACTION_USER_EMAIL),
+      contact: _.get(getOrderData, TRANSACTION_USER_MOBILE),
     },
     theme: {
       color: "#61dafb",
@@ -279,6 +298,7 @@ export const SelectPaymentType = (props) => {
   };
 
   const paymentObject = new window.Razorpay(options);
+  setPaymentLoading(false);
   paymentObject.open();
 }
 
@@ -302,7 +322,11 @@ export const SelectPaymentType = (props) => {
     window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
   }
 
-  if (paymentLoading) {
+  if (paymentLoading || isPaymentLoading) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // for smooth scrolling
+      });
     return <Loader />;
   }
 

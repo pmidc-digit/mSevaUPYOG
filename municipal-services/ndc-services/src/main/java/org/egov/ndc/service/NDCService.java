@@ -8,6 +8,7 @@ import org.egov.ndc.producer.Producer;
 import org.egov.ndc.repository.NDCRepository;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.util.NDCConstants;
+import org.egov.ndc.util.NDCUtil;
 import org.egov.ndc.web.model.ndc.*;
 import org.egov.ndc.workflow.WorkflowIntegrator;
 import org.egov.tracer.model.CustomException;
@@ -24,6 +25,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class NDCService {
 
+	@Autowired
+	NDCUtil ndcUtil;
 	@Autowired
 	private WorkflowIntegrator workflowIntegrator;
 
@@ -50,7 +53,14 @@ public class NDCService {
 
 	public NdcApplicationRequest createNdcApplication(boolean skipWorkFlow, NdcApplicationRequest ndcApplicationRequest) {
 		// Save applicant data
-		String applicantId = UUID.randomUUID().toString();
+//		String applicantId = UUID.randomUUID().toString();
+
+		List<String> listOfSurveyIds = ndcUtil.getIdList(ndcApplicationRequest.getRequestInfo(), ndcApplicationRequest.getApplicant().getTenantId(), "ndc.applicationid", "NDC-[cy:yyyy-MM-dd]-[SEQ_EGOV_COMMON]", 1);
+		log.info(listOfSurveyIds.toString());
+
+		String applicantId = listOfSurveyIds.get(0);
+
+
 		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
 		applicant.setUuid(applicantId);
 		applicant.setCreatedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());

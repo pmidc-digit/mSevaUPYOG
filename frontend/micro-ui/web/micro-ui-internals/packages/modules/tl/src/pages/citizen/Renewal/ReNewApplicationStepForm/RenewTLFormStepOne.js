@@ -49,8 +49,8 @@ export const RenewTLFormStepOne = ({ config, onGoNext, onBackClick, t }) => {
     if (accessories && accessories.length > 0) {
       accessories.forEach((item, index) => {
         if (item?.accessoryCategory?.code) {
-          // if (!item?.uom) missingFields.push(`UOM (Item ${index + 1})`);
-          // if (!item?.uomValue) missingFields.push(`UOM Value (Item ${index + 1})`);
+          if (!item?.uom) missingFields.push(`UOM (Item ${index + 1})`);
+          if (!item?.uomValue) missingFields.push(`UOM Value (Item ${index + 1})`);
           if (!item?.count) missingFields.push(`Accessory Count (Item ${index + 1})`);
         }
       });

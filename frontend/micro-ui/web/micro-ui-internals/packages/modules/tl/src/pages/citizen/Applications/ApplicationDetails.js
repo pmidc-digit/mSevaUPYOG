@@ -70,7 +70,7 @@ const TLApplicationDetails = () => {
         consumerCode: application[0]?.applicationNumber,
         businessService: application[0]?.businessService,
       }).then((res) => {
-        setBill(res?.Bill[0]);
+        setBill(res?.Bill?.[0]);
       });
     }
   }, [application]);

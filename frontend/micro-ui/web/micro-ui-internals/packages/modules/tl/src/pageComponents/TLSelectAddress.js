@@ -56,7 +56,7 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
   },[localities])
 
   useEffect(() => {
-    if (cities && currentUserType === "EMPLOYEE") {
+    if (cities && !isEdit) {
       if (cities.length === 1) {
         setSelectedCity(cities[0]);
       }

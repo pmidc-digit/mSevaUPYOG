@@ -4,10 +4,11 @@ import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { FormComposer } from "@mseva/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
+import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 
 export const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const history = useHistory();
 
   useEffect(() => {
@@ -28,7 +29,8 @@ export const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => 
 
     if (res) {
       console.log("Submission successful, moving to next step.");
-      history.replace(`/digit-ui/employee/tl/application-details/${formData?.CreatedResponse?.applicationNumber}`);
+
+      history.replace(`/digit-ui/citizen/tl/tradelicence/application/${formData?.CreatedResponse?.applicationNumber}/${tenantId}`);
     } else {
       console.error("Submission failed, not moving to next step.");
     }

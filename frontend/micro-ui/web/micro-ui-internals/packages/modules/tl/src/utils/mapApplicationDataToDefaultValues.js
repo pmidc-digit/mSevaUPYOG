@@ -1,7 +1,7 @@
 import { convertEpochToDate, stringReplaceAll } from "./index"; // Adjust path as needed
 
 const formatFinancialYear = (year) => ({
-    code: `FY${year}`,
+    code: `${year}`,
     i18nKey: `FY${year}`
   });
   
@@ -51,7 +51,8 @@ const formatFinancialYear = (year) => ({
       code: owner?.gender || "MALE",
       i18nKey: `TL_GENDER_${owner?.gender || "MALE"}`
     },
-    key: Date.now() + idx
+    key: Date.now() + idx,
+    // id: owner?.id
   });
   
   const formatTradeUnit = (unit, idx, t) => {
@@ -79,13 +80,18 @@ const formatFinancialYear = (year) => ({
       key: Date.now() + (idx + 1) * 20,
       ownerType: {
         code: "NONE"
-      }
+      },
+      // id: unit?.id
     };
   };
   
   const formatAccessory = (acc, idx, t) => {
+    console.log("acc",acc);
+    console.log("acc=======",typeof acc?.accessoryCategory !== "string");
+    console.log("coming here");
+    
     if (typeof acc?.accessoryCategory !== "string") return acc;
-  
+   console.log("coming here not",idx);
     const accessoryI18nKey = `TRADELICENSE_ACCESSORIESCATEGORY_${stringReplaceAll(acc?.accessoryCategory || "", "-", "_")}`;
   
     return {
@@ -99,6 +105,7 @@ const formatFinancialYear = (year) => ({
       uom: acc?.uom || "",
       uomValue: acc?.uomValue || "",
       key: Date.now() + (idx + 1) * 20,
+      // id: acc?.id,
       ownerType: {
         code: "NONE"
       }
@@ -110,7 +117,8 @@ const formatFinancialYear = (year) => ({
     const { structureType, structureSubType } = formatStructureType(tradeLicenseDetail?.structureType || "", t);
   
     const isImmovable = (tradeLicenseDetail?.structureType || "").split(".")[0] === "IMMOVABLE";
-    console.log("ApplicationDataForMapFunction: ", applicationData);
+    console.log("ApplicationDataForMapFunction: ", applicationData?.licenseType);
+
   
     return {
       TraidDetails: {
@@ -170,13 +178,19 @@ const formatFinancialYear = (year) => ({
         },
         owners: (tradeLicenseDetail?.owners || []).map((owner, idx) => formatOwner(owner, idx))
       },
+      // Documents: {
+      //   documents: {
+      //     documents: (tradeLicenseDetail?.applicationDocuments || []).map((doc) => ({
+      //       id: doc?.id || "",
+      //       documentType: doc?.documentType || "",
+      //       fileStoreId: doc?.fileStoreId || "",
+      //       tenantId: doc?.tenantId || ""
+      //     }))
+      //   }
+      // },
       Documents: {
         documents: {
-          documents: (tradeLicenseDetail?.applicationDocuments || []).map((doc) => ({
-            documentType: doc?.documentType || "",
-            fileStoreId: doc?.fileStoreId || "",
-            tenantId: doc?.tenantId || ""
-          }))
+          documents: tradeLicenseDetail?.applicationDocuments
         }
       },
       cptId: {

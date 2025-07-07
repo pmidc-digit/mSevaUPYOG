@@ -60,11 +60,13 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   const onSubmit = async (data) => {
-    let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
+    
+    // let tenantId = Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
     let isSameAsPropertyOwner = sessionStorage.getItem("isSameAsPropertyOwner");
 
     const { TraidDetails, OwnerDetails, Documents, applicationData } = data;
     const Traid = TraidDetails || data.TraidDetailsRenew; // fallback in case you use different keys
+    let tenantId = applicationData?.tenantId || Digit.ULBService.getCurrentTenantId() || Digit.ULBService.getCitizenCurrentTenant();
 
     // Prepare accessories
     let accessories = [];
@@ -121,19 +123,25 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     let owners = [];
     if (OwnerDetails?.owners?.length > 0) {
       OwnerDetails.owners.map((owner, index) => {
+        console.log("gender-ownerType-relationship",owner?.gender?.code, owner?.relationship?.code, owner?.ownerType?.code)
+        const gender = owner?.gender?.code;
+        const relationship = owner?.relationship?.code;
+        const ownerType = owner?.ownerType?.code
+
         let obj = {
           name: owner?.name || "",
           mobileNumber: owner?.mobileNumber ? Number(owner?.mobileNumber) : null,
           fatherOrHusbandName: owner?.fatherOrHusbandName || "",
-          gender: owner?.gender?.code || "MALE",
+          gender: gender || "MALE",
           permanentAddress: owner?.permanentAddress || "",
-          relationship: owner?.relationship?.code || "FATHER",
-          ownerType: owner?.ownerType?.code || "NONE",
+          relationship: relationship || "FATHER",
+          ownerType: ownerType || "NONE",
           dob: owner?.dob ? convertDateToEpoch(owner.dob) : null,
           additionalDetails: {
             ownerSequence: index,
             ownerName: owner?.name || "",
           },
+          // id: owner?.id
         };
         owners.push(obj);
       });
@@ -156,7 +164,7 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       commencementDate: convertDateToEpoch(Traid?.tradedetils?.[0]?.commencementDate),
       issuedDate: applicationData?.issuedDate,
       applicationDate: applicationData?.applicationDate,
-      financialYear: Traid?.tradedetils?.[0]?.financialYear?.code?.split("FY")?.[1],
+      financialYear: Traid?.tradedetils?.[0]?.financialYear?.code,
       licenseType: Traid?.tradedetils?.[0]?.licenseType?.code || "PERMANENT",
       businessService: applicationData?.businessService || "TL",
       // wfDocuments: applicationDocuments,
@@ -166,7 +174,7 @@ export const RenewTLFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       tradeLicenseDetail: {
         id: applicationData?.tradeLicenseDetail?.id,
         surveyNo: applicationData?.tradeLicenseDetail?.surveyNo || null,
-        channel: "COUNTER",
+        channel: "CITIZEN",
         address: address,
         owners: owners,
         structureType: Traid?.tradedetils?.[0]?.structureSubType?.code,

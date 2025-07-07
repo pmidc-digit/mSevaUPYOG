@@ -4,7 +4,6 @@ import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { FormComposer } from "@mseva/digit-ui-react-components";
 import { useHistory } from "react-router-dom";
-import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 
 export const RenewTLSummaryStepFour = ({ config, onGoNext, onBackClick, t }) => {
   const formData = useSelector((state) => state.tl.tlNewApplicationForm.formData);

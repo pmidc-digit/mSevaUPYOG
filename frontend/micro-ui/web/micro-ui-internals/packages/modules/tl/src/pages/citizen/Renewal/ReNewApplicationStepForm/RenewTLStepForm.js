@@ -48,7 +48,7 @@ const renewEmployeeConfig = [
     key: "Documents",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "TL_RENEWAL_BUTTON_SUBMIT",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {

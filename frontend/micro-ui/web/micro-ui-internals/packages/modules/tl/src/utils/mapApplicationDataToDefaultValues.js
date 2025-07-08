@@ -118,6 +118,7 @@ const formatFinancialYear = (year) => ({
   
     const isImmovable = (tradeLicenseDetail?.structureType || "").split(".")[0] === "IMMOVABLE";
     console.log("ApplicationDataForMapFunction: ", applicationData?.licenseType);
+    let isRenewal = window.location.href.includes("renew-application-details")  || window.location.href.includes("renew-trade");
 
   
     return {
@@ -125,7 +126,7 @@ const formatFinancialYear = (year) => ({
         tradedetils: [
           {
             tradeName: applicationData?.tradeName || "",
-            financialYear: formatFinancialYear(applicationData?.financialYear || ""),
+            financialYear: isRenewal? {} : formatFinancialYear(applicationData?.financialYear || ""),
             licenseType: {
               code: applicationData?.licenseType || "PERMANENT",
               active: true,

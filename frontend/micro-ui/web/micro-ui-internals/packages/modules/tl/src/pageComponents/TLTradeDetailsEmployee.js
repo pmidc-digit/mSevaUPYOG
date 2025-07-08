@@ -67,7 +67,8 @@ const TLTradeDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
   const [licenseTypeList, setLicenseTypeList] = useState([]);
-  const [licenseTypeValue, setLicenseTypeValue] = useState(tradedetils?.[0]?.licenseType||{});
+  // const [licenseTypeValue, setLicenseTypeValue] = useState(tradedetils?.[0]?.licenseType||{});
+  const [licenseTypeValue, setLicenseTypeValue] = useState([]);
   // console.log("licenseTypeValueCheck", licenseTypeValue)
 
   const { isLoading: menuLoading, data: Menu = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "StructureType");
@@ -371,7 +372,8 @@ const OwnerForm1 = (_props) => {
         <Controller
           name="financialYear"
           rules={{ required: t("REQUIRED_FIELD") }}
-          defaultValue={isRenewal ? {} : tradedetail?.financialYear}
+          // defaultValue={isRenewal ? tradedetail?.financialYear : financialYearOptions[0]}
+          defaultValue={tradedetail?.financialYear}
           control={control}
           render={(props) => (
             <Dropdown

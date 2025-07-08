@@ -8,6 +8,7 @@ import static org.egov.inbox.util.BpaConstants.MOBILE_NUMBER_PARAM;
 import static org.egov.inbox.util.BpaConstants.OFFSET_PARAM;
 import static org.egov.inbox.util.BpaConstants.STATUS_ID;
 import static org.egov.inbox.util.BpaConstants.STATUS_PARAM;
+import static org.egov.inbox.util.BpaConstants.ASSIGNEE_PARAM;
 import static org.egov.inbox.util.DSSConstants.*;
 import static org.egov.inbox.util.FSMConstants.APPLICATIONSTATUS;
 import static org.egov.inbox.util.FSMConstants.CITIZEN_FEEDBACK_PENDING_STATE;
@@ -23,6 +24,7 @@ import static org.egov.inbox.util.NocConstants.NOC;
 import static org.egov.inbox.util.NocConstants.NOC_APPLICATION_NUMBER_PARAM;
 import static org.egov.inbox.util.PTConstants.ACKNOWLEDGEMENT_IDS_PARAM;
 import static org.egov.inbox.util.PTConstants.PT;
+import static org.egov.inbox.util.PTRConstants.PTR;
 import static org.egov.inbox.util.TLConstants.APPLICATION_NUMBER_PARAM;
 import static org.egov.inbox.util.TLConstants.BUSINESS_SERVICE_PARAM;
 import static org.egov.inbox.util.TLConstants.REQUESTINFO_PARAM;
@@ -32,7 +34,8 @@ import static org.egov.inbox.util.TLConstants.TL;
 import static org.egov.inbox.util.SWConstants.SW;
 import static org.egov.inbox.util.BSConstants.*;
 import static org.egov.inbox.util.WSConstants.WS;
-
+import static org.egov.inbox.util.AssetConstants.ASSET;
+import static org.egov.inbox.util.StreetVendingConstants.*;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -123,6 +126,15 @@ public class InboxService {
 
     @Autowired
     ElasticSearchRepository elasticSearchRepository;
+
+    @Autowired
+    private AssetInboxFilterService assetInboxFilterService;
+
+    @Autowired
+    private StreetVendingInboxFilterService StreetVendingInboxFilterService;
+
+    @Autowired
+    private PtrInboxFilterService ptrInboxFilterService;
 
     @Autowired
     public InboxService(InboxConfiguration config, ServiceRequestRepository serviceRequestRepository,
@@ -431,6 +443,57 @@ public class InboxService {
                 } catch (HttpClientErrorException e) {
                     log.error("client error while searching ES : " + e.getMessage());
                     throw new CustomException("ELASTICSEARCH_ERROR", "client error while searching ES : \" + e.getMessage()");
+                }
+            }
+
+            //for street vending
+            if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
+                    && processCriteria.getModuleName().equals(SV_SERVICES)) {
+
+                List<String> applicationNumbers = StreetVendingInboxFilterService.fetchApplicationIdsFromSearcher(criteria,
+                        StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    moduleSearchCriteria.put(SV_APPLICATION_NUMBER_PARAM, applicationNumbers);
+                    businessKeys.addAll(applicationNumbers);
+                    moduleSearchCriteria.remove(LOCALITY_PARAM);
+                    moduleSearchCriteria.remove(OFFSET_PARAM);
+                    moduleSearchCriteria.remove(STATUS_PARAM);
+                    if(moduleSearchCriteria.containsKey(APPLICATION_STATUS)) {
+                        moduleSearchCriteria.put(STATUS_PARAM, moduleSearchCriteria.get(APPLICATION_STATUS));
+                    }
+                } else {
+                    isSearchResultEmpty = true;
+                }
+            }
+
+            // for pet service
+            if (!ObjectUtils.isEmpty(processCriteria.getModuleName()) && processCriteria.getModuleName().equals(PTR)) {
+
+                List<String> applicationNumbers = ptrInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
+                        StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    moduleSearchCriteria.put(ACKNOWLEDGEMENT_IDS_PARAM, applicationNumbers);
+                    businessKeys.addAll(applicationNumbers);
+                    moduleSearchCriteria.remove(LOCALITY_PARAM);
+                    moduleSearchCriteria.remove(OFFSET_PARAM);
+                } else {
+                    isSearchResultEmpty = true;
+                }
+            }
+
+            // for asset service
+            if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
+                    && processCriteria.getModuleName().equals(ASSET)) {
+
+                List<String> applicationNumbers = assetInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
+                        StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    moduleSearchCriteria.put(ACKNOWLEDGEMENT_IDS_PARAM, applicationNumbers);
+                    businessKeys.addAll(applicationNumbers);
+                    // moduleSearchCriteria.remove(LOCALITY_PARAM);
+                    // moduleSearchCriteria.remove(OFFSET_PARAM);
+                } else {
+                    isSearchResultEmpty = true;
                 }
             }
                      

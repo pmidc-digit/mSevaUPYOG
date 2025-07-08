@@ -96,7 +96,7 @@ const SurveyId= ({ t, config, onSelect, value, userType, formData, setError: set
                 onSelect={goNext}
                 placeholder={""}
                 {...input.validation}
-                onBlur={onBlur}
+                // onBlur={onBlur}
 
               // autoFocus={presentInModifyApplication}
               />

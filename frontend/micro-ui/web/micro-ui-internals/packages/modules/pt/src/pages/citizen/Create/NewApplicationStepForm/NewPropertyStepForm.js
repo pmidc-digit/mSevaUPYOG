@@ -14,9 +14,22 @@ import { useLocation } from "react-router-dom/cjs/react-router-dom";
 //Config for steps
 const createEmployeeConfig = [
   {
+    head: "GIS Details",
+    stepLabel: "GIS Address", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
+    stepNumber: 1,
+    isStepEnabled: true,
+    type: "component",
+    component: "PTNewFormStepZeroCitizen",
+    key: "GISDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
     head: "Personal Details",
     stepLabel: "Property Address", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
-    stepNumber: 1,
+    stepNumber: 2,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepOneCitizen",
@@ -29,7 +42,7 @@ const createEmployeeConfig = [
   {
     head: "ES_NEW_APPLICATION_PROPERTY_ASSESSMENT",
     stepLabel: "Property Assesment",
-    stepNumber: 2,
+    stepNumber: 3,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepTwoCitizen",
@@ -42,7 +55,7 @@ const createEmployeeConfig = [
   {
     head: "ES_NEW_APPLICATION_OWNERSHIP_DETAILS",
     stepLabel: "Owner Details",
-    stepNumber: 3,
+    stepNumber: 4,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepThreeCitizen",
@@ -55,7 +68,7 @@ const createEmployeeConfig = [
   {
     head: "ES_NEW_APPLICATION_DOCUMENTS_REQUIRED",
     stepLabel: "Document Info",
-    stepNumber: 4,
+    stepNumber: 5,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepFourCitizen",
@@ -68,7 +81,7 @@ const createEmployeeConfig = [
   {
     head: "Summary",
     stepLabel: "Summary",
-    stepNumber: 5,
+    stepNumber: 6,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormSummaryStepFiveCitizen",
@@ -124,7 +137,6 @@ const CreateEmployeeStepForm = () => {
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (

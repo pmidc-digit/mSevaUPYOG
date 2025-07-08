@@ -142,6 +142,8 @@ import CitizenPTEditFormStepFour from "./pages/citizen/EditProperty/CitizenPTEdi
 import CitizenPTEditFormSummaryStepFive from "./pages/citizen/EditProperty/CitizenPTEditFormSummaryStepFive";
 import PTSummaryEdit from "./pageComponents/PTSummaryEdit";
 import PTSummaryEmployee from "./pageComponents/PTSummaryEmployee";
+import { GISComponent } from './pageComponents/GISComponent';
+import { PTNewFormStepZeroCitizen } from './pages/citizen/Create/NewApplicationStepForm/PTNewFormStepZeroCitizen'
 
 export const PTReducers = getRootReducer;
 
@@ -276,7 +278,9 @@ const componentsToRegister = {
   CitizenPTEditFormStepFour,
   CitizenPTEditFormSummaryStepFive,
   PTSummaryEdit,
-  PTSummaryEmployee
+  PTSummaryEmployee,
+  GISComponent,
+  PTNewFormStepZeroCitizen
   
 };
 

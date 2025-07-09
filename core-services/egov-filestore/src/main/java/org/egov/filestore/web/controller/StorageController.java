@@ -4,6 +4,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +28,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,10 +36,22 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.MediaType;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 @Controller
 @RequestMapping("/v1/files")
 public class StorageController {
-
+	@Autowired
+	private RedisTemplate<String, String> redisTemplate;
 	private StorageService storageService;
 	private ResponseFactory responseFactory;
 	private StorageUtil storageUtil;
@@ -69,6 +83,31 @@ public class StorageController {
 				.header(HttpHeaders.CONTENT_TYPE, resource.getContentType()).body(resource.getResource());
 	}
 
+	@GetMapping("/view/{shortCode}")
+	public ResponseEntity<byte[]> serveCachedFile(@PathVariable String shortCode) throws Exception {
+	    String redisKey = "file:view:" + shortCode;
+	    String json = redisTemplate.opsForValue().get(redisKey);
+	    if (json == null) {
+	        return ResponseEntity.status(HttpStatus.GONE).build();
+	    }
+	    redisTemplate.delete(redisKey);
+
+	    ObjectMapper mapper = new ObjectMapper();
+	    JsonNode node = mapper.readTree(json);
+	    String base64 = node.get("content").asText();
+	    String contentType = node.get("type").asText();
+
+	    byte[] fileBytes = Base64.getDecoder().decode(base64);
+
+	    return ResponseEntity.ok()
+	        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"file\"")
+	        .contentType(MediaType.parseMediaType(contentType))
+	        .body(fileBytes);
+	}
+
+
+
+	
 	@GetMapping("/metadata")
 	@ResponseBody
 	public ResponseEntity<org.egov.filestore.domain.model.Resource> getMetaData(

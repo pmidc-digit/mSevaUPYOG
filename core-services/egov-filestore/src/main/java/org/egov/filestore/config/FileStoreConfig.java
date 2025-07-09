@@ -32,6 +32,12 @@ public class FileStoreConfig {
 	@Value("${image.large}")
 	private String _large;
 	
+	@Value("${show.path.host.url}")
+	private String showHostUrl;
+
+	@Value("${show.path.context.url}")
+	private String showContentUrl;
+	
 	@Value("${image.small.width}")
 	private Integer smallWidth;
 

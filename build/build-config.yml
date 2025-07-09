@@ -876,11 +876,33 @@ config:
       - work-dir: "municipal-services/pet-services/src/main/resources/db"
         image-name: "pet-services-db"  
    
-  - name: "builds/upyog/municipal-services/sv-services"
+   - name: "builds/upyog/municipal-services/sv-services"
     build:
       - work-dir: "municipal-services/street-vending"
         image-name: "sv-services"
         dockerfile: "build/maven/Dockerfile"
       - work-dir: "municipal-services/street-vending/src/main/resources/db"
         image-name: "sv-services-db"
+
+    - name: "builds/upyog/municipal-services/asset-services"
+      build:
+        - work-dir: "municipal-services/asset-services"
+          image-name: "asset-services"
+          dockerfile: "build/maven/Dockerfile"
+        - work-dir: "municipal-services/asset-services/src/main/resources/db"
+          image-name: "asset-services-db"
+
+    - name: "builds/upyog/municipal-services/asset-calculator"
+    build:
+      - work-dir: "municipal-services/asset-calculator"
+        image-name: "asset-calculator"
+        dockerfile: "build/maven/Dockerfile"  
+      - work-dir: "municipal-services/asset-calculator/src/main/resources/db"
+        image-name: "asset-calculator-db"
+
+    - name: builds/upyog/frontend/sv-ui
+    build:
+      - work-dir: frontend/sv-ui/
+        dockerfile: frontend/sv-ui/web/docker/Dockerfile
+        image-name: sv-ui 
         

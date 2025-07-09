@@ -163,6 +163,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const isLocation = window.location.href.includes("pt") || window.location.href.includes("application");
   const isNewRegistration = window.location.href.includes("new-application") || window.location.href.includes("modify-application") || window.location.href.includes("pt/application-details");
   const PTResponseEmployee = Digit?.ComponentRegistryService?.getComponent("PTResponseEmployee");
+  const GISIntegration = Digit?.ComponentRegistryService?.getComponent("GISIntegration");
   return (
     <Switch>
       <React.Fragment>
@@ -222,6 +223,7 @@ const EmployeeApp = ({ path, url, userType }) => {
           />
           <PrivateRoute path={`${path}/application-search`} component={(props) => <SearchApp {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/ulb-assesment`} component={(props) => <UlbAssesment {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/property/gis-values`} component={(props) => <GISIntegration {...props} parentRoute={path} />} />
         </div>
       </React.Fragment>
     </Switch>

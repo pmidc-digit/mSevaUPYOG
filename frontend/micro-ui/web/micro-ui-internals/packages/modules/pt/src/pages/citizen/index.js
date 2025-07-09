@@ -37,6 +37,7 @@ const App = () => {
   const PropertyApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PropertyApplicationDetails");
   const PTResponseCitizen = Digit?.ComponentRegistryService?.getComponent("PTResponseCitizen");
     const SubmitResponse = Digit?.ComponentRegistryService?.getComponent("SubmitResponse");
+    const GISIntegration = Digit?.ComponentRegistryService?.getComponent("GISIntegration");
   console.log("citizen path",path)
   return (
     <span className={"pt-citizen"}style={{width:"100%"}}>
@@ -63,6 +64,7 @@ const App = () => {
           <PrivateRoute path={`${path}/property/application-preview/:id`} component={(props) => <PropertyApplicationDetails {...props} t={t} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseCitizen {...props} t={t} parentRoute={path} />} />
            <PrivateRoute path={`${path}/property/pt-acknowledgement`} component={SubmitResponse}></PrivateRoute>
+          <PrivateRoute path={`${path}/property/gis-values`} component={GISIntegration} />
         </AppContainer>
       </Switch>
     </span>

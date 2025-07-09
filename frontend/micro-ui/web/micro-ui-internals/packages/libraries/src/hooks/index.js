@@ -338,6 +338,7 @@ import useAssetparentSubType from "./asset/useAssetparentSubType";
 import useAssignCreateAPI from "./asset/useAssignCreateAPI";
 import useReturnAPI from "./asset/useReturnAPI";
 import useEditUpdateAPI from "./asset/useEditUpdateAPI";
+import useMaintenanceAPI from "./asset/useMaintenanceAPI";
 
 const pgr = {
   useComplaintDetails,
@@ -615,9 +616,11 @@ const asset = {
   useAssetparentSubType,
   useTenants: useTenantsASSET,
   useAssignCreateAPI,
+  useMaintenanceAPI,
   useReturnAPI,
-  useEditUpdateAPI,
+  useEditUpdateAPI
 };
+
 
 const survey = {
   useCreate: useSurveyCreate,
@@ -752,7 +755,7 @@ const Hooks = {
   sv,
   ads,
   chb,
-  asset,
+  asset
 };
 
 export default Hooks;

@@ -1,8 +1,9 @@
-import { Loader, Modal, FormComposer } from "@mseva/digit-ui-react-components";
+import { Loader, Modal, FormComposer } from "@nudmcdgnpm/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 
 import { useHistory } from "react-router-dom";
 import { configASSETApproverApplication } from "../config";
+
 
 const Heading = (props) => {
   return <h1 className="heading-m">{props.label}</h1>;
@@ -24,7 +25,9 @@ const CloseBtn = (props) => {
 };
 
 const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationData, businessService, moduleCode }) => {
+  
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
+    
     tenantId,
     {
       roles: action?.roles?.[0]?.map?.((e) => ({ code: e })),
@@ -35,44 +38,62 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
 
   const history = useHistory(); // Initialize useHistory
 
+
+
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
   const [approvers, setApprovers] = useState([]);
   const [selectedApprover, setSelectedApprover] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
+  
+
+  
 
   useEffect(() => {
     setApprovers(approverData?.Employees?.map((employee) => ({ uuid: employee?.uuid, name: employee?.user?.name })));
   }, [approverData]);
 
+  
+  
+
   function submit(data) {
-    let workflow = { action: action?.action, comment: data?.comments, businessService, moduleName: moduleCode };
-    if (uploadedFile) workflow["documents"] = [];
-    submitAction({
-      Asset: {
-        ...applicationData,
-        workflow,
-      },
-    });
+   
+      let workflow = { action: action?.action, comment: data?.comments, businessService, moduleName: moduleCode };
+      if (uploadedFile)
+        workflow["documents"] = [
+          
+        ];
+      submitAction({
+        Asset: 
+          {
+            ...applicationData,
+            workflow,
+          },
+        
+      });
+     
+   
   }
 
   useEffect(() => {
-    if (action?.state === "INITIATED") {
-      history.push(`/digit-ui/employee/asset/assetservice/edit/` + `${applicationData?.applicationNo}`);
-    } else {
+    if(action?.state==="INITIATED"){
+      history.push(`/digit-ui/employee/asset/assetservice/edit/`+ `${applicationData?.applicationNo}`);
+    }
+    else {
       setConfig(
         configASSETApproverApplication({
-          t,
-          action,
-          approvers,
-          selectedApprover,
-          setSelectedApprover,
-          // selectFile,
-          uploadedFile,
-          setUploadedFile,
-          businessService,
-        })
-      );
+            t,
+            action,
+            approvers,
+            selectedApprover,
+            setSelectedApprover,
+            // selectFile,
+            uploadedFile,
+            setUploadedFile,
+            businessService,
+          })
+        );
+      
     }
   }, [action, approvers, uploadedFile]);
 
@@ -86,15 +107,17 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       actionSaveOnSubmit={() => {}}
       formId="modal-action"
     >
-      <FormComposer
-        config={config.form}
-        noBoxShadow
-        inline
-        childrenAtTheBottom
-        onSubmit={submit}
-        defaultValues={defaultValues}
-        formId="modal-action"
-      />
+       
+        <FormComposer
+          config={config.form}
+          noBoxShadow
+          inline
+          childrenAtTheBottom
+          onSubmit={submit}
+          defaultValues={defaultValues}
+          formId="modal-action"
+        />
+      
     </Modal>
   ) : (
     <Loader />

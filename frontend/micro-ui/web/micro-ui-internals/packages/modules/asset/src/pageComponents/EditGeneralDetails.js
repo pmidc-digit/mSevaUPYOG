@@ -734,10 +734,7 @@ const OwnerForm = (_props) => {
                     disable={false}
                     autoFocus={focusIndex.index === editAssignDetails?.key && focusIndex.type === "lifeOfAsset"}
                     onChange={(e) => {
-                      if (e.target.value.length > 3) {
-                        alert("Maximum limit is 3 digits only!");
-                        return false;
-                      }
+                      if((e.target.value).length > 3) { alert('Maximum limit is 3 digits only!'); return false }
                       props.onChange(e.target.value);
                       setFocusIndex({ index: editAssignDetails.key, type: "lifeOfAsset" });
                     }}

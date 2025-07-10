@@ -53,10 +53,7 @@ import org.egov.inbox.model.vehicle.VehicleTripDetailResponse;
 import org.egov.inbox.model.vehicle.VehicleTripSearchCriteria;
 import org.egov.inbox.repository.ElasticSearchRepository;
 import org.egov.inbox.repository.ServiceRequestRepository;
-import org.egov.inbox.util.BpaConstants;
-import org.egov.inbox.util.ErrorConstants;
-import org.egov.inbox.util.FSMConstants;
-import org.egov.inbox.util.TLConstants;
+import org.egov.inbox.util.*;
 import org.egov.inbox.web.model.Inbox;
 import org.egov.inbox.web.model.InboxResponse;
 import org.egov.inbox.web.model.InboxSearchCriteria;
@@ -135,6 +132,9 @@ public class InboxService {
 
     @Autowired
     private PtrInboxFilterService ptrInboxFilterService;
+
+    @Autowired
+    private PGRAiInboxFilterService pgrAiInboxFilterService;
 
     @Autowired
     public InboxService(InboxConfiguration config, ServiceRequestRepository serviceRequestRepository,
@@ -494,6 +494,17 @@ public class InboxService {
                     // moduleSearchCriteria.remove(OFFSET_PARAM);
                 } else {
                     isSearchResultEmpty = true;
+                }
+            }
+            // fetching total count and application numbers from searcher for pgr ai service
+            if (!ObjectUtils.isEmpty(processCriteria.getModuleName()) && processCriteria.getModuleName().equals(PGRAiConstants.PGR_MODULE)) {
+
+                totalCount = pgrAiInboxFilterService.fetchApplicationIdsCountFromSearcher(criteria, StatusIdNameMap,
+                        requestInfo);
+                List<String> applicationNumbers = pgrAiInboxFilterService.fetchApplicationIdsFromSearcher(criteria,
+                        StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    businessKeys.addAll(applicationNumbers);
                 }
             }
                      

@@ -42,7 +42,7 @@ const EditGeneralDetails = ({ config, onSelect, formData, setError, clearErrors 
 
   const { data: Asset_Parent_Sub_Type } = Digit.Hooks.asset.useAssetparentSubType(stateId, "ASSET", "assetSubCategory");
 
-  const { data: sourceofFinanceMDMS } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "SourceFinance" }], {
+  const { data: sourceofFinanceMDMS } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "SourceFinance" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["SourceFinance"];
       const activeData = formattedData?.filter((item) => item.active === true);
@@ -57,7 +57,7 @@ const EditGeneralDetails = ({ config, onSelect, formData, setError, clearErrors 
       sourcefinance.push({ i18nKey: `AST_${finance.code}`, code: `${finance.code}`, value: `${finance.name}` });
     });
 
-  const { data: currentFinancialYear } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "FinancialYear" }], {
+  const { data: currentFinancialYear } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "FinancialYear" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["FinancialYear"];
       return formattedData;
@@ -89,7 +89,7 @@ const EditGeneralDetails = ({ config, onSelect, formData, setError, clearErrors 
       });
     });
 
-  const { data: assetTypeData } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetType" }], {
+  const { data: assetTypeData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetType" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["AssetType"];
       return formattedData;
@@ -101,7 +101,7 @@ const EditGeneralDetails = ({ config, onSelect, formData, setError, clearErrors 
     assetTypeData.map((assT) => {
       assetType.push({ i18nKey: `${assT.code}`, code: `${assT.code}`, value: `${assT.name}` });
     });
-  const { data: assetCurrentUsageData } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetUsage" }], {
+  const { data: assetCurrentUsageData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetUsage" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["AssetUsage"];
       return formattedData;
@@ -114,7 +114,7 @@ const EditGeneralDetails = ({ config, onSelect, formData, setError, clearErrors 
       assetCurrentUsage.push({ i18nKey: `${assT.code}`, code: `${assT.code}`, value: `${assT.name}` });
     });
 
-  const { data: masterDropdown } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "ModeOfPossessionOrAcquisition" }], {
+  const { data: masterDropdown } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "ModeOfPossessionOrAcquisition" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["ModeOfPossessionOrAcquisition"];
       return formattedData;

@@ -18,16 +18,6 @@ const CloseBtn = (props) => {
     );
 };
 
-/**
- * @author - Shivank - NIUA
- * @modified - Khalid Rashid - NIUA
- *  Developed for renew feature , when click on renew button this pop-up will render and 
- * show two buttons, Proceed with payment and Proceed with editing application 
- * and then the user can redirected accordingly
- * 
- * TODO:- Need to create New Payload for Renewal and send it when Create demand API will call
- * 
- */
 
 const RenewPopup = ({ t, closeModal, onSubmit, application }) => {
     console.log(" ----- Renew POP coming ")

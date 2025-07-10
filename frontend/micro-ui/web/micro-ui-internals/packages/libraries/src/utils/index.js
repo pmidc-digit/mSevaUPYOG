@@ -274,6 +274,31 @@ const swAccess = () => {
   return SW_ACCESS?.length > 0;
 };
 
+const chbAccess = () => {
+  const userInfo = Digit.UserService.getUser();
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code);
+  const chbRoles = ["CHB_APPROVER", "CHB_VERIFIER"];
+  const CHB_ACCESS = userRoles?.filter((role) => chbRoles?.includes(role));
+  return CHB_ACCESS?.length > 0;
+};
+
+
+const adsAccess = () => {
+  const userInfo = Digit.UserService.getUser();
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code);
+  const adsRoles = ["ADS_CEMP"];
+  const ADS_ACCESS = userRoles?.filter((role) => adsRoles?.includes(role));
+  return ADS_ACCESS?.length > 0;
+};
+
+const assetAccess = () => {
+  const userInfo = Digit.UserService.getUser();
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code);
+  const assetRoles = ["ASSET_INITIATOR","ASSET_VERIFIER", "ASSET_APPROVER"];
+  const ASSET_ACCESS = userRoles?.filter((role) => assetRoles?.includes(role));
+  return ASSET_ACCESS?.length > 0;
+};
+
 export default {
   pdf: PDFUtil,
   downloadReceipt,
@@ -311,4 +336,7 @@ export default {
   svAccess,
   ...privacy,
   compressImage,
+  chbAccess,
+  assetAccess,
+  adsAccess
 };

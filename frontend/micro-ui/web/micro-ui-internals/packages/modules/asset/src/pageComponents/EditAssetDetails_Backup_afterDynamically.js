@@ -81,7 +81,7 @@ const OwnerForm = (_props) => {
     const tenantId = Digit.ULBService.getCurrentTenantId();
 
     //  This call with tenantId (Get city-level data)
-    const cityResponseObject = Digit.Hooks.useCustomMDMSV2(tenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
+    const cityResponseObject = Digit.Hooks.useCustomMDMS(tenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
         select: (data) => {
             const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
             return formattedData;
@@ -89,7 +89,7 @@ const OwnerForm = (_props) => {
     });
 
     // This call with stateTenantId (Get state-level data)
-    const stateResponseObject = Digit.Hooks.useCustomMDMSV2(stateTenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
+    const stateResponseObject = Digit.Hooks.useCustomMDMS(stateTenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
         select: (data) => {
             const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
             return formattedData;

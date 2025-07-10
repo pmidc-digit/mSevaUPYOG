@@ -72,18 +72,18 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
   const stateId = Digit.ULBService.getStateId();
 
   // const { data: Menu_Asset } = Digit.Hooks.asset.useAssetClassification(stateId, "ASSET", "assetClassification"); // hook for asset classification Type
-  const { data: Menu_Asset } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetClassification" }], {
+  const { data: Menu_Asset } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "assetClassification" }], {
     select: (data) => {
-      const formattedData = data?.["ASSET"]?.["AssetClassification"];
+      const formattedData = data?.["ASSET"]?.["assetClassification"];
       const activeData = formattedData?.filter((item) => item.active === true);
       return activeData;
     },
   });
 
   // const { data: Asset_Type } = Digit.Hooks.asset.useAssetType(stateId, "ASSET", "assetParentCategory");
-  const { data: Asset_Type } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetParentCategory" }], {
+  const { data: Asset_Type } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "assetParentCategory" }], {
     select: (data) => {
-      const formattedData = data?.["ASSET"]?.["AssetParentCategory"];
+      const formattedData = data?.["ASSET"]?.["assetParentCategory"];
       const activeData = formattedData?.filter((item) => item.active === true);
       return activeData;
     },
@@ -91,18 +91,17 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
 
   const { data: Asset_Sub_Type } = Digit.Hooks.asset.useAssetSubType(stateId, "ASSET", "assetCategory"); // hooks for Asset Parent Category
 
-  // const { data: Asset_Parent_Sub_Type } = Digit.Hooks.asset.useAssetparentSubType(stateId, "ASSET", "assetSubCategory");
 
   // For Sub Catagories
-  const { data: Asset_Parent_Sub_Type } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetSubCategory" }], {
+  const { data: Asset_Parent_Sub_Type } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "assetSubCategory" }], {
     select: (data) => {
-      const formattedData = data?.["ASSET"]?.["AssetSubCategory"];
+      const formattedData = data?.["ASSET"]?.["assetSubCategory"];
       const activeData = formattedData?.filter((item) => item.active === true);
       return activeData;
     },
   });
 
-  const { data: sourceofFinanceMDMS } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "SourceFinance" }], {
+  const { data: sourceofFinanceMDMS } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "SourceFinance" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["SourceFinance"];
       const activeData = formattedData?.filter((item) => item.active === true);
@@ -117,7 +116,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
       sourcefinance.push({ i18nKey: `AST_${finance.code}`, code: `${finance.code}`, value: `${finance.name}` });
     });
 
-  const { data: currentFinancialYear } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "FinancialYear" }], {
+  const { data: currentFinancialYear } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "FinancialYear" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["FinancialYear"];
       return formattedData;
@@ -272,20 +271,9 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
     Assetdescription,
   ]);
 
-  // const { data: assetTypeData } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetType" }], {
-  //   select: (data) => {
-  //     const formattedData = data?.["ASSET"]?.["AssetType"];
-  //     return formattedData;
-  //   },
-  // });
-  // let assetType = [];
 
-  // assetTypeData &&
-  //   assetTypeData.map((assT) => {
-  //     assetType.push({ i18nKey: `${assT.code}`, code: `${assT.code}`, value: `${assT.name}` });
-  //   });
 
-  const { data: assetCurrentUsageData } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetUsage" }], {
+  const { data: assetCurrentUsageData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetUsage" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["AssetUsage"];
       return formattedData;

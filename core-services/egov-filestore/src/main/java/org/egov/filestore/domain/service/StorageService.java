@@ -199,12 +199,9 @@ public class StorageService {
 	            InputStream inputStream = minioClient.getObject(minioConfig.getBucketName(), name);
 
 	            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-	            byte[] data = new byte[1];
-	            int nRead;
-	            while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-	                buffer.write(data, 0, nRead);
-	            }
+	            IOUtils.copy(inputStream, buffer);
 	            inputStream.close();
+
 
 	            byte[] fileBytes = buffer.toByteArray();
 	            String ext = name.substring(name.lastIndexOf('.') + 1).toLowerCase();

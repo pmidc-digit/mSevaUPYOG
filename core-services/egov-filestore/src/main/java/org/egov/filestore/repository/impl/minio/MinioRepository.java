@@ -32,6 +32,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.amazonaws.util.IOUtils;
+
 import io.minio.MinioClient;
 import io.minio.PutObjectOptions;
 import io.minio.errors.ErrorResponseException;
@@ -152,13 +154,10 @@ public class MinioRepository implements CloudFilesManager {
 
 	            InputStream inputStream = minioClient.getObject(minioConfig.getBucketName(), fileName);
 	            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-	            int nRead;
-	            byte[] data = new byte[8192];
-	            while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-	                buffer.write(data, 0, nRead);
-	            }
+	            IOUtils.copy(inputStream, buffer); 
 	            inputStream.close();
-	            byte[] fileBytes = buffer.toByteArray();
+
+
 
 	            String fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
 

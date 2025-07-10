@@ -340,6 +340,11 @@ import useReturnAPI from "./asset/useReturnAPI";
 import useEditUpdateAPI from "./asset/useEditUpdateAPI";
 import useMaintenanceAPI from "./asset/useMaintenanceAPI";
 
+import useCreate from "./pgrAi/useCreate";
+import useSearchPGRAI from "./pgrAi/useSearchPGRAI";
+import useFilterEmployee from "./pgrAi/useFilterEmployee";
+import useApplicationDetails from "./pgrAi/useApplicationDetails";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -684,6 +689,12 @@ const ws = {
 const reports = {
   useReportMeta,
 };
+const pgrAi={
+  useCreate,
+  useSearchPGRAI,
+  useFilterEmployee,
+  useApplicationDetails
+}
 
 const Hooks = {
   useSessionStorage,
@@ -755,7 +766,8 @@ const Hooks = {
   sv,
   ads,
   chb,
-  asset
+  asset,
+  pgrAi
 };
 
 export default Hooks;

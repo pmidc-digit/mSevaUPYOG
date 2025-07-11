@@ -24,3 +24,16 @@ export const useNDCSearchApplication = (params, tenantId, config = {}, t) => {
 
     return { ...result, revalidate: () => client.invalidateQueries(["NDC_APPLICATIONS_LIST", params]) };
 }
+
+export const useNDCSearchApplicationEmployee = (params, tenantId, config = {}, t) => {
+    const client = useQueryClient();
+    const result = useQuery(["NDC_APPLICATIONS_LIST", params], useNDCSearch(params, tenantId, config), {
+        staleTime: Infinity,
+        select: (data) => {
+            const objData = data?.data
+            return objData
+        }
+    })
+
+    return { ...result, revalidate: () => client.invalidateQueries(["NDC_APPLICATIONS_LIST", params]) };
+}

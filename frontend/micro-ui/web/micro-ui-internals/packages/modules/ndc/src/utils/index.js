@@ -57,7 +57,6 @@ export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") =
     /* Need to enhance this util to return required format*/
   
     let downloadLink = documents[fileStoreId] || "";
-    console.log("downloadLink:", documents);
     let differentFormats = downloadLink?.split(",") || [];
     let fileURL = "";
     differentFormats.length > 0 &&

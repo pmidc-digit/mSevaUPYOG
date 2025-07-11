@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useMemo, useReducer } from "react";
+import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect, use } from "react";
 import { InboxComposer, ComplaintIcon, Header } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
@@ -11,7 +11,8 @@ import CreateNDCApplicationStep from "../createNDCApplication";
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
 
   const searchFormDefaultValues = {
     // mobileNumber: "",
@@ -111,10 +112,26 @@ const Inbox = ({ parentRoute }) => {
     t
   );
 
-  const { isLoading: isInboxLoading, data: { table = [], statuses, totalCount } = {} } = Digit.Hooks.ndc.useInbox({
-    tenantId,
-    filters: { ...formState },
-  });
+  // const { isLoading: isInboxLoading, data: { table = [], statuses, totalCount } = {} } = Digit.Hooks.ndc.useInbox({
+  //   tenantId,
+  //   filters: { ...formState },
+  // });
+
+  const { isLoading: isInboxLoading, data} = Digit.Hooks.ndc.useSearchEmployeeApplication({status: "CREATE"}, tenantId)
+
+  const [table, setTable] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+
+  useEffect(() => {
+    if(!isInboxLoading && data) {
+      setTable(data?.Applications || []);
+      setStatuses(data?.status || []);
+      setTotalCount(data?.totalCount || 0);
+    }
+  }, [data]);
+
+  console.log("tenantIdInNDCInbox",   data);
 
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,

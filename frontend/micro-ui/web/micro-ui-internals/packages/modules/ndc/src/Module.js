@@ -54,7 +54,7 @@ const NDCModule = ({ stateCode, userType, tenants }) => {
 const componentsToRegister = {
   NDCModule,
   NOCCard,
-  NOCApplicationOverview: ApplicationOverview,
+  NDCApplicationOverview: ApplicationOverview,
   NDCInbox: Inbox,
   NOCSearchApplication,
   PropertyDetailsForm,

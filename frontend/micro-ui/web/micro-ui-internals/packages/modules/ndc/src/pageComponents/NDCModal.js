@@ -1,8 +1,7 @@
 import { Loader, Modal, FormComposer } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 
-import { configTLApproverApplication } from "../config";
-import * as predefinedConfig from "../config";
+import { ModalConfig } from "../config/ModalConfig";
 
 const Heading = (props) => {
   return <h1 className="heading-m">{props.label}</h1>;
@@ -23,7 +22,7 @@ const CloseBtn = (props) => {
   );
 };
 
-const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationData, businessService, moduleCode }) => {
+const NDCModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationData, businessService, moduleCode }) => {
   console.log("ActionModalActions: ", action)
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
@@ -130,7 +129,7 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   useEffect(() => {
     if (action) {
       setConfig(
-        configTLApproverApplication({
+        ModalConfig({
           t,
           action,
           approvers,
@@ -176,4 +175,4 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
   );
 };
 
-export default ActionModal;
+export default NDCModal;

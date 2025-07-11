@@ -299,6 +299,12 @@ const Urls = {
     assetAssignable:"/asset-services/v1/assets/assignment/_search"
   },
 
+  pgrAi:{
+    PGR_Create_AI:"/pgr-ai-services/v1/request/_create",
+    PGR_Search_AI: "/pgr-ai-services/v1/request/_search",
+    PGR_Update_AI:"/pgr-ai-services/v1/request/_update"
+  },
+
   access_control: "/access/v1/actions/mdms/_get",
   billgenie: "/egov-searcher",
   audit: "/inbox/v1/elastic/_search",

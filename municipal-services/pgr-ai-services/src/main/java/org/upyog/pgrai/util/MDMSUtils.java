@@ -101,6 +101,6 @@ public class MDMSUtils {
      * @return The constructed MDMS search URL.
      */
     public StringBuilder getMdmsSearchUrl() {
-        return new StringBuilder().append(config.getMdmsHost()).append(config.getMdmsEndPoint());
+        return new StringBuilder().append(config.getMdmsHost()).append(config.getMdmsPath());
     }
 }

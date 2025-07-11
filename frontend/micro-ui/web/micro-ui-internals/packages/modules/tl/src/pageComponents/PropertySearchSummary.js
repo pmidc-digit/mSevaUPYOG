@@ -197,13 +197,13 @@ const PropertySearchSummary = ({ config, onSelect, userType, formData, setError,
                   // onSelect(config.key, { id: e.target.value });
                   setValue(e.target.value, propertyIdInput.name);
                 }}
-                disable={false}
+                disable={isEmpRenewLicense}
                 defaultValue={undefined}
                 style={{ width: "80%", float: "left", marginRight: "20px" }}
                 {...propertyIdInput.validation}
                 placeholder={t(`${propertyIdInput.placeholder}`)}
               />
-              <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
+              <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty} disabled={isEmpRenewLicense}>
                 {`${t("PT_SEARCH")}`}
               </button>
             </div>

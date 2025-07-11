@@ -338,6 +338,12 @@ import useAssetparentSubType from "./asset/useAssetparentSubType";
 import useAssignCreateAPI from "./asset/useAssignCreateAPI";
 import useReturnAPI from "./asset/useReturnAPI";
 import useEditUpdateAPI from "./asset/useEditUpdateAPI";
+import useMaintenanceAPI from "./asset/useMaintenanceAPI";
+
+import useCreate from "./pgrAi/useCreate";
+import useSearchPGRAI from "./pgrAi/useSearchPGRAI";
+import useFilterEmployee from "./pgrAi/useFilterEmployee";
+import useApplicationDetails from "./pgrAi/useApplicationDetails";
 
 const pgr = {
   useComplaintDetails,
@@ -615,9 +621,11 @@ const asset = {
   useAssetparentSubType,
   useTenants: useTenantsASSET,
   useAssignCreateAPI,
+  useMaintenanceAPI,
   useReturnAPI,
-  useEditUpdateAPI,
+  useEditUpdateAPI
 };
+
 
 const survey = {
   useCreate: useSurveyCreate,
@@ -681,6 +689,12 @@ const ws = {
 const reports = {
   useReportMeta,
 };
+const pgrAi={
+  useCreate,
+  useSearchPGRAI,
+  useFilterEmployee,
+  useApplicationDetails
+}
 
 const Hooks = {
   useSessionStorage,
@@ -753,6 +767,7 @@ const Hooks = {
   ads,
   chb,
   asset,
+  pgrAi
 };
 
 export default Hooks;

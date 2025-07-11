@@ -101,7 +101,9 @@ export const ApplicationCard = ({
             </div>
           )}
           {type === "SORT" && (
-            <div className="popup-module">{<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} onSort={onSort} />}</div>
+            <div className="popup-module">
+              {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} onSort={onSort} />}
+            </div>
           )}
           {type === "SEARCH" && (
             <div className="popup-module">

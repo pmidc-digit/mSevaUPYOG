@@ -59,6 +59,8 @@ import { SVService } from "./services/elements/SV";
 import { ADSServices } from "./services/elements/ADS";
 import { CHBServices } from "./services/elements/CHB";
 import { ASSETService } from "./services/elements/ASSET";
+import { PGRAIService } from "./services/elements/PGRAI";
+import { PGRAIUpdate } from "./services/elements/PGRAIUpdate";
 
 const setupLibraries = (Library, props) => {
   window.Digit = window.Digit || {};
@@ -125,6 +127,8 @@ const initLibraries = () => {
   setupLibraries("AccessControlService", AccessControlService);
   setupLibraries("BillServices", BillServices);
   setupLibraries("AuditService", AuditService);
+  setupLibraries("PGRAIService", PGRAIService);
+  setupLibraries("PGRAIUpdate", PGRAIUpdate);
   return new Promise((resolve) => {
     initI18n(resolve);
   });

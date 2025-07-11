@@ -101,7 +101,10 @@ module.exports = function (app) {
     "/asset-services/maintenance/v1/_update",
     "/asset-services/maintenance/v1/_search",
     "/asset-services/v1/disposal/_search",
-    "/asset-services/v1/assets/assignment/_search"
+    "/asset-services/v1/assets/assignment/_search",
+    "/pgr-ai-services/v1/request/_create",
+    "/pgr-ai-services/v1/request/_search",
+    "/pgr-ai-services/v1/request/_update",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

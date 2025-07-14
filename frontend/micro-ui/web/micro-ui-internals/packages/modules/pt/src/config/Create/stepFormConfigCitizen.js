@@ -4,13 +4,6 @@ export const newConfig = [
     stepNumber: 1,
     body: [
       {
-        type: "component",
-        isMandatory: true,
-        component: "SurveyId",
-        key: "surveyId",
-        withoutLabel: true,
-      },
-      {
           type: "component",
           isMandatory: true,
           component: "GISComponent",
@@ -82,13 +75,13 @@ export const newConfig = [
         nextStep: "existingPropertyId",
       },
 
-      // {
-      //   type: "component",
-      //   isMandatory: true,
-      //   component: "SurveyId",
-      //   key: "surveyId",
-      //   withoutLabel: true,
-      // },
+      {
+        type: "component",
+        isMandatory: true,
+        component: "SurveyId",
+        key: "surveyId",
+        withoutLabel: true,
+      },
       {
         type: "component",
         isMandatory: true,

@@ -5,11 +5,13 @@ import { useParams } from "react-router-dom";
 import { Link, useHistory } from "react-router-dom";
 import { convertToStakeholderObject } from "../../../utils/index";
 import getAcknowledgementData from "../../../../getAcknowlegment";
-const GetActionMessage = ( props) => {
-  const LicenseType=props?.data?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
+const GetActionMessage = (props) => {
+  const LicenseType = props?.data?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
   const { t } = useTranslation();
   if (props.isSuccess) {
-    return !window.location.href.includes("edit-application") ? `${t(`TRADELICENSE_TRADETYPE_${LicenseType}`)}${t(`CS_STAKEHOLDER_APPLICATION_SUCCESS`)}` : t("CS_PROPERTY_UPDATE_APPLICATION_SUCCESS");
+    return !window.location.href.includes("edit-application")
+      ? `${t(`TRADELICENSE_TRADETYPE_${LicenseType}`)}${t(`CS_STAKEHOLDER_APPLICATION_SUCCESS`)}`
+      : t("CS_PROPERTY_UPDATE_APPLICATION_SUCCESS");
   } else if (props.isLoading) {
     return !window.location.href.includes("edit-application") ? t("CS_STAKEHOLDER_APPLICATION_PENDING") : t("CS_PROPERTY_UPDATE_APPLICATION_PENDING");
   } else if (!props.isSuccess) {
@@ -23,7 +25,7 @@ const rowContainerStyle = {
 };
 
 const BannerPicker = (props) => {
-  const LicenseType=props?.data?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
+  const LicenseType = props?.data?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
   return (
     <Banner
       message={GetActionMessage(props)}
@@ -38,7 +40,7 @@ const BannerPicker = (props) => {
 
 const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   const { t } = useTranslation();
-  const {id}= useParams();
+  const { id } = useParams();
   //const isPropertyMutation = window.location.href.includes("property-mutation");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const mutation = Digit.Hooks.obps.useStakeholderAPI(data?.address?.city ? data.address?.city?.code : tenantId, true);
@@ -57,24 +59,22 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
       mutation.mutate(formdata, {
         onSuccess,
       });
-    } catch (err) {
-    }
+    } catch (err) {}
   }, []);
-  const state = tenantId?.split('.')[0]
+  const state = tenantId?.split(".")[0];
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
-    tenantId: tenantId?.split('.')[0],
+    tenantId: tenantId?.split(".")[0],
     id: id,
     moduleCode: "BPAREG",
   });
-  const {  data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(state, { applicationNumber: id, tenantId: state }, {});
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(state, { applicationNumber: id, tenantId: state }, {});
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails ;
-    const tenantInfo  = tenants.find((tenant) => tenant.code === Property.tenantId);
+    const Property = applicationDetails;
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
     const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
-   
+
     Digit.Utils.pdf.generate(acknowledgementData);
-    
   };
 
   return mutation.isLoading || mutation.isIdle ? (
@@ -99,10 +99,10 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
               <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
             </Link>
           )}
-          {mutation.isSuccess &&(
-              <div style={{marginTop:"10px"}}>
-              <SubmitBar label={t("CS_COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf}/>
-              </div>
+          {mutation.isSuccess && (
+            <div style={{ marginTop: "10px" }}>
+              <SubmitBar label={t("CS_COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+            </div>
           )}
           {!isOpenLinkFlow && (
             <Link to={`/digit-ui/citizen`}>

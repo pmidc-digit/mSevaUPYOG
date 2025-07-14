@@ -199,9 +199,6 @@ import useServiceTypeFromApplicationType from "./obps/useServiceTypeFromApplicat
 import useBusinessServiceBasedOnServiceType from "./obps/useBusinessServiceBasedOnServiceType";
 import useBusinessServiceData from "./obps/useBusinessServiceData";
 import useBPATaxDocuments from "./obps/useBPATaxDocuments";
-import useDistricts from "./obps/useDistricts";
-import useULBList from "./obps/useULBList";
-import useUlbType from "./obps/useUlbType";
 
 import useEventInbox from "./events/useEventInbox";
 import useEventDetails from "./events/useEventDetails";
@@ -548,9 +545,6 @@ const obps = {
   useBusinessServiceBasedOnServiceType,
   useBusinessServiceData,
   useBPATaxDocuments,
-  useDistricts,
-  useULBList,
-  useUlbType,
 };
 
 const events = {
@@ -623,9 +617,8 @@ const asset = {
   useAssignCreateAPI,
   useMaintenanceAPI,
   useReturnAPI,
-  useEditUpdateAPI
+  useEditUpdateAPI,
 };
-
 
 const survey = {
   useCreate: useSurveyCreate,
@@ -689,12 +682,12 @@ const ws = {
 const reports = {
   useReportMeta,
 };
-const pgrAi={
+const pgrAi = {
   useCreate,
   useSearchPGRAI,
   useFilterEmployee,
-  useApplicationDetails
-}
+  useApplicationDetails,
+};
 
 const Hooks = {
   useSessionStorage,
@@ -767,7 +760,7 @@ const Hooks = {
   ads,
   chb,
   asset,
-  pgrAi
+  pgrAi,
 };
 
 export default Hooks;

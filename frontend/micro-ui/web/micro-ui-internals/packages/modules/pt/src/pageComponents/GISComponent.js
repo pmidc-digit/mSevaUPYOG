@@ -10,7 +10,7 @@ export const GISComponent = ({config, onSelect, userType, formData, setError, fo
         // }else{
         //     alert("Please a valid a survey ID before proceeding to the GIS map.");
         // }
-        const url = "https://onemap.nic.in/punjab/map.aspx?PROPERTYID=001-A01-0123"; // your third-party URL
+        const url = "https://onemap.punjab.gov.in/map.aspx?PROPERTYID=G2-2358"; // your third-party URL
         window.open(url, "_blank", "noopener,noreferrer");
     }
     const onGISMapClickScenarioTwo = ()=>{
@@ -20,7 +20,7 @@ export const GISComponent = ({config, onSelect, userType, formData, setError, fo
         // }else{
         //     alert("Please a valid a survey ID before proceeding to the GIS map.");
         // }
-        const url = "https://onemap.nic.in/punjab/map.aspx?surveyid=001-A01-0123"; // your third-party URL
+        const url = "https://onemap.punjab.gov.in/map.aspx?surveyid=G2-2358"; // your third-party URL
         window.open(url, "_blank", "noopener,noreferrer");
     }
     return(

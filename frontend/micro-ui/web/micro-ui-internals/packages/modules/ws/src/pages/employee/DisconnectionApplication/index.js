@@ -2,7 +2,7 @@ import { Loader } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useRouteMatch, Switch, Route, Redirect } from "react-router-dom";
-import { newConfig as newConfigWS } from "../../../config/wsDisconnectionConfig";
+import { newConfig  } from "../../../config/wsDisconnectionConfig";
 
 const getPath = (path, params) => {
   params && Object.keys(params).map(key => {
@@ -16,11 +16,12 @@ const DisconnectionApplication = () => {
   const { t } = useTranslation();
   const match = useRouteMatch();
   const stateId = Digit.ULBService.getStateId();
-  let { data: newConfig, isLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSDisconnectionConfig(stateId, {});
+  //let { data: newConfig, isLoading } = Digit.Hooks.ws.useWSConfigMDMS.WSDisconnectionConfig(stateId, {});
 
   let config = [];
 
-  if (!isLoading && newConfig.length > 0) {
+  //if (!isLoading && newConfig.length > 0) {
+    if (newConfig.length > 0) {
     newConfig.forEach((obj) => {
       config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
     });

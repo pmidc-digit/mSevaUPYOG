@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Loader, Modal, FormComposer, ButtonSelector, ActionBar,ApplyFilterBar  } from "@mseva/digit-ui-react-components";
+import { Loader, Modal, FormComposer, ButtonSelector, ActionBar, ApplyFilterBar } from "@mseva/digit-ui-react-components";
 import { configAcceptApplication } from "../config/Approve";
 import { configTermsAndConditions } from "../config/TermsAndConditions";
 
 const Heading = (props) => {
-  return <h1 style={{marginLeft:"22px"}} className="heading-m BPAheading-m">{props.label}</h1>;
+  return (
+    <h1 style={{ marginLeft: "22px" }} className="heading-m BPAheading-m">
+      {props.label}
+    </h1>
+  );
 };
 
 const Close = () => (
@@ -15,7 +19,7 @@ const Close = () => (
 
 const CloseBtn = (props) => {
   return (
-    <div className="icon-bg-secondary" onClick={props.onClick} style={{backgroundColor: "#FFFFFF"}}>
+    <div className="icon-bg-secondary" onClick={props.onClick} style={{ backgroundColor: "#FFFFFF" }}>
       <Close />
     </div>
   );
@@ -32,72 +36,68 @@ const ActionModal = ({ t, closeModal, submitAction, actionData, action, applicat
 
   const selectFile = (e) => {
     setFile(e.target.files[0]);
-  }
+  };
 
   useEffect(() => {
     switch (action) {
       case "APPROVE": {
-        setConfig(
-          configAcceptApplication({ t, action, selectFile, uploadedFile, error, isCommentRequired: false, setUploadedFile,file, error })
-        )
+        setConfig(configAcceptApplication({ t, action, selectFile, uploadedFile, error, isCommentRequired: false, setUploadedFile, file, error }));
         break;
       }
       case "SEND_TO_ARCHITECT":
-        setConfig(
-          configAcceptApplication({ t, action, selectFile, uploadedFile, error, setUploadedFile,file, error })
-        );
+        setConfig(configAcceptApplication({ t, action, selectFile, uploadedFile, error, setUploadedFile, file, error }));
         break;
       case "TERMS_AND_CONDITIONS":
         setTermsData(true);
         setConfig(configTermsAndConditions({ t, applicationData }));
-        break;  
+        break;
       default:
-        setConfig(
-          configAcceptApplication({ t, action, selectFile, uploadedFile, error, isCommentRequired: false , setUploadedFile,file, error})
-        )
+        setConfig(configAcceptApplication({ t, action, selectFile, uploadedFile, error, isCommentRequired: false, setUploadedFile, file, error }));
     }
   }, [action, uploadedFile, error]);
 
   useEffect(() => {
     (async () => {
-        setError(null);
-        if (file) {
-              const allowedFileTypesRegex = /(.*?)(jpg|jpeg|png|image|pdf)$/i
-              if (file.size >= 5242880) {
-                setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
-              } else if (file?.type && !allowedFileTypesRegex.test(file?.type)) {
-                setError(t(`NOT_SUPPORTED_FILE_TYPE`))
-              } else {
-                try {
-                    setUploadedFile(null);
-                    const response = await Digit.UploadServices.Filestorage("BPA", file, Digit.ULBService.getStateId());
-                    if (response?.data?.files?.length > 0) {
-                        setUploadedFile(response?.data?.files[0]?.fileStoreId);
-                    } else {
-                        setError(t("CS_FILE_UPLOAD_ERROR"));
-                    }
-                } catch (err) {
-                    setError(t("CS_FILE_UPLOAD_ERROR"));
-                }
+      setError(null);
+      if (file) {
+        const allowedFileTypesRegex = /(.*?)(jpg|jpeg|png|image|pdf)$/i;
+        if (file.size >= 5242880) {
+          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+        } else if (file?.type && !allowedFileTypesRegex.test(file?.type)) {
+          setError(t(`NOT_SUPPORTED_FILE_TYPE`));
+        } else {
+          try {
+            setUploadedFile(null);
+            const response = await Digit.UploadServices.Filestorage("BPA", file, Digit.ULBService.getStateId());
+            if (response?.data?.files?.length > 0) {
+              setUploadedFile(response?.data?.files[0]?.fileStoreId);
+            } else {
+              setError(t("CS_FILE_UPLOAD_ERROR"));
             }
+          } catch (err) {
+            setError(t("CS_FILE_UPLOAD_ERROR"));
+          }
         }
+      }
     })();
   }, [file]);
 
   const submit = (data) => {
     let workflow = { action };
     if (uploadedFile) {
-      workflow.varificationDocuments = [{
-        documentType: "Document - 1",
-        fileName: file?.name || "",
-        fileStoreId: uploadedFile
-      }]
+      workflow.varificationDocuments = [
+        {
+          documentType: "Document - 1",
+          fileName: file?.name || "",
+          fileStoreId: uploadedFile,
+        },
+      ];
     }
 
-    if(!data?.comments) delete data.comments;
+    if (!data?.comments) delete data.comments;
 
-    submitAction({ ...data, ...workflow, })
-  }
+    submitAction({ ...data, ...workflow });
+  };
 
   return (
     <Modal
@@ -111,15 +111,19 @@ const ActionModal = ({ t, closeModal, submitAction, actionData, action, applicat
       isDisabled={false}
       //style={{height: "auto", padding: "10px"}}
       isOBPSFlow={true}
-      popupStyles={mobileView?{width:"720px"}:{}}
-      style={!mobileView?{minHeight: "45px", height: "auto", width:"107px",paddingLeft:"0px",paddingRight:"0px"}:{minHeight: "45px", height: "auto",width:"160px"}}
+      popupStyles={mobileView ? { width: "720px" } : {}}
+      style={
+        !mobileView
+          ? { minHeight: "45px", height: "auto", width: "107px", paddingLeft: "0px", paddingRight: "0px" }
+          : { minHeight: "45px", height: "auto", width: "160px" }
+      }
       hideSubmit={config?.label?.hideSubmit ? true : false}
-      popupModuleMianStyles={action == "TERMS_AND_CONDITIONS" ? {height : "92%", boxSizing: "border-box"}: mobileView?{paddingLeft:"0px"}: {}}
-      headerBarMainStyle={action == "TERMS_AND_CONDITIONS" ? {margin: "0px", height: "35px"}: {}}
+      popupModuleMianStyles={action == "TERMS_AND_CONDITIONS" ? { height: "92%", boxSizing: "border-box" } : mobileView ? { paddingLeft: "0px" } : {}}
+      headerBarMainStyle={action == "TERMS_AND_CONDITIONS" ? { margin: "0px", height: "35px" } : {}}
     >
-      {config?.form ?
+      {config?.form ? (
         <FormComposer
-          cardStyle={{ minWidth: "unset", paddingRight: "unset", marginRight:"18px",paddingBottom:"64px" }}
+          cardStyle={{ minWidth: "unset", paddingRight: "unset", marginRight: "18px", paddingBottom: "64px" }}
           config={config?.form}
           noBoxShadow
           inline
@@ -127,22 +131,21 @@ const ActionModal = ({ t, closeModal, submitAction, actionData, action, applicat
           onSubmit={submit}
           defaultValues={defaultValues}
           formId="modal-action"
-        /> : null
-      }
-      {termsData ?
-        <div style={{height: "100%"}}>
+        />
+      ) : null}
+      {termsData ? (
+        <div style={{ height: "100%" }}>
           <div style={{ height: "95%" }}>
-            <div style={{fontSize: "18px", paddingBottom: "16px", color :"#000000", fontWeight : "700"}}>{t("TERMS_AND_CONDITIONS")}</div>
-            {config?.data && config?.data?.map((value, index) => <div style={{ height: "90%", overflow: "auto"}}>{`${value}`}</div>)}
+            <div style={{ fontSize: "18px", paddingBottom: "16px", color: "#000000", fontWeight: "700" }}>{t("TERMS_AND_CONDITIONS")}</div>
+            {config?.data && config?.data?.map((value, index) => <div style={{ height: "90%", overflow: "auto" }}>{`${value}`}</div>)}
           </div>
-          <div style={{display: "flex", justifyContent: "center", minHeight: "5%"}}>
-            <ButtonSelector label={t("BPA_GO_BACK_LABEL")} onSubmit={closeModal} style={{minWidth: "240px"}}/>
+          <div style={{ display: "flex", justifyContent: "center", minHeight: "5%" }}>
+            <ButtonSelector label={t("BPA_GO_BACK_LABEL")} onSubmit={closeModal} style={{ minWidth: "240px" }} />
           </div>
-        </div> : null
-      }
-     
+        </div>
+      ) : null}
     </Modal>
-  )
-}
+  );
+};
 
 export default ActionModal;

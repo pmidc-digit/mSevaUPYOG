@@ -24,7 +24,6 @@ import OBPSResponse from "../employee/OBPSResponse";
 import Inbox from "../employee/Inbox";
 
 const App = ({ path }) => {
-  console.log("ethe tn aa rea");
   const location = useLocation();
   const { t } = useTranslation();
   let isCommonPTPropertyScreen = window.location.href.includes("/ws/create-application/property-details");

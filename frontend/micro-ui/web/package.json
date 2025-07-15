@@ -55,7 +55,7 @@
     "@mseva/upyog-ui-module-ads": "1.0.16",
     "@mseva/upyog-ui-module-chb": "1.0.10",
     "@mseva/upyog-ui-module-asset": "1.0.8",
-    "@mseva/upyog-ui-module-pgrai":"1.0.0",
+    "@mseva/upyog-ui-module-pgrai": "1.0.1",
     "babel-loader": "8.1.0",
     "qrcode": "^1.5.3",
     "react": "17.0.2",

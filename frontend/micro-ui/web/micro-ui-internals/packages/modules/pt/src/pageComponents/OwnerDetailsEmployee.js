@@ -778,7 +778,7 @@ const [isSamePropAddress,setIsSamePropAddress] = useState(false)
                   />
                 )}
           />
-{formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.MULTIPLEOWNERS" || formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.SINGLEOWNER" &&(
+{(formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.MULTIPLEOWNERS" || formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.SINGLEOWNER") &&(
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("Ownership Percentage")} {isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>
             <div className="field">

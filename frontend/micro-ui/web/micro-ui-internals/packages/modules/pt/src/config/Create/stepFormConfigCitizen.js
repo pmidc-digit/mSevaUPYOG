@@ -1,7 +1,20 @@
 export const newConfig = [
   {
-    head: "Personal Details",
+    head: "GIS_MAPPING",
     stepNumber: 1,
+    body: [
+      {
+          type: "component",
+          isMandatory: true,
+          component: "GISComponent",
+          key: "GISData",
+          withoutLabel: true,
+      },
+    ],
+  },
+  {
+    head: "Personal Details",
+    stepNumber: 2,
     body: [
       {
         route: "map",
@@ -80,7 +93,7 @@ export const newConfig = [
   },
   {
     head: "ES_NEW_APPLICATION_PROPERTY_ASSESSMENT",
-    stepNumber: 2,
+    stepNumber: 3,
     body: [
       {
         type: "component",
@@ -158,6 +171,18 @@ export const newConfig = [
       },
       {
         type: "component",
+        component: "VasikaDetails",
+        key: "vasikaDetails",
+        withoutLabel: true,
+      },
+      {
+        type: "component",
+        component: "AllotmentDetails",
+        key: "allottmentDetails",
+        withoutLabel: true,
+      },
+      {
+        type: "component",
         isMandatory: true,
         component: "BusinessName",
         key: "businessName",
@@ -201,7 +226,7 @@ export const newConfig = [
   },
   {
     head: "ES_NEW_APPLICATION_OWNERSHIP_DETAILS",
-    stepNumber: 3,
+    stepNumber: 4,
     body: [
       {
         type: "component",
@@ -370,7 +395,7 @@ export const newConfig = [
   },
   {
     head: "ES_NEW_APPLICATION_DOCUMENTS_REQUIRED",
-    stepNumber: 4,
+    stepNumber: 5,
     body: [
       {
         component: "SelectDocuments",
@@ -382,7 +407,7 @@ export const newConfig = [
   },
   {
     head: "Summary",
-    stepNumber: 5,
+    stepNumber: 6,
     body: [
       {
         component: "PTSummary",

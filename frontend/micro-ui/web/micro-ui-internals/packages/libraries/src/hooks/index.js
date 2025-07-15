@@ -176,6 +176,7 @@ import SearchMdmsTypes from "./obps/SearchMdmsTypes";
 import useOBPSMDMS from "./obps/useMDMS";
 import useOBPSSearch from "./obps/useOBPSSearch";
 import useScrutinyDetails from "./obps/useScrutinyDetails";
+import useQualificationTypes from "./obps/useQualificationTypes";
 import useTenantsOBPS from "./obps/useTenants";
 import useNocDetails from "./obps/useNocDetails";
 import useNOCApplicationActions from "./noc/useNOCApplicationActions";
@@ -545,6 +546,7 @@ const obps = {
   useBusinessServiceBasedOnServiceType,
   useBusinessServiceData,
   useBPATaxDocuments,
+  useQualificationTypes,
 };
 
 const events = {

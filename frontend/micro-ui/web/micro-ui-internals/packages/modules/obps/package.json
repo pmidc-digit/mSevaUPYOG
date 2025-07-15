@@ -1,7 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-obps",
-  "version": "1.0.7",
-  "description": "",
+  "version": "1.0.8",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/Module.js",
@@ -31,5 +30,7 @@
     "react-router-dom": "5.3.0"
   },
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {},
+  "description": ""
 }

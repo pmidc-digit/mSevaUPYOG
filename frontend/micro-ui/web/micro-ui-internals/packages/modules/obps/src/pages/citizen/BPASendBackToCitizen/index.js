@@ -19,7 +19,8 @@ const BPASendBackToCitizen = ({ parentRoute }) => {
   const { applicationNo: applicationNo, tenantId } = useParams();
   sessionStorage.setItem("BPA_SUBMIT_APP", JSON.stringify("BPA_SUBMIT_APP"));
 
-  let config = [], application = {};
+  let config = [],
+    application = {};
 
   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("BUILDING_PERMIT_EDITFLOW", {});
 
@@ -30,10 +31,11 @@ const BPASendBackToCitizen = ({ parentRoute }) => {
 
   const { data: bpaData, isLoading: isBpaSearchLoading } = Digit.Hooks.obps.useBPASearch(tenantId, { applicationNo: applicationNo });
 
-  let scrutinyNumber = { edcrNumber: bpaData?.[0]?.edcrNumber }, sourceRefId = applicationNo;
+  let scrutinyNumber = { edcrNumber: bpaData?.[0]?.edcrNumber },
+    sourceRefId = applicationNo;
 
   const { data: edcrDetails, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(stateCode, scrutinyNumber, {
-    enabled: bpaData?.[0]?.edcrNumber ? true : false
+    enabled: bpaData?.[0]?.edcrNumber ? true : false,
   });
 
   const { data: nocdata, isLoading: isNocLoading, refetch: nocRefetch } = Digit.Hooks.obps.useNocDetails(tenantId, { sourceRefId: sourceRefId });
@@ -57,7 +59,6 @@ const BPASendBackToCitizen = ({ parentRoute }) => {
     }
   }, [bpaData, edcrDetails, mdmsData, nocdata]);
 
-
   const goNext = (skipStep) => {
     const currentPath = pathname.split("/").pop();
     const { nextStep } = config.find((routeObj) => routeObj.route === currentPath);
@@ -66,8 +67,7 @@ const BPASendBackToCitizen = ({ parentRoute }) => {
       return redirectWithHistory(`${getPath(match.path, match.params)}/check`);
     }
     redirectWithHistory(`${getPath(match.path, match.params)}/${nextStep}`);
-
-  }
+  };
 
   const onSuccess = () => {
     queryClient.invalidateQueries("PT_CREATE_PROPERTY");
@@ -81,7 +81,7 @@ const BPASendBackToCitizen = ({ parentRoute }) => {
     else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
     goNext(skipStep);
   };
-  const handleSkip = () => { };
+  const handleSkip = () => {};
 
   newConfig = newConfig?.BuildingPermitConfig ? newConfig?.BuildingPermitConfig : newConfigBPA;
   newConfig.forEach((obj) => {
@@ -96,11 +96,11 @@ const BPASendBackToCitizen = ({ parentRoute }) => {
     }
   }, []);
 
-  const CheckPage = Digit?.ComponentRegistryService?.getComponent('OCBPASendBackCheckPage') ;
-  const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent('OCSendBackAcknowledgement');
+  const CheckPage = Digit?.ComponentRegistryService?.getComponent("OCBPASendBackCheckPage");
+  const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("OCSendBackAcknowledgement");
 
   if (isNocLoading || isBpaSearchLoading || isLoading) {
-    return <Loader />
+    return <Loader />;
   }
 
   return (

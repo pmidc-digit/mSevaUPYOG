@@ -1,4 +1,4 @@
-import React, { Fragment, useState} from "react";
+import React, { Fragment, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActionLinks, CardSectionHeader, CheckPoint, ConnectingCheckPoints, Loader, SubmitBar, LinkButton } from "@mseva/digit-ui-react-components";
 import BPACaption from "./BPACaption";
@@ -11,30 +11,38 @@ const BPAApplicationTimeline = (props) => {
     id: props.id,
     moduleCode: businessService,
   });
-  
-  const [showAllTimeline, setShowAllTimeline]=useState(false);
-  function OpenImage(imageSource, index,thumbnailsToShow){
-    window.open(thumbnailsToShow?.fullImage?.[0],"_blank");
-  }
-  const getTimelineCaptions = (checkpoint, index, timeline) => {
 
-      const previousCheckpoint = timeline[index - 1];
-      const caption = {
-        date: checkpoint?.auditDetails?.lastModified,
-        name: checkpoint?.assignes?.[0]?.name,
-        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
-        wfComment: previousCheckpoint ? previousCheckpoint?.wfComment : [], // Get wfComment from the previous checkpoint
-        thumbnailsToShow: checkpoint?.thumbnailsToShow,
-      };
-      return <BPACaption data={caption} OpenImage={OpenImage} />;
+  const [showAllTimeline, setShowAllTimeline] = useState(false);
+  function OpenImage(imageSource, index, thumbnailsToShow) {
+    window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
+  }
+  const getTimelineCaptions = (checkpoint) => {
+    // if (checkpoint.state === "INITIATE") {
+    //   const caption = {
+    //     date: Digit.DateUtils.ConvertEpochToDate(props.application?.auditDetails?.createdTime),
+    //     source: props.application?.tradeLicenseDetail?.channel || "",
+    //   };
+    //   return <BPACaption data={caption} />;
+    // }
+    //else {
+    const caption = {
+      date: checkpoint?.auditDetails?.lastModified,
+      name: checkpoint?.assignes?.[0]?.name,
+      mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
+      comment: t(checkpoint?.comment),
+      wfComment: checkpoint.wfComment,
+      thumbnailsToShow: checkpoint?.thumbnailsToShow,
+    };
+    return <BPACaption data={caption} OpenImage={OpenImage} />;
+    //}
   };
 
   if (isLoading) {
     return <Loader />;
   }
-  const toggleTimeline=()=>{
-    setShowAllTimeline((prev)=>!prev);
-  }
+  const toggleTimeline = () => {
+    setShowAllTimeline((prev) => !prev);
+  };
 
   return (
     <React.Fragment>
@@ -49,20 +57,18 @@ const BPAApplicationTimeline = (props) => {
             <CheckPoint
               isCompleted={true}
               label={t((data?.timeline[0]?.state && `WF_${businessService}_${data.timeline[0].state}`) || "NA")}
-              customChild={getTimelineCaptions(data?.timeline[0],0,data.timeline)}
+              customChild={getTimelineCaptions(data?.timeline[0])}
             />
           ) : (
             <ConnectingCheckPoints>
               {data?.timeline &&
-                data?.timeline.slice(0,showAllTimeline? data.timeline.length:2).map((checkpoint, index, arr) => {
+                data?.timeline.slice(0, showAllTimeline ? data.timeline.length : 2).map((checkpoint, index, arr) => {
                   let timelineStatusPostfix = "";
                   if (window.location.href.includes("/obps")) {
-                    if(data?.timeline[index-1]?.state?.includes("BACK_FROM") || data?.timeline[index-1]?.state?.includes("SEND_TO_CITIZEN"))
-                        timelineStatusPostfix = `_NOT_DONE`
-                    else if(checkpoint?.performedAction === "SEND_TO_ARCHITECT")
-                        timelineStatusPostfix = `_BY_ARCHITECT_DONE`
-                    else
-                    timelineStatusPostfix = index == 0 ? "" : `_DONE`;
+                    if (data?.timeline[index - 1]?.state?.includes("BACK_FROM") || data?.timeline[index - 1]?.state?.includes("SEND_TO_CITIZEN"))
+                      timelineStatusPostfix = `_NOT_DONE`;
+                    else if (checkpoint?.performedAction === "SEND_TO_ARCHITECT") timelineStatusPostfix = `_BY_ARCHITECT_DONE`;
+                    else timelineStatusPostfix = index == 0 ? "" : `_DONE`;
                   }
                   return (
                     <React.Fragment key={index}>
@@ -70,7 +76,7 @@ const BPAApplicationTimeline = (props) => {
                         keyValue={index}
                         isCompleted={index === 0}
                         label={checkpoint.state ? t(`WF_${businessService}_${checkpoint.state}${timelineStatusPostfix}`) : "NA"}
-                        customChild={getTimelineCaptions(checkpoint,index,data?.timeline)}
+                        customChild={getTimelineCaptions(checkpoint)}
                       />
                     </React.Fragment>
                   );
@@ -78,14 +84,13 @@ const BPAApplicationTimeline = (props) => {
             </ConnectingCheckPoints>
           )}
           {data?.timeline?.length > 2 && (
-            <LinkButton label={showAllTimeline? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}>
-            </LinkButton>   
+            <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
           )}
         </Fragment>
       )}
       {/* {data && showNextActions(data?.nextActions)} */}
     </React.Fragment>
   );
-}
+};
 
 export default BPAApplicationTimeline;

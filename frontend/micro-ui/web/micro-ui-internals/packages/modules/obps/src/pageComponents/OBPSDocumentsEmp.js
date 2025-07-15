@@ -2,7 +2,19 @@ import React, { useEffect, useState } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader, MultiUploadWrapper } from "@mseva/digit-ui-react-components";
 import { useLocation } from "react-router-dom";
 
-const OBPSDocumentsEmp = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, index: indexx, setFieldReports, documentList }) => {
+const OBPSDocumentsEmp = ({
+  t,
+  config,
+  onSelect,
+  userType,
+  formData,
+  setError: setFormError,
+  clearErrors: clearFormErrors,
+  formState,
+  index: indexx,
+  setFieldReports,
+  documentList,
+}) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(formData?.FeildReports?.[indexx]?.Documents || []);
@@ -24,13 +36,16 @@ const OBPSDocumentsEmp = ({ t, config, onSelect, userType, formData, setError: s
   const tlDocumentsList = tlDocuments?.["0"]?.allowedDocs;
 
   let finalTlDocumentsList = [];
-  documentList && documentList.map((doc) => {
-    finalTlDocumentsList.push({ documentType: doc.code, code: doc.code });
-  })
+  documentList &&
+    documentList.map((doc) => {
+      finalTlDocumentsList.push({ documentType: doc.code, code: doc.code });
+    });
 
   const goNext = () => {
     let data = formData;
-    data && data?.FieldReports && data?.FieldReports.length > 0 && documents?.length > 0 ? data.FieldReports[indexx] = { ...data.FieldReports[indexx], Documents: documents } : "";
+    data && data?.FieldReports && data?.FieldReports.length > 0 && documents?.length > 0
+      ? (data.FieldReports[indexx] = { ...data.FieldReports[indexx], Documents: documents })
+      : "";
     data && data?.FieldReports && data?.FieldReports.length > 0 && documents.length > 0 ? setFieldReports(data.FieldReports) : "";
   };
 
@@ -46,24 +61,24 @@ const OBPSDocumentsEmp = ({ t, config, onSelect, userType, formData, setError: s
     <div>
       {finalTlDocumentsList?.map((document, index) => {
         return (
-          <div >
-          <SelectDocument
-            key={index}
-            document={document}
-            action={action}
-            t={t}
-            id={`obps-doc-${index}`}
-            error={error}
-            setError={setError}
-            setDocuments={setDocuments}
-            documents={documents}
-            formData={formData}
-            setFormError={setFormError}
-            clearFormErrors={clearFormErrors}
-            config={config}
-            formState={formState}
-            stateId={stateId}
-          />
+          <div>
+            <SelectDocument
+              key={index}
+              document={document}
+              action={action}
+              t={t}
+              id={`obps-doc-${index}`}
+              error={error}
+              setError={setError}
+              setDocuments={setDocuments}
+              documents={documents}
+              formData={formData}
+              setFormError={setFormError}
+              clearFormErrors={clearFormErrors}
+              config={config}
+              formState={formState}
+              stateId={stateId}
+            />
           </div>
         );
       })}
@@ -88,7 +103,7 @@ function SelectDocument({
   fromRawData,
   key,
   id,
-  stateId={stateId}
+  stateId = { stateId },
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType);
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -109,14 +124,15 @@ function SelectDocument({
     let data = Object.fromEntries(e);
     let newArr = Object.values(data);
     setnewArray(newArr);
-    if (documents && newArr && documents.filter(ob => ob.documentType === key).length > newArr.length) {
-      setDocuments(documents.filter(ob => ob.documentType !== key));
+    if (documents && newArr && documents.filter((ob) => ob.documentType === key).length > newArr.length) {
+      setDocuments(documents.filter((ob) => ob.documentType !== key));
     }
 
-    newArr && newArr.map((ob) => {
-      ob.file.documentType = key;
-      selectfile(ob, key);
-    })
+    newArr &&
+      newArr.map((ob) => {
+        ob.file.documentType = key;
+        selectfile(ob, key);
+      });
   }
 
   const addError = () => {
@@ -142,7 +158,12 @@ function SelectDocument({
   };
 
   useEffect(() => {
-    if (selectedDocument?.documentType && ((documents.filter((ob) => ob.documentType === selectedDocument?.documentType)).length == 0 || ((newArray.filter((ob) => ob?.file?.documentType === selectedDocument?.documentType)).length) !== (documents.filter((ob) => ob.documentType === selectedDocument?.documentType)).length)) {
+    if (
+      selectedDocument?.documentType &&
+      (documents.filter((ob) => ob.documentType === selectedDocument?.documentType).length == 0 ||
+        newArray.filter((ob) => ob?.file?.documentType === selectedDocument?.documentType).length !==
+          documents.filter((ob) => ob.documentType === selectedDocument?.documentType).length)
+    ) {
       setDocuments((prev) => {
         if (uploadedFile?.length === 0 || uploadedFile === null) {
           return prev;
@@ -156,22 +177,21 @@ function SelectDocument({
               documentType: selectedDocument?.documentType,
               fileStoreId: uploadedFile,
               tenantId: tenantId,
-              id: selectedDocument?.id
+              id: selectedDocument?.id,
             },
           ];
-        } 
-        else{
-        let UniqueDocTypeTempArray =[];
-        newArray.map((ob) => {
-          UniqueDocTypeTempArray.push( 
-            //...filteredDocumentsByFileStoreId,
-            {
-              documentType: selectedDocument?.documentType,
-              fileStoreId: ob?.fileStoreId?.fileStoreId,
-              tenantId: ob?.fileStoreId?.tenantId,
-            },
-          );
-          })
+        } else {
+          let UniqueDocTypeTempArray = [];
+          newArray.map((ob) => {
+            UniqueDocTypeTempArray.push(
+              //...filteredDocumentsByFileStoreId,
+              {
+                documentType: selectedDocument?.documentType,
+                fileStoreId: ob?.fileStoreId?.fileStoreId,
+                tenantId: ob?.fileStoreId?.tenantId,
+              }
+            );
+          });
           return [...filteredDocumentByDocumentType, ...UniqueDocTypeTempArray];
         }
       });
@@ -200,24 +220,24 @@ function SelectDocument({
         }
       }
     }
-  }, [doc])
+  }, [doc]);
   return (
     <div style={{ marginBottom: "24px" }}>
-      <LabelFieldPair style={{width :"100%"}}>
-        <CardLabel className="card-label-smaller" style={{width :"100%"}}>
-          {doc?.documentType != "OLDLICENCENO" ?
-            `${t(`${doc?.documentType.replaceAll(".", "_")}`)}` :
-            `${t(`${doc?.documentType.replaceAll(".", "_")}`)}`}
+      <LabelFieldPair style={{ width: "100%" }}>
+        <CardLabel className="card-label-smaller" style={{ width: "100%" }}>
+          {doc?.documentType != "OLDLICENCENO"
+            ? `${t(`${doc?.documentType.replaceAll(".", "_")}`)}*`
+            : `${t(`${doc?.documentType.replaceAll(".", "_")}`)}`}
         </CardLabel>
         <div className="field" style={{ width: "100%" }}>
           <MultiUploadWrapper
             module="BPA"
             tenantId={stateId}
-            getFormState={e => getData(e, doc?.documentType.replaceAll(".", "_"))}
+            getFormState={(e) => getData(e, doc?.documentType.replaceAll(".", "_"))}
             t={t}
             allowedFileTypesRegex={allowedFileTypes}
             allowedMaxSizeInMB={5}
-            acceptFiles= "image/*, .pdf, .png, .jpeg, .jpg"
+            acceptFiles="image/*, .pdf, .png, .jpeg, .jpg"
           />
         </div>
       </LabelFieldPair>

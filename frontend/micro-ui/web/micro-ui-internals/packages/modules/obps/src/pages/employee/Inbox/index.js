@@ -105,7 +105,7 @@ const Inbox = ({ parentRoute }) => {
     if (bService === "BPAREG") {
       redirectBS = "search/application/stakeholder";
     } else {
-      redirectBS = window.location.href.includes("/citizen") ? "bpa" : "search/application/bpa"
+      redirectBS = window.location.href.includes("/citizen") ? "bpa" : "search/application/bpa";
     }
     return redirectBS;
   };
@@ -161,13 +161,13 @@ const Inbox = ({ parentRoute }) => {
   );
 
   const onSearchFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""] ;
+    data.hasOwnProperty("") && delete data?.[""];
     dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
     dispatch({ action: "mutateSearchForm", data });
   };
 
   const onFilterFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""] ;
+    data.hasOwnProperty("") && delete data?.[""];
     dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
     dispatch({ action: "mutateFilterForm", data });
   };
@@ -200,13 +200,17 @@ const Inbox = ({ parentRoute }) => {
         {t("ES_COMMON_INBOX")}
         {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
       </Header>
-      {Digit.Utils.browser.isMobile() &&
-        <div style={{marginLeft: "12px"}}>
-          <Link to={window.location.href.includes("/citizen") ? "/digit-ui/citizen/obps/search/application" : "/digit-ui/employee/obps/search/application"}>
+      {Digit.Utils.browser.isMobile() && (
+        <div style={{ marginLeft: "12px" }}>
+          <Link
+            to={
+              window.location.href.includes("/citizen") ? "/digit-ui/citizen/obps/search/application" : "/digit-ui/employee/obps/search/application"
+            }
+          >
             <span className="link">{t("BPA_SEARCH_PAGE_TITLE")}</span>
           </Link>
         </div>
-      }
+      )}
       <InboxComposer
         {...{
           isInboxLoading,

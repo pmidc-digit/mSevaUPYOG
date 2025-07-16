@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader } from "@mseva/digit-ui-react-components";
+import {
+  CardLabel,
+  LabelFieldPair,
+  Dropdown,
+  UploadFile,
+  Toast,
+  Loader,
+} from "@mseva/digit-ui-react-components";
 import { useParams } from "react-router-dom";
+
 
 import { useLocation } from "react-router-dom";
 const AssetDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
@@ -9,24 +17,30 @@ const AssetDocuments = ({ t, config, onSelect, userType, formData, setError: set
   const [error, setError] = useState(null);
 
   let action = "create";
-  const { id: applicationNo } = useParams();
+  const { id:applicationNo } = useParams();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const { data: applicationDetails } = Digit.Hooks.asset.useAssetApplicationDetail(t, tenantId, applicationNo);
-  let comingDataFromAPI = applicationDetails?.applicationData?.applicationData?.documents;
+  const { data: applicationDetails } = Digit.Hooks.asset.useAssetApplicationDetail(t,tenantId, applicationNo);
+  let comingDataFromAPI = applicationDetails?.applicationData?.applicationData?.documents
+
+
 
   const { pathname } = useLocation();
+  
 
-  const { isLoading, data } = Digit.Hooks.asset.useAssetDocumentsMDMS(stateId, "ASSET", "Documents");
+  const { isLoading, data } = Digit.Hooks.asset.useAssetDocumentsMDMS(stateId, "ASSET", "Documents");   
 
-  const AssetsDocument = data?.ASSET?.Documents.map((document) => ({
-    ...document,
-    hasDropdown: true,
-  }));
+
+  const AssetsDocument = data?.ASSET?.Documents.map(document => ({
+  ...document,
+  hasDropdown: true
+}));
+
 
   const goNext = () => {
     onSelect(config.key, { documents, AssetsDocumentLength: AssetsDocument?.length });
   };
 
+  
   useEffect(() => {
     goNext();
   }, [documents]);
@@ -56,7 +70,9 @@ const AssetDocuments = ({ t, config, onSelect, userType, formData, setError: set
             config={config}
             formState={formState}
           />
+          
         );
+       
       })}
       {error && <Toast label={error} onClose={() => setError(null)} error />}
     </div>
@@ -74,10 +90,11 @@ function AssetSelectDocument({
   config,
   formState,
   comingDataFromAPI,
-  id,
+  id
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
 
+  
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
       ? { ...filteredDocument, active: filteredDocument?.status === "ACTIVE", code: filteredDocument?.documentType }
@@ -86,16 +103,18 @@ function AssetSelectDocument({
       : {}
   );
 
+ 
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
 
   const handleAssetSelectDocument = (value) => setSelectedDocument(value);
+  
 
   function selectfile(e) {
     setFile(e.target.files[0]);
   }
   const { dropdownData } = doc;
-
+ 
   var dropDownData = dropdownData;
   const [isHidden, setHidden] = useState(false);
 
@@ -152,6 +171,8 @@ function AssetSelectDocument({
     }
   }, [uploadedFile, selectedDocument, isHidden]);
 
+ 
+
   useEffect(() => {
     (async () => {
       setError(null);
@@ -178,6 +199,8 @@ function AssetSelectDocument({
   useEffect(() => {
     if (isHidden) setUploadedFile(null);
   }, [isHidden]);
+
+
 
   return (
     <div style={{ marginBottom: "24px" }}>
@@ -207,7 +230,7 @@ function AssetSelectDocument({
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
+            accept=".pdf, .jpeg, .jpg, .png"   //  to accept document of all kind
             buttonType="button"
             error={!uploadedFile}
           />

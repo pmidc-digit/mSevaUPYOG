@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { stringReplaceAll } from "../utils";
 import Timeline from "../components/Timeline";
 import { CompetencyDescriptions } from "../constants/LicenseTypeConstants";
-import useQualificationTypes from "../../../../libraries/src/hooks/obps/QualificationTypesForLicense";
+// import useQualificationTypes from "../../../../libraries/src/hooks/obps/QualificationTypesForLicense";
 
 const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   if (JSON.parse(sessionStorage.getItem("BPAREGintermediateValue")) !== null) {
@@ -15,18 +15,22 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   let index = window.location.href.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [qualificationType, setQualificationType] = useState(() => {
-    return formData?.LicneseType?.qualificationType || "B-Arch"; // Initialize with the value from formData if it exists
-  });
+  const [qualificationType, setQualificationType] = useState(null);
   const [LicenseType, setLicenseType] = useState(formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || "");
   const [ArchitectNo, setArchitectNo] = useState(formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null);
 
-  const { data: qualificationTypes, isLoading: isQualificationLoading, error: qualificationError } = useQualificationTypes(tenantId);
+  const { data: qualificationTypes, isLoading: isQualificationLoading, error: qualificationError } = Digit.Hooks.obps.useQualificationTypes(stateId);
+  // let qualificationTypes = [],
+  //   isQualificationLoading = false,
+  //   qualificationError = {};
   const { data, isLoading } = Digit.Hooks.obps.useMDMS(stateId, "StakeholderRegistraition", "TradeTypetoRoleMapping");
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   const [selfCertification, setSelfCertification] = useState(formData?.selfCertification || formData?.formData?.selfCertification || null);
   let validation = {};
+
+  console.log("OBPS_Formdata", formData);
+
   const [errorMessage, setErrorMessage] = useState("");
   if (isopenlink)
     window.onunload = function () {
@@ -37,6 +41,20 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       mapQualificationToLicense(qualificationType);
     }
   }, [qualificationType]);
+
+  console.log("qualificationTypeFinfing", qualificationType);
+
+  useEffect(() => {
+    console.log("selectedQualificationType 1", qualificationTypes, formData?.LicneseType?.qualificationType, qualificationTypes);
+    if (formData?.LicneseType?.qualificationType && qualificationTypes && !qualificationType) {
+      const selectedQualificationType = qualificationTypes.find((val) => {
+        return val.name === formData?.LicneseType?.qualificationType;
+      });
+
+      setQualificationType(selectedQualificationType);
+      console.log("selectedQualificationType", selectedQualificationType, formData?.LicneseType?.qualificationType, qualificationTypes);
+    }
+  }, []);
 
   function getLicenseType() {
     // let list = [];
@@ -115,6 +133,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     setQualificationType(value);
     mapQualificationToLicense(value);
     setLicenseType(null);
+    setArchitectNo(null);
   }
 
   function selectLicenseType(value) {
@@ -168,10 +187,9 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                 t={t}
                 optionKey="name"
                 isMandatory={config.isMandatory}
-                options={qualificationTypes || []}
-                selectedOption={setQualificationType}
-                onSelect={(value) => {
-                  console.log("Selected Value:", value);
+                option={qualificationTypes || []}
+                selected={qualificationType}
+                select={(value) => {
                   selectQualificationType(value);
                 }}
               />

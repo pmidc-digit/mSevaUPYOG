@@ -19,7 +19,8 @@ const App = () => {
   const CreateTradeLicence = Digit?.ComponentRegistryService?.getComponent('TLCreateTradeLicence');
   const CreateTradeLicenceStepForm=Digit?.ComponentRegistryService?.getComponent('TLCreateTradeLicenceStepForm');
   const EditTrade = Digit?.ComponentRegistryService?.getComponent('TLEditTrade');
-  const RenewTrade = Digit?.ComponentRegistryService?.getComponent('TLRenewTrade');
+  const RenewTrade = Digit?.ComponentRegistryService?.getComponent('RenewTLStepFormCitizen');
+  // const RenewTrade = Digit?.ComponentRegistryService?.getComponent('TLRenewTrade');
   const TradeLicense = Digit?.ComponentRegistryService?.getComponent('TradeLicense');
   const TLList = Digit?.ComponentRegistryService?.getComponent('TLList');
   const SearchTradeComponent = Digit?.ComponentRegistryService?.getComponent('TLSearchTradeComponent');

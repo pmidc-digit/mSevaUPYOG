@@ -123,6 +123,7 @@ const Search = ({ path }) => {
           : ""
       }
       count={count}
+      isLoading = {isLoading || isWorkflowLoading}
     />
   );
 };

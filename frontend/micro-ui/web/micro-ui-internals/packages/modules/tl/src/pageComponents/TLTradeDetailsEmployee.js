@@ -51,16 +51,29 @@ const TLTradeDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const [structureSubTypeOptions, setStructureSubTypeOptions] = useState([]);
   const [owners, setOwners] = useState(formData?.owners || [createTradeDetailsDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-  const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
+  // console.log("tradedetilsInTLTradeDetails",tradedetils);
+
+  const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
+
+  let tenantId;
+  if(currentUserType === "CITIZEN"){
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+
+  }else{
+    tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+  }
+
+  //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
   const [licenseTypeList, setLicenseTypeList] = useState([]);
+  // const [licenseTypeValue, setLicenseTypeValue] = useState(tradedetils?.[0]?.licenseType||{});
   const [licenseTypeValue, setLicenseTypeValue] = useState([]);
+  // console.log("licenseTypeValueCheck", licenseTypeValue)
 
   const { isLoading: menuLoading, data: Menu = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "StructureType");
 
   const { data: FinaceMenu = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "egf-master", ["FinancialYear"]);
-
   const { data: billingSlabData } = Digit.Hooks.tl.useTradeLicenseBillingslab({ tenantId, filters: {} });
 
   const addNewOwner = () => {
@@ -173,10 +186,12 @@ const OwnerForm1 = (_props) => {
   } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
+  // console.log("licenseTypeValueForCheck",licenseTypeValue)
 
   useEffect(() => {
     console.log("licenseTypeValue: ", licenseTypeValue);
     if (billingSlabData && billingSlabData?.billingSlab && billingSlabData?.billingSlab?.length > 0) {
+      // console.log("licenseTypeValueChanged",);
       const processedData =
         billingSlabData.billingSlab &&
         billingSlabData.billingSlab.reduce(
@@ -276,7 +291,7 @@ const OwnerForm1 = (_props) => {
     }
   }
 
-  let isRenewal = window.location.href.includes("renew-application-details");
+  let isRenewal = window.location.href.includes("renew-application-details")  || window.location.href.includes("renew-trade");
   if (window.location.href.includes("edit-application-details")) isRenewal = true;
 
   useEffect(() => {
@@ -332,6 +347,12 @@ const OwnerForm1 = (_props) => {
     }
   }, [licenseTypeValue]);
 
+  // useEffect(() => {
+  //   if(isEdit){
+      
+  //   }
+  // } ,[])
+
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
       setError(config.key, { type: errors });
@@ -351,12 +372,14 @@ const OwnerForm1 = (_props) => {
         <Controller
           name="financialYear"
           rules={{ required: t("REQUIRED_FIELD") }}
-          defaultValue={isRenewal ? financialYearOptions[0] : tradedetail?.financialYear}
+          // defaultValue={isRenewal ? tradedetail?.financialYear : financialYearOptions[0]}
+          defaultValue={tradedetail?.financialYear}
           control={control}
           render={(props) => (
             <Dropdown
               className="form-field"
-              selected={isRenewal ? financialYearOptions[0] : props.value}
+              // selected={isRenewal ? financialYearOptions[0] : props.value}
+              selected={props.value}
               errorStyle={localFormState.touched.financialYear && errors?.financialYear?.message ? true : false}
               // disable={financialYearOptions?.length === 1}
               option={financialYearOptions}
@@ -364,7 +387,7 @@ const OwnerForm1 = (_props) => {
               optionKey="i18nKey"
               onBlur={props.onBlur}
               placeholder={t("TL_FINANCIAL_YEAR_PLACEHOLDER")}
-              disable={isRenewal}
+              // disable={isRenewal}
               t={t}
             />
           )}

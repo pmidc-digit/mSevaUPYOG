@@ -6,6 +6,11 @@ import { useQueryClient } from "react-query";
 import { useCashPaymentDetails } from "./ManualReciept";
 import { useCardPaymentDetails } from "./card";
 import { useChequeDetails } from "./cheque";
+import { useDdDetails } from "./dd"
+import { useNEFTDetails } from "./neft"
+import { useRTGSDetails } from "./rtgs"
+import { usePostalDetails } from "./postalOrder"
+import { useQRDetails } from "./qrCode"
 import isEqual from "lodash/isEqual";
 import { BillDetailsFormConfig } from "./Bill-details/billDetails";
 
@@ -45,6 +50,11 @@ export const CollectPayment = (props) => {
   const { cardConfig } = useCardPaymentDetails(props, t);
   const { chequeConfig } = useChequeDetails(props, t);
   const { cashConfig } = useCashPaymentDetails(props, t);
+  const { ddConfig } = useDdDetails(props, t);
+  const { neftConfig } = useNEFTDetails(props, t);
+  const { rtgsConfig } = useRTGSDetails(props, t);
+  const { postalOrderConfig } = usePostalDetails(props, t);
+  const { qrConfig } = useQRDetails(props, t);
 
   const [formState, setFormState] = useState({});
   const [toast, setToast] = useState(null);
@@ -59,15 +69,21 @@ export const CollectPayment = (props) => {
     { code: "CASH", label: t("COMMON_MASTERS_PAYMENTMODE_CASH") },
     { code: "CHEQUE", label: t("COMMON_MASTERS_PAYMENTMODE_CHEQUE") },
     { code: "CARD", label: t("COMMON_MASTERS_PAYMENTMODE_CREDIT/DEBIT CARD") },
-    // { code: "DD", label: "Demand Draft" },
-    // { code: "OFFLINE_NEFT", label: "Offline NEFT" },
-    // { code: "OFFLINE_RTGS", label: "Offline RTGS" },
-    // { code: "POSTAL_ORDER", label: "Postal Order" },
+    { code: "DD", label: "Demand Draft" },
+    { code: "OFFLINE_NEFT", label: "NEFT" },
+    { code: "OFFLINE_RTGS", label: "RTGS" },
+    { code: "POSTAL_ORDER", label: "Postal Order" },
+    { code: "QR_CODE", label: "QR Code" },
   ];
 
   const formConfigMap = {
     CHEQUE: chequeConfig,
     CARD: cardConfig,
+    DD: ddConfig,
+    OFFLINE_NEFT: neftConfig,
+    OFFLINE_RTGS: rtgsConfig,
+    POSTAL_ORDER: postalOrderConfig,
+    QR_CODE: qrConfig
   };
 
   useEffect(() => {

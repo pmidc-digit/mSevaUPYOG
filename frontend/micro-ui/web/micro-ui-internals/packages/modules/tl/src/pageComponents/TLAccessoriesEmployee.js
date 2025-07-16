@@ -23,7 +23,17 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
     const isEditScreen = pathname.includes("/modify-application/");
     const [accessoriesList, setAccessoriesList] = useState(formData?.accessories || [createAccessoriesDetails()]);
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-    const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
+    
+    const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
+
+    let tenantId;
+    if(currentUserType === "CITIZEN"){
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+    }else{
+      tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+    }
+
+    //const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
     const [accessories, SetAccessories] = useState([]);
     const [isErrors, setIsErrors] = useState(false);
     const [flag, setFlag] = useState(true);

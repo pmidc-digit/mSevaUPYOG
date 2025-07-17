@@ -117,6 +117,8 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     return list;
   }
 
+  console.log("License Type List", getLicenseType())
+
   function mapQualificationToLicense(qualification) {
     let license = null;
     console.log("qualification", qualification);
@@ -151,16 +153,43 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
   function selectArchitectNo(e) {
     const input = e.target.value.trim();
-    const pattern = /^CA(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\d{5}$/;
+    //const pattern = /^CA(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\d{5}$/;
+    const pattern = /^CA\/(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\/\d{5}$/;
     setArchitectNo(input);
     if (!pattern.test(input) && input !== "") {
-      setErrorMessage("Invalid Council Number format! Format should be: CA<YEAR><5 DIGITS> (Year between 1972-2025) Example: CA20230012345");
+      setErrorMessage("Invalid Council Number format! Format should be: CA<YEAR><5 DIGITS> (Year between 1972-2025) Example: CA/2023/12345");
     } else {
       setErrorMessage("");
     }
   }
 
+    function selectAssociateOrFellowNo(e) {
+    const input = e.target.value.trim();
+    //const pattern = /^(AITP|FITP)(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\d{4}$/;
+    setArchitectNo(input);
+    const pattern = /^(AITP|FITP)\/(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\/\d{4}$/;
+    if (!pattern.test(input) && input !== "") {
+      setErrorMessage("Invalid AITP/FITP Number format! Format should be: AITP<YEAR><4 DIGITS> (Year between 1972-2025) Example: FITP/2023/1234 or AITP/2023/1234");
+    } else {
+      setErrorMessage("");
+      
+    }
+  }
+
   function goNext() {
+    if(errorMessage !== "")return;
+
+    if(LicenseType?.i18nKey.includes("ARCHITECT") && ArchitectNo === ""){
+      setErrorMessage("Invalid Council Number format! Format should be: CA<YEAR><5 DIGITS> (Year between 1972-2025) Example: CA/2023/12345");
+      return;
+    }
+
+   if(LicenseType?.i18nKey.includes("TOWNPLANNER") && ArchitectNo === ""){
+      setErrorMessage("Invalid AITP/FITP Number format! Format should be: AITP<YEAR><4 DIGITS> (Year between 1972-2025) Example: FITP/2023/1234 or AITP/2023/1234");
+      return;
+    }
+
+
     if (!(formData?.result && formData?.result?.Licenses[0]?.id))
       onSelect(config.key, { LicenseType, ArchitectNo, selfCertification, qualificationType: qualificationType?.name });
     else {
@@ -171,10 +200,13 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       data.qualificationType = qualificationType?.name;
       onSelect("", formData);
     }
+   
   }
   function selectSelfCertification(e) {
     setSelfCertification(e.target.checked);
   }
+
+  console.log("formData in LicenseType", formData);
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
       <div style={{ flex: 1, marginRight: "20px" }}>
@@ -253,7 +285,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
             {LicenseType && LicenseType?.i18nKey.includes("TOWNPLANNER") && (
               <div>
-                <CardLabel>{`${t("BPA_COUNCIL_NUMBER")}*`}</CardLabel>
+                <CardLabel>{`${t("ASSOCIATE_OR_FELLOW_NUMBER")}*`}</CardLabel>
                 <TextInput
                   t={t}
                   type={"text"}
@@ -261,7 +293,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                   optionKey="i18nKey"
                   name="ArchitectNo"
                   value={ArchitectNo}
-                  onChange={selectArchitectNo}
+                  onChange={selectAssociateOrFellowNo}
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       e.preventDefault();

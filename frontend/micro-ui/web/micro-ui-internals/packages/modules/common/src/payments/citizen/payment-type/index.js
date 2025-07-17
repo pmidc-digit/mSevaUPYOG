@@ -87,7 +87,7 @@ export const SelectPaymentType = (props) => {
     setPaymentLoading(true);
 
     console.log("process.env.BASE_URL", process.env)
-    const baseURL = process.env.REACT_APP_PROXY_API
+    const baseURL = process.env.REACT_APP_Base_URL
 
     const filterData = {
       Transaction: {

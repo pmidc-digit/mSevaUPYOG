@@ -23,7 +23,17 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
     const isEditScreen = pathname.includes("/modify-application/");
     const [accessoriesList, setAccessoriesList] = useState(formData?.accessories || [createAccessoriesDetails()]);
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-    const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
+    
+    const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
+
+    let tenantId;
+    if(currentUserType === "CITIZEN"){
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+    }else{
+      tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+    }
+
+    //const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
     const [accessories, SetAccessories] = useState([]);
     const [isErrors, setIsErrors] = useState(false);
     const [flag, setFlag] = useState(true);
@@ -112,7 +122,9 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
             {accessoriesList.map((accessor, index) => (
                 <AccessoriersForm key={accessor.key} index={index} accessor={accessor} {...commonProps} />
             ))}
+            {!isRenewal && 
             <LinkButton label={`${t("TL_NEW_TRADE_DETAILS_BUTTON_NEW_ACC")}`} onClick={addAccessories} style={{ color: "#a82227", width: "fit-content" }} />
+            }
 
         </React.Fragment>
     );
@@ -316,6 +328,7 @@ const AccessoriersForm = (_props) => {
                                     option={sortDropdownNames(accessories,"i18nKey",t) || []}
                                     optionKey="i18nKey"
                                     t={t}
+                                    disable={isRenewal || false}
                                     placeholder={t("TL_NEW_TRADE_DETAILS_ACC_PLACEHOLDER")}
                                 />
                             )}

@@ -126,9 +126,9 @@ const WrapCheckPage = ({ onSubmit, value }) => {
                 label={t("TL_STRUCTURE_SUB_TYPE")}
                 text={t(TradeDetails?.StructureType.code !== "IMMOVABLE" ? TradeDetails?.VehicleType?.i18nKey : TradeDetails?.BuildingType?.i18nKey)}
               />
-              <Row className="border-none" label={t("TL_TRADE_GST_NO")} text={TradeDetails?.TradeGSTNumber || t("CS_NA")} />
-              <Row className="border-none" label={t("TL_OPERATIONAL_AREA")} text={TradeDetails?.OperationalSqFtArea || t("CS_NA")} />
-              <Row className="border-none" label={t("TL_NO_OF_EMPLOYEES")} text={TradeDetails?.NumberOfEmployees || t("CS_NA")} />
+              <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_LABEL")} text={TradeDetails?.TradeGSTNumber || t("CS_NA")} />
+              <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL")} text={TradeDetails?.OperationalSqFtArea || t("CS_NA")} />
+              <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL")} text={TradeDetails?.NumberOfEmployees || t("CS_NA")} />
               <Row
                 className="border-none"
                 label={t("TL_NEW_TRADE_DETAILS_TRADE_COMM_DATE_LABEL")}
@@ -137,12 +137,12 @@ const WrapCheckPage = ({ onSubmit, value }) => {
               {TradeDetails?.units.map((unit, index) => (
                 <div key={index}>
                   <CardSubHeader>
-                    {t("TL_UNIT_HEADER")}-{index + 1}
+                    {t("TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER")}-{index + 1}
                   </CardSubHeader>
                   <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_TRADE_CAT_LABEL")} text={t(unit?.tradecategory?.i18nKey)} />
                   <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_TRADE_TYPE_LABEL")} text={t(unit?.tradetype?.i18nKey)} />
                   <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_TRADE_SUBTYPE_LABEL")} text={t(unit?.tradesubtype?.i18nKey)} />
-                  <Row className="border-none" label={t("TL_UNIT_OF_MEASURE_LABEL")} text={`${unit?.unit ? t(unit?.unit) : t("CS_NA")}`} />
+                  <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_UOM_LABEL")} text={`${unit?.unit ? t(unit?.unit) : t("CS_NA")}`} />
                   <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} text={`${unit?.uom ? t(unit?.uom) : t("CS_NA")}`} />
                 </div>
               ))}
@@ -151,12 +151,12 @@ const WrapCheckPage = ({ onSubmit, value }) => {
                 TradeDetails?.accessories.map((acc, index) => (
                   <div key={index}>
                     <CardSubHeader>
-                      {t("TL_ACCESSORY_LABEL")}-{index + 1}
+                      {t("TL_NEW_TRADE_DETAILS_ACC_LABEL")}-{index + 1}
                     </CardSubHeader>
-                    <Row className="border-none" label={t("TL_TRADE_ACC_HEADER")} text={t(acc?.accessory?.i18nKey)} />
+                    <Row className="border-none" label={t("TL_EMP_APPLICATION_ACC_TYPE")} text={t(acc?.accessory?.i18nKey)} />
                     <Row className="border-none" label={t("TL_NEW_TRADE_ACCESSORY_COUNT")} text={t(acc?.accessorycount)} />
-                    <Row className="border-none" label={t("TL_ACC_UOM_LABEL")} text={`${acc?.unit ? t(acc?.unit) : t("CS_NA")}`} />
-                    <Row className="border-none" label={t("TL_ACC_UOM_VALUE_LABEL")} text={`${acc?.unit ? t(acc?.uom) : t("CS_NA")}`} />
+                    <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_UOM_LABEL")} text={`${acc?.unit ? t(acc?.unit) : t("CS_NA")}`} />
+                    <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} text={`${acc?.unit ? t(acc?.uom) : t("CS_NA")}`} />
                   </div>
                 ))}
             </StatusTable>
@@ -225,14 +225,14 @@ const WrapCheckPage = ({ onSubmit, value }) => {
                     </CardSubHeader>
                     <Row className="border-none" label={t("TL_COMMON_TABLE_COL_OWN_NAME")} text={t(owner?.name)} />
                     <Row className="border-none" label={t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")} text={t(owner?.gender?.i18nKey) || t("CS_NA")} />
-                    <Row className="border-none" label={t("TL_MOBILE_NUMBER_LABEL")} text={t(owner?.mobilenumber)} />
+                    <Row className="border-none" label={t("TL_HOME_SEARCH_RESULTS_OWN_MOB_LABEL")} text={t(owner?.mobilenumber)} />
                     <Row
                       className="border-none"
                       label={t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}
                       text={t(owner?.fatherOrHusbandName) || t("CS_NA")}
                     />
                     <Row className="border-none" label={t("TL_COMMON_RELATIONSHIP_LABEL")} text={t(owner?.relationship?.i18nKey) || t("CS_NA")} />
-                    <Row className="border-none" label={t("TL_EMAIL_ID_LABEL")} text={t(owner?.emailId) || t("CS_NA")} />
+                    <Row className="border-none" label={t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")} text={t(owner?.emailId) || t("CS_NA")} />
                     <Row
                       className="border-none"
                       label={t("TL_CORRESPONDENCE_ADDRESS")}

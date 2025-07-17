@@ -14,7 +14,7 @@ export const TLList = () => {
   if (licenseno) filter1.tenantId = tenantID;
   if (!licenseno) filter1.mobileNumber = userInfo?.info?.mobileNumber;
   filter1 = { ...filter1, RenewalPending:true, tenantId: tenantId || tenantID, status: "APPROVED,CANCELLED,EXPIRED,MANUALEXPIRED" };
-  const { isLoading, isError, error, data } = Digit.Hooks.tl.useTradeLicenseSearch({ filters: filter1 }, {});
+  const { isLoading, isError, error, data } = Digit.Hooks.tl.useTradeLicenseSearch({ filters: {} }, {});
   useEffect(() => {
     localStorage.setItem("TLAppSubmitEnabled", "true");
   }, []);
@@ -26,15 +26,15 @@ export const TLList = () => {
 
   return (
     <React.Fragment>
-      <Card>
+      {/* <Card>
         <CardHeader>{`${t("TL_RENEW_TRADE_HEADER")}`}</CardHeader>
         <CardText>{`${t("TL_RENEW_TRADE_TEXT")}`}</CardText>
-      </Card>
+      </Card> */}
       <div>
         {newapplicationlist?.length > 0 &&
           newapplicationlist.map((application, index) => (
             <div key={index}>
-              <TradeLicenseList application={application} />
+              {application?.licenseNumber && <TradeLicenseList application={application} />}
             </div>
           ))}
         {!newapplicationlist?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PT_NO_APPLICATION_FOUND_MSG")}</p>}

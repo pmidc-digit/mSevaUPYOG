@@ -62,6 +62,7 @@ import {
   ASSETLinks,
   ASSETModule,
 } from "@mseva/upyog-ui-module-asset";
+import { PGRAIComponents, PGRAILinks, PGRAIModule } from "@mseva/upyog-ui-module-pgrai";
 
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
@@ -97,6 +98,7 @@ const enabledModules = [
   "CHB",
   "PTR",
   "ASSET",
+  "PGRAI",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -127,6 +129,9 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ASSETModule,
   ASSETLinks,
   ...ASSETComponents,
+  PGRAIModule,
+  PGRAILinks,
+  ...PGRAIComponents
 });
 initPGRComponents();
 initSWACHComponents();

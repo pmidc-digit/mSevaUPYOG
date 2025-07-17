@@ -4,6 +4,8 @@ import { Link, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 
+
+
 const GetMessage = (type, action, isSuccess, isEmployee, t) => {
   return t(`${isEmployee ? "E" : "C"}S_ASSET_RESPONSE_${action ? action : "EDIT"}_${type}${isSuccess ? "" : "_ERROR"}`);
 };
@@ -45,6 +47,7 @@ const EditResponse = (props) => {
     setShowToast(null);
     setError(null);
   };
+  
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { state } = props.location;
@@ -52,12 +55,15 @@ const EditResponse = (props) => {
   const mutation = Digit.Hooks.asset.useEditUpdateAPI(tenantId, state.key !== "UPDATE");
   const mutation1 = Digit.Hooks.asset.useEditUpdateAPI(tenantId, false);
 
+  
+
   useEffect(() => {
     if (mutation1.data && mutation1.isSuccess) setsuccessData(mutation1.data);
   }, [mutation.data]);
   useEffect(() => {
     if (mutation1.data && mutation1.isSuccess) setsuccessData(mutation1.data);
   }, [mutation1.data]);
+
 
   useEffect(() => {
     const onSuccess = async (successRes) => {
@@ -85,6 +91,7 @@ const EditResponse = (props) => {
     }
   }, []);
 
+
   if (mutation.isLoading || (mutation.isIdle && !mutationHappened)) {
     return <Loader />;
   }
@@ -100,16 +107,11 @@ const EditResponse = (props) => {
           isLoading={(mutation.isIdle && !mutationHappened) || mutation?.isLoading}
           isEmployee={props.parentRoute.includes("employee")}
         />
+       
       </Card>
       {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
       <ActionBar>
-        <Link
-          to={`${
-            props.parentRoute.includes("employee")
-              ? `/digit-ui/employee/asset/assetservice/applicationsearch/application-details/${mutation?.data?.Assets?.[0]?.applicationNo}`
-              : false
-          }`}
-        >
+        <Link to={`${props.parentRoute.includes("employee") ? `/digit-ui/employee/asset/assetservice/applicationsearch/application-details/${mutation?.data?.Assets?.[0]?.applicationNo}` : false}`}>
           <SubmitBar label={t("MY_APPLICATIONS")} />
         </Link>
       </ActionBar>

@@ -4,6 +4,8 @@ import { Link, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 
+
+
 const GetMessage = (type, action, isSuccess, isEmployee, t) => {
   return t(`${isEmployee ? "E" : "C"}S_ASSET_RESPONSE_${action ? action : "ASSIGN"}_${type}${isSuccess ? "" : "_ERROR"}`);
 };
@@ -32,7 +34,7 @@ const BannerPicker = (props) => {
 };
 
 const Response = (props) => {
-  console.log("For coming data from props in response:- ", props);
+  console.log('For coming data from props in response:- ', props)
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const history = useHistory();
@@ -46,6 +48,7 @@ const Response = (props) => {
     setShowToast(null);
     setError(null);
   };
+  
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const { state } = props.location;
@@ -59,6 +62,7 @@ const Response = (props) => {
   useEffect(() => {
     if (mutation1.data && mutation1.isSuccess) setsuccessData(mutation1.data);
   }, [mutation1.data]);
+
 
   useEffect(() => {
     const onSuccess = async (successRes) => {
@@ -86,6 +90,7 @@ const Response = (props) => {
     }
   }, []);
 
+
   if (mutation.isLoading || (mutation.isIdle && !mutationHappened)) {
     return <Loader />;
   }
@@ -101,6 +106,7 @@ const Response = (props) => {
           isLoading={(mutation.isIdle && !mutationHappened) || mutation?.isLoading}
           isEmployee={props.parentRoute.includes("employee")}
         />
+       
       </Card>
       {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
       <ActionBar>

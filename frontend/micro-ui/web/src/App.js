@@ -36,7 +36,7 @@ import {
   initTLComponents,
 } from "@mseva/digit-ui-module-tl";
 
-import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
+import { PTRModule, PTRLinks, PTRComponents, PTRReducers } from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
   ReceiptsModule,
@@ -158,6 +158,7 @@ const moduleReducers = (initData) => ({
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),
   swach: SWACHReducers(initData),
+  ptr: PTRReducers(initData)
 });
 
 function App() {

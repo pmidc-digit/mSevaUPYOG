@@ -32,8 +32,11 @@ import Response from "./pages/Response";
 import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
 import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
 import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
+import getRootReducer from "./redux/reducer";
+import NewPTRStepBaseForm from './pages/citizen/Create/NewPTRStepperForm/NewPTRStepBaseForm'; 
 
 
+export const PTRReducers = getRootReducer;
 
 const componentsToRegister = {
   PTRCheckPage,
@@ -61,7 +64,7 @@ const componentsToRegister = {
   PTRSelectProofIdentity,
   PTRServiceDoc,
   PTRWFApplicationTimeline,
- 
+  NewPTRStepBaseFormCitizen: NewPTRStepBaseForm,
   
   
   

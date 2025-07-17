@@ -41,6 +41,10 @@ const PTRCitizenPet
       (formData.pets && formData.pets[index] && formData.pets[index].lastVaccineDate) || formData?.pets?.lastVaccineDate || ""
     );
 
+    const [color, setColor] = useState(
+      (formData.pets && formData.pets[index] && formData.pets[index].color) || formData?.pets?.color || ""
+    );
+
 
 
 
@@ -48,9 +52,15 @@ const PTRCitizenPet
     const tenantId = Digit.ULBService.getCurrentTenantId();
     const stateId = Digit.ULBService.getStateId();
 
-    const { data: Menu } = Digit.Hooks.ptr.usePTRPetMDMS(stateId, "PetService", "PetType");
+    // const { data: Menu } = Digit.Hooks.ptr.usePTRPetMDMS(stateId, "PetService", "PetType");
+    const Menu = [{code: "DOG", i18nKey: "Dog"}, {code: "CAT", i18nKey: "Cat"}, {code: "BIRD", i18nKey: "Bird"}]; // Mock data for pet type
 
-    const { data: Breed_Type } = Digit.Hooks.ptr.useBreedTypeMDMS(stateId, "PetService", "BreedType");  // hooks for breed type
+    // const { data: Breed_Type } = Digit.Hooks.ptr.useBreedTypeMDMS(stateId, "PetService", "BreedType");  // hooks for breed type
+    const Breed_Type = [
+      { code: "LABRADOR", name: "Labrador", PetType: "DOG" },
+      { code: "PERSIAN", name: "Persian", PetType: "CAT" },
+      { code: "PARROT", name: "Parrot", PetType: "BIRD" }
+    ]; // Mock data for breed type
 
     let menu = [];   //variable name for pettype
     let breed_type = [];
@@ -90,6 +100,7 @@ const PTRCitizenPet
       });
 
 
+      console.log("petFormData", formData);
 
     function setpettype(e) {
       setPetType(e.target.value);
@@ -118,6 +129,10 @@ const PTRCitizenPet
       setClinicName(e.target.value);
     }
 
+    function setColorName(e) {
+      setColor(e.target.value);
+    }
+
     function setvaccinationdate(e) {
       setVaccinationDate(e.target.value);
     }
@@ -139,11 +154,11 @@ const PTRCitizenPet
       let owner = formData.pets && formData.pets[index];
       let ownerStep;
       if (userType === "citizen") {
-        ownerStep = { ...owner, petType, breedType, petGender, petName, petAge, doctorName, clinicName, lastVaccineDate, vaccinationNumber };
+        ownerStep = { ...owner, petType, breedType, petGender, petName, petAge, color, lastVaccineDate, vaccinationNumber };
         onSelect(config.key, { ...formData[config.key], ...ownerStep }, false, index);
       } else {
 
-        ownerStep = { ...owner, petType, breedType, petGender, petName, petAge, doctorName, clinicName, lastVaccineDate, vaccinationNumber };
+        ownerStep = { ...owner, petType, breedType, petGender, petName, petAge, color, lastVaccineDate, vaccinationNumber };
         onSelect(config.key, ownerStep, false, index);
       }
     };
@@ -155,9 +170,10 @@ const PTRCitizenPet
       if (userType === "citizen") {
         goNext();
       }
-    }, [petType, breedType, petGender, petName, petAge, doctorName, lastVaccineDate]);
+    }, [petType, breedType, petGender, petName, petAge, lastVaccineDate, color, vaccinationNumber]);
 
 
+    console.log("PTRCitizenPet formData", !petType || !breedType || !petGender || !petName || !color || !lastVaccineDate || !vaccinationNumber);
 
 
 
@@ -176,9 +192,28 @@ const PTRCitizenPet
           onSelect={goNext}
           onSkip={onSkip}
           t={t}
-          isDisabled={!petType || !breedType || !petGender || !petName || !petAge || !doctorName || !clinicName || !lastVaccineDate || !vaccinationNumber}
+          isDisabled={!petType || !breedType || !petGender || !petName || !color || !lastVaccineDate || !vaccinationNumber}
         >
           <div>
+            <CardLabel>{`${t("PTR_PET_NAME")}`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="petName"
+              value={petName}
+              onChange={setpetname}
+              style={{ width: "86%" }}
+              ValidationRequired={false}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[a-zA-Z-.`' ]*$",
+                type: "text",
+                title: t("PT_NAME_ERROR_MESSAGE"),
+              })}
+            />
+
             <CardLabel>{`${t("PTR_SEARCH_PET_TYPE")}`}</CardLabel>
 
 
@@ -228,27 +263,7 @@ const PTRCitizenPet
 
             />
 
-
-            <CardLabel>{`${t("PTR_PET_NAME")}`}</CardLabel>
-            <TextInput
-              t={t}
-              type={"text"}
-              isMandatory={false}
-              optionKey="i18nKey"
-              name="petName"
-              value={petName}
-              onChange={setpetname}
-              style={{ width: "86%" }}
-              ValidationRequired={false}
-              {...(validation = {
-                isRequired: true,
-                pattern: "^[a-zA-Z-.`' ]*$",
-                type: "text",
-                title: t("PT_NAME_ERROR_MESSAGE"),
-              })}
-            />
-
-            <CardLabel>{`${t("PTR_PET_SEX")}`}</CardLabel>
+            <CardLabel>{`${t("PTR_PET_GENDER")}`}</CardLabel>
 
 
             <Controller
@@ -271,7 +286,7 @@ const PTRCitizenPet
 
             />
 
-            <CardLabel>{`${t("PTR_PET_AGE")}`}</CardLabel>
+            {/* <CardLabel>{`${t("PTR_PET_AGE")}`}</CardLabel>
             <TextInput
               t={t}
               type={"text"}
@@ -326,6 +341,25 @@ const PTRCitizenPet
               name="clinicName"
               value={clinicName}
               onChange={setclinicname}
+              style={{ width: "86%" }}
+              ValidationRequired={false}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[a-zA-Z-.`' ]*$",
+                type: "text",
+                title: t("PT_NAME_ERROR_MESSAGE"),
+              })}
+            /> */}
+
+            <CardLabel>{`${t("PTR_COLOR")}`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="color"
+              value={color}
+              onChange={setColorName}
               style={{ width: "86%" }}
               ValidationRequired={false}
               {...(validation = {

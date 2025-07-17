@@ -2,13 +2,14 @@
                 [
                     {
                     "head": "ES_TITILE_OWNER_DETAILS",
+                    "stepNumber": 1,
                     "body": [
-                        {
-                            "route":"info",
-                            "component":"PTRServiceDoc",
-                            "nextStep": "owners",
-                            "key": "Documents"
-                        },
+                        // {
+                        //     "route":"info",
+                        //     "component":"PTRServiceDoc",
+                        //     "nextStep": "owners",
+                        //     "key": "Documents"
+                        // },
 
                         
                         {
@@ -29,6 +30,7 @@
 
                     {
                     "head": "ES_TITILE_PET_DETAILS",
+                    "stepNumber": 2,
                     "body": [
                         {
                         "route": "pet-details",
@@ -97,6 +99,7 @@
                 
                     {
                     "head": "ES_TITILE_DOCUMENT_DETAILS",
+                    "stepNumber": 3,
                     "body": [
                         {
                             "route": "documents",

@@ -12,7 +12,7 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
   // const tenantId = Digit.ULBService.getCurrentTenantId();
     const stateId = Digit.ULBService.getStateId();
   
-
+  console.log("petdetail");
   const { isLoading, data } = Digit.Hooks.ptr.usePetMDMS(stateId, "PetService", "Documents");
   
 

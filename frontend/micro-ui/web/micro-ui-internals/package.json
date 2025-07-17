@@ -60,20 +60,12 @@
     "dev:noc": "cd packages/modules/noc && yarn start",
     "dev:ws": "cd packages/modules/ws && yarn start",
     "dev:example": "cd example && yarn start",
-<<<<<<< HEAD
-    "devD:ptr": "cd packages/modules/ptr && yarn start",
-    "devD:sv": "cd packages/modules/sv && yarn start",
-    "devD:ads": "cd packages/modules/ads && yarn start",
-    "devD:chb": "cd packages/modules/chb && yarn start",
-    "devD:asset": "cd packages/modules/asset && yarn start",
-=======
     "dev:ptr": "cd packages/modules/ptr && yarn start",
     "dev:sv": "cd packages/modules/sv && yarn start",
     "dev:ads": "cd packages/modules/ads && yarn start",
     "dev:chb": "cd packages/modules/chb && yarn start",
     "dev:asset": "cd packages/modules/asset && yarn start",
     "devD:pgrai": "cd packages/modules/pgrai && yarn start",
->>>>>>> 8b2d828b7e84cef3d27ca8a005e3b0bef69d4f8a
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
     "build:components": "cd packages/react-components && yarn build",

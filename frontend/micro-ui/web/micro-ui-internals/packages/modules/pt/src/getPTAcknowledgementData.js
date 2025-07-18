@@ -67,8 +67,8 @@ const getOwner = (application, t, customTitle) => {
     return {
       title: t("PT_OWNERSHIP_INFO_SUB_HEADER"),
       values: [
-        { title: t("PT_COMMON_INSTITUTION_NAME"), value: application?.institution?.name || t("CS_NA") },
-        { title: t("PT_TYPE_OF_INSTITUTION"), value: application?.institution?.type || t("CS_NA") },
+        { title: t("PT_COMMON_INSTITUTION_NAME"), value: application?.institution?.institutionName || t("CS_NA") },
+        { title: t("PT_TYPE_OF_INSTITUTION"), value: application?.institution?.institutionType || t("CS_NA") },
         { title: t("PT_OWNER_NAME"), value: application?.institution?.nameOfAuthorizedPerson || t("CS_NA") },
         { title: t("PT_COMMON_AUTHORISED_PERSON_DESIGNATION"), value: application?.institution?.designation || t("CS_NA") },
         { title: t("PT_FORM3_MOBILE_NUMBER"), value: owners[0]?.mobileNumber || t("CS_NA") },

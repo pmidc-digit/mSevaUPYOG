@@ -86,7 +86,8 @@ export const config = [
             label: "TL_LOCALIZATION_STREET_NAME",
             type: "text",
             name: "street",
-            disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
+           // disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
+            disable: "window.location.href.includes(`edit-application`)",
             placeholder: "TL_NEW_TRADE_DETAILS_SRT_NAME_PLACEHOLDER"
             // "validation": {
             //     "maxlength": 256,
@@ -97,7 +98,8 @@ export const config = [
             label: "TL_NEW_TRADE_DETAILS_BLDG_NAME_LABEL",
             type: "text",
             name: "buildingName",
-            disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
+            //disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
+            disable: "window.location.href.includes(`edit-application`)",
             placeholder: "TL_NEW_TRADE_DETAILS_BLDG_NAME_PLACEHOLDER"
             // "validation": {
             //     "maxlength": 256,
@@ -143,7 +145,7 @@ export const config = [
         withoutLabel: true,
       },
       // {
-      //   name:"",
+      //   name: "",
       //   type: "component",
       //   component: "TLSelectLandmark",
       //   key: "address",
@@ -162,13 +164,13 @@ export const config = [
         key: "ownershipCategory",
         withoutLabel: true,
       },
-      // {
-      //   name: "",
-      //   type: "component",
-      //   component: "TLSelectOwnerAddress",
-      //   key: "owners",
-      //   withoutLabel: true,
-      // },
+      {
+        name: "",
+        type: "component",
+        component: "TLSelectOwnerAddress",
+        key: "owners",
+        withoutLabel: true,
+      },
       {
         name: "",
         type: "component",

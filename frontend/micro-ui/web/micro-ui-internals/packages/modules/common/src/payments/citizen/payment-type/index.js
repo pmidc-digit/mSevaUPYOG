@@ -15,7 +15,7 @@ import {
   LabelFieldPair,
   Dropdown,
   TextInput,
-  MobileNumber
+  MobileNumber,
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useForm, Controller } from "react-hook-form";
@@ -24,7 +24,21 @@ import { stringReplaceAll } from "../bills/routes/bill-details/utils";
 import $ from "jquery";
 import { makePayment } from "./payGov";
 import _ from "lodash";
-import { MERCHENT_KEY, ORDER_ID, POPUP_DIPSPLAY_IMAGE, POPUP_DIPSPLAY_NAME, RAZORPAY_CALLBACK_URL_KEYS, RAZORPAY_LOADSCRIPT_URL, TRANSACTION_AMMOUNT, TRANSACTION_BUSINESSSERVICE, TRANSACTION_CALLBACKURL, TRANSACTION_REDIRECTURL, TRANSACTION_USER_EMAIL, TRANSACTION_USER_MOBILE, TRANSACTION_USERNAME } from "../../../constants/razorpayConstants"
+import {
+  MERCHENT_KEY,
+  ORDER_ID,
+  POPUP_DIPSPLAY_IMAGE,
+  POPUP_DIPSPLAY_NAME,
+  RAZORPAY_CALLBACK_URL_KEYS,
+  RAZORPAY_LOADSCRIPT_URL,
+  TRANSACTION_AMMOUNT,
+  TRANSACTION_BUSINESSSERVICE,
+  TRANSACTION_CALLBACKURL,
+  TRANSACTION_REDIRECTURL,
+  TRANSACTION_USER_EMAIL,
+  TRANSACTION_USER_MOBILE,
+  TRANSACTION_USERNAME,
+} from "../../../constants/razorpayConstants";
 import { gatewayType } from "../../../constants/gatewayTypeConstants";
 
 export const SelectPaymentType = (props) => {
@@ -32,7 +46,7 @@ export const SelectPaymentType = (props) => {
   const userInfo = Digit.UserService.getUser();
   const [showToast, setShowToast] = useState(null);
   const [showOwnerToast, setShowOwnerToast] = useState(null);
-  const { tenantId: __tenantId, authorization, workflow: wrkflow , consumerCode : connectionNo } = Digit.Hooks.useQueryParams();
+  const { tenantId: __tenantId, authorization, workflow: wrkflow, consumerCode: connectionNo } = Digit.Hooks.useQueryParams();
   const paymentAmount = state?.paymentAmount;
   const { t } = useTranslation();
   const history = useHistory();
@@ -54,7 +68,7 @@ export const SelectPaymentType = (props) => {
     {}
   );
   if (window.location.href.includes("ISWSCON") || wrkflow === "WNS") consumerCode = decodeURIComponent(consumerCode);
-  if( wrkflow === "WNS") consumerCode = stringReplaceAll(consumerCode,"+","/")
+  if (wrkflow === "WNS") consumerCode = stringReplaceAll(consumerCode, "+", "/");
   useEffect(() => {
     if (paymentdetails?.Bill && paymentdetails.Bill.length == 0) {
       setShowToast({ key: true, label: "CS_BILL_NOT_FOUND" });
@@ -67,7 +81,7 @@ export const SelectPaymentType = (props) => {
 
   const billDetails = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
 
-  const userOptions = ["OWNER", "OTHER"]
+  const userOptions = ["OWNER", "OTHER"];
 
   const onSubmit = async (d) => {
     if (!d?.name || d?.name.trim() === "") {
@@ -86,25 +100,24 @@ export const SelectPaymentType = (props) => {
 
     setPaymentLoading(true);
 
-    console.log("process.env.BASE_URL", process.env)
-    const baseURL = process.env.REACT_APP_PROXY_API
+    const baseURL = process.env.REACT_APP_Base_URL;
 
     const filterData = {
       Transaction: {
         tenantId: billDetails?.tenantId,
         txnAmount: paymentAmount || billDetails.totalAmount,
         module: businessService,
-        businessService:businessService,
+        businessService: businessService,
         billId: billDetails.id,
         consumerCode: consumerCode,
         productInfo: "Common Payment",
-        gateway: d?.paymentType ,
+        gateway: d?.paymentType,
         taxAndPayments: [
           {
             taxAmount: paymentAmount || billDetails.totalAmount,
             billId: billDetails.id,
             amountPaid: paymentAmount || billDetails.totalAmount,
-            businessService:businessService,
+            businessService: businessService,
           },
         ],
         user: {
@@ -117,40 +130,49 @@ export const SelectPaymentType = (props) => {
         // callbackUrl: window.location.href.includes("mcollect") || wrkflow === "WNS"
         //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
         //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
-        // callbackUrl: (paymentAmount === 0 || billDetails.totalAmount === 0) ? 
+        // callbackUrl: (paymentAmount === 0 || billDetails.totalAmount === 0) ?
         // window.location.href.includes("mcollect") || wrkflow === "WNS"
         //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
         //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`:
         // window.location.href.includes("mcollect") || wrkflow === "WNS"
         //   ? `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
         //   : `${window.location.protocol}//${window.location.host}/digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
-        callbackUrl: (paymentAmount === 0 || billDetails.totalAmount === 0) ? 
-        window.location.href.includes("mcollect") || wrkflow === "WNS"
-          ? `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
-          : `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`:
-        window.location.href.includes("mcollect") || wrkflow === "WNS"
-          ? `${baseURL}digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? consumerCode:consumerCode}/${tenantId}?workflow=${wrkflow === "WNS"? wrkflow : "mcollect"}`
-          : `${baseURL}digit-ui/citizen/payment/success/${businessService}/${wrkflow === "WNS"? encodeURIComponent(consumerCode):consumerCode}/${tenantId}?propertyId=${consumerCode}`,
+        callbackUrl:
+          paymentAmount === 0 || billDetails.totalAmount === 0
+            ? window.location.href.includes("mcollect") || wrkflow === "WNS"
+              ? `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS" ? consumerCode : consumerCode}/${tenantId}?workflow=${
+                  wrkflow === "WNS" ? wrkflow : "mcollect"
+                }`
+              : `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${
+                  wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
+                }/${tenantId}?propertyId=${consumerCode}`
+            : window.location.href.includes("mcollect") || wrkflow === "WNS"
+            ? `${baseURL}digit-ui/citizen/payment/success/${businessService}/${
+                wrkflow === "WNS" ? consumerCode : consumerCode
+              }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
+            : `${baseURL}digit-ui/citizen/payment/success/${businessService}/${
+                wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
+              }/${tenantId}?propertyId=${consumerCode}`,
         additionalDetails: {
           isWhatsapp: false,
-          paidBy: d?.paidBy // Need To change
+          paidBy: d?.paidBy, // Need To change
         },
       },
     };
 
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
-      console.log("data=========",data);
+      console.log("data=========", data);
 
-      if(paymentAmount === 0 || billDetails.totalAmount === 0){
+      if (paymentAmount === 0 || billDetails.totalAmount === 0) {
         setPaymentLoading(false);
-        window.location.href = data?.Transaction?.callbackUrl
+        window.location.href = data?.Transaction?.callbackUrl;
         return;
       }
-      
+
       // const redirectUrl = data?.Transaction?.redirectUrl;
       // if (d?.paymentType == "AXIS") {
-        // window.location = redirectUrl;
+      // window.location = redirectUrl;
       // }
       // else if (d?.paymentType == "NTTDATA") {
       //   let redirect= redirectUrl.split("returnURL=")
@@ -233,13 +255,13 @@ export const SelectPaymentType = (props) => {
       //     //window.location = redirectionUrl;
       //   }
       // }
-     // window.location = redirectUrl;
-     if(d?.paymentType === gatewayType.RAZORPAY){
+      // window.location = redirectUrl;
+      if (d?.paymentType === gatewayType.RAZORPAY) {
         displayRazorpay(data);
-     }else{
-       //Do Nothing
-       setPaymentLoading(false);
-     }
+      } else {
+        //Do Nothing
+        setPaymentLoading(false);
+      }
     } catch (error) {
       let messageToShow = "CS_PAYMENT_UNKNOWN_ERROR_ON_SERVER";
       if (error.response?.data?.Errors?.[0]) {
@@ -252,55 +274,62 @@ export const SelectPaymentType = (props) => {
   };
 
   async function displayRazorpay(getOrderData) {
-  const res = await loadScript(
-    RAZORPAY_LOADSCRIPT_URL
-  );
+    const res = await loadScript(RAZORPAY_LOADSCRIPT_URL);
 
-  if (!res) {
-    alert("Razorpay SDK failed to load. Are you online?");
-    return;
-  }
-
-  function getQueryVariable(variable) {
-    const query = _.get(getOrderData, TRANSACTION_REDIRECTURL);
-    var vars = query.split("&");
-    for (var i = 0; i < vars.length; i++) {
-      var pair = vars[i].split("=");
-      if (pair[0] == variable) { return pair[1]; }
+    if (!res) {
+      alert("Razorpay SDK failed to load. Are you online?");
+      return;
     }
-    return (false);
+
+    function getQueryVariable(variable) {
+      const query = _.get(getOrderData, TRANSACTION_REDIRECTURL);
+      var vars = query.split("&");
+      for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split("=");
+        if (pair[0] == variable) {
+          return pair[1];
+        }
+      }
+      return false;
+    }
+    const options = {
+      key: getQueryVariable(MERCHENT_KEY),
+      amount: _.get(getOrderData, TRANSACTION_AMMOUNT) * 100,
+      //currency: getQueryVariable('currency'),
+      name: POPUP_DIPSPLAY_NAME,
+      description: _.get(getOrderData, TRANSACTION_BUSINESSSERVICE) + " Charge Collection",
+      image: POPUP_DIPSPLAY_IMAGE,
+      order_id: getQueryVariable(ORDER_ID),
+      handler: async function (response) {
+        const data = {
+          razorpayPaymentId: response.razorpay_payment_id,
+          razorpayOrderId: response.razorpay_order_id,
+          razorpaySignature: response.razorpay_signature,
+        };
+
+        window.location =
+          _.get(getOrderData, TRANSACTION_CALLBACKURL) +
+          RAZORPAY_CALLBACK_URL_KEYS.PAYMENT_ID +
+          data.razorpayPaymentId +
+          RAZORPAY_CALLBACK_URL_KEYS.ORDER_ID +
+          data.razorpayOrderId +
+          RAZORPAY_CALLBACK_URL_KEYS.SIGNATURE +
+          data.razorpaySignature;
+      },
+      prefill: {
+        name: _.get(getOrderData, TRANSACTION_USERNAME),
+        email: _.get(getOrderData, TRANSACTION_USER_EMAIL),
+        contact: _.get(getOrderData, TRANSACTION_USER_MOBILE),
+      },
+      theme: {
+        color: "#61dafb",
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    setPaymentLoading(false);
+    paymentObject.open();
   }
-  const options = {
-    key: getQueryVariable(MERCHENT_KEY),
-    amount: _.get(getOrderData, TRANSACTION_AMMOUNT) * 100,
-    //currency: getQueryVariable('currency'),
-    name: POPUP_DIPSPLAY_NAME,
-    description: _.get(getOrderData, TRANSACTION_BUSINESSSERVICE) + " Charge Collection",
-    image: POPUP_DIPSPLAY_IMAGE,
-    order_id: getQueryVariable(ORDER_ID),
-    handler: async function (response) {
-      const data = {
-        razorpayPaymentId: response.razorpay_payment_id,
-        razorpayOrderId: response.razorpay_order_id,
-        razorpaySignature: response.razorpay_signature,
-      };
-
-      window.location = _.get(getOrderData, TRANSACTION_CALLBACKURL) + RAZORPAY_CALLBACK_URL_KEYS.PAYMENT_ID + data.razorpayPaymentId + RAZORPAY_CALLBACK_URL_KEYS.ORDER_ID + data.razorpayOrderId + RAZORPAY_CALLBACK_URL_KEYS.SIGNATURE + data.razorpaySignature;
-    },
-    prefill: {
-      name: _.get(getOrderData, TRANSACTION_USERNAME),
-      email: _.get(getOrderData, TRANSACTION_USER_EMAIL),
-      contact: _.get(getOrderData, TRANSACTION_USER_MOBILE),
-    },
-    theme: {
-      color: "#61dafb",
-    },
-  };
-
-  const paymentObject = new window.Razorpay(options);
-  setPaymentLoading(false);
-  paymentObject.open();
-}
 
   function loadScript(src) {
     return new Promise((resolve) => {
@@ -323,10 +352,10 @@ export const SelectPaymentType = (props) => {
   }
 
   if (paymentLoading || isPaymentLoading) {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth' // for smooth scrolling
-      });
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", // for smooth scrolling
+    });
     return <Loader />;
   }
 
@@ -338,15 +367,24 @@ export const SelectPaymentType = (props) => {
         <Card>
           <div className="payment-amount-info" style={{ marginBottom: "26px" }}>
             <CardLabel className="dark">{t("PAYMENT_CS_TOTAL_AMOUNT_DUE")}</CardLabel>
-            <CardSectionHeader> ₹ { paymentAmount !== undefined ? Number(paymentAmount).toFixed(2) : Number(billDetails?.totalAmount).toFixed(2)}</CardSectionHeader>
+            <CardSectionHeader>
+              {" "}
+              ₹ {paymentAmount !== undefined ? Number(paymentAmount).toFixed(2) : Number(billDetails?.totalAmount).toFixed(2)}
+            </CardSectionHeader>
           </div>
           <CardLabel>{t("PAYMENT_CS_SELECT_METHOD")}</CardLabel>
           {menuList?.[moduleName]?.PaymentGateway?.length && (
             <Controller
-              name="paymentType"  
+              name="paymentType"
               defaultValue={menuList?.[moduleName]?.PaymentGateway?.[0]?.gateway}
               control={control}
-              render={(props) => <RadioButtons selectedOption={props.value} options={menuList?.testing?.PaymentGateway?.map((item)=> item?.gateway)} onSelect={props.onChange} />}
+              render={(props) => (
+                <RadioButtons
+                  selectedOption={props.value}
+                  options={menuList?.testing?.PaymentGateway?.map((item) => item?.gateway)}
+                  onSelect={props.onChange}
+                />
+              )}
             />
           )}
         </Card>
@@ -364,13 +402,12 @@ export const SelectPaymentType = (props) => {
                 <Dropdown
                   selected={props.value}
                   option={userOptions}
-                  select={(val)=> {
-                    if(val === "OWNER"){
+                  select={(val) => {
+                    if (val === "OWNER") {
                       props.onChange(val);
                       setValue("name", name || billDetails?.payerName || "");
                       setValue("mobileNumber", mobileNumber || billDetails?.mobileNumber || "");
-                    }
-                    else if(val === "OTHER"){
+                    } else if (val === "OTHER") {
                       props.onChange(val);
                       setValue("name", "");
                       setValue("mobileNumber", "");
@@ -418,9 +455,11 @@ export const SelectPaymentType = (props) => {
             </div>
           </LabelFieldPair>
         </Card>
-        {!showToast && <Card>
-          <SubmitBar label={t("PAYMENT_CS_BUTTON_LABEL")} submit={true} />
-        </Card>}
+        {!showToast && (
+          <Card>
+            <SubmitBar label={t("PAYMENT_CS_BUTTON_LABEL")} submit={true} />
+          </Card>
+        )}
       </form>
       <InfoBanner label={t("CS_COMMON_INFO")} text={t("CS_PAYMENT_REDIRECT_NOTICE")} />
       {showToast && (

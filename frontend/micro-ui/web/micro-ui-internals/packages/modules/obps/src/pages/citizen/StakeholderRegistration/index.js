@@ -66,6 +66,8 @@ const StakeholderRegistration = () => {
   const CheckPage = Digit?.ComponentRegistryService?.getComponent('StakeholderCheckPage') ;
   const StakeholderAcknowledgement = Digit?.ComponentRegistryService?.getComponent('StakeholderAcknowledgement');
 
+  console.log("formData in StakeholderRegistration", params);
+  console.log("config in StakeholderRegistration", config);
   return (
     <Switch>
       {config.map((routeObj, index) => {

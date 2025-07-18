@@ -20,7 +20,7 @@ export const GISComponent = ({config, onSelect, userType, formData, setError, fo
         // }else{
         //     alert("Please a valid a survey ID before proceeding to the GIS map.");
         // }
-        const url = "https://onemap.punjab.gov.in/map.aspx?surveyid=G2-2358"; 
+        const url = "https://onemap.punjab.gov.in/map.aspx?surveyid=G2-2358&usertype=citizen"; 
         window.location.href = url;
     }
     return(

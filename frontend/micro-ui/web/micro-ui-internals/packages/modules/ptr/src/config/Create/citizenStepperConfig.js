@@ -21,9 +21,6 @@
                         "nextStep": "pet-details",
                         "hideInEmployee": true,
                         "isMandatory": true,
-                        "texts": {
-                            "submitBarLabel": "PTR_COMMON_NEXT",
-                        }
                         },
                     ],
                     },
@@ -41,9 +38,6 @@
                         "isMandatory": true,
                         "hideInEmployee": true,
                         "nextStep": "documents",
-                        "texts": {
-                            "submitBarLabel": "PTR_COMMON_NEXT",
-                        }
                         },
                     ],
                     },
@@ -108,9 +102,22 @@
                             "key": "documents",
                             "type": "component",
                             "nextStep":null,
-                            "texts": {
-                                "submitBarLabel": "PTR_COMMON_NEXT",
-                            },
+                            
+                        }
+                    ],
+                    },
+
+                    {
+                    "head": "ES_TITILE_AUMMARY_DETAILS",
+                    "stepNumber": 4,
+                    "body": [
+                        {
+                            "route": "summary",
+                            "component": "PTRSummary",
+                            "withoutLabel": true,
+                            "key": "summary",
+                            "type": "component",
+                            "nextStep":null,
                             
                         }
                     ],

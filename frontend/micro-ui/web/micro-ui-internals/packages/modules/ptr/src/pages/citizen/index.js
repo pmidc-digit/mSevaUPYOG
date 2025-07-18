@@ -20,7 +20,7 @@ const App = () => {
   // const PTRCreate = Digit?.ComponentRegistryService?.getComponent("PTRCreatePet");
   const PTRApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PTRApplicationDetails");
   const PTRMyApplications = Digit?.ComponentRegistryService?.getComponent("PTRMyApplications");
-  const PTRCreate = Digit?.ComponentRegistryService?.getComponent("NewPTRStepBaseFormCitizen");
+  const PTRCreate = Digit?.ComponentRegistryService?.getComponent("NewPTRStepperForm");
  
   return (
     <span className={"pet-citizen"}style={{width:"100%"}}>

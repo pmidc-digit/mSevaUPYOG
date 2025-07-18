@@ -90,20 +90,18 @@ const PTRCitizenDetails
 
   useEffect(() => {
     console.log("useEffect called in PTRCitizenDetails", formData, userType);
-    if (userType === "citizen") {
       goNext();
-    }
   }, [ mobileNumber, fatherName, emailId, firstName, lastName, address]);
 
  
 
   return (
     <React.Fragment>
-    {
+    {/* {
       window.location.href.includes("/citizen") ?
  <Timeline currentStep={1} />
     : null
-    }
+    } */}
 
     <FormStep
       config={config}
@@ -225,7 +223,7 @@ const PTRCitizenDetails
         />
 
         <CardLabel>{`${t("PTR_APPLICANT_ADDRESS")}`}</CardLabel>
-        <TextInput
+        <TextArea
           t={t}
           type={"text"}
           isMandatory={false}

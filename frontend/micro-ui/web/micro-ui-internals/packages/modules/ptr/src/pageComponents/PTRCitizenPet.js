@@ -154,11 +154,11 @@ const PTRCitizenPet
       let owner = formData.pets && formData.pets[index];
       let ownerStep;
       if (userType === "citizen") {
-        ownerStep = { ...owner, petType, breedType, petGender, petName, petAge, color, lastVaccineDate, vaccinationNumber };
+        ownerStep = { ...owner, petType, breedType, petGender, petName, color, lastVaccineDate, vaccinationNumber };
         onSelect(config.key, { ...formData[config.key], ...ownerStep }, false, index);
       } else {
 
-        ownerStep = { ...owner, petType, breedType, petGender, petName, petAge, color, lastVaccineDate, vaccinationNumber };
+        ownerStep = { ...owner, petType, breedType, petGender, petName, color, lastVaccineDate, vaccinationNumber };
         onSelect(config.key, ownerStep, false, index);
       }
     };
@@ -167,10 +167,10 @@ const PTRCitizenPet
 
 
     useEffect(() => {
-      if (userType === "citizen") {
+      // if (userType === "citizen") {
         goNext();
-      }
-    }, [petType, breedType, petGender, petName, petAge, lastVaccineDate, color, vaccinationNumber]);
+      // }  
+    }, [petType, breedType, petGender, petName, lastVaccineDate, color, vaccinationNumber]);
 
 
     console.log("PTRCitizenPet formData", !petType || !breedType || !petGender || !petName || !color || !lastVaccineDate || !vaccinationNumber);
@@ -181,11 +181,11 @@ const PTRCitizenPet
 
     return (
       <React.Fragment>
-        {
+        {/* {
           window.location.href.includes("/citizen") ?
             <Timeline currentStep={2} />
             : null
-        }
+        } */}
 
         <FormStep
           config={config}

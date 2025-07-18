@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/PTRTimeline";
 
 const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
+  const [documents, setDocuments] = useState(formData?.documents?.documents);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
@@ -12,8 +12,11 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
   // const tenantId = Digit.ULBService.getCurrentTenantId();
     const stateId = Digit.ULBService.getStateId();
   
-  console.log("petdetail");
-  const { isLoading, data } = Digit.Hooks.ptr.usePetMDMS(stateId, "PetService", "Documents");
+  // const { isLoading, data } = Digit.Hooks.ptr.usePetMDMS(stateId, "PetService", "Documents");
+  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", [
+    "Documents",
+  ]);
+  console.log("formDataINPTRDOCUMENT", documents, formData);
   
 
   const handleSubmit = () => {
@@ -27,16 +30,16 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
 
   useEffect(() => {
     let count = 0;
-    data?.PetService?.Documents.map((doc) => {
+    data?.PetService?.Documents?.map((doc) => {
       doc.hasDropdown = true;
       
       let isRequired = false;
-      documents.map((data) => {
+      documents?.map((data) => {
         if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
       });
       if (!isRequired && doc.required) count = count + 1;
     });
-    if ((count == "0" || count == 0) && documents.length > 0) setEnableSubmit(false);
+    if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
 
@@ -44,10 +47,10 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
 
   return (
     <div>
-      <Timeline currentStep={4} />
+      {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {data?.PetService?.Documents?.map((document, index) => {
+          {data?.NDC?.Documents?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}
@@ -58,6 +61,7 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
                 setDocuments={setDocuments}
                 documents={documents}
                 setCheckRequiredFields={setCheckRequiredFields}
+                handleSubmit={handleSubmit}
               />
             );
           })}
@@ -79,12 +83,12 @@ function PTRSelectDocument({
   documents,
   action,
   formData,
-  
+  handleSubmit,
   id,
   
 }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  console.log("filetetetetet",filteredDocument);
+  // console.log("filetetetetet",filteredDocument, documents, doc);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
@@ -108,11 +112,13 @@ function PTRSelectDocument({
   var dropDownData = dropdownData;
    
   const [isHidden, setHidden] = useState(false);
+  const [getLoading, setLoading] = useState(false);
 
   
 
   useEffect(() => {
     if (selectedDocument?.code) {
+      console.log("selectedDocument", documents);
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
@@ -120,7 +126,7 @@ function PTRSelectDocument({
           return filteredDocumentsByDocumentType;
         }
 
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile);
+        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
         return [
           ...filteredDocumentsByFileStoreId,
           {
@@ -133,6 +139,13 @@ function PTRSelectDocument({
     }
     
   }, [uploadedFile, selectedDocument]);
+
+  useEffect(() => {
+    if(documents?.length>0) {
+      console.log("documents", documents);
+      handleSubmit();
+    }
+  },[documents]);  
 
   useEffect(() => {
     if (action === "update") {
@@ -150,9 +163,17 @@ function PTRSelectDocument({
   }, []);
 
   useEffect(() => {
+    if(!doc?.hasDropdown){
+      setSelectedDocument({ code: doc?.code, i18nKey: doc?.code?.replaceAll(".", "_") });
+      // setHidden(true);
+    }
+  },[])
+
+  useEffect(() => {
     (async () => {
       setError(null);
       if (file) {
+         setLoading(true);
         if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
           // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
@@ -160,12 +181,14 @@ function PTRSelectDocument({
           try {
             setUploadedFile(null);
             const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
+             setLoading(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
               setError(t("CS_FILE_UPLOAD_ERROR"));
             }
           } catch (err) {
+             setLoading(false);
             setError(t("CS_FILE_UPLOAD_ERROR"));
           }
         }
@@ -179,9 +202,10 @@ function PTRSelectDocument({
 
   return (
     <div style={{ marginBottom: "24px" }}>
+      {getLoading && <Loader />}
       {doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
+          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))}</CardLabel>
           <Dropdown
             className="form-field"
             selected={selectedDocument}
@@ -191,6 +215,11 @@ function PTRSelectDocument({
             optionKey="i18nKey"
             t={t}
           />
+        </LabelFieldPair>
+      ) : null}
+      {!doc?.hasDropdown ? (
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
         </LabelFieldPair>
       ) : null}
       <LabelFieldPair>

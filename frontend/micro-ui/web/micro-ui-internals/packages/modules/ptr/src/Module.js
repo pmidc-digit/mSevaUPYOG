@@ -33,7 +33,12 @@ import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
 import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
 import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
 import getRootReducer from "./redux/reducer";
-import NewPTRStepBaseForm from './pages/citizen/Create/NewPTRStepperForm/NewPTRStepBaseForm'; 
+import NewPTRStepperForm from "./pages/citizen/Create/NewPTRStepper/NewPTRStepperForm";
+import NewPTRStepFormOne from "./pages/citizen/Create/NewPTRStepper/NewPTRStepFormOne";
+import NewPTRStepFormTwo from "./pages/citizen/Create/NewPTRStepper/NewPTRStepFormTwo";
+import NewPTRStepFormThree from "./pages/citizen/Create/NewPTRStepper/NewPTRStepFormThree";
+import NewPTRStepFormFour from "./pages/citizen/Create/NewPTRStepper/NewPTRStepFormFour";
+import PTRSummary from "./pageComponents/PTRSummary";
 
 
 export const PTRReducers = getRootReducer;
@@ -64,9 +69,12 @@ const componentsToRegister = {
   PTRSelectProofIdentity,
   PTRServiceDoc,
   PTRWFApplicationTimeline,
-  NewPTRStepBaseFormCitizen: NewPTRStepBaseForm,
-  
-  
+  NewPTRStepperForm,
+  NewPTRStepFormOne,
+  NewPTRStepFormTwo,
+  NewPTRStepFormThree,
+  NewPTRStepFormFour,
+  PTRSummary
   
 
  

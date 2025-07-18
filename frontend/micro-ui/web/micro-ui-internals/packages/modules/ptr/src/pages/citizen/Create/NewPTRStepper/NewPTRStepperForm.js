@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 //
-import Stepper from "@mseva/digit-ui-react-components/src/customComponents/Stepper";
+import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { citizenConfig } from "../../../../config/Create/citizenStepperConfig";
 import { SET_PTRNewApplication_STEP, RESET_PTR_NEW_APPLICATION_FORM } from "../../../../redux/action/PTRNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
@@ -11,73 +11,79 @@ import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
 //Config for steps
 const createEmployeeConfig = [
-//   {
-//     head: "Trade Details",
-//     stepLabel: "Trade Details",
-//     stepNumber: 1,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "TLNewFormStepOneCitizen",
-//     key: "TraidDetails",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
-//     },
-//   },
-//   {
-//     head: "Owner Details",
-//     stepLabel: "Owner Details",
-//     stepNumber: 2,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "TLNewFormStepTwoCitizen",
-//     key: "OwnerDetails",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
-//     },
-//   },
-//   {
-//     head: "Documents",
-//     stepLabel: "Documents",
-//     stepNumber: 3,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "TLNewFormStepThreeCitizen",
-//     key: "Documents",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "TL_COMMON_BUTTON_SUBMIT",
-//     },
-//   },
-//   {
-//     head: "Summary",
-//     stepLabel: "Summary",
-//     stepNumber: 4,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "TLNewSummaryStepFourCitizen",
-//     key: "SummaryTL",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "TL_COMMON_BUTTON_SUBMIT",
-//     },
-//   },
+  {
+    head: "OWNER DETAILS",
+    stepLabel: "ES_TITILE_OWNER_DETAILS",
+    stepNumber: 1,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewPTRStepFormOne",
+    key: "ownerss",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "PTR_COMMON_NEXT",
+    },
+  },
+  {
+    head: "PET DETAILS",
+    stepLabel: "ES_TITILE_PET_DETAILS",
+    stepNumber: 2,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewPTRStepFormTwo",
+    key: "pets",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "PTR_COMMON_NEXT",
+    },
+  },
+  {
+    head: "DOCUMENT DETAILS",
+    stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewPTRStepFormThree",
+    key: "documents",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "PTR_COMMON_NEXT",
+    },
+  },
+  {
+    head: "SUMMARY DETAILS",
+    stepLabel: "ES_TITILE_SUMMARY_DETAILS",
+    stepNumber: 4,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewPTRStepFormFour",
+    key: "summary",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "PTR_COMMON_SUBMITe",
+    },
+  },
+
+  // NewPTRStepFormTwo
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-const NewPTRStepBaseForm = () => {
+console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
+
+const NewPTRStepperForm = () => {
   const history = useHistory();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.tl.tlNewApplicationForm);
+  const formState = useSelector((state) => state.ptr.PTRNewApplicationFormReducer);
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  console.log("formStatePTR: ", formState);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PTRNewApplication_STEP(updatedStepNumber));
@@ -104,7 +110,7 @@ const NewPTRStepBaseForm = () => {
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {t("New Trade License Application")}
+        {t("PET_REGISTRATION_APPLICATION")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (
@@ -121,4 +127,4 @@ const NewPTRStepBaseForm = () => {
   );
 };
 
-export default NewPTRStepBaseForm;
+export default NewPTRStepperForm;

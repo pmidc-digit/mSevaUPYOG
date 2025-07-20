@@ -149,16 +149,10 @@ const formatFinancialYear = (year) => ({
             name: applicationData?.tenantId || ""
           },
           locality: tradeLicenseDetail?.address?.locality?.code || "",
-          // locality: {
-          //   code: applicationData?.tradeLicenseDetail?.address?.locality?.code || "",
-          //   i18nKey: applicationData?.tradeLicenseDetail?.address?.locality?.name.slice(0,applicationData?.tradeLicenseDetail?.address?.locality?.name.length - 5),
-          //   name: applicationData?.tradeLicenseDetail?.address?.locality?.name || "",
-          //   label: "Locality",
-          // },
           street: tradeLicenseDetail?.address?.street || "",
           doorNo: tradeLicenseDetail?.address?.doorNo || "",
-          electricityNo: tradeLicenseDetail?.address?.electricityNo || "",
-          buildingName: tradeLicenseDetail?.address?.buildingName || ""
+          electricityNo: "",
+          landmark: tradeLicenseDetail?.address?.landmark || ""
         }
       },
       OwnerDetails: {

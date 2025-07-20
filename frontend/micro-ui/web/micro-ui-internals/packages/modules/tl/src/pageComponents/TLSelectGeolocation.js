@@ -34,8 +34,7 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
   };
 
   console.log("GeoLocation formdata", config.key, formData);
-  const isEmpRenewLicense =
-    window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
+  
 
   return (
     <React.Fragment>
@@ -50,13 +49,13 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
       position={geoLocation}
       onSave={() => onSelect(config.key, { geoLocation, pincode })}
       onChange={(code, location) => onChange(code, location)}
-      disabled={isEmpRenewLicense || pincode === "" || isEditProperty}
+      disabled={pincode === "" || isEditProperty}
       forcedError={t(pincodeServicability)}
       isPTDefault={true}
       PTdefaultcoord={defaultcoord1}
       onSelect={onSelect}
       //isPopUp={true}
-    /> 
+    />
     </React.Fragment>
   );
 };

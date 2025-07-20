@@ -112,9 +112,7 @@ const TLAccessoriesEmployee = ({ config, onSelect, userType, formData, setError,
             {accessoriesList.map((accessor, index) => (
                 <AccessoriersForm key={accessor.key} index={index} accessor={accessor} {...commonProps} />
             ))}
-            {!isRenewal && 
             <LinkButton label={`${t("TL_NEW_TRADE_DETAILS_BUTTON_NEW_ACC")}`} onClick={addAccessories} style={{ color: "#a82227", width: "fit-content" }} />
-            }
 
         </React.Fragment>
     );
@@ -318,8 +316,7 @@ const AccessoriersForm = (_props) => {
                                     option={sortDropdownNames(accessories,"i18nKey",t) || []}
                                     optionKey="i18nKey"
                                     t={t}
-                                    disable={isRenewal || false}
-                                    placeholder={t("TL_NEW_TRADE_DETAILS_ACC_PLACEHOLDER")}
+                                  
                                 />
                             )}
                         />

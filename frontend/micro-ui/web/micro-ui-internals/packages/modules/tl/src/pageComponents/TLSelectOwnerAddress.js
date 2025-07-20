@@ -7,7 +7,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
   const [permanentAddress, setPermanentAddress] = useState(formData?.owners?.permanentAddress || "");
   const [isCorrespondenceAddress, setIsCorrespondenceAddress] = useState(formData?.owners?.isCorrespondenceAddress);
   let isedittrade = window.location.href.includes("edit-application");
-  let isrenewtrade = window.location.href.includes("renew-application-details");
+  let isrenewtrade = window.location.href.includes("renew-trade");
   const { pathname: url } = useLocation();
   const editScreen = url.includes("/modify-application/");
   let ismultiple = formData?.ownershipCategory?.code?.includes("SINGLEOWNER") ? false : true;
@@ -114,7 +114,7 @@ const TLSelectOwnerAddress = ({ t, config, onSelect, userType, formData }) => {
           {t("PT_OWNERS_ADDRESS")}
         </CardLabel>
         <div className="field">
-          <TextInput name="address" onChange={setOwnerPermanentAddress} value={permanentAddress} disable={isrenewtrade || editScreen}  placeholder={t("Enter Official Correspondence Address")}/>
+          <TextInput name="address" onChange={setOwnerPermanentAddress} value={permanentAddress} disable={editScreen} />
         </div>
       </LabelFieldPair>
     );

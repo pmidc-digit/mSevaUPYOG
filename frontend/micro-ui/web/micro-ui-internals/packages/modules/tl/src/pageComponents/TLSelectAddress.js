@@ -31,18 +31,9 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
 
   const [localities, setLocalities] = useState();
 
-  const [selectedLocality, setSelectedLocality] = useState(formData?.address?.locality || null);
+  const [selectedLocality, setSelectedLocality] = useState();
 
   const [isErrors, setIsErrors] = useState(false);
-
-
-  useEffect(()=>{
-    if(localities && typeof selectedLocality === "string" && checkingLocationForRenew){
-      const foundLocality = localities?.find((item) => item.code === selectedLocality)
-      setSelectedLocality(foundLocality)
-      setValue("locality",foundLocality);
-    }
-  },[localities])
 
   useEffect(() => {
     if (cities) {
@@ -66,8 +57,6 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
     }
 
   }, [formData?.tradeUnits?.[0]?.tradeCategory?.code]);
-
-  console.log("formDataInTLSelectState", formData)
 
   useEffect(() => {
     if (selectedCity && fetchedLocalities) {
@@ -195,22 +184,13 @@ const TLSelectAddress = ({ t, config, onSelect, userType, formData, setError, fo
           <CardLabel className="card-label-smaller">{`${t("TL_LOCALIZATION_LOCALITY")} * `}</CardLabel>
           <Controller
             name="locality"
-            defaultValue={selectedLocality || formData?.address?.locality || null}
+            defaultValue={checkingLocationForRenew ? formData?.address?.locality : null}
             control={control}
             rules={{required: t("REQUIRED_FIELD")}}
             render={(props) => (
               <Dropdown
                 className="form-field"
-                // selected={
-                //   checkingLocationForRenew || formData?.cpt?.details
-                //     ? { ...formData?.cpt?.details?.address?.locality, i18nkey: formData?.cpt?.details?.address?.locality?.name }
-                //     : props.value || { ...formData?.cpt?.details?.address?.locality, i18nkey: formData?.cpt?.details?.address?.locality?.name }
-                // }
-                selected={
-                  formData?.cpt?.details?.address ? 
-                  { ...formData?.cpt?.details?.address?.locality, i18nkey: formData?.cpt?.details?.address?.locality?.name }
-                  : checkingLocationForRenew ? selectedLocality || formData?.address?.locality : props.value
-                }
+                selected={checkingLocationForRenew || formData?.cpt?.details ? ({...formData?.cpt?.details?.address?.locality, i18nkey:formData?.cpt?.details?.address?.locality?.name}) :(props.value || {...formData?.cpt?.details?.address?.locality, i18nkey:formData?.cpt?.details?.address?.locality?.name})}
                 option={localities}
                 select={props.onChange}
                 onBlur={props.onBlur}

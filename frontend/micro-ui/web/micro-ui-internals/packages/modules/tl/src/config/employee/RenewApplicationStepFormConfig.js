@@ -58,14 +58,14 @@ export const config = [
       {
         name: "",
         type: "component",
-        component: "TLPropertySearchSummary",
+        component: "CPTPropertySearchNSummary",
         key: "cpt",
         withoutLabel: true,
       },
     ],
   },
   {
-    head: "TL_NEW_TRADE_DETAILS_HEADER_TRADE_LOC_DETAILS",
+    head: "ES_NEW_APPLICATION_LOCATION_DETAILS",
     stepNumber: 1,
     body: [
       {
@@ -86,9 +86,7 @@ export const config = [
             label: "TL_LOCALIZATION_STREET_NAME",
             type: "text",
             name: "street",
-           // disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
-            disable: "window.location.href.includes(`edit-application`)",
-            placeholder: "TL_NEW_TRADE_DETAILS_SRT_NAME_PLACEHOLDER"
+            disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
             // "validation": {
             //     "maxlength": 256,
             //     "title": "CORE_COMMON_STREET_INVALID"
@@ -98,9 +96,7 @@ export const config = [
             label: "TL_NEW_TRADE_DETAILS_BLDG_NAME_LABEL",
             type: "text",
             name: "buildingName",
-            //disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
-            disable: "window.location.href.includes(`edit-application`)",
-            placeholder: "TL_NEW_TRADE_DETAILS_BLDG_NAME_PLACEHOLDER"
+            disable: "window.location.href.includes(`edit-application`)||window.location.href.includes(`renew-trade`)",
             // "validation": {
             //     "maxlength": 256,
             //     "title": "CORE_COMMON_DOOR_INVALID"
@@ -110,7 +106,6 @@ export const config = [
             label: "TL_NEW_TRADE_DETAILS_DOOR_NO_LABEL",
             type: "text",
             name: "doorNo",
-            placeholder: "TL_NEW_TRADE_DETAILS_DOOR_NO_PLACEHOLDER"
             //disable: false,
             // "validation": {
             //     "maxlength": 256,
@@ -121,7 +116,6 @@ export const config = [
             label: "TL_NEW_TRADE_DETAILS_ELEC_CON_NO_LABEL",
             type: "text",
             name: "electricityNo",
-            placeholder: "TL_NEW_TRADE_DETAILS_ELEC_CON_NO_PLACEHOLDER"
             //disable:false,
             // "validation": {
             //     "maxlength": 256,

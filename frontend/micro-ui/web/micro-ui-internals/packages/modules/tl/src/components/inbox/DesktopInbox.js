@@ -15,22 +15,9 @@ const DesktopInbox = ({ tableConfig, filterComponent,columns, isLoading, setSear
   const GetCell = (value) => <span className="cell-text">{value}</span>;
 
   const GetSlaCell = (value) => {
-    // if (value === "CS_NA") return t(value);
-    // if (isNaN(value)) return <span className="sla-cell-success">0</span>;
-    // return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
-    if (value < 0) {
-      return (
-        <span className="sla-cell-error" style={{ color: "#a82227", padding: 0 }}>
-          {Math.abs(value)} hours overdue
-        </span>
-      );
-    } else {
-      return (
-        <span className="sla-cell-success" style={{ padding: 0 }}>
-          {value} hours left
-        </span>
-      );
-    }
+    if(value === "CS_NA") return t(value)
+    if (isNaN(value)) return <span className="sla-cell-success">0</span>;
+    return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
   };
 
   const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
@@ -158,12 +145,12 @@ const DesktopInbox = ({ tableConfig, filterComponent,columns, isLoading, setSear
               //   businessService: "TL",
               //   roles: ["TL_APPROVER", "TL_DOC_VERIFIER","TL_FIELD_INSPECTOR"],
               // },
-              // {
-              //   text: "TL_RENEWAL_HEADER",
-              //   link: "/digit-ui/employee/tl/search/license",
-              //   businessService: "TL",
-              //   roles: ["TL_CEMP"],
-              // },
+              {
+                text: "TL_RENEWAL_HEADER",
+                link: "/digit-ui/employee/tl/search/license",
+                businessService: "TL",
+                roles: ["TL_CEMP"],
+              },
               {
                 text: "ACTION_TEST_DASHBOARD",
                 link: "/digit-ui/employee/dss/dashboard/tradelicence",

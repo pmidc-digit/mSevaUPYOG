@@ -108,9 +108,7 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
             {units.map((unit, index) => (
                 <TradeUnitForm key={unit.key} index={index} unit={unit} {...commonProps} />
             ))}
-            {!isRenewal && 
             <LinkButton label={t("TL_ADD_TRADE_UNITS")} onClick={addNewUnits} style={{ color: "#a82227", width: "fit-content" }} />
-            }
         </React.Fragment>
     );
 };
@@ -321,7 +319,7 @@ function checkBillingSlab(value){
                                 <Dropdown
                                     className="form-field"
                                     selected={props.value}
-                                    disable={isRenewal}
+                                    disable={false}
                                     option={tradeCategoryValues}
                                     errorStyle={(localFormState.touched.tradeCategory && errors?.tradeCategory?.message) ? true : false}
                                     select={(e) => {
@@ -368,7 +366,7 @@ function checkBillingSlab(value){
                                 <Dropdown
                                     className="form-field"
                                     selected={getValues("tradeType")}
-                                    disable={isRenewal}
+                                    disable={false}
                                     option={unit?.tradeCategory ? tradeTypeOptionsList : []}
                                     errorStyle={(localFormState.touched.tradeType && errors?.tradeType?.message) ? true : false}
                                     select={(e) => {
@@ -413,7 +411,7 @@ function checkBillingSlab(value){
                                 <Dropdown
                                     className="form-field"
                                     selected={getValues("tradeSubType")}
-                                    disable={isRenewal}
+                                    disable={false}
                                     // option={unit?.tradeType ? sortDropdownNames(tradeSubTypeOptionsList,"i18nKey",t) : []}
                                     option={unit?.tradeType ? validTradeSubTypeOptions : []}
                                     errorStyle={(localFormState.touched.tradeSubType && errors?.tradeSubType?.message) ? true : false}

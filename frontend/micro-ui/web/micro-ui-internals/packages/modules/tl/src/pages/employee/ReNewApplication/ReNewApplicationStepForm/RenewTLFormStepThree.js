@@ -65,7 +65,7 @@ const RenewTLFormStepThree = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
-      {showToast && <Toast isDleteBtn={true}  error={true} label={error} onClose={closeToast} />}
+      {showToast && <Toast error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

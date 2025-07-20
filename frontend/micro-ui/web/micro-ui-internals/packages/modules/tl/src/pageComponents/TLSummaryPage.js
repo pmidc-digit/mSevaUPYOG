@@ -148,8 +148,8 @@ const TLSummaryPage = ({ config, formData, onSelect }) => {
 
       <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
       <div style={sectionStyle}>
-        {Array.isArray(formData?.Documents?.documents?.documents) && formData.Documents.documents.documents.length > 0 ? (
-          <TLDocument value={{ workflowDocs: formData.Documents.documents.documents }} ></TLDocument>
+        {Array.isArray(formData?.Documents?.documents) && formData.Documents.documents.length > 0 ? (
+          <TLDocument value={{ workflowDocs: formData.Documents.documents }} ></TLDocument>
         ) : (
           <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
         )}

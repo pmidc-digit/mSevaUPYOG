@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
-import { newConfig } from "../../../../config/Create/stepFormConfig";
-import { SET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { config } from "../../../../config/Create/employeeStepFormConfig";
+import { SET_PtNewApplication, RESET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
@@ -18,7 +18,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepOne",
-    key: "PersonalDetails",
+    key: "LocationDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "Next",
@@ -80,7 +80,7 @@ const createEmployeeConfig = [
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
-  return { ...item, currStepConfig: newConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
+  return { ...item, currStepConfig: config.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
 const CreateEmployeeStepForm = () => {
@@ -92,8 +92,12 @@ const CreateEmployeeStepForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  console.log("Form data", formData)
-  console.log("formState: ",formState);
+  // console.log("Form data", formData)
+  // console.log("formState: ",formState);
+
+  useEffect(() => {
+    dispatch(RESET_PtNewApplication());
+  }, []);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PtNewApplication(updatedStepNumber));

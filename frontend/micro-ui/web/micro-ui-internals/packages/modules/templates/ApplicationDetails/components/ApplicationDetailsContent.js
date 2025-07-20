@@ -7,13 +7,16 @@ import {
   ConnectingCheckPoints,
   Loader,
   Row,
+  Toast,
   StatusTable,
-  LinkButton
+  LinkButton,
+  ActionBar,
+  SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import { values } from "lodash";
 import React, { Fragment, useEffect,useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import BPADocuments from "./BPADocuments";
 import InspectionReport from "./InspectionReport";
 import NOCDocuments from "./NOCDocuments";
@@ -32,9 +35,13 @@ import WSFeeEstimation from "./WSFeeEstimation";
 // import WSInfoLabel from "../../../ws/src/pageComponents/WSInfoLabel";
 import DocumentsPreview from "./DocumentsPreview";
 import InfoDetails from "./InfoDetails";
-import ViewBreakup from"./ViewBreakup";
-import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bill-details/arrear-summary"
-import { getOrderDocuments  } from "../../../obps/src/utils";
+import ViewBreakup from "./ViewBreakup";
+import ArrearSummary from "../../../common/src/payments/citizen/bills/routes/bill-details/arrear-summary";
+import AssessmentHistory from "./AssessmentHistory";
+import { getOrderDocuments } from "../../../obps/src/utils";
+import DcbTable from "./DcbTable";
+import ApplicationHistory from "./ApplicationHistory";
+import PaymentHistory from "./PaymentHistory";
 function ApplicationDetailsContent({
   applicationDetails,
   demandData,
@@ -50,22 +57,63 @@ function ApplicationDetailsContent({
   statusAttribute = "status",
   paymentsList,
   oldValue,
-  isInfoLabel = false
+  isInfoLabel = false,
+  propertyId,
 }) {
   const { t } = useTranslation();
-  let isEditApplication=window.location.href.includes("editApplication") && window.location.href.includes("bpa") ; 
-const ownersSequences= applicationDetails?.applicationData?.owners
-console.log("appl", applicationDetails)
+  const history = useHistory();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const [showToast, setShowToast] = useState(null);
+  const [payments,setPayments]=useState([])
+  let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
+  const ownersSequences = applicationDetails?.applicationData?.owners;
+  console.log("appl", applicationDetails);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
 
-  const [fetchBillData, updatefetchBillData] = useState({}); 
+  const [fetchBillData, updatefetchBillData] = useState({});
+  const [assessmentDetails,setAssessmentDetails] = useState()
+  const [filtered,setFiltered]=useState([])
   const setBillData = async (tenantId, propertyIds, updatefetchBillData, updateCanFetchBillData) => {
     const assessmentData = await Digit.PTService.assessmentSearch({ tenantId, filters: { propertyIds } });
     let billData = {};
     if (assessmentData?.Assessments?.length > 0) {
+      
+const activeRecords = assessmentData.Assessments.filter(a => a.status === 'ACTIVE');
+
+// Helper to normalize timestamp to date only (midnight)
+  function normalizeDate(timestamp) {
+   const date = new Date(timestamp);
+   date.setHours(0, 0, 0, 0);
+   return date.getTime();
+  }
+
+
+
+const latestMap = new Map();
+
+activeRecords.forEach(record => {
+
+const normalizedDate = normalizeDate(record.assessmentDate);
+ const key = `${normalizedDate}_${record.financialYear}`;
+  const existing = latestMap.get(key);
+
+ if (!existing || record.createdDate > existing.createdDate) {
+ latestMap.set(key, record);
+ }
+});
+
+
+console.log("grouped",latestMap)
+
+// Step 3: Convert grouped object to array
+const filteredAssessment=Array.from(latestMap.values());
+setFiltered(filteredAssessment)
+console.log(filteredAssessment);
+
+      setAssessmentDetails(assessmentData?.Assessments)
       billData = await Digit.PaymentService.fetchBill(tenantId, {
         businessService: "PT",
         consumerCode: propertyIds,
@@ -141,9 +189,9 @@ console.log("appl", applicationDetails)
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         name: checkpoint?.assignes?.[0]?.name,
-        mobileNumber: applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid && applicationData?.processInstance?.assignes?.[0]?.mobileNumber 
-                     ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber 
-                     : checkpoint?.assignes?.[0]?.mobileNumber,
+        mobileNumber: applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid && applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            : checkpoint?.assignes?.[0]?.mobileNumber,
         comment: t(checkpoint?.comment),
         wfComment: previousCheckpoint ? previousCheckpoint.wfComment : [],
         thumbnailsToShow: checkpoint?.thumbnailsToShow,
@@ -267,7 +315,132 @@ console.log("appl", applicationDetails)
   const totalBalanceInterest = demandData?.reduce((sum, item) => sum + item.balanceInterest, 0);
   const totalBalancePenality= demandData?.reduce((sum, item) => sum + item.balancePenality, 0);
 
-  // console.log("applicationDetails?.applicationDetails",applicationDetails?.applicationDetails)
+  const closeToast = () => {
+    setShowToast(null);
+  };
+
+  // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
+  const updatePropertyStatus = async (propertyData, status, propertyIds) => {
+    const confirm = window.confirm(`Are you sure you want to make this property ${status}?`);
+    if (!confirm) return;
+
+    const payload = {
+      ...propertyData,
+      status: status,
+      isactive: status === "ACTIVE",
+      isinactive: status === "INACTIVE",
+      creationReason: "STATUS",
+      additionalDetails: {
+        ...propertyData.additionalDetails,
+        propertytobestatus: status,
+      },
+      workflow: {
+        ...propertyData.workflow,
+        businessService: "PT.CREATE",
+        action: "OPEN",
+        moduleName: "PT",
+      },
+    };
+    // try {
+    const response = await Digit.PTService.updatePT({ Property: { ...payload } }, tenantId, propertyIds);
+    console.log("response from inactive/active", response);
+    //   const result = await response.json();
+    //   if (response.ok) {
+    //     alert(`Property marked as ${status} successfully!`);
+    //   } else {
+    //     alert("Failed to update property status.");
+    //     console.error(result);
+    //   }
+    // }
+    //  catch (err) {
+    //   console.error("Error inactivating property:", err);
+    //   alert(`Something went wrong while making the property ${status}.`);
+    // }
+  };
+
+  const applicationData_pt = applicationDetails?.applicationData;
+  const propertyIds = applicationDetails?.applicationData?.propertyId || "";
+  const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
+  const PropertyInActive = () => {
+    if(window.location.href.includes("employee")){
+      if (checkPropertyStatus == "ACTIVE") {
+        updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+      } else {
+        alert("Property is already inactive.");
+      }
+    }else{
+      alert("You are not authorized to change the property status.");
+    }
+  };
+
+  const PropertyActive = () => {
+    if(window.location.href.includes("employee")){
+      if (checkPropertyStatus == "INACTIVE") {
+        updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
+      } else {
+        alert("Property is already active.");
+      }
+    }else{
+      alert("You are not authorized to change the property status.");
+    }  
+  };
+  // const PropertyInActive = () => updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
+  // const PropertyActive = () => updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
+
+  const EditProperty = () => {
+    const pID = applicationDetails?.applicationData?.propertyId;
+    if (pID) {
+      if(window.location.href.includes("employee")){
+        if(applicationDetails?.applicationData?.status === "INACTIVE"){
+          alert("Property is inactive, cannot edit.");
+          return;
+        }else if(applicationDetails?.applicationData?.status === "INWORKFLOW"){
+          alert("Property is in workflow, cannot edit.");
+          return;
+        }
+        else if(applicationDetails?.applicationData?.status === "ACTIVE"){
+          history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
+        } 
+      }else{
+        if(applicationDetails?.applicationData?.status === "INACTIVE"){
+          alert("Property is inactive, cannot edit.");
+          return;
+        }else if(applicationDetails?.applicationData?.status === "INWORKFLOW"){
+          alert("Property is in workflow, cannot edit.");
+          return;
+        }
+        else if(applicationDetails?.applicationData?.status === "ACTIVE"){
+          history.push({ pathname: `/digit-ui/citizen/pt/property/edit-application/${pID}` });
+        }
+      }
+    }
+    // alert("edit property");
+  };
+
+  const AccessProperty = () => {
+    alert("access property");
+  };
+
+   console.log("applicationDetails?.applicationDetails",applicationDetails)
+   console.log("infolabel",isInfoLabel)
+   console.log("assessment details",assessmentDetails)
+
+   useEffect(()=>{
+   try{
+   let filters={
+    consumerCodes:propertyId,
+   // tenantId: tenantId
+   }
+   const auth=true
+    Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
+      setPayments(response?.Payments)
+      console.log(response)  
+    })
+   }
+   catch(error){
+   console.log(error)
+   }
+   },[])
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
@@ -450,7 +623,7 @@ console.log("appl", applicationDetails)
             <SubOccupancyTable edcrDetails={detail?.additionalDetails} applicationData={applicationDetails?.applicationData} />
           )}
           {detail?.additionalDetails?.documentsWithUrl && <DocumentsPreview documents={detail?.additionalDetails?.documentsWithUrl} />}
-          {detail?.additionalDetails?.documents && <PropertyDocuments documents={detail?.additionalDetails?.documents} />}
+          {/* {detail?.additionalDetails?.documents && <PropertyDocuments documents={detail?.additionalDetails?.documents} />} */}
           {detail?.additionalDetails?.taxHeadEstimatesCalculation && (
             <PropertyEstimates taxHeadEstimatesCalculation={detail?.additionalDetails?.taxHeadEstimatesCalculation} />
           )}
@@ -470,6 +643,10 @@ console.log("appl", applicationDetails)
           
         </React.Fragment>
       ))}
+        {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
+        <PaymentHistory payments={payments}/>
+        <ApplicationHistory applicationData={applicationDetails?.applicationData}/>
+
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
           <BreakLine />
@@ -531,37 +708,44 @@ console.log("appl", applicationDetails)
           )}
         </React.Fragment>
       )}
-                {/* table for DCB Details */}
-                <CardSectionHeader style={{marginBottom:'16px',marginTop:"16px",fontSize:'24px'}}>DCB Details</CardSectionHeader>
-                <table border="1px" style={tableStyles.table} >
-           <thead >
-            <tr>
-              <th style={tableStyles.th}>Installments</th>
-              <th colSpan="3" style={tableStyles.th}>Demand</th>
-              <th colSpan="3" style={tableStyles.th}>Collection</th>
-              <th colSpan="3" style={tableStyles.th}>Balance</th>
-              <th style={tableStyles.th}>Advance</th>
-            </tr>
-            <tr>
-              <th style={tableStyles.th}></th>
-              <th style={tableStyles.th}>Tax</th>
-              <th style={tableStyles.th}>Interest</th>
-              <th style={tableStyles.th}>Penalty</th>
-              <th style={tableStyles.th}>Tax</th>
-              <th style={tableStyles.th}>Interest</th>
-              <th style={tableStyles.th}>Penalty</th>
-              <th style={tableStyles.th}>Tax</th>
-              <th style={tableStyles.th}>Interest</th>
-              <th style={tableStyles.th}>Penalty</th>
-              <th style={tableStyles.th}>Advance</th>
-            </tr>
-           </thead>
-           <tbody >
-          
-          {demandData?.map((item)=>{
-            return(
+      {/* table for DCB Details */}
+      {/* <CardSectionHeader style={{ marginBottom: "16px", marginTop: "16px", fontSize: "24px" }}>DCB Details</CardSectionHeader>
+      <table border="1px" style={tableStyles.table}>
+        <thead>
+          <tr>
+            <th style={tableStyles.th}>Installments</th>
+            <th colSpan="3" style={tableStyles.th}>
+              Demand
+            </th>
+            <th colSpan="3" style={tableStyles.th}>
+              Collection
+            </th>
+            <th colSpan="3" style={tableStyles.th}>
+              Balance
+            </th>
+            <th style={tableStyles.th}>Advance</th>
+          </tr>
+          <tr>
+            <th style={tableStyles.th}></th>
+            <th style={tableStyles.th}>Tax</th>
+            <th style={tableStyles.th}>Interest</th>
+            <th style={tableStyles.th}>Penalty</th>
+            <th style={tableStyles.th}>Tax</th>
+            <th style={tableStyles.th}>Interest</th>
+            <th style={tableStyles.th}>Penalty</th>
+            <th style={tableStyles.th}>Tax</th>
+            <th style={tableStyles.th}>Interest</th>
+            <th style={tableStyles.th}>Penalty</th>
+            <th style={tableStyles.th}>Advance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {demandData?.map((item) => {
+            return (
               <tr>
-                <td style={tableStyles.td}>{item.taxPeriodFrom}-{item.taxPeriodTo}</td>
+                <td style={tableStyles.td}>
+                  {item.taxPeriodFrom}-{item.taxPeriodTo}
+                </td>
                 <td style={tableStyles.td}>{item.demandTax}</td>
                 <td style={tableStyles.td}>{item.demandInterest}</td>
                 <td style={tableStyles.td}>{item.demandPenality}</td>
@@ -573,10 +757,9 @@ console.log("appl", applicationDetails)
                 <td style={tableStyles.td}>{item.balancePenality}</td>
                 <td style={tableStyles.td}>{item.advance}</td>
               </tr>
-           
-            )
+            );
           })}
-    {/* <tr>
+          {/* <tr>
       <td style={tableStyles.td}>0.0</td>
       <td style={tableStyles.td}>0.0</td>
       <td style={tableStyles.td}>0.0</td>
@@ -589,47 +772,53 @@ console.log("appl", applicationDetails)
       <td style={tableStyles.td}>0.0</td>
       <td style={tableStyles.td}>0.0</td>
     </tr> */}
-    <tr>
-      <th style={tableStyles.th}>Total</th>
-      <td style={tableStyles.td}>{totalDemandTax}</td>
-      <td style={tableStyles.td}>{totalDemandInterest}</td>
-      <td style={tableStyles.td}>{totalDemandPenality}</td>
-      <td style={tableStyles.td}>{totalCollectionTax}</td>
-      <td style={tableStyles.td}>{totalCollectionInterest}</td>
-      <td style={tableStyles.td}>{totalCollectionPenality}</td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
+          {/* <tr>
+            <th style={tableStyles.th}>Total</th>
+            <td style={tableStyles.td}>{totalDemandTax}</td>
+            <td style={tableStyles.td}>{totalDemandInterest}</td>
+            <td style={tableStyles.td}>{totalDemandPenality}</td>
+            <td style={tableStyles.td}>{totalCollectionTax}</td>
+            <td style={tableStyles.td}>{totalCollectionInterest}</td>
+            <td style={tableStyles.td}>{totalCollectionPenality}</td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+          </tr>
+          <tr>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <th style={tableStyles.th}>Total</th>
+            <td style={tableStyles.td}>{totalBalanceTax}</td>
+            <td style={tableStyles.td}>0</td>
+            <td style={tableStyles.td}>0</td>
+            <td style={tableStyles.td}>0</td>
+          </tr>
+          <tr>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <td style={tableStyles.td}></td>
+            <th style={tableStyles.th}>Total Balance</th>
+            <td style={tableStyles.td}>{totalBalanceTax}</td>
+          </tr>
+        </tbody> */}
+      {/* </table> */}
 
-    </tr>
-    <tr>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td> 
-      <td style={tableStyles.td}></td>
-      <th style={tableStyles.th}>Total</th>
-      <td style={tableStyles.td}>{totalBalanceTax}</td>
-      <td style={tableStyles.td}>0</td>
-      <td style={tableStyles.td}>0</td>
-      <td style={tableStyles.td}>0</td>
-    </tr>
-    <tr>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <td style={tableStyles.td}></td>
-      <th style={tableStyles.th}>Total Balance</th>
-      <td style={tableStyles.td}>{totalBalanceTax}</td>
-   
-    </tr>
-           </tbody>
-          </table>
 
+      {window.location.href.includes("/pt/")?<ActionBar className="clear-search-container" style={{ display: "block" }}>
+        <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />
+        <SubmitBar label={"Make Property Inactive"} style={{ marginLeft: "20px" }} onSubmit={PropertyInActive} />
+        <SubmitBar label={"Edit Property"} style={{ marginLeft: "20px" }} onSubmit={EditProperty} />
+        <SubmitBar label={"Access Property"} style={{ marginLeft: "20px" }} onSubmit={AccessProperty} />
+      </ActionBar>:<div></div>}
+      {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </Card>
   );
 }

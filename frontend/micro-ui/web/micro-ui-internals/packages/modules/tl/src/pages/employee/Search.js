@@ -109,6 +109,7 @@ const Search = ({ path }) => {
           }
       })) : { display: "ES_COMMON_NO_DATA" }) : ""}
       count={count}
+      isLoading = {isLoading || isWorkflowLoading}
     />
   );
 };

@@ -25,7 +25,18 @@ const TLTradeUnitsEmployee = ({ config, onSelect, userType, formData, setError, 
     const [units, setUnits] = useState(formData?.tradeUnits || [createUnitDetails()]);
     // const [owners, setOwners] = useState(formData?.owners || [createOwnerDetails()]);
     const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-    const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
+
+    const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
+
+    let tenantId;
+    if(currentUserType === "CITIZEN"){
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+    }else{
+    tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+    }
+
+
+   // const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
     const stateId = Digit.ULBService.getStateId();
     const [tradeTypeMdmsData, setTradeTypeMdmsData] = useState([]);
     const [tradeCategoryValues, setTradeCategoryValues] = useState([]);

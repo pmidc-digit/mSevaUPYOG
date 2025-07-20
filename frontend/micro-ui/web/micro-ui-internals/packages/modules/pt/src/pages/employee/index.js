@@ -150,6 +150,8 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   const NewApplication = Digit?.ComponentRegistryService?.getComponent("PTNewApplication");
   const NewPropertyStepForm = Digit?.ComponentRegistryService?.getComponent('NewPropertyStepForm')
+  const EditPropertyStepForm = Digit?.ComponentRegistryService?.getComponent('EditPropertyStepForm')
+  const OwnerTransfershipStepForm = Digit?.ComponentRegistryService?.getComponent('OwnerTransfershipStepForm')
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
   const PropertyDetails = Digit?.ComponentRegistryService?.getComponent("PTPropertyDetails");
   const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("PTAssessmentDetails");
@@ -160,6 +162,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const isRes = window.location.href.includes("pt/response");
   const isLocation = window.location.href.includes("pt") || window.location.href.includes("application");
   const isNewRegistration = window.location.href.includes("new-application") || window.location.href.includes("modify-application") || window.location.href.includes("pt/application-details");
+  const PTResponseEmployee = Digit?.ComponentRegistryService?.getComponent("PTResponseEmployee");
   return (
     <Switch>
       <React.Fragment>
@@ -196,12 +199,15 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/assessment-details/:id`} component={() => <AssessmentDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/ptsearch/assessment-details/:id`} component={() => <AssessmentDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/modify-application/:id`} component={() => <EditApplication />} />
+          <PrivateRoute path={`${path}/edit-application/:id`} component={() => <EditApplication />} />
           {/**/}
           <PrivateRoute path={`${path}/response`} component={(props) => <Response {...props} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property-mutate/:id`} component={() => <TransferOwnership parentRoute={path} />} />
           <PrivateRoute path={`${path}/property-mutate-docs-required/:id`} component={() => <DocsRequired parentRoute={path} />} />
           <PrivateRoute path={`${path}/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseEmployee {...props} t={t} parentRoute={path} />} />
           <PrivateRoute
+          
             path={`${path}/searchold`}
             component={() => (
               <Inbox

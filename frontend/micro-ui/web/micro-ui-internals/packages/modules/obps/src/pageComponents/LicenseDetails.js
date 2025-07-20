@@ -205,7 +205,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{"Date of Birth"}</CardLabel>
+              <CardLabel>{"Date of Birth*"}</CardLabel>
               <DatePicker
                 date={dateOfBirth}
                 onChange={handleDateOfBirthChange}

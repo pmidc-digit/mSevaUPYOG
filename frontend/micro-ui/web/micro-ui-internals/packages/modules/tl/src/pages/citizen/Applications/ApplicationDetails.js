@@ -11,8 +11,10 @@ import {
   LinkLabel,
   LinkButton,
   StatusTable,
+  ActionBar,
+  Menu
 } from  "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useHistory, useParams } from "react-router-dom";
 import getPDFData from "../../../utils/getTLAcknowledgementData";
@@ -27,8 +29,8 @@ const getAddress = (address, t) => {
 
 const TLApplicationDetails = () => {
   const { t } = useTranslation();
-  const { id } = useParams();
-  const { tenantId } = useParams();
+  const { id, tenantId } = useParams();
+  //const { tenantId } = useParams();
   const history = useHistory();
   const [bill, setBill] = useState(null);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -58,6 +60,19 @@ const TLApplicationDetails = () => {
     { enabled: application?.[0]?.tradeLicenseDetail?.additionalDetail?.propertyId ? true : false }
   );
 
+  let user = Digit.UserService.getUser();
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+  const [showToast, setShowToast] = useState(null);
+  const getActionsOnce = useRef(false);
+  const stateId = Digit.ULBService.getStateId();
+
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const menuRef = useRef();
+  const closeMenu = () => {
+          setDisplayMenu(false);
+      }
+    Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu );
+
   useEffect(() => {
     localStorage.setItem("TLAppSubmitEnabled", "true");
     setMutationHappened(false);
@@ -70,19 +85,51 @@ const TLApplicationDetails = () => {
         consumerCode: application[0]?.applicationNumber,
         businessService: application[0]?.businessService,
       }).then((res) => {
-        setBill(res?.Bill[0]);
+        setBill(res?.Bill?.[0]);
       });
     }
   }, [application]);
   const [showOptions, setShowOptions] = useState(false);
   useEffect(() => {}, [application, errorApplication]);
 
-  const businessService = application?.[0]?.businessService;
-  const { isLoading: iswfLoading, data: wfdata } = Digit.Hooks.useWorkflowDetails({
-    tenantId: application?.[0]?.tenantId,
-    id: id,
-    moduleCode: businessService,
+  const closeToast = () => {
+    setShowToast(null);
+  };
+
+
+const businessService = application?.[0]?.businessService;
+const { isLoading: iswfLoading, data: wfdata }=Digit.Hooks.useWorkflowDetails({ 
+   tenantId: tenantId,
+   id: id,
+   moduleCode: businessService,
+}, {
+   enabled: application,
+});
+
+let EditRenewalApplastModifiedTime = Digit.SessionStorage.get("EditRenewalApplastModifiedTime");
+  
+    let workflowDetails = Digit.Hooks.useWorkflowDetails({
+      tenantId:tenantId,
+      id: id,
+      // moduleCode: businessService,
+      moduleCode: "NewTL", // Need To make this dynamic
+      role: "PT_CEMP",
+      config: { EditRenewalApplastModifiedTime: EditRenewalApplastModifiedTime },
+    });
+
+    const {
+    isLoading: updatingApplication,
+    isError: updateApplicationError,
+    data: updateResponse,
+    error: updateError,
+    mutate,
+  } = Digit.Hooks.tl.useApplicationActions(tenantId);
+
+  const rolearray = user?.info?.roles.filter((item) => {
+    if ((item.code == "TL_CEMP" && item.tenantId === tenantId) || item.code == "CITIZEN") return true;
   });
+
+  const rolecheck = rolearray.length > 0 ? true : false;
   
   let workflowDocs = [];
   if (wfdata) {
@@ -95,6 +142,80 @@ const TLApplicationDetails = () => {
       }
     });
   }
+
+  const [actions, setActions] = useState([]) 
+
+  useEffect(()=>{
+    if(workflowDetails?.data && !getActionsOnce.current){
+      getActionsOnce.current = true;
+      let actionData = workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+          return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+      });
+ console.log("application?.applicationData?.status", application, rolecheck)
+
+    if (
+    rolecheck &&
+    (application?.[0]?.status === "APPROVED" ||
+      application?.[0]?.status === "EXPIRED" ||
+      application?.[0]?.status === "CANCELLED" ||
+      application?.[0]?.status === "MANUALEXPIRED") /* && renewalPending==="true" */ /* && duration <= renewalPeriod */
+  ) {
+    console.log("application?.applicationData?.status", application?.[0]?.status)
+    if (workflowDetails?.data /* && allowedToNextYear */) {
+      if (!workflowDetails?.data?.actionState) {
+        workflowDetails.data.actionState = {};
+        workflowDetails.data.actionState.nextActions = [];
+      }
+      const flagData = workflowDetails?.data?.actionState?.nextActions?.filter((data) => data.action == "RENEWAL_SUBMIT_BUTTON");
+      if (flagData && flagData.length === 0) {
+        const licenseNumber = application?.[0]?.licenseNumber ? application?.[0]?.licenseNumber : "";
+        actionData?.push({
+          action: "RENEWAL_SUBMIT_BUTTON",
+          isToast:
+            application?.[0]?.status === "CANCELLED" ||
+            application?.[0]?.status === "MANUALEXPIRED" /* && latestRenewalYearofAPP */
+              ? true
+              : false,
+          // toastMessage: getToastMessages(),
+          redirectionUrl: {
+            pathname: `/digit-ui/citizen/tl/tradelicence/renew-trade/${licenseNumber}/${tenantId}`,
+            state: application,
+          },
+          tenantId: stateId,
+          role: [],
+        });
+      }
+      // workflowDetails = {
+      //   ...workflowDetails,
+      //   data: {
+      //     ...workflowDetails?.data,
+      //     actionState: {
+      //       nextActions: allowedToNextYear ?[
+      //         {
+      //           action: "RENEWAL_SUBMIT_BUTTON",
+      //           redirectionUrl: {
+      //             pathname: `/digit-ui/employee/tl/renew-application-details/${applicationNumber}`,
+      //             state: applicationDetails
+      //           },
+      //           tenantId: stateId,
+      //         }
+      //       ] : [],
+      //     },
+      //   },
+      // };
+    }
+  }
+
+
+      setActions(actionData || [])
+    }
+  },[workflowDetails])
+
+  // let actions = workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+  //   return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  // }) || workflowDetails?.data?.nextActions?.filter((e) => {
+  //   return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+  // });
   
   const handleViewTimeline=()=>{ 
     const timelineSection=document.getElementById('timeline');
@@ -103,9 +224,9 @@ const TLApplicationDetails = () => {
       } 
       setViewTimeline(true);   
   };
-  if (isLoading || iswfLoading) {
-    return <Loader />;
-  }
+  // if (isLoading || iswfLoading) {
+  //   return <Loader />;
+  // }
 
   if (application?.applicationDetails?.length === 0) {
     history.goBack();
@@ -168,6 +289,18 @@ const TLApplicationDetails = () => {
             onClick: handleDownloadPdf,
           },
         ];
+
+  function onActionSelect(action) {
+    console.log("actionINCITIZENRENEWAL", action);
+    setDisplayMenu(false);
+    window.location.href = "/digit-ui/citizen/tl/tradelicence/renew-trade/"+"PB-TL-2024-02-28-062772"+"/" + tenantId;
+  }
+
+  function isActionRenew(){
+    return actions?.some((action) => action?.action === "RENEWAL_SUBMIT_BUTTON");
+  }
+
+  // console.log("DisplayMenuValue",displayMenu, (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions))
         
   const ownersSequences= (application?.[0]?.tradeLicenseDetail?.owners?.additionalDetails!==null)? application?.[0]?.tradeLicenseDetail?.owners.sort((a,b)=>a?.additionalDetails?.ownerSequence-b?.additionalDetails?.ownerSequence) : [];
   return (
@@ -184,7 +317,7 @@ const TLApplicationDetails = () => {
         <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
         </div>        
       </div>
-      <Card style={{ position: "relative" }}>
+      {isLoading ? <Loader /> : <Card style={{ position: "relative" }}>
         {application?.map((application, index) => {
           return (
             <div key={index} className="employee-data-table">
@@ -198,11 +331,11 @@ const TLApplicationDetails = () => {
               />
               {application?.licenseNumber && <Row
                 className="border-none"
-                label={t("TL_COMMON_TABLE_COL_LICENSE_NO")}
+                label={t("TL_LOCALIZATION_TRADE_LICENSE_NO")}
                 text={application?.licenseNumber}
                 textStyle={{wordBreak:"break-word"}}
               />}
-              <Row className="border-none" label={t("TL_APPLICATION_CATEGORY")} text={t("ACTION_TEST_TRADE_LICENSE")} textStyle={{ wordBreak:"break-word" }} />
+              {/* <Row className="border-none" label={t("TL_APPLICATION_CATEGORY")} text={t("ACTION_TEST_TRADE_LICENSE")} textStyle={{ wordBreak:"break-word" }} /> */}
               <Row
                 className="border-none"
                 // style={{ border: "none" }}
@@ -211,13 +344,13 @@ const TLApplicationDetails = () => {
                 // textStyle={{ whiteSpace: "pre-wrap", width: "70%", wordBreak:"break-word" }}
                 textStyle={{wordBreak:"break-word"}}
               />
-              <Row
+              {/* <Row
                 className="border-none"
                 // style={{ border: "none" }}
                 label={t("TL_COMMON_TABLE_COL_SLA_NAME")}
                 text={`${Math.round(application?.SLA / (1000 * 60 * 60 * 24))} ${t("TL_SLA_DAYS")}`}
                 textStyle={{ wordBreak:"break-word" }}
-              />
+              /> */}
               <Row
                 className="border-none"
                 // style={{ border: "none" }}
@@ -229,7 +362,7 @@ const TLApplicationDetails = () => {
               <Row
                 className="border-none"
                 // style={{ border: "none" }}
-                label={t("TL_TRADE_GST_NO")}
+                label={t("TL_NEW_TRADE_DETAILS_TRADE_GST_NO_LABEL")}
                 text={application?.tradeLicenseDetail?.additionalDetail?.tradeGstNo || application?.tradeLicenseDetail?.additionalDetail?.gstNo || t("CS_NA")}
                 // textStyle={{ whiteSpace: "pre-wrap", width: "70%", wordBreak:"break-word" }}
                 textStyle={{wordBreak:"break-word"}}
@@ -237,7 +370,7 @@ const TLApplicationDetails = () => {
               <Row
                 className="border-none"
                 // style={{ border: "none" }}
-                label={t("TL_OPERATIONAL_AREA")}
+                label={t("TL_NEW_TRADE_DETAILS_OPR_AREA_LABEL")}
                 text={application?.tradeLicenseDetail?.operationalArea || t("CS_NA")}
                 // textStyle={{ whiteSpace: "pre-wrap", width: "70%", wordBreak:"break-word" }}
                 textStyle={{wordBreak:"break-word"}}
@@ -245,7 +378,7 @@ const TLApplicationDetails = () => {
               <Row
                 className="border-none"
                 // style={{ border: "none" }}
-                label={t("TL_NO_OF_EMPLOYEES")}
+                label={t("TL_NEW_TRADE_DETAILS_NO_EMPLOYEES_LABEL")}
                 text={application?.tradeLicenseDetail?.noOfEmployees || t("CS_NA")}
                 // textStyle={{ whiteSpace: "pre-wrap", width: "70%", wordBreak:"break-word" }}
                 textStyle={{wordBreak:"break-word"}}
@@ -255,21 +388,22 @@ const TLApplicationDetails = () => {
                 return application?.tradeLicenseDetail?.subOwnerShipCategory.includes("INSTITUTIONAL") ? (
                   <div key={index} style={multiBoxStyle}>
                     <CardSectionHeader style={multiHeaderStyle}>{`${t("TL_PAYMENT_PAID_BY_PLACEHOLDER")} - ` + (index + 1)}</CardSectionHeader>
-                    <Row
+                    {/* <Row
                       className="border-none"
                       label={`${t("TL_INSTITUTION_NAME_LABEL")}`}
                       text={t(application?.tradeLicenseDetail?.institution?.instituionName)}
                       textStyle={{ wordBreak:"break-word" }}
-                    />
+                    /> */}
                     <Row
-                      label={`${t("TL_INSTITUTION_TYPE_LABEL")}`}
+                      className="border-none"
+                      label={`${t("COMMON-MASTERS_SUBOWNERSHIP_LABEL")}`}
                       text={t(`TL_${application?.tradeLicenseDetail?.subOwnerShipCategory}`)}
                       textStyle={{ wordBreak:"break-word" }}
                     />
-                    <Row className="border-none" label={`${t("TL_MOBILE_NUMBER_LABEL")}`} text={t(ele.mobileNumber)} textStyle={{ whiteSpace: "pre" }} />
+                    <Row className="border-none" label={`${t("TL_NEW_OWNER_DETAILS_MOB_NO_LABEL")}`} text={t(ele.mobileNumber)} textStyle={{ whiteSpace: "pre" }} />
                     <Row
                       className="border-none"
-                      label={`${t("TL_TELEPHONE_NUMBER_LABEL")}`}
+                      label={`${t("TL_NEW_OWNER_PHONE_LABEL")}`}
                       text={t(application?.tradeLicenseDetail?.institution?.contactNo || t("CS_NA"))}
                       textStyle={{ wordBreak:"break-word" }}
                     />
@@ -279,26 +413,26 @@ const TLApplicationDetails = () => {
                       text={t(ele.fatherOrHusbandName || application?.tradeLicenseDetail?.institution?.name)}
                       textStyle={{ wordBreak:"break-word" }}
                     />
-                    <Row className="border-none" label={`${t("TL_LOCALIZATION_EMAIL_ID")}`} text={t(ele.emailId || t("CS_NA"))} textStyle={{ wordBreak:"break-word" }} />
+                    <Row className="border-none" label={`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")}`} text={t(ele.emailId || t("CS_NA"))} textStyle={{ wordBreak:"break-word" }} />
                   </div>
                 ) : (
                   <div key={index} style={multiBoxStyle}>
                     <CardSectionHeader style={multiHeaderStyle}>{`${t("TL_PAYMENT_PAID_BY_PLACEHOLDER")} - ` + (index + 1)}</CardSectionHeader>
                     <Row className="border-none" label={`${t("TL_COMMON_TABLE_COL_OWN_NAME")}`} text={t(ele.name)} textStyle={{ wordBreak:"break-word" }} />
                     <Row className="border-none" label={`${t("TL_NEW_OWNER_DETAILS_GENDER_LABEL")}`} text={t(ele.gender)} textStyle={{ wordBreak:"break-word" }} />
-                    <Row className="border-none" label={`${t("TL_MOBILE_NUMBER_LABEL")}`} text={t(ele.mobileNumber)} textStyle={{ wordBreak:"break-word" }} />
-                    <Row className="border-none" label={`${t("TL_EMAIL_ID_LABEL")}`} text={t(ele.emailId || t("CS_NA"))} textStyle={{ wordBreak:"break-word" }} />
+                    <Row className="border-none" label={`${t("TL_HOME_SEARCH_RESULTS_OWN_MOB_LABEL")}`} text={t(ele.mobileNumber)} textStyle={{ wordBreak:"break-word" }} />
+                    <Row className="border-none" label={`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")}`} text={t(ele.emailId || t("CS_NA"))} textStyle={{ wordBreak:"break-word" }} />
                     <Row className="border-none" label={`${t("TL_NEW_OWNER_DETAILS_FATHER_NAME_LABEL")}`} text={t(ele.fatherOrHusbandName)} textStyle={{ wordBreak:"break-word" }} />
                     <Row className="border-none" label={`${t("TL_COMMON_RELATIONSHIP_LABEL")}`} text={t(ele.relationship)} textStyle={{ wordBreak:"break-word" }} />
                   </div>
                 );
               })}
-              <CardSubHeader>{t("TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER")}</CardSubHeader>
+              <CardSectionHeader>{t("TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER")}</CardSectionHeader>
               {application?.tradeLicenseDetail?.tradeUnits?.map((ele, index) => {
                 return (
                   <div key={index} style={multiBoxStyle}>
                     <CardSectionHeader style={multiHeaderStyle}>
-                      {t("TL_UNIT_HEADER")} {index + 1}
+                      {t("TL_NEW_TRADE_DETAILS_TRADE_UNIT_HEADER")} {index + 1}
                     </CardSectionHeader>
                     <Row
                       className="border-none"
@@ -325,16 +459,16 @@ const TLApplicationDetails = () => {
                 );
               })}
               {Array.isArray(application?.tradeLicenseDetail?.accessories) && application?.tradeLicenseDetail?.accessories.length > 0 && (
-                <CardSubHeader style={{ paddingTop: "7px" }}>{t("TL_NEW_TRADE_DETAILS_HEADER_ACC")}</CardSubHeader>
+                <CardSectionHeader style={{ paddingTop: "7px" }}>{t("TL_NEW_TRADE_DETAILS_HEADER_ACC")}</CardSectionHeader>
               )}
               {Array.isArray(application?.tradeLicenseDetail?.accessories) &&
                 application?.tradeLicenseDetail?.accessories.length > 0 &&
                 application?.tradeLicenseDetail?.accessories?.map((ele, index) => {
                   return (
                     <div key={index} style={multiBoxStyle}>
-                      <CardSectionHeader style={multiHeaderStyle}>
+                      {/* <CardSectionHeader style={multiHeaderStyle}>
                         {t("TL_ACCESSORY_LABEL")} {index + 1}
-                      </CardSectionHeader>
+                      </CardSectionHeader> */}
                       <Row
                         className="border-none"
                         // style={{ border: "none" }}
@@ -342,9 +476,9 @@ const TLApplicationDetails = () => {
                         text={t(`TL_${ele?.accessoryCategory.split("-").join("_")}`)}
                         textStyle={{ wordBreak:"break-word" }}
                       />
-                      <Row className="border-none" label={t("TL_NEW_TRADE_ACCESSORY_COUNT_LABEL")} text={ele?.count} textStyle={{ wordBreak:"break-word" }} />
-                      <Row className="border-none" label={t("TL_NEW_TRADE_ACCESSORY_UOM_LABEL")} text={ele?.uom} textStyle={{ wordBreak:"break-word" }} />
-                      <Row className="border-none" label={t("TL_NEW_TRADE_ACCESSORY_UOMVALUE_LABEL")} text={ele?.uomValue} textStyle={{ wordBreak:"break-word" }} />
+                      <Row className="border-none" label={t("TL_NEW_TRADE_ACCESSORY_COUNT")} text={ele?.count} textStyle={{ wordBreak:"break-word" }} />
+                      <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_UOM_LABEL")} text={ele?.uom} textStyle={{ wordBreak:"break-word" }} />
+                      <Row className="border-none" label={t("TL_NEW_TRADE_DETAILS_UOM_VALUE_LABEL")} text={ele?.uomValue} textStyle={{ wordBreak:"break-word" }} />
                     </div>
                   );
                 })}
@@ -370,7 +504,7 @@ const TLApplicationDetails = () => {
                 <Row
                   className="border-none"
                   // style={{ border: "none" }}
-                  label={t("TL_NEW_TRADE_ADDRESS_LABEL")}
+                  label={t("TL_LOCALIZATION_TRADE_ADDRESS")}
                   text={`${
                     application?.tradeLicenseDetail?.address?.doorNo?.trim() ? `${application?.tradeLicenseDetail?.address?.doorNo?.trim()}, ` : ""
                   } ${
@@ -433,7 +567,37 @@ const TLApplicationDetails = () => {
             </div>
           );
         })}
-      </Card>
+      </Card>}
+      {/* <ApplicationDetailsTemplate
+        applicationDetails={application}
+        isLoading={isLoading}
+        isDataLoading={isLoading}
+        applicationData={application?.applicationData}
+        mutate={mutate}
+        id={"timeline"}
+        workflowDetails={workflowDetails}
+        businessService={businessService}
+        moduleCode="TL"
+        showToast={showToast}
+        setShowToast={setShowToast}
+        closeToast={closeToast}
+        timelineStatusPrefix={"WF_NEWTL_"}
+      /> */}
+      {!workflowDetails?.isLoading && actions?.length && isActionRenew() && (
+              <ActionBar >
+                {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+                  <Menu
+                    localeKeyPrefix={`WF_EMPLOYEE_${businessService?.toUpperCase()}`}
+                    options={actions}
+                    optionKey={"action"}
+                    t={t}
+                    onSelect={onActionSelect}
+                  />
+                ) : null}
+                <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+              </ActionBar>
+        )}
+      
     </React.Fragment>
   );
 };

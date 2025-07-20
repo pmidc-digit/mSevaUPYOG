@@ -47,7 +47,7 @@ const createEmployeeConfig = [
     key: "Documents",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_SUBMIT",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {

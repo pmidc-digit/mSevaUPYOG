@@ -159,8 +159,8 @@ const NewApplication = () => {
    
     if (!data?.ownershipCategory?.code.includes("INDIVIDUAL")) {
       formData.institution = {
-        name: data.owners?.[0].institution.name,
-        type:data.owners?.[0].institution?.type?.code,
+        name: data.owners?.[0].institutionName,
+        type: data.owners?.[0].institutionType?.name,
         designation: data.owners?.[0].designation,        
         nameOfAuthorizedPerson: data.owners?.[0].name,
         tenantId: Digit.ULBService.getCurrentTenantId(),

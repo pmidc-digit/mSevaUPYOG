@@ -53,7 +53,8 @@ const ApplicationDetails = (props) => {
     showTimeLine = true,
     oldValue,
     isInfoLabel = false,
-    clearDataDetails
+    clearDataDetails,
+    propertyId
   } = props;
   
   useEffect(() => {
@@ -265,6 +266,7 @@ const ApplicationDetails = (props) => {
             showTimeLine={showTimeLine}
             oldValue={oldValue}
             isInfoLabel={isInfoLabel}
+            propertyId={propertyId}
           />
           {showModal ? (
             <ActionModal
@@ -294,8 +296,9 @@ const ApplicationDetails = (props) => {
             />
           ) : null}
           <ApplicationDetailsToast t={t} showToast={showToast} closeToast={closeToast} businessService={businessService} />
-          {!isEditApplication?  (
-            <ApplicationDetailsActionBar
+          {!isEditApplication?  (<div>
+          {!(window.location.href.includes("citizen")&&window.location.href.includes("/pt/"))&&  
+          <ApplicationDetailsActionBar
             workflowDetails={workflowDetails}
             displayMenu={displayMenu}
             onActionSelect={onActionSelect}
@@ -305,7 +308,8 @@ const ApplicationDetails = (props) => {
             ActionBarStyle={ActionBarStyle}
             MenuStyle={MenuStyle}
           />
-          ):(<div >
+          }
+          </div>):(<div >
             <SubmitBar style={{ marginRight:20}} label={t("BPA_EDIT_UPDATE")} onSubmit={onSubmit}  id/>
             </div>)}          
         </React.Fragment>

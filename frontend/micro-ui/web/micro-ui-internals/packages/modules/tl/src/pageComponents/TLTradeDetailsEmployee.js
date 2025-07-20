@@ -41,16 +41,29 @@ const TLTradeDetailsEmployee = ({ config, onSelect, userType, formData, setError
   const [structureSubTypeOptions, setStructureSubTypeOptions] = useState([]);
   const [owners, setOwners] = useState(formData?.owners || [createTradeDetailsDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-  const tenantId = Digit.ULBService.getCurrentPermanentCity() //Digit.ULBService.getCurrentTenantId();
+  // console.log("tradedetilsInTLTradeDetails",tradedetils);
+
+  const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
+
+  let tenantId;
+  if(currentUserType === "CITIZEN"){
+      tenantId = window.localStorage.getItem("CITIZEN.CITY");
+
+  }else{
+    tenantId = Digit.ULBService.getCurrentPermanentCity(); 
+  }
+
+  //const tenantId = Digit.ULBService.getCurrentPermanentCity(); //Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const [isErrors, setIsErrors] = useState(false);
   const [licenseTypeList, setLicenseTypeList] = useState([]);
+  // const [licenseTypeValue, setLicenseTypeValue] = useState(tradedetils?.[0]?.licenseType||{});
   const [licenseTypeValue, setLicenseTypeValue] = useState([]);
+  // console.log("licenseTypeValueCheck", licenseTypeValue)
 
   const { isLoading : menuLoading, data: Menu = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "StructureType");
 
   const { data: FinaceMenu = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "egf-master", ["FinancialYear"]);
-
   const { data: billingSlabData } = Digit.Hooks.tl.useTradeLicenseBillingslab({ tenantId, filters: {} });
 
   const addNewOwner = () => {
@@ -155,56 +168,53 @@ const OwnerForm1 = (_props) => {
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, getValues } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
+  // console.log("licenseTypeValueForCheck",licenseTypeValue)
 
   useEffect(() => {
     console.log("licenseTypeValue: ",licenseTypeValue);
     if (billingSlabData && billingSlabData?.billingSlab && billingSlabData?.billingSlab?.length > 0) {
-        const processedData =
-            billingSlabData.billingSlab &&
-            billingSlabData.billingSlab.reduce(
-                (acc, item) => {
-                    let accessory = { active: true };
-                    let tradeType = { active: true };
-                    if (item.accessoryCategory && item.tradeType === null) {
-                        accessory.code = item.accessoryCategory;
-                        accessory.uom = item.uom;
-                        accessory.rate = item.rate;
-                        item.rate && item.rate > 0 && acc.accessories.push(accessory);
-                    } else if (item.accessoryCategory === null && item.tradeType) {
-                        tradeType.code = item.tradeType;
-                        tradeType.uom = item.uom;
-                        tradeType.structureType = item.structureType;
-                        tradeType.licenseType = item.licenseType;
-                        tradeType.rate = item.rate;
-                        !isUndefined(item.rate) &&
-                            item.rate !== null &&
-                            acc.tradeTypeData.push(tradeType);
-                    }
-                    return acc;
-                },
-                { accessories: [], tradeTypeData: [] }
-            );
-        let licenseTypes = getUniqueItemsFromArray(
-            processedData.tradeTypeData,
-            "licenseType"
+      // console.log("licenseTypeValueChanged",);
+      const processedData =
+        billingSlabData.billingSlab &&
+        billingSlabData.billingSlab.reduce(
+          (acc, item) => {
+            let accessory = { active: true };
+            let tradeType = { active: true };
+            if (item.accessoryCategory && item.tradeType === null) {
+              accessory.code = item.accessoryCategory;
+              accessory.uom = item.uom;
+              accessory.rate = item.rate;
+              item.rate && item.rate > 0 && acc.accessories.push(accessory);
+            } else if (item.accessoryCategory === null && item.tradeType) {
+              tradeType.code = item.tradeType;
+              tradeType.uom = item.uom;
+              tradeType.structureType = item.structureType;
+              tradeType.licenseType = item.licenseType;
+              tradeType.rate = item.rate;
+              !isUndefined(item.rate) && item.rate !== null && acc.tradeTypeData.push(tradeType);
+            }
+            return acc;
+          },
+          { accessories: [], tradeTypeData: [] }
         );
-        licenseTypes = licenseTypes.map(item => {
-            return { code: item.licenseType, active: true };
+      let licenseTypes = getUniqueItemsFromArray(processedData.tradeTypeData, "licenseType");
+      licenseTypes = licenseTypes.map((item) => {
+        return { code: item.licenseType, active: true };
+      });
+      if (licenseTypes && licenseTypes.length > 0) {
+        licenseTypes.forEach((data) => {
+          data.i18nKey = `TRADELICENSE_LICENSETYPE_${data.code}`;
         });
-        if (licenseTypes && licenseTypes.length > 0) {
-          licenseTypes.forEach(data => {
-            data.i18nKey = `TRADELICENSE_LICENSETYPE_${data.code}`
-          })
-        };
-        
-        let licenseTypeValue = [];
-        if (licenseTypes && licenseTypes.length > 0) {
-          licenseTypes.map(data =>{
-            if(data.code == "PERMANENT") licenseTypeValue.push(data);
-          });
-        }
-        setLicenseTypeValue(licenseTypeValue[0]);
-        setLicenseTypeList(licenseTypes);
+      }
+
+      let licenseTypeValue = [];
+      if (licenseTypes && licenseTypes.length > 0) {
+        licenseTypes.map((data) => {
+          if (data.code == "PERMANENT") licenseTypeValue.push(data);
+        });
+      }
+      setLicenseTypeValue(licenseTypeValue[0]);
+      setLicenseTypeList(licenseTypes);
     }
 }, [billingSlabData]);
 
@@ -249,7 +259,7 @@ const OwnerForm1 = (_props) => {
     }
   }
 
-  let isRenewal = window.location.href.includes("renew-application-details");
+  let isRenewal = window.location.href.includes("renew-application-details")  || window.location.href.includes("renew-trade");
   if (window.location.href.includes("edit-application-details")) isRenewal = true;
 
 
@@ -305,9 +315,13 @@ const OwnerForm1 = (_props) => {
     if (licenseTypeValue) {
       setValue("licenseType", licenseTypeValue); // <-- This is the missing part
     }
-  },[licenseTypeValue])
+  }, [licenseTypeValue]);
 
-
+  // useEffect(() => {
+  //   if(isEdit){
+      
+  //   }
+  // } ,[])
 
   useEffect(() => {
     if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) {
@@ -320,56 +334,63 @@ const OwnerForm1 = (_props) => {
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   return (
-      <div style={{ marginBottom: "16px" }}>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_FINANCIAL_YEAR_LABEL")} * `}</CardLabel>
-            <Controller
-              name="financialYear"
-              rules={{ required: t("REQUIRED_FIELD") }}
-              defaultValue={tradedetail?.financialYear}
-              control={control}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  selected={props.value}
-                  errorStyle={(localFormState.touched.financialYear && errors?.financialYear?.message) ? true : false}
-                  // disable={financialYearOptions?.length === 1}
-                  option={financialYearOptions}
-                  select={props.onChange}
-                  optionKey="i18nKey"
-                  onBlur={props.onBlur}
-                  // disable={isRenewal}
-                  t={t}
-                />
-              )}
+    <div style={{ marginBottom: "16px" }}>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">
+          {`${t("TL_FINANCIAL_YEAR_LABEL")}`}<span className="requiredField">*</span>
+        </CardLabel>
+
+        <Controller
+          name="financialYear"
+          rules={{ required: t("REQUIRED_FIELD") }}
+          // defaultValue={isRenewal ? tradedetail?.financialYear : financialYearOptions[0]}
+          defaultValue={tradedetail?.financialYear}
+          control={control}
+          render={(props) => (
+            <Dropdown
+              className="form-field"
+              // selected={isRenewal ? financialYearOptions[0] : props.value}
+              selected={props.value}
+              errorStyle={localFormState.touched.financialYear && errors?.financialYear?.message ? true : false}
+              // disable={financialYearOptions?.length === 1}
+              option={financialYearOptions}
+              select={props.onChange}
+              optionKey="i18nKey"
+              onBlur={props.onBlur}
+              placeholder={t("TL_FINANCIAL_YEAR_PLACEHOLDER")}
+              // disable={isRenewal}
+              t={t}
             />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{localFormState.touched.financialYear ? errors?.financialYear?.message : ""}</CardLabelError>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL")} * `}</CardLabel>
-            <Controller
-              name="licenseType"
-              // defaultValue={tradedetail?.licenseType}
-              defaultValue={licenseTypeValue}
-              control={control}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  selected={licenseTypeValue} //{licenseTypeList[1]}
-                  // selected={licenseTypeNewValue} 
-                  disable={true}
-                  option={licenseTypeList}
-                  select={(e)=>{
-                    props.onChange(e)
-                  }}
-                  optionKey="i18nKey"
-                  onBlur={props.onBlur}
-                  t={t}
-                  errorStyle={(localFormState.touched.licenseType && errors?.licenseType?.message) ? true : false}
-                />
-              )}
+          )}
+        />
+      </LabelFieldPair>
+      <CardLabelError style={errorStyle}>{localFormState.touched.financialYear ? errors?.financialYear?.message : ""}</CardLabelError>
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_LIC_TYPE_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+        <Controller
+          name="licenseType"
+          // defaultValue={tradedetail?.licenseType}
+          defaultValue={licenseTypeValue}
+          control={control}
+          render={(props) => (
+            <Dropdown
+              className="form-field"
+              selected={licenseTypeValue} //{licenseTypeList[1]}
+              // selected={licenseTypeNewValue}
+              disable={true}
+              option={licenseTypeList}
+              select={(e) => {
+                props.onChange(e);
+              }}
+              optionKey="i18nKey"
+              onBlur={props.onBlur}
+              t={t}
+              errorStyle={localFormState.touched.licenseType && errors?.licenseType?.message ? true : false}
+              placeholder={t("TL_NEW_TRADE_DETAILS_LIC_TYPE_PLACEHOLDER")}
             />
-          </LabelFieldPair>
+          )}
+        />
+      </LabelFieldPair>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("TL_COMMON_TABLE_COL_TRD_NAME")} * `}</CardLabel>

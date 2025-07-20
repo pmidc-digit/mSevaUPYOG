@@ -50,12 +50,14 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                   gender: formData?.LicneseDetails?.gender?.code,
                   mobileNumber: formData?.LicneseDetails?.mobileNumber,
                   name: formData?.LicneseDetails?.name,
-                  dob: null,
+                  // "dob": formData?.LicneseDetails?.dateOfBirth,LicneseDetails.dateOfBirth
+                  dob: "",
                   emailId: formData?.LicneseDetails?.email,
                   permanentAddress: formData?.LicneseDetails?.PermanentAddress,
                   correspondenceAddress: Correspondenceaddress,
-                  pan: formData?.LicneseDetails?.PanNumber,
+                  // "pan":formData?.LicneseDetails?.PanNumber,
                   // "permanentPinCode": "143001"
+                  ...(formData?.LicneseDetails?.PanNumber && { pan: formData?.LicneseDetails?.PanNumber }),
                 },
               ],
               subOwnerShipCategory: "INDIVIDUAL",
@@ -68,10 +70,15 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification ? formData?.LicneseType?.selfCertification : null,
               },
+              // "address": {
+              //   "city": "",
+              //   "landmark": "",
+              //   "pincode": formData?.LicneseDetails?.Pincode
+              // },
               address: {
-                city: "",
-                landmark: "",
-                pincode: "",
+                ...(formData?.LicneseDetails?.City && { city: formData?.LicneseDetails?.City }),
+                ...(formData?.LicneseDetails?.Landmark && { landmark: formData?.LicneseDetails?.Landmark }),
+                pincode: formData?.LicneseDetails?.Pincode,
               },
               institution: null,
               applicationDocuments: null,

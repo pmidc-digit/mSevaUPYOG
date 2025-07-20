@@ -3,20 +3,16 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/ASTTimeline";
 
-const AssetPincode = ({ t, config, onSelect, formData = {}, userType}) => {
-  
+const AssetPincode = ({ t, config, onSelect, formData = {}, userType }) => {
   const tenants = Digit.Hooks.asset.useTenants();
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("modify");
-
 
   const [pincode, setPincode] = useState(() => {
     if (presentInModifyApplication && userType === "employee") return formData?.originalData?.address?.pincode || "";
     return formData?.address?.pincode || "";
   });
 
-  
-  
   const inputs = [
     {
       label: "AST_PINCODE",
@@ -30,8 +26,8 @@ const AssetPincode = ({ t, config, onSelect, formData = {}, userType}) => {
         title: t("PTR_ADDRESS_PINCODE_INVALID"),
       },
       style: {
-        width: "50%"
-      }
+        width: "50%",
+      },
     },
   ];
   const [pincodeServicability, setPincodeServicability] = useState(null);
@@ -75,7 +71,15 @@ const AssetPincode = ({ t, config, onSelect, formData = {}, userType}) => {
           <LabelFieldPair key={index}>
             <CardLabel className="card-label-smaller">{t(input.label)}</CardLabel>
             <div className="field">
-              <TextInput key={input.name} style={input.style} value={pincode} onChange={onChange} {...input.validation} disable={presentInModifyApplication} autoFocus={presentInModifyApplication} />
+              <TextInput
+                key={input.name}
+                style={input.style}
+                value={pincode}
+                onChange={onChange}
+                {...input.validation}
+                disable={presentInModifyApplication}
+                autoFocus={presentInModifyApplication}
+              />
             </div>
           </LabelFieldPair>
           {error ? <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>{error}</CardLabelError> : null}
@@ -86,16 +90,16 @@ const AssetPincode = ({ t, config, onSelect, formData = {}, userType}) => {
   const onSkip = () => onSelect();
   return (
     <React.Fragment>
-    {window.location.href.includes("/employee") ? <Timeline currentStep={3}/> : null}
-    <FormStep
-      t={t}
-      config={{ ...config, inputs }}
-      onSelect={goNext}
-      _defaultValues={{ pincode }}
-      onChange={onChange}
-      onSkip={onSkip}
-      forcedError={t(pincodeServicability)}
-    ></FormStep>
+      {window.location.href.includes("/employee") ? <Timeline currentStep={3} /> : null}
+      <FormStep
+        t={t}
+        config={{ ...config, inputs }}
+        onSelect={goNext}
+        _defaultValues={{ pincode }}
+        onChange={onChange}
+        onSkip={onSkip}
+        forcedError={t(pincodeServicability)}
+      ></FormStep>
     </React.Fragment>
   );
 };

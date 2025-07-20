@@ -5,10 +5,6 @@ import { useTranslation } from "react-i18next";
 const InboxLinks = () => {
   const { t } = useTranslation();
 
-
-  
-
- 
   const GetLogo = () => (
     <div className="header">
       <span className="logo">

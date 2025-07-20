@@ -10,7 +10,6 @@ const editnewDetails = () => ({
 });
 
 const EditAssetDetails = ({ config, onSelect, formData, setError, clearErrors }) => {
-
   const { t } = useTranslation();
   const [editNewAssetDetails, seteditAssignDetails] = useState(formData?.editNewAssetDetails || [editnewDetails()]);
   const { id: applicationNo } = useParams();
@@ -18,7 +17,6 @@ const EditAssetDetails = ({ config, onSelect, formData, setError, clearErrors })
   const { data: applicationDetails } = Digit.Hooks.asset.useAssetApplicationDetail(t, tenantId, applicationNo);
   let comingDataFromAPI = applicationDetails?.applicationData?.applicationData;
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
-
 
   useEffect(() => {
     onSelect(config?.key, editNewAssetDetails);
@@ -48,7 +46,7 @@ const EditAssetDetails = ({ config, onSelect, formData, setError, clearErrors })
     clearErrors,
     config,
     comingDataFromAPI,
-    warrantyTime
+    warrantyTime,
   };
   return (
     <React.Fragment>
@@ -71,16 +69,16 @@ const OwnerForm = (_props) => {
     clearErrors,
     setFocusIndex,
     comingDataFromAPI,
-    warrantyTime
+    warrantyTime,
   } = _props;
-  let formJson = []
+  let formJson = [];
 
   //  const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateTenantId = Digit.ULBService.getStateId();
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   //  This call with tenantId (Get city-level data)
-  const cityResponseObject = Digit.Hooks.useCustomMDMS(tenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
+  const cityResponseObject = Digit.Hooks.useCustomMDMSV2(tenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
       return formattedData;
@@ -88,7 +86,7 @@ const OwnerForm = (_props) => {
   });
 
   // This call with stateTenantId (Get state-level data)
-  const stateResponseObject = Digit.Hooks.useCustomMDMS(stateTenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
+  const stateResponseObject = Digit.Hooks.useCustomMDMSV2(stateTenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
       return formattedData;
@@ -116,7 +114,6 @@ const OwnerForm = (_props) => {
   } else {
     console.log("combinedData.data is not an array or is empty.");
   }
-
 
   const [showToast, setShowToast] = useState(null);
   const { control, formState: localFormState, watch, trigger } = useForm();
@@ -175,148 +172,138 @@ const OwnerForm = (_props) => {
     <React.Fragment>
       <div style={{ marginBottom: "16px" }}>
         <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px" }}>
-
           <React.Fragment>
-            {
-              formJson.map((row, index) => (
-                <div key={index}>
-                  {row.type === "date" ?
-                    (
-                      <div key={index}>
-                        <LabelFieldPair>
-                          <CardLabel className="card-label-smaller">{t(row.code)}</CardLabel>
-                          <div className="field">
-                            <Controller
-                              control={control}
-                              name={row.name}
-                              defaultValue={comingDataFromAPI?.additionalDetails[row.name] || ""}
-                              rules={{
-                                required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                                validDate: (val) => (/^\d{4}-\d{2}-\d{2}$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+            {formJson.map((row, index) => (
+              <div key={index}>
+                {row.type === "date" ? (
+                  <div key={index}>
+                    <LabelFieldPair>
+                      <CardLabel className="card-label-smaller">{t(row.code)}</CardLabel>
+                      <div className="field">
+                        <Controller
+                          control={control}
+                          name={row.name}
+                          defaultValue={comingDataFromAPI?.additionalDetails[row.name] || ""}
+                          rules={{
+                            required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                            validDate: (val) => (/^\d{4}-\d{2}-\d{2}$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                          }}
+                          render={(props) => (
+                            <TextInput
+                              value={props.value}
+                              type={"date"}
+                              max={new Date().toISOString().split("T")[0]}
+                              autoFocus={focusIndex.index === editNewAssetDetails?.key && focusIndex.type === row.name}
+                              onChange={(e) => {
+                                props.onChange(e.target.value);
+                                setFocusIndex({ index: editNewAssetDetails.key, type: row.name });
                               }}
-                              render={(props) => (
-                                <TextInput
-                                  value={props.value}
-                                  type={"date"}
-                                  max={new Date().toISOString().split("T")[0]}
-                                  autoFocus={focusIndex.index === editNewAssetDetails?.key && focusIndex.type === row.name}
-                                  onChange={(e) => {
-                                    props.onChange(e.target.value);
-                                    setFocusIndex({ index: editNewAssetDetails.key, type: row.name });
-                                  }}
-                                  onBlur={(e) => {
-                                    setFocusIndex({ index: -1 });
-                                    props.onBlur(e);
-                                  }}
-                                />
-                              )}
+                              onBlur={(e) => {
+                                setFocusIndex({ index: -1 });
+                                props.onBlur(e);
+                              }}
                             />
-                          </div>
-                        </LabelFieldPair>
-                        <CardLabelError style={errorStyle}>{localFormState.touched[row.name] ? errors[row.name]?.message : ""}</CardLabelError>
+                          )}
+                        />
                       </div>
-                    )
-                    : row.type == "dropdown" ?
-                      (
-                        <div key={index}>
-                          <LabelFieldPair>
-                            <CardLabel className="card-label-smaller">{t(row.code)}</CardLabel>
-                            <Controller
-                              control={control}
-                              name={row.name}
-                              defaultValue={comingDataFromAPI?.additionalDetails[row.name] || ""}
-                              render={(props) => (
-                                <Dropdown
-                                  className="form-field"
-                                  selected={props.value}
-                                  select={props.onChange}
-                                  onBlur={props.onBlur}
-                                  option={row.options}
-                                  optionKey="i18nKey"
-                                  t={t}
-                                />
-                              )}
+                    </LabelFieldPair>
+                    <CardLabelError style={errorStyle}>{localFormState.touched[row.name] ? errors[row.name]?.message : ""}</CardLabelError>
+                  </div>
+                ) : row.type == "dropdown" ? (
+                  <div key={index}>
+                    <LabelFieldPair>
+                      <CardLabel className="card-label-smaller">{t(row.code)}</CardLabel>
+                      <Controller
+                        control={control}
+                        name={row.name}
+                        defaultValue={comingDataFromAPI?.additionalDetails[row.name] || ""}
+                        render={(props) => (
+                          <Dropdown
+                            className="form-field"
+                            selected={props.value}
+                            select={props.onChange}
+                            onBlur={props.onBlur}
+                            option={row.options}
+                            optionKey="i18nKey"
+                            t={t}
+                          />
+                        )}
+                      />
+                    </LabelFieldPair>
+                    <CardLabelError style={errorStyle}>{localFormState.touched[row.name] ? errors[row.name]?.message : ""}</CardLabelError>
+                  </div>
+                ) : row.addCurrentLocationButton === true ? (
+                  <div key={index}>
+                    <LabelFieldPair>
+                      <CardLabel className="card-label-smaller">{t(row.code)}</CardLabel>
+                      <div className="field">
+                        <Controller
+                          control={control}
+                          name={row.name}
+                          defaultValue={comingDataFromAPI?.additionalDetails[row.name] || ""}
+                          rules={{
+                            required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                            validDate: (val) => (/^\d{4}-\d{2}-\d{2}$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                          }}
+                          render={(props) => (
+                            <TextInput
+                              value={props.value}
+                              type={row.type}
+                              autoFocus={focusIndex.index === editNewAssetDetails?.key && focusIndex.type === row.name}
+                              onChange={(e) => {
+                                props.onChange(e.target.value);
+                                setFocusIndex({ index: editNewAssetDetails.key, type: row.name });
+                              }}
+                              onBlur={(e) => {
+                                setFocusIndex({ index: -1 });
+                                props.onBlur(e);
+                              }}
+                              onClick={() => {
+                                fetchCurrentLocation(row.name);
+                              }}
                             />
-
-                          </LabelFieldPair>
-                          <CardLabelError style={errorStyle}>{localFormState.touched[row.name] ? errors[row.name]?.message : ""}</CardLabelError>
-                        </div>
-                      ) : row.addCurrentLocationButton === true ?
-                        (
-                          <div key={index}>
-                            <LabelFieldPair>
-                              <CardLabel className="card-label-smaller">{t(row.code)}</CardLabel>
-                              <div className="field">
-                                <Controller
-                                  control={control}
-                                  name={row.name}
-                                  defaultValue={comingDataFromAPI?.additionalDetails[row.name] || ""}
-                                  rules={{
-                                    required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                                    validDate: (val) => (/^\d{4}-\d{2}-\d{2}$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
-                                  }}
-                                  render={(props) => (
-                                    <TextInput
-                                      value={props.value}
-                                      type={row.type}
-                                      autoFocus={focusIndex.index === editNewAssetDetails?.key && focusIndex.type === row.name}
-                                      onChange={(e) => {
-                                        props.onChange(e.target.value);
-                                        setFocusIndex({ index: editNewAssetDetails.key, type: row.name });
-                                      }}
-                                      onBlur={(e) => {
-                                        setFocusIndex({ index: -1 });
-                                        props.onBlur(e);
-                                      }}
-                                      onClick={() => {
-                                        fetchCurrentLocation(row.name);
-                                      }}
-                                    />
-
-                                  )}
-                                />
-                              </div>
-                            </LabelFieldPair>
-                            <CardLabelError style={errorStyle}>{localFormState.touched[row.name] ? errors[row.name]?.message : ""}</CardLabelError>
-                          </div>
-                        ) :
-                        (
-                          <div key={index}>
-                            <LabelFieldPair>
-                              <CardLabel className="card-label-smaller">{t(row.code)}</CardLabel>
-                              <div className="field">
-                                <Controller
-                                  control={control}
-                                  name={row.name}
-                                  defaultValue={comingDataFromAPI?.additionalDetails[row.name]}
-                                  rules={{
-                                    required: t("CORE_COMMON_REQUIRED_ERRMSG"),
-                                    validDate: (val) => (/^\d{4}-\d{2}-\d{2}$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
-                                  }}
-                                  render={(props) => (
-                                    <TextInput
-                                      value={props.value}
-                                      type={row.type}
-                                      autoFocus={focusIndex.index === editNewAssetDetails?.key && focusIndex.type === row.name}
-                                      onChange={(e) => {
-                                        props.onChange(e.target.value);
-                                        setFocusIndex({ index: editNewAssetDetails.key, type: row.name });
-                                      }}
-                                      onBlur={(e) => {
-                                        setFocusIndex({ index: -1 });
-                                        props.onBlur(e);
-                                      }}
-                                    />
-                                  )}
-                                />
-                              </div>
-                            </LabelFieldPair>
-                            <CardLabelError style={errorStyle}>{localFormState.touched[row.name] ? errors[row.name]?.message : ""}</CardLabelError>
-                          </div>
-                        )
-                  }
-                </div>
-              ))}
+                          )}
+                        />
+                      </div>
+                    </LabelFieldPair>
+                    <CardLabelError style={errorStyle}>{localFormState.touched[row.name] ? errors[row.name]?.message : ""}</CardLabelError>
+                  </div>
+                ) : (
+                  <div key={index}>
+                    <LabelFieldPair>
+                      <CardLabel className="card-label-smaller">{t(row.code)}</CardLabel>
+                      <div className="field">
+                        <Controller
+                          control={control}
+                          name={row.name}
+                          defaultValue={comingDataFromAPI?.additionalDetails[row.name]}
+                          rules={{
+                            required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                            validDate: (val) => (/^\d{4}-\d{2}-\d{2}$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
+                          }}
+                          render={(props) => (
+                            <TextInput
+                              value={props.value}
+                              type={row.type}
+                              autoFocus={focusIndex.index === editNewAssetDetails?.key && focusIndex.type === row.name}
+                              onChange={(e) => {
+                                props.onChange(e.target.value);
+                                setFocusIndex({ index: editNewAssetDetails.key, type: row.name });
+                              }}
+                              onBlur={(e) => {
+                                setFocusIndex({ index: -1 });
+                                props.onBlur(e);
+                              }}
+                            />
+                          )}
+                        />
+                      </div>
+                    </LabelFieldPair>
+                    <CardLabelError style={errorStyle}>{localFormState.touched[row.name] ? errors[row.name]?.message : ""}</CardLabelError>
+                  </div>
+                )}
+              </div>
+            ))}
 
             {/* <LabelFieldPair>
                 <CardLabel className="card-label-smaller">{t("AST_INVOICE_DATE") + " *"}</CardLabel>
@@ -606,7 +593,6 @@ const OwnerForm = (_props) => {
               </LabelFieldPair>
               <CardLabelError style={errorStyle}>{localFormState.touched.city ? errors?.city?.message : ""}</CardLabelError> */}
           </React.Fragment>
-
         </div>
       </div>
       {showToast?.label && (

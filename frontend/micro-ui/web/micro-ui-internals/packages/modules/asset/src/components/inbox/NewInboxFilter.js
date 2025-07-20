@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {RemoveableTag, CloseSvg, CheckBox, Localities, SubmitBar } from "@mseva/digit-ui-react-components";
+import { RemoveableTag, CloseSvg, CheckBox, Localities, SubmitBar } from "@mseva/digit-ui-react-components";
 import { useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
 
@@ -17,7 +17,6 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
       label: "AST_NEW_ASSET",
       value: "asset-create",
     },
-    
   ];
 
   const localParamChange = (filterParam) => {
@@ -90,7 +89,6 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
             )}
           </div>
           <div>
-            
             <div>
               <div className="filter-label" style={{ fontWeight: "normal" }}>
                 {t("ES_INBOX_LOCALITY")}:
@@ -110,7 +108,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                 })}
               </div>
             </div>
-            {/* <div>
+            <div>
               <div className="filter-label" style={{ fontWeight: "normal" }}>
                 {t("AST_APPLICATION_TYPE")}
               </div>
@@ -126,7 +124,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                   />
                 );
               })}
-            </div> */}
+            </div>
             <div>
               <Status
                 searchParams={_searchParams}

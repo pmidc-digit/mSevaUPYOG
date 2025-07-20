@@ -29,49 +29,37 @@ const BannerPicker = (props) => {
       applicationNumber={props.data?.Assets?.[0].applicationNo}
       info={props.isSuccess ? props.t("ES_ASSET_RESPONSE_CREATE_LABEL") : ""}
       successful={props.isSuccess}
-      style={{width: "100%"}}
+      style={{ width: "100%" }}
     />
   );
 };
 
 const NewResponse = ({ data, onSuccess }) => {
-
-
-  
   const { t } = useTranslation();
-  
+
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const mutation = Digit.Hooks.asset.useAssetCreateAPI(data?.address?.city?.code); 
+  const mutation = Digit.Hooks.asset.useAssetCreateAPI(data?.address?.city?.code);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const match = useRouteMatch();
   const { tenants } = storeData || {};
 
-
   useEffect(() => {
     try {
-      
       data.tenantId = data.address?.city?.code;
-      let formdata = Assetdata(data)
-      console.log("formdata in acknowejkfdlgi ::: ", formdata);
-
-      
-
+      let formdata = Assetdata(data);
 
       mutation.mutate(formdata, {
         onSuccess,
       });
-    } catch (err) {
-    }
+    } catch (err) {}
   }, []);
-
-  
 
   const handleDownloadPdf = async () => {
     const { Asset = [] } = mutation.data;
     let AST = (Asset && Asset[0]) || {};
     const tenantInfo = tenants.find((tenant) => tenant.code === AST.tenantId);
     let tenantId = AST.tenantId || tenantId;
-   
+
     const data = await getAssetAcknowledgementData({ ...AST }, tenantInfo, t);
     Digit.Utils.pdf.generate(data);
   };
@@ -82,13 +70,7 @@ const NewResponse = ({ data, onSuccess }) => {
     <Card>
       <BannerPicker t={t} data={mutation.data} isSuccess={mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
       <StatusTable>
-        {mutation.isSuccess && (
-          <Row
-            rowContainerStyle={rowContainerStyle}
-            last       
-            textStyle={{ whiteSpace: "pre", width: "60%" }}
-          />
-        )}
+        {mutation.isSuccess && <Row rowContainerStyle={rowContainerStyle} last textStyle={{ whiteSpace: "pre", width: "60%" }} />}
       </StatusTable>
       {/* {mutation.isSuccess && <SubmitBar label={t("AST_REPORT")} onSubmit={handleDownloadPdf} />} */}
       <Link to={`/digit-ui/employee`}>

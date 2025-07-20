@@ -42,7 +42,6 @@ const Inbox = ({
         ModuleCode: moduleCode,
         filters: { ...searchParams, ...paginationParams, sortParams },
       })
-
     : Digit.Hooks.useInboxGeneral({
         tenantId,
         businessService: moduleCode,
@@ -56,11 +55,6 @@ const Inbox = ({
         middlewaresWf,
         middlewareSearch,
       });
-
-
-     
-
-
 
   useEffect(() => {
     setPageOffset(0);
@@ -107,7 +101,7 @@ const Inbox = ({
           searchParams={searchParams}
           sortParams={sortParams}
           linkPrefix={`${parentRoute}/application-details/`}
-          tableConfig={rest?.tableConfig ? res?.tableConfig:TableConfig(t)["ASSET"]}
+          tableConfig={rest?.tableConfig ? res?.tableConfig : TableConfig(t)["ASSET"]}
           filterComponent={filterComponent}
           EmptyResultInboxComp={EmptyResultInboxComp}
           useNewInboxAPI={useNewInboxAPI}
@@ -118,12 +112,10 @@ const Inbox = ({
       return (
         <div>
           {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
-         
-          
+
           <ASTDesktopInbox
             moduleCode={moduleCode}
             data={data}
-            
             tableConfig={TableConfig(t)["ASSET"]}
             isLoading={hookLoading}
             defaultSearchParams={initialStates.searchParams}
@@ -153,4 +145,3 @@ const Inbox = ({
 };
 
 export default Inbox;
-

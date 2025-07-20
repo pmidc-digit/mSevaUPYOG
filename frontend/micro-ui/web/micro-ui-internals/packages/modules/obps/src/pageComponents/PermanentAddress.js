@@ -15,6 +15,7 @@ import React, { useState, useEffect } from "react";
 import Timeline from "../components/Timeline";
 
 const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) => {
+  
   let validation = {};
   const onSkip = () => onSelect();
   const [PermanentAddress, setPermanentAddress] = useState(
@@ -22,7 +23,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   );
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  console.log("tenantId", tenantId);
+  console.log("tenantId",tenantId)
   const stateId = Digit.ULBService.getStateId();
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
@@ -32,9 +33,9 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
   console.log("formData", formData);
   // console.log("data: newConfig", newConfig);
-
+  
   // const [ulbTypes, setUlbTypes] = useState(["Abohar", "Adampur", "Ahmedgarh", "Ajnala", "Alawalpur", "Amargarh", "Amloh"]);
-  const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) => tenant.name);
+  const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) =>tenant.name);
   // console.log("tenantName=+",tenantName);
   useEffect(() => {
     const role = formData?.LicneseType?.LicenseType?.role;

@@ -16,16 +16,19 @@ import {
 import { useTranslation } from "react-i18next";
 
 const fieldComponents = {
+  date: DatePicker,
   mobileNumber: MobileNumber,
-  Dropdown:(props) => (
-    <Dropdown
-      selected={props.value}
-      select={props.onChange}
-      option={props.options}
-      optionKey="i18nKey"
-      t={props.t}
-    />
-  ),
+  //   Locality: (props) => (
+  //     <Localities
+  //       tenantId={Digit.ULBService.getCurrentTenantId()}
+  //       selectLocality={props.onChange}
+  //       keepNull={false}
+  //       boundaryType="revenue"
+  //       selected={props.value}
+  //       disableLoader={true}
+  //       sortFn={(a, b) => (a.i18nkey < b.i18nkey ? -1 : 1)}
+  //     />
+  //   ),
 };
 
 const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams, isInboxPage, defaultSearchParams, clearSearch: _clearSearch }) => {
@@ -47,18 +50,6 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
   };
 
   const mobileView = innerWidth <= 640;
-  const assetClassification=[
-    {
-      code: "MOVABLE",
-      i18nKey: "MOVABLE",
-      value: "MOVABLE"
-    },
-    {
-      code: "IMMOVABLE",
-      i18nKey: "IMMOVABLE",
-      value: "IMMOVABLE"
-    }
-  ];
 
   const onSubmitInput = (data) => {
     if (!data.mobileNumber) {
@@ -114,7 +105,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                 </span>
               </div>
             )}
-            <div className={"complaint-input-container for-pt " + (!isInboxPage ? "for-search" : "")} style={{ width: "100%", display:"grid" }}>
+            <div className={"complaint-input-container for-pt " + (!isInboxPage ? "for-search" : "")} style={{ width: "100%", display: "grid" }}>
               {searchFields
                 ?.filter((e) => true)
                 ?.map((input, index) => (
@@ -135,7 +126,7 @@ const SearchApplication = ({ onSearch, type, onClose, searchFields, searchParams
                         <Controller
                           render={(props) => {
                             const Comp = fieldComponents?.[input.type];
-                            return <Comp formValue={form} setValue={setValue} onChange={props.onChange} value={props.value} options={assetClassification} t={t}/>;
+                            return <Comp formValue={form} setValue={setValue} onChange={props.onChange} value={props.value} />;
                           }}
                           name={input.name}
                           control={control}

@@ -21,32 +21,31 @@ const CheckPage = ({ onSubmit, value = {} }) => {
   const history = useHistory();
   const [agree, setAgree] = useState(false);
   const [categoriesWiseData, setCategoriesWiseData] = useState();
-  
-   //  * get @param city & state id
-   const tenantId = Digit.ULBService.getCurrentTenantId();
-   const stateTenantId = Digit.ULBService.getStateId();
- 
-   //  This call with tenantId (Get city-level data)
-   const cityResponseObject = Digit.Hooks.useCustomMDMS(tenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
-     select: (data) => {
-       const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
-       return formattedData;
-     },
-   });
- 
-   // This call with stateTenantId (Get state-level data)
-   const stateResponseObject = Digit.Hooks.useCustomMDMS(stateTenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
-     select: (data) => {
-       const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
-       return formattedData;
-     },
-   });
+
+  //  * get @param city & state id
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const stateTenantId = Digit.ULBService.getStateId();
+
+  //  This call with tenantId (Get city-level data)
+  const cityResponseObject = Digit.Hooks.useCustomMDMS(tenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
+    select: (data) => {
+      const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
+      return formattedData;
+    },
+  });
+
+  // This call with stateTenantId (Get state-level data)
+  const stateResponseObject = Digit.Hooks.useCustomMDMS(stateTenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
+    select: (data) => {
+      const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
+      return formattedData;
+    },
+  });
 
   const { address, assetDetails, index, isEdit, isUpdate, asset } = value;
 
   const typeOfApplication = !isEdit && !isUpdate ? `new-application` : `edit-application`;
 
-  
   const setdeclarationhandler = () => {
     setAgree(!agree);
   };
@@ -62,10 +61,9 @@ const CheckPage = ({ onSubmit, value = {} }) => {
     }
     setCategoriesWiseData(combinedData);
   }, [cityResponseObject, stateResponseObject]);
-  
+
   let formJson = [];
   if (Array.isArray(categoriesWiseData)) {
-
     formJson = categoriesWiseData
       .filter((category) => {
         const isMatch = category.assetParentCategory === asset?.assettype?.code || category.assetParentCategory === "COMMON";
@@ -76,12 +74,12 @@ const CheckPage = ({ onSubmit, value = {} }) => {
       .filter((field) => field.active === true); // Filter by active status
   }
 
-  function extractValue(key){
-      var vl = assetDetails[key]
-      if(typeof vl === 'object'){
-          return vl.code
-      }
-      return vl
+  function extractValue(key) {
+    var vl = assetDetails[key];
+    if (typeof vl === "object") {
+      return vl.code;
+    }
+    return vl;
   }
 
   return (
@@ -149,91 +147,83 @@ const CheckPage = ({ onSubmit, value = {} }) => {
               actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/asset-deatils`} />}
             />
 
-<Row
-            label={t("AST_TYPE")}
-            text={`${t(checkForNA(asset?.assetsOfType?.value))}`}
-            actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/asset-deatils`} />}
-          />
+            <Row
+              label={t("AST_TYPE")}
+              text={`${t(checkForNA(asset?.assetsOfType?.value))}`}
+              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/asset-deatils`} />}
+            />
 
-          <Row
-            label={t("AST_USAGE")}
-            text={`${t(checkForNA(asset?.assetsUsage?.code))}`}
-            actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/asset-deatils`} />}
-          />
-
-          <Row
-            label={t("AST_STATUS_ASSIGNABLE")}
-            text={`${t(checkForNA(asset?.assetAssignable?.code))}`}
-            actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/asset-deatils`} />}
-          />
-
+            <Row
+              label={t("AST_USAGE")}
+              text={`${t(checkForNA(asset?.assetsUsage?.code))}`}
+              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/asset-deatils`} />}
+            />
           </StatusTable>
           <br></br>
 
           <CardSubHeader>{t("AST_DETAILS")}</CardSubHeader>
 
           <StatusTable>
-              <React.Fragment>
+            <React.Fragment>
               <Row
-              label={t("AST_MODE_OF_POSSESSION_OR_ACQUISITION")}
-              text={`${t(checkForNA(assetDetails?.modeOfPossessionOrAcquisition?.code))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
-            <Row
-              label={t("AST_INVOICE_DATE")}
-              text={`${t(checkForNA(assetDetails?.invoiceDate))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
-            <Row
-              label={t("AST_INVOICE_NUMBER")}
-              text={`${t(checkForNA(assetDetails?.invoiceNumber))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
-            <Row
-              label={t("AST_PURCHASE_DATE")}
-              text={`${t(checkForNA(assetDetails?.purchaseDate))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
-            <Row
-              label={t("AST_PURCHASE_ORDER")}
-              text={`${t(checkForNA(assetDetails?.purchaseOrderNumber))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
-            <Row
-              label={t("AST_LIFE")}
-              text={`${t(checkForNA(assetDetails?.lifeOfAsset))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
-            <Row
-              label={t("AST_LOCATION_DETAILS")}
-              text={`${t(checkForNA(assetDetails?.location))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
-            <Row
-              label={t("AST_PURCHASE_COST")}
-              text={`${t(checkForNA(assetDetails?.purchaseCost))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
-            <Row
-              label={t("AST_ACQUISITION_COST")}
-              text={`${t(checkForNA(assetDetails?.acquisitionCost))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
-            <Row
-              label={t("AST_BOOK_VALUE")}
-              text={`${t(checkForNA(assetDetails?.bookValue))}`}
-              actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
-            />
+                label={t("AST_MODE_OF_POSSESSION_OR_ACQUISITION")}
+                text={`${t(checkForNA(assetDetails?.modeOfPossessionOrAcquisition?.code))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
+              <Row
+                label={t("AST_INVOICE_DATE")}
+                text={`${t(checkForNA(assetDetails?.invoiceDate))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
+              <Row
+                label={t("AST_INVOICE_NUMBER")}
+                text={`${t(checkForNA(assetDetails?.invoiceNumber))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
+              <Row
+                label={t("AST_PURCHASE_DATE")}
+                text={`${t(checkForNA(assetDetails?.purchaseDate))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
+              <Row
+                label={t("AST_PURCHASE_ORDER")}
+                text={`${t(checkForNA(assetDetails?.purchaseOrderNumber))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
+              <Row
+                label={t("AST_LIFE")}
+                text={`${t(checkForNA(assetDetails?.lifeOfAsset))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
+              <Row
+                label={t("AST_LOCATION_DETAILS")}
+                text={`${t(checkForNA(assetDetails?.location))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
+              <Row
+                label={t("AST_PURCHASE_COST")}
+                text={`${t(checkForNA(assetDetails?.purchaseCost))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
+              <Row
+                label={t("AST_ACQUISITION_COST")}
+                text={`${t(checkForNA(assetDetails?.acquisitionCost))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
+              <Row
+                label={t("AST_BOOK_VALUE")}
+                text={`${t(checkForNA(assetDetails?.bookValue))}`}
+                actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
+              />
               {formJson.map((row, index) => (
-                <Row key= {index}
+                <Row
+                  key={index}
                   label={t(row.code)}
                   text={`${extractValue(row.name)}`}
                   actionButton={<ActionButton jumpTo={`/digit-ui/employee/asset/assetservice/new-assets/assets`} />}
                 />
-                
               ))}
-              </React.Fragment>
-         
+            </React.Fragment>
           </StatusTable>
 
           <br></br>

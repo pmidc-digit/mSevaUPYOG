@@ -13,7 +13,7 @@ const ASSETCard = () => {
 
     config: {
       select: (data) => {
-        return {totalCount:data?.totalCount,nearingSlaCount:data?.nearingSlaCount} || "0";
+        return { totalCount: data?.totalCount, nearingSlaCount: data?.nearingSlaCount } || "0";
       },
       enabled: Digit.Utils.assetAccess(),
     },
@@ -23,12 +23,10 @@ const ASSETCard = () => {
     if (!isFetching && isSuccess) setTotal(data);
   }, [isFetching]);
 
-  
-
   if (!Digit.Utils.assetAccess()) {
     return null;
   }
-  const links=[
+  const links = [
     {
       count: isLoading ? "0" : total?.totalCount,
       label: t("Inbox"),
@@ -37,18 +35,17 @@ const ASSETCard = () => {
     {
       label: t("ASSET_ADD"),
       link: `/digit-ui/employee/asset/assetservice/new-assets`,
-      role: "ASSET_INITIATOR"
+      role: "ASSET_INITIATOR",
     },
     {
       label: t("MY_ASSET_APPLICATION"),
       link: `/digit-ui/employee/asset/assetservice/my-asset`,
-    }
+    },
     // {
     //   label: t("AST_REPORT"),
     //   link: `/digit-ui/employee/asset/assetservice/report`,
     // }
-   
-  ]
+  ];
   const ASSETRole = Digit.UserService.hasAccess(["ASSET_INITIATOR"]) || false;
   const propsForModuleCard = {
     // Icon: <PropertyHouse />,
@@ -57,11 +54,10 @@ const ASSETCard = () => {
       {
         count: total?.totalCount,
         label: t("Inbox"),
-        link: `/digit-ui/employee/asset/assetservice/inbox`
+        link: `/digit-ui/employee/asset/assetservice/inbox`,
       },
-      
     ],
-    links:links.filter(link=>!link?.role || ASSETRole ),
+    links: links.filter((link) => !link?.role || ASSETRole),
   };
 
   return <EmployeeModuleCard {...propsForModuleCard} />;

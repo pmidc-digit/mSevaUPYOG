@@ -21,7 +21,7 @@ const DropdownType = ({
 }) => {
   return (
     <div className="options_checkboxes">
-      {options.map((option, i) => (
+      {options.map((option,i) => (
         <div key={option.id}>
           <DropdownOption
             indexNumber={i}
@@ -99,7 +99,7 @@ const DropdownOption = ({
   };
   return (
     <div className="optionradiobtnwrapper" style={{ alignItems: "flex-start" }}>
-      <span>{indexNumber + 1}.</span>
+      <span>{indexNumber+1}.</span>
       <input
         type="text"
         ref={inputRef}
@@ -129,7 +129,6 @@ const DropdownOption = ({
           min={minWeight}
           max={maxWeight}
           title={weightHover}
-          onWheel={(e) => e.target.blur()}
           className="employee-card-input"
           //    name={`questions[${index}].optionsWeightage`}
           onChange={handleChange}

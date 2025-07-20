@@ -30,7 +30,6 @@ import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
 import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
 import { CHBModule, CHBLinks, CHBComponents } from "@mseva/upyog-ui-module-chb";
 import { ASSETComponents, ASSETLinks, ASSETModule } from "@mseva/upyog-ui-module-asset";
-import { PGRAIComponents, PGRAILinks, PGRAIModule } from "@mseva/upyog-ui-module-pgrai";
 
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@mseva/digit-ui-module-pgr";
@@ -73,7 +72,6 @@ const enabledModules = [
   "SV",
   "CHB",
   "ASSET",
-  "PGRAI"
 ];
 
 const initTokens = (stateCode) => {
@@ -135,9 +133,6 @@ const initDigitUI = () => {
     ASSETModule,
     ASSETLinks,
     ...ASSETComponents,
-    PGRAIModule,
-    PGRAILinks,
-  ...PGRAIComponents
   });
   initFSMComponents();
   initPGRComponents();

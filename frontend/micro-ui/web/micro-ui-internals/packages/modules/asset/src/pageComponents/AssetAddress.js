@@ -16,7 +16,12 @@ const AssetAddress = ({ t, config, onSelect, userType, formData, formState }) =>
   let isEditAddress = formData?.isEditAddress || false;
   if (presentInModifyApplication) isEditAddress = true;
   const { pincode, city } = formData?.address || "";
-  const cities = user.type === "EMPLOYEE" ? allCities.filter((city) => city.code === tenantId) : pincode  ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode)) : allCities;
+  const cities =
+    user.type === "EMPLOYEE"
+      ? allCities.filter((city) => city.code === tenantId)
+      : pincode
+      ? allCities.filter((city) => city?.pincode?.some((pin) => pin == pincode))
+      : allCities;
 
   const [selectedCity, setSelectedCity] = useState(() => {
     return formData?.address?.city || null;
@@ -24,7 +29,7 @@ const AssetAddress = ({ t, config, onSelect, userType, formData, formState }) =>
 
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
-     "revenue",
+    "revenue",
     {
       enabled: !!selectedCity,
     },
@@ -32,7 +37,7 @@ const AssetAddress = ({ t, config, onSelect, userType, formData, formState }) =>
   );
 
   const [localities, setLocalities] = useState();
- const [selectedLocality, setSelectedLocality] = useState();
+  const [selectedLocality, setSelectedLocality] = useState();
 
   useEffect(() => {
     if (userType === "employee" && presentInModifyApplication && localities?.length) {
@@ -49,7 +54,6 @@ const AssetAddress = ({ t, config, onSelect, userType, formData, formState }) =>
       }
     }
   }, [cities]);
-
 
   useEffect(() => {
     if (selectedCity && fetchedLocalities) {
@@ -74,8 +78,6 @@ const AssetAddress = ({ t, config, onSelect, userType, formData, formState }) =>
       }
     }
   }, [selectedCity, formData?.address?.pincode, fetchedLocalities]);
-
-  
 
   function selectCity(city) {
     setSelectedLocality(null);
@@ -121,8 +123,8 @@ const AssetAddress = ({ t, config, onSelect, userType, formData, formState }) =>
   useEffect(() => {
     if (userType === "employee") {
       const errorsPresent = !!Object.keys(localFormState.errors).lengtha;
-      if (errorsPresent && !formState.errors?.[config.key]) /*setError(config.key, { type: "required" })*/;
-      else if (!errorsPresent && formState.errors?.[config.key]) /*clearErrors(config.key)*/;
+      if (errorsPresent && !formState.errors?.[config.key]);
+      else if (!errorsPresent && formState.errors?.[config.key] /*clearErrors(config.key)*/);
     }
   }, [localFormState]);
 
@@ -203,8 +205,6 @@ const AssetAddress = ({ t, config, onSelect, userType, formData, formState }) =>
             //labelKey="TENANT_TENANTS"
             disabled={isEditAddress}
             /> */}
-
-    
           </span>
           {selectedCity && localities && <CardLabel>{`${t("AST_LOCALITY")} `}</CardLabel>}
           {selectedCity && localities && (

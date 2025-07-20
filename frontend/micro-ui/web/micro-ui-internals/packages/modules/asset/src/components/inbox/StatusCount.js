@@ -5,7 +5,6 @@ import { CheckBox } from "@mseva/digit-ui-react-components";
 const StatusCount = ({ status, searchParams, onAssignmentChange, statusMap, businessServices }) => {
   const { t } = useTranslation();
 
-
   return (
     <CheckBox
       styles={{ height: "unset" }}

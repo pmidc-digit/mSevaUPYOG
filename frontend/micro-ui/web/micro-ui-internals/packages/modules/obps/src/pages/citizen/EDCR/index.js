@@ -24,7 +24,7 @@ const CreateEDCR = ({ parentRoute }) => {
   function handleSelect(key, data, skipStep, index) {
     setIsSubmitBtnDisable(true);
     const loggedInuserInfo = Digit.UserService.getUser();
-    const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
+    const userInfo = { uuid: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
     let edcrRequest = {
       transactionNumber: "",
       edcrNumber: "",
@@ -45,6 +45,7 @@ const CreateEDCR = ({ parentRoute }) => {
     };
 
     const applicantName = data?.applicantName;
+    const coreArea = data?.coreArea?.code;
     const file = data?.file;
     const tenantId = data?.tenantId?.code;
     const transactionNumber = uuidv4();
@@ -54,6 +55,7 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, tenantId };
     edcrRequest = { ...edcrRequest, transactionNumber };
     edcrRequest = { ...edcrRequest, applicantName };
+    edcrRequest = { ...edcrRequest, coreArea };
     edcrRequest = { ...edcrRequest, appliactionType };
     edcrRequest = { ...edcrRequest, applicationSubType };
 
@@ -96,7 +98,6 @@ const CreateEDCR = ({ parentRoute }) => {
   config.indexRoute = "home";
 
   const EDCRAcknowledgement = Digit?.ComponentRegistryService?.getComponent('EDCRAcknowledgement') ;
-
   return (
     <Switch>
       {config.map((routeObj, index) => {

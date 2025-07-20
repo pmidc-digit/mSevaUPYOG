@@ -1,5 +1,5 @@
 import { Loader } from "@mseva/digit-ui-react-components";
-import React ,{Fragment}from "react";
+import React, { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useRouteMatch } from "react-router-dom";
@@ -15,12 +15,12 @@ const ASSETCreate = ({ parentRoute }) => {
   let config = [];
   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("Asset_Test", {});
 
-  const goNext = (skipStep, index, isAddMultiple, key) => {    
+  const goNext = (skipStep, index, isAddMultiple, key) => {
     let currentPath = pathname.split("/").pop(),
       lastchar = currentPath.charAt(currentPath.length - 1),
       isMultiple = false,
       nextPage;
-      
+
     if (Number(parseInt(currentPath)) || currentPath == "0" || currentPath == "-1") {
       if (currentPath == "-1" || currentPath == "-2") {
         currentPath = pathname.slice(0, -3);
@@ -38,8 +38,7 @@ const ASSETCreate = ({ parentRoute }) => {
       isMultiple = true;
     }
     // let { nextStep = {} } = config.find((routeObj) => routeObj.route === currentPath);
-    let { nextStep = {} } = config.find((routeObj) => routeObj.route === (currentPath || '0'));
-
+    let { nextStep = {} } = config.find((routeObj) => routeObj.route === (currentPath || "0"));
 
     let redirectWithHistory = history.push;
     if (skipStep) {
@@ -53,20 +52,17 @@ const ASSETCreate = ({ parentRoute }) => {
     }
     if (!isNaN(nextStep.split("/").pop())) {
       nextPage = `${match.path}/${nextStep}`;
-    }
-     else {
+    } else {
       nextPage = isMultiple && nextStep !== "map" ? `${match.path}/${nextStep}/${index}` : `${match.path}/${nextStep}`;
     }
 
     redirectWithHistory(nextPage);
   };
 
-
-  if(params && Object.keys(params).length>0 && window.location.href.includes("/info") && sessionStorage.getItem("docReqScreenByBack") !== "true")
-    {
-      clearParams();
-      queryClient.invalidateQueries("AST_CREATE");
-    }
+  if (params && Object.keys(params).length > 0 && window.location.href.includes("/info") && sessionStorage.getItem("docReqScreenByBack") !== "true") {
+    clearParams();
+    queryClient.invalidateQueries("AST_CREATE");
+  }
 
   const astcreate = async () => {
     history.push(`${match.path}/acknowledgement`);
@@ -97,7 +93,7 @@ const ASSETCreate = ({ parentRoute }) => {
     queryClient.invalidateQueries("AST_CREATE");
   };
 
-  let isLoading
+  let isLoading;
 
   if (isLoading) {
     return <Loader />;
@@ -105,18 +101,16 @@ const ASSETCreate = ({ parentRoute }) => {
 
   // commonFields=newConfig;
   /* use newConfig instead of commonFields for local development in case needed */
- let commonFields = newAssetConfig;
+  let commonFields = newAssetConfig;
   commonFields.forEach((obj) => {
     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
   });
-  
+
   config.indexRoute = "info";
 
   const CheckPage = Digit?.ComponentRegistryService?.getComponent("ASTCheckPage");
   const NewResponse = Digit?.ComponentRegistryService?.getComponent("NewResponse");
 
-  
-  
   return (
     <Switch>
       {config.map((routeObj, index) => {
@@ -129,7 +123,6 @@ const ASSETCreate = ({ parentRoute }) => {
         );
       })}
 
-      
       <Route path={`${match.path}/check`}>
         <CheckPage onSubmit={astcreate} value={params} />
       </Route>

@@ -234,37 +234,56 @@ const FillSurvey = ({ stateCode }) => {
     if (proceed) {
       console.log("Form submitted:", formData);
       console.log("reg", formData.register, formData.citizenFound);
+      if ((formData.register === false || formData.register === null) && (formData.citizenFound === true)) {
+        // handleNext();
+        // const updateddata = {
+         
+        //   name: formData.name,
+        //   gender: formData.gender,
+        //   emailId: formData.email,
+        //   dob: formData.dob
+        // };
+        // const data={
+        //   ...formData.user,
+        //   ...updateddata
+        // }
+      
 
-      console.log("getUser", getUser);
+        // Digit.UserService.updateUser(data, stateCode)
+        //   .then((response) => {
+        //     console.log("response", response);
 
-      const existingUser = formData.user;
+        //     if ((response?.responseInfo?.status === "200" || response?.responseInfo?.status === "201") && response?.user.length > 0) {
 
-      if ((formData.register === false || formData.register === null) && formData.citizenFound === true) {
-        const isEmailChanged = formData.email && formData.email !== existingUser?.emailId;
-        const isGenderChanged = formData.gender && formData.gender !== existingUser?.gender;
-        const isDobChanged = formData.dob && formData.dob !== existingUser?.dob;
+        //       // setFormData((prevData) => ({
+        //       //   ...prevData,
+        //       //   "citizenFound": true,
+        //       //   "name": response.user[0]?.name,
+        //       //   ["email"]: response.user[0]?.email,
+        //       //   ["gender"]: response.user[0]?.gender,
+        //       //   ["dob"]: response.user[0]?.dob,
+        //       //   "register": false,
+        //       //   // "city": response.user[0]?.permanentCity,
+        //       //   "user": response.user[0],
+        //       // }));
+        //       history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
+        //         citizenFill: true,
+        //         citizenData: formData,
+        //         userInfo: formData.user,
+        //         surveyDetails: surveyDetails,
+        //         userType: location.state?.userType
+        //       });
 
-        // Only call API if something has changed
-        if (isEmailChanged || isGenderChanged || isDobChanged) {
-          const requestData = {
-            ...getUser,
-            ...(isEmailChanged && { emailId: formData.email }),
-            ...(isGenderChanged && { gender: formData.gender }),
-            ...(isDobChanged && { dob: formData.dob }),
-          };
-          try {
-            const { responseInfo, user } = await Digit.UserService.updateUser(requestData, getUser?.tenantId);
-            console.log("User updated:", user);
-          } catch (error) {
-            console.error("Error updating user:", error);
-            setShowToast({ key: true, isError: true, label: "FAILED TO UPDATE USER INFORMATION" });
-            return;
-          }
-        } else {
-          console.log("No user info changed. Skipping API call.");
-        }
 
-        console.log("formData", formData);
+        //     } else {
+
+        //       setShowToast({ key: true, isError: true, label: `CITIZEN DETAILS NOT UPDTAED` });
+
+        //     }
+        //   })
+        //   .catch((error) => {
+        //     console.log(error);
+        //   });
 
         history.push("/digit-ui/employee/engagement/surveys/fill-survey", {
           citizenFill: true,

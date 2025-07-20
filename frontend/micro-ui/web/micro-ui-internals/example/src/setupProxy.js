@@ -97,14 +97,6 @@ module.exports = function (app) {
     "/asset-services/v1/assets/depreciation/_process",
     "/asset-services/v1/assets/depreciation/list",
     "/asset-services/v1/disposal/_create",
-    "/asset-services/maintenance/v1/_create",
-    "/asset-services/maintenance/v1/_update",
-    "/asset-services/maintenance/v1/_search",
-    "/asset-services/v1/disposal/_search",
-    "/asset-services/v1/assets/assignment/_search",
-    "/pgr-ai-services/v1/request/_create",
-    "/pgr-ai-services/v1/request/_search",
-    "/pgr-ai-services/v1/request/_update",
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

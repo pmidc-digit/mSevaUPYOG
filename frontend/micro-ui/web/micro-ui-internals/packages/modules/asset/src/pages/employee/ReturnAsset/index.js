@@ -13,33 +13,26 @@ const ReturnAsset = () => {
   const history = useHistory();
   const { id: applicationNo } = useParams();
   const { data: applicationDetails } = Digit.Hooks.asset.useAssetApplicationDetail(t, tenantId, applicationNo);
-  console.log('Data is application from Hook:- ', applicationDetails);
-   const [_formData, setFormData,_clear] = Digit.Hooks.useSessionStorage("store-data",null);
-   const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
-  const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", { });
-
+  console.log("Data is application from Hook:- ", applicationDetails);
+  const [_formData, setFormData, _clear] = Digit.Hooks.useSessionStorage("store-data", null);
+  const [mutationHappened, setMutationHappened, clear] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_HAPPENED", false);
+  const [successData, setsuccessData, clearSuccessData] = Digit.Hooks.useSessionStorage("EMPLOYEE_MUTATION_SUCCESS_DATA", {});
 
   const convertToEpoch = (dateString) => {
     const [year, month, day] = dateString.split("-").map(Number);
     return new Date(year, month - 1, day).getTime();
   };
 
- 
-
   useEffect(() => {
     setMutationHappened(false);
     clearSuccessData();
   }, []);
 
-  
-
   const onFormValueChange = (setValue, formData, formState) => {
-    
-    setSubmitValve(!Object.keys(formState.errors).length); 
+    setSubmitValve(!Object.keys(formState.errors).length);
   };
 
   const onSubmit = (data) => {
-    console.log('Return Asset is comming complier!  :-  ', data);
     const returnDateEpoch = convertToEpoch(data?.returndetails?.[0]?.returnDate);
     const formData = {
       id: applicationDetails?.applicationData?.applicationData?.id,
@@ -50,56 +43,43 @@ const ReturnAsset = () => {
         assetId: "",
         assignedUserName: applicationDetails?.applicationData?.applicationData?.assetAssignment?.assignedUserName,
         designation: applicationDetails?.applicationData?.applicationData?.assetAssignment?.designation || "",
-        department: applicationDetails?.applicationData?.applicationData?.assetAssignment?.department || "",    //later we need to send the procured department here.
+        department: applicationDetails?.applicationData?.applicationData?.assetAssignment?.department || "", //later we need to send the procured department here.
         assignedDate: applicationDetails?.applicationData?.applicationData?.assetAssignment?.assignedDate,
-        employeeCode:applicationDetails?.applicationData?.applicationData?.assetAssignment?.employeeCode,
+        employeeCode: applicationDetails?.applicationData?.applicationData?.assetAssignment?.employeeCode,
         isAssigned: false,
         returnDate: returnDateEpoch,
         auditDetails: {
           createdBy: "",
           lastModifiedBy: "",
           createdTime: "",
-          lastModifiedTime: ""
-        }
-      },   
+          lastModifiedTime: "",
+        },
+      },
     };
 
-    history.replace("/digit-ui/employee/asset/assetservice/return-response", { Asset: formData }); 
-    
-
+    history.replace("/digit-ui/employee/asset/assetservice/return-response", { Asset: formData });
   };
-    
 
-   
-  
+  const configs = returnConfig;
 
-  
-  const configs = returnConfig;    
-
-  
   return (
     <FormComposer
       heading={t("AST_RETURN_ASSET")}
       isDisabled={!canSubmit}
       label={t("ES_COMMON_APPLICATION_SUBMIT")}
       config={configs.map((config) => {
-       
         return {
           ...config,
           body: config.body.filter((a) => !a.hideInEmployee),
         };
       })}
       fieldStyle={{ marginRight: 0 }}
-      cardStyle={{Width: 60}}
+      cardStyle={{ Width: 60 }}
       onSubmit={onSubmit}
       defaultValues={defaultValues}
       onFormValueChange={onFormValueChange}
-     
     />
   );
 };
 
 export default ReturnAsset;
-
-
-

@@ -7,7 +7,6 @@ import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails
 // import getAssetAcknowledgementData from "../../getAssetAcknowledgementData";
 import getAssetAcknowledgementData from "../../getAssetAcknowledgementData";
 
-
 const ApplicationDetails = () => {
   const { t } = useTranslation();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -20,9 +19,7 @@ const ApplicationDetails = () => {
   const [enableAudit, setEnableAudit] = useState(false);
   const [businessService, setBusinessService] = useState("asset-create");
 
-
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.asset.useAssetApplicationDetail(t, tenantId, applicationNo);
-
 
   const {
     isLoading: updatingApplication,
@@ -32,26 +29,17 @@ const ApplicationDetails = () => {
     mutate,
   } = Digit.Hooks.asset.useASSETApplicationAction(tenantId);
 
-
-
-
-
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: applicationDetails?.applicationData?.tenantId || tenantId,
     id: applicationDetails?.applicationData?.applicationData?.applicationNo,
     moduleCode: businessService,
-    role: ["ASSET_INITIATOR", "ASSET_VERIFIER", "ASSET_APPROVER"]
+    role: ["ASSET_INITIATOR", "ASSET_VERIFIER", "ASSET_APPROVER"],
   });
 
-
-
-  const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.asset.useASSETSearch(
-    {
-      tenantId,
-      filters: { applicationNo: applicationNo, audit: true },
-    },
-  );
-
+  const { isLoading: auditDataLoading, isError: isAuditError, data: auditData } = Digit.Hooks.asset.useASSETSearch({
+    tenantId,
+    filters: { applicationNo: applicationNo, audit: true },
+  });
 
   const closeToast = () => {
     setShowToast(null);
@@ -60,19 +48,17 @@ const ApplicationDetails = () => {
   useEffect(() => {
     if (applicationDetails) {
       setAppDetailsToShow(_.cloneDeep(applicationDetails));
-     
     }
   }, [applicationDetails]);
 
-
-
   useEffect(() => {
-
-    if (workflowDetails?.data?.applicationBusinessService && !(workflowDetails?.data?.applicationBusinessService === "asset-create" && businessService === "asset-create")) {
+    if (
+      workflowDetails?.data?.applicationBusinessService &&
+      !(workflowDetails?.data?.applicationBusinessService === "asset-create" && businessService === "asset-create")
+    ) {
       setBusinessService(workflowDetails?.data?.applicationBusinessService);
     }
   }, [workflowDetails.data]);
-
 
   const handleDownloadPdf = async () => {
     const Assets = appDetailsToShow?.applicationData;
@@ -87,8 +73,6 @@ const ApplicationDetails = () => {
     onClick: () => handleDownloadPdf(),
   };
   let dowloadOptions = [AssetDetailsPDF];
-
-
 
   return (
     <div>
@@ -107,14 +91,11 @@ const ApplicationDetails = () => {
         )}
       </div> */}
 
-
-
-
       <ApplicationDetailsTemplate
         applicationDetails={appDetailsToShow?.applicationData}
         isLoading={isLoading}
         isDataLoading={isLoading}
-        applicationData={appDetailsToShow?.applicationData?.applicationData}  
+        applicationData={appDetailsToShow?.applicationData?.applicationData}
         mutate={mutate}
         workflowDetails={workflowDetails}
         businessService={businessService}
@@ -127,7 +108,6 @@ const ApplicationDetails = () => {
         statusAttribute={"state"}
         MenuStyle={{ color: "#FFFFFF", fontSize: "18px" }}
       />
-
     </div>
   );
 };

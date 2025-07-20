@@ -29,7 +29,7 @@ const BannerPicker = ({ data, action, isSuccess, isEmployee, t }) => {
 
 const AssetDisposeResponse = (props) => {
   const location = useLocation();
-  const { AssetDisposal, applicationNo } = location.state || {};
+  const { AssetDisposal } = location.state || {};
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const history = useHistory();
@@ -37,15 +37,12 @@ const AssetDisposeResponse = (props) => {
   const [showToast, setShowToast] = useState(null);
   const [enableAudit, setEnableAudit] = useState(false);
   const [successData, setSuccessData] = useState(null);
-  const [applicationDetail, setApplicationDetail] = useState(null);
 
   useEffect(() => {
     if (AssetDisposal && AssetDisposal.ResponseInfo.status === "successful") {
       setSuccessData(AssetDisposal.AssetDisposals[0]);
-      setApplicationDetail(applicationNo);
-
     }
-  }, [AssetDisposal, applicationDetail]);
+  }, [AssetDisposal]);
 
   const closeToast = () => {
     setShowToast(null);
@@ -56,21 +53,10 @@ const AssetDisposeResponse = (props) => {
     <div>
       <Card>
         {successData ? (
-          <BannerPicker
-            t={t}
-            data={successData}
-            action={props.action}
-            isSuccess={true}
-            isEmployee={props.parentRoute.includes("employee")}
-          />
+          <BannerPicker t={t} data={successData} action={props.action} isSuccess={true} isEmployee={props.parentRoute.includes("employee")} />
         ) : (
           <Loader />
         )}
-        <div style={{ padding: "10px", paddingBottom: "10px", display: "flex", justifyContent: "center", alignItems: "center" }}>
-          <Link to={`${props.parentRoute}/assetservice/applicationsearch/application-details/${applicationDetail}`} >
-            <SubmitBar label={t("AST_DISPOSEL_LIST")} />
-          </Link>
-        </div>
       </Card>
       {showToast && <Toast error={showToast.key === "error"} label={error} onClose={closeToast} />}
       <ActionBar>

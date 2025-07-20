@@ -71,13 +71,13 @@ const CheckPage = ({ onSubmit, value }) => {
             </StatusTable>
           </Card>
           <Card style={{ paddingRight: "16px" }}>
-            <StatusTable>
-              <CardHeader styles={{ fontSize: "24px" }}>{t(`BPA_LICENSE_DETAILS_LABEL`)}</CardHeader>
-              <LinkButton
-                label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
-                style={{ width: "100px", display: "inline" }}
-                onClick={() => routeTo(`${routeLink}/provide-license-type`)}
-              />
+          <StatusTable>
+            <CardHeader styles={{ fontSize: "24px" }}>{t(`BPA_LICENSE_DETAILS_LABEL`)}</CardHeader>
+            <LinkButton
+              label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
+              style={{ width: "100px", display: "inline" }}
+              onClick={() => routeTo(`${routeLink}/provide-license-type`)}
+            />
               <Row
                 className="border-none"
                 label={t(`BPA_LICENSE_TYPE`)}
@@ -90,13 +90,13 @@ const CheckPage = ({ onSubmit, value }) => {
             </StatusTable>
           </Card>
           <Card style={{ paddingRight: "16px" }}>
-            <StatusTable>
-              <CardHeader styles={{ fontSize: "24px" }}>{t(`BPA_LICENSE_DET_CAPTION`)}</CardHeader>
-              <LinkButton
-                label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
-                style={{ width: "100px", display: "inline" }}
-                onClick={() => routeTo(`${routeLink}/license-details`)}
-              />
+          <StatusTable>
+            <CardHeader styles={{ fontSize: "24px" }}>{t(`BPA_LICENSE_DET_CAPTION`)}</CardHeader>
+            <LinkButton
+              label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
+              style={{ width: "100px", display: "inline" }}
+              onClick={() => routeTo(`${routeLink}/license-details`)}
+            />
               <Row
                 className="border-none"
                 label={t(`BPA_APPLICANT_NAME_LABEL`)}
@@ -110,56 +110,54 @@ const CheckPage = ({ onSubmit, value }) => {
             </StatusTable>
           </Card>
           <Card style={{ paddingRight: "16px" }}>
-            <StatusTable>
-              <div style={{ marginRight: "24px" }}>
-                <CardHeader styles={{ fontSize: "24px" }}>{t(`BPA_LICENSEE_PERMANENT_LABEL`)}</CardHeader>
-              </div>
-              <LinkButton
-                label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
-                style={{ width: "100px", display: "inline" }}
-                onClick={() => routeTo(`${routeLink}/Permanent-address`)}
-              />
-              <CardText style={isMobile ? { color: "black" } : { color: "black", fontSize: "16px" }}>
-                {t(formData?.LicneseDetails?.PermanentAddress)}
-              </CardText>
+          <StatusTable>
+            <div style={{ marginRight: "24px" }}>
+              <CardHeader styles={{ fontSize: "24px" }}>{t(`BPA_LICENSEE_PERMANENT_LABEL`)}</CardHeader>
+            </div>
+            <LinkButton
+              label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
+              style={{ width: "100px", display: "inline" }}
+              onClick={() => routeTo(`${routeLink}/Permanent-address`)}
+            />
+            <CardText style={isMobile ? {color:"black"} : {color:"black", fontSize:"16px"}}>{t(formData?.LicneseDetails?.PermanentAddress)}</CardText>
             </StatusTable>
           </Card>
           <Card style={{ paddingRight: "16px" }}>
-            <StatusTable>
-              <div style={{ marginRight: "24px" }}>
-                <CardHeader styles={{ fontSize: "24px" }}>{t(`BPA_COMMUNICATION_ADDRESS_HEADER_DETAILS`)}</CardHeader>
-              </div>
-              <LinkButton
-                label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
-                style={{ width: "100px", display: "inline" }}
-                onClick={() => routeTo(`${routeLink}/correspondence-address`)}
-              />
-              <CardText style={isMobile ? { color: "black" } : { color: "black", fontSize: "16px" }}>{t(value?.Correspondenceaddress)}</CardText>
+          <StatusTable>
+            <div style={{ marginRight: "24px" }}>
+              <CardHeader styles={{ fontSize: "24px" }}>{t(`BPA_COMMUNICATION_ADDRESS_HEADER_DETAILS`)}</CardHeader>
+            </div>
+            <LinkButton
+              label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
+              style={{ width: "100px", display: "inline" }}
+              onClick={() => routeTo(`${routeLink}/correspondence-address`)}
+            />
+            <CardText style={isMobile ? {color:"black"} : {color:"black", fontSize:"16px"}}>{t(value?.Correspondenceaddress)}</CardText>
             </StatusTable>
           </Card>
           <Card style={{ paddingRight: "16px" }}>
-            <StatusTable>
-              <CardHeader styles={{ fontSize: "24px" }}>{t("BPA_DOC_DETAILS_SUMMARY")}</CardHeader>
-              <LinkButton
-                label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
-                style={{ width: "100px", display: "inline" }}
-                onClick={() => routeTo(`${routeLink}/stakeholder-document-details`)}
-              />
-              {documents?.documents.map((doc, index) => (
-                <div key={index}>
-                  <CardSectionHeader styles={{ fontSize: "18px" }}>{t(`BPAREG_HEADER_${doc?.documentType?.replace(".", "_")}`)}</CardSectionHeader>
-                  {doc?.info ? (
-                    <div style={{ fontSize: "12px", color: "#505A5F", fontWeight: 400, lineHeight: "15px" }}>{`${t(doc?.info)}`}</div>
+          <StatusTable>
+            <CardHeader styles={{ fontSize: "24px" }}>{t("BPA_DOC_DETAILS_SUMMARY")}</CardHeader>
+            <LinkButton
+              label={<EditIcon style={{ marginTop: "-15px", float: "right", position: "relative", bottom: "32px" }} />}
+              style={{ width: "100px", display: "inline" }}
+              onClick={() => routeTo(`${routeLink}/stakeholder-document-details`)}
+            />
+            {documents?.documents.map((doc, index) => (
+              <div key={index}>
+                <CardSectionHeader styles={{ fontSize: "18px" }}>{t(`BPAREG_HEADER_${doc?.documentType?.replace(".", "_")}`)}</CardSectionHeader>
+                {doc?.info ? (
+                  <div style={{ fontSize: "12px", color: "#505A5F", fontWeight: 400, lineHeight: "15px" }}>{`${t(doc?.info)}`}</div>
+                ) : null}
+                <StatusTable>
+                  <OBPSDocument value={value} Code={doc?.documentType} index={index} isNOC={false} svgStyles={{}} isStakeHolder={true} />
+                  {documents?.documents?.length != index + 1 ? (
+                    <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
                   ) : null}
-                  <StatusTable>
-                    <OBPSDocument value={value} Code={doc?.documentType} index={index} isNOC={false} svgStyles={{}} isStakeHolder={true} />
-                    {documents?.documents?.length != index + 1 ? (
-                      <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-                    ) : null}
-                  </StatusTable>
-                </div>
-              ))}
-            </StatusTable>
+                </StatusTable>
+              </div>
+            ))}
+          </StatusTable>
           </Card>
           <Card style={{ paddingRight: "16px" }}>
             <CardHeader styles={{ fontSize: "24px" }}>{t("BPA_SUMMARY_FEE_EST")}</CardHeader>

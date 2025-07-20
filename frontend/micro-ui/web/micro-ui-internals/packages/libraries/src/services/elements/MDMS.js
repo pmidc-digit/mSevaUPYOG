@@ -547,39 +547,6 @@ const BPAUlbType = (MdmsRes) => {
     };
   });
 };
-
-const getAssetDocuments = (MdmsRes) => {
-  MdmsRes["ASSET"].Documents.filter((Documents) => Documents.active).map((dropdownData) => {
-    return {
-      ...Documents,
-      i18nKey: `${dropdownData.code}`,
-    };
-  });
-};
-const Asset_Classification = (MdmsRes) => {
-  MdmsRes["ASSET"].assetClassification.filter((assetClassification) => assetClassification.active).map((asset_mdms) => {
-    return {
-      ...asset_mdms,
-      i18nKey: `ASSET_CLASS_${asset_mdms.code}`,
-    };
-  });
-};
-const getAssetSubParent = (MdmsRes) => {
-  return MdmsRes["ASSET"].assetCategory.filter((assetCategory) => assetCategory.active).map((assetsubparentDetails) => {
-    return {
-      ...assetsubparentDetails,
-      i18nKey: `ASSET_SUB_CLASSIFIED_${assetsubparentDetails.code}`,
-    };
-  })};
-
-  const getAssetClassification = (MdmsRes) => {
-  return MdmsRes["ASSET"].assetClassification.filter((assetClassification) => assetClassification.active).map((assetDetails) => {
-    return {
-      ...assetDetails,
-      i18nKey: `ASSET_CLASSIFIED_${assetDetails.code}`,
-    };
-  })};
-
 /////////////
 
 const getCommonFieldsCriteria = (tenantId, moduleCode, type) => ({
@@ -1309,73 +1276,6 @@ const GetEgovLocations = (MdmsRes) => {
   }));
 };
 
-//Adding Asset Document
-const getAssetDocumentsCategory = (tenantId, moduleCode) => ({
-  details: {
-    tenantId: tenantId,
-    moduleDetails: [
-      {
-        moduleName: moduleCode,
-        masterDetails: [
-          {
-            name: "Documents",
-          },
-        ],
-      },
-    ],
-  },
-});
-
-const getAssetSubParentList = (tenantId, moduleCode, type) => ({
-  type,
-  details: {
-    tenantId,
-    moduleDetails: [
-      {
-        moduleName: moduleCode,
-        masterDetails: [
-          {
-            name: "assetCategory",
-          },
-        ],
-      },
-    ],
-  },
-});
-
-const getAssetClassificationList = (tenantId, moduleCode, type) => ({
-  type,
-  details: {
-    tenantId,
-    moduleDetails: [
-      {
-        moduleName: moduleCode,
-        masterDetails: [
-          {
-            name: "assetClassification",
-          },
-        ],
-      },
-    ],
-  },
-});
-const getAssetcommonList = (tenantId, moduleCode, type) => ({
-  type,
-  details: {
-    tenantId,
-    moduleDetails: [
-      {
-        moduleName: moduleCode,
-        masterDetails: [
-          {
-            name: "AssetCommonDetail",
-          },
-        ],
-      },
-    ],
-  },
-});
-
 const GetServiceDefs = (MdmsRes, moduleCode) => MdmsRes[`RAINMAKER-${moduleCode}`].ServiceDefs.filter((def) => def.active);
 
 const GetSwachBharatCategory = (MdmsRes, moduleCode) => MdmsRes[`SwachReform`].SwachBharatCategory.filter((def) => def.active);
@@ -1683,24 +1583,6 @@ const GetReceivedPaymentType = (MdmsRes) => {
   });
 };
 
-const Assetcommondetail = (MdmsRes) => {
-  MdmsRes["ASSET"].AssetCommonDetail.filter((AssetCommonDetail) => AssetCommonDetail.active).map((asset_mdms_common) => {
-    return {
-      ...asset_mdms_common,
-      i18nKey: `ASSET_SUB_PARENT_CATEGORY_${asset_mdms_common.code}`,
-    };
-  });
-};
-
-const AssetSubTypeParent = (MdmsRes) => {
-  MdmsRes["ASSET"].assetCategory.filter((assetCategory) => assetCategory.active).map((asset_sub_type_mdms) => {
-    return {
-      ...asset_sub_type_mdms,
-      i18nKey: `ASSET_SUB_PARENT_CATEGORY_${asset_sub_type_mdms.code}`,
-    };
-  });
-};
-
 const getDssDashboard = (MdmsRes) => MdmsRes["dss-dashboard"]["dashboard-config"];
 
 const GetRoleStatusMapping = (MdmsRes) => MdmsRes["DIGIT-UI"].RoleStatusMapping;
@@ -1850,21 +1732,6 @@ const transformResponse = (type, MdmsRes, moduleCode, tenantId) => {
 
     case "BPAUlbType":
       return BPAUlbType(MdmsRes);
-    case "Documents":
-      return getAssetDocuments(MdmsRes);
-
-    case "assetCategory":
-      return getAssetSubParent(MdmsRes);
-    case "assetClassification":
-      return getAssetClassification(MdmsRes); 
-
-    case "Asset_Classification":
-        return Asset_Classification(MdmsRes);
-    case "Assetcommondetail":
-      return Assetcommondetail(MdmsRes);
-
-    case "AssetSubTypeParent":
-      return AssetSubTypeParent(MdmsRes);
 
     default:
       return MdmsRes;
@@ -2249,22 +2116,5 @@ export const MdmsService = {
   },
   getStaticDataJSON: (tenantId) => {
     return MdmsService.call(tenantId, getStaticData());
-  },
-  getAssetDocuments: (tenantId, moduleCode) => {
-    return MdmsService.getDataByCriteria(tenantId, getAssetDocumentsCategory(tenantId, moduleCode), moduleCode);
-  },
-
-  AssetSubTypeParent: (tenantId, moduleCode, type) => {
-    return MdmsService.getDataByCriteria(tenantId, getAssetSubParentList(tenantId, moduleCode, type), moduleCode);
-  },
-
-  getAssetClassification: (tenantId, moduleCode, type) => {
-    return MdmsService.getDataByCriteria(tenantId, getAssetClassificationList(tenantId, moduleCode, type), moduleCode);
-  },
-  Asset_Classification: (tenantId, moduleCode, type) => {
-    return MdmsService.getDataByCriteria(tenantId, getAssetClassificationList(tenantId, moduleCode, type), moduleCode);
-  },
-  Assetcommondetail: (tenantId, moduleCode, type) => {
-    return MdmsService.getDataByCriteria(tenantId, getAssetcommonList(tenantId, moduleCode, type), moduleCode);
   },
 };

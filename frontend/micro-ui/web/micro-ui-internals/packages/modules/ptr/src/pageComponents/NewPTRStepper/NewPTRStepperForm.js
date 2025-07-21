@@ -3,9 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 //
-import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
-import { citizenConfig } from "../../../../config/Create/citizenStepperConfig";
-import { SET_PTRNewApplication_STEP, RESET_PTR_NEW_APPLICATION_FORM } from "../../../../redux/action/PTRNewApplicationActions";
+// import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
+import Stepper from "../../../../../react-components/src/customComponents/Stepper";
+import { citizenConfig } from "../../config/Create/citizenStepperConfig";
+import { SET_PTRNewApplication_STEP, RESET_PTR_NEW_APPLICATION_FORM } from "../../redux/action/PTRNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
@@ -21,7 +22,7 @@ const createEmployeeConfig = [
     key: "ownerss",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "PTR_COMMON_NEXT",
+      submitBarLabel: "CS_COMMON_NEXT",
     },
   },
   {
@@ -34,7 +35,7 @@ const createEmployeeConfig = [
     key: "pets",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "PTR_COMMON_NEXT",
+      submitBarLabel: "CS_COMMON_NEXT",
     },
   },
   {
@@ -47,7 +48,7 @@ const createEmployeeConfig = [
     key: "documents",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "PTR_COMMON_NEXT",
+      submitBarLabel: "CS_COMMON_NEXT",
     },
   },
   {
@@ -60,7 +61,7 @@ const createEmployeeConfig = [
     key: "summary",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "PTR_COMMON_SUBMITe",
+      submitBarLabel: "CS_COMMON_SUBMIT",
     },
   },
 

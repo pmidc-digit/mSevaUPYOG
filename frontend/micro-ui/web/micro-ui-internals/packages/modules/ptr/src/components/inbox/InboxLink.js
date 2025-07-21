@@ -8,10 +8,9 @@ const InboxLinks = ({ parentRoute, businessService }) => {
 
   const allLinks = [
     {
-      text: "ES_TITLE_NEW_PET_REGISTRATION",
-      link: "/digit-ui/employee/ptr/new-application",
-      businessService: "ptr",
-      roles: ["PT_CEMP"],
+      text: t("ES_TITLE_NEW_PET_REGISTRATION"),
+      link: "/digit-ui/employee/ptr/petservice/new-application",
+      roles: [],
     },
     {
       text: "PTR_SEARCH_PET",
@@ -34,9 +33,7 @@ const InboxLinks = ({ parentRoute, businessService }) => {
   const { roles: userRoles } = Digit.UserService.getUser().info;
 
   useEffect(() => {
-    let linksToShow = allLinks
-      .filter((e) => e.businessService === businessService)
-      .filter(({ roles }) => roles.some((e) => userRoles.map(({ code }) => code).includes(e)) || !roles?.length);
+    let linksToShow = allLinks;
     setLinks(linksToShow);
   }, []);
 

@@ -8,7 +8,6 @@ import Inbox from "./Inbox";
 import SearchApp from "./SearchApp";
 
 const EmployeeApp = ({ path, url, userType }) => {
-  console.log("before coming here");
   const { t } = useTranslation();
   const location = useLocation();
   const mobileView = innerWidth <= 640;
@@ -54,6 +53,7 @@ const EmployeeApp = ({ path, url, userType }) => {
     return <BreadCrumb style={isMobile ? { display: "flex" } : {}} spanStyle={{ maxWidth: "min-content" }} crumbs={crumbs} />;
   };
 
+  const PTRCreate = Digit?.ComponentRegistryService?.getComponent("NewPTRStepperForm");
   const NewApplication = Digit?.ComponentRegistryService?.getComponent("PTRNewApplication");
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
 
@@ -91,7 +91,7 @@ const EmployeeApp = ({ path, url, userType }) => {
               />
             )}
           />
-          <PrivateRoute path={`${path}/petservice/new-application`} component={() => <NewApplication parentUrl={url} />} />
+          <PrivateRoute path={`${path}/petservice/new-application`} component={PTRCreate} />
           <PrivateRoute path={`${path}/petservice/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute
             path={`${path}/petservice/applicationsearch/application-details/:id`}

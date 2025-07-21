@@ -14,16 +14,15 @@ const InboxLinks = ({ parentRoute, businessService }) => {
     },
     {
       text: "PTR_SEARCH_PET",
-      link: `/digit-ui/employee/ptr/search`,
-      businessService: "ptr",
+      link: `/digit-ui/employee/ptr/petservice/search`,
       roles: [],
     },
-    {
-      text: "PTR_COMMON_APPLICATION_SEARCH",
-      link: `/digit-ui/employee/ptr/application-search`,
-      businessService: "ptr",
-      roles: [],
-    },
+    // {
+    //   text: "PTR_COMMON_APPLICATION_SEARCH",
+    //   link: `/digit-ui/employee/ptr/application-search`,
+    //   businessService: "ptr",
+    //   roles: [],
+    // },
     // { text: "PT_REPORTS", hyperLink: true, link: "/digit-ui/employee/integration/dss/propertytax", roles: [], businessService: "PT" },
     // { text: "PT_DASHBOARD", link: "/digit-ui/employee/", roles: [], businessService: "PT" },
   ];

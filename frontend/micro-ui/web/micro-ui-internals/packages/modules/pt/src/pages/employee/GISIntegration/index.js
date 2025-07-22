@@ -25,7 +25,7 @@ export const GISIntegration = () => {
         }
 
         history.push({
-            pathname: "/digit-ui/citizen/pt/property/create-application",
+            pathname: "/digit-ui/employee/pt/create-application",
             state : state
         })
     },[])

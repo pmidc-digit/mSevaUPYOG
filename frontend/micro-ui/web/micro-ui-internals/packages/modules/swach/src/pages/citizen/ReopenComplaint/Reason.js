@@ -23,7 +23,10 @@ const ReasonPage = (props) => {
     if (selected === null) {
       setValid(false);
     } else {
-      history.push(`${props.match.path}/upload-photo/${id}`);
+      const basePath = window.location.pathname.split("/reopen/")[0];
+      const complaintId = id;
+      const newURL = `${basePath}/reopen/upload-photo/${complaintId}`;
+      history.push(newURL);
     }
   }
 
@@ -31,21 +34,16 @@ const ReasonPage = (props) => {
     <Card>
       <CardHeader>{t(`${LOCALIZATION_KEY.CS_REOPEN}_COMPLAINT`)}</CardHeader>
       <CardText>
-        {/* Select the option related to your complaint from the list given below.
-        If the complaint type you are looking for is not listed select others.{" "} */}
-        {/* {t(`${TRANSLATION_KEY}_OPTION_ONE`)} */}
       </CardText>
       {valid ? null : <CardLabelError>{t(`${LOCALIZATION_KEY.CS_ADDCOMPLAINT}_ERROR_REOPEN_REASON`)}</CardLabelError>}
       <RadioButtons
-        // handleChange={onRadioChange}
         onSelect={onRadioChange}
         selectedOption={selected}
-        // selected={(value) => setSelected(value)}
         options={[
-          t(`${LOCALIZATION_KEY.CS_REOPEN}_OPTION_ONE`),
-          t(`${LOCALIZATION_KEY.CS_REOPEN}_OPTION_TWO`),
-          t(`${LOCALIZATION_KEY.CS_REOPEN}_OPTION_THREE`),
-          t(`${LOCALIZATION_KEY.CS_REOPEN}_OPTION_FOUR`),
+          t(`${LOCALIZATION_KEY.CS_REOPEN}_NO_ACTION_TAKEN`),
+          t(`${LOCALIZATION_KEY.CS_REOPEN}_ISSUE_NOT_RESOLVED`),
+          t(`${LOCALIZATION_KEY.CS_REOPEN}_PARTIAL_RESOLUTION`),
+          t(`${LOCALIZATION_KEY.CS_REOPEN}_PROBLEM_RECURRED`),
         ]}
       />
 

@@ -23,7 +23,7 @@ const ViewAttendence = () => {
     const userInfo = Digit.SessionStorage.get("User")?.info;
   const { t } = useTranslation();
   const user =  userInfo?.uuid
-  const tenantId = "pb.testing";
+  const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
   const [addresses, setAddresses] = useState({});
  const getTodayTimestamp = () => {
     const today = new Date();

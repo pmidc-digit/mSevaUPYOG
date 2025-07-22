@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState, Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useHistory, Redirect } from "react-router-dom";
@@ -62,7 +62,7 @@ const AddtionalDetails = (props) => {
   function reopenComplaint() {
     setShowToast(false)
     let reopenDetails = Digit.SessionStorage.get(`reopen.${id}`);
-    if (complaintDetails) {
+    if (complaintDetails && complaintDetails.service) {
       complaintDetails.workflow = getUpdatedWorkflow(
         reopenDetails,
         // complaintDetails,

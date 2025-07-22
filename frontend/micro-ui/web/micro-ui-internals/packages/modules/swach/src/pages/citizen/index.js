@@ -23,7 +23,7 @@ const App = () => {
   const Response = Digit?.ComponentRegistryService?.getComponent("SWACHResponseCitzen");
   const AttendencePage = Digit?.ComponentRegistryService?.getComponent("Attendence");
   const ViewAttendence = Digit?.ComponentRegistryService?.getComponent("ViewAttendence");
-
+ const ReopenComplaint = Digit?.ComponentRegistryService?.getComponent("SWACHReopenComplaint");
   return (
     <React.Fragment>
       <div className="pgr-citizen-wrapper">
@@ -35,6 +35,7 @@ const App = () => {
           <PrivateRoute path={`${path}/complaints/:id*`} component={ComplaintDetailsPage} />
           <PrivateRoute path={`${path}/Attendence`} component={AttendencePage} />
           <PrivateRoute path={`${path}/ViewAttendence`} component={ViewAttendence} />
+          <PrivateRoute path={`${path}/reopen/:id*`} component={() => <ReopenComplaint match={{ ...match, url, path: `${path}/reopen` }} parentRoute={path} />} />
           {/* <PrivateRoute
             path={`${path}/reopen`}
             component={() => <ReopenComplaint match={{ ...match, url, path: `${path}/reopen` }} parentRoute={path} />}

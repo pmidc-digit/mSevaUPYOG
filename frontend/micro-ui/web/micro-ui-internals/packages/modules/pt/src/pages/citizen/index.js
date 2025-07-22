@@ -6,6 +6,7 @@ import Search from "../employee/Search";
 import { useTranslation } from "react-i18next";
 import { PTMyPayments } from "./MyPayments";
 import PaymentDetails from "../../utils/PaymentDetails"
+
 const hideBackButtonConfig = [
   { screenPath: "property/new-application/acknowledgement" },
   { screenPath: "property/edit-application/acknowledgement" },
@@ -29,14 +30,22 @@ const App = () => {
   const MutateProperty = Digit?.ComponentRegistryService?.getComponent("PTMutateProperty");
   const PropertyInformation = Digit?.ComponentRegistryService?.getComponent("PropertyInformation");
   const PropertyOwnerHistory = Digit?.ComponentRegistryService?.getComponent("PropertyOwnerHistory");
-  const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("PTAssessmentDetails");
+  const AssessmentDetails = Digit?.ComponentRegistryService?.getComponent("AssessmentDetailsCitizen");
+  const NewApplicationCitizen = Digit?.ComponentRegistryService?.getComponent("NewApplicationCitizen");
+  const CreateEmployeeStepForm= Digit?.ComponentRegistryService?.getComponent("CreateEmployeeStepForm");
+  const PropertyDetailsCitizen = Digit?.ComponentRegistryService?.getComponent("PropertyDetailsCitizen")
+  const PropertyApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PropertyApplicationDetails");
+  const PTResponseCitizen = Digit?.ComponentRegistryService?.getComponent("PTResponseCitizen");
+    const SubmitResponse = Digit?.ComponentRegistryService?.getComponent("SubmitResponse");
+    const GISIntegration = Digit?.ComponentRegistryService?.getComponent("GISIntegration");
+  console.log("citizen path",path)
   return (
     <span className={"pt-citizen"}style={{width:"100%"}}>
       <Switch>
         <AppContainer>
           {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}
           <PrivateRoute path={`${path}/property/new-application`} component={CreateProperty} />
-          <PrivateRoute path={`${path}/property/edit-application`} component={EditProperty} />
+          <PrivateRoute path={`${path}/property/edit-application/:id`} component={EditProperty} />
           <Route path={`${path}/property/citizen-search`} component={SearchPropertyComponent} />
           <Route path={`${path}/property/search-results`} component={SearchResultsComponent} />
           <PrivateRoute path={`${path}/property/application/:acknowledgementIds/:tenantId`} component={PTApplicationDetails}></PrivateRoute>
@@ -45,12 +54,17 @@ const App = () => {
           <PrivateRoute path={`${path}/property/my-payments`} component={PTMyPayments}></PrivateRoute>
           <PrivateRoute path={`${path}/property/property-mutation`} component={MutateProperty}></PrivateRoute>
           <PrivateRoute path={`${path}/property/properties/:propertyIds`} component={PropertyInformation}></PrivateRoute>
+          <PrivateRoute path={`${path}/property/my-property/:id`} component={PropertyDetailsCitizen}></PrivateRoute>
           <PrivateRoute path={`${path}/payment-details/:id`} component={() => <PaymentDetails parentRoute={path} />} />
           {/* <PrivateRoute path={`${path}/property/transfer-ownership`} component={MutateProperty}></PrivateRoute> */}
           <PrivateRoute path={`${path}/property/owner-history/:tenantId/:propertyIds`} component={PropertyOwnerHistory}></PrivateRoute>
           {/* <Redirect to={`/`}></Redirect> */}
-          <PrivateRoute path={`${path}/assessment-details/:id`} component={() => <AssessmentDetails parentRoute={path} />} />
+          <PrivateRoute path={`${path}/property/assessment-details/:id`} component={() => <AssessmentDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/property/application-preview/:id`} component={(props) => <PropertyApplicationDetails {...props} t={t} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseCitizen {...props} t={t} parentRoute={path} />} />
+           <PrivateRoute path={`${path}/property/pt-acknowledgement`} component={SubmitResponse}></PrivateRoute>
+          <PrivateRoute path={`${path}/property/gis-values`} component={GISIntegration} />
         </AppContainer>
       </Switch>
     </span>

@@ -1,5 +1,5 @@
 // reducers/employeeFormReducer.js
-import { UPDATE_PtNewApplication_FORM, SET_PtNewApplication_STEP } from "../actions/types";
+import { UPDATE_PtNewApplication_FORM, SET_PtNewApplication_STEP, RESET_PtNewApplication_STEP } from "../actions/types";
 
 const initialState = {
   step: 1,
@@ -22,6 +22,8 @@ const PTNewApplicationFormReducer = (state = initialState, action) => {
         ...state,
         step: action.payload,
       };
+    case RESET_PtNewApplication_STEP:
+      return initialState;
     // case SET_EMPLOYEE_VALIDITY:
     //   return {
     //     ...state,

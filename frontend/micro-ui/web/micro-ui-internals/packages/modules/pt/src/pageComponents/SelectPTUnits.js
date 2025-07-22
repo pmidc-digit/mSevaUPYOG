@@ -53,7 +53,7 @@ const SelectPTUnits = React.memo(({ t, config, onSelect, userType, formData }) =
   const [fields, setFields] = useState(
     formatUnits(isFloor ? formData?.units?.filter((ee) => ee.floorNo == currentFloor) : formData?.units, currentFloor, isFloor)
   );
-
+console.log("form data in select ptunits",formData)
   useEffect(() => {
     setFields(() => formatUnits(isFloor ? formData?.units?.filter((ee) => ee.floorNo == currentFloor) : formData?.units, currentFloor, isFloor));
     return () => {

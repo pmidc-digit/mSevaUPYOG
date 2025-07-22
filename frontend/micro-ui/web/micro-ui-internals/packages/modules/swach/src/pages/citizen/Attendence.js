@@ -64,8 +64,8 @@ const Attendence = (props) => {
     { label: "Mobile Number", value: mobileNumber || "N/A" },
   ];
   const [uploadedImages, setUploadedImages] = useState([]);
+  const [isImageLoading, setIsImageLoading] = useState(false);
 
-  // State for location and time
   const [location, setLocation] = useState({ latitude: "", longitude: "" });
   const [currentTime, setCurrentTime] = useState("");
   const [address, setAddress] = useState("Fetching address...");
@@ -130,6 +130,20 @@ const Attendence = (props) => {
     }
   }, [data]);
 
+  useEffect(() => {
+    let timeoutId;
+
+    if (isImageLoading) {
+      timeoutId = setTimeout(() => {
+        setIsImageLoading(false);
+      }, 10000);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isImageLoading]);
+
   return (
     <React.Fragment>
       {toast.show && <Toast error={toast.type === "error"} label={toast.message} onClose={() => setToast({ ...toast, show: false })} />}
@@ -146,25 +160,43 @@ const Attendence = (props) => {
             <Row label="Current Time" text={currentTime} />
           </StatusTable>
           <div style={{ margin: "16px 0" }}>
-            <SelectImages
-              key={uploadedImages.length > 0 ? uploadedImages[0] : "empty"}
-              value={{ uploadedImages: uploadedImages.length > 0 ? [uploadedImages[uploadedImages.length - 1]] : [] }}
-              onSelect={(val) => {
-                if (val.uploadedImages && val.uploadedImages.length > 0) {
-                  setUploadedImages([val.uploadedImages[val.uploadedImages.length - 1]]);
-                } else {
-                  setUploadedImages([]);
-                }
-              }}
-              tenantId={tenantId}
-            />
+            {isImageLoading ? (
+              // <Loader />
+               <div style={{ height: "150px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <Loader />
+    <p style={{ textAlign: "center", marginTop: "8px" }}>Processing image...</p>
+  </div>
+            ) : (
+              <SelectImages
+                key={uploadedImages.length > 0 ? uploadedImages[0] : "empty"}
+                value={{ uploadedImages: uploadedImages.length > 0 ? [uploadedImages[uploadedImages.length - 1]] : [] }}
+                onSelect={(val) => {
+                   console.log("Image selected:", val);
+                  if (val.uploadedImages && val.uploadedImages.length > 0) {
+                    if (uploadedImages.length === 0 || val.uploadedImages[val.uploadedImages.length - 1] !== uploadedImages[0]) {
+                       console.log("Setting loading to true");
+                      setIsImageLoading(true);
+                      setTimeout(() => {
+                        setUploadedImages([val.uploadedImages[val.uploadedImages.length - 1]]);
+                        setIsImageLoading(false);
+                      }, 3000);
+                    } else {
+                      setUploadedImages([val.uploadedImages[val.uploadedImages.length - 1]]);
+                    }
+                  } else {
+                    setUploadedImages([]);
+                  }
+                }}
+                tenantId={tenantId}
+              />
+            )}
           </div>
         </Card>
          {!hasAttendance && (
           <ButtonSelector
             label="Submit"
             onSubmit={handleSubmit}
-            isDisabled={address === "Fetching address..." || !address || address === "Unavailable"}
+            isDisabled={address === "Fetching address..." || !address || address === "Unavailable" || isImageLoading ||  uploadedImages.length === 0 }
           />
         )}
       </div>

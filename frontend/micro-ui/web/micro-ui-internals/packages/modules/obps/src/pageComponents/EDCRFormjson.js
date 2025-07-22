@@ -41,4 +41,18 @@ export const DROPDOWN_OPTIONS = {
       { code: "MIXED", i18nKey: "EDCR_MIXED" },
     ],
   },
+  siteReserved: {
+    labelKey: "EDCR_IS_SITE_RESERVED",
+    options: [
+      { code: "YES", i18nKey: "YES", name: "YES" },
+      { code: "NO", i18nKey: "NO", name: "NO" },
+    ],
+  },
+  approvedControlSheet: {
+    labelKey: "EDCR_IS_APPROVED_CONTROL_SHEET",
+    options: [
+      { code: "YES", i18nKey: "YES", name: "YES" },
+      { code: "NO", i18nKey: "NO", name: "NO" },
+    ],
+  },
 };

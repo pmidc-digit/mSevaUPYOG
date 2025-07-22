@@ -134,3 +134,35 @@
   color: red;
   font-weight: bold;
 }
+
+.ViewAttendence{
+  .tablechart{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  
+  .tablechartinner{
+    flex: 1 1 300px;
+    min-width: 300px;
+  }
+  
+  .attendanceimage{
+    flex: 1 1 300px;
+    min-width: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  
+  .attendanceimg{
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+  }
+  .attendancecard{
+     margin-bottom: 16px;
+  }
+}

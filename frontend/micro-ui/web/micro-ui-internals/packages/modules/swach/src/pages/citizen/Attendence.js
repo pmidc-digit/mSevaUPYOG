@@ -21,6 +21,9 @@ import {
 import TimeLine from "../../components/TimeLine";
 
 const Attendence = (props) => {
+  const userInfo = Digit.SessionStorage.get("User")?.info;
+  const user = userInfo?.uuid;
+
   let { t } = useTranslation();
   let { id } = useParams();
   const history = useHistory();
@@ -35,6 +38,17 @@ const Attendence = (props) => {
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
 
+ const getTodayTimestamp = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today.getTime();
+  };
+  const { data, isLoading, error } = Digit.Hooks.swach.useViewAttendence({
+    tenantId,
+    userIds: user,
+    fromDate: getTodayTimestamp(),
+  });
+
   useEffect(() => {
     if (toast.show && toast.type === "success") {
       const timer = setTimeout(() => {
@@ -43,7 +57,6 @@ const Attendence = (props) => {
       return () => clearTimeout(timer);
     }
   }, [toast, history]);
-  const userInfo = Digit.SessionStorage.get("User")?.info;
   const [mobileNumber, setMobileNumber] = useState(userInfo?.mobileNumber || "");
   const [fullName, setFullName] = useState(userInfo?.name || "");
   const attendanceFields = [
@@ -83,13 +96,7 @@ const Attendence = (props) => {
     }
   }, [location]);
 
-  // if (isLoading || loader) {
-  //   return <Loader />;
-  // }
 
-  // if (isError) {
-  //   return <h2>Error</h2>;
-  // }
   const attendanceRequestBody = {
     RequestInfo: { apiId: "Rainmaker", authToken: "", userInfo: {}, msgId: "", plainAccessRequest: {} },
     ImageData: { tenantId: "", useruuid: "", latitude: "", longitude: "", locality: "", imagerurl: "" },
@@ -105,9 +112,7 @@ const Attendence = (props) => {
       longitude: location.longitude,
     };
 
-    // const docs = complaintDetails.workflow.verificationDocuments || [];
     const attendance = { image: uploadedImages[0] || "" };
-    // const attendance = { image: docs[0]?.fileStoreId || "" };
 
     submitAttendance(
       { user, slots, attendance },
@@ -117,6 +122,13 @@ const Attendence = (props) => {
       }
     );
   };
+
+  const [hasAttendance, setHasAttendance] = useState(false);
+  useEffect(() => {
+    if (data?.Attendance && data.Attendance.length > 0) {
+      setHasAttendance(true);
+    }
+  }, [data]);
 
   return (
     <React.Fragment>
@@ -137,8 +149,6 @@ const Attendence = (props) => {
             <SelectImages
               key={uploadedImages.length > 0 ? uploadedImages[0] : "empty"}
               value={{ uploadedImages: uploadedImages.length > 0 ? [uploadedImages[uploadedImages.length - 1]] : [] }}
-              // value={{ uploadedImages }}
-              // onSelect={(val) => setUploadedImages(val.uploadedImages)}
               onSelect={(val) => {
                 if (val.uploadedImages && val.uploadedImages.length > 0) {
                   setUploadedImages([val.uploadedImages[val.uploadedImages.length - 1]]);
@@ -150,9 +160,13 @@ const Attendence = (props) => {
             />
           </div>
         </Card>
-        <ButtonSelector label="Submit" onSubmit={handleSubmit} 
-        isDisabled={address === "Fetching address..." || !address || address === "Unavailable"}
-></ButtonSelector>
+         {!hasAttendance && (
+          <ButtonSelector
+            label="Submit"
+            onSubmit={handleSubmit}
+            isDisabled={address === "Fetching address..." || !address || address === "Unavailable"}
+          />
+        )}
       </div>
     </React.Fragment>
   );

@@ -219,6 +219,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
                 onBlur={props.onBlur}
                 optionKey="i18nKey"
                 t={t}
+                disable={GISValues?.useType ? true : false}
                 // disable={isEditProperty ? isEditProperty : false}
               />
             )}

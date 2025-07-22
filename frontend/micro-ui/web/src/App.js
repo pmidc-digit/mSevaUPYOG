@@ -36,7 +36,12 @@ import {
   initTLComponents,
 } from "@mseva/digit-ui-module-tl";
 
-import { PTRModule, PTRLinks, PTRComponents, PTRReducers } from "@mseva/digit-ui-module-ptr";
+import {
+  PTRModule,
+  PTRLinks,
+  PTRComponents,
+  PTRReducers,
+} from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
   ReceiptsModule,
@@ -55,14 +60,23 @@ import {
 } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
-import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
+import {
+  ADSModule,
+  ADSLinks,
+  ADSComponents,
+  ADSReducers,
+} from "@mseva/upyog-ui-module-ads";
 import { CHBModule, CHBLinks, CHBComponents } from "@mseva/upyog-ui-module-chb";
 import {
   ASSETComponents,
   ASSETLinks,
   ASSETModule,
 } from "@mseva/upyog-ui-module-asset";
-import { PGRAIComponents, PGRAILinks, PGRAIModule } from "@mseva/upyog-ui-module-pgrai";
+import {
+  PGRAIComponents,
+  PGRAILinks,
+  PGRAIModule,
+} from "@mseva/upyog-ui-module-pgrai";
 
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
@@ -131,7 +145,7 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ...ASSETComponents,
   PGRAIModule,
   PGRAILinks,
-  ...PGRAIComponents
+  ...PGRAIComponents,
 });
 initPGRComponents();
 initSWACHComponents();
@@ -158,7 +172,8 @@ const moduleReducers = (initData) => ({
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),
   swach: SWACHReducers(initData),
-  ptr: PTRReducers(initData)
+  ptr: PTRReducers(initData),
+  ads: ADSReducers(initData),
 });
 
 function App() {

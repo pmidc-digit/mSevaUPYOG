@@ -9,6 +9,7 @@ import {
   MobileNumber,
   CardSectionHeader,
   TextInput,
+  DatePicker
 } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
@@ -31,6 +32,8 @@ const createOwnerDetails = () => ({
   subOwnerShipCategory:"",
   correspondenceAddress: "",
   key: Date.now(),
+  pan: "",
+  dob: ""
 });
 
 const OwnerForm = (_props) => {
@@ -64,6 +67,10 @@ const OwnerForm = (_props) => {
   const stateId = Digit.ULBService.getStateId();
   const [part, setPart] = useState({});
   const { ownershipCategory: { code: keyToSearchOwnershipSubtype } = {} } = formData;
+  const [dobError, setDobError] = useState({
+    err: false,
+    message: ""
+  })
   // const { data: institutionOwnershipTypeOptions } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "TradeOwnershipSubType", {
   //   keyToSearchOwnershipSubtype : keyToSearchOwnershipSubtype ? keyToSearchOwnershipSubtype.split(".")[0]:undefined,
   // });
@@ -125,6 +132,8 @@ const OwnerForm = (_props) => {
         setValue("emailId",owner?.emailId);
         setValue("ownerType",owner?.ownerType);
         setValue("permanentAddress",owner?.permanentAddress);
+        setValue("pan", owner?.pan)
+        setValue("dob", owner?.dob)
       }
     }
   }, [formData?.cpt?.details?.propertyId, formData?.cptId?.Id, formData]);
@@ -158,6 +167,46 @@ const OwnerForm = (_props) => {
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
   let isMulitpleOwners = false;
   if (formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS") isMulitpleOwners = true;
+
+  useEffect(()=>{
+    if(owner.dob.length > 0 ){
+      if(!validate(owner.dob)){
+        setDobError({
+          err: true,
+          message: t("DOB_ERROR_MESSAGE")
+        })
+      }else{
+        setDobError({
+          err: false,
+          message:""
+        })
+      }
+    }
+  },[owner.dob])
+
+const validate = (dob) => {
+  if (!dob) return false;
+
+  const birthDate = new Date(dob);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  const dayDiff = today.getDate() - birthDate.getDate();
+
+  // Adjust age if birthday hasn't occurred yet this year
+  if (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) {
+    age--;
+  }
+
+  const isAdult = age >= 18;
+  const isValidAge = age < 150;
+
+  return isAdult && isValidAge;
+};
+
+
+console.log("Getting inside TL", owner);
 
   return (
     <React.Fragment>
@@ -687,6 +736,30 @@ const OwnerForm = (_props) => {
                   />
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.gender ? errors?.gender?.message : ""}</CardLabelError>
+
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_TRADE_DETAILS_TRADE_DATE_OF_BIRTH_LABEL")}`}<span className="requiredField">*</span></CardLabel>
+                    <div className="field">
+                      <Controller
+                        name="dob"
+                        rules={{ required: t("REQUIRED_DATE_OF_BIRTH")}}
+                        defaultValue={owner?.dob}
+                        control={control}
+                        render={(props) => (
+                          <DatePicker
+                            date={props.value}
+                            // date={CommencementDate}
+                            name="dob"
+                            onChange={props.onChange}
+                            // disabled={isRenewal}
+                          />
+                        )}
+                      />
+                    </div>
+                </LabelFieldPair>
+                <CardLabelError style={errorStyle}>{dobError?.err ? dobError?.message : ""}</CardLabelError>
+
+
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_EMAIL_LABEL")} `}</CardLabel>
                   <div className="field">
@@ -717,6 +790,39 @@ const OwnerForm = (_props) => {
                   </div>
                 </LabelFieldPair>
                 <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
+
+                <LabelFieldPair>
+                  <CardLabel className="card-label-smaller">{`${t("TL_NEW_OWNER_DETAILS_PAN_NUMBER_LABEL")}`}</CardLabel>
+                  <div className="field">
+                    <Controller
+                      control={control}
+                      name={"pan"}
+                      defaultValue={owner?.pan}
+                      rules={{ validate: { pattern: (val) => (/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(val) ? true : t("INVALID_PAN")) } }}
+                      render={(props) => (
+                        <TextInput
+                          value={props.value}
+                          autoFocus={focusIndex.index === owner?.key && focusIndex.type === "pan"}
+                          errorStyle={localFormState.touched.pan && errors?.pan?.message ? true : false}
+                          onChange={(e) => {
+                            if (e.target.value != owner?.pan && isRenewal)
+                              setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
+                            props.onChange(e.target.value);
+                            // props.onChange(e);
+                            setFocusIndex({ index: owner.key, type: "pan" });
+                          }}
+                          //disable={isRenewal}
+                          onBlur={props.onBlur}
+                          placeholder={t("TL_NEW_OWNER_DETAILS_PAN_NUMBER_LABEL")}
+                        />
+                      )}
+                    />
+                  </div>
+                </LabelFieldPair>
+                <CardLabelError style={errorStyle}>
+                  {localFormState.touched.pan ? errors?.pan?.message : ""}{" "}
+                </CardLabelError>
+                
                 <LabelFieldPair>
                   <CardLabel className="card-label-smaller">{`${t("TL_EMP_APPLICATION_SPL_CAT")} `}</CardLabel>
                   <Controller

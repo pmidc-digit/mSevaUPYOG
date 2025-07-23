@@ -98,7 +98,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     const { ownershipCategory, owners } = data;
     if (!ownershipCategory?.code || !owners?.length) return false;
     return owners.every(
-      (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName
+      (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName && owner?.dob
     );
   };
 
@@ -140,12 +140,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       }
     }
 
-    const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails?.address?.pincode));
-    if (!foundValue && TraidDetails?.address?.pincode) {
-      setShowToast({ key: "error" });
-      setError(t("TL_COMMON_PINCODE_NOT_SERVICABLE"));
-      return;
-    }
+    // const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails?.address?.pincode));
+    // if (!foundValue && TraidDetails?.address?.pincode) {
+    //   setShowToast({ key: "error" });
+    //   setError(t("TL_COMMON_PINCODE_NOT_SERVICABLE"));
+    //   return;
+    // }
 
     let accessories = [];
     if (TraidDetails?.accessories?.length > 0) {
@@ -192,7 +192,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       if (TraidDetails.address.electricityNo) address.electricityNo = TraidDetails.address.electricityNo;
       if (TraidDetails.address.pincode) address.pincode = TraidDetails.address.pincode;
     }
-    if (TraidDetails.address?.geoLocation?.latitude) {
+    if (TraidDetails.address?.geoLocation?.latitude && TraidDetails.address?.geoLocation?.longitude) {
       address.latitude = TraidDetails.address?.geoLocation?.latitude;
       address.longitude = TraidDetails.address?.geoLocation?.longitude;
     }
@@ -202,6 +202,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       OwnerDetails.owners.map((owner, index) => {
         let obj = {};
         obj.dob = owner?.dob ? convertDateToEpoch(owner.dob) : null;
+        obj.pan = (owner?.pan && owner?.pan?.length > 0) ? owner?.pan : null;
         obj.additionalDetails = { ownerSequence: index, ownerName: owner.name };
         if (owner.fatherOrHusbandName) obj.fatherOrHusbandName = owner.fatherOrHusbandName;
         if (owner.gender?.code) obj.gender = owner.gender.code;

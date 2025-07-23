@@ -359,11 +359,11 @@ const LocationSearch = (props) => {
       const getLatLngError = (error) => {
         let defaultLatLong = {};
         if (props?.isPTDefault) {
-          defaultLatLong = props?.PTdefaultcoord?.defaultConfig || { lat: 31.6160638, lng: 74.8978579 };
+          defaultLatLong = props?.PTdefaultcoord?.defaultConfig || { lat: 0, lng: 0 };
         } else {
           defaultLatLong = {
-            lat: 31.6160638,
-            lng: 74.8978579,
+            lat: 0,
+            lng: 0,
           };
         }
         initAutocomplete(props.onChange, defaultLatLong, props.isPlaceRequired);

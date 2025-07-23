@@ -98,7 +98,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           isRoute = true;
         }
       });
-      if (isRoute) {
+      if (!isRoute) {
         setStakeholderRoles(false);
         setShowToast({ key: "true", message: t("BPA_LOGIN_HOME_VALIDATION_MESSAGE_LABEL") });
       } else {

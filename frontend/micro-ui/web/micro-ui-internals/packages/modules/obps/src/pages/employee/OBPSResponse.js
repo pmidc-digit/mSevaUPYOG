@@ -107,7 +107,7 @@ const OBPSResponse = (props) => {
             style={{ padding: "10px" }}
             headerStyles={{ fontSize: "32px", wordBreak: "break-word" }}
           />
-          <CardText style={{ paddingBottom: "10px", marginBottom: "10px" }}>{getSubHeaderMessage()}</CardText>
+          <CardText style={{ paddingBottom: "10px", marginBottom: "10px" }}></CardText>
           {applicationData?.status == "PERMIT REVOCATION" ? (
             <div
               className="primary-label-btn d-grid"

@@ -97,9 +97,9 @@ const BpaApplicationDetail = () => {
     if (payments?.fileStoreId) {
       response = { filestoreIds: [payments?.fileStoreId] };
     } else {
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "bpa-receipt");
+      response = await Digit.PaymentService.generatePdf(stateId, { Payments: [{ ...payments }] }, "bpa-receipt");
     }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    const fileStore = await Digit.PaymentService.printReciept(stateId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
 
@@ -109,6 +109,36 @@ const BpaApplicationDetail = () => {
       currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate()
     );
     let requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }] };
+
+    const state = Digit.ULBService.getStateId();
+    let count = 0;
+
+    for (let i = 0; i < workflowDetails?.data?.processInstances?.length; i++) {
+      if (
+        (workflowDetails?.data?.processInstances[i]?.action === "POST_PAYMENT_APPLY" ||
+          workflowDetails?.data?.processInstances[i]?.action === "PAY") &&
+        workflowDetails?.data?.processInstances?.[i]?.state?.applicationStatus === "APPROVAL_INPROGRESS" &&
+        count == 0
+      ) {
+        requestData.additionalDetails.submissionDate = workflowDetails?.data?.processInstances[i]?.auditDetails?.createdTime;
+        count = 1;
+      }
+    }
+
+    if (requestData?.additionalDetails?.approvedColony == "NO") {
+      requestData.additionalDetails.permitData =
+        "The plot has been officially regularized under No." +
+        requestData?.additionalDetails?.NocNumber +
+        "  dated dd/mm/yyyy, registered in the name of <name as per the NOC>. This regularization falls within the jurisdiction of " +
+        state +
+        ".Any form of misrepresentation of the NoC is strictly prohibited. Such misrepresentation renders the building plan null and void, and it will be regarded as an act of impersonation. Criminal proceedings will be initiated against the owner and concerned architect / engineer/ building designer / supervisor involved in such actions";
+    } else if (requestData?.additionalDetails?.approvedColony == "YES") {
+      requestData.additionalDetails.permitData =
+        "The building plan falls under approved colony " + requestData?.additionalDetails?.nameofApprovedcolony;
+    } else {
+      requestData.additionalDetails.permitData = "The building plan falls under Lal Lakir";
+    }
+
     let response = await Digit.PaymentService.generatePdf(tenantId, { Bpa: [requestData] }, order);
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
@@ -347,41 +377,22 @@ const BpaApplicationDetail = () => {
       <div className={"employee-main-application-details"}>
         <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
           <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-          <LinkButton label={t("VIEW_TIMELINE")} onClick={handleViewTimeline}></LinkButton>
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper employee-mulitlink-main-div"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-              downloadBtnClassName={"employee-download-btn-className"}
-              optionsClassName={"employee-options-btn-className"}
-            />
-          )}
+          <div>
+            <div style={{ zIndex: "10", position: "relative" }}>
+              {dowloadOptions && dowloadOptions.length > 0 && (
+                <MultiLink
+                  className="multilinkWrapper"
+                  onHeadClick={() => setShowOptions(!showOptions)}
+                  displayOptions={showOptions}
+                  options={dowloadOptions}
+                  downloadBtnClassName={"employee-download-btn-className"}
+                  optionsClassName={"employee-options-btn-className"}
+                />
+              )}
+            </div>
+            <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+          </div>
         </div>
-        {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
-          (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
-            <FormComposer
-              heading={t("")}
-              isDisabled={!canSubmit}
-              config={configs.map((config) => {
-                return {
-                  ...config,
-                  body: config.body.filter((a) => {
-                    return !a.hideInEmployee;
-                  }),
-                  head: checkHead(config.head),
-                };
-              })}
-              fieldStyle={{ marginRight: 0 }}
-              submitInForm={false}
-              defaultValues={defaultValues}
-              onFormValueChange={onFormValueChange}
-              breaklineStyle={{ border: "0px" }}
-              className={"employeeCard-override"}
-              cardClassName={"employeeCard-override"}
-            />
-          )}
         <ApplicationDetailsTemplate
           applicationDetails={data}
           isLoading={isLoading}
@@ -409,6 +420,29 @@ const BpaApplicationDetail = () => {
               : data?.applicationData?.businessService
           }_`}
         />
+        {data?.applicationData?.status === "FIELDINSPECTION_INPROGRESS" &&
+          (userInfo?.info?.roles.filter((role) => role.code === "BPA_FIELD_INSPECTOR")).length > 0 && (
+            <FormComposer
+              heading={t("")}
+              isDisabled={!canSubmit}
+              config={configs.map((config) => {
+                return {
+                  ...config,
+                  body: config.body.filter((a) => {
+                    return !a.hideInEmployee;
+                  }),
+                  head: checkHead(config.head),
+                };
+              })}
+              fieldStyle={{ marginRight: 0 }}
+              submitInForm={false}
+              defaultValues={defaultValues}
+              onFormValueChange={onFormValueChange}
+              breaklineStyle={{ border: "0px" }}
+              className={"employeeCard-override"}
+              cardClassName={"employeeCard-override"}
+            />
+          )}
       </div>
     </Fragment>
   );

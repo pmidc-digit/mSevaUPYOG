@@ -105,7 +105,7 @@ const ApplicationCard = ({ searchFields, searchParams, statusMap, sortParams = {
           )}
           {type === "SORT" && (
             <div className="popup-module w-fullwidth">
-              {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} type="mobile" onSort={onSort} />}
+              {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} onSort={onSort} />}
             </div>
           )}
         </PopUp>

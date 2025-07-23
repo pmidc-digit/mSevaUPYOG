@@ -19,6 +19,7 @@ import Timeline from "../components/Timeline";
 import cloneDeep from "lodash/cloneDeep";
 
 const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
+  console.log("formdatatstd", formData);
   let validation = {};
   sessionStorage.removeItem("currentPincode");
   let isedittrade = window.location.href.includes("edit-application");
@@ -30,10 +31,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
   const [genderList, setGenderList] = useState([]);
   const [ownershipCategory, setOwnershipCategory] = useState(formData?.owners?.ownershipCategory);
   const [name, setName] = useState(formData?.owners?.name || "");
+  const [emailId, setEmail] = useState(formData?.owners?.emailId || "");
+  const [aadharNumber, setaadharNumber] = useState(formData?.owners?.aadharNumber || "");
   const [isPrimaryOwner, setisPrimaryOwner] = useState(false);
   const [gender, setGender] = useState(formData?.owners?.gender);
   const [mobileNumber, setMobileNumber] = useState(formData?.owners?.mobileNumber || "");
-  const [emailId, setEmail] = useState(formData?.owners?.emailId || "");
   const [showToast, setShowToast] = useState(null);
   const [isDisable, setIsDisable] = useState(false);
   let Webview = !Digit.Utils.browser.isMobile();
@@ -44,6 +46,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
   const [fields, setFeilds] = useState(
     (formData?.owners && formData?.owners?.owners) || [{ name: "", gender: "", mobileNumber: null, isPrimaryOwner: true }]
   );
+
+  const user = Digit.UserService.getUser();
+  console.log("userrrr", user);
 
   useEffect(() => {
     var flag = 0;
@@ -142,6 +147,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
     let units = [...fields];
     units[i].emailId = e.target.value;
     setEmail(e.target.value);
+    setFeilds(units);
+    if (units[i].gender && units[i].mobileNumber && units[i].name) {
+      setCanmovenext(false);
+    }
+  }
+  function setAadharNumber(i, e) {
+    let units = [...fields];
+    units[i].aadharNumber = e.target.value;
+    setaadharNumber(e.target.value);
     setFeilds(units);
     if (units[i].gender && units[i].mobileNumber && units[i].name) {
       setCanmovenext(false);
@@ -253,7 +267,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
 
         if (found) {
           setCanmovenext(false);
-          setownerRoleCheck(found);
+          //setownerRoleCheck(found);
           setShowToast({ key: "true", error: true, message: `BPA_OWNER_VALIDATION_${found?.code}` });
           return;
         }
@@ -311,7 +325,190 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
         let owner = formData.owners;
         let ownerStep;
         ownerStep = { ...owner, owners: fields, ownershipCategory: ownershipCategory };
-        onSelect(config.key, ownerStep);
+
+        if (!formData?.id) {
+          setIsDisable(true);
+          //for owners conversion
+          let conversionOwners = [];
+          ownerStep?.owners?.map((owner) => {
+            conversionOwners.push({
+              ...owner,
+              active: true,
+              name: owner.name,
+              emailId: owner.emailId,
+              aadharNumber: owner.aadharNumber,
+              mobileNumber: owner.mobileNumber,
+              isPrimaryOwner: owner.isPrimaryOwner,
+              gender: owner.gender.code,
+              fatherOrHusbandName: "NAME",
+            });
+          });
+          let payload = {};
+          payload.edcrNumber = formData?.edcrNumber?.edcrNumber ? formData?.edcrNumber?.edcrNumber : formData?.data?.scrutinyNumber?.edcrNumber;
+          payload.riskType = formData?.data?.riskType;
+          payload.applicationType = formData?.data?.applicationType;
+          payload.serviceType = formData?.data?.serviceType;
+
+          const userInfo = Digit.UserService.getUser();
+          const accountId = userInfo?.info?.uuid;
+          payload.tenantId = formData?.address?.city?.code;
+          payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] };
+          payload.accountId = accountId;
+          payload.documents = null;
+
+          // Additonal details
+          payload.additionalDetails = { GISPlaceName: formData?.address?.placeName };
+          payload.additionalDetails.boundaryWallLength = formData?.data?.boundaryWallLength || "NA";
+          payload.additionalDetails.area = (formData?.data.edcrDetails.planDetail.planInformation.plotArea).toString() || "NA";
+          payload.additionalDetails.height = (formData?.data.edcrDetails.planDetail.blocks[0].building.buildingHeight).toString() || "NA";
+          payload.additionalDetails.usage = formData?.data.occupancyType || "NA";
+          payload.additionalDetails.builtUpArea = (formData?.data.edcrDetails.planDetail.blocks[0].building.totalBuitUpArea).toString();
+          //payload.additionalDetails.nocNumber=(formData?.nocnumber?.nocNumber).toString();
+          payload.additionalDetails.ownerName = conversionOwners.map((obj) => obj.name).join(",");
+
+          if (formData?.data?.registrationDetails) payload.additionalDetails.registrationDetails = formData?.data?.registrationDetails;
+          if (formData?.data?.applicationType) payload.additionalDetails.applicationType = formData?.data?.applicationType;
+          if (formData?.data?.serviceType) payload.additionalDetails.serviceType = formData?.data?.serviceType;
+          if (formData?.data?.wardnumber) payload.additionalDetails.wardnumber = formData?.data?.wardnumber;
+          if (formData?.data?.zonenumber) payload.additionalDetails.zonenumber = formData?.data?.zonenumber;
+          if (formData?.data?.khasraNumber) payload.additionalDetails.khasraNumber = formData?.data?.khasraNumber;
+          if (formData?.data?.applicationType) payload.additionalDetails.applicationType = formData?.data?.applicationType;
+          if (formData?.data?.serviceType) payload.additionalDetails.serviceType = formData?.data?.serviceType;
+          if (formData?.data?.architectid) payload.additionalDetails.architectid = formData?.data?.architectid;
+          if (formData?.data?.propertyuid) payload.additionalDetails.propertyuid = formData?.data?.propertyuid;
+          if (formData?.data?.bathnumber) payload.additionalDetails.bathnumber = formData?.data?.bathnumber;
+          if (formData?.data?.kitchenNumber) payload.additionalDetails.kitchenNumber = formData?.data?.kitchenNumber;
+          if (formData?.data?.approxinhabitants) payload.additionalDetails.approxinhabitants = formData?.data?.approxinhabitants;
+          if (formData?.data?.materialusedinfloor) payload.additionalDetails.materialusedinfloor = formData?.data?.materialusedinfloor;
+          if (formData?.data?.distancefromsewer) payload.additionalDetails.distancefromsewer = formData?.data?.distancefromsewer;
+          if (formData?.data?.sourceofwater) payload.additionalDetails.sourceofwater = formData?.data?.sourceofwater;
+          if (formData?.data?.watercloset) payload.additionalDetails.watercloset = formData?.data?.watercloset;
+          if (formData?.data?.materialused) payload.additionalDetails.materialused = formData?.data?.materialused;
+          if (formData?.data?.materialusedinroofs) payload.additionalDetails.materialusedinroofs = formData?.data?.materialusedinroofs;
+          if (formData?.owners?.approvedColony?.code) payload.additionalDetails.approvedColony = formData?.owners?.approvedColony?.code;
+          if (formData?.owners?.buildingStatus?.code) payload.additionalDetails.buildingStatus = formData?.owners?.buildingStatus?.code;
+          if (formData?.owners?.greenbuilding?.code) payload.additionalDetails.greenbuilding = formData?.owners?.greenbuilding?.code;
+          if (formData?.owners?.masterPlan?.code) payload.additionalDetails.masterPlan = formData?.owners?.masterPlan?.code;
+          if (formData?.owners?.proposedSite?.code) payload.additionalDetails.proposedSite = formData?.owners?.proposedSite?.code;
+          if (formData?.owners?.purchasedFAR?.code) payload.additionalDetails.purchasedFAR = formData?.owners?.purchasedFAR?.code;
+          if (formData?.owners?.restrictedArea?.code) payload.additionalDetails.restrictedArea = formData?.owners?.restrictedArea?.code;
+          if (formData?.owners?.schemes?.i18nKey) payload.additionalDetails.schemes = formData?.owners?.schemes?.i18nKey;
+          if (formData?.owners?.UlbName?.code)
+            payload.additionalDetails.UlbName = formData?.owners?.UlbName?.code.toLowerCase().replace(/^\w/, (c) => c.toUpperCase());
+          if (formData?.owners?.District?.code) payload.additionalDetails.District = formData?.owners?.District?.code;
+          if (formData?.owners?.nameofApprovedcolony) payload.additionalDetails.nameofApprovedcolony = formData?.owners?.nameofApprovedcolony;
+          if (formData?.owners?.NocNumber) payload.additionalDetails.NocNumber = formData?.owners?.NocNumber;
+          if (formData?.owners?.coreArea?.code) payload.additionalDetails.coreArea = formData?.owners?.coreArea?.code;
+          if (formData?.owners?.schemesselection?.i18nKey) payload.additionalDetails.schemesselection = formData?.owners?.schemesselection?.i18nKey;
+          if (formData?.owners?.schemeName) payload.additionalDetails.schemeName = formData?.owners?.schemeName;
+          if (formData?.owners?.transferredscheme) payload.additionalDetails.transferredscheme = formData?.owners?.transferredscheme;
+          if (formData?.owners?.Ulblisttype?.value) payload.additionalDetails.Ulblisttype = formData?.owners?.Ulblisttype?.value;
+          if (formData?.owners?.uploadedFile) payload.additionalDetails.uploadedFileNoc = formData?.owners?.uploadedFile;
+          if (formData?.owners?.rating?.code) payload.additionalDetails.rating = formData?.owners?.rating?.code;
+          if (formData?.owners?.greenuploadedFile) payload.additionalDetails.uploadedFileGreenBuilding = formData?.owners?.greenuploadedFile;
+          if (formData?.owners?.use?.code) payload.additionalDetails.use = formData?.owners?.use?.code;
+
+          //adding Architect name and his mobilenumber so that i can use it in Consent form
+          if (user?.info?.name) payload.additionalDetails.architectName = user?.info?.name;
+          if (user?.info?.mobileNumber) payload.additionalDetails.architectMobileNumber = user?.info?.mobileNumber;
+
+          //For LandInfo
+          payload.landInfo = {};
+          //For Address
+          payload.landInfo.address = {};
+          if (formData?.address?.city?.code) payload.landInfo.address.city = formData?.address?.city?.code;
+          if (formData?.address?.locality?.code) payload.landInfo.address.locality = { code: formData?.address?.locality?.code };
+          if (formData?.address?.pincode) payload.landInfo.address.pincode = formData?.address?.pincode;
+          if (formData?.address?.landmark) payload.landInfo.address.landmark = formData?.address?.landmark;
+          if (formData?.address?.street) payload.landInfo.address.street = formData?.address?.street;
+          if (formData?.address?.geoLocation) payload.landInfo.address.geoLocation = formData?.address?.geoLocation;
+
+          payload.landInfo.owners = conversionOwners;
+          payload.landInfo.ownershipCategory = ownershipCategory.code;
+          payload.landInfo.tenantId = formData?.address?.city?.code;
+
+          //for units
+          const blockOccupancyDetails = formData;
+          payload.landInfo.unit = getUnitsForAPI(blockOccupancyDetails);
+
+          let nameOfAchitect = sessionStorage.getItem("BPA_ARCHITECT_NAME");
+          let parsedArchitectName = nameOfAchitect ? JSON.parse(nameOfAchitect) : "ARCHITECT";
+          payload.additionalDetails.typeOfArchitect = parsedArchitectName;
+          payload.additionalDetails.stakeholderName = JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_NAME"));
+          payload.additionalDetails.stakeholderRegistrationNumber = JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"));
+          payload.additionalDetails.stakeholderAddress = JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS"));
+          let isSelfCertificationRequired = sessionStorage.getItem("isSelfCertificationRequired");
+          if (isSelfCertificationRequired === "undefined") {
+            isSelfCertificationRequired = "false";
+          }
+          payload.additionalDetails.isSelfCertificationRequired = isSelfCertificationRequired.toString();
+          // create BPA call
+          // if(isSelfCertificationRequired===true && formData?.data.occupancyType==="Residential" && (parsedArchitectName=="ARCHITECT" || parsedArchitectName=="ENGINEER"|| parsedArchitectName=="DESIGNER" || parsedArchitectName=="SUPERVISOR")){
+          //     if(formData?.data.edcrDetails.planDetail.blocks[0].building.buildingHeight > 15){
+          //         alert("Height should not be more than 15 metres");
+          //     }
+          //     //converting plot area which is in square meters to square yards by multiplying 1.196
+          //     else if((parsedArchitectName=="ARCHITECT" || parsedArchitectName=="ENGINEER") && (formData?.data.edcrDetails.planDetail.planInformation.plotArea*1.19599) >500){
+          //             alert("Architect/Engineer can apply for area less then 500 sq. yards. in self declaration")
+          //         }
+          //     else if((parsedArchitectName=="DESIGNER" || parsedArchitectName=="SUPERVISOR") && (formData?.data.edcrDetails.planDetail.planInformation.plotArea*1.19599)>250){
+          //             alert("Designer/Supervisor can apply for area less then 500 sq. yards. in self declaration")
+          //         }
+          //     else{
+          //             Digit.OBPSService.create({ BPA: payload }, tenantId)
+          //             .then((result, err) => {
+          //                 if (result?.BPA?.length > 0) {
+          //                     result?.BPA?.[0]?.landInfo?.owners?.forEach(owner => {
+          //                         owner.gender = { code: owner.gender, active: true, i18nKey: `COMMON_GENDER_${owner.gender}` }
+          //                     });
+          //                     result.BPA[0].owners = { ...owner, owners: result?.BPA?.[0]?.landInfo?.owners, ownershipCategory: ownershipCategory };
+          //                     result.BPA[0].address = result?.BPA?.[0]?.landInfo?.address;
+          //                     result.BPA[0].address.city = formData.address.city;
+          //                     result.BPA[0].address.locality = formData.address.locality;
+          //                     result.BPA[0].placeName = formData?.address?.placeName;
+          //                     result.BPA[0].data = formData.data;
+          //                     result.BPA[0].BlockIds = getBlockIds(result.BPA[0].landInfo.unit);
+          //                     result.BPA[0].subOccupancy= formData?.subOccupancy;
+          //                     result.BPA[0].uiFlow = formData?.uiFlow;
+          //                     setIsDisable(false);
+          //                     onSelect("", result.BPA[0], "", true);
+          //                 }
+          //             })
+          //             .catch((e) => {
+          //                 setIsDisable(false);
+          //                 setShowToast({ key: "true", error: true, message: e?.response?.data?.Errors[0]?.message });
+          //             });
+          //         }
+
+          // }
+          // else{
+          Digit.OBPSService.create({ BPA: payload }, tenantId)
+            .then((result, err) => {
+              if (result?.BPA?.length > 0) {
+                result?.BPA?.[0]?.landInfo?.owners?.forEach((owner) => {
+                  owner.gender = { code: owner.gender, active: true, i18nKey: `COMMON_GENDER_${owner.gender}` };
+                });
+                result.BPA[0].owners = { ...owner, owners: result?.BPA?.[0]?.landInfo?.owners, ownershipCategory: ownershipCategory };
+                result.BPA[0].address = result?.BPA?.[0]?.landInfo?.address;
+                result.BPA[0].address.city = formData.address.city;
+                result.BPA[0].address.locality = formData.address.locality;
+                result.BPA[0].placeName = formData?.address?.placeName;
+                result.BPA[0].data = formData.data;
+                result.BPA[0].BlockIds = getBlockIds(result.BPA[0].landInfo.unit);
+                result.BPA[0].subOccupancy = formData?.subOccupancy;
+                result.BPA[0].uiFlow = formData?.uiFlow;
+                setIsDisable(false);
+                onSelect("", result.BPA[0], "", true);
+              }
+            })
+            .catch((e) => {
+              setIsDisable(false);
+              setShowToast({ key: "true", error: true, message: e?.response?.data?.Errors[0]?.message });
+            });
+          // }
+        } else {
+          onSelect(config.key, ownerStep);
+        }
       }
     }
   };
@@ -333,7 +530,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
 
   return (
     <div>
-      <Timeline currentStep={2} />
+      <Timeline currentStep={3} />
       <FormStep
         config={config}
         onSelect={goNext}
@@ -442,6 +639,22 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                       onSelect={(e) => setGenderName(index, e)}
                       t={t}
                     />
+                    <CardLabel>{`${t("BPA_AADHAAR_NUMBER_LABEL")}`}</CardLabel>
+                    <TextInput
+                      style={{ background: "#FAFAFA" }}
+                      t={t}
+                      type={"text"}
+                      isMandatory={false}
+                      optionKey="i18nKey"
+                      name="aadharNumber"
+                      value={field.aadharNumber}
+                      onChange={(e) => setAadharNumber(index, e)}
+                      {...(validation = {
+                        pattern: "^[2-9]{1}[0-9]{3}[0-9]{4}[0-9]{4}$",
+                        type: "tel",
+                        title: t("INVALID_AADHAAR_NUMBER"),
+                      })}
+                    />
                     <CardLabel>{`${t("CORE_EMAIL_ID")}`}</CardLabel>
                     <TextInput
                       style={{ background: "#FAFAFA" }}
@@ -458,6 +671,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                         type: "emailId",
                         title: t("TL_EMAIL_ID_ERROR_MESSAGE"),
                       })}
+                      disabled={false}
                       //disabled={true}
                     />
                     {ismultiple && (

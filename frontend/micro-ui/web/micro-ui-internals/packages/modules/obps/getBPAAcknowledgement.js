@@ -41,7 +41,11 @@ const convertToLocale = (value = "", key = "") => {
 };
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
+
 const getBPAAcknowledgement = async (application, tenantInfo, t) => {
+  const user = Digit.UserService.getUser();
+
+  console.log("application", application);
   const owner = application?.landInfo?.owners;
   return {
     t: t,
@@ -79,10 +83,10 @@ const getBPAAcknowledgement = async (application, tenantInfo, t) => {
             title: t("BPA_BASIC_DETAILS_RISK_TYPE_LABEL"),
             value: t(`WF_BPA_${application?.riskType}`) || "NA",
           },
-          {
-            title: t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"),
-            value: application?.data?.edcrDetails?.planDetail?.planInformation?.applicantName || "NA",
-          },
+          // {
+          //     title: t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"),
+          //     value: application?.data?.edcrDetails?.planDetail?.planInformation?.applicantName || "NA"
+          // },
         ],
       },
       {
@@ -90,7 +94,7 @@ const getBPAAcknowledgement = async (application, tenantInfo, t) => {
         values: [
           {
             title: t("BPA_BOUNDARY_PLOT_AREA_LABEL"),
-            value: `${application?.data?.edcrDetails?.planDetail?.planInformation?.plotArea} sq.ft` || "NA",
+            value: `${application?.data?.edcrDetails?.planDetail?.planInformation?.plotArea} sq mtrs` || "NA",
           },
           {
             title: t("BPA_PLOT_NUMBER_LABEL"),
@@ -110,23 +114,27 @@ const getBPAAcknowledgement = async (application, tenantInfo, t) => {
           },
           {
             title: t("BPA_APPLICATION_DEMOLITION_AREA_LABEL"),
-            value: t(`${application?.data?.edcrDetails?.planDetail?.planInformation?.demolitionArea} sq.mtrs`) || "NA",
+            value: t(`${application?.data?.edcrDetails?.planDetail?.planInformation?.demolitionArea} sq mtrs`) || "NA",
+          },
+          {
+            title: t("BPA_WARD_NUMBER_LABEL"),
+            value: application?.additionalDetails?.wardnumber || "NA",
+          },
+          {
+            title: t("BPA_KHASRA_NUMBER_LABEL"),
+            value: application?.additionalDetails?.khasraNumber || "NA",
           },
         ],
       },
-      {
-        title: t(`BPA_NOC_DETAILS_SUMMARY`),
-        values: [
-          {
-            title: t(`BPA_${application?.nocDocuments?.NocDetails[0]?.nocType}_LABEL`),
-            value: application?.nocDocuments?.NocDetails[0]?.applicationNo || "NA",
-          },
-          {
-            title: t(`BPA_${application?.nocDocuments?.NocDetails[1]?.nocType}_LABEL`),
-            value: application?.nocDocuments?.NocDetails[1]?.applicationNo || "NA",
-          },
-        ],
-      },
+      //  {
+      //     title: t(`BPA_NOC_DETAILS_SUMMARY`) ,
+      //     values: [
+      //         {
+      //           title: t(`BPA_NOC_NUMBER`),
+      //           value: application?.additionalDetails?.nocNumber || "NA",
+      //         }
+      //     ],
+      //  },
       {
         title: t("BPA_APPLICANT_DETAILS_HEADER"),
         values: [
@@ -153,6 +161,27 @@ const getBPAAcknowledgement = async (application, tenantInfo, t) => {
         ],
       },
       {
+        title: t("BPA_ARCHITECT_DETAILS"),
+        values: [
+          {
+            title: t("BPA_ARCHITECT_NAME"),
+            value: user?.info?.name || "NA",
+          },
+          {
+            title: t("BPA_ARCHITECT_MOBILE_NUMBER"),
+            value: user?.info?.mobileNumber || "NA",
+          },
+          {
+            title: t("BPA_ARCHITECT_ID"),
+            value: application?.additionalDetails?.architectid || "NA",
+          },
+          {
+            title: t("BPA_ARCHITECT_EMAIL"),
+            value: user?.info?.emailId || "NA",
+          },
+        ],
+      },
+      {
         title: t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS"),
         values: [
           {
@@ -174,6 +203,59 @@ const getBPAAcknowledgement = async (application, tenantInfo, t) => {
           {
             title: t("ES_NEW_APPLICATION_LOCATION_LANDMARK"),
             value: application?.landInfo?.address?.landmark || "NA",
+          },
+        ],
+      },
+      {
+        title: t("BPA_COLONY_DETAILS"),
+        values: [
+          {
+            title: t("BPA_APPROVED_COLONY"),
+            value: application?.additionalDetails?.approvedColony || "NA",
+          },
+          {
+            title: t("BPA_MASTER_PLAN"),
+            value: application?.additionalDetails?.masterPlan || "NA",
+          },
+          {
+            title: t("BPA_DISTRICT"),
+            value: application?.additionalDetails?.District || "NA",
+          },
+          {
+            title: t("BPA_ULB_NAME"),
+            value: application?.additionalDetails?.UlbName || "NA",
+          },
+          {
+            title: t("BPA_BUILDING_STATUS"),
+            value: application?.additionalDetails?.buildingStatus || "NA",
+          },
+          {
+            title: t("BPA_SCHEMES"),
+            value: application?.additionalDetails?.schemes || "NA",
+          },
+          {
+            title: t("BPA_SCHEMES_TYPE"),
+            value: application?.additionalDetails?.schemesselection || "NA",
+          },
+          {
+            title: t("BPA_PURCHASED_FAR"),
+            value: application?.additionalDetails?.purchasedFAR || "NA",
+          },
+          {
+            title: t("BPA_GREEN_BUIDINGS"),
+            value: application?.additionalDetails?.greenbuilding || "NA",
+          },
+          {
+            title: t("BPA_RESTRICTED_AREA"),
+            value: application?.additionalDetails?.restrictedArea || "NA",
+          },
+          {
+            title: t("BPA_PROPOSED_SITE_TYPE"),
+            value: application?.additionalDetails?.proposedSite || "NA",
+          },
+          {
+            title: t("BPA_CORE_AREA"),
+            value: application?.data?.edcrDetails?.planDetail?.coreArea || "NA",
           },
         ],
       },

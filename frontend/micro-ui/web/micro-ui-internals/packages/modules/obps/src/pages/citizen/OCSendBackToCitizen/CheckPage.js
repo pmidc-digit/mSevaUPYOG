@@ -266,7 +266,7 @@ const CheckPage = ({ onSubmit, value }) => {
             label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}
             text={
               datafromAPI?.planDetail?.planInformation?.plotArea
-                ? `${datafromAPI?.planDetail?.planInformation?.plotArea} ${t(`BPA_SQ_FT_LABEL`)}`
+                ? `${datafromAPI?.planDetail?.planInformation?.plotArea} ${t(`BPA_SQ_MTRS_LABEL`)}`
                 : t("CS_NA")
             }
           />

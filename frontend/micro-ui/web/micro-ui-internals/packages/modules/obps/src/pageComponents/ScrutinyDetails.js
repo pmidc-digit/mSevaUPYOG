@@ -92,10 +92,10 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
       name: "BPA_TABLE_COL_FLOORAREA",
       id: "FloorArea",
     },
-    {
-      name: "BPA_TABLE_COL_CARPETAREA",
-      id: "CarpetArea",
-    },
+    // {
+    //   name: "BPA_TABLE_COL_CARPETAREA",
+    //   id: "CarpetArea",
+    // },
   ];
   const selectOccupancy = (e, data, num) => {
     let blocks = subOccupancyObject;
@@ -233,7 +233,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
           <Row
             className="border-none"
             label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
-            text={<ActionButton label={t("BPA_UPLOADED_PLAN_DXF")} jumpTo={data?.updatedDxfFile} />}
+            text={<ActionButton label={t("Uploaded Plan.pdf")} jumpTo={data?.updatedDxfFile} />}
           ></Row>
           <Row
             className="border-none"

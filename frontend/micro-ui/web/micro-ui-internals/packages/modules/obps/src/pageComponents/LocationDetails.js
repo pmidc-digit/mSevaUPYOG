@@ -242,8 +242,8 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
                     <svg
                       style={
                         !isMobile
-                          ? { position: "relative", left: "515px", bottom: "35px", marginTop: "-20px" }
-                          : { float: "right", position: "relative", bottom: "35px", marginTop: "-20px", marginRight: "5px" }
+                          ? { position: "relative", left: "515px", bottom: "25px", marginTop: "-20px" }
+                          : { float: "right", position: "relative", bottom: "25px", marginTop: "-20px", marginRight: "5px" }
                       }
                       width="24"
                       height="24"

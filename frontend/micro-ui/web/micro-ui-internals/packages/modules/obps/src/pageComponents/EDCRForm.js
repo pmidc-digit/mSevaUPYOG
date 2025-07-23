@@ -40,17 +40,56 @@ const EDCRForm = ({ t, config, onSelect, onSkip, formData }) => {
     coreAreaOptions,
     siteReservedOptions,
     approvedControlSheetOptions,
-  } = useEDCRForm({ t, formData });
+
+    cityOptions,
+    selectedCity,
+    setSelectedCity,
+  } = useEDCRForm({ formData });
   let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId() || "pb.amritsar"; // fallback hardcoded tenant (update this to your ULB)
 
   const stateId = Digit.ULBService.getStateId();
-  console.log(stateId, tenantId, "TEN STATE");
+  console.log(stateId, tenantId, t, "TEN STATE");
+
+  // const handleSubmit = () => {
+  //   if (!isFormValid()) {
+  //     setUploadMessage(t("EDCR_FORM_INCOMPLETE"));
+  //     return;
+  //   }
+
+  //   const data = {
+  //     Scrutiny: [
+  //       {
+  //         name,
+  //         ulb,
+  //         areaType,
+  //         schemeArea,
+  //         schName,
+  //         siteReserved,
+  //         approvedCS,
+  //         cluApprove,
+  //         coreArea,
+  //       },
+  //     ],
+  //     owners: {
+  //       documents: {
+  //         layoutFile,
+  //         dxfFile,
+  //       },
+  //     },
+  //   };
+
+  //   onSelect(config.key, data);
+  // };
 
   const handleSubmit = () => {
     if (!isFormValid()) {
       setUploadMessage(t("EDCR_FORM_INCOMPLETE"));
       return;
     }
+
+    const isApprovedCSYes = approvedCS?.code === "YES";
+
+    const documents = isApprovedCSYes ? { layoutFile } : { layoutFile, dxfFile };
 
     const data = {
       Scrutiny: [
@@ -67,10 +106,7 @@ const EDCRForm = ({ t, config, onSelect, onSkip, formData }) => {
         },
       ],
       owners: {
-        documents: {
-          layoutFile,
-          dxfFile,
-        },
+        documents,
       },
     };
 
@@ -86,7 +122,18 @@ const EDCRForm = ({ t, config, onSelect, onSkip, formData }) => {
         <TextInput t={t} isMandatory={true} type="text" name="applicantName" value={name} onChange={(e) => setName(e.target.value)} />
 
         <CardLabel>{t("EDCR_ULB_NAME")}</CardLabel>
-        <TextInput t={t} isMandatory={true} type="text" name="ulbName" value={ulb} onChange={(e) => setUlb(e.target.value)} />
+        <Dropdown
+          t={t}
+          isMandatory={true}
+          option={cityOptions}
+          optionKey="displayName"
+          selected={selectedCity}
+          select={(city) => {
+            setSelectedCity(city);
+            setUlb(city?.code); // Also set ulb here
+          }}
+          placeholder={t("COMMON_TABLE_SEARCH")}
+        />
 
         <CardLabel>{t("EDCR_SCRUTINY_AREA_TYPE")}</CardLabel>
         <Dropdown t={t} isMandatory={true} option={areaTypeOptions} selected={areaType} optionKey="value" select={handleAreaTypeChange} />
@@ -98,20 +145,6 @@ const EDCRForm = ({ t, config, onSelect, onSkip, formData }) => {
 
             <CardLabel>{t("EDCR_SCHEME_NAME")}</CardLabel>
             <TextInput t={t} isMandatory={true} type="text" name="schemeName" value={schName} onChange={(e) => setSchName(e.target.value)} />
-
-            <CardLabel>{t("EDCR_SCRUTINY_SCHEME_UPLOAD_LAYOUT")}</CardLabel>
-            <UploadFile
-              id={"edcr-layout"}
-              extraStyleName={"propertyCreate"}
-              onUpload={handleLayoutUpload}
-              onDelete={() => {
-                setLayoutFile(null);
-                setFile("");
-              }}
-              message={layoutFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-              error={error}
-              uploadMessage={layoutMessage}
-            />
 
             <CardLabel>{t("EDCR_IS_SITE_RESERVED")}</CardLabel>
             <Dropdown t={t} isMandatory={true} option={siteReservedOptions} selected={siteReserved} optionKey="value" select={setSiteReserved} />
@@ -126,6 +159,24 @@ const EDCRForm = ({ t, config, onSelect, onSkip, formData }) => {
                   selected={approvedCS}
                   optionKey="value"
                   select={setApprovedCS}
+                />
+              </React.Fragment>
+            )}
+
+            {approvedCS?.code === "YES" && (
+              <React.Fragment>
+                <CardLabel>{t("EDCR_SCRUTINY_SCHEME_UPLOAD_LAYOUT")}</CardLabel>
+                <UploadFile
+                  id={"edcr-layout"}
+                  extraStyleName={"propertyCreate"}
+                  onUpload={handleLayoutUpload}
+                  onDelete={() => {
+                    setLayoutFile(null);
+                    setFile("");
+                  }}
+                  message={layoutFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+                  error={error}
+                  uploadMessage={layoutMessage}
                 />
               </React.Fragment>
             )}
@@ -146,19 +197,23 @@ const EDCRForm = ({ t, config, onSelect, onSkip, formData }) => {
           </React.Fragment>
         )}
 
-        <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
-        <UploadFile
-          id={"edcr-doc"}
-          extraStyleName={"propertyCreate"}
-          onUpload={handleDXFUpload}
-          onDelete={() => {
-            setUploadedFile(null);
-            setFile("");
-          }}
-          message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-          error={error}
-          uploadMessage={uploadMessage}
-        />
+        {approvedCS?.code !== "YES" && (
+          <React.Fragment>
+            <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
+            <UploadFile
+              id={"edcr-doc"}
+              extraStyleName={"propertyCreate"}
+              onUpload={handleDXFUpload}
+              onDelete={() => {
+                setUploadedFile(null);
+                setFile("");
+              }}
+              message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+              error={error}
+              uploadMessage={uploadMessage}
+            />
+          </React.Fragment>
+        )}
       </FormStep>
     </React.Fragment>
   );

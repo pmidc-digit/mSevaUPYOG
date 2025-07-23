@@ -1,11 +1,11 @@
-// hooks/useEDCRForm.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { sortDropdownNames, stringReplaceAll } from "../../../../modules/obps/src/utils";
+import { useTranslation } from "react-i18next";
+import { useHistory, useLocation } from "react-router-dom";
 
-const useEDCRForm = ({ t, formData }) => {
+const useEDCRForm = ({ formData }) => {
   const stateId = Digit.ULBService.getStateId();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  console.log(stateId, tenantId, "TEN STATE");
   const [citymoduleList, setCitymoduleList] = useState([]);
   const [name, setName] = useState(formData?.Scrutiny?.[0]?.applicantName || "");
   const [ulb, setUlb] = useState(formData?.Scrutiny?.[0]?.ulbName || "");
@@ -25,13 +25,17 @@ const useEDCRForm = ({ t, formData }) => {
   const [layoutMessage, setLayoutMessage] = useState("");
   const [layoutFile, setLayoutFile] = useState(null);
   const [dxfFile, setDxfFile] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(() => ({ code: Digit.ULBService.getCitizenCurrentTenant(true) }));
+
+  const { t } = useTranslation();
 
   const { data: citymodules, isLoading } = Digit.Hooks.obps.useMDMS(stateId, "tenant", ["citymodule"]);
 
   const { data: mdmsData, isLoading: isMdmsLoading } = Digit.Hooks.useCustomMDMS(stateId, "BPA", [{ name: "EDCRNewBuildingPlanScrutiny" }]);
+  const { data: cities } = Digit.Hooks.useTenants();
 
+  const location = useLocation();
   const edcrMaster = mdmsData?.BPA?.EDCRNewBuildingPlanScrutiny?.[0] || {};
-
   const areaTypeOptions = edcrMaster?.areaType?.filter((o) => o.active) || [];
   const schemeAreaOptions = edcrMaster?.schemeArea?.filter((o) => o.active) || [];
   const cluApproveOptions = edcrMaster?.cluApprove?.filter((o) => o.active) || [];
@@ -45,14 +49,8 @@ const useEDCRForm = ({ t, formData }) => {
     { code: "NO", value: "No" },
   ];
 
-  console.log("mdmsData", mdmsData);
-  console.log("edcrMaster", edcrMaster);
-
-  console.log(Digit?.Hooks, "DIGIT");
-
   console.log("FORM DATA --->", JSON.stringify(formData, null, 2));
 
-  console.log(formData, "CUSTOM");
   useEffect(() => {
     if (citymodules?.tenant?.citymodule?.length > 0) {
       const list = citymodules?.tenant?.citymodule?.filter((d) => d.code === "BPAAPPLY");
@@ -90,15 +88,63 @@ const useEDCRForm = ({ t, formData }) => {
     setDxfFile(e.target.files[0]);
   };
 
+  const texts = useMemo(
+    () => ({
+      header: t("CS_COMMON_CHOOSE_LOCATION"),
+      submitBarLabel: t("CORE_COMMON_CONTINUE"),
+    }),
+    [t]
+  );
+
+  function selectCity(city) {
+    setSelectedCity(city);
+    console.log("selected city", city);
+    setShowError(false);
+  }
+  console.log("selected city", selectCity);
+  const RadioButtonProps = useMemo(() => {
+    return {
+      options: cities,
+      optionsKey: "i18nKey",
+      additionalWrapperClass: "reverse-radio-selection-wrapper",
+      onSelect: selectCity,
+      selectedOption: selectedCity,
+    };
+  }, [cities, t, selectedCity]);
+
+  const cityOptions = cities?.map((city) => ({
+    ...city,
+    displayName: t(city.i18nKey),
+  }));
+
   const isFormValid = () => {
-    const base = name && ulb && dxfFile;
-    if (!areaType) return false;
+    if (!name || !selectedCity?.code || !areaType) return false;
 
     if (areaType?.code === "SCHEME_AREA") {
-      return base && schemeArea && schName;
-    } else {
-      return base && cluApprove && coreArea;
+      if (!schemeArea || !schName || !siteReserved) return false;
+
+      if (siteReserved?.code === "YES") {
+        if (!approvedCS) return false;
+
+        if (approvedCS?.code === "YES") {
+          if (!layoutFile) return false;
+          return true;
+        }
+      }
+      return !!dxfFile;
     }
+
+    if (areaType?.code === "NON_SCHEME_AREA") {
+      if (!cluApprove) return false;
+
+      if (cluApprove?.code !== "NO") {
+        if (!coreArea) return false;
+      }
+
+      return !!dxfFile;
+    }
+
+    return true;
   };
 
   console.log({
@@ -189,6 +235,10 @@ const useEDCRForm = ({ t, formData }) => {
     coreAreaOptions,
     siteReservedOptions,
     approvedControlSheetOptions,
+
+    cityOptions,
+    selectedCity,
+    setSelectedCity,
   };
 };
 

@@ -181,7 +181,11 @@ const CheckPage = ({ onSubmit, value }) => {
             <SubmitBar
               label={t("CS_COMMON_SUBMIT")}
               onSubmit={onSubmit}
-              disabled={paymentDetails?.billResponse?.Bill?.[0]?.billDetails[0]?.amount ? false : true}
+              // disabled={paymentDetails?.billResponse?.Bill?.[0]?.billDetails[0]?.amount ? false : true}
+              disabled={
+                typeof paymentDetails?.billResponse?.Bill?.[0]?.billDetails[0]?.amount !== "number" ||
+                paymentDetails?.billResponse?.Bill?.[0]?.billDetails[0]?.amount < 0
+              }
             />
           </Card>
         </div>

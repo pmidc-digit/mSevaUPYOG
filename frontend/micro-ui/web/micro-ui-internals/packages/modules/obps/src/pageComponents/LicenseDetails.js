@@ -1,4 +1,4 @@
-import { BackButton, CardLabel, FormStep, Loader, MobileNumber, RadioButtons, TextInput } from "@mseva/digit-ui-react-components";
+import { BackButton, CardLabel, FormStep, Loader, MobileNumber, RadioButtons, TextInput, DatePicker } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/Timeline";
@@ -14,6 +14,16 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   const [name, setName] = useState(
     (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || ""
   );
+  const [lastName, setLastName] = useState(() => {
+    const fullName = formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
+    const nameParts = fullName.trim().split(" ");
+    return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
+  });
+  const [middleName, setMiddleName] = useState("");
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [isPasswordValid, setIsPasswordValid] = useState(true);
+  const [dateOfBirth, setDateOfBirth] = useState(formData?.LicneseDetails?.dateOfBirth || ""); // State for the date field
   const [email, setEmail] = useState(
     (!isOpenLinkFlow ? userInfo?.info?.emailId : "") || formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || ""
   );
@@ -63,6 +73,18 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   function SelectName(e) {
     setName(e.target.value);
   }
+  function SelectLastName(e) {
+    setLastName(e.target.value);
+  }
+  function SelectMiddleName(e) {
+    setMiddleName(e.target.value);
+  }
+  function SelectUserName(e) {
+    setUserName(e.target.value);
+  }
+  function SelectPassword(e) {
+    setPassword(e.target.value);
+  }
   function selectEmail(e) {
     setEmail(e.target.value);
   }
@@ -77,9 +99,36 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     setPanNumber(e.target.value);
   }
 
+  function handleDateOfBirthChange(date) {
+    const today = new Date();
+    const birthDate = new Date(date);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    if (age < 18) {
+      alert(t("You must be at least 18 years old. Please enter a valid date of birth."));
+      return;
+    }
+
+    setDateOfBirth(date);
+  }
+
   const goNext = () => {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
-      let licenseDet = { name: name, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber };
+      let licenseDet = { name: name, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
       onSelect(config.key, licenseDet);
     } else {
       let data = formData?.formData;
@@ -89,6 +138,9 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       data.LicneseDetails.email = email;
       data.LicneseDetails.PanNumber = PanNumber;
       onSelect("", formData);
+    }
+    if (age < 18) {
+      alert(t("You must be at least 18 years old to proceed"));
     }
   };
 
@@ -100,9 +152,9 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
         {isOpenLinkFlow && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
         <Timeline currentStep={1} flow="STAKEHOLDER" />
         {!isLoading || !isUserLoading ? (
-          <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!name || !mobileNumber || !gender}>
+          <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!name || !mobileNumber || !gender || !dateOfBirth}>
             <div>
-              <CardLabel>{`${t("BPA_APPLICANT_NAME_LABEL")}*`}</CardLabel>
+              <CardLabel>{"Firstname*"}</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -119,6 +171,65 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
+              <CardLabel>{"Middle name"}</CardLabel>
+              <TextInput
+                t={t}
+                type={"text"}
+                isMandatory={false}
+                // optionKey="i18nKey"
+                name="Mname"
+                value={middleName}
+                onChange={SelectMiddleName}
+                // disable={middleName && !isOpenLinkFlow ? true : false}
+                {...(validation = {
+                  isRequired: false,
+                  pattern: "^[a-zA-Z ]*$",
+                  type: "text",
+                  title: t("PT_NAME_ERROR_MESSAGE"),
+                })}
+              />
+              <CardLabel>{"Lastname*"}</CardLabel>
+              <TextInput
+                t={t}
+                type={"text"}
+                isMandatory={false}
+                optionKey="i18nKey"
+                name="Lname"
+                value={lastName}
+                onChange={SelectLastName}
+                // disable={lastName && !isOpenLinkFlow ? true : false}
+                {...(validation = {
+                  isRequired: true,
+                  pattern: "^[a-zA-Z ]*$",
+                  type: "text",
+                  title: t("PT_NAME_ERROR_MESSAGE"),
+                })}
+              />
+              <CardLabel>{"Date of Birth*"}</CardLabel>
+              <DatePicker
+                date={dateOfBirth}
+                onChange={handleDateOfBirthChange}
+                min="1900-01-01"
+                max={new Date().toISOString().split("T")[0]}
+                isRequired={true}
+              />
+              {/* <CardLabel>{`${t("BPA_APPLICANT_NAME_LABEL")}*`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="name"
+              value={name}
+              onChange={SelectName}
+              disable={name && !isOpenLinkFlow ? true : false}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[a-zA-Z ]*$",
+                type: "text",
+                title: t("PT_NAME_ERROR_MESSAGE"),
+              })}
+            /> */}
               <CardLabel>{`${t("BPA_APPLICANT_GENDER_LABEL")}*`}</CardLabel>
               <RadioButtons
                 t={t}
@@ -151,7 +262,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 value={email}
                 onChange={selectEmail}
                 disable={userInfo?.info?.emailId && !isOpenLinkFlow ? true : false}
-                //disable={editScreen}
+                // disable={editScreen}
                 {...{
                   required: true,
                   pattern: "[A-Za-z0-9._%+-]+@[a-z0-9.-]+.[a-z]{2,4}$",
@@ -159,17 +270,77 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
                 }}
               />
-              <CardLabel>{`${t("BPA_APPLICANT_PAN_NO")}`}</CardLabel>
-              <TextInput
-                t={t}
-                type={"text"}
-                isMandatory={false}
-                optionKey="i18nKey"
-                name="PanNumber"
-                value={PanNumber}
-                onChange={selectPanNumber}
-                {...{ required: true, pattern: "[A-Z]{5}[0-9]{4}[A-Z]{1}", title: t("BPA_INVALID_PAN_NO") }}
-              />
+              {/* <CardLabel>{`${t("BPA_APPLICANT_PAN_NO")}`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="PanNumber"
+              value={PanNumber}
+              onChange={selectPanNumber}
+              {...{ required: true, pattern: "[A-Z]{5}[0-9]{4}[A-Z]{1}", title: t("BPA_INVALID_PAN_NO") }}
+            /> */}
+              {/* <CardLabel>{"Username"}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="Uname"
+              value={userName}
+              onChange={SelectUserName}
+              // disable={userName && !isOpenLinkFlow ? true : false}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[a-zA-Z ]*$",
+                type: "text",
+                title: t("PT_NAME_ERROR_MESSAGE"),
+              })}
+            />
+            <CardLabel>{"Password"}</CardLabel>
+            <TextInput
+              t={t}
+              type={"password"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="Pword"
+              value={password}
+              minLength="10"
+              onChange={(e) => {
+                const value = e.target.value;
+                setPassword(value); // Update the password state
+              }}
+
+              onBlur={() => {
+                if (!regex.test(password)) {
+                  alert(t("Password must be at least 10 characters long, include an uppercase letter, a special character, and alphanumeric characters."));
+                }
+              }}
+              {...(validation = {
+                isRequired: true,
+                pattern: /^(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])(?=.*[a-zA-Z0-9])[A-Za-z0-9!@#$%^&*(),.?":{}|<>]{1,}$/,
+                type: "Password",
+                title: "titlerror Password must be 8 to 10 characters long, include an uppercase letter, a special character, and alphanumeric characters.",
+              })}
+            /> */}
+              {/* <CardLabel>{"Confirm Password"}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="name"
+              value={name}
+              onChange={SelectName}
+              disable={name && !isOpenLinkFlow ? true : false}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[a-zA-Z ]*$",
+                type: "text",
+                title: t("PT_NAME_ERROR_MESSAGE"),
+              })}
+            /> */}
             </div>
           </FormStep>
         ) : (

@@ -94,21 +94,91 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
   //   return mandatoryFieldsCheck;
   // };
 
-  const validateOwnerDetails = (data) => {
-    const { ownershipCategory, owners } = data;
-    if (!ownershipCategory?.code || !owners?.length) return false;
-    return owners.every(
-      (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName && owner?.dob
-    );
-  };
+  // const validateOwnerDetails = (data) => {
+  //   const { ownershipCategory, owners } = data;
+  //   if (!ownershipCategory?.code || !owners?.length) return false;
+  //   return owners.every(
+  //     (owner) => owner?.name && owner?.mobileNumber && owner?.gender?.code && owner?.relationship?.code && owner?.fatherOrHusbandName && owner?.dob
+  //   );
+  // };
+
+const validateOwnerDetails = (data) => {
+  const { ownershipCategory, owners } = data;
+  const errors = [];
+
+  if (!ownershipCategory?.code) {
+    errors.push(t("PT_OWNERSHIP_CATEGORY_REQUIRED"));
+  }
+
+  if (!owners?.length) {
+    errors.push(t("PT_AT_LEAST_ONE_OWNER_REQUIRED"));
+    return errors;
+  }
+
+  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  const MOBILE_REGEX = /^[6-9]\d{9}$/;
+
+  owners.forEach((owner, index) => {
+    const indexKey = `_OWNER_${index + 1}`;
+
+    if (!owner?.name) {
+      errors.push(`${t("PT_NAME_REQUIRED")} ${indexKey}`);
+    }
+
+    if (!owner?.mobileNumber) {
+      errors.push(`${t("PT_MOBILE_REQUIRED")} ${indexKey}`);
+    } else if (!MOBILE_REGEX.test(owner.mobileNumber)) {
+      errors.push(`${t("PT_MOBILE_INVALID")} ${indexKey}`);
+    }
+
+    if (!owner?.gender?.code) {
+      errors.push(`${t("PT_GENDER_REQUIRED")} ${indexKey}`);
+    }
+
+    if (!owner?.relationship?.code) {
+      errors.push(`${t("PT_RELATIONSHIP_REQUIRED")} ${indexKey}`);
+    }
+
+    if (!owner?.fatherOrHusbandName) {
+      errors.push(`${t("PT_FATHER_OR_HUSBAND_NAME_REQUIRED")} ${indexKey}`);
+    }
+
+    if (!owner?.dob) {
+      errors.push(`${t("PT_DOB_REQUIRED")} ${indexKey}`);
+    } else {
+      const dobDate = new Date(owner.dob);
+      const today = new Date();
+      let age = today.getFullYear() - dobDate.getFullYear();
+      const m = today.getMonth() - dobDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+        age--;
+      }
+
+      if (isNaN(age)) {
+        errors.push(`${t("PT_DOB_INVALID")} ${indexKey}`);
+      } else if (age < 18 || age > 150) {
+        errors.push(`${t("PT_AGE_INVALID")} ${indexKey}`);
+      }
+    }
+
+    if (owner?.pan && !PAN_REGEX.test(owner.pan)) {
+      errors.push(`${t("PT_PAN_INVALID")} ${indexKey}`);
+    }
+  });
+
+  return errors;
+};
+
+
+  
 
   const goNext = async (data) => {
     console.log("Submitting full form data: ", formData);
 
     const { OwnerDetails } = formData || {};
-
-    if (!validateOwnerDetails(OwnerDetails)) {
-      setError(t("Please fill all owner mandatory details correctly."));
+    const missingFields = validateOwnerDetails(OwnerDetails)
+    if (missingFields?.length>0) {
+      setError(t("Please fill all owner mandatory details correctly.")+" "+missingFields[0]);
       setShowToast(true);
       return;
     }

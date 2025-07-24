@@ -311,7 +311,7 @@ const LocationSearch = (props) => {
       let pincode = GetPinCode(place);
 
       console.log("Pincode: ", pincode);
-      if (pincode) {
+      // if (pincode) {
         const { geometry } = place;
         const geoLocation = {
           latitude: geometry.location.lat(),
@@ -319,7 +319,7 @@ const LocationSearch = (props) => {
         };
         if (isPlaceRequired) onChange(pincode, geoLocation, place.name);
         else onChange(pincode, geoLocation);
-      }
+      // }
       markers.forEach((marker) => {
         marker.setMap(null);
       });
@@ -358,14 +358,7 @@ const LocationSearch = (props) => {
       };
       const getLatLngError = (error) => {
         let defaultLatLong = {};
-        if (props?.isPTDefault) {
-          defaultLatLong = props?.PTdefaultcoord?.defaultConfig || { lat: 0, lng: 0 };
-        } else {
-          defaultLatLong = {
-            lat: 0,
-            lng: 0,
-          };
-        }
+        defaultLatLong = props?.PTdefaultcoord?.defaultConfig || { lat: 0, lng: 0 };
         initAutocomplete(props.onChange, defaultLatLong, props.isPlaceRequired);
       };
 

@@ -35,26 +35,15 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
     }
   };
 
-  console.log("GeoLocation formdata", config.key, formData);
+  console.log("GeoLocation formdata", config.key, formData );
   const isEmpRenewLicense =
     window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
 
 
     function open (){
-      setPopup(true);
+      console.log("Opening Close")
+      setPopup(!popup);
     }
-  function close(state) {
-    switch (state) {
-      case fullscreen:
-        setFullscreen(!fullscreen);
-        break;
-      case popup:
-        setPopup(!popup);
-        break;
-      default:
-        break;
-    }
-  }
 
   return (
     <React.Fragment>
@@ -65,22 +54,15 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
             </CardLabel>
             <div className="field" style={{ marginTop: "20px", display: "flex" }}  id="search-property-field">
               <TextInput
+              value={formData?.address?.geoLocation?.latitude ? formData?.address?.geoLocation?.latitude?.toString()+ ", " + formData?.address?.geoLocation?.longitude?.toString() : ""}
+              disable={true}
               />
-              <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {open()}}  disabled={isEmpRenewLicense}>
+              <button className="submit-bar" type="button" style={{ color: "white" }} onClick={() => {open()}}  disabled={isEmpRenewLicense || isEditProperty}>
                 {`${t("GEO_LOCATION_SEARCH")}`}
               </button>
             </div>
       </LabelFieldPair>
-    {popup ? <Modal
-          actionCancelLabel={t("CS_COMMON_CANCEL")}
-          actionCancelOnSubmit={() => close(popup)}
-          actionSaveLabel={ t("CS_COMMON_PICK")}
-          actionSaveOnSubmit={() => {
-            console.log("geoLocationInThisModal", geoLocation)
-            onSelect(config.key, { geoLocation, pincode })
-            close(popup)
-          }}
-        >
+    {popup ?
         <LocationSearchCard
           header={t("TL_GEOLOCATION_HEADER")}
           cardText={t("TL_GEOLOCATION_TEXT")}
@@ -88,17 +70,17 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
           skipAndContinueText={t("CORE_COMMON_SKIP_CONTINUE")}
           // skip={onSkip}
           t={t}
-          position={geoLocation}
-          onSave={() => onSelect(config.key, { geoLocation, pincode })}
+          position={formData?.address?.geoLocation}
+          onSave={() => {onSelect(config.key, { geoLocation, pincode })}}
           onChange={(code, location) => onChange(code, location)}
           disabled={isEmpRenewLicense || isEditProperty}
           forcedError={t(pincodeServicability)}
           isPTDefault={true}
-          PTdefaultcoord={defaultcoord1}
+          PTdefaultcoord={formData?.address?.geoLocation}
           onSelect={onSelect}
+          open={open}
           //isPopUp={true}
-        /> 
-        </Modal>: null}
+        /> : null}
     </React.Fragment>
   );
 };

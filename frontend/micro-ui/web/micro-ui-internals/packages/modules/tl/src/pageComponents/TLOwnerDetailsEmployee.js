@@ -430,7 +430,7 @@ console.log("Getting inside TL", owner);
                      control={control}
                      defaultValue={owner?.emailId}
                      name={"emailId"}
-                     rules={{ /* required: t("REQUIRED_FIELD"),*/ validate: { pattern: (val) => (/^$|^(?=^.{1,64}$)((([^<>()\[\]\\.,;:\s$*@'"]+(\.[^<>()\[\]\\.,;:\s@'"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,})))$/.test(val) ? true : t("TL_EMAIL_ERROR_MESSAGE")) }  }}
+                     rules={{ /* required: t("REQUIRED_FIELD"),*/ validate: { pattern: (val) => (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(val) ? true : t("TL_EMAIL_ERROR_MESSAGE")) }  }}
                      render={(props)=>(
                       <TextInput
                         t={t}
@@ -807,7 +807,7 @@ console.log("Getting inside TL", owner);
                           onChange={(e) => {
                             if (e.target.value != owner?.pan && isRenewal)
                               setPreviousLicenseDetails({ ...previousLicenseDetails, checkForRenewal: true });
-                            props.onChange(e.target.value);
+                            props.onChange(e.target.value?.toUpperCase());
                             // props.onChange(e);
                             setFocusIndex({ index: owner.key, type: "pan" });
                           }}

@@ -40,6 +40,9 @@ const App = ({ path }) => {
   const OCSendToArchitect = Digit?.ComponentRegistryService?.getComponent("ObpsOCSendToArchitect");
   const BPASendBackToCitizen = Digit?.ComponentRegistryService?.getComponent("ObpsBPASendBackToCitizen");
   const OCSendBackToCitizen = Digit?.ComponentRegistryService?.getComponent("ObpsOCSendBackToCitizen");
+  const BPANewBuildingdetails = Digit?.ComponentRegistryService?.getComponent("BPANewBuildingdetails");
+  const CitizenConsent = Digit?.ComponentRegistryService?.getComponent("CitizenConsent");
+  const Architectconcent = Digit?.ComponentRegistryService?.getComponent("Architectconcent");
   const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false;
   return (
     <React.Fragment>
@@ -68,6 +71,9 @@ const App = ({ path }) => {
           <PrivateRoute path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`} component={BPASendBackToCitizen} />
           <PrivateRoute path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`} component={OCSendBackToCitizen} />
           <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
+          <PrivateRoute path={`${path}/citizenConsent`} component={CitizenConsent} />
+          <PrivateRoute path={`${path}/architectConsent`} component={Architectconcent} />
+          <PrivateRoute path={`${path}/bpaNewBuilding`} component={BPANewBuildingdetails} />
         </Switch>
       </div>
     </React.Fragment>

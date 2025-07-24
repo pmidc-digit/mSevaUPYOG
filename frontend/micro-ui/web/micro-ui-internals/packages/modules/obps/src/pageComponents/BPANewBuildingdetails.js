@@ -3,11 +3,13 @@ import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon } from
 import Timeline from "../components/Timeline";
 import { useLocation, useRouteMatch } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 
-const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
+const BPANewBuildingdetails = ({ config, onSelect, formData }) => {
   const { pathname: url } = useLocation();
   let index = window.location.href.charAt(window.location.href.length - 1);
   let validation = {};
+  const { t } = useTranslation();
   const [approvedColony, setapprovedColony] = useState(formData?.owners?.approvedColony || "");
   const [masterPlan, setmasterPlan] = useState(formData?.owners?.masterPlan || "");
   const [UlbName, setUlbName] = useState(formData?.owners?.UlbName || "");
@@ -116,10 +118,13 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { data: ulbList } = Digit.Hooks.obps.useUlbType(stateId, "BPA", "UlbType");
+  // const { data: ulbList } = Digit.Hooks.obps.useUlbType(stateId, "BPA", "UlbType");
+  const ulbList = [];
+  // const { data: districtMenu } = Digit.Hooks.obps.useDistricts(stateId, "BPA", "Districts");
+  // const { data: ULB } = Digit.Hooks.obps.useULBList(stateId, "BPA", "Ulb");
 
-  const { data: districtMenu } = Digit.Hooks.obps.useDistricts(stateId, "BPA", "Districts");
-  const { data: ULB } = Digit.Hooks.obps.useULBList(stateId, "BPA", "Ulb");
+  const districtMenu = [];
+  const ULB = [];
 
   let ulblists = [];
 

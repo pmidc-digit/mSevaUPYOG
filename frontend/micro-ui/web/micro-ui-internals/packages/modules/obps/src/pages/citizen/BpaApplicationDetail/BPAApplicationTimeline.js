@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from "react";
+import React, { Fragment, useState} from "react";
 import { useTranslation } from "react-i18next";
 import { ActionLinks, CardSectionHeader, CheckPoint, ConnectingCheckPoints, Loader, SubmitBar, LinkButton } from "@mseva/digit-ui-react-components";
 import BPACaption from "./BPACaption";
@@ -11,10 +11,10 @@ const BPAApplicationTimeline = (props) => {
     id: props.id,
     moduleCode: businessService,
   });
-
-  const [showAllTimeline, setShowAllTimeline] = useState(false);
-  function OpenImage(imageSource, index, thumbnailsToShow) {
-    window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
+  
+  const [showAllTimeline, setShowAllTimeline]=useState(false);
+  function OpenImage(imageSource, index,thumbnailsToShow){
+    window.open(thumbnailsToShow?.fullImage?.[0],"_blank");
   }
   const getTimelineCaptions = (checkpoint) => {
     // if (checkpoint.state === "INITIATE") {
@@ -23,26 +23,26 @@ const BPAApplicationTimeline = (props) => {
     //     source: props.application?.tradeLicenseDetail?.channel || "",
     //   };
     //   return <BPACaption data={caption} />;
-    // }
+    // }  
     //else {
-    const caption = {
-      date: checkpoint?.auditDetails?.lastModified,
-      name: checkpoint?.assignes?.[0]?.name,
-      mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
-      comment: t(checkpoint?.comment),
-      wfComment: checkpoint.wfComment,
-      thumbnailsToShow: checkpoint?.thumbnailsToShow,
-    };
-    return <BPACaption data={caption} OpenImage={OpenImage} />;
+      const caption = {
+        date: checkpoint?.auditDetails?.lastModified,
+        name: checkpoint?.assignes?.[0]?.name,
+        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
+        comment: t(checkpoint?.comment),
+        wfComment : checkpoint.wfComment,
+        thumbnailsToShow : checkpoint?.thumbnailsToShow,
+      };
+      return <BPACaption data={caption} OpenImage={OpenImage} />;
     //}
   };
 
   if (isLoading) {
     return <Loader />;
   }
-  const toggleTimeline = () => {
-    setShowAllTimeline((prev) => !prev);
-  };
+  const toggleTimeline=()=>{
+    setShowAllTimeline((prev)=>!prev);
+  }
 
   return (
     <React.Fragment>
@@ -62,13 +62,15 @@ const BPAApplicationTimeline = (props) => {
           ) : (
             <ConnectingCheckPoints>
               {data?.timeline &&
-                data?.timeline.slice(0, showAllTimeline ? data.timeline.length : 2).map((checkpoint, index, arr) => {
+                data?.timeline.slice(0,showAllTimeline? data.timeline.length:2).map((checkpoint, index, arr) => {
                   let timelineStatusPostfix = "";
                   if (window.location.href.includes("/obps")) {
-                    if (data?.timeline[index - 1]?.state?.includes("BACK_FROM") || data?.timeline[index - 1]?.state?.includes("SEND_TO_CITIZEN"))
-                      timelineStatusPostfix = `_NOT_DONE`;
-                    else if (checkpoint?.performedAction === "SEND_TO_ARCHITECT") timelineStatusPostfix = `_BY_ARCHITECT_DONE`;
-                    else timelineStatusPostfix = index == 0 ? "" : `_DONE`;
+                    if(data?.timeline[index-1]?.state?.includes("BACK_FROM") || data?.timeline[index-1]?.state?.includes("SEND_TO_CITIZEN"))
+                        timelineStatusPostfix = `_NOT_DONE`
+                    else if(checkpoint?.performedAction === "SEND_TO_ARCHITECT")
+                        timelineStatusPostfix = `_BY_ARCHITECT_DONE`
+                    else
+                    timelineStatusPostfix = index == 0 ? "" : `_DONE`;
                   }
                   return (
                     <React.Fragment key={index}>
@@ -84,13 +86,14 @@ const BPAApplicationTimeline = (props) => {
             </ConnectingCheckPoints>
           )}
           {data?.timeline?.length > 2 && (
-            <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
+            <LinkButton label={showAllTimeline? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}>
+            </LinkButton>   
           )}
         </Fragment>
       )}
       {/* {data && showNextActions(data?.nextActions)} */}
     </React.Fragment>
   );
-};
+}
 
 export default BPAApplicationTimeline;

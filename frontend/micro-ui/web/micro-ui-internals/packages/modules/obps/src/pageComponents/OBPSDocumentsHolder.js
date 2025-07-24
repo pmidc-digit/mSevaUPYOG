@@ -49,15 +49,14 @@ const OBPSDocumentsHolder = ({ documents = [] }) => {
   if (isLoading) {
     return <Loader />;
   }
-  let consolidatedDocObject =
-    data?.pdfFiles?.reduce((acc, curr) => {
-      if (acc[curr.docCategory]) {
-        acc[curr.docCategory].push(curr);
-      } else {
-        acc[curr.docCategory] = [curr];
-      }
-      return { ...acc };
-    }, {}) || {};
+  let consolidatedDocObject = data?.pdfFiles?.reduce((acc, curr) => {
+    if (acc[curr.docCategory]) {
+      acc[curr.docCategory].push(curr);
+    } else {
+      acc[curr.docCategory] = [curr];
+    }
+    return { ...acc };
+  }, {})||{};
   return (
     <React.Fragment>
       {Object.keys(consolidatedDocObject)?.map((category, index) => (

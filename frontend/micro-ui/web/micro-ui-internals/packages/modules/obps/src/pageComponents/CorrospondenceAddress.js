@@ -5,9 +5,7 @@ import Timeline from "../components/Timeline";
 const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData }) => {
   let validation = {};
   const onSkip = () => onSelect();
-  const [Correspondenceaddress, setCorrespondenceaddress] = useState(
-    formData?.Correspondenceaddress || formData?.formData?.Correspondenceaddress || ""
-  );
+  const [Correspondenceaddress, setCorrespondenceaddress] = useState(formData?.Correspondenceaddress || formData?.formData?.Correspondenceaddress || "");
   const [isAddressSame, setisAddressSame] = useState(formData?.isAddressSame || formData?.formData?.isAddressSame || false);
   const [error, setError] = useState(null);
   const [showToast, setShowToast] = useState(null);
@@ -17,18 +15,17 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
 
-  if (isopenlink)
-    window.onunload = function () {
-      sessionStorage.removeItem("Digit.BUILDING_PERMIT");
-    };
+  if(isopenlink)  
+  window.onunload = function () {
+    sessionStorage.removeItem("Digit.BUILDING_PERMIT");
+  }
 
   function selectChecked(e) {
     if (isAddressSame == false) {
       setisAddressSame(true);
-      setCorrespondenceaddress(
-        formData?.LicneseDetails?.PermanentAddress ? formData?.LicneseDetails?.PermanentAddress : formData?.formData?.LicneseDetails?.PermanentAddress
-      );
-    } else {
+      setCorrespondenceaddress(formData?.LicneseDetails?.PermanentAddress ? formData?.LicneseDetails?.PermanentAddress : formData?.formData?.LicneseDetails?.PermanentAddress);
+    }
+    else {
       Array.from(document.querySelectorAll("input")).forEach((input) => (input.value = ""));
       setisAddressSame(false);
       setCorrespondenceaddress("");
@@ -39,64 +36,67 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   }
 
   const goNext = () => {
+
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
       setIsDisableForNext(true);
       let payload = {
-        Licenses: [
+        "Licenses": [
           {
-            tradeLicenseDetail: {
-              owners: [
+            "tradeLicenseDetail": {
+              "owners": [
                 {
-                  gender: formData?.LicneseDetails?.gender?.code,
-                  mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  name: formData?.LicneseDetails?.name,
-                  dob: null,
-                  emailId: formData?.LicneseDetails?.email,
-                  permanentAddress: formData?.LicneseDetails?.PermanentAddress,
-                  correspondenceAddress: Correspondenceaddress,
-                  pan: formData?.LicneseDetails?.PanNumber,
+                  "gender": formData?.LicneseDetails?.gender?.code,
+                  "mobileNumber": formData?.LicneseDetails?.mobileNumber,
+                  "name": formData?.LicneseDetails?.name,
+                  "dob": null,
+                  "emailId": formData?.LicneseDetails?.email,
+                  "permanentAddress": formData?.LicneseDetails?.PermanentAddress,
+                  "correspondenceAddress": Correspondenceaddress,
+                  "pan":formData?.LicneseDetails?.PanNumber,
                   // "permanentPinCode": "143001"
-                },
+                }
               ],
-              subOwnerShipCategory: "INDIVIDUAL",
-              tradeUnits: [
+              "subOwnerShipCategory": "INDIVIDUAL",
+              "tradeUnits": [
                 {
-                  tradeType: formData?.LicneseType?.LicenseType?.tradeType,
-                },
+                  "tradeType": formData?.LicneseType?.LicenseType?.tradeType,
+                }
               ],
-              additionalDetail: {
-                counsilForArchNo: formData?.LicneseType?.ArchitectNo,
-                isSelfCertificationRequired: formData?.LicneseType?.selfCertification ? formData?.LicneseType?.selfCertification : null,
+              "additionalDetail": {
+                "counsilForArchNo": formData?.LicneseType?.ArchitectNo,
+                "isSelfCertificationRequired": formData?.LicneseType?.selfCertification?formData?.LicneseType?.selfCertification: null,
               },
-              address: {
-                city: "",
-                landmark: "",
-                pincode: "",
+              "address": {
+                "city": "",
+                "landmark": "",
+                "pincode": ""
               },
-              institution: null,
-              applicationDocuments: null,
+              "institution": null,
+              "applicationDocuments": null
             },
-            licenseType: "PERMANENT",
-            businessService: "BPAREG",
-            tenantId: stateId,
-            action: "NOWORKFLOW",
-          },
-        ],
-      };
+            "licenseType": "PERMANENT",
+            "businessService": "BPAREG",
+            "tenantId": stateId,
+            "action": "NOWORKFLOW"
+          }
+        ]
+      }
 
       Digit.OBPSService.BPAREGCreate(payload, tenantId)
         .then((result, err) => {
           setIsDisableForNext(false);
-          let data = { result: result, formData: formData, Correspondenceaddress: Correspondenceaddress, isAddressSame: isAddressSame };
+          let data = { result: result, formData: formData, Correspondenceaddress: Correspondenceaddress, isAddressSame: isAddressSame }
           //1, units
           onSelect("", data, "", true);
+
         })
         .catch((e) => {
           setIsDisableForNext(false);
           setShowToast({ key: "error" });
           setError(e?.response?.data?.Errors[0]?.message || null);
         });
-    } else {
+    }
+    else {
       formData.Correspondenceaddress = Correspondenceaddress;
       formData.isAddressSame = isAddressSame;
       onSelect("", formData, "", true);
@@ -108,9 +108,16 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   return (
     <React.Fragment>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
+
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
         <Timeline currentStep={2} flow="STAKEHOLDER" />
-        <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={isDisableForNext}>
+        <FormStep
+          config={config}
+          onSelect={goNext}
+          onSkip={onSkip}
+          t={t}
+          isDisabled={isDisableForNext}
+        >
           <CheckBox
             label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
             onChange={(e) => selectChecked(e)}
@@ -132,17 +139,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
         </FormStep>
       </div>
       <div style={{ disabled: "true", height: "30px", width: "100%", fontSize: "14px" }}></div>
-      {showToast && (
-        <Toast
-          error={showToast?.key === "error" ? true : false}
-          label={error}
-          isDleteBtn={true}
-          onClose={() => {
-            setShowToast(null);
-            setError(null);
-          }}
-        />
-      )}
+      {showToast && <Toast error={showToast?.key === "error" ? true : false} label={error} isDleteBtn={true} onClose={() => { setShowToast(null); setError(null); }} />}
     </React.Fragment>
   );
 };

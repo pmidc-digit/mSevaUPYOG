@@ -44,6 +44,8 @@ const App = ({ path }) => {
   const CitizenConsent = Digit?.ComponentRegistryService?.getComponent("CitizenConsent");
   const Architectconcent = Digit?.ComponentRegistryService?.getComponent("Architectconcent");
   const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false;
+
+  console.log(path, "PATHHHHH");
   return (
     <React.Fragment>
       <div className="ws-citizen-wrapper">

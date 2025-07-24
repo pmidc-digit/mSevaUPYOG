@@ -117,19 +117,6 @@ const useEDCRForm = ({ formData }) => {
     displayName: t(city.i18nKey),
   }));
 
-  // const isFormValid = () => {
-  //   const base = name && ulb && dxfFile;
-  //   if (!areaType) return false;
-
-  //   if (areaType?.code === "SCHEME_AREA") {
-  //     return base && schemeArea && schName;
-  //   } else {
-  //     return base && cluApprove && coreArea;
-  //   }
-  // };
-
-  // Pseudo-code inside useEDCRForm.js
-
   const isFormValid = () => {
     if (!name || !selectedCity?.code || !areaType) return false;
 

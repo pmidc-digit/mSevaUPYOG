@@ -176,7 +176,7 @@ import SearchMdmsTypes from "./obps/SearchMdmsTypes";
 import useOBPSMDMS from "./obps/useMDMS";
 import useOBPSSearch from "./obps/useOBPSSearch";
 import useScrutinyDetails from "./obps/useScrutinyDetails";
-import useQualificationTypes from "./obps/useQualificationTypes";
+// import useQualificationTypes from "./obps/useQualificationTypes";
 import useTenantsOBPS from "./obps/useTenants";
 import useNocDetails from "./obps/useNocDetails";
 import useNOCApplicationActions from "./noc/useNOCApplicationActions";
@@ -200,6 +200,7 @@ import useServiceTypeFromApplicationType from "./obps/useServiceTypeFromApplicat
 import useBusinessServiceBasedOnServiceType from "./obps/useBusinessServiceBasedOnServiceType";
 import useBusinessServiceData from "./obps/useBusinessServiceData";
 import useBPATaxDocuments from "./obps/useBPATaxDocuments";
+import useDistricts from "./obps/useDistricts";
 
 import useEventInbox from "./events/useEventInbox";
 import useEventDetails from "./events/useEventDetails";
@@ -342,6 +343,10 @@ import useCreate from "./pgrAi/useCreate";
 import useSearchPGRAI from "./pgrAi/useSearchPGRAI";
 import useFilterEmployee from "./pgrAi/useFilterEmployee";
 import useApplicationDetails from "./pgrAi/useApplicationDetails";
+import useULBList from "./obps/useULBList";
+import useUlbType from "./obps/useUlbType";
+import useQualificationTypes from "./obps/useQualificationTypes";
+import useEDCRForm from "./obps/useEDCRForm";
 
 const pgr = {
   useComplaintDetails,
@@ -547,6 +552,10 @@ const obps = {
   useBusinessServiceData,
   useBPATaxDocuments,
   useQualificationTypes,
+  useDistricts,
+  useULBList,
+  useUlbType,
+  useEDCRForm,
 };
 
 const events = {

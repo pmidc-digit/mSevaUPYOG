@@ -118,13 +118,13 @@ const BPANewBuildingdetails = ({ config, onSelect, formData }) => {
 
   const stateId = Digit.ULBService.getStateId();
 
-  // const { data: ulbList } = Digit.Hooks.obps.useUlbType(stateId, "BPA", "UlbType");
-  const ulbList = [];
-  // const { data: districtMenu } = Digit.Hooks.obps.useDistricts(stateId, "BPA", "Districts");
-  // const { data: ULB } = Digit.Hooks.obps.useULBList(stateId, "BPA", "Ulb");
+  const { data: ulbList } = Digit.Hooks.obps.useUlbType(stateId, "BPA", "UlbType");
+  // const ulbList = [];
+  const { data: districtMenu } = Digit.Hooks.obps.useDistricts(stateId, "BPA", "Districts");
+  const { data: ULB } = Digit.Hooks.obps.useULBList(stateId, "BPA", "Ulb");
 
-  const districtMenu = [];
-  const ULB = [];
+  // const districtMenu = [];
+  // const ULB = [];
 
   let ulblists = [];
 

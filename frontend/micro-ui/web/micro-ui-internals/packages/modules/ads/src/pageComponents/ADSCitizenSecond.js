@@ -147,12 +147,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           />
         </div>
         <ActionBar>
-          <SubmitBar
-            style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }}
-            label="Back"
-            submit="submit"
-            onSubmit={onGoBack}
-          />
+          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
         {/* <button type="submit">submit</button> */}

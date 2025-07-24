@@ -20,9 +20,6 @@ const NewADSStepFormOne = ({ config, onGoNext, onBackClick }) => {
   function goNext(data) {
     dispatch(UPDATE_ADSNewApplication_FORM(config.key, data));
     onGoNext();
-    return;
-    setError(`Please fill the following field: ${missingFields[0]}`);
-    setShowToast(true);
   }
 
   function onGoBack(data) {
@@ -33,6 +30,7 @@ const NewADSStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setShowToast(false);
     setError("");
   };
+
   return (
     <React.Fragment>
       <ADSCitizenDetailsNew onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />

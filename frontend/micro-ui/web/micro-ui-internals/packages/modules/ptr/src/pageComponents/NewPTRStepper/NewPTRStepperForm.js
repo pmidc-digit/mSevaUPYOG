@@ -19,7 +19,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "NewPTRStepFormOne",
-    key: "ownerss",
+    key: "ownerDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
@@ -32,7 +32,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "NewPTRStepFormTwo",
-    key: "pets",
+    key: "petDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",

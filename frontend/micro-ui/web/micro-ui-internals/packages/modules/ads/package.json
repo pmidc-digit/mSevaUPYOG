@@ -1,7 +1,7 @@
 {
   "name": "@mseva/upyog-ui-module-ads",
   "description": "Advertisement Module",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",

@@ -83,8 +83,15 @@ public class WorkflowService {
 			criteria.setIsProcessCountCall(true);
 			url = this.buildWorkflowUrl(criteria, url, Boolean.FALSE);
 
-			RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
-			Object result = serviceRequestRepository.fetchIntResult(url, requestInfoWrapper);
+//			RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
+//			Object result = serviceRequestRepository.fetchIntResult(url, requestInfoWrapper);
+			Map<String, Object> requestPayload = new HashMap<>();
+			requestPayload.put("RequestInfo", requestInfo);
+			requestPayload.put("tenantId", tenantId);
+			requestPayload.put("businessServices", criteria.getBusinessService());
+
+			Object result = serviceRequestRepository.fetchIntResult(url, requestPayload);
+
 			Integer response = null;
 			try {
 				response = mapper.convertValue(result, Integer.class);
@@ -213,6 +220,7 @@ public class WorkflowService {
 		if(criteria.getIsProcessCountCall() || ObjectUtils.isEmpty(criteria.getModuleName()) && !StringUtils.isEmpty(criteria.getBusinessService())) {
 			url.append("&businessService=").append( StringUtils.arrayToDelimitedString(criteria.getBusinessService().toArray(),","));
 		}
+		
 		if(!StringUtils.isEmpty(criteria.getLimit())) {
 			url.append("&limit=").append( criteria.getLimit());
 		}

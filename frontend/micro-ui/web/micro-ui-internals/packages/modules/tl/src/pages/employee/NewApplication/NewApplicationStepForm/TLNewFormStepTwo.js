@@ -38,47 +38,113 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     setError("");
   };
 
+  // const validateOwnerDetails = (data) => {
+  //   const { ownershipCategory, owners } = data || {};
+  //   const missingFields = [];
+
+  //   if (!ownershipCategory?.value) {
+  //     missingFields.push("Ownership Category");
+  //     return missingFields;
+  //   }
+
+  //   if (!owners || owners.length === 0) {
+  //     missingFields.push("At least one Owner");
+  //     return missingFields;
+  //   }
+
+  //   const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
+  //   const isMultipleOwner = ownershipCategory.value === "INDIVIDUAL.MULTIPLEOWNERS";
+
+  //   const validateOwner = (owner, index = 1) => {
+  //     if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
+  //     if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
+  //     if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
+  //     if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
+  //     if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
+  //   };
+
+  //   if (isSingleOwner) {
+  //     if (owners.length !== 1) {
+  //       missingFields.push("Only one owner allowed for SINGLEOWNER");
+  //     } else {
+  //       validateOwner(owners[0], 1);
+  //     }
+  //   } else if (isMultipleOwner) {
+  //     owners.forEach((owner, index) => validateOwner(owner, index + 1));
+  //   } else {
+  //     // For other ownership types like INSTITUTIONAL, apply same validations for now
+  //     owners.forEach((owner, index) => validateOwner(owner, index + 1));
+  //   }
+
+  //   return missingFields;
+  // };
+
   const validateOwnerDetails = (data) => {
-    const { ownershipCategory, owners } = data || {};
-    const missingFields = [];
+  const { ownershipCategory, owners } = data;
+  const errors = [];
 
-    if (!ownershipCategory?.value) {
-      missingFields.push("Ownership Category");
-      return missingFields;
+  if (!ownershipCategory?.code) {
+    errors.push(t("PT_OWNERSHIP_CATEGORY_REQUIRED"));
+  }
+
+  if (!owners?.length) {
+    errors.push(t("PT_AT_LEAST_ONE_OWNER_REQUIRED"));
+    return errors;
+  }
+
+  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  const MOBILE_REGEX = /^[6-9]\d{9}$/;
+
+  owners.forEach((owner, index) => {
+    const indexKey = `_OWNER_${index + 1}`;
+
+    if (!owner?.name) {
+      errors.push(`${t("PT_NAME_REQUIRED")} ${indexKey}`);
     }
 
-    if (!owners || owners.length === 0) {
-      missingFields.push("At least one Owner");
-      return missingFields;
+    if (!owner?.mobileNumber) {
+      errors.push(`${t("PT_MOBILE_REQUIRED")} ${indexKey}`);
+    } else if (!MOBILE_REGEX.test(owner.mobileNumber)) {
+      errors.push(`${t("PT_MOBILE_INVALID")} ${indexKey}`);
     }
 
-    const isSingleOwner = ownershipCategory.value === "INDIVIDUAL.SINGLEOWNER";
-    const isMultipleOwner = ownershipCategory.value === "INDIVIDUAL.MULTIPLEOWNERS";
+    if (!owner?.gender?.code) {
+      errors.push(`${t("PT_GENDER_REQUIRED")} ${indexKey}`);
+    }
 
-    const validateOwner = (owner, index = 1) => {
-      if (!owner?.name) missingFields.push(`Name (Owner ${index})`);
-      if (!owner?.mobileNumber) missingFields.push(`Mobile Number (Owner ${index})`);
-      if (!owner?.gender?.code) missingFields.push(`Gender (Owner ${index})`);
-      if (!owner?.relationship?.code) missingFields.push(`Relationship (Owner ${index})`);
-      if (!owner?.fatherOrHusbandName) missingFields.push(`Father/Husband Name (Owner ${index})`);
-    };
+    if (!owner?.relationship?.code) {
+      errors.push(`${t("PT_RELATIONSHIP_REQUIRED")} ${indexKey}`);
+    }
 
-    if (isSingleOwner) {
-      if (owners.length !== 1) {
-        missingFields.push("Only one owner allowed for SINGLEOWNER");
-      } else {
-        validateOwner(owners[0], 1);
-      }
-    } else if (isMultipleOwner) {
-      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+    if (!owner?.fatherOrHusbandName) {
+      errors.push(`${t("PT_FATHER_OR_HUSBAND_NAME_REQUIRED")} ${indexKey}`);
+    }
+
+    if (!owner?.dob) {
+      errors.push(`${t("PT_DOB_REQUIRED")} ${indexKey}`);
     } else {
-      // For other ownership types like INSTITUTIONAL, apply same validations for now
-      owners.forEach((owner, index) => validateOwner(owner, index + 1));
+      const dobDate = new Date(owner.dob);
+      const today = new Date();
+      let age = today.getFullYear() - dobDate.getFullYear();
+      const m = today.getMonth() - dobDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+        age--;
+      }
+
+      if (isNaN(age)) {
+        errors.push(`${t("PT_DOB_INVALID")} ${indexKey}`);
+      } else if (age < 18 || age > 150) {
+        errors.push(`${t("PT_AGE_INVALID")} ${indexKey}`);
+      }
     }
 
-    return missingFields;
-  };
+    if (owner?.pan && !PAN_REGEX.test(owner.pan)) {
+      errors.push(`${t("PT_PAN_INVALID")} ${indexKey}`);
+    }
+  });
 
+  return errors;
+};
   const goNext = async (data) => {
     console.log("Submitting full form data: ", formData);
 
@@ -89,10 +155,9 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
     //   setShowToast(true);
     //   return;
     // }
-    const missingFields = validateOwnerDetails(OwnerDetails);
-
-    if (missingFields.length > 0) {
-      setError(`Please fill the following fields: ${missingFields.join(", ")}`);
+    const missingFields = validateOwnerDetails(OwnerDetails)
+    if (missingFields?.length>0) {
+      setError(t("Please fill all owner mandatory details correctly.")+" "+missingFields[0]);
       setShowToast(true);
       return;
     }

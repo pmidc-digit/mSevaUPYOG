@@ -71,7 +71,7 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
           // skip={onSkip}
           t={t}
           position={formData?.address?.geoLocation}
-          onSave={() => {onSelect(config.key, { geoLocation, pincode })}}
+          onSave={() => {onSelect(config.key, { ...formData?.address, geoLocation, pincode })}}
           onChange={(code, location) => onChange(code, location)}
           disabled={isEmpRenewLicense || isEditProperty}
           forcedError={t(pincodeServicability)}
@@ -79,6 +79,7 @@ const TLSelectGeolocation = ({ t, config, onSelect, formData = {} }) => {
           PTdefaultcoord={formData?.address?.geoLocation}
           onSelect={onSelect}
           open={open}
+          formData={formData}
           //isPopUp={true}
         /> : null}
     </React.Fragment>

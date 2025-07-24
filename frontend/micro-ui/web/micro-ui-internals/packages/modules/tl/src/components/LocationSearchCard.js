@@ -30,7 +30,8 @@ const LocationSearchCard = ({
   Webview = false,
   isPopUp = false,
   onSelect,
-  open
+  open,
+  formData
 }) => {
   const isMounted = useRef(true); // 1️⃣ Track if mounted
 
@@ -90,7 +91,7 @@ const LocationSearchCard = ({
   const onSubmit = () => {
     console.log("code", code);
     console.log("geoLocation", geoLocation);
-    onSelect("address", { geoLocation })
+    onSelect("address", { ...formData?.address, geoLocation })
     open();
     // if (_place.length > 0) {
     //   onChange(code, geoLocation, _place);

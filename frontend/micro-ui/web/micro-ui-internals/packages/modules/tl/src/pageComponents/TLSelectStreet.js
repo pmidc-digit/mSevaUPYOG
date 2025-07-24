@@ -116,7 +116,7 @@ const TLSelectStreet = ({ t, config, onSelect, userType, formData, formState, se
     }
   }, [formData?.cpt?.details]);
 
-  console.log("formData in TLSelectStreet ", formData);
+  console.log("formData in TLSelectStreet ", formData, userType);
   //console.log("localFormData in TLSelectStreet ", localFormData);
 
   if (userType === "employee") {

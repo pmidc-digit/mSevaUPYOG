@@ -1,5 +1,6 @@
 import { Router } from "express";
-import producer from "../kafka/producer";
+//import producer from "../kafka/producer";
+import logger from "../config/logger";
 import envVariables from "../envVariables";
 const asyncHandler = require("express-async-handler");
 import mdmsData from "../utils/mdmsData";
@@ -17,7 +18,13 @@ import filter from "lodash/filter";
 import { validateFireNOCModel } from "../utils/modelValidation";
 import set from "lodash/set";
 import get from "lodash/get";
-
+const { initializeProducer } = require("../kafka/producer");
+initializeProducer().then(() => {
+  logger.info('Kafka producer connected');
+}).catch((error) => {
+  logger.error(error.stack || error);
+  process.exit(1);
+});
 export default ({ config }) => {
   let api = Router();
   api.post(
@@ -105,7 +112,7 @@ export const updateApiResponse = async ({ body }, next = {}) => {
     ResponseInfo: requestInfoToResponseInfo(body.RequestInfo, true),
     FireNOCs: body.FireNOCs
   };
-  producer.send(payloads, function(err, data) {
+  initializeProducer.send(payloads, function(err, data) {
     if (err) console.log(err);
   });
 

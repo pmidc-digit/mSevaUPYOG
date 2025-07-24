@@ -1,6 +1,8 @@
 const kafka = require("kafka-node");
 import envVariables from "../envVariables";
-import producer from "./producer";
+import logger from "../config/logger";
+//import producer from "./producer";
+const { producer } = require("./producer");
 import get from "lodash/get";
 import set from "lodash/set";
 import { searchApiResponse } from "../api/search";
@@ -350,6 +352,7 @@ consumerGroup.on("message", function(message) {
     //   break;
     case envVariables.KAFKA_TOPICS_RECEIPT_CREATE:
       {
+        console.log("reciept hit");
         sendPaymentMessage(value);
         FireNOCPaymentStatus(value);
       }
@@ -357,13 +360,27 @@ consumerGroup.on("message", function(message) {
   }
 
 	console.log("payloads is",payloads);
-  producer.send(payloads, function(err, data) {
-    if (!err) {
-      console.log("sucessfully pushed" + data);
-    } else {
-      console.log("failed to push " + err);
-    }
-  });
+  // producer.send(payloads, function(err, data) {
+  //   if (!err) {
+  //     console.log("sucessfully pushed" + data);
+  //   } else {
+  //     console.log("failed to push " + err);
+  //   }
+  // });
+
+  producer.send(payload).then((data) => {
+    logger.info('Message sent to Kafka:', data);
+    logger.info("jobid: " + jobid + ": published to kafka successfully");
+     successCallback({
+         message: "Success",
+        jobid: jobid,
+     })
+  }).catch(err => {
+    logger.error(err.stack || err);
+    errorCallback({
+      message: `error while publishing to kafka: ${err.message}`
+    });
+  })
 });
 
 consumerGroup.on("error", function(err) {

@@ -48,7 +48,7 @@
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
     "xss": "^1.0.9",
-    "kafkajs": "1.16.0"
+    "kafkajs": "2.2.4"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

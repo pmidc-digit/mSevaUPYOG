@@ -66,7 +66,12 @@ import {
   ADSComponents,
   ADSReducers,
 } from "@mseva/upyog-ui-module-ads";
-import { CHBModule, CHBLinks, CHBComponents } from "@mseva/upyog-ui-module-chb";
+import {
+  CHBModule,
+  CHBLinks,
+  CHBComponents,
+  CHBReducers,
+} from "@mseva/upyog-ui-module-chb";
 import {
   ASSETComponents,
   ASSETLinks,
@@ -174,6 +179,7 @@ const moduleReducers = (initData) => ({
   swach: SWACHReducers(initData),
   ptr: PTRReducers(initData),
   ads: ADSReducers(initData),
+  chb: CHBReducers(initData),
 });
 
 function App() {

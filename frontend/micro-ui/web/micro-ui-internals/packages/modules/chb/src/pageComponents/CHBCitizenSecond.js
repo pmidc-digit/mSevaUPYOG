@@ -1,23 +1,20 @@
 import React, { useEffect } from "react";
-import { TextInput, CardLabel, Dropdown, MobileNumber, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 
-const ADSCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const stateId = Digit.ULBService.getStateId();
+const Breed_Type = [{ i18nKey: `PTR_GENDER`, code: `123`, name: `test` }];
 
+const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const { control, handleSubmit, setValue } = useForm();
 
   const onSubmit = (data) => {
-    console.log("data in first step", data);
     goNext(data);
   };
 
   useEffect(() => {
     console.log("currentStepData", currentStepData);
-    const formattedData = currentStepData?.ownerDetails;
+    const formattedData = currentStepData?.venueDetails;
     if (formattedData) {
-      console.log("coming here", formattedData);
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });
@@ -28,10 +25,10 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
-          <CardLabel>{`${t("NDC_FIRST_NAME")}`}</CardLabel>
+          <CardLabel>Community Hall ID</CardLabel>
           <Controller
             control={control}
-            name="firstName"
+            name="hallId"
             render={(props) => (
               <TextInput
                 value={props.value}
@@ -41,15 +38,23 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
                 onBlur={(e) => {
                   props.onBlur(e);
                 }}
-                t={t}
               />
             )}
           />
 
-          <CardLabel>{`${t("NDC_LAST_NAME")}`}</CardLabel>
+          <CardLabel>Community Hall Name</CardLabel>
           <Controller
             control={control}
-            name="lastName"
+            name={"hallName"}
+            render={(props) => (
+              <Dropdown className="form-field" select={props.onChange} selected={props.value} option={Breed_Type} optionKey="i18nKey" />
+            )}
+          />
+
+          <CardLabel>Size</CardLabel>
+          <Controller
+            control={control}
+            name="size"
             render={(props) => (
               <TextInput
                 value={props.value}
@@ -59,57 +64,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
                 onBlur={(e) => {
                   props.onBlur(e);
                 }}
-                t={t}
-              />
-            )}
-          />
-
-          <CardLabel>{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}</CardLabel>
-          <Controller
-            control={control}
-            name="emailId"
-            render={(props) => (
-              <TextInput
-                value={props.value}
-                onChange={(e) => {
-                  props.onChange(e.target.value);
-                }}
-                onBlur={(e) => {
-                  props.onBlur(e);
-                }}
-                t={t}
-              />
-            )}
-          />
-
-          <CardLabel>{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}</CardLabel>
-          <Controller
-            control={control}
-            name="mobileNumber"
-            render={(props) => (
-              <MobileNumber
-                value={props.value}
-                onChange={props.onChange} // ✅ don't wrap it
-                onBlur={props.onBlur}
-                t={t}
-              />
-            )}
-          />
-
-          <CardLabel>{`${t("ADVT_CHALLAN_UNDER_SECTION_122_123_SGST")}`}</CardLabel>
-          <Controller
-            control={control}
-            name="SGST"
-            render={(props) => (
-              <TextInput
-                value={props.value}
-                onChange={(e) => {
-                  props.onChange(e.target.value);
-                }}
-                onBlur={(e) => {
-                  props.onBlur(e);
-                }}
-                t={t}
               />
             )}
           />
@@ -120,7 +74,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
             name="address"
             render={(props) => (
               <TextArea
-                name="address"
                 value={props.value}
                 onChange={(e) => {
                   props.onChange(e.target.value);
@@ -128,7 +81,51 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
                 onBlur={(e) => {
                   props.onBlur(e);
                 }}
-                t={t}
+              />
+            )}
+          />
+
+          <CardLabel>Geo Location</CardLabel>
+          <Controller
+            control={control}
+            name={"geoLocation"}
+            render={(props) => (
+              <Dropdown className="form-field" select={props.onChange} selected={props.value} option={Breed_Type} optionKey="i18nKey" />
+            )}
+          />
+
+          <CardLabel>Start Date</CardLabel>
+          <Controller
+            control={control}
+            name="startDate"
+            render={(props) => (
+              <TextInput
+                type="date"
+                value={props.value}
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  props.onBlur(e);
+                }}
+              />
+            )}
+          />
+
+          <CardLabel>End Date</CardLabel>
+          <Controller
+            control={control}
+            name="endDate"
+            render={(props) => (
+              <TextInput
+                type="date"
+                value={props.value}
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  props.onBlur(e);
+                }}
               />
             )}
           />
@@ -136,20 +133,43 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
           <div style={{ marginTop: "20px" }}>
             <Controller
               control={control}
-              name="selfDeclaration"
+              name="gstApp"
               render={(field) => (
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
                   <input
                     value={field.value}
                     type="checkbox"
-                    id="selfDeclaration"
+                    id="gstApp"
                     checked={field.value || false} // checkbox uses `checked`
                     onChange={(e) => field.onChange(e.target.checked)} // get boolean
                     onBlur={field.onBlur}
                     style={{ width: "18px", height: "18px", cursor: "pointer" }}
                   />
-                  <label htmlFor="selfDeclaration" style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}>
-                    {t("BILLAMENDMENT_SELFDECLARATION_LABEL")}
+                  <label htmlFor="gstApp" style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}>
+                    GST Applicable
+                  </label>
+                </div>
+              )}
+            />
+          </div>
+
+          <div style={{ marginTop: "20px" }}>
+            <Controller
+              control={control}
+              name="cowCess"
+              render={(field) => (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                  <input
+                    value={field.value}
+                    type="checkbox"
+                    id="cowCess"
+                    checked={field.value || false} // checkbox uses `checked`
+                    onChange={(e) => field.onChange(e.target.checked)} // get boolean
+                    onBlur={field.onBlur}
+                    style={{ width: "18px", height: "18px", cursor: "pointer" }}
+                  />
+                  <label htmlFor="cowCess" style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}>
+                    Cow Cess Applicable
                   </label>
                 </div>
               )}
@@ -157,6 +177,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
           </div>
         </div>
         <ActionBar>
+          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
         {/* <button type="submit">submit</button> */}
@@ -165,4 +186,4 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
   );
 };
 
-export default ADSCitizenDetailsNew;
+export default CHBCitizenSecond;

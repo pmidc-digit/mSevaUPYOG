@@ -10,6 +10,7 @@ import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 import { PTModule, PTLinks, PTComponents, PTReducers } from "@mseva/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@mseva/digit-ui-module-mcollect";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
+import { GCModule, GCLinks, initGCComponents, GCReducers } from "@mseva/digit-ui-module-gc";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
 import { initSWACHComponents } from "@mseva/digit-ui-module-swach";
@@ -58,6 +59,7 @@ const enabledModules = [
   "Engagement",
   "NOC",
   "WS",
+  "GC",
   "CommonPT",
   "NDSS",
   "Bills",
@@ -120,7 +122,9 @@ const initDigitUI = () => {
     CommonPTModule,
     ...PTRComponents,
     TLModule,
+    GCModule,
     TLLinks,
+    GCLinks,
     SVModule,
     SVLinks,
     ...SVComponents,
@@ -141,6 +145,7 @@ const initDigitUI = () => {
   initMCollectComponents();
   initHRMSComponents();
   initTLComponents();
+  initGCComponents();
   initReceiptsComponents();
   // initReportsComponents();
   initOBPSComponents();
@@ -159,6 +164,7 @@ const initDigitUI = () => {
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData),
     tl: TLReducers(initData),
+    gc: GCReducers(initData),
   });
 
   window.Digit.Customizations = {

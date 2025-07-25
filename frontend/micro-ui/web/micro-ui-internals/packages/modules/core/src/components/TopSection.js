@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React, { useState } from "react";
 
 const TopSection = () => {
   const [currentIndex, setCurrentIndex] = useState(0);

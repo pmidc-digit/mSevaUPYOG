@@ -55,6 +55,27 @@ const inboxSearchFields = {
   ],
   SV: [
     {
+      label: "GC_APPLICATION_NUMBER",
+      name: "applicationNumber",
+      roles: [],
+    },
+    {
+      label: "GC_REGISTERED_MOB_NUMBER",
+      name: "mobileNumber",
+      type: "mobileNumber",
+      maxLength: 10,
+      minLength: 0,
+      roles: [],
+      pattern: "^$|[6-9][0-9]{9}",
+      errorMessages: {
+        pattern: "",
+        minLength: "",
+        maxLength: "",
+      },
+    },
+  ],
+  GC: [
+    {
       label: "SV_APPLICATION_NUMBER",
       name: "applicationNumber",
       roles: [],

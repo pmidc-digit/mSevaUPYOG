@@ -88,13 +88,13 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
   // };
 
   const updatedModuleData = quickServiceModules.modules
-  .filter((item) => item.moduleCode === moduleData.code)
-  .map((item) => ({
-    ...item,
-    Access: moduleData.access, // Merge the Access key
-  }));
+    .filter((item) => item.moduleCode === moduleData.code)
+    .map((item) => ({
+      ...item,
+      Access: moduleData.access, // Merge the Access key
+    }));
 
- //console.log("updatedModuleData",updatedModuleData)
+  console.log("updatedModuleData", updatedModuleData);
   const iconSelector = (code) => {
     switch (code) {
       case "PT":
@@ -129,13 +129,13 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <BillsIcon />;
       case "ASSET":
         return <BillsIcon />;
+      case "GC":
+        return <WSICon />;
       default:
         return <PTIcon />;
     }
   };
-return(
-  
-  userRoles.some(item => item.code === updatedModuleData[0]?.Access)? (
+  return userRoles.some((item) => item.code === updatedModuleData[0]?.Access) ? (
     <div
       className="employee-dashboard-quick-service-card employee-dashboard-quick-service-card-content"
       style={{
@@ -163,11 +163,11 @@ return(
       </Link>
       <Link
         to={`${updatedModuleData[0]?.routes}`}
-         style={{ 
-          width: "100%" ,
-          }}    
-          >
-            <div
+        style={{
+          width: "100%",
+        }}
+      >
+        <div
           className="employee-dashboard-quick-service-card-module-name"
           style={{
             display: "flex",
@@ -182,8 +182,7 @@ return(
         </div>
       </Link>
     </div>
-  ) : null
- );
+  ) : null;
 };
 
 export default EmployeeQuickServicesCard;

@@ -44,6 +44,14 @@ const inboxConfig = (tenantId, filters) => ({
     fetchFilters: filterFunctions.SV,
     _searchFn: () => SVService.search({ tenantId, filters }),
   },
+  GC: {
+    services: ["street-vending"],
+    searchResponseKey: "GCDetails",
+    businessIdsParamForSearch: "applicationNo",
+    businessIdAliasForSearch: "applicationNo",
+    fetchFilters: filterFunctions.GC,
+    _searchFn: () => SVService.search({ tenantId, filters }),
+  },
   CHB: {
     services: ["chb"],
     searchResponseKey: "hallsBookingApplication",

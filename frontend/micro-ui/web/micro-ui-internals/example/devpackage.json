@@ -20,6 +20,7 @@
     "@mseva/digit-ui-module-swach": "1.0.35",
     "@mseva/digit-ui-module-receipts": "1.0.1",
     "@mseva/digit-ui-module-ws": "1.0.3",
+    "@mseva/digit-ui-module-gc": "1.0.0",
     "@mseva/digit-ui-module-hrms": "1.0.3",
     "@mseva/digit-ui-module-ptr": "1.0.37",
     "@mseva/digit-ui-module-commonpt": "1.0.3",

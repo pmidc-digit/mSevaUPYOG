@@ -36,6 +36,13 @@ import {
   initTLComponents,
 } from "@mseva/digit-ui-module-tl";
 
+import {
+  GCModule,
+  GCReducers,
+  GCLinks,
+  initGCComponents,
+} from "@mseva/digit-ui-module-gc";
+
 import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
@@ -48,6 +55,7 @@ import {
   SurveyReducers,
 } from "@mseva/digit-ui-module-engagement";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
+import { initGCComponents } from "@mseva/digit-ui-module-gc";
 import { initCustomisationComponents } from "./Customisations";
 import {
   initCommonPTComponents,
@@ -97,6 +105,7 @@ const enabledModules = [
   "CHB",
   "PTR",
   "ASSET",
+  "GC",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -109,6 +118,8 @@ window.Digit.ComponentRegistryService.setupRegistry({
   MCollectModule,
   HRMSModule,
   TLModule,
+  GCModule,
+  GCLinks,
   TLLinks,
   ReceiptsModule,
   PTRModule,
@@ -140,6 +151,7 @@ initOBPSComponents();
 initNOCComponents();
 initEngagementComponents();
 initWSComponents();
+initGCComponents();
 initCommonPTComponents();
 initBillsComponents();
 // initReportsComponents();
@@ -153,6 +165,7 @@ const moduleReducers = (initData) => ({
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),
   swach: SWACHReducers(initData),
+  gc: GCReducers(initData),
 });
 
 function App() {

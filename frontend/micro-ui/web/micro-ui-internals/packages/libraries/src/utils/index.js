@@ -7,7 +7,7 @@ import * as pt from "./pt";
 import * as privacy from "./privacy";
 import PDFUtil, { downloadReceipt, downloadPDFFromLink, downloadBill, getFileUrl } from "./pdf";
 import getFileTypeFromFileStoreURL from "./fileType";
-import {compressImage} from "./compressImage"
+import { compressImage } from "./compressImage";
 
 const GetParamFromUrl = (key, fallback, search) => {
   if (typeof window !== "undefined") {
@@ -126,6 +126,13 @@ const svAccess = () => {
   const svRoles = ["SVCEMP", "TVCEMPLOYEE", "INSPECTIONOFFICER"];
   const SV_ACCESS = userRoles?.filter((role) => svRoles?.includes(role));
   return SV_ACCESS?.length > 0;
+};
+const gcAccess = () => {
+  const userInfo = Digit.UserService.getUser();
+  const userRoles = userInfo?.info?.roles?.map((roleData) => roleData?.code);
+  const gcRoles = [];
+  const GC_ACCESS = userRoles?.filter((role) => gcRoles?.includes(role));
+  return GC_ACCESS?.length > 0;
 };
 
 const pgrAccess = () => {
@@ -309,6 +316,7 @@ export default {
   wsAccess,
   swAccess,
   svAccess,
+  gcAccess,
   ...privacy,
   compressImage,
 };

@@ -30,14 +30,14 @@ const App = () => {
         <Switch>
           {/* <AppContainer> */}
           <PrivateRoute path={`${path}/create-complaint`} component={CreateComplaint} />
+          <PrivateRoute path={`${path}/rate/:id*`} component={() => <SelectRating parentRoute={path} />} />
+          {/* <PrivateRoute
+            path={`${path}/reopen/:id*`}
+            component={() => <ReopenComplaint match={{ ...match, url, path: `${path}/reopen` }} parentRoute={path} />}
+          /> */}
           <PrivateRoute path={`${path}/complaints`} exact component={ComplaintsList} />
           <PrivateRoute path={`${path}/complaints/:id*`} component={ComplaintDetailsPage} />
           <PrivateRoute path={`${path}/Attendence`} component={AttendencePage} />
-          {/* <PrivateRoute
-            path={`${path}/reopen`}
-            component={() => <ReopenComplaint match={{ ...match, url, path: `${path}/reopen` }} parentRoute={path} />}
-          /> */}
-          {/* <PrivateRoute path={`${path}/rate/:id*`} component={() => <SelectRating parentRoute={path} />} /> */}
           <PrivateRoute path={`${path}/response`} component={() => <Response match={{ ...match, url, path }} />} />
           {/* <Route path={`${path}/response`}>
           <Response/>

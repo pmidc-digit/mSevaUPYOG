@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { useDispatch } from "react-redux";
-import { RatingCard, CardLabelError } from "@mseva/digit-ui-react-components";
+import { RatingCard, CardLabelError, Loader } from "@mseva/digit-ui-react-components";
 import { useParams, Redirect, useHistory } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { updateComplaints } from "../../../redux/actions/index";
@@ -12,7 +12,7 @@ const SelectRating = ({ parentRoute }) => {
   const history = useHistory();
 
   let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
-  const complaintDetails = Digit.Hooks.pgr.useComplaintDetails({ tenantId: tenantId, id: id }).complaintDetails;
+  const { complaintDetails, isLoading, error } = Digit.Hooks.swach.useComplaintDetails({ tenantId: tenantId, id: id });
   const updateComplaint = useCallback((complaintDetails) => dispatch(updateComplaints(complaintDetails)), [dispatch]);
   const [submitError, setError] = useState(false)
   
@@ -57,6 +57,19 @@ const SelectRating = ({ parentRoute }) => {
       },
     ],
   };
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (error) {
+    return <div>Error loading complaint details: {error.message}</div>;
+  }
+
+  if (!complaintDetails) {
+    return <div>No complaint details found for ID: {id}</div>;
+  }
+
   return <RatingCard {...{ config: config }} t={t} onSelect={log} />;
 };
 export default SelectRating;

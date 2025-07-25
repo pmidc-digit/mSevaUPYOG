@@ -187,12 +187,12 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
       }
     }
 
-    const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails?.address?.pincode));
-    if (!foundValue && TraidDetails?.address?.pincode) {
-      setShowToast({ key: "error" });
-      setError(t("TL_COMMON_PINCODE_NOT_SERVICABLE"));
-      return;
-    }
+    // const foundValue = tenants?.find((obj) => obj.pincode?.find((item) => item.toString() === TraidDetails?.address?.pincode));
+    // if (!foundValue && TraidDetails?.address?.pincode) {
+    //   setShowToast({ key: "error" });
+    //   setError(t("TL_COMMON_PINCODE_NOT_SERVICABLE"));
+    //   return;
+    // }
 
     let accessories = [];
     if (TraidDetails?.accessories?.length > 0) {
@@ -244,7 +244,7 @@ const TLNewFormStepTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     let owners = [];
     if (OwnerDetails?.owners?.length > 0) {
-      OwnerDetails.owners.map((owner, index) => {
+      OwnerDetails?.owners?.map((owner, index) => {
         let obj = {};
         obj.dob = owner?.dob ? convertDateToEpoch(owner.dob) : null;
         obj.additionalDetails = { ownerSequence: index, ownerName: owner.name };

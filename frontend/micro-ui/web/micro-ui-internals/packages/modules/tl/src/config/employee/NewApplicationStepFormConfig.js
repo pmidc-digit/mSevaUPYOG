@@ -162,13 +162,13 @@ export const config = [
         key: "ownershipCategory",
         withoutLabel: true,
       },
-      {
-        name: "",
-        type: "component",
-        component: "TLSelectOwnerAddress",
-        key: "owners",
-        withoutLabel: true,
-      },
+      // {
+      //   name: "",
+      //   type: "component",
+      //   component: "TLSelectOwnerAddress",
+      //   key: "owners",
+      //   withoutLabel: true,
+      // },
       {
         name: "",
         type: "component",

@@ -29,6 +29,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode || "");
   const [ulbType, setUlbType] = useState("");
   const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
+  const [errorMessage, setErrorMessage] = useState("");
 
   console.log("formData", formData);
   // console.log("data: newConfig", newConfig);
@@ -92,6 +93,18 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   }
 
   const goNext = () => {
+
+    // if(PermanentAddress === "" || PermanentAddress.length<4){
+    //   setErrorMessage("Enter valid address &  it should be greater than 3 characters");
+    //   return;
+    // }
+
+    if(pinCode === "" || pinCode.length<6){
+     setErrorMessage("Enter valid 6 digit Pincode");
+     return;
+    }
+
+    
     // sessionStorage.setItem("CurrentFinancialYear", FY);
     if (!(formData?.result && formData?.result?.Licenses[0]?.id))
       onSelect(config.key, { PermanentAddress: PermanentAddress, Pincode: pinCode, Ulb: selectedUlbTypes });
@@ -114,7 +127,10 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
         <Timeline currentStep={2} flow="STAKEHOLDER" />
-        <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!PermanentAddress}>
+        <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} 
+          isDisabled={!PermanentAddress || selectedUlbTypes.length === 0 || pinCode===""}
+        >
+          
           <CardLabel>{`${t("BPA_PERMANANT_ADDRESS_LABEL")}*`}</CardLabel>
           <TextArea
             t={t}
@@ -125,7 +141,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             onChange={selectPermanentAddress}
             value={PermanentAddress}
           />
-
+          
+          <div>
           <CardLabel>{"Pincode*"}</CardLabel>
           <TextInput
             t={t}
@@ -144,6 +161,20 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               title: t("Please enter a valid 6-digit pincode."),
             })}
           />
+            {errorMessage && (
+                  <div
+                    style={{
+                      color: "#d32f2f",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    {errorMessage}
+                  </div>
+             )}
+          </div>
+          
 
           <CardLabel>{"ULB*"}</CardLabel>
           <MultiSelectDropdown

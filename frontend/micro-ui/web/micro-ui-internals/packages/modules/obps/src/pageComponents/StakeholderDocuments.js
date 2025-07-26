@@ -42,6 +42,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     filtredBpaDocs?.[0]?.docTypes?.forEach((doc) => {
       documentsList.push(doc);
     });
+    //console.log("documentsList here", documentsList);
     setBpaTaxDocuments(documentsList);
   }, [!isLoading]);
 
@@ -202,7 +203,21 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
       {doc?.info ? (
         <div style={{ fontSize: "12px", color: "#505A5F", fontWeight: 400, lineHeight: "15px", marginBottom: "10px" }}>{`${t(doc?.info)}`}</div>
       ) : null}
+      {doc?.code === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO" ?
+
       <UploadFile
+        extraStyleName={"OBPS"}
+        accept=".png, .jpeg, .jpg"
+        onUpload={selectfile}
+        onDelete={() => {
+          setUploadedFile(null);
+          setCheckRequiredFields(true);
+        }}
+        message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+        iserror={error}
+      />
+      :
+       <UploadFile
         extraStyleName={"OBPS"}
         accept="image/*, .pdf, .png, .jpeg, .jpg"
         onUpload={selectfile}
@@ -212,7 +227,9 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
         }}
         message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
         iserror={error}
-      />
+       />
+      }
+      
     </div>
   );
 }

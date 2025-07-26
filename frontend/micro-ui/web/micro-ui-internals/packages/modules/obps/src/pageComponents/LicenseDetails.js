@@ -11,15 +11,29 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   let isOpenLinkFlow = window.location.href.includes("openlink");
   const uuid = userInfo?.info?.uuid;
   const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(tenantId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
-  const [name, setName] = useState(
-    (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || ""
+  const [name, setName] = useState(()=>{
+    // (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
+    const fullName = formData?.LicneseDetails?.name ||  (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
+    const nameParts = fullName.trim().split(" ");
+    //console.log("firstName here", nameParts[0]);
+    return nameParts.length ? nameParts[0] : "";
+  }
   );
   const [lastName, setLastName] = useState(() => {
-    const fullName = formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
+    const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
     const nameParts = fullName.trim().split(" ");
+   // console.log("lastName here", nameParts[nameParts.length - 1]);
     return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
   });
-  const [middleName, setMiddleName] = useState("");
+  const [middleName, setMiddleName] = useState(()=>{
+    const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
+    
+    const nameParts = fullName.trim().split(" ");
+   // console.log("Middle name parts:", nameParts.slice(1, -1));
+
+    // Join middle name parts if there are more than two words
+    return nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "";
+  });
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(true);
@@ -28,10 +42,10 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     (!isOpenLinkFlow ? userInfo?.info?.emailId : "") || formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || ""
   );
   const [gender, setGender] = useState(
+    formData?.LicneseDetails?.gender ||
     (!isOpenLinkFlow && userDetails
       ? { i18nKey: `COMMON_GENDER_${userDetails?.user?.[0]?.gender}`, code: userDetails?.user?.[0]?.gender, value: userDetails?.user?.[0]?.gender }
       : "") ||
-      formData?.LicneseDetails?.gender ||
       formData?.formData?.LicneseDetails?.gender
   );
   const [mobileNumber, setMobileNumber] = useState(
@@ -41,6 +55,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       ""
   );
   const [PanNumber, setPanNumber] = useState(formData?.LicneseDetails?.PanNumber || formData?.formData?.LicneseDetails?.PanNumber || "");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (!gender?.code && userDetails?.user?.[0]?.gender && !isOpenLinkFlow) {
@@ -127,8 +142,18 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       age--;
     }
 
+    if(gender?.code === null){
+      setErrorMessage("Please select gender");
+      return;
+    }
+
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
-      let licenseDet = { name: name, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
+      let fullName= `${name} ${middleName} ${lastName}`;
+      // console.log("firstName before saving",name);
+      // console.log("middleName before saving", middleName);
+      // console.log("lastName before saving", lastName);
+      // console.log("fullName here", fullName);
+      let licenseDet = { name: fullName, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
       onSelect(config.key, licenseDet);
     } else {
       let data = formData?.formData;
@@ -230,6 +255,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 title: t("PT_NAME_ERROR_MESSAGE"),
               })}
             /> */}
+            <div>
               <CardLabel>{`${t("BPA_APPLICANT_GENDER_LABEL")}*`}</CardLabel>
               <RadioButtons
                 t={t}
@@ -244,6 +270,21 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 disable={gender && !isOpenLinkFlow ? true : false}
                 //disabled={isUpdateProperty || isEditProperty}
               />
+
+               {errorMessage && (
+                  <div
+                    style={{
+                      color: "#d32f2f",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    {errorMessage}
+                  </div>
+                )}
+            </div>
+              
               <CardLabel>{`${t("BPA_OWNER_MOBILE_NO_LABEL")}*`}</CardLabel>
               <MobileNumber
                 value={mobileNumber}
@@ -342,6 +383,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
               })}
             /> */}
             </div>
+    
           </FormStep>
         ) : (
           <Loader />

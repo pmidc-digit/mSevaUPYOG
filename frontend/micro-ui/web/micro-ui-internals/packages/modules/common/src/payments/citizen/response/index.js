@@ -1034,6 +1034,11 @@ const WrapPaymentZeroComponent = (props) => {
   const [printing, setPrinting] = useState(false);
   const [allowFetchBill, setallowFetchBill] = useState(false);
   const { businessService: business_service, consumerCode, tenantId } = useParams();
+  const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
+    retry: false,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
     {},
@@ -1043,12 +1048,12 @@ const WrapPaymentZeroComponent = (props) => {
     { enabled: window.location.href.includes("bpa") || window.location.href.includes("BPA") }
   );
 
-  const { data: reciept_data, isLoading, isError } = Digit.Hooks.useRecieptSearchNew(
-    {
-        tenantId: tenantId,
-        billIds: transactionData?.billId
-    },
-); 
+//   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearchNew(
+//     {
+//         tenantId: tenantId,
+//         billIds: transactionData?.billId
+//     },
+// ); 
 
 
   const cities = Digit.Hooks.useTenants();
@@ -1064,22 +1069,22 @@ const WrapPaymentZeroComponent = (props) => {
   const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
 
   const newTenantId = business_service.includes("WS.ONE_TIME_FEE" || "SW.ONE_TIME_FEE") ? Digit.ULBService.getStateId() : tenantId;
-  // const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-  //   {
-  //     tenantId,
-  //     businessService: business_service,
-  //     receiptNumbers: data?.payments?.Payments?.[0]?.paymentDetails[0].receiptNumber,
-  //   },
-  //   {
-  //     retry: false,
-  //     staleTime: Infinity,
-  //     refetchOnWindowFocus: false,
-  //     select: (dat) => {
-  //       return dat.Payments[0];
-  //     },
-  //     enabled: allowFetchBill,
-  //   }
-  // );
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+      {
+        tenantId,
+        businessService: business_service,
+        receiptNumbers: data?.payments?.Payments?.[0]?.paymentDetails[0].receiptNumber,
+      },
+      {
+        retry: false,
+        staleTime: Infinity,
+        refetchOnWindowFocus: false,
+        select: (dat) => {
+          return dat.Payments[0];
+        },
+        enabled: allowFetchBill,
+      }
+    );
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
@@ -1100,7 +1105,7 @@ const WrapPaymentZeroComponent = (props) => {
   }, []);
 
 
-  if (isLoading) {
+  if (isLoading || recieptDataLoading) {
     return <Loader />;
   }
 

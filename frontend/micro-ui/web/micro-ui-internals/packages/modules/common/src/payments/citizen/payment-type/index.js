@@ -100,7 +100,7 @@ export const SelectPaymentType = (props) => {
 
     setPaymentLoading(true);
 
-    const baseURL = process.env.REACT_APP_Base_URL;
+    const baseURL = process.env.REACT_APP_BASE_URL;
 
     const filterData = {
       Transaction: {
@@ -166,7 +166,11 @@ export const SelectPaymentType = (props) => {
 
       if (paymentAmount === 0 || billDetails.totalAmount === 0) {
         setPaymentLoading(false);
-        window.location.href = data?.Transaction?.callbackUrl;
+        if(data?.ResponseInfo?.status === "SUCCESSFUL"){
+          window.location.href = data?.Transaction?.callbackUrl;
+        }else{
+          window.location.href = "/digit-ui/citizen/payment/failure"
+        }
         return;
       }
 

@@ -100,9 +100,13 @@ export const SelectPaymentType = (props) => {
 
     setPaymentLoading(true);
 
+<<<<<<< HEAD
     // const baseURL = process.env.REACT_APP_BASE_URL;
     const baseURL = document.location.origin;
     console.log("BASEURLINPAYMENT", baseURL)
+=======
+    const baseURL = process.env.REACT_APP_BASE_URL;
+>>>>>>> aef4f816a7a6bd89b5adf191bab418fa6a1d1ffc
 
     const filterData = {
       Transaction: {

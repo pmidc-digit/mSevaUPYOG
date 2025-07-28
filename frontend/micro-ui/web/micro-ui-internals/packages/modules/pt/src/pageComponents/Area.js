@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/TLTimeline";
 import { useForm, Controller } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
 
 const Area = ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
   //let index = window.location.href.charAt(window.location.href.length - 1);
@@ -17,6 +18,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
     getValues,
   } = useForm();
   let index = window.location.href.split("/").pop();
+  const GISValues = useSelector((state) => state.pt?.PTNewApplicationForm?.formData?.GISValues);
   let validation = {};
   const onSkip = () => onSelect();
   let floorarea;
@@ -92,6 +94,12 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
   useEffect(() => {
     onSelect(config.key, floorarea);
   }, [floorarea]);
+
+  useEffect(()=>{
+    if(GISValues?.area){
+      setfloorarea(GISValues?.area)
+    }
+  }, [GISValues])
 
   //   const onChange = (e) => {
   //     setSelectedValue(e);
@@ -206,6 +214,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
                       {...input.validation}
                       onBlur={onBlur}
                     // autoFocus={presentInModifyApplication}
+                    disabled={GISValues?.area ? true : false}
                     />
                   )}
                 />
@@ -251,6 +260,7 @@ const Area = ({ t, config, onSelect, value, userType, formData, setError: setFor
                       {...input.validation}
                       onBlur={onBlur}
                     // autoFocus={presentInModifyApplication}
+                    disabled={GISValues?.area ? true : false}
                     />
                   )}
                 />

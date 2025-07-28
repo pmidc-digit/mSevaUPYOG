@@ -9,7 +9,10 @@ const hideBackButtonConfig = [];
 const App = () => {
   const { path, url, ...match } = useRouteMatch();
   const { t } = useTranslation();
-  const ADSCreate = Digit?.ComponentRegistryService?.getComponent("ADSCreate");
+  const ADSCreate = Digit?.ComponentRegistryService?.getComponent("NewADSStepperForm");
+  // const ADSCreate = Digit?.ComponentRegistryService?.getComponent("ADSCreate");
+  // const ADSCreate = Digit?.ComponentRegistryService?.getComponent("NewPTRStepperForm");
+
   //  to show back button on top left of the page in order to go back to previous page
   const ADSMyApplications = Digit?.ComponentRegistryService?.getComponent("ADSMyApplications");
   const ADSApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ADSApplicationDetails");

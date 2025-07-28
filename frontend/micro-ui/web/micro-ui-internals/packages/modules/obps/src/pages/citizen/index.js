@@ -26,6 +26,12 @@ import Inbox from "../employee/Inbox";
 const App = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
+
+  const [showArchitectConsentModal, setShowArchitectConsentModal] = useState(false);
+  const [otpVerifiedTimestamp, setOtpVerifiedTimestamp] = useState(new Date().toLocaleString());
+
+  const [showCitizenConsentModal, setShowCitizenConsentModel] = useState(false);
+
   let isCommonPTPropertyScreen = window.location.href.includes("/ws/create-application/property-details");
   let isAcknowledgement = window.location.href.includes("/acknowledgement") || window.location.href.includes("/disconnect-acknowledge");
   const BPACitizenHomeScreen = Digit?.ComponentRegistryService?.getComponent("BPACitizenHomeScreen");
@@ -45,6 +51,10 @@ const App = ({ path }) => {
   const Architectconcent = Digit?.ComponentRegistryService?.getComponent("Architectconcent");
   const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false;
 
+  // const ArchitectConsentComponent = () => {
+  //   return <div>{true && <Architectconcent />}</div>;
+  // };
+
   console.log(path, "PATHHHHH");
   return (
     <React.Fragment>
@@ -53,6 +63,9 @@ const App = ({ path }) => {
           !location.pathname.includes("openlink/stakeholder") &&
           !location.pathname.includes("/acknowledgement") &&
           !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+        <button onClick={() => setShowArchitectConsentModal(true)}>Open ArchitectConsent</button>
+        <button onClick={() => setShowCitizenConsentModel(true)}>Open CitizenConsent</button>
+
         <Switch>
           <PrivateRoute path={`${path}/home`} component={BPACitizenHomeScreen} />
           <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
@@ -77,6 +90,12 @@ const App = ({ path }) => {
           <PrivateRoute path={`${path}/architectConsent`} component={Architectconcent} />
           <PrivateRoute path={`${path}/bpaNewBuilding`} component={BPANewBuildingdetails} />
         </Switch>
+
+        {showArchitectConsentModal && (
+          <Architectconcent showTermsPopup={showArchitectConsentModal} setShowTermsPopup={setShowArchitectConsentModal} />
+        )}
+
+        {showCitizenConsentModal && <CitizenConsent showTermsPopup={showCitizenConsentModal} setShowTermsPopup={setShowCitizenConsentModel} />}
       </div>
     </React.Fragment>
   );

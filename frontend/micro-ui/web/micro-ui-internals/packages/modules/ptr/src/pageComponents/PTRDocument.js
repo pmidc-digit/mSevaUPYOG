@@ -11,9 +11,12 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 
 function PTRDocument({ petdetail = {} }) {
   const { t } = useTranslation();
-  const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePetDocumentSearch({
-    petdetail,
-  });
+  // const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePetDocumentSearch({
+  //   petdetail,
+  // });
+  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", [
+    "Documents",
+  ]);
   const documents = petdetail?.documents || [];
 
   if (isLoading) {

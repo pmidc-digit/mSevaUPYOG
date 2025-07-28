@@ -1,6 +1,7 @@
 package org.egov.ndc.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.ndc.config.NDCConfiguration;
@@ -9,6 +10,9 @@ import org.egov.ndc.repository.NDCRepository;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.util.NDCConstants;
 import org.egov.ndc.util.NDCUtil;
+import org.egov.ndc.web.model.calculator.CalculationCriteria;
+import org.egov.ndc.web.model.calculator.CalculationReq;
+import org.egov.ndc.web.model.calculator.CalculationRes;
 import org.egov.ndc.web.model.ndc.*;
 import org.egov.ndc.workflow.WorkflowIntegrator;
 import org.egov.tracer.model.CustomException;
@@ -18,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,8 +32,12 @@ public class NDCService {
 
 	@Autowired
 	NDCUtil ndcUtil;
+
 	@Autowired
 	private WorkflowIntegrator workflowIntegrator;
+
+	@Autowired
+	private NDCConfiguration ndcConfiguration;
 
 	@Autowired
 	private NDCRepository ndcRepository;
@@ -50,6 +59,9 @@ public class NDCService {
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
+	private MDMSService mdmsService;
 
 	public NdcApplicationRequest createNdcApplication(boolean skipWorkFlow, NdcApplicationRequest ndcApplicationRequest) {
 		// Save applicant data
@@ -97,6 +109,7 @@ public class NDCService {
 		if(!skipWorkFlow) {
 			workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
 		}
+
 		producer.push(config.getSaveTopic(), ndcApplicationRequest);
 
 		return ndcApplicationRequest;
@@ -150,11 +163,34 @@ public class NDCService {
 		if(!skipWorkFlow) {
 			workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
 		}
-		// Push to update topic
+		getCalculation(ndcApplicationRequest);
+
 		producer.push(config.getUpdateTopic(), ndcApplicationRequest);
 
 		return ndcApplicationRequest;
 	}
+
+//	private void getFlatFee(NdcApplicationRequest ndcApplicationRequest) {
+//		Object mdmsData = mdmsService.mDMSCall(ndcApplicationRequest.getRequestInfo(), ndcApplicationRequest.getApplicant().getTenantId());
+//		String jsonPathExpression = "$.MdmsRes.ndc.NdcFee[0].flatFee";
+//
+//		try {
+//			String jsonResponse = mapper.writeValueAsString(mdmsData);
+//			Double flatFee = JsonPath.read(jsonResponse, jsonPathExpression);
+//			System.out.println("Flat Fee (extracted with JsonPath): " + flatFee); // Output: Flat Fee (extracted with JsonPath): 100.0
+//
+//			ndcApplicationRequest.getApplicant().setFee(BigDecimal.valueOf(flatFee));
+////			// If the path might not exist and you want to handle it gracefully, you can configure JsonPath
+////			// to suppress exceptions for missing paths and return null instead.
+////			Configuration conf = Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build();
+////			Double optionalFlatFee = JsonPath.using(conf).parse(jsonResponse).read("$.nonExistentPath");
+////			System.out.println("Optional Flat Fee (non-existent path): " + optionalFlatFee); // Output: null
+//
+//		} catch (Exception e) {
+//			System.err.println("Error extracting flatFee: " + e.getMessage());
+//			e.printStackTrace();
+//		}
+//	}
 
 	public NdcApplicationRequest deleteNdcApplication(NdcDeleteRequest ndcDeleteRequest) {
 
@@ -202,7 +238,29 @@ public class NDCService {
 		}else{
 			throw new CustomException("EG_NDC_TENANT_ID_NULL_PARAM_NULL","Parameter missing with Tenant ID or empty when UUID is not provided");
 		}
+	}
 
-//		return new ArrayList<>();
+	public CalculationRes getCalculation(NdcApplicationRequest request){
+
+		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
+			CalculationCriteria calculationCriteria = CalculationCriteria.builder()
+					.ndcApplicationRequest(request)
+					.tenantId(request.getApplicant().getTenantId())
+					.applicationNumber(request.getApplicant().getUuid())
+					.build();
+			calculationCriteriaList.add(calculationCriteria);
+
+		CalculationReq calculationReq = CalculationReq.builder()
+				.requestInfo(request.getRequestInfo())
+				.calculationCriteria(calculationCriteriaList)
+				.build();
+
+		StringBuilder url = new StringBuilder().append(ndcConfiguration.getNdcCalculatorHost())
+				.append(ndcConfiguration.getNdcCalculatorEndpoint());
+
+		Object response = serviceRequestRepository.fetchResult(url, calculationReq);
+		CalculationRes calculationRes = mapper.convertValue(response, CalculationRes.class);
+		request.getApplicant().setFee(BigDecimal.valueOf(calculationRes.getCalculation().get(0).getTotalAmount()));
+		return calculationRes;
 	}
 }

@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import org.egov.ndc.web.model.Workflow;
 
+import java.math.BigDecimal;
+
 @Data
 @Builder
 public class ApplicantRequest {
@@ -37,6 +39,9 @@ public class ApplicantRequest {
 
     @JsonProperty("action")
     private String action;
+
+    @JsonProperty("fee")
+    private BigDecimal fee;
 
     @JsonProperty("createdby")
     private String createdby;

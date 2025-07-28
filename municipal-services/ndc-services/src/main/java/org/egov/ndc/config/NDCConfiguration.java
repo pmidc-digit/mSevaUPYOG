@@ -3,6 +3,7 @@ package org.egov.ndc.config;
 import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,7 +30,6 @@ public class NDCConfiguration {
 		TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
 	}
 
-	// User Config
 	@Value("${egov.user.host}")
 	private String userHost;
 
@@ -107,7 +107,6 @@ public class NDCConfiguration {
 	@Value("${ndc.offline.doc.required}")
 	private Boolean ndcOfflineDocRequired;
 
-	//bpa configuration
     @Value("${egov.bpa.host}")
     private String bpaHost;
 
@@ -141,4 +140,24 @@ public class NDCConfiguration {
 	@Value("${billing.service.fetchbill.endpoint}")
 	private String fetchBillPath;
 
+	@Value("${ndc.module.code}")
+	private String moduleCode;
+
+	@Value("${ndc.taxhead.master.code}")
+	private String taxHeadMasterCode;
+
+	@Value("${egov.billingservice.host}")
+	private String billingServiceHost;
+
+	@Value("${egov.demand.create.endpoint}")
+	private String demandCreateEndpoint;
+
+	@Value("${egov.billingservice.fetch.bill}")
+	private String fetchBillEndpoint;
+
+	@Value("${egov.ndccalculator.host}")
+	private String ndcCalculatorHost;
+
+	@Value("${egov.ndccalculator.endpoint}")
+	private String ndcCalculatorEndpoint;
 }

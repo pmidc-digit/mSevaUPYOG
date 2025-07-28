@@ -65,6 +65,7 @@ const App = () => {
           <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseCitizen {...props} t={t} parentRoute={path} />} />
            <PrivateRoute path={`${path}/property/pt-acknowledgement`} component={SubmitResponse}></PrivateRoute>
           <PrivateRoute path={`${path}/property/gis-values`} component={GISIntegration} />
+          <PrivateRoute path={`${path}/property/create-application`} component={CreateEmployeeStepForm} />
         </AppContainer>
       </Switch>
     </span>

@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-common",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "license": "MIT",
   "description": "Digit Common Payment Module",
   "main": "dist/index.js",

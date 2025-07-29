@@ -188,7 +188,7 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
             return;
           }
         }
-        if (!uploadedFile) {
+        if (selectedAction !== "ASSIGN" && selectedAction !== "REASSIGN" && !uploadedFile) {
           setError(t("CS_MANDATORY_FILE"));
           return;
         }

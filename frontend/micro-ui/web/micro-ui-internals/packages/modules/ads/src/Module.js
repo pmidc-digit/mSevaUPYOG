@@ -19,6 +19,21 @@ import ADSApplicationDetails from "./pages/citizen/ADSApplicationDetails";
 import ApplicationDetails from "./pages/employee/ApplicationDetails";
 import ADSSearchApplication from "./components/SearchApplication";
 import ADSRequiredDoc from "./pageComponents/ADSRequiredDoc";
+import NewADSStepperForm from "./pageComponents/NewADSStepper/NewADSStepperForm";
+import NewADSStepFormOne from "./pageComponents/NewADSStepper/NewADSStepFormOne";
+import NewADSStepFormTwo from "./pageComponents/NewADSStepper/NewADSStepFormTwo";
+import NewADSStepFormThree from "./pageComponents/NewADSStepper/NewADSStepFormThree";
+import NewADSStepFormFour from "./pageComponents/NewADSStepper/NewADSStepFormFour";
+import ADSCitizenDetailsNew from "./pageComponents/ADSCitizenDetailsNew";
+import ADSCitizenSecond from "./pageComponents/ADSCitizenSecond";
+import ADSSelectProofIdentity from "./pageComponents/ADSSelectProofIdentity";
+import ADSSummary from "./pageComponents/ADSSummary";
+import getRootReducer from "./redux/reducer";
+
+// import PTRSummary from "./pageComponents/PTRSummary";
+
+export const ADSReducers = getRootReducer;
+
 // Component registry for the ADS module, mapping component names to their implementations.
 // Enables dynamic registration and access of components in the application.
 const componentsToRegister = {
@@ -35,6 +50,15 @@ const componentsToRegister = {
   ADSApplicationDetails: ADSApplicationDetails,
   ADSSearchApplication,
   ADSRequiredDoc,
+  NewADSStepperForm,
+  NewADSStepFormOne,
+  NewADSStepFormTwo,
+  NewADSStepFormThree,
+  NewADSStepFormFour,
+  ADSCitizenDetailsNew,
+  ADSCitizenSecond,
+  ADSSelectProofIdentity,
+  ADSSummary,
 };
 
 // Function to add components to the registry

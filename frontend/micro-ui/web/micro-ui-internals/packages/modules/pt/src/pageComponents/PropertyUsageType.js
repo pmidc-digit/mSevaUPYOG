@@ -11,8 +11,10 @@ import {
 import { cardBodyStyle } from "../utils";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
 
 const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState, setError, clearErrors, onBlur }) => {
+  const GISValues = useSelector((state) => state.pt?.PTNewApplicationForm?.formData?.GISValues);
   const { pathname } = useLocation();
   const presentInModifyApplication = pathname.includes("edit-application");
   const [usageCategoryMajor, setPropertyPurpose] = useState(
@@ -91,6 +93,25 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
       setPropertyPurpose(selectedOption);
     }
   }, [Menu]);
+
+  function getMatchingItem(input) {
+    const data = usageCategoryMajorMenu(usagecat);
+    const target = input.toUpperCase();
+    return data.find(item => {
+      const codeParts = item.code.split(".");
+      return codeParts[codeParts.length - 1].toUpperCase() === target;
+    });
+  }
+
+  useEffect(()=>{
+    if(GISValues?.useType && !menuLoading && usagecat?.length>0){
+      const gISUsageType = getMatchingItem(GISValues?.useType)
+      selectPropertyPurpose(gISUsageType)
+    }
+  },[GISValues, menuLoading])
+
+
+
   // pt.PTNewApplicationForm.formData.PropertyDetails.usageCategoryMajor
   // useEffect(() => {
   //   if (formData?.PropertyDetails?.usageCategoryMajor?.code && usageCategoryMajorMenu(usagecat)?.length) {
@@ -198,6 +219,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
                 onBlur={props.onBlur}
                 optionKey="i18nKey"
                 t={t}
+                disable={GISValues?.useType ? true : false}
                 // disable={isEditProperty ? isEditProperty : false}
               />
             )}
@@ -240,7 +262,7 @@ const PropertyUsageType = ({ t, config, onSelect, userType, formData, formState,
                 onBlur={props.onBlur}
                 optionKey="i18nKey"
                 t={t}
-                // disable={isEditProperty ? isEditProperty : false}
+                disable={GISValues?.useType ? true : false}
               />
             )}
           />

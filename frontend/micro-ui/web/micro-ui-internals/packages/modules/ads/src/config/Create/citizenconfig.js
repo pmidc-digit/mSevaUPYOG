@@ -1,66 +1,110 @@
-/*
- * citizenConfig outlines the routing,
- * detailing steps for applicant, address, and document details, along with their configurations.
- */
-
 export const citizenConfig = [
   {
-    head: "ES_TITILE_APPLICANT_DETAILS",
+    head: "ES_TITILE_OWNER_DETAILS",
     body: [
       {
-        route: "searchads",
-        component: "ADSSearch",
-        nextStep: "info",
-        key: "adslist",
-        type: "component",
-      },
-      {
         route: "info",
-        component: "ADSRequiredDoc",
-        nextStep: "applicant-details",
+        component: "PTRServiceDoc",
+        nextStep: "owners",
         key: "Documents",
-        type: "component",
       },
+
       {
-        route: "applicant-details",
-        component: "ADSCitizenDetails",
+        route: "owners",
+        component: "PTRCitizenDetails",
         withoutLabel: true,
-        key: "applicant",
+        key: "ownerss",
         type: "component",
-        nextStep: "address-details",
+        nextStep: "pet-details",
         hideInEmployee: true,
         isMandatory: true,
         texts: {
-          header:"APPLICANT_PERSONAL_DETAILS",
-          submitBarLabel: "ADS_COMMON_NEXT",
+          submitBarLabel: "CS_COMMON_NEXT",
         },
       },
+    ],
+  },
+
+  {
+    head: "ES_TITILE_PET_DETAILS",
+    body: [
       {
-        route: "address-details",
-        component: "ADSAddress",
+        route: "pet-details",
+        component: "PTRCitizenPet",
         withoutLabel: true,
-        key: "address",
+        key: "pets",
         type: "component",
-        nextStep: "document-details",
-        hideInEmployee: true,
         isMandatory: true,
+        hideInEmployee: true,
+        nextStep: "documents",
         texts: {
-          header:"APPLICANT_ADDRESS_DETAILS",
-          submitBarLabel: "ADS_COMMON_NEXT",
+          submitBarLabel: "CS_COMMON_NEXT",
         },
       },
+    ],
+  },
+
+  // {
+  // "head": "PTR_LOCATION_DETAILS",
+  // "body":
+  // [
+  //     {
+  //     "route": "pincode",
+  //     "component": "PTRSelectPincode",
+  //     "texts": {
+
+  //         "submitBarLabel": "PTR_COMMON_NEXT",
+  //         "skipText": "CORE_COMMON_SKIP_CONTINUE",
+  //     },
+  //     "withoutLabel": true,
+  //     "key": "address",
+  //     "nextStep": "address",
+  //     "type": "component",
+  //     },
+
+  //     {
+  //     "route": "address",
+  //     "component": "PTRSelectAddress",
+  //     "withoutLabel": true,
+  //     "texts": {
+
+  //         "submitBarLabel": "PTR_COMMON_NEXT",
+  //     },
+  //     "key": "address",
+  //     "nextStep": "street",
+  //     "isMandatory": true,
+  //     "type": "component",
+  //     },
+
+  //     {
+  //     "type": "component",
+  //     "route": "street",
+  //     "component": "PTRCitizenAddress",
+  //     "key": "address",
+  //     "withoutLabel": true,
+  //     "texts": {
+  //         "submitBarLabel": "PTR_COMMON_NEXT",
+  //     },
+  //     "nextStep": "documents",
+  //     },
+
+  // ],
+  // },
+
+  {
+    head: "ES_TITILE_DOCUMENT_DETAILS",
+    body: [
       {
-        "route": "document-details",
-        "component": "ADSDocumentDetails",
-        "withoutLabel": true,
-        "key": "documents",
-        "type": "component",
-        "nextStep":null,
-        "texts": {
-            "submitBarLabel": "ADS_COMMON_NEXT",
+        route: "documents",
+        component: "PTRSelectProofIdentity",
+        withoutLabel: true,
+        key: "documents",
+        type: "component",
+        nextStep: null,
+        texts: {
+          submitBarLabel: "CS_COMMON_NEXT",
         },
-    }
-      
+      },
     ],
   },
 ];

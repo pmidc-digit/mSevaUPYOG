@@ -142,17 +142,17 @@ export const SelectPaymentType = (props) => {
         callbackUrl:
           paymentAmount === 0 || billDetails.totalAmount === 0
             ? window.location.href.includes("mcollect") || wrkflow === "WNS"
-              ? `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS" ? consumerCode : consumerCode}/${tenantId}?workflow=${
+              ? `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS" ? consumerCode : consumerCode}/${tenantId}?workflow=${
                   wrkflow === "WNS" ? wrkflow : "mcollect"
                 }`
-              : `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${
+              : `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${
                   wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
                 }/${tenantId}?propertyId=${consumerCode}`
             : window.location.href.includes("mcollect") || wrkflow === "WNS"
-            ? `${baseURL}digit-ui/citizen/payment/success/${businessService}/${
+            ? `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${
                 wrkflow === "WNS" ? consumerCode : consumerCode
               }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
-            : `${baseURL}digit-ui/citizen/payment/success/${businessService}/${
+            : `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${
                 wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
               }/${tenantId}?propertyId=${consumerCode}`,
         additionalDetails: {
@@ -165,8 +165,8 @@ export const SelectPaymentType = (props) => {
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
       console.log("data=========", data);
-
-      if (paymentAmount === 0 || billDetails.totalAmount === 0) {
+      setTimeout(()=>{
+        if (paymentAmount === 0 || billDetails.totalAmount === 0) {
         setPaymentLoading(false);
         if(data?.ResponseInfo?.status === "SUCCESSFUL"){
           window.location.href = data?.Transaction?.callbackUrl;
@@ -175,6 +175,7 @@ export const SelectPaymentType = (props) => {
         }
         return;
       }
+      }, 7000)
 
       // const redirectUrl = data?.Transaction?.redirectUrl;
       // if (d?.paymentType == "AXIS") {

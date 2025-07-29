@@ -91,11 +91,13 @@ const WrapPaymentComponent = (props) => {
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
-      data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
+      data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
     retry: false,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
+
+  console.log("generatePdfKeyInResponse", generatePdfKey, business_service)
 
   const payments = data?.payments;
 
@@ -150,7 +152,7 @@ const WrapPaymentComponent = (props) => {
       </Card>
     );
   }
-
+  console.log("paymentData", data);
   const paymentData = data?.payments?.Payments[0];
   const amount = reciept_data?.paymentDetails?.[0]?.totalAmountPaid;
   const transactionDate = paymentData?.transactionDate;
@@ -261,14 +263,36 @@ const WrapPaymentComponent = (props) => {
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...paymentData }] }, generatePdfKeyForWs);
         } else if (paymentData.paymentDetails[0].businessService.includes("BPA")) {
           const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-          const updatedpayments = {
+          let updatedpayments
+          if(paymentData.paymentDetails[0].businessService.includes("BPAREG")){
+            updatedpayments = {
             ...paymentData,
+            paymentDetails: [
+              {
+                ...paymentData?.paymentDetails?.[0],
+                additionalDetails: {
+                  ...paymentData?.paymentDetails?.[0]?.additionalDetails,
+                  stakeholderType: "Applicant"
+                }
+              }
+            ],
             additionalDetails: {
               ...paymentData.additionalDetails,
               designation: designation,
               ulbType: ulbType,
             },
           };
+          }
+          else{
+            updatedpayments = {
+              ...paymentData,
+              additionalDetails: {
+                ...paymentData.additionalDetails,
+                designation: designation,
+                ulbType: ulbType,
+              },
+            }; 
+          }
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
         } else {

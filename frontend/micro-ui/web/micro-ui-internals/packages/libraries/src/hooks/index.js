@@ -343,6 +343,10 @@ import useSearchPGRAI from "./pgrAi/useSearchPGRAI";
 import useFilterEmployee from "./pgrAi/useFilterEmployee";
 import useApplicationDetails from "./pgrAi/useApplicationDetails";
 
+import useDistricts from "./obps/useDistricts"
+import useULBList from "./obps/useULBList"
+import useUlbType from "./obps/useUlbType"
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -547,6 +551,9 @@ const obps = {
   useBusinessServiceData,
   useBPATaxDocuments,
   useQualificationTypes,
+  useDistricts,
+  useULBList,
+  useUlbType,
 };
 
 const events = {

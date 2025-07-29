@@ -1,35 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { newConfig } from "../../../../config/Create/stepFormConfigCitizen";
-import { SET_PtNewApplication, RESET_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
+import { SET_PtNewApplication, RESET_PtNewApplication, UPDATE_PtNewApplication } from "../../../../redux/actions/PTNewApplicationActions";
 
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
-import { useLocation } from "react-router-dom/cjs/react-router-dom";
 
 //Config for steps
 const createEmployeeConfig = [
   {
-    head: "GIS Details",
-    stepLabel: "GIS Address", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
-    stepNumber: 1,
-    isStepEnabled: true,
-    type: "component",
-    component: "PTNewFormStepZeroCitizen",
-    key: "GISDetails",
-    withoutLabel: true,
-    texts: {
-      submitBarLabel: "Next",
-    },
-  },
-  {
     head: "Personal Details",
     stepLabel: "Property Address", //"HR_EMPLOYEE_DETAILS_STEP_LABEL",
-    stepNumber: 2,
+    stepNumber: 1,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepOneCitizen",
@@ -42,7 +28,7 @@ const createEmployeeConfig = [
   {
     head: "ES_NEW_APPLICATION_PROPERTY_ASSESSMENT",
     stepLabel: "Property Assesment",
-    stepNumber: 3,
+    stepNumber: 2,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepTwoCitizen",
@@ -55,7 +41,7 @@ const createEmployeeConfig = [
   {
     head: "ES_NEW_APPLICATION_OWNERSHIP_DETAILS",
     stepLabel: "Owner Details",
-    stepNumber: 4,
+    stepNumber: 3,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepThreeCitizen",
@@ -68,7 +54,7 @@ const createEmployeeConfig = [
   {
     head: "ES_NEW_APPLICATION_DOCUMENTS_REQUIRED",
     stepLabel: "Document Info",
-    stepNumber: 5,
+    stepNumber: 4,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormStepFourCitizen",
@@ -81,7 +67,7 @@ const createEmployeeConfig = [
   {
     head: "Summary",
     stepLabel: "Summary",
-    stepNumber: 6,
+    stepNumber: 5,
     isStepEnabled: true,
     type: "component",
     component: "PTNewFormSummaryStepFiveCitizen",
@@ -99,6 +85,7 @@ let updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 
 const CreateEmployeeStepForm = () => {
   const history = useHistory();
+  const {state} = useLocation();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const location = useLocation();
@@ -113,6 +100,8 @@ const CreateEmployeeStepForm = () => {
       // updatedCreateEmployeeconfig= createEmployeeConfig.filter((item)=>item.stepNumber===location.state.currentStepNumber)
     }
     dispatch(RESET_PtNewApplication());
+    // const GISValues = mapGISToProperty();
+    dispatch(UPDATE_PtNewApplication("GISValues", {...state}));
   }, []);
 
   useEffect(() => {
@@ -137,7 +126,7 @@ const CreateEmployeeStepForm = () => {
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {t("HR_COMMON_CREATE_EMPLOYEE_HEADER")}
+        {t("HR_COMMON_CREATE_PROPERTY_HEADER")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (

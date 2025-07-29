@@ -1,20 +1,7 @@
 export const newConfig = [
   {
-    head: "GIS_MAPPING",
-    stepNumber: 1,
-    body: [
-      {
-          type: "component",
-          isMandatory: true,
-          component: "GISComponent",
-          key: "GISData",
-          withoutLabel: true,
-      },
-    ],
-  },
-  {
     head: "Personal Details",
-    stepNumber: 2,
+    stepNumber: 1,
     body: [
       {
         route: "map",
@@ -93,7 +80,7 @@ export const newConfig = [
   },
   {
     head: "ES_NEW_APPLICATION_PROPERTY_ASSESSMENT",
-    stepNumber: 3,
+    stepNumber: 2,
     body: [
       {
         type: "component",
@@ -226,7 +213,7 @@ export const newConfig = [
   },
   {
     head: "ES_NEW_APPLICATION_OWNERSHIP_DETAILS",
-    stepNumber: 4,
+    stepNumber: 3,
     body: [
       {
         type: "component",
@@ -395,7 +382,7 @@ export const newConfig = [
   },
   {
     head: "ES_NEW_APPLICATION_DOCUMENTS_REQUIRED",
-    stepNumber: 5,
+    stepNumber: 4,
     body: [
       {
         component: "SelectDocuments",
@@ -407,7 +394,7 @@ export const newConfig = [
   },
   {
     head: "Summary",
-    stepNumber: 6,
+    stepNumber: 5,
     body: [
       {
         component: "PTSummary",

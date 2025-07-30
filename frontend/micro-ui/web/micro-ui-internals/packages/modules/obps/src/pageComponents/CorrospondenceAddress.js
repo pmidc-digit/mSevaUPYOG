@@ -1,6 +1,7 @@
 import { BackButton, CardLabel, CheckBox, FormStep, TextArea, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState } from "react";
 import Timeline from "../components/Timeline";
+import { convertDateToEpoch } from "../utils";
 
 const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData }) => {
   let validation = {};
@@ -38,7 +39,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
     setCorrespondenceaddress(e.target.value);
   }
 
-    const goNext = () => {
+  const goNext = () => {
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
       setIsDisableForNext(true);
       let payload = {
@@ -50,14 +51,12 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                   gender: formData?.LicneseDetails?.gender?.code,
                   mobileNumber: formData?.LicneseDetails?.mobileNumber,
                   name: formData?.LicneseDetails?.name,
-                  // "dob": formData?.LicneseDetails?.dateOfBirth,LicneseDetails.dateOfBirth
-                  dob: "",
+                  dob: formData?.LicenseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth) : null,
                   emailId: formData?.LicneseDetails?.email,
                   permanentAddress: formData?.LicneseDetails?.PermanentAddress,
                   correspondenceAddress: Correspondenceaddress,
-                  // "pan":formData?.LicneseDetails?.PanNumber,
+                  pan: formData?.LicneseDetails?.PanNumber,
                   // "permanentPinCode": "143001"
-                  ...(formData?.LicneseDetails?.PanNumber && { pan: formData?.LicneseDetails?.PanNumber }),
                 },
               ],
               subOwnerShipCategory: "INDIVIDUAL",
@@ -67,17 +66,14 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                 },
               ],
               additionalDetail: {
+                qualificationType: formData?.LicenseType?.qualificationType?.name,
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification ? formData?.LicneseType?.selfCertification : null,
+                Ulb: formData?.LicneseDetails?.Ulb,
               },
-              // "address": {
-              //   "city": "",
-              //   "landmark": "",
-              //   "pincode": formData?.LicneseDetails?.Pincode
-              // },
               address: {
-                ...(formData?.LicneseDetails?.City && { city: formData?.LicneseDetails?.City }),
-                ...(formData?.LicneseDetails?.Landmark && { landmark: formData?.LicneseDetails?.Landmark }),
+                city: "",
+                landmark: "",
                 pincode: formData?.LicneseDetails?.Pincode,
               },
               institution: null,
@@ -101,7 +97,9 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
         .catch((e) => {
           setIsDisableForNext(false);
           setShowToast({ key: "error" });
+          console.log("error message here", e?.response?.data?.Errors[0]?.message);
           setError(e?.response?.data?.Errors[0]?.message || null);
+          //setError("A user account with this mobile number already exists. Please use a different number or log in with the existing account");
         });
     } else {
       formData.Correspondenceaddress = Correspondenceaddress;

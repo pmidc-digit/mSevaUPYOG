@@ -100,8 +100,8 @@ const NDCSummary = ({ formData, t}) => {
               ))} */}
             <CardSubHeader style={{ fontSize: "24px" }}>{t("NDC_DOCUMENTS_DETAILS")}</CardSubHeader>
             <StatusTable>
-              {docs.map((doc, index) => (
-                <NDCDocument value={docs} Code={doc?.documentType} index={index} />
+              {docs?.map((doc, index) => (
+                <NDCDocument value={docs} Code={doc?.documentType} index={index} formData={formData}/>
               ))}
             </StatusTable>
             </div>

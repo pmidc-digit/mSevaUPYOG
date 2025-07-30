@@ -17,7 +17,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const missingFields = validateStepData(currentStepData);
 
     if (missingFields.length > 0) {
-      setError(`Please fill the following fields: ${missingFields.join(", ")}`);
+      setError(`${missingFields[0]}`);
       setShowToast(true);
       return;
     }
@@ -35,16 +35,45 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const NDCReason = data?.NDCReason || {};
 
     // Mandatory Field Checks
-    if (!propertyDetails?.firstName) missingFields.push("First Name");
-    if (!propertyDetails?.lastName) missingFields.push("Last Name");
-    if (!propertyDetails?.mobileNumber) missingFields.push("Mobile Number");
-    if (!propertyDetails?.address) missingFields.push("Address");
-    if (!propertyDetails?.email) missingFields.push("Email");
-    if (propertyDetails?.waterConnection?.length === 0) missingFields.push("Water Connection");
-    if (propertyDetails?.sewerageConnection?.length === 0) missingFields.push("Sewerage Connection");
-    if (!NDCReason?.code) missingFields.push("NDC Reason");
-    if (!cpt?.id) missingFields.push("CPT ID");
-    if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push("CPT Details");
+   if (!cpt?.id) missingFields.push(t("NDC_MESSAGE_PROPERTY_ID"));
+    if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push(t("NDC_MESSAGE_PLEASE_SEARCH_PROPERTY_ID"));
+    if (!propertyDetails?.firstName) missingFields.push(t("NDC_MESSAGE_FIRST_NAME"));
+    if (!propertyDetails?.lastName) missingFields.push(t("NDC_MESSAGE_LAST_NAME"));
+    if (!propertyDetails?.mobileNumber) missingFields.push(t("NDC_MESSAGE_MOBILE_NUMBER"));
+    if (!propertyDetails?.address) missingFields.push(t("NDC_MESSAGE_ADDRESS"));
+    if (!propertyDetails?.email) missingFields.push(t("NDC_MESSAGE_EMAIL"));
+    // if (propertyDetails?.waterConnection?.length === 0) missingFields.push(t("NDC_MESSAGE_WATER_CONNECTION"));
+    // if (propertyDetails?.sewerageConnection?.length === 0) missingFields.push(t("NDC_MESSAGE_SEWERAGE_CONNECTION"));
+    if (!NDCReason?.code) missingFields.push(t("NDC_MESSAGE_NDC_REASON"));
+
+    if (propertyDetails?.waterConnection?.length > 0) {
+      propertyDetails.waterConnection.forEach(value => {
+        if (!value?.billData?.id) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
+        }
+        if (value?.billData?.id && value?.billData?.totalAmount > 0) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
+        }
+      });
+    }
+
+    if (propertyDetails?.sewerageConnection?.length > 0) {
+      propertyDetails.sewerageConnection.forEach(value => {
+        if (!value?.billData?.id) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
+        }
+        if (value?.billData?.id && value?.billData?.totalAmount > 0) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
+        }
+      });
+    }
+
+    if (!propertyDetails?.propertyBillData?.billData?.id) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_PROPERTY_TAX")} ${cpt?.id}`);
+        }
+        if (propertyDetails?.propertyBillData?.billData?.id && propertyDetails?.propertyBillData?.billData?.totalAmount > 0) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_PROPERTY_TAX")} ${cpt?.id}`);
+        }
 
     // Format Validations
     const nameRegex = /^[A-Za-z\s]+$/;
@@ -52,20 +81,21 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const mobileRegex = /^[6-9]\d{9}$/;
 
     if (propertyDetails?.firstName && !nameRegex.test(propertyDetails.firstName)) {
-      invalidFields.push("First Name (only alphabets allowed)");
+      invalidFields.push(t("NDC_MESSAGE_FIRST_NAME_ONLY_ALPHABETS_ALLOWED"));
     }
 
     if (propertyDetails?.lastName && !nameRegex.test(propertyDetails.lastName)) {
-      invalidFields.push("Last Name (only alphabets allowed)");
+      invalidFields.push(t("NDC_MESSAGE_LAST_NAME_ONLY_ALPHABETS_ALLOWED"));
     }
 
     if (propertyDetails?.email && !emailRegex.test(propertyDetails.email)) {
-      invalidFields.push("Email (invalid format)");
+      invalidFields.push(t("NDC_MESSAGE_EMAIL_INVALID_FORMAT"));
     }
 
     if (propertyDetails?.mobileNumber && !mobileRegex.test(propertyDetails.mobileNumber)) {
-      invalidFields.push("Mobile Number (must be a valid 10-digit Indian number)");
+      invalidFields.push(t("NDC_MESSAGE_MOBILE_NUMBER_MUST_BE_A_VALID_TEN_DIGIT_INDIAN_NUMBER"));
     }
+
 
     const allErrors = [...missingFields, ...invalidFields];
     return allErrors;

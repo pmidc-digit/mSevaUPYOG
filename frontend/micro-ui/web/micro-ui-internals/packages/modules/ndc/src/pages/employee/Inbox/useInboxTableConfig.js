@@ -13,14 +13,14 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const tableColumnConfig = useMemo(() => {
     return [
       {
-        Header: t("NOC_APP_NO_LABEL"),
-        accessor: "applicationNo",
+        Header: t("NDC_APP_NO_LABEL"),
+        accessor: "uuid",
         disableSortBy: true,
         Cell: ({ row }) => {
           return (
             <div>
-              <Link to={`${parentRoute}/inbox/application-overview/${row.original["applicationId"]}`}>
-                <span className="link">{row.original["applicationId"]}</span>
+              <Link to={`${parentRoute}/inbox/application-overview/${row.original?.Applicant?.["uuid"]}`}>
+                <span className="link">{row.original?.Applicant?.["uuid"]}</span>
               </Link>
             </div>
           );
@@ -28,34 +28,34 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       },
       {
         Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
-        accessor: "applicationDate",
-        Cell: ({ row }) => (row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : ""),
+        accessor: "createdtime",
+        Cell: ({ row }) => (row.original?.Applicant?.["createdtime"] ? GetCell(format(new Date(row.original?.Applicant?.["createdtime"]), "dd/MM/yyyy")) : ""),
       },
-      // {
-      //   Header: t("ES_INBOX_LOCALITY"),
-      //   accessor: (row) => t(row?.locality),
-      // disableSortBy: true,
-
-      // },
       {
-        Header: t("NOC_MODULE_SOURCE_LABEL"),
-        accessor: (row) => t(`MODULE_${row?.source}`),
+        Header: t("ES_INBOX_NAME_LABEL"),
+        accessor: (row) =>(row?.Applicant?.firstname ? row?.Applicant?.firstname : "" + " " + row?.original?.Applicant?.lastname? row?.original?.Applicant?.lastname : ""),
+      disableSortBy: true,
+
+      },
+      {
+        Header: t("NDC_EMAIL_LABEL"),
+        accessor: (row) => (row?.Applicant?.["email"]? row?.Applicant?.["email"] : "NA"),
         disableSortBy: true,
       },
       {
         Header: t("NOC_STATUS_LABEL"),
-        accessor: (row) => t(row?.status),
+        accessor: (row) => (row?.Applicant?.["applicationStatus"] ? row?.Applicant?.["applicationStatus"] : ""),
         disableSortBy: true,
       },
-      {
-        Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
-        accessor: (row) => row?.owner,
-        disableSortBy: true,
-      },
-      {
-        Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
-        accessor: (row) => GetStatusCell(row?.sla),
-      },
+      // {
+      //   Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
+      //   accessor: (row) => row?.owner?.Applicant?.["applicationStatus"],
+      //   disableSortBy: true,
+      // },
+      // {
+      //   Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
+      //   accessor: (row) => GetStatusCell(row?.sla),
+      // },
     ];
   });
 

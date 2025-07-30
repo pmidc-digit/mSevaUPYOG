@@ -149,10 +149,12 @@ import useTLDocumentSearch from "./tl/useTLDocumentSearch";
 import useTradeLicenseAPI from "./tl/useTradeLicenseAPI";
 import useTradeLicenseSearch from "./tl/useTradeLicenseSearch";
 import { useTLSearchApplication, useTLApplicationDetails } from "./tl/useTLsearchApplication";
+import { useNDCSearchApplication, useNDCSearchApplicationEmployee } from "./ndc/useNDCSearchApplication";
 import useTLPaymentHistory from "./tl/userPaymentHistory";
 import useTLApplicationDetail from "./tl/useApplicationDetail";
 import useTLApplicationActions from "./tl/useApplicationActions";
 import useTLFetchBill from "./tl/useFetchBill";
+import useNDCDocumentSearch from "./ndc/useNDCDocumentSearch";
 
 import useTLGenderMDMS from "./tl/useTLGenderMDMS";
 import useTLInbox from "./tl/useInbox";
@@ -645,6 +647,9 @@ const noc = {
 
 const ndc = {
   useInbox: useNDCInbox,
+  useSearchApplication: useNDCSearchApplication,
+  useSearchEmployeeApplication: useNDCSearchApplicationEmployee,
+  useNDCDocumentSearch
 };
 
 const ws = {

@@ -8,12 +8,17 @@ const App = () => {
     console.log("NDC Citizen App Loaded", path);
 
     const NewNDCStepForm = Digit.ComponentRegistryService.getComponent("NewNDCStepFormCitizen");
+    const MyApplications = Digit.ComponentRegistryService.getComponent("MyApplications");
+    const NDCResponseCitizen = Digit.ComponentRegistryService.getComponent("NDCResponseCitizen");
 
     return (
         <span className={"tl-citizen"}>
             <Switch>
                 <AppContainer>
                     <PrivateRoute path={`${path}/new-application`} component={NewNDCStepForm} />
+                    <PrivateRoute path={`${path}/my-application`} component={MyApplications} />
+                    <PrivateRoute path={`${path}/response/:id`} component={NDCResponseCitizen} />
+
                 </AppContainer>
             </Switch>
         </span>

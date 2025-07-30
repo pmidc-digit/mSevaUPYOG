@@ -5,7 +5,19 @@ import Filter from "./Filter";
 import Search from "./Search";
 import SortBy from "./SortBy";
 
-const ApplicationCard = ({ searchFields, searchParams, statusMap, sortParams = {}, onSort, onFilterChange, onSearch, t, data, idKey, isLoading }) => {
+const ApplicationCard = ({
+  searchFields,
+  searchParams,
+  statusMap,
+  sortParams = {},
+  onSort,
+  onFilterChange,
+  onSearch,
+  t,
+  data,
+  idKey,
+  isLoading
+}) => {
   const [type, setType] = useState("");
   const history = useHistory();
   const [popup, setPopup] = useState(false);
@@ -26,8 +38,8 @@ const ApplicationCard = ({ searchFields, searchParams, statusMap, sortParams = {
   };
 
   let result;
-  if (isLoading) {
-    return <Loader />;
+  if(isLoading){
+    return <Loader/>
   }
   if (data?.length === 0) {
     result = (
@@ -41,16 +53,9 @@ const ApplicationCard = ({ searchFields, searchParams, statusMap, sortParams = {
           ))}
       </Card>
     );
-  } else if (data && data?.length > 0) {
-    result = (
-      <DetailsCard
-        data={data}
-        handleSelect={(e) => {}}
-        handleDetailCardClick={(e) => {
-          history.push(`/digit-ui/citizen/obps/bpa/${e?.[idKey]}`);
-        }}
-      />
-    );
+  }
+  else if (data && data?.length > 0) {
+    result = <DetailsCard data={data} handleSelect={(e) => {}} handleDetailCardClick={(e) => { history.push(`/digit-ui/citizen/obps/bpa/${e?.[idKey]}`); }} />
   }
 
   return (
@@ -85,7 +90,14 @@ const ApplicationCard = ({ searchFields, searchParams, statusMap, sortParams = {
         <PopUp>
           {type === "SEARCH" && (
             <div className="popup-module w-fullwidth">
-              <Search t={t} type="mobile" onClose={handlePopupClose} onSearch={onSearch} searchParams={searchParams} searchFields={searchFields} />
+              <Search
+                t={t}
+                type="mobile"
+                onClose={handlePopupClose}
+                onSearch={onSearch}
+                searchParams={searchParams}
+                searchFields={searchFields}
+              />
             </div>
           )}
           {type === "FILTER" && (
@@ -98,20 +110,20 @@ const ApplicationCard = ({ searchFields, searchParams, statusMap, sortParams = {
                   type="mobile"
                   searchParams={searchParams}
                   statuses={statusMap}
-                  // removeParam={removeParam}
+                // removeParam={removeParam}
                 />
               }
             </div>
           )}
           {type === "SORT" && (
             <div className="popup-module w-fullwidth">
-              {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose} type="mobile" onSort={onSort} />}
+              {<SortBy type="mobile" sortParams={sortParams} onClose={handlePopupClose}  onSort={onSort} />}
             </div>
           )}
         </PopUp>
       )}
     </React.Fragment>
-  );
-};
+  )
+}
 
 export default ApplicationCard;

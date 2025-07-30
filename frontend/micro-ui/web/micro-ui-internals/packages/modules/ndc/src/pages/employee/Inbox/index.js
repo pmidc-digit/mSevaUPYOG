@@ -112,26 +112,30 @@ const Inbox = ({ parentRoute }) => {
     t
   );
 
-  // const { isLoading: isInboxLoading, data: { table = [], statuses, totalCount } = {} } = Digit.Hooks.ndc.useInbox({
-  //   tenantId,
-  //   filters: { ...formState },
-  // });
+  const {
+    isLoading: isInboxLoading,
+    data,
+    // : { table = [], statuses, totalCount } = {}
+  } = Digit.Hooks.ndc.useInbox({
+    tenantId,
+    filters: { ...formState },
+  });
 
-  const { isLoading: isInboxLoading, data} = Digit.Hooks.ndc.useSearchEmployeeApplication({status: "CREATE"}, tenantId)
+  // const { isLoading: isInboxLoading, data} = Digit.Hooks.ndc.useSearchEmployeeApplication({status: "CREATE"}, tenantId)
 
   const [table, setTable] = useState([]);
   const [statuses, setStatuses] = useState([]);
   const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
-    if(!isInboxLoading && data) {
+    if (!isInboxLoading && data) {
       setTable(data?.Applications || []);
       setStatuses(data?.status || []);
       setTotalCount(data?.totalCount || 0);
     }
   }, [data]);
 
-  console.log("tenantIdInNDCInbox",   data);
+  console.log("tenantIdInNDCInbox", data);
 
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,

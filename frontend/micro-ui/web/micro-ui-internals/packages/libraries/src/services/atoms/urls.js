@@ -303,9 +303,10 @@ const Urls = {
     PGR_Create_AI: "/pgr-ai-services/v1/request/_create",
     PGR_Search_AI: "/pgr-ai-services/v1/request/_search",
     PGR_Update_AI: "/pgr-ai-services/v1/request/_update",
+  },
   ndc: {
     create: "/ndc-services/ndc/_create",
-    search: "/ndc-services/ndc/_search"
+    search: "/ndc-services/ndc/_search",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

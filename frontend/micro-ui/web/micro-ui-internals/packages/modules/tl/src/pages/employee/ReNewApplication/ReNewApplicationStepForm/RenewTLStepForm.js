@@ -1,5 +1,5 @@
 import { config } from "../../../../config/employee/RenewApplicationStepFormConfig";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -22,7 +22,7 @@ const renewEmployeeConfig = [
     key: "TraidDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {
@@ -35,7 +35,7 @@ const renewEmployeeConfig = [
     key: "OwnerDetails",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_NXT_STEP",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {
@@ -48,7 +48,7 @@ const renewEmployeeConfig = [
     key: "Documents",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "HR_COMMON_BUTTON_SUBMIT",
+      submitBarLabel: "TL_COMMON_BUTTON_NXT_STEP",
     },
   },
   {
@@ -61,7 +61,7 @@ const renewEmployeeConfig = [
     key: "SummaryTL",
     withoutLabel: true,
     texts: {
-      submitBarLabel: "Submit",
+      submitBarLabel: "TL_RENEWAL_BUTTON_SUBMIT",
     },
   },
 ];
@@ -104,24 +104,25 @@ const RenewTLStepForm = (props) => {
   const defaultValues = mapApplicationDataToDefaultValues(applicationData, t, propertyId, propertyDetails);
 
   useEffect(() => {
-    console.log("RenewTLStepForm props: ", props);
-    console.log("Default_Values_RenewTL_Stepper_Form: ", defaultValues);
+    //console.log("RenewTLStepForm props: ", props);
+    //console.log("Default_Values_RenewTL_Stepper_Form: ", defaultValues);
 
     const updatedDefaultValues = JSON.parse(JSON.stringify(defaultValues));
 
     // Set financialYear to {} if it exists
-    if (updatedDefaultValues?.TraidDetails?.tradedetils?.length > 0 && updatedDefaultValues.TraidDetails.tradedetils[0].financialYear) {
-      updatedDefaultValues.TraidDetails.tradedetils[0].financialYear = "";
-    }
+    // if (updatedDefaultValues?.TraidDetails?.tradedetils?.length > 0 && updatedDefaultValues.TraidDetails.tradedetils[0].financialYear) {
+    //   updatedDefaultValues.TraidDetails.tradedetils[0].financialYear = "";
+    // }
 
     Object.entries(updatedDefaultValues).forEach(([key, value]) => {
       dispatch(UPDATE_tlNewApplication(key, value));
     });
-  }, []); // Important to depend on defaultValues
+ }, []); // Important to depend on defaultValues
 
-  useEffect(() => {
-    console.log("RenewTLStepForm formData: ", formData);
-  }, [formData]);
+
+  // useEffect(() => {
+  //   console.log("RenewTLStepForm formData: ", formData);
+  // }, [formData]);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_tlNewApplication(updatedStepNumber));
@@ -134,7 +135,7 @@ const RenewTLStepForm = (props) => {
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {t("Renew Trade License Application")}
+        {t("ES_TITLE_RENEW_TRADE_LICESE_APPLICATION")}
       </CardHeader>
       <Stepper stepsList={updatedRenewEmployeeConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && <Toast error={showToast.key} label={t(showToast.label)} onClose={() => setShowToast(null)} isDleteBtn={"true"} />}

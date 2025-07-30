@@ -1,33 +1,103 @@
-import React, { useEffect, useState } from "react";
-import { CardLabel, LabelFieldPair, Dropdown, TextInput, LinkButton, CardLabelError, Loader, DeleteIcon } from "@mseva/digit-ui-react-components";
-import { stringReplaceAll } from "../utils";
-import { useForm, Controller } from "react-hook-form";
+import { CardLabel, CardLabelError, DeleteIcon, Dropdown, LabelFieldPair, Loader, TextInput } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
+import React, { useEffect, useState, useRef } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
+import { stringReplaceAll } from "../utils";
 
 const Units = ({ t, config, onSelect, userType, formData, setError, formState, clearErrors }) => {
+  console.log("formData in unit component", formData);
+
   const { pathname } = useLocation();
-  const presentInModifyApplication = pathname.includes("modify");
+  const presentInModifyApplication = pathname.includes("modify") || pathname.includes("edit-application");
   let isMobile = window.Digit.Utils.browser.isMobile();
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [units, setUnits] = useState(
-    formData?.units || [
-      {
-        key: Date.now(),
-        order: 1,
-        floorNo: null,
-        occupancyType: null,
-        tenantId,
-        usageCategory: null,
-        builtUpArea: "",
-        RentedMonths: null,
-        ageOfProperty:null,
-        structureType:null,
-        NonRentedMonthsUsage: null
-      },
-    ]
-  );
+  const isNotFirst = useRef(false)
+
+  // const [units, setUnits] = useState(
+  //   formData?.units || [
+  //     {
+  //       key: Date.now(),
+  //       order: 1,
+  //       floorNoCitizen: null,
+  //       occupancyType: null,
+  //       tenantId,
+  //       usageCategory: null,
+  //       builtUpArea: "",
+  //       RentedMonths: null,
+  //       ageOfProperty: null,
+  //       structureType: null,
+  //       NonRentedMonthsUsage: null,
+  //     },
+  //   ]
+  // );
+
+  const [units, setUnits] = useState(()=> {
+    console.log("initialUnits", formData?.units)
+    return formData?.units || []});
+
+  useEffect(()=>{
+    console.log("isNotFirst and Units", isNotFirst.current, formData.units, formData, units);
+    // debugger;
+    if(!isNotFirst.current){
+      isNotFirst.current = true;
+      return;
+    }
+    if(formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY" && !presentInModifyApplication){
+
+      console.log("isNotFirst and Units if Independent property", isNotFirst.current, formData.units, formData, units);
+      setUnits(()=>{
+        const numberOfFloors = formData?.noOfFloors || 0;
+    
+        return Array.from({ length: numberOfFloors }, (_, index) => ({
+          key: Date.now() + index, // ensure unique keys
+          order: index + 1,
+          floorNoCitizen: null,
+          occupancyType: null,
+          tenantId,
+          usageCategory: null,
+          builtUpArea: "",
+          RentedMonths: null,
+          ageOfProperty: null,
+          structureType: null,
+          NonRentedMonthsUsage: null,
+          arv: null,
+          subUsageType: null
+        }));
+      })
+    }
+    else if(formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY" && !presentInModifyApplication){
+
+      console.log("isNotFirst and Units if Flat/Part", isNotFirst.current, formData.units, formData, units);
+      setUnits([
+        {
+          key: Date.now(),
+          order: 1,
+          floorNoCitizen: null,
+          occupancyType: null,
+          tenantId,
+          usageCategory: null,
+          builtUpArea: "",
+          RentedMonths: null,
+          ageOfProperty: null,
+          structureType: null,
+          NonRentedMonthsUsage: null,
+          arv: null,
+          subUsageType: null
+        },
+      ])
+    }
+  },[formData.noOfFloors, formData.PropertyType, formData.usageCategoryMajor])
+
+  useEffect(()=>{
+    // console.log("isNotFirst and Units Units-Updated", units, formData);
+    if(formData?.units?.length > 0 && formData?.units[0]?.occupancyType?.length > 0){
+      setUnits(formData?.units);
+    }
+  },[])
+
+  console.log("here???????")
   const stateId = Digit.ULBService.getStateId();
   const [focusIndex, setFocusIndex] = useState({ index: -1 });
   const [loader, setLoader] = useState(true);
@@ -44,6 +114,8 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
       "OwnerShipCategory",
     ]) || {};
 
+  console.log("Menu in Units", Menu);
+
   let usagecat = [];
   usagecat = Menu?.PropertyTax?.UsageCategory?.filter((e) => e?.code !== "MIXED") || [];
 
@@ -56,162 +128,219 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   let occupencyOptions = [];
   occupencyOptions = Menu?.PropertyTax?.OccupancyType.map((e) => ({ i18nKey: `PROPERTYTAX_OCCUPANCYTYPE_${e?.code}`, ...e })) || [];
 
- let rentedmonths =
-  [
+  let rentedmonths = [
     {
-     "i18nKey": "PROPERTYTAX_MONTH1",
-      "name": "Month 1",
-      "code": "1",
-      "active": true
-     },
+      i18nKey: "PROPERTYTAX_MONTH1",
+      name: "Month 1",
+      code: "1",
+      active: true,
+    },
     {
-      "i18nKey": "PROPERTYTAX_MONTH2",
-      "name": "Month 2",
-      "code": "2",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH3",
-      "name": "Month 3",
-      "code": "3",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH4",
-      "name": "Month 4",
-      "code": "4",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH5",
-      "name": "Month 5",
-      "code": "5",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH6",
-      "name": "Month 6",
-      "code": "6",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH7",
-      "name": "Month 7",
-      "code": "7",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH8",
-      "name": "Month 8",
-      "code": "8",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH9",
-      "name": "Month 9",
-      "code": "9",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH10",
-      "name": "Month 10",
-      "code": "10",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH11",
-      "name": "Month 11",
-      "code": "11",
-     "active": true
-     },
-     {
-      "i18nKey": "PROPERTYTAX_MONTH12",
-      "name": "Month 12",
-      "code": "12",
-     "active": true
-     },    
-    ]   
+      i18nKey: "PROPERTYTAX_MONTH2",
+      name: "Month 2",
+      code: "2",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH3",
+      name: "Month 3",
+      code: "3",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH4",
+      name: "Month 4",
+      code: "4",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH5",
+      name: "Month 5",
+      code: "5",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH6",
+      name: "Month 6",
+      code: "6",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH7",
+      name: "Month 7",
+      code: "7",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH8",
+      name: "Month 8",
+      code: "8",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH9",
+      name: "Month 9",
+      code: "9",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH10",
+      name: "Month 10",
+      code: "10",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH11",
+      name: "Month 11",
+      code: "11",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH12",
+      name: "Month 12",
+      code: "12",
+      active: true,
+    },
+  ];
 
-    let nonrentedusage=[
-      {
-        "i18nKey": "NON_RENT_SELFOCCUPIED",
-        "name": "Non Rent Self occupied",
-        "code": "NonRentSelfOccupied",
-       "active": true
-       },  
-       {
-        "i18nKey": "NON_RENT_UNOCCUPIED",
-        "name": "Non rent Un occupied",
-        "code": "NonRentUnOccupied",
-       "active": true
-       },  
-    ]
-    let ageOfPropertyOptions =[
-      {
-        "i18nKey": "PROPERTYTAX_MONTH>10",
-        "name": "greater than 10 years",
-        "code": "10",
-       "active": true
-       },
-       {
-        "i18nKey": "PROPERTYTAX_MONTH>15",
-        "name": "greater than 15 years",
-        "code": "15",
-       "active": true
-       },
-       {
-        "i18nKey": "PROPERTYTAX_MONTH>25",
-        "name": "greater than 24 years",
-        "code": "25",
-       "active": true
-       } 
-     ]
-     let structureTypeOptions =[
-      {
-        "i18nKey": "PERMANENT",
-        "name": "Permanent",
-        "code": "permanent",
-       "active": true
-       },
-       {
-        "i18nKey": "TEMPORARY",
-        "name": "Temporary",
-        "code": "temporary",
-       "active": true
-       },
-       {
-        "i18nKey": "SEMI_PERMANENT",
-        "name": "Semi Permanent",
-        "code": "semiPermanent",
-       "active": true
-       },
-       {
-        "i18nKey": "RCC",
-        "name": "RCC",
-        "code": "RCC",
-       "active": true
-       }  
-     ]
+  let nonrentedusage = [
+    {
+      i18nKey: "SELFOCCUPIED",
+      name: "Non Rent Self occupied",
+      code: "SELFOCCUPIED",
+      active: true,
+    },
+    {
+      i18nKey: "UNOCCUPIED",
+      name: "Non rent Un occupied",
+      code: "UNOCCUPIED",
+      active: true,
+    },
+  ];
+  let ageOfPropertyOptions = [
+    {
+      i18nKey: "PROPERTYTAX_MONTH>10",
+      name: "greater than 10 years",
+      code: "10",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH>15",
+      name: "greater than 15 years",
+      code: "15",
+      active: true,
+    },
+    {
+      i18nKey: "PROPERTYTAX_MONTH>25",
+      name: "greater than 24 years",
+      code: "25",
+      active: true,
+    },
+  ];
+  let structureTypeOptions = [
+    {
+      i18nKey: "PERMANENT",
+      name: "Permanent",
+      code: "permanent",
+      active: true,
+    },
+    {
+      i18nKey: "TEMPORARY",
+      name: "Temporary",
+      code: "temporary",
+      active: true,
+    },
+    {
+      i18nKey: "SEMI_PERMANENT",
+      name: "Semi Permanent",
+      code: "semiPermanent",
+      active: true,
+    },
+    {
+      i18nKey: "RCC",
+      name: "RCC",
+      code: "RCC",
+      active: true,
+    },
+  ];
   let floorListData = [];
   function getfloorlistdata(floorlist) {
     floorListData = floorlist?.map((floor) => ({ i18nKey: "PROPERTYTAX_FLOOR_" + stringReplaceAll(floor?.code, "-", "_"), code: floor?.code })) || [];
     return floorListData;
   }
 
+  function findUsageType(unit){
+    const { usageCategory } = unit;
+    if ([usageCategory, formData?.usageCategoryMajor?.code].includes("RESIDENTIAL")) {
+      console.log("usageCategory is set to RESIDENTIAL", usageCategory, formData?.usageCategoryMajor?.code)
+      return usageCategoryMajorMenu(usagecat).filter((e) => e?.code === "RESIDENTIAL")[0];
+    }
+
+    if (formData?.usageCategoryMajor?.code !== "MIXED" && usageCategory && typeof usageCategory === "string") {
+      console.log("usageCategoryBeforeError", usageCategory);
+      const codeArr = usageCategory?.split(".");
+      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    } else if (usageCategory && typeof usageCategory === "string") {
+      console.log("usageCategoryBeforeError", usageCategory);
+      const codeArr = usageCategory?.split(".");
+      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    }else if(formData?.usageCategoryMajor?.code !== "MIXED" && usageCategory?.code){
+      console.log("usageCategoryBeforeError", usageCategory);
+      const codeArr = usageCategory?.code?.split(".");
+      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    }else if(usageCategory && usageCategory?.code){
+      console.log("usageCategoryBeforeError", usageCategory);
+      const codeArr = usageCategory?.code?.split(".");
+      console.log("codeArr", codeArr, usageCategory, formData?.usageCategoryMajor?.code);
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    }
+  }
+
   useEffect(() => {
-    if (!isLoading && presentInModifyApplication && Menu) {
+    if (!isLoading && presentInModifyApplication && Menu ) {
       // usage subUsage unit Occupancy
-      let defaultUnits = formData?.originalData?.units
+      console.log("formdatain Units useEffect", formData?.units);
+      let defaultUnits = formData?.units
         ?.filter((e) => e.active)
         ?.map((unit, index) => {
-          let { occupancyType, usageCategory: uc, constructionDetail, floorNo, arv } = unit;
-          occupancyType = occupencyOptions.filter((e) => e?.code === occupancyType)[0];
-          let usageCategory = usageCategoryMajorMenu(usagecat).filter((e) => e?.code === uc)[0];
-          floorNo = getfloorlistdata(floorlist).filter((e) => e?.code == floorNo)[0];
+          let { occupancyType, usageCategory: uc, constructionDetail, floorNo, arv,
+            RentedMonths, NonRentedMonthsUsage } = unit;
+          occupancyType = occupencyOptions?.filter((e) => e?.code === occupancyType)[0] || unit?.occupancyType;
+          const usageType = findUsageType(unit) ;
+          let subUsageType, usageCategory;
+          // let usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === uc)?.[0] || unit?.usageCategory;
+          // console.log("usageTypeusageCategoryValueInUnits", usageType, uc);
+          // let usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => uc?.startsWith(e?.code))?.[0] || unit?.usageCategory;
+          // console.log("usageCategoryValueInUnits", usageCategoryMajorMenu(usagecat), uc, usageType);
+          // let subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => e?.code === uc)?.[0] || unit?.subUsageType;
+          // console.log("usageCategoryValueInUnits 1", subUsageType);
+          if(typeof uc === "string"){
+            usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => uc?.startsWith(e?.code))?.[0] || unit?.usageCategory;
+            subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => uc?.startsWith(e?.code))?.[0] || unit?.subUsageType;
+          }else if(typeof uc === "object" && uc?.code){
+            usageCategory = usageCategoryMajorMenu(usagecat)?.filter((e) => uc?.code?.startsWith(e?.code))?.[0] || unit?.usageCategory;
+            subUsageType = subUsageCategoryMenu(usageType)?.filter((e) => uc?.code?.startsWith(e?.code))?.[0] || unit?.subUsageType;
+          }
+          if(subUsageType){
+            subUsageType = { i18nKey: "PROPERTYTAX_USAGE_" + stringReplaceAll(subUsageType?.code, "-", "_"), code: subUsageType?.code, }
+          }
+          console.log("usageCategoryValueInUnits 2", subUsageType);
+          console.log("usageCategoryValueInUnits3",unit, );
+          floorNo = getfloorlistdata(floorlist)?.filter((e) => e?.code == floorNo)[0] || unit?.floorNoCitizen;
+          RentedMonths = rentedmonths?.find((val) => val.code === RentedMonths?.toString()) || unit?.RentedMonths;
+          NonRentedMonthsUsage = nonrentedusage?.find((val) => val.code === NonRentedMonthsUsage) || unit?.NonRentedMonthsUsage;
           let key = Date.now() + index;
           let order = index + 1;
-          let builtUpArea = constructionDetail.builtUpArea;
+          let builtUpArea = constructionDetail?.builtUpArea || unit?.builtUpArea;
           return {
+            ...unit,
             floorNo,
             occupancyType,
             usageCategory,
@@ -220,12 +349,22 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
             builtUpArea,
             existingUsageCategory: uc,
             arv,
+            RentedMonths, NonRentedMonthsUsage,
+            usageCategoryType: usageCategory,
+            floorNoCitizen: floorNo,
+            subUsageType,
+            active: true,
           };
         });
+      console.log("defaultUnits", defaultUnits);
       setUnits(defaultUnits || []);
       setLoader(false);
     }
   }, [isLoading]);
+
+  // useEffect(()=>{
+  //   console.log("formData", formData);
+  // },[formData])
 
   const calculateNumberOfFloors = () => {
     if (formData?.PropertyType?.code !== "BUILTUP.INDEPENDENTPROPERTY") {
@@ -253,7 +392,6 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
     if (!floorlist?.length) return;
     let minFloor = units.reduce((min, unit) => Math.min(min, Number(unit.floorNo?.code) || Number(0)), Number(0));
     let maxFloor = units.reduce((max, unit) => Math.max(max, Number(unit.floorNo?.code) || Number(0)), Number(0));
-
 
     let floorWiseAreas = units.reduce((acc, { floorNo, builtUpArea }) => {
       if (!floorNo) return acc;
@@ -302,33 +440,45 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   };
 
   const subUsageCategoryMenu = (category) => {
+    console.log("subUsageCategoryMenu category", category);
     const menu = usagecat
       .filter((cat) => cat?.code.includes(category?.code) && cat?.code.split(".").length === 4)
       .map((item) => {
+        console.log("subUsageCategoryMenu item", item);
         const codeArr = item?.code.split(".");
         return { i18nKey: `COMMON_PROPSUBUSGTYPE_NONRESIDENTIAL_${codeArr[1]}_${codeArr[3]}`, code: item?.code };
       });
+    console.log("subUsageCategoryMenu menu", menu);
     return menu;
   };
 
   function goNext() {
+    // debugger;
+    console.log("goNextfunctioncalledwithunits", units);
     let unitsData = units?.map((unit) => ({
-      occupancyType: unit?.occupancyType?.code,
-      RentedMonths: unit?.RentedMonths?.code,
-      ageOfProperty: unit?.ageOfProperty?.code,
-      structureType: unit?.structureType?.code,
-      NonRentedMonthsUsage:unit?.NonRentedMonthsUsage?.code,
-      floorNo: unit?.floorNo?.code,
-      constructionDetail: {
+      ...unit,
+      order: unit?.order,
+      occupancyType: unit?.occupancyType,
+      RentedMonths: unit?.RentedMonths,
+      ageOfProperty: unit?.ageOfProperty,
+      structureType: unit?.structureType,
+      NonRentedMonthsUsage: unit?.NonRentedMonthsUsage,
+      floorNoCitizen: unit?.floorNoCitizen,
+      subUsageType: unit?.subUsageType,
+      usageCategory: unit?.usageCategory,
+      arv: unit?.arv,
+      // constructionDetail: {
         builtUpArea: unit?.builtUpArea,
-      },
+      // },
       tenantId: Digit.ULBService.getCurrentTenantId(),
-      usageCategory: unit?.usageCategory?.code,
+      usageCategoryType: unit?.usageCategoryType,
+      active: true,
     }));
     unitsData = unitsData?.map((unit, index) => {
       if (unit.occupancyType === "RENTED") return { ...unit, arv: units[index].arv };
       return unit;
     });
+    console.log("goNextfunctioncalledwithunits unitsData in goNext", unitsData);
     onSelect(config.key, unitsData);
   }
 
@@ -367,13 +517,18 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
   }, [formData?.PropertyType]);
 
   useEffect(() => {
+    console.log("units before goNext function", units);
     goNext();
-    calculateNumberOfFloors();
+    // calculateNumberOfFloors();
   }, [units, formData.PropertyType, formData.landarea]);
 
   if (loader && presentInModifyApplication) return <Loader />;
 
-  return formData?.PropertyType?.code === "VACANT" || !formData?.PropertyType?.code || !formData?.usageCategoryMajor?.code ? null : (
+  // const propertyUsageTypeList=[];
+  // const propertyTypeList=["BUILTUP.INDEPENDENTPROPERTY","BUILTUP.SHAREDPROPERTY"];
+  // const displayThisComponent=propertyUsageTypeList.includes(formData?.usageCategoryMajor?.code) && propertyTypeList.includes(formData?.PropertyType?.code) 
+
+  return !formData?.PropertyType?.code || !formData?.usageCategoryMajor?.code || formData?.PropertyType?.code === "VACANT" ? null : (
     <div>
       {units?.map((unit, index) => (
         <Unit
@@ -392,14 +547,14 @@ const Units = ({ t, config, onSelect, userType, formData, setError, formState, c
           occupencyOptions={occupencyOptions}
           rentedmonths={rentedmonths}
           ageOfPropertyOptions={ageOfPropertyOptions}
-          structureTypeOptions = {structureTypeOptions}
+          structureTypeOptions={structureTypeOptions}
           nonrentedusage={nonrentedusage}
           formData={formData}
           handleRemoveUnit={handleRemoveUnit}
           {...{ formState, setError, clearErrors, usageCategoryMajorMenu, subUsageCategoryMenu }}
         />
       ))}
-      <LinkButton label={t("PT_ADD_UNIT")} onClick={handleAddUnit} style={{ color: "orange", width: "175px" }}></LinkButton>
+      {!((formData?.usageCategoryMajor?.code === "RESIDENTIAL" || formData?.usageCategoryMajor?.code === "NONRESIDENTIAL.OTHERS") && formData?.PropertyType?.code === "BUILTUP.SHAREDPROPERTY") && <label onClick={handleAddUnit} style={{ color: "orange", width: "175px", cursor: "pointer", }}>{t("PT_ADD_UNIT")}</label>}
       {["units_missing", "landArea extended"].includes(formState.errors?.[config.key]?.type) ? (
         <CardLabelError style={{ width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" }}>
           {`${t(formState.errors?.[config.key].message.split(".")[0])}` +
@@ -446,8 +601,16 @@ function Unit({
     "SubOwnerShipCategory",
     "OwnerShipCategory",
   ]);
+
+
+  console.log("Unit: ", unit);
+
+
+
   let usagecat = [];
   usagecat = usageMenu?.PropertyTax?.UsageCategory?.filter((e) => e?.code !== "MIXED") || [];
+
+  console.log("usagecatdemo", usagecat)
 
   const [usageType, setUsageType] = useState(() => {
     const { existingUsageCategory } = unit;
@@ -455,10 +618,21 @@ function Unit({
       return usageCategoryMajorMenu(usagecat).filter((e) => e?.code === "RESIDENTIAL")[0];
     }
 
-    if (formData?.usageCategoryMajor?.code !== "MIXED") {
-    } else if (existingUsageCategory) {
+    else if (formData?.usageCategoryMajor?.code !== "MIXED" && typeof existingUsageCategory === "string") {
       const codeArr = existingUsageCategory?.split(".");
-      const val = usageCategoryMajorMenu(usagecat).filter((e) => e?.code === codeArr[0] + "." + codeArr[1])[0];
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    } else if (typeof existingUsageCategory === "string") {
+      const codeArr = existingUsageCategory?.split(".");
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    }else if (formData?.usageCategoryMajor?.code !== "MIXED" && typeof existingUsageCategory === "object") {
+      const codeArr = existingUsageCategory?.code?.split(".");
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
+      return val;
+    } else if (typeof existingUsageCategory === "object") {
+      const codeArr = existingUsageCategory?.code?.split(".");
+      const val = usageCategoryMajorMenu(usagecat)?.filter((e) => e?.code === codeArr[0] + "." + codeArr[1])?.[0];
       return val;
     }
   });
@@ -471,11 +645,14 @@ function Unit({
     const code = formData?.usageCategoryMajor?.code;
     if (code !== usageType?.code && code !== "MIXED") {
       setUsageType(formData?.usageCategoryMajor);
+    }else if (code === "MIXED") {
+      setUsageType(unit?.usageCategoryType || null);
     }
   }, [formData?.usageCategoryMajor?.code]);
 
   useEffect(() => {
     if (usageType?.code === "RESIDENTIAL") {
+      console.log("usageCategory is set to RESIDENTIAL", usageType)
       setValue("usageCategory", usageType);
     } else {
       if (formValue.usageCategory?.code === "RESIDENTIAL") setValue("usageCategory", null);
@@ -507,7 +684,6 @@ function Unit({
       }
     }
 
-
     if (Object.keys(localFormState.errors).length && !formState?.errors?.units) {
       setError("units", { type: `${unit.key}`, message: Object.keys(localFormState.errors).join() });
     } else if (formState?.errors?.units?.type === `${unit.key}` && !Object.keys(localFormState.errors).length) {
@@ -515,64 +691,349 @@ function Unit({
     }
   }, [formValue]);
 
-  const { errors } = localFormState;
-  const errorStyle = isMobile ? {width: "70%", marginLeft: "4%", fontSize: "12px"} : { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+  function getSubUsageTypeOptions (usagecode){
+    if(usagecode?.code){
+      const filteredArray = usagecat.filter((val) => val?.code?.startsWith(usagecode?.code+"."))
+      const sortedByName = filteredArray.sort((a, b) => a.name.localeCompare(b.name));
+      const arrayWithCode = sortedByName.map((val) => {
+        return { i18nKey: "PROPERTYTAX_USAGE_" + stringReplaceAll(val?.code, "-", "_"), code: val?.code, }
+      })
+      console.log("Filtered SubUsageTypeCode", arrayWithCode)
+      return arrayWithCode;
+    }
+    return []
+  }
 
+  const { errors } = localFormState;
+  const errorStyle = isMobile
+    ? { width: "70%", marginLeft: "4%", fontSize: "12px" }
+    : { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
+
+  console.log("localFormState",localFormState.errors)
   return (
-    <div style={{ marginBottom: "16px" }}>
+    <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px", marginBottom: "16px" }}>
       <div className="label-field-pair">
         <h2 className="card-label card-label-smaller" style={{ color: "#505A5F" }}>
           Unit {unit?.order}
         </h2>
       </div>
-      <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px" }}>
-        {allUnits.length > 1 ? (
-            <LinkButton
-            label={ <DeleteIcon style={{ float: "right", position: "relative", bottom: "5px" }} fill={!(allUnits.length == 1) ? "#494848" : "#FAFAFA"}/>}
-            style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}
-            onClick={(e) => handleRemoveUnit(unit)}
-            />
-          // <div onClick={() => handleRemoveUnit(unit)} style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>
-          //   X
-          // </div>
-        ) : null}
-        <div style={{ marginTop: "30px" }}>
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
-          <Controller
-            name="floorNo"
-            defaultValue={unit.floorNo}
-            control={control}
-            render={(props) => (
-              <Dropdown
-                className="form-field"
-                selected={props.value}
-                disable={false}
-                option={getfloorlistdata(floorlist) || []}
-                select={props.onChange}
-                optionKey="i18nKey"
-                onBlur={props.onBlur}
-                t={t}
+      {allUnits.length > 1 ? (
+        <label
+          style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}
+          onClick={(e) => handleRemoveUnit(unit)}
+        > <DeleteIcon style={{ float: "right", position: "relative", bottom: "5px" }} fill={!(allUnits.length == 1) ? "#494848" : "#FAFAFA"} /></label>
+      ) : // <div onClick={() => handleRemoveUnit(unit)} style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>
+        //   X
+        // </div>
+        null}
+      {formData?.usageCategoryMajor?.code === "NONRESIDENTIAL.OTHERS"? <div>
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR")}<span style={{ color: "red" }}>*</span></CardLabel>
+              <Controller
+                name="floorNoCitizen"
+                defaultValue={unit.floorNoCitizen}
+                control={control}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    selected={props.value}
+                    disable={false}
+                    option={getfloorlistdata(floorlist) || []}
+                    select={props.onChange}
+                    optionKey="i18nKey"
+                    onBlur={props.onBlur}
+                    t={t}
+                  />
+                )}
               />
-            )}
-          />
-        </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{localFormState.touched.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
-        </div>
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + " *"}</CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={usageType}
-            disable={formData?.usageCategoryMajor?.code !== "MIXED"}
-            option={usageCategoryMajorMenu(usagecat)}
-            select={setUsageType}
-            optionKey="i18nKey"
-            t={t}
-          />
-        </LabelFieldPair>
+            </LabelFieldPair>
+            <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
+      </div> : <div>
+      <div style={{ marginTop: "30px" }}>
+        {/* {formData?.PropertyType?.code == "BUILTUP.INDEPENDENTPROPERTY" && (
+            <div>
+              {" "}
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR") + " *"}</CardLabel>
+                <Controller
+                  name="floorNo"
+                  defaultValue={unit.floorNo}
+                  control={control}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      selected={props.value}
+                      disable={false}
+                      option={getfloorlistdata(floorlist) || []}
+                      select={props.onChange}
+                      optionKey="i18nKey"
+                      onBlur={props.onBlur}
+                      t={t}
+                    />
+                  )}
+                />
+              </LabelFieldPair>
+              <CardLabelError style={errorStyle}>{localFormState.touched.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
+            </div>
+          )} */}
+        {formData?.PropertyType?.code === "BUILTUP.INDEPENDENTPROPERTY" && (
+          <div>
+            {/* Floor Selection Component */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR")}<span style={{ color: "red" }}>*</span></CardLabel>
+              <Controller
+                name="floorNoCitizen"
+                defaultValue={unit.floorNoCitizen}
+                control={control}
+                render={(props) => (
+                  <Dropdown
+                    className="form-field"
+                    selected={props.value}
+                    disable={false}
+                    option={getfloorlistdata(floorlist) || []}
+                    select={props.onChange}
+                    optionKey="i18nKey"
+                    onBlur={props.onBlur}
+                    t={t}
+                  />
+                )}
+              />
+            </LabelFieldPair>
+            <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
 
-        <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
+            <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER")}<span style={{ color: "red" }}>*</span></CardLabel>
+            <Controller
+              name="usageCategoryType"
+              defaultValue={subUsageCategoryMenu(usageType)?.filter((e) => e?.code === unit.existingUsageCategory)[0]}
+              control={control}
+              render={(props) => (
+            <Dropdown
+              className="form-field"
+              selected={usageType}
+              disable={formData?.usageCategoryMajor?.code !== "MIXED"}
+              option={usageCategoryMajorMenu(usagecat)}
+              // select={setUsageType}
+              select={(e) => {
+                  props.onChange(e);     // Update form state
+                  setUsageType(e);       // Update local state if needed
+                }}
+              optionKey="i18nKey"
+              t={t}
+            />)} />
+          </LabelFieldPair> 
+          
+          {!(usageType?.code === "RESIDENTIAL") &&<div>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_SUB_USAGE_TYPE")}<span style={{ color: "red" }}>*</span></CardLabel>
+            <Controller
+              name="subUsageType"
+              defaultValue={unit.subUsageType}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={false}
+                  option={getSubUsageTypeOptions(usageType) || []}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
+          </div>}
+
+            {/* Built-Up Area Component */}
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA")}<span style={{ color: "red" }}>*</span></CardLabel>
+              <div className="field">
+                <Controller
+                  name="builtUpArea"
+                  defaultValue={unit?.builtUpArea}
+                  control={control}
+                  render={(props) => (
+                    <TextInput
+                      type="text"
+                      name="unit-area"
+                      onChange={(e) => {
+                        props.onChange(e.target.value);
+                        setFocusIndex({ index, type: "builtUpArea" });
+                      }}
+                      value={props.value}
+                      autoFocus={focusIndex.index === index && focusIndex.type === "builtUpArea"}
+                      onBlur={props.onBlur}
+                    />
+                  )}
+                />
+              </div>
+            </LabelFieldPair>
+            <CardLabelError style={errorStyle}>{localFormState.errors.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError>
+          </div>
+        )}
+      </div>
+
+      {formData?.PropertyType?.code == "BUILTUP.SHAREDPROPERTY" && (
+        <div>
+          {/* Usage Type Component */}
+          {/* <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_USAGE_TYPE") + " *"}</CardLabel>
+            <Controller
+              name="usageCategory"
+              defaultValue={subUsageCategoryMenu(usageType)?.filter((e) => e?.code === unit.existingUsageCategory)[0]}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={!usageType?.code}
+                  option={subUsageCategoryMenu(usageType)}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair> */}
+
+          {/* <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER") + "*"}</CardLabel>
+            <Dropdown
+              className="form-field"
+              selected={usageType}
+              disable={formData?.usageCategoryMajor?.code !== "MIXED"}
+              option={usageCategoryMajorMenu(usagecat)}
+              select={setUsageType}
+              optionKey="i18nKey"
+              t={t}
+            />
+          </LabelFieldPair>  */}
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_PROPERTY_DETAILS_USAGE_TYPE_HEADER")}<span style={{ color: "red" }}>*</span></CardLabel>
+            <Controller
+              name="usageCategoryType"
+              defaultValue={subUsageCategoryMenu(usageType)?.filter((e) => e?.code === unit.existingUsageCategory)[0]}
+              control={control}
+              render={(props) => (
+            <Dropdown
+              className="form-field"
+              selected={usageType}
+              disable={formData?.usageCategoryMajor?.code !== "MIXED"}
+              option={usageCategoryMajorMenu(usagecat)}
+              // select={setUsageType}
+              select={(e) => {
+                  props.onChange(e);     // Update form state
+                  setUsageType(e);       // Update local state if needed
+                }}
+              optionKey="i18nKey"
+              t={t}
+            />)} />
+          </LabelFieldPair> 
+          
+          {!(usageType?.code === "RESIDENTIAL") &&<div>
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_SUB_USAGE_TYPE")}<span style={{ color: "red" }}>*</span></CardLabel>
+            <Controller
+              name="subUsageType"
+              defaultValue={unit.subUsageType}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={false}
+                  option={getSubUsageTypeOptions(usageType) || []}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
+          </div>}
+
+          {/* Built-Up Area Component */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA")}<span style={{ color: "red" }}>*</span></CardLabel>
+            <div className="field">
+              <Controller
+                name="builtUpArea"
+                defaultValue={unit?.builtUpArea}
+                control={control}
+                render={(props) => (
+                  <TextInput
+                    type="text"
+                    name="unit-area"
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      setFocusIndex({ index, type: "builtUpArea" });
+                    }}
+                    value={props.value}
+                    autoFocus={focusIndex.index === index && focusIndex.type === "builtUpArea"}
+                    onBlur={props.onBlur}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.errors.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError>
+
+          {/* Floor Selection Component */}
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_SELECT_FLOOR")}<span style={{ color: "red" }}>*</span></CardLabel>
+            <Controller
+              name="floorNoCitizen"
+              defaultValue={unit.floorNoCitizen}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={false}
+                  option={getfloorlistdata(floorlist) || []}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.errors.floorNo ? errors?.floorNo?.message : ""}</CardLabelError>
+
+          {/* Occupancy Type Component */}
+          {/* <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY") + " *"}</CardLabel>
+            <Controller
+              name="occupancyType"
+              defaultValue={unit?.occupancyType}
+              control={control}
+              render={(props) => (
+                <Dropdown
+                  className="form-field"
+                  selected={props.value}
+                  disable={occupencyOptions?.length === 1}
+                  option={occupencyOptions}
+                  select={props.onChange}
+                  optionKey="i18nKey"
+                  onBlur={props.onBlur}
+                  t={t}
+                />
+              )}
+            />
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.errors.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError> */}
+        </div>
+      )}
+
+      {/* <LabelFieldPair style={["RESIDENTIAL"].includes(usageType?.code) ? { display: "none" } : {}}>
           <CardLabel className="card-label-smaller">{t("PT_FORM2_USAGE_TYPE") + " *"}</CardLabel>
           <Controller
             name="usageCategory"
@@ -591,13 +1052,14 @@ function Unit({
               />
             )}
           />
-        </LabelFieldPair>
-        {!["RESIDENTIAL"].includes(usageType?.code) ? (
-          <CardLabelError style={errorStyle}>{localFormState.touched.usageCategory ? errors?.usageCategory?.message : ""}</CardLabelError>
-        ) : null}
+        </LabelFieldPair>  */}
 
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY") + " *"}</CardLabel>
+      {/* {!["RESIDENTIAL"].includes(usageType?.code) ? (
+          <CardLabelError style={errorStyle}>{localFormState.touched.usageCategory ? errors?.usageCategory?.message : ""}</CardLabelError>
+        ) : null} */}
+
+      <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{t("PT_FORM2_OCCUPANCY")}<span style={{ color: "red" }}>*</span></CardLabel>
           <Controller
             name="occupancyType"
             defaultValue={unit?.occupancyType}
@@ -618,68 +1080,48 @@ function Unit({
           />
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{localFormState.touched.occupancyType ? errors?.occupancyType?.message : ""}</CardLabelError>
-        {formValue.occupancyType?.code === "RENTED" ? (
-          <React.Fragment>
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{t("PT_FORM2_TOTAL_ANNUAL_RENT") + " *"}</CardLabel>
-              <div className="field">
-                <Controller
-                  name="arv"
-                  defaultValue={unit.arv}
-                  control={control}
-                  render={(props) => (
-                    <TextInput
-                      type="text"
-                      name="unit-area"
-                      onChange={(e) => {
-                        props.onChange(e.target.value);
-                        setFocusIndex({ index, type: "arv" });
-                      }}
-                      value={props.value}
-                      autoFocus={focusIndex.index === index && focusIndex.type === "arv"}
-                      onBlur={props.onBlur}
-                    />
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-            <CardLabelError style={errorStyle}>{localFormState.touched.arv ? errors?.arv?.message : ""}</CardLabelError>
-            
+
+
+      {formValue.occupancyType?.code === "RENTED" ||formValue.occupancyType?.code === "PG"? (
+        <React.Fragment>
           <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_FORM2_RENTED_MONTHS") + " *"}</CardLabel>
-          <Controller
-            name="RentedMonths"
-            defaultValue={unit.RentedMonths}
-            control={control}
-            render={(props) => (
-              <Dropdown
-                className="form-field"
-                selected={props.value}
-                disable={rentedmonths?.length === 1}
-                option={rentedmonths}
-                select={props.onChange}
-                optionKey="i18nKey"
-                onBlur={props.onBlur}
-                t={t}
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_TOTAL_ANNUAL_RENT")}<span style={{ color: "red" }}>*</span></CardLabel>
+            <div className="field">
+              <Controller
+                name="arv"
+                defaultValue={unit?.arv}
+                control={control}
+                render={(props) => (
+                  <TextInput
+                    type="text"
+                    // name="unit-area"
+                    onChange={(e) => {
+                      console.log("change arv", e.target.value)
+                      props.onChange(e.target.value);
+                      setFocusIndex({ index, type: "arv" });
+                    }}
+                    value={props.value}
+                    autoFocus={focusIndex.index === index && focusIndex.type === "arv"}
+                    onBlur={props.onBlur}
+                  />
+                )}
               />
-            )}
-          />
-        </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{localFormState.touched.Rentedmonths ? errors?.Rentedmonths?.message : ""}</CardLabelError>
-        {formValue?.RentedMonths?.code === "1" || formValue?.RentedMonths?.code === "2" || formValue?.RentedMonths?.code === "3" || formValue?.RentedMonths?.code === "4" || formValue?.RentedMonths?.code === "5" || formValue?.RentedMonths?.code === "6" || formValue?.RentedMonths?.code === "7" || formValue?.RentedMonths?.code === "8" || formValue?.RentedMonths?.code === "9" || formValue?.RentedMonths?.code === "10" || formValue?.RentedMonths?.code === "11" ? (
-          <React.Fragment>
-            <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM2_NONRENTED_MONTHS_USAGE") + " *"}</CardLabel>
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.errors.arv ? errors?.arv?.message : ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_RENTED_MONTHS")}<span style={{ color: "red" }}>*</span></CardLabel>
             <Controller
-              name="NonRentedMonthsUsage"
-              defaultValue={unit.NonRentedMonthsUsage}
+              name="RentedMonths"
+              defaultValue={unit.RentedMonths}
               control={control}
               render={(props) => (
                 <Dropdown
                   className="form-field"
                   selected={props.value}
-                  disable={nonrentedusage?.length === 1}
-                  option={nonrentedusage}
+                  disable={rentedmonths?.length === 1}
+                  option={rentedmonths}
                   select={props.onChange}
                   optionKey="i18nKey"
                   onBlur={props.onBlur}
@@ -687,38 +1129,62 @@ function Unit({
                 />
               )}
             />
-            </LabelFieldPair> 
-            </React.Fragment>
-          ): null}     
-        </React.Fragment>          
-        ) : null}         
-
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
-          <div className="field">
-            <Controller
-              name="builtUpArea"
-              defaultValue={unit?.builtUpArea}
-              // rules={}
-              control={control}
-              render={(props) => (
-                <TextInput
-                  type="text"
-                  name="unit-area"
-                  onChange={(e) => {
-                    props.onChange(e.target.value);
-                    setFocusIndex({ index, type: "builtUpArea" });
-                  }}
-                  value={props.value}
-                  autoFocus={focusIndex.index === index && focusIndex.type === "builtUpArea"}
-                  onBlur={props.onBlur}
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{localFormState.errors.Rentedmonths ? errors?.Rentedmonths?.message : ""}</CardLabelError>
+          {unit?.RentedMonths?.code === "1" || unit?.RentedMonths?.code === "2" || unit?.RentedMonths?.code === "3" || unit?.RentedMonths?.code === "4" || unit?.RentedMonths?.code === "5" || unit?.RentedMonths?.code === "6" || unit?.RentedMonths?.code === "7" || unit?.RentedMonths?.code === "8" || unit?.RentedMonths?.code === "9" || unit?.RentedMonths?.code === "10" || unit?.RentedMonths?.code === "11" ? (
+            <React.Fragment>
+              <LabelFieldPair>
+                <CardLabel className="card-label-smaller">{t("PT_FORM2_NONRENTED_MONTHS_USAGE")}<span style={{ color: "red" }}>*</span></CardLabel>
+                <Controller
+                  name="NonRentedMonthsUsage"
+                  defaultValue={unit.NonRentedMonthsUsage}
+                  control={control}
+                  render={(props) => (
+                    <Dropdown
+                      className="form-field"
+                      selected={props.value}
+                      disable={nonrentedusage?.length === 1}
+                      option={nonrentedusage}
+                      select={props.onChange}
+                      optionKey="i18nKey"
+                      onBlur={props.onBlur}
+                      t={t}
+                    />
+                  )}
                 />
-              )}
-            />
-          </div>
-        </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError>
-      </div>
+              </LabelFieldPair>
+            </React.Fragment>
+          ) : null}
+        </React.Fragment>
+      ) : null}
+      {/* {formData?.PropertyType?.code == "VACANT" && ( 
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("PT_FORM2_BUILT_AREA") + " *"}</CardLabel>
+            <div className="field">
+              <Controller
+                name="builtUpArea"
+                defaultValue={unit?.builtUpArea}
+                // rules={}
+                control={control}
+                render={(props) => (
+                  <TextInput
+                    type="text"
+                    name="unit-area"
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                      setFocusIndex({ index, type: "builtUpArea" });
+                    }}
+                    value={props.value}
+                    autoFocus={focusIndex.index === index && focusIndex.type === "builtUpArea"}
+                    onBlur={props.onBlur}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+        )}
+      <CardLabelError style={errorStyle}>{localFormState.touched.builtUpArea ? errors?.builtUpArea?.message : ""}</CardLabelError> */}
+      </div>}
     </div>
   );
 }

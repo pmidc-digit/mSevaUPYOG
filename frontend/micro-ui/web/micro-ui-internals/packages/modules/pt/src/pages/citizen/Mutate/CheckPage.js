@@ -173,8 +173,8 @@ const CheckPage = ({ onSubmit, value = {} }) => {
                       </span>
                     )}
                   <StatusTable>
-                    <Row className="border-none" label={t("PT_INSTITUTION_NAME")} text={transferorInstitution?.inistitutionName || t("CS_NA")} />
-                    <Row className="border-none" label={t("PT_TYPE_OF_INSTITUTION")} text={`${t(transferorInstitution?.inistitutetype?.value)}` || t("CS_NA")} />
+                    <Row className="border-none" label={t("PT_INSTITUTION_NAME")} text={transferorInstitution?.institutionName || t("CS_NA")} />
+                    <Row className="border-none" label={t("PT_TYPE_OF_INSTITUTION")} text={`${t(transferorInstitution?.institutionType?.value)}` || t("CS_NA")} />
                     <Row className="border-none" label={t("PT_NAME_AUTHORIZED_PERSON")} text={transferorInstitution?.name || t("CS_NA")} />
                     <Row className="border-none" label={t("PT_LANDLINE_NUMBER")} text={transferorInstitution?.altContactNumber || t("CS_NA")} />
                     <Row className="border-none" label={t("PT_FORM3_MOBILE_NUMBER")} text={transferorInstitution?.mobileNumber || t("CS_NA")} />

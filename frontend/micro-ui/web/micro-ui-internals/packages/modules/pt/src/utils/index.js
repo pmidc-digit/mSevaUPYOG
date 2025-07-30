@@ -103,10 +103,10 @@ export const setOwnerDetails = (data) => {
   if (owners && owners.length > 0) {
     if (data?.ownershipCategory?.value === "INSTITUTIONALPRIVATE" || data?.ownershipCategory?.value === "INSTITUTIONALGOVERNMENT") {
       institution.designation = owners[0]?.designation;
-      institution.name = owners[0]?.inistitutionName;
+      institution.name = owners[0]?.institutionName;
       institution.nameOfAuthorizedPerson = owners[0]?.name;
       institution.tenantId = address?.city?.code;
-      institution.type = owners[0]?.inistitutetype?.value;
+      institution.type = owners[0]?.institutionType;
       let document = [];
       if (owners[0]?.documents["proofIdentity"]?.fileStoreId) {
         document.push({
@@ -620,10 +620,10 @@ export const setUpdateOwnerDetails = (data = []) => {
   if (data?.ownershipCategory?.value === "INSTITUTIONALPRIVATE" || data?.ownershipCategory?.value === "INSTITUTIONALGOVERNMENT") {
     if (data?.ownershipCategory?.value === "INSTITUTIONALPRIVATE" || data?.ownershipCategory?.value === "INSTITUTIONALGOVERNMENT") {
       institution.designation = owners[0]?.designation;
-      institution.name = owners[0]?.inistitutionName;
+      institution.name = owners[0]?.institutionName;
       institution.nameOfAuthorizedPerson = owners[0]?.name;
       institution.tenantId = data?.address?.city?.code;
-      institution.type = owners[0]?.inistitutetype?.value;
+      institution.type = owners[0]?.institutionType;
       let document = [];
       if (owners[0]?.documents["proofIdentity"]?.fileStoreId && owners[0].documents["proofIdentity"].id) {
         document.push({

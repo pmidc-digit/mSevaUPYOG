@@ -1,6 +1,7 @@
-import { CardLabel, CardLabelError, Dropdown, LabelFieldPair, LinkButton, MobileNumber, TextInput,Toast } from "@mseva/digit-ui-react-components";
+import { CardLabel, CardLabelError, Dropdown, LabelFieldPair, MobileNumber, TextInput,Toast,CheckBox } from "@mseva/digit-ui-react-components";
 import _ from "lodash";
 import React, { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
@@ -16,14 +17,19 @@ const createOwnerDetails = () => ({
   ownerType: "",
   gender: "",
   isCorrespondenceAddress: false,
+  institutionName: null,
+  institutionType: null,
   key: Date.now(),
 });
 
 const PTEmployeeOwnershipDetails = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
   const { t } = useTranslation();
 
+console.log("formData tes test",formData);
+
+
   const { pathname } = useLocation();
-  const isEditScreen = pathname.includes("/modify-application/" ) 
+  const isEditScreen = pathname.includes("/edit-application/") 
   const [owners, setOwners] = useState(formData?.owners || [createOwnerDetails()]);
   const [focusIndex, setFocusIndex] = useState({ index: -1, type: "" });
 
@@ -63,10 +69,62 @@ const PTEmployeeOwnershipDetails = ({ config, onSelect, userType, formData, setE
   }, [owners]);
 
   useEffect(() => {
+    console.log("formdata",formData)
     if (!formData?.owners) {
       setOwners([createOwnerDetails()]);
     }
   }, [formData?.ownershipCategory?.code]);
+
+  const relationshipTypes = [{ i18nKey: "PT_FORM3_FATHER", code: "FATHER" },{ i18nKey: "PT_FORM3_HUSBAND", code: "HUSBAND" }]
+
+  const ownerTypesMenu = useMemo(
+    () =>
+      mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
+        i18nKey: `${e.code.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_")}`,
+        code: e.code,
+      })) || [],
+    [mdmsData]
+  );
+
+  const institutionTypeMenu = useMemo(() => {
+    const code = formData?.ownershipCategory?.code;
+    const arr = mdmsData?.PropertyTax?.SubOwnerShipCategory?.filter((e) => e?.ownerShipCategory?.includes(code));
+    return arr?.map((e) => ({ ...e, i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code?.replaceAll(".", "_")}` }));
+  }, [mdmsData, formData?.ownershipCategory]);
+
+  useEffect(()=>{
+    if(Menu && isEditScreen){
+      let defaultOwners = formData?.owners?.map((owner,index) => {
+        let { relationship, gender, ownerType } = owner;
+        let institutionType = owner?.institutionType;
+        // let institutionType = owner?.owner;
+        if(!relationship?.code && relationship){
+          relationship = relationshipTypes.find((val) => val.code === relationship?.toUpperCase());
+        }
+        if(!formData?.ownershipCategory?.code?.includes("INDIVIDUAL") && !institutionType?.code && institutionType){
+          institutionType = institutionTypeMenu.find((val) => val.code === institutionType)
+        }
+        if(!gender?.code && gender){
+          gender = menu.find((val) => val.code === gender);
+        }
+        if(!ownerType?.code && ownerType){
+          ownerType = ownerTypesMenu.find((val) => val.code === ownerType);
+        }
+
+
+        return {
+          ...owner,
+          relationship,
+          gender,
+          ownerType,
+          institutionType
+        }
+      })
+
+      setOwners(defaultOwners || []);
+      
+    }
+  },[Menu, isLoading])
 
   const commonProps = {
     focusIndex,
@@ -83,6 +141,8 @@ const PTEmployeeOwnershipDetails = ({ config, onSelect, userType, formData, setE
     config,
     menu,
     isEditScreen,
+    ownerTypesMenu,
+    institutionTypeMenu
   };
 
   // if (isEditScreen) {
@@ -95,7 +155,7 @@ const PTEmployeeOwnershipDetails = ({ config, onSelect, userType, formData, setE
         <OwnerForm key={owner.key} index={index} owner={owner} {...commonProps} />
       ))}
       {!isEditScreen && formData?.ownershipCategory?.code === "INDIVIDUAL.MULTIPLEOWNERS" ? (
-        <LinkButton label="Add Owner" onClick={addNewOwner} style={{ color: "orange" }} />
+        <label onClick={addNewOwner} style={{ color: "orange", cursor: "pointer" }}>Add Owner</label>
       ) : null}
     </React.Fragment>
   ) : null;
@@ -119,6 +179,8 @@ const OwnerForm = (_props) => {
     formState,
     menu,
     isEditScreen,
+    ownerTypesMenu,
+    institutionTypeMenu
   } = _props;
   const { originalData = {} } = formData;
   const { institution = {} } = originalData;
@@ -127,15 +189,22 @@ const [showToast, setShowToast] = useState(null);
   const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
   const formValue = watch();
   const { errors } = localFormState;
+  console.log("institution",institution)
+  console.log("owner",owner)
+const formState2 = useSelector((state) => state.pt.PTNewApplicationForm);
+console.log("man",formData?.ownerShipCategory)
+const [isSamePropAddress,setIsSamePropAddress] = useState(false)
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  owner["institution"] = { name: owner?.institution?.name ? formValue?.institution?.name : institution?.name };
-  owner["institution"].type = {
-    active: true,
-    code: formValue?.institution?.type?.code || institution?.type?.code,
-    i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`,
-    name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`),
-  };
-  owner.designation = owner?.designation ? formValue?.designation : institution?.designation;
+  // owner["institution"] = { name: owner?.institution?.name ? formValue?.institution?.name : institution?.name };
+  // owner["institution"].type = {
+  //   active: true,
+  //   code: formValue?.institution?.type?.code || institution?.type?.code,
+  //   // i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`,
+  //   // name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`),
+  //   i18nKey: `${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`,
+  //   name: t(`${stringReplaceAll(formValue?.institution?.type?.code || institution?.type || "")}`),
+  // };
+  // owner.designation = owner?.designation ? formValue?.designation : institution?.designation;
   const specialDocsMenu = useMemo(
     () =>
       mdmsData?.PropertyTax?.Documents?.filter((e) => e.code === "OWNER.SPECIALCATEGORYPROOF")?.[0]
@@ -147,14 +216,14 @@ const [showToast, setShowToast] = useState(null);
     [mdmsData, formValue]
   );
 
-  const ownerTypesMenu = useMemo(
-    () =>
-      mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
-        i18nKey: `${e.code.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_")}`,
-        code: e.code,
-      })) || [],
-    [mdmsData]
-  );
+  // const ownerTypesMenu = useMemo(
+  //   () =>
+  //     mdmsData?.PropertyTax?.OwnerType?.map?.((e) => ({
+  //       i18nKey: `${e.code.replaceAll("PROPERTY", "COMMON_MASTERS").replaceAll(".", "_")}`,
+  //       code: e.code,
+  //     })) || [],
+  //   [mdmsData]
+  // );
 
   if (ownerTypesMenu?.length > 0) {
     ownerTypesMenu ? ownerTypesMenu.sort((a, b) => a.code.localeCompare(b.code)) : "";
@@ -166,11 +235,11 @@ const [showToast, setShowToast] = useState(null);
   }
   const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
 
-  const institutionTypeMenu = useMemo(() => {
-    const code = formData?.ownershipCategory?.code;
-    const arr = mdmsData?.PropertyTax?.SubOwnerShipCategory?.filter((e) => e?.ownerShipCategory?.includes(code));
-    return arr?.map((e) => ({ ...e, i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code?.replaceAll(".", "_")}` }));
-  }, [mdmsData, formData?.ownershipCategory]);
+  // const institutionTypeMenu = useMemo(() => {
+  //   const code = formData?.ownershipCategory?.code;
+  //   const arr = mdmsData?.PropertyTax?.SubOwnerShipCategory?.filter((e) => e?.ownerShipCategory?.includes(code));
+  //   return arr?.map((e) => ({ ...e, i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${e.code?.replaceAll(".", "_")}` }));
+  // }, [mdmsData, formData?.ownershipCategory]);
 
   useEffect(() => {
     trigger();
@@ -214,6 +283,31 @@ const [showToast, setShowToast] = useState(null);
   }, [uuid])
 
 
+  function getAddressEmployee () {
+    let str = "";
+    str = formState2?.formData?.LocationDetails?.address?.doorNo? str + formState2?.formData?.LocationDetails?.address?.doorNo + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.buildingName? str + " " + formState2?.formData?.LocationDetails?.address?.buildingName + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.street? str + " " + formState2?.formData?.LocationDetails?.address?.street + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.locality?.name? str + " " + formState2?.formData?.LocationDetails?.address?.locality?.name + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.city?.name? str + " " + formState2?.formData?.LocationDetails?.address?.city?.name + ",": str
+    str = formState2?.formData?.LocationDetails?.address?.pincode? str + " " + formState2?.formData?.LocationDetails?.address?.pincode  : str
+    
+    return str;
+  }
+
+  function getAddressCitizen () {
+    let str = "";
+    str = formState2?.formData?.PersonalDetails?.address?.doorNo? str + formState2?.formData?.PersonalDetails?.address?.doorNo + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.buildingName? str + " " + formState2?.formData?.PersonalDetails?.address?.buildingName + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.street? str + " " + formState2?.formData?.PersonalDetails?.address?.street + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.locality?.name? str + " " + formState2?.formData?.PersonalDetails?.address?.locality?.name + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.city?.name? str + " " + formState2?.formData?.PersonalDetails?.address?.city?.name + ",": str
+    str = formState2?.formData?.PersonalDetails?.address?.pincode? str + " " + formState2?.formData?.PersonalDetails?.address?.pincode  : str
+    
+    return str;
+  }
+
+
   return (
     <React.Fragment>
       <div style={{ marginBottom: "16px" }}>
@@ -234,14 +328,15 @@ const [showToast, setShowToast] = useState(null);
           {!isIndividualTypeOwner ? (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_NAME") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_NAME")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
-                    name={"institution.name"}
-                    defaultValue={isEditScreen ? ( institution?.name ? institution.name : owner?.name) : null}
+                    name={"institutionName"}
+                    // defaultValue={isEditScreen ? ( institution?.name ? institution.name : owner?.name) : ( formValue?.institutionName ? formValue?.institutionName : null)}
+                    defaultValue={owner?.institutionName ||  null}
                     rules={{
-                      required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                      // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                       validate: {
                         pattern: (v) => (/^[a-zA-Z_@./()#&+-\s]*$/.test(v) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
                       },
@@ -250,16 +345,22 @@ const [showToast, setShowToast] = useState(null);
                       <TextInput
                         value={props.value}
                         disable={isEditScreen}
-                        name={"institution.name"}
-                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institution.name"}
+                        name={"institutionName"}
+                        // autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institution.name"}
+                        // onChange={(e) => {
+                        //   props.onChange(e.target.value);
+                        //   setFocusIndex({ index: owner.key, type: "institution.name"});
+                        // }}
+                        autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institutionName"}
                         onChange={(e) => {
                           props.onChange(e.target.value);
-                          setFocusIndex({ index: owner.key, type: "institution.name"});
+                          setFocusIndex({ index: owner.key, type: "institutionName" });
                         }}
                         onBlur={(e) => {
                           setFocusIndex({ index: -1 });
                           props.onBlur(e);
                         }}
+                        // isRequired={true}
                       />
                     )}
                   />
@@ -269,22 +370,29 @@ const [showToast, setShowToast] = useState(null);
                 {localFormState.touched?.institution?.name ? errors?.institution?.name?.message : ""}
               </CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_TYPE") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_INSTITUTION_TYPE")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
-                  name={"institution.type"}
-                  defaultValue={isEditScreen ? {
-                    active: true,
-                    code: institution?.type,
-                    i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`,
-                    name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`),
-                  } : null}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  name={"institutionType"}
+                  defaultValue={owner?.institutionType ||  null}
+                  // defaultValue={isEditScreen ? {
+                  //   active: true,
+                  //   code: institution?.type,
+                  //   i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`,
+                  //   name: t(`COMMON_MASTERS_OWNERSHIPCATEGORY_${stringReplaceAll(institution?.type || "")}`),
+                  // } : null}
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
-                      selected={props.value}
-                      select={props.onChange}
+                      selected={owner?.institutionType || props.value}
+                      name={"institutionType"}
+                      // select={props.onChange}
+                      autoFocus={focusIndex.index === owner?.key && focusIndex.type === "institutionType"}
+                      select={(e) => {
+                        props.onChange(e);
+                        setFocusIndex({ index: owner.key, type: "institutionType" });
+                      }}
                       onBlur={props.onBlur}
                       option={institutionTypeMenu}
                       optionKey="i18nKey"
@@ -301,14 +409,14 @@ const [showToast, setShowToast] = useState(null);
           ) : null}
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_OWNER_NAME") + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_OWNER_NAME")} <span style={{ color: 'red' }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name={"name"}
                 defaultValue={owner?.name}
                 rules={{
-                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                  // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                  
                 }}
                 render={(props) => (
@@ -324,6 +432,7 @@ const [showToast, setShowToast] = useState(null);
                       setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
+                    // isRequired={true}
                   />
                 )}
               />
@@ -334,18 +443,18 @@ const [showToast, setShowToast] = useState(null);
           {isIndividualTypeOwner ? (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_FORM3_GENDER") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_FORM3_GENDER")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"gender"}
-                  defaultValue={owner?.gender}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  defaultValue={owner?.gender}              
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
-                      selected={props.value}
+                      selected={owner?.gender || props.value}
                       select={props.onChange}
-                      disable={isEditScreen}
+                      // disable={isEditScreen}
                       onBlur={props.onBlur}
                       /*option={[
                         { i18nKey: "PT_FORM3_MALE", code: "Male" },
@@ -365,7 +474,7 @@ const [showToast, setShowToast] = useState(null);
           ) : (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_LANDLINE_NUMBER_FLOATING_LABEL") + (isIndividualTypeOwner ? "" : " *")}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_LANDLINE_NUMBER_FLOATING_LABEL")} {isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
@@ -375,7 +484,7 @@ const [showToast, setShowToast] = useState(null);
                       isIndividualTypeOwner
                         ? {}
                         : {
-                            required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                            // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                             validate: { pattern: (e) => (/^[0-9]{11}$/i.test(e) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) },
                           }
                     }
@@ -401,14 +510,14 @@ const [showToast, setShowToast] = useState(null);
             </React.Fragment>
           )}
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_FORM3_MOBILE_NUMBER") + " *"}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_FORM3_MOBILE_NUMBER")} <span style={{ color: 'red' }}>*</span></CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name={"mobileNumber"}
                 defaultValue={owner?.mobileNumber}
                 rules={{
-                  required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                  // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                   validate: (v) => (/^[6789]\d{9}$/.test(v) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
                 }}
                 render={(props) => (
@@ -431,14 +540,14 @@ const [showToast, setShowToast] = useState(null);
           {isIndividualTypeOwner ? (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_SEARCHPROPERTY_TABEL_GUARDIANNAME") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_SEARCHPROPERTY_TABEL_GUARDIANNAME")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
                     name={"fatherOrHusbandName"}
                     defaultValue={owner?.fatherOrHusbandName}
                     rules={{
-                      required: t("CORE_COMMON_REQUIRED_ERRMSG"),
+                      // required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                       validate: { pattern: (val) => (/^[a-zA-Z ]+$/.test(val) ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")) },
                     }}
                     render={(props) => (
@@ -451,6 +560,7 @@ const [showToast, setShowToast] = useState(null);
                           setFocusIndex({ index: owner.key, type: "fatherOrHusbandName" });
                         }}
                         onBlur={props.onBlur}
+                        // isRequired={true}
                       />
                     )}
                   />
@@ -460,16 +570,16 @@ const [showToast, setShowToast] = useState(null);
                 {localFormState.touched.fatherOrHusbandName ? errors?.fatherOrHusbandName?.message : ""}
               </CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_FORM3_RELATIONSHIP") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_FORM3_RELATIONSHIP")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"relationship"}
                   defaultValue={owner?.relationship}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
-                      selected={props.value}
+                      selected={owner?.relationship || props.value}
                       select={props.onChange}
                       onBlur={props.onBlur}
                       disable={isEditScreen}
@@ -485,16 +595,16 @@ const [showToast, setShowToast] = useState(null);
               </LabelFieldPair>
               <CardLabelError style={errorStyle}>{localFormState.touched.relationship ? errors?.relationship?.message : ""}</CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_FORM3_SPECIAL_CATEGORY") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_FORM3_SPECIAL_CATEGORY")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"ownerType"}
                   defaultValue={owner?.ownerType}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
-                      selected={props.value}
+                      selected={owner?.ownerType || props.value}
                       select={props.onChange}
                       onBlur={props.onBlur}
                       option={ownerTypesMenu}
@@ -510,13 +620,14 @@ const [showToast, setShowToast] = useState(null);
           ) : (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("TL_NEW_DESIG_OWNER_LABEL") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("TL_NEW_DESIG_OWNER_LABEL")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
                     name={"designation"}
-                    defaultValue={isEditScreen ? ( institution?.designation || "") : null}
-                    rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                    // defaultValue={isEditScreen ? ( institution?.designation || "") : null}
+                    defaultValue={owner?.designation ||  null}
+                    // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                     render={(props) => (
                       <TextInput
                         value={props.value}
@@ -527,6 +638,7 @@ const [showToast, setShowToast] = useState(null);
                           setFocusIndex({ index: owner.key, type: "designation" });
                         }}
                         onBlur={props.onBlur}
+                        // isRequired={true}
                       />
                     )}
                   />
@@ -539,12 +651,12 @@ const [showToast, setShowToast] = useState(null);
           {formValue.ownerType?.code && formValue.ownerType?.code !== "NONE" ? (
             <React.Fragment>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_DOCUMENT_TYPE") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_DOCUMENT_TYPE")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <Controller
                   control={control}
                   name={"documents.documentType"}
                   defaultValue={owner?.documents?.documentType}
-                  rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                  // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                   render={(props) => (
                     <Dropdown
                       className="form-field"
@@ -563,13 +675,13 @@ const [showToast, setShowToast] = useState(null);
                 {localFormState.touched.documents?.documentType ? errors?.documents?.documentType?.message : ""}
               </CardLabelError>
               <LabelFieldPair>
-                <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_DOCUMENT_ID") + " *"}</CardLabel>
+                <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_DOCUMENT_ID")} <span style={{ color: 'red' }}>*</span></CardLabel>
                 <div className="field">
                   <Controller
                     control={control}
                     name={"documents.documentUid"}
                     defaultValue={owner?.documents?.documentUid}
-                    rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                    // rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                     render={(props) => (
                       <TextInput
                         value={props.value}
@@ -582,6 +694,7 @@ const [showToast, setShowToast] = useState(null);
                         }}
                         labelStyle={{ marginTop: "unset" }}
                         onBlur={props.onBlur}
+                        // isRequired={true}
                       />
                     )}
                   />
@@ -619,13 +732,13 @@ const [showToast, setShowToast] = useState(null);
           <CardLabelError style={errorStyle}>{localFormState.touched.emailId ? errors?.emailId?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_INFO_CORR_ADDR") + (isIndividualTypeOwner ? "" : " *")}</CardLabel>
+            <CardLabel className="card-label-smaller">{t("PT_OWNERSHIP_INFO_CORR_ADDR")} {isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name={"correspondenceAddress"}
                 defaultValue={owner?.correspondenceAddress}
-                rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
                 render={(props) => (
                   <TextInput
                     value={props.value}
@@ -636,6 +749,7 @@ const [showToast, setShowToast] = useState(null);
                       setFocusIndex({ index: owner.key, type: "correspondenceAddress" });
                     }}
                     onBlur={props.onBlur}
+                    // isRequired={true}
                   />
                 )}
               />
@@ -644,6 +758,57 @@ const [showToast, setShowToast] = useState(null);
           <CardLabelError style={errorStyle}>
             {localFormState.touched.correspondenceAddress ? errors?.correspondenceAddress?.message : ""}
           </CardLabelError>
+          <Controller
+                control={control}
+                name={"isSamePropAddress"}
+                defaultValue={owner?.isSamePropAddress}
+                // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                render={(props) => (
+                  <CheckBox
+                    onChange={(e) => {
+                      setValue("correspondenceAddress", !owner?.isSamePropAddress? window.location.href.includes("employee")? getAddressEmployee() : getAddressCitizen() : "")
+                      // setIsSamePropAddress(e.target.checked)
+                      props.onChange(e.target.checked)
+                    }}
+                    checked={owner?.isSamePropAddress}
+                    disable={isEditScreen}
+                    label={t("Same as Property Address?")}
+                    pageType={"employee"}
+                    style={{ marginTop: "-5px" }}
+                  />
+                )}
+          />
+{(formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.MULTIPLEOWNERS" || formState2?.formData?.ownerShipDetails?.ownershipCategory?.code==="INDIVIDUAL.SINGLEOWNER") &&(
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{t("Ownership Percentage")} {isIndividualTypeOwner ? "" : <span style={{ color: 'red' }}>*</span>}</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"ownershipPercentage"}
+                defaultValue={owner?.ownershipPercentage}
+                // rules={isIndividualTypeOwner ? {} : { required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    disable={isEditScreen}
+                    autoFocus={focusIndex.index === owner?.key && focusIndex.type === "ownershipPercentage"}
+                    onChange={(e) => {
+                      props.onChange(e);
+                      setFocusIndex({ index: owner.key, type: "ownershipPercentage" });
+                    }}
+                    onBlur={props.onBlur}
+                    // isRequired={true}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+)}
+{formData?.ownershipCategory?.code.includes("INDIVIDUAL") || formData?.ownershipCategory?.code.includes("SINGLE") &&(
+          <CardLabelError style={errorStyle}>
+            {localFormState.touched.ownershipPercentage ? errors?.ownershipPercentage?.message : ""}
+          </CardLabelError>
+)}
         </div>
       </div>
       {showToast?.label && (

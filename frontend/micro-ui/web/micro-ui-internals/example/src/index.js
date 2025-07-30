@@ -25,11 +25,12 @@ import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
-import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
+import { PTRModule, PTRLinks, PTRComponents, PTRReducers } from "@mseva/digit-ui-module-ptr";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
-import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
-import { CHBModule, CHBLinks, CHBComponents } from "@mseva/upyog-ui-module-chb";
+import { ADSModule, ADSLinks, ADSComponents, ADSReducers } from "@mseva/upyog-ui-module-ads";
+import { CHBModule, CHBLinks, CHBComponents, CHBReducers } from "@mseva/upyog-ui-module-chb";
 import { ASSETComponents, ASSETLinks, ASSETModule } from "@mseva/upyog-ui-module-asset";
+import { PGRAIComponents, PGRAILinks, PGRAIModule } from "@mseva/upyog-ui-module-pgrai";
 
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@mseva/digit-ui-module-pgr";
@@ -72,6 +73,7 @@ const enabledModules = [
   "SV",
   "CHB",
   "ASSET",
+  "PGRAI",
 ];
 
 const initTokens = (stateCode) => {
@@ -133,6 +135,9 @@ const initDigitUI = () => {
     ASSETModule,
     ASSETLinks,
     ...ASSETComponents,
+    PGRAIModule,
+    PGRAILinks,
+    ...PGRAIComponents,
   });
   initFSMComponents();
   initPGRComponents();
@@ -159,6 +164,9 @@ const initDigitUI = () => {
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData),
     tl: TLReducers(initData),
+    ptr: PTRReducers(initData),
+    ads: ADSReducers(initData),
+    chb: CHBReducers(initData),
   });
 
   window.Digit.Customizations = {

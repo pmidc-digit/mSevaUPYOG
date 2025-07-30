@@ -98,11 +98,11 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
   const [selectedEmployee, setSelectedEmployee] = useState();
   const [comments, setComments] = useState("");
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState();
   const [error, setError] = useState(null);
   const cityDetails = Digit.ULBService.getCurrentUlb();
   const [selectedReopenReason, setSelectedReopenReason] = useState(null);
-
+  const [uploadError, setUploadError] = useState("");
   useEffect(() => {
     (async () => {
       setError(null);
@@ -156,10 +156,10 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
             selectedAction === "ASSIGN" || selectedAction === "REASSIGN"
               ? t("CS_ACTION_ASSIGN")
               : selectedAction === "REJECT"
-              ? t("CS_ACTION_REJECT")
-              : selectedAction === "REOPEN"
-              ? t("CS_COMMON_REOPEN")
-              : t("CS_COMMON_RESOLVE")
+                ? t("CS_ACTION_REJECT")
+                : selectedAction === "REOPEN"
+                  ? t("CS_COMMON_REOPEN")
+                  : t("CS_COMMON_RESOLVE")
           }
         />
       }
@@ -170,12 +170,14 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
         selectedAction === "ASSIGN" || selectedAction === "REASSIGN"
           ? t("CS_COMMON_ASSIGN")
           : selectedAction === "REJECT"
-          ? t("CS_COMMON_REJECT")
-          : selectedAction === "REOPEN"
-          ? t("CS_COMMON_REOPEN")
-          : t("CS_COMMON_RESOLVE")
+            ? t("CS_COMMON_REJECT")
+            : selectedAction === "REOPEN"
+              ? t("CS_COMMON_REOPEN")
+              : t("CS_COMMON_RESOLVE")
       }
       actionSaveOnSubmit={() => {
+        //debugger;
+        //console.log("uploadedFile", uploadedFile)
         if (!comments) {
           setError(t("CS_MANDATORY_COMMENTS"));
           return;
@@ -185,6 +187,10 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
             setError(t("CS_MANDATORY_EMPLOYEE"));
             return;
           }
+        }
+        if (selectedAction !== "ASSIGN" && selectedAction !== "REASSIGN" && !uploadedFile) {
+          setError(t("CS_MANDATORY_FILE"));
+          return;
         }
         // if(selectedAction === "REJECT" && !comments)
         // setError(t("CS_MANDATORY_COMMENTS"));
@@ -219,13 +225,14 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
         <CardLabel>{t("CS_ACTION_SUPPORTING_DOCUMENTS")}</CardLabel>
         <CardLabelDesc>{t(`CS_UPLOAD_RESTRICTIONS`)}</CardLabelDesc>
         <UploadFile
-          id={"swach-doc"}
+          id={"swach-docgffggjrhg"}
           accept=".jpg,.jpeg,.png,.pdf"
           onUpload={selectfile}
           onDelete={() => {
             setUploadedFile(null);
           }}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+          error={uploadError || !uploadedFile}
         />
       </Card>
     </Modal>
@@ -431,8 +438,8 @@ export const ComplaintDetails = (props) => {
       mobileNumber: checkpoint?.assigner?.mobileNumber,
       ...(checkpoint.status === "COMPLAINT_FILED" && complaintDetails?.audit
         ? {
-            source: complaintDetails.audit.source,
-          }
+          source: complaintDetails.audit.source,
+        }
         : {}),
     };
     const isFirstPendingForAssignment = arr.length - (index + 1) === 1 ? true : false;
@@ -527,7 +534,7 @@ export const ComplaintDetails = (props) => {
                         ? complaintDetails?.details[k].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
                         : t(complaintDetails?.details[k]) || "N/A"
                     }
-                    // last={arr.length - 1 === i}
+                  // last={arr.length - 1 === i}
                   />
                 ))}
 

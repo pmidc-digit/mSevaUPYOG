@@ -32,8 +32,15 @@ import Response from "./pages/Response";
 import SelectOtp from "../../core/src/pages/citizen/Login/SelectOtp";
 import CitizenFeedback from "@mseva/digit-ui-module-core/src/components/CitizenFeedback";
 import AcknowledgementCF from "@mseva/digit-ui-module-core/src/components/AcknowledgementCF";
+import getRootReducer from "./redux/reducer";
+import NewPTRStepperForm from "./pageComponents/NewPTRStepper/NewPTRStepperForm";
+import NewPTRStepFormOne from "./pageComponents/NewPTRStepper/NewPTRStepFormOne";
+import NewPTRStepFormTwo from "./pageComponents/NewPTRStepper/NewPTRStepFormTwo";
+import NewPTRStepFormThree from "./pageComponents/NewPTRStepper/NewPTRStepFormThree";
+import NewPTRStepFormFour from "./pageComponents/NewPTRStepper/NewPTRStepFormFour";
+import PTRSummary from "./pageComponents/PTRSummary";
 
-
+export const PTRReducers = getRootReducer;
 
 const componentsToRegister = {
   PTRCheckPage,
@@ -61,12 +68,12 @@ const componentsToRegister = {
   PTRSelectProofIdentity,
   PTRServiceDoc,
   PTRWFApplicationTimeline,
- 
-  
-  
-  
-
- 
+  NewPTRStepperForm,
+  NewPTRStepFormOne,
+  NewPTRStepFormTwo,
+  NewPTRStepFormThree,
+  NewPTRStepFormFour,
+  PTRSummary,
 };
 
 const addComponentsToRegistry = () => {
@@ -74,7 +81,6 @@ const addComponentsToRegistry = () => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });
 };
-
 
 export const PTRModule = ({ stateCode, userType, tenants }) => {
   const { path, url } = useRouteMatch();
@@ -112,17 +118,16 @@ export const PTRLinks = ({ matchPath, userType }) => {
   }, []);
 
   const links = [
-    
     {
       link: `${matchPath}/ptr/petservice/new-application`,
       i18nKey: t("PTR_CREATE_PET_APPLICATION"),
     },
-    
+
     {
       link: `${matchPath}/ptr/petservice/my-application`,
       i18nKey: t("PTR_MY_APPLICATIONS_HEADER"),
     },
-    
+
     {
       link: `${matchPath}/howItWorks`,
       i18nKey: t("PTR_HOW_IT_WORKS"),

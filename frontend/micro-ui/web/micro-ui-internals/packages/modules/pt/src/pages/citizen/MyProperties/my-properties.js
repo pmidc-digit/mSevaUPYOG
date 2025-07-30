@@ -36,20 +36,20 @@ const MyProperty = ({ application }) => {
       <KeyNote
         keyValue={t("PT_COMMON_TABLE_COL_OWNER_NAME")}
         note={ownersSequences.map((owners, index) => (
-          <div key="index">{index == owners.length - 1 ? owners?.name + "," : owners.name}</div>
+          <div key="index">{index == owners?.length - 1 ? owners?.name + "," : owners?.name}</div>
         ))}
       />
       <KeyNote
         keyValue={t("PT_COMMON_COL_ADDRESS")}
         note={
-          `${t(address?.locality.name)}, ${t(address?.city)},${t(address?.pincode) ? `${address.pincode}` : " "}` || "CS_APPLICATION_TYPE_PT"
+          `${t(address?.locality?.name)}, ${t(address?.city)},${t(address?.pincode) ? `${address.pincode}` : " "}` || "CS_APPLICATION_TYPE_PT"
         }
       />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t("PT_COMMON_" + application.status)} />
-      <Link to={`/digit-ui/citizen/pt/property/properties/${application.propertyId}`}>
+      <Link to={`/digit-ui/citizen/pt/property/my-property/${application.propertyId}`}>
         <SubmitBar label={t("PT_VIEW_DETAILS")} />
       </Link>
-      {billData?.Bill.length > 0  ? (
+      {billData?.Bill?.length > 0  ? (
       <Link to={`/digit-ui/citizen/payment/my-bills/PT/${application?.propertyId}`}>
     
         <div style={{marginTop:"10px"}}><SubmitBar label={t("COMMON_MAKE_PAYMENT")}/></div>

@@ -48,7 +48,7 @@ export const SuccessfulPayment = (props) => {
   const loginCity = JSON.parse(sessionStorage.getItem("Digit.User"))?.value?.info?.tenantId;
   if (cities.data !== undefined) {
     const selectedTenantData = cities.data.find((item) => item.city.districtTenantCode === loginCity);
-    ulbType = selectedTenantData.city.ulbGrade;
+    ulbType = selectedTenantData?.city?.ulbGrade;
   }
 
   const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);

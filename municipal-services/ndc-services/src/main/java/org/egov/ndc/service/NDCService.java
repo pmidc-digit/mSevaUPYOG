@@ -10,6 +10,7 @@ import org.egov.ndc.repository.NDCRepository;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.util.NDCConstants;
 import org.egov.ndc.util.NDCUtil;
+import org.egov.ndc.web.model.calculator.Calculation;
 import org.egov.ndc.web.model.calculator.CalculationCriteria;
 import org.egov.ndc.web.model.calculator.CalculationReq;
 import org.egov.ndc.web.model.calculator.CalculationRes;
@@ -32,6 +33,9 @@ public class NDCService {
 
 	@Autowired
 	NDCUtil ndcUtil;
+
+	@Autowired
+	CalculationService calculationService;
 
 	@Autowired
 	private WorkflowIntegrator workflowIntegrator;
@@ -240,7 +244,7 @@ public class NDCService {
 		}
 	}
 
-	public CalculationRes getCalculation(NdcApplicationRequest request){
+	public void getCalculation(NdcApplicationRequest request){
 
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 			CalculationCriteria calculationCriteria = CalculationCriteria.builder()
@@ -258,9 +262,10 @@ public class NDCService {
 		StringBuilder url = new StringBuilder().append(ndcConfiguration.getNdcCalculatorHost())
 				.append(ndcConfiguration.getNdcCalculatorEndpoint());
 
-		Object response = serviceRequestRepository.fetchResult(url, calculationReq);
-		CalculationRes calculationRes = mapper.convertValue(response, CalculationRes.class);
-		request.getApplicant().setFee(BigDecimal.valueOf(calculationRes.getCalculation().get(0).getTotalAmount()));
-		return calculationRes;
+		List<Calculation> calculations = calculationService.calculate(calculationReq);
+//		Object response = serviceRequestRepository.fetchResult(url, calculationReq);
+//		CalculationRes calculationRes = mapper.convertValue(response, CalculationRes.class);
+		request.getApplicant().setFee(BigDecimal.valueOf(calculations.get(0).getTotalAmount()));
+//		return null;
 	}
 }

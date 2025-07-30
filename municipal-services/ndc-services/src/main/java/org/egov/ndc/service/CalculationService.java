@@ -57,9 +57,10 @@ public class CalculationService {
 
         try {
             String jsonResponse = mapper.writeValueAsString(mdmsData);
-            Double flatFee = JsonPath.read(jsonResponse, jsonPathExpression);
-            System.out.println("Flat Fee (extracted with JsonPath): " + flatFee); // Output: Flat Fee (extracted with JsonPath): 100.0
-            return flatFee;
+            Number flatFee = JsonPath.read(jsonResponse, jsonPathExpression);
+            Double flatFeeValue = flatFee.doubleValue();
+            System.out.println("Flat Fee (extracted with JsonPath): " + flatFeeValue);
+            return flatFeeValue;
         } catch (Exception e) {
             log.error("Error extracting flatFee: " + e.getMessage());
             throw new CustomException("ERROR_FETCHING_FEE_FROM_MDMS","Error extracting flatFee: " + e.getMessage());

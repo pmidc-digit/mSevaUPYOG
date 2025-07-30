@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.repository.ServiceRequestRepository;
+import org.egov.ndc.util.NDCConstants;
 import org.egov.ndc.web.model.RequestInfoWrapper;
 import org.egov.ndc.web.model.bill.BillResponse;
 import org.egov.ndc.web.model.calculator.Calculation;
@@ -45,7 +46,7 @@ public class DemandService {
             Demand demand = Demand.builder()
                     .tenantId(calculation.getTenantId()).consumerCode(calculation.getApplicationNumber())
                     .consumerType("NDC_APPLICATION_FEE")
-                    .businessService(ndcConfiguration.getModuleCode())
+                    .businessService(NDCConstants.NDC_MODULE)
                     .taxPeriodFrom(System.currentTimeMillis()).taxPeriodTo(System.currentTimeMillis())
                     .demandDetails(Collections.singletonList(demandDetail))
                     .build();

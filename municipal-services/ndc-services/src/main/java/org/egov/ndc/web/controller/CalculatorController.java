@@ -22,7 +22,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @Controller
-@RequestMapping("/calculator")
+@RequestMapping("/ndc")
 public class CalculatorController {
 
     private final ObjectMapper objectMapper;

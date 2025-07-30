@@ -50,9 +50,9 @@ public class MDMSService {
 
         final String flatFeeFilter = "$.[?(@.flatFee!=null)]";
 
-        flatFeeMasterDetails.add(MasterDetail.builder().name(NDCConstants.NDC_FEE_MODULE.toLowerCase()).filter(flatFeeFilter).build());
+        flatFeeMasterDetails.add(MasterDetail.builder().name(NDCConstants.NDC_FEE_MODULE).filter(flatFeeFilter).build());
         ModuleDetail flatFeeModule = ModuleDetail.builder().masterDetails(flatFeeMasterDetails)
-                .moduleName(NDCConstants.NDC_FEE_MODULE).build();
+                .moduleName(NDCConstants.NDC_MODULE.toLowerCase()).build();
 
         List<ModuleDetail> moduleDetails = new ArrayList<>();
         moduleDetails.add(flatFeeModule);

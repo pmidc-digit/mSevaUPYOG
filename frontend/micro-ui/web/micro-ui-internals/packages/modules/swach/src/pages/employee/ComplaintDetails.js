@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, Fragment, useRef } from "react";
 import { useParams } from "react-router-dom";
 import {
   BreakLine,
@@ -98,11 +98,11 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
   const [selectedEmployee, setSelectedEmployee] = useState();
   const [comments, setComments] = useState("");
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState();
   const [error, setError] = useState(null);
   const cityDetails = Digit.ULBService.getCurrentUlb();
   const [selectedReopenReason, setSelectedReopenReason] = useState(null);
-
+  const [uploadError, setUploadError] = useState("");
   useEffect(() => {
     (async () => {
       setError(null);
@@ -156,10 +156,10 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
             selectedAction === "ASSIGN" || selectedAction === "REASSIGN"
               ? t("CS_ACTION_ASSIGN")
               : selectedAction === "REJECT"
-              ? t("CS_ACTION_REJECT")
-              : selectedAction === "REOPEN"
-              ? t("CS_COMMON_REOPEN")
-              : t("CS_COMMON_RESOLVE")
+                ? t("CS_ACTION_REJECT")
+                : selectedAction === "REOPEN"
+                  ? t("CS_COMMON_REOPEN")
+                  : t("CS_COMMON_RESOLVE")
           }
         />
       }
@@ -170,12 +170,14 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
         selectedAction === "ASSIGN" || selectedAction === "REASSIGN"
           ? t("CS_COMMON_ASSIGN")
           : selectedAction === "REJECT"
-          ? t("CS_COMMON_REJECT")
-          : selectedAction === "REOPEN"
-          ? t("CS_COMMON_REOPEN")
-          : t("CS_COMMON_RESOLVE")
+            ? t("CS_COMMON_REJECT")
+            : selectedAction === "REOPEN"
+              ? t("CS_COMMON_REOPEN")
+              : t("CS_COMMON_RESOLVE")
       }
       actionSaveOnSubmit={() => {
+        //debugger;
+        //console.log("uploadedFile", uploadedFile)
         if (!comments) {
           setError(t("CS_MANDATORY_COMMENTS"));
           return;
@@ -185,6 +187,10 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
             setError(t("CS_MANDATORY_EMPLOYEE"));
             return;
           }
+        }
+        if (selectedAction !== "ASSIGN" && selectedAction !== "REASSIGN" && !uploadedFile) {
+          setError(t("CS_MANDATORY_FILE"));
+          return;
         }
         // if(selectedAction === "REJECT" && !comments)
         // setError(t("CS_MANDATORY_COMMENTS"));
@@ -219,13 +225,14 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
         <CardLabel>{t("CS_ACTION_SUPPORTING_DOCUMENTS")}</CardLabel>
         <CardLabelDesc>{t(`CS_UPLOAD_RESTRICTIONS`)}</CardLabelDesc>
         <UploadFile
-          id={"swach-doc"}
-          accept=".jpg"
+          id={"swach-docgffggjrhg"}
+          accept=".jpg,.jpeg,.png,.pdf"
           onUpload={selectfile}
           onDelete={() => {
             setUploadedFile(null);
           }}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
+          error={uploadError || !uploadedFile}
         />
       </Card>
     </Modal>
@@ -251,13 +258,12 @@ export const ComplaintDetails = (props) => {
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: ulb, id, moduleCode: "SWACH", role: "EMPLOYEE" });
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([]);
-
-  // RAIN-5692 PGR : GRO is assigning complaint, Selecting employee and assign. Its not getting assigned.
-  // Fix for next action  assignee dropdown issue
+  console.log("workflowDetails", workflowDetails);
   if (workflowDetails && workflowDetails?.data) {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
   }
+  const menuRef = useRef(null);
 
   useEffect(() => {
     if (workflowDetails) {
@@ -278,7 +284,20 @@ export const ComplaintDetails = (props) => {
   const [rerender, setRerender] = useState(1);
   const [viewTimeline, setViewTimeline] = useState(false);
   const client = useQueryClient();
+  useEffect(() => {
+    if (!displayMenu) return;
 
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setDisplayMenu(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [displayMenu]);
   function popupCall(option) {
     setDisplayMenu(false);
     setPopup(true);
@@ -419,8 +438,8 @@ export const ComplaintDetails = (props) => {
       mobileNumber: checkpoint?.assigner?.mobileNumber,
       ...(checkpoint.status === "COMPLAINT_FILED" && complaintDetails?.audit
         ? {
-            source: complaintDetails.audit.source,
-          }
+          source: complaintDetails.audit.source,
+        }
         : {}),
     };
     const isFirstPendingForAssignment = arr.length - (index + 1) === 1 ? true : false;
@@ -515,7 +534,7 @@ export const ComplaintDetails = (props) => {
                         ? complaintDetails?.details[k].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
                         : t(complaintDetails?.details[k]) || "N/A"
                     }
-                    // last={arr.length - 1 === i}
+                  // last={arr.length - 1 === i}
                   />
                 ))}
 
@@ -606,7 +625,9 @@ export const ComplaintDetails = (props) => {
       {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 0 && (
         <ActionBar>
           {displayMenu && workflowDetails?.data?.nextActions ? (
-            <Menu options={workflowDetails?.data?.nextActions.map((action) => action.action)} t={t} onSelect={onActionSelect} />
+            <div ref={menuRef}>
+              <Menu options={workflowDetails?.data?.nextActions.map((action) => action.action)} t={t} onSelect={onActionSelect} />
+            </div>
           ) : null}
           <SubmitBar label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
         </ActionBar>

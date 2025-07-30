@@ -8,13 +8,13 @@ import { LOCALIZATION_KEY } from "../constants/Localization";
 // import { ConvertTimestampToDate } from "../@mseva/digit-utils/services/date";
 
 const Complaint = ({ data, path }) => {
-  let { serviceCode, serviceRequestId, applicationStatus } = data;
+  let { serviceCode, serviceRequestId, applicationStatus, tenantId } = data;
 
   const history = useHistory();
   const { t } = useTranslation();
 
   const handleClick = () => {
-    history.push(`${path}/${serviceRequestId}`);
+    history.push(`${path}/${serviceRequestId}/${tenantId}`);
   };
 
   const closedStatus = ["RESOLVED", "REJECTED", "CLOSEDAFTERREJECTION", "CLOSEDAFTERRESOLUTION"];

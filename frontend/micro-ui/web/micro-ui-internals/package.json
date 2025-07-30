@@ -22,6 +22,10 @@
     "packages/modules/obps",
     "packages/modules/sv",
     "packages/modules/ads",
+    "packages/modules/ptr",
+    "packages/modules/chb",
+    "packages/modules/asset",
+    "packages/modules/pgrai",
     "packages/modules/ndc"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
@@ -60,7 +64,10 @@
     "dev:ptr": "cd packages/modules/ptr && yarn start",
     "dev:sv": "cd packages/modules/sv && yarn start",
     "dev:ads": "cd packages/modules/ads && yarn start",
+    "dev:chb": "cd packages/modules/chb && yarn start",
+    "dev:asset": "cd packages/modules/asset && yarn start",
     "dev:ndc": "cd packages/modules/ndc && yarn start",
+    "devD:pgrai": "cd packages/modules/pgrai && yarn start",
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
     "build:components": "cd packages/react-components && yarn build",
@@ -80,11 +87,14 @@
     "build:obps": "cd packages/modules/obps && yarn build",
     "build:engagement": "cd packages/modules/engagement && yarn build",
     "build:noc": "cd packages/modules/noc && yarn build",
-    "buildD:ws": "cd packages/modules/ws && yarn build",
+    "build:ws": "cd packages/modules/ws && yarn build",
     "buildd:bills": "cd packages/modules/bills && yarn build",
     "buildR:reports": "cd packages/modules/reports && yarn build",
     "build:sv": "cd packages/modules/sv && yarn build",
     "build:ads": "cd packages/modules/ads && yarn build",
+    "build:chb": "cd packages/modules/chb && yarn build",
+    "build:asset": "cd packages/modules/asset && yarn build",
+    "buildD:pgrai": "cd packages/modules/pgrai && yarn build",
     "build:ndc": "cd packages/modules/ndc && yarn build",
     "deploy:jenkins": "./scripts/jenkins.sh"
   },
@@ -108,6 +118,8 @@
     "**/babel-loader": "8.2.2",
     "**/@babel/core": "7.14.0",
     "**/@babel/preset-env": "7.14.0",
-    "**/@babel/plugin-transform-modules-commonjs": "7.14.0"
+    "**/@babel/plugin-transform-modules-commonjs": "7.14.0",
+    "glob": "7.2.3",
+    "minimatch": "^3.1.2"
   }
 }

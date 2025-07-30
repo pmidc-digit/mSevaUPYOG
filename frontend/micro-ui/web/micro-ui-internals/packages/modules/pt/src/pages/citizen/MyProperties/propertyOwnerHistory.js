@@ -46,32 +46,39 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
       } else {
         owner = {
           PT_OWNER_NAME: item.name || t("CS_NA"),
+          PT_FORM3_GUARDIAN_NAME: item.fatherOrHusbandName || t("CS_NA"),
           PT_FORM3_GENDER: t(item.gender) || t("CS_NA"),
           PT_FORM3_MOBILE_NUMBER: item.mobileNumber || t("CS_NA"),
-          PT_FORM3_GUARDIAN_NAME: item.fatherOrHusbandName || t("CS_NA"),
-          PT_FORM3_RELATIONSHIP: t(item.relationship) || t("CS_NA"),
-          PT_SPECIAL_OWNER_CATEGORY: t(item.ownerType === "NONE"?"CS_NA":item.ownerType) || t("CS_NA"),
+
+          // PT_FORM3_RELATIONSHIP: t(item.relationship) || t("CS_NA"),
           PT_MUTATION_AUTHORISED_EMAIL: item.emailId || t("CS_NA"),
+          PT_SPECIAL_OWNER_CATEGORY: t(item.ownerType === "NONE"?"CS_NA":item.ownerType) || t("CS_NA"),
+          PT_OWNER_PERCENTAGE: item.ownerShipPercentage===null?t("CS_NA"):item.ownerShipPercentage || t("CS_NA"),
           PT_OWNERSHIP_INFO_CORR_ADDR: item.permanentAddress || t("CS_NA"),
         };
       }
       itemKey.push(owner);
     });
+    console.log("itemkey",itemKey)
     return itemKey;
   };
 
   if (properties && Array.isArray(properties) && properties.length > 0) {
     let ownerProperty = properties[0];
+    console.log("in if properties")
     properties = properties.filter((data) => data.status == "ACTIVE");
     if (properties.length === 0) {
       properties.push(ownerProperty);
     }
     properties = getUniqueList(properties);
+    console.log("properties",properties)
     properties &&
       properties.length > 0 &&
       properties.map((indProperty) => {
         let lastModifiedDate = indProperty.auditDetails.lastModifiedTime;
-        indProperty.owners = indProperty.owners.filter((owner) => owner.status == "ACTIVE");
+        // indProperty.owners = indProperty.owners.filter((owner) => owner.status == "ACTIVE");
+          indProperty.owners = indProperty.owners.filter((owner) => owner.active === true);
+      console.log("indProperty",indProperty)
         if (!ownershipInfo[lastModifiedDate]) {
           ownershipInfo[lastModifiedDate] = [];
         }
@@ -82,24 +89,25 @@ const propertyOwnerHistory = ({ userType, propertyId: propertyIdFromProp }) => {
   if (isLoading) {
     return <Loader />;
   }
-
+console.log("propertyFromProp",propertyIdFromProp, ownershipInfo,data)
   if (propertyIdFromProp) {
     return (
       <React.Fragment>
-        <Card>
+        <Card style={{marginLeft:'2px'}}>
           <div>
             {Object.keys(ownershipInfo).map((key, index, arr) => {
               const date = convertEpochToDate(Number(key));
+              console.log("date",date,key,Object.keys(ownershipInfo).length,index)
               return (
                 <div className="historyContent">
                   <div style={{ display: "flex" }}>
                     <div className="historyCheckpoint zIndex"></div>
-                    {index !== Object.keys(ownershipInfo).length - 1 ? (
+                    {/* {index !== Object.keys(ownershipInfo).length - 1 ? ( */}
                       <div className="rowContainerStyles">
                         <CardSubHeader className="historyTableDateLabel bottomMargin"> {t("PT_DATE_OF_TRANSFER")} </CardSubHeader>
                         <CardSubHeader className="historyTableDate bottomMargin">{date}</CardSubHeader>
                       </div>
-                    ) : null}
+                    {/* ) : null} */}
                   </div>
                   <TransferDetails
                     data={ownershipInfo[key]}

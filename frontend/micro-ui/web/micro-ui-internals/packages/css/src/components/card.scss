@@ -1,7 +1,8 @@
 .card {
   @apply bg-white m-sm px-md pt-md pb-lg shadow-card;
   border-radius: 4px;
-  width:95vw;
+  max-width: 95vw;
+  width: 100%;
 
   .card-header {
     @apply text-text-primary text-heading-xl font-bold font-rc align-middle text-left mb-md;
@@ -78,7 +79,7 @@
     @apply text-text-primary text-heading-m font-medium;
   }
 
-  .card-section-sub-text{
+  .card-section-sub-text {
     @apply text-text-primary text-body-s;
   }
 
@@ -129,7 +130,8 @@
 .employeeCard.fsm {
   margin-bottom: 64px !important;
   margin-left: 0px !important;
-  margin-right: 16px !important; }
+  margin-right: 16px !important;
+}
 .header-wrap {
   @apply flex mb-md;
 
@@ -155,9 +157,9 @@
 
 .submit-bar {
   @apply h-10 bg-primary-main text-center outline-none text-white;
-  
-  width:175px;
-  border-radius:8px;
+
+  width: 175px;
+  border-radius: 8px;
 
   &:focus {
     @apply outline-none;
@@ -171,9 +173,9 @@
 .submit-bar-disabled {
   @apply h-10 bg-primary-main text-center outline-none opacity-50 text-white;
 
-  width:175px;
-  border-radius:8px;
- 
+  width: 175px;
+  border-radius: 8px;
+
   &:focus {
     @apply outline-none;
   }
@@ -187,10 +189,10 @@
 @screen dt {
   .submit-bar,
   .submit-bar-disabled {
-    width:175px;
-    border-radius:8px;
-   
-    height: 2rem !important
+    width: 175px;
+    border-radius: 8px;
+
+    height: 2rem !important;
   }
 
   .card {
@@ -242,14 +244,14 @@
 
     .card-section-header {
       margin-bottom: 10px;
-      color: #0D43A7;
+      color: #0d43a7;
       font-size: 24px;
-        line-height: 28px;
-      font-family:Noto Sans, sans-serif;
+      line-height: 28px;
+      font-family: Noto Sans, sans-serif;
       @apply text-heading-m-dt font-medium font-sans;
     }
 
-    .card-section-sub-text{
+    .card-section-sub-text {
       @apply text-text-primary text-body-s-dt;
     }
 
@@ -404,18 +406,31 @@
   width: 100% !important;
 }
 
-.language-selector .submit-bar, .submit-bar-disabled{
-  background-color: rgb(178, 196, 239,0.8) !important;
+.language-selector .submit-bar,
+.submit-bar-disabled {
+  background-color: rgb(178, 196, 239, 0.8) !important;
 }
 
-.owner-details{
+.owner-details {
   display: flex;
   flex-direction: row;
   width: 100%;
   flex-wrap: wrap;
-  justify-content: space-between
+  justify-content: space-between;
 }
 
-.owner-details-child{
+.owner-details-child {
   width: 50%;
+}
+
+.location-card .card {
+  max-width: 85vw;
+  width: 100%;
+  margin: 0;
+}
+
+.image-card .card {
+  max-width: 85vw;
+  width: 100%;
+  margin: 0;
 }

@@ -69,13 +69,12 @@ const [description, setDescription] = useState("")
   const client = useQueryClient();
   useEffect(() => {
     if (complaintType?.key && subType?.key && selectedCity?.code && selectedLocality?.code 
-      // && priorityLevel?.code 
     ) {
       setSubmitValve(true);
     } else {
       setSubmitValve(false);
     }
-  }, [complaintType, subType, priorityLevel, selectedCity, selectedLocality]);
+  }, [complaintType, subType, selectedCity, selectedLocality]);
 
   useEffect(() => {
     setLocalities(fetchedLocalities);

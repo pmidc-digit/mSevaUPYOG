@@ -23,14 +23,17 @@ const MyApplication = () => {
   const userInfo = userInfoData?.value;
   const requestor = userInfo?.info?.mobileNumber;
 
-
-  const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
-  const { data: bpaData, isLoading: isBpaSearchLoading, revalidate: bpaRevalidate } = Digit.Hooks.obps.useBPASearch(tenantId, {
-    requestor,
-    mobileNumber: requestor,
-    limit: 50 - (data?.Licenses?.length ? Number(data?.Licenses?.length) : 0),
-    offset: 0,
-  }, {enabled: !isLoading ? true : false});
+  const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, { mobileNumber: requestor }, { cacheTime: 0 });
+  const { data: bpaData, isLoading: isBpaSearchLoading, revalidate: bpaRevalidate } = Digit.Hooks.obps.useBPASearch(
+    tenantId,
+    {
+      requestor,
+      mobileNumber: requestor,
+      limit: 50 - (data?.Licenses?.length ? Number(data?.Licenses?.length) : 0),
+      offset: 0,
+    },
+    { enabled: !isLoading ? true : false }
+  );
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(Digit.ULBService.getStateId(), "BPA", ["RiskTypeComputation"]);
 
   const getBPAREGFormData = (data) => {
@@ -123,80 +126,104 @@ const MyApplication = () => {
   const getTotalCount = (LicensesLength, bpaDataLength) => {
     let count = 0;
     if (typeof LicensesLength == "number") {
-      count = count + LicensesLength
+      count = count + LicensesLength;
     }
 
     if (typeof bpaDataLength == "number") {
-      count = count + bpaDataLength
+      count = count + bpaDataLength;
     }
 
     if (count > 0) return `(${count})`;
-    else return ""
-  }
+    else return "";
+  };
 
   return (
     <Fragment>
-      <Header styles={{marginLeft: "10px"}}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
+      <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
           return (
             <Card key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNumber} />
-              <KeyNote keyValue={t("BPA_LICENSE_TYPE")} note={t(`TRADELICENSE_TRADETYPE_${application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split('.')[0]}`)} />
-              {application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes('ARCHITECT') &&
+              <KeyNote
+                keyValue={t("BPA_LICENSE_TYPE")}
+                note={t(`TRADELICENSE_TRADETYPE_${application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0]}`)}
+              />
+              {application?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType.includes("ARCHITECT") && (
                 <KeyNote keyValue={t("BPA_COUNCIL_OF_ARCH_NO_LABEL")} note={application?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo} />
-              }
+              )}
               <KeyNote keyValue={t("BPA_APPLICANT_NAME_LABEL")} note={application?.tradeLicenseDetail?.owners?.[0]?.name} />
-              <KeyNote keyValue={t("TL_COMMON_TABLE_COL_STATUS")} note={t(`WF_ARCHITECT_${application?.status}`)} noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }} />
-              {application.status !== "INITIATED" ? <Link to={{ pathname: `/digit-ui/citizen/obps/stakeholder/${application?.applicationNumber}`, state: { tenantId: '' } }}>
-                <SubmitBar label={t("TL_VIEW_DETAILS")} />
-              </Link> :
-                <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => getBPAREGFormData(application)} />}
-              {application.status==="PENDINGPAYMENT" ? (
-              <Link
-                to={{
-                  pathname : `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
-                }}>
-              <div style={{marginTop:"10px"}}>
-                <SubmitBar label ={t("COMMON_MAKE_PAYMENT")}/>
-              </div>
-              </Link>
+              <KeyNote
+                keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
+                note={t(`WF_ARCHITECT_${application?.status}`)}
+                noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
+              />
+              {application.status !== "INITIATED" ? (
+                <Link to={{ pathname: `/digit-ui/citizen/obps/stakeholder/${application?.applicationNumber}`, state: { tenantId: "" } }}>
+                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
+                </Link>
+              ) : (
+                <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => getBPAREGFormData(application)} />
+              )}
+              {application.status === "PENDINGPAYMENT" ? (
+                <Link
+                  to={{
+                    pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
+                  }}
+                >
+                  <div style={{ marginTop: "10px" }}>
+                    <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
+                  </div>
+                </Link>
               ) : null}
             </Card>
-          )
+          );
         } else {
           return (
             <Card key={index}>
               <KeyNote keyValue={t("BPA_APPLICATION_NUMBER_LABEL")} note={application?.applicationNo} />
-              <KeyNote keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")} note={application?.businessService !== "BPA_OC" ? t(`WF_BPA_BUILDING_PLAN_SCRUTINY`) : t(`WF_BPA_BUILDING_OC_PLAN_SCRUTINY`)} />
+              <KeyNote
+                keyValue={t("BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL")}
+                note={application?.businessService !== "BPA_OC" ? t(`WF_BPA_BUILDING_PLAN_SCRUTINY`) : t(`WF_BPA_BUILDING_OC_PLAN_SCRUTINY`)}
+              />
               <KeyNote keyValue={t("BPA_COMMON_SERVICE")} note={t(`BPA_SERVICETYPE_NEW_CONSTRUCTION`)} />
-              <KeyNote keyValue={t("TL_COMMON_TABLE_COL_STATUS")} note={t(`WF_BPA_${application?.state}`)} noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }} />
-              {/* 
-              commented out as suggested by PMIDC             
-              <KeyNote keyValue={t("BPA_COMMON_SLA")} note={typeof(application?.sla) == "string" && application?.sla?.includes("NA") ? t(`${`CS_NA`}`) : application?.sla} /> */}
-              {application.action === "SEND_TO_ARCHITECT" || application.status !== "INITIATED" ? <Link to={{ pathname: `/digit-ui/citizen/obps/bpa/${application?.applicationNo}`, state: { tenantId: '' } }}>
-                <SubmitBar label={t("TL_VIEW_DETAILS")} />
-              </Link> :
+              <KeyNote
+                keyValue={t("TL_COMMON_TABLE_COL_STATUS")}
+                note={t(`WF_BPA_${application?.state}`)}
+                noteStyle={application?.status === "APPROVED" ? { color: "#00703C" } : { color: "#D4351C" }}
+              />
+              <KeyNote
+                keyValue={t("BPA_COMMON_SLA")}
+                note={typeof application?.sla == "string" && application?.sla?.includes("NA") ? t(`${`CS_NA`}`) : application?.sla}
+              />
+              {application.action === "SEND_TO_ARCHITECT" || application.status !== "INITIATED" ? (
+                <Link to={{ pathname: `/digit-ui/citizen/obps/bpa/${application?.applicationNo}`, state: { tenantId: "" } }}>
+                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
+                </Link>
+              ) : (
                 <div>
-                  {labelMessage ?
-                    <Link to={{ pathname: `/digit-ui/citizen/obps/bpa/${application?.applicationNo}`, state: { tenantId: '' } }}>
+                  {labelMessage ? (
+                    <Link to={{ pathname: `/digit-ui/citizen/obps/bpa/${application?.applicationNo}`, state: { tenantId: "" } }}>
                       <SubmitBar label={t("TL_VIEW_DETAILS")} />
-                    </Link> : <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => getBPAFormData(application, mdmsData, history, t)} />}
+                    </Link>
+                  ) : (
+                    <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => getBPAFormData(application, mdmsData, history, t)} />
+                  )}
                 </div>
-              }
-              {application.status==="PENDINGPAYMENT" ? (
-              <Link
-                to={{
-                  pathname : `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
-
-                }}>
-              <div style={{marginTop:"10px"}}>
-                <SubmitBar label ={t("COMMON_MAKE_PAYMENT")}/>
-              </div>
-              </Link>
+              )}
+              {application.status === "PENDINGPAYMENT" ? (
+                <Link
+                  to={{
+                    pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
+                  }}
+                >
+                  <div style={{ marginTop: "10px" }}>
+                    <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
+                  </div>
+                </Link>
               ) : null}
             </Card>
-          )
+          );
         }
       })}
 

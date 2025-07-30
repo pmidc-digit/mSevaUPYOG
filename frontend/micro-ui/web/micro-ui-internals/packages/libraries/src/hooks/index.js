@@ -50,6 +50,7 @@ import usePGRTenants from "./pgr/useTenants";
 import usePGRMDMS from "./pgr/useMDMS";
 import useComplaintSubType from "./pgr/useComplaintSubType";
 import useComplaintStatusCount from "./pgr/useComplaintStatusWithCount";
+import usePGRInbox from "./pgr/useInbox";
 
 import useSwachComplaintDetails from "./swach/useComplaintDetails";
 import { useSwachComplaintsList, useSwachComplaintsListByMobile } from "./swach/useComplaintList";
@@ -57,6 +58,7 @@ import useSwachComplaintStatus from "./swach/useComplaintStatus";
 import useSwachComplaintTable from "./swach/useComplaintTable";
 import useSwachComplaintTypes from "./swach/useComplaintTypes";
 import useSwachEmployeeFilter from "./swach/useEmployeeFilter";
+import useAttendence from "./swach/useAttendence";
 import useSwachInboxData from "./swach/useInboxData";
 import useSwachLocalities from "./swach/useLocalities";
 import useSWACHInbox from "./swach/useInbox";
@@ -65,6 +67,7 @@ import useSwachTenants from "./swach/useTenants";
 // import usePGRMDMS from "./pgr/useMDMS";
 import useSwachComplaintSubType from "./swach/useComplaintSubType";
 import useSwachComplaintStatusCount from "./swach/useComplaintStatusWithCount";
+import useCount from "./swach/useCount";
 
 import useTenantsFSM from "./fsm/useTenants";
 import useDesludging from "./fsm/useDesludging";
@@ -173,6 +176,7 @@ import SearchMdmsTypes from "./obps/SearchMdmsTypes";
 import useOBPSMDMS from "./obps/useMDMS";
 import useOBPSSearch from "./obps/useOBPSSearch";
 import useScrutinyDetails from "./obps/useScrutinyDetails";
+import useQualificationTypes from "./obps/useQualificationTypes";
 import useTenantsOBPS from "./obps/useTenants";
 import useNocDetails from "./obps/useNocDetails";
 import useNOCApplicationActions from "./noc/useNOCApplicationActions";
@@ -196,9 +200,6 @@ import useServiceTypeFromApplicationType from "./obps/useServiceTypeFromApplicat
 import useBusinessServiceBasedOnServiceType from "./obps/useBusinessServiceBasedOnServiceType";
 import useBusinessServiceData from "./obps/useBusinessServiceData";
 import useBPATaxDocuments from "./obps/useBPATaxDocuments";
-import useDistricts from "./obps/useDistricts";
-import useULBList from "./obps/useULBList";
-import useUlbType from "./obps/useUlbType";
 
 import useEventInbox from "./events/useEventInbox";
 import useEventDetails from "./events/useEventDetails";
@@ -306,6 +307,43 @@ import useADSDemandEstimation from "./ads/useADSDemandEstimation";
 
 // ndc
 import useNDCInbox from "./ndc/useInbox";
+import useSpecialCategory from "./chb/useSpecialCategory";
+import useResidentType from "./chb/useResidentType";
+import usePurpose from "./chb/usePurpose";
+import useChbCreateAPI from "./chb/useChbCreateAPI";
+import useChbDocumentsMDMS from "./chb/useChbDocumentsMDMS";
+import useChbDocumentSearch from "./chb/useChbDocumentSearch";
+import useChbApplicationDetail from "./chb/useChbApplicationDetail";
+import useChbSearch from "./chb/useChbSearch";
+import useTenantsCHB from "./chb/useTenants";
+import useChbApplicationAction from "./chb/useChbApplicationAction";
+import useServiceSearchCHB from "./chb/useServiceSearchCHB";
+import useChbCommunityHalls from "./chb/useChbCommunityHalls";
+import useChbHallCode from "./chb/useChbHallCode";
+import useChbSlotSearch from "./chb/useChbSlotSearch";
+import useDemandEstimation from "./chb/useDemandEstimation";
+
+// asset hooks here
+import useAssetClassification from "./asset/useAssetClassification";
+import useAssetType from "./asset/useAssetType";
+import useAssetDocumentsMDMS from "./asset/useAssetDocumentsMDMS";
+import useAssetSubType from "./asset/useAssetSubType";
+import useAssetdetail from "./asset/useAssetdetail";
+import useAssetCreateAPI from "./asset/useAssetCreateAPI";
+import useAssetApplicationDetail from "./asset/useAssetApplicationDetail";
+import useASSETSearch from "./asset/useASSETSearch";
+import useTenantsASSET from "./asset/useTenants";
+import useASSETApplicationAction from "./asset/useASSETApplicationAction";
+import useAssetparentSubType from "./asset/useAssetparentSubType";
+import useAssignCreateAPI from "./asset/useAssignCreateAPI";
+import useReturnAPI from "./asset/useReturnAPI";
+import useEditUpdateAPI from "./asset/useEditUpdateAPI";
+import useMaintenanceAPI from "./asset/useMaintenanceAPI";
+
+import useCreate from "./pgrAi/useCreate";
+import useSearchPGRAI from "./pgrAi/useSearchPGRAI";
+import useFilterEmployee from "./pgrAi/useFilterEmployee";
+import useApplicationDetails from "./pgrAi/useApplicationDetails";
 
 const pgr = {
   useComplaintDetails,
@@ -324,6 +362,7 @@ const pgr = {
   useComplaintStatusCount,
   useTradeLicenseBillingslab,
   useMDMS: usePGRMDMS,
+  useInbox: usePGRInbox,
 };
 
 const swach = {
@@ -334,6 +373,7 @@ const swach = {
   useComplaintTable: useSwachComplaintTable,
   useComplaintTypes: useSwachComplaintTypes,
   useEmployeeFilter: useSwachEmployeeFilter,
+  useAttendence,
   useInboxData: useSwachInboxData,
   useInbox: useSWACHInbox,
   useLocalities: useSwachLocalities,
@@ -343,6 +383,7 @@ const swach = {
   usePropertyMDMS,
   useComplaintStatusCount: useSwachComplaintStatusCount,
   useTradeLicenseBillingslab,
+  useCount,
   // useMDMS: usePGRMDMS,
 };
 
@@ -507,9 +548,7 @@ const obps = {
   useBusinessServiceBasedOnServiceType,
   useBusinessServiceData,
   useBPATaxDocuments,
-  useDistricts,
-  useULBList,
-  useUlbType,
+  useQualificationTypes,
 };
 
 const events = {
@@ -547,6 +586,42 @@ const ads = {
   useADSSearch,
   useADSDemandEstimation,
   useADSApplicationDetail,
+};
+
+const chb = {
+  useSpecialCategory,
+  useResidentType,
+  usePurpose,
+  useChbCreateAPI,
+  useChbDocumentsMDMS,
+  useChbDocumentSearch,
+  useChbApplicationDetail,
+  useChbSearch,
+  useTenants: useTenantsCHB,
+  useChbApplicationAction,
+  useServiceSearchCHB,
+  useChbCommunityHalls,
+  useChbHallCode,
+  useChbSlotSearch,
+  useDemandEstimation,
+};
+
+const asset = {
+  useAssetClassification,
+  useAssetType,
+  useAssetDocumentsMDMS,
+  useAssetSubType,
+  useAssetdetail,
+  useAssetCreateAPI,
+  useAssetApplicationDetail,
+  useASSETApplicationAction,
+  useASSETSearch,
+  useAssetparentSubType,
+  useTenants: useTenantsASSET,
+  useAssignCreateAPI,
+  useMaintenanceAPI,
+  useReturnAPI,
+  useEditUpdateAPI,
 };
 
 const survey = {
@@ -614,6 +689,12 @@ const ws = {
 
 const reports = {
   useReportMeta,
+};
+const pgrAi = {
+  useCreate,
+  useSearchPGRAI,
+  useFilterEmployee,
+  useApplicationDetails,
 };
 
 const Hooks = {
@@ -686,6 +767,9 @@ const Hooks = {
   sv,
   ads,
   ndc,
+  chb,
+  asset,
+  pgrAi,
 };
 
 export default Hooks;

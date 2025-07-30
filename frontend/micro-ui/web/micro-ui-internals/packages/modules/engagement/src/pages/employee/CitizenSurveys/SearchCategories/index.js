@@ -219,7 +219,7 @@ if(Categories.length>0){
       onPageSizeChange,
       formState,
       totalCount: totalCount,
-      table: Categories,
+      table: sortedCategories,
       noResultsMessage: "No Categories found",
       dispatch,
       inboxStyles: { overflowX: "scroll", overflowY: "hidden" },
@@ -227,7 +227,7 @@ if(Categories.length>0){
     },
   });
 
-  const propsForInboxMobileCards = useCategoryInboxMobileCardsData({ parentRoute, table: Categories,   setShowToast });
+  const propsForInboxMobileCards = useCategoryInboxMobileCardsData({ parentRoute, table: sortedCategories,   setShowToast });
 
   //const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
 

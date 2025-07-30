@@ -29,6 +29,7 @@ const MyApplications = ({ view }) => {
     <React.Fragment>
       <Header>{`${t("TL_MY_APPLICATIONS_HEADER")}`}</Header>
       {data?.map((application) => {
+        // console.log("applicationWithIndex", index, application);
         return (
           <div>
             <Card>
@@ -38,9 +39,9 @@ const MyApplications = ({ view }) => {
                   <KeyNote keyValue={t(item)} note={t(application[item])} />
                 ))}
               <Link to={`/digit-ui/citizen/tl/tradelicence/application/${application?.raw?.applicationNumber}/${application.raw?.tenantId}`}>
-                <SubmitBar label={t(application?.raw?.status != "PENDINGPAYMENT" ? "TL_VIEW_DETAILS" : "TL_VIEW_DETAILS_PAY")} />
+                <SubmitBar label={t(application?.raw?.status != "PENDINGPAYMENT" ? application?.raw?.status === "APPROVED" ? "TL_VIEW_DETAILS_RENEW_NOW": "TL_VIEW_DETAILS" : "TL_VIEW_DETAILS_PAY")} />
               </Link>{" "}
-              {application?.raw?.status === "PENDINGPAYMENT" ? (
+              {/* {application?.raw?.status === "PENDINGPAYMENT" ? (
                   <Link
                   to={{
                     pathname : `/digit-ui/citizen/payment/collect/${data?.[0]?.raw?.businessService}/${application?.raw?.applicationNumber}`,
@@ -49,7 +50,7 @@ const MyApplications = ({ view }) => {
                     <SubmitBar label ={t("COMMON_MAKE_PAYMENT")}/>
                     </div>
                   </Link>
-              ):null}
+              ):null} */}
             </Card>
           </div>
         );

@@ -11,7 +11,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const GetStatusCell = (value) =>
     value === true ? <span className="sla-cell-success">Active</span> : value === false ? <span className="sla-cell-error">Inactive</span> : "-";
   const { t } = useTranslation();
-
+  const userInfo = Digit.UserService.getUser();
   const handleUpdateSurveyConfirm = (row) => {
     console.log("Current row: ", row);
     const currentStatus = row?.original?.active ? "Active" : "Inactive";
@@ -130,6 +130,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "updateSurvey",
         Cell: ({ row }) => {
           return (
+               (row?.original?.tenantId === userInfo?.info?.tenantId ?(
             <div className="tooltip" /* style={{position:"relative"}} */>
               <div style={{ display: "flex", /* alignItems: "center", */ gap: "0 4px" }}>
                 <button onClick={() => handleUpdateSurveyConfirm(row)}>
@@ -140,6 +141,14 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 </span>
               </div>
             </div>
+             )
+              :
+              (
+                <div style={{color:'red'}}>
+                  No access
+                </div>
+              )
+            )
           );
         },
       },

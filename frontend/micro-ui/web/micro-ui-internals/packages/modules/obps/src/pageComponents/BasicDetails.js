@@ -113,10 +113,14 @@ const BasicDetails = ({ formData, onSelect, config }) => {
         <TextInput
           className="searchInput"
           onKeyPress={handleKeyPress}
-          onChange={event => setScrutinyNumber({ edcrNumber: event.target.value })} 
-          value={scrutinyNumber?.edcrNumber} 
-          signature={true} 
-          signatureImg={!disableVlaue && <SearchIconSvg className="signature-img" onClick={!disableVlaue && scrutinyNumber?.edcrNumber ? () => handleSearch() : null} />}
+          onChange={(event) => setScrutinyNumber({ edcrNumber: event.target.value })}
+          value={scrutinyNumber?.edcrNumber}
+          signature={true}
+          signatureImg={
+            !disableVlaue && (
+              <SearchIconSvg className="signature-img" onClick={!disableVlaue && scrutinyNumber?.edcrNumber ? () => handleSearch() : null} />
+            )
+          }
           disable={disableVlaue}
           style={{ marginBottom: "10px" }}
         />

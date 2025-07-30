@@ -43,9 +43,9 @@ const TLDocumentsEmployee = ({ t, config, onSelect, userType, formData, setError
     goNext();
   }, [documents]);
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  // if (isLoading) {
+  //   return <Loader />;
+  // }
 
   return (
     <div>
@@ -218,8 +218,9 @@ function SelectDocument({
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">
           {doc?.documentType != "OLDLICENCENO" ?
-            `${t(`TL_NEW_${doc?.documentType.replaceAll(".", "_")}`)} * ` :
-            `${t(`TL_NEW_${doc?.documentType.replaceAll(".", "_")}`)} `}
+            `${t(`TL_${doc?.documentType.replaceAll(".", "_")}`)} ` :
+            `${t(`TL_${doc?.documentType.replaceAll(".", "_")}`)} `}
+            <span className={doc?.documentType != "OLDLICENCENO" ? "requiredField": ""}>{doc?.documentType != "OLDLICENCENO" ? "*":""}</span>
         </CardLabel>
         <div className="field">
           <UploadFile

@@ -74,6 +74,51 @@ const inboxSearchFields = {
       },
     },
   ],
+  CHB: [
+    {
+      label: "CHB_APPLICATION_NUMBER",
+      name: "bookingNo",
+      roles: [],
+    },
+    {
+      label: "CHB_HALL_NAME",
+      name: "hallName",
+      roles: [],
+    },
+    {
+      label: "CHB_MOBILE_NUMBER",
+      name: "mobileNumber",
+      type: "mobileNumber",
+      maxLength: 10,
+      minLength: 0,
+      roles: [],
+      pattern: "^$|[6-9][0-9]{9}",
+      errorMessages: {
+        pattern: "",
+        minLength: "",
+        maxLength: "",
+      },
+    },
+  ],
+  ASSET: [
+    {
+      label: "ES_ASSET_RESPONSE_CREATE_LABEL",
+      name: "applicationNo",
+      roles: [],
+    },
+    {
+      label: "AST_ASSET_CATEGORY_LABEL",
+      name: "assetClassification",
+      type: "Dropdown",
+      roles: [],
+    },
+    {
+      label: "AST_PARENT_CATEGORY_LABEL",
+      name: "assetParentCategory",
+      // minLength: "10",
+      roles: [],
+    },
+  ]
 };
 
 const searchFieldsForSearch = {

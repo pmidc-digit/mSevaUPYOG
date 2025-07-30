@@ -25,18 +25,20 @@ import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
-import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
+import { PTRModule, PTRLinks, PTRComponents, PTRReducers } from "@mseva/digit-ui-module-ptr";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
-import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
-import { NDCReducers } from "@mseva/digit-ui-module-ndc";
-import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
+import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
+import { ADSModule, ADSLinks, ADSComponents, ADSReducers } from "@mseva/upyog-ui-module-ads";
+import { CHBModule, CHBLinks, CHBComponents, CHBReducers } from "@mseva/upyog-ui-module-chb";
+import { ASSETComponents, ASSETLinks, ASSETModule } from "@mseva/upyog-ui-module-asset";
+import { PGRAIComponents, PGRAILinks, PGRAIModule } from "@mseva/upyog-ui-module-pgrai";
+
 // import {initCustomisationComponents} from "./customisations";
 // import { PGRModule, PGRLinks } from "@mseva/digit-ui-module-pgr";
 // import { Body, TopBar } from "@mseva/digit-ui-react-components";
-//import "@upyog-niua/upyog-css/example/index.css";
+//import "@mseva-niua/upyog-css/example/index.css";
 import "@pmidc/upyog-css";
 // import * as comps from "@mseva/digit-ui-react-components";
-// import { subFormRegistry } from "@upyog/digit-ui-libraries";
 
 import { pgrCustomizations, pgrComponents } from "./pgr";
 
@@ -71,6 +73,9 @@ const enabledModules = [
   "Swach",
   "SV",
   "NDC",
+  "CHB",
+  "ASSET",
+  "PGRAI",
 ];
 
 const initTokens = (stateCode) => {
@@ -126,6 +131,15 @@ const initDigitUI = () => {
     ADSLinks,
     ADSModule,
     ...ADSComponents,
+    CHBModule,
+    CHBLinks,
+    ...CHBComponents,
+    ASSETModule,
+    ASSETLinks,
+    ...ASSETComponents,
+    PGRAIModule,
+    PGRAILinks,
+    ...PGRAIComponents,
   });
   initFSMComponents();
   initPGRComponents();
@@ -154,6 +168,9 @@ const initDigitUI = () => {
     engagement: SurveyReducers(initData),
     tl: TLReducers(initData),
     ndc: NDCReducers(initData),
+    ptr: PTRReducers(initData),
+    ads: ADSReducers(initData),
+    chb: CHBReducers(initData),
   });
 
   window.Digit.Customizations = {

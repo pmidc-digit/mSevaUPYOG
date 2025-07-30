@@ -123,6 +123,7 @@
       .filter-card {
         @apply bg-white;
         padding: 10px;
+        padding-bottom: 50px;
         .filter-card-close-button {
           @apply flex flex-row-reverse;
         }
@@ -408,6 +409,7 @@
 
 .sla-cell-error {
   color: #2947A3;
+  color: #a82227;
   background-color: #F5FBFF;
   padding: 0 24px;
   border-radius: 11px;

@@ -66,7 +66,7 @@ const PTWFApplicationTimeline = (props) => {
 
   const showNextActions = (nextActions) => {
     let nextAction = nextActions[0];
-    const next = nextActions.map((action) => action.action);
+    const next = nextActions?.map((action) => action.action);
     if (next.includes("PAY") || next.includes("EDIT")) {
       let currentIndex = next.indexOf("EDIT") || next.indexOf("PAY");
       currentIndex = currentIndex != -1 ? currentIndex : next.indexOf("PAY");

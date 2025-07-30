@@ -39,7 +39,7 @@ const LocationSearchCard = ({
     };
   }, []);
 
-  let isDisabled = false || disabled;
+  let isDisabled =  disabled  || false;
   const [geoLocation, setGeoLocation] = useState({
     latitude: 0,
     longitude: 0,
@@ -162,7 +162,7 @@ const LocationSearchCard = ({
         />
         {forcedError && <CardLabelError>{t(forcedError)}</CardLabelError>}
       </div>
-      <SubmitBar label={"Pick"} onSubmit={onSubmit} disabled={geoLocation.latitude === 0} />
+      <SubmitBar label={"Pick"} onSubmit={onSubmit} disabled={isDisabled} />
       {/* {skip ? <LinkButton onClick={skip} label={skipAndContinueText} /> : null} */}
     </Card>
   );

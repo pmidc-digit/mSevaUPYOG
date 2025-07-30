@@ -206,7 +206,7 @@ const useQuestionsInboxTableConfig = ({
       };
     },
     disableSort: false,
-    autoSort: true,
+    autoSort: false,
     manualPagination: true,
     initSortI: "endDate",
     onPageSizeChange: onPageSizeChange,

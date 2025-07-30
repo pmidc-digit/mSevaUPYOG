@@ -11,8 +11,8 @@ const SelectInistitutionOwnerDetails = ({ t, config, onSelect, userType, formDat
   let index = 0;
   let validation = {};
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [inistitutionName, setInistitutionName] = useState(formData.owners && formData.owners[index] && formData.owners[index].inistitutionName);
-  const [inistitutetype, setInistitutetype] = useState(formData.owners && formData.owners[index] && formData.owners[index].inistitutetype);
+  const [institutionName, setInstitutionName] = useState(formData.owners && formData.owners[index] && formData.owners[index].institutionName);
+  const [institutionType, setInstitutionType] = useState(formData.owners && formData.owners[index] && formData.owners[index].institutionType);
   const [name, setName] = useState(formData.owners && formData.owners[index] && formData.owners[index].name);
   const [designation, setDesignation] = useState(formData.owners && formData.owners[index] && formData.owners[index].designation);
   const [mobileNumber, setMobileNumber] = useState(formData.owners && formData.owners[index] && formData.owners[index].mobileNumber);
@@ -22,10 +22,10 @@ const SelectInistitutionOwnerDetails = ({ t, config, onSelect, userType, formDat
   let isEditProperty = formData?.isEditProperty || false;
 
   function setInistitution(e) {
-    setInistitutionName(e.target.value);
+    setInstitutionName(e.target.value);
   }
-  function setTypeOfInistituteName(inistitutetype) {
-    setInistitutetype(inistitutetype);
+  function setTypeOfInistituteName(institutionType) {
+    setInstitutionType(institutionType);
   }
   function setInistituteName(e) {
     setName(e.target.value);
@@ -76,8 +76,8 @@ const SelectInistitutionOwnerDetails = ({ t, config, onSelect, userType, formDat
   const goNext = () => {
     let ownerDetails = formData.owners && formData.owners[index];
     if (ownerDetails) {
-      ownerDetails["inistitutionName"] = inistitutionName;
-      ownerDetails["inistitutetype"] = inistitutetype;
+      ownerDetails["institutionName"] = institutionName;
+      ownerDetails["institutionType"] = institutionType;
       ownerDetails["name"] = name;
       ownerDetails["designation"] = designation;
       ownerDetails["mobileNumber"] = mobileNumber;
@@ -85,7 +85,7 @@ const SelectInistitutionOwnerDetails = ({ t, config, onSelect, userType, formDat
       ownerDetails["emailId"] = emailId;
       onSelect(config.key, isMutation ? [ownerDetails] : ownerDetails, false, index);
     } else {
-      let ownerStep = { ...ownerDetails, inistitutionName, inistitutetype, name, designation, mobileNumber, altContactNumber, emailId };
+      let ownerStep = { ...ownerDetails, institutionName, institutionType, name, designation, mobileNumber, altContactNumber, emailId };
       if (isMutation) onSelect(config.key, [ownerStep], false, index);
       else onSelect(config.key, ownerStep, false, index);
     }
@@ -104,7 +104,7 @@ const SelectInistitutionOwnerDetails = ({ t, config, onSelect, userType, formDat
         config={config}
         t={t}
         onSelect={goNext}
-        isDisabled={!inistitutionName || !inistitutetype || !name || !designation || !mobileNumber || !altContactNumber}
+        isDisabled={!institutionName || !institutionType || !name || !designation || !mobileNumber || !altContactNumber}
       >
         <div>
           <CardLabel>{`${t("PT_COMMON_INSTITUTION_NAME")}`}</CardLabel>
@@ -114,7 +114,7 @@ const SelectInistitutionOwnerDetails = ({ t, config, onSelect, userType, formDat
             t={t}
             name="institutionName"
             onChange={setInistitution}
-            value={inistitutionName}
+            value={institutionName}
             disable={isUpdateProperty || isEditProperty}
             {...(validation = {
               isRequired: true,
@@ -127,7 +127,7 @@ const SelectInistitutionOwnerDetails = ({ t, config, onSelect, userType, formDat
             t={t}
             isMandatory={false}
             option={getDropdwonForInstitution() || []}
-            selected={inistitutetype}
+            selected={institutionType}
             optionKey="code"
             select={setTypeOfInistituteName}
             disabled={isUpdateProperty || isEditProperty}

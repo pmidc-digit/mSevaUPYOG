@@ -36,7 +36,12 @@ import {
   initTLComponents,
 } from "@mseva/digit-ui-module-tl";
 
-import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
+import {
+  PTRModule,
+  PTRLinks,
+  PTRComponents,
+  PTRReducers,
+} from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
   ReceiptsModule,
@@ -55,9 +60,30 @@ import {
 } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
-import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
-import { NDCReducers } from "@mseva/digit-ui-module-ndc";
-import { initNDCComponents } from "@mseva/digit-ui-module-ndc";
+import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
+import {
+  ADSModule,
+  ADSLinks,
+  ADSComponents,
+  ADSReducers,
+} from "@mseva/upyog-ui-module-ads";
+import {
+  CHBModule,
+  CHBLinks,
+  CHBComponents,
+  CHBReducers,
+} from "@mseva/upyog-ui-module-chb";
+import {
+  ASSETComponents,
+  ASSETLinks,
+  ASSETModule,
+} from "@mseva/upyog-ui-module-asset";
+import {
+  PGRAIComponents,
+  PGRAILinks,
+  PGRAIModule,
+} from "@mseva/upyog-ui-module-pgrai";
+
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
 initLibraries();
@@ -89,6 +115,10 @@ const enabledModules = [
   "Swach",
   "SV",
   "ADS",
+  "CHB",
+  "PTR",
+  "ASSET",
+  "PGRAI",
   "NDC",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
@@ -114,6 +144,15 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ADSLinks,
   ADSModule,
   ...ADSComponents,
+  CHBModule,
+  CHBLinks,
+  ...CHBComponents,
+  ASSETModule,
+  ASSETLinks,
+  ...ASSETComponents,
+  PGRAIModule,
+  PGRAILinks,
+  ...PGRAIComponents,
 });
 initPGRComponents();
 initSWACHComponents();
@@ -142,6 +181,9 @@ const moduleReducers = (initData) => ({
   tl: TLReducers(initData),
   swach: SWACHReducers(initData),
   ndc: NDCReducers(initData),
+  ptr: PTRReducers(initData),
+  ads: ADSReducers(initData),
+  chb: CHBReducers(initData),
 });
 
 function App() {

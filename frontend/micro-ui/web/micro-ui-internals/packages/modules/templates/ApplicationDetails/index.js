@@ -53,7 +53,8 @@ const ApplicationDetails = (props) => {
     showTimeLine = true,
     oldValue,
     isInfoLabel = false,
-    clearDataDetails
+    clearDataDetails,
+    propertyId
   } = props;
   
   useEffect(() => {
@@ -67,10 +68,10 @@ const ApplicationDetails = (props) => {
       if(action?.action=="EDIT PAY 2" && window.location.href.includes("bpa")){
         window.location.assign(window.location.href.split("bpa")[0]+"editApplication/bpa"+window.location.href.split("bpa")[1]);
       }
-      if(action?.isToast){
-        setShowToast({ key: "error", error: { message: action?.toastMessage } });
-        setTimeout(closeToast, 5000);
-      }
+      // if(action?.isToast){
+      //   setShowToast({ key: "error", error: { message: action?.toastMessage } });
+      //   setTimeout(closeToast, 5000);
+      // }
       else if (action?.isWarningPopUp) {
         setWarningPopUp(true);
       } else if (action?.redirectionUrll) {
@@ -265,6 +266,7 @@ const ApplicationDetails = (props) => {
             showTimeLine={showTimeLine}
             oldValue={oldValue}
             isInfoLabel={isInfoLabel}
+            propertyId={propertyId}
           />
           {showModal ? (
             <ActionModal
@@ -294,8 +296,9 @@ const ApplicationDetails = (props) => {
             />
           ) : null}
           <ApplicationDetailsToast t={t} showToast={showToast} closeToast={closeToast} businessService={businessService} />
-          {!isEditApplication?  (
-            <ApplicationDetailsActionBar
+          {!isEditApplication?  (<div>
+          {!(window.location.href.includes("citizen")&&window.location.href.includes("/pt/"))&&  
+          <ApplicationDetailsActionBar
             workflowDetails={workflowDetails}
             displayMenu={displayMenu}
             onActionSelect={onActionSelect}
@@ -305,7 +308,8 @@ const ApplicationDetails = (props) => {
             ActionBarStyle={ActionBarStyle}
             MenuStyle={MenuStyle}
           />
-          ):(<div >
+          }
+          </div>):(<div >
             <SubmitBar style={{ marginRight:20}} label={t("BPA_EDIT_UPDATE")} onSubmit={onSubmit}  id/>
             </div>)}          
         </React.Fragment>

@@ -6,19 +6,8 @@ export const newConfig = [
         route: "docs-required",
         component: "DocsRequired",
         key: "data",
-        nextStep: "noc-number"
+        nextStep: "basic-details"
       },
-      {
-        route: "noc-number",
-        component: "NOCNumber",
-        nextStep: "basic-details",
-        key: "nocnumber",
-        texts: {
-            "headerCaption": "BPA_NOC_NUMBER_DETAILS",
-            "header": "",
-            "submitBarLabel": "CS_COMMON_NEXT"
-        }
-    },
       {
         route: "basic-details",
         component: "BasicDetails",
@@ -35,7 +24,7 @@ export const newConfig = [
           header: "BPA_PLOT_DETAILS_TITLE",
           cardText: "",
           submitBarLabel: "CS_COMMON_NEXT",
-          //skipText: "CORE_COMMON_SKIP_CONTINUE",
+          skipText: "CORE_COMMON_SKIP_CONTINUE",
         },
         inputs: [
           {
@@ -55,13 +44,9 @@ export const newConfig = [
             name: "registrationDetails"
           },
           {
-            label: "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
+            label: "BPA_BOUNDARY_WALL_LENGTH_LABEL",
             type: "text",
-            validation: {
-              pattern:/^[0-9]*$/,
-              title: "Enter in Numbers[0-9]",
-              required: true
-            },
+            validation: {},
             name: "boundaryWallLength"
         }
         ]
@@ -108,7 +93,7 @@ export const newConfig = [
       {
         route: "document-details",
         component: "DocumentDetails",
-        nextStep: null,
+        nextStep: "noc-details",
         key: "documents",
         texts: {
           headerCaption: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
@@ -116,18 +101,18 @@ export const newConfig = [
           submitBarLabel: "CS_COMMON_NEXT",
         }
       },
-      // {
-      //   route: "noc-details",
-      //   component: "NOCDetails",
-      //   nextStep: null,
-      //   key: "nocDocuments",
-      //   texts: {
-      //     headerCaption: "BPA_NOC_DETAILS_SUMMARY",
-      //     header: "",
-      //     submitBarLabel: "CS_COMMON_NEXT",
-      //     skipText: "CORE_COMMON_SKIP_CONTINUE",
-      //   }
-      // }
+      {
+        route: "noc-details",
+        component: "NOCDetails",
+        nextStep: null,
+        key: "nocDocuments",
+        texts: {
+          headerCaption: "BPA_NOC_DETAILS_SUMMARY",
+          header: "",
+          submitBarLabel: "CS_COMMON_NEXT",
+          skipText: "CORE_COMMON_SKIP_CONTINUE",
+        }
+      }
     ]
   }
 ]

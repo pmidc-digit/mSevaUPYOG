@@ -40,6 +40,14 @@ export const SwachService = {
       method: "POST",
       params: { tenantId, ...params },
     }),
+  AssigneeWithCount: (tenantId, params) =>
+    Request({
+      url: Urls.Swach_Assignee_Count,
+      useCache: true,
+      auth: true,
+      method: "POST",
+      params: { tenantId, ...params },
+    }),
 
   employeeSearch: (tenantId, roles, isActive) => {
     return Request({
@@ -52,6 +60,16 @@ export const SwachService = {
   SwachOpensearch: ({ tenantId, filters }) =>
     Request({
      url: Urls.Swach_search,
+     useCache: false,
+     method: "POST",
+     auth: false ,
+     userService: false,
+     params: { tenantId, ...filters },
+   }),
+   
+    SwachAttendence: ({ tenantId, filters }) =>
+    Request({
+     url: Urls.Swach_attendence,
      useCache: false,
      method: "POST",
      auth: false ,

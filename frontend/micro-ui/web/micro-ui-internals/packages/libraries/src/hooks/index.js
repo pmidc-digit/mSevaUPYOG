@@ -343,9 +343,10 @@ import useSearchPGRAI from "./pgrAi/useSearchPGRAI";
 import useFilterEmployee from "./pgrAi/useFilterEmployee";
 import useApplicationDetails from "./pgrAi/useApplicationDetails";
 
-import useDistricts from "./obps/useDistricts"
-import useULBList from "./obps/useULBList"
-import useUlbType from "./obps/useUlbType"
+import useDistricts from "./obps/useDistricts";
+import useULBList from "./obps/useULBList";
+import useUlbType from "./obps/useUlbType";
+import useEDCRForm from "./obps/useEDCRForm";
 
 const pgr = {
   useComplaintDetails,
@@ -554,6 +555,7 @@ const obps = {
   useDistricts,
   useULBList,
   useUlbType,
+  useEDCRForm,
 };
 
 const events = {
@@ -770,6 +772,7 @@ const Hooks = {
   chb,
   asset,
   pgrAi,
+  useEDCRForm,
 };
 
 export default Hooks;

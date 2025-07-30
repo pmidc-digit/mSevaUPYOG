@@ -43,6 +43,9 @@ public class ApplicantRequest {
     @JsonProperty("fee")
     private BigDecimal fee;
 
+    @JsonProperty("reason")
+    private String reason;
+
     @JsonProperty("createdby")
     private String createdby;
 

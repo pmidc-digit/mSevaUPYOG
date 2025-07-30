@@ -167,7 +167,10 @@ public class NDCService {
 		if(!skipWorkFlow) {
 			workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
 		}
-		getCalculation(ndcApplicationRequest);
+		if(ndcApplicationRequest.getApplicant().getWorkflow().getAction().equalsIgnoreCase("APPLY")) {
+			getCalculation(ndcApplicationRequest);
+		}
+
 
 		producer.push(config.getUpdateTopic(), ndcApplicationRequest);
 

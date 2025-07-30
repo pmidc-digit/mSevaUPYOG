@@ -11,7 +11,7 @@ RUN yarn add @mseva/digit-ui-module-noc@1.0.3
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.26
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.3
 RUN yarn add @mseva/digit-ui-module-core@1.0.29
-RUN yarn add @mseva/digit-ui-module-common@1.0.38
+RUN yarn add @mseva/digit-ui-module-common@1.0.39
 RUN yarn add @mseva/digit-ui-module-ws@1.0.4
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.3
 RUN yarn add @mseva/digit-ui-module-ptr@1.0.47

@@ -46,6 +46,10 @@ public class CalculatorConstants {
 	public static final String PT_ADHOC_PENALTY = "PT_ADHOC_PENALTY";
 
 	public static final String PT_ADHOC_REBATE = "PT_ADHOC_REBATE";
+	
+	public static final String OTS_PENALTY_WAVEOFF = "OTS_PENALTY_WAVEOFF";
+	
+	public static final String OTS_INTEREST_WAVEOFF= "OTS_INTEREST_WAVEOFF";
 
 //	public static final String PT_DECIMAL_CEILING_CREDIT = "PT_DECIMAL_CEILING_CREDIT";
 	
@@ -103,6 +107,8 @@ public class CalculatorConstants {
 	public static final String REBATE_MASTER = "Rebate";
 
 	public static final String PENANLTY_MASTER = "Penalty";
+	
+	public static final String OTS_MASTER = "Ots";
 
 	public static final String FIRE_CESS_MASTER = "FireCess";
 

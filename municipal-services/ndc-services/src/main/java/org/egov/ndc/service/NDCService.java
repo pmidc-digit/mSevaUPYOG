@@ -265,10 +265,10 @@ public class NDCService {
 		StringBuilder url = new StringBuilder().append(ndcConfiguration.getNdcCalculatorHost())
 				.append(ndcConfiguration.getNdcCalculatorEndpoint());
 
-		List<Calculation> calculations = calculationService.calculate(calculationReq);
-//		Object response = serviceRequestRepository.fetchResult(url, calculationReq);
-//		CalculationRes calculationRes = mapper.convertValue(response, CalculationRes.class);
-		request.getApplicant().setFee(BigDecimal.valueOf(calculations.get(0).getTotalAmount()));
+//		List<Calculation> calculations = calculationService.calculate(calculationReq);
+		Object response = serviceRequestRepository.fetchResult(url, calculationReq);
+		CalculationRes calculationRes = mapper.convertValue(response, CalculationRes.class);
+		request.getApplicant().setFee(BigDecimal.valueOf(calculationRes.getCalculation().get(0).getTotalAmount()));
 //		return null;
 	}
 }

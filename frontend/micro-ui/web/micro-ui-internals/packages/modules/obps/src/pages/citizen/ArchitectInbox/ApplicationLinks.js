@@ -14,7 +14,7 @@ const InboxLinks = ({ parentRoute, businessService, allLinks, headerText }) => {
   const GetLogo = () => (
     <div className="header" style={{ justifyContent: "flex-start" }}>
       <span className="logo">
-        <OBPSIconSolidBg />
+      <OBPSIconSolidBg />
       </span>{" "}
       <span className="text">{t(headerText)}</span>
     </div>
@@ -22,19 +22,19 @@ const InboxLinks = ({ parentRoute, businessService, allLinks, headerText }) => {
 
   return (
     <Card className="employeeCard filter inboxLinks">
-      <div className="complaint-links-container">
-        {GetLogo()}
-        <div className="body">
-          {links.map(({ link, text, hyperlink = false, accessTo = [] }, index) => {
-            return (
-              <span className="link" key={index}>
-                {hyperlink ? <a href={link}>{t(text)}</a> : <Link to={link}>{t(text)}</Link>}
-              </span>
-            );
-          })}
-        </div>
+    <div className="complaint-links-container">
+      {GetLogo()}
+      <div className="body">
+        {links.map(({ link, text, hyperlink = false, accessTo = [] }, index) => {
+          return (
+            <span className="link" key={index}>
+              {hyperlink ? <a href={link}>{t(text)}</a> : <Link to={link}>{t(text)}</Link>}
+            </span>
+          );
+        })}
       </div>
-    </Card>
+    </div>
+  </Card>
   );
 };
 

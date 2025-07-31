@@ -69,12 +69,12 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
     filters: { filterForm: {}, searchForm: {}, tableForm: { limit: 10, offset: 0 } },
   });
 
-  useEffect(() => {
-    if (location.pathname === "/digit-ui/citizen/obps/home") {
-      Digit.SessionStorage.del("OBPS.INBOX");
-      Digit.SessionStorage.del("STAKEHOLDER.INBOX");
+  useEffect(()=>{
+    if (location.pathname === "/digit-ui/citizen/obps/home"){
+      Digit.SessionStorage.del("OBPS.INBOX")
+      Digit.SessionStorage.del("STAKEHOLDER.INBOX")
     }
-  }, [location.pathname]);
+  },[location.pathname])
 
   useEffect(() => {
     if (!bpaLoading) {
@@ -98,7 +98,7 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
           isRoute = true;
         }
       });
-      if (isRoute) {
+      if (!isRoute) {
         setStakeholderRoles(false);
         setShowToast({ key: "true", message: t("BPA_LOGIN_HOME_VALIDATION_MESSAGE_LABEL") });
       } else {

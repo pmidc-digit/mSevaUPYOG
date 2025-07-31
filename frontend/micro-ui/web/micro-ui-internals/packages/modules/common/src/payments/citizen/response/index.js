@@ -91,11 +91,13 @@ const WrapPaymentComponent = (props) => {
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
-      data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey || "consolidatedreceipt",
+      data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
     retry: false,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
+
+  console.log("generatePdfKeyInResponse", generatePdfKey, business_service)
 
   const payments = data?.payments;
 
@@ -150,7 +152,7 @@ const WrapPaymentComponent = (props) => {
       </Card>
     );
   }
-
+  console.log("paymentData", data);
   const paymentData = data?.payments?.Payments[0];
   const amount = reciept_data?.paymentDetails?.[0]?.totalAmountPaid;
   const transactionDate = paymentData?.transactionDate;
@@ -261,14 +263,36 @@ const WrapPaymentComponent = (props) => {
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...paymentData }] }, generatePdfKeyForWs);
         } else if (paymentData.paymentDetails[0].businessService.includes("BPA")) {
           const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-          const updatedpayments = {
+          let updatedpayments
+          if(paymentData.paymentDetails[0].businessService.includes("BPAREG")){
+            updatedpayments = {
             ...paymentData,
+            paymentDetails: [
+              {
+                ...paymentData?.paymentDetails?.[0],
+                additionalDetails: {
+                  ...paymentData?.paymentDetails?.[0]?.additionalDetails,
+                  stakeholderType: "Applicant"
+                }
+              }
+            ],
             additionalDetails: {
               ...paymentData.additionalDetails,
               designation: designation,
               ulbType: ulbType,
             },
           };
+          }
+          else{
+            updatedpayments = {
+              ...paymentData,
+              additionalDetails: {
+                ...paymentData.additionalDetails,
+                designation: designation,
+                ulbType: ulbType,
+              },
+            }; 
+          }
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
         } else {
@@ -1034,6 +1058,11 @@ const WrapPaymentZeroComponent = (props) => {
   const [printing, setPrinting] = useState(false);
   const [allowFetchBill, setallowFetchBill] = useState(false);
   const { businessService: business_service, consumerCode, tenantId } = useParams();
+  const { isLoading, data, isError } = Digit.Hooks.usePaymentUpdate({ egId }, business_service, {
+    retry: false,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  });
   const { data: bpaData = {}, isLoading: isBpaSearchLoading, isSuccess: isBpaSuccess, error: bpaerror } = Digit.Hooks.obps.useOBPSSearch(
     "",
     {},
@@ -1043,12 +1072,12 @@ const WrapPaymentZeroComponent = (props) => {
     { enabled: window.location.href.includes("bpa") || window.location.href.includes("BPA") }
   );
 
-  const { data: reciept_data, isLoading, isError } = Digit.Hooks.useRecieptSearchNew(
-    {
-        tenantId: tenantId,
-        billIds: transactionData?.billId
-    },
-); 
+//   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearchNew(
+//     {
+//         tenantId: tenantId,
+//         billIds: transactionData?.billId
+//     },
+// ); 
 
 
   const cities = Digit.Hooks.useTenants();
@@ -1064,22 +1093,22 @@ const WrapPaymentZeroComponent = (props) => {
   const mutation = Digit.Hooks.chb.useChbCreateAPI(tenantId, false);
 
   const newTenantId = business_service.includes("WS.ONE_TIME_FEE" || "SW.ONE_TIME_FEE") ? Digit.ULBService.getStateId() : tenantId;
-  // const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-  //   {
-  //     tenantId,
-  //     businessService: business_service,
-  //     receiptNumbers: data?.payments?.Payments?.[0]?.paymentDetails[0].receiptNumber,
-  //   },
-  //   {
-  //     retry: false,
-  //     staleTime: Infinity,
-  //     refetchOnWindowFocus: false,
-  //     select: (dat) => {
-  //       return dat.Payments[0];
-  //     },
-  //     enabled: allowFetchBill,
-  //   }
-  // );
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+      {
+        tenantId,
+        businessService: business_service,
+        receiptNumbers: data?.payments?.Payments?.[0]?.paymentDetails[0].receiptNumber,
+      },
+      {
+        retry: false,
+        staleTime: Infinity,
+        refetchOnWindowFocus: false,
+        select: (dat) => {
+          return dat.Payments[0];
+        },
+        enabled: allowFetchBill,
+      }
+    );
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
@@ -1100,7 +1129,7 @@ const WrapPaymentZeroComponent = (props) => {
   }, []);
 
 
-  if (isLoading) {
+  if (isLoading || recieptDataLoading) {
     return <Loader />;
   }
 

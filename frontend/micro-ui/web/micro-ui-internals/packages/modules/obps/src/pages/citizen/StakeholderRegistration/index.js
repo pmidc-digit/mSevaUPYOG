@@ -6,7 +6,6 @@ import { newConfig as newConfigBPAREG } from "../../../config/stakeholderConfig"
 // import CheckPage from "./CheckPage";
 // import StakeholderAcknowledgement from "./StakeholderAcknowledgement";
 
-
 const StakeholderRegistration = () => {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
@@ -15,7 +14,10 @@ const StakeholderRegistration = () => {
   const history = useHistory();
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("BUILDING_PERMIT", state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber }}} : {});
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(
+    "BUILDING_PERMIT",
+    state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
+  );
 
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(stateId, []);
@@ -28,8 +30,7 @@ const StakeholderRegistration = () => {
       return redirectWithHistory(`${path}/check`);
     }
     redirectWithHistory(`${path}/${nextStep}`);
-
-  }
+  };
 
   const onSuccess = () => {
     clearParams();
@@ -41,9 +42,8 @@ const StakeholderRegistration = () => {
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
     if (isFromCreateApi) setParams(data);
-    else if(key=== "")
-    setParams({...data});
-    else setParams({ ...params, ...{ [key]: { ...params[key], ...data }}});
+    else if (key === "") setParams({ ...data });
+    else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
     goNext(skipStep);
   };
   const handleSkip = () => {};
@@ -57,14 +57,14 @@ const StakeholderRegistration = () => {
   config.indexRoute = "stakeholder-docs-required";
 
   useEffect(() => {
-    if(sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
+    if (sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
       clearParams();
       sessionStorage.setItem("isPermitApplication", false);
     }
   }, []);
 
-  const CheckPage = Digit?.ComponentRegistryService?.getComponent('StakeholderCheckPage') ;
-  const StakeholderAcknowledgement = Digit?.ComponentRegistryService?.getComponent('StakeholderAcknowledgement');
+  const CheckPage = Digit?.ComponentRegistryService?.getComponent("StakeholderCheckPage");
+  const StakeholderAcknowledgement = Digit?.ComponentRegistryService?.getComponent("StakeholderAcknowledgement");
 
   console.log("formData in StakeholderRegistration", params);
   console.log("config in StakeholderRegistration", config);
@@ -79,10 +79,10 @@ const StakeholderRegistration = () => {
           </Route>
         );
       })}
-       <Route path={`${path}/check`}>
-          <CheckPage onSubmit={createApplication} value={params} />
-        </Route>
-        <Route path={`${path}/acknowledgement`}>
+      <Route path={`${path}/check`}>
+        <CheckPage onSubmit={createApplication} value={params} />
+      </Route>
+      <Route path={`${path}/acknowledgement`}>
         <StakeholderAcknowledgement data={params} onSuccess={onSuccess} />
       </Route>
       <Route>
@@ -92,4 +92,4 @@ const StakeholderRegistration = () => {
   );
 };
 
-export default StakeholderRegistration; 
+export default StakeholderRegistration;

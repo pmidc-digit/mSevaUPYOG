@@ -24,7 +24,8 @@
     "micro-ui-internals/packages/modules/ptr",
     "micro-ui-internals/packages/modules/chb",
     "micro-ui-internals/packages/modules/asset",
-    "micro-ui-internals/packages/modules/pgrai"
+    "micro-ui-internals/packages/modules/pgrai",
+    "micro-ui-internals/packages/modules/noc"
   ],
   "engines": {
     "node": ">=14"

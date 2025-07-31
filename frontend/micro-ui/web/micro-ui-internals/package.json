@@ -25,7 +25,8 @@
     "packages/modules/ptr",
     "packages/modules/chb",
     "packages/modules/asset",
-    "packages/modules/pgrai"
+    "packages/modules/pgrai",
+    "packages/modules/noc"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",

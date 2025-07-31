@@ -12,7 +12,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles : []
+      roles: [],
     },
     {
       moduleCode: "Swach",
@@ -24,7 +24,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "PT",
@@ -36,7 +36,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "OBPS",
@@ -48,7 +48,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "TL",
@@ -60,7 +60,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "Payment",
@@ -72,7 +72,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "HRMS",
@@ -84,7 +84,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "SW",
@@ -96,7 +96,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "WS",
@@ -108,7 +108,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "MCollect",
@@ -120,7 +120,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "Engagement",
@@ -132,7 +132,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "PTR",
@@ -144,7 +144,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "NDC",
@@ -156,7 +156,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "SV",
@@ -168,7 +168,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "ADS",
@@ -180,7 +180,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "CHB",
@@ -192,7 +192,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[] 
+      roles: [],
     },
     {
       moduleCode: "ASSET",
@@ -204,7 +204,19 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
+    },
+    {
+      moduleCode: "NOC",
+      moduleName: "No Objection Certificate",
+      bgColor: "#3e4b5b",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/noc/inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles: [],
     },
   ],
 };

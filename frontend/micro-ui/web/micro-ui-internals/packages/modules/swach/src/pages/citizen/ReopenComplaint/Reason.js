@@ -12,6 +12,9 @@ const ReasonPage = (props) => {
   const { id } = useParams();
   const [selected, setSelected] = useState(null);
   const [valid, setValid] = useState(true);
+  
+const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
+const complaintDetails = Digit.Hooks.swach.useComplaintDetails({ tenantId, id }).complaintDetails;
 
   const onRadioChange = (value) => {
     let reopenDetails = Digit.SessionStorage.get(`reopen.${id}`);
@@ -26,7 +29,11 @@ const ReasonPage = (props) => {
       const basePath = window.location.pathname.split("/reopen/")[0];
       const complaintId = id;
       const newURL = `${basePath}/reopen/upload-photo/${complaintId}`;
-      history.push(newURL);
+      // history.push(newURL);
+      history.push({
+      pathname: newURL,
+      state: { complaintDetails }
+    });
     }
   }
 

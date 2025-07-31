@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useHistory, useParams } from "react-router-dom";
+import { Link, useHistory, useParams,useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { Card, SubmitBar, BackButton, ImageUploadHandler, CardLabelError, LinkButton } from "@mseva/digit-ui-react-components";
@@ -16,6 +16,9 @@ const UploadPhoto = (props) => {
   const handleUpload = (ids) => {
     setDocState(ids);
   };
+  const location = useLocation();
+const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
+const complaintDetails = location.state?.complaintDetails || Digit.Hooks.swach.useComplaintDetails({ tenantId, id }).complaintDetails;
  const cities = Digit.Hooks.swach.useTenants();
   const getCities = () => cities || [];
   const [selectedCity, setSelectedCity] = useState(getCities()[0] ? getCities()[0] : null);
@@ -44,7 +47,11 @@ const UploadPhoto = (props) => {
        const parts = window.location.pathname.split("/");
       const uploadIndex = parts.indexOf("upload-photo");
       const newParts = [...parts.slice(0, uploadIndex), "addional-details", ...parts.slice(uploadIndex + 1)];
-      history.push(newParts.join("/"));
+      // history.push(newParts.join("/"));
+      history.push({
+      pathname: newParts.join("/"),
+      state: { complaintDetails }
+    });
     }
   }
 
@@ -73,7 +80,7 @@ const UploadPhoto = (props) => {
 
         {valid ? null : <CardLabelError>{t(`${LOCALIZATION_KEY.CS_ADDCOMPLAINT}_UPLOAD_ERROR_MESSAGE`)}</CardLabelError>}
         <SubmitBar label={t(`${LOCALIZATION_KEY.PT_COMMONS}_NEXT`)} onSubmit={save} />
-        {props.skip ? <LinkButton label={t(`${LOCALIZATION_KEY.CORE_COMMON}_SKIP_CONTINUE`)} onClick={skip} /> : null}
+        {/* {props.skip ? <LinkButton label={t(`${LOCALIZATION_KEY.CORE_COMMON}_SKIP_CONTINUE`)} onClick={skip} /> : null} */}
       </Card>
     </React.Fragment>
   );

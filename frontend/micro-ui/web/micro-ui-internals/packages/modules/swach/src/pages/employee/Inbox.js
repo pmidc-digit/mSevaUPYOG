@@ -88,7 +88,7 @@ const fetchPrevPage = () => {
   // console.log("complaints ----- ", complaints);
 
   let { data: complaints, isLoading, refetch } = Digit.Hooks.swach.useInbox({
-    tenantId,
+    tenantId: tenantIdCheck,
     filters: { ...searchParams, ...paginationParams, sortParams },
     config: {},
   });

@@ -59,11 +59,13 @@ const Inbox = ({ parentRoute }) => {
   const formInitValue = useMemo(() => {
     const inboxFromhomePage = Digit.SessionStorage.get("EDCR_BACK");
     if (inboxFromhomePage === "IS_EDCR_BACK") {
-      return {
-        filterForm: filterFormDefaultValues,
-        searchForm: searchFormDefaultValues,
-        tableForm: tableOrderFormDefaultValues,
-      };
+      return (
+        {
+          filterForm: filterFormDefaultValues,
+          searchForm: searchFormDefaultValues,
+          tableForm: tableOrderFormDefaultValues,
+        }
+      );
     }
 
     return (
@@ -120,9 +122,7 @@ const Inbox = ({ parentRoute }) => {
   };
 
   const SearchFormFields = useCallback(
-    ({ registerRef, searchFormState, searchFieldComponents }) => (
-      <SearchFormFieldsComponents {...{ registerRef, searchFormState, searchFieldComponents }} />
-    ),
+    ({ registerRef, searchFormState, searchFieldComponents }) => <SearchFormFieldsComponents {...{ registerRef, searchFormState, searchFieldComponents }} />,
     []
   );
 

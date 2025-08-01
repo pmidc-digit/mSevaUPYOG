@@ -14,11 +14,12 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   let index = window.location.href?.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [qualificationType, setQualificationType] = useState(null);
-  const [LicenseType, setLicenseType] = useState(formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || "");
+  const [qualificationType, setQualificationType] = useState(formData?.LicneseType?.qualificationType || null);
+  const [LicenseType, setLicenseType] = useState(formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || null);
   const [ArchitectNo, setArchitectNo] = useState(formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null);
 
   const { data: qualificationTypes, isLoading: isQualificationLoading, error: qualificationError } = Digit.Hooks.obps.useQualificationTypes(stateId);
+  //console.log("qualificationTypes here", qualificationTypes);
   // let qualificationTypes = [],
   //   isQualificationLoading = false,
   //   qualificationError = {};
@@ -117,11 +118,11 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     return list;
   }
 
-  console.log("License Type List", getLicenseType())
+  console.log("License Type List", getLicenseType());
 
   function mapQualificationToLicense(qualification) {
     let license = null;
-    console.log("qualification", qualification);
+    // console.log("qualification", qualification);
 
     if (qualification.name == "B-Arch") {
       license = getLicenseType().find((type) => type.i18nKey.includes("ARCHITECT"));
@@ -145,62 +146,93 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     mapQualificationToLicense(value);
     setLicenseType(null);
     setArchitectNo(null);
+    setErrorMessage("");
   }
 
   function selectLicenseType(value) {
     setLicenseType(value);
   }
 
+  function isValidCOA(input) {
+    let pattern = /^CA\/(\d{4})\/\d{5}$/;
+    const match = input.match(pattern);
+    if (!match) return false;
+
+    const year = parseInt(match[1], 10);
+    const currentYear = new Date().getFullYear();
+
+    return year >= 1972 && year <= currentYear;
+  }
+
   function selectArchitectNo(e) {
     const input = e.target.value.trim();
     //const pattern = /^CA(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\d{5}$/;
-    const pattern = /^CA\/(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\/\d{5}$/;
+    //const pattern = /^CA\/(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\/\d{5}$/;
     setArchitectNo(input);
-    if (!pattern.test(input) && input !== "") {
+    if (!isValidCOA(input) && input !== "") {
       setErrorMessage("Invalid Council Number format! Format should be: CA<YEAR><5 DIGITS> (Year between 1972-2025) Example: CA/2023/12345");
     } else {
       setErrorMessage("");
     }
   }
 
-    function selectAssociateOrFellowNo(e) {
+  function isValidAITPorFITP(input) {
+    let pattern = /^(AITP|FITP)\/(\d{4})\/\d{4}$/;
+    const match = input.match(pattern);
+    if (!match) return false;
+
+    const year = parseInt(match[2], 10);
+    return year >= 1972 && year <= new Date().getFullYear();
+  }
+
+  function selectAssociateOrFellowNo(e) {
     const input = e.target.value.trim();
     //const pattern = /^(AITP|FITP)(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\d{4}$/;
     setArchitectNo(input);
-    const pattern = /^(AITP|FITP)\/(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\/\d{4}$/;
-    if (!pattern.test(input) && input !== "") {
-      setErrorMessage("Invalid AITP/FITP Number format! Format should be: AITP<YEAR><4 DIGITS> (Year between 1972-2025) Example: FITP/2023/1234 or AITP/2023/1234");
+    // const pattern = /^(AITP|FITP)\/(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\/\d{4}$/;
+    if (!isValidAITPorFITP(input) && input !== "") {
+      setErrorMessage(
+        "Invalid AITP/FITP Number format! Format should be: AITP<YEAR><4 DIGITS> (Year between 1972-2025) Example: FITP/2023/1234 or AITP/2023/1234"
+      );
     } else {
       setErrorMessage("");
-      
     }
   }
 
   function goNext() {
-    if(errorMessage !== "")return;
+    if (errorMessage !== "") return;
 
-    if(LicenseType?.i18nKey.includes("ARCHITECT") && ArchitectNo === ""){
+    if (LicenseType?.i18nKey.includes("ARCHITECT") && ArchitectNo === null) {
       setErrorMessage("Invalid Council Number format! Format should be: CA<YEAR><5 DIGITS> (Year between 1972-2025) Example: CA/2023/12345");
       return;
     }
 
-   if(LicenseType?.i18nKey.includes("TOWNPLANNER") && ArchitectNo === ""){
-      setErrorMessage("Invalid AITP/FITP Number format! Format should be: AITP<YEAR><4 DIGITS> (Year between 1972-2025) Example: FITP/2023/1234 or AITP/2023/1234");
+    if (LicenseType?.i18nKey.includes("TOWNPLANNER") && ArchitectNo === null) {
+      setErrorMessage(
+        "Invalid AITP/FITP Number format! Format should be: AITP<YEAR><4 DIGITS> (Year between 1972-2025) Example: FITP/2023/1234 or AITP/2023/1234"
+      );
       return;
     }
 
+    if (qualificationType === null) {
+      setErrorMessage("Select Qualification Type");
+      return;
+    }
+
+    //  setErrorMessage("");
+
+    // console.log("qualificationType before saving", qualificationType);
 
     if (!(formData?.result && formData?.result?.Licenses[0]?.id))
-      onSelect(config.key, { LicenseType, ArchitectNo, selfCertification, qualificationType: qualificationType?.name });
+      onSelect(config.key, { LicenseType, ArchitectNo, selfCertification, qualificationType: qualificationType });
     else {
       let data = formData?.formData;
       data.LicneseType.LicenseType = LicenseType;
       data.LicneseType.ArchitectNo = ArchitectNo;
       data.LicneseType.selfCertification = selfCertification ? selfCertification : false;
-      data.qualificationType = qualificationType?.name;
+      data.qualificationType = qualificationType;
       onSelect("", formData);
     }
-   
   }
   function selectSelfCertification(e) {
     setSelfCertification(e.target.checked);
@@ -219,7 +251,12 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
             config={config}
             onSelect={goNext}
             onSkip={onSkip}
-            isDisabled={LicenseType && LicenseType?.i18nKey.includes("ARCHITECT") ? !LicenseType || !ArchitectNo : !LicenseType}
+            //isDisabled={LicenseType && (LicenseType?.i18nKey.includes("ARCHITECT") ? !LicenseType || !ArchitectNo : !LicenseType) || !qualificationType}
+            isDisabled={
+              (LicenseType?.i18nKey.includes("ARCHITECT") && !ArchitectNo) ||
+              (LicenseType?.i18nKey.includes("TOWNPLANNER") && !ArchitectNo) ||
+              !qualificationType
+            }
           >
             <CardLabel>{"Qualification*"}</CardLabel>
             <div className={"form-pt-dropdown-only"}>

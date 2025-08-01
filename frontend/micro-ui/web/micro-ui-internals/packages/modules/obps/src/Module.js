@@ -12,13 +12,15 @@ import BasicDetails from "./pageComponents/BasicDetails";
 import DocsRequired from "./pageComponents/DocsRequired";
 import PlotDetails from "./pageComponents/PlotDetails";
 import ScrutinyDetails from "./pageComponents/ScrutinyDetails";
+import BPANewBuildingdetails from "./pageComponents/BPANewBuildingdetails"
 import OwnerDetails from "./pageComponents/OwnerDetails";
 import DocumentDetails from "./pageComponents/DocumentDetails";
 import NOCDetails from "./pageComponents/NOCDetails";
 import NOCNumber from "./pageComponents/NOCNumber";
 import LocationDetails from "./pageComponents/LocationDetails";
-import StakeholderDocsRequired from "./pageComponents/StakeholderDocsRequired";
+import StakeholderDocsRequired  from "./pageComponents/StakeholderDocsRequired";
 import GIS from "./pageComponents/GIS";
+
 import OCEDCRDocsRequired from "./pageComponents/OCEDCRDocsRequired";
 import OCeDCRScrutiny from "./pageComponents/OCeDCRScrutiny";
 import OCUploadPlanDiagram from "./pageComponents/OCUploadPlanDiagram";
@@ -57,6 +59,15 @@ import BPAAcknowledgement from "./pages/citizen/NewBuildingPermit/OBPSAcknowledg
 import OCBPAAcknowledgement from "./pages/citizen/OCBuildingPermit/OBPSAcknowledgement";
 import OCSendBackAcknowledgement from "./pages/citizen/OCSendBackToCitizen/Acknowledgement";
 import StakeholderAcknowledgement from "./pages/citizen/StakeholderRegistration/StakeholderAcknowledgement";
+import Architectconcent from "./pages/citizen/NewBuildingPermit/Architectconcent";
+import CitizenConsent from "./pages/citizen/BpaApplicationDetail/CitizenConsent";
+
+
+
+
+
+
+ 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = ["bpa", "bpareg", "common"]; //"bpa";
@@ -74,8 +85,8 @@ const OBPSModule = ({ stateCode, userType, tenants }) => {
     return <CitizenApp path={path} stateCode={stateCode} />;
   }
 
-  return <EmployeeApp path={path} stateCode={stateCode} />;
-};
+  return <EmployeeApp path={path} stateCode={stateCode} />
+}
 
 const OBPSLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
@@ -96,32 +107,23 @@ const OBPSLinks = ({ matchPath, userType }) => {
   ];
 
   return (
-    <CitizenHomeCard
-      header={t("ACTION_TEST_BUILDING_PLAN_APPROVAL")}
-      links={links}
-      Icon={() => <OBPSIcon />}
-      Info={() => (
-        <CitizenInfoLabel
-          style={{ margin: "0px", padding: "10px" }}
-          info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-          text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)}
-        />
-      )}
-      isInfo={true}
+    <CitizenHomeCard header={t("ACTION_TEST_BUILDING_PLAN_APPROVAL")} links={links} Icon={() => <OBPSIcon />}
+      Info={() => <CitizenInfoLabel style={{margin: "0px", padding: "10px"}} info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t(`BPA_CITIZEN_HOME_STAKEHOLDER_INCLUDES_INFO_LABEL`)} />} isInfo={true}
     />
   );
-};
+} 
 
 const componentsToRegister = {
   OBPSModule,
   OBPSLinks,
-  OBPSCard: OBPSEmployeeHomeCard,
+  OBPSCard:OBPSEmployeeHomeCard,
   BPACitizenHomeScreen,
   EDCRForm,
   BasicDetails,
   DocsRequired,
   PlotDetails,
   ScrutinyDetails,
+  BPANewBuildingdetails,
   OwnerDetails,
   DocumentDetails,
   NOCDetails,
@@ -152,20 +154,24 @@ const componentsToRegister = {
   OCBPAAcknowledgement,
   OCSendBackAcknowledgement,
   StakeholderAcknowledgement,
-  ObpsCreateEDCR: CreateEDCR,
-  ObpsCreateOCEDCR: CreateOCEDCR,
-  ObpsNewBuildingPermit: NewBuildingPermit,
-  ObpsOCBuildingPermit: OCBuildingPermit,
-  ObpsStakeholderRegistration: StakeholderRegistration,
-  ObpsCitizenBpaApplicationDetail: CitizenBpaApplicationDetail,
-  ObpsBPASendToArchitect: BPASendToArchitect,
-  ObpsOCSendToArchitect: OCSendToArchitect,
-  ObpsBPASendBackToCitizen: BPASendBackToCitizen,
-  ObpsOCSendBackToCitizen: OCSendBackToCitizen,
-  ObpsEdcrInbox: EdcrInbox,
-  ObpsEmpApplicationDetail: EmpApplicationDetail,
-  ObpsEmployeeBpaApplicationDetail: EmployeeBpaApplicationDetail,
-};
+  ObpsCreateEDCR : CreateEDCR,
+  ObpsCreateOCEDCR : CreateOCEDCR,
+  ObpsNewBuildingPermit : NewBuildingPermit,
+  ObpsOCBuildingPermit : OCBuildingPermit,
+  ObpsStakeholderRegistration : StakeholderRegistration,
+  ObpsCitizenBpaApplicationDetail : CitizenBpaApplicationDetail,
+  ObpsBPASendToArchitect : BPASendToArchitect,
+  ObpsOCSendToArchitect : OCSendToArchitect,
+  ObpsBPASendBackToCitizen : BPASendBackToCitizen,
+  ObpsOCSendBackToCitizen : OCSendBackToCitizen,
+  ObpsEdcrInbox : EdcrInbox,
+  ObpsEmpApplicationDetail : EmpApplicationDetail,
+  ObpsEmployeeBpaApplicationDetail : EmployeeBpaApplicationDetail,
+  Architectconcent,
+  CitizenConsent
+  
+   
+}
 
 export const initOBPSComponents = () => {
   Object.entries(componentsToRegister).forEach(([key, value]) => {

@@ -68,6 +68,7 @@ import useSwachTenants from "./swach/useTenants";
 import useSwachComplaintSubType from "./swach/useComplaintSubType";
 import useSwachComplaintStatusCount from "./swach/useComplaintStatusWithCount";
 import useCount from "./swach/useCount";
+import useViewAttendence from "./swach/useViewAttendence";
 
 import useTenantsFSM from "./fsm/useTenants";
 import useDesludging from "./fsm/useDesludging";
@@ -343,6 +344,11 @@ import useSearchPGRAI from "./pgrAi/useSearchPGRAI";
 import useFilterEmployee from "./pgrAi/useFilterEmployee";
 import useApplicationDetails from "./pgrAi/useApplicationDetails";
 
+import useDistricts from "./obps/useDistricts";
+import useULBList from "./obps/useULBList";
+import useUlbType from "./obps/useUlbType";
+import useEDCRForm from "./obps/useEDCRForm";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -382,6 +388,7 @@ const swach = {
   useComplaintStatusCount: useSwachComplaintStatusCount,
   useTradeLicenseBillingslab,
   useCount,
+  useViewAttendence,
   // useMDMS: usePGRMDMS,
 };
 
@@ -547,6 +554,10 @@ const obps = {
   useBusinessServiceData,
   useBPATaxDocuments,
   useQualificationTypes,
+  useDistricts,
+  useULBList,
+  useUlbType,
+  useEDCRForm,
 };
 
 const events = {
@@ -763,6 +774,7 @@ const Hooks = {
   chb,
   asset,
   pgrAi,
+  useEDCRForm,
 };
 
 export default Hooks;

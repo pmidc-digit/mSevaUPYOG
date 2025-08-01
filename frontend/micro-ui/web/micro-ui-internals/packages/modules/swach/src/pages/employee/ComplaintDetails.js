@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import {
   BreakLine,
   Card,
@@ -247,10 +247,12 @@ export const ComplaintDetails = (props) => {
   const id = parts.slice(0, parts.length - 1).join("/");
 
   const { t } = useTranslation();
+  const history = useHistory();
   const [fullscreen, setFullscreen] = useState(false);
   const [imageZoom, setImageZoom] = useState(null);
   // const [actionCalled, setActionCalled] = useState(false);
   const [toast, setToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   const tenantId = Digit.ULBService.getCurrentTenantId();
   // const tenantIdPB = localStorage.getItem("punjab-tenantId");
   // console.log("tenantIdPB", tenantIdPB);
@@ -258,7 +260,7 @@ export const ComplaintDetails = (props) => {
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: ulb, id, moduleCode: "SWACH", role: "EMPLOYEE" });
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([]);
-  console.log("workflowDetails", workflowDetails);
+  
   if (workflowDetails && workflowDetails?.data) {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
@@ -308,6 +310,18 @@ export const ComplaintDetails = (props) => {
       const assignWorkflow = await Digit?.WorkflowService?.getByBusinessId(ulb, id);
     })();
   }, [complaintDetails]);
+
+    useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        // Redirect to inbox after toast appears
+        history.push("/digit-ui/employee/swach/inbox");
+      }, 3000); // 3 seconds delay
+      
+      // Clean up the timeout on component unmount
+      return () => clearTimeout(timer);
+    }
+  }, [toast, history]);
 
   const refreshData = async () => {
     await client.refetchQueries(["fetchInboxData"]);
@@ -395,12 +409,15 @@ export const ComplaintDetails = (props) => {
     setPopup(false);
     const response = await Digit.Complaint.assignSwach(complaintDetails, selectedAction, selectedEmployee, comments, uploadedFile, tenantId);
     setAssignResponse(response);
+     // Set toast message based on action type
+    const actionMessage = t(response ? `CS_ACTION_${selectedAction}_TEXT` : "CS_ACTION_ASSIGN_FAILED");
+    setToastMessage(actionMessage);
     setToast(true);
     setLoader(true);
     await refreshData();
     setLoader(false);
     setRerender(rerender + 1);
-    setTimeout(() => setToast(false), 10000);
+    // setTimeout(() => setToast(false), 10000);
   }
 
   function closeToast() {
@@ -621,7 +638,7 @@ export const ComplaintDetails = (props) => {
           t={t}
         />
       ) : null}
-      {toast && <Toast label={t(assignResponse ? `CS_ACTION_${selectedAction}_TEXT` : "CS_ACTION_ASSIGN_FAILED")} onClose={closeToast} />}
+      {toast && <Toast label={toastMessage ||t(assignResponse ? `CS_ACTION_${selectedAction}_TEXT` : "CS_ACTION_ASSIGN_FAILED")} onClose={closeToast} />}
       {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 0 && (
         <ActionBar>
           {displayMenu && workflowDetails?.data?.nextActions ? (

@@ -420,7 +420,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                 payload.additionalDetails.stakeholderRegistrationNumber=JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"));
                 payload.additionalDetails.stakeholderAddress=JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS"))
                 let isSelfCertificationRequired=sessionStorage.getItem("isSelfCertificationRequired");
-                if(isSelfCertificationRequired==="undefined"){
+                if(isSelfCertificationRequired==="undefined" || isSelfCertificationRequired===null){ // Need To Revert
                     isSelfCertificationRequired="false";
                 }
                 payload.additionalDetails.isSelfCertificationRequired = isSelfCertificationRequired.toString();

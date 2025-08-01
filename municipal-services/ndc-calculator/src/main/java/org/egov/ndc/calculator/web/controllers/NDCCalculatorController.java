@@ -5,19 +5,19 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
+import org.egov.bpa.calculator.web.models.RequestInfoWrapper;
+import org.egov.bpa.calculator.web.models.demand.DemandResponse;
 import org.egov.ndc.calculator.services.CalculationService;
 
 import org.egov.ndc.calculator.services.DemandService;
 import org.egov.ndc.calculator.web.models.Calculation;
 import org.egov.ndc.calculator.web.models.CalculationReq;
 import org.egov.ndc.calculator.web.models.CalculationRes;
+import org.egov.ndc.calculator.web.models.bill.GetBillCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -56,6 +56,12 @@ public class NDCCalculatorController {
 		 List<Calculation> calculations = calculationService.calculate(calculationReq);
 		 CalculationRes calculationRes = CalculationRes.builder().calculation(calculations).build();
 		 return new ResponseEntity<CalculationRes>(calculationRes,HttpStatus.OK);
+	}
+
+	@PostMapping("/_updatedemand")
+	public ResponseEntity<DemandResponse> updateDemand(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
+													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
+		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
 	}
 
 

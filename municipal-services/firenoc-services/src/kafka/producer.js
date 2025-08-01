@@ -12,26 +12,36 @@ let client;
 //   client = new kafka.KafkaClient({ kafkaHost: envVariables.KAFKA_BROKER_HOST });
 //   console.log("cloud Producer- ");
 // }
-let kafkaClient = new Kafka({ 
-  clientId: 'firenoc-services',
-  logLevel: logLevel.INFO,
-  brokers: [envVariables.KAFKA_BROKER_HOST], 
-  retry: { retries: 1 },
-  ssl: false
-});
+// let kafkaClient = new Kafka({ 
+//   clientId: 'firenoc-services',
+//   logLevel: logLevel.INFO,
+//   brokers: [envVariables.KAFKA_BROKER_HOST], 
+//   retry: { retries: 1 },
+//   ssl: false
+// });
 
 //const producer = new Producer(client);
-const producer =  kafkaClient.producer()
 
-async function initializeProducer() {
+let producer;
+
+const initializeProducer = async () => {
+  if (producer) return producer;
+
+  const kafka = new Kafka({
+    clientId: 'firenoc-services',
+    logLevel: logLevel.INFO,
+    brokers: [envVariables.KAFKA_BROKER_HOST], 
+    retry: { retries: 1 },
+    ssl: false
+  });
+
+  producer = kafka.producer();
   await producer.connect();
-}
 
-module.exports = {
-  initializeProducer,
-  producer
+  return producer;
 };
 
+module.exports = { initializeProducer };
 
 // producer.on("ready", function() {
 //   console.log("Producer is ready");

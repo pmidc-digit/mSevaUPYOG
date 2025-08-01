@@ -1,6 +1,6 @@
 import { Router } from "express";
-//import producer from "../kafka/producer";
 import logger from "../config/logger";
+//import producer from "../kafka/producer";
 import {
   requestInfoToResponseInfo,
   createWorkFlow,
@@ -15,7 +15,10 @@ import set from "lodash/set";
 import get from "lodash/get";
 const asyncHandler = require("express-async-handler");
 const { initializeProducer } = require("../kafka/producer");
-initializeProducer().then(() => {
+let producer;
+initializeProducer().then((p) => {
+   producer = p;
+
   logger.info('Kafka producer connected');
 }).catch((error) => {
   logger.error(error.stack || error);
@@ -88,15 +91,19 @@ export const createApiResponse = async ({ body }, res, next) => {
   //console.log("Final Requested Body for Create"+JSON.stringify(body));
   payloads.push({
     topic: envVariables.KAFKA_TOPICS_FIRENOC_CREATE,
-    messages: JSON.stringify(body)
+    messages: [{ value: JSON.stringify(body) }]
   });
   let response = {
     ResponseInfo: requestInfoToResponseInfo(body.RequestInfo, true),
     FireNOCs: body.FireNOCs
   };
 
-  initializeProducer.send(payloads, function(err, data) {
-    if (err) console.log(err);
-  });
+  //  await producer.send(payloads, function(err, data) {
+  //    if (err) console.log(err);
+  //  });
+  await producer.send({
+    topic: envVariables.KAFKA_TOPICS_FIRENOC_CREATE,
+    messages: [{ value: JSON.stringify(body) }]
+});
   return response;
 };

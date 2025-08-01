@@ -239,6 +239,17 @@ export const searchByMobileNumber = async (mobileNumber, tenantId) => {
   );
   return userSearchResponse;
 };
+export const searchByUserName = async (mobileNumber, tenantId) => {
+  var userSearchReqCriteria = {};
+  userSearchReqCriteria.userType = "CITIZEN";
+  userSearchReqCriteria.tenantId = tenantId;
+  userSearchReqCriteria.userName = mobileNumber;
+  var userSearchResponse = await userService.searchUser(
+    requestInfo,
+    userSearchReqCriteria
+  );
+  return userSearchResponse;
+};
 
 export const mapIDsToList = response => {
   let result = [];

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requestInfoToResponseInfo } from "../utils";
-import { mergeSearchResults, searchByMobileNumber, mapIDsToList } from "../utils/search";
+import { mergeSearchResults, searchByMobileNumber, searchByUserName, mapIDsToList } from "../utils/search";
 import isEmpty from "lodash/isEmpty";
 import get from "lodash/get";
 import some from "lodash/some";
@@ -87,7 +87,8 @@ export const searchApiResponse = async (request, next = {}) => {
   let sqlQuery = text;
   if (queryObj.hasOwnProperty("mobileNumber")) {
     // console.log("mobile number");
-    let userSearchResponse = await searchByMobileNumber(
+    //let userSearchResponse = await searchByMobileNumber(
+      let userSearchResponse = await searchByUserName(
       queryObj.mobileNumber,
       envVariables.EGOV_DEFAULT_STATE_ID
     );

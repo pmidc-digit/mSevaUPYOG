@@ -40,9 +40,9 @@ export const createUser = async (requestInfo, user) => {
 };
 
 export const updateUser = async (requestInfo, user) => {
-  // console.log(user);
+   console.log(user);
   user.dob=dobConvetion(user.dob);
-  // console.info(user.dob);
+   console.info(user.dob);
   let requestBody = { RequestInfo: requestInfo, user: user };
   var userUpdateResponse = await httpRequest({
     hostURL: envVariables.EGOV_USER_HOST,

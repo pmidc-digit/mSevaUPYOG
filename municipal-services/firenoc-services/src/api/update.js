@@ -19,7 +19,10 @@ import { validateFireNOCModel } from "../utils/modelValidation";
 import set from "lodash/set";
 import get from "lodash/get";
 const { initializeProducer } = require("../kafka/producer");
-initializeProducer().then(() => {
+let producer;
+initializeProducer().then((p) => {
+   producer = p;
+
   logger.info('Kafka producer connected');
 }).catch((error) => {
   logger.error(error.stack || error);
@@ -42,7 +45,8 @@ export default ({ config }) => {
 };
 export const updateApiResponse = async ({ body }, next = {}) => {
   console.log("Update Body: "+JSON.stringify(body));
-  let payloads = [];
+  let payloads = {};
+  payloads.messages =[];
   let mdms = await mdmsData(body.RequestInfo, body.FireNOCs[0].tenantId);
   //model validator
   //location data
@@ -88,11 +92,13 @@ export const updateApiResponse = async ({ body }, next = {}) => {
   body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
   console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
 
-  payloads.push({
-    topic: envVariables.KAFKA_TOPICS_FIRENOC_UPDATE,
-    messages: JSON.stringify(body),
-    key : body.FireNOCs[0].fireNOCDetails.id
-  });
+  // payloads.push({
+  //   topic: envVariables.KAFKA_TOPICS_FIRENOC_UPDATE,
+  //   messages: JSON.stringify(body),
+  //   key : body.FireNOCs[0].fireNOCDetails.id
+  // });
+    payloads.topic = envVariables.KAFKA_TOPICS_FIRENOC_UPDATE;
+    payloads.messages.push({ value: JSON.stringify(body)});
 
   //check approved list
   const approvedList = filter(body.FireNOCs, function(fireNoc) {
@@ -101,20 +107,34 @@ export const updateApiResponse = async ({ body }, next = {}) => {
 
   // console.log("list length",approvedList.length);
   if (approvedList.length > 0) {
-    payloads.push({
-      topic: envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW,
-      messages: JSON.stringify({ RequestInfo, FireNOCs: approvedList }),
-       key : body.FireNOCs[0].fireNOCDetails.id
-    });
+    // payloads.push({
+    //   topic: envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW,
+    //   messages: JSON.stringify({ RequestInfo, FireNOCs: approvedList }),
+    //    key : body.FireNOCs[0].fireNOCDetails.id
+    // });
+    payloads.topic = envVariables.KAFKA_TOPICS_FIRENOC_UPDATE;
+    payloads.messages.push({ value: JSON.stringify({ RequestInfo, FireNOCs: approvedList })})
   }
   console.log(JSON.stringify(body));
   let response = {
     ResponseInfo: requestInfoToResponseInfo(body.RequestInfo, true),
     FireNOCs: body.FireNOCs
   };
-  initializeProducer.send(payloads, function(err, data) {
-    if (err) console.log(err);
-  });
-
+  // initializeProducer.send(payloads, function(err, data) {
+  //   if (err) console.log(err);
+  // });
+  producer.send(payloads).then((data) => {
+    logger.info('Message sent to Kafka:', data);
+    //logger.info("jobid: " + jobid + ": published to kafka successfully");
+    //  successCallback({
+    //      message: "Success"
+    //     //jobid: jobid,
+    //  })
+  }).catch(err => {
+    logger.error(err.stack || err);
+    // errorCallback({
+    //   message: `error while publishing to kafka: ${err.message}`
+    // });
+  })
   return response;
 };

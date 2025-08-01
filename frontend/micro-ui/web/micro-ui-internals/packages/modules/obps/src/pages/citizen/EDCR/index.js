@@ -49,6 +49,12 @@ const CreateEDCR = ({ parentRoute }) => {
     const coreArea = data?.coreArea?.code;
     const file = data?.file;
     const tenantId = userInfo?.tenantId;
+    const ulb = data?.ulb;
+    const areaType = data?.areaType?.code;
+    const schName = data?.schName;
+    const siteReserved = data?.siteReserved?.code;
+    const approvedCS = data?.approvedCS?.code;
+    const cluApprove = data?.cluApprove?.code
     const transactionNumber = uuidv4();
     const appliactionType = "BUILDING_PLAN_SCRUTINY";
     const applicationSubType = "NEW_CONSTRUCTION";
@@ -62,6 +68,15 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, coreArea };
     edcrRequest = { ...edcrRequest, appliactionType };
     edcrRequest = { ...edcrRequest, applicationSubType };
+    edcrRequest = { ...edcrRequest, applicationSubType };
+    edcrRequest = { ...edcrRequest, ulb };
+    edcrRequest = { ...edcrRequest, areaType };
+    edcrRequest = { ...edcrRequest, schName };
+    edcrRequest = { ...edcrRequest, siteReserved };
+    edcrRequest = { ...edcrRequest, approvedCS };
+    edcrRequest = { ...edcrRequest, cluApprove };
+
+    console.log("tenantIdInEDCR-Request", edcrRequest);
 
     let bodyFormData = new FormData();
     bodyFormData.append("edcrRequest", JSON.stringify(edcrRequest));

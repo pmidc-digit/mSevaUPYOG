@@ -1,6 +1,8 @@
 package org.egov.ndc.calculator.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.minidev.json.JSONArray;
+import org.egov.bpa.calculator.web.models.RequestInfoWrapper;
 import org.egov.bpa.calculator.web.models.demand.Demand;
 import org.egov.bpa.calculator.web.models.demand.DemandDetail;
 import org.egov.bpa.calculator.web.models.demand.DemandRequest;
@@ -8,20 +10,28 @@ import org.egov.bpa.calculator.web.models.demand.DemandResponse;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.ndc.calculator.config.NDCCalculatorConfig;
 import org.egov.ndc.calculator.repository.ServiceRequestRepository;
+import org.egov.ndc.calculator.utils.CalculatorUtils;
 import org.egov.ndc.calculator.web.models.Calculation;
+import org.egov.ndc.calculator.web.models.bill.GetBillCriteria;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+
+import static org.egov.ndc.calculator.utils.NDCConstants.EMPTY_DEMAND_ERROR_CODE;
+import static org.egov.ndc.calculator.utils.NDCConstants.EMPTY_DEMAND_ERROR_MESSAGE;
 
 @Service
 public class DemandService {
 
     @Autowired
     private NDCCalculatorConfig ndcConfiguration;
+
+    @Autowired
+    private CalculatorUtils utils;
 
     @Autowired
     private ObjectMapper mapper = new ObjectMapper();
@@ -59,6 +69,88 @@ public class DemandService {
         DemandResponse demandResponse = mapper.convertValue(response, DemandResponse.class);
         return demandResponse.getDemands();
     }
+
+
+
+    public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+
+        if (getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);
+//        validator.validateGetBillCriteria(getBillCriteria);
+        RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+//        Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap = new HashMap<>();
+//        Map<String, JSONArray> timeBasedExmeptionMasterMap = new HashMap<>();
+//        mstrDataService.setPropertyMasterValues(requestInfo, getBillCriteria.getTenantId(),
+//                propertyBasedExemptionMasterMap, timeBasedExmeptionMasterMap);
+
+/*
+		if(CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes()))
+			getBillCriteria.setConsumerCodes(Collections.singletonList(getBillCriteria.getPropertyId()+ CalculatorConstants.PT_CONSUMER_CODE_SEPARATOR +getBillCriteria.getAssessmentNumber()));
+*/
+
+        DemandResponse res = mapper.convertValue(
+                repository.fetchResult(utils.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+                DemandResponse.class);
+        if (CollectionUtils.isEmpty(res.getDemands())) {
+            Map<String, String> map = new HashMap<>();
+            map.put(EMPTY_DEMAND_ERROR_CODE, EMPTY_DEMAND_ERROR_MESSAGE);
+            //	throw new CustomException(map);
+        }
+
+
+        /**
+         * Loop through the consumerCodes and re-calculate the time based applicables
+         */
+
+
+        Map<String,List<Demand>> consumerCodeToDemandMap = new HashMap<>();
+        res.getDemands().forEach(demand -> {
+            if(consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
+                consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
+            else {
+                List<Demand> demands = new LinkedList<>();
+                demands.add(demand);
+                consumerCodeToDemandMap.put(demand.getConsumerCode(),demands);
+            }
+        });
+
+        if (!CollectionUtils.isEmpty(consumerCodeToDemandMap)) {
+            List<Demand> demandsToBeUpdated = new LinkedList<>();
+
+            String tenantId = getBillCriteria.getTenantId();
+
+//            List<TaxPeriod> taxPeriods = mstrDataService.getTaxPeriodList(requestInfoWrapper.getRequestInfo(), tenantId);
+
+//            for (String consumerCode : getBillCriteria.getConsumerCodes()) {
+//                List<Demand> demands = consumerCodeToDemandMap.get(consumerCode);
+//                if (CollectionUtils.isEmpty(demands))
+//                    continue;
+
+//                for(Demand demand : demands){
+//                    if (demand.getStatus() != null
+//                            && CalculatorConstants.DEMAND_CANCELLED_STATUS.equalsIgnoreCase(demand.getStatus().toString()))
+//                        throw new CustomException(CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR,
+//                                CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR_MSG);
+//
+//                    applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap,taxPeriods);
+//
+//                    roundOffDecimalForDemand(demand, requestInfoWrapper);
+//
+//                    demandsToBeUpdated.add(demand);
+//                }
+//            }
+
+
+            /**
+             * Call demand update in bulk to update the interest or penalty
+             */
+            DemandRequest request = DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfo).build();
+            StringBuilder updateDemandUrl = utils.getUpdateDemandUrl();
+            repository.fetchResult(updateDemandUrl, request);
+        }
+        return res;
+    }
+
+
 }
 
 //    public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {

@@ -245,7 +245,7 @@ public class EdcrRestService {
             edcrApplication.setThirdPartyUserTenant(tenantId);
         }
 
-        edcrApplication = edcrApplicationService.createRestEdcr(edcrApplication);
+        edcrApplication = edcrApplicationService.createRestEdcr(edcrApplication,edcrRequest);
         
         //Code to push the data of edcr application to kafka index
         EdcrIndexData edcrIndexData = new EdcrIndexData();
@@ -985,18 +985,78 @@ public class EdcrRestService {
         return errorDetails;
     }
 
+//    public List<ErrorDetail> validateEdcrMandatoryFields(final EdcrRequest edcrRequest) {
+//        List<ErrorDetail> errors = new ArrayList<>();
+//        if (StringUtils.isBlank(edcrRequest.getAppliactionType())) {
+//            errors.add(new ErrorDetail("BPA-10", "Application type is missing"));
+//        }
+//
+//        if (StringUtils.isBlank(edcrRequest.getApplicationSubType())) {
+//            errors.add(new ErrorDetail("BPA-11", "Service type is missing"));
+//        }
+//
+//        return errors;
+//    }
+    
     public List<ErrorDetail> validateEdcrMandatoryFields(final EdcrRequest edcrRequest) {
         List<ErrorDetail> errors = new ArrayList<>();
+
+        // Application Type
         if (StringUtils.isBlank(edcrRequest.getAppliactionType())) {
             errors.add(new ErrorDetail("BPA-10", "Application type is missing"));
         }
 
+        // Application Sub Type
         if (StringUtils.isBlank(edcrRequest.getApplicationSubType())) {
             errors.add(new ErrorDetail("BPA-11", "Service type is missing"));
         }
 
+        // Applicant Name
+        if (StringUtils.isBlank(edcrRequest.getApplicantName())) {
+            errors.add(new ErrorDetail("BPA-12", "Applicant name is required"));
+        }
+
+        // ULB
+        if (StringUtils.isBlank(edcrRequest.getUlb())) {
+            errors.add(new ErrorDetail("BPA-13", "ULB name is required"));
+        }
+
+        // Area Type
+        if (StringUtils.isBlank(edcrRequest.getAreaType())) {
+            errors.add(new ErrorDetail("BPA-14", "Area type is required"));
+            return errors; // Can't continue further without area type
+        }
+
+        if ("SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
+            // Scheme Area Validations
+            if (StringUtils.isBlank(edcrRequest.getSchemeArea())) {
+                errors.add(new ErrorDetail("BPA-15", "Scheme type is required for Scheme Area"));
+            }
+            if (StringUtils.isBlank(edcrRequest.getSchName())) {
+                errors.add(new ErrorDetail("BPA-16", "Scheme name is required for Scheme Area"));
+            }
+            if (edcrRequest.getSiteReserved() == null) {
+                errors.add(new ErrorDetail("BPA-17", "Site reserved selection is required for Scheme Area"));
+            } else {
+                if (edcrRequest.getSiteReserved() && edcrRequest.getApprovedCS() == null) {
+                    errors.add(new ErrorDetail("BPA-18", "Approved control sheet selection is required when site is reserved"));
+                }
+            }
+        } else if ("NON_SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
+            // Non-Scheme Area Validations
+            if (edcrRequest.getCluApprove() == null) {
+                errors.add(new ErrorDetail("BPA-19", "CLU approval selection is required for Non-Scheme Area"));
+            }
+            if (edcrRequest.getCoreArea() == null) {
+                errors.add(new ErrorDetail("BPA-20", "Core area selection is required for Non-Scheme Area"));
+            }
+        } else {
+            errors.add(new ErrorDetail("BPA-21", "Invalid Area Type value"));
+        }
+
         return errors;
     }
+
 
     public ErrorDetail validateSearchRequest(final String edcrNumber, final String transactionNumber) {
         ErrorDetail errorDetail = null;

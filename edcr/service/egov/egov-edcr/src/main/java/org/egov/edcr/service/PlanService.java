@@ -12,9 +12,13 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -36,7 +40,13 @@ import org.egov.edcr.entity.ApplicationType;
 import org.egov.edcr.entity.EdcrApplication;
 import org.egov.edcr.entity.EdcrApplicationDetail;
 import org.egov.edcr.entity.OcComparisonDetail;
+import org.egov.edcr.feature.Coverage;
 import org.egov.edcr.feature.FeatureProcess;
+import org.egov.edcr.feature.FrontYardService;
+import org.egov.edcr.feature.Parking;
+import org.egov.edcr.feature.PlanInfoFeature;
+import org.egov.edcr.feature.PlotArea;
+import org.egov.edcr.feature.RoadWidth;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.custom.CustomImplProvider;
 import org.egov.infra.filestore.entity.FileStoreMapper;
@@ -91,6 +101,178 @@ public class PlanService {
                 featureService.getFeatures());
         plan.setCoreArea(dcrApplication.getCoreArea());
         System.out.println("coreArea" + plan.getCoreArea());
+
+        plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
+        plan = applyRules(plan, amd, cityDetails);
+      
+        String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
+        if (ApplicationType.PERMIT.getApplicationTypeVal()
+                .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+                || (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
+                        .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+                        && StringUtils.isBlank(comparisonDcrNumber))) {
+            InputStream reportStream = generateReport(plan, amd, dcrApplication);
+            saveOutputReport(dcrApplication, reportStream, plan);
+        } else if (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
+                .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+                && StringUtils.isNotBlank(comparisonDcrNumber)) {
+            ComparisonRequest comparisonRequest = new ComparisonRequest();
+            EdcrApplicationDetail edcrApplicationDetail = dcrApplication.getEdcrApplicationDetails().get(0);
+            comparisonRequest.setEdcrNumber(edcrApplicationDetail.getComparisonDcrNumber());
+            comparisonRequest.setTenantId(edcrApplicationDetail.getApplication().getThirdPartyUserTenant());
+            edcrApplicationDetail.setPlan(plan);
+         
+            OcComparisonDetail processCombinedStatus = ocComparisonService.processCombinedStatus(comparisonRequest,
+                    edcrApplicationDetail);
+
+            dcrApplication.setDeviationStatus(processCombinedStatus.getStatus());
+
+            InputStream reportStream = generateReport(plan, amd, dcrApplication);
+            saveOutputReport(dcrApplication, reportStream, plan);
+            final List<InputStream> pdfs = new ArrayList<>();
+            Path path = fileStoreService.fetchAsPath(
+                    dcrApplication.getEdcrApplicationDetails().get(0).getReportOutputId().getFileStoreId(),
+                    "Digit DCR");
+            byte[] convertedDigitDcr = null;
+            try {
+                convertedDigitDcr = Files.readAllBytes(path);
+            } catch (IOException e) {
+                LOG.error("Error occurred while reading file!!!", e);
+            }
+            ByteArrayInputStream dcrReport = new ByteArrayInputStream(convertedDigitDcr);
+            pdfs.add(dcrReport);
+
+            if (Boolean.TRUE.equals(plan.getMainDcrPassed())) {
+                OcComparisonDetail ocComparisonE = ocComparisonService.processCombined(processCombinedStatus,
+                        edcrApplicationDetail);
+
+                String fileName;
+                if(StringUtils.isBlank(ocComparisonE.getOcdcrNumber()))
+                    fileName = ocComparisonE.getDcrNumber() + "-comparison" + ".pdf";
+                else
+                    fileName = ocComparisonE.getOcdcrNumber() + "-" + ocComparisonE.getDcrNumber() +
+                        "-comparison" + ".pdf";
+                final FileStoreMapper fileStoreMapper = fileStoreService.store(ocComparisonE.getOutput(), fileName,
+                        "application/pdf",
+                        DcrConstants.FILESTORE_MODULECODE);
+                ocComparisonE.setOcComparisonReport(fileStoreMapper);
+                if (StringUtils.isNotBlank(dcrApplication.getEdcrApplicationDetails().get(0).getDcrNumber())) {
+                    ocComparisonE.setOcdcrNumber(dcrApplication.getEdcrApplicationDetails().get(0).getDcrNumber());
+                }
+                ocComparisonDetailService.saveAndFlush(ocComparisonE);
+
+                Path ocPath = fileStoreService.fetchAsPath(ocComparisonE.getOcComparisonReport().getFileStoreId(),
+                        "Digit DCR");
+                byte[] convertedComparison = null;
+                try {
+                    convertedComparison = Files.readAllBytes(ocPath);
+                } catch (IOException e) {
+                    LOG.error("Error occurred while reading file!!!", e);
+                }
+                ByteArrayInputStream comparisonReport = new ByteArrayInputStream(convertedComparison);
+                pdfs.add(comparisonReport);
+            }
+
+            final byte[] data = appendFiles(pdfs);
+            InputStream targetStream = new ByteArrayInputStream(data);
+            saveOutputReport(dcrApplication, targetStream, plan);
+            updateFinalReport(dcrApplication.getEdcrApplicationDetails().get(0).getReportOutputId());
+        }
+        return plan;
+    }
+    
+    public Plan process(EdcrApplication dcrApplication, String applicationType,EdcrRequest edcrRequest) {
+        Map<String, String> cityDetails = specificRuleService.getCityDetails();
+      
+        Date asOnDate = null;
+        if (dcrApplication.getPermitApplicationDate() != null) {
+            asOnDate = dcrApplication.getPermitApplicationDate();
+        } else if (dcrApplication.getApplicationDate() != null) {
+            asOnDate = dcrApplication.getApplicationDate();
+        } else {
+            asOnDate = new Date();
+        }
+
+        AmendmentService repo = (AmendmentService) specificRuleService.find("amendmentService");
+        Amendment amd = repo.getAmendments();
+
+		List<PlanFeature> features = featureService.getFeatures();		
+
+		if (edcrRequest.getAreaType().equalsIgnoreCase("SCHEME_AREA")) {
+			// Get scheme name
+			if (edcrRequest.getSchName() != null && !edcrRequest.getSchName().isEmpty()) {
+				// Upload or Select layout + control sheet
+				// Master is created for scheme-wise layout and control sheets for all ULBs
+				if (edcrRequest.getSiteReserved()) {
+					if (edcrRequest.getApprovedCS()) {
+						// Exempt scrutiny
+						// uploadPDF();
+						// proceedToFormFill();
+						// as of now not implemented the code for control sheet
+					} else {
+						// No approved control sheet
+						// min plot area and road width not required
+						// uploadDXF();
+						Set<Class<?>> classesToRemove = new HashSet<>(Arrays.asList(PlotArea.class, RoadWidth.class));
+
+						features.removeIf(feature -> feature.getRuleClass() != null
+								&& classesToRemove.contains(feature.getRuleClass()));
+					}
+				} else {
+					// Not reserved
+					// Mark as "Scrutiny as per PMBL"
+					// uploadDXF();
+					// process file normally
+				}
+			} else {
+				LOG.info("Error: Scheme Name is required");
+			}
+
+		} else if (edcrRequest.getAreaType().equalsIgnoreCase("NON_SCHEME_AREA")) {
+			Set<Class<?>> classesToRemove = new HashSet<>();
+			if (edcrRequest.getCluApprove()) {
+				// Check for min plot area and road width
+				// If both present, no scrutiny needed
+				LOG.info("Min plot area and road width met. No scrutiny required.");
+				classesToRemove.addAll(Arrays.asList(PlotArea.class, RoadWidth.class));
+			}
+
+			if ("yes".equalsIgnoreCase(edcrRequest.getCoreArea())) {
+				// Exempt plot coverage, front setback and ECS
+				LOG.info("Core area: coverage, setback and ECS exempted.");
+				classesToRemove.addAll(Arrays.asList(Coverage.class, Parking.class, FrontYardService.class));
+			} else {
+				// Not a core area
+				// Scrutiny will be done as per PMBL
+				LOG.info("Scrutiny as per PMBL.");
+				// process normally
+			}
+
+			features.removeIf(
+					feature -> feature.getRuleClass() != null && classesToRemove.contains(feature.getRuleClass()));
+
+		} else {
+			// Not CLU approved
+			// Scrutiny will be done as per PMBL
+			LOG.info("Scrutiny as per PMBL.");
+			// process normally
+		}
+		
+		LOG.info("*** Features for Processing Plan file start *** ");
+		
+		features.forEach(feature -> {
+		    if (feature.getRuleClass() != null) {
+		    	LOG.info("Feature name : " + feature.getRuleClass().getSimpleName());
+		    } else {
+		    	LOG.info("Feature name : " + feature.getName());
+		    }
+		});
+		
+		LOG.info("*** Features for Processing Plan file end *** ");
+        Plan plan = extractService.extract(dcrApplication.getSavedDxfFile(), amd, asOnDate,
+                features);
+        plan.setCoreArea(dcrApplication.getCoreArea());
+	LOG.info("coreArea" + plan.getCoreArea());
 
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
         plan = applyRules(plan, amd, cityDetails);

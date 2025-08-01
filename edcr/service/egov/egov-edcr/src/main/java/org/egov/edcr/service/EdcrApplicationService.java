@@ -30,6 +30,7 @@ import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageXYZDestination;
 import org.egov.common.entity.edcr.Plan;
+import org.egov.edcr.contract.EdcrRequest;
 import org.egov.edcr.entity.ApplicationType;
 import org.egov.edcr.entity.EdcrApplication;
 import org.egov.edcr.entity.EdcrApplicationDetail;
@@ -138,6 +139,14 @@ public class EdcrApplicationService {
         return applicationRes;
     }
 
+    private Plan callDcrProcess(EdcrApplication edcrApplication, String applicationType, EdcrRequest edcrRequest){
+        Plan planDetail = new Plan();
+        planDetail = planService.process(edcrApplication, applicationType, edcrRequest);
+        updateFile(planDetail, edcrApplication);
+        edcrApplicationDetailService.saveAll(edcrApplication.getEdcrApplicationDetails());
+        return planDetail;
+    }
+    
     private Plan callDcrProcess(EdcrApplication edcrApplication, String applicationType){
         Plan planDetail = new Plan();
         planDetail = planService.process(edcrApplication, applicationType);
@@ -427,7 +436,7 @@ public class EdcrApplicationService {
     
 
     @Transactional
-    public EdcrApplication createRestEdcr(final EdcrApplication edcrApplication){
+    public EdcrApplication createRestEdcr(final EdcrApplication edcrApplication, EdcrRequest edcrRequest){
         String comparisonDcrNo = edcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
         if (edcrApplication.getApplicationDate() == null)
             edcrApplication.setApplicationDate(new Date());
@@ -436,7 +445,8 @@ public class EdcrApplicationService {
         edcrApplication.setStatus(ABORTED);
         edcrApplicationRepository.save(edcrApplication);
         edcrApplication.getEdcrApplicationDetails().get(0).setComparisonDcrNumber(comparisonDcrNo);
-        callDcrProcess(edcrApplication, NEW_SCRTNY);
+//        callDcrProcess(edcrApplication, NEW_SCRTNY);
+        callDcrProcess(edcrApplication, NEW_SCRTNY,edcrRequest);
         edcrIndexService.updateEdcrRestIndexes(edcrApplication, NEW_SCRTNY);
         return edcrApplication;
     }

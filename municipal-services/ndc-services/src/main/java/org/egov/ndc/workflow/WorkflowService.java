@@ -5,6 +5,7 @@ import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.web.model.Ndc;
 import org.egov.ndc.web.model.RequestInfoWrapper;
+import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
 import org.egov.ndc.web.model.workflow.BusinessService;
 import org.egov.ndc.web.model.workflow.BusinessServiceResponse;
 import org.egov.ndc.web.model.workflow.State;
@@ -26,8 +27,8 @@ public class WorkflowService {
 	@Autowired
 	private ObjectMapper mapper;
 	
-	public BusinessService getBusinessService(Ndc ndc, RequestInfo requestInfo, String bussinessServiceValue) {
-		StringBuilder url = getSearchURLWithParams(bussinessServiceValue, ndc.getTenantId());
+	public BusinessService getBusinessService(NdcApplicationRequest ndc, RequestInfo requestInfo, String bussinessServiceValue) {
+		StringBuilder url = getSearchURLWithParams(bussinessServiceValue, ndc.getApplicant().getTenantId());
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 		Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper);
 		BusinessServiceResponse response = null;

@@ -1,12 +1,10 @@
 package org.egov.ndc.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
@@ -19,6 +17,9 @@ import org.egov.ndc.web.model.idgen.IdGenerationRequest;
 import org.egov.ndc.web.model.idgen.IdGenerationResponse;
 import org.egov.ndc.web.model.idgen.IdRequest;
 import org.egov.ndc.web.model.idgen.IdResponse;
+import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
+import org.egov.ndc.web.model.workflow.BusinessService;
+import org.egov.ndc.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,10 +43,13 @@ public class NDCUtil {
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
 
+	private WorkflowService workflowService;
+
 	@Autowired
-	public NDCUtil(NDCConfiguration config, ServiceRequestRepository serviceRequestRepository) {
+	public NDCUtil(NDCConfiguration config, ServiceRequestRepository serviceRequestRepository, WorkflowService workflowService) {
 		this.config = config;
 		this.serviceRequestRepository = serviceRequestRepository;
+		this.workflowService = workflowService;
 	}
 
 	/**
@@ -144,5 +148,15 @@ public class NDCUtil {
 
 		return idResponses.stream().map(IdResponse::getId).collect(Collectors.toList());
 	}
-	
+
+	public Map<String, Boolean> getIdToIsStateUpdatableMap(BusinessService businessService, List<NdcApplicationRequest> searchresult) {
+		Map<String, Boolean> idToIsStateUpdatableMap = new HashMap<>();
+		searchresult.forEach(result -> {
+			if (result.getApplicant().getApplicationStatus().equalsIgnoreCase(NDCConstants.STATE_INITIATED)) {
+				idToIsStateUpdatableMap.put(result.getApplicant().getUuid(), true);
+			} else
+				idToIsStateUpdatableMap.put(result.getApplicant().getUuid(), workflowService.isStateUpdatable(result.getApplicant().getApplicationStatus(), businessService));
+		});
+		return idToIsStateUpdatableMap;
+	}
 }

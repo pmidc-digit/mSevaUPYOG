@@ -141,7 +141,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       age--;
     }
 
-    if (gender?.code === null) {
+    if (!gender?.code || !gender) {
       setErrorMessage("Please select gender");
       return;
     }

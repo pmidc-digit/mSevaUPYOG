@@ -31,6 +31,11 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
   const [errorMessage, setErrorMessage] = useState("");
 
+  // validation on multiselect tenent 
+  const [qualificationType, setQualificationType] = useState([]);
+const [isBArchSelected, setIsBArchSelected] = useState(false);
+
+
   console.log("formData", formData);
   // console.log("data: newConfig", newConfig);
 
@@ -39,12 +44,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   // console.log("tenantName=+",tenantName);
   useEffect(() => {
     const role = formData?.LicneseType?.LicenseType?.role;
-    if (role == "BPA_ARCHITECT") {
+    if (role == "BPA_ARCHITECT" && !isBArchSelected) {
       const allUlbs = tenantName.map((ulb) => ({ ulbname: ulb }));
       setSelectedUlbTypes(allUlbs);
       console.log("Initial ULBs for BPA_ARCHITECT:", allUlbs);
     }
-  }, [formData?.LicneseType?.LicenseType?.role]);
+  }, [formData?.LicneseType?.LicenseType?.role, isBArchSelected]);
   // console.log("obpas tentants",Digit.SessionStorage.get("OBPS_TENANTS"))
   //const isEdit = window.location.href.includes("/edit-application/") || window.location.href.includes("renew-trade");
   //const { isLoading, data: fydata = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "egf-master", "FinancialYear");
@@ -66,6 +71,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
     // console.log("selectedOptions=======", selectedOptions);
     const flattenedOptions = selectedOptions.map((option) => option[1]);
     const role = formData?.LicneseType?.LicenseType?.role;
+    
     if (role == "BPA_ARCHITECT") {
       const allUlbs = tenantName.map((ulb) => ({ ulbname: ulb }));
 
@@ -119,6 +125,45 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   useEffect(() => {
     // console.log("selectedUlbTypes", selectedUlbTypes);
   }, [selectedUlbTypes]);
+
+  useEffect(() => {
+  async function fetchQualificationType() {
+    try {
+      const requestBody = {
+        RequestInfo: {},
+        MdmsCriteria: {
+          tenantId: stateId,
+          moduleDetails: [
+            {
+              moduleName: "BPA",
+              masterDetails: [{ name: "QualificationType" }],
+            },
+          ],
+        },
+      };
+
+      const response = await Digit.MDMSService.getData(stateId, requestBody);
+      const qualificationList = response?.BPA?.QualificationType || [];
+
+      setQualificationType(qualificationList);
+
+      const bArchEntry = qualificationList.find((q) => q.name === "B-Arch");
+      if (bArchEntry) {
+        setIsBArchSelected(true);
+        const allUlbs = tenantName.map((ulb) => ({ ulbname: ulb }));
+        setSelectedUlbTypes(allUlbs);
+      } else {
+        setIsBArchSelected(false);
+        setSelectedUlbTypes([]);
+      }
+    } catch (err) {
+      console.error("Failed to load QualificationType", err);
+    }
+  }
+
+  fetchQualificationType();
+}, []);
+
 
   return (
     <React.Fragment>
@@ -177,14 +222,30 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           </div>
 
           <CardLabel>{"ULB*"}</CardLabel>
-          <MultiSelectDropdown
+          {/* <MultiSelectDropdown
             options={tenantName.map((ulb) => ({ ulbname: ulb }))}
             optionsKey="ulbname"
             onSelect={(selectedOptions) => handleUlbSelection(selectedOptions)}
             defaultLabel={t("Select ULBs")}
             defaultUnit={t("ULBs")}
             selected={selectedUlbTypes}
-          />
+            disable={isBArchSelected}
+          /> */}
+            <MultiSelectDropdown
+              options={tenantName.map((ulb) => ({ ulbname: ulb }))}
+              optionsKey="ulbname"
+              onSelect={(selectedOptions) => {
+                if (!isBArchSelected) {
+                  handleUlbSelection(selectedOptions);
+                }
+              }}
+              defaultLabel={t("Select ULBs")}
+              defaultUnit={t("ULBs")}
+              selected={selectedUlbTypes}
+              disable={isBArchSelected}
+            />
+
+
         </FormStep>
       </div>
     </React.Fragment>

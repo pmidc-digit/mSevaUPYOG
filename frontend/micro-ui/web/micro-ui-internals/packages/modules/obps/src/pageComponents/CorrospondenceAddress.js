@@ -7,7 +7,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   let validation = {};
   const onSkip = () => onSelect();
   const [Correspondenceaddress, setCorrespondenceaddress] = useState(
-    formData?.Correspondenceaddress || formData?.formData?.Correspondenceaddress || ""
+    formData?.Correspondenceaddress || formData?.formData?.PermanentAddress || ""
   );
   const [isAddressSame, setisAddressSame] = useState(formData?.isAddressSame || formData?.formData?.isAddressSame || false);
   const [error, setError] = useState(null);

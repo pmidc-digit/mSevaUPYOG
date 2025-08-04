@@ -43,8 +43,8 @@ public class PaymentUpdateService {
 
 	private NDCUtil util;
 
-	@Value("${workflow.bpa.businessServiceCode.fallback_enabled}")
-	private Boolean pickWFServiceNameFromTradeTypeOnly;
+//	@Value("${workflow.bpa.businessServiceCode.fallback_enabled}")
+//	private Boolean pickWFServiceNameFromTradeTypeOnly;
 
 	@Autowired
 	public PaymentUpdateService(NDCService service, NDCConfiguration config, NDCRepository repository,

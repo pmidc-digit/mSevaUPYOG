@@ -124,7 +124,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     }
 
     if (age < 18) {
-      alert(t("You must be at least 18 years old. Please enter a valid date of birth."));
+      alert(t("BPA_DOB_VALIDATION_MESSAGE"));
       return;
     }
 
@@ -142,7 +142,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     }
 
     if (gender?.code === null) {
-      setErrorMessage("Please select gender");
+      setErrorMessage(t("BPA_APPLICANT_GENDER_PLACEHOLDER"));
       return;
     }
 
@@ -164,7 +164,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       onSelect("", formData);
     }
     if (age < 18) {
-      alert(t("You must be at least 18 years old to proceed"));
+      alert(t("BPA_DOB_VALIDATION_MESSAGE"));
     }
   };
 
@@ -178,7 +178,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
         {!isLoading || !isUserLoading ? (
           <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!name || !mobileNumber || !gender || !dateOfBirth}>
             <div>
-              <CardLabel>{"Firstname*"}</CardLabel>
+              <CardLabel>{t("BPA_FIRST_NAME")}*</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -195,7 +195,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{"Middle name"}</CardLabel>
+              <CardLabel>{t("BPA_MIDDLE_NAME")}</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -212,7 +212,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{"Lastname*"}</CardLabel>
+              <CardLabel>{t("BPA_LAST_NAME")}*</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -229,7 +229,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{"Date of Birth*"}</CardLabel>
+              <CardLabel>{t("BPA_APPLICANT_DOB_LABEL")}*</CardLabel>
               <DatePicker
                 date={dateOfBirth}
                 onChange={handleDateOfBirthChange}
@@ -284,7 +284,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 )}
               </div>
 
-              <CardLabel>{`${t("BPA_OWNER_MOBILE_NO_LABEL")}*`}</CardLabel>
+              <CardLabel>{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}*`}</CardLabel>
               <MobileNumber
                 value={mobileNumber}
                 name="mobileNumber"

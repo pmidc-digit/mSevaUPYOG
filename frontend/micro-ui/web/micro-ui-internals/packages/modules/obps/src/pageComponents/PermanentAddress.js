@@ -99,7 +99,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
     // }
 
     if (pinCode === "" || pinCode.length < 6) {
-      setErrorMessage("Enter valid 6 digit Pincode");
+      setErrorMessage(t("BPA_PINCODE_ERROR_MESSAGE"));
       return;
     }
 
@@ -144,7 +144,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           />
 
           <div>
-            <CardLabel>{"Pincode*"}</CardLabel>
+            <CardLabel>{t("BPA_DETAILS_PIN_LABEL")}*</CardLabel>
             <TextInput
               t={t}
               type={"text"}
@@ -159,7 +159,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                 isRequired: true,
                 pattern: "^[0-9]{6}$",
                 type: "number",
-                title: t("Please enter a valid 6-digit pincode."),
+                title: t("BPA_PINCODE_ERROR_MESSAGE"),
               })}
             />
             {errorMessage && (
@@ -176,7 +176,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             )}
           </div>
 
-          <CardLabel>{"ULB*"}</CardLabel>
+          <CardLabel>{"BPA_SELECT_ULB"}*</CardLabel>
           <MultiSelectDropdown
             options={tenantName.map((ulb) => ({ ulbname: ulb }))}
             optionsKey="ulbname"

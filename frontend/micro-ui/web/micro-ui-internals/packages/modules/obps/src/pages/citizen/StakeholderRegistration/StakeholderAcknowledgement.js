@@ -70,6 +70,8 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(state, { applicationNumber: id, tenantId: state }, {});
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
+    console.log("applicationDetails in StakeholderAck", applicationDetails);
+    console.log("tenants", tenants);
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
     const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);

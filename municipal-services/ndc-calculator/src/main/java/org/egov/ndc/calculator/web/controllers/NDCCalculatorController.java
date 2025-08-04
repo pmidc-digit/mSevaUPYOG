@@ -51,11 +51,11 @@ public class NDCCalculatorController {
 	 * @return Calculation Response
 	 */
 	@RequestMapping(value = "/_calculate", method = RequestMethod.POST)
-	public ResponseEntity<CalculationRes> calculate(@Valid @RequestBody CalculationReq calculationReq) {
+	public ResponseEntity<CalculationRes> calculate(@Valid @RequestBody CalculationReq calculationReq, @RequestParam boolean getCalculationOnly) {
 		log.debug("CalculationReaquest:: " + calculationReq);
-		 List<Calculation> calculations = calculationService.calculate(calculationReq);
+		 List<Calculation> calculations = calculationService.calculate(calculationReq,getCalculationOnly);
 		 CalculationRes calculationRes = CalculationRes.builder().calculation(calculations).build();
-		 return new ResponseEntity<CalculationRes>(calculationRes,HttpStatus.OK);
+		 return new ResponseEntity<>(calculationRes,HttpStatus.OK);
 	}
 
 	@PostMapping("/_updatedemand")

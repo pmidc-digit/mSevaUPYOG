@@ -32,11 +32,13 @@ public class CalculationService {
 	@Autowired
 	private ResponseInfoFactory responseInfoFactory;
 
-	public List<Calculation> calculate(CalculationReq calculationReq){
+	public List<Calculation> calculate(CalculationReq calculationReq, boolean getCalculationOnly){
 		List<Calculation> calculations = getCalculations(calculationReq);
 //        CalculationRes calculationRes = CalculationRes.builder().responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(calculationReq.getRequestInfo(),true)).calculation(calculations).build();
 
-		demandService.generateDemands(calculationReq.getRequestInfo(),calculations);
+		if(!getCalculationOnly) {
+			demandService.generateDemands(calculationReq.getRequestInfo(), calculations);
+		}
 		return calculations;
 	}
 

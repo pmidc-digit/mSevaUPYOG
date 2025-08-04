@@ -12,8 +12,8 @@ import java.util.List;
 //@JsonInclude(JsonInclude.Include.NON_NULL)
 public class NdcApplicationRequest {
 
-    @JsonProperty("RequestInfo")
-    private RequestInfo requestInfo;
+//    @JsonProperty("RequestInfo")
+//    private RequestInfo requestInfo;
 
     @JsonProperty("Applicant")
     private ApplicantRequest applicant;

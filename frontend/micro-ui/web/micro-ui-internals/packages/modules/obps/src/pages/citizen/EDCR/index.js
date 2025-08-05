@@ -46,15 +46,17 @@ const CreateEDCR = ({ parentRoute }) => {
 
     console.log(userInfo, loggedInuserInfo, "USER INFO");
     const applicantName = data?.applicantName;
-    const coreArea = data?.coreArea?.code === "YES" ? true : false; // will remove after ajay chnages will reflect
+    // const coreArea = data?.coreArea?.code;
+    const coreArea = data?.areaType?.code === "SCHEME_AREA" ? "NO" : data?.coreArea?.code;
     const file = data?.file;
     const tenantId = userInfo?.tenantId;
     const ulb = data?.ulb;
     const areaType = data?.areaType?.code;
     const schName = data?.schName;
-    const siteReserved = data?.siteReserved?.code;
-    const approvedCS = data?.approvedCS?.code;
+    const siteReserved = data?.siteReserved?.code === "YES" ? true : false;
+    const approvedCS = data?.approvedCS?.code === "YES" ? true : false;
     const cluApprove = data?.cluApprove?.code === "YES" ? true : false;
+    const schemeArea = data?.schemeArea?.code;
     const transactionNumber = uuidv4();
     const appliactionType = "BUILDING_PLAN_SCRUTINY";
     const applicationSubType = "NEW_CONSTRUCTION";
@@ -75,6 +77,7 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, schName };
     edcrRequest = { ...edcrRequest, siteReserved };
     edcrRequest = { ...edcrRequest, approvedCS };
+    edcrRequest = { ...edcrRequest, schemeArea };
     edcrRequest = { ...edcrRequest, cluApprove };
 
     console.log("tenantIdInEDCR-Request", edcrRequest);

@@ -137,6 +137,16 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     data.approvedCS = approvedCS;
     data.cluApprove = cluApprove;
     data.layoutFile = layoutFile
+
+
+     if (areaType?.code === "SCHEME_AREA") {
+    data.coreArea = "NO";
+  } else if (areaType?.code === "NON_SCHEME_AREA") {
+    data.coreArea = coreArea;
+  }
+
+
+  
     onSelect(config.key, data);
   };
 

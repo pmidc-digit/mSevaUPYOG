@@ -178,7 +178,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
         {!isLoading || !isUserLoading ? (
           <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!name || !mobileNumber || !gender || !dateOfBirth}>
             <div>
-              <CardLabel>{"Firstname*"}</CardLabel>
+              <CardLabel>{"First Name*"}</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -195,7 +195,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{"Middle name"}</CardLabel>
+              <CardLabel>{"Middle Name"}</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -212,7 +212,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{"Lastname*"}</CardLabel>
+              <CardLabel>{"Last Name*"}</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}

@@ -129,14 +129,14 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     data.applicantName = name;
     data.file = file;
     data.coreArea = coreArea;
-    // data.ulb = ulb;
-    // data.areaType = areaType;
-    // data.schemeArea = schemeArea;
-    // data.schName = schName;
-    // data.siteReserved = siteReserved;
-    // data.approvedCS = approvedCS;
-    // data.cluApprove = cluApprove;
-    // data.layoutFile = layoutFile
+    data.ulb = ulb;
+    data.areaType = areaType;
+    data.schemeArea = schemeArea;
+    data.schName = schName;
+    data.siteReserved = siteReserved;
+    data.approvedCS = approvedCS;
+    data.cluApprove = cluApprove;
+    data.layoutFile = layoutFile
     onSelect(config.key, data);
   };
 

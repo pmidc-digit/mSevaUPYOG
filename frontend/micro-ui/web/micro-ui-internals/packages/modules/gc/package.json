@@ -1,6 +1,8 @@
 {
-  "name": "@mseva/digit-ui-module-gc",
+  "name": "@mseva/upyog-ui-module-gc",
+  "description": "GC Module",
   "version": "1.0.0",
+  "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/Module.js",
@@ -17,7 +19,9 @@
     "react-router-dom": "5.3.0"
   },
   "dependencies": {
+    "@mseva/digit-ui-libraries": "1.0.36",
     "@mseva/digit-ui-react-components": "1.0.4",
+    "lodash.merge": "^4.6.2",
     "microbundle-crl": "^0.13.11",
     "react": "17.0.2",
     "react-dom": "17.0.2",
@@ -25,13 +29,11 @@
     "react-i18next": "11.16.2",
     "react-query": "3.6.1",
     "react-router-dom": "5.3.0",
-    "xlsx": "^0.18.5",
+    "react-redux": "7.2.8",
+    "react-table": "7.7.0",
     "redux": "4.1.2",
-    "redux-thunk": "2.4.1",
-    "react-redux": "7.2.8"
+    "redux-thunk": "2.4.1"
   },
   "author": "",
-  "license": "MIT",
-  "devDependencies": {},
-  "description": ""
+  "devDependencies": {}
 }

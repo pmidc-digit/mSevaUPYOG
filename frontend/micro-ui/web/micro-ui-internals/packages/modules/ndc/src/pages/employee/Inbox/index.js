@@ -121,6 +121,10 @@ const Inbox = ({ parentRoute }) => {
     filters: { ...formState },
   });
 
+  const { isLoading, data: testData, isError, error } = Digit.Hooks.ndc.useSearchApplication({ mobileNumber: "1234567890" }, tenantId);
+
+  console.log("testData", testData);
+
   // const { isLoading: isInboxLoading, data} = Digit.Hooks.ndc.useSearchEmployeeApplication({status: "CREATE"}, tenantId)
 
   const [table, setTable] = useState([]);
@@ -128,12 +132,14 @@ const Inbox = ({ parentRoute }) => {
   const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
-    if (!isInboxLoading && data) {
-      setTable(data?.Applications || []);
-      setStatuses(data?.status || []);
-      setTotalCount(data?.totalCount || 0);
+    if (testData) {
+      console.log("testData?.Applications", testData?.Applications);
+      console.log("testData?.App=====", testData);
+      setTable(testData?.data || []);
+      // setStatuses(data?.status || []);
+      setTotalCount(testData?.count || 0);
     }
-  }, [data]);
+  }, [testData]);
 
   console.log("tenantIdInNDCInbox", data);
 

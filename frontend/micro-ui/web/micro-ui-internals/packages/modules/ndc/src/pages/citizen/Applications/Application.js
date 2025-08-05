@@ -7,7 +7,7 @@ const MyApplications = ({ view }) => {
   const { t } = useTranslation();
 
   const userInfo = Digit.UserService.getUser()?.info || {};
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY")
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   console.log("userInfo========", userInfo);
 
   // const { isLoading, isError, data, error, ...rest } =
@@ -25,25 +25,26 @@ const MyApplications = ({ view }) => {
   //       );
 
   // const { data: NDCData } = Digit.Hooks.ndc.useSearchApplication({uuid: userInfo.uuid}, tenantId)
-  const { isLoading, data, isError, error } = Digit.Hooks.ndc.useSearchApplication({mobileNumber: userInfo.mobileNumber}, tenantId)
+  const { isLoading, data, isError, error } = Digit.Hooks.ndc.useSearchApplication({ mobileNumber: userInfo.mobileNumber }, tenantId);
 
+  console.log("data", data);
 
   if (isLoading) {
     return <Loader />;
   }
 
-  
   return (
     <React.Fragment>
       <Header>{`${t("TL_MY_APPLICATIONS_HEADER")}`}</Header>
-      {data?.map((application, index) => {
+      {data?.data?.map((application, index) => {
+        const filteredApplication = Object.fromEntries(Object.entries(application).filter(([key]) => key !== "Applications"));
         return (
           <div key={`card-${index}`}>
             <Card>
-              {Object.keys(application)
-                .filter((e) => e !== "raw" && application[e] !== null)
+              {Object.keys(filteredApplication)
+                .filter((key) => filteredApplication[key] !== null)
                 .map((item) => (
-                  <KeyNote keyValue={t(item)} note={t(application[item])} />
+                  <KeyNote keyValue={t(item)} note={t(filteredApplication[item])} />
                 ))}
               {/* <Link to={`/digit-ui/citizen/tl/tradelicence/application/${application?.raw?.applicationNumber}/${application.raw?.tenantId}`}>
                 <SubmitBar label={t(application?.raw?.status != "PENDINGPAYMENT" ? "TL_VIEW_DETAILS" : "TL_VIEW_DETAILS_PAY")} />

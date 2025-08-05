@@ -6,9 +6,17 @@ import { useTranslation } from "react-i18next";
 const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
   const { t } = useTranslation();
 
+  console.log("table", table);
+
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
-  const GetStatusCell = (value) => value === "CS_NA" ? t(value) : 
-    value === "Active" || value > 0 ? <span className="sla-cell-success">{value}</span> : <span className="sla-cell-error">{value}</span>;
+  const GetStatusCell = (value) =>
+    value === "CS_NA" ? (
+      t(value)
+    ) : value === "Active" || value > 0 ? (
+      <span className="sla-cell-success">{value}</span>
+    ) : (
+      <span className="sla-cell-error">{value}</span>
+    );
 
   const tableColumnConfig = useMemo(() => {
     return [
@@ -17,10 +25,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: "uuid",
         disableSortBy: true,
         Cell: ({ row }) => {
+          console.log("asdad", row?.original);
           return (
             <div>
-              <Link to={`${parentRoute}/inbox/application-overview/${row.original?.Applicant?.["uuid"]}`}>
-                <span className="link">{row.original?.Applicant?.["uuid"]}</span>
+              <Link to={`${parentRoute}/inbox/application-overview/${row.original?.Applications?.["uuid"]}`}>
+                <span className="link">{row.original?.Applications?.["uuid"]}</span>
               </Link>
             </div>
           );
@@ -29,17 +38,22 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       {
         Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
         accessor: "createdtime",
-        Cell: ({ row }) => (row.original?.Applicant?.["createdtime"] ? GetCell(format(new Date(row.original?.Applicant?.["createdtime"]), "dd/MM/yyyy")) : ""),
+        Cell: ({ row }) =>
+          row.original?.Applicant?.["createdtime"] ? GetCell(format(new Date(row.original?.Applicant?.["createdtime"]), "dd/MM/yyyy")) : "",
       },
       {
         Header: t("ES_INBOX_NAME_LABEL"),
-        accessor: (row) =>(row?.Applicant?.firstname ? row?.Applicant?.firstname : "" + " " + row?.original?.Applicant?.lastname? row?.original?.Applicant?.lastname : ""),
-      disableSortBy: true,
-
+        accessor: (row) =>
+          row?.Applicant?.firstname
+            ? row?.Applicant?.firstname
+            : "" + " " + row?.original?.Applicant?.lastname
+            ? row?.original?.Applicant?.lastname
+            : "",
+        disableSortBy: true,
       },
       {
         Header: t("NDC_EMAIL_LABEL"),
-        accessor: (row) => (row?.Applicant?.["email"]? row?.Applicant?.["email"] : "NA"),
+        accessor: (row) => (row?.Applicant?.["email"] ? row?.Applicant?.["email"] : "NA"),
         disableSortBy: true,
       },
       {

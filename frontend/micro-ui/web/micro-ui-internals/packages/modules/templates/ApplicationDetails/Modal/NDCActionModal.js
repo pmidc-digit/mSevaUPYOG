@@ -1,7 +1,8 @@
 import { Loader, Modal, FormComposer } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 
-import { ModalConfig } from "../config/ModalConfig";
+import { configTLApproverApplication } from "../config";
+import * as predefinedConfig from "../config";
 
 const Heading = (props) => {
   return <h1 className="heading-m">{props.label}</h1>;
@@ -22,31 +23,8 @@ const CloseBtn = (props) => {
   );
 };
 
-const NDCModal = ({
-  t,
-  action,
-  tenantId,
-  state,
-  id,
-  closeModal,
-  submitAction,
-  actionData,
-  applicationDetails,
-  applicationData,
-  businessService,
-  moduleCode,
-  workflowDetails,
-}) => {
-  const [config, setConfig] = useState({});
-  const [defaultValues, setDefaultValues] = useState({});
-  const [approvers, setApprovers] = useState([]);
-  const [selectedApprover, setSelectedApprover] = useState({});
-  const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(null);
-  const [error, setError] = useState(null);
-  const [financialYears, setFinancialYears] = useState([]);
-  const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
-
+const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationData, businessService, moduleCode }) => {
+  console.log("ActionModalActions: ", action);
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
@@ -55,7 +33,6 @@ const NDCModal = ({
     },
     { enabled: !action?.isTerminateState }
   );
-
   const { isLoading: financialYearsLoading, data: financialYearsData } = Digit.Hooks.pt.useMDMS(
     tenantId,
     businessService,
@@ -68,6 +45,16 @@ const NDCModal = ({
       },
     }
   );
+
+  const [config, setConfig] = useState({});
+  const [defaultValues, setDefaultValues] = useState({});
+  const [approvers, setApprovers] = useState([]);
+  const [selectedApprover, setSelectedApprover] = useState({});
+  const [file, setFile] = useState(null);
+  const [uploadedFile, setUploadedFile] = useState(null);
+  const [error, setError] = useState(null);
+  const [financialYears, setFinancialYears] = useState([]);
+  const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
 
   useEffect(() => {
     if (financialYearsData && financialYearsData["egf-master"]) {
@@ -84,6 +71,7 @@ const NDCModal = ({
         approverData?.Employees?.map((employee) => {
           const deptCode = employee?.assignments?.[0]?.department;
           const matchedDept = departments?.find((d) => d?.code === deptCode);
+          console.log("matchedDept===", matchedDept);
           return { uuid: employee?.uuid, name: `${employee?.user?.name} - ${matchedDept?.name}` };
         })
       );
@@ -142,7 +130,7 @@ const NDCModal = ({
   useEffect(() => {
     if (action) {
       setConfig(
-        ModalConfig({
+        configTLApproverApplication({
           t,
           action,
           approvers,
@@ -168,24 +156,24 @@ const NDCModal = ({
       // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       formId="modal-action"
     >
-      {/* {financialYearsLoading ? (
+      {financialYearsLoading ? (
         <Loader />
-      ) : ( */}
-      <FormComposer
-        config={config.form}
-        noBoxShadow
-        inline
-        childrenAtTheBottom
-        onSubmit={submit}
-        defaultValues={defaultValues}
-        formId="modal-action"
-        // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
-      />
-      {/* )} */}
+      ) : (
+        <FormComposer
+          config={config.form}
+          noBoxShadow
+          inline
+          childrenAtTheBottom
+          onSubmit={submit}
+          defaultValues={defaultValues}
+          formId="modal-action"
+          // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
+        />
+      )}
     </Modal>
   ) : (
     <Loader />
   );
 };
 
-export default NDCModal;
+export default ActionModal;

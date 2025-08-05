@@ -17,12 +17,7 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
     control.setValue("status", "");
   sessionStorage.setItem("search_application", JSON.stringify(applicationType));
   const { applicationTypes, ServiceTypes } = Digit.Hooks.obps.useServiceTypeFromApplicationType({
-    Applicationtype:
-      applicationType?.code ||
-      (userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_")).length > 0 &&
-      userInformation?.roles?.filter((ob) => ob.code.includes("BPA_") || ob.code.includes("CITIZEN")).length <= 0
-        ? "BPA_STAKEHOLDER_REGISTRATION"
-        : "BUILDING_PLAN_SCRUTINY"),
+    Applicationtype: applicationType?.code || (userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_") ).length>0 &&  userInformation?.roles?.filter((ob) => ob.code.includes("BPA_") || ob.code.includes("CITIZEN") ).length<=0 ?"BPA_STAKEHOLDER_REGISTRATION" :"BUILDING_PLAN_SCRUTINY"),
     tenantId: stateTenantId,
   });
   const businessServices = "BPA,BPA_LOW,BPA_OC,ARCHITECT,BUILDER,ENGINEER,STRUCTURALENGINEER";
@@ -94,23 +89,17 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
   bpaOCStatusStatusUnique.forEach((code) => bpaOCApplicationStatus.push({ i18nKey: `WF_BPA_${code}`, code: code }));
   bparegStatusUnique.forEach((code) => bpaRegApplicationStatus.push({ i18nKey: `WF_BPA_${code}`, code: code }));
 
-  bpaApplicationStatus.forEach((bpaCode) => {
-    bpaStatus.map((bpaCde) => {
-      if (bpaCode?.code == bpaCde?.code) bpaCode.i18nKey = bpaCde.i18nKey;
-    });
-  });
+  bpaApplicationStatus.forEach(bpaCode => {
+    bpaStatus.map(bpaCde => { if(bpaCode?.code == bpaCde?.code) bpaCode.i18nKey = bpaCde.i18nKey })
+  })
 
-  bpaOCApplicationStatus.forEach((bpaOCCode) => {
-    bpaOCStatus.map((bpaOCCde) => {
-      if (bpaOCCode?.code == bpaOCCde?.code) bpaOCCode.i18nKey = bpaOCCde.i18nKey;
-    });
-  });
+  bpaOCApplicationStatus.forEach(bpaOCCode => {
+    bpaOCStatus.map(bpaOCCde => { if(bpaOCCode?.code == bpaOCCde?.code) bpaOCCode.i18nKey = bpaOCCde.i18nKey })
+  })
 
-  bpaRegApplicationStatus.forEach((bparegCode) => {
-    bparegStatus.map((bparegCde) => {
-      if (bparegCode?.code == bparegCde?.code) bparegCode.i18nKey = bparegCde.i18nKey;
-    });
-  });
+  bpaRegApplicationStatus.forEach(bparegCode => {
+    bparegStatus.map(bparegCde => { if(bparegCode?.code == bparegCde?.code) bparegCode.i18nKey = bparegCde.i18nKey})
+  })
 
   if (applicationType?.code === "BPA_STAKEHOLDER_REGISTRATION") applicationStatuses = bpaRegApplicationStatus;
   else if (applicationType?.code === "BUILDING_PLAN_SCRUTINY") applicationStatuses = bpaApplicationStatus;
@@ -127,7 +116,12 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
         <label>{t("BPA_SEARCH_OWNER_NAME")}</label>
         <TextInput name="name" inputRef={register({})} />
       </SearchField>
+<<<<<<< HEAD
       {!window.location.href.includes("citizen/obps/search/application") && (
+=======
+      {
+        !window.location.href.includes("citizen/obps/search/application") &&
+>>>>>>> dba611404f82ba8fe5fcb4fe595c3c2122f84e58
         <SearchField>
           <label>{t("BPA_APP_MOBILE_NO_SEARCH_PARAM")}</label>
           <MobileNumber
@@ -150,12 +144,12 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
             })}
             type="number"
             componentInFront={<div className="employee-card-input employee-card-input--front">+91</div>}
-            //maxlength={10}
+          //maxlength={10}
           />
           <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
         </SearchField>
-      )}
-
+      }
+      
       <SearchField>
         <label>{t("BPA_SEARCH_APPLICATION_TYPE_LABEL")}</label>
         <Controller
@@ -172,15 +166,7 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
           control={control}
           name="serviceType"
           render={(props) => (
-            <Dropdown
-              selected={ServiceTypes && ServiceTypes?.length > 0 ? props.value : ServiceTypes[0]}
-              select={props.onChange}
-              onBlur={props.onBlur}
-              option={ServiceTypes}
-              optionKey="i18nKey"
-              t={t}
-              isBPAREG={ServiceTypes && ServiceTypes?.length > 0 ? true : false}
-            />
+            <Dropdown selected={ServiceTypes && ServiceTypes?.length > 0 ? props.value : ServiceTypes[0]} select={props.onChange} onBlur={props.onBlur} option={ServiceTypes} optionKey="i18nKey" t={t} isBPAREG={ServiceTypes && ServiceTypes?.length > 0? true : false} />
           )}
         />
       </SearchField>
@@ -212,7 +198,11 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
               applicationNo: "",
               mobileNumber: window.location.href.includes("/search/obps-application") ? currentUserPhoneNumber : "",
               // mobileNumber: "",
+<<<<<<< HEAD
               name: "",
+=======
+              name:"",
+>>>>>>> dba611404f82ba8fe5fcb4fe595c3c2122f84e58
               fromDate: "",
               toDate: "",
               status: "",
@@ -220,45 +210,31 @@ const SearchFormFieldsComponent = ({ formState, Controller, register, control, t
               limit: 10,
               sortBy: "commencementDate",
               sortOrder: "DESC",
-              applicationType:
-                userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length <= 0 &&
-                userInformation?.roles?.filter((ob) => ob.code.includes("BPA_") || ob.code.includes("CITIZEN")).length > 0
-                  ? {
-                      code: "BUILDING_PLAN_SCRUTINY",
-                      i18nKey: "WF_BPA_BUILDING_PLAN_SCRUTINY",
-                    }
-                  : userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length > 0 &&
-                    userInformation?.roles?.filter((ob) => ob.code.includes("BPA_") || ob.code.includes("CITIZEN")).length <= 0
-                  ? {
-                      code: "BPA_STAKEHOLDER_REGISTRATION",
-                      i18nKey: "WF_BPA_BPA_STAKEHOLDER_REGISTRATION",
-                    }
-                  : {
-                      code: "BUILDING_PLAN_SCRUTINY",
-                      i18nKey: "WF_BPA_BUILDING_PLAN_SCRUTINY",
-                    },
-              serviceType:
-                userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length <= 0 &&
-                userInformation?.roles?.filter((ob) => ob.code.includes("BPA_") || ob.code.includes("CITIZEN")).length > 0
-                  ? {
-                      applicationType: ["BUILDING_PLAN_SCRUTINY", "BUILDING_OC_PLAN_SCRUTINY"],
-                      code: "NEW_CONSTRUCTION",
-                      i18nKey: "BPA_SERVICETYPE_NEW_CONSTRUCTION",
-                    }
-                  : userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length > 0 &&
-                    userInformation?.roles?.filter((ob) => ob.code.includes("BPA_") || ob.code.includes("CITIZEN")).length <= 0
-                  ? /* {
+              applicationType: userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length <= 0 && userInformation?.roles?.filter((ob) =>(ob.code.includes("BPA_") || ob.code.includes("CITIZEN"))).length > 0 ? {
+                code: "BUILDING_PLAN_SCRUTINY",
+                i18nKey: "WF_BPA_BUILDING_PLAN_SCRUTINY",
+              } : userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length > 0 && userInformation?.roles?.filter((ob) =>(ob.code.includes("BPA_") || ob.code.includes("CITIZEN"))).length <= 0 ? {
+                code: "BPA_STAKEHOLDER_REGISTRATION",
+                i18nKey: "WF_BPA_BPA_STAKEHOLDER_REGISTRATION",
+              } : {
+                code: "BUILDING_PLAN_SCRUTINY",
+                i18nKey: "WF_BPA_BUILDING_PLAN_SCRUTINY",
+              },
+              serviceType: userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length <= 0 && userInformation?.roles?.filter((ob) =>(ob.code.includes("BPA_") || ob.code.includes("CITIZEN"))).length > 0 ? {
+                applicationType: ["BUILDING_PLAN_SCRUTINY", "BUILDING_OC_PLAN_SCRUTINY"],
+                code: "NEW_CONSTRUCTION",
+                i18nKey: "BPA_SERVICETYPE_NEW_CONSTRUCTION",
+              } : userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length > 0 && userInformation?.roles?.filter((ob) =>(ob.code.includes("BPA_") || ob.code.includes("CITIZEN"))).length <= 0 ? /* {
                 code: "BPA_STAKEHOLDER_REGISTRATION",
                 applicationType:["BPA_STAKEHOLDER_REGISTRATION"],
                 roles: ["BPAREG_APPROVER","BPAREG_DOC_VERIFIER"],
                 i18nKey: "BPA_SERVICETYPE_BPA_STAKEHOLDER_REGISTRATION"
-              } */ ""
-                  : {
-                      applicationType: ["BUILDING_PLAN_SCRUTINY", "BUILDING_OC_PLAN_SCRUTINY"],
-                      code: "NEW_CONSTRUCTION",
-                      i18nKey: "BPA_SERVICETYPE_NEW_CONSTRUCTION",
-                    },
-              isSubmitSuccessful: false,
+              } */"" : {
+                applicationType: ["BUILDING_PLAN_SCRUTINY", "BUILDING_OC_PLAN_SCRUTINY"],
+                code: "NEW_CONSTRUCTION",
+                i18nKey: "BPA_SERVICETYPE_NEW_CONSTRUCTION",
+              },
+              "isSubmitSuccessful":false,
             });
             previousPage();
             // closeMobilePopupModal()

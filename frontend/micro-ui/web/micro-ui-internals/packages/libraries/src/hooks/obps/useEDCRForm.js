@@ -13,11 +13,19 @@ const useEDCRForm = ({ formData }) => {
   const [schName, setSchName] = useState(formData?.Scrutiny?.[0]?.schemeName || "");
   const [schemeArea, setSchemeArea] = useState(formData?.Scrutiny?.[0]?.schemeType || null);
   const [cluApprove, setCluApproved] = useState(formData?.Scrutiny?.[0]?.isCluApproved || null);
+<<<<<<< HEAD
   const [coreArea, setCoreArea] = useState(formData?.Scrutiny?.[0]?.coreType || null);
   const [siteReserved, setSiteReserved] = useState(formData?.Scrutiny?.[0]?.siteReserved || null);
   const [approvedCS, setApprovedCS] = useState(formData?.Scrutiny?.[0]?.approvedControlSheet || null);
   const [tenantIdData, setTenantIdData] = useState(formData?.Scrutiny?.[0]?.tenantIdData || null);
   const [uploadedFile, setUploadedFile] = useState(formData?.Scrutiny?.[0]?.proofIdentity?.fileStoreId || null);
+=======
+  const [coreArea, setcoreArea] = useState(formData?.Scrutiny?.[0]?.coreArea);
+  const [siteReserved, setSiteReserved] = useState(formData?.Scrutiny?.[0]?.siteReserved || null);
+  const [approvedCS, setApprovedCS] = useState(formData?.Scrutiny?.[0]?.approvedControlSheet || null);
+  const [tenantIdData, setTenantIdData] = useState(formData?.Scrutiny?.[0]?.tenantIdData || null);
+  const [uploadedFile, setUploadedFile] = useState(() => formData?.Scrutiny?.[0]?.proofIdentity?.fileStoreId || null);
+>>>>>>> dba611404f82ba8fe5fcb4fe595c3c2122f84e58
   const [selectLayout, setSelectLayout] = useState(formData?.Scrutiny?.[0]?.proofIdentity?.fileStoreId || null);
   const [file, setFile] = useState(formData?.owners?.documents?.proofIdentity || null);
   const [error, setError] = useState(null);
@@ -68,7 +76,11 @@ const useEDCRForm = ({ formData }) => {
     setSchName("");
     setSchemeArea(null);
     setCluApproved(null);
+<<<<<<< HEAD
     setCoreArea(null);
+=======
+    setcoreArea(null);
+>>>>>>> dba611404f82ba8fe5fcb4fe595c3c2122f84e58
   };
 
   const selectFile = (e) => {
@@ -186,6 +198,7 @@ const useEDCRForm = ({ formData }) => {
   };
 
   return {
+<<<<<<< HEAD
     stateId,
     tenantId,
     isLoading,
@@ -239,6 +252,61 @@ const useEDCRForm = ({ formData }) => {
     cityOptions,
     selectedCity,
     setSelectedCity,
+=======
+    approvedCS,
+    approvedControlSheetOptions,
+    areaType,
+    areaTypeOptions,
+    cityOptions,
+    citymoduleList,
+    cluApprove,
+    cluApproveOptions,
+    coreArea,
+    coreAreaOptions,
+    dxfFile,
+    error,
+    file,
+    getFormData,
+    handleAreaTypeChange,
+    handleDXFUpload,
+    handleLayoutUpload,
+    isFormValid,
+    isLoading,
+    layoutFile,
+    layoutMessage,
+    name,
+    schName,
+    schemeArea,
+    schemeAreaOptions,
+    selectedCity,
+    setApprovedCS,
+    setCitymoduleList,
+    setCluApproved,
+    setcoreArea,
+    setError,
+    setFile,
+    setLayoutFile,
+    setLayoutMessage,
+    setName,
+    setSchName,
+    setSchemeArea,
+    setSelectedCity,
+    setSiteReserved,
+    setTenantIdData,
+    setUlb,
+    setUploadMessage,
+    setUploadedFile,
+    setcoreArea,
+    setSelectLayout,
+    siteReserved,
+    siteReservedOptions,
+    stateId,
+    tenantId,
+    tenantIdData,
+    ulb,
+    uploadMessage,
+    uploadedFile,
+>>>>>>> dba611404f82ba8fe5fcb4fe595c3c2122f84e58
   };
 };
 

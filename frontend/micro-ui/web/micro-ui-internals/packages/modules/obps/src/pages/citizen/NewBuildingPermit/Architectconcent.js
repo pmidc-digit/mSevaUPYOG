@@ -1,4 +1,4 @@
-/** 
+  /** 
   * @author - Shivank - NIUA
 
   This Page is consent page which is self delclare by the architect before forwarding the design/plan to citizen.
@@ -15,51 +15,55 @@
   2. jsPDF for downloading the PDF
 
   */
-import React, { useState, useEffect } from "react";
-import Modal from "react-modal";
-import { useLocation } from "react-router-dom";
-import { SubmitBar } from "@mseva/digit-ui-react-components";
-import { useTranslation } from "react-i18next";
+  import React, { useState, useEffect } from 'react';
+  import Modal from 'react-modal';
+  import { useLocation } from "react-router-dom";
+  import { SubmitBar } from '@mseva/digit-ui-react-components';
+  import { useTranslation } from "react-i18next";
+  
 
-const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimestamp }) => {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const { state } = useLocation();
-  const { t } = useTranslation();
-  const user = Digit.UserService.getUser();
-  const architecname = user?.info?.name;
-  const architectmobileNumber = user?.info.mobileNumber;
-  const [params, setParams] = Digit.Hooks.useSessionStorage(
-    "BUILDING_PERMIT",
-    state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
-  );
-  const [isUploading, setIsUploading] = useState(false); // it will check whether the file upload is in process or not
-  const [isFileUploaded, setIsFileUploaded] = useState(false);
-  const architectid = params?.additionalDetails?.architectid;
-  const ownername = params?.owners?.owners?.[0]?.name;
-  const mobile = params?.owners?.owners?.[0]?.mobileNumber;
-  const architecttype = params?.additionalDetails?.typeOfArchitect;
-  const khasranumber = params?.additionalDetails?.khasraNumber;
-  const ulbname = params?.additionalDetails?.District;
-  const district = params?.additionalDetails?.UlbName;
-  const ward = params?.additionalDetails?.wardnumber;
-  const area = params?.additionalDetails?.area;
-  const zone = params?.additionalDetails?.zonenumber;
-  const ulbgrade = params?.additionalDetails?.Ulblisttype;
-  const TimeStamp = otpVerifiedTimestamp;
 
-  useEffect(() => {
-    if (params?.additionalDetails && !params.additionalDetails.TimeStamp) {
-      setParams((prevParams) => ({
-        ...prevParams,
-        additionalDetails: {
-          ...prevParams.additionalDetails,
-          TimeStamp: otpVerifiedTimestamp,
-        },
-      }));
-    }
-  }, [params, otpVerifiedTimestamp, setParams]);
 
-  const selfdeclarationform = `
+  const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimestamp }) => {
+    
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const { state } = useLocation();
+    const { t } = useTranslation();
+    const user = Digit.UserService.getUser();
+    const architecname = user?.info?.name;
+    const architectmobileNumber = user?.info.mobileNumber
+    const [params, setParams] = Digit.Hooks.useSessionStorage("BUILDING_PERMIT", state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {});
+    const [isUploading, setIsUploading] = useState(false); // it will check whether the file upload is in process or not
+    const [isFileUploaded, setIsFileUploaded] = useState(false);
+    const architectid = params?.additionalDetails?.architectid;
+    const ownername = params?.owners?.owners?.[0]?.name;
+    const mobile = params?.owners?.owners?.[0]?.mobileNumber
+    const architecttype = params?.additionalDetails?.typeOfArchitect;
+    const khasranumber = params?.additionalDetails?.khasraNumber;
+    const ulbname = params?.additionalDetails?.District;
+    const district = params?.additionalDetails?.UlbName;
+    const ward = params?.additionalDetails?.wardnumber;
+    const area = params?.additionalDetails?.area;
+    const zone = params?.additionalDetails?.zonenumber;
+    const ulbgrade = params?.additionalDetails?.Ulblisttype
+    const TimeStamp = otpVerifiedTimestamp;
+
+
+    useEffect(() => {
+      if (params?.additionalDetails && !params.additionalDetails.TimeStamp) {
+        setParams(prevParams => ({
+          ...prevParams,
+          additionalDetails: {
+            ...prevParams.additionalDetails,
+            TimeStamp: otpVerifiedTimestamp
+          }
+        }));
+      }
+    }, [params, otpVerifiedTimestamp, setParams]);
+
+
+    const selfdeclarationform =
+    `
    To,
    <b>${ulbgrade}</b>
    <b>${district}</b>
@@ -120,140 +124,168 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
                                   
     `;
 
-  const isRightAlignedLine = (line) =>
-    [
+    const isRightAlignedLine = (line) => [
       `Name of Professional - <b>${architecname}</b>`,
       `Designation - <b>${architecttype}</b>`,
       `Architect Id - <b>${architectid}</b>`,
       `Mobile Number - <b>${architectmobileNumber}</b>`,
     ].includes(line.trim());
+  
+    const shouldAddSpacing = (currentLine, nextLine) => {
+      const lineToCheck1 = 'That above stated facts are true and all the requisite documents uploaded with this E-Naksha plan.';
+      const lineToCheck2 = '';
+      const lineToCheck3 = `This Document is Verified By OTP at <b>${TimeStamp}</b>`;
+  
+      return (
+        (currentLine.trim() === lineToCheck1 && nextLine?.trim() === lineToCheck2) ||
+        currentLine.trim() === lineToCheck3
+      );
+    };
 
-  const shouldAddSpacing = (currentLine, nextLine) => {
-    const lineToCheck1 = "That above stated facts are true and all the requisite documents uploaded with this E-Naksha plan.";
-    const lineToCheck2 = "";
-    const lineToCheck3 = `This Document is Verified By OTP at <b>${TimeStamp}</b>`;
+   
 
-    return (currentLine.trim() === lineToCheck1 && nextLine?.trim() === lineToCheck2) || currentLine.trim() === lineToCheck3;
-  };
+    const openModal = () => {
+      setIsModalOpen(true);
+    };
 
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
+    const closeModal = () => {
+      setShowTermsPopup(false);
+    };
 
-  const closeModal = () => {
-    setShowTermsPopup(false);
-  };
+    
 
-  const uploadSelfDeclaration = async () => {
-    try {
-      setIsUploading(true); // Set isUploading to true before starting the upload
-      let result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [params] }, "architectconsent");
 
+    const uploadSelfDeclaration = async () => {
+      try {
+        setIsUploading(true); // Set isUploading to true before starting the upload
+        let result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [params] }, "architectconsent");
+        
       if (result?.filestoreIds[0]?.length > 0) {
         alert("File Uploaded Successfully");
-        sessionStorage.setItem("ArchitectConsentdocFilestoreid", result?.filestoreIds[0]);
+        sessionStorage.setItem("ArchitectConsentdocFilestoreid",result?.filestoreIds[0]);
         setIsFileUploaded(true); // Set isFileUploaded to true on successful upload
       } else {
-        alert("File Upload Failed");
+        alert("File Upload Failed"); 
       }
     } catch (error) {
       alert("Error Uploading PDF:", error); // Error handling
-    } finally {
+    }
+    finally {
       setIsUploading(false); // Set isUploading to false after the upload is complete
     }
-  };
+};
+    
+    
+    
+    
+    
+    
+    
+    const modalStyles = {
+      modal: {
+        width: "100%",
+        height: "100%",
+        top: "0",
+        position: "relative",
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        
+      },
+      modalOverlay: {
+        position: 'fixed',
+        top: '0',
+        left: '0',
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)'
+      },
+      modalContent: {
+        backgroundColor: '#FFFFFF',
+        padding: '2rem', 
+        borderRadius: '0.5rem', 
+        maxWidth: '800px',
+        margin: 'auto',
+        fontFamily: 'Roboto, serif',
+        overflowX: 'hidden', 
+        textAlign: 'justify',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', 
+        maxHeight: '80vh', 
+        overflowY: 'auto', 
+      },
+      heading: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+        marginBottom: '10px',
+        
+      },
+      subheading: {
+        textAlign: 'center',
+        fontWeight: 'bold',
+        marginBottom: '20px',
+       
+      },
+      rightAlignedText: {
+        textAlign: 'right',
+        whiteSpace: 'pre-wrap',
+        wordWrap: 'break-word',
+        fontFamily: 'Roboto, serif'
+      },
+      
+    };
 
-  const modalStyles = {
-    modal: {
-      width: "100%",
-      height: "100%",
-      top: "0",
-      position: "relative",
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
-      display: "flex",
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    modalOverlay: {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100%",
-      height: "100%",
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
-    },
-    modalContent: {
-      backgroundColor: "#FFFFFF",
-      padding: "2rem",
-      borderRadius: "0.5rem",
-      maxWidth: "800px",
-      margin: "auto",
-      fontFamily: "Roboto, serif",
-      overflowX: "hidden",
-      textAlign: "justify",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
-      maxHeight: "80vh",
-      overflowY: "auto",
-    },
-    heading: {
-      textAlign: "center",
-      fontWeight: "bold",
-      marginBottom: "10px",
-    },
-    subheading: {
-      textAlign: "center",
-      fontWeight: "bold",
-      marginBottom: "20px",
-    },
-    rightAlignedText: {
-      textAlign: "right",
-      whiteSpace: "pre-wrap",
-      wordWrap: "break-word",
-      fontFamily: "Roboto, serif",
-    },
-  };
+    
+   
 
-  return (
-    <div>
-      <Modal
-        isOpen={showTermsPopup}
-        onRequestClose={closeModal}
-        contentLabel="Self-Declaration"
-        style={{
-          modal: modalStyles.modal,
-          overlay: modalStyles.modalOverlay,
-          content: modalStyles.modalContent,
-        }}
-      >
-        <div></div>
-        <div>
-          <h2 style={modalStyles.heading}>DECLARATION UNDER SELF-CERTIFICATION SCHEME</h2>
-          <h3 style={modalStyles.subheading}>(For proposed Construction)</h3>
-          <h3 style={modalStyles.subheading}>(By Architect/ Civil Engineer/ Building Designer and Supervisor)</h3>
 
-          <div style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", textAlign: "justify", fontFamily: "Roboto, serif" }}>
-            {selfdeclarationform.split("\n").map((line, index) => (
-              <React.Fragment key={index}>
-                <div style={isRightAlignedLine(line) ? modalStyles.rightAlignedText : {}} dangerouslySetInnerHTML={{ __html: line }} />
+    return (
+      <div>
+        <Modal
+          isOpen={showTermsPopup}
+          onRequestClose={closeModal}
+          contentLabel="Self-Declaration"
+          style={{
+            modal: modalStyles.modal,
+            overlay: modalStyles.modalOverlay,
+            content: modalStyles.modalContent,
+          }}
+        >
+          <div>
+          
+
+          </div>
+          <div>
+            <h2 style={modalStyles.heading}>DECLARATION UNDER SELF-CERTIFICATION SCHEME</h2>
+            <h3 style={modalStyles.subheading}>(For proposed Construction)</h3>
+            <h3 style={modalStyles.subheading}>(By Architect/ Civil Engineer/ Building Designer and Supervisor)</h3>
+            
+          <div style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', textAlign: 'justify', fontFamily: 'Roboto, serif' }}>
+          {selfdeclarationform.split('\n').map((line, index) => (
+            <React.Fragment key={index}>
+              <div style={isRightAlignedLine(line) ? modalStyles.rightAlignedText : {}}
+              dangerouslySetInnerHTML={{ __html: line }}/>
                 {/* {line}
                
               </div> */}
-                {shouldAddSpacing(line, selfdeclarationform.split("\n")[index + 1]) && <div style={{ marginBottom: "2rem" }} />}
-              </React.Fragment>
-            ))}
-          </div>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
-          </div>
-          <br></br>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <br></br>
-            <SubmitBar label={t("BPA_UPLOAD")} onSubmit={uploadSelfDeclaration} disabled={isUploading || isFileUploaded} />
-          </div>
+              {shouldAddSpacing(line, selfdeclarationform.split('\n')[index + 1]) && (
+                <div style={{ marginBottom: '2rem' }} />
+              )}
+            </React.Fragment>
+          ))}
         </div>
-      </Modal>
-    </div>
-  );
-};
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
+            </div>
+            <br></br>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <br></br>
+              <SubmitBar label={t("BPA_UPLOAD")} onSubmit={uploadSelfDeclaration} disabled={isUploading || isFileUploaded} />
+            </div>
+          </div>
+        </Modal>
+      </div>
+    );
+  };
 
-export default Architectconcent;
+  export default Architectconcent;

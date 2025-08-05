@@ -348,6 +348,11 @@ import useUlbType from "./obps/useUlbType";
 import useQualificationTypes from "./obps/useQualificationTypes";
 import useEDCRForm from "./obps/useEDCRForm";
 
+import useDistricts from "./obps/useDistricts";
+import useULBList from "./obps/useULBList";
+import useUlbType from "./obps/useUlbType";
+import useEDCRForm from "./obps/useEDCRForm";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -772,6 +777,7 @@ const Hooks = {
   chb,
   asset,
   pgrAi,
+  useEDCRForm,
 };
 
 export default Hooks;

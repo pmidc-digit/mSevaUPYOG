@@ -100,7 +100,9 @@ export const SelectPaymentType = (props) => {
 
     setPaymentLoading(true);
 
-    const baseURL = process.env.REACT_APP_Base_URL;
+    // const baseURL = process.env.REACT_APP_BASE_URL;
+    const baseURL = document.location.origin;
+    console.log("BASEURLINPAYMENT", baseURL);
 
     const filterData = {
       Transaction: {
@@ -140,17 +142,17 @@ export const SelectPaymentType = (props) => {
         callbackUrl:
           paymentAmount === 0 || billDetails.totalAmount === 0
             ? window.location.href.includes("mcollect") || wrkflow === "WNS"
-              ? `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${wrkflow === "WNS" ? consumerCode : consumerCode}/${tenantId}?workflow=${
-                  wrkflow === "WNS" ? wrkflow : "mcollect"
-                }`
-              : `${baseURL}digit-ui/citizen/payment/zero/${businessService}/${
+              ? `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${
+                  wrkflow === "WNS" ? consumerCode : consumerCode
+                }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
+              : `${baseURL}/digit-ui/citizen/payment/zero/${businessService}/${
                   wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
                 }/${tenantId}?propertyId=${consumerCode}`
             : window.location.href.includes("mcollect") || wrkflow === "WNS"
-            ? `${baseURL}digit-ui/citizen/payment/success/${businessService}/${
+            ? `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${
                 wrkflow === "WNS" ? consumerCode : consumerCode
               }/${tenantId}?workflow=${wrkflow === "WNS" ? wrkflow : "mcollect"}`
-            : `${baseURL}digit-ui/citizen/payment/success/${businessService}/${
+            : `${baseURL}/digit-ui/citizen/payment/success/${businessService}/${
                 wrkflow === "WNS" ? encodeURIComponent(consumerCode) : consumerCode
               }/${tenantId}?propertyId=${consumerCode}`,
         additionalDetails: {
@@ -163,10 +165,13 @@ export const SelectPaymentType = (props) => {
     try {
       const data = await Digit.PaymentService.createCitizenReciept(billDetails?.tenantId, filterData);
       console.log("data=========", data);
-
       if (paymentAmount === 0 || billDetails.totalAmount === 0) {
         setPaymentLoading(false);
-        window.location.href = data?.Transaction?.callbackUrl;
+        if (data?.ResponseInfo?.status === "SUCCESSFUL") {
+          window.location.href = data?.Transaction?.callbackUrl;
+        } else {
+          window.location.href = "/digit-ui/citizen/payment/failure";
+        }
         return;
       }
 

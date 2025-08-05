@@ -46,56 +46,32 @@ const App = ({ path }) => {
   const OCSendToArchitect = Digit?.ComponentRegistryService?.getComponent("ObpsOCSendToArchitect");
   const BPASendBackToCitizen = Digit?.ComponentRegistryService?.getComponent("ObpsBPASendBackToCitizen");
   const OCSendBackToCitizen = Digit?.ComponentRegistryService?.getComponent("ObpsOCSendBackToCitizen");
-  const BPANewBuildingdetails = Digit?.ComponentRegistryService?.getComponent("BPANewBuildingdetails");
-  const CitizenConsent = Digit?.ComponentRegistryService?.getComponent("CitizenConsent");
-  const Architectconcent = Digit?.ComponentRegistryService?.getComponent("Architectconcent");
-  const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false;
-
-  // const ArchitectConsentComponent = () => {
-  //   return <div>{true && <Architectconcent />}</div>;
-  // };
-
-  console.log(path, "PATHHHHH");
+  const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false
   return (
     <React.Fragment>
       <div className="ws-citizen-wrapper">
-        {!location.pathname.includes("response") &&
-          !location.pathname.includes("openlink/stakeholder") &&
-          !location.pathname.includes("/acknowledgement") &&
-          !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        <button onClick={() => setShowArchitectConsentModal(true)}>Open ArchitectConsent</button>
-        <button onClick={() => setShowCitizenConsentModel(true)}>Open CitizenConsent</button>
-
-        <Switch>
-          <PrivateRoute path={`${path}/home`} component={BPACitizenHomeScreen} />
-          <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/search/obps-application`} component={(props) => <Search {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/edcrscrutiny/apply`} component={CreateEDCR} />
-          <PrivateRoute path={`${path}/edcrscrutiny/oc-apply`} component={CreateOCEDCR} />
-          <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType`} component={NewBuildingPermit} />
-          <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType`} component={OCBuildingPermit} />
-          <PrivateRoute path={`${path}/stakeholder/apply`} component={StakeholderRegistration} />
-          <Route path={`${path}/openlink/stakeholder/apply`} component={StakeholderRegistration} />
-          <PrivateRoute path={`${path}/my-applications`} component={MyApplication} />
-          <PrivateRoute path={`${path}/bpa/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/edcr/inbox`} component={(props) => <EdcrInbox {...props} parentRoute={path} />} />
-          <PrivateRoute path={`${path}/stakeholder/:id`} component={ApplicationDetails} />
-          <PrivateRoute path={`${path}/bpa/:id`} component={BpaApplicationDetail} />
-          <PrivateRoute path={`${path}/editApplication/bpa/:tenantId/:applicationNo`} component={BPASendToArchitect} />
-          <PrivateRoute path={`${path}/editApplication/ocbpa/:tenantId/:applicationNo`} component={OCSendToArchitect} />
-          <PrivateRoute path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`} component={BPASendBackToCitizen} />
-          <PrivateRoute path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`} component={OCSendBackToCitizen} />
-          <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
-          <PrivateRoute path={`${path}/citizenConsent`} component={CitizenConsent} />
-          <PrivateRoute path={`${path}/architectConsent`} component={Architectconcent} />
-          <PrivateRoute path={`${path}/bpaNewBuilding`} component={BPANewBuildingdetails} />
-        </Switch>
-
-        {showArchitectConsentModal && (
-          <Architectconcent showTermsPopup={showArchitectConsentModal} setShowTermsPopup={setShowArchitectConsentModal} />
-        )}
-
-        {showCitizenConsentModal && <CitizenConsent showTermsPopup={showCitizenConsentModal} setShowTermsPopup={setShowCitizenConsentModel} />}
+       {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
+      <Switch>
+        <PrivateRoute path={`${path}/home`} component={BPACitizenHomeScreen} />
+        <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/search/obps-application`} component={(props) => <Search {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/edcrscrutiny/apply`} component={CreateEDCR} />
+        <PrivateRoute path={`${path}/edcrscrutiny/oc-apply`} component={CreateOCEDCR} />
+        <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType`} component={NewBuildingPermit} />
+        <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType`} component={OCBuildingPermit}/>
+        <PrivateRoute path={`${path}/stakeholder/apply`} component={StakeholderRegistration} />
+        <Route path={`${path}/openlink/stakeholder/apply`} component={StakeholderRegistration} />
+        <PrivateRoute path={`${path}/my-applications`} component={MyApplication} />
+        <PrivateRoute path={`${path}/bpa/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/edcr/inbox`} component={(props) => <EdcrInbox {...props} parentRoute={path} />} />
+        <PrivateRoute path={`${path}/stakeholder/:id`} component={ApplicationDetails} />
+        <PrivateRoute path={`${path}/bpa/:id`} component={BpaApplicationDetail} />
+        <PrivateRoute path={`${path}/editApplication/bpa/:tenantId/:applicationNo`} component={BPASendToArchitect} />
+        <PrivateRoute path={`${path}/editApplication/ocbpa/:tenantId/:applicationNo`} component={OCSendToArchitect} />
+        <PrivateRoute path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`} component={BPASendBackToCitizen} />
+        <PrivateRoute path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`} component={OCSendBackToCitizen} />
+        <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
+      </Switch>
       </div>
     </React.Fragment>
   );

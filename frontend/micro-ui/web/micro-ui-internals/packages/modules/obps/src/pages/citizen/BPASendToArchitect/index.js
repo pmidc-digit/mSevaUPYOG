@@ -5,49 +5,47 @@ import { useQueryClient } from "react-query";
 import { Redirect, Route, Switch, useHistory, useLocation, useParams, useRouteMatch } from "react-router-dom";
 import { newConfig as newConfigBPA } from "../../../config/buildingPermitConfig";
 const getPath = (path, params) => {
-  params &&
-    Object.keys(params).map((key) => {
-      path = path.replace(`:${key}`, params[key]);
-    });
+  params && Object.keys(params).map(key => {
+    path = path.replace(`:${key}`, params[key]);
+  })
   return path;
-};
+}
 
-const getBPAEditDetails = async (data, APIScrutinyDetails, mdmsData, nocdata, t) => {
+const getBPAEditDetails = async (data, APIScrutinyDetails,mdmsData,nocdata,t) => {
+
   const getBlockIds = (unit) => {
     let blocks = {};
-    unit &&
-      unit.map((ob, index) => {
-        blocks[`Block_${index + 1}`] = ob.id;
-      });
+    unit && unit.map((ob, index) => {
+      blocks[`Block_${index+1}`]=ob.id;
+    });
     return blocks;
-  };
+  }
 
   const getBlocksforFlow = (unit) => {
-    let arr = [];
+    let arr=[];
     let subBlocks = [];
     let subOcc = {};
-    unit &&
-      unit.map((un, index) => {
-        arr = un?.usageCategory ? un?.usageCategory?.split(",") : [];
-        subBlocks = [];
-        arr &&
-          arr.map((ob, ind) => {
-            subBlocks.push({
-              code: ob,
-              i18nKey: `BPA_SUBOCCUPANCYTYPE_${ob.replaceAll(".", "_")}`,
-              name: t(`BPA_SUBOCCUPANCYTYPE_${ob.replaceAll(".", "_")}`),
-            });
-          });
-        if (subBlocks) subOcc[`Block_${index + 1}`] = subBlocks;
-      });
+    unit && unit.map((un, index) => {
+      arr = un?.usageCategory ? un?.usageCategory?.split(",") : [];
+      subBlocks=[];
+      arr && arr.map((ob, ind) => {
+        subBlocks.push({
+          code:ob,
+          i18nKey:`BPA_SUBOCCUPANCYTYPE_${ob.replaceAll(".","_")}`,
+          name:t(`BPA_SUBOCCUPANCYTYPE_${ob.replaceAll(".","_")}`),
+        })
+      })
+      if(subBlocks) subOcc[`Block_${index+1}`]=subBlocks;
+    });
 
     return subOcc;
-  };
+    
+  }
 
-  data.BlockIds = getBlockIds(data?.landInfo?.unit);
+  data.BlockIds=getBlockIds(data?.landInfo?.unit);
   data.address = data?.landInfo?.address;
-  data.address.city = { code: data?.landInfo?.address?.city, name: data?.landInfo?.address?.city?.split(".")[1] };
-  data.address.locality = { ...data?.landInfo?.address?.locality, i18nkey: data?.landInfo?.address?.locality?.name };
+  data.address.city = { code:data?.landInfo?.address?.city, name:data?.landInfo?.address?.city?.split(".")[1]}
+  data.address.locality = {...data?.landInfo?.address?.locality, "i18nkey":data?.landInfo?.address?.locality?.name}
   data.data = {
     applicantName: APIScrutinyDetails?.planDetail?.planInformation?.applicantName,
     applicationDate: data?.auditDetails?.createdTime,
@@ -56,66 +54,57 @@ const getBPAEditDetails = async (data, APIScrutinyDetails, mdmsData, nocdata, t)
     boundaryWallLength: data?.additionalDetails?.boundaryWallLength,
     occupancyType: APIScrutinyDetails?.planDetail?.planInformation?.occupancy,
     registrationDetails: data?.additionalDetails?.registrationDetails,
-    riskType: Digit.Utils.obps.calculateRiskType(
-      mdmsData?.BPA?.RiskTypeComputation,
-      APIScrutinyDetails?.planDetail?.plot?.area,
-      APIScrutinyDetails?.planDetail?.blocks
-    ),
-    serviceType: data?.additionalDetails?.serviceType || APIScrutinyDetails?.applicationSubType,
-    scrutinyNumber: { edcrNumber: data?.edcrNumber },
-  };
+    riskType: Digit.Utils.obps.calculateRiskType(mdmsData?.BPA?.RiskTypeComputation, APIScrutinyDetails?.planDetail?.plot?.area, APIScrutinyDetails?.planDetail?.blocks),
+    serviceType:data?.additionalDetails?.serviceType || APIScrutinyDetails?.applicationSubType,
+    scrutinyNumber:{edcrNumber:data?.edcrNumber}
+  }
 
   data["PrevStateDocuments"] = data?.documents;
   data.documents = {
-    documents: [],
-  };
+    documents:[]
+  }
+
 
   let nocDocs = [];
-  nocdata &&
-    nocdata.map((a, index) => {
-      a.documents &&
-        a.documents.map((b, index) => {
-          nocDocs.push(b);
-        });
-    });
+  nocdata && nocdata.map((a,index) => {
+    a.documents && a.documents.map((b,index) => {
+      nocDocs.push(b);
+    })
+  })
 
-  data["PrevStateNocDocuments"] = nocDocs;
+  data["PrevStateNocDocuments"]=nocDocs;
 
   data.nocDocuments = {
-    NocDetails: nocdata,
-    nocDocuments: [],
-  };
-  data?.landInfo.owners.map((owner, ind) => {
+    NocDetails:nocdata,
+    nocDocuments:[],
+  }
+  data?.landInfo.owners.map((owner,ind) => {
     owner.gender = {
-      active: true,
-      code: owner.gender,
-      i18nKey: `COMMON_GENDER_${owner.gender}`,
-    };
-  });
+      active:true,
+      code:owner.gender,
+      i18nKey:`COMMON_GENDER_${owner.gender}`,
+    }
+  })
 
-  data.owners = {
-    owners: data?.landInfo?.owners,
-    ownershipCategory: {
-      active: true,
-      code: data?.landInfo?.ownershipCategory,
-      i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${data?.landInfo?.ownershipCategory.replaceAll(".", "_")}`,
-    },
-  };
+  data.owners ={
+    owners:data?.landInfo?.owners,
+    ownershipCategory:{
+      active:true,
+      code:data?.landInfo?.ownershipCategory,
+      i18nKey:`COMMON_MASTERS_OWNERSHIPCATEGORY_${data?.landInfo?.ownershipCategory.replaceAll(".","_")}`,
+    }
+  }
 
-  data.riskType = Digit.Utils.obps.calculateRiskType(
-    mdmsData?.BPA?.RiskTypeComputation,
-    APIScrutinyDetails?.planDetail?.plot?.area,
-    APIScrutinyDetails?.planDetail?.blocks
-  );
+  data.riskType = Digit.Utils.obps.calculateRiskType(mdmsData?.BPA?.RiskTypeComputation, APIScrutinyDetails?.planDetail?.plot?.area, APIScrutinyDetails?.planDetail?.blocks)
   data.subOccupancy = getBlocksforFlow(data?.landInfo?.unit);
   data.uiFlow = {
-    flow: data?.businessService?.split(".")?.[0],
-    applicationType: data?.additionalDetails?.applicationType || APIScrutinyDetails?.appliactionType,
-    serviceType: data?.additionalDetails?.serviceType || APIScrutinyDetails?.applicationSubType,
-  };
+    flow:data?.businessService?.split(".")?.[0],
+    applicationType:data?.additionalDetails?.applicationType || APIScrutinyDetails?.appliactionType,
+    serviceType:data?.additionalDetails?.serviceType || APIScrutinyDetails?.applicationSubType
+  }
   sessionStorage.setItem("BPA_IS_ALREADY_WENT_OFF_DETAILS", JSON.stringify(true));
   return data;
-};
+}
 
 const BPASendToArchitect = ({ parentRoute }) => {
   sessionStorage.setItem("BPA_SUBMIT_APP", JSON.stringify("BPA_SUBMIT_APP"));
@@ -135,21 +124,21 @@ const BPASendToArchitect = ({ parentRoute }) => {
   let filter1 = {};
 
   if (tenantId) filter1.tenantId = tenantId;
-  if (applicationNo) filter1.applicationNo = applicationNo;
+  if(applicationNo) filter1.applicationNo=applicationNo;
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(Digit.ULBService.getStateId(), "BPA", ["RiskTypeComputation"]);
 
-  const { data: bpaData, isLoading: isBpaSearchLoading } = Digit.Hooks.obps.useBPASearch(tenantId, { applicationNo: applicationNo });
+  const { data: bpaData, isLoading: isBpaSearchLoading } = Digit.Hooks.obps.useBPASearch(tenantId, {applicationNo:applicationNo});
 
-  let scrutinyNumber = { edcrNumber: bpaData?.[0]?.edcrNumber };
+  let scrutinyNumber = {edcrNumber:bpaData?.[0]?.edcrNumber};
 
   const { data: data1, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(Digit.ULBService.getStateId(), scrutinyNumber, {
-    enabled: scrutinyNumber["edcrNumber"] ? true : false,
-  });
+    enabled: scrutinyNumber["edcrNumber"]?true:false
+  })
 
   let sourceRefId = applicationNo;
 
-  const { data: nocdata, isLoading: isNocLoading, refetch: nocRefetch } = Digit.Hooks.obps.useNocDetails(tenantId, { sourceRefId: sourceRefId });
+  const { data : nocdata, isLoading: isNocLoading, refetch:nocRefetch } = Digit.Hooks.obps.useNocDetails(tenantId, { sourceRefId: sourceRefId });
 
   const editApplication = window.location.href.includes("editApplication");
 
@@ -157,18 +146,19 @@ const BPASendToArchitect = ({ parentRoute }) => {
     let isAlready = sessionStorage.getItem("BPA_IS_ALREADY_WENT_OFF_DETAILS");
     isAlready = isAlready ? JSON.parse(isAlready) : true;
     if (!isAlready && !isNocLoading && !isBpaSearchLoading && !isLoading) {
-      application = bpaData ? bpaData[0] : {};
+      application = bpaData ? bpaData[0]:{};
       if (data1 && nocdata) {
-        application = bpaData[0];
+       application = bpaData[0];
         if (editApplication) {
           application.isEditApplication = true;
         }
         sessionStorage.setItem("bpaInitialObject", JSON.stringify({ ...application }));
-        let bpaEditDetails = await getBPAEditDetails(application, data1, mdmsData, nocdata, t);
+        let bpaEditDetails = await getBPAEditDetails(application,data1,mdmsData,nocdata,t);
         setParams({ ...params, ...bpaEditDetails });
       }
     }
-  }, [bpaData, data1, mdmsData, nocdata, params]);
+  }, [bpaData,data1,mdmsData,nocdata,params]);
+
 
   const goNext = (skipStep) => {
     const currentPath = pathname?.split("/")?.pop();
@@ -178,7 +168,8 @@ const BPASendToArchitect = ({ parentRoute }) => {
       return redirectWithHistory(`${getPath(match.path, match.params)}/check`);
     }
     redirectWithHistory(`${getPath(match.path, match.params)}/${nextStep}`);
-  };
+
+  }
 
   const onSuccess = () => {
     queryClient.invalidateQueries("PT_CREATE_PROPERTY");
@@ -189,11 +180,11 @@ const BPASendToArchitect = ({ parentRoute }) => {
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
     if (isFromCreateApi) setParams(data);
-    else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
+    else setParams({ ...params, ...{ [key]: { ...params[key], ...data }}});
     goNext(skipStep);
   };
   const handleSkip = () => {};
-
+  
   newConfig = newConfig?.BuildingPermitConfig ? newConfig?.BuildingPermitConfig : newConfigBPA;
   newConfig.forEach((obj) => {
     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
@@ -201,17 +192,17 @@ const BPASendToArchitect = ({ parentRoute }) => {
   config.indexRoute = "check";
 
   useEffect(() => {
-    if (sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
+    if(sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
       clearParams();
       sessionStorage.setItem("isPermitApplication", false);
     }
   }, []);
 
-  const CheckPage = Digit?.ComponentRegistryService?.getComponent("BPACheckPage");
-  const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
+  const CheckPage = Digit?.ComponentRegistryService?.getComponent('BPACheckPage') ;
+  const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent('BPAAcknowledgement');
 
   if (isNocLoading || isBpaSearchLoading || isLoading) {
-    return <Loader />;
+    return <Loader />
   }
 
   return (
@@ -231,7 +222,9 @@ const BPASendToArchitect = ({ parentRoute }) => {
       <Route path={`${getPath(match.path, match.params)}/acknowledgement`}>
         <OBPSAcknowledgement data={params} onSuccess={onSuccess} />
       </Route>
-      <Route>{data1 && <Redirect to={`${getPath(match.path, match.params)}/${config.indexRoute}`} />}</Route>
+      <Route>
+        {data1 && <Redirect to={`${getPath(match.path, match.params)}/${config.indexRoute}`} />}
+      </Route>
     </Switch>
   );
 };

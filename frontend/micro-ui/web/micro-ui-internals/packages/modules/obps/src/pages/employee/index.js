@@ -54,29 +54,22 @@ const OBPSBreadCrumbs = ({ location }) => {
   ];
 
   return <BreadCrumb crumbs={crumbs} />;
-};
+}
 
 const EmployeeApp = ({ path }) => {
-  const location = useLocation();
+  const location = useLocation()
   const { t } = useTranslation();
   const Inbox = Digit.ComponentRegistryService.getComponent("BPAInbox");
   const StakeholderInbox = Digit.ComponentRegistryService.getComponent("StakeholderInbox");
   const ApplicationDetail = Digit.ComponentRegistryService.getComponent("ObpsEmpApplicationDetail");
   const BpaApplicationDetail = Digit.ComponentRegistryService.getComponent("ObpsEmployeeBpaApplicationDetail");
-  const isLocation =
-    window.location.href.includes("bpa") ||
-    window.location.href.includes("stakeholder-inbox/stakeholder") ||
-    window.location.href.includes("application");
+  const isLocation = window.location.href.includes("bpa") || window.location.href.includes("stakeholder-inbox/stakeholder") || window.location.href.includes("application");
   const isFromNoc = window.location.href.includes("digit-ui/employee/obps/bpa/");
   const isRes = window.location.href.includes("obps/response") || window.location.href.includes("obps/stakeholder-response");
   return (
     <Fragment>
-      {!isFromNoc && !isRes ? (
-        <div style={isLocation ? { marginLeft: "10px" } : {}}>
-          <OBPSBreadCrumbs location={location} />
-        </div>
-      ) : null}
-      {isFromNoc ? <BackButton style={{ border: "none", margin: "0", padding: "0" }}>{t("CS_COMMON_BACK")}</BackButton> : null}
+      {!isFromNoc && !isRes ? <div style={isLocation ? {marginLeft: "10px"} : {}}><OBPSBreadCrumbs location={location} /></div> : null}
+      {isFromNoc ? <BackButton style={{ border: "none", margin: "0", padding: "0" }}>{t("CS_COMMON_BACK")}</BackButton>: null}
       <Switch>
         <PrivateRoute path={`${path}/stakeholder-inbox/stakeholder/:id`} component={ApplicationDetail} />
         <PrivateRoute path={`${path}/search/application/stakeholder/:id`} component={ApplicationDetail} />
@@ -92,7 +85,7 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/stakeholder-response`} component={StakeholderResponse} />
       </Switch>
     </Fragment>
-  );
-};
+  )
+}
 
 export default EmployeeApp;

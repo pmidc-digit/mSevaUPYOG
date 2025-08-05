@@ -13,7 +13,16 @@ const getAction = (flow) => {
       actions = ["BPA_BASIC_AND_PLOT_DETAILS_LABEL", "BPA_SCRUTINY_DETAILS", "BPA_DOCUMENT_AND_NOC_DETAILS_LABEL", "BPA_STEPPER_SUMMARY_HEADER"];
       break;
     default:
+<<<<<<< HEAD
       actions = ["BPA_STEPPER_SCRUTINY_DETAILS_HEADER", "COLONY_DETAILS", "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL", "BPA_STEPPER_SUMMARY_HEADER"];
+=======
+      actions = [
+        "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
+        "COLONY_DETAILS",
+        "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
+        "BPA_STEPPER_SUMMARY_HEADER",
+      ];
+>>>>>>> dba611404f82ba8fe5fcb4fe595c3c2122f84e58
   }
 };
 const Timeline = ({ currentStep = 1, flow = "" }) => {

@@ -36,6 +36,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     enabled: true,
   });
 
+
   function getFloorData(block) {
     let floors = [];
     block?.building?.floors?.map((ob) => {
@@ -55,11 +56,11 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
   function getsuboptions() {
     let suboccoption = [];
     // data &&
-    // data?.planDetail?.mdmsMasterData?.SubOccupancyType?.map((ob) => {
-    mdmsData?.BPA?.SubOccupancyType?.map((ob) => {
-      suboccoption.push({ code: ob.code, name: ob.name, i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(ob?.code?.toUpperCase(), "-", "_")}` });
-    });
-    return Digit.Utils.locale.sortDropdownNames(suboccoption, "i18nKey", t);
+      // data?.planDetail?.mdmsMasterData?.SubOccupancyType?.map((ob) => {
+        mdmsData?.BPA?.SubOccupancyType?.map((ob) => {
+        suboccoption.push({ code: ob.code, name: ob.name, i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(ob?.code?.toUpperCase(), "-", "_")}` });
+      });
+    return Digit.Utils.locale.sortDropdownNames(suboccoption,'i18nKey',t);
   }
 
   const ActionButton = ({ label, jumpTo }) => {
@@ -154,7 +155,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
         const userInfo = Digit.UserService.getUser();
         const accountId = userInfo?.info?.uuid;
         payload.tenantId = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.tenantId;
-        payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] };
+        payload.workflow = { action: "INITIATE", assignes : [userInfo?.info?.uuid] };
         payload.accountId = accountId;
         payload.documents = null;
 
@@ -214,7 +215,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     return returnValue ? returnValue : "NA";
   }
 
-  if (isMdmsLoading) return <Loader />;
+  if (isMdmsLoading) return <Loader /> 
 
   return (
     <React.Fragment>
@@ -227,8 +228,8 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
             style={{ border: "none" }}
             label={checkingFlow === "OCBPA" ? t("BPA_OC_EDCR_NO_LABEL") : t("BPA_EDCR_NO_LABEL")}
             text={data?.edcrNumber}
-            labelStyle={{ wordBreak: "break-all" }}
-            textStyle={{ wordBreak: "break-all" }}
+            labelStyle={{wordBreak: "break-all"}} 
+            textStyle={{wordBreak: "break-all"}}
           ></Row>
           <Row
             className="border-none"
@@ -294,7 +295,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
                 onSelect={(e) => selectOccupancy(e, data, block.number)}
                 isOBPSMultiple={true}
                 optionsKey="i18nKey"
-                ServerStyle={{ width: "100%", overflowX: "hidden" }}
+                ServerStyle={{ width: "100%", overflowX: "hidden"}}
                 t={t}
               />
             ) : null}

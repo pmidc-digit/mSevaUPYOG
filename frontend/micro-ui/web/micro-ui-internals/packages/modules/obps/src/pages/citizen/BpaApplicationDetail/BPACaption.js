@@ -1,9 +1,13 @@
+<<<<<<< HEAD
 import React, { useState } from "react";
+=======
+import React,{useState} from "react";
+>>>>>>> dba611404f82ba8fe5fcb4fe595c3c2122f84e58
 import { useTranslation } from "react-i18next";
 import { TelePhone, DisplayPhotos } from "@mseva/digit-ui-react-components";
 import BPAReason from "./BPAReason";
 
-const BPACaption = ({ data, OpenImage }) => {
+const BPACaption = ({ data,OpenImage }) => {
   const { t } = useTranslation();
   const [viewMore, setviewMore] = useState(false);
   return (
@@ -14,8 +18,12 @@ const BPACaption = ({ data, OpenImage }) => {
       {data.source && <p>{t("ES_APPLICATION_DETAILS_APPLICATION_CHANNEL_" + data.source.toUpperCase())}</p>}
       {/* //TODO: please find a better way to display in checkpoints */}
       {data.comment && <BPAReason otherComment={data?.otherComment} headComment={data?.comment}></BPAReason>}
-      {data?.wfComment ? (
+      {data?.wfComment ? <div>{data?.wfComment?.map( e => 
+      <div className="TLComments">
+        <h3>{t("WF_COMMON_COMMENTS")}</h3>
+        {!viewMore && (
         <div>
+<<<<<<< HEAD
           {data?.wfComment?.map((e) => (
             <div className="TLComments">
               <h3>{t("WF_COMMON_COMMENTS")}</h3>
@@ -64,12 +72,42 @@ const BPACaption = ({ data, OpenImage }) => {
             srcs={data?.thumbnailsToShow.thumbs}
             onClick={(src, index) => {
               OpenImage(src, index, data?.thumbnailsToShow);
+=======
+         <p style={{overflow:"hidden", textOverflow:"ellipsis",display:"-webkit-box", WebkitLineClamp:1, WebkitBoxOrient:"vertical"}}>{e}</p>
+          {e.length>36?(<button
+            type="button"
+            onClick={() => {
+              setviewMore(true);
+>>>>>>> dba611404f82ba8fe5fcb4fe595c3c2122f84e58
             }}
-          />
+            style={{color:"#800000"}}
+          >
+            {t("View More")}
+          </button>):null}
         </div>
-      ) : null}
+      )}
+      {viewMore && (
+        <div >
+          <p style={{overflow:"visible"}}>{e}</p>
+          <button
+            type="button"
+            onClick={() => {
+              setviewMore(false);
+            }}
+            style={{color:"#800000"}}
+          >
+            {t("View Less")}
+          </button>
+        </div>
+      )}
+      </div>
+      )}</div> : null}
+      {data?.thumbnailsToShow?.thumbs?.length > 0 ? <div className="TLComments">
+      <h3>{t("CS_COMMON_ATTACHMENTS")}</h3>
+      <DisplayPhotos srcs={data?.thumbnailsToShow.thumbs} onClick={(src, index) => {OpenImage(src, index,data?.thumbnailsToShow)}} />
+    </div> : null}
     </div>
   );
-};
+}
 
 export default BPACaption;

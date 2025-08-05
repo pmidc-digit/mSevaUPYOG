@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -78,7 +80,7 @@ public class PaymentUpdateService {
 				if (paymentDetail.getBusinessService().equalsIgnoreCase(NDCConstants.NDC_BUSINESS_SERVICE)) {
 					NdcApplicationSearchCriteria searchCriteria = new NdcApplicationSearchCriteria();
 					searchCriteria.setTenantId(tenantIdFromPaymentDetails);
-					searchCriteria.setUuid(paymentDetail.getBill().getConsumerCode());
+					searchCriteria.setUuid(Collections.singletonList(paymentDetail.getBill().getConsumerCode()));
 					List<NdcApplicationRequest> applicationRequests = ndcService.searchNdcApplications(searchCriteria);
 
 					String tenantIdFromSearch = applicationRequests.get(0).getApplicant().getTenantId();

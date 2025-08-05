@@ -207,7 +207,7 @@ public class NDCService {
 		if(!ndcRepository.checkApplicantExists(ndcDeleteRequest.getUuid())) {
 			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
 		}
-		NdcApplicationRequest ndcApplicationRequest = searchNdcApplications(NdcApplicationSearchCriteria.builder().uuid(ndcDeleteRequest.getUuid()).build()).get(0);
+		NdcApplicationRequest ndcApplicationRequest = searchNdcApplications(NdcApplicationSearchCriteria.builder().uuid(Collections.singletonList(ndcDeleteRequest.getUuid())).build()).get(0);
 		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
 		applicant.setLastmodifiedby(ndcDeleteRequest.getRequestInfo().getUserInfo().getUuid());
 		applicant.setLastmodifiedtime(System.currentTimeMillis());
@@ -229,8 +229,8 @@ public class NDCService {
 	}
 
 	public List<NdcApplicationRequest> searchNdcApplications(NdcApplicationSearchCriteria criteria) {
-
-		if (StringUtils.isNotBlank(criteria.getUuid())) {
+		List<String> uuids = criteria.getUuid();
+		if (uuids != null && !uuids.isEmpty()) {
 			return ndcRepository.fetchNdcApplications(criteria);
 		}
 

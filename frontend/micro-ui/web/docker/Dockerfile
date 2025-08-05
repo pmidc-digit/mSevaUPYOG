@@ -18,7 +18,7 @@ RUN yarn add @mseva/digit-ui-module-ptr@1.0.48
 RUN yarn add @mseva/digit-ui-module-swach@1.0.39
 RUN yarn add @mseva/digit-ui-module-pt@1.0.31
 RUN yarn add @mseva/digit-ui-module-tl@1.0.10
-RUN yarn add @mseva/digit-ui-module-obps@1.0.15
+RUN yarn add @mseva/digit-ui-module-obps@1.0.17
 RUN yarn add @mseva/digit-ui-module-sv@1.0.23
 RUN yarn add @mseva/upyog-ui-module-ads@1.0.28
 RUN yarn add @mseva/upyog-ui-module-chb@1.0.20

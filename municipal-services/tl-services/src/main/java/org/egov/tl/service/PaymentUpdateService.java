@@ -87,6 +87,7 @@ public class PaymentUpdateService {
 	 */
 	public void process(HashMap<String, Object> record) {
 
+		log.info("Start PaymentUpdateService.process method.");
 		try {
 			PaymentRequest paymentRequest = mapper.convertValue(record,PaymentRequest.class);
 			RequestInfo requestInfo = paymentRequest.getRequestInfo();
@@ -149,6 +150,9 @@ public class PaymentUpdateService {
 					/*
 					 * calling repository to update the object in TL tables
 					 */
+					updateRequest.getLicenses()
+					.forEach(obj -> log.info("Request Object" + obj));
+					
 					Map<String,Boolean> idToIsStateUpdatableMap = util.getIdToIsStateUpdatableMap(businessService,licenses);
 					repository.update(updateRequest,idToIsStateUpdatableMap);
 			}
@@ -156,6 +160,8 @@ public class PaymentUpdateService {
 		} catch (Exception e) {
 			log.error("KAFKA_PROCESS_ERROR", e);
 		}
+		
+		log.info("End PaymentUpdateService.process method.");
 
 	}
 

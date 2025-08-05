@@ -84,7 +84,7 @@ import PropertyDetailsCitizen from "./pages/citizen/MyProperties/PropertyDetails
 import {PropertyApplicationDetails}  from "./pages/citizen/MyProperties/PropertyApplicationDetails";
 import PTResponseCitizen from "./pages/citizen/PTResponseCitizen"
 import PTResponseEmployee from "./pages/employee/PTResponseEmployee"
-//import PTCitizenFeedback from "@upyog/digit-ui-module-core/src/components/PTCitizenFeedback";
+
 
 import EmployeeApp from "./pages/employee";
 import PTCard from "./components/PTCard";

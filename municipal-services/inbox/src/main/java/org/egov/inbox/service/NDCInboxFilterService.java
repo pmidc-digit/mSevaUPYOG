@@ -1,23 +1,23 @@
 package org.egov.inbox.service;
 
-import static org.egov.inbox.util.NocConstants.ASSIGNEE_PARAM;
-import static org.egov.inbox.util.NocConstants.BUSINESS_SERVICE_PARAM;
-import static org.egov.inbox.util.NocConstants.CITIZEN;
-import static org.egov.inbox.util.NocConstants.DESC_PARAM;
-import static org.egov.inbox.util.NocConstants.LIMIT_PARAM;
-import static org.egov.inbox.util.NocConstants.LOCALITY_PARAM;
-import static org.egov.inbox.util.NocConstants.MOBILE_NUMBER_PARAM;
-import static org.egov.inbox.util.NocConstants.NOC_APPLICATION_NUMBER_PARAM;
-import static org.egov.inbox.util.NocConstants.NOC_SOURCE_APPLICATION_NUMBER_PARAM;
-import static org.egov.inbox.util.NocConstants.NOC_SOURCE_REF_ID_PARAM;
-import static org.egov.inbox.util.NocConstants.NO_OF_RECORDS_PARAM;
-import static org.egov.inbox.util.NocConstants.OFFSET_PARAM;
-import static org.egov.inbox.util.NocConstants.REQUESTINFO_PARAM;
-import static org.egov.inbox.util.NocConstants.SEARCH_CRITERIA_PARAM;
-import static org.egov.inbox.util.NocConstants.SORT_ORDER_PARAM;
-import static org.egov.inbox.util.NocConstants.STATUS_PARAM;
-import static org.egov.inbox.util.NocConstants.TENANT_ID_PARAM;
-import static org.egov.inbox.util.NocConstants.USERID_PARAM;
+import static org.egov.inbox.util.NdcConstants.ASSIGNEE_PARAM;
+import static org.egov.inbox.util.NdcConstants.BUSINESS_SERVICE_PARAM;
+import static org.egov.inbox.util.NdcConstants.CITIZEN;
+import static org.egov.inbox.util.NdcConstants.DESC_PARAM;
+import static org.egov.inbox.util.NdcConstants.LIMIT_PARAM;
+import static org.egov.inbox.util.NdcConstants.LOCALITY_PARAM;
+import static org.egov.inbox.util.NdcConstants.MOBILE_NUMBER_PARAM;
+import static org.egov.inbox.util.NdcConstants.NDC_APPLICATION_NUMBER_PARAM;
+import static org.egov.inbox.util.NdcConstants.NDC_SOURCE_APPLICATION_NUMBER_PARAM;
+import static org.egov.inbox.util.NdcConstants.NDC_SOURCE_REF_ID_PARAM;
+import static org.egov.inbox.util.NdcConstants.NO_OF_RECORDS_PARAM;
+import static org.egov.inbox.util.NdcConstants.OFFSET_PARAM;
+import static org.egov.inbox.util.NdcConstants.REQUESTINFO_PARAM;
+import static org.egov.inbox.util.NdcConstants.SEARCH_CRITERIA_PARAM;
+import static org.egov.inbox.util.NdcConstants.SORT_ORDER_PARAM;
+import static org.egov.inbox.util.NdcConstants.STATUS_PARAM;
+import static org.egov.inbox.util.NdcConstants.TENANT_ID_PARAM;
+import static org.egov.inbox.util.NdcConstants.USERID_PARAM;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-public class NOCInboxFilterService {
+public class NDCInboxFilterService {
 
     @Value("${egov.user.host}")
     private String userHost;
@@ -52,14 +52,14 @@ public class NOCInboxFilterService {
     @Value("${egov.searcher.host}")
     private String searcherHost;
 
-    @Value("${egov.searcher.noc.search.path}")
-    private String nocInboxSearcherEndpoint;
+    @Value("${egov.searcher.ndc.search.path}")
+    private String ndcInboxSearcherEndpoint;
 
-    @Value("${egov.searcher.noc.search.desc.path}")
-    private String nocInboxSearcherDescEndpoint;
+    @Value("${egov.searcher.ndc.search.desc.path}")
+    private String ndcInboxSearcherDescEndpoint;
 
-    @Value("${egov.searcher.noc.count.path}")
-    private String nocInboxSearcherCountEndpoint;
+    @Value("${egov.searcher.ndc.count.path}")
+    private String ndcInboxSearcherCountEndpoint;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -107,13 +107,13 @@ public class NOCInboxFilterService {
 
             if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
                     && moduleSearchCriteria.get(SORT_ORDER_PARAM).equals(DESC_PARAM))
-                uri.append(searcherHost).append(nocInboxSearcherDescEndpoint);
+                uri.append(searcherHost).append(ndcInboxSearcherDescEndpoint);
             else
-                uri.append(searcherHost).append(nocInboxSearcherEndpoint);
+                uri.append(searcherHost).append(ndcInboxSearcherEndpoint);
 
             result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
 
-            List<String> citizenApplicationsNumbers = JsonPath.read(result, "$.Noc.*.applicationno");
+            List<String> citizenApplicationsNumbers = JsonPath.read(result, "$.NDCApplications.*.id");
 
             applicationNumbers.addAll(citizenApplicationsNumbers);
 
@@ -137,11 +137,11 @@ public class NOCInboxFilterService {
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(LOCALITY_PARAM)) {
             searchCriteria.put(LOCALITY_PARAM, moduleSearchCriteria.get(LOCALITY_PARAM));
         }
-        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NOC_APPLICATION_NUMBER_PARAM)) {
-            searchCriteria.put(NOC_APPLICATION_NUMBER_PARAM, moduleSearchCriteria.get(NOC_APPLICATION_NUMBER_PARAM));
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NDC_APPLICATION_NUMBER_PARAM)) {
+            searchCriteria.put(NDC_APPLICATION_NUMBER_PARAM, moduleSearchCriteria.get(NDC_APPLICATION_NUMBER_PARAM));
         }
-        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NOC_SOURCE_REF_ID_PARAM)) {
-            searchCriteria.put(NOC_SOURCE_APPLICATION_NUMBER_PARAM, moduleSearchCriteria.get(NOC_SOURCE_REF_ID_PARAM));
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NDC_SOURCE_REF_ID_PARAM)) {
+            searchCriteria.put(NDC_SOURCE_APPLICATION_NUMBER_PARAM, moduleSearchCriteria.get(NDC_SOURCE_REF_ID_PARAM));
         }
 
         // Accommodating process search criteria in searcher request
@@ -189,7 +189,7 @@ public class NOCInboxFilterService {
             searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
             searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
             StringBuilder citizenUri = new StringBuilder();
-            citizenUri.append(searcherHost).append(nocInboxSearcherCountEndpoint);
+            citizenUri.append(searcherHost).append(ndcInboxSearcherCountEndpoint);
 
             Object result = restTemplate.postForObject(citizenUri.toString(), searcherRequest, Map.class);
 

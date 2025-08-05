@@ -5,12 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 public class NdcApplicationSearchCriteria {
-    private String uuid;
+    private List<String> uuid;
     private String tenantId;
     private String status;
     private String mobileNumber;

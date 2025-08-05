@@ -19,8 +19,7 @@ import static org.egov.inbox.util.FSMConstants.FSM_VEHICLE_TRIP_MODULE;
 import static org.egov.inbox.util.FSMConstants.STATUSID;
 import static org.egov.inbox.util.FSMConstants.VEHICLE_LOG;
 import static org.egov.inbox.util.FSMConstants.WAITING_FOR_DISPOSAL_STATE;
-import static org.egov.inbox.util.NocConstants.NOC;
-import static org.egov.inbox.util.NocConstants.NOC_APPLICATION_NUMBER_PARAM;
+import static org.egov.inbox.util.NdcConstants.NDC_APPLICATION_NUMBER_PARAM;
 import static org.egov.inbox.util.PTConstants.ACKNOWLEDGEMENT_IDS_PARAM;
 import static org.egov.inbox.util.PTConstants.PT;
 import static org.egov.inbox.util.TLConstants.APPLICATION_NUMBER_PARAM;
@@ -107,7 +106,7 @@ public class InboxService {
     private FSMInboxFilterService fsmInboxFilter;
     
     @Autowired
-    private NOCInboxFilterService nocInboxFilterService;
+    private NDCInboxFilterService ndcInboxFilterService;
 
     @Autowired
     private WSInboxFilterService wsInboxFilterService;
@@ -385,11 +384,11 @@ public class InboxService {
             }
             
             if (processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
-                    && processCriteria.getModuleName().equals(NOC)) {
-                totalCount = nocInboxFilterService.fetchApplicationCountFromSearcher(criteria, StatusIdNameMap, requestInfo);
-                List<String> applicationNumbers = nocInboxFilterService.fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                    && processCriteria.getModuleName().equals("NDC")) {
+                totalCount = ndcInboxFilterService.fetchApplicationCountFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                List<String> applicationNumbers = ndcInboxFilterService.fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
                 if (!CollectionUtils.isEmpty(applicationNumbers)) {
-                    moduleSearchCriteria.put(NOC_APPLICATION_NUMBER_PARAM, applicationNumbers);
+                    moduleSearchCriteria.put(NDC_APPLICATION_NUMBER_PARAM, applicationNumbers);
                     businessKeys.addAll(applicationNumbers);
                     moduleSearchCriteria.remove(STATUS_PARAM);
                     moduleSearchCriteria.remove(MOBILE_NUMBER_PARAM);
@@ -519,6 +518,11 @@ public class InboxService {
                 businessObjects = fetchModuleObjects(moduleSearchCriteria, businessServiceName, criteria.getTenantId(),
                         requestInfo, srvMap);
             }
+//            if (!isSearchResultEmpty && (processCriteria.getModuleName().equals("NDC"))) {
+//                businessObjects = fetchModuleObjectsForNdc(moduleSearchCriteria, businessServiceName, criteria.getTenantId(),
+//                        requestInfo, srvMap);
+//            }
+
             Map<String, Object> businessMap = StreamSupport.stream(businessObjects.spliterator(), false)
                     .collect(Collectors.toMap(s1 -> ((JSONObject) s1).get(businessIdParam).toString(),
                             s1 -> s1, (e1, e2) -> e1, LinkedHashMap::new));
@@ -1024,7 +1028,7 @@ public class InboxService {
         url.append("?tenantId=").append(tenantId);
        
         Set<String> searchParams = moduleSearchCriteria.keySet();
-        
+
 		searchParams.forEach((param) -> {
 
 			if (!param.equalsIgnoreCase("tenantId")) {
@@ -1044,12 +1048,12 @@ public class InboxService {
 				}
 			}
 		});
-		
+
 		log.info("\nfetchModuleObjects URL :::: " + url.toString());
 		
         RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
         Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper);
-        
+
         LinkedHashMap responseMap;
         try {
             responseMap = mapper.convertValue(result, LinkedHashMap.class);
@@ -1070,6 +1074,64 @@ public class InboxService {
         
         return resutls;
     }
+
+//    private JSONArray fetchModuleObjectsForNdc(HashMap moduleSearchCriteria, List<String> businessServiceName, String tenantId,
+//                                         RequestInfo requestInfo, Map<String, String> srvMap) {
+//        JSONArray resutls = null;
+//
+//        if (CollectionUtils.isEmpty(srvMap) || StringUtils.isEmpty(srvMap.get("searchPath"))) {
+//            throw new CustomException(ErrorConstants.INVALID_MODULE_SEARCH_PATH,
+//                    "search path not configured for the businessService : " + businessServiceName);
+//        }
+//        StringBuilder url = new StringBuilder(srvMap.get("searchPath"));
+//        url.append("?tenantId=").append(tenantId);
+//
+//        Set<String> searchParams = moduleSearchCriteria.keySet();
+//
+//        Iterator<String> iterator = searchParams.iterator();
+//
+//        while (iterator.hasNext()) {
+//            String param = iterator.next();
+//            if (!param.equalsIgnoreCase("tenantId")) {
+//
+//                if (moduleSearchCriteria.get(param) instanceof Collection) {
+//                    url.append("&").append(param).append("=");
+//                    url.append(StringUtils
+//                            .arrayToDelimitedString(((Collection<?>) moduleSearchCriteria.get(param)).toArray(), ","));
+//                } else if (param.equalsIgnoreCase("appStatus")) {
+//                    url.append("&").append("applicationStatus").append("=")
+//                            .append(moduleSearchCriteria.get(param).toString());
+//                } else if (null != moduleSearchCriteria.get(param)) {
+//                    url.append("&").append(param).append("=").append(moduleSearchCriteria.get(param).toString());
+//                }
+//            }
+//        }
+//
+//        log.info("\nfetchModuleObjects URL :::: " + url.toString());
+//
+//        RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
+//        Object result = serviceRequestRepository.fetchNdcResult(url, requestInfoWrapper);
+//
+//        LinkedHashMap responseMap;
+//        try {
+//            responseMap = mapper.convertValue(result, LinkedHashMap.class);
+//        } catch (IllegalArgumentException e) {
+//            throw new CustomException(ErrorConstants.PARSING_ERROR, "Failed to parse response of ProcessInstance Count");
+//        }
+//
+//
+//        JSONObject jsonObject = new JSONObject(responseMap);
+//
+//        try {
+//            resutls = (JSONArray) jsonObject.getJSONArray(srvMap.get("dataRoot"));
+//        } catch (Exception e) {
+//            throw new CustomException(ErrorConstants.INVALID_MODULE_DATA,
+//                    " search api could not find data in dataroot " + srvMap.get("dataRoot"));
+//        }
+//
+//
+//        return resutls;
+//    }
 
     public static Map<String, Object> toMap(JSONObject object) throws JSONException {
         Map<String, Object> map = new HashMap<String, Object>();

@@ -5,6 +5,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,11 +36,13 @@ public class NdcQueryBuilder {
 			preparedStmtList.add(criteria.getTenantId());
 		}
 
-		if (StringUtils.isNotBlank(criteria.getUuid())) {
+		if (criteria.getUuid() != null && !criteria.getUuid().isEmpty()) {
 			addClauseIfRequired(query, whereAdded);
 			whereAdded = true;
-			query.append(" a.uuid = ?");
-			preparedStmtList.add(criteria.getUuid());
+			query.append(" a.uuid in (");
+			String placeholders = String.join(",", Collections.nCopies(criteria.getUuid().size(), "?"));
+			query.append(placeholders).append(")");
+			preparedStmtList.addAll(criteria.getUuid());
 		}
 
 		if (criteria.getStatus() != null) {

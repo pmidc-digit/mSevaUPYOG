@@ -151,7 +151,6 @@
 			      <customTypeMapping>org.egov.common.contract.request.User:User</customTypeMapping>
 			      <customTypeMapping>org.egov.common.contract.request.RequestInfo:RequestInfo</customTypeMapping>
 			      <customTypeMapping>org.egov.common.contract.response.ResponseInfo:ResponseInfo</customTypeMapping>
-			      <customTypeMapping>org.egov.ndc.calculator.web.models.Document:Document</customTypeMapping>
 			    </customTypeMappings>
 			    <namespace>Digit</namespace>
 			    <debug>true</debug>

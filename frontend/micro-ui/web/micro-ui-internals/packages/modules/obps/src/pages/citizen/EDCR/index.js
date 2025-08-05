@@ -48,6 +48,7 @@ const CreateEDCR = ({ parentRoute }) => {
     const applicantName = data?.applicantName;
     // const coreArea = data?.coreArea?.code;
     const coreArea = data?.areaType?.code === "SCHEME_AREA" ? "NO" : data?.coreArea?.code;
+    console.log("A=====", coreArea, data?.areaType?.code, data?.areaType?.code === "SCHEME_AREA");
     const file = data?.file;
     const tenantId = userInfo?.tenantId;
     const ulb = data?.ulb;
@@ -70,7 +71,7 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, coreArea };
     edcrRequest = { ...edcrRequest, appliactionType };
     edcrRequest = { ...edcrRequest, applicationSubType };
-    // sub type to clu aprove 
+    // sub type to clu aprove
     edcrRequest = { ...edcrRequest, applicationSubType };
     edcrRequest = { ...edcrRequest, ulb };
     edcrRequest = { ...edcrRequest, areaType };

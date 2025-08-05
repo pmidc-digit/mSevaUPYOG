@@ -32,6 +32,7 @@ import TLSelectStreet from "./pageComponents/TLSelectStreet";
 import TLSelectLandmark from "./pageComponents/TLSelectLandMark";
 import TLSelectOwnerAddress from "./pageComponents/TLSelectOwnerAddress";
 import PropertySearchSummary from "./pageComponents/PropertySearchSummary";
+import NewApplicationModal from "./pageComponents/NewApplicationModal";
 
 import TLOwnerDetailsEmployee from "./pageComponents/TLOwnerDetailsEmployee";
 import TLTradeDetailsEmployee from "./pageComponents/TLTradeDetailsEmployee";
@@ -78,6 +79,11 @@ import TLNewFormStepOneCitizen from "./pages/citizen/Create/NewApplicationStepFo
 import TLNewFormStepTwoCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewFormStepTwo";
 import TLNewFormStepThreeCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewFormStepThree";
 import TLNewSummaryStepFourCitizen from "./pages/citizen/Create/NewApplicationStepForm/TLNewSummaryStepFour";
+import { RenewTLStepForm as RenewTLStepFormCitizen } from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewTLStepForm";
+import { RenewTLFormStepOne as RenewTLFormStepOneCitizen } from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewTLFormStepOne";
+import { RenewTLFormStepTwo as RenewTLFormStepTwoCitizen } from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewTLFormStepTwo";
+import { RenewTLFormStepThree as RenewTLFormStepThreeCitizen } from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewTLFormStepThree";
+import { RenewTLSummaryStepFour as RenewTLSummaryStepFourCitizen } from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewTLSummaryStepFour";
 //
 
 export const TLReducers = getRootReducer;
@@ -196,6 +202,14 @@ const componentsToRegister = {
   TLNewFormStepThreeCitizen,
   TLNewSummaryStepFourCitizen,
   TLPropertySearchSummary: PropertySearchSummary,
+  TLNewApplicationModal: NewApplicationModal,
+
+  RenewTLStepFormCitizen,
+  RenewTLFormStepOneCitizen,
+  RenewTLFormStepTwoCitizen,
+  RenewTLFormStepThreeCitizen,
+  RenewTLSummaryStepFourCitizen,
+
 };
 
 export const initTLComponents = () => {

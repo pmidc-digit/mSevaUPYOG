@@ -15,7 +15,7 @@ const useAssetApplicationDetail = (t, tenantId, applicationNo, config = {}, user
   };
 
   
-    const { data: cityResponseObject} =  Digit.Hooks.useCustomMDMSV2(tenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
+    const { data: cityResponseObject} =  Digit.Hooks.useCustomMDMS(tenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
       select: (data) => {
         
         const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
@@ -23,7 +23,7 @@ const useAssetApplicationDetail = (t, tenantId, applicationNo, config = {}, user
       },
     });
  
-    const {data: stateResponseObject} =  Digit.Hooks.useCustomMDMSV2(stateTenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
+    const {data: stateResponseObject} =  Digit.Hooks.useCustomMDMS(stateTenantId, "ASSET", [{ name: "AssetParentCategoryFields" }], {
       select: (data) => {
         const formattedData = data?.["ASSET"]?.["AssetParentCategoryFields"];
         return formattedData;

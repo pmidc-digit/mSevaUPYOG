@@ -176,6 +176,7 @@ import SearchMdmsTypes from "./obps/SearchMdmsTypes";
 import useOBPSMDMS from "./obps/useMDMS";
 import useOBPSSearch from "./obps/useOBPSSearch";
 import useScrutinyDetails from "./obps/useScrutinyDetails";
+import useQualificationTypes from "./obps/useQualificationTypes";
 import useTenantsOBPS from "./obps/useTenants";
 import useNocDetails from "./obps/useNocDetails";
 import useNOCApplicationActions from "./noc/useNOCApplicationActions";
@@ -199,9 +200,6 @@ import useServiceTypeFromApplicationType from "./obps/useServiceTypeFromApplicat
 import useBusinessServiceBasedOnServiceType from "./obps/useBusinessServiceBasedOnServiceType";
 import useBusinessServiceData from "./obps/useBusinessServiceData";
 import useBPATaxDocuments from "./obps/useBPATaxDocuments";
-import useDistricts from "./obps/useDistricts";
-import useULBList from "./obps/useULBList";
-import useUlbType from "./obps/useUlbType";
 
 import useEventInbox from "./events/useEventInbox";
 import useEventDetails from "./events/useEventDetails";
@@ -338,6 +336,17 @@ import useAssetparentSubType from "./asset/useAssetparentSubType";
 import useAssignCreateAPI from "./asset/useAssignCreateAPI";
 import useReturnAPI from "./asset/useReturnAPI";
 import useEditUpdateAPI from "./asset/useEditUpdateAPI";
+import useMaintenanceAPI from "./asset/useMaintenanceAPI";
+
+import useCreate from "./pgrAi/useCreate";
+import useSearchPGRAI from "./pgrAi/useSearchPGRAI";
+import useFilterEmployee from "./pgrAi/useFilterEmployee";
+import useApplicationDetails from "./pgrAi/useApplicationDetails";
+
+import useDistricts from "./obps/useDistricts";
+import useULBList from "./obps/useULBList";
+import useUlbType from "./obps/useUlbType";
+import useEDCRForm from "./obps/useEDCRForm";
 
 const pgr = {
   useComplaintDetails,
@@ -542,9 +551,11 @@ const obps = {
   useBusinessServiceBasedOnServiceType,
   useBusinessServiceData,
   useBPATaxDocuments,
+  useQualificationTypes,
   useDistricts,
   useULBList,
   useUlbType,
+  useEDCRForm,
 };
 
 const events = {
@@ -615,6 +626,7 @@ const asset = {
   useAssetparentSubType,
   useTenants: useTenantsASSET,
   useAssignCreateAPI,
+  useMaintenanceAPI,
   useReturnAPI,
   useEditUpdateAPI,
 };
@@ -680,6 +692,12 @@ const ws = {
 
 const reports = {
   useReportMeta,
+};
+const pgrAi = {
+  useCreate,
+  useSearchPGRAI,
+  useFilterEmployee,
+  useApplicationDetails,
 };
 
 const Hooks = {
@@ -753,6 +771,8 @@ const Hooks = {
   ads,
   chb,
   asset,
+  pgrAi,
+  useEDCRForm,
 };
 
 export default Hooks;

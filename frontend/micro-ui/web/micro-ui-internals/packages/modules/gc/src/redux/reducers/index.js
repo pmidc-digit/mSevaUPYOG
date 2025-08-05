@@ -1,9 +1,9 @@
 import { combineReducers } from "redux";
-import newGCApplicationFormReducer from "./newGCApplicationFormReducer";
+import newWSApplicationFormReducer from "./newWSApplicationFormReducer";
 
 const getRootReducer = () =>
   combineReducers({
-    newGCApplicationForm: newGCApplicationFormReducer,
+    newWSApplicationForm: newWSApplicationFormReducer,
   });
 
 export default getRootReducer;

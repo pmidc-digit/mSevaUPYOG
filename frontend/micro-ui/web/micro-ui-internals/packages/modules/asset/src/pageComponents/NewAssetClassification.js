@@ -57,6 +57,10 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
   const [assetsUsage, setAssetsUsage] = useState(
     (formData.asset && formData.asset[index] && formData.asset[index].assetsUsage) || formData?.asset?.assetsUsage || ""
   );
+  const [assetAssignable, setAssetAssignable] = useState(
+    (formData.asset && formData.asset[index] && formData.asset[index].assetAssignable) || formData?.asset?.assetAssignable || ""
+  );
+
   const [financialYear, setfinancialYear] = useState(
     (formData.asset && formData.asset[index] && formData.asset[index].financialYear) || formData?.asset?.financialYear || initialFinancialYear
   );
@@ -68,18 +72,18 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
   const stateId = Digit.ULBService.getStateId();
 
   // const { data: Menu_Asset } = Digit.Hooks.asset.useAssetClassification(stateId, "ASSET", "assetClassification"); // hook for asset classification Type
-  const { data: Menu_Asset } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetClassification" }], {
+  const { data: Menu_Asset } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "assetClassification" }], {
     select: (data) => {
-      const formattedData = data?.["ASSET"]?.["AssetClassification"];
+      const formattedData = data?.["ASSET"]?.["assetClassification"];
       const activeData = formattedData?.filter((item) => item.active === true);
       return activeData;
     },
   });
 
   // const { data: Asset_Type } = Digit.Hooks.asset.useAssetType(stateId, "ASSET", "assetParentCategory");
-  const { data: Asset_Type } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetParentCategory" }], {
+  const { data: Asset_Type } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "assetParentCategory" }], {
     select: (data) => {
-      const formattedData = data?.["ASSET"]?.["AssetParentCategory"];
+      const formattedData = data?.["ASSET"]?.["assetParentCategory"];
       const activeData = formattedData?.filter((item) => item.active === true);
       return activeData;
     },
@@ -87,19 +91,17 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
 
   const { data: Asset_Sub_Type } = Digit.Hooks.asset.useAssetSubType(stateId, "ASSET", "assetCategory"); // hooks for Asset Parent Category
 
-  // const { data: Asset_Parent_Sub_Type } = Digit.Hooks.asset.useAssetparentSubType(stateId, "ASSET", "assetSubCategory");
 
   // For Sub Catagories
-  const { data: Asset_Parent_Sub_Type } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetSubCategory" }], {
+  const { data: Asset_Parent_Sub_Type } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "assetSubCategory" }], {
     select: (data) => {
-      const formattedData = data?.["ASSET"]?.["AssetSubCategory"];
+      const formattedData = data?.["ASSET"]?.["assetSubCategory"];
       const activeData = formattedData?.filter((item) => item.active === true);
       return activeData;
     },
   });
-  console.log("E data:- ", Asset_Parent_Sub_Type);
 
-  const { data: sourceofFinanceMDMS } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "SourceFinance" }], {
+  const { data: sourceofFinanceMDMS } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "SourceFinance" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["SourceFinance"];
       const activeData = formattedData?.filter((item) => item.active === true);
@@ -114,7 +116,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
       sourcefinance.push({ i18nKey: `AST_${finance.code}`, code: `${finance.code}`, value: `${finance.name}` });
     });
 
-  const { data: currentFinancialYear } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "FinancialYear" }], {
+  const { data: currentFinancialYear } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "FinancialYear" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["FinancialYear"];
       return formattedData;
@@ -240,6 +242,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
         Department,
         assetsOfType,
         assetsUsage,
+        assetAssignable,
         Assetdescription,
       };
       onSelect(config.key, ownerStep, false, index);
@@ -264,23 +267,13 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
     Department,
     assetsOfType,
     assetsUsage,
+    assetAssignable,
     Assetdescription,
   ]);
 
-  const { data: assetTypeData } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetType" }], {
-    select: (data) => {
-      const formattedData = data?.["ASSET"]?.["AssetType"];
-      return formattedData;
-    },
-  });
-  let assetType = [];
 
-  assetTypeData &&
-    assetTypeData.map((assT) => {
-      assetType.push({ i18nKey: `${assT.code}`, code: `${assT.code}`, value: `${assT.name}` });
-    });
 
-  const { data: assetCurrentUsageData } = Digit.Hooks.useCustomMDMSV2(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetUsage" }], {
+  const { data: assetCurrentUsageData } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "ASSET", [{ name: "AssetUsage" }], {
     select: (data) => {
       const formattedData = data?.["ASSET"]?.["AssetUsage"];
       return formattedData;
@@ -293,6 +286,13 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
       assetCurrentUsage.push({ i18nKey: `${assT.code}`, code: `${assT.code}`, value: `${assT.name}` });
     });
 
+    // This is use for Asset Assigned / Not Assigned menu
+    let assetAssignableMenu = [
+      {i18nKey: 'YES', code: 'YES', value: 'YES'},
+      {i18nKey: 'NO', code: 'NO', value: 'NO'},
+    ];
+  
+    
   return (
     <React.Fragment>
       {window.location.href.includes("/employee") ? <Timeline currentStep={1} /> : null}
@@ -302,11 +302,11 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
         onSelect={goNext}
         onSkip={onSkip}
         t={t}
-        isDisabled={!assetclassification || !assetsubtype || !assettype || !BookPagereference}
+        isDisabled={!assetclassification || !assetsubtype || !BookPagereference}
       >
         <div>
           <div>
-            {t("AST_FINANCIAL_YEAR")}
+            {t("AST_FINANCIAL_YEAR")} <span style={{ color: "red" }}>*</span>
             <div className="tooltip" style={{ width: "12px", height: "5px", marginLeft: "10px", display: "inline-flex", alignItems: "center" }}>
               <InfoBannerIcon />
               <span
@@ -344,7 +344,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
           />
 
           <div>
-            {t("AST_SOURCE_FINANCE")}
+            {t("AST_SOURCE_FINANCE")} <span style={{ color: "red" }}>*</span>
             <div className="tooltip" style={{ width: "12px", height: "5px", marginLeft: "10px", display: "inline-flex", alignItems: "center" }}>
               <InfoBannerIcon />
               <span
@@ -381,7 +381,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
           />
 
           <div>
-            {t("AST_CATEGORY")}
+            {t("AST_CATEGORY")} <span style={{ color: "red" }}>*</span>
             <div className="tooltip" style={{ width: "12px", height: "5px", marginLeft: "10px", display: "inline-flex", alignItems: "center" }}>
               <InfoBannerIcon />
               <span
@@ -416,7 +416,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
               />
             )}
           />
-          <CardLabel>{`${t("AST_PARENT_CATEGORY")}`}</CardLabel>
+          <div>{`${t("AST_PARENT_CATEGORY")}`} <span style={{ color: "red" }}>*</span></div>
           <Controller
             control={control}
             name={"assettype"}
@@ -434,7 +434,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
               />
             )}
           />
-          <CardLabel>{`${t("AST_SUB_CATEGORY")}`}</CardLabel>
+          <div>{`${t("AST_SUB_CATEGORY")}`} <span style={{ color: "red" }}>*</span></div>
           <Controller
             control={control}
             name={"assetsubtype"}
@@ -453,7 +453,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
             )}
           />
 
-          <CardLabel>{`${t("AST_CATEGORY_SUB_CATEGORY")}`}</CardLabel>
+          <div>{`${t("AST_CATEGORY_SUB_CATEGORY")}`}</div>
           <Controller
             control={control}
             name={"assetparentsubCategory"}
@@ -471,7 +471,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
               />
             )}
           />
-          <div>{t("AST_TYPE")}</div>
+          {/* <div>{t("AST_TYPE")}</div>
           <Controller
             control={control}
             name={"assetsOfType"}
@@ -488,10 +488,10 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
                 t={t}
               />
             )}
-          />
+          /> */}
 
           <div>
-            {t("AST_BOOK_REF_SERIAL_NUM")}
+            {t("AST_BOOK_REF_SERIAL_NUM")} <span style={{ color: "red" }}>*</span>
             <div className="tooltip" style={{ width: "12px", height: "5px", marginLeft: "10px", display: "inline-flex", alignItems: "center" }}>
               <InfoBannerIcon />
               <span
@@ -527,7 +527,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
             })}
           />
 
-          <CardLabel>{`${t("AST_NAME")}`}</CardLabel>
+          <div>{`${t("AST_NAME")}`} <span style={{ color: "red" }}>*</span> </div>
           <TextInput
             t={t}
             type={"text"}
@@ -586,7 +586,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
           </div>
 
           <div>
-            {t("AST_DEPARTMENT")}
+            {t("AST_DEPARTMENT")} <span style={{ color: "red" }}>*</span>
             <div className="tooltip" style={{ width: "12px", height: "5px", marginLeft: "10px", display: "inline-flex", alignItems: "center" }}>
               <InfoBannerIcon />
               <span
@@ -622,7 +622,7 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
             )}
           />
 
-          <div>{t("AST_USAGE")}</div>
+          <div>{t("AST_USAGE")} <span style={{ color: "red" }}>*</span></div>
           <Controller
             control={control}
             name={"assetsUsage"}
@@ -634,6 +634,25 @@ const NewAssetClassification = ({ t, config, onSelect, userType, formData }) => 
                 selected={assetsUsage}
                 select={setAssetsUsage}
                 option={assetCurrentUsage}
+                optionKey="i18nKey"
+                placeholder={"Select"}
+                t={t}
+              />
+            )}
+          />
+
+          <div>{t("AST_STATUS_ASSIGNABLE")} <span style={{ color: "red" }}>*</span> </div>
+          <Controller
+            control={control}
+            name={"assetAssignable"}
+            defaultValue={assetAssignable}
+            rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                selected={assetAssignable}
+                select={setAssetAssignable}
+                option={assetAssignableMenu}
                 optionKey="i18nKey"
                 placeholder={"Select"}
                 t={t}

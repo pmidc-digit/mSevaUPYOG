@@ -60,14 +60,14 @@ const inboxConfig = (tenantId, filters) => ({
     fetchFilters: filterFunctions.CHB,
     _searchFn: () => CHBServices.search({ tenantId, filters }),
   },
-  ASSET: {
+ ASSET: {
     services: ["asset-create"],
     searchResponseKey: "Asset",
     businessIdsParamForSearch: "applicationNo",
     businessIdAliasForSearch: "applicationNo",
     fetchFilters: filterFunctions.ASSET,
     _searchFn: () => ASSETService.search({ tenantId, filters }),
-  },
+  }
 });
 
 const callMiddlewares = async (data, middlewares) => {

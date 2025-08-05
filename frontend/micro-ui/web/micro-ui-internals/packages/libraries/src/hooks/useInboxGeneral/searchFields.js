@@ -129,8 +129,8 @@ const inboxSearchFields = {
     },
     {
       label: "AST_ASSET_CATEGORY_LABEL",
-      name: "assetclassification",
-      // minLength: "10",
+      name: "assetClassification",
+      type: "Dropdown",
       roles: [],
     },
     {
@@ -139,7 +139,7 @@ const inboxSearchFields = {
       // minLength: "10",
       roles: [],
     },
-  ],
+  ]
 };
 
 const searchFieldsForSearch = {

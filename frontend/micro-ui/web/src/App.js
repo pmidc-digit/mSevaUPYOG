@@ -35,15 +35,18 @@ import {
   TLLinks,
   initTLComponents,
 } from "@mseva/digit-ui-module-tl";
-
 import {
   GCModule,
   GCReducers,
   GCLinks,
   initGCComponents,
 } from "@mseva/digit-ui-module-gc";
-
-import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
+import {
+  PTRModule,
+  PTRLinks,
+  PTRComponents,
+  PTRReducers,
+} from "@mseva/digit-ui-module-ptr";
 import {
   initReceiptsComponents,
   ReceiptsModule,
@@ -55,7 +58,6 @@ import {
   SurveyReducers,
 } from "@mseva/digit-ui-module-engagement";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
-import { initGCComponents } from "@mseva/digit-ui-module-gc";
 import { initCustomisationComponents } from "./Customisations";
 import {
   initCommonPTComponents,
@@ -63,13 +65,28 @@ import {
 } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
-import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
-import { CHBModule, CHBLinks, CHBComponents } from "@mseva/upyog-ui-module-chb";
+import {
+  ADSModule,
+  ADSLinks,
+  ADSComponents,
+  ADSReducers,
+} from "@mseva/upyog-ui-module-ads";
+import {
+  CHBModule,
+  CHBLinks,
+  CHBComponents,
+  CHBReducers,
+} from "@mseva/upyog-ui-module-chb";
 import {
   ASSETComponents,
   ASSETLinks,
   ASSETModule,
 } from "@mseva/upyog-ui-module-asset";
+import {
+  PGRAIComponents,
+  PGRAILinks,
+  PGRAIModule,
+} from "@mseva/upyog-ui-module-pgrai";
 
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
@@ -106,6 +123,7 @@ const enabledModules = [
   "PTR",
   "ASSET",
   "GC",
+  "PGRAI",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -138,6 +156,9 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ASSETModule,
   ASSETLinks,
   ...ASSETComponents,
+  PGRAIModule,
+  PGRAILinks,
+  ...PGRAIComponents,
 });
 initPGRComponents();
 initSWACHComponents();
@@ -165,6 +186,9 @@ const moduleReducers = (initData) => ({
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),
   swach: SWACHReducers(initData),
+  ptr: PTRReducers(initData),
+  ads: ADSReducers(initData),
+  chb: CHBReducers(initData),
   gc: GCReducers(initData),
 });
 

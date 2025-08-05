@@ -25,6 +25,7 @@
 
 
   const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimestamp }) => {
+    
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { state } = useLocation();
     const { t } = useTranslation();
@@ -54,7 +55,7 @@
           ...prevParams,
           additionalDetails: {
             ...prevParams.additionalDetails,
-            TimeStamp: sessionStorage.getItem("otpVerifiedTimestamp")
+            TimeStamp: otpVerifiedTimestamp
           }
         }));
       }
@@ -63,52 +64,53 @@
 
     const selfdeclarationform =
     `
-To,
-<b>${ulbgrade}</b>
-<b>${district}</b>
+   To,
+   <b>${ulbgrade}</b>
+   <b>${district}</b>
+   
+    
+   Dear Sir or Madam,
 
+   I, under signed Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype}</b>) having Registration No. 
+   <b>${architectid}</b> is appointed by the <b>${ownername}</b> Mobile number <b>${mobile}</b> for the development on
+   land bearing Kh. No <b>${khasranumber}</b> Area <b>${area}</b> (Sq.mts).
+    
+   This site falls in ward number <b>${ward}</b> zone number <b>${zone}</b>  in the Master plan of 
+   <b>${district}</b> and the proposed Residential/Commercial/Industrial construction is permi
+   -ssible in this area.
   
-Dear Sir or Madam,
-
-
-I, under signed Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype}</b>) having Registration No. <b>${architectid}</b> is appointed by the <b>${ownername}</b> Mobile number <b>${mobile}</b> for the development on land bearing Kh. No <b>${khasranumber}</b> Area <b>${area}</b> (Sq.mts).
-
-
-This site falls in ward number <b>${ward}</b> zone number <b>${zone}</b>  in the Master plan of <b>${district}</b> and the proposed Residential/Commercial/Industrial construction is permissible in this area.
-
-
-I am currently registered as <b>${architecttype}</b> with the Competent Authority and empanelled under Self-Certification Scheme.
-
-
-I hereby certify that I/we have appointed by the owner to prepare the plans, sections and details, structural details as required under the Punjab Municipal Building Byelaws for the above mentioned project. 
-
-
-That the drawings prepared and uploaded along with other necessary documents on this E-Naksha Platform are as per the provisions of Punjab Municipal Building Byelaws and this building plan has been applied under Self-Certification Scheme. 
-
-
-I certify that:
-
-
-That I am fully conversant with the provisions of the Punjab Municipal Building Byelaws and other applicable instructions/ regulations, which are in force and I undertake to fulfill the same.
-
-
-That plans have been prepared within the framework of provisions of the Master Plan and applicable Building Bye Laws / Regulations. 
-
-
-That site does not falls in any prohibited area/ government land/ encroachment or any other land restricted for building construction or in any unauthorized colony. 
-
-
-That plan is in conformity to structural safety norms. 
-
-
-That I have seen the originals of all the documents uploaded and Nothing is concealed thereof. 
-
-
-That all the requisite documents/NOC required to be uploaded have been uploaded on E-Naksha portal along with plan. 
-
-
-That above stated facts are true and all the requisite documents uploaded with this E-Naksha plan.
-
+   I am currently registered as <b>${architecttype}</b> with the Competent Authority and empane
+   -lled under Self-Certification Scheme.
+  
+   I hereby certify that I/we have appointed by the owner to prepare the plans, sections and 
+   details, structural details as required under the Punjab Municipal Building Byelaws for the 
+   above mentioned project. 
+  
+   That the drawings prepared and uploaded along with other necessary documents on this 
+   E-Naksha Platform are as per the provisions of Punjab Municipal Building Byelaws and th
+   -is building plan has been applied under Self-Certification Scheme. 
+  
+   I certify that:
+   That I am fully conversant with the provisions of the Punjab Municipal Building Byelaws and 
+   other applicable instructions/ regulations, which are in force and I undertake to fulfill the 
+   same.
+  
+   That plans have been prepared within the framework of provisions of the Master Plan and app
+   -licable Building Bye Laws / Regulations. 
+  
+   That site does not falls in any prohibited area/ government land/ encroachment or any other 
+   land restricted for building construction or in any unauthorized colony. 
+  
+   That plan is in conformity to structural safety norms. 
+  
+   That I have seen the originals of all the documents uploaded and Nothing is concealed 
+   thereof. 
+  
+   That all the requisite documents/NOC required to be uploaded have been uploaded on 
+   E-Naksha portal along with plan. 
+  
+   That above stated facts are true and all the requisite documents uploaded with this E-Naksha plan.
+   
 
 
    This Document is Verified By OTP at <b>${TimeStamp}</b>

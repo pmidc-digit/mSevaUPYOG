@@ -270,30 +270,20 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
                 : t("NA")
             }
           ></Row>
-          <Row
-            className="border-none"
-            label={t("BPA_SECTION_HEIGHT_EXCLUDING_MUMTY_PARAPET")}
-            text={
-              data?.planDetail?.blocks?.[0]?.building?.buildingHeightExcludingMP
-                ? `${data?.planDetail?.blocks?.[0]?.building?.buildingHeightExcludingMP} ${t("BPA_MTRS_LABEL")}`
-                : t("NA")
-            }
-          ></Row>
         </StatusTable>
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
         {data?.planDetail?.blocks?.map((block, index) => (
           <div key={index} style={{ marginTop: "20px" }}>
-            
-            {/* <CardSubHeader style={{ fontSize: "18px" }}>
+            <CardSubHeader style={{ fontSize: "18px" }}>
               {t("BPA_BLOCK_SUBHEADER")} {index + 1}
-            </CardSubHeader> 
-             {!(checkingFlow === "OCBPA") ? (
+            </CardSubHeader>
+            {!(checkingFlow === "OCBPA") ? (
               <CardSectionHeader style={{ fontWeight: "normal" }} className="card-label-smaller">
                 {t("BPA_SUB_OCCUPANCY_LABEL")}
               </CardSectionHeader>
-            ) : null} 
-             {!(checkingFlow === "OCBPA") ? (
+            ) : null}
+            {!(checkingFlow === "OCBPA") ? (
               <MultiSelectDropdown
                 BlockNumber={block.number}
                 className="form-field"
@@ -308,8 +298,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
                 ServerStyle={{ width: "100%", overflowX: "hidden"}}
                 t={t}
               />
-            ) : null} */}
-
+            ) : null}
             {!(checkingFlow === "OCBPA") ? (
               <div className="tag-container">
                 {subOccupancyObject[`Block_${block.number}`] &&

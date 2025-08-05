@@ -1,12 +1,12 @@
 import React, { useCallback, useMemo, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { SearchForm, Table, Card, Header, CardSectionHeader, CardSectionSubText } from "@mseva/digit-ui-react-components";
+import { SearchForm, Table, Card, Header, CardSectionHeader, CardSectionSubText, Loader } from "@mseva/digit-ui-react-components";
 import { Link } from "react-router-dom";
 import { convertEpochToDateDMY } from "../../utils";
 import SearchFields from "./SearchFields";
 import MobileSearchApplication from "./MobileSearchApplication";
 
-const SearchApplication = ({ tenantId, t, onSubmit, data, count }) => {
+const SearchApplication = ({ tenantId, t, onSubmit, data, count, isLoading }) => {
   const initialValues = Digit.SessionStorage.get("SEARCH_APPLICATION_DETAIL")
     ? {
         ...Digit.SessionStorage.get("SEARCH_APPLICATION_DETAIL"),
@@ -135,6 +135,7 @@ const SearchApplication = ({ tenantId, t, onSubmit, data, count }) => {
       <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
         <SearchFields {...{ register, control, reset, tenantId, t, previousPage }} />
       </SearchForm>
+      {isLoading && (<Loader />)}
       {data?.display ? (
         <Card style={{ marginTop: 20 }}>
           {t(data.display)

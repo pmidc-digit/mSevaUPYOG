@@ -55,8 +55,7 @@ export const newConfig1=[
                 "label": "BPA_WARD_NUMBER_LABEL",
                 "type": "text",
                 "validation": {
-                    "pattern": "^[a-zA-Z0-9 ]*$",
-                    "title": "Special Character are not allowed",
+                    "pattern": "^[a-zA-Z0-9 -]+$",
                     "required": true
                   },
                 "name": "wardnumber"
@@ -64,25 +63,19 @@ export const newConfig1=[
             {
                 "label": "BPA_ZONE_NUMBER_LABEL",
                 "type": "text",
-                "validation": {
-                    "pattern": "^[a-zA-Z0-9 ]*$",
-                    "required": false},
+                "validation": {},
                 "name": "zonenumber"
             },
             {
                 "label": "BPA_KHASRA_NUMBER_LABEL",
                 "type": "text",
-                "validation": {
-                    "pattern": "^[a-zA-Z0-9/]*$",
-                    "required": true},
+                "validation": {"required": true},
                 "name": "khasraNumber"
             },
             {
                 "label": "BPA_ARCHITECT_ID",
                 "type": "text",
-                "validation": {
-                    "pattern": "^[a-zA-Z0-9/]*$",
-                    "required": true},
+                "validation": {"required": true},
                 "name": "architectid"
             },
             {
@@ -94,66 +87,55 @@ export const newConfig1=[
             {
                 "label": "BPA_NUMBER_OF_BATHS",
                 "type": "text",
-                "validation": {
-                    "pattern": "^[0-9]*$",
-                    "required": false
-                },
+                "validation": {},
                 "name": "bathnumber"
             },
             {
                 "label": "BPA_NUMBER_OF_KITCHENS",
                 "type": "text",
-                "validation": {"pattern": "^[0-9]*$",
-                    "required": false},
+                "validation": {},
                 "name": "kitchenNumber"
             },
             {
                 "label": "BPA_APPROX_INHABITANTS_FOR_ACCOMODATION",
                 "type": "text",
-                "validation": {"pattern": "^[0-9]*$",
-                    "required": false},
+                "validation": {},
                 "name": "approxinhabitants"
             },
             {
                 "label": "BPA_DISTANCE_FROM_SEWER",
                 "type": "text",
-                "validation": {"pattern": "^[0-9]*$",
-                    "required": false},
+                "validation": {},
                 "name": "distancefromsewer"
             },
             {
                 "label": "BPA_SOURCE_OF_WATER",
                 "type": "text",
-                "validation": {"pattern": "^[a-zA-Z]*$",
-                    "required": false},
+                "validation": {},
                 "name": "sourceofwater"
             },
             {
                 "label": "BPA_NUMBER_OF_WATER_CLOSETS",
                 "type": "text",
-                "validation": {"pattern": "^[0-9]*$",
-                    "required": false},
+                "validation": {},
                 "name": "watercloset"
             },
             {
                 "label": "BPA_MATERIAL_TO-BE_USED_IN_WALLS",
                 "type": "text",
-                "validation": {"pattern": "^[a-zA-Z]*$",
-                    "required": false},
+                "validation": {},
                 "name": "materialused"
             },
             {
                 "label": "BPA_MATERIAL_TO-BE_USED_IN_FLOOR",
                 "type": "text",
-               "validation": {"pattern": "^[a-zA-Z]*$",
-                    "required": false},
+                "validation": {},
                 "name": "materialusedinfloor"
             },
             {
                 "label": "BPA_MATERIAL_TO-BE_USED_IN_ROOFS",
                 "type": "text",
-                "validation": {"pattern": "^[a-zA-Z]*$",
-                    "required": false},
+                "validation": {},
                 "name": "materialusedinroofs"
             },
 

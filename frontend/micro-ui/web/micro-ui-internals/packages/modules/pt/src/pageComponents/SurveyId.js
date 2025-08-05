@@ -2,6 +2,7 @@ import { CardLabel,LabelFieldPair, TextInput, CardLabelError } from "@mseva/digi
 //import  FormStep  from "@mseva/digit-ui-react-components/src/molecules/FormStep";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 //import Timeline from "../components/TLTimeline";
 
 const SurveyId= ({ t, config, onSelect, value, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onBlur }) => {
@@ -13,10 +14,11 @@ const SurveyId= ({ t, config, onSelect, value, userType, formData, setError: set
    let surveyId;
    let setSurveyId;
   const [hidden, setHidden] = useState(true);
+  const GISValues = useSelector((state) => state.pt?.PTNewApplicationForm?.formData?.GISValues);
   if (!isNaN(index)) {
-    [surveyId, setSurveyId] = useState(formData?.surveyId || "");
+    [surveyId, setSurveyId] = useState(GISValues?.surveyId || formData?.surveyId || "");
   } else {
-    [surveyId, setSurveyId] = useState(formData?.surveyId || "");
+    [surveyId, setSurveyId] = useState(GISValues?.surveyId || formData?.surveyId || "");
   }
   const [error, setError] = useState(null);
   const { pathname } = useLocation();
@@ -50,8 +52,13 @@ const SurveyId= ({ t, config, onSelect, value, userType, formData, setError: set
   useEffect(() => {
     if (presentInModifyApplication && userType === "employee") {
         setSurveyId(formData?.originalData?.surveyId)
+        return;
     }
-  }, []);
+    if(GISValues?.surveyId) {
+      setSurveyId(GISValues?.surveyId);
+      return;
+    }
+  }, [GISValues?.surveyId]);
 
   const inputs = [
     {
@@ -96,7 +103,8 @@ const SurveyId= ({ t, config, onSelect, value, userType, formData, setError: set
                 onSelect={goNext}
                 placeholder={""}
                 {...input.validation}
-                onBlur={onBlur}
+                // onBlur={onBlur}
+                disabled={GISValues?.surveyId ? true : false}
 
               // autoFocus={presentInModifyApplication}
               />

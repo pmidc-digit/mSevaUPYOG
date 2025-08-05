@@ -13,20 +13,50 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   let isEdit = window.location.href.includes("edit-application")||window.location.href.includes("renew-trade");
   const [ownershipCategory, setOwnershipCategory] = useState(formData?.ownershipCategory);
   const [isSameAsPropertyOwner, setisSameAsPropertyOwner] = useState((formData?.ownershipCategory?.isSameAsPropertyOwner === "false" ? false : formData?.ownershipCategory?.isSameAsPropertyOwner)  || null);
-  const { data: dropdownData } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "TLOwnerTypeWithSubtypes",{userType});
+  const { data: dropdownData } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "common-masters", "TLOwnerShipCategory",{userType});
   const isEmpNewApplication = window.location.href.includes("/employee/tl/new-application");
   const isEmpRenewLicense = window.location.href.includes("/employee/tl/renew-application-details");
   const isEmpEdit = window.location.href.includes("/employee/tl/edit-application-details");
   const [ownershipTypeMain, setOwnershipTypeMain] = useState();
   const ownershipTypeOptions = [
-    { code: "INDIVIDUAL", i18nKey: "COMMON_MASTERS_OWNERSHIPCATEGORY_INDIVIDUAL" },
-    { code: "INSTITUTIONALPRIVATE", i18nKey: "COMMON_MASTERS_OWNERSHIPCATEGORY_INSTITUTIONALPRIVATE" },
-    { code: "INSTITUTIONALGOVERNMENT", i18nKey: "COMMON_MASTERS_OWNERSHIPCATEGORY_INSTITUTIONALGOVERNMENT" }
+    { code: "INDIVIDUAL", i18nKey: "TL_INDIVIDUAL" },
+    { code: "INSTITUTIONALPRIVATE", i18nKey: "TL_INSTITUTIONALPRIVATE" },
+    { code: "INSTITUTIONALGOVERNMENT", i18nKey: "TL_INSTITUTIONALGOVERNMENT" }
   ];
 
   const filteredOwnershipSubTypes = useMemo(() => {
     if (!ownershipTypeMain) return [];
-    return dropdownData?.filter(item => item.code.startsWith(ownershipTypeMain.code)) || [];
+    //console.log("ownershipTypeMain",ownershipTypeMain);
+    const currentFilteredData= dropdownData?.filter((item)=> item?.code.split(".")?.[0]=== ownershipTypeMain?.code);
+    //console.log("currentFilteredData", currentFilteredData);
+    let modifiedFilteredData;
+
+    if(ownershipTypeMain?.code === "INSTITUTIONALPRIVATE"){
+      modifiedFilteredData=currentFilteredData.filter(item=> item?.code !== "INSTITUTIONALPRIVATE.PRIVATECOMPANY" && item?.code !== "INSTITUTIONALPRIVATE.PRIVATETRUST")?.map((item)=>({
+        ...item,
+        i18nKey: `TL_${item.code}`
+      }))
+
+    }
+    else if(ownershipTypeMain?.code === "INSTITUTIONALGOVERNMENT"){
+       modifiedFilteredData=currentFilteredData.filter((item)=> item?.code !== "INSTITUTIONALGOVERNMENT.ULBGOVERNMENT" )?.map((item)=>({
+        ...item,
+        i18nKey: `TL_${item.code}`
+      }))
+    }
+    else{
+      modifiedFilteredData= currentFilteredData?.map((item)=> 
+      {
+      return {
+        ...item,
+        i18nKey: `TL_${item.code}`
+      }
+      })
+    }
+    
+   // console.log("modifiedFilteredData", modifiedFilteredData);
+    return modifiedFilteredData || [];
+    //return dropdownData?.filter(item => item.code.startsWith(ownershipTypeMain.code)) || [];
   }, [dropdownData, ownershipTypeMain]);
 
 
@@ -35,6 +65,10 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
 
   function selectedValue(value) {
     setOwnershipCategory(value);
+  }
+
+  const handleOwnershipMain=(value)=>{
+    setOwnershipTypeMain(value);
   }
 
   function selectisSameAsPropertyOwner(e) {
@@ -115,6 +149,8 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
   //   }
   // }, []);
 
+  console.log("formData here", formData);
+
   if (userType === "employee") {
   let isRenewal = window.location.href.includes("tl/renew-application-details");
   if (window.location.href.includes("tl/edit-application-details")) isRenewal = true;
@@ -144,7 +180,7 @@ const SelectOwnerShipDetails = ({ t, config, onSelect, userType, formData, onBlu
             selected={ownershipTypeMainDerived}
             disable={(isRenewal && ownershipCategory?.code) || isSameAsPropertyOwner}
             option={ownershipTypeOptions}
-            select={setOwnershipTypeMain}
+            select={(value)=>handleOwnershipMain(value)}
             optionKey="i18nKey"
             t={t}
             placeholder={t("COMMON-MASTERS_OWNERSHIP_LABEL")}

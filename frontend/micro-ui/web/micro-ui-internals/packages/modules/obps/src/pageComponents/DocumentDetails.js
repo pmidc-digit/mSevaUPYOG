@@ -1,6 +1,7 @@
-////////////////////////////////////////////////////////////
+
 /** 
- * @author - Shivank - NIUA 
+ * @author - Shivank Shukla  - NIUA
+  
  * Addition of feature of fetching Latitude and Longitude from uploaded photo 
 
     - i have added a function (extractGeoLocation)  to extract latitude and longitude from an uploaded image file.
@@ -17,6 +18,14 @@
     - After extracting geolocation, the function continues with the existing logic to handle the uploaded files. 
 */
 
+
+
+
+
+
+
+
+
 import React, { useEffect, useMemo, useState } from "react";
 import {
     CardLabel,
@@ -26,9 +35,7 @@ import {
     Loader,
     FormStep,
     MultiUploadWrapper,
-    CitizenInfoLabel,
-    SubmitBar,
-    SearchIcon
+    CitizenInfoLabel
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview";
@@ -36,90 +43,24 @@ import { stringReplaceAll } from "../utils";
 import cloneDeep from "lodash/cloneDeep";
 import EXIF from 'exif-js';
 
-const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState, onSubmit }) => {
+const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
     const stateId = Digit.ULBService.getStateId();
-    const tenantId = Digit.ULBService.getCurrentTenantId();
-    const [documents, setDocuments] = useState(formData?.documents?.documents|| formData?.documents ||[]);
+    const [documents, setDocuments] = useState(formData?.documents?.documents || []);
     const [error, setError] = useState(null);
     const [enableSubmit, setEnableSubmit] = useState(true)
     const [checkRequiredFields, setCheckRequiredFields] = useState(false);
     const checkingFlow = formData?.uiFlow?.flow;
 
     const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
-    
+
 
     const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
     const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
-
-    const handleSaveAsDraft = () => {
-        let updatedFormData = { ...formData };
-        updatedFormData.documents = { ...formData.documents, documents };
-    
-        // Construct the BPA object using only the required fields
-        let BPA = {
-            id: updatedFormData.id,
-            applicationNo: updatedFormData.applicationNo,
-            approvalNo: updatedFormData.approvalNo,
-            accountId: updatedFormData.accountId,
-            edcrNumber: updatedFormData.edcrNumber,
-            riskType: updatedFormData.riskType,
-            businessService: updatedFormData.businessService,
-            landId: updatedFormData.landId,
-            tenantId: updatedFormData.tenantId,
-            approvalDate: updatedFormData.approvalDate,
-            applicationDate: updatedFormData.applicationDate,
-            status: updatedFormData.status,
-            documents: updatedFormData.documents.documents, // Include only necessary document details
-            landInfo: {
-                ...updatedFormData.landInfo,
-                address: {
-                    ...updatedFormData.landInfo?.address,
-                    city: updatedFormData.landInfo?.address?.city?.code, // Ensure city is a string
-                },
-                owners: updatedFormData?.landInfo?.owners.map(owner => ({
-                    ...owner,
-                    gender: owner.gender?.code // Ensure gender is a string
-                })),
-                unit: updatedFormData?.landInfo?.unit?.map(unit => ({
-                    id: unit?.id,
-                    floorNo: unit?.floorNo,
-                    unitType: unit?.unitType,
-                    blockIndex: unit?.blockIndex,
-                    usageCategory: unit?.usageCategory,
-                    occupancyType: unit?.occupancyType // Only necessary fields
-                })),
-            },
-        
-            assignee: updatedFormData.assignee || [], // Assuming this can be an empty array
-            workflow: {
-                action: "SAVE_AS_DRAFT", // Always set action as SAVE_AS_DRAFT
-                assignes: null,
-                comments: null,
-                varificationDocuments: null
-            },
-            auditDetails: updatedFormData.auditDetails,
-            additionalDetails: updatedFormData.additionalDetails,
-            applicationType: "BUILDING_PLAN_SCRUTINY",
-            serviceType: "NEW_CONSTRUCTION",
-            occupancyType: "A"
-        };
-        
-        // Call the update service to save as draft
-        Digit.OBPSService.update({ BPA }, tenantId)
-            .then(response => {
-                console.log("Draft saved successfully", response);
-            })
-            .catch(error => {
-                console.error("Error saving draft", error);
-            });
-        
-    };
-    
     const handleSubmit = () => {
         let document = formData.documents;
         let documentStep;
         let RealignedDocument = [];
-        bpaTaxDocuments && bpaTaxDocuments?.map((ob) => {
+        bpaTaxDocuments && bpaTaxDocuments.map((ob) => {
             documents && documents.filter(x => ob.code === stringReplaceAll(x?.additionalDetails.category,"_",".")).map((doc) => {
                 RealignedDocument.push(doc);
             })
@@ -182,13 +123,6 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
                         );
                     })}
                     {error && <Toast label={error} onClose={() => setError(null)} error />}
-                    {/*Adding Save As Draft Button */}
-                    <SubmitBar 
-                    label={t("BPA_SAVE_AS_DRAFT")}
-                    onSubmit={handleSaveAsDraft}
-                    disabled={enableSubmit}
-                    />
-                <br></br>
                 </FormStep>: <Loader />}
                 {(window.location.href.includes("/bpa/building_plan_scrutiny/new_construction") || window.location.href.includes("/ocbpa/building_oc_plan_scrutiny/new_construction")) && formData?.applicationNo ? <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.applicationNo} ${t("BPA_DOCS_INFORMATION")}`} className={"info-banner-wrap-citizen-override"} /> : ""}
         </div>
@@ -224,6 +158,7 @@ const SelectDocument = React.memo(function MyComponent({
     
     const [latitude, setLatitude] = useState(null);
     const [longitude, setLongitude] = useState(null);
+////////////////////////////////////////////////////////////
     function extractGeoLocation(file) {
         return new Promise((resolve) => {
             EXIF.getData(file, function() {
@@ -245,12 +180,15 @@ const SelectDocument = React.memo(function MyComponent({
             });
         });
     }
+    
     function convertToDecimal(coordinate) {
         const degrees = coordinate[0];
         const minutes = coordinate[1];
         const seconds = coordinate[2];
         return degrees + minutes / 60 + seconds / 3600;
     }
+
+    //////////////////////////
     const handleSelectDocument = (value) => {
         if(filteredDocument?.documentType){
             filteredDocument.documentType=value?.code;
@@ -261,6 +199,7 @@ const SelectDocument = React.memo(function MyComponent({
         }
         setSelectedDocument(value);
     };
+
     function selectfile(e, key) {
         e && setFile(e.file);
         e && setfileArray([...fileArray,e.file]);
@@ -297,13 +236,11 @@ const SelectDocument = React.memo(function MyComponent({
                     // const filteredDocumentsByFileStoreId = documents?.filter((item) => item?.fileStoreId !== uploadedFile.fileStoreId) || []
                     let newfiles = [];
                     e?.map((doc, index) => {
-                        
                         newfiles.push({
                             documentType: selectedDocument?.code,
                             additionalDetails:{category:selectedDocument?.code.split(".").slice(0,2).join('_'),
                             latitude: location.latitude,
                             longitude: location.longitude,
-                            fileName: doc?.[0] || "",
                         },
                             fileStoreId: doc?.[1]?.fileStoreId?.fileStoreId,
                             documentUid: doc?.[1].fileStoreId?.fileStoreId,
@@ -359,7 +296,6 @@ const SelectDocument = React.memo(function MyComponent({
                             additionalDetails:{category:selectedDocument?.code.split(".").slice(0,2).join('_'),
                             latitude: latitude,
                             longitude: longitude,
-                            fileName: fileArray[index]?.name || "",
                         },
                             documentUid: doc.fileStoreId,
                             fileName: fileArray[index]?.name || "",
@@ -391,6 +327,7 @@ const SelectDocument = React.memo(function MyComponent({
                             if (normalDocumentType == selectedDocumentType) {
                                 if (data?.documentType) data.documentType = selectedDocument?.code;
                                 if (data?.file?.documentType) data.file.documentType = selectedDocument?.code;
+                                
                             }
                         });
                     }
@@ -418,22 +355,13 @@ const SelectDocument = React.memo(function MyComponent({
 
     const allowedFileTypes = /(.*?)(jpg|jpeg|png|image|pdf)$/i;
 
-    const uploadedFilesPreFill = useMemo(() => {
-        if (!formData) return [];
-        const docs = formData.documents?.documents || formData.documents || [];
-        const selectedUplDocs = docs
-            .filter(ob => ob.documentType === selectedDocument.code)
-            .map(e => [
-                e.additionalDetails.fileName,
-                {
-                    file: { name: e.additionalDetails.fileName, type: e.documentType },
-                    fileStoreId: { fileStoreId: e.fileStoreId, tenantId },
-                },
-            ]);
+    const uploadedFilesPreFill = useMemo(()=>{
+        let selectedUplDocs=[];
+        formData?.documents?.documents?.filter((ob) => ob.documentType === selectedDocument.code).forEach(e =>
+            selectedUplDocs.push([e.fileName, {file: {name: e.fileName, type: e.documentType}, fileStoreId: {fileStoreId: e.fileStoreId, tenantId}}])
+            )
         return selectedUplDocs;
-    }, [formData, selectedDocument.code, tenantId]);
-    
-    const sitePhotographDoc = documents.filter(doc => doc.documentType === "SITEPHOTOGRAPH.ONE.ONE");
+    },[formData])
 
     return (
         <div /* style={{ marginBottom: "24px" }} */>
@@ -458,29 +386,22 @@ const SelectDocument = React.memo(function MyComponent({
                 acceptFiles= "image/*, .pdf, .png, .jpeg, .jpg"
             /> 
         {doc?.uploadedDocuments?.length && <DocumentsPreview isSendBackFlow={true} documents={doc?.uploadedDocuments} />}
-        {doc?.code === "SITEPHOTOGRAPH.ONE" && (() => {
-            const latitude = sessionStorage.getItem("Latitude") || sitePhotographDoc?.[0]?.additionalDetails?.latitude;
-            const longitude = sessionStorage.getItem("Longitude") || sitePhotographDoc?.[0]?.additionalDetails?.longitude;
 
-            return latitude && longitude ? (
-                <div>
-                    <p>Latitude: {latitude}</p>
-                    <p>Longitude: {longitude}</p>
-                    <div
-                        style={{ position: "relative", zIndex: "100", right: "-500px", marginTop: "-24px", marginRight: "20px", cursor: "pointer" }}
-                        onClick={() => window.open(`http://maps.google.com/maps?q=${latitude},${longitude}`, '_blank')}
-                    >
-                        <SearchIcon />
+        {doc?.code === "SITEPHOTOGRAPH.ONE" && (
+                sessionStorage.getItem("Latitude") && sessionStorage.getItem("Longitude") ? (
+                    <div>
+                        <p>Latitude: {sessionStorage.getItem("Latitude")}</p>
+                        <p>Longitude: {sessionStorage.getItem("Longitude")}</p>
+                        {setIsNextButtonDisabled(false)} {/* Enable the "Next" button */}
                     </div>
-                    {setIsNextButtonDisabled(false)} {/* Enable the "Next" button */}
-                </div>
-            ) : (
-                <div>
-                    <p style={{ color: 'red' }}>Please upload a Photo with Location details.</p>
-                    {setIsNextButtonDisabled(true)} {/* Disable the "Next" button */}
-                </div>
-            );
-        })()}   
+                ) : (
+                    <div>
+                        <p style={{ color: 'red' }}>Please upload a Photo with Location details.</p>
+                        {setIsNextButtonDisabled(true)} {/* Disable the "Next" button */}
+                    </div>
+                )
+            )}
+       
         </div>
     );
     });

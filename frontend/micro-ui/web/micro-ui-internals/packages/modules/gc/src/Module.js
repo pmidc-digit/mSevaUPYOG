@@ -5,17 +5,121 @@ import { Loader, CitizenHomeCard, WSICon } from "@mseva/digit-ui-react-component
 import CitizenApp from "./pages/citizen";
 import EmployeeApp from "./pages/employee";
 
+
 //Page Components
-import GCCard from "./components/GCCard";
+import WSServiceName from "./pageComponents/WSServiceName";
+import WSWaterConnectionDetails from "./pageComponents/WSWaterConnectionDetails";
+import WSDocsRequired from "./pageComponents/WSDocsRequired";
+import WSDocumentDetails from "./pageComponents/WSDocumentDetails";
+import WSSewerageConnectionDetails from "./pageComponents/WSSewerageConnectionDetails";
+import WSPlumberPreference from "./pageComponents/WSPlumberPreference";
+import WSConnectionHolder from "./pageComponents/WSConnectionHolder";
+import WSInfoLabel from "./pageComponents/WSInfoLabel";
+import WSActivationDetails from "./pageComponents/WSActivationDetails";
+import WSConnectionDetails from "./pageComponents/WSConnectionDetails";
+import WSDocumentsRequired from "./pageComponents/WSDocumentsRequired";
+import WSPlumberDetails from "./pageComponents/WSPlumberDetails";
+import WSRoadCuttingDetails from "./pageComponents/WSRoadCuttingDetails";
+import WSRoadCuttingAddlDetails from "./pageComponents/WSRoadCuttingAddlDetails";
+import WSPropertyDetails from "./pageComponents/WSPropertyDetails";
+import WSConnectionHolderDetails from "./pageComponents/WSConnectionHolderDetails";
+import WSActivationConnectionDetails from "./pageComponents/WSActivationConnectionDetails";
+import WSActivationPlumberDetails from "./pageComponents/WSActivationPlumberDetails";
+import WSActivationPageDetails from "./pageComponents/WSActivationPageDetails";
+import WSActivationCommentsDetails from "./pageComponents/WSActivationCommentsDetails";
+import WSActivationSupportingDocuments from "./pageComponents/WSActivationSupportingDocuments";
+import WSDocumentsEmployee from "./pageComponents/WSDocumentsEmployee";
+import WSEditConnectionDetails from"./pageComponents/WSEditConnectionDetails";
+import WSDisconnectionDocsRequired from "./pageComponents/WSDisconnectionDocsRequired";
+import WSDisconnectionForm from "./pageComponents/WSDisconnectionForm";
+import WSRestorationForm from "./pageComponents/WSRestorationForm";
+import WSDisconnectionDocumentsForm from "./pageComponents/WSDisconnectionDocumentsForm";
+import WSDisconnectAcknowledgement from "./pageComponents/WSDisconnectAcknowledgement";
+import WSRestorationAcknowledgement from "./pageComponents/WSRestorationAcknowledgement";
+import WSDisconnectionAppDetails from "./pageComponents/WSDisconnectionAppDetails";
+
+
+
+//Components
+import WSInbox from "./components/WSInbox";
+import BillAmendmentCard from "./components/BillAmendmentCard";
+import SearchApplication from "./components/SearchApplication";
+import SearchWaterConnection from "./components/SearchWaterConnection";
+import BulkBillSearch from "./components/SearchWaterConnection/BulkBillSearch"
+import WSCard from "./components/WSCard";
+import SWCard from "./components/SWCard";
+import BillIAmendMentInbox from "./components/BillIAmendMentInbox";
+
+//Citizen Components
+import WSCreate from "./pages/citizen/WSCreate";
+import WSDisconnection from "./pages/citizen/WSDisconnection";
+import WSRestoration from "./pages/citizen/WSRestoration";
+import SearchConnectionComponent from "./pages/citizen/SearchConnection";
+import SearchResultsComponent from "./pages/citizen/SearchResults";
+import WSCitizenApplicationDetails from "./pages/citizen/WSApplicationDetails";
+import WSAdditionalDetails from "./pages/citizen/WSMyApplications/additionalDetails";
+import WSCitizenConnectionDetails from "./pages/citizen/MyConnection/ConnectionDetails";
+import WSCitizenConsumptionDetails from "./pages/citizen/MyConnection/ConsumptionDetails";
+import WSMyPayments from "./pages/citizen/MyPayment";
+import WSCitizenEditApplication from "./pages/citizen/EditApplication";
+import WSReSubmitDisconnectionApplication from "./pages/citizen/ReSubmitDisconnection";
+import WSCheckPage from "./pages/citizen/WSCreate/CheckPage";
+import WSMyConnections from "./pages/citizen/MyConnection";
+import WSAcknowledgement from "./pages/citizen/WSCreate/WSAcknowledgement";
+import WSDisconnectionCheckPage from "./pages/citizen/WSDisconnection/CheckPage";
+import WSRestorationCheckPage from "./pages/citizen/WSRestoration/CheckPage";
+import WSReSubmitDisconnectionCheckPage from "./pages/citizen/ReSubmitDisconnection/CheckPage"
+import WNSMyBillsComponent from "./pages/citizen/WnSMyBills";
+
+//Employee Components
+import ApplicationBillAmendment from "./pages/employee/ApplicationBillAmendment";
+import RequiredDocuments from "./pages/employee/RequiredDocuments";
+import NewApplication from "./pages/employee/NewApplication" ;
+import ApplicationDetails from "./pages/employee/ApplicationDetails";
+import GetConnectionDetails from "./pages/employee/connectionDetails/connectionDetails";
+import ActivateConnection from "./pages/employee/ActivateConnection";
+import ApplicationDetailsBillAmendment from "./pages/employee/ApplicationDetailsBillAmendment";
+import Search from "./pages/employee/search";
+import SearchWater from "./pages/employee/SearchWater";
+import WSEditApplication from "./pages/employee/EditApplication";
+import ConsumptionDetails from "./pages/employee/connectionDetails/ConsumptionDetails";
+import ModifyApplication from "./pages/employee/ModifyApplication";
+import EditModifyApplication from "./pages/employee/EditModifyApplication";
+import DisconnectionApplication from "./pages/employee/DisconnectionApplication";
+import RestorationApplication from "./pages/employee/RestorationApplication";
+import WSEditApplicationByConfig from './pages/employee/EditApplication/WSEditApplicationByConfig';
+import GetDisconnectionDetails from "./pages/employee/DisconnectionDetails";
+import ModifyApplicationDetails from "./pages/employee/ModifyApplicationDetails";
+import EditDisconnectionApplication from "./pages/employee/EditDisconnectionApplication";
+import EditDisconnectionByConfig from "./pages/employee/EditDisconnectionApplication/EditDisconnectionByConfig";
+import ResubmitDisconnection from "./pages/employee/EditDisconnectionApplication/ResubmitDisconnection";
+//import IntegratedBill from "./pages/employee/SearchWaterConnectionIntegrated";
+import SearchWaterConnectionIntegrated from "./pages/employee/SearchWaterConnectionIntegrated";
+import SearchIntegrated from "./pages/employee/SearchIntegrated";
+import SearchWaterConnectionViewIntegrated from "./pages/employee/SearchWaterConnection/SearchWaterConnectionViewIntegrated";
+import BulkBillGeneration from "./pages/employee/BulkBillGeneration";
+//
+import NewApplicationStepForm from "./pages/employee/NewApplicationStepForm";
+//New application form steps
+import WSConnectionDetailsStep from "./components/newWSApplicationFormSteps/ConnectionDetails";
+import WSDocumentsStep from "./components/newWSApplicationFormSteps/Documents";
+import WSAdditionalDetailsStep from "./components/newWSApplicationFormSteps/AdditionalDetails";
+import WSSummaryStep from "./components/newWSApplicationFormSteps/Summary";
+//New application step/page components
+import WSApplyingFor from "./pageComponents/newApplicationComponents/WSApplyingFor";
+import WSConnectionDetailsSingleInstance from "./pageComponents/newApplicationComponents/WSConnectionDetailsSingleInstance";
+//
 import getRootReducer from "./redux/reducers";
+export const WSReducers = getRootReducer;
 
-export const GCReducers = getRootReducer;
+ import BillGeneration from "./pages/employee/BillGeneration";
+import BillSearch from "./components/SearchWaterConnection/BillSearch";
 
-export const GCModule = ({ stateCode, userType, tenants }) => {
+
+const WSModule = ({ stateCode, userType, tenants }) => {
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
-  const moduleCode = ["ws", "gc", "pt", "common", tenantId, "bill-amend", "abg"];
+  const moduleCode = ["ws", "pt", "common", tenantId, "bill-amend","abg"];
   const { path, url } = useRouteMatch();
-
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({
     stateCode,
@@ -23,7 +127,8 @@ export const GCModule = ({ stateCode, userType, tenants }) => {
     language,
   });
 
-  Digit.SessionStorage.set("GC_TENANTS", tenants);
+  Digit.SessionStorage.set("WS_TENANTS", tenants);
+  Digit.SessionStorage.set("PT_TENANTS", tenants);
 
   if (isLoading) {
     return <Loader />;
@@ -36,7 +141,7 @@ export const GCModule = ({ stateCode, userType, tenants }) => {
   return <EmployeeApp path={path} stateCode={stateCode} />;
 };
 
-export const GCLinks = ({ matchPath, userType }) => {
+const WSLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
 
   const links = [
@@ -58,24 +163,124 @@ export const GCLinks = ({ matchPath, userType }) => {
     },
     {
       link: `${matchPath}/my-applications`,
-      i18nKey: t("ACTION_TEXT_GC_MY_APPLICATION"),
+      i18nKey: t("ACTION_TEXT_WS_MY_APPLICATION"),
     },
     {
       link: `${matchPath}/my-connections`,
-      i18nKey: t("ACTION_TEXT_GC_MY_CONNECTION"),
+      i18nKey: t("ACTION_TEXT_WS_MY_CONNECTION"),
     },
   ];
 
-  return <CitizenHomeCard header={t("ACTION_TEST_GARBAGE_COLLECTION")} links={links} Icon={() => <WSICon />} />;
+  return <CitizenHomeCard header={t("ACTION_TEST_WATER_AND_SEWERAGE")} links={links} Icon={() => <WSICon />} />;
 };
 
 const componentsToRegister = {
-  GCModule,
-  GCLinks,
-  GCCard,
+  WSModule,
+  WSLinks,
+
+  // PageComponents
+  WSServiceName,
+  WSWaterConnectionDetails,
+  WSDocsRequired,
+  WSDocumentDetails,
+  WSSewerageConnectionDetails,
+  WSPlumberPreference,
+  WSConnectionHolder,
+  WSInfoLabel,
+  WSActivationDetails,
+  WSConnectionDetails,
+  WSDocumentsRequired,
+  WSPlumberDetails,
+  WSRoadCuttingDetails,
+  WSRoadCuttingAddlDetails,
+  WSPropertyDetails,
+  WSConnectionHolderDetails,
+  WSActivationConnectionDetails,
+  WSActivationPlumberDetails,
+  WSActivationPageDetails,
+  WSActivationCommentsDetails,
+  WSActivationSupportingDocuments,
+  WSDocumentsEmployee,
+  WSEditConnectionDetails,
+  WSDisconnectionDocsRequired,
+  WSDisconnectionForm,
+  WSRestorationForm,
+  WSDisconnectionDocumentsForm,
+  WSDisconnectAcknowledgement,
+  WSRestorationAcknowledgement,
+  WSDisconnectionAppDetails,
+
+  //Components
+  WSInbox,
+  BillAmendmentCard,
+  WSSearchApplication: SearchApplication,
+  WSSearchWaterConnection: SearchWaterConnection,
+  WSBulkBillSearch:BulkBillSearch,
+  WSCard,
+  SWCard,
+  WSBillIAmendMentInbox: BillIAmendMentInbox,
+
+  //Citizen Components
+  WSCreate: WSCreate,
+  WSDisconnection: WSDisconnection,
+  WSRestoration:WSRestoration,
+  WSSearchConnectionComponent: SearchConnectionComponent,
+  WSSearchResultsComponent: SearchResultsComponent,
+  WSCitizenApplicationDetails: WSCitizenApplicationDetails,
+  WSAdditionalDetails: WSAdditionalDetails,
+  WSMyConnections: WSMyConnections,
+  WSCitizenConnectionDetails: WSCitizenConnectionDetails,
+  WSCitizenConsumptionDetails: WSCitizenConsumptionDetails,
+  WSMyPayments: WSMyPayments,
+  WSCitizenEditApplication: WSCitizenEditApplication,
+  WSReSubmitDisconnectionApplication: WSReSubmitDisconnectionApplication,
+  WNSMyBillsComponent: WNSMyBillsComponent,
+  WSCheckPage,
+  WSAcknowledgement,
+  WSDisconnectionCheckPage,
+  WSRestorationCheckPage,
+  WSReSubmitDisconnectionCheckPage,
+
+  //Employee Components
+  WSApplicationBillAmendment: ApplicationBillAmendment,
+  WSRequiredDocuments: RequiredDocuments,
+  WSNewApplication: NewApplication,
+  WSNewApplicationStepForm: NewApplicationStepForm,
+  WSApplicationDetails: ApplicationDetails,
+  WSGetConnectionDetails: GetConnectionDetails,
+  WSActivateConnection: ActivateConnection,
+  WSApplicationDetailsBillAmendment: ApplicationDetailsBillAmendment,
+  WSSearch: Search,
+  WSSearchWater: SearchWater,
+  WSEditApplication: WSEditApplication,
+  WSConsumptionDetails: ConsumptionDetails,
+  WSModifyApplication: ModifyApplication,
+  WSEditModifyApplication: EditModifyApplication,
+  WSDisconnectionApplication: DisconnectionApplication,
+  WSRestorationApplication:RestorationApplication,
+  WSEditApplicationByConfig: WSEditApplicationByConfig,
+  WSGetDisconnectionDetails: GetDisconnectionDetails,
+  WSModifyApplicationDetails: ModifyApplicationDetails,
+  WSEditDisconnectionApplication: EditDisconnectionApplication,
+  WSEditDisconnectionByConfig: EditDisconnectionByConfig,
+  WSResubmitDisconnection: ResubmitDisconnection,
+  WSSearchWaterConnectionIntegrated:SearchWaterConnectionIntegrated,
+  WSSearchIntegrated:SearchIntegrated,
+  WSSearchWaterConnectionViewIntegrated :SearchWaterConnectionViewIntegrated,
+  WSBulkBillGeneration:BulkBillGeneration,
+
+  WSBillGeneration: BillGeneration,
+  WSBillSearch: BillSearch,
+  //
+  WSConnectionDetailsStep,
+  WSDocumentsStep,
+  WSAdditionalDetailsStep,
+  WSSummaryStep,
+  WSApplyingFor,
+  WSConnectionDetailsSingleInstance
 };
 
-export const initGCComponents = () => {
+export const initWSComponents = () => {
   Object.entries(componentsToRegister).forEach(([key, value]) => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });

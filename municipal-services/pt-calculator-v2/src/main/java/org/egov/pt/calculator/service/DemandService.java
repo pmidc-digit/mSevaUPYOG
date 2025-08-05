@@ -257,6 +257,8 @@ public class DemandService {
 	 * @return
 	 */
 	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+		 Boolean isOTSEnabled = false;
+
 		
 		if (getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);
 		validator.validateGetBillCriteria(getBillCriteria);
@@ -308,15 +310,16 @@ public class DemandService {
 			List<Demand> demands = consumerCodeToDemandMap.get(consumerCode);
 			if (CollectionUtils.isEmpty(demands))
 				continue;
-			   Boolean isOTSEnabled = false;
+			
+			
 			for(Demand demand : demands){
 				if (demand.getStatus() != null
 						&& CalculatorConstants.DEMAND_CANCELLED_STATUS.equalsIgnoreCase(demand.getStatus().toString()))
 					throw new CustomException(CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR,
 							CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR_MSG);
-
-
-				JSONArray otsArray = (JSONArray) timeBasedExmeptionMasterMap.get("Ots");
+				/*
+				 * OTS Configuration Fix - PI-18953 ( Abhishek Rana)
+				 */				JSONArray otsArray = (JSONArray) timeBasedExmeptionMasterMap.get("Ots");
 
 				if (otsArray != null && !otsArray.isEmpty()) {
 				    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -346,10 +349,10 @@ public class DemandService {
 				                    otsRate = new BigDecimal(penaltyMap.get("rate").toString());
 				                }
 
-				                if (startingDayEpoch != null && startingDayEpoch.equals(demand.getTaxPeriodFrom())
-				                        && otsEndDateEpoch != null && otsEndDateEpoch >= System.currentTimeMillis()) {
-
-				                    log.info("OTS is Enabled and Applicable for Period: " + demand.getTaxPeriodFrom()
+				                if (startingDayEpoch != null && otsEndDateEpoch != null
+				                        && startingDayEpoch >= demand.getTaxPeriodFrom()
+				                        && otsEndDateEpoch <= demand.getTaxPeriodTo()) {
+				                			log.info("OTS is Enabled and Applicable for Period: " + demand.getTaxPeriodFrom()
 				                            + " to " + demand.getTaxPeriodTo() + ", Rate: " + otsRate);
 
 				                    // Apply this specific rate to the demand
@@ -756,6 +759,9 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		return isCurrentDemand;
 	}
 
+	/*
+	 * OTS Configuration Fix - PI-18953 ( Abhishek Rana)
+	 */	
 	
 	private boolean otsEnabled(Demand demand, BigDecimal rate) {
 	    String demandId = demand.getId();

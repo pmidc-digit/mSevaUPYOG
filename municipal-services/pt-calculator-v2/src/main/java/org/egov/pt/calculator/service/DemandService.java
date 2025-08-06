@@ -349,9 +349,9 @@ public class DemandService {
 				                    otsRate = new BigDecimal(penaltyMap.get("rate").toString());
 				                }
 
-				                if (startingDayEpoch != null && otsEndDateEpoch != null
-				                        && startingDayEpoch >= demand.getTaxPeriodFrom()
-				                        && otsEndDateEpoch <= demand.getTaxPeriodTo()) {
+				                if (startingDayEpoch != null && otsEndDateEpoch != null &&
+				                		 demand.getTaxPeriodFrom() >= startingDayEpoch &&
+				                		    demand.getTaxPeriodTo() <= otsEndDateEpoch) {
 				                			log.info("OTS is Enabled and Applicable for Period: " + demand.getTaxPeriodFrom()
 				                            + " to " + demand.getTaxPeriodTo() + ", Rate: " + otsRate);
 

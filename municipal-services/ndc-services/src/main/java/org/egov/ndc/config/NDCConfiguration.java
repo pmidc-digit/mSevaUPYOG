@@ -39,14 +39,12 @@ public class NDCConfiguration {
 	@Value("${egov.user.search.path}")
 	private String userSearchEndpoint;
 
-	// SMS
 	@Value("${kafka.topics.notification.sms}")
 	private String smsNotifTopic;
 
 	@Value("${notification.sms.enabled}")
 	private Boolean isSMSEnabled;
 
-	// Localization
 	@Value("${egov.localization.host}")
 	private String localizationHost;
 
@@ -125,9 +123,6 @@ public class NDCConfiguration {
 	@Value("${sewerage.service.host}")
 	private String sewerageConnectionServicePath;
 
-	@Value("${billing.service.host}")
-	private String billingServicePath;
-
 	@Value("${property.service.search.endpoint}")
 	private String propertySearchPath;
 
@@ -136,9 +131,6 @@ public class NDCConfiguration {
 
 	@Value("${sewerage.service.search.endpoint}")
 	private String sewerageSearchPath;
-
-	@Value("${billing.service.fetchbill.endpoint}")
-	private String fetchBillPath;
 
 	@Value("${ndc.module.code}")
 	private String moduleCode;

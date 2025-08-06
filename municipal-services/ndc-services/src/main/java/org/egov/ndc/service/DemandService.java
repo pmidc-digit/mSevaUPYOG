@@ -65,31 +65,31 @@ public class DemandService {
         return demandResponse.getDemands();
     }
 
-    public BillResponse getBill(RequestInfoWrapper requestInfoWrapper, String tenantId, String applicationNumber) {
-        String uri = getFetchBillURI();
-        uri = uri.replace("{1}", tenantId);
-        uri = uri.replace("{2}", applicationNumber);
-        uri = uri.replace("{3}", ndcConfiguration.getModuleCode());
-
-        Object response = repository.fetchResult(new StringBuilder(uri), requestInfoWrapper);
-        BillResponse billResponse = mapper.convertValue(response, BillResponse.class);
-
-        return billResponse;
-    }
-
-    public String getFetchBillURI(){
-        StringBuilder url = new StringBuilder(ndcConfiguration.getBillingServiceHost());
-        url.append(ndcConfiguration.getFetchBillEndpoint());
-        url.append("?");
-        url.append("tenantId=");
-        url.append("{1}");
-        url.append("&");
-        url.append("consumerCode=");
-        url.append("{2}");
-        url.append("&");
-        url.append("businessService=");
-        url.append("{3}");
-
-        return url.toString();
-    }
+//    public BillResponse getBill(RequestInfoWrapper requestInfoWrapper, String tenantId, String applicationNumber) {
+//        String uri = getFetchBillURI();
+//        uri = uri.replace("{1}", tenantId);
+//        uri = uri.replace("{2}", applicationNumber);
+//        uri = uri.replace("{3}", ndcConfiguration.getModuleCode());
+//
+//        Object response = repository.fetchResult(new StringBuilder(uri), requestInfoWrapper);
+//        BillResponse billResponse = mapper.convertValue(response, BillResponse.class);
+//
+//        return billResponse;
+//    }
+//
+//    public String getFetchBillURI(){
+//        StringBuilder url = new StringBuilder(ndcConfiguration.getBillingServiceHost());
+//        url.append(ndcConfiguration.getFetchBillEndpoint());
+//        url.append("?");
+//        url.append("tenantId=");
+//        url.append("{1}");
+//        url.append("&");
+//        url.append("consumerCode=");
+//        url.append("{2}");
+//        url.append("&");
+//        url.append("businessService=");
+//        url.append("{3}");
+//
+//        return url.toString();
+//    }
 }

@@ -63,6 +63,7 @@ export const processLinkData = (newData, code, t) => {
   return newObj;
 };
 const iconSelector = (code) => {
+  console.log("Icon Selector Code", code);
   switch (code) {
     case "PT":
       return <PTIcon className="fill-path-primary-main" />;
@@ -71,6 +72,8 @@ const iconSelector = (code) => {
     case "FSM":
       return <FSMIcon className="fill-path-primary-main" />;
     case "MCollect":
+      return <MCollectIcon className="fill-path-primary-main" />;
+    case "ChallanGeneration":
       return <MCollectIcon className="fill-path-primary-main" />;
     case "PGR":
       return <PGRIcon className="fill-path-primary-main" />;

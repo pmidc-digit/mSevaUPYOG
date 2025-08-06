@@ -24,7 +24,8 @@
     "micro-ui-internals/packages/modules/ptr",
     "micro-ui-internals/packages/modules/chb",
     "micro-ui-internals/packages/modules/asset",
-    "micro-ui-internals/packages/modules/pgrai"
+    "micro-ui-internals/packages/modules/pgrai",
+    "micro-ui-internals/packages/modules/gc"
   ],
   "engines": {
     "node": ">=14"
@@ -56,6 +57,7 @@
     "@mseva/upyog-ui-module-chb": "1.0.19",
     "@mseva/upyog-ui-module-asset": "1.0.15",
     "@mseva/upyog-ui-module-pgrai": "1.0.8",
+    "@mseva/upyog-ui-module-gc": "1.0.0",
     "babel-loader": "8.1.0",
     "qrcode": "^1.5.3",
     "react": "17.0.2",

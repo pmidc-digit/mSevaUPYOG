@@ -25,7 +25,8 @@
     "packages/modules/ptr",
     "packages/modules/chb",
     "packages/modules/asset",
-    "packages/modules/pgrai"
+    "packages/modules/pgrai",
+    "packages/modules/gc"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",
@@ -66,6 +67,7 @@
     "dev:chb": "cd packages/modules/chb && yarn start",
     "dev:asset": "cd packages/modules/asset && yarn start",
     "devD:pgrai": "cd packages/modules/pgrai && yarn start",
+    "dev:gc": "cd packages/modules/gc && yarn start",
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
     "build:components": "cd packages/react-components && yarn build",
@@ -93,6 +95,7 @@
     "build:chb": "cd packages/modules/chb && yarn build",
     "build:asset": "cd packages/modules/asset && yarn build",
     "buildD:pgrai": "cd packages/modules/pgrai && yarn build",
+    "build:gc": "cd packages/modules/gc && yarn build",
     "deploy:jenkins": "./scripts/jenkins.sh"
   },
   "devDependencies": {

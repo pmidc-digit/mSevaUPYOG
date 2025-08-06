@@ -305,6 +305,12 @@ const Urls = {
     PGR_Update_AI: "/pgr-ai-services/v1/request/_update",
   },
 
+  gc: {
+    create: "/gc-services/booking/v1/_create",
+    search: "/gc-services/booking/v1/_search",
+    update: "/gc-services/booking/v1/_update",
+  },
+
   access_control: "/access/v1/actions/mdms/_get",
   billgenie: "/egov-searcher",
   audit: "/inbox/v1/elastic/_search",

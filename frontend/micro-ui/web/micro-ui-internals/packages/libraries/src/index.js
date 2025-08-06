@@ -61,6 +61,7 @@ import { CHBServices } from "./services/elements/CHB";
 import { ASSETService } from "./services/elements/ASSET";
 import { PGRAIService } from "./services/elements/PGRAI";
 import { PGRAIUpdate } from "./services/elements/PGRAIUpdate";
+import { GCService } from "./services/elements/GC";
 
 const setupLibraries = (Library, props) => {
   window.Digit = window.Digit || {};

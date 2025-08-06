@@ -83,6 +83,8 @@ import {
   PGRAIModule,
 } from "@mseva/upyog-ui-module-pgrai";
 
+import { GCComponents, GCLinks, GCModule } from "@mseva/upyog-ui-module-gc";
+
 // import { initReportsComponents } from "@egovernments/digit-ui-module-reports";
 
 initLibraries();
@@ -118,6 +120,7 @@ const enabledModules = [
   "PTR",
   "ASSET",
   "PGRAI",
+  "GC",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -151,7 +154,11 @@ window.Digit.ComponentRegistryService.setupRegistry({
   PGRAIModule,
   PGRAILinks,
   ...PGRAIComponents,
+  GCLinks,
+  GCModule,
+  ...GCComponents,
 });
+
 initPGRComponents();
 initSWACHComponents();
 initFSMComponents();

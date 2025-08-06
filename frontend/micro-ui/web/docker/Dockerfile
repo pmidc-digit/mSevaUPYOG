@@ -24,6 +24,7 @@ RUN yarn add @mseva/upyog-ui-module-ads@1.0.27
 RUN yarn add @mseva/upyog-ui-module-chb@1.0.19
 RUN yarn add @mseva/upyog-ui-module-asset@1.0.15
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.8
+RUN yarn add @mseva/upyog-ui-module-gc@1.0.0
 ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192

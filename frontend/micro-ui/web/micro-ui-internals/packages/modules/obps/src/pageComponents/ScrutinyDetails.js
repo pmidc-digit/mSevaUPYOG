@@ -234,12 +234,12 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
           <Row
             className="border-none"
             label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
-            text={<ActionButton label={t("Uploaded Plan.pdf")} jumpTo={data?.updatedDxfFile} />}
+            text={<ActionButton label={t("Uploaded Plan.pdf")} jumpTo={data?.updatedDxfFile} onClick={()=>{console.log("")}}/>}
           ></Row>
           <Row
             className="border-none"
             label={t("BPA_SCRUNTINY_REPORT_OUTPUT")}
-            text={<ActionButton label={t("BPA_SCRUTINY_REPORT_PDF")} jumpTo={data?.planReport} />}
+            text={<ActionButton label={t("BPA_SCRUTINY_REPORT_PDF")} jumpTo={data?.planReport} onClick={()=>{console.log("")}}/>}
           ></Row>
         </StatusTable>
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />

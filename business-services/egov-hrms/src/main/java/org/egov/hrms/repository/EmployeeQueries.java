@@ -42,10 +42,25 @@ public class EmployeeQueries {
 			+ "ON employee.uuid = docs.employeeid LEFT JOIN eg_hrms_servicehistory history ON employee.uuid = history.employeeid LEFT JOIN eg_hrms_jurisdiction jurisdiction "
 			+ "ON employee.uuid = jurisdiction.employeeid LEFT JOIN eg_hrms_deactivationdetails deact ON employee.uuid = deact.employeeid LEFT JOIN eg_hrms_reactivationdetails react "
 			+ "ON employee.uuid = react.employeeid WHERE ";
+	
+	public static final String HRMS_GET_EMPLOYEES_COUNT = "SELECT count (distinct employee.id) "
+			+ "FROM eg_hrms_employee employee LEFT JOIN eg_hrms_assignment assignment ON employee.uuid = assignment.employeeid LEFT JOIN eg_hrms_educationaldetails education "
+			+ "ON employee.uuid = education.employeeid LEFT JOIN eg_hrms_departmentaltests depttest ON employee.uuid = depttest.employeeid LEFT JOIN eg_hrms_empdocuments docs "
+			+ "ON employee.uuid = docs.employeeid LEFT JOIN eg_hrms_servicehistory history ON employee.uuid = history.employeeid LEFT JOIN eg_hrms_jurisdiction jurisdiction "
+			+ "ON employee.uuid = jurisdiction.employeeid LEFT JOIN eg_hrms_deactivationdetails deact ON employee.uuid = deact.employeeid LEFT JOIN eg_hrms_reactivationdetails react "
+			+ "ON employee.uuid = react.employeeid WHERE ";
 
 	public static final String HRMS_PAGINATION_WRAPPER = "SELECT * FROM "
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY employee_uuid) offset_ FROM " + "({})" + " result) result_offset "
 			+ "WHERE offset_ > $offset AND offset_ <= $limit";
+	
+	public static final String HRMS_PAGINATION_V1_WRAPPER = "SELECT * FROM "
+			+ "(SELECT *, ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY employee_uuid) AS offset_ FROM " + "({})" + " result) result_offset "
+			+ "WHERE offset_ = 1 ";
+	
+	public static final String HRMS_PAGINATION_COUNT_WRAPPER = "SELECT * FROM "
+			+ "(SELECT * FROM " + "({})" + " result) result_offset ";
+			
 	
 	public static final String HRMS_POSITION_SEQ = "SELECT NEXTVAL('EG_HRMS_POSITION')";
 

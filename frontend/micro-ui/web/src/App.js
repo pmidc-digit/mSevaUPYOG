@@ -16,6 +16,11 @@ import {
   MCollectLinks,
   initMCollectComponents,
 } from "@mseva/digit-ui-module-mcollect";
+import {
+  ChallanGenerationModule,
+  ChallanGenerationLinks,
+  initChallanGenerationComponents,
+} from "@mseva/digit-ui-module-challangeneration";
 import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import {
   PaymentModule,
@@ -118,6 +123,7 @@ const enabledModules = [
   "PTR",
   "ASSET",
   "PGRAI",
+  "ChallanGeneration",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -128,6 +134,8 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ...PTComponents,
   MCollectLinks,
   MCollectModule,
+  ChallanGenerationModule,
+  ChallanGenerationLinks,
   HRMSModule,
   TLModule,
   TLLinks,
@@ -157,6 +165,7 @@ initSWACHComponents();
 initFSMComponents();
 initDSSComponents();
 initMCollectComponents();
+initChallanGenerationComponents();
 initHRMSComponents();
 initTLComponents();
 initReceiptsComponents();

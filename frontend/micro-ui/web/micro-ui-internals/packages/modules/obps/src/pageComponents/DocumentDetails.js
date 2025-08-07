@@ -55,7 +55,14 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
 
 
     const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
-    const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
+    // const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
+    const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId,     {
+                        status: "INPROGRESS",
+                        RiskType: "LOW",
+                        ServiceType: "NEW_CONSTRUCTION",
+                        applicationType: "BUILDING_PLAN_SCRUTINY"
+                    }, beforeUploadDocuments || []);
+
     const handleSubmit = () => {
         let document = formData.documents;
         let documentStep;
@@ -98,7 +105,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
                     onSelect={handleSubmit}
                     onSkip={onSkip}
                     // isDisabled={window.location.href.includes("editApplication")||window.location.href.includes("sendbacktocitizen")?false:enableSubmit}
-                    isDisabled={(window.location.href.includes("editApplication") || window.location.href.includes("sendbacktocitizen") ? false : enableSubmit) || isNextButtonDisabled}
+                    // isDisabled={(window.location.href.includes("editApplication") || window.location.href.includes("sendbacktocitizen") ? false : enableSubmit) || isNextButtonDisabled}
                     onAdd={onAdd}
                 >
                     {/* {bpaTaxDocuments?.map((document, index) => { */}

@@ -1,6 +1,6 @@
 {
   "name": "@mseva/upyog-ui-module-pgrai",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
@@ -18,7 +18,7 @@
     "react-router-dom": "5.3.0"
   },
   "dependencies": {
-    "@mseva/digit-ui-libraries": "1.0.36",
+    "@mseva/digit-ui-libraries": "1.0.38",
     "@mseva/digit-ui-react-components": "1.0.4",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",

@@ -145,7 +145,7 @@ public class DemandService {
              */
             DemandRequest request = DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfo).build();
             StringBuilder updateDemandUrl = utils.getUpdateDemandUrl();
-            repository.fetchResult(updateDemandUrl, request);
+//            repository.fetchResult(updateDemandUrl, request);
         }
         return res;
     }

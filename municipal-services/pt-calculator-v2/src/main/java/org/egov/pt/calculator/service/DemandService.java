@@ -298,7 +298,9 @@ public class DemandService {
 				consumerCodeToDemandMap.put(demand.getConsumerCode(),demands);
 			}
 		});
-		
+		  Long startingDayEpoch = null;
+          Long otsEndDateEpoch = null;
+          BigDecimal otsRate = null;
 		if (!CollectionUtils.isEmpty(consumerCodeToDemandMap)) {
 		List<Demand> demandsToBeUpdated = new LinkedList<>();
 
@@ -331,9 +333,7 @@ public class DemandService {
 				            boolean otsEnabledFlag = Boolean.parseBoolean(String.valueOf(penaltyMap.get("isOTSEnabled")));
 
 				            if (otsEnabledFlag) {
-				                Long startingDayEpoch = null;
-				                Long otsEndDateEpoch = null;
-				                BigDecimal otsRate = null;
+				              
 
 				                if (penaltyMap.get("startingDay") != null) {
 				                    LocalDate localDate = LocalDate.parse(penaltyMap.get("startingDay").toString(), formatter);

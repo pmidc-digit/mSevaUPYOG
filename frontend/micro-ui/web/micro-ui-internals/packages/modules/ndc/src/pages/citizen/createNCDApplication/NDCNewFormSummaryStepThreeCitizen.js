@@ -30,7 +30,8 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
   function mapToNDCPayload(inputData) {
     const applicant = Digit.UserService.getUser()?.info || {};
-
+    console.log("inputData", inputData);
+    console.log("formData", formData);
     const payload = {
       Applicant: formData.apiData.Applicant,
       NdcDetails: formData.apiData.NdcDetails,
@@ -49,6 +50,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   }
 
   const onSubmit = async (data) => {
+    console.log("coming here btw");
     const finalPayload = mapToNDCPayload(data);
 
     // const response = await Digit.NDCService.NDCcreate({ tenantId, filters: { skipWorkFlow: true }, details: finalPayload });

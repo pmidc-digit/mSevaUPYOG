@@ -9,9 +9,7 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
 
   const { action = "create" } = Digit.Hooks.useQueryParams();
 
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", [
-    "Documents",
-  ]);
+  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", ["Documents"]);
 
   console.log("Documents data:", data);
 
@@ -135,15 +133,15 @@ function SelectDocument({
         ];
       });
     }
-    if (!isHidden) {
-      if (!uploadedFile || !doc?.code) {
-        addError();
-      } else if (uploadedFile && doc?.code) {
-        removeError();
-      }
-    } else if (isHidden) {
-      removeError();
-    }
+    // if (!isHidden) {
+    //   if (!uploadedFile || !doc?.code) {
+    //     addError();
+    //   } else if (uploadedFile && doc?.code) {
+    //     removeError();
+    //   }
+    // } else if (isHidden) {
+    //   removeError();
+    // }
   }, [uploadedFile, isHidden]);
 
   useEffect(() => {
@@ -163,7 +161,6 @@ function SelectDocument({
               setError(t("CS_FILE_UPLOAD_ERROR"));
             }
           } catch (err) {
-            
             setError(t("CS_FILE_UPLOAD_ERROR"));
           }
         }
@@ -211,7 +208,7 @@ function SelectDocument({
   return (
     <div style={{ marginBottom: "24px" }}>
       <LabelFieldPair>
-      <CardLabel className="card-label-smaller">{t(doc?.code)}</CardLabel>
+        <CardLabel className="card-label-smaller">{t(doc?.code)}</CardLabel>
         <div className="field">
           <UploadFile
             id={"tl-doc"}

@@ -17,10 +17,12 @@ const NDCSummary = ({ formData, t }) => {
     : window.localStorage.getItem("Employee.tenant-id");
 
   const fetchCalculations = async () => {
+    console.log("formData?.apiData", formData?.apiData);
+    console.log("formData", formData);
     const payload = {
       CalculationCriteria: [
         {
-          applicationNumber: formData.apiData.Applicant.uuid,
+          applicationNumber: formData?.apiData?.Applicant.uuid,
           tenantId: tenantId,
         },
       ],

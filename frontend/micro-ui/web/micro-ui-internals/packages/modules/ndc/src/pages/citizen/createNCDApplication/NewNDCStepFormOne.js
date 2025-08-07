@@ -107,7 +107,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     console.log("payload", payload);
 
-    const response = await Digit.NDCService.NDCcreate({ tenantId, filters: { skipWorkFlow: true }, details: payload });
+    const response = await Digit.NDCService.NDCcreate({ tenantId, details: payload });
     console.log("response====", response);
 
     if (response?.ResponseInfo?.status === "successful") {

@@ -364,10 +364,14 @@ public class DemandService {
 				    }
 
 				    if (!anyOtsApplied) {
-				        log.info("No applicable OTS found. Applying normal exemptions.");
+				    	log.info("No applicable OTS found. Applying normal exemptions. Demand From: {}, Demand To: {}, OTS Start: {}, OTS End: {}",
+				    		    demand.getTaxPeriodFrom(), demand.getTaxPeriodTo(), startingDayEpoch, otsEndDateEpoch);
 				        applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
 				    }
 				} else {
+					log.info("No applicable OTS found. Applying normal exemptions. Demand From: {}, Demand To: {}, OTS Start: {}, OTS End: {}",
+						    demand.getTaxPeriodFrom(), demand.getTaxPeriodTo(), startingDayEpoch, otsEndDateEpoch);
+
 				    applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
 				}
 

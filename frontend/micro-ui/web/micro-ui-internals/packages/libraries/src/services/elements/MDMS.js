@@ -1032,6 +1032,18 @@ const getChallanGenerationBillingServiceCriteria = (tenantId, moduleCode, type, 
     ],
   },
 });
+const getRentAndLeaseBillingServiceCriteria = (tenantId, moduleCode, type, filter) => ({
+  type,
+  details: {
+    tenantId: tenantId,
+    moduleDetails: [
+      {
+        moduleName: moduleCode,
+        masterDetails: [{ name: "BusinessService", filter: filter }],
+      },
+    ],
+  },
+});
 
 const getTradeUnitsDataList = (tenantId, moduleCode, type, filter) => ({
   type,
@@ -1060,6 +1072,18 @@ const getMCollectApplicationStatusCriteria = (tenantId, moduleCode, type) => ({
 });
 
 const getChallanGenerationApplicationStatusCriteria = (tenantId, moduleCode, type) => ({
+  type,
+  details: {
+    tenantId: tenantId,
+    moduleDetails: [
+      {
+        moduleName: moduleCode,
+        masterDetails: [{ name: "applicationStatus" }],
+      },
+    ],
+  },
+});
+const getRentAndLeaseApplicationStatusCriteria = (tenantId, moduleCode, type) => ({
   type,
   details: {
     tenantId: tenantId,
@@ -2177,6 +2201,12 @@ export const MdmsService = {
   },
   getChallanGenerationApplcationStatus: (tenantId, moduleCode, type, filter) => {
     return MdmsService.getDataByCriteria(tenantId, getChallanGenerationApplicationStatusCriteria(tenantId, moduleCode, type, filter), moduleCode);
+  },
+  getRentAndLeaseBillingService: (tenantId, moduleCode, type, filter) => {
+    return MdmsService.getDataByCriteria(tenantId, getRentAndLeaseBillingServiceCriteria(tenantId, moduleCode, type, filter), moduleCode);
+  },
+  getRentAndLeaseApplcationStatus: (tenantId, moduleCode, type, filter) => {
+    return MdmsService.getDataByCriteria(tenantId, getRentAndLeaseApplicationStatusCriteria(tenantId, moduleCode, type, filter), moduleCode);
   },
   getHrmsEmployeeRolesandDesignation: (tenantId) => {
     return MdmsService.call(tenantId, getHrmsEmployeeRolesandDesignations());

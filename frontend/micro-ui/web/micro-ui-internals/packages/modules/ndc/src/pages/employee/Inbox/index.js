@@ -13,6 +13,7 @@ const Inbox = ({ parentRoute }) => {
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const [getFilter, setFilter] = useState();
 
   const searchFormDefaultValues = {
     // mobileNumber: "",
@@ -86,9 +87,11 @@ const Inbox = ({ parentRoute }) => {
   ]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
+
   const onPageSizeChange = (e) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
   };
+
   const onSortingByData = (e) => {
     if (e.length > 0) {
       const [{ id, desc }] = e;
@@ -112,18 +115,16 @@ const Inbox = ({ parentRoute }) => {
     t
   );
 
-  const {
-    isLoading: isInboxLoading,
-    data,
-    // : { table = [], statuses, totalCount } = {}
-  } = Digit.Hooks.ndc.useInbox({
+  const handleFilter = (filterStatus) => {
+    setFilter(filterStatus);
+  };
+
+  const { isLoading: isInboxLoading, data } = Digit.Hooks.ndc.useInbox({
     tenantId,
-    filters: { ...formState },
+    filters: { ...formState, getFilter },
   });
 
   const { isLoading, data: testData, isError, error } = Digit.Hooks.ndc.useSearchApplication({ mobileNumber: "1234567890" }, tenantId);
-
-  console.log("testData", testData);
 
   // const { isLoading: isInboxLoading, data} = Digit.Hooks.ndc.useSearchEmployeeApplication({status: "CREATE"}, tenantId)
 
@@ -133,15 +134,16 @@ const Inbox = ({ parentRoute }) => {
 
   useEffect(() => {
     if (testData) {
-      console.log("testData?.Applications", testData?.Applications);
-      console.log("testData?.App=====", testData);
       setTable(testData?.data || []);
-      // setStatuses(data?.status || []);
       setTotalCount(testData?.count || 0);
     }
-  }, [testData]);
+  }, [testData, data]);
 
-  console.log("tenantIdInNDCInbox", data);
+  useEffect(() => {
+    if (data) {
+      setStatuses(data?.statuses || []);
+    }
+  }, [data]);
 
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,
@@ -175,6 +177,7 @@ const Inbox = ({ parentRoute }) => {
           localitiesForEmployeesCurrentTenant,
           loadingLocalitiesForEmployeesCurrentTenant,
         }}
+        handleFilter={handleFilter}
       />
     ),
     [statuses, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant]

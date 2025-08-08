@@ -1,24 +1,39 @@
-import React, { useEffect } from "react";
-import { Card, CardSubHeader, CardLabel, LabelFieldPair, StatusTable } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useState, useRef } from "react";
+import { Card, CardSubHeader, CardLabel, LabelFieldPair, StatusTable, ActionBar, SubmitBar, Menu } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setNDCStep } from "../redux/actions/NDCFormActions";
+import { useTranslation } from "react-i18next";
 import NDCDocument from "../components/NDCDocument";
 
-const NDCSummary = ({ formData, t }) => {
-  console.log("form data in summary component", formData);
+const NDCSummary = ({ formData, goNext, ...props }) => {
   const { pathname: url } = useLocation();
+  const { t } = useTranslation();
   const history = useHistory();
+  const menuRef = useRef();
   const dispatch = useDispatch();
   const mutateScreen = url.includes("/property-mutate/");
+  let user = Digit.UserService.getUser();
+
+  console.log("formData", formData);
+
   let docs = formData?.DocummentDetails?.documents?.documents;
+  const uuid = formData?.apiData?.Applicant.uuid;
+
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
+  const [getData, setData] = useState();
+  const [displayMenu, setDisplayMenu] = useState(false);
+
+  const closeMenu = () => {
+    setDisplayMenu(false);
+  };
+
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
+
   const fetchCalculations = async () => {
-    console.log("formData?.apiData", formData?.apiData);
-    console.log("formData", formData);
     const payload = {
       CalculationCriteria: [
         {
@@ -28,21 +43,46 @@ const NDCSummary = ({ formData, t }) => {
       ],
     };
     const response = await Digit.NDCService.NDCCalculator({ tenantId, filters: { getCalculationOnly: true }, details: payload });
+    console.log("response", response?.Calculation?.[0]?.totalAmount);
+    setData(response?.Calculation?.[0]);
   };
 
   useEffect(() => {
     fetchCalculations();
   }, []);
 
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: formData?.apiData?.Applicant.uuid,
+    moduleCode: "NDC",
+  });
+
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+  let actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
+
+  function onActionSelect(action) {
+    goNext(action);
+    // setShowModal(true);
+    // setSelectedAction(action);
+  }
+
+  console.log("workflowDetails", workflowDetails?.data?.nextActions);
+
   return (
     <div className="application-summary">
       <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{t("Application Summary")}</h2>
 
       <div className="summary-section">
-        <div className="section-header">
+        {/* <div className="section-header">
           <h3>{t("Property Details")}</h3>
           <label onClick={() => dispatch(setNDCStep(1))}>{t("EDIT")}</label>
-        </div>
+        </div> */}
         <div className="section-content">
           <LabelFieldPair>
             <CardLabel>{t("First Name")}</CardLabel>
@@ -92,14 +132,18 @@ const NDCSummary = ({ formData, t }) => {
             <CardLabel>{t("Property ID")}</CardLabel>
             <div>{formData?.NDCDetails?.cpt?.id || "NA"}</div>
           </LabelFieldPair>
+          <LabelFieldPair>
+            <CardLabel>{t("Amount")}</CardLabel>
+            <div>{getData?.totalAmount || "NA"}</div>
+          </LabelFieldPair>
         </div>
       </div>
 
       <div className="summary-section">
-        <div className="section-header">
+        {/* <div className="section-header">
           <h3>{t("Documents")}</h3>
           <label onClick={() => dispatch(setNDCStep(2))}>{t("EDIT")}</label>
-        </div>
+        </div> */}
         <div className="section-content">
           {/* {formData?.DocummentDetails?.documents?.documents?.map((doc, index) => (
                 <LabelFieldPair key={index}>
@@ -115,6 +159,23 @@ const NDCSummary = ({ formData, t }) => {
           </StatusTable>
         </div>
       </div>
+
+      <ActionBar>
+        {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+          <Menu
+            localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`}
+            options={actions}
+            optionKey={"action"}
+            t={t}
+            onSelect={onActionSelect}
+            // style={MenuStyle}
+          />
+        ) : null}
+        <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+        {/* <SubmitBar label="Next" submit="submit" /> */}
+
+        {/* <SubmitBar label={t("WF_TAKE_ACTION")} /> */}
+      </ActionBar>
     </div>
   );
 };

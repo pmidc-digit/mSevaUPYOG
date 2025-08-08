@@ -1,8 +1,8 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
-//
 import { FormComposer } from "@mseva/digit-ui-react-components";
+import NDCSummary from "../../../pageComponents/NDCSummary";
 
 const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -13,9 +13,12 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   // console.log("state.pt.PTNewApplicationForm Form data in Summary Step: ", useSelector((state) => state.pt.PTNewApplicationForm.formData));
   // Function to handle the "Next" button click
 
-  const goNext = async (data) => {
+  const goNext = async (action) => {
+    console.log("yeah", action);
+    console.log("formData", formData);
+    const actionStatus = action?.action;
     try {
-      const res = await onSubmit(formData); // wait for the API response
+      const res = await onSubmit(formData, actionStatus); // wait for the API response
 
       // Check if the API call was successful
       if (res?.isSuccess) {
@@ -28,12 +31,20 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
     }
   };
 
-  function mapToNDCPayload(inputData) {
+  function mapToNDCPayload(inputData, actionStatus) {
     const applicant = Digit.UserService.getUser()?.info || {};
-    console.log("inputData", inputData);
-    console.log("formData", formData);
+
+    // Clone and modify workflow action
+    const updatedApplicant = {
+      ...formData.apiData.Applicant,
+      workflow: {
+        ...formData.apiData.Applicant.workflow,
+        action: actionStatus,
+      },
+    };
+
     const payload = {
-      Applicant: formData.apiData.Applicant,
+      Applicant: updatedApplicant,
       NdcDetails: formData.apiData.NdcDetails,
       Documents: [], // Add documents mapping if needed
     };
@@ -49,13 +60,13 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
     return payload;
   }
 
-  const onSubmit = async (data) => {
-    console.log("coming here btw");
-    const finalPayload = mapToNDCPayload(data);
+  const onSubmit = async (data, actionStatus) => {
+    console.log("coming here btw", actionStatus);
+    const finalPayload = mapToNDCPayload(data, actionStatus);
 
     // const response = await Digit.NDCService.NDCcreate({ tenantId, filters: { skipWorkFlow: true }, details: finalPayload });
 
-    const response = await Digit.NDCService.NDCUpdate({ tenantId, filters: { skipWorkFlow: true }, details: finalPayload });
+    const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
 
     if (response?.ResponseInfo?.status === "successful") {
       return { isSuccess: true, response };
@@ -64,18 +75,6 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
     }
   };
 
-  const fetchBill = async (data) => {
-    const result = await Digit.PaymentService.fetchBill(tenantId, {
-      businessService: "NDC",
-      consumerCode: data?.uuid,
-    });
-  };
-
-  useEffect(() => {
-    console.log("formData", formData);
-    if (formData.apiData.Applicant) fetchBill(formData.apiData.Applicant);
-  }, [formData]);
-
   // Function to handle the "Back" button click
   const onGoBack = (data) => {
     onBackClick(config.key, data);
@@ -83,7 +82,8 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
   return (
     <React.Fragment>
-      <FormComposer
+      <NDCSummary formData={formData} goNext={goNext} />
+      {/* <FormComposer
         defaultValues={formData} // Pass the entire formData as default values
         config={config.currStepConfig} // Configuration for the current step
         onSubmit={goNext} // Handle form submission
@@ -91,7 +91,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
         label={t(`${config.texts.submitBarLabel}`)} // Submit button label
         currentStep={config.currStepNumber} // Current step number
         onBackClick={onGoBack} // Handle back button click
-      />
+      /> */}
     </React.Fragment>
   );
 };

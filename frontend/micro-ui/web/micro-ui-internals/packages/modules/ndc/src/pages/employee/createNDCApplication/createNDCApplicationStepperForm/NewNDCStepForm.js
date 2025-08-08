@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
-import { config } from "../../../../config/citizen/CitizenNDCApplicationConfig"
+import { config } from "../../../../config/citizen/CitizenNDCApplicationConfig";
 import { setNDCStep } from "../../../../redux/actions/NDCFormActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
@@ -44,11 +44,11 @@ const createEmployeeConfig = [
     component: "NDCNewFormSummaryStepThreeEmployee",
     key: "PTSummary",
     withoutLabel: true,
-    texts: {
-      submitBarLabel: "Submit",
-    },
-  }
-]
+    // texts: {
+    //   submitBarLabel: "Submit",
+    // },
+  },
+];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: config.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
@@ -57,23 +57,22 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 // console.log("updatedCreateEmployeeconfig", updatedCreateEmployeeconfig);
 
 export const NewNDCStepForm = () => {
-    const history = useHistory();
-    const { t } = useTranslation();
-    const dispatch = useDispatch();
-    const [showToast, setShowToast] = useState(null);
-    const formState = useSelector((state) => state.ndc.NDCForm);
-    const formData = formState.formData;
-    const step = formState.step;
-    const tenantId = Digit.ULBService.getCurrentTenantId();
+  const history = useHistory();
+  const { t } = useTranslation();
+  const dispatch = useDispatch();
+  const [showToast, setShowToast] = useState(null);
+  const formState = useSelector((state) => state.ndc.NDCForm);
+  const formData = formState.formData;
+  const step = formState.step;
+  const tenantId = Digit.ULBService.getCurrentTenantId();
 
-    // console.log("formStateNDC", formState);
+  // console.log("formStateNDC", formState);
 
-    const setStep = (updatedStepNumber) => {
-      dispatch(setNDCStep(updatedStepNumber));
-    };
+  const setStep = (updatedStepNumber) => {
+    dispatch(setNDCStep(updatedStepNumber));
+  };
 
-    const handleSubmit = () => {}
-
+  const handleSubmit = () => {};
 
   return (
     <div className="pageCard">
@@ -92,5 +91,5 @@ export const NewNDCStepForm = () => {
         />
       )}
     </div>
-  )
-}
+  );
+};

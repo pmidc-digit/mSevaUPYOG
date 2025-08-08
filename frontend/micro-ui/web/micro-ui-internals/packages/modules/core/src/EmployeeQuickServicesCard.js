@@ -107,6 +107,8 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <MCollectIcon />;
       case "ChallanGeneration":
         return <MCollectIcon />;
+      case "RentAndLease":
+        return <MCollectIcon />;
       case "PGR":
         return <PGRIcon />;
       case "TL":

@@ -10,6 +10,7 @@ import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 import { PTModule, PTLinks, PTComponents, PTReducers } from "@mseva/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@mseva/digit-ui-module-mcollect";
 import { ChallanGenerationModule, ChallanGenerationLinks } from "@mseva/digit-ui-module-challangeneration";
+import { RentAndLeaseModule, RentAndLeaseLinks } from "@mseva/digit-ui-module-rentandlease";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
@@ -19,6 +20,7 @@ import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-r
 // import { initReportsComponents } from "@mseva/digit-ui-module-reports";
 import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
 import { initChallanGenerationComponents } from "@mseva/digit-ui-module-challangeneration";
+import { initRentAndLeaseComponents } from "@mseva/digit-ui-module-rentandlease";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
 import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
@@ -77,6 +79,7 @@ const enabledModules = [
   "ASSET",
   "PGRAI",
   "ChallanGeneration",
+  "RentAndLease",
 ];
 
 const initTokens = (stateCode) => {
@@ -119,6 +122,8 @@ const initDigitUI = () => {
     MCollectModule,
     ChallanGenerationModule, 
     ChallanGenerationLinks,
+    RentAndLeaseModule,
+    RentAndLeaseLinks,
     HRMSModule,
     ReceiptsModule,
     BillsModule,
@@ -150,6 +155,7 @@ const initDigitUI = () => {
   initDSSComponents();
   initMCollectComponents();
   initChallanGenerationComponents();
+  initRentAndLeaseComponents();
   initHRMSComponents();
   initTLComponents();
   initReceiptsComponents();

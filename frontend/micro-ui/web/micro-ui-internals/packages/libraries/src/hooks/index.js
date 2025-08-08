@@ -19,6 +19,7 @@ import {
 } from "./payment";
 import { useMCollectRecieptSearch } from "./mcollect/mCollect";
 import { useChallanGenerationRecieptSearch } from "./challanGeneration/challanGeneration";
+import { useRentAndLeaseRecieptSearch } from "./rentAndLease/rentAndLease";
 
 import { useUserSearch } from "./userSearch";
 import { useApplicationsForBusinessServiceSearch } from "./useApplicationForBillSearch";
@@ -153,6 +154,16 @@ import useChallanGenerationCategory from "./challanGeneration/useChallanGenerati
 import useChallanGenerationCategoryTypes from "./challanGeneration/useChallanGenerationCategoryTypes";
 import useChallanGenerationTaxHeads from "./challanGeneration/useChallanGenerationTaxHeads";
 import useChallanGenerationFormConfig from "./challanGeneration/useChallanGenerationFormConfig";
+
+import useRentAndLeaseMDMS from "./rentAndLease/useRentAndLeaseMDMS";
+import useRentAndLeaseSearch from "./rentAndLease/useRentAndLeaseSearch";
+import useRentAndLeaseSearchBill from "./rentAndLease/useRentAndLeaseSearchBill";
+import useRentAndLeaseTenants from "./rentAndLease/useTenants";
+import useRentAndLeaseCount from "./rentAndLease/useRentAndLeaseCount";
+import useRentAndLeaseCategory from "./rentAndLease/useRentAndLeaseCategory";
+import useRentAndLeaseCategoryTypes from "./rentAndLease/useRentAndLeaseCategoryTypes";
+import useRentAndLeaseTaxHeads from "./rentAndLease/useRentAndLeaseTaxHeads";
+import useRentAndLeaseFormConfig from "./rentAndLease/useRentAndLeaseFormConfig";
 
 import useTenantsTL from "./tl/useTenants";
 import useTradeLicenseMDMS from "./tl/useTradeLicenseMDMS";
@@ -673,6 +684,18 @@ const challangeneration = {
   useChallanGenerationTaxHeads,
   useChallanGenerationFormConfig,
 }
+const rentandlease = {
+  useRentAndLeaseRecieptSearch,
+  useRentAndLeaseMDMS,
+  useRentAndLeaseSearch,
+  useRentAndLeaseSearchBill,
+  useRentAndLeaseTenants,
+  useRentAndLeaseCount,
+  useRentAndLeaseCategory,
+  useRentAndLeaseCategoryTypes,
+  useRentAndLeaseTaxHeads,
+  useRentAndLeaseFormConfig,
+}
 
 const ws = {
   WSSearchMdmsTypes,
@@ -797,7 +820,8 @@ const Hooks = {
   asset,
   pgrAi,
   useEDCRForm,
-  challangeneration
+  challangeneration,
+  rentandlease
 };
 
 export default Hooks;

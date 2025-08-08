@@ -75,6 +75,8 @@ const iconSelector = (code) => {
       return <MCollectIcon className="fill-path-primary-main" />;
     case "ChallanGeneration":
       return <MCollectIcon className="fill-path-primary-main" />;
+    case "RentAndLease":
+      return <MCollectIcon className="fill-path-primary-main" />;
     case "PGR":
       return <PGRIcon className="fill-path-primary-main" />;
     case "TL":

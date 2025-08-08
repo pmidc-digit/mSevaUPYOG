@@ -21,6 +21,11 @@ import {
   ChallanGenerationLinks,
   initChallanGenerationComponents,
 } from "@mseva/digit-ui-module-challangeneration";
+import {
+  RentAndLeaseModule,
+  RentAndLeaseLinks,
+  initRentAndLeaseComponents,
+} from "@mseva/digit-ui-module-rentandlease";
 import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import {
   PaymentModule,
@@ -124,6 +129,7 @@ const enabledModules = [
   "ASSET",
   "PGRAI",
   "ChallanGeneration",
+  "RentAndLease",
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -136,6 +142,8 @@ window.Digit.ComponentRegistryService.setupRegistry({
   MCollectModule,
   ChallanGenerationModule,
   ChallanGenerationLinks,
+  RentAndLeaseModule,
+  RentAndLeaseLinks, 
   HRMSModule,
   TLModule,
   TLLinks,
@@ -166,6 +174,7 @@ initFSMComponents();
 initDSSComponents();
 initMCollectComponents();
 initChallanGenerationComponents();
+initRentAndLeaseComponents();
 initHRMSComponents();
 initTLComponents();
 initReceiptsComponents();

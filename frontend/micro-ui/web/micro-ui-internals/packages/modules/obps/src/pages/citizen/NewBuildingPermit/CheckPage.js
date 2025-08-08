@@ -271,7 +271,7 @@ setWaterCharges(Malbafees/2)
         }
       );
       if(!isEditApplication){
-        value.additionalDetails.P1charges=paymentDetails?.Bill[0]?.billDetails[0]?.amount;
+        // value.additionalDetails.P1charges=paymentDetails?.Bill[0]?.billDetails[0]?.amount;
       }
       const sendbacktocitizenApp = window.location.href.includes("sendbacktocitizen");
       let routeLink = `/digit-ui/citizen/obps/bpa/${additionalDetails?.applicationType.toLowerCase()}/${additionalDetails?.serviceType.toLowerCase()}`;

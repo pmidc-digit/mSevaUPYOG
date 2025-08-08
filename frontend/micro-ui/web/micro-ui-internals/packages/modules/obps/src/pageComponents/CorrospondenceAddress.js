@@ -42,6 +42,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   const goNext = () => {
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
       setIsDisableForNext(true);
+      console.log("dob here in payload", formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth): null);
       let payload = {
         Licenses: [
           {
@@ -51,7 +52,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                   gender: formData?.LicneseDetails?.gender?.code,
                   mobileNumber: formData?.LicneseDetails?.mobileNumber,
                   name: formData?.LicneseDetails?.name,
-                  dob: formData?.LicenseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth) : null,
+                  dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth) : null,
                   emailId: formData?.LicneseDetails?.email,
                   permanentAddress: formData?.LicneseDetails?.PermanentAddress,
                   correspondenceAddress: Correspondenceaddress,
@@ -66,7 +67,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                 },
               ],
               additionalDetail: {
-                qualificationType: formData?.LicenseType?.qualificationType?.name,
+                qualificationType: formData?.LicneseType?.qualificationType?.name,
                 counsilForArchNo: formData?.LicneseType?.ArchitectNo,
                 isSelfCertificationRequired: formData?.LicneseType?.selfCertification ? formData?.LicneseType?.selfCertification : null,
                 Ulb: formData?.LicneseDetails?.Ulb,

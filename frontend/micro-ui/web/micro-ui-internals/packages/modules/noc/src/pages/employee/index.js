@@ -42,6 +42,7 @@ const EmployeeApp = ({ path }) => {
   const { t } = useTranslation();
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCApplicationOverview");
   const Inbox = Digit?.ComponentRegistryService?.getComponent("NOCInbox");
+  const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
 
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -54,6 +55,7 @@ const EmployeeApp = ({ path }) => {
       <Switch>
         <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} />
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
+        <PrivateRoute path={`${path}/new-application`} component={NewNOCApplication} />
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/response`} component={Response} />

@@ -47,7 +47,7 @@ import {
   ReceiptsModule,
 } from "@mseva/digit-ui-module-receipts";
 import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
-import { initNOCComponents } from "@mseva/digit-ui-module-noc";
+import { initNOCComponents, NOCReducers } from "@mseva/digit-ui-module-noc";
 import {
   initEngagementComponents,
   SurveyReducers,
@@ -180,6 +180,7 @@ const moduleReducers = (initData) => ({
   ptr: PTRReducers(initData),
   ads: ADSReducers(initData),
   chb: CHBReducers(initData),
+  noc: NOCReducers(initData)
 });
 
 function App() {

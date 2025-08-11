@@ -321,60 +321,64 @@ public class DemandService {
 							CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR_MSG);
 				/*
 				 * OTS Configuration Fix - PI-18953 ( Abhishek Rana)
-				 */				JSONArray otsArray = (JSONArray) timeBasedExmeptionMasterMap.get("Ots");
+				 */				
+				JSONArray otsArray = (JSONArray) timeBasedExmeptionMasterMap.get("Ots");
 
-				if (otsArray != null && !otsArray.isEmpty()) {
-				    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-				    boolean anyOtsApplied = false;
+			
+					if (otsArray != null && !otsArray.isEmpty()) {
+					    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+					    boolean anyOtsApplied = false;
 
-				    for (Object item : otsArray) {
-				        if (item instanceof Map) {
-				            Map<String, Object> penaltyMap = (Map<String, Object>) item;
-				            boolean otsEnabledFlag = Boolean.parseBoolean(String.valueOf(penaltyMap.get("isOTSEnabled")));
+					    int demandFY = getFinancialYearStart(demand.getTaxPeriodFrom());
 
-				            if (otsEnabledFlag) {
-				              
+					    for (Object item : otsArray) {
+					        if (item instanceof Map) {
+					            Map<String, Object> penaltyMap = (Map<String, Object>) item;
+					            boolean otsEnabledFlag = Boolean.parseBoolean(String.valueOf(penaltyMap.get("isOTSEnabled")));
 
-				                if (penaltyMap.get("startingDay") != null) {
-				                    LocalDate localDate = LocalDate.parse(penaltyMap.get("startingDay").toString(), formatter);
-				                    startingDayEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-				                }
+					            if (otsEnabledFlag) {
 
-				                if (penaltyMap.get("OTSEndDate") != null) {
-				                    LocalDate localDate = LocalDate.parse(penaltyMap.get("OTSEndDate").toString(), formatter);
-				                    otsEndDateEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-				                }
+					                Long localStartingEpoch = null;
+					                Long localOtsEndEpoch = null;
+					                BigDecimal localOtsRate = BigDecimal.ZERO;
 
-				                if (penaltyMap.get("rate") != null) {
-				                    otsRate = new BigDecimal(penaltyMap.get("rate").toString());
-				                }
+					                if (penaltyMap.get("startingDay") != null) {
+					                    LocalDate localDate = LocalDate.parse(penaltyMap.get("startingDay").toString(), formatter);
+					                    localStartingEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+					                }
 
-				                if (startingDayEpoch != null && otsEndDateEpoch != null &&
-				                		 demand.getTaxPeriodFrom() >= startingDayEpoch &&
-				                		    demand.getTaxPeriodTo() <= otsEndDateEpoch) {
-				                			log.info("OTS is Enabled and Applicable for Period: " + demand.getTaxPeriodFrom()
-				                            + " to " + demand.getTaxPeriodTo() + ", Rate: " + otsRate);
+					                if (penaltyMap.get("OTSEndDate") != null) {
+					                    LocalDate localDate = LocalDate.parse(penaltyMap.get("OTSEndDate").toString(), formatter);
+					                    localOtsEndEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+					                }
 
-				                    // Apply this specific rate to the demand
-				                    otsEnabled(demand, otsRate);
-				                    anyOtsApplied = true;
-				                }
-				            }
-				        }
-				    }
+					                if (penaltyMap.get("rate") != null) {
+					                    localOtsRate = new BigDecimal(penaltyMap.get("rate").toString());
+					                }
 
-				    if (!anyOtsApplied) {
-				    	log.info("No applicable OTS found. Applying normal exemptions. Demand From: {}, Demand To: {}, OTS Start: {}, OTS End: {}",
-				    		    demand.getTaxPeriodFrom(), demand.getTaxPeriodTo(), startingDayEpoch, otsEndDateEpoch);
-				        applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
-				    }
-				} else {
-					log.info("No applicable OTS found. Applying normal exemptions. Demand From: {}, Demand To: {}, OTS Start: {}, OTS End: {}",
-						    demand.getTaxPeriodFrom(), demand.getTaxPeriodTo(), startingDayEpoch, otsEndDateEpoch);
+					                if (localStartingEpoch != null && localOtsEndEpoch != null) {
+					                    int otsFYStart = getFinancialYearStart(localStartingEpoch);
+					                    int otsFYEnd = getFinancialYearStart(localOtsEndEpoch);
 
-				    applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
-				}
+					                    if (demandFY == otsFYStart || demandFY == otsFYEnd) {
+					                        log.info("OTS is Enabled and Applicable for FY: {} (Rate: {})", demandFY, localOtsRate);
+					                        otsEnabled(demand, localOtsRate);
+					                        anyOtsApplied = true;
+					                    }
+					                }
+					            }
+					        }
+					    }
 
+					    if (!anyOtsApplied) {
+					        log.info("No applicable OTS found for FY: {}. Applying normal exemptions.", demandFY);
+					        applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
+					    }
+
+					} else {
+					    log.info("OTS array empty. Applying normal exemptions.");
+					    applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
+					}
 
 
 				roundOffDecimalForDemand(demand, requestInfoWrapper);
@@ -395,7 +399,14 @@ public class DemandService {
 	}
 
 	
-	
+	 private int getFinancialYearStart(long epochMillis) {
+		    LocalDate date = Instant.ofEpochMilli(epochMillis)
+		            .atZone(ZoneId.systemDefault())
+		            .toLocalDate();
+		    // For Jan–Mar, FY starts previous year
+		    return (date.getMonthValue() <= 3) ? date.getYear() - 1 : date.getYear();
+		}
+
 public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
 		
 		if(getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);

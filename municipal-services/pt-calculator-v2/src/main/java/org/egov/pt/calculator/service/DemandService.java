@@ -400,13 +400,14 @@ public class DemandService {
 	}
 
 	
-	 private int getFinancialYearStart(long epochMillis) {
-		    LocalDate date = Instant.ofEpochMilli(epochMillis)
-		            .atZone(ZoneId.systemDefault())
-		            .toLocalDate();
-		    // For Jan–Mar, FY starts previous year
-		    return (date.getMonthValue() <= 3) ? date.getYear() - 1 : date.getYear();
-		}
+	private int getFinancialYearStart(long epochMillis) {
+	    ZoneId zoneId = ZoneId.of("Asia/Kolkata"); 
+	    LocalDate date = Instant.ofEpochMilli(epochMillis)
+	            .atZone(zoneId)
+	            .toLocalDate();
+
+	    return (date.getMonthValue() <= 3) ? date.getYear() - 1 : date.getYear();
+	}
 
 public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
 		

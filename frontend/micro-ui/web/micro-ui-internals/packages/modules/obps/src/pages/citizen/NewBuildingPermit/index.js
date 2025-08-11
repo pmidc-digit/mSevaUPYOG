@@ -82,6 +82,11 @@ const NewBuildingPermit = () => {
       {newConfig1.map((routeObj, index) => {
         const { component, texts, inputs, key } = routeObj;
         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
+        // let enrichedInputs
+
+        // if(inputs?.length > 0){
+        //   enrichedInputs = inputs?.map(()=>{})
+        // }
         return (
           <Route path={`${getPath(match.path, match.params)}/${routeObj.route}`} key={index}>
             <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={params} />

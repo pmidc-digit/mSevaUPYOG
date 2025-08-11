@@ -123,6 +123,30 @@ export const quickServiceModules = {
       roles: [],
     },
     {
+      moduleCode: "ChallanGeneration",
+      moduleName: "Challan Generation",
+      bgColor: "#3e4b5b  ",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/challangeneration/inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles :[]
+    },
+    {
+      moduleCode: "RentAndLease",
+      moduleName: "Rent And Lease",
+      bgColor: "#3e4b5b  ",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/rentandlease/inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles :[]
+    },
+    {
       moduleCode: "Engagement",
       moduleName: "Citizen Score Card",
       bgColor: "#0a3622",

@@ -420,7 +420,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                 payload.additionalDetails.stakeholderRegistrationNumber=JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"));
                 payload.additionalDetails.stakeholderAddress=JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS"))
                 let isSelfCertificationRequired=sessionStorage.getItem("isSelfCertificationRequired");
-                if(isSelfCertificationRequired==="undefined"){
+                if(isSelfCertificationRequired==="undefined" || isSelfCertificationRequired===null){ // Need To Revert
                     isSelfCertificationRequired="false";
                 }
                 payload.additionalDetails.isSelfCertificationRequired = isSelfCertificationRequired.toString();
@@ -464,29 +464,32 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                     
                 // }
                 // else{
-                    Digit.OBPSService.create({ BPA: payload }, tenantId)
-                    .then((result, err) => {
-                        if (result?.BPA?.length > 0) {
-                            result?.BPA?.[0]?.landInfo?.owners?.forEach(owner => {
-                                owner.gender = { code: owner.gender, active: true, i18nKey: `COMMON_GENDER_${owner.gender}` }
-                            });
-                            result.BPA[0].owners = { ...owner, owners: result?.BPA?.[0]?.landInfo?.owners, ownershipCategory: ownershipCategory };
-                            result.BPA[0].address = result?.BPA?.[0]?.landInfo?.address;
-                            result.BPA[0].address.city = formData.address.city;
-                            result.BPA[0].address.locality = formData.address.locality;
-                            result.BPA[0].placeName = formData?.address?.placeName;
-                            result.BPA[0].data = formData.data;
-                            result.BPA[0].BlockIds = getBlockIds(result.BPA[0].landInfo.unit);
-                            result.BPA[0].subOccupancy= formData?.subOccupancy;
-                            result.BPA[0].uiFlow = formData?.uiFlow;
-                            setIsDisable(false);
-                            onSelect("", result.BPA[0], "", true);
-                        }
-                    })
-                    .catch((e) => {
-                        setIsDisable(false);
-                        setShowToast({ key: "true", error: true, message: e?.response?.data?.Errors[0]?.message });
-                    });
+                    // Digit.OBPSService.create({ BPA: payload }, tenantId)
+                    // .then((result, err) => {
+                    //     if (result?.BPA?.length > 0) {
+                    //         result?.BPA?.[0]?.landInfo?.owners?.forEach(owner => {
+                    //             owner.gender = { code: owner.gender, active: true, i18nKey: `COMMON_GENDER_${owner.gender}` }
+                    //         });
+                    //         result.BPA[0].owners = { ...owner, owners: result?.BPA?.[0]?.landInfo?.owners, ownershipCategory: ownershipCategory };
+                    //         result.BPA[0].address = result?.BPA?.[0]?.landInfo?.address;
+                    //         result.BPA[0].address.city = formData.address.city;
+                    //         result.BPA[0].address.locality = formData.address.locality;
+                    //         result.BPA[0].placeName = formData?.address?.placeName;
+                    //         result.BPA[0].data = formData.data;
+                    //         result.BPA[0].BlockIds = getBlockIds(result.BPA[0].landInfo.unit);
+                    //         result.BPA[0].subOccupancy= formData?.subOccupancy;
+                    //         result.BPA[0].uiFlow = formData?.uiFlow;
+                    //         setIsDisable(false);
+                    //         onSelect("", result.BPA[0], "", true);
+                    //     }
+                    // })
+                    // .catch((e) => {
+                    //     setIsDisable(false);
+                    //     setShowToast({ key: "true", error: true, message: e?.response?.data?.Errors[0]?.message });
+                    // });
+
+                    setIsDisable(false);
+                    onSelect("", {}, "", true);
                 // }
             } else {
                 onSelect(config.key, ownerStep);

@@ -42,6 +42,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
   const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
   const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
   const getAcknowledgementData=async(application, tenantInfo, t)=>{
+  console.log("application in getAcknowledgement", application);
     return {
         t: t,
         tenantId: tenantInfo?.code,
@@ -59,8 +60,6 @@ const getMohallaLocale = (value = "", tenantId = "") => {
                         title: t("REGISTRATION_FILED_DATE"),
                         value: Digit.DateUtils.ConvertTimestampToDate(application?.applicationData?.auditDetails?.createdTime, "dd/MM/yyyy") || "NA",
                     },
-                    
-                
                 ],
             },
             {
@@ -68,16 +67,18 @@ const getMohallaLocale = (value = "", tenantId = "") => {
                 values: [
                     {
                         title : t("BPA_LICENSE_TYPE"),
-                        value : application?.applicationDetails?.[1]?.values[0]?.value || "NA",
+                        value : t(`${application?.applicationDetails?.[1]?.values[0]?.value}`) || "NA",
                     },
                     {
-                        title : t("BPA_COUNCIL_OF_ARCH_NO_LABEL"),
+                        title : t("BPA_COUNCIL_NUMBER"),
                         value : application?.applicationDetails?.[1]?.values[1]?.value || "NA",
                     },
                     {
-                        title: t("LICENSE_TYPE"),
-                        value: application?.applicationData?.licenseType|| "NA",
+                        title: t("BPA_LICENSE_TYPE"),
+                        value: application?.applicationData?.tradeLicenseDetail?.tradeUnits?.tradeType|| "NA",
+                        
                     },
+                    {/**Qualification Type missing here in payload */}
                 ]
             },
 
@@ -99,12 +100,13 @@ const getMohallaLocale = (value = "", tenantId = "") => {
                     {
                         title : t("BPA_APPLICANT_EMAIL_LABEL"),
                         value : application?.applicationDetails?.[2]?.values[3]?.value || "NA",
-                    }
+                    },
+                    {/**Date of Birth Missing here */}
 
                 ]
             },
             {
-                title: t("BPA_ADDRESS_LABEL"),
+                title: t("BPA_NEW_ADDRESS_HEADER_DETAILS"),
                 values: [
                     {
                         title : t("BPA_PERMANANT_ADDRESS_LABEL"),
@@ -113,7 +115,8 @@ const getMohallaLocale = (value = "", tenantId = "") => {
                     {
                         title : t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL"),
                         value : application?.applicationDetails?.[4]?.values[0]?.value || "NA",
-                    }
+                    },
+                    {/**Pincode, Selected Ulbs missing */}
                 ]
             },
             

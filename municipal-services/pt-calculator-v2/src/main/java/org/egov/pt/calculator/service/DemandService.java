@@ -360,11 +360,12 @@ public class DemandService {
 					                    int otsFYStart = getFinancialYearStart(localStartingEpoch);
 					                    int otsFYEnd = getFinancialYearStart(localOtsEndEpoch);
 
-					                    if (demandFY == otsFYStart || demandFY == otsFYEnd) {
+					                    if (demandFY >= otsFYStart && demandFY <= otsFYEnd) {
 					                        log.info("OTS is Enabled and Applicable for FY: {} (Rate: {})", demandFY, localOtsRate);
 					                        otsEnabled(demand, localOtsRate);
 					                        anyOtsApplied = true;
 					                    }
+
 					                }
 					            }
 					        }

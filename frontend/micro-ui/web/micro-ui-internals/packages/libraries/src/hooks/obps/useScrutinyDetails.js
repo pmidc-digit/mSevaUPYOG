@@ -7,6 +7,7 @@ const useScrutinyDetails = (tenantId, filters, config, key = "OBPS_SCRUTINYDETAI
   console.log("useScrutinyDetails Hook Called");
   console.log("TenantId:", tenantId);
   console.log("Filters:", filters);
+  console.log("+++++");
   return useQuery(
     [key, filters],
     async () => {

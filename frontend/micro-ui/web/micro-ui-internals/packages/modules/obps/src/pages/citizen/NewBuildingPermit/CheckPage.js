@@ -29,39 +29,124 @@ import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments } from "../.
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview";
 import Architectconcent from "./Architectconcent";
 import { OTPInput, CardLabelError } from "@mseva/digit-ui-react-components";
+import useScrutinyDetails from "../../../../../../../../micro-ui-internals/packages/libraries/src/hooks/obps/useScrutinyDetails";
+import CitizenConsent from "../BpaApplicationDetail/CitizenConsent";
 
 const CheckPage = ({ onSubmit, value }) => {
-  const [development, setDevelopment] = useState(
-    () => sessionStorage.getItem("development") || value?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || ""
-  );
-  const [otherCharges, setOtherCharges] = useState(
-    () => sessionStorage.getItem("otherCharges") || value?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || ""
-  );
-  const [lessAdjusment, setLessAdjusment] = useState(
-    () => sessionStorage.getItem("lessAdjusment") || value?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT || ""
-  );
+  // Initialize states with sessionStorage values to persist across refreshes
+  const [development, setDevelopment] = useState(() => {
+    const stored = sessionStorage.getItem("development");
+    return stored || value?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "";
+  });
+
+  const [otherCharges, setOtherCharges] = useState(() => {
+    const stored = sessionStorage.getItem("otherCharges");
+    return stored || value?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "";
+  });
+
+  const [lessAdjusment, setLessAdjusment] = useState(() => {
+    const stored = sessionStorage.getItem("lessAdjusment");
+    return stored || value?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT || "";
+  });
+
+  const [otherChargesDisc, setOtherChargesDisc] = useState(() => {
+    const stored = sessionStorage.getItem("otherChargesDisc");
+    return stored || value?.additionalDetails?.otherFeesDiscription || "";
+  });
   const [labourCess, setLabourCess] = useState(() => sessionStorage.getItem("LabourCess") || "");
   const [gaushalaFees, setGaushalaFees] = useState(() => sessionStorage.getItem("GaushalaFees") || "");
   const [malbafees, setMalbafees] = useState(() => sessionStorage.getItem("Malbafees") || "");
   const [waterCharges, setWaterCharges] = useState(() => sessionStorage.getItem("WaterCharges") || "");
+
+  const [ownersData, setOwnersData] = useState(() => {
+    // Try to get owner data from multiple sessionStorage sources
+    const storedOwnerData = sessionStorage.getItem("currentOwnerData");
+    const storedOwnerFields = sessionStorage.getItem("ownerFields");
+
+    if (storedOwnerData) {
+      const parsedData = JSON.parse(storedOwnerData);
+      return parsedData?.owners || [];
+    }
+
+    if (storedOwnerFields) {
+      const parsedFields = JSON.parse(storedOwnerFields);
+      return parsedFields || [];
+    }
+
+    return owners?.owners || [];
+  });
+  const mutation = Digit.Hooks.obps.useObpsAPI(value?.tenantId, false);
+  console.log(mutation, "CHECK MUTATION");
+  useEffect(() => {
+    const storedOwnerData = sessionStorage.getItem("currentOwnerData");
+    const storedOwnerFields = sessionStorage.getItem("ownerFields");
+
+    if (storedOwnerData) {
+      const parsedData = JSON.parse(storedOwnerData);
+      if (parsedData?.owners) {
+        setOwnersData(parsedData.owners);
+      }
+    } else if (storedOwnerFields) {
+      const parsedFields = JSON.parse(storedOwnerFields);
+      if (parsedFields) {
+        setOwnersData(parsedFields);
+      }
+    }
+  }, []);
+
+  const getPlotDataFromStorage = () => {
+    try {
+      const storedValue = sessionStorage.getItem("Digit.BUILDING_PERMIT");
+      if (storedValue) {
+        const parsedData = JSON.parse(storedValue);
+        return parsedData?.value?.data?.edcrDetails || null;
+      }
+    } catch (error) {
+      console.error("Error parsing sessionStorage data:", error);
+    }
+    return null;
+  };
+
+  const getPlanInfoProperties = () => {
+    try {
+      const storedValue = sessionStorage.getItem("Digit.BUILDING_PERMIT");
+      if (storedValue) {
+        const parsedData = JSON.parse(storedValue);
+        console.log(parsedData?.value?.data?.edcrDetails, "))))))))");
+        return parsedData?.value?.data?.edcrDetails || null;
+      }
+    } catch (error) {
+      console.error("Error parsing planInfoProperties:", error);
+    }
+    return null;
+  };
+
+  // Replace/add this section after the existing building extract section:
+  const planInfoProps = getPlanInfoProperties();
+
+  const plotDataFromStorage = getPlotDataFromStorage();
 
   const { t } = useTranslation();
   const history = useHistory();
   const match = useRouteMatch();
   const user = Digit.UserService.getUser();
   const state = Digit.ULBService.getStateId();
-  const tenantId = user?.info?.permanentCity || value?.tenantId || Digit.ULBService.getCurrentTenantId();
+
+  // Dynamic tenant ID calculation - this is the key fix
+  const tenantId = useMemo(() => {
+    return value?.address?.city?.code || value?.tenantId || user?.info?.permanentCity || Digit.ULBService.getCurrentTenantId();
+  }, [value?.address?.city?.code, value?.tenantId, user?.info?.permanentCity]);
+
   const architectmobilenumber = user?.info?.mobileNumber;
+
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(state, "BPA", ["GaushalaFees", "MalbaCharges", "LabourCess"]);
 
-  const [otherChargesDisc, setOtherChargesDisc] = useState(
-    () => sessionStorage.getItem("otherChargesDisc") || value?.additionalDetails?.otherFeesDiscription || ""
-  );
   const [uploadedFile, setUploadedFile] = useState();
   const [uploadedFileLess, setUploadedFileLess] = useState(() => {
     const stored = sessionStorage.getItem("uploadedFileLess");
     return stored ? JSON.parse(stored) : [];
   });
+
   const [file, setFile] = useState();
   const [uploadMessage, setUploadMessage] = useState("");
   const [errorFile, setError] = useState(null);
@@ -95,22 +180,30 @@ const CheckPage = ({ onSubmit, value }) => {
   });
 
   const [showTermsPopup, setShowTermsPopup] = useState(false);
+  const [showTermsPopupOwner, setShowTermsPopupOwner] = useState(false);
+
   const [showMobileInput, setShowMobileInput] = useState(() => {
     const stored = sessionStorage.getItem("showMobileInput");
     return stored === "true";
   });
+
   const [mobileNumber, setMobileNumber] = useState(() => sessionStorage.getItem("mobileNumber") || architectmobilenumber || "");
+
   const [showOTPInput, setShowOTPInput] = useState(() => {
     const stored = sessionStorage.getItem("showOTPInput");
     return stored === "true";
   });
+
   const [otp, setOTP] = useState("");
+
   const [isOTPVerified, setIsOTPVerified] = useState(() => {
     const stored = sessionStorage.getItem("isOTPVerified");
     const timestamp = sessionStorage.getItem("otpVerifiedTimestamp");
     return stored === "true" && timestamp;
   });
+
   const [otpError, setOTPError] = useState("");
+
   const [otpVerifiedTimestamp, setOTPVerifiedTimestamp] = useState(() => {
     const stored = sessionStorage.getItem("otpVerifiedTimestamp");
     return stored ? new Date(stored) : null;
@@ -121,23 +214,43 @@ const CheckPage = ({ onSubmit, value }) => {
     const stored = sessionStorage.getItem("ownerAgree");
     return stored === "true";
   });
+
   const [showOwnerMobileInput, setShowOwnerMobileInput] = useState(() => {
     const stored = sessionStorage.getItem("showOwnerMobileInput");
     return stored === "true";
   });
-  const [ownerMobileNumber, setOwnerMobileNumber] = useState(
-    () => sessionStorage.getItem("ownerMobileNumber") || owners?.owners?.[0]?.mobileNumber || ""
-  );
+
+  const [ownerMobileNumber, setOwnerMobileNumber] = useState(() => {
+    // Try to get from sessionStorage first (from OwnerDetails page)
+    const storedOwnerData = sessionStorage.getItem("currentOwnerData");
+    const storedOwnerMobile = sessionStorage.getItem("ownerMobileNumber");
+    const storedOwnerFields = sessionStorage.getItem("ownerFields");
+
+    if (storedOwnerMobile) return storedOwnerMobile;
+    if (storedOwnerData) {
+      const parsedData = JSON.parse(storedOwnerData);
+      return parsedData?.owners?.[0]?.mobileNumber || "";
+    }
+    if (storedOwnerFields) {
+      const parsedFields = JSON.parse(storedOwnerFields);
+      return parsedFields?.[0]?.mobileNumber || "";
+    }
+    return owners?.owners?.[0]?.mobileNumber || "";
+  });
+
   const [showOwnerOTPInput, setShowOwnerOTPInput] = useState(() => {
     const stored = sessionStorage.getItem("showOwnerOTPInput");
     return stored === "true";
   });
+
   const [ownerOtp, setOwnerOTP] = useState("");
+
   const [isOwnerOTPVerified, setIsOwnerOTPVerified] = useState(() => {
     const stored = sessionStorage.getItem("isOwnerOTPVerified");
     return stored === "true";
   });
-  const [ownerOtpError, setOwnerOTPError] = useState("");
+
+  const [ownerOtpError, setOwnerOtpError] = useState("");
 
   const Architectvalidations = sessionStorage.getItem("ArchitectConsentdocFilestoreid") ? true : false;
 
@@ -182,8 +295,31 @@ const CheckPage = ({ onSubmit, value }) => {
     sessionStorage.setItem("ownerMobileNumber", ownerMobileNumber);
   }, [ownerMobileNumber]);
 
+  // Add these useEffect hooks to persist missing data
+  useEffect(() => {
+    sessionStorage.setItem("development", development);
+  }, [development]);
+
+  useEffect(() => {
+    sessionStorage.setItem("otherCharges", otherCharges);
+  }, [otherCharges]);
+
+  useEffect(() => {
+    sessionStorage.setItem("lessAdjusment", lessAdjusment);
+  }, [lessAdjusment]);
+
+  useEffect(() => {
+    sessionStorage.setItem("otherChargesDisc", otherChargesDisc);
+  }, [otherChargesDisc]);
+
+  useEffect(() => {
+    if (otpVerifiedTimestamp) {
+      sessionStorage.setItem("otpVerifiedTimestamp", otpVerifiedTimestamp.toISOString());
+    }
+  }, [otpVerifiedTimestamp]);
+
   const handleTermsLinkClick = (e) => {
-    e.preventDefault(); // Prevent default link behavior
+    e.preventDefault();
     if (isOTPVerified) {
       setShowTermsPopup(true);
     } else {
@@ -220,6 +356,7 @@ const CheckPage = ({ onSubmit, value }) => {
           type: "login",
         },
       });
+
       if (response.isSuccessful) {
         setShowOTPInput(true);
       } else {
@@ -232,9 +369,9 @@ const CheckPage = ({ onSubmit, value }) => {
     }
   };
 
-  const handleOTPChange = (e) => {
-    setOTP(e.target.value);
-  };
+  // const handleOTPChange = (e) => {
+  //   setOTP(e.target.value);
+  // };
 
   const requestData = {
     username: mobileNumber,
@@ -277,9 +414,11 @@ const CheckPage = ({ onSubmit, value }) => {
 
   // Owner verification functions
   const handleOwnerTermsLinkClick = (e) => {
-    e.preventDefault(); // Prevent default link behavior
+    e.preventDefault();
+    e.stopPropagation();
     if (isOwnerOTPVerified) {
-      setShowTermsPopup(true);
+      setShowTermsPopupOwner(true);
+      console.log("OPEN");
     } else {
       alert("Please verify owner first");
     }
@@ -289,7 +428,11 @@ const CheckPage = ({ onSubmit, value }) => {
     return (
       <div>
         {t("OWNER_AGREES_TO_BELOW_UNDERTAKING")}
-        <LinkButton label={t("OWNER_DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleOwnerTermsLinkClick} />
+        <LinkButton
+          label={t("OWNER_DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")}
+          onClick={handleOwnerTermsLinkClick}
+          disabled={!isOwnerOTPVerified}
+        />
       </div>
     );
   };
@@ -314,6 +457,7 @@ const CheckPage = ({ onSubmit, value }) => {
           type: "login",
         },
       });
+
       if (response.isSuccessful) {
         setShowOwnerOTPInput(true);
       } else {
@@ -326,9 +470,9 @@ const CheckPage = ({ onSubmit, value }) => {
     }
   };
 
-  const handleOwnerOTPChange = (e) => {
-    setOwnerOTP(e.target.value);
-  };
+  // const handleOwnerOTPChange = (e) => {
+  //   setOwnerOTP(e.target.value);
+  // };
 
   const ownerRequestData = {
     username: ownerMobileNumber,
@@ -336,7 +480,6 @@ const CheckPage = ({ onSubmit, value }) => {
     tenantId: user?.info?.tenantId,
     userType: "CITIZEN",
   };
-
   const handleOwnerVerifyOTPClick = async (e) => {
     e.preventDefault(); // Prevent form submission
     console.log("Owner OTP++++++++>");
@@ -344,17 +487,17 @@ const CheckPage = ({ onSubmit, value }) => {
       const response = await Digit.UserService.authenticate(ownerRequestData);
       if (response.ResponseInfo.status === "Access Token generated successfully") {
         setIsOwnerOTPVerified(true);
-        setOwnerOTPError(t("VERIFIED"));
+        setOwnerOtpError(t("VERIFIED")); // Changed from setOwnerOTPError to setOwnerOtpError
         setOwnerAgree(true);
       } else {
         setIsOwnerOTPVerified(false);
-        setOwnerOTPError(t("WRONG OTP"));
+        setOwnerOtpError(t("WRONG OTP")); // Changed from setOwnerOTPError to setOwnerOtpError
       }
     } catch (error) {
       console.error("Error verifying Owner OTP:", error);
       alert("Owner OTP Verification Error ");
       setIsOwnerOTPVerified(false);
-      setOwnerOTPError(t("OTP Verification Error"));
+      setOwnerOtpError(t("OTP Verification Error")); // Changed from setOwnerOTPError to setOwnerOtpError
     }
   };
 
@@ -405,7 +548,6 @@ const CheckPage = ({ onSubmit, value }) => {
       );
       Digit.UploadServices.Filefetch(fileStoresIds, state).then((res) => setDocuments(res?.data));
     }
-
     if (isEditApplication) {
       setDevelopment(value?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES);
       sessionStorage.setItem("development", value?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES);
@@ -417,10 +559,8 @@ const CheckPage = ({ onSubmit, value }) => {
       sessionStorage.setItem("otherChargesDisc", value?.additionalDetails?.otherFeesDiscription);
       setUploadedFileLess(value?.additionalDetails?.lessAdjustmentFeeFiles);
     }
-
     let plotArea =
       parseInt(sessionStorage.getItem("plotArea")) || datafromAPI?.planDetail?.planInformation?.plotArea || value?.additionalDetails?.area;
-
     const LabourCess = Math.round(plotArea * 10.7639 > 909 ? mdmsData?.BPA?.LabourCess[1].rate * (plotArea * 10.7639) : 0);
     const GaushalaFees = Math.round(mdmsData?.BPA?.GaushalaFees[0].rate);
     const Malbafees = Math.round(
@@ -430,12 +570,10 @@ const CheckPage = ({ onSubmit, value }) => {
         ? mdmsData?.BPA?.MalbaCharges?.[1].rate
         : mdmsData?.BPA?.MalbaCharges[2].rate || 500
     );
-
     sessionStorage.setItem("Malbafees", Malbafees);
     sessionStorage.setItem("WaterCharges", Malbafees / 2);
     sessionStorage.setItem("GaushalaFees", GaushalaFees);
     sessionStorage.setItem("LabourCess", LabourCess);
-
     setGaushalaFees(GaushalaFees);
     setLabourCess(LabourCess);
     setMalbafees(Malbafees);
@@ -472,8 +610,9 @@ const CheckPage = ({ onSubmit, value }) => {
     });
   }
 
-  const { data: datafromAPI, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, value?.data?.scrutinyNumber, {
-    enabled: value?.data?.scrutinyNumber ? true : false,
+  // Use the updated custom hook with proper parameters
+  const { data: datafromAPI, isLoading, refetch } = useScrutinyDetails(tenantId, value?.data?.scrutinyNumber, {
+    enabled: value?.data?.scrutinyNumber && tenantId ? true : false,
   });
 
   let consumerCode = value?.applicationNo;
@@ -499,6 +638,7 @@ const CheckPage = ({ onSubmit, value }) => {
   }
 
   const sendbacktocitizenApp = window.location.href.includes("sendbacktocitizen");
+
   let routeLink = `/digit-ui/citizen/obps/bpa/${additionalDetails?.applicationType.toLowerCase()}/${additionalDetails?.serviceType.toLowerCase()}`;
   if (isEditApplication) routeLink = `/digit-ui/citizen/obps/editApplication/bpa/${value?.tenantId}/${value?.applicationNo}`;
   if (sendbacktocitizenApp) routeLink = `/digit-ui/citizen/obps/sendbacktocitizen/bpa/${value?.tenantId}/${value?.applicationNo}`;
@@ -562,6 +702,123 @@ const CheckPage = ({ onSubmit, value }) => {
     return <Loader />;
   }
 
+  const dynamicTenantId = value?.address?.city?.code || address?.city?.code || tenantId;
+
+  // Function to make the POST API call for sending to citizen
+  const sendToCitizenAPI = async () => {
+    try {
+      const dynamicTenantId = value?.address?.city?.code || address?.city?.code || tenantId;
+
+      // Get auth token from user info - try different methods
+      let authToken;
+      try {
+        // Try the most common method first
+        authToken =
+          user?.info?.access_token ||
+          user?.access_token ||
+          Digit.UserService.getUser()?.access_token ||
+          sessionStorage.getItem("token") ||
+          localStorage.getItem("token");
+      } catch (error) {
+        console.warn("Could not get auth token:", error);
+        authToken = null;
+      }
+
+      console.log("Auth token:", authToken ? "Found" : "Not found");
+      console.log(tenantId, "TEEN");
+
+      // Build query parameters - only tenantId, edcrNumber, and timestamp
+      const queryParams = new URLSearchParams({
+        tenantId: dynamicTenantId,
+        edcrNumber: value?.data?.scrutinyNumber?.edcrNumber || value?.data?.scrutinyNumber,
+        _: Date.now().toString(),
+      });
+
+      // Prepare the request body similar to your cURL
+      const requestBody = {
+        // RequestInfo: {
+        //   apiId: "Rainmaker",
+        //   authToken: authToken,
+        //   userInfo: {
+        //     id: user.info.id,
+        //     uuid: user.info.uuid,
+        //     userName: user.info.userName,
+        //     name: user.info.name,
+        //     mobileNumber: user.info.mobileNumber,
+        //     emailId: user.info.emailId || "",
+        //     locale: user.info.locale,
+        //     type: user.info.type,
+        //     roles: user.info.roles,
+        //     active: true,
+        //     tenantId: user.info.tenantId,
+        //     permanentCity: user.info.permanentCity,
+        //   },
+        //   msgId: `${Date.now()}|en_IN`,
+        // },
+        // // Add your application data for send to citizen
+        // applicationData: {
+        //   ...value,
+        //   additionalDetails: {
+        //     ...value.additionalDetails,
+        //     selfCertificationCharges: {
+        //       BPA_DEVELOPMENT_CHARGES: development || "0",
+        //       BPA_OTHER_CHARGES: otherCharges || "0",
+        //       BPA_LESS_ADJUSMENT_PLOT: lessAdjusment || "0",
+        //     },
+        //     otherFeesDiscription: otherChargesDisc,
+        //     lessAdjustmentFeeFiles: uploadedFileLess,
+        //     professionalVerified: isOTPVerified,
+        //     ownerVerified: isOwnerOTPVerified,
+        //     professionalMobile: mobileNumber,
+        //     ownerMobile: ownerMobileNumber,
+        //     architectValidations: Architectvalidations,
+        //     // Get owner details from sessionStorage
+        //     ownerPhoneNumber: ownerMobileNumber || sessionStorage.getItem("ownerMobileNumber"),
+        //     ownerDetails: JSON.parse(sessionStorage.getItem("ownerFields") || "[]"),
+        //     ownerData: JSON.parse(sessionStorage.getItem("currentOwnerData") || "{}"),
+        //   },
+        // },
+      };
+
+      console.log("Send to Citizen API Call");
+      console.log("URL:", `/edcr/rest/dcr/scrutinydetails?${queryParams.toString()}`);
+      console.log("Request Body:", JSON.stringify(requestBody, null, 2));
+
+      const response = await fetch(`/edcr/rest/dcr/scrutinydetails?${queryParams.toString()}`, {
+        method: "POST",
+        headers: {
+          Accept: "application/json, text/plain, */*",
+          "Accept-Language": "en-GB,en-US;q=0.9,en;q=0.8",
+          "Content-Type": "application/json;charset=UTF-8",
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Send to Citizen API Error:", errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log("Send to Citizen API Response:", data);
+
+      // Handle success
+      alert(t("APPLICATION_SENT_TO_CITIZEN_SUCCESSFULLY"));
+
+      // Call the parent onSubmit if it exists
+      if (typeof onSubmit === "function") {
+        onSubmit(data, dynamicTenantId);
+      }
+
+      return data;
+    } catch (error) {
+      console.error("Send to Citizen API Error:", error);
+      alert(t("FAILED_TO_SEND_APPLICATION_TO_CITIZEN"));
+      throw error;
+    }
+  };
+
   // function onSubmitCheck() {
   //   if (!development) {
   //     sessionStorage.setItem("development", 0);
@@ -578,38 +835,8 @@ const CheckPage = ({ onSubmit, value }) => {
   //   ) {
   //     alert(t("Enterd Less Adjustment amount is invalid"));
   //   } else {
-  //     // Get the dynamic tenant ID
-  //     const dynamicTenantId = value?.address?.city?.code || address?.city?.code || tenantId;
-
-  //     console.log("Calling onSubmit with tenantId:", dynamicTenantId);
-
-  //     const submissionData = {
-  //       tenantId: dynamicTenantId,
-  //       applicationData: value,
-  //       charges: {
-  //         development: development || 0,
-  //         otherCharges: otherCharges || 0,
-  //         lessAdjusment: lessAdjusment || 0,
-  //         labourCess: labourCess || 0,
-  //         gaushalaFees: gaushalaFees || 0,
-  //         malbafees: malbafees || 0,
-  //         waterCharges: waterCharges || 0,
-  //       },
-  //       verificationData: {
-  //         professionalVerified: isOTPVerified,
-  //         ownerVerified: isOwnerOTPVerified,
-  //         professionalMobile: mobileNumber,
-  //         ownerMobile: ownerMobileNumber,
-  //         architectValidations: Architectvalidations,
-  //       },
-  //     };
-
-  //     if (typeof onSubmit === "function") {
-  //       onSubmit(submissionData, dynamicTenantId);
-  //     } else {
-  //       console.error("onSubmit is not a function:", typeof onSubmit);
-  //       alert("Submission function not available. Please refresh and try again.");
-  //     }
+  //     // Call the API function instead of just calling onSubmit
+  //     return sendToCitizenAPI();
   //   }
   // }
 
@@ -629,7 +856,15 @@ const CheckPage = ({ onSubmit, value }) => {
     ) {
       alert(t("Enterd Less Adjustment amount is invalid"));
     } else {
-      onSubmit();
+      // onSubmit({ dynamicTenantId, edcrNumber });
+
+      const edcrNumber =
+        value?.data?.scrutinyNumber?.edcrNumber || value?.data?.scrutinyNumber || data?.scrutinyNumber?.edcrNumber || plotDataFromStorage?.edcrNumber;
+
+      onSubmit({
+        tenantId: dynamicTenantId,
+        edcrNumber: edcrNumber,
+      });
     }
   }
 
@@ -688,10 +923,9 @@ const CheckPage = ({ onSubmit, value }) => {
       <Header styles={{ marginLeft: "10px" }}>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
-          <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={applicationNo ? applicationNo : ""} />
+          <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={plotDataFromStorage?.applicationNumber} />
         </StatusTable>
       </Card>
-
       <Card style={{ paddingRight: "16px" }}>
         <CardHeader>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardHeader>
         <StatusTable>
@@ -702,7 +936,6 @@ const CheckPage = ({ onSubmit, value }) => {
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_RISK_TYPE_LABEL`)} text={t(`WF_BPA_${data?.riskType}`)} />
         </StatusTable>
       </Card>
-
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
@@ -711,7 +944,7 @@ const CheckPage = ({ onSubmit, value }) => {
             style={{ width: "100px", display: "inline" }}
             onClick={() => routeTo(`${routeLink}/plot-details`)}
           />
-          <Row
+          {/* <Row
             className="border-none"
             textStyle={{ paddingLeft: "12px" }}
             label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}
@@ -738,10 +971,62 @@ const CheckPage = ({ onSubmit, value }) => {
             className="border-none"
             label={t(`BPA_WARD_NUMBER_LABEL`)}
             text={data?.wardnumber || value?.additionalDetails?.wardnumber || t("CS_NA")}
+          /> */}
+          <Row
+            className="border-none"
+            textStyle={{ paddingLeft: "12px" }}
+            label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}
+            text={
+              plotDataFromStorage?.planDetail?.planInformation?.plotArea ||
+              datafromAPI?.planDetail?.planInformation?.plotArea ||
+              value?.data?.edcrDetails?.planDetail?.planInformation?.plotArea
+                ? `${
+                    plotDataFromStorage?.planDetail?.planInformation?.plotArea ||
+                    datafromAPI?.planDetail?.planInformation?.plotArea ||
+                    value?.data?.edcrDetails?.planDetail?.planInformation?.plotArea
+                  } ${t(`BPA_SQ_MTRS_LABEL`)}`
+                : t("CS_NA")
+            }
+          />
+          <Row
+            className="border-none"
+            label={t(`BPA_PLOT_NUMBER_LABEL`)}
+            text={plotDataFromStorage?.planDetail?.planInfoProperties?.PLOT_NO || t("CS_NA")}
+          />
+          <Row
+            className="border-none"
+            label={t(`BPA_KHATHA_NUMBER_LABEL`)}
+            text={plotDataFromStorage?.planDetail?.planInfoProperties?.KHATA_NO || t("CS_NA")}
+          />
+          {console.log(plotDataFromStorage, "P+++++")}
+          <Row
+            className="border-none"
+            label={t(`BPA_BOUNDARY_LAND_REG_DETAIL_LABEL`)}
+            text={data?.registrationDetails || value?.data?.registrationDetails || t("CS_NA")}
+          />
+          <Row
+            className="border-none"
+            label={t(`BPA_BOUNDARY_WALL_LENGTH_LABEL`)}
+            text={data?.boundaryWallLength || value?.data?.boundaryWallLength || t("CS_NA")}
+          />
+          <Row
+            className="border-none"
+            label={t(`BPA_KHASRA_NUMBER_LABEL`)}
+            text={
+              plotDataFromStorage?.planInfoProperties?.KHASRA_NO ||
+              data?.khasraNumber ||
+              value?.additionalDetails?.khasraNumber ||
+              value?.data?.khasraNumber ||
+              t("CS_NA")
+            }
+          />
+          <Row
+            className="border-none"
+            label={t(`BPA_WARD_NUMBER_LABEL`)}
+            text={data?.wardnumber || value?.additionalDetails?.wardnumber || value?.data?.wardnumber || t("CS_NA")}
           />
         </StatusTable>
       </Card>
-
       <Card style={{ paddingRight: "16px" }}>
         <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
@@ -780,8 +1065,8 @@ const CheckPage = ({ onSubmit, value }) => {
         </StatusTable>
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader>
-        <StatusTable>
-          <Row
+
+        {/* <Row
             className="border-none"
             label={t("BPA_TOTAL_BUILT_UP_AREA_HEADER")}
             text={`${datafromAPI?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea} ${t("BPA_SQ_MTRS_LABEL")}`}
@@ -796,7 +1081,138 @@ const CheckPage = ({ onSubmit, value }) => {
             label={t("BPA_HEIGHT_FROM_GROUND_LEVEL_FROM_MUMTY")}
             text={`${datafromAPI?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight} ${t("BPA_MTRS_LABEL")}`}
           ></Row>
-        </StatusTable>
+        </StatusTable> */}
+
+        <Card style={{ paddingRight: "16px" }}>
+          <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
+          <StatusTable>
+            <Row
+              className="border-none"
+              label={t("BPA_PLOT_AREA_M2")}
+              text={`${planInfoProps?.PLOT_AREA_M2 || t("CS_NA")} ${planInfoProps?.PLOT_AREA_M2 ? t("BPA_SQ_MTRS_LABEL") : ""}`}
+            />
+            {console.log(planInfoProps, "PLAN")}
+            <Row
+              className="border-none"
+              label={t("BPA_PLOT_NUMBER")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.PLOT_NO || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_KHASRA_NUMBER")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.KHASRA_NO || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_KHATA_NUMBER")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.KHATA_NO || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_KHATUNI_NUMBER")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.KHATUNI_NO || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_DISTRICT")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.DISTRICT || t("CS_NA")}
+            />
+            <Row className="border-none" label={t("BPA_MAUZA")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.MAUZA || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("BPA_AREA_TYPE")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.AREA_TYPE || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_LAND_USE_ZONE")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.LAND_USE_ZONE || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_NUMBER_OF_FLOORS")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.NUMBER_OF_FLOORS || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_ULB_TYPE")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.ULB_TYPE || t("CS_NA")}
+            />
+
+            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_PLOT_DIMENSIONS")}</CardSubHeader>
+            <Row className="border-none" label={t("BPA_AVG_PLOT_DEPTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.AVG_PLOT_DEPTH} />
+            <Row className="border-none" label={t("BPA_AVG_PLOT_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH} />
+
+            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
+            <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={planInfoProps?.ROAD_TYPE || t("CS_NA")} />
+            <Row className="border-none" label={t("BPA_ROAD_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.ROAD_WIDTH} />
+
+            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
+            <Row
+              className="border-none"
+              label={t("BPA_GREEN_BUILDINGS_SUSTAINABILITY")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.PROVISION_FOR_GREEN_BUILDINGS_AND_SUSTAINABILITY || t("CS_NA")}
+            />
+            <Row className="border-none" label={t("BPA_RWH_DECLARED")} text={planInfoProps?.RWH_DECLARED || t("CS_NA")} />
+            <Row className="border-none" label={t("BPA_SOLAR_WATER_HEATER")} text={planInfoProps?.SOLAR_WATER_HEATER || t("CS_NA")} />
+
+            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_NOC_REQUIREMENTS")}</CardSubHeader>
+            <Row
+              className="border-none"
+              label={t("BPA_NOC_FIRE_DEPT")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.NOC_FIRE_DEPT || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_NOC_COLLECTOR_GVT_LAND")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.NOC_COLLECTOR_GVT_LAND || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_NOC_IRRIGATION_DEPT")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.NOC_IRRIGATION_DEPT || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_NOC_CONSTRUCTION_NEAR_MONUMENT")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.NOC_FOR_CONSTRUCTION_NEAR_MONUMENT || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_NOC_NH_ECR")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.NOC_NH_ECR || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_NOC_STATE_CRZ")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.NOC_STATE_CRZ || t("CS_NA")}
+            />
+
+            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_PROXIMITY_LIMITS")}</CardSubHeader>
+            <Row
+              className="border-none"
+              label={t("BPA_ABUTTING_NH_ECR")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.ABUTTING_NH_ECR || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_AIRPORT_LIMIT")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.AIRPORT_LIMIT || t("CS_NA")}
+            />
+            <Row
+              className="border-none"
+              label={t("BPA_RAILWAY_LIMIT")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.RAILWAY_LIMIT || t("CS_NA")}
+            />
+
+            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_DEMOLITION_DETAILS")}</CardSubHeader>
+            <Row
+              className="border-none"
+              label={t("BPA_EXISTING_FLOOR_AREA_DEMOLISHED")}
+              text={plotDataFromStorage?.planDetail?.planInfoProperties?.EXISTING_FLOOR_AREA_TO_BE_DEMOLISHED_M2}
+            />
+          </StatusTable>
+        </Card>
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
         {datafromAPI?.planDetail?.blocks.map((block, index) => (
@@ -862,7 +1278,6 @@ const CheckPage = ({ onSubmit, value }) => {
           ></Row>
         </StatusTable>
       </Card>
-
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
@@ -878,7 +1293,6 @@ const CheckPage = ({ onSubmit, value }) => {
           <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} />
         </StatusTable>
       </Card>
-
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
@@ -887,12 +1301,13 @@ const CheckPage = ({ onSubmit, value }) => {
             style={{ width: "100px", display: "inline" }}
             onClick={() => routeTo(`${routeLink}/owner-details`)}
           />
-          {owners?.owners &&
-            owners?.owners.map((ob, index) => (
+          {ownersData &&
+            ownersData.length > 0 &&
+            ownersData.map((ob, index) => (
               <div
                 key={index}
                 style={
-                  owners?.owners?.length > 1
+                  ownersData.length > 1
                     ? {
                         marginTop: "19px",
                         background: "#FAFAFA",
@@ -906,7 +1321,7 @@ const CheckPage = ({ onSubmit, value }) => {
                     : {}
                 }
               >
-                {owners.owners.length > 1 && (
+                {ownersData.length > 1 && (
                   <CardSubHeader>
                     {t("COMMON_OWNER")} {index + 1}
                   </CardSubHeader>
@@ -914,20 +1329,23 @@ const CheckPage = ({ onSubmit, value }) => {
                 <StatusTable>
                   <Row
                     className="border-none"
-                    textStyle={index == 0 && owners.owners.length == 1 ? { paddingLeft: "12px" } : {}}
+                    textStyle={index == 0 && ownersData.length == 1 ? { paddingLeft: "12px" } : {}}
                     label={t(`CORE_COMMON_NAME`)}
-                    text={ob?.name}
+                    text={ob?.name || "N/A"}
                   />
-                  <Row className="border-none" label={t(`BPA_APPLICANT_GENDER_LABEL`)} text={t(ob?.gender?.i18nKey)} />
-                  <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber} />
+                  <Row
+                    className="border-none"
+                    label={t(`BPA_APPLICANT_GENDER_LABEL`)}
+                    text={ob?.gender?.i18nKey ? t(ob.gender.i18nKey) : ob?.gender?.code || "N/A"}
+                  />
+                  <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber || "N/A"} />
                   <Row className="border-none" label={t(`CORE_COMMON_EMAIL_ID`)} text={ob?.emailId || t("CS_NA")} />
-                  <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner}`} />
+                  <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner || false}`} />
                 </StatusTable>
               </div>
             ))}
         </StatusTable>
       </Card>
-
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardHeader>
@@ -1002,7 +1420,6 @@ const CheckPage = ({ onSubmit, value }) => {
           />
         </StatusTable>
       </Card>
-
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
@@ -1022,7 +1439,6 @@ const CheckPage = ({ onSubmit, value }) => {
           }
         </StatusTable>
       </Card>
-
       <Card style={{ paddingRight: "16px" }}>
         <CardSubHeader>{t("BPA_SUMMARY_FEE_EST")}</CardSubHeader>
         <StatusTable>
@@ -1038,13 +1454,11 @@ const CheckPage = ({ onSubmit, value }) => {
             text={`₹ ${Math.round(datafromAPI?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea * 10.7639 * 2.5)}`}
           />
           <Row className="border-none" label={t(`BOUNDARY_WALL_FEES`)} text={`₹ ${data?.boundaryWallLength * 2.5}`} />
-
           <CardSubHeader>{t("BPA_P2_SUMMARY_FEE_EST")}</CardSubHeader>
           <Row className="border-none" label={t(`BPA_COMMON_MALBA_AMT`)} text={`₹ ${malbafees}`} />
           <Row className="border-none" label={t(`BPA_COMMON_LABOUR_AMT`)} text={`₹ ${labourCess}`} />
           <Row className="border-none" label={t(`BPA_COMMON_WATER_AMT`)} text={`₹ ${waterCharges}`} />
           <Row className="border-none" label={t(`BPA_COMMON_GAUSHALA_AMT`)} text={`₹ ${gaushalaFees}`} />
-
           <CardSubHeader>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
           <CardLabel>{t("BPA_COMMON_DEVELOPMENT_AMT")}</CardLabel>
           <TextInput
@@ -1060,7 +1474,6 @@ const CheckPage = ({ onSubmit, value }) => {
             }}
             {...{ required: true, pattern: "^[0-9]*$" }}
           />
-
           <CardLabel>{t("BPA_COMMON_OTHER_AMT")}</CardLabel>
           <TextInput
             t={t}
@@ -1075,7 +1488,6 @@ const CheckPage = ({ onSubmit, value }) => {
             }}
             {...{ required: true, pattern: /^[0-9]*$/ }}
           />
-
           {parseInt(otherCharges) > 0 ? (
             <div>
               <CardLabel>{t("BPA_COMMON_OTHER_AMT_DISCRIPTION")}</CardLabel>
@@ -1092,7 +1504,6 @@ const CheckPage = ({ onSubmit, value }) => {
               />
             </div>
           ) : null}
-
           <CardLabel>{t("BPA_COMMON_LESS_AMT")}</CardLabel>
           <TextInput
             t={t}
@@ -1107,7 +1518,6 @@ const CheckPage = ({ onSubmit, value }) => {
             }}
             {...{ required: true, pattern: "^[0-9]*$" }}
           />
-
           {parseInt(lessAdjusment) > 0 ? (
             <div>
               <CardLabel>{t("BPA_COMMON_LESS_AMT_FILE")}</CardLabel>
@@ -1125,17 +1535,14 @@ const CheckPage = ({ onSubmit, value }) => {
               />
             </div>
           ) : null}
-
           {docLessAdjustment?.fileStoreIds?.length && parseInt(value?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT) > 0 && (
             <CardLabel style={{ marginTop: "15px" }}>{t("BPA_COMMON_LESS_AMT_PREVIOUS_FILE")}</CardLabel>
           )}
-
           {docLessAdjustment?.fileStoreIds?.length && parseInt(value?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT) > 0 && (
             <a target="_blank" href={docLessAdjustment?.fileStoreIds[0]?.url}>
               <PDFSvg />
             </a>
           )}
-
           <Row className="border-none"></Row>
           <Row
             className="border-none"
@@ -1150,7 +1557,6 @@ const CheckPage = ({ onSubmit, value }) => {
               (parseInt(lessAdjusment) ? parseInt(lessAdjusment) : 0)
             }`}
           />
-
           {value?.status === "INITIATED" && (
             <div>
               <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
@@ -1178,16 +1584,7 @@ const CheckPage = ({ onSubmit, value }) => {
                 <React.Fragment>
                   <br></br>
                   <CardLabel>{t("BPA_OTP")}</CardLabel>
-                  <TextInput
-                    t={t}
-                    type="text"
-                    isMandatory={true}
-                    optionKey="i18nKey"
-                    name="otp"
-                    value={otp}
-                    onChange={handleOTPChange}
-                    {...{ required: true, pattern: "[0-9]{6}", type: "tel", title: t("BPA_INVALID_OTP") }}
-                  />
+                  <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
                   <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
                   {otpError && <CardLabel style={{ color: "red" }}>{otpError}</CardLabel>}
                 </React.Fragment>
@@ -1205,7 +1602,6 @@ const CheckPage = ({ onSubmit, value }) => {
         </div>
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
       </Card>
-
       <Card>
         <div style={{ marginBottom: "30px" }}>
           {isOTPVerified && isOwnerOTPVerified && (
@@ -1215,7 +1611,6 @@ const CheckPage = ({ onSubmit, value }) => {
           )}
           {isOTPVerified && <CardLabel style={{ color: "green", marginTop: "10px" }}>✓ {t("PROFESSIONAL_VERIFICATION_COMPLETED")}</CardLabel>}
         </div>
-
         {showMobileInput && !isOTPVerified && (
           <React.Fragment>
             <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
@@ -1232,28 +1627,16 @@ const CheckPage = ({ onSubmit, value }) => {
             <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
           </React.Fragment>
         )}
-
         {showOTPInput && !isOTPVerified && (
           <React.Fragment>
             <br />
             <CardLabel>{t("BPA_OTP")}</CardLabel>
-            <TextInput
-              t={t}
-              type="text"
-              isMandatory={true}
-              optionKey="i18nKey"
-              name="otp"
-              value={otp}
-              onChange={handleOTPChange}
-              {...{ required: true, pattern: "[0-9]{6}", type: "tel", title: t("BPA_INVALID_OTP") }}
-            />
+            <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
             <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
             {otpError && <CardLabel style={{ color: otpError === t("VERIFIED") ? "green" : "red" }}>{otpError}</CardLabel>}
           </React.Fragment>
         )}
-
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "1px", marginTop: "20px", marginBottom: "20px" }} />
-
         <div style={{ marginBottom: "30px" }}>
           <CheckBox
             label={ownerCheckLabels()}
@@ -1264,7 +1647,6 @@ const CheckPage = ({ onSubmit, value }) => {
           />
           {isOwnerOTPVerified && <CardLabel style={{ color: "green", marginTop: "10px" }}>✓ {t("OWNER_VERIFICATION_COMPLETED")}</CardLabel>}
         </div>
-
         {showOwnerMobileInput && !isOwnerOTPVerified && (
           <React.Fragment>
             <CardLabel>{t("OWNER_MOBILE_NUMBER")}</CardLabel>
@@ -1281,32 +1663,23 @@ const CheckPage = ({ onSubmit, value }) => {
             <LinkButton label={t("BPA_GET_OTP")} onClick={handleOwnerGetOTPClick} disabled={!isValidOwnerMobileNumber} />
           </React.Fragment>
         )}
-
         {showOwnerOTPInput && !isOwnerOTPVerified && (
           <React.Fragment>
             <br />
             <CardLabel>{t("ENTER_OTP_SENT_ON_OWNER_MOBILE")}</CardLabel>
-            <TextInput
-              t={t}
-              type="text"
-              isMandatory={true}
-              optionKey="i18nKey"
-              name="ownerOtp"
-              value={ownerOtp}
-              onChange={handleOwnerOTPChange}
-              {...{ required: true, pattern: "[0-9]{6}", type: "tel", title: t("BPA_INVALID_OTP") }}
-            />
+            <OTPInput length={6} onChange={(value) => setOwnerOTP(value)} value={ownerOtp} />
             <SubmitBar label={t("VERIFY_OWNER_OTP")} onSubmit={handleOwnerVerifyOTPClick} />
             {ownerOtpError && <CardLabel style={{ color: ownerOtpError === t("VERIFIED") ? "green" : "red" }}>{ownerOtpError}</CardLabel>}
           </React.Fragment>
         )}
-
-        {showTermsPopup && (
-          <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} />
+        {showTermsPopupOwner && (
+          <CitizenConsent
+            showTermsPopupOwner={showTermsPopupOwner}
+            setShowTermsPopupOwner={setShowTermsPopupOwner}
+            otpVerifiedTimestamp={otpVerifiedTimestamp}
+          />
         )}
-
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-
         <SubmitBar
           label={isSubmitting ? t("SUBMITTING...") : t("BPA_SEND_TO_CITIZEN_LABEL")}
           onSubmit={async () => {

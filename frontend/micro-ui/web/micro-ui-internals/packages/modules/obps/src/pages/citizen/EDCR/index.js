@@ -24,6 +24,8 @@ const CreateEDCR = ({ parentRoute }) => {
   function handleSelect(key, data, skipStep, index) {
     setIsSubmitBtnDisable(true);
     const loggedInuserInfo = Digit.UserService.getUser();
+    const formTenantId = data?.tenantId || data?.ulb;
+    console.log(formTenantId, "I(((((((((");
     const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
     let edcrRequest = {
       transactionNumber: "",
@@ -50,7 +52,8 @@ const CreateEDCR = ({ parentRoute }) => {
     const coreArea = data?.areaType?.code === "SCHEME_AREA" ? "NO" : data?.coreArea?.code;
     console.log("A=====", coreArea, data?.areaType?.code, data?.areaType?.code === "SCHEME_AREA");
     const file = data?.file;
-    const tenantId = userInfo?.tenantId;
+    // const tenantId = userInfo?.tenantId;
+    const tenantId = formTenantId;
     const ulb = data?.ulb;
     const areaType = data?.areaType?.code;
     const schName = data?.schName;

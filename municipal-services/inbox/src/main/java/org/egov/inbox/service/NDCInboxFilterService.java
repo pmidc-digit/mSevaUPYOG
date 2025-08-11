@@ -113,7 +113,7 @@ public class NDCInboxFilterService {
 
             result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
 
-            List<String> citizenApplicationsNumbers = JsonPath.read(result, "$.NDCApplications.*.id");
+            List<String> citizenApplicationsNumbers = JsonPath.read(result, "$.Applications.*.uuid");
 
             applicationNumbers.addAll(citizenApplicationsNumbers);
 

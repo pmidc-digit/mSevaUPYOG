@@ -48,6 +48,7 @@ export const searchService = async (reqestCriteria, searchResponse, pool) => {
 
 const popolateSearchResponse = result => {
   let BillingSlabs = [];
+  console.log("billingSlabResult",result)
   result.rows.map(rowData => {
     const billingSlab = {};
    

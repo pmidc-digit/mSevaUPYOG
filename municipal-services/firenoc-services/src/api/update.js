@@ -112,7 +112,7 @@ export const updateApiResponse = async ({ body }, next = {}) => {
     //   messages: JSON.stringify({ RequestInfo, FireNOCs: approvedList }),
     //    key : body.FireNOCs[0].fireNOCDetails.id
     // });
-    payloads.topic = envVariables.KAFKA_TOPICS_FIRENOC_UPDATE;
+    payloads.topic = envVariables.KAFKA_TOPICS_FIRENOC_WORKFLOW;
     payloads.messages.push({ value: JSON.stringify({ RequestInfo, FireNOCs: approvedList })})
   }
   console.log(JSON.stringify(body));

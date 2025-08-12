@@ -46,7 +46,8 @@
     "resource-router-middleware": "^0.6.0",
     "swagger-tools": "^0.10.4",
     "uuid": "^3.3.2",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "@noble/hashes": "1.2.0"
   },
   "devDependencies": {
     "babel-cli": "^6.9.0",

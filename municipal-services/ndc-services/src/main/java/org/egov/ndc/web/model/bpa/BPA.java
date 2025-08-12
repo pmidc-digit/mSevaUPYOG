@@ -22,9 +22,9 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 /**
- * BPA application object to capture the details of land, land owners, and address of the land.
+ * BPA applications object to capture the details of land, land owners, and address of the land.
  */
-@ApiModel(description = "BPA application object to capture the details of land, land owners, and address of the land.")
+@ApiModel(description = "BPA applications object to capture the details of land, land owners, and address of the land.")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-06-23T05:52:32.717Z[GMT]")
 @NoArgsConstructor
@@ -99,10 +99,10 @@ public class BPA   {
   }
 
   /**
-   * Unique Identifier(UUID) of the bpa application for internal reference.
+   * Unique Identifier(UUID) of the bpa applications for internal reference.
    * @return id
   **/
-  @ApiModelProperty(readOnly = true, value = "Unique Identifier(UUID) of the bpa application for internal reference.")
+  @ApiModelProperty(readOnly = true, value = "Unique Identifier(UUID) of the bpa applications for internal reference.")
   
   @Size(min=1,max=64)   public String getId() {
     return id;
@@ -118,10 +118,10 @@ public class BPA   {
   }
 
   /**
-   * Generate formatted Unique Identifier of the building permit application. Keep the format in mdms
+   * Generate formatted Unique Identifier of the building permit applications. Keep the format in mdms
    * @return applicationNo
   **/
-  @ApiModelProperty(readOnly = true, value = "Generate formatted Unique Identifier of the building permit application. Keep the format in mdms")
+  @ApiModelProperty(readOnly = true, value = "Generate formatted Unique Identifier of the building permit applications. Keep the format in mdms")
   
   @Size(min=1,max=64)   public String getApplicationNo() {
     return applicationNo;
@@ -137,10 +137,10 @@ public class BPA   {
   }
 
   /**
-   * Generate Approval number based on wf status. When to generate approvalNo will be depends on wf state so make it configurable at  application level
+   * Generate Approval number based on wf status. When to generate approvalNo will be depends on wf state so make it configurable at  applications level
    * @return approvalNo
   **/
-  @ApiModelProperty(readOnly = true, value = "Generate Approval number based on wf status. When to generate approvalNo will be depends on wf state so make it configurable at  application level")
+  @ApiModelProperty(readOnly = true, value = "Generate Approval number based on wf status. When to generate approvalNo will be depends on wf state so make it configurable at  applications level")
   
   @Size(min=1,max=64)   public String getApprovalNo() {
     return approvalNo;
@@ -314,10 +314,10 @@ public class BPA   {
   }
 
   /**
-   * status of the application.
+   * status of the applications.
    * @return status
   **/
-  @ApiModelProperty(value = "status of the application.")
+  @ApiModelProperty(value = "status of the applications.")
   
     public String getStatus() {
     return status;

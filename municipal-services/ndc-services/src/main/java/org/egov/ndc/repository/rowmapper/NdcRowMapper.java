@@ -9,62 +9,57 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.ndc.web.model.AuditDetails;
-import org.egov.ndc.web.model.Document;
-import org.egov.ndc.web.model.Ndc;
-import org.egov.ndc.web.model.enums.ApplicationType;
-import org.egov.ndc.web.model.enums.Status;
-import org.egov.ndc.web.model.ndc.ApplicantRequest;
-import org.egov.ndc.web.model.ndc.DocumentRequest;
-import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
-import org.egov.ndc.web.model.ndc.NdcDetailsRequest;
+import org.egov.ndc.web.model.OwnerInfo;
+import org.egov.ndc.web.model.ndc.*;
 import org.egov.tracer.model.CustomException;
 import org.postgresql.util.PGobject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.Gson;
-
 @Component
-public class NdcRowMapper implements ResultSetExtractor<List<NdcApplicationRequest>> {
+public class NdcRowMapper implements ResultSetExtractor<List<Application>> {
 
 	private ObjectMapper objectMapper = new ObjectMapper();
 
 	@Override
-	public List<NdcApplicationRequest> extractData(ResultSet rs) throws SQLException, DataAccessException {
-		Map<String, NdcApplicationRequest> ndcApplicationRequestMap = new HashMap<>();
+	public List<Application> extractData(ResultSet rs) throws SQLException, DataAccessException {
+		Map<String, Application> applicationHashMap = new HashMap<>();
 		while (rs.next()) {
-			String applicantId = rs.getString("a_uuid");
-			NdcApplicationRequest ndcApplicationRequest = ndcApplicationRequestMap.get(applicantId);
-			if (ndcApplicationRequest == null) {
-				ndcApplicationRequest = new NdcApplicationRequest();
-				ApplicantRequest applicant = ApplicantRequest.builder()
-						.uuid(applicantId)
+			String applicationId = rs.getString("a_uuid");
+			Application application = applicationHashMap.get(applicationId);
+			if (application == null) {
+				application = Application.builder()
+						.uuid(applicationId)
 						.tenantId(rs.getString("tenantid"))
-						.firstname(rs.getString("firstname"))
-						.lastname(rs.getString("lastname"))
-						.mobile(rs.getString("mobile"))
-						.email(rs.getString("email"))
-						.address(rs.getString("address"))
+//						.firstname(rs.getString("firstname"))
+//						.lastname(rs.getString("lastname"))
+//						.mobile(rs.getString("mobile"))
+//						.email(rs.getString("email"))
+//						.address(rs.getString("address"))
+						.reason(rs.getString("reason"))
 						.applicationStatus(rs.getString("applicationstatus"))
 						.active(rs.getBoolean("active"))
-						.createdby(rs.getString("a_createdby"))
-						.lastmodifiedby(rs.getString("a_lastmodifiedby"))
-						.createdtime(rs.getLong("a_createdtime"))
-						.lastmodifiedtime(rs.getLong("a_lastmodifiedtime"))
+						.auditDetails(AuditDetails.builder()
+						.createdBy(rs.getString("a_createdby"))
+						.lastModifiedBy(rs.getString("a_lastmodifiedby"))
+						.createdTime(rs.getLong("a_createdtime"))
+						.lastModifiedTime(rs.getLong("a_lastmodifiedtime")).build())
 						.build();
-				ndcApplicationRequest.setApplicant(applicant);
-				ndcApplicationRequestMap.put(applicantId, ndcApplicationRequest);
+//				applications.;
+				applicationHashMap.put(applicationId, application);
 			}
             try {
-                addNdcDetails(rs, ndcApplicationRequest);
+                addNdcDetails(rs, application);
+				addDocuments(rs, application);
+				addOwnerUuids(rs, application);
+
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
-            addDocuments(rs, ndcApplicationRequest);
+
 		}
-		return new ArrayList<>(ndcApplicationRequestMap.values());
+		return new ArrayList<>(applicationHashMap.values());
 	}
 
 	/**
@@ -73,12 +68,12 @@ public class NdcRowMapper implements ResultSetExtractor<List<NdcApplicationReque
 	 * @param ndcApplicationRequest
 	 * @throws SQLException
 	 */
-	private void addNdcDetails(ResultSet rs, NdcApplicationRequest ndcApplicationRequest) throws SQLException, JsonProcessingException {
+	private void addNdcDetails(ResultSet rs, Application ndcApplicationRequest) throws SQLException, JsonProcessingException {
 		String ndcDetailsId = rs.getString("d_uuid");
 		if (!StringUtils.isEmpty(ndcDetailsId)) {
 			NdcDetailsRequest ndcDetails = NdcDetailsRequest.builder()
 					.uuid(ndcDetailsId)
-					.applicantId(rs.getString("d_applicantid"))
+					.applicationId(rs.getString("d_applicationid"))
 					.businessService(rs.getString("businessservice"))
 					.consumerCode(rs.getString("consumercode"))
 					.dueAmount(rs.getBigDecimal("dueamount"))
@@ -86,8 +81,30 @@ public class NdcRowMapper implements ResultSetExtractor<List<NdcApplicationReque
 					.additionalDetails(getJsonValue((PGobject) rs.getObject("additionaldetails")))
 					.build();
 
-			ndcApplicationRequest.addNdcDetailsItem(ndcDetails);
+			ndcApplicationRequest.addDetail(ndcDetails);
 		}
+	}
+
+	private void addOwnerUuids(ResultSet rs, Application application) throws SQLException, JsonProcessingException {
+		String ownerUuid = rs.getString("owner_uuid");
+
+		if (!StringUtils.isEmpty(ownerUuid)) {
+			if (application.getOwners() == null) {
+				application.setOwners(new ArrayList<>());
+			}
+
+			// Check if this owner UUID is already present
+			boolean alreadyPresent = application.getOwners().stream()
+					.anyMatch(o -> ownerUuid.equals(o.getUuid()));
+
+			if (!alreadyPresent) {
+				OwnerInfo ownerInfo = OwnerInfo.builder()
+						.uuid(ownerUuid)
+						.build();
+				application.addOwner(ownerInfo);
+			}
+		}
+
 	}
 
 	/**
@@ -96,16 +113,16 @@ public class NdcRowMapper implements ResultSetExtractor<List<NdcApplicationReque
 	 * @param ndcApplicationRequest
 	 * @throws SQLException
 	 */
-	private void addDocuments(ResultSet rs, NdcApplicationRequest ndcApplicationRequest) throws SQLException {
+	private void addDocuments(ResultSet rs, Application ndcApplicationRequest) throws SQLException {
 		String documentId = rs.getString("doc_uuid");
 		if (!StringUtils.isEmpty(documentId)) {
 			DocumentRequest document = DocumentRequest.builder()
 					.uuid(documentId)
-					.applicantId(rs.getString("doc_applicantid"))
+					.applicationId(rs.getString("doc_applicationid"))
 					.documentType(rs.getString("documenttype"))
 					.documentAttachment(rs.getString("documentattachment"))
 					.build();
-			ndcApplicationRequest.addDocumentsItem(document);
+			ndcApplicationRequest.addDocument(document);
 		}
 	}
 

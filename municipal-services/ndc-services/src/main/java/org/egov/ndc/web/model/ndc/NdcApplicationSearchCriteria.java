@@ -1,11 +1,13 @@
 package org.egov.ndc.web.model.ndc;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -18,5 +20,8 @@ public class NdcApplicationSearchCriteria {
     private String mobileNumber;
     private String name;
     private Boolean active;
+    @JsonProperty("ownerids")
+    private Set<String> ownerIds;
+    private String userName;
 
 }

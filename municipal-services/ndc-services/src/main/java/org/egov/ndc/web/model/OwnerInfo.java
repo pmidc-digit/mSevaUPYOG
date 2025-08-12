@@ -1,4 +1,4 @@
-package org.egov.ndc.web.model.bpa;
+package org.egov.ndc.web.model;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -11,7 +11,8 @@ import javax.validation.constraints.Size;
 
 import lombok.Data;
 import org.egov.common.contract.request.Role;
-import org.egov.ndc.web.model.AuditDetails;
+import org.egov.ndc.web.model.bpa.Document;
+import org.egov.ndc.web.model.bpa.Relationship;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 
@@ -31,7 +32,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class OwnerInfo {
+public class OwnerInfo extends User{
  
 	@SafeHtml
 	@JsonProperty("tenantId")
@@ -200,14 +201,14 @@ public class OwnerInfo {
 
     @Size(max=64)
     @JsonProperty("createdBy")
-    private String createdBy;
+    private Long createdBy;
 
     @JsonProperty("createdDate")
     private Long createdDate;
 
     @Size(max=64)
     @JsonProperty("lastModifiedBy")
-    private String lastModifiedBy;
+    private Long lastModifiedBy;
 
     @JsonProperty("lastModifiedDate")
     private Long lastModifiedDate;

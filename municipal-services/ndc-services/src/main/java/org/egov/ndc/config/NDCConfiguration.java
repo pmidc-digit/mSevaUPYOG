@@ -30,15 +30,6 @@ public class NDCConfiguration {
 		TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
 	}
 
-	@Value("${egov.user.host}")
-	private String userHost;
-
-	@Value("${egov.user.context.path}")
-	private String userContextPath;
-
-	@Value("${egov.user.search.path}")
-	private String userSearchEndpoint;
-
 	@Value("${kafka.topics.notification.sms}")
 	private String smsNotifTopic;
 
@@ -104,33 +95,6 @@ public class NDCConfiguration {
 	
 	@Value("${ndc.offline.doc.required}")
 	private Boolean ndcOfflineDocRequired;
-
-    @Value("${egov.bpa.host}")
-    private String bpaHost;
-
-    @Value("${egov.bpa.context.path}")
-    private String bpaContextPath;
-
-    @Value("${egov.bpa.search.endpoint}")
-    private String bpaSearchEndpoint;
-
-	@Value("${property.service.host}")
-	private String propertyServicePath;
-
-	@Value("${water.service.host}")
-	private String waterConnectionServicePath;
-
-	@Value("${sewerage.service.host}")
-	private String sewerageConnectionServicePath;
-
-	@Value("${property.service.search.endpoint}")
-	private String propertySearchPath;
-
-	@Value("${water.service.search.endpoint}")
-	private String waterSearchPath;
-
-	@Value("${sewerage.service.search.endpoint}")
-	private String sewerageSearchPath;
 
 	@Value("${ndc.module.code}")
 	private String moduleCode;

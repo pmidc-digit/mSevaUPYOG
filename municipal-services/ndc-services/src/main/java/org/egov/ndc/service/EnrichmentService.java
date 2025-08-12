@@ -6,12 +6,12 @@ import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.repository.IdGenRepository;
 import org.egov.ndc.util.NDCConstants;
 import org.egov.ndc.util.NDCUtil;
-import org.egov.ndc.web.model.AuditDetails;
-import org.egov.ndc.web.model.Ndc;
-import org.egov.ndc.web.model.NdcRequest;
+import org.egov.ndc.web.model.*;
 import org.egov.ndc.web.model.idgen.IdResponse;
 import org.egov.ndc.web.model.ndc.ApplicantRequest;
+import org.egov.ndc.web.model.ndc.Application;
 import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
+import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
 import org.egov.ndc.web.model.workflow.BusinessService;
 import org.egov.ndc.web.model.workflow.State;
 import org.egov.ndc.workflow.WorkflowService;
@@ -145,19 +145,18 @@ public class EnrichmentService {
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void postStatusEnrichment(NdcApplicationRequest ndcRequest, String businessServiceValue) {
-		ApplicantRequest ndc = ndcRequest.getApplicant();
-
-
+		List<Application> ndc = ndcRequest.getApplications();
 		BusinessService businessService = workflowService.getBusinessService(ndcRequest, ndcRequest.getRequestInfo(),
 				businessServiceValue);
+		ndc.forEach(application -> {
 
-		if (businessService != null) {
+					if (businessService != null) {
 
-			State stateObj = workflowService.getCurrentState(ndc.getApplicationStatus(), businessService);
-			String state = stateObj != null ? stateObj.getState() : StringUtils.EMPTY;
+						State stateObj = workflowService.getCurrentState(application.getApplicationStatus(), businessService);
+						String state = stateObj != null ? stateObj.getState() : StringUtils.EMPTY;
 
-			if (state.equalsIgnoreCase(NDCConstants.APPROVED_STATE)
-					|| state.equalsIgnoreCase(NDCConstants.AUTOAPPROVED_STATE)) {
+						if (state.equalsIgnoreCase(NDCConstants.APPROVED_STATE)
+								|| state.equalsIgnoreCase(NDCConstants.AUTOAPPROVED_STATE)) {
 
 //				Map<String, Object> additionalDetail = null;
 //				if (ndc.get != null) {
@@ -167,15 +166,16 @@ public class EnrichmentService {
 //					ndc.setAdditionalDetails(additionalDetail);
 //				}
 
-				List<IdResponse> idResponses = idGenRepository
-						.getId(ndcRequest.getRequestInfo(), ndc.getTenantId(), config.getApplicationNoIdgenName(), 1)
-						.getIdResponses();
-				ndc.setUuid(idResponses.get(0).getId());
-			}
-			if (state.equalsIgnoreCase("CANCEL")) {
-				ndc.setActive(false);
-			}
-		}
+							List<IdResponse> idResponses = idGenRepository
+									.getId(ndcRequest.getRequestInfo(), application.getTenantId(), config.getApplicationNoIdgenName(), 1)
+									.getIdResponses();
+							application.setUuid(idResponses.get(0).getId());
+						}
+						if (state.equalsIgnoreCase("CANCEL")) {
+							application.setActive(false);
+						}
+					}
+				});
 		
 //		if (ndc.getWorkflow() != null && ndc.getWorkflow().getAction().equals(NDCConstants.ACTION_INITIATE)) {
 //			Map<String, String> details = (Map<String, String>) ndc.getAdditionalDetails();
@@ -183,5 +183,71 @@ public class EnrichmentService {
 //			ndc.setAdditionalDetails(details);
 //		}
 	}
+
+
+	public void enrichApplicationCriteriaWithOwnerids(NdcApplicationSearchCriteria criteria, List<Application> applications){
+		Set<String> ownerids = new HashSet<>();
+		for(Application application : applications){
+			if(application.getOwners()!=null){
+			for(OwnerInfo ownerInfo : application.getOwners()){
+				ownerids.add(ownerInfo.getUuid());
+			}
+			}
+		}
+		criteria.setOwnerIds(ownerids);
+	}
+
+	public void enrichOwner(UserResponse userDetailResponse, List<Application> applications){
+		List<OwnerInfo> users = userDetailResponse.getUser();
+		Map<String,OwnerInfo> userIdToOwnerMap = new HashMap<>();
+		users.forEach(user -> userIdToOwnerMap.put(user.getUuid(),user));
+		applications.forEach(application -> {
+//				applications.getOwners().forEach(owner -> {
+//					if(userIdToOwnerMap.get(owner.getUuid())==null)
+//						throw new CustomException("OWNER SEARCH ERROR","The owner of the applications "+applications.getUuid()+" is not coming in user search");
+//					else
+//						owner.addUserDetail(userIdToOwnerMap.get(owner.getUuid()));
+//
+//
+//				if(userIdToOwnerMap.get(owner.getUuid())!=null)
+//					applications.addOwner(userIdToOwnerMap.get(owner.getUuid()));
+//				else
+//					throw new CustomException("CITIZENINFO ERROR","The citizenInfo with id: "+ owner.getUuid()+" cannot be found");
+//			});
+
+
+
+			List<OwnerInfo> enrichedOwners = new ArrayList<>();
+
+			if(application.getOwners()!=null) {
+				for (OwnerInfo owner : application.getOwners()) {
+					OwnerInfo userDetail = userIdToOwnerMap.get(owner.getUuid());
+
+//					if (userDetail == null) {
+//						throw new CustomException("OWNER SEARCH ERROR",
+//								"The owner of the applications " + applications.getUuid() + " is not coming in user search");
+//					}
+					if(userDetail!=null) {
+						owner.addUserDetail(userDetail);
+						enrichedOwners.add(userDetail);
+					}// or owner, depending on your logic
+				}
+			}
+
+			application.setOwners(enrichedOwners);
+
+
+
+		});
+	}
+
+//	public void enrichSearchCriteriaForDefaultSearch(RequestInfo requestInfo, NdcApplicationSearchCriteria criteria){
+//		Set<String> set = new HashSet<>();
+//
+//		criteria.setMobileNumber(requestInfo.getUserInfo().getUserName());
+//		set.add(requestInfo.getUserInfo().getUuid());
+//		criteria.setOwnerIds(set);
+//		criteria.setTenantId(requestInfo.getUserInfo().getTenantId());
+//	}
 
 }

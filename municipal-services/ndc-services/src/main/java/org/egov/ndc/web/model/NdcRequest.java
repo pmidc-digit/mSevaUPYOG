@@ -13,9 +13,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * A object to bind the metadata contract and main application contract
+ * A object to bind the metadata contract and main applications contract
  */
-@ApiModel(description = "A object to bind the metadata contract and main application contract")
+@ApiModel(description = "A object to bind the metadata contract and main applications contract")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 public class NdcRequest {

@@ -11,15 +11,14 @@ import org.egov.ndc.util.NDCUtil;
 import org.egov.ndc.web.model.bill.PaymentDetail;
 import org.egov.ndc.web.model.bill.PaymentRequest;
 import org.egov.ndc.web.model.ndc.ApplicantRequest;
+import org.egov.ndc.web.model.ndc.Application;
 import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
 import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
 import org.egov.ndc.workflow.WorkflowIntegrator;
 import org.egov.ndc.workflow.WorkflowService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -81,15 +80,13 @@ public class PaymentUpdateService {
 					NdcApplicationSearchCriteria searchCriteria = new NdcApplicationSearchCriteria();
 					searchCriteria.setTenantId(tenantIdFromPaymentDetails);
 					searchCriteria.setUuid(Collections.singletonList(paymentDetail.getBill().getConsumerCode()));
-					List<NdcApplicationRequest> applicationRequests = ndcService.searchNdcApplications(searchCriteria);
+					List<Application> applications = ndcService.searchNdcApplications(searchCriteria, requestInfo);
 
-					String tenantIdFromSearch = applicationRequests.get(0).getApplicant().getTenantId();
+					String tenantIdFromSearch = applications.get(0).getTenantId();
 
-                    applicationRequests.forEach(applicationRequest -> {
-								ApplicantRequest applicant = applicationRequest.getApplicant();
-								applicant.getWorkflow().setAction(NDCConstants.ACTION_PAY);
-								applicant.setAction(NDCConstants.ACTION_PAY);
-
+                    applications.forEach(application -> {
+								application.getWorkflow().setAction(NDCConstants.ACTION_PAY);
+								application.setAction(NDCConstants.ACTION_PAY);
 							}
 						);
 
@@ -97,15 +94,15 @@ public class PaymentUpdateService {
 					requestInfo.getUserInfo().getRoles().add(role);
 					NdcApplicationRequest updateRequest = NdcApplicationRequest.builder()
 							.requestInfo(requestInfo)
-							.applicant(applicationRequests.get(0).getApplicant())
-							.ndcDetails(applicationRequests.get(0).getNdcDetails())
+							.applications(applications)
 							.build();
 
 					/*
 					 * calling workflow to update status
 					 */
 					wfIntegrator.callWorkFlow(updateRequest,NDCConstants.NDC_BUSINESS_SERVICE);
-                    log.info(" the status of the application is : {}", updateRequest.getApplicant().getApplicationStatus());
+                    log.info(" applications uuid is : {}", updateRequest.getApplications().get(0).getUuid());
+                    log.info(" the status of the applications is : {}", updateRequest.getApplications().get(0).getApplicationStatus());
 					enrichmentService.postStatusEnrichment(updateRequest,NDCConstants.NDC_BUSINESS_SERVICE);
 
 					/*

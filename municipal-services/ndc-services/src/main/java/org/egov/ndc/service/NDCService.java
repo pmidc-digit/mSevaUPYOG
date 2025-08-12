@@ -1,16 +1,18 @@
 package org.egov.ndc.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.egov.common.contract.request.RequestInfo;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.producer.Producer;
 import org.egov.ndc.repository.NDCRepository;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.util.NDCConstants;
 import org.egov.ndc.util.NDCUtil;
-import org.egov.ndc.web.model.calculator.Calculation;
+import org.egov.ndc.web.model.AuditDetails;
+import org.egov.ndc.web.model.OwnerInfo;
+import org.egov.ndc.web.model.UserResponse;
 import org.egov.ndc.web.model.calculator.CalculationCriteria;
 import org.egov.ndc.web.model.calculator.CalculationReq;
 import org.egov.ndc.web.model.calculator.CalculationRes;
@@ -20,11 +22,12 @@ import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +36,9 @@ public class NDCService {
 
 	@Autowired
 	NDCUtil ndcUtil;
+
+	@Autowired
+	UserService userService;
 
 	@Autowired
 	CalculationService calculationService;
@@ -67,52 +73,59 @@ public class NDCService {
 	@Autowired
 	private MDMSService mdmsService;
 
+	@Autowired
+	private  EnrichmentService enrichmentService;
+
 	public NdcApplicationRequest createNdcApplication(boolean skipWorkFlow, NdcApplicationRequest ndcApplicationRequest) {
 		// Save applicant data
-//		String applicantId = UUID.randomUUID().toString();
 
-		List<String> listOfSurveyIds = ndcUtil.getIdList(ndcApplicationRequest.getRequestInfo(), ndcApplicationRequest.getApplicant().getTenantId(), "ndc.applicationid", "NDC-[cy:yyyy-MM-dd]-[SEQ_EGOV_COMMON]", 1);
-		log.info(listOfSurveyIds.toString());
+		String userUuidFromRequestInfo = ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid();
+		for (Application application : ndcApplicationRequest.getApplications()) {
 
-		String applicantId = listOfSurveyIds.get(0);
+			List<String> idList = ndcUtil.getIdList(ndcApplicationRequest.getRequestInfo(), application.getTenantId(), "ndc.applicationid", "NDC-[cy:yyyy-MM-dd]-[SEQ_EGOV_COMMON]", 1);
+			log.info(idList.toString());
+			String applicantionId = idList.get(0);
+			application.setUuid(applicantionId);
+			application.setAuditDetails(AuditDetails.builder().createdBy(userUuidFromRequestInfo)
+					.createdTime(System.currentTimeMillis())
+					.lastModifiedBy(userUuidFromRequestInfo)
+					.lastModifiedTime(System.currentTimeMillis()).build());
 
+			if (application.getActive() == null) application.setActive(true);
+			// Save NDC details
+			List<NdcDetailsRequest> ndcDetails = application.getNdcDetails();
+			if (ndcDetails != null) {
+				for (NdcDetailsRequest details : ndcDetails) {
+					details.setUuid(UUID.randomUUID().toString());
+					details.setApplicationId(applicantionId);
+				}
+			}
 
-		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
-		applicant.setUuid(applicantId);
-		applicant.setCreatedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
-		applicant.setLastmodifiedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
-		applicant.setCreatedtime(System.currentTimeMillis());
-		applicant.setLastmodifiedtime(System.currentTimeMillis());
-		if(applicant.getActive()==null) {
-			applicant.setActive(true);
-		}
-
-		// Save NDC details
-		List<NdcDetailsRequest> ndcDetails = ndcApplicationRequest.getNdcDetails();
-		if(ndcDetails!= null) {
-			for (NdcDetailsRequest details : ndcDetails) {
-				details.setUuid(UUID.randomUUID().toString());
-				details.setApplicantId(applicantId);
+			List<DocumentRequest> documents = application.getDocuments();
+			if (documents != null) {
+				for (DocumentRequest document : documents) {
+					if (document.getDocumentAttachment() == null)
+						throw new CustomException("DOCUMENT_ATTACHMENT_NULL", "Document attachment is null");
+					if (document.getUuid() == null)
+						throw new CustomException("DOCUMENT_UUID_NULL", "Document uuid is null");
+					document.setApplicationId(applicantionId);
+					document.setCreatedby(userUuidFromRequestInfo);
+					document.setLastmodifiedby(userUuidFromRequestInfo);
+					document.setCreatedtime(System.currentTimeMillis());
+					document.setLastmodifiedtime(System.currentTimeMillis());
+				}
+			}
+			userService.createUser(ndcApplicationRequest.getRequestInfo(),application);
+			NdcApplicationRequest ndcApplicationRequest1 = NdcApplicationRequest.builder().requestInfo(ndcApplicationRequest.getRequestInfo()).applications(Collections.singletonList(application)).build();
+			if(!skipWorkFlow) {
+				workflowIntegrator.callWorkFlow(ndcApplicationRequest1, NDCConstants.NDC_BUSINESS_SERVICE);
 			}
 		}
+		
 
-		List<DocumentRequest> documents = ndcApplicationRequest.getDocuments();
-		if(documents != null) {
-			for (DocumentRequest document : documents) {
-				if(document.getDocumentAttachment()==null) throw new CustomException("DOCUMENT_ATTACHMENT_NULL", "Document attachment is null");
-				if(document.getUuid()==null) throw new CustomException("DOCUMENT_UUID_NULL", "Document uuid is null");
-				document.setApplicantId(applicantId);
-				document.setCreatedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
-				document.setLastmodifiedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
-				document.setCreatedtime(System.currentTimeMillis());
-				document.setLastmodifiedtime(System.currentTimeMillis());
-			}
-		}
-		System.out.println(ndcApplicationRequest);
+		log.info("Request: {}", ndcApplicationRequest);
 
-		if(!skipWorkFlow) {
-			workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
-		}
+
 
 		producer.push(config.getSaveTopic(), ndcApplicationRequest);
 
@@ -120,103 +133,96 @@ public class NDCService {
 	}
 
 	public NdcApplicationRequest updateNdcApplication(boolean skipWorkFlow,NdcApplicationRequest ndcApplicationRequest) {
-
-		if(ndcApplicationRequest.getApplicant()==null || ObjectUtils.isEmpty(ndcApplicationRequest.getApplicant().getUuid())){
-			throw new CustomException("APPLICANT_UUID_NULL", "Applicant details or uuid is null");
-		}
-		if(!ndcRepository.checkApplicantExists(ndcApplicationRequest.getApplicant().getUuid())) {
-			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant details or uuid is not found.");
-		}
-
-		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
-		applicant.setLastmodifiedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
-		applicant.setLastmodifiedtime(System.currentTimeMillis());
-
-		// Update NDC details
-		List<NdcDetailsRequest> ndcDetails = ndcApplicationRequest.getNdcDetails();
-		if (ndcDetails != null) {
-			Set<String> existingDetailUuids = getExistingUuids("eg_ndc_details", ndcDetails.stream().map(NdcDetailsRequest::getUuid).collect(Collectors.toList()));
-			for (NdcDetailsRequest details : ndcDetails) {
-				if (details.getUuid() == null || !existingDetailUuids.contains(details.getUuid())) {
-					details.setUuid(UUID.randomUUID().toString());
-					details.setApplicantId(applicant.getUuid());
-				}
-			}
-		}
-
-		// Update documents
-		List<DocumentRequest> documents = ndcApplicationRequest.getDocuments();
-		if (documents != null) {
-			Set<String> existingDocumentUuids = getExistingUuids("eg_ndc_documents", documents.stream().map(DocumentRequest::getUuid).collect(Collectors.toList()));
-			for (DocumentRequest document : documents) {
-				if (document.getUuid() == null ){
-					throw new CustomException("DOCUMENT_ID_ERR", "Please provide a valid document id.");
-				}
-				if( !existingDocumentUuids.contains(document.getUuid())) {
-					document.setUuid(document.getUuid());
-					document.setApplicantId(applicant.getUuid());
-					document.setCreatedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
-					document.setCreatedtime(System.currentTimeMillis());
-				}
-				document.setLastmodifiedby(ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid());
-				document.setLastmodifiedtime(System.currentTimeMillis());
-			}
-		}
-
 		log.info("ndc request :", ndcApplicationRequest);
-		if(!skipWorkFlow) {
-			workflowIntegrator.callWorkFlow(ndcApplicationRequest, NDCConstants.NDC_BUSINESS_SERVICE);
+		RequestInfo requestInfo = ndcApplicationRequest.getRequestInfo();
+		String userUuidFromRequestInfo = requestInfo.getUserInfo().getUuid();
+		List<Application> applications = ndcApplicationRequest.getApplications();
+		if (applications == null || applications.isEmpty()) {
+			throw new CustomException("APPLICATIONS_EMPTY", "No applications found in request.");
 		}
-		if(ndcApplicationRequest.getApplicant().getWorkflow().getAction().equalsIgnoreCase("APPLY")) {
-			getCalculation(ndcApplicationRequest);
+		for (Application application : applications) {
+
+            if (ObjectUtils.isEmpty(application.getUuid())) {
+                throw new CustomException("APPLICANT_UUID_NULL", "Applicant details or uuid is null");
+            }
+            if (!ndcRepository.checkApplicationExists(application.getUuid())) {
+                throw new CustomException("APPLICANT_NOT_FOUND", "Applicant details or uuid is not found.");
+            }
+
+            AuditDetails auditDetails = application.getAuditDetails();
+            auditDetails.setLastModifiedBy(userUuidFromRequestInfo);
+            auditDetails.setLastModifiedTime(System.currentTimeMillis());
+			application.setAuditDetails(auditDetails);
+
+
+            // Update NDC details
+            List<NdcDetailsRequest> ndcDetails = application.getNdcDetails();
+            if (ndcDetails != null) {
+                Set<String> existingDetailUuids = getExistingUuids("eg_ndc_details", ndcDetails.stream().map(NdcDetailsRequest::getUuid).collect(Collectors.toList()));
+                for (NdcDetailsRequest details : ndcDetails) {
+                    if (details.getUuid() == null || !existingDetailUuids.contains(details.getUuid())) {
+                        details.setUuid(UUID.randomUUID().toString());
+                        details.setApplicationId(application.getUuid());
+                    }
+                }
+            }
+
+            // Update documents
+            List<DocumentRequest> documents = application.getDocuments();
+            if (documents != null) {
+                Set<String> existingDocumentUuids = getExistingUuids("eg_ndc_documents", documents.stream().map(DocumentRequest::getUuid).collect(Collectors.toList()));
+                for (DocumentRequest document : documents) {
+                    if (document.getUuid() == null) {
+                        throw new CustomException("DOCUMENT_ID_ERR", "Please provide a valid document id.");
+                    }
+                    if (!existingDocumentUuids.contains(document.getUuid())) {
+                        document.setUuid(document.getUuid());
+                        document.setApplicationId(application.getUuid());
+                        document.setCreatedby(userUuidFromRequestInfo);
+                        document.setCreatedtime(System.currentTimeMillis());
+                    }
+                    document.setLastmodifiedby(userUuidFromRequestInfo);
+                    document.setLastmodifiedtime(System.currentTimeMillis());
+                }
+            }
+
+			List<OwnerInfo> owners = application.getOwners();
+			if (owners != null) {
+				userService.createUser(requestInfo,application);
+			}
+
+			NdcApplicationRequest requestTobeUpdated = NdcApplicationRequest.builder().requestInfo(requestInfo).applications(Collections.singletonList(application)).build();
+			log.info("ndc request with current applications :", requestTobeUpdated);
+			if (!skipWorkFlow) {
+                workflowIntegrator.callWorkFlow(requestTobeUpdated, NDCConstants.NDC_BUSINESS_SERVICE);
+            }
+            if (application.getWorkflow().getAction().equalsIgnoreCase("APPLY")) {
+                getCalculation(requestTobeUpdated);
+            }
+        }
+			producer.push(config.getUpdateTopic(), ndcApplicationRequest);
+
+			return ndcApplicationRequest;
 		}
-
-
-		producer.push(config.getUpdateTopic(), ndcApplicationRequest);
-
-		return ndcApplicationRequest;
-	}
-
-//	private void getFlatFee(NdcApplicationRequest ndcApplicationRequest) {
-//		Object mdmsData = mdmsService.mDMSCall(ndcApplicationRequest.getRequestInfo(), ndcApplicationRequest.getApplicant().getTenantId());
-//		String jsonPathExpression = "$.MdmsRes.ndc.NdcFee[0].flatFee";
-//
-//		try {
-//			String jsonResponse = mapper.writeValueAsString(mdmsData);
-//			Double flatFee = JsonPath.read(jsonResponse, jsonPathExpression);
-//			System.out.println("Flat Fee (extracted with JsonPath): " + flatFee); // Output: Flat Fee (extracted with JsonPath): 100.0
-//
-//			ndcApplicationRequest.getApplicant().setFee(BigDecimal.valueOf(flatFee));
-////			// If the path might not exist and you want to handle it gracefully, you can configure JsonPath
-////			// to suppress exceptions for missing paths and return null instead.
-////			Configuration conf = Configuration.builder().options(Option.SUPPRESS_EXCEPTIONS).build();
-////			Double optionalFlatFee = JsonPath.using(conf).parse(jsonResponse).read("$.nonExistentPath");
-////			System.out.println("Optional Flat Fee (non-existent path): " + optionalFlatFee); // Output: null
-//
-//		} catch (Exception e) {
-//			System.err.println("Error extracting flatFee: " + e.getMessage());
-//			e.printStackTrace();
-//		}
-//	}
 
 	public NdcApplicationRequest deleteNdcApplication(NdcDeleteRequest ndcDeleteRequest) {
 
 		if(ObjectUtils.isEmpty(ndcDeleteRequest.getUuid())){
 			throw new CustomException("APPLICANT_UUID_NULL", "Applicant uuid is null");
 		}
-		if(!ndcRepository.checkApplicantExists(ndcDeleteRequest.getUuid())) {
+		if(!ndcRepository.checkApplicationExists(ndcDeleteRequest.getUuid())) {
 			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
 		}
-		NdcApplicationRequest ndcApplicationRequest = searchNdcApplications(NdcApplicationSearchCriteria.builder().uuid(Collections.singletonList(ndcDeleteRequest.getUuid())).build()).get(0);
-		ApplicantRequest applicant = ndcApplicationRequest.getApplicant();
-		applicant.setLastmodifiedby(ndcDeleteRequest.getRequestInfo().getUserInfo().getUuid());
-		applicant.setLastmodifiedtime(System.currentTimeMillis());
-		applicant.setActive(ndcDeleteRequest.getActive());
-		ndcApplicationRequest.setApplicant(applicant);
-		// Push to delete topic
-		System.out.println(applicant);
-		producer.push(config.getDeleteTopic(), applicant);
-
+		Application application = searchNdcApplications(NdcApplicationSearchCriteria.builder().uuid(Collections.singletonList(ndcDeleteRequest.getUuid())).build(), ndcDeleteRequest.getRequestInfo()).get(0);
+		NdcApplicationRequest ndcApplicationRequest = NdcApplicationRequest.builder().requestInfo(ndcDeleteRequest.getRequestInfo()).build();
+		AuditDetails auditDetails = application.getAuditDetails();
+		auditDetails.setLastModifiedBy(ndcDeleteRequest.getRequestInfo().getUserInfo().getUuid());
+		auditDetails.setLastModifiedTime(System.currentTimeMillis());
+		application.setAuditDetails(auditDetails);
+		application.setActive(ndcDeleteRequest.getActive());
+		ndcApplicationRequest.setApplications(Collections.singletonList(application));
+		// Push to
+		producer.push(config.getDeleteTopic(), application);
 		return ndcApplicationRequest;
 	}
 
@@ -228,23 +234,47 @@ public class NDCService {
 		return ndcRepository.getExistingUuids(tableName, uuids);
 	}
 
-	public List<NdcApplicationRequest> searchNdcApplications(NdcApplicationSearchCriteria criteria) {
+	public List<Application> searchNdcApplications(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Application> applications;
 		List<String> uuids = criteria.getUuid();
-		if (uuids != null && !uuids.isEmpty()) {
-			return ndcRepository.fetchNdcApplications(criteria);
-		}
-
-		if (StringUtils.isBlank(criteria.getTenantId())) {
+				if (StringUtils.isBlank(criteria.getTenantId())) {
 			throw new CustomException("EG_NDC_TENANT_ID_NULL","Tenant ID must not be null or empty when UUID is not provided");
 		}
+		if (criteria.getMobileNumber() != null || criteria.getName() != null) {
+			UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
+			// If user not found with given user fields return empty list
+			if (userDetailResponse.getUser().isEmpty()) {
+				return Collections.emptyList();
+			} else {
+				criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
+			}
+			// If property not found with given propertyId or oldPropertyId or address fields return empty list
+//			if (applications.size() == 0) {
+//				return Collections.emptyList();
+//			}
+//			// Add propertyIds of all properties owned by the user
+//			criteria = enrichmentService.getPropertyCriteriaFromPropertyIds(properties);
+			//Get all properties with ownerInfo enriched from user service
+			applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
+			Map<String, OwnerInfo> ownerInfoMap = userDetailResponse.getUser().stream()
+					.collect(Collectors.toMap(OwnerInfo::getUuid, Function.identity()));
 
-		if (StringUtils.isNotBlank(criteria.getMobileNumber()) ||
-				StringUtils.isNotBlank(criteria.getName()) || criteria.getActive()!=null||
-				criteria.getStatus() != null) {
-			return ndcRepository.fetchNdcApplications(criteria);
-		}else{
-			throw new CustomException("EG_NDC_TENANT_ID_NULL_PARAM_NULL","Parameter missing with Tenant ID or empty when UUID is not provided");
+			enrichApplicationOwners(applications, ownerInfoMap);
+		} else {
+			applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
+
 		}
+		return applications;
+	}
+
+	public List<Application> getApplicationsWithOwnerInfo(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {
+		List<Application> applications = ndcRepository.fetchNdcApplications(criteria);
+		if (CollectionUtils.isEmpty(applications))
+			return Collections.emptyList();
+		enrichmentService.enrichApplicationCriteriaWithOwnerids(criteria, applications);
+		UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
+		enrichmentService.enrichOwner(userDetailResponse, applications);
+		return applications;
 	}
 
 	public void getCalculation(NdcApplicationRequest request){
@@ -252,8 +282,8 @@ public class NDCService {
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 			CalculationCriteria calculationCriteria = CalculationCriteria.builder()
 					.ndcApplicationRequest(request)
-					.tenantId(request.getApplicant().getTenantId())
-					.applicationNumber(request.getApplicant().getUuid())
+					.tenantId(request.getApplications().get(0).getTenantId())
+					.applicationNumber(request.getApplications().get(0).getUuid())
 					.build();
 			calculationCriteriaList.add(calculationCriteria);
 
@@ -264,11 +294,25 @@ public class NDCService {
 
 		StringBuilder url = new StringBuilder().append(ndcConfiguration.getNdcCalculatorHost())
 				.append(ndcConfiguration.getNdcCalculatorEndpoint());
-
-//		List<Calculation> calculations = calculationService.calculate(calculationReq);
 		Object response = serviceRequestRepository.fetchResult(url, calculationReq);
 		CalculationRes calculationRes = mapper.convertValue(response, CalculationRes.class);
-		request.getApplicant().setFee(BigDecimal.valueOf(calculationRes.getCalculation().get(0).getTotalAmount()));
-//		return null;
+		log.info("Calculation Response: " + calculationRes);
 	}
+
+	public void enrichApplicationOwners(List<Application> applications, Map<String, OwnerInfo> ownerInfoMap) {
+
+		for (Application app : applications) {
+			Set<String> seenUuids = new HashSet<>();
+
+			List<OwnerInfo> enrichedOwners = app.getOwners().stream()
+					.filter(owner -> owner.getUuid() != null) // skip null UUIDs
+					.filter(owner -> seenUuids.add(owner.getUuid())) // deduplicate by UUID
+					.map(owner -> ownerInfoMap.getOrDefault(owner.getUuid(), owner)) // enrich if available
+					.collect(Collectors.toList());
+
+			app.setOwners(enrichedOwners);
+		}
+
+	}
+
 }

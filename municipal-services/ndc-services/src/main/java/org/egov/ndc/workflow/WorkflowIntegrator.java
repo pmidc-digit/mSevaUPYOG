@@ -10,6 +10,7 @@ import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.util.NDCConstants;
 import org.egov.ndc.web.model.NdcRequest;
 import org.egov.ndc.web.model.ndc.ApplicantRequest;
+import org.egov.ndc.web.model.ndc.Application;
 import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,9 +79,9 @@ public class WorkflowIntegrator {
 	 * @param ndcRequest
 	 */
 	public void callWorkFlow(NdcApplicationRequest ndcRequest, String bussinessServiceValue) {
-		String wfTenantId = ndcRequest.getApplicant().getTenantId();
+		String wfTenantId = ndcRequest.getApplications().get(0).getTenantId();
 		JSONArray array = new JSONArray();
-		ApplicantRequest ndc = ndcRequest.getApplicant();
+		Application ndc = ndcRequest.getApplications().get(0);
 		JSONObject obj = new JSONObject();
 		obj.put(BUSINESSIDKEY, ndc.getUuid());
 		obj.put(TENANTIDKEY, wfTenantId);

@@ -39,7 +39,6 @@
  */
 package org.egov.ndc.web.controller;
 
-import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.response.ResponseInfo;
 import org.egov.ndc.config.ResponseInfoFactory;
 import org.egov.ndc.service.NDCService;
@@ -51,7 +50,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/ndc")
@@ -69,10 +67,10 @@ public class NDCController {
 		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
 
 		NdcApplicationResponse response = NdcApplicationResponse.builder()
-				.applicant(request.getApplicant())
-				.ndcDetails(request.getNdcDetails())
-				.documents(request.getDocuments())
-				.responseInfo(responseInfo).build();
+				.responseInfo(responseInfo)
+				.applications(request.getApplications())
+				.build();
+
 
 		return new ResponseEntity<>(response, HttpStatus.CREATED);
 	}
@@ -83,10 +81,9 @@ public class NDCController {
 		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
 
 		NdcApplicationResponse response = NdcApplicationResponse.builder()
-				.applicant(request.getApplicant())
-				.ndcDetails(request.getNdcDetails())
-				.documents(request.getDocuments())
-				.responseInfo(responseInfo).build();
+				.responseInfo(responseInfo)
+				.applications(request.getApplications())
+				.build();
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -97,10 +94,9 @@ public class NDCController {
 		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
 
 		NdcApplicationResponse response = NdcApplicationResponse.builder()
-				.applicant(request.getApplicant())
-				.ndcDetails(request.getNdcDetails())
-				.documents(request.getDocuments())
-				.responseInfo(responseInfo).build();
+				.responseInfo(responseInfo)
+				.applications(request.getApplications())
+				.build();
 
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
@@ -109,17 +105,13 @@ public class NDCController {
 	public ResponseEntity<NdcApplicationSearchResponse> searchNdcApplications(
 			@RequestBody RequestInfoWrapper requestInfoWrapper,
 			@ModelAttribute NdcApplicationSearchCriteria criteria) {
-		List<NdcApplicationRequest> applications = ndcService.searchNdcApplications(criteria);
+		List<Application> applications = ndcService.searchNdcApplications(criteria,requestInfoWrapper.getRequestInfo() );
 		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
-
-		List<NdcApplicationRequest> applicationRequests = applications.stream()
-				.peek(app -> app.setRequestInfo(null))
-				.collect(Collectors.toList());
 
 		NdcApplicationSearchResponse response = NdcApplicationSearchResponse.builder()
 				.responseInfo(responseInfo)
-				.applications(applicationRequests)
-				.totalCount(applicationRequests.size())
+				.applications(applications)
+				.totalCount(applications.size())
 				.build();
 
 		return new ResponseEntity<>(response, HttpStatus.OK);

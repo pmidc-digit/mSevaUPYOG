@@ -173,7 +173,7 @@ public class NDCValidator {
 			});
 			addedDocTypes.forEach(documentType -> {
 				if (!docTypeMappings.contains(documentType)) {
-					throw new CustomException("NDC_INVALID_DOCUMENTTYPE", "Document Type " + documentType + " is invalid for " + ndc.getNdcType() + " application");
+					throw new CustomException("NDC_INVALID_DOCUMENTTYPE", "Document Type " + documentType + " is invalid for " + ndc.getNdcType() + " applications");
 				}
 			});
 		}
@@ -255,7 +255,7 @@ public class NDCValidator {
 						});
 						addedDocTypes.forEach(documentType -> {
 							if (!docTypes.contains(documentType)) {
-								throw new CustomException("NDC_INVALID_DOCUMENTTYPE", "Document Type " + documentType + " is invalid for " + ndc.getNdcType() + " application");
+								throw new CustomException("NDC_INVALID_DOCUMENTTYPE", "Document Type " + documentType + " is invalid for " + ndc.getNdcType() + " applications");
 							}
 						});
 					}

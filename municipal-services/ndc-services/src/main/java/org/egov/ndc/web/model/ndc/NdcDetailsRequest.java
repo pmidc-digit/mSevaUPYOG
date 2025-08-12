@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Builder;
 import lombok.Data;
+import org.egov.ndc.web.model.OwnerInfo;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -13,8 +15,8 @@ public class NdcDetailsRequest {
     @JsonProperty("uuid")
     private String uuid;
 
-    @JsonProperty("applicantId")
-    private String applicantId;
+    @JsonProperty("applicationId")
+    private String applicationId;
 
     @JsonProperty("businessService")
     private String businessService;
@@ -30,4 +32,7 @@ public class NdcDetailsRequest {
 
     @JsonProperty("status")
     private String status;
+
+//    @JsonProperty("owners")
+//    private List<OwnerInfo> ownerInfo;
 }

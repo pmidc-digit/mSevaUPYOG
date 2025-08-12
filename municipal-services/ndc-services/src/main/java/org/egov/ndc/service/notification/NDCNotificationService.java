@@ -1,19 +1,15 @@
 package org.egov.ndc.service.notification;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.service.UserService;
 import org.egov.ndc.util.NotificationUtil;
 import org.egov.ndc.web.model.NdcRequest;
-import org.egov.ndc.web.model.NdcSearchCriteria;
 import org.egov.ndc.web.model.SMSRequest;
 import org.egov.ndc.web.model.UserResponse;
+import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -88,9 +84,9 @@ public class NDCNotificationService {
 		Map<String, String> mobileNumberToOwner = new HashMap<>();
 		String tenantId = ndcRequest.getNdc().getTenantId();
 		String stakeUUID = ndcRequest.getNdc().getAccountId();
-		List<String> ownerId = new ArrayList<String>();
+		Set<String> ownerId = new HashSet<>();
 		ownerId.add(stakeUUID);
-		NdcSearchCriteria ndcSearchCriteria = new NdcSearchCriteria();
+		NdcApplicationSearchCriteria ndcSearchCriteria = new NdcApplicationSearchCriteria();
 		ndcSearchCriteria.setOwnerIds(ownerId);
 		ndcSearchCriteria.setTenantId(tenantId);
 		UserResponse userDetailResponse = userService.getUser(ndcSearchCriteria, ndcRequest.getRequestInfo());

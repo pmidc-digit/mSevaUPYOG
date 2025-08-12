@@ -149,14 +149,14 @@ public class NDCUtil {
 		return idResponses.stream().map(IdResponse::getId).collect(Collectors.toList());
 	}
 
-	public Map<String, Boolean> getIdToIsStateUpdatableMap(BusinessService businessService, List<NdcApplicationRequest> searchresult) {
-		Map<String, Boolean> idToIsStateUpdatableMap = new HashMap<>();
-		searchresult.forEach(result -> {
-			if (result.getApplicant().getApplicationStatus().equalsIgnoreCase(NDCConstants.STATE_INITIATED)) {
-				idToIsStateUpdatableMap.put(result.getApplicant().getUuid(), true);
-			} else
-				idToIsStateUpdatableMap.put(result.getApplicant().getUuid(), workflowService.isStateUpdatable(result.getApplicant().getApplicationStatus(), businessService));
-		});
-		return idToIsStateUpdatableMap;
-	}
+//	public Map<String, Boolean> getIdToIsStateUpdatableMap(BusinessService businessService, List<NdcApplicationRequest> searchresult) {
+//		Map<String, Boolean> idToIsStateUpdatableMap = new HashMap<>();
+//		searchresult.forEach(result -> {
+//			if (result.getApplicant().getApplicationStatus().equalsIgnoreCase(NDCConstants.STATE_INITIATED)) {
+//				idToIsStateUpdatableMap.put(result.getApplicant().getUuid(), true);
+//			} else
+//				idToIsStateUpdatableMap.put(result.getApplicant().getUuid(), workflowService.isStateUpdatable(result.getApplicant().getApplicationStatus(), businessService));
+//		});
+//		return idToIsStateUpdatableMap;
+//	}
 }

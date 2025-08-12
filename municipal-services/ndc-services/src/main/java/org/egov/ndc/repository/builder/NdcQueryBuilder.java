@@ -17,12 +17,17 @@ public class NdcQueryBuilder {
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY ndc_lastModifiedTime DESC) offset_ FROM " + "({})"
 			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
 
-	private static final String NDC_QUERY = "SELECT a.uuid AS a_uuid, a.firstname,a.tenantid, a.lastname, a.mobile, a.email, a.address, a.applicationstatus,a.active, a.createdby AS a_createdby, a.lastmodifiedby AS a_lastmodifiedby, a.createdtime AS a_createdtime, a.lastmodifiedtime AS a_lastmodifiedtime, " +
-			"d.uuid AS d_uuid, d.applicantid AS d_applicantid, d.businessservice, d.consumercode, d.additionaldetails, d.dueamount, d.status, " +
-			"doc.uuid AS doc_uuid, doc.applicantid AS doc_applicantid, doc.documenttype, doc.documentattachment, doc.createdby AS doc_createdby, doc.lastmodifiedby AS doc_lastmodifiedby, doc.createdtime AS doc_createdtime, doc.lastmodifiedtime AS doc_lastmodifiedtime " +
-			"FROM eg_ndc_applicants a " +
-			"LEFT JOIN eg_ndc_details d ON a.uuid = d.applicantid " +
-			"LEFT JOIN eg_ndc_documents doc ON a.uuid = doc.applicantid";
+	private static final String NDC_QUERY = "SELECT " +
+			"a.uuid AS a_uuid, a.tenantid, a.applicationstatus, a.active,\n" +
+            "  a.createdby AS a_createdby, a.lastmodifiedby AS a_lastmodifiedby,\n" +
+            "  a.createdtime AS a_createdtime, a.lastmodifiedtime AS a_lastmodifiedtime,\n" +
+            "  a.action, a.reason,owner.uuid as owner_uuid,\n" +
+			"d.uuid AS d_uuid, d.applicationid AS d_applicationid, d.businessservice, d.consumercode, d.additionaldetails, d.dueamount, d.status, " +
+			"doc.uuid AS doc_uuid, doc.applicationid AS doc_applicationid, doc.documenttype, doc.documentattachment, doc.createdby AS doc_createdby, doc.lastmodifiedby AS doc_lastmodifiedby, doc.createdtime AS doc_createdtime, doc.lastmodifiedtime AS doc_lastmodifiedtime " +
+			"FROM eg_ndc_application a " +
+			"LEFT JOIN eg_ndc_owner owner ON a.uuid = owner.ndcapplicationuuid " +
+			"LEFT JOIN eg_ndc_details d ON a.uuid = d.applicationid " +
+			"LEFT JOIN eg_ndc_documents doc ON a.uuid = doc.applicationid";
 
 
 	public String getNdcApplicationSearchQuery(NdcApplicationSearchCriteria criteria, List<Object> preparedStmtList) {
@@ -59,19 +64,28 @@ public class NdcQueryBuilder {
 			preparedStmtList.add(criteria.getActive());
 		}
 
-		if (StringUtils.isNotBlank(criteria.getMobileNumber())) {
+		if (criteria.getOwnerIds() != null) {
 			addClauseIfRequired(query, whereAdded);
 			whereAdded = true;
-			query.append(" a.mobile = ?");
-			preparedStmtList.add(criteria.getMobileNumber());
+			query.append(" owner.uuid in (");
+			String placeholders = String.join(",", Collections.nCopies(criteria.getOwnerIds().size(), "?"));
+			query.append(placeholders).append(")");
+			preparedStmtList.addAll(criteria.getOwnerIds());
 		}
 
-		if (StringUtils.isNotBlank(criteria.getName())) {
-			addClauseIfRequired(query, whereAdded);
-			whereAdded = true;
-			query.append(" CONCAT(a.firstname, ' ', a.lastname) ILIKE ?");
-			preparedStmtList.add("%" + criteria.getName() + "%");
-		}
+//		if (StringUtils.isNotBlank(criteria.getMobileNumber())) {
+//			addClauseIfRequired(query, whereAdded);
+//			whereAdded = true;
+//			query.append(" a.mobile = ?");
+//			preparedStmtList.add(criteria.getMobileNumber());
+//		}
+
+//		if (StringUtils.isNotBlank(criteria.getName())) {
+//			addClauseIfRequired(query, whereAdded);
+//			whereAdded = true;
+//			query.append(" CONCAT(a.firstname, ' ', a.lastname) ILIKE ?");
+//			preparedStmtList.add("%" + criteria.getName() + "%");
+//		}
 
 		query.append(" ORDER BY a.createdtime DESC ");
 		return query.toString();
@@ -89,7 +103,11 @@ public class NdcQueryBuilder {
 		return "SELECT uuid FROM " + tableName + " WHERE uuid IN (" + uuids.stream().map(uuid -> "'" + uuid + "'").collect(Collectors.joining(",")) + ")";
 	}
 
-	public String checkApplicantExists(String uuid) {
-		return "SELECT uuid FROM eg_ndc_applicants WHERE uuid =?";
+	public String checkApplicationExists(String uuid) {
+		return "SELECT uuid FROM eg_ndc_application WHERE uuid =?";
+	}
+
+	public String checkUniqueUserAndApplicationUUid(List<String> uuid, String ndcApplicationUuid) {
+		return ("SELECT 1 FROM eg_ndc_owner WHERE uuid in ("+"?"+") and ndcapplicationuuid = ? ");
 	}
 }

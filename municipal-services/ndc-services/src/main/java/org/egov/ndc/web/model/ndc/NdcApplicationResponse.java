@@ -20,26 +20,15 @@ public class NdcApplicationResponse {
     @JsonProperty("ResponseInfo")
     private ResponseInfo responseInfo;
 
-    @JsonProperty("Applicant")
-    private ApplicantRequest applicant;
+    @JsonProperty("Applications")
+    private List<Application> applications;
 
-    @JsonProperty("NdcDetails")
-    private List<NdcDetailsRequest> ndcDetails;
 
-    @JsonProperty("Documents")
-    private List<DocumentRequest> documents;
-
-    public void addNdcDetailsItem(NdcDetailsRequest ndcDetailsItem) {
-        if (this.ndcDetails == null) {
-            this.ndcDetails = new ArrayList<>();
+    public void addApplicationItem(Application applicationItem) {
+        if (this.applications == null) {
+            this.applications = new ArrayList<>();
         }
-        this.ndcDetails.add(ndcDetailsItem);
+        this.applications.add(applicationItem);
     }
 
-    public void addDocumentsItem(DocumentRequest documentItem) {
-        if (this.documents == null) {
-            this.documents = new ArrayList<>();
-        }
-        this.documents.add(documentItem);
-    }
 }

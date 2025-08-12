@@ -28,7 +28,7 @@ public class WorkflowService {
 	private ObjectMapper mapper;
 	
 	public BusinessService getBusinessService(NdcApplicationRequest ndc, RequestInfo requestInfo, String bussinessServiceValue) {
-		StringBuilder url = getSearchURLWithParams(bussinessServiceValue, ndc.getApplicant().getTenantId());
+		StringBuilder url = getSearchURLWithParams(bussinessServiceValue, ndc.getApplications().get(0).getTenantId());
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
 		Object result = serviceRequestRepository.fetchResult(url, requestInfoWrapper);
 		BusinessServiceResponse response = null;

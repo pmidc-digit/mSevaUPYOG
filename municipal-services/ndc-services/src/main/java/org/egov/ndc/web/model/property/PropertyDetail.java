@@ -7,7 +7,7 @@ import lombok.*;
 import org.egov.ndc.web.model.AuditDetails;
 import org.egov.ndc.web.model.bpa.Document;
 import org.egov.ndc.web.model.bpa.Institution;
-import org.egov.ndc.web.model.bpa.OwnerInfo;
+import org.egov.ndc.web.model.OwnerInfo;
 import org.egov.ndc.web.model.bpa.Unit;
 import org.springframework.validation.annotation.Validated;
 

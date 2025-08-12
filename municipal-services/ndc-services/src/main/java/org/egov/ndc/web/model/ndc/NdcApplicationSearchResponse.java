@@ -19,6 +19,6 @@ public class NdcApplicationSearchResponse {
     @JsonProperty("ResponseInfo")
     private ResponseInfo responseInfo;
     @JsonProperty("Applications")
-    private List<NdcApplicationRequest> applications;
+    private List<Application> applications;
     private Integer totalCount;
 }

@@ -6,12 +6,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.producer.Producer;
 import org.egov.ndc.repository.builder.NdcQueryBuilder;
 import org.egov.ndc.repository.rowmapper.NdcRowMapper;
-import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
+import org.egov.ndc.web.model.ndc.Application;
 import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -42,13 +41,19 @@ public class NDCRepository {
 		return jdbcTemplate.query(sql, (rs, rowNum) -> rs.getString("uuid")).stream().collect(Collectors.toSet());
 	}
 
-	public boolean checkApplicantExists(String uuid) {
-		String sql = queryBuilder.checkApplicantExists(uuid);
+	public boolean checkApplicationExists(String uuid) {
+		String sql = queryBuilder.checkApplicationExists(uuid);
 		String query = jdbcTemplate.queryForObject(sql, new Object[]{uuid}, String.class);
 		return query != null;
 	}
 
-	public List<NdcApplicationRequest> fetchNdcApplications(NdcApplicationSearchCriteria criteria) {
+	public boolean checkUserUuidAndApplicationExists(List<String> uuid, String applicationUuid) {
+		String sql = queryBuilder.checkUniqueUserAndApplicationUUid(uuid , applicationUuid);
+		String query = jdbcTemplate.queryForObject(sql, new Object[]{uuid,applicationUuid},String.class);
+		return query != null;
+	}
+
+	public List<Application> fetchNdcApplications(NdcApplicationSearchCriteria criteria) {
 		List<Object> preparedStmtList = new ArrayList<>();
 		String query = queryBuilder.getNdcApplicationSearchQuery(criteria, preparedStmtList);
 		log.info(query);

@@ -10,8 +10,8 @@ public class DocumentRequest {
     @JsonProperty("uuid")
     private String uuid;
 
-    @JsonProperty("applicantId")
-    private String applicantId;
+    @JsonProperty("applicationId")
+    private String applicationId;
 
     @JsonProperty("documentType")
     private String documentType;

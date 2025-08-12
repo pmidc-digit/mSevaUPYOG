@@ -13,9 +13,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 
 /**
- * BPA application object to capture the details of land, land owners, and address of the land.
+ * BPA applications object to capture the details of land, land owners, and address of the land.
  */
-@ApiModel(description = "BPA application object to capture the details of land, land owners, and address of the land.")
+@ApiModel(description = "BPA applications object to capture the details of land, land owners, and address of the land.")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 public class Workflow   {
@@ -41,10 +41,10 @@ public class Workflow   {
   }
 
   /**
-   * Action on the application in certain
+   * Action on the applications in certain
    * @return action
   **/
-  @ApiModelProperty(value = "Action on the application in certain")
+  @ApiModelProperty(value = "Action on the applications in certain")
   
   @Size(min=1,max=64)   public String getAction() {
     return action;

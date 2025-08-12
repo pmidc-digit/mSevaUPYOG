@@ -130,5 +130,20 @@ public class EmployeeController {
 		return new ResponseEntity<>(response,HttpStatus.OK);
 	}
 
+	/**
+	 * Maps Post Requests for _search & returns ResponseEntity of either
+	 * EmployeeResponse type or ErrorResponse type
+	 *
+	 * @param criteria
+	 * @param bindingResult
+	 * @return ResponseEntity<?>
+	 */
+	@PostMapping(value = "/_searchV2")
+	@ResponseBody
+	public ResponseEntity<?> searchV2(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper, @ModelAttribute @Valid EmployeeSearchCriteria criteria) {
+		validator.validateSearchRequest(requestInfoWrapper.getRequestInfo(), criteria);
+		EmployeeResponse employeeResponse = employeeService.searchV2(criteria, requestInfoWrapper.getRequestInfo());
+		return new ResponseEntity<>(employeeResponse,HttpStatus.OK);
+	}	
 
 }

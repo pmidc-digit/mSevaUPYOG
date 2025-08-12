@@ -562,5 +562,88 @@ public class EmployeeService {
 		response.put("EmployeCount",results);
 		return  response;
 	}
+	
+	/**
+	 * Searches employees on a given criteria.
+	 * 
+	 * @param criteria
+	 * @param requestInfo
+	 * @return
+	 */
+	public EmployeeResponse searchV2(EmployeeSearchCriteria criteria, RequestInfo requestInfo) {
+		boolean  userChecked = false;
+		/*if(null == criteria.getIsActive() || criteria.getIsActive())
+			criteria.setIsActive(true);
+		else
+			criteria.setIsActive(false);*/
+        Map<String, User> mapOfUsers = new HashMap<String, User>();
+		if(!StringUtils.isEmpty(criteria.getPhone()) || !CollectionUtils.isEmpty(criteria.getRoles())) {
+            Map<String, Object> userSearchCriteria = new HashMap<>();
+            userSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_TENANTID,criteria.getTenantId());
+            if(!StringUtils.isEmpty(criteria.getPhone()))
+                userSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_MOBILENO,criteria.getPhone());
+            if( !CollectionUtils.isEmpty(criteria.getRoles()) )
+                userSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_ROLECODES,criteria.getRoles());
+            UserResponse userResponse = userService.getUser(requestInfo, userSearchCriteria);
+			userChecked =true;
+            if(!CollectionUtils.isEmpty(userResponse.getUser())) {
+                 mapOfUsers.putAll(userResponse.getUser().stream()
+                        .collect(Collectors.toMap(User::getUuid, Function.identity())));
+            }
+			List<String> userUUIDs = userResponse.getUser().stream().map(User :: getUuid).collect(Collectors.toList());
+            if(!CollectionUtils.isEmpty(criteria.getUuids()))
+                criteria.setUuids(criteria.getUuids().stream().filter(userUUIDs::contains).collect(Collectors.toList()));
+            else
+                criteria.setUuids(userUUIDs);
+		}
+		//checks if above criteria met and result is not  null will check for name search if list of names are given as user search on name is not bulk api
+
+		if(!((!CollectionUtils.isEmpty(criteria.getRoles()) || !StringUtils.isEmpty(criteria.getPhone())) && CollectionUtils.isEmpty(criteria.getUuids()))){
+			if(!CollectionUtils.isEmpty(criteria.getNames())) {
+				List<String> userUUIDs = new ArrayList<>();
+				for(String name: criteria.getNames()) {
+					Map<String, Object> userSearchCriteria = new HashMap<>();
+					userSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_TENANTID,criteria.getTenantId());
+					userSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_NAME,name);
+					UserResponse userResponse = userService.getUser(requestInfo, userSearchCriteria);
+					userChecked =true;
+					if(!CollectionUtils.isEmpty(userResponse.getUser())) {
+						mapOfUsers.putAll(userResponse.getUser().stream()
+								.collect(Collectors.toMap(User::getUuid, Function.identity())));
+					}
+					List<String> uuids = userResponse.getUser().stream().map(User :: getUuid).collect(Collectors.toList());
+					userUUIDs.addAll(uuids);
+				}
+				if(!CollectionUtils.isEmpty(criteria.getUuids()))
+					criteria.setUuids(criteria.getUuids().stream().filter(userUUIDs::contains).collect(Collectors.toList()));
+				else
+					criteria.setUuids(userUUIDs);
+			}
+		}
+		if(userChecked)
+			criteria.setTenantId(null);
+        List <Employee> employees = new ArrayList<>();
+        if(!((!CollectionUtils.isEmpty(criteria.getRoles()) || !CollectionUtils.isEmpty(criteria.getNames()) || !StringUtils.isEmpty(criteria.getPhone())) && CollectionUtils.isEmpty(criteria.getUuids())))
+            employees = repository.fetchEmployeesV2(criteria, requestInfo);
+        List<String> uuids = employees.stream().map(Employee :: getUuid).collect(Collectors.toList());
+        log.info("Active employees are::" + employees.size() + "uuids are :::" + uuids);
+
+		if(!CollectionUtils.isEmpty(uuids)){
+            Map<String, Object> UserSearchCriteria = new HashMap<>();
+            UserSearchCriteria.put(HRMSConstants.HRMS_USER_SEARCH_CRITERA_UUID,uuids);
+            if(mapOfUsers.isEmpty()){
+            UserResponse userResponse = userService.getUser(requestInfo, UserSearchCriteria);
+			if(!CollectionUtils.isEmpty(userResponse.getUser())) {
+				mapOfUsers = userResponse.getUser().stream()
+						.collect(Collectors.toMap(User :: getUuid, Function.identity()));
+            }
+            }
+            for(Employee employee: employees){
+                employee.setUser(mapOfUsers.get(employee.getUuid()));
+            }
+		}
+		return EmployeeResponse.builder().responseInfo(factory.createResponseInfoFromRequestInfo(requestInfo, true))
+				.employees(employees).build();
+	}	
 
 }

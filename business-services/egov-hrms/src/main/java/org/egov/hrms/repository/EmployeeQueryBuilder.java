@@ -42,10 +42,10 @@ public class EmployeeQueryBuilder {
 		return paginationClause(criteria, builder);
 	}
 	
-	public String getEmployeeSearchQueryV1(EmployeeSearchCriteria criteria,List <Object> preparedStmtList , String Count) {
+	public String getEmployeeSearchQueryV2(EmployeeSearchCriteria criteria,List <Object> preparedStmtList , String Count) {
 		StringBuilder builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
 		addWhereClause(criteria, builder, preparedStmtList);
-		return paginationClauseV1(criteria, builder,preparedStmtList , Count);
+		return paginationClauseV2(criteria, builder,preparedStmtList , Count);
 	}
 	
 	public String getEmployeeSearchQueryCount(EmployeeSearchCriteria criteria,List <Object> preparedStmtListV1 ) {
@@ -132,7 +132,7 @@ public class EmployeeQueryBuilder {
 		return pagination;
 	}
 	
-	public String paginationClauseV1(EmployeeSearchCriteria criteria, StringBuilder builder,List <Object> preparedStmtList , String Count) {
+	public String paginationClauseV2(EmployeeSearchCriteria criteria, StringBuilder builder,List <Object> preparedStmtList , String Count) {
 		String pagination = EmployeeQueries.HRMS_PAGINATION_V1_WRAPPER;
 		pagination = pagination.replace("{}", builder.toString());
 		if(null != criteria.getOffset())

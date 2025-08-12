@@ -46,8 +46,6 @@ public class EmployeeRepository {
 	 */
 	public List<Employee> fetchEmployees(EmployeeSearchCriteria criteria, RequestInfo requestInfo){
 		List<Employee> employees = new ArrayList<>();
-		String countEmployee = null; 
-		List<Object> preparedStmtListV1 = new ArrayList<>();
 		List<Object> preparedStmtList = new ArrayList<>();
 		if(hrmsUtils.isAssignmentSearchReqd(criteria)) {
 			List<String> empUuids = fetchEmployeesforAssignment(criteria, requestInfo);
@@ -60,21 +58,7 @@ public class EmployeeRepository {
 					criteria.setUuids(empUuids);
 			}
 		}
-		String count = queryBuilder.getEmployeeSearchQueryCount(criteria, preparedStmtListV1);
-
-		try {
-		    countEmployee = jdbcTemplate.queryForObject(
-		        count, 
-		        preparedStmtListV1.toArray(), 
-		        String.class
-		    );
-		} catch (Exception e) {
-		    log.error("Exception while making the DB call: ", e);
-		    log.error("Query: " + count);
-		}
-
-		
-		String query = queryBuilder.getEmployeeSearchQueryV1(criteria, preparedStmtList , countEmployee);
+		String query = queryBuilder.getEmployeeSearchQuery(criteria, preparedStmtList);
 		try {
 			employees = jdbcTemplate.query(query, preparedStmtList.toArray(),rowMapper);
 		}catch(Exception e) {
@@ -136,5 +120,51 @@ public class EmployeeRepository {
 		}
 		return response;
 	}
+	
+	/**
+	 * DB Repository that makes jdbc calls to the db and fetches employees.
+	 * 
+	 * @param criteria
+	 * @param requestInfo
+	 * @return
+	 */
+	public List<Employee> fetchEmployeesV2(EmployeeSearchCriteria criteria, RequestInfo requestInfo){
+		List<Employee> employees = new ArrayList<>();
+		String countEmployee = null; 
+		List<Object> preparedStmtListV1 = new ArrayList<>();
+		List<Object> preparedStmtList = new ArrayList<>();
+		if(hrmsUtils.isAssignmentSearchReqd(criteria)) {
+			List<String> empUuids = fetchEmployeesforAssignment(criteria, requestInfo);
+			if (CollectionUtils.isEmpty(empUuids))
+				return employees;
+			else {
+				if(!CollectionUtils.isEmpty(criteria.getUuids()))
+					criteria.setUuids(criteria.getUuids().stream().filter(empUuids::contains).collect(Collectors.toList()));
+				else
+					criteria.setUuids(empUuids);
+			}
+		}
+		String count = queryBuilder.getEmployeeSearchQueryCount(criteria, preparedStmtListV1);
 
+		try {
+		    countEmployee = jdbcTemplate.queryForObject(
+		        count, 
+		        preparedStmtListV1.toArray(), 
+		        String.class
+		    );
+		} catch (Exception e) {
+		    log.error("Exception while making the DB call: ", e);
+		    log.error("Query: " + count);
+		}
+
+		
+		String query = queryBuilder.getEmployeeSearchQueryV2(criteria, preparedStmtList , countEmployee);
+		try {
+			employees = jdbcTemplate.query(query, preparedStmtList.toArray(),rowMapper);
+		}catch(Exception e) {
+			log.error("Exception while making the db call: ",e);
+			log.error("query; "+query);
+		}
+		return employees;
+	}	
 }

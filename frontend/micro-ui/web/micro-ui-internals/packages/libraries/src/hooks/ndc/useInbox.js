@@ -1,7 +1,6 @@
 import useInbox from "../useInbox";
 
 const useNDCInbox = ({ tenantId, filters, config = {} }) => {
-  console.log("filters", filters);
   const { filterForm, searchForm, tableForm, getFilter } = filters;
   let { assignee } = filterForm;
   const { applicationNo } = searchForm;
@@ -20,34 +19,60 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
     },
 
     moduleSearchCriteria: {
-      status: "INITIATED",
+      // status: "PENDINGPAYMENT",
       ...(applicationNo ? { applicationNo } : {}),
     },
     limit,
     offset,
   };
 
+  // return useInbox({
+  //   tenantId,
+  //   filters: _filters,
+  //   config: {
+  //     select: (data) => ({
+  //       statuses: data.statusMap,
+  //       table: data?.items.map((application) => ({
+  //         applicationId: application.businessObject.applicationNo,
+  //         date: parseInt(application.businessObject?.auditDetails?.createdTime),
+  //         businessService: application?.ProcessInstance?.businessService,
+  //         locality: `${application.businessObject?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
+  //         status: `WF_${application.businessObject.additionalDetails.workflowCode}_${application.businessObject.applicationStatus}`, //application.businessObject.applicationStatus,
+  //         owner: application?.ProcessInstance?.assignes?.[0]?.name || "-",
+  //         source: application.businessObject.source,
+  //         sla: application?.businessObject?.applicationStatus.match(/^(APPROVED)$/)
+  //           ? "CS_NA"
+  //           : Math.round(application.ProcessInstance?.businesssServiceSla / (24 * 60 * 60 * 1000)),
+  //       })),
+  //       totalCount: data.totalCount,
+  //       nearingSlaCount: data.nearingSlaCount,
+  //     }),
+  //     ...config,
+  //   },
+  // });
   return useInbox({
     tenantId,
     filters: _filters,
     config: {
-      select: (data) => ({
-        statuses: data.statusMap,
-        table: data?.items.map((application) => ({
-          applicationId: application.businessObject.applicationNo,
-          date: parseInt(application.businessObject?.auditDetails?.createdTime),
-          businessService: application?.ProcessInstance?.businessService,
-          locality: `${application.businessObject?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
-          status: `WF_${application.businessObject.additionalDetails.workflowCode}_${application.businessObject.applicationStatus}`, //application.businessObject.applicationStatus,
-          owner: application?.ProcessInstance?.assignes?.[0]?.name || "-",
-          source: application.businessObject.source,
-          sla: application?.businessObject?.applicationStatus.match(/^(APPROVED)$/)
-            ? "CS_NA"
-            : Math.round(application.ProcessInstance?.businesssServiceSla / (24 * 60 * 60 * 1000)),
-        })),
-        totalCount: data.totalCount,
-        nearingSlaCount: data.nearingSlaCount,
-      }),
+      select: (data) => {
+        const tableData = data?.items?.map((application) => {
+          return {
+            applicationId: application.businessObject?.uuid,
+            date: parseInt(application.businessObject?.auditDetails?.createdTime),
+            businessService: application?.ProcessInstance?.businessService,
+            locality: `${application.businessObject?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,
+            status: `${application.businessObject.applicationStatus}`,
+            owner: application?.ProcessInstance?.assigner?.[0]?.name || "-",
+          };
+        });
+
+        return {
+          statuses: data.statusMap,
+          table: tableData,
+          totalCount: data.totalCount,
+          nearingSlaCount: data.nearingSlaCount,
+        };
+      },
       ...config,
     },
   });

@@ -22,7 +22,7 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
 
       // Check if the API call was successful
       if (res?.isSuccess) {
-        history.push("/digit-ui/employee/ndc/response/" + res?.response?.Applicant?.uuid);
+        history.push("/digit-ui/employee/ndc/response/" + res?.response?.Applications?.[0]?.uuid);
       } else {
         console.error("Submission failed, not moving to next step.", res?.response);
       }
@@ -35,27 +35,34 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
     const applicant = Digit.UserService.getUser()?.info || {};
 
     // Clone and modify workflow action
-    const updatedApplicant = {
-      ...formData.apiData.Applicant,
+    const updatedApplication = {
+      ...formData?.apiData?.Applications?.[0],
       workflow: {
-        ...formData.apiData.Applicant.workflow,
+        ...formData?.apiData?.Applications?.[0]?.workflow,
         action: actionStatus,
       },
+      NdcDetails: formData?.apiData?.Applications?.[0]?.NdcDetails,
+      Documents: [], // We'll populate below
     };
 
-    const payload = {
-      Applicant: updatedApplicant,
-      NdcDetails: formData.apiData.NdcDetails,
-      Documents: [], // Add documents mapping if needed
-    };
+    // const payload = {
+    //   Applications: updatedApplicant,
+    //   NdcDetails: formData.apiData.NdcDetails,
+    //   Documents: [], // Add documents mapping if needed
+    // };
 
     (inputData?.DocummentDetails?.documents?.documents || []).forEach((doc) => {
-      payload.Documents.push({
+      updatedApplication.Documents.push({
         uuid: doc?.documentUid,
         documentType: doc?.documentType,
         documentAttachment: doc?.fileStoreId,
       });
     });
+
+    // Final payload matches update API structure
+    const payload = {
+      Applications: [updatedApplication],
+    };
 
     return payload;
   }

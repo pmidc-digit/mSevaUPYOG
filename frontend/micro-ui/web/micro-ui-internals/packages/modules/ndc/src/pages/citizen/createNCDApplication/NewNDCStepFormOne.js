@@ -34,30 +34,44 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
 
-    const payload = {
-      Applicant: {
-        tenantId: tenantId,
-        firstname: data?.PropertyDetails?.firstName,
-        lastname: data?.PropertyDetails?.lastName,
-        mobile: data?.PropertyDetails?.mobileNumber,
-        email: data?.PropertyDetails?.email,
-        address: data?.PropertyDetails?.address,
-        applicationStatus: "CREATE",
-        createdby: auditDetails?.createdBy,
-        lastmodifiedby: auditDetails?.lastModifiedBy,
-        createdtime: auditDetails?.createdTime,
-        lastmodifiedtime: auditDetails?.lastModifiedTime,
-        workflow: {
-          action: "INITIATE",
-        },
+    // Build owners array
+    const owners = [
+      {
+        name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
+        mobileNumber: data?.PropertyDetails?.mobileNumber,
+        gender: data?.PropertyDetails?.gender,
+        emailId: data?.PropertyDetails?.email,
+        type: "CITIZEN",
       },
-      NdcDetails: [],
-      Documents: [], // Add documents mapping if needed
-    };
+    ];
+
+    // Prepare NdcDetails
+    const ndcDetails = [];
+
+    // const payload = {
+    //   Applicant: {
+    //     tenantId: tenantId,
+    //     firstname: data?.PropertyDetails?.firstName,
+    //     lastname: data?.PropertyDetails?.lastName,
+    //     mobile: data?.PropertyDetails?.mobileNumber,
+    //     email: data?.PropertyDetails?.email,
+    //     address: data?.PropertyDetails?.address,
+    //     applicationStatus: "CREATE",
+    //     createdby: auditDetails?.createdBy,
+    //     lastmodifiedby: auditDetails?.lastModifiedBy,
+    //     createdtime: auditDetails?.createdTime,
+    //     lastmodifiedtime: auditDetails?.lastModifiedTime,
+    //     workflow: {
+    //       action: "INITIATE",
+    //     },
+    //   },
+    //   NdcDetails: [],
+    //   Documents: [], // Add documents mapping if needed
+    // };
 
     // Add each water connection to NdcDetails
     (data?.PropertyDetails?.waterConnection || []).forEach((wc) => {
-      payload.NdcDetails.push({
+      ndcDetails.push({
         uuid: wc?.billData?.id,
         applicantId: applicantId,
         businessService: "WS",
@@ -75,7 +89,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     // Add each sewerage connection to NdcDetails
     (data?.PropertyDetails?.sewerageConnection || []).forEach((sc) => {
-      payload.NdcDetails.push({
+      ndcDetails.push({
         uuid: sc?.billData?.id,
         applicantId: applicantId,
         businessService: "SW",
@@ -91,7 +105,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     if (data?.PropertyDetails?.propertyBillData?.billData) {
       const billData = data?.PropertyDetails?.propertyBillData?.billData;
-      payload.NdcDetails.push({
+      ndcDetails.push({
         uuid: billData?.id,
         applicantId: applicantId,
         businessService: "PT",
@@ -104,6 +118,23 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
         status: billData?.status,
       });
     }
+
+    // Final payload
+    const payload = {
+      Applications: [
+        {
+          tenantId,
+          owners,
+          NdcDetails: ndcDetails,
+          Documents: [],
+          active: true,
+          reason: "New application submission",
+          workflow: {
+            action: "INITIATE",
+          },
+        },
+      ],
+    };
 
     console.log("payload", payload);
 

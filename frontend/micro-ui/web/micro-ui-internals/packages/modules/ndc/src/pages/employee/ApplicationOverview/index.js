@@ -151,16 +151,12 @@ const ApplicationOverview = () => {
     const ndcObject = applicationDetails?.Applications?.[0];
     if (ndcObject) {
       const applicantData = {
-        address: ndcObject?.Applicant?.address,
-        email: ndcObject?.Applicant?.email,
-        mobile: ndcObject?.Applicant?.mobile,
-        name: ndcObject?.Applicant?.firstname
-          ? ndcObject?.Applicant?.firstname
-          : "" + " " + ndcObject?.Applicant?.lastname
-          ? ndcObject?.Applicant?.lastname
-          : "",
-        createdDate: ndcObject?.Applicant?.createdtime ? format(new Date(ndcObject?.Applicant?.createdtime), "dd/MM/yyyy") : "",
-        applicationNo: ndcObject?.Applicant?.uuid,
+        address: ndcObject?.owners?.[0]?.correspondenceAddress,
+        email: ndcObject?.owners?.[0]?.emailId,
+        mobile: ndcObject?.owners?.[0]?.mobileNumber,
+        name: ndcObject?.owners?.[0]?.name,
+        // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
+        applicationNo: ndcObject?.uuid,
       };
       const Documents = removeDuplicatesByUUID(ndcObject?.Documents || []);
       const NdcDetails = removeDuplicatesByUUID(ndcObject?.NdcDetails || [])?.map((item) => ({
@@ -319,6 +315,7 @@ const ApplicationOverview = () => {
   // }))
 
   useEffect(() => {
+    console.log("applicationDetails", applicationDetails);
     if (applicationDetails) {
       setIsDetailsLoading(true);
       const { Applicant: details } = applicationDetails?.Applications?.[0];
@@ -336,20 +333,28 @@ const ApplicationOverview = () => {
     // setShowModal(false);
     // setSelectedAction(null);
     const payloadData = applicationDetails?.Applications[0];
-    const payload = {
-      Applicant: payloadData?.Applicant,
-      NdcDetails: payloadData?.NdcDetails,
-      Documents: payloadData?.Documents,
+
+    const updatedApplicant = {
+      ...payloadData,
+      workflow: {},
     };
+
     const filtData = data?.Licenses?.[0];
-    payload.Applicant.workflow = {
+    updatedApplicant.workflow = {
       action: filtData.action,
       assignes: filtData?.assignee,
       comment: filtData?.comment,
       documents: null,
     };
 
-    const response = await Digit.NDCService.NDCUpdate({ tenantId, filters: { skipWorkFlow: true }, details: payload });
+    const finalPayload = {
+      Applications: [updatedApplicant],
+    };
+
+    console.log("finalPayload", finalPayload);
+    // return;
+
+    const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
 
     setSelectedAction(null);
     setShowModal(false);
@@ -401,11 +406,12 @@ const ApplicationOverview = () => {
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
+          {console.log("displayData?.applicantData", displayData?.applicantData)}
           {displayData?.applicantData &&
             Object.entries(displayData?.applicantData)?.map(([key, value]) => (
               <Row
                 key={key}
-                label={t(`NDC_APPLICANT_${key.toUpperCase()}`)}
+                label={t(`${key?.toUpperCase()}`)}
                 text={
                   Array.isArray(value)
                     ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")

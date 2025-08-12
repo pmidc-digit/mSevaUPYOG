@@ -6,8 +6,6 @@ import { useTranslation } from "react-i18next";
 const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData }) => {
   const { t } = useTranslation();
 
-  console.log("table", table);
-
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
   const GetStatusCell = (value) =>
     value === "CS_NA" ? (
@@ -21,14 +19,14 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const tableColumnConfig = useMemo(() => {
     return [
       {
-        Header: t("NDC_APP_NO_LABEL"),
+        Header: t("NDC_APPLICATION_NO."),
         accessor: "uuid",
         disableSortBy: true,
         Cell: ({ row }) => {
           return (
             <div>
-              <Link to={`${parentRoute}/inbox/application-overview/${row.original?.Applications?.["uuid"]}`}>
-                <span className="link">{row.original?.Applications?.["uuid"]}</span>
+              <Link to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`}>
+                <span className="link">{row.original?.applicationId}</span>
               </Link>
             </div>
           );
@@ -37,37 +35,27 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       {
         Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
         accessor: "createdtime",
-        Cell: ({ row }) =>
-          row.original?.Applicant?.["createdtime"] ? GetCell(format(new Date(row.original?.Applicant?.["createdtime"]), "dd/MM/yyyy")) : "",
-      },
-      {
-        Header: t("ES_INBOX_NAME_LABEL"),
-        accessor: (row) =>
-          row?.Applicant?.firstname
-            ? row?.Applicant?.firstname
-            : "" + " " + row?.original?.Applicant?.lastname
-            ? row?.original?.Applicant?.lastname
-            : "",
-        disableSortBy: true,
-      },
-      {
-        Header: t("NDC_EMAIL_LABEL"),
-        accessor: (row) => (row?.Applicant?.["email"] ? row?.Applicant?.["email"] : "NA"),
-        disableSortBy: true,
+        Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
       },
       {
         Header: t("NOC_STATUS_LABEL"),
-        accessor: (row) => (row?.Applicant?.["applicationStatus"] ? row?.Applicant?.["applicationStatus"] : ""),
-        disableSortBy: true,
+        accessor: "status",
+        Cell: ({ row }) => row.original?.status,
       },
       // {
-      //   Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
-      //   accessor: (row) => row?.owner?.Applicant?.["applicationStatus"],
+      //   Header: t("ES_INBOX_NAME_LABEL"),
+      //   accessor: (row) =>
+      //     row?.Applicant?.firstname
+      //       ? row?.Applicant?.firstname
+      //       : "" + " " + row?.original?.Applicant?.lastname
+      //       ? row?.original?.Applicant?.lastname
+      //       : "",
       //   disableSortBy: true,
       // },
       // {
-      //   Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
-      //   accessor: (row) => GetStatusCell(row?.sla),
+      //   Header: t("NDC_EMAIL_LABEL"),
+      //   accessor: (row) => (row?.Applicant?.["email"] ? row?.Applicant?.["email"] : "NA"),
+      //   disableSortBy: true,
       // },
     ];
   });

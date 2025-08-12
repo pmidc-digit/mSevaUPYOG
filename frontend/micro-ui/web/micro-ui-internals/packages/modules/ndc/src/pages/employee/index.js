@@ -46,7 +46,6 @@ const NDCBreadCrumbs = ({ location }) => {
 const EmployeeApp = ({ path }) => {
   const location = useLocation();
   const { t } = useTranslation();
-  console.log("here in ndc");
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NDCApplicationOverview");
   const Inbox = Digit?.ComponentRegistryService?.getComponent("NDCInbox");
   const NewNDCStepForm = Digit.ComponentRegistryService.getComponent("NewNDCStepFormEmployee");
@@ -66,7 +65,7 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
         <Route path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/create`} component={(props) => <NewNDCStepForm {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/response/:id`} component={Response} /> 
+        <PrivateRoute path={`${path}/response/:id`} component={Response} />
       </Switch>
     </Fragment>
   );

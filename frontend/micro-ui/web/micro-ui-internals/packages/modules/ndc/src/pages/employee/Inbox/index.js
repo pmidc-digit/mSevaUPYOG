@@ -124,7 +124,7 @@ const Inbox = ({ parentRoute }) => {
     filters: { ...formState, getFilter },
   });
 
-  const { isLoading, data: testData, isError, error } = Digit.Hooks.ndc.useSearchApplication({ mobileNumber: "1234567890" }, tenantId);
+  // const { isLoading, data: testData, isError, error } = Digit.Hooks.ndc.useSearchApplication({ mobileNumber: "1234567890" }, tenantId);
 
   // const { isLoading: isInboxLoading, data} = Digit.Hooks.ndc.useSearchEmployeeApplication({status: "CREATE"}, tenantId)
 
@@ -133,15 +133,10 @@ const Inbox = ({ parentRoute }) => {
   const [totalCount, setTotalCount] = useState(0);
 
   useEffect(() => {
-    if (testData) {
-      setTable(testData?.data || []);
-      setTotalCount(testData?.count || 0);
-    }
-  }, [testData, data]);
-
-  useEffect(() => {
     if (data) {
       setStatuses(data?.statuses || []);
+      setTable(data?.table || []);
+      setTotalCount(data?.totalCount || 0);
     }
   }, [data]);
 

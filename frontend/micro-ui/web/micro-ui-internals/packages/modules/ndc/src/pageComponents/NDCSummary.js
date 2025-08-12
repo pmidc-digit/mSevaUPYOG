@@ -18,7 +18,6 @@ const NDCSummary = ({ formData, goNext, ...props }) => {
   console.log("formData", formData);
 
   let docs = formData?.DocummentDetails?.documents?.documents;
-  const uuid = formData?.apiData?.Applicant.uuid;
 
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -37,7 +36,7 @@ const NDCSummary = ({ formData, goNext, ...props }) => {
     const payload = {
       CalculationCriteria: [
         {
-          applicationNumber: formData?.apiData?.Applicant.uuid,
+          applicationNumber: formData?.apiData?.Applications?.[0]?.uuid,
           tenantId: tenantId,
         },
       ],
@@ -53,7 +52,7 @@ const NDCSummary = ({ formData, goNext, ...props }) => {
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
-    id: formData?.apiData?.Applicant.uuid,
+    id: formData?.apiData?.Applications?.[0]?.uuid,
     moduleCode: "NDC",
   });
 

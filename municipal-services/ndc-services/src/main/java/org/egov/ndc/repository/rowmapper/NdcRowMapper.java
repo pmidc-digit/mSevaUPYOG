@@ -32,11 +32,6 @@ public class NdcRowMapper implements ResultSetExtractor<List<Application>> {
 				application = Application.builder()
 						.uuid(applicationId)
 						.tenantId(rs.getString("tenantid"))
-//						.firstname(rs.getString("firstname"))
-//						.lastname(rs.getString("lastname"))
-//						.mobile(rs.getString("mobile"))
-//						.email(rs.getString("email"))
-//						.address(rs.getString("address"))
 						.reason(rs.getString("reason"))
 						.applicationStatus(rs.getString("applicationstatus"))
 						.active(rs.getBoolean("active"))
@@ -46,7 +41,6 @@ public class NdcRowMapper implements ResultSetExtractor<List<Application>> {
 						.createdTime(rs.getLong("a_createdtime"))
 						.lastModifiedTime(rs.getLong("a_lastmodifiedtime")).build())
 						.build();
-//				applications.;
 				applicationHashMap.put(applicationId, application);
 			}
             try {

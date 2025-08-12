@@ -73,20 +73,6 @@ public class NdcQueryBuilder {
 			preparedStmtList.addAll(criteria.getOwnerIds());
 		}
 
-//		if (StringUtils.isNotBlank(criteria.getMobileNumber())) {
-//			addClauseIfRequired(query, whereAdded);
-//			whereAdded = true;
-//			query.append(" a.mobile = ?");
-//			preparedStmtList.add(criteria.getMobileNumber());
-//		}
-
-//		if (StringUtils.isNotBlank(criteria.getName())) {
-//			addClauseIfRequired(query, whereAdded);
-//			whereAdded = true;
-//			query.append(" CONCAT(a.firstname, ' ', a.lastname) ILIKE ?");
-//			preparedStmtList.add("%" + criteria.getName() + "%");
-//		}
-
 		query.append(" ORDER BY a.createdtime DESC ");
 		return query.toString();
 	}

@@ -77,7 +77,6 @@ public class NDCService {
 	private  EnrichmentService enrichmentService;
 
 	public NdcApplicationRequest createNdcApplication(boolean skipWorkFlow, NdcApplicationRequest ndcApplicationRequest) {
-		// Save applicant data
 
 		String userUuidFromRequestInfo = ndcApplicationRequest.getRequestInfo().getUserInfo().getUuid();
 		for (Application application : ndcApplicationRequest.getApplications()) {
@@ -92,7 +91,7 @@ public class NDCService {
 					.lastModifiedTime(System.currentTimeMillis()).build());
 
 			if (application.getActive() == null) application.setActive(true);
-			// Save NDC details
+
 			List<NdcDetailsRequest> ndcDetails = application.getNdcDetails();
 			if (ndcDetails != null) {
 				for (NdcDetailsRequest details : ndcDetails) {
@@ -154,8 +153,6 @@ public class NDCService {
             auditDetails.setLastModifiedTime(System.currentTimeMillis());
 			application.setAuditDetails(auditDetails);
 
-
-            // Update NDC details
             List<NdcDetailsRequest> ndcDetails = application.getNdcDetails();
             if (ndcDetails != null) {
                 Set<String> existingDetailUuids = getExistingUuids("eg_ndc_details", ndcDetails.stream().map(NdcDetailsRequest::getUuid).collect(Collectors.toList()));
@@ -248,13 +245,7 @@ public class NDCService {
 			} else {
 				criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
 			}
-			// If property not found with given propertyId or oldPropertyId or address fields return empty list
-//			if (applications.size() == 0) {
-//				return Collections.emptyList();
-//			}
-//			// Add propertyIds of all properties owned by the user
-//			criteria = enrichmentService.getPropertyCriteriaFromPropertyIds(properties);
-			//Get all properties with ownerInfo enriched from user service
+
 			applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
 			Map<String, OwnerInfo> ownerInfoMap = userDetailResponse.getUser().stream()
 					.collect(Collectors.toMap(OwnerInfo::getUuid, Function.identity()));

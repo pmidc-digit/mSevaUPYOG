@@ -59,4 +59,18 @@ export const citizenConfig = [
       },
     ],
   },
+  {
+    head: "ES_TITILE_DOCUMENT_DETAILS",
+    stepNumber: 5,
+    body: [
+      {
+        route: "documents",
+        component: "CHBSelectProofIdentity",
+        withoutLabel: true,
+        key: "documents",
+        type: "component",
+        nextStep: null,
+      },
+    ],
+  },
 ];

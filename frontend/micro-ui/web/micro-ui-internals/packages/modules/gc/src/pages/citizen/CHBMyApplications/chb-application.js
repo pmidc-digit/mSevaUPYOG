@@ -111,10 +111,10 @@ const ChbApplication = ({ application, tenantId, buttonLabel }) => {
               {t("CS_TIME_REMAINING")}: <span className="astericColor">{formatTime(timeRemaining)}</span>
             </CardSubHeader>)}
         </div> */}
-      <KeyNote keyValue={t("CHB_APPLICANT_NAME")} note={application?.applicantDetail?.applicantName} />
-      <KeyNote keyValue={t("CHB_COMMUNITY_HALL_NAME")} note={t(`${application?.communityHallCode}`)} />
-      <KeyNote keyValue={t("CHB_BOOKING_DATE")} note={getBookingDateRange(application?.bookingSlotDetails)} />
-      <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
+      <KeyNote keyValue={t("CHB_APPLICANT_NAME")} note={application?.firstName + " "+ application?.lastName} />
+      <KeyNote keyValue={t("CHB_APPLICANT_EMAILID")} note={application?.emailId} />
+      <KeyNote keyValue={t("CHB_APPLICANT_MOBILENUMER")} note={application?.mobileNumber} />
+      <KeyNote keyValue={t("CHB_APPLICANT_ADDRESS")} note={application?.address} />
       <div>
         <Link to={`/digit-ui/citizen/chb/application/${application?.bookingNo}/${application?.tenantId}`}>
           <SubmitBar label={buttonLabel} />

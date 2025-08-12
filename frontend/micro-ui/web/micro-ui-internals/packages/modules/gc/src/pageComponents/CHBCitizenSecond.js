@@ -25,10 +25,10 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
-          <CardLabel>Community Hall ID</CardLabel>
+          <CardLabel>{t("PROPERTY_ID")}</CardLabel>
           <Controller
             control={control}
-            name="hallId"
+            name="propertyId"
             render={(props) => (
               <TextInput
                 value={props.value}
@@ -42,19 +42,19 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             )}
           />
 
-          <CardLabel>Community Hall Name</CardLabel>
+          <CardLabel>{t("PROPERTY_TYPE")}</CardLabel>
           <Controller
             control={control}
-            name={"hallName"}
+            name={"propertyType"}
             render={(props) => (
               <Dropdown className="form-field" select={props.onChange} selected={props.value} option={Breed_Type} optionKey="i18nKey" />
             )}
           />
 
-          <CardLabel>Size</CardLabel>
+          <CardLabel>{t("Property_Size")}</CardLabel>
           <Controller
             control={control}
-            name="size"
+            name="propertySize"
             render={(props) => (
               <TextInput
                 value={props.value}
@@ -68,7 +68,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             )}
           />
 
-          <CardLabel>{`${t("PT_COMMON_COL_ADDRESS")}`}</CardLabel>
+          {/* <CardLabel>{`${t("PT_COMMON_COL_ADDRESS")}`}</CardLabel>
           <Controller
             control={control}
             name="address"
@@ -83,18 +83,53 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 }}
               />
             )}
+          /> */}
+
+          <CardLabel>{`${t("Geo_Location")}`}</CardLabel>
+          <Controller
+            control={control}
+            name="geoLocation"
+            render={(props) => (
+              <TextArea
+                value={props.value}
+                onChange={(e) => {
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  props.onBlur(e);
+                }}
+              />
+            )}
           />
 
-          <CardLabel>Geo Location</CardLabel>
+          {/* <CardLabel>Geo Location</CardLabel>
           <Controller
             control={control}
             name={"geoLocation"}
             render={(props) => (
               <Dropdown className="form-field" select={props.onChange} selected={props.value} option={Breed_Type} optionKey="i18nKey" />
             )}
+          /> */}
+
+          <CardLabel>{t("Frequency_Garbage_Collection")}</CardLabel>
+          <Controller
+            control={control}
+            name={"frequencyOfCollection"}
+            render={(props) => (
+              <Dropdown className="form-field" select={props.onChange} selected={props.value} option={Breed_Type} optionKey="i18nKey" />
+            )}
           />
 
-          <CardLabel>Start Date</CardLabel>
+          <CardLabel>{t("Types_Of_Waste")}</CardLabel>
+          <Controller
+            control={control}
+            name={"typeOfWaste"}
+            render={(props) => (
+              <Dropdown className="form-field" select={props.onChange} selected={props.value} option={Breed_Type} optionKey="i18nKey" />
+            )}
+          />
+
+          {/* <CardLabel>Start Date</CardLabel>
           <Controller
             control={control}
             name="startDate"
@@ -174,7 +209,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 </div>
               )}
             />
-          </div>
+          </div> */}
         </div>
         <ActionBar>
           <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />

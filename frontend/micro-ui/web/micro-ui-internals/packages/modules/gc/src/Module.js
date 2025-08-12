@@ -36,9 +36,10 @@ import CHBCitizenDetailsNew from "./pageComponents/CHBCitizenDetailsNew";
 import CHBCitizenSecond from "./pageComponents/CHBCitizenSecond";
 import CHBSelectProofIdentity from "./pageComponents/CHBSelectProofIdentity";
 import CHBSummary from "./pageComponents/CHBSummary";
+import NewGCStepFormFive from "./pageComponents/CHBStepper/GCStepFormFive";
 import getRootReducer from "./redux/reducer";
 
-export const CHBReducers = getRootReducer;
+export const GCReducers = getRootReducer;
 
 const componentsToRegister = {
   CHBCheckPage,
@@ -70,6 +71,7 @@ const componentsToRegister = {
   CHBCitizenSecond,
   CHBSelectProofIdentity,
   CHBSummary,
+  NewGCStepFormFive
 };
 
 const addComponentsToRegistry = () => {

@@ -13,52 +13,65 @@ import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 //Config for steps
 const createEmployeeConfig = [
   {
-    head: "OWNER DETAILS",
-    stepLabel: "ES_TITILE_OWNER_DETAILS",
+    head: "Citizen DETAILS",
+    stepLabel: "GC_TITILE_CITIZEN_DETAILS",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
     component: "CHBStepFormOne",
-    key: "ownerDetails",
+    key: "citizenDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
     },
   },
   {
-    head: "Venue Details",
-    stepLabel: "CHB_Venue_Details",
+    head: "Property Details",
+    stepLabel: "GC_Property_Details",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
     component: "CHBStepFormTwo",
-    key: "venueDetails",
+    key: "propertyDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
     },
   },
   {
-    head: "DOCUMENT DETAILS",
-    stepLabel: "ES_TITILE_DOCUMENT_DETAILS",
+    head: "FEE/BILLING DETAILS",
+    stepLabel: "GC_TITILE_FEE_DETAILS",
     stepNumber: 3,
     isStepEnabled: true,
     type: "component",
     component: "CHBStepFormThree",
-    key: "documents",
+    key: "feeDetails",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
     },
   },
   {
-    head: "SUMMARY DETAILS",
-    stepLabel: "ES_TITILE_SUMMARY_DETAILS",
+    head: "NOTIFICATION AND ALERTS",
+    stepLabel: "ES_TITILE_ALLERT_DETAILS",
     stepNumber: 4,
     isStepEnabled: true,
     type: "component",
     component: "CHBStepFormFour",
-    key: "summary",
+    key: "notificationDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "CS_COMMON_NEXT",
+    },
+  },
+  {
+    head: "DOCUMENTS DETAILS",
+    stepLabel: "GC_TITILE_DOCUMENT_DETAILS",
+    stepNumber: 5,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewGCStepFormFive",
+    key: "documents",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_SUBMIT",
@@ -79,11 +92,12 @@ const NewADSStepperForm = () => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
-  const formState = useSelector((state) => state.chb.CHBApplicationFormReducer);
+  const formState = useSelector((state) => state.gc.gcApplicationFormReducer);
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
-
+  const formAllStates = useSelector((state) => state);
+  console.log("formAllStates: ", formAllStates);
   // console.log("formStatePTR: ", formState);
 
   const setStep = (updatedStepNumber) => {
@@ -112,7 +126,7 @@ const NewADSStepperForm = () => {
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
-        {t("CHB_REGISTRATION_APPLICATION")}
+        {t("GC_REGISTRATION_APPLICATION")}
       </CardHeader>
       <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (

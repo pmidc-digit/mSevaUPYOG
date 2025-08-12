@@ -3,7 +3,7 @@ import CHBApplicationFormReducer from "./CHBApplicationFormReducer";
 
 const getRootReducer = () =>
   combineReducers({
-    CHBApplicationFormReducer,
+    gcApplicationFormReducer: CHBApplicationFormReducer,
   });
 
 export default getRootReducer;

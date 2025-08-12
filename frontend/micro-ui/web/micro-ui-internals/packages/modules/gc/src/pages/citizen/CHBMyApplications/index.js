@@ -56,7 +56,29 @@ export const CHBMyApplications = () => {
     { i18nKey: "Cancelled", code: "CANCELLED", value: t("CANCELLED") }
   ];
 
-  const filteredApplications = data?.hallsBookingApplication || [];
+  // const filteredApplications = data?.hallsBookingApplication || [];
+
+  const filteredApplications = [{
+    bookingNo: "12345",
+    firstName: "Nayan",
+    lastName: "Dhawan",
+    emailId: "abc@abc.com", 
+    mobileNumber: "9876543210",
+    address : "123 Street, City",
+    propertyId: "12345",
+    propertyType: "Residential",
+    propertySize: "1000",
+    geoLocation: "12.9716,77.5946",
+    frequencyOfCollection: "Monthly",
+    typeOfWaste: "General",
+    ammountDue: "0",
+    paymentStatus: "Paid",
+    bilingCycle: "Monthly",
+    paymentMethod: "Online",
+    paymentReminders: true,
+    overdueNotices: true,
+    tenantId: "pb.testing"
+  }]
 
   return (
     <React.Fragment>
@@ -117,7 +139,7 @@ export const CHBMyApplications = () => {
           ))}
         {filteredApplications.length === 0 && !isLoading && (
           <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-            {t("CHB_NO_APPLICATION_FOUND_MSG")}
+            {t("GC_NO_APPLICATION_FOUND_MSG")}
           </p>
         )}
 
@@ -125,7 +147,7 @@ export const CHBMyApplications = () => {
           <div>
             <p style={{ marginLeft: "16px", marginTop: "16px" }}>
               <span className="link">
-                <Link to={`/digit-ui/citizen/chb/myBookings/${t1}`}>
+                <Link to={`/digit-ui/citizen/gc/myBookings/${t1}`}>
                   {t("CHB_LOAD_MORE_MSG")}
                 </Link>
               </span>

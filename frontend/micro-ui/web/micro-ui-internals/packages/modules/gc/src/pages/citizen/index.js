@@ -22,8 +22,8 @@ const App = () => {
       <Switch>
         <AppContainer>
           {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}
-          <PrivateRoute path={`${path}/bookHall`} component={CHBCreate} />
-          <PrivateRoute path={`${path}/myBookings`} component={CHBMyApplications}></PrivateRoute>
+          <PrivateRoute path={`${path}/new-application`} component={CHBCreate} />
+          <PrivateRoute path={`${path}/my-applications`} component={CHBMyApplications}></PrivateRoute>
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={CHBApplicationDetails}></PrivateRoute>
           {/* <PrivateRoute path={`${path}/petservice/my-payments`} component={PTMyPayments}></PrivateRoute> */}
           <PrivateRoute path={`${path}/bookHall/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />

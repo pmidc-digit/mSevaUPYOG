@@ -50,7 +50,7 @@ const EmployeeApp = ({ path, url, userType }) => {
 
   // const EditApplication = Digit?.ComponentRegistryService?.getComponent("PTEditApplication");
   const Response = Digit?.ComponentRegistryService?.getComponent("CHBResponse");
-  const CHBCreate = Digit?.ComponentRegistryService?.getComponent("CHBCreate");
+  const CHBCreate = Digit?.ComponentRegistryService?.getComponent("CHBStepperForm");
   const isRes = window.location.href.includes("chb/response");
   const isNewRegistration =
     window.location.href.includes("searchhall") ||

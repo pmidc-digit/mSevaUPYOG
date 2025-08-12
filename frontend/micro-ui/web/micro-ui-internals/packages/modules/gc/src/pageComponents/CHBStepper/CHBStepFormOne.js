@@ -14,7 +14,7 @@ const NewADSStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
-    return state.chb.CHBApplicationFormReducer.formData;
+    return state.gc.gcApplicationFormReducer.formData;
   });
 
   function goNext(data) {

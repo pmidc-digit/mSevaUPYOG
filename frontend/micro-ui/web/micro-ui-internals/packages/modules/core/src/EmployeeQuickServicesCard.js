@@ -105,6 +105,10 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <FSMIcon className="fill-path-primary-main" />;
       case "MCollect":
         return <MCollectIcon />;
+      case "ChallanGeneration":
+        return <MCollectIcon />;
+      case "RentAndLease":
+        return <MCollectIcon />;
       case "PGR":
         return <PGRIcon />;
       case "NDC":

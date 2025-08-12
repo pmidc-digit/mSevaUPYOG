@@ -29,6 +29,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode || "");
   const [ulbType, setUlbType] = useState("");
   const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
+  const [errorMessage, setErrorMessage] = useState("");
 
   console.log("formData", formData);
   // console.log("data: newConfig", newConfig);
@@ -92,6 +93,16 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   }
 
   const goNext = () => {
+    // if(PermanentAddress === "" || PermanentAddress.length<4){
+    //   setErrorMessage("Enter valid address &  it should be greater than 3 characters");
+    //   return;
+    // }
+
+    if (pinCode === "" || pinCode.length < 6) {
+      setErrorMessage(t("BPA_PINCODE_ERROR_MESSAGE"));
+      return;
+    }
+
     // sessionStorage.setItem("CurrentFinancialYear", FY);
     if (!(formData?.result && formData?.result?.Licenses[0]?.id))
       onSelect(config.key, { PermanentAddress: PermanentAddress, Pincode: pinCode, Ulb: selectedUlbTypes });
@@ -114,7 +125,13 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
         <Timeline currentStep={2} flow="STAKEHOLDER" />
-        <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!PermanentAddress}>
+        <FormStep
+          config={config}
+          onSelect={goNext}
+          onSkip={onSkip}
+          t={t}
+          isDisabled={!PermanentAddress || selectedUlbTypes.length === 0 || pinCode === ""}
+        >
           <CardLabel>{`${t("BPA_PERMANANT_ADDRESS_LABEL")}*`}</CardLabel>
           <TextArea
             t={t}
@@ -126,26 +143,40 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             value={PermanentAddress}
           />
 
-          <CardLabel>{"Pincode*"}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="Pcode"
-            minLength="6"
-            value={pinCode}
-            onChange={SelectPincode}
-            // disable={name && !isOpenLinkFlow ? true : false}
-            {...(validation = {
-              isRequired: true,
-              pattern: "^[0-9]{6}$",
-              type: "number",
-              title: t("Please enter a valid 6-digit pincode."),
-            })}
-          />
+          <div>
+            <CardLabel>{t("BPA_DETAILS_PIN_LABEL")}*</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="Pcode"
+              minLength="6"
+              value={pinCode}
+              onChange={SelectPincode}
+              // disable={name && !isOpenLinkFlow ? true : false}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[0-9]{6}$",
+                type: "number",
+                title: t("BPA_PINCODE_ERROR_MESSAGE"),
+              })}
+            />
+            {errorMessage && (
+              <div
+                style={{
+                  color: "#d32f2f",
+                  fontSize: "12px",
+                  marginTop: "4px",
+                  marginBottom: "12px",
+                }}
+              >
+                {errorMessage}
+              </div>
+            )}
+          </div>
 
-          <CardLabel>{"ULB*"}</CardLabel>
+          <CardLabel>{"BPA_SELECT_ULB"}*</CardLabel>
           <MultiSelectDropdown
             options={tenantName.map((ulb) => ({ ulbname: ulb }))}
             optionsKey="ulbname"

@@ -1,5 +1,5 @@
-import { UploadFile } from "@mseva/digit-ui-react-components";
-import React from "react";
+import { UploadFile } from "@mseva/digit-ui-react-components"
+import React from 'react';
 
 export const configAcceptApplication = ({ t, action, selectFile, uploadedFile, error, isCommentRequired = true, setUploadedFile, file }) => {
   return {
@@ -19,7 +19,7 @@ export const configAcceptApplication = ({ t, action, selectFile, uploadedFile, e
               name: "comments",
               validation: {
                 required: isCommentRequired,
-              },
+              }
             },
           },
           {
@@ -32,7 +32,7 @@ export const configAcceptApplication = ({ t, action, selectFile, uploadedFile, e
                   setUploadedFile(null);
                 }}
                 message={uploadedFile ? `1 ${t(`ES_PT_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-                accept="image/*, .pdf, .png, .jpeg, .jpg"
+                accept= "image/*, .pdf, .png, .jpeg, .jpg"
                 iserror={error}
               />
             ),
@@ -41,4 +41,4 @@ export const configAcceptApplication = ({ t, action, selectFile, uploadedFile, e
       },
     ],
   };
-};
+}

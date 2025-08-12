@@ -18,6 +18,8 @@ import {
   useBulkPdfDetails,
 } from "./payment";
 import { useMCollectRecieptSearch } from "./mcollect/mCollect";
+import { useChallanGenerationRecieptSearch } from "./challanGeneration/challanGeneration";
+import { useRentAndLeaseRecieptSearch } from "./rentAndLease/rentAndLease";
 
 import { useUserSearch } from "./userSearch";
 import { useApplicationsForBusinessServiceSearch } from "./useApplicationForBillSearch";
@@ -142,6 +144,26 @@ import useMCollectCategory from "./mcollect/useMcollectCategory";
 import useMCollectCategoryTypes from "./mcollect/useMcollectCategoryTypes";
 import useMCollectTaxHeads from "./mcollect/useMcollectTaxHeads";
 import useMcollectFormConfig from "./mcollect/useMcollectFormConfig";
+
+import useChallanGenerationMDMS from "./challanGeneration/useChallanGenerationMDMS";
+import useChallanGenerationSearch from "./challanGeneration/useChallanGenerationSearch";
+import useChallanGenerationSearchBill from "./challanGeneration/useChallanGenerationSearchBill";
+import useChallanGenerationTenants from "./challanGeneration/useTenants";
+import useChallanGenerationCount from "./challanGeneration/useChallanGenerationCount";
+import useChallanGenerationCategory from "./challanGeneration/useChallanGenerationCategory";
+import useChallanGenerationCategoryTypes from "./challanGeneration/useChallanGenerationCategoryTypes";
+import useChallanGenerationTaxHeads from "./challanGeneration/useChallanGenerationTaxHeads";
+import useChallanGenerationFormConfig from "./challanGeneration/useChallanGenerationFormConfig";
+
+import useRentAndLeaseMDMS from "./rentAndLease/useRentAndLeaseMDMS";
+import useRentAndLeaseSearch from "./rentAndLease/useRentAndLeaseSearch";
+import useRentAndLeaseSearchBill from "./rentAndLease/useRentAndLeaseSearchBill";
+import useRentAndLeaseTenants from "./rentAndLease/useTenants";
+import useRentAndLeaseCount from "./rentAndLease/useRentAndLeaseCount";
+import useRentAndLeaseCategory from "./rentAndLease/useRentAndLeaseCategory";
+import useRentAndLeaseCategoryTypes from "./rentAndLease/useRentAndLeaseCategoryTypes";
+import useRentAndLeaseTaxHeads from "./rentAndLease/useRentAndLeaseTaxHeads";
+import useRentAndLeaseFormConfig from "./rentAndLease/useRentAndLeaseFormConfig";
 
 import useTenantsTL from "./tl/useTenants";
 import useTradeLicenseMDMS from "./tl/useTradeLicenseMDMS";
@@ -347,6 +369,11 @@ import useSearchPGRAI from "./pgrAi/useSearchPGRAI";
 import useFilterEmployee from "./pgrAi/useFilterEmployee";
 import useApplicationDetails from "./pgrAi/useApplicationDetails";
 
+import useDistricts from "./obps/useDistricts";
+import useULBList from "./obps/useULBList";
+import useUlbType from "./obps/useUlbType";
+import useEDCRForm from "./obps/useEDCRForm";
+
 const pgr = {
   useComplaintDetails,
   useComplaintsList,
@@ -551,6 +578,10 @@ const obps = {
   useBusinessServiceData,
   useBPATaxDocuments,
   useQualificationTypes,
+  useDistricts,
+  useULBList,
+  useUlbType,
+  useEDCRForm,
 };
 
 const events = {
@@ -649,7 +680,32 @@ const ndc = {
   useInbox: useNDCInbox,
   useSearchApplication: useNDCSearchApplication,
   useSearchEmployeeApplication: useNDCSearchApplicationEmployee,
-  useNDCDocumentSearch
+  useNDCDocumentSearch,
+};
+
+const challangeneration = {
+  useChallanGenerationRecieptSearch,
+  useChallanGenerationMDMS,
+  useChallanGenerationSearch,
+  useChallanGenerationSearchBill,
+  useChallanGenerationTenants,
+  useChallanGenerationCount,
+  useChallanGenerationCategory,
+  useChallanGenerationCategoryTypes,
+  useChallanGenerationTaxHeads,
+  useChallanGenerationFormConfig,
+};
+const rentandlease = {
+  useRentAndLeaseRecieptSearch,
+  useRentAndLeaseMDMS,
+  useRentAndLeaseSearch,
+  useRentAndLeaseSearchBill,
+  useRentAndLeaseTenants,
+  useRentAndLeaseCount,
+  useRentAndLeaseCategory,
+  useRentAndLeaseCategoryTypes,
+  useRentAndLeaseTaxHeads,
+  useRentAndLeaseFormConfig,
 };
 
 const ws = {
@@ -775,6 +831,9 @@ const Hooks = {
   chb,
   asset,
   pgrAi,
+  useEDCRForm,
+  challangeneration,
+  rentandlease,
 };
 
 export default Hooks;

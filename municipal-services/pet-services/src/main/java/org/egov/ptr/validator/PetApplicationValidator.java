@@ -62,7 +62,7 @@ public class PetApplicationValidator {
 		PetRegistrationApplication petRegistrationApplication1 = repository.getApplications(PetApplicationSearchCriteria.builder()
 				.applicationNumber(petRegistrationApplication.getApplicationNumber()).build()).get(0);
 		if (petRegistrationApplication1 == null)
-			throw new CustomException("EG_BT_APP_ERR", "No pet registration application found for the given application number");
+			throw new CustomException("EG_PTR_ERR", "No pet registration application found for the given application number");
 
 		return petRegistrationApplication1;
 	}

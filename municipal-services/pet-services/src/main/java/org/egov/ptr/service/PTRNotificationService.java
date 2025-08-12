@@ -99,8 +99,14 @@ public class PTRNotificationService {
 			if (user instanceof Optional) {
 				Optional<Object> optionalUser = (Optional<Object>) user;
 				if (optionalUser.isPresent()) {
-					String uuid = JsonPath.read(optionalUser.get(), "$.user[0].uuid");
-					mapOfPhoneNoAndUUIDs.put(mobileNumber, uuid);
+					List<String> uuids = JsonPath.read(optionalUser.get(), "$.user[*].uuid");
+					if (!uuids.isEmpty()) {
+						mapOfPhoneNoAndUUIDs.put(mobileNumber, uuids.get(0));
+					} else {
+						log.warn("No user found for mobile number: " + mobileNumber);
+					}
+				} else {
+					log.error("Service returned empty Optional while fetching user for username - " + mobileNumber);
 				}
 			} else {
 				log.error("Service returned null while fetching user for username - " + mobileNumber);

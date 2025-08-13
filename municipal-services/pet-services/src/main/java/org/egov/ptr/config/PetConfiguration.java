@@ -131,22 +131,22 @@ public class PetConfiguration {
 	@Value("${egov.user.event.notification.enabled}")
 	private Boolean isUserEventsNotificationEnabled;
 
-	@Value("${workflow.host}")
+	@Value("${egov.workflow.host}")
 	private String wfHost;
 
-	@Value("${workflow.transition.path}")
+	@Value("${egov.workflow.transition.path}")
 	private String wfTransitionPath;
 
-	@Value("${workflow.businessservice.search.path}")
+	@Value("${egov.workflow.businessservice.search.path}")
 	private String wfBusinessServiceSearchPath;
 
-	@Value("${workflow.processinstance.search.path}")
+	@Value("${egov.workflow.processinstance.search.path}")
 	private String wfProcessInstanceSearchPath;
 
 	@Value("${is.workflow.enabled}")
 	private Boolean isWorkflowEnabled;
 
-	@Value("${workflow.status.active}")
+	@Value("${egov.workflow.status.active}")
 	private String wfStatusActive;
 
 	// ##### mdms
@@ -155,13 +155,6 @@ public class PetConfiguration {
 
 	@Value("${egov.mdms.search.endpoint}")
 	private String mdmsEndpoint;
-
-	// Billing-Service
-	@Value("${egbs.host}")
-	private String egbsHost;
-
-	@Value("${egbs.fetchbill.endpoint}")
-	private String egbsFetchBill;
 
 	@Value("${egov.localization.statelevel}")
 	private Boolean isLocalizationStateLevel;

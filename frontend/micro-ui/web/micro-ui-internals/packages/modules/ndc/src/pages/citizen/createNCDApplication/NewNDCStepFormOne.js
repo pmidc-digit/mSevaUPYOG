@@ -11,6 +11,9 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   const currentStepData = useSelector((state) =>
     state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {}
   );
+
+  const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
+
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   function goNext(data) {
@@ -23,8 +26,10 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    createApplication(data);
-    console.log("data", data);
+    if (checkFormData?.apiData?.Applications?.[0]?.uuid) {
+      console.log("call update if data changes");
+      onGoNext();
+    } else createApplication(data);
 
     // onGoNext();
   }
@@ -47,27 +52,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     // Prepare NdcDetails
     const ndcDetails = [];
-
-    // const payload = {
-    //   Applicant: {
-    //     tenantId: tenantId,
-    //     firstname: data?.PropertyDetails?.firstName,
-    //     lastname: data?.PropertyDetails?.lastName,
-    //     mobile: data?.PropertyDetails?.mobileNumber,
-    //     email: data?.PropertyDetails?.email,
-    //     address: data?.PropertyDetails?.address,
-    //     applicationStatus: "CREATE",
-    //     createdby: auditDetails?.createdBy,
-    //     lastmodifiedby: auditDetails?.lastModifiedBy,
-    //     createdtime: auditDetails?.createdTime,
-    //     lastmodifiedtime: auditDetails?.lastModifiedTime,
-    //     workflow: {
-    //       action: "INITIATE",
-    //     },
-    //   },
-    //   NdcDetails: [],
-    //   Documents: [], // Add documents mapping if needed
-    // };
 
     // Add each water connection to NdcDetails
     (data?.PropertyDetails?.waterConnection || []).forEach((wc) => {
@@ -128,7 +112,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
           NdcDetails: ndcDetails,
           Documents: [],
           active: true,
-          reason: "New application submission",
+          reason: data?.NDCReason?.code,
           workflow: {
             action: "INITIATE",
           },
@@ -136,10 +120,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       ],
     };
 
-    console.log("payload", payload);
-
     const response = await Digit.NDCService.NDCcreate({ tenantId, details: payload });
-    console.log("response====", response);
 
     if (response?.ResponseInfo?.status === "successful") {
       dispatch(updateNDCForm("apiData", response));
@@ -149,18 +130,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       return { isSuccess: false, response };
     }
   };
-
-  // const onSubmit = async (data) => {
-  //   const finalPayload = mapToNDCPayload(data);
-
-  //   const response = await Digit.NDCService.NDCcreate({ tenantId, filters: { skipWorkFlow: true }, details: finalPayload });
-
-  //   if (response?.ResponseInfo?.status === "successful") {
-  //     return { isSuccess: true, response };
-  //   } else {
-  //     return { isSuccess: false, response };
-  //   }
-  // };
 
   function validateStepData(data) {
     const missingFields = [];

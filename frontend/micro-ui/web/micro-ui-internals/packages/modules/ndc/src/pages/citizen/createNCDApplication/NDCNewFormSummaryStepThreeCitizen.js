@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useHistory, useLocation } from "react-router-dom";
 import { FormComposer } from "@mseva/digit-ui-react-components";
 import NDCSummary from "../../../pageComponents/NDCSummary";
+import { resetNDCForm } from "../../../redux/actions/NDCFormActions";
 
 const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -34,28 +35,40 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   function mapToNDCPayload(inputData, actionStatus) {
     const applicant = Digit.UserService.getUser()?.info || {};
 
+    const owners = [
+      {
+        name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
+        mobileNumber: formData?.NDCDetails?.PropertyDetails?.mobileNumber,
+        gender: formData?.NDCDetails?.PropertyDetails?.gender,
+        emailId: formData?.NDCDetails?.PropertyDetails?.email,
+        type: "CITIZEN",
+      },
+    ];
+
     // Clone and modify workflow action
-    const updatedApplicant = {
-      ...formData.apiData.Applicant,
+    const updatedApplication = {
+      ...formData?.apiData?.Applications?.[0],
       workflow: {
-        ...formData.apiData.Applicant.workflow,
+        ...formData?.apiData?.Applications?.[0]?.workflow,
         action: actionStatus,
       },
-    };
-
-    const payload = {
-      Applicant: updatedApplicant,
-      NdcDetails: formData.apiData.NdcDetails,
-      Documents: [], // Add documents mapping if needed
+      owners: owners,
+      NdcDetails: formData?.apiData?.Applications?.[0]?.NdcDetails,
+      Documents: [], // We'll populate below
     };
 
     (inputData?.DocummentDetails?.documents?.documents || []).forEach((doc) => {
-      payload.Documents.push({
+      updatedApplication.Documents.push({
         uuid: doc?.documentUid,
         documentType: doc?.documentType,
         documentAttachment: doc?.fileStoreId,
       });
     });
+
+    // Final payload matches update API structure
+    const payload = {
+      Applications: [updatedApplication],
+    };
 
     return payload;
   }
@@ -64,10 +77,8 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
     console.log("coming here btw", actionStatus);
     const finalPayload = mapToNDCPayload(data, actionStatus);
 
-    // const response = await Digit.NDCService.NDCcreate({ tenantId, filters: { skipWorkFlow: true }, details: finalPayload });
-
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
-
+    dispatch(resetNDCForm());
     if (response?.ResponseInfo?.status === "successful") {
       return { isSuccess: true, response };
     } else {
@@ -83,15 +94,6 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   return (
     <React.Fragment>
       <NDCSummary formData={formData} goNext={goNext} />
-      {/* <FormComposer
-        defaultValues={formData} // Pass the entire formData as default values
-        config={config.currStepConfig} // Configuration for the current step
-        onSubmit={goNext} // Handle form submission
-        // onFormValueChange={onFormValueChange} // Handle form value changes
-        label={t(`${config.texts.submitBarLabel}`)} // Submit button label
-        currentStep={config.currStepNumber} // Current step number
-        onBackClick={onGoBack} // Handle back button click
-      /> */}
     </React.Fragment>
   );
 };

@@ -8,7 +8,7 @@ import NOCCard from "./pages/employee/EmployeeCard";
 import Inbox from "./pages/employee/Inbox";
 import NOCSearchApplication from "./pages/employee/SearchApplication/Search";
 import PropertyDetailsForm from "./pages/employee/createNDCApplication/propertyDetailsForm";
-import PropertyDetailsStep1 from "./pages/employee/createNDCApplication/PropertyDetailsStep1";
+import PropertyDetailsStep1 from "./pages/employee/createNDCApplication/propertyDetailsStep1";
 import PropertyDetailsStep2 from "./pages/employee/createNDCApplication/propertyDetailsStep2";
 import PropertyDetailsFormUser from "./pages/employee/createNDCApplication/propertyDetailsFormUser";
 import {NewNDCStepForm as NewNDCStepFormCitizen} from "./pages/citizen/createNCDApplication/NewNDCStepForm";

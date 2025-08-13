@@ -90,13 +90,11 @@ public class Applicant {
 	@JsonProperty("active")
 	private Boolean active = null;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dob")
-	private LocalDate dob = null;
+	private Long dob = null;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("pwdExpiryDate")
-	private LocalDate pwdExpiryDate = null;
+	private Long pwdExpiryDate = null;
 
 	@JsonProperty("locale")
 	private String locale = null;
@@ -129,16 +127,14 @@ public class Applicant {
 	@JsonProperty("createdBy")
 	private Long createdBy = null;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("createdDate")
-	private LocalDate createdDate = null;
+	private Long createdDate = null;
 
 	@JsonProperty("lastModifiedBy")
 	private Long lastModifiedBy = null;
 
-	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("lastModifiedDate")
-	private LocalDate lastModifiedDate = null;
+	private Long lastModifiedDate = null;
 
 	@JsonProperty("otpReference")
 	private String otpReference = null;

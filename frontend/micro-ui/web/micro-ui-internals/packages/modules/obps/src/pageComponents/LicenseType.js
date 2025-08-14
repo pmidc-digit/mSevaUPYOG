@@ -11,13 +11,23 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     sessionStorage.setItem("BPAREGintermediateValue", null);
   } else formData = formData;
 
+  //data presist for this form
+
+  const permitData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")) || {};
+  const storedLicneseType = permitData?.value?.LicneseType || {};
+
   let index = window.location.href?.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [qualificationType, setQualificationType] = useState(formData?.LicneseType?.qualificationType || null);
-  const [LicenseType, setLicenseType] = useState(formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || null);
-  const [ArchitectNo, setArchitectNo] = useState(formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null);
-
+  const [qualificationType, setQualificationType] = useState(
+    formData?.LicneseType?.qualificationType || storedLicneseType?.qualificationType || null
+  );
+  const [LicenseType, setLicenseType] = useState(
+    formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || storedLicneseType?.LicenseType || null
+  );
+  const [ArchitectNo, setArchitectNo] = useState(
+    formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || storedLicneseType?.ArchitectNo || null
+  );
   const { data: qualificationTypes, isLoading: isQualificationLoading, error: qualificationError } = Digit.Hooks.obps.useQualificationTypes(stateId);
   //console.log("qualificationTypes here", qualificationTypes);
   // let qualificationTypes = [],
@@ -62,6 +72,25 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       console.log("selectedQualificationType", selectedQualificationType, formData?.LicneseType?.qualificationType, qualificationTypes);
     }
   }, []);
+
+  useEffect(() => {
+    const currentPermit = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")) || {};
+    sessionStorage.setItem(
+      "Digit.BUILDING_PERMIT",
+      JSON.stringify({
+        ...currentPermit,
+        value: {
+          ...currentPermit.value,
+          LicneseType: {
+            LicenseType,
+            ArchitectNo,
+            selfCertification,
+            qualificationType,
+          },
+        },
+      })
+    );
+  }, [LicenseType, ArchitectNo, selfCertification, qualificationType]);
 
   function getLicenseType() {
     // let list = [];
@@ -191,9 +220,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     setArchitectNo(input);
     // const pattern = /^(AITP|FITP)\/(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\/\d{4}$/;
     if (!isValidAITPorFITP(input) && input !== "") {
-      setErrorMessage(
-        t("BPA_INVALID_MESSAGE_FOR_AITP_OR_FITP")
-      );
+      setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_AITP_OR_FITP"));
     } else {
       setErrorMessage("");
     }
@@ -208,9 +235,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     }
 
     if (LicenseType?.i18nKey.includes("TOWNPLANNER") && ArchitectNo === null) {
-      setErrorMessage(
-        t("BPA_INVALID_MESSAGE_FOR_AITP_OR_FITP")
-      );
+      setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_AITP_OR_FITP"));
       return;
     }
 
@@ -314,7 +339,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                       marginBottom: "12px",
                     }}
                   >
-                     {errorMessage}
+                    {errorMessage}
                   </div>
                 )}
               </div>
@@ -397,7 +422,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                 letterSpacing: "1px",
               }}
             >
-             {t("BPA_COMPETENCIES")}
+              {t("BPA_COMPETENCIES")}
             </h1>
             <ul
               style={{

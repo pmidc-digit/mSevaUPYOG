@@ -137,9 +137,13 @@ const CheckPage = ({ onSubmit, value }) => {
                 {t(formData?.LicneseDetails?.PermanentAddress)}
               </CardText>
               {formData?.LicneseType?.LicenseType?.i18nKey.includes("ARCHITECT") ? (
-                <Row className="border-none" label={t(`BPA_SELECTED_ULB`)} text={t("BPA_ULB_SELECTED_MESSAGE ")}/>
+                <Row className="border-none" label={t(`BPA_SELECTED_ULB`)} text={t("BPA_ULB_SELECTED_MESSAGE ")} />
               ) : (
-                <Row className="border-none" label={t(`BPA_SELECTED_ULB`)} text={formData?.LicneseDetails?.Ulb?.map((obj) => obj.ulbname).join(", ")} />
+                <Row
+                  className="border-none"
+                  label={t(`BPA_SELECTED_ULB`)}
+                  text={formData?.LicneseDetails?.Ulb?.map((obj) => obj.ulbname).join(", ")}
+                />
               )}
             </StatusTable>
           </Card>
@@ -180,6 +184,7 @@ const CheckPage = ({ onSubmit, value }) => {
               ))}
             </StatusTable>
           </Card>
+          <h2>Hello</h2>
           <Card style={{ paddingRight: "16px" }}>
             <CardHeader styles={{ fontSize: "24px" }}>{t("BPA_SUMMARY_FEE_EST")}</CardHeader>
             <StatusTable>

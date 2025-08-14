@@ -139,15 +139,14 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
     }
   };
   function selectCommencementDate(value) {
-    const appDate= new Date();
-    const proposedDate= format(subYears(appDate, 18), 'yyyy-MM-dd').toString();
+    const appDate = new Date();
+    const proposedDate = format(subYears(appDate, 18), "yyyy-MM-dd").toString();
 
-    if( convertDateToEpoch(proposedDate)  <= convertDateToEpoch(value)){
-      return true     
+    if (convertDateToEpoch(proposedDate) <= convertDateToEpoch(value)) {
+      return true;
+    } else {
+      return false;
     }
-    else {
-      return false;     
-    }    
   }
   const selectName = async (name) => {
     const data = {
@@ -156,15 +155,13 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
       userType: getUserType(),
       ...name,
     };
-    console.log("name",name)
-    if (selectCommencementDate(name.dob))
-    {
+    console.log("name", name);
+    if (selectCommencementDate(name.dob)) {
       setError("Minimum age should be 18 years");
       setTimeout(() => {
         setError(false);
       }, 3000);
-    }
-    else {
+    } else {
       setParmas({ ...params, ...name });
       setCanSubmitName(true);
       const [res, err] = await sendOtp({ otp: { ...data, ...TYPE_REGISTER } });
@@ -175,8 +172,6 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
         setCanSubmitName(false);
       }
     }
-    
-  
   };
 
   const selectOtp = async () => {

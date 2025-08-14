@@ -1,5 +1,9 @@
 import React from "react";
 
+export const shouldHideBackButton = (config = []) => {
+  return config.filter((key) => window.location.href.includes(key.screenPath)).length > 0 ? true : false;
+};
+
 /* methid to get date from epoch */
 export const convertEpochToDate = (dateEpoch) => {
     // Returning null in else case because new Date(null) returns initial date from calender

@@ -10,6 +10,7 @@ import {
   MultiUploadWrapper,
   CitizenInfoLabel,
 } from "@mseva/digit-ui-react-components";
+import EXIF from "exif-js";
 
 const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
@@ -22,6 +23,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
   //console.log("data for documents here", data)
+  //console.log("formData here =====", formData);
 
   const handleSubmit = () => {
     let document = formData.documents;
@@ -95,7 +97,43 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   const handlePTRSelectDocument = (value) => setSelectedDocument(value);
 
   function selectfile(e) {
-    setFile(e.target.files[0]);
+    //console.log("e here==>", e);
+    //console.log("e.target.files[0] here==>", e.target.files[0]);
+    
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    // setFile(e.target.files[0]);
+    console.log("selectedFile here", selectedFile);
+
+   if (selectedFile && selectedFile.type === "image/jpeg") {
+    extractGeoLocation(selectedFile).then((location) => {
+      console.log("Latitude:", location.latitude);
+      console.log("Longitude:", location.longitude);
+
+      if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+        if (location.latitude !== null && location.longitude !== null) {
+          sessionStorage.setItem("Latitude1", location.latitude);
+          sessionStorage.setItem("Longitude1", location.longitude);
+        } else {
+          sessionStorage.removeItem("Latitude1");
+          sessionStorage.removeItem("Longitude1");
+          alert("Please upload a photo with location details.");
+        }
+      }
+
+      if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
+        if (location.latitude !== null && location.longitude !== null) {
+          sessionStorage.setItem("Latitude2", location.latitude);
+          sessionStorage.setItem("Longitude2", location.longitude);
+        } else {
+          sessionStorage.removeItem("Latitude2");
+          sessionStorage.removeItem("Longitude2");
+          alert("Please upload a photo with location details.");
+        }
+      }
+    });
+  }
+
   }
   const { dropdownData } = doc;
 
@@ -106,7 +144,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (selectedDocument?.code) {
-      console.log("selectedDocument", documents);
+     // console.log("selectedDocument here", selectedDocument);
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
 
@@ -129,7 +167,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   useEffect(() => {
     if (documents?.length > 0) {
-      console.log("documents", documents);
+      console.log("documents here", documents);
       handleSubmit();
     }
   }, [documents]);
@@ -187,6 +225,50 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
     if (isHidden) setUploadedFile(null);
   }, [isHidden]);
 
+  function convertToDecimal(coordinate) {
+    const degrees = coordinate[0];
+    const minutes = coordinate[1];
+    const seconds = coordinate[2];
+    return degrees + minutes / 60 + seconds / 3600;
+  }
+
+  function extractGeoLocation(file) {
+      //console.log("file", file);
+  
+      return new Promise((resolve) => {
+        try {
+          // if (file && file.type === "image/jpeg" && file.size > 1000) {
+          EXIF.getData(file, function () {
+           // console.log("comign here as well");
+  
+            const lat = EXIF.getTag(this, "GPSLatitude");
+            const lon = EXIF.getTag(this, "GPSLongitude");
+  
+            console.log("lat====", lat);
+            if (lat && lon) {
+              // Convert GPS coordinates to decimal format
+              const latDecimal = convertToDecimal(lat);
+              const lonDecimal = convertToDecimal(lon);
+              resolve({ latitude: latDecimal, longitude: lonDecimal });
+            } else {
+              resolve({ latitude: null, longitude: null });
+              if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+                {
+                  alert("Please Upload a Photo with Location Details");
+                }
+              } else {
+                null;
+              }
+            }
+          });
+          // }
+        } catch (error) {
+          console.log("EXIF parsing failed:", error);
+          resolve({ latitude: null, longitude: null });
+        }
+      });
+    }
+
   return (
     <div style={{ marginBottom: "24px" }}>
       {getLoading && <Loader />}
@@ -221,7 +303,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".dxf"
+            accept=".pdf"
             buttonType="button"
             error={!uploadedFile}
           />
@@ -240,6 +322,36 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             error={!uploadedFile}
           />
         )}
+
+        {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&
+        (sessionStorage.getItem("Latitude1") && sessionStorage.getItem("Longitude1") ? (
+          <div>
+            <p>Latitude: {sessionStorage.getItem("Latitude1")}</p>
+            <p>Longitude: {sessionStorage.getItem("Longitude1")}</p>
+            {/* {setIsNextButtonDisabled(false)}  */}
+          </div>
+        ) : (
+          <div>
+            <p style={{ color: "red" }}>Please upload a Photo with Location details.</p>
+            {/* {setIsNextButtonDisabled(true)}  */}
+          </div>
+        ))}
+
+        {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&
+        (sessionStorage.getItem("Latitude2") && sessionStorage.getItem("Longitude2") ? (
+          <div>
+            <p>Latitude: {sessionStorage.getItem("Latitude2")}</p>
+            <p>Longitude: {sessionStorage.getItem("Longitude2")}</p>
+            {/* {setIsNextButtonDisabled(false)}  */}
+          </div>
+        ) : (
+          <div>
+            <p style={{ color: "red" }}>Please upload a Photo with Location details.</p>
+            {/* {setIsNextButtonDisabled(true)}  */}
+          </div>
+        ))}
+
+
       </LabelFieldPair>
     </div>
   );

@@ -53,9 +53,21 @@ function NOCSummary({ formData, t }) {
     </div>
   );
 
+  const getFloorLabel = (index) => {
+  if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
+  const suffixes = ["st", "nd", "rd"];
+  const suffix = suffixes[(index - 1) % 10 - 1] || "th";
+  return `${index}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`; // e.g., "1st Floor"
+  };
+
+
+  const userInfo = Digit.UserService.getUser();
+  const currentUser=userInfo?.info?.type;
+
   return (
     <div style={pageStyle}>
-      {formData?.applicationDetails?.registeredStakeHolder?.code === "NO" && (
+
+      {currentUser === "CITIZEN" ? (
         <React.Fragment>
           <h2 style={headingStyle}>{t("NOC_APPLICANT_DETAILS")}</h2>
           <div style={sectionStyle}>
@@ -67,12 +79,10 @@ function NOCSummary({ formData, t }) {
             {renderLabel(t("NOC_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
             {renderLabel(t("NOC_APPLICANT_ADDRESS_LABEL"), formData?.applicationDetails?.applicantAddress)}
           </div>
-        </React.Fragment>
-      )}
-
-      {formData?.applicationDetails?.registeredStakeHolder?.code === "YES" && (
+          </React.Fragment>
+      ): (
         <React.Fragment>
-          <h2 style={headingStyle}>{t("NOC_PROFESSIONAL_DETAILS")}</h2>
+        <h2 style={headingStyle}>{t("NOC_PROFESSIONAL_DETAILS")}</h2>
           <div style={sectionStyle}>
             {renderLabel(t("NOC_PROFESSIONAL_NAME_LABEL"), formData?.applicationDetails?.professionalName)}
             {renderLabel(t("NOC_PROFESSIONAL_EMAIL_LABEL"), formData?.applicationDetails?.professionalEmailId)}
@@ -81,7 +91,9 @@ function NOCSummary({ formData, t }) {
             {renderLabel(t("NOC_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
           </div>
         </React.Fragment>
-      )}
+      )
+    
+    }
 
       <h2 style={headingStyle}>{t("NOC_SITE_DETAILS")}</h2>
       <div style={sectionStyle}>
@@ -96,12 +108,18 @@ function NOCSummary({ formData, t }) {
         {renderLabel(t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), formData?.siteDetails?.netPlotAreaAfterWidening)}
         {renderLabel(t("NOC_ROAD_WIDTH_AT_SITE_LABEL"), formData?.siteDetails?.roadWidthAtSite)}
         {renderLabel(t("NOC_BUILDING_STATUS_LABEL"), formData?.siteDetails?.buildingStatus?.name)}
-        {renderLabel(t("NOC_FIRST_FLOOR_AREA_LABEL"), formData?.siteDetails?.firstFloorArea)}
-        {renderLabel(t("NOC_SECOND_FLOOR_AREA_LABEL"), formData?.siteDetails?.secondFloorArea)}
-        {renderLabel(t("NOC_THIRD_FLOOR_AREA_LABEL"), formData?.siteDetails?.thirdFloorArea)}
-        {renderLabel(t("NOC_TOTAL_FLOOR_AREA_LABEL"), formData?.siteDetails?.totalFloorArea)}
-        {/* {renderLabel(t("NOC_DISTRICT_LABEL"), formData?.siteDetails?.district?.name)}
-        {renderLabel(t("NOC_ZONE_LABEL"), formData?.siteDetails?.zone?.name)} */}
+        {renderLabel(t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL"), formData?.siteDetails?.isBasementAreaAvailable?.code)}
+
+        {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && renderLabel(t("NOC_BASEMENT_AREA_LABEL"), formData?.siteDetails?.basementArea)}
+        
+        {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && formData?.siteDetails?.floorArea?.map((floor, index) =>
+           renderLabel(getFloorLabel(index), floor?.value)
+        )}
+
+        {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && renderLabel(t("NOC_TOTAL_FLOOR_AREA_LABEL"), formData?.siteDetails?.totalFloorArea)}
+
+        {renderLabel(t("NOC_DISTRICT_LABEL"), formData?.siteDetails?.district?.name)}
+        {renderLabel(t("NOC_ZONE_LABEL"), formData?.siteDetails?.zone?.name)}
         {renderLabel(t("NOC_SITE_WARD_NO_LABEL"), formData?.siteDetails?.wardNo)}
         {renderLabel(t("NOC_SITE_VILLAGE_NAME_LABEL"), formData?.siteDetails?.villageName)}
       </div>

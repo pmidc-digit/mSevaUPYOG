@@ -1,13 +1,13 @@
-import React from "react";
+import React,{useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Toast, ActionBar, SubmitBar} from "@mseva/digit-ui-react-components";
 import { UPDATE_NOCNewApplication_FORM } from "../../redux/action/NOCNewApplicationActions";
 import { useState } from "react";
 import NOCSiteDetails from "../NOCSiteDetails";
 import NOCSpecificationDetails from "../NOCSpecificationDetails";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useForm, useFieldArray } from "react-hook-form";
 
 const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
@@ -21,7 +21,12 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     setValue,
     formState: { errors },
     trigger,
-  } = useForm();
+    watch
+  } = useForm({ 
+     defaultValues: {
+       floorArea: [{ value: "" }] 
+  }
+});
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
@@ -29,7 +34,15 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     return state.noc.NOCNewApplicationFormReducer.formData;
   });
 
-  const commonProps = { Controller, control, setValue, errors, errorStyle };
+//   useEffect(() => {
+//   const formattedData = currentStepData?.siteDetails;
+//   if (formattedData?.floorArea) {
+//     setValue("floorArea", formattedData.floorArea);
+//   }
+// }, [currentStepData, setValue]);
+
+
+  const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch};
 
   const onSubmit = (data) => {
     trigger();

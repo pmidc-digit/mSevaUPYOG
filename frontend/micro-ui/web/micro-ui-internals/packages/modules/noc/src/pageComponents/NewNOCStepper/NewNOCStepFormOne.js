@@ -19,20 +19,10 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     return state.noc.NOCNewApplicationFormReducer.formData;
   });
 
+  const userInfo = Digit.UserService.getUser();
+  //console.log("userInfo type here", userInfo?.info?.type);
+
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
-
-  const [registeredStakeHolder, setRegisteredStakeHolder] = useState(currentStepData?.applicationDetails?.registeredStakeHolder || null);
-
-  const options = [
-    {
-      code: "YES",
-      i18nKey: "YES",
-    },
-    {
-      code: "NO",
-      i18nKey: "NO",
-    },
-  ];
 
   const {
     control,
@@ -69,43 +59,15 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setError("");
   };
 
-  //  console.log("registeredStakeHolder here", registeredStakeHolder);
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NOC_REGISTERED_STAKEHOLDER_TYPE_LABEL")}`} *</CardLabel>
-            <Controller
-              control={control}
-              name={"registeredStakeHolder"}
-              // defaultValue={registeredStakeHolder || null}
-              rules={{
-                required: t("REQUIRED_FIELD"),
-              }}
-              render={(props) => (
-                <Dropdown
-                  className="form-field"
-                  select={(e) => {
-                    setRegisteredStakeHolder(e);
-                    props.onChange(e);
-                  }}
-                  selected={props.value}
-                  option={options}
-                  optionKey="i18nKey"
-                />
-              )}
-            />
-          </LabelFieldPair>
-          <CardLabelError style={errorStyle}>{errors?.registeredStakeHolder?.message || ""}</CardLabelError>
-
-          {registeredStakeHolder?.code === "YES" && (
-            <NOCProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-          )}
-
-          {registeredStakeHolder?.code === "NO" && (
-            <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-          )}
+            {userInfo?.info?.type === "CITIZEN" ? (
+                 <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+              ) : (
+               <NOCProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+            )}
         </div>
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />

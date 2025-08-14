@@ -1,6 +1,7 @@
-import { Loader } from "@mseva/digit-ui-react-components";
+import { Loader, CitizenHomeCard, CaseIcon } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useRouteMatch } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import EmployeeApp from "./pages/employee";
 import ApplicationOverview from "./pages/employee/ApplicationOverview";
 import NOCCard from "./pages/employee/EmployeeCard";
@@ -23,7 +24,27 @@ import NOCSummary from "./pageComponents/NOCSummary";
 import NOCDocumentWithLatLong from "./pageComponents/NOCDocumentWithLatLong";
 
 
-const NOCModule = ({ stateCode, userType, tenants }) => {
+export const NOCLinks = ({ matchPath, userType }) => {
+  const { t } = useTranslation();
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("PT_CREATE_PROPERTY112", {});
+
+  useEffect(() => {
+    clearParams();
+  }, []);
+
+  const links = [
+    {
+      link: `${matchPath}/noc/new-application`,
+      i18nKey: t("NOC_NEW_APPLICATION"),
+    },
+    
+  ];
+
+  return <CitizenHomeCard header={t("ACTION_TEST_NOC")} links={links} Icon={() => <CaseIcon className="fill-path-primary-main" />} />;
+};
+
+
+export const NOCModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = "noc";
   const { path, url } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();

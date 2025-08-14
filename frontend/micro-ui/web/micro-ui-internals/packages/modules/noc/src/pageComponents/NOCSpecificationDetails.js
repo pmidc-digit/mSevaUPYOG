@@ -12,6 +12,7 @@ import {
   CardSectionHeader,
   Loader,
   CardLabelError,
+  UploadFile
 } from "@mseva/digit-ui-react-components";
 
 const NOCSpecificationDetails = (_props) => {
@@ -33,6 +34,7 @@ const NOCSpecificationDetails = (_props) => {
       });
     }
   }, [currentStepData, setValue]);
+
 
   return (
     <React.Fragment>

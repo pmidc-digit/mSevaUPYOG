@@ -31,16 +31,18 @@ const NOCDocumentWithLatLong = ({ t, config, onSelect, userType, formData, setEr
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
-  const checkingFlow = formData?.uiFlow?.flow;
+  //const checkingFlow = formData?.uiFlow?.flow;
 
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
 
   const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
   // const {data: nocDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
   const { isLoading, data: nocDocuments } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
-  console.log("nocDocuments here", nocDocuments);
+  // console.log("nocDocuments here", nocDocuments);
+  // console.log("formData here ===", formData);
 
   const handleSubmit = () => {
+   // console.log("handleSubmit called here !!")
     let document = formData.documents;
     let documentStep;
     //let RealignedDocument = [];
@@ -56,20 +58,22 @@ const NOCDocumentWithLatLong = ({ t, config, onSelect, userType, formData, setEr
   const onSkip = () => onSelect();
   function onAdd() {}
   useEffect(() => {
-    // const allRequiredDocumentsCode = nocDocuments?.filter( e => e.required).map(e => e.code)
-    // const reqDocumentEntered = allRequiredDocumentsCode?.filter(reqCode => documents.reduce((acc,doc) => {
-    //     if (reqCode == `${doc?.documentType?.split('.')?.[0]}.${doc?.documentType?.split('.')?.[1]}`) {
-    //         return true
-    //     }
-    //     else{
-    //         return acc
-    //     }
-    // }, false))
-    // if ((reqDocumentEntered?.length == allRequiredDocumentsCode?.length ) && documents?.length > 0) {
-    //     setEnableSubmit(false);
-    // }else {
-    //     setEnableSubmit(true);
-    // }
+    //console.log("allRequiredDocuments here", nocDocuments?.NOC?.Documents);
+    const allRequiredDocumentsCode = nocDocuments?.NOC?.Documents?.filter((e) => e.required).map((e) => e.code);
+    const reqDocumentEntered = allRequiredDocumentsCode?.filter((reqCode) =>
+      documents.reduce((acc, doc) => {
+        if (reqCode == `${doc?.documentType?.split(".")?.[0]}.${doc?.documentType?.split(".")?.[1]}`) {
+          return true;
+        } else {
+          return acc;
+        }
+      }, false)
+    );
+    if (reqDocumentEntered?.length == allRequiredDocumentsCode?.length && documents?.length > 0) {
+      setEnableSubmit(false);
+    } else {
+      setEnableSubmit(true);
+    }
   }, [documents, checkRequiredFields]);
 
   return (
@@ -113,6 +117,7 @@ const NOCDocumentWithLatLong = ({ t, config, onSelect, userType, formData, setEr
                   beforeUploadDocuments={beforeUploadDocuments || []}
                   isNextButtonDisabled={isNextButtonDisabled}
                   setIsNextButtonDisabled={setIsNextButtonDisabled}
+                  handleSubmit={handleSubmit}
                 />
               </div>
             );
@@ -148,10 +153,13 @@ const SelectDocument = React.memo(function MyComponent({
   formData,
   beforeUploadDocuments,
   setIsNextButtonDisabled, // Add this line
+  handleSubmit
 }) {
+  console.log("documents here", documents);
   const filteredDocument =
     documents?.filter((item) => item?.documentType?.includes(doc?.code))[0] ||
     beforeUploadDocuments?.filter((item) => item?.documentType?.includes(doc?.code))[0];
+    console.log("filteredDocument here", filteredDocument);
   const tenantId = Digit.ULBService.getStateId(); //Digit.ULBService.getCurrentTenantId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
@@ -175,26 +183,39 @@ const SelectDocument = React.memo(function MyComponent({
   const [longitude, setLongitude] = useState(null);
   ////////////////////////////////////////////////////////////
   function extractGeoLocation(file) {
+   // console.log("file", file);
+
     return new Promise((resolve) => {
-      EXIF.getData(file, function () {
-        const lat = EXIF.getTag(this, "GPSLatitude");
-        const lon = EXIF.getTag(this, "GPSLongitude");
-        if (lat && lon) {
-          // Convert GPS coordinates to decimal format
-          const latDecimal = convertToDecimal(lat);
-          const lonDecimal = convertToDecimal(lon);
-          resolve({ latitude: latDecimal, longitude: lonDecimal });
-        } else {
-          resolve({ latitude: null, longitude: null });
-          if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
-            {
-              alert("Please Upload a Photo with Location Details");
-            }
+      try {
+        // if (file && file.type === "image/jpeg" && file.size > 1000) {
+        EXIF.getData(file, function () {
+         // console.log("comign here as well");
+
+          const lat = EXIF.getTag(this, "GPSLatitude");
+          const lon = EXIF.getTag(this, "GPSLongitude");
+
+          //console.log("lat====", lat);
+          if (lat && lon) {
+            // Convert GPS coordinates to decimal format
+            const latDecimal = convertToDecimal(lat);
+            const lonDecimal = convertToDecimal(lon);
+            resolve({ latitude: latDecimal, longitude: lonDecimal });
           } else {
-            null;
+            resolve({ latitude: null, longitude: null });
+            if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
+              {
+                alert("Please Upload a Photo with Location Details");
+              }
+            } else {
+              null;
+            }
           }
-        }
-      });
+        });
+        // }
+      } catch (error) {
+       // console.log("EXIF parsing failed:", error);
+        resolve({ latitude: null, longitude: null });
+      }
     });
   }
 
@@ -205,17 +226,22 @@ const SelectDocument = React.memo(function MyComponent({
     return degrees + minutes / 60 + seconds / 3600;
   }
 
-  //////////////////////////
   // const handleSelectDocument = (value) => {
-  //     if(filteredDocument?.documentType){
-  //         filteredDocument.documentType=value?.code;
-  //         let currDocs=documents?.filter((item) => item?.documentType?.includes(doc?.code));
-  //         currDocs.map(doc=>doc.documentType=value?.code);
-  //         let newDoc=[ ...documents?.filter((item) => !item?.documentType?.includes(doc?.code)),...currDocs]
-  //         setDocuments(newDoc);
-  //     }
-  //     setSelectedDocument(value);
+  //       if(filteredDocument?.documentType){
+  //           filteredDocument.documentType=value?.code;
+  //           let currDocs=documents?.filter((item) => item?.documentType?.includes(doc?.code));
+  //           currDocs.map(doc=>doc.documentType=value?.code);
+  //           let newDoc=[ ...documents?.filter((item) => !item?.documentType?.includes(doc?.code)),...currDocs]
+  //           setDocuments(newDoc);
+  //       }
+  //       setSelectedDocument(value);
   // };
+
+  useEffect(() => {
+      if (documents?.length > 0) {
+       // console.log("documents here", documents);
+        handleSubmit();
+   }}, [documents]);
 
   function selectfile(e, key) {
     e && setFile(e.file);
@@ -225,7 +251,11 @@ const SelectDocument = React.memo(function MyComponent({
   function getData(e) {
     let key = selectedDocument.code;
     let data, newArr;
+    //console.log("e====", e);
+
     if (e?.length > 0) {
+     // console.log("e here ====", e);
+      //console.log("e[0][1].file", e[0][1].file);
       // Extract geo location from the first file
       extractGeoLocation(e[0][1].file)
         .then((location) => {
@@ -311,7 +341,7 @@ const SelectDocument = React.memo(function MyComponent({
               id: documents ? documents.find((x) => x.documentType === selectedDocument?.code)?.id : undefined,
             });
           });
-
+         console.log("newfiles here", newfiles);
         return [...filteredDocumentsByFileStoreId, ...newfiles];
       });
       setuploadedfileArray([]);
@@ -360,6 +390,7 @@ const SelectDocument = React.memo(function MyComponent({
   const allowedFileTypes = /(.*?)(jpg|jpeg|png|image|pdf)$/i;
 
   const uploadedFilesPreFill = useMemo(() => {
+    console.log("uploadFiles here from formData", formData);
     let selectedUplDocs = [];
     formData?.documents?.documents
       ?.filter((ob) => ob.documentType === selectedDocument.code)
@@ -369,6 +400,7 @@ const SelectDocument = React.memo(function MyComponent({
           { file: { name: e.fileName, type: e.documentType }, fileStoreId: { fileStoreId: e.fileStoreId, tenantId } },
         ])
       );
+      console.log("selectedUplDocs here", selectedUplDocs);
     return selectedUplDocs;
   }, [formData]);
 

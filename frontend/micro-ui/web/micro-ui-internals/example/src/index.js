@@ -20,7 +20,7 @@ import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
 import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
-import { initNOCComponents, NOCReducers } from "@mseva/digit-ui-module-noc";
+import { initNOCComponents, NOCReducers, NOCLinks, NOCModule } from "@mseva/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
@@ -138,6 +138,8 @@ const initDigitUI = () => {
     PGRAIModule,
     PGRAILinks,
     ...PGRAIComponents,
+    NOCModule,
+    NOCLinks
   });
   initFSMComponents();
   initPGRComponents();

@@ -35,8 +35,8 @@ const NOCProfessionalDetails = (_props) => {
 
   const { data: allCities, isLoading: isAllCitiesLoading } = Digit.Hooks.noc.useTenants();
   const [cities, setCities] = useState(allCities);
-  console.log("allCities here", allCities);
-  console.log("cities here ", cities);
+  // console.log("allCities here", allCities);
+  // console.log("cities here ", cities);
 
   return (
     <React.Fragment>

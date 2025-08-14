@@ -18,7 +18,7 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
       assignee: assignee === "ASSIGNED_TO_ME" ? user?.info?.uuid : "",
       moduleName: "NDC",
       businessService: ["ndc-services"],
-      ...(selectedStatuses.length > 0 ? { status: selectedStatuses } : {}),
+      ...(status.length > 0 ? { status: status } : {}),
     },
 
     moduleSearchCriteria: status.length > 0 ? {

@@ -15,12 +15,12 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", ["Documents"]);
   function goNext(finaldata) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, finaldata);
-    // const missingFields = validation(finaldata);
-    // if (missingFields.length > 0) {
-    //   setError(`${t("NDC_MESSAGE_"+missingFields[0].replace(".", "_").toUpperCase())}`);
-    //   setShowToast(true);
-    //   return;
-    // }
+    const missingFields = validation(finaldata);
+    if (missingFields.length > 0) {
+      setError(`${t("NDC_MESSAGE_"+missingFields[0].replace(".", "_").toUpperCase())}`);
+      setShowToast(true);
+      return;
+    }
     onGoNext();
     //}
   }

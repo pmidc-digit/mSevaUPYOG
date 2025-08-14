@@ -18,13 +18,13 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
   function goNext(data) {
     console.log(`Data in step ${config.currStepNumber} is: \n`, data);
-    // const missingFields = validateStepData(currentStepData);
+    const missingFields = validateStepData(currentStepData);
 
-    // if (missingFields.length > 0) {
-    //   setError(`${missingFields[0]}`);
-    //   setShowToast(true);
-    //   return;
-    // }
+    if (missingFields.length > 0) {
+      setError(`${missingFields[0]}`);
+      setShowToast(true);
+      return;
+    }
     if (checkFormData?.apiData?.Applications?.[0]?.uuid) {
       console.log("call update if data changes");
       onGoNext();

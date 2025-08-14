@@ -21,8 +21,11 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
       ...(selectedStatuses.length > 0 ? { status: selectedStatuses } : {}),
     },
 
-    moduleSearchCriteria: {
+    moduleSearchCriteria: status.length > 0 ? {
       status: status,
+      ...(applicationNo ? { applicationNo } : {}),
+    } : {
+      // status: status,
       ...(applicationNo ? { applicationNo } : {}),
     },
     limit,

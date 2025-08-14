@@ -1,5 +1,6 @@
 package org.egov.inbox.service;
 
+import static org.egov.inbox.util.BSConstants.ASSIGNEE_PARAM;
 import static org.egov.inbox.util.BpaConstants.BPA;
 import static org.egov.inbox.util.BpaConstants.BPAREG;
 import static org.egov.inbox.util.BpaConstants.BPA_APPLICATION_NUMBER_PARAM;
@@ -19,7 +20,7 @@ import static org.egov.inbox.util.FSMConstants.FSM_VEHICLE_TRIP_MODULE;
 import static org.egov.inbox.util.FSMConstants.STATUSID;
 import static org.egov.inbox.util.FSMConstants.VEHICLE_LOG;
 import static org.egov.inbox.util.FSMConstants.WAITING_FOR_DISPOSAL_STATE;
-import static org.egov.inbox.util.NdcConstants.NDC_APPLICATION_NUMBER_PARAM;
+import static org.egov.inbox.util.NdcConstants.*;
 import static org.egov.inbox.util.PTConstants.ACKNOWLEDGEMENT_IDS_PARAM;
 import static org.egov.inbox.util.PTConstants.PT;
 import static org.egov.inbox.util.TLConstants.APPLICATION_NUMBER_PARAM;
@@ -59,10 +60,7 @@ import org.egov.inbox.model.vehicle.VehicleTripDetailResponse;
 import org.egov.inbox.model.vehicle.VehicleTripSearchCriteria;
 import org.egov.inbox.repository.ElasticSearchRepository;
 import org.egov.inbox.repository.ServiceRequestRepository;
-import org.egov.inbox.util.BpaConstants;
-import org.egov.inbox.util.ErrorConstants;
-import org.egov.inbox.util.FSMConstants;
-import org.egov.inbox.util.TLConstants;
+import org.egov.inbox.util.*;
 import org.egov.inbox.web.model.Inbox;
 import org.egov.inbox.web.model.InboxResponse;
 import org.egov.inbox.web.model.InboxSearchCriteria;
@@ -225,6 +223,14 @@ public class InboxService {
 
         Map<String, Long> businessServiceSlaMap = new HashMap<>();
 
+        boolean isNdcFlag = criteria.getProcessSearchCriteria().getModuleName().equalsIgnoreCase(NDC_MODULE);
+
+        if(isNdcFlag){
+            moduleSearchCriteria.put("tenantId", criteria.getTenantId());
+            moduleSearchCriteria.put("offset", criteria.getOffset());
+            moduleSearchCriteria.put("limit", criteria.getLimit());
+        }
+
         if (!CollectionUtils.isEmpty(moduleSearchCriteria)) {
             moduleSearchCriteria.put("tenantId", criteria.getTenantId());
             moduleSearchCriteria.put("offset", criteria.getOffset());
@@ -238,6 +244,16 @@ public class InboxService {
             }
             HashMap<String, String> StatusIdNameMap = workflowService.getActionableStatusesForRole(requestInfo, bussinessSrvs,
                     processCriteria);
+
+            if(isNdcFlag) {
+                List<String> matchingIds = StatusIdNameMap.entrySet().stream()
+                        .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
+                        .map(Map.Entry::getKey)
+                        .collect(Collectors.toList());
+                if(!(moduleSearchCriteria.containsKey("wfStatus") && moduleSearchCriteria.get("wfStatus") != null) && !ObjectUtils.isEmpty(matchingIds))
+                moduleSearchCriteria.put("wfStatus", matchingIds);
+            }
+
             String applicationStatusParam = srvMap.get("applsStatusParam");
             String businessIdParam = srvMap.get("businessIdProperty");
             if (StringUtils.isEmpty(applicationStatusParam)) {
@@ -463,14 +479,14 @@ public class InboxService {
             }
             
             if (processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
-                    && processCriteria.getModuleName().equals("NDC")) {
+                    && processCriteria.getModuleName().equals(NDC_MODULE)) {
                 totalCount = ndcInboxFilterService.fetchApplicationCountFromSearcher(criteria, StatusIdNameMap, requestInfo);
                 List<String> applicationNumbers = ndcInboxFilterService.fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
                 if (!CollectionUtils.isEmpty(applicationNumbers)) {
                     moduleSearchCriteria.put(NDC_APPLICATION_NUMBER_PARAM, applicationNumbers);
                     businessKeys.addAll(applicationNumbers);
                     moduleSearchCriteria.remove(STATUS_PARAM);
-                    moduleSearchCriteria.remove(MOBILE_NUMBER_PARAM);
+//                    moduleSearchCriteria.remove(MOBILE_NUMBER_PARAM);
                     moduleSearchCriteria.remove(LOCALITY_PARAM);
                     moduleSearchCriteria.remove(OFFSET_PARAM);
                 } else {
@@ -597,6 +613,9 @@ public class InboxService {
                 businessObjects = fetchModuleObjects(moduleSearchCriteria, businessServiceName, criteria.getTenantId(),
                         requestInfo, srvMap);
                 //Specifically handle for swach/pgr mobileNumber,locality,servCode filters if given
+                if(processCriteria.getModuleName().equalsIgnoreCase(NDC_MODULE)){
+                    businessObjects = filterObjectsBasedOnMobileNumber(moduleSearchCriteria, businessObjects);
+                }
                 if (processCriteria.getModuleName().equals(SWACH) || processCriteria.getModuleName().equals(PGR)) {
                 	if(moduleSearchCriteria.containsKey(PGR_MOBILE_NUMBER_PARAM) || moduleSearchCriteria.containsKey(PGR_SERVICECODE_PARAM) || moduleSearchCriteria.containsKey(PGR_LOCALITY_PARAM)) {
                 		JSONArray filtered = new JSONArray();
@@ -766,6 +785,16 @@ public class InboxService {
             		processInstanceResponse = workflowService.getProcessInstance(processCriteria, requestInfo);
             	}
             	else {
+                    if(isNdcFlag) {
+                        List<String> matchingIdsNdc = StatusIdNameMap.entrySet().stream()
+                                    .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
+                                    .map(Map.Entry::getKey)
+                                    .collect(Collectors.toList());
+
+                        processCriteria.setStatus(matchingIdsNdc);
+
+                    }
+
             		processInstanceResponse = workflowService.getProcessInstance(processCriteria, requestInfo);
             	}
             }
@@ -1017,6 +1046,37 @@ public class InboxService {
         response.setStatusMap(statusCountMap);
         response.setItems(inboxes);
         return response;
+    }
+
+    private JSONArray filterObjectsBasedOnMobileNumber(HashMap moduleSearchCriteria, JSONArray businessObjects) {
+        String inputMobileNumber = moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)
+                ? (String) moduleSearchCriteria.get(MOBILE_NUMBER_PARAM)
+                : null;
+
+        JSONArray filtered = new JSONArray();
+        if (inputMobileNumber != null && !inputMobileNumber.isEmpty()) {
+            for (Object obj : businessObjects) {
+                JSONObject json = (JSONObject) obj;
+                JSONArray owners = json.getJSONArray(OWNERS);
+                if (owners == null) continue;
+
+                boolean matchFound = false;
+                for (int i = 0; i < owners.length(); i++) {
+                    JSONObject owner = owners.getJSONObject(i);
+                    String mobile = owner.optString(MOBILE_NUMBER_PARAM);
+                    if (inputMobileNumber.equals(mobile)) {
+                        matchFound = true;
+                        break;
+                    }
+                }
+
+                if (matchFound) {
+                    filtered.put(json);
+                }
+            }
+            businessObjects = filtered;
+        }
+        return businessObjects;
     }
 
     /**

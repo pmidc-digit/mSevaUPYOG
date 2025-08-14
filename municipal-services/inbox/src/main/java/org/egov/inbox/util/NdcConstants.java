@@ -2,7 +2,8 @@ package org.egov.inbox.util;
 
 public class NdcConstants {
 
-	public static final String NDC = "ndc-services";
+	public static final String NDC_BUSINESS_SERVICE = "ndc-services";
+	public static final String NDC_MODULE = "NDC";
 	public static final String MOBILE_NUMBER_PARAM = "mobileNumber";
 	public static final String BUSINESS_SERVICE_PARAM = "businessservice";
 	public static final String TENANT_ID_PARAM = "tenantId";
@@ -23,4 +24,6 @@ public class NdcConstants {
 	public static final String CITIZEN = "CITIZEN";
 	public static final String USER_UUID = "userUUID";
 
+    public static final String WF_STATUS = "wfStatus";
+	public static final String OWNERS = "owners";
 }

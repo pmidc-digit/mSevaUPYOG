@@ -19,13 +19,12 @@ import static org.egov.inbox.util.NdcConstants.STATUS_PARAM;
 import static org.egov.inbox.util.NdcConstants.TENANT_ID_PARAM;
 import static org.egov.inbox.util.NdcConstants.USERID_PARAM;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.inbox.repository.ServiceRequestRepository;
+import org.egov.inbox.util.NdcConstants;
 import org.egov.inbox.web.model.InboxSearchCriteria;
 import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,20 +142,27 @@ public class NDCInboxFilterService {
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NDC_SOURCE_REF_ID_PARAM)) {
             searchCriteria.put(NDC_SOURCE_APPLICATION_NUMBER_PARAM, moduleSearchCriteria.get(NDC_SOURCE_REF_ID_PARAM));
         }
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NdcConstants.WF_STATUS)) {
+            searchCriteria.put(NdcConstants.WF_STATUS, moduleSearchCriteria.get(NdcConstants.WF_STATUS));
 
+        }
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(STATUS_PARAM)) {
+            searchCriteria.put(STATUS_PARAM, StatusIdNameMap.values());
+        }
         // Accommodating process search criteria in searcher request
         if (!ObjectUtils.isEmpty(processCriteria.getAssignee())) {
             searchCriteria.put(ASSIGNEE_PARAM, processCriteria.getAssignee());
         }
         if (!ObjectUtils.isEmpty(processCriteria.getStatus())) {
             searchCriteria.put(STATUS_PARAM, processCriteria.getStatus());
-        } else {
-            if (StatusIdNameMap != null && StatusIdNameMap.values().size() > 0) {
-                if (CollectionUtils.isEmpty(processCriteria.getStatus())) {
-                    searchCriteria.put(STATUS_PARAM, StatusIdNameMap.keySet());
-                }
-            }
         }
+//        else {
+//            if (StatusIdNameMap != null && StatusIdNameMap.values().size() > 0) {
+//                if (CollectionUtils.isEmpty(processCriteria.getStatus())) {
+//                    searchCriteria.put(STATUS_PARAM, StatusIdNameMap.keySet());
+//                }
+//            }
+//        }
         return searchCriteria;
     }
 

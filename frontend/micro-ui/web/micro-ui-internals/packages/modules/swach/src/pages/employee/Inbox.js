@@ -17,9 +17,11 @@ const Inbox = ({ initialStates = {} }) => {
   const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
   let isMobile = Digit.Utils.browser.isMobile();
 
+  const sessionEmpTenant = Digit.SessionStorage.get("Employee.tenantId");
+
   const ttID = localStorage.getItem("punjab-tenantId");
 
-  const tenantIdCheck = ttID || tenantId;
+  const tenantIdCheck = sessionEmpTenant || ttID || tenantId;
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantIdCheck, "admin", {}, t);
 
@@ -29,8 +31,8 @@ const Inbox = ({ initialStates = {} }) => {
       const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
       // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.map((e) => e.code).join(",");
       const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
-       let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
-        // console.log("useCount response in inbox else block", response);
+
+      let response = await Digit.SwachService.count(tenantIdCheck,applicationStatus?.length > 0 ? { applicationStatus } : {});
       if (response?.count) {
         setTotalRecords(response.count);
       }
@@ -56,7 +58,7 @@ const Inbox = ({ initialStates = {} }) => {
       // }
       // }
     })();
-  }, [searchParams, pageOffset, pageSize]);
+  }, [searchParams, pageOffset, pageSize, tenantIdCheck, sessionEmpTenant]);
 
   const fetchNextPage = () => {
   setPageOffset((prevState) => prevState + pageSize);

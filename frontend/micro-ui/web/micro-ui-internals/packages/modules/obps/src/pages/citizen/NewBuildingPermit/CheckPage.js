@@ -58,41 +58,80 @@ const CheckPage = ({ onSubmit, value }) => {
   const [malbafees, setMalbafees] = useState(() => sessionStorage.getItem("Malbafees") || "");
   const [waterCharges, setWaterCharges] = useState(() => sessionStorage.getItem("WaterCharges") || "");
 
+  // const [ownersData, setOwnersData] = useState(() => {
+  //   // Try to get owner data from multiple sessionStorage sources
+  //   const storedOwnerData = sessionStorage.getItem("currentOwnerData");
+  //   const storedOwnerFields = sessionStorage.getItem("ownerFields");
+
+  //   if (storedOwnerData) {
+  //     const parsedData = JSON.parse(storedOwnerData);
+  //     return parsedData?.owners || [];
+  //   }
+
+  //   if (storedOwnerFields) {
+  //     const parsedFields = JSON.parse(storedOwnerFields);
+  //     return parsedFields || [];
+  //   }
+
+  //   return owners?.owners || [];
+  // });
+  // const mutation = Digit.Hooks.obps.useObpsAPI(value?.tenantId, false);
+  // console.log(mutation, "CHECK MUTATION");
+  // useEffect(() => {
+  //   const storedOwnerData = sessionStorage.getItem("currentOwnerData");
+  //   const storedOwnerFields = sessionStorage.getItem("ownerFields");
+
+  //   if (storedOwnerData) {
+  //     const parsedData = JSON.parse(storedOwnerData);
+  //     if (parsedData?.owners) {
+  //       setOwnersData(parsedData.owners);
+  //     }
+  //   } else if (storedOwnerFields) {
+  //     const parsedFields = JSON.parse(storedOwnerFields);
+  //     if (parsedFields) {
+  //       setOwnersData(parsedFields);
+  //     }
+  //   }
+  // }, []);
+
   const [ownersData, setOwnersData] = useState(() => {
-    // Try to get owner data from multiple sessionStorage sources
-    const storedOwnerData = sessionStorage.getItem("currentOwnerData");
-    const storedOwnerFields = sessionStorage.getItem("ownerFields");
+    // <CHANGE> Get data from the correct session storage key
+    const storedBuildingPermit = sessionStorage.getItem("Digit.BUILDING_PERMIT");
 
-    if (storedOwnerData) {
-      const parsedData = JSON.parse(storedOwnerData);
-      return parsedData?.owners || [];
+    if (storedBuildingPermit) {
+      try {
+        const parsedData = JSON.parse(storedBuildingPermit);
+        // <CHANGE> Access owners data from the nested structure
+        return parsedData?.value?.data?.owners || [];
+      } catch (error) {
+        console.error("Error parsing building permit data:", error);
+        return [];
+      }
     }
 
-    if (storedOwnerFields) {
-      const parsedFields = JSON.parse(storedOwnerFields);
-      return parsedFields || [];
-    }
-
-    return owners?.owners || [];
+    return [];
   });
-  const mutation = Digit.Hooks.obps.useObpsAPI(value?.tenantId, false);
-  console.log(mutation, "CHECK MUTATION");
-  useEffect(() => {
-    const storedOwnerData = sessionStorage.getItem("currentOwnerData");
-    const storedOwnerFields = sessionStorage.getItem("ownerFields");
 
-    if (storedOwnerData) {
-      const parsedData = JSON.parse(storedOwnerData);
-      if (parsedData?.owners) {
-        setOwnersData(parsedData.owners);
-      }
-    } else if (storedOwnerFields) {
-      const parsedFields = JSON.parse(storedOwnerFields);
-      if (parsedFields) {
-        setOwnersData(parsedFields);
-      }
-    }
-  }, []);
+  //   const [ownerMobileNumber, setOwnerMobileNumber] = useState(() => {
+  //   // <CHANGE> Look in the correct session storage location
+  //   const storedOwnerMobile = sessionStorage.getItem("ownerMobileNumber");
+  //   if (storedOwnerMobile) return storedOwnerMobile;
+
+  //   // <CHANGE> Get owner mobile from the correct building permit data structure
+  //   const storedBuildingPermit = sessionStorage.getItem("Digit.BUILDING_PERMIT");
+  //   if (storedBuildingPermit) {
+  //     try {
+  //       const parsedData = JSON.parse(storedBuildingPermit);
+  //       const ownerMobile = parsedData?.value?.data?.owners?.[0]?.mobileNumber;
+  //       if (ownerMobile) return ownerMobile;
+  //     } catch (error) {
+  //       console.error("Error parsing building permit data for owner mobile:", error);
+  //     }
+  //   }
+
+  //   // <CHANGE> Fallback to the owners prop structure
+  //   return owners?.[0]?.mobileNumber || "";
+  // });
 
   const getPlotDataFromStorage = () => {
     try {
@@ -1153,7 +1192,7 @@ const CheckPage = ({ onSubmit, value }) => {
               label={t("BPA_GREEN_BUILDINGS_SUSTAINABILITY")}
               text={plotDataFromStorage?.planDetail?.planInfoProperties?.PROVISION_FOR_GREEN_BUILDINGS_AND_SUSTAINABILITY || t("CS_NA")}
             />
-            <Row className="border-none" label={t("BPA_RWH_DECLARED")} text={planInfoProps?.RWH_DECLARED || t("CS_NA")} />
+            {/* <Row className="border-none" label={t("BPA_RWH_DECLARED")} text={planInfoProps?.RWH_DECLARED || t("CS_NA")} />
             <Row className="border-none" label={t("BPA_SOLAR_WATER_HEATER")} text={planInfoProps?.SOLAR_WATER_HEATER || t("CS_NA")} />
 
             <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_NOC_REQUIREMENTS")}</CardSubHeader>
@@ -1186,9 +1225,9 @@ const CheckPage = ({ onSubmit, value }) => {
               className="border-none"
               label={t("BPA_NOC_STATE_CRZ")}
               text={plotDataFromStorage?.planDetail?.planInfoProperties?.NOC_STATE_CRZ || t("CS_NA")}
-            />
+            /> */}
 
-            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_PROXIMITY_LIMITS")}</CardSubHeader>
+            {/* <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_PROXIMITY_LIMITS")}</CardSubHeader>
             <Row
               className="border-none"
               label={t("BPA_ABUTTING_NH_ECR")}
@@ -1203,14 +1242,14 @@ const CheckPage = ({ onSubmit, value }) => {
               className="border-none"
               label={t("BPA_RAILWAY_LIMIT")}
               text={plotDataFromStorage?.planDetail?.planInfoProperties?.RAILWAY_LIMIT || t("CS_NA")}
-            />
+            /> */}
 
-            <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_DEMOLITION_DETAILS")}</CardSubHeader>
+            {/* <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_DEMOLITION_DETAILS")}</CardSubHeader>
             <Row
               className="border-none"
               label={t("BPA_EXISTING_FLOOR_AREA_DEMOLISHED")}
               text={plotDataFromStorage?.planDetail?.planInfoProperties?.EXISTING_FLOOR_AREA_TO_BE_DEMOLISHED_M2}
-            />
+            /> */}
           </StatusTable>
         </Card>
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />

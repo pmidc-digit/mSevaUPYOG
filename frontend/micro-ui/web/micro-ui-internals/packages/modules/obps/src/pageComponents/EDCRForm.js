@@ -231,7 +231,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
           selected={selectedCity}
           select={(city) => {
             setSelectedCity(city);
-            setUlb(city?.code); // Also set ulb here
+            setUlb(city?.code);
           }}
           placeholder={t("COMMON_TABLE_SEARCH")}
         />
@@ -305,6 +305,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
               id={"edcr-doc"}
               extraStyleName={"propertyCreate"}
               onUpload={handleDXFUpload}
+              accept=".dxf"
               onDelete={() => {
                 setUploadedFile(null);
                 setFile("");
@@ -313,6 +314,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
               error={error}
               uploadMessage={uploadMessage}
             />
+            <p style={{ padding: "7px", fontSize: "10px" }}>{t("EDCR_ONLY_DXF_FILE")}</p>
           </React.Fragment>
         )}
       </FormStep>

@@ -8,7 +8,7 @@ const useEDCRForm = ({ formData }) => {
 
   const [citymoduleList, setCitymoduleList] = useState([]);
   const [name, setName] = useState(formData?.Scrutiny?.[0]?.applicantName || "");
-  const [ulb, setUlb] = useState(formData?.Scrutiny?.[0]?.ulbName || "pb.amritsar");
+  const [ulb, setUlb] = useState(formData?.Scrutiny?.[0]?.ulbName);
   const [areaType, setAreaType] = useState(formData?.Scrutiny?.[0]?.areaType || null);
   const [schName, setSchName] = useState(formData?.Scrutiny?.[0]?.schemeName || "");
   const [schemeArea, setSchemeArea] = useState(formData?.Scrutiny?.[0]?.schemeType || null);
@@ -16,7 +16,7 @@ const useEDCRForm = ({ formData }) => {
   const [coreArea, setcoreArea] = useState(formData?.Scrutiny?.[0]?.coreArea);
   const [siteReserved, setSiteReserved] = useState(formData?.Scrutiny?.[0]?.siteReserved || null);
   const [approvedCS, setApprovedCS] = useState(formData?.Scrutiny?.[0]?.approvedControlSheet || null);
-  const [tenantIdData, setTenantIdData] = useState(formData?.Scrutiny?.[0]?.tenantIdData || "pb.amritsar");
+  const [tenantIdData, setTenantIdData] = useState(formData?.Scrutiny?.[0]?.tenantIdData);
   const [uploadedFile, setUploadedFile] = useState(() => formData?.Scrutiny?.[0]?.proofIdentity?.fileStoreId || null);
   const [selectLayout, setSelectLayout] = useState(formData?.Scrutiny?.[0]?.proofIdentity?.fileStoreId || null);
   const [file, setFile] = useState(formData?.owners?.documents?.proofIdentity || null);
@@ -26,19 +26,10 @@ const useEDCRForm = ({ formData }) => {
   const [layoutFile, setLayoutFile] = useState(null);
   const [dxfFile, setDxfFile] = useState(null);
 
-  // Initialize selectedCity with pb.amritsar as default
-  const [selectedCity, setSelectedCity] = useState(() => {
-    return {
-      code: "pb.amritsar",
-      displayName: "Amritsar",
-      i18nKey: "TENANT_TENANTS_PB_AMRITSAR",
-      name: "Amritsar",
-    };
-  });
+  const [selectedCity, setSelectedCity] = useState("");
 
-  // Always return the selected city code as tenantId
   const tenantId = useMemo(() => {
-    return selectedCity?.code || "pb.amritsar";
+    return selectedCity?.code;
   }, [selectedCity]);
 
   const { t } = useTranslation();
@@ -77,19 +68,17 @@ const useEDCRForm = ({ formData }) => {
     }
   }, [citymodules]);
 
-  // When cities data is available, find and set the correct city
   useEffect(() => {
     if (cities && cities.length > 0) {
-      // Try to find pb.amritsar in the cities list
-      const amritsarCity = cities.find((city) => city.code === "pb.amritsar");
-      if (amritsarCity && !selectedCity?.displayName) {
+      const dynamicCity = cities.find((city) => city.code);
+      if (dynamicCity && !selectedCity?.displayName) {
         const cityWithDisplayName = {
-          ...amritsarCity,
-          displayName: t(amritsarCity.i18nKey),
+          ...dynamicCity,
+          displayName: t(dynamicCity.i18nKey),
         };
         setSelectedCity(cityWithDisplayName);
-        setUlb(amritsarCity.code);
-        setTenantIdData(amritsarCity.code);
+        setUlb(dynamicCity.code);
+        setTenantIdData(dynamicCity.code);
 
         console.log("Set default city to:", cityWithDisplayName);
       }
@@ -112,7 +101,6 @@ const useEDCRForm = ({ formData }) => {
     }
   }, [formData, cities, t]);
 
-  // Sync tenantIdData and ulb with selectedCity
   useEffect(() => {
     if (selectedCity?.code) {
       setTenantIdData(selectedCity.code);
@@ -142,6 +130,14 @@ const useEDCRForm = ({ formData }) => {
   };
 
   const handleDXFUpload = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile && selectedFile.name.split(".").pop().toLowerCase() !== "dxf") {
+      setError(t("Please upload a valid DXF file"));
+      setUploadedFile(null);
+      setFile(null);
+      setDxfFile(null);
+      return;
+    }
     setUploadedFile(e.target.files[0]);
     setFile(e.target.files[0]);
     setDxfFile(e.target.files[0]);
@@ -214,7 +210,7 @@ const useEDCRForm = ({ formData }) => {
       ulbName: ulb,
       areaType: areaType,
       file: file,
-      tenantId: tenantId, // Use computed tenantId
+      tenantId: tenantId,
     };
 
     if (areaType?.code === "SCHEME_AREA") {
@@ -279,7 +275,7 @@ const useEDCRForm = ({ formData }) => {
     siteReserved,
     siteReservedOptions,
     stateId,
-    tenantId, // This should now be pb.amritsar
+    tenantId,
     tenantIdData,
     ulb,
     uploadMessage,

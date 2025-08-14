@@ -20,10 +20,10 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
     const actionStatus = action?.action;
     try {
       const res = await onSubmit(formData, actionStatus); // wait for the API response
-
+      console.log("res====", res);
       // Check if the API call was successful
       if (res?.isSuccess) {
-        history.push("/digit-ui/citizen/ndc/response/" + res?.response?.Applicant?.uuid);
+        history.push("/digit-ui/citizen/ndc/response/" + res?.response?.Applications?.[0]?.uuid);
       } else {
         console.error("Submission failed, not moving to next step.", res?.response);
       }

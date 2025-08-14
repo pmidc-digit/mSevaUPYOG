@@ -1,6 +1,6 @@
 import React, { useState, Fragment, useEffect } from "react";
 import { FilterFormField, Loader, RadioButtons, Localities, RemoveableTag, Dropdown, CheckBox } from "@mseva/digit-ui-react-components";
-import { Controller, useWatch } from "react-hook-form";
+import { Controller } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { businessServiceList } from "../../../utils";
 
@@ -58,81 +58,38 @@ const FilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTyp
           )}
         />
       </FilterFormField>
-      {/* <FilterFormField>
+
+      <FilterFormField>
         <Controller
-          name="businessService"
+          name="applicationStatus"
           control={controlFilterForm}
+          defaultValue={[]}
           render={(props) => {
+            const toggleStatus = (statusCode) => {
+              console.log(statusCode, "statusCode");
+              if (props.value.includes(statusCode)) {
+                props.onChange(props.value.filter((code) => code !== statusCode));
+              } else {
+                props.onChange([...props.value, statusCode]);
+              }
+            };
+
             return (
               <>
-                <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
-                  {t("BUSINESS_SERVICE")}
-                </div>
-                <RadioButtons
-                  onSelect={(e) => {
-                    setFilterFormValue("applicationStatus", []);
-                    props.onChange(e);
-                  }}
-                  selectedOption={props.value}
-                  optionsKey="i18nKey"
-                  options={businessServiceList() || []}
-                />
+                {statuses?.map((status, index) => (
+                  <CheckBox
+                    key={status.applicationstatus}
+                    label={`${status.applicationstatus} - ${status.count}`}
+                    value={status.applicationstatus}
+                    checked={props.value.includes(status.applicationstatus)}
+                    onChange={() => toggleStatus(status.applicationstatus)}
+                    index={index}
+                  />
+                ))}
               </>
             );
           }}
         />
-      </FilterFormField> */}
-
-      <FilterFormField>
-        {statuses?.map((option, index) => {
-          // const checked = searchParams?.applicationStatus?.includes(e.statusid);
-          let hasFilters = tlfilters?.applicationStatus?.length;
-          return (
-            <CheckBox
-              key={index + "service"}
-              label={`${option?.applicationstatus} - ${option.count}`}
-              //value={option.statusid}
-              // checked={
-              //   hasFilters ? (tlfilters.applicationStatus.filter((e) => e.code === option.applicationstatus).length !== 0 ? true : false) : false
-              // }
-              onChange={(e) => handleAssignmentChange(e, option)}
-            />
-          );
-        })}
-        {/* <Controller
-          name="applicationStatus"
-          control={controlFilterForm}
-          render={(props) => {
-            function changeItemCheckStatus(value) {
-              props.onChange(value);
-            }
-            const renderStatusCheckBoxes = useMemo(
-              () =>
-                statuses?.map((status) => {
-                  return (
-                    <CheckBox
-                      onChange={(e) =>
-                        e.target.checked
-                          ? changeItemCheckStatus([...props.value, status?.statusid])
-                          : changeItemCheckStatus(props.value?.filter((id) => id !== status?.statusid))
-                      }
-                      checked={props.value?.includes(status?.statusid)}
-                      label={`${status.applicationstatus} (${status.count})`}
-                    />
-                  );
-                }),
-              [props.value, statuses]
-            );
-            return (
-              <>
-                <div className="filter-label sub-filter-label" style={{ fontSize: "18px", fontWeight: "600" }}>
-                  {t("ACTION_TEST_APPLICATION_STATUS")}
-                </div>
-                {isInboxLoading ? <Loader /> : <>{renderStatusCheckBoxes}</>}
-              </>
-            );
-          }}
-        /> */}
       </FilterFormField>
     </>
   );

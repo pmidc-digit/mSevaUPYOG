@@ -6,6 +6,9 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
   const { applicationNo } = searchForm;
   const { limit, offset } = tableForm;
   const user = Digit.UserService.getUser();
+  const status = filters?.filterForm?.applicationStatus;
+
+  console.log("filters==", filters?.filterForm?.applicationStatus);
 
   const selectedStatuses = getFilter?.applicationStatus?.map((s) => s?.code) || [];
 
@@ -19,7 +22,7 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
     },
 
     moduleSearchCriteria: {
-      // status: "PENDINGPAYMENT",
+      status: status,
       ...(applicationNo ? { applicationNo } : {}),
     },
     limit,

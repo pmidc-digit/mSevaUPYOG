@@ -82,11 +82,11 @@ public class ActionValidator {
         //    validateRole(request);
 
         // Check if all the applicationTypes of bulk request is same.
-        if(request.getLicenses().size() > 1){
-            if(applicationTypes.size() != 1){
-                errorMap.put("INVALID APPLICATION TYPES", "Application Types should be identical for bulk requests");
-            }
-        }
+//        if(request.getLicenses().size() > 1){
+//            if(applicationTypes.size() != 1){
+//                errorMap.put("INVALID APPLICATION TYPES", "Application Types should be identical for bulk requests");
+//            }
+//        }
 
         if (!errorMap.isEmpty())
             throw new CustomException(errorMap);

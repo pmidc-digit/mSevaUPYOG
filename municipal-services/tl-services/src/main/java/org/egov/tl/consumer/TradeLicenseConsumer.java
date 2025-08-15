@@ -32,7 +32,7 @@ public class TradeLicenseConsumer {
     }
 
     @KafkaListener(
-    groupId = "tl-tradelicense",  // isolates this from other services
+    groupId = "egov-tl-services",  // isolates this from other services
     topics = {
       "${persister.update.tradelicense.topic}",
       "${persister.save.tradelicense.topic}",

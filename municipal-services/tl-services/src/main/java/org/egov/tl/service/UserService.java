@@ -36,6 +36,7 @@ public class UserService{
 
     private TLConfiguration config;
 
+    private final static String BPA_ARCHITECT = "BPA_ARCHITECT";
 
     private TradeUtil tradeUtil;
 
@@ -108,7 +109,11 @@ public class UserService{
                    if (isBPARoleAddRequired) {
                         List<String> licenseeTyperRole = tradeUtil.getusernewRoleFromMDMS(tradeLicense, requestInfo);
                         for (String rolename : licenseeTyperRole) {
-                            user.addRolesItem(Role.builder().code(rolename).name(rolename).tenantId(tradeLicense.getTenantId()).build());
+                            // Add BPA_ARCHITECT role with state level tenantId
+                            if (rolename.equalsIgnoreCase(BPA_ARCHITECT))
+                        		user.addRolesItem(Role.builder().code(rolename).name(rolename).tenantId(user.getTenantId()).build());
+                        	else
+                        		user.addRolesItem(Role.builder().code(rolename).name(rolename).tenantId(tradeLicense.getTenantId()).build());
                         }
                    }
                     userDetailResponse = userCall( new CreateUserRequest(requestInfo,user),uri);

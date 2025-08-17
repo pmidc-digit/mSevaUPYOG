@@ -80,6 +80,7 @@ const enabledModules = [
   "PGRAI",
   "ChallanGeneration",
   "RentAndLease",
+  "BPAStakeholder"
 ];
 
 const initTokens = (stateCode) => {

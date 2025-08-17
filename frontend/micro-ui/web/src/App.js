@@ -130,6 +130,7 @@ const enabledModules = [
   "PGRAI",
   "ChallanGeneration",
   "RentAndLease",
+  "BPAStakeholder"
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,

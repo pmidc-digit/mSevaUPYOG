@@ -115,6 +115,8 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <TLIcon />;
       case "OBPS":
         return <OBPSIcon />;
+      case "BPAStakeholder":
+        return <OBPSIcon />;
       case "Bills":
         return <BillsIcon />;
       case "PTR":

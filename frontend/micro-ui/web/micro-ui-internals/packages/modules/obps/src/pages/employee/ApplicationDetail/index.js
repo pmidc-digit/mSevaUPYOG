@@ -12,7 +12,7 @@ const ApplicationDetail = () => {
   const state = tenantId?.split('.')[0]
   const [showToast, setShowToast] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
-  const { isLoading, data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(state, { applicationNumber: id, tenantId: state }, {});
+  const { isLoading, data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId === "pb.punjab"? "pb" :tenantId, { applicationNumber: id, tenantId: tenantId === "pb.punjab"? "pb" : tenantId }, {});
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [viewTimeline, setViewTimeline]=useState(false);
   const {
@@ -21,10 +21,10 @@ const ApplicationDetail = () => {
     data: updateResponse,
     error: updateError,
     mutate,
-  } = Digit.Hooks.obps.useBPAREGApplicationActions(tenantId);
+  } = Digit.Hooks.obps.useBPAREGApplicationActions(tenantId === "pb.punjab"? "pb" : tenantId);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
-    tenantId: tenantId?.split('.')[0],
+    tenantId: tenantId === "pb.punjab"? "pb" : tenantId,
     id: id,
     moduleCode: "BPAREG",
   });

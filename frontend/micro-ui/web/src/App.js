@@ -131,11 +131,8 @@ const enabledModules = [
   "PGRAI",
   "ChallanGeneration",
   "RentAndLease",
-<<<<<<< HEAD
   "NDC",
-=======
   "BPAStakeholder"
->>>>>>> 3a52cab2ecb72f7b585ffe6996543660f5d8b27f
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,

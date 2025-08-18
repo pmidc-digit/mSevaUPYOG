@@ -70,6 +70,7 @@ import {
 } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
+import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
 import {
   ADSModule,
   ADSLinks,
@@ -130,6 +131,8 @@ const enabledModules = [
   "PGRAI",
   "ChallanGeneration",
   "RentAndLease",
+  "NDC",
+  "BPAStakeholder"
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -143,7 +146,7 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ChallanGenerationModule,
   ChallanGenerationLinks,
   RentAndLeaseModule,
-  RentAndLeaseLinks, 
+  RentAndLeaseLinks,
   HRMSModule,
   TLModule,
   TLLinks,
@@ -184,6 +187,7 @@ initEngagementComponents();
 initWSComponents();
 initCommonPTComponents();
 initBillsComponents();
+initNDCComponents();
 // initReportsComponents();
 initCustomisationComponents();
 
@@ -195,6 +199,7 @@ const moduleReducers = (initData) => ({
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),
   swach: SWACHReducers(initData),
+  ndc: NDCReducers(initData),
   ptr: PTRReducers(initData),
   ads: ADSReducers(initData),
   chb: CHBReducers(initData),

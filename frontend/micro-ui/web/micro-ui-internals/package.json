@@ -27,7 +27,8 @@
     "packages/modules/asset",
     "packages/modules/pgrai",
     "packages/modules/challanGeneration",
-    "packages/modules/rentAndLease"
+    "packages/modules/rentAndLease",
+    "packages/modules/ndc"
   ],
   "author": "Abhinav Kushwaha <abhinav.kushwaha@egovernments.org>",
   "license": "MIT",
@@ -69,6 +70,7 @@
     "dev:ads": "cd packages/modules/ads && yarn start",
     "dev:chb": "cd packages/modules/chb && yarn start",
     "dev:asset": "cd packages/modules/asset && yarn start",
+    "dev:ndc": "cd packages/modules/ndc && yarn start",
     "devD:pgrai": "cd packages/modules/pgrai && yarn start",
     "build": "run-p build:**",
     "build:libraries": "cd packages/libraries && yarn build",
@@ -99,6 +101,7 @@
     "build:chb": "cd packages/modules/chb && yarn build",
     "build:asset": "cd packages/modules/asset && yarn build",
     "buildD:pgrai": "cd packages/modules/pgrai && yarn build",
+    "build:ndc": "cd packages/modules/ndc && yarn build",
     "deploy:jenkins": "./scripts/jenkins.sh"
   },
   "devDependencies": {

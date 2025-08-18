@@ -42,8 +42,9 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   const { t } = useTranslation();
   const { id } = useParams();
   //const isPropertyMutation = window.location.href.includes("property-mutation");
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const mutation = Digit.Hooks.obps.useStakeholderAPI(data?.address?.city ? data.address?.city?.code : tenantId, true);
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
+  const mutation = Digit.Hooks.obps.useStakeholderAPI(tenantId, true);
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
   let isOpenLinkFlow = window.location.href.includes("openlink");
@@ -67,7 +68,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
     id: id,
     moduleCode: "BPAREG",
   });
-  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(state, { applicationNumber: id, tenantId: state }, {});
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: id, tenantId: state }, {});
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
     console.log("applicationDetails in StakeholderAck", applicationDetails);

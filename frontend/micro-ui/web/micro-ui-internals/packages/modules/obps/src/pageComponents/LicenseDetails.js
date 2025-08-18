@@ -166,11 +166,19 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     }
 
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
-      let fullName = `${name} ${middleName} ${lastName}`;
+      // let fullName = `${name} ${middleName} ${lastName}`;
       // console.log("firstName before saving",name);
       // console.log("middleName before saving", middleName);
       // console.log("lastName before saving", lastName);
       // console.log("fullName here", fullName);
+      let fullName = "";
+      if(name?.length>0){
+        fullName = name;
+      }if(middleName?.length>0){
+        fullName = fullName + " " + middleName;
+      }if(lastName?.length>0){
+        fullName = fullName + " " + lastName;
+      }
       let licenseDet = { name: fullName, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
       onSelect(config.key, licenseDet);
     } else {

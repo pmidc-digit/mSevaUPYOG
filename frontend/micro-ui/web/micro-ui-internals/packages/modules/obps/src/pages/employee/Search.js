@@ -8,7 +8,8 @@ const Search = ({ path }) => {
   const userInformation = userInfo?.value?.info;
 
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window?.localStorage?.getItem("Employee.tenant-id");
   const location = useLocation();
   const details = () => {
     if (userInformation?.roles?.filter((ob) => ob.code.includes("BPAREG_"))?.length <= 0 && userInformation?.roles?.filter((ob) =>(ob.code.includes("BPA_") || ob.code.includes("CITIZEN"))).length > 0) return "BUILDING_PLAN_SCRUTINY";

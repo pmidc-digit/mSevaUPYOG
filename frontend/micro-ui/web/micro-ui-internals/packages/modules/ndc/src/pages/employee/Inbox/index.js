@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useMemo, useReducer } from "react";
+import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect, use } from "react";
 import { InboxComposer, ComplaintIcon, Header } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
@@ -11,7 +11,9 @@ import CreateNDCApplicationStep from "../createNDCApplication";
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const [getFilter, setFilter] = useState();
 
   const searchFormDefaultValues = {
     // mobileNumber: "",
@@ -19,7 +21,7 @@ const Inbox = ({ parentRoute }) => {
   };
 
   const filterFormDefaultValues = {
-    moduleName: "noc-services",
+    moduleName: "ndc-services",
     applicationStatus: [],
     businessService: null,
     locality: [],
@@ -85,9 +87,11 @@ const Inbox = ({ parentRoute }) => {
   ]);
 
   const [formState, dispatch] = useReducer(formReducer, formInitValue);
+
   const onPageSizeChange = (e) => {
     dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
   };
+
   const onSortingByData = (e) => {
     if (e.length > 0) {
       const [{ id, desc }] = e;
@@ -111,10 +115,30 @@ const Inbox = ({ parentRoute }) => {
     t
   );
 
-  const { isLoading: isInboxLoading, data: { table = [], statuses, totalCount } = {} } = Digit.Hooks.noc.useInbox({
+  const handleFilter = (filterStatus) => {
+    setFilter(filterStatus);
+  };
+
+  const { isLoading: isInboxLoading, data } = Digit.Hooks.ndc.useInbox({
     tenantId,
-    filters: { ...formState },
+    filters: { ...formState, getFilter },
   });
+
+  // const { isLoading, data: testData, isError, error } = Digit.Hooks.ndc.useSearchApplication({ mobileNumber: "1234567890" }, tenantId);
+
+  // const { isLoading: isInboxLoading, data} = Digit.Hooks.ndc.useSearchEmployeeApplication({status: "CREATE"}, tenantId)
+
+  const [table, setTable] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+
+  useEffect(() => {
+    if (data) {
+      setStatuses(data?.statuses || []);
+      setTable(data?.table || []);
+      setTotalCount(data?.totalCount || 0);
+    }
+  }, [data]);
 
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,
@@ -148,6 +172,7 @@ const Inbox = ({ parentRoute }) => {
           localitiesForEmployeesCurrentTenant,
           loadingLocalitiesForEmployeesCurrentTenant,
         }}
+        handleFilter={handleFilter}
       />
     ),
     [statuses, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant]

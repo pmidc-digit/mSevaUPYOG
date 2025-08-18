@@ -83,6 +83,8 @@ const iconSelector = (code) => {
       return <TLIcon className="fill-path-primary-main" />;
     case "OBPS":
       return <OBPSIcon className="fill-path-primary-main" />;
+    case "BPAStakeholder":
+      return <OBPSIcon className="fill-path-primary-main" />;
     case "Bills":
       return <BillsIcon className="fill-path-primary-main" />;
     case "PTR":
@@ -90,6 +92,8 @@ const iconSelector = (code) => {
     case "SV":
       return <PTRIcon className="fill-path-primary-main" />;
     case "ADS":
+      return <PTRIcon className="fill-path-primary-main" />;
+    case "NDC":
       return <PTRIcon className="fill-path-primary-main" />;
     default:
       return <PTIcon className="fill-path-primary-main" />;

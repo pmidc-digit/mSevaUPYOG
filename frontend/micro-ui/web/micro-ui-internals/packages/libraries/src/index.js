@@ -64,6 +64,8 @@ import { ASSETService } from "./services/elements/ASSET";
 import { PGRAIService } from "./services/elements/PGRAI";
 import { PGRAIUpdate } from "./services/elements/PGRAIUpdate";
 
+import { NDCService } from "./services/elements/NDC";
+
 const setupLibraries = (Library, props) => {
   window.Digit = window.Digit || {};
   window.Digit[Library] = window.Digit[Library] || {};
@@ -133,6 +135,7 @@ const initLibraries = () => {
   setupLibraries("AuditService", AuditService);
   setupLibraries("PGRAIService", PGRAIService);
   setupLibraries("PGRAIUpdate", PGRAIUpdate);
+  setupLibraries("NDCService", NDCService);
   return new Promise((resolve) => {
     initI18n(resolve);
   });

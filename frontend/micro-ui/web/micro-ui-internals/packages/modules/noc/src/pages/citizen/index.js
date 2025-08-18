@@ -16,7 +16,7 @@ const App = () => {
       <Switch>
         <AppContainer>
           {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}
-          <PrivateRoute path={`${path}/noc/new-application`} component={NewNOCApplication} />
+          <PrivateRoute path={`${path}/new-application`} component={NewNOCApplication} />
         </AppContainer>
       </Switch>
     </span>

@@ -9,6 +9,8 @@ import Inbox from "./pages/employee/Inbox";
 import NOCSearchApplication from "./pages/employee/SearchApplication/Search";
 import getRootReducer from "./redux/reducer";
 
+import CitizenApp from "./pages/citizen";
+
 import NewNOCStepperForm from "./pageComponents/NewNOCStepper/NewNOCStepperForm";
 import NewNOCStepFormOne from "./pageComponents/NewNOCStepper/NewNOCStepFormOne";
 import NewNOCStepFormTwo from "./pageComponents/NewNOCStepper/NewNOCStepFormTwo";
@@ -26,7 +28,7 @@ import NOCDocumentWithLatLong from "./pageComponents/NOCDocumentWithLatLong";
 
 export const NOCLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("PT_CREATE_PROPERTY112", {});
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("NOC_MODULE", {});
 
   useEffect(() => {
     clearParams();
@@ -45,7 +47,7 @@ export const NOCLinks = ({ matchPath, userType }) => {
 
 
 export const NOCModule = ({ stateCode, userType, tenants }) => {
-  const moduleCode = "noc";
+  const moduleCode = "NOC";
   const { path, url } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
@@ -57,9 +59,9 @@ export const NOCModule = ({ stateCode, userType, tenants }) => {
   }
 
   if (userType === "citizen") {
-    return <div></div>;
+    return <CitizenApp/>;
   }
-
+   
   return <EmployeeApp path={path} stateCode={stateCode} />;
 };
 
@@ -68,6 +70,7 @@ export const NOCReducers = getRootReducer;
 const componentsToRegister = {
   NOCModule,
   NOCCard,
+  NOCLinks,
   NOCApplicationOverview: ApplicationOverview,
   NOCInbox: Inbox,
   NOCSearchApplication,

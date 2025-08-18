@@ -320,6 +320,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
             ) : null}
             {!(checkingFlow === "OCBPA") ? (
               <MultiSelectDropdown
+                disabled
                 BlockNumber={block.number}
                 className="form-field"
                 isMandatory={true}
@@ -343,12 +344,12 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
                   ))}
               </div>
             ) : null}
-            {!(checkingFlow === "OCBPA")
+            {/* {!(checkingFlow === "OCBPA")
               ? subOccupancyObject[`Block_${block.number}`] &&
                 subOccupancyObject[`Block_${block.number}`].length > 0 && (
                   <LinkButton style={{ textAlign: "left" }} label={"Clear All"} onClick={() => clearall(block.number)} />
                 )
-              : null}
+              : null} */}
             <div style={{ marginTop: "20px" }}>
               {checkingFlow === "OCBPA" ? (
                 <StatusTable>

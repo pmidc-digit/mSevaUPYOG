@@ -314,7 +314,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
               error={error}
               uploadMessage={uploadMessage}
             />
-            <p style={{ padding: "7px", fontSize: "10px" }}>{t("EDCR_ONLY_DXF_FILE")}</p>
+            <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p>
           </React.Fragment>
         )}
       </FormStep>

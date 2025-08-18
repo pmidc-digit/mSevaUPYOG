@@ -156,16 +156,16 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const NDCReason = data?.NDCReason || {};
 
     // Mandatory Field Checks
-    // if (!cpt?.id) missingFields.push(t("NDC_MESSAGE_PROPERTY_ID"));
-    // if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push(t("NDC_MESSAGE_PLEASE_SEARCH_PROPERTY_ID"));
-    // if (!propertyDetails?.firstName) missingFields.push(t("NDC_MESSAGE_FIRST_NAME"));
-    // if (!propertyDetails?.lastName) missingFields.push(t("NDC_MESSAGE_LAST_NAME"));
-    // if (!propertyDetails?.mobileNumber) missingFields.push(t("NDC_MESSAGE_MOBILE_NUMBER"));
-    // if (!propertyDetails?.address) missingFields.push(t("NDC_MESSAGE_ADDRESS"));
-    // if (!propertyDetails?.email) missingFields.push(t("NDC_MESSAGE_EMAIL"));
-    // // if (propertyDetails?.waterConnection?.length === 0) missingFields.push(t("NDC_MESSAGE_WATER_CONNECTION"));
-    // // if (propertyDetails?.sewerageConnection?.length === 0) missingFields.push(t("NDC_MESSAGE_SEWERAGE_CONNECTION"));
-    // if (!NDCReason?.code) missingFields.push(t("NDC_MESSAGE_NDC_REASON"));
+    if (!cpt?.id) missingFields.push(t("NDC_MESSAGE_PROPERTY_ID"));
+    if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push(t("NDC_MESSAGE_PLEASE_SEARCH_PROPERTY_ID"));
+    if (!propertyDetails?.firstName) missingFields.push(t("NDC_MESSAGE_FIRST_NAME"));
+    if (!propertyDetails?.lastName) missingFields.push(t("NDC_MESSAGE_LAST_NAME"));
+    if (!propertyDetails?.mobileNumber) missingFields.push(t("NDC_MESSAGE_MOBILE_NUMBER"));
+    if (!propertyDetails?.address) missingFields.push(t("NDC_MESSAGE_ADDRESS"));
+    if (!propertyDetails?.email) missingFields.push(t("NDC_MESSAGE_EMAIL"));
+    // if (propertyDetails?.waterConnection?.length === 0) missingFields.push(t("NDC_MESSAGE_WATER_CONNECTION"));
+    // if (propertyDetails?.sewerageConnection?.length === 0) missingFields.push(t("NDC_MESSAGE_SEWERAGE_CONNECTION"));
+    if (!NDCReason?.code) missingFields.push(t("NDC_MESSAGE_NDC_REASON"));
 
     // if (propertyDetails?.waterConnection?.length > 0) {
     //   propertyDetails.waterConnection.forEach(value => {

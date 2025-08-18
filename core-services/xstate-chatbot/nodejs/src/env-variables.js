@@ -123,14 +123,14 @@ const envVariables = {
     pgrUseCase: {
         pgrVersion: process.env.PGR_VERSION || 'v2',
         complaintSearchLimit: process.env.COMPLAINT_SEARCH_LIMIT || 3,
-        informationImageFilestoreId: process.env.INFORMATION_IMAGE_FILESTORE_ID || '16dff22d-06dd-485d-a03d-6d11e8564dff',
+        informationImageFilestoreId: process.env.INFORMATION_IMAGE_FILESTORE_ID ||'5c3a93a0-e501-4b97-aa84-97f9b9b34517',                                            //'16dff22d-06dd-485d-a03d-6d11e8564dff',
         pgrUpdateTopic: process.env.PGR_UPDATE_TOPIC || 'update-pgr-request',
         geoSearch: process.env.GEO_SEARCH || true
     },
 
     swachUseCase: {
         complaintSearchLimit: process.env.COMPLAINT_SEARCH_LIMIT || 3,
-        informationImageFilestoreId: process.env.INFORMATION_IMAGE_FILESTORE_ID || 'b7285c21-7f6e-4a71-9537-bd4d2c56b34c',
+        informationImageFilestoreId: process.env.INFORMATION_IMAGE_FILESTORE_ID || '5c3a93a0-e501-4b97-aa84-97f9b9b34517',                   //'b7285c21-7f6e-4a71-9537-bd4d2c56b34c',
         geoSearch: process.env.GEO_SEARCH || true
     },
 

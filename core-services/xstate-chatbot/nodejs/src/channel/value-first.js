@@ -157,8 +157,8 @@ class ValueFirstWhatsAppProvider {
             } 
 
             else if(type === 'image'){
-                var imageInBase64String = requestBody.media_data;
-                //  var imageInBase64String = requestBody.MediaData;
+                //var imageInBase64String = requestBody.media_data;
+                  var imageInBase64String = requestBody.MediaData;
 
                 if (!imageInBase64String) {
                     console.error("Error: Base64 image string is missing in requestBody!");

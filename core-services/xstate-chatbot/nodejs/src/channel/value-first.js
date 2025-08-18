@@ -1,4 +1,4 @@
-const config = require('../env-variables');
+const config = require('../env-variables_prod');
 const fetch = require("node-fetch");
 const urlencode = require('urlencode');
 const fs = require('fs');
@@ -157,8 +157,8 @@ class ValueFirstWhatsAppProvider {
             } 
 
             else if(type === 'image'){
-                var imageInBase64String = requestBody.media_data;
-                //  var imageInBase64String = requestBody.MediaData;
+                //var imageInBase64String = requestBody.media_data;
+                  var imageInBase64String = requestBody.MediaData;
 
                 if (!imageInBase64String) {
                     console.error("Error: Base64 image string is missing in requestBody!");
@@ -251,7 +251,7 @@ class ValueFirstWhatsAppProvider {
             method: "GET",
             origin: '*'
         }
-
+        console.log("Filestore URL", url)
         let response = await fetch(url,options);
         response = await(response).json();
         console.log("getFileForFileStoreId Response", response);

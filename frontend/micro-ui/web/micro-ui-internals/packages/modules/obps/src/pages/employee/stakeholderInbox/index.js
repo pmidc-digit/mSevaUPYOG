@@ -1,17 +1,22 @@
-import React, { Fragment, useCallback, useMemo, useReducer } from "react"
-import { InboxComposer, CaseIcon, Header } from "@mseva/digit-ui-react-components";
+import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect, use } from "react"
+import { InboxComposer, CaseIcon, Header, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
 import useInboxTableConfig from "./useInboxTableConfig";
 import useInboxMobileCardsData from "./useInboxMobileCardsData";
 import { Link } from "react-router-dom";
+import { set } from "lodash";
 
 const Inbox = ({ parentRoute }) => {
 
   const { t } = useTranslation()
-
-  const tenantId = Digit.ULBService.getStateId();
+  const [error, setError] = useState({
+    error: false,
+    label: ""
+  });
+  // const tenantId = Digit.ULBService.getStateId();
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
 
   const searchFormDefaultValues = {}
 
@@ -96,12 +101,15 @@ const Inbox = ({ parentRoute }) => {
     dispatch({action: "mutateTableForm", data:{ ...formState.tableForm, sortOrder }})
   }
 
-  const { data: localitiesForEmployeesCurrentTenant, isLoading: loadingLocalitiesForEmployeesCurrentTenant } = Digit.Hooks.useBoundaryLocalities(tenantId, "revenue", {}, t);
+  const { data: localitiesForEmployeesCurrentTenant, isLoading: loadingLocalitiesForEmployeesCurrentTenant } = Digit.Hooks.useBoundaryLocalities("pb", "revenue", {}, t);
 
-  const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {} } = Digit.Hooks.obps.useBPAInbox({
-    tenantId,
+  const { isLoading: isInboxLoading, data: { table, statuses, totalCount } = {}, isError } = Digit.Hooks.obps.useBPAInbox({
+    tenantId: tenantId === "pb.punjab"? "pb" : tenantId,
     filters: { ...formState }
   });
+
+  // const isInboxLoading = false, table = [], statuses = [], totalCount = 0;
+  console.log("isInboxLoading", isInboxLoading, "table", table, "statuses", statuses, "totalCount", totalCount);
 
   const PropsForInboxLinks = {
     logoIcon: <CaseIcon />,
@@ -142,6 +150,18 @@ const Inbox = ({ parentRoute }) => {
   
   const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset }
 
+  useEffect(() => {
+    if(isError) {
+      setError({
+        error: true,
+        label: t("ES_OBPS_INBOX_ERROR")
+      })
+      setTimeout(() => {
+        window.location.href = `/digit-ui/employee/`
+      }, 5000)
+    }
+  },[isError])
+
   return <>
     <Header>
       {t("ES_COMMON_INBOX")}
@@ -154,7 +174,8 @@ const Inbox = ({ parentRoute }) => {
         </Link>
       </div>
     }
-    <InboxComposer {...{ isInboxLoading, PropsForInboxLinks, ...propsForSearchForm, ...propsForFilterForm, ...propsForMobileSortForm, propsForInboxTable, propsForInboxMobileCards, formState }}></InboxComposer>
+    {!isError && <InboxComposer {...{ isInboxLoading, PropsForInboxLinks, ...propsForSearchForm, ...propsForFilterForm, ...propsForMobileSortForm, propsForInboxTable, propsForInboxMobileCards, formState }}></InboxComposer>}
+    {error.error && <Toast error label={error.label} onClose={() => setError({ error: false, label: "" })} />}
   </>
 }
 

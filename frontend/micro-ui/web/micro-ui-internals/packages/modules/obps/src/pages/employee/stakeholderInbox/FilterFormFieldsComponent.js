@@ -24,6 +24,35 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
       }, []);
     }
   });
+  const { data: qualificationTypes, isLoading: isQualificationLoading, error: qualificationError } = Digit.Hooks.obps.useQualificationTypes(stateId);
+
+  const updatedQualificationTypes = useMemo(() => {
+    if( isQualificationLoading || qualificationError) return [];
+    return qualificationTypes?.map((qualification) => {
+      let license = null;
+
+    if (qualification.name == "B-Arch") {
+      license = "ARCHITECT"
+    } else if (qualification.name == "BE/B-Tech") {
+      license = "ENGINEER"
+    } else if (qualification.name == "Diploma in Civil Engineering/Architect") {
+      license = "SUPERVISOR"
+    } else if (qualification.name == "Town and Country Planning") {
+      license = "TOWNPLANNER"
+    }
+
+    return license
+    });
+  }, [qualificationTypes, isQualificationLoading]);
+
+  const updatedStakeholderServiceTypes = useMemo(() => {
+    if (stakeholderServiceTypesLoading) return [];
+    return stakeholderServiceTypes?.filter((type) => updatedQualificationTypes?.includes(type.identifier))
+  });
+  
+  console.log("updatedStakeholderServiceTypes", updatedStakeholderServiceTypes, stakeholderServiceTypes);
+
+
   const selectedBusinessService = useWatch({control: controlFilterForm, name: "businessService", defaultValue: null});
   return <>
     <FilterFormField>
@@ -57,7 +86,7 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
                   }}
                   selectedOption={props.value}
                   optionsKey="i18nKey"
-                  options={stakeholderServiceTypes}
+                  options={updatedStakeholderServiceTypes}
                 />  
               </>
           }}

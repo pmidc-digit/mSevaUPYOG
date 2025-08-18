@@ -192,6 +192,12 @@ const ApplicationDetails = (props) => {
               return
             }
             if(data?.Licenses?.length > 0 && data?.Licenses[0]?.applicationNumber){
+              if(data?.Licenses[0]?.businessService?.includes("BPAREG")){
+                setShowToast({ key: "success", action: selectedAction });
+                data.selectedAction = selectedAction;
+                history.push(`/digit-ui/employee/obps/stakeholder-response`, { data: data });
+                return;
+              }
               setShowToast({ key: "success", action: selectedAction });
               history.replace(`/digit-ui/employee/tl/application-details/${data?.Licenses[0]?.applicationNumber}`);
               return;

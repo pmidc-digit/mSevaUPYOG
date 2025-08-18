@@ -88,13 +88,13 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
   // };
 
   const updatedModuleData = quickServiceModules.modules
-  .filter((item) => item.moduleCode === moduleData.code)
-  .map((item) => ({
-    ...item,
-    Access: moduleData.access, // Merge the Access key
-  }));
+    .filter((item) => item.moduleCode === moduleData.code)
+    .map((item) => ({
+      ...item,
+      Access: moduleData.access, // Merge the Access key
+    }));
 
- //console.log("updatedModuleData",updatedModuleData)
+  //console.log("updatedModuleData",updatedModuleData)
   const iconSelector = (code) => {
     switch (code) {
       case "PT":
@@ -111,9 +111,13 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <MCollectIcon />;
       case "PGR":
         return <PGRIcon />;
+      case "NDC":
+        return <PGRIcon />;
       case "TL":
         return <TLIcon />;
       case "OBPS":
+        return <OBPSIcon />;
+      case "BPAStakeholder":
         return <OBPSIcon />;
       case "Bills":
         return <BillsIcon />;
@@ -121,8 +125,6 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <PTIcon />;
       case "Swach":
         return <PGRIcon />;
-      case "NDC":
-        return <TLIcon />;
       case "HRMS":
         return <WSICon />;
       case "SV":
@@ -137,9 +139,7 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <PTIcon />;
     }
   };
-return(
-  
-  userRoles.some(item => item.code === updatedModuleData[0]?.Access)? (
+  return userRoles.some((item) => item.code === updatedModuleData[0]?.Access) ? (
     <div
       className="employee-dashboard-quick-service-card employee-dashboard-quick-service-card-content"
       style={{
@@ -167,11 +167,11 @@ return(
       </Link>
       <Link
         to={`${updatedModuleData[0]?.routes}`}
-         style={{ 
-          width: "100%" ,
-          }}    
-          >
-            <div
+        style={{
+          width: "100%",
+        }}
+      >
+        <div
           className="employee-dashboard-quick-service-card-module-name"
           style={{
             display: "flex",
@@ -186,8 +186,7 @@ return(
         </div>
       </Link>
     </div>
-  ) : null
- );
+  ) : null;
 };
 
 export default EmployeeQuickServicesCard;

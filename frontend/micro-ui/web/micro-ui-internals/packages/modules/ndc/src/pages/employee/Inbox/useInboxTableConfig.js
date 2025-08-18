@@ -7,20 +7,26 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const { t } = useTranslation();
 
   const GetCell = (value) => <span className="cell-text styled-cell">{value}</span>;
-  const GetStatusCell = (value) => value === "CS_NA" ? t(value) : 
-    value === "Active" || value > 0 ? <span className="sla-cell-success">{value}</span> : <span className="sla-cell-error">{value}</span>;
+  const GetStatusCell = (value) =>
+    value === "CS_NA" ? (
+      t(value)
+    ) : value === "Active" || value > 0 ? (
+      <span className="sla-cell-success">{value}</span>
+    ) : (
+      <span className="sla-cell-error">{value}</span>
+    );
 
   const tableColumnConfig = useMemo(() => {
     return [
       {
-        Header: t("NOC_APP_NO_LABEL"),
-        accessor: "applicationNo",
+        Header: t("NDC_APPLICATION_NO."),
+        accessor: "uuid",
         disableSortBy: true,
         Cell: ({ row }) => {
           return (
             <div>
-              <Link to={`${parentRoute}/inbox/application-overview/${row.original["applicationId"]}`}>
-                <span className="link">{row.original["applicationId"]}</span>
+              <Link to={`${parentRoute}/inbox/application-overview/${row.original?.applicationId}`}>
+                <span className="link">{row.original?.applicationId}</span>
               </Link>
             </div>
           );
@@ -28,34 +34,29 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       },
       {
         Header: t("TL_COMMON_TABLE_COL_APP_DATE"),
-        accessor: "applicationDate",
-        Cell: ({ row }) => (row.original?.["date"] ? GetCell(format(new Date(row.original?.["date"]), "dd/MM/yyyy")) : ""),
-      },
-      // {
-      //   Header: t("ES_INBOX_LOCALITY"),
-      //   accessor: (row) => t(row?.locality),
-      // disableSortBy: true,
-
-      // },
-      {
-        Header: t("NOC_MODULE_SOURCE_LABEL"),
-        accessor: (row) => t(`MODULE_${row?.source}`),
-        disableSortBy: true,
+        accessor: "createdtime",
+        Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
       },
       {
         Header: t("NOC_STATUS_LABEL"),
-        accessor: (row) => t(row?.status),
-        disableSortBy: true,
+        accessor: "status",
+        Cell: ({ row }) => row.original?.status,
       },
-      {
-        Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
-        accessor: (row) => row?.owner,
-        disableSortBy: true,
-      },
-      {
-        Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
-        accessor: (row) => GetStatusCell(row?.sla),
-      },
+      // {
+      //   Header: t("ES_INBOX_NAME_LABEL"),
+      //   accessor: (row) =>
+      //     row?.Applicant?.firstname
+      //       ? row?.Applicant?.firstname
+      //       : "" + " " + row?.original?.Applicant?.lastname
+      //       ? row?.original?.Applicant?.lastname
+      //       : "",
+      //   disableSortBy: true,
+      // },
+      // {
+      //   Header: t("NDC_EMAIL_LABEL"),
+      //   accessor: (row) => (row?.Applicant?.["email"] ? row?.Applicant?.["email"] : "NA"),
+      //   disableSortBy: true,
+      // },
     ];
   });
 

@@ -1,5 +1,5 @@
 // reducers/employeeFormReducer.js
-import { SET_NDC_STEP, UPDATE_NDC_FORM } from "../actions/types";
+import { SET_NDC_STEP, UPDATE_NDC_FORM, RESET_NDC_FORM } from "../actions/types";
 
 const initialState = {
   step: 1,
@@ -22,7 +22,8 @@ const NDCFormReducer = (state = initialState, action) => {
         ...state,
         step: action.payload,
       };
-
+    case RESET_NDC_FORM:
+      return initialState; // <-- reset everything
     default:
       return state;
   }

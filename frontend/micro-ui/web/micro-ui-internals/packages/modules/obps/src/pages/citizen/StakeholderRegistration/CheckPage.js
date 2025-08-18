@@ -12,6 +12,7 @@ import {
   BackButton,
   EditIcon,
   CardText,
+  Loader,
 } from "@mseva/digit-ui-react-components";
 import React, { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -39,7 +40,7 @@ const CheckPage = ({ onSubmit, value }) => {
   let consumerCode = value?.result?.Licenses[0].applicationNumber;
   const fetchBillParams = { consumerCode };
 
-  const { data: paymentDetails } = Digit.Hooks.obps.useBPAREGgetbill(
+  const { data: paymentDetails, isLoading } = Digit.Hooks.obps.useBPAREGgetbill(
     { businessService: "BPAREG", ...fetchBillParams, tenantId: tenant ? tenant : tenantId.split(".")[0] },
     {
       enabled: consumerCode ? true : false,
@@ -51,6 +52,10 @@ const CheckPage = ({ onSubmit, value }) => {
 
   function routeTo(jumpTo) {
     history.push(jumpTo);
+  }
+
+  if(isLoading){
+    return <Loader />
   }
 
   return (

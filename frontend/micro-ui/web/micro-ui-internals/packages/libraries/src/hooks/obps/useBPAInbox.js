@@ -10,7 +10,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   if (window.location.href.includes("stakeholder-inbox")) moduleName = "BPAREG";
   if (moduleName == "BPAREG") {
     applicationNumber = applicationNo;
-    tenantId = Digit.ULBService.getStateId();
+    // tenantId = Digit.ULBService.getStateId();
   }
   if (
     applicationType === "BUILDING_OC_PLAN_SCRUTINY" &&
@@ -31,7 +31,8 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
             : ["BPA_LOW", "BPA", "BPA_OC"]
           : businessService
           ? [businessService.identifier]
-          : ["ARCHITECT", "BUILDER", "ENGINEER", "STRUCTURALENGINEER", "TOWNPLANNER", "SUPERVISOR"],
+          :["ARCHITECT", "ENGINEER", "TOWNPLANNER", "SUPERVISOR"],
+          // : ["ARCHITECT", "BUILDER", "ENGINEER", "STRUCTURALENGINEER", "TOWNPLANNER", "SUPERVISOR"],
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
     },
     moduleSearchCriteria: {

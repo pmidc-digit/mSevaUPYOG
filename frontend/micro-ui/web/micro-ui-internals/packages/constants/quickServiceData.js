@@ -51,6 +51,18 @@ export const quickServiceModules = {
       roles :[]
     },
     {
+      moduleCode: "BPAStakeholder",
+      moduleName: "BPA Stakeholder",
+      bgColor: "#00cccd",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/obps/stakeholder-inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles :[]
+    },
+    {
       moduleCode: "TL",
       moduleName: "Trade License",
       bgColor: "#3e4b5b",

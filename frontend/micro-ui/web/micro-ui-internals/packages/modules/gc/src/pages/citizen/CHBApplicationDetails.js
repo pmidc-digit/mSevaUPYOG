@@ -27,6 +27,86 @@ import { pdfDownloadLink } from "../../utils";
 import get from "lodash/get";
 import { size } from "lodash";
 
+const dummyData = {
+  hallsBookingApplication: [
+    {
+      bookingNo: "CHB-2025-0001",
+      tenantId: "pb.amritsar",
+      communityHallCode: "COMMUNITY_HALL_001",
+      applicantDetail: {
+        applicantName: "John Doe",
+        applicantMobileNo: "9876543210",
+        applicantAlternateMobileNo: "9123456780",
+        applicantEmailId: "john.doe@example.com",
+        accountNumber: "123456789012",
+        ifscCode: "HDFC0001234",
+        bankName: "HDFC Bank",
+        bankBranchName: "Amritsar Main",
+        accountHolderName: "John Doe",
+      },
+      specialCategory: {
+        category: "GENERAL",
+      },
+      purpose: {
+        purpose: "Marriage Ceremony",
+      },
+      purposeDescription: "Booking community hall for marriage function",
+      address: {
+        pincode: "143001",
+        city: "Amritsar",
+        locality: "Ranjit Avenue",
+        streetName: "Main Road",
+        houseNo: "12B",
+        landmark: "Near Golden Temple",
+      },
+      bookingSlotDetails: [
+        {
+          hallCode: "HALL-101",
+          capacity: "200",
+          bookingDate: "2025-08-20",
+          bookingFromTime: "10:00",
+          bookingToTime: "14:00",
+          status: "CONFIRMED",
+        },
+        {
+          hallCode: "HALL-102",
+          capacity: "150",
+          bookingDate: "2025-08-21",
+          bookingFromTime: "18:00",
+          bookingToTime: "22:00",
+          status: "PENDING",
+        },
+      ],
+      documents: [
+        {
+          documentType: "CHB.ID_PROOF.AADHAAR",
+          fileStoreId: "file-12345",
+        },
+        {
+          documentType: "CHB.ADDRESS_PROOF.UTILITY_BILL",
+          fileStoreId: "file-67890",
+        },
+      ],
+      workflow: {
+        id: 101,
+        tenantId: "pb.amritsar",
+        businessService: "chb-services",
+        businessId: "CHB-2025-0001",
+        action: "APPLY",
+        moduleName: "chb-services",
+        state: "APPLIED",
+        comment: "Application submitted",
+        documents: null,
+        assignes: null,
+      },
+      additionalDetails: {
+        documentDate: "2025-08-19T10:30:00Z",
+      },
+    },
+  ],
+};
+
+
 const CHBApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -48,7 +128,8 @@ const CHBApplicationDetails = () => {
   const [billData, setBillData] = useState(null);
 
   // Getting HallsBookingDetails
-  const hallsBookingApplication = get(data, "hallsBookingApplication", []);
+  // const hallsBookingApplication = get(data, "hallsBookingApplication", []);
+  const hallsBookingApplication = get(dummyData, "hallsBookingApplication", []); //placing this dummy data for testing purposes
   const chbId = get(data, "hallsBookingApplication[0].bookingNo", []);
 
   let chb_details = (hallsBookingApplication && hallsBookingApplication.length > 0 && hallsBookingApplication[0]) || {};
@@ -321,14 +402,14 @@ const CHBApplicationDetails = () => {
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_DOCUMENTS_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Card style={{display: "flex", flexDirection: "row" }}>
-              {docs.map((doc, index) => (
+              {/* {docs && docs?.map((doc, index) => (
                 <div key={`doc-${index}`} style={{ marginRight: "25px"}}>
                   <div>
                     <CardSectionHeader>{t("CHB_" + (doc?.documentType?.split('.').slice(0,2).join('_')))}</CardSectionHeader>
                     <CHBDocument value={docs} Code={doc?.documentType} index={index} />
                   </div>
                 </div>
-              ))}
+              ))} */}
             </Card>
          </StatusTable>
 

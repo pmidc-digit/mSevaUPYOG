@@ -1,4 +1,4 @@
-const config = require('../env-variables_prod');
+const config = require('../env-variables');
 const fetch = require("node-fetch");
 const urlencode = require('urlencode');
 const fs = require('fs');

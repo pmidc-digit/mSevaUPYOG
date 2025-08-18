@@ -171,10 +171,12 @@ import useTLDocumentSearch from "./tl/useTLDocumentSearch";
 import useTradeLicenseAPI from "./tl/useTradeLicenseAPI";
 import useTradeLicenseSearch from "./tl/useTradeLicenseSearch";
 import { useTLSearchApplication, useTLApplicationDetails } from "./tl/useTLsearchApplication";
+import { useNDCSearchApplication, useNDCSearchApplicationEmployee } from "./ndc/useNDCSearchApplication";
 import useTLPaymentHistory from "./tl/userPaymentHistory";
 import useTLApplicationDetail from "./tl/useApplicationDetail";
 import useTLApplicationActions from "./tl/useApplicationActions";
 import useTLFetchBill from "./tl/useFetchBill";
+import useNDCDocumentSearch from "./ndc/useNDCDocumentSearch";
 
 import useTLGenderMDMS from "./tl/useTLGenderMDMS";
 import useTLInbox from "./tl/useInbox";
@@ -327,6 +329,8 @@ import useADSDocumentsMDMS from "./ads/useADSDocumentsMDMS";
 import useADSDocumentSearch from "./ads/useADSDocumentSearch";
 import useADSDemandEstimation from "./ads/useADSDemandEstimation";
 
+// ndc
+import useNDCInbox from "./ndc/useInbox";
 import useSpecialCategory from "./chb/useSpecialCategory";
 import useResidentType from "./chb/useResidentType";
 import usePurpose from "./chb/usePurpose";
@@ -672,6 +676,13 @@ const noc = {
   useNOCSearchApplication,
 };
 
+const ndc = {
+  useInbox: useNDCInbox,
+  useSearchApplication: useNDCSearchApplication,
+  useSearchEmployeeApplication: useNDCSearchApplicationEmployee,
+  useNDCDocumentSearch,
+};
+
 const challangeneration = {
   useChallanGenerationRecieptSearch,
   useChallanGenerationMDMS,
@@ -683,7 +694,7 @@ const challangeneration = {
   useChallanGenerationCategoryTypes,
   useChallanGenerationTaxHeads,
   useChallanGenerationFormConfig,
-}
+};
 const rentandlease = {
   useRentAndLeaseRecieptSearch,
   useRentAndLeaseMDMS,
@@ -695,7 +706,7 @@ const rentandlease = {
   useRentAndLeaseCategoryTypes,
   useRentAndLeaseTaxHeads,
   useRentAndLeaseFormConfig,
-}
+};
 
 const ws = {
   WSSearchMdmsTypes,
@@ -816,12 +827,13 @@ const Hooks = {
   createTokenAPI,
   sv,
   ads,
+  ndc,
   chb,
   asset,
   pgrAi,
   useEDCRForm,
   challangeneration,
-  rentandlease
+  rentandlease,
 };
 
 export default Hooks;

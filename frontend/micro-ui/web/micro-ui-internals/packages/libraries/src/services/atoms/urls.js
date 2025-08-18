@@ -336,6 +336,12 @@ const Urls = {
     PGR_Search_AI: "/pgr-ai-services/v1/request/_search",
     PGR_Update_AI: "/pgr-ai-services/v1/request/_update",
   },
+  ndc: {
+    create: "/ndc-services/ndc/_create",
+    search: "/ndc-services/ndc/_search",
+    update: "/ndc-services/ndc/_update",
+    billingCalculate: "/ndc-calculator/v1/_calculate",
+  },
 
   gc: {
     create: "/gc-services/booking/v1/_create",

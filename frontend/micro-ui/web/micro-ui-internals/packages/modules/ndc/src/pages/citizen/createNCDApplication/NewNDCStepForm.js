@@ -1,0 +1,96 @@
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
+import { useHistory } from "react-router-dom";
+//
+import Stepper from "../../../../../../react-components/src/customComponents/Stepper";
+import { config } from "../../../config/citizen/CitizenNDCApplicationConfig";
+import { setNDCStep } from "../../../redux/actions/NDCFormActions";
+import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
+
+const createEmployeeConfig = [
+  {
+    head: "NDC Details",
+    stepLabel: "NDC Details",
+    stepNumber: 1,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewNDCStepFormOneCitizen",
+    key: "NDCDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
+    head: "NDC_DOCUMENTS_REQUIRED",
+    stepLabel: "Document Info",
+    stepNumber: 2,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewNDCStepFormTwoCitizen",
+    key: "DocummentDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
+    head: "Summary",
+    stepLabel: "Summary",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "NDCNewFormSummaryStepThreeCitizen",
+    key: "PTSummary",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Submit",
+    },
+  }
+]
+
+const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
+  return { ...item, currStepConfig: config.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
+});
+
+// console.log("updatedCreateEmployeeconfig", updatedCreateEmployeeconfig);
+
+export const NewNDCStepForm = () => {
+    const history = useHistory();
+    const { t } = useTranslation();
+    const dispatch = useDispatch();
+    const [showToast, setShowToast] = useState(null);
+    const formState = useSelector((state) => state.ndc.NDCForm);
+    const formData = formState.formData;
+    const step = formState.step;
+    const tenantId = Digit.ULBService.getCurrentTenantId();
+
+    // console.log("formStateNDC", formState);
+
+    const setStep = (updatedStepNumber) => {
+      dispatch(setNDCStep(updatedStepNumber));
+    };
+
+    const handleSubmit = () => {}
+
+
+  return (
+    <div className="pageCard">
+      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+        {t("New NDC Application")}
+      </CardHeader>
+      <Stepper stepsList={updatedCreateEmployeeconfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
+      {showToast && (
+        <Toast
+          error={showToast.key}
+          label={t(showToast.label)}
+          onClose={() => {
+            setShowToast(null);
+          }}
+          isDleteBtn={"true"}
+        />
+      )}
+    </div>
+  )
+}

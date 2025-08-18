@@ -31,6 +31,7 @@ import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-c
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
 import { PTRModule, PTRLinks, PTRComponents, PTRReducers } from "@mseva/digit-ui-module-ptr";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
+import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
 import { ADSModule, ADSLinks, ADSComponents, ADSReducers } from "@mseva/upyog-ui-module-ads";
 import { CHBModule, CHBLinks, CHBComponents, CHBReducers } from "@mseva/upyog-ui-module-chb";
 import { ASSETComponents, ASSETLinks, ASSETModule } from "@mseva/upyog-ui-module-asset";
@@ -76,11 +77,13 @@ const enabledModules = [
   "ADS",
   "Swach",
   "SV",
+  "NDC",
   "CHB",
   "ASSET",
   "PGRAI",
   "ChallanGeneration",
   "RentAndLease",
+  "BPAStakeholder",
   "GC",
 ];
 
@@ -171,6 +174,7 @@ const initDigitUI = () => {
   initWSComponents();
   initCommonPTComponents();
   initBillsComponents();
+  initNDCComponents();
   // initCustomisationComponents();
 
   const moduleReducers = (initData) => ({
@@ -181,6 +185,7 @@ const initDigitUI = () => {
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData),
     tl: TLReducers(initData),
+    ndc: NDCReducers(initData),
     ptr: PTRReducers(initData),
     ads: ADSReducers(initData),
     chb: CHBReducers(initData),

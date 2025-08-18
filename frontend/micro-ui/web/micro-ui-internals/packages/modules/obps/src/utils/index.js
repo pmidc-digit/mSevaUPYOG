@@ -89,7 +89,9 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
       unit.map((un, index) => {
         arr = un?.usageCategory?.split(",");
         subBlocks = [];
-        arr && arr?.length > 0 && arr != "" &&
+        arr &&
+          arr?.length > 0 &&
+          arr != "" &&
           arr.map((ob, ind) => {
             subBlocks.push({
               code: ob,
@@ -105,7 +107,9 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
 
   data.BlockIds = getBlockIds(data?.landInfo?.unit);
   data.address = data?.landInfo?.address;
-  data.address.locality["i18nkey"] = `${t(`${stringReplaceAll(data?.landInfo?.address?.tenantId,".","_").toUpperCase()}_REVENUE_${data?.landInfo?.address?.locality?.code}`)}`;
+  data.address.locality["i18nkey"] = `${t(
+    `${stringReplaceAll(data?.landInfo?.address?.tenantId, ".", "_").toUpperCase()}_REVENUE_${data?.landInfo?.address?.locality?.code}`
+  )}`;
   data.placeName = data?.additionalDetails?.GISPlaceName || "";
   data.data = {
     scrutinyNumber: { edcrNumber: APIScrutinyDetails?.edcrNumber },
@@ -113,7 +117,7 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
     applicationDate: data?.auditDetails?.createdTime,
     applicationType: APIScrutinyDetails?.appliactionType,
     holdingNumber: data?.additionalDetails?.holdingNo,
-    boundaryWallLength:data?.additionalDetails?.boundaryWallLength,
+    boundaryWallLength: data?.additionalDetails?.boundaryWallLength,
     occupancyType: APIScrutinyDetails?.planDetail?.planInformation?.occupancy,
     registrationDetails: data?.additionalDetails?.registrationDetails,
     riskType: Digit.Utils.obps.calculateRiskType(
@@ -181,14 +185,14 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
 //         additionalDetails: {},
 //         id: ob.id,
 //       };
-    
+
 //       if (ob.documentType === "SITEPHOTOGRAPH.ONE") {
 //         docObject.additionalDetails = {
 //           latitude: ob?.additionalDetails?.latitude,
 //           longitude: ob?.additionalDetails?.longitude,
 //         };
 //       }
-    
+
 //       document.push(docObject);
 //     } else {
 //       let docObject = {
@@ -199,14 +203,14 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
 //         fileUrl: "",
 //         additionalDetails: {},
 //       };
-    
+
 //       if (ob.documentType === "SITEPHOTOGRAPH.ONE") {
 //         docObject.additionalDetails = {
 //           latitude: ob?.additionalDetails?.latitude,
 //           longitude: ob?.additionalDetails?.longitude,
 //         };
 //       }
-    
+
 //       document.push(docObject);
 //     }
 //   });
@@ -264,7 +268,7 @@ export const getDocumentforBPA = (docs, PrevStateDocs) => {
 
       document.push(docObject);
     });
-    
+
   document.push(architectConsentForm);
 
   document = [...document, ...(PrevStateDocs ? PrevStateDocs : [])];
@@ -427,9 +431,9 @@ export const getBPAOwners = (data, isOCBPA) => {
 };
 
 export const getOwnerShipCategory = (data, isOCBPA) => {
-    if(isOCBPA) return data?.landInfo?.ownershipCategory
-    return data.owners.ownershipCategory.code || data?.landInfo?.ownershipCategory
-}
+  if (isOCBPA) return data?.landInfo?.ownershipCategory;
+  return data.owners.ownershipCategory || data?.landInfo?.ownershipCategory;
+};
 
 export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = false) => {
   if (isOCBPA) {
@@ -472,7 +476,9 @@ export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = 
       applicationDate: data?.applicationDate,
       status: isSendBackTOCitizen ? data.status : data.status ? data.status : "INITIATED",
       documents: getDocumentforBPA(data?.documents?.documents, data?.PrevStateDocuments),
-      landInfo: isOCBPA ? data?.landInfo : { ...data?.landInfo, ownershipCategory: getOwnerShipCategory(data, isOCBPA), owners: getBPAOwners(data, isOCBPA), unit: getBPAUnit(data) },
+      landInfo: isOCBPA
+        ? data?.landInfo
+        : { ...data?.landInfo, ownershipCategory: getOwnerShipCategory(data, isOCBPA), owners: getBPAOwners(data, isOCBPA), unit: getBPAUnit(data) },
       assignee: isSendBackTOCitizen ? data.assignee : [],
       workflow: {
         action: "SEND_TO_CITIZEN",
@@ -484,27 +490,27 @@ export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = 
       additionalDetails: {
         ...data?.additionalDetails,
         OTPverfiedTimeSamp: sessionStorage.getItem("otpVerifiedTimestamp"),
-        otherFeesDiscription:sessionStorage.getItem("otherChargesDisc"),
-        lessAdjustmentFeeFiles:JSON.parse(sessionStorage.getItem("uploadedFileLess")),
-        selfCertificationCharges:{
-          "BPA_MALBA_CHARGES" : sessionStorage.getItem("Malbafees"),
-          "BPA_LABOUR_CESS": sessionStorage.getItem("LabourCess"),
-          "BPA_WATER_CHARGES":sessionStorage.getItem("WaterCharges"),
-          "BPA_GAUSHALA_CHARGES_CESS":sessionStorage.getItem("GaushalaFees"),
-          "BPA_LESS_ADJUSMENT_PLOT":sessionStorage.getItem("lessAdjusment",),
-          "BPA_DEVELOPMENT_CHARGES":sessionStorage.getItem("development"),
-          "BPA_OTHER_CHARGES":sessionStorage.getItem("otherCharges")
+        otherFeesDiscription: sessionStorage.getItem("otherChargesDisc"),
+        lessAdjustmentFeeFiles: JSON.parse(sessionStorage.getItem("uploadedFileLess")),
+        selfCertificationCharges: {
+          BPA_MALBA_CHARGES: sessionStorage.getItem("Malbafees"),
+          BPA_LABOUR_CESS: sessionStorage.getItem("LabourCess"),
+          BPA_WATER_CHARGES: sessionStorage.getItem("WaterCharges"),
+          BPA_GAUSHALA_CHARGES_CESS: sessionStorage.getItem("GaushalaFees"),
+          BPA_LESS_ADJUSMENT_PLOT: sessionStorage.getItem("lessAdjusment"),
+          BPA_DEVELOPMENT_CHARGES: sessionStorage.getItem("development"),
+          BPA_OTHER_CHARGES: sessionStorage.getItem("otherCharges"),
         },
 
-        GISPlaceName : data?.address?.placeName,
+        GISPlaceName: data?.address?.placeName,
         holdingNo: data?.data?.holdingNumber ? data?.data?.holdingNumber : data?.additionalDetails?.holdingNo,
-        boundaryWallLength:data?.data?.boundaryWallLength ? data?.data?.boundaryWallLength : data?.additionalDetails?.boundaryWallLength , 
+        boundaryWallLength: data?.data?.boundaryWallLength ? data?.data?.boundaryWallLength : data?.additionalDetails?.boundaryWallLength,
         registrationDetails: data?.data?.registrationDetails ? data?.data?.registrationDetails : data?.additionalDetails?.registrationDetails,
         architectconsentdocument: {
-          "documentType": "Architect Consent Form",
-          "fileStoreId": sessionStorage.getItem("ArchitectConsentform"),
-          "fileStore": sessionStorage.getItem("ArchitectConsentform"),
-        }
+          documentType: "Architect Consent Form",
+          fileStoreId: sessionStorage.getItem("ArchitectConsentform"),
+          fileStore: sessionStorage.getItem("ArchitectConsentform"),
+        },
       },
       applicationType: "BUILDING_PLAN_SCRUTINY",
       serviceType: "NEW_CONSTRUCTION",
@@ -538,7 +544,10 @@ export const convertToStakeholderObject = (data) => {
         action: "APPLY",
         tradeLicenseDetail: {
           ...data?.result?.Licenses[0]?.tradeLicenseDetail,
-          additionalDetail: { counsilForArchNo: data?.formData?.LicneseType?.ArchitectNo, isSelfCertificationRequired:data?.formData?.LicneseType?.selfCertification},
+          additionalDetail: {
+            counsilForArchNo: data?.formData?.LicneseType?.ArchitectNo,
+            isSelfCertificationRequired: data?.formData?.LicneseType?.selfCertification,
+          },
           tradeUnits: [
             {
               ...data?.result?.Licenses[0]?.tradeLicenseDetail?.tradeUnits?.[0],
@@ -805,15 +814,14 @@ export const printPdf = (blob) => {
   }
 };
 
-export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId,payments , mode = "download", pdfKey = "bpa-receipt") => {
-  let response=null;
-  console.log("payments",payments)
-    if (payments[0]?.fileStoreId ) {
-       response = { filestoreIds: [payments[0]?.fileStoreId] };      
-    }
-  else{
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments  }, "bpa-receipt");
-     //response = await Digit.OBPSService.receipt_download(bussinessService, consumerCode, tenantId, { pdfKey: pdfKey });
+export const downloadAndPrintReciept = async (bussinessService, consumerCode, tenantId, payments, mode = "download", pdfKey = "bpa-receipt") => {
+  let response = null;
+  console.log("payments", payments);
+  if (payments[0]?.fileStoreId) {
+    response = { filestoreIds: [payments[0]?.fileStoreId] };
+  } else {
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: payments }, "bpa-receipt");
+    //response = await Digit.OBPSService.receipt_download(bussinessService, consumerCode, tenantId, { pdfKey: pdfKey });
   }
   const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
   window.open(fileStore[response?.filestoreIds[0]], "_blank");
@@ -876,69 +884,78 @@ export const getCheckBoxLabelData = (t, appData) => {
   }
 };
 
-
 export const scrutinyDetailsData = async (edcrNumber, tenantId) => {
-  const scrutinyDetails = await Digit.OBPSService.scrutinyDetails(tenantId, {edcrNumber: edcrNumber});
-  const bpaDetails = await Digit.OBPSService.BPASearch(tenantId, {edcrNumber: edcrNumber});
+  const scrutinyDetails = await Digit.OBPSService.scrutinyDetails(tenantId, { edcrNumber: edcrNumber });
+  const bpaDetails = await Digit.OBPSService.BPASearch(tenantId, { edcrNumber: edcrNumber });
   if (bpaDetails?.BPA?.length == 0) {
-    return scrutinyDetails?.edcrDetail?.[0] ? scrutinyDetails?.edcrDetail?.[0] : {type: "ERROR", message: "BPA_NO_RECORD_FOUND"};
-  } else if (bpaDetails?.BPA?.length > 0 && (bpaDetails?.BPA?.[0]?.status == "INITIATED" || bpaDetails?.BPA?.[0]?.status == "REJECTED" || bpaDetails?.BPA?.[0]?.status == "PERMIT REVOCATION")) {
-    return scrutinyDetails?.edcrDetail?.[0] ? scrutinyDetails?.edcrDetail?.[0] : {type: "ERROR", message: "BPA_NO_RECORD_FOUND"};
+    return scrutinyDetails?.edcrDetail?.[0] ? scrutinyDetails?.edcrDetail?.[0] : { type: "ERROR", message: "BPA_NO_RECORD_FOUND" };
+  } else if (
+    bpaDetails?.BPA?.length > 0 &&
+    (bpaDetails?.BPA?.[0]?.status == "INITIATED" || bpaDetails?.BPA?.[0]?.status == "REJECTED" || bpaDetails?.BPA?.[0]?.status == "PERMIT REVOCATION")
+  ) {
+    return scrutinyDetails?.edcrDetail?.[0] ? scrutinyDetails?.edcrDetail?.[0] : { type: "ERROR", message: "BPA_NO_RECORD_FOUND" };
   } else {
-    return {type: "ERROR", message: "APPLICATION_NUMBER_ALREADY_EXISTS"}
+    return { type: "ERROR", message: "APPLICATION_NUMBER_ALREADY_EXISTS" };
   }
-}
+};
 
 export const getOCEDCRDetails = async (edcrNumber, tenantId) => {
   try {
-    const valueToStore = await Digit.OBPSService.scrutinyDetails(tenantId, {edcrNumber: edcrNumber});
+    const valueToStore = await Digit.OBPSService.scrutinyDetails(tenantId, { edcrNumber: edcrNumber });
     return valueToStore;
   } catch (err) {
-    return err?.response?.statusText ? err?.response?.statusText : "BPA_INTERNAL_SERVER_ERROR"
+    return err?.response?.statusText ? err?.response?.statusText : "BPA_INTERNAL_SERVER_ERROR";
   }
-}
+};
 
 export const ocScrutinyDetailsData = async (edcrNumber, tenantId) => {
   const scrutinyDetails = await getOCEDCRDetails(edcrNumber, tenantId);
   if (!scrutinyDetails?.edcrDetail?.[0]?.edcrNumber) {
-    return {type: "ERROR", message: scrutinyDetails ? scrutinyDetails : "BPA_NO_RECORD_FOUND"}
+    return { type: "ERROR", message: scrutinyDetails ? scrutinyDetails : "BPA_NO_RECORD_FOUND" };
   }
-  const bpaDetails = await Digit.OBPSService.BPASearch(tenantId, {approvalNo: scrutinyDetails?.edcrDetail?.[0]?.permitNumber});
+  const bpaDetails = await Digit.OBPSService.BPASearch(tenantId, { approvalNo: scrutinyDetails?.edcrDetail?.[0]?.permitNumber });
   const bpaEdcrNumber = bpaDetails?.BPA?.[0]?.edcrNumber;
   tenantId = bpaDetails?.BPA?.[0]?.tenantId;
   const edcrDetails = await Digit.OBPSService.scrutinyDetails(tenantId, { edcrNumber: bpaEdcrNumber });
-  const bpaResponse = await Digit.OBPSService.BPASearch(tenantId, {edcrNumber: edcrNumber});
+  const bpaResponse = await Digit.OBPSService.BPASearch(tenantId, { edcrNumber: edcrNumber });
 
   if (!scrutinyDetails?.edcrDetail?.[0]?.edcrNumber) {
-    return {type: "ERROR", message: scrutinyDetails ? scrutinyDetails : "BPA_NO_RECORD_FOUND"}
+    return { type: "ERROR", message: scrutinyDetails ? scrutinyDetails : "BPA_NO_RECORD_FOUND" };
   }
-  
+
   if (scrutinyDetails?.edcrDetail?.[0]?.edcrNumber) {
     return {
       ocEdcrDetails: scrutinyDetails?.edcrDetail?.[0],
-      otherDetails : {
+      otherDetails: {
         bpaApprovalResponse: bpaDetails?.BPA,
         edcrDetails: edcrDetails?.edcrDetail,
         bpaResponse: bpaResponse?.BPA,
-      }
-    }
+      },
+    };
   } else {
-    return {type: "ERROR", message: "BPA_NO_RECORD_FOUND"}
+    return { type: "ERROR", message: "BPA_NO_RECORD_FOUND" };
   }
-}
+};
 
 export const getOrderDocuments = (appUploadedDocumnets, isNoc = false) => {
   let finalDocs = [];
   if (appUploadedDocumnets?.length > 0) {
-    let uniqueDocmnts = appUploadedDocumnets.filter((elem, index) => appUploadedDocumnets.findIndex((obj) => obj?.documentType?.split(".")?.slice(0, 2)?.join("_") === elem?.documentType?.split(".")?.slice(0, 2)?.join("_")) === index);
-    uniqueDocmnts?.map(uniDoc => {
-      const resultsDocs = appUploadedDocumnets?.filter(appDoc => uniDoc?.documentType?.split(".")?.slice(0, 2)?.join("_") == appDoc?.documentType?.split(".")?.slice(0, 2)?.join("_"));
-      resultsDocs?.forEach(resDoc => resDoc.title = resDoc.documentType);
+    let uniqueDocmnts = appUploadedDocumnets.filter(
+      (elem, index) =>
+        appUploadedDocumnets.findIndex(
+          (obj) => obj?.documentType?.split(".")?.slice(0, 2)?.join("_") === elem?.documentType?.split(".")?.slice(0, 2)?.join("_")
+        ) === index
+    );
+    uniqueDocmnts?.map((uniDoc) => {
+      const resultsDocs = appUploadedDocumnets?.filter(
+        (appDoc) => uniDoc?.documentType?.split(".")?.slice(0, 2)?.join("_") == appDoc?.documentType?.split(".")?.slice(0, 2)?.join("_")
+      );
+      resultsDocs?.forEach((resDoc) => (resDoc.title = resDoc.documentType));
       finalDocs.push({
         title: !isNoc ? resultsDocs?.[0]?.documentType?.split(".")?.slice(0, 2)?.join("_") : "",
-        values: resultsDocs
-      })
+        values: resultsDocs,
+      });
     });
   }
   return finalDocs;
-}
+};

@@ -5,11 +5,13 @@ import Timeline from "../components/Timeline";
 
 const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
   const { pathname: url } = useLocation();
+  // const userInfo = Digit.UserService.getUser();
   const userInfo = Digit.UserService.getUser();
   let validation = {};
   const tenantId = Digit.ULBService.getCurrentTenantId();
   let isOpenLinkFlow = window.location.href.includes("openlink");
   const uuid = userInfo?.info?.uuid;
+  const [getUserDetails, setGetUserDetails] = useState(null);
   const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(tenantId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
   const [name, setName] = useState(() => {
     // (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
@@ -55,7 +57,24 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   );
   const [PanNumber, setPanNumber] = useState(formData?.LicneseDetails?.PanNumber || formData?.formData?.LicneseDetails?.PanNumber || "");
   const [errorMessage, setErrorMessage] = useState("");
+  // get user info from api
+  const getUserInfo = async () => {
+    const uuid = userInfo?.info?.uuid;
+    if (uuid) {
+      const usersResponse = await Digit.UserService.userSearch(tenantId, { uuid: [uuid] }, {});
+      if (usersResponse?.user?.length) {
+        const user = usersResponse.user[0];
+        setGetUserDetails(user);
+        if (user.dob) {
+          setDateOfBirth(user.dob);
+        }
+      }
+    }
+  };
 
+  useEffect(() => {
+    getUserInfo();
+  }, []);
   useEffect(() => {
     if (!gender?.code && userDetails?.user?.[0]?.gender && !isOpenLinkFlow) {
       setGender({
@@ -147,11 +166,19 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     }
 
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
-      let fullName = `${name} ${middleName} ${lastName}`;
+      // let fullName = `${name} ${middleName} ${lastName}`;
       // console.log("firstName before saving",name);
       // console.log("middleName before saving", middleName);
       // console.log("lastName before saving", lastName);
       // console.log("fullName here", fullName);
+      let fullName = "";
+      if(name?.length>0){
+        fullName = name;
+      }if(middleName?.length>0){
+        fullName = fullName + " " + middleName;
+      }if(lastName?.length>0){
+        fullName = fullName + " " + lastName;
+      }
       let licenseDet = { name: fullName, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
       onSelect(config.key, licenseDet);
     } else {

@@ -1,7 +1,7 @@
 FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.0.39
+RUN yarn add @mseva/digit-ui-libraries@1.0.45
 RUN yarn add @mseva/digit-ui-module-bills@1.0.5
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.3
 RUN yarn add @mseva/digit-ui-module-dss@1.0.3
@@ -10,22 +10,23 @@ RUN yarn add @mseva/digit-ui-module-pgr@1.0.7
 RUN yarn add @mseva/digit-ui-module-noc@1.0.3
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.26
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.3
-RUN yarn add @mseva/digit-ui-module-core@1.0.31
-RUN yarn add @mseva/digit-ui-module-common@1.0.42
+RUN yarn add @mseva/digit-ui-module-core@1.0.32
+RUN yarn add @mseva/digit-ui-module-common@1.0.48
 RUN yarn add @mseva/digit-ui-module-ws@1.0.4
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.3
-RUN yarn add @mseva/digit-ui-module-ptr@1.0.51
+RUN yarn add @mseva/digit-ui-module-ptr@1.0.57
 RUN yarn add @mseva/digit-ui-module-swach@1.0.39
-RUN yarn add @mseva/digit-ui-module-pt@1.0.31
+RUN yarn add @mseva/digit-ui-module-pt@1.0.32
 RUN yarn add @mseva/digit-ui-module-tl@1.0.10
-RUN yarn add @mseva/digit-ui-module-obps@1.0.17
-RUN yarn add @mseva/digit-ui-module-sv@1.0.25
-RUN yarn add @mseva/upyog-ui-module-ads@1.0.30
-RUN yarn add @mseva/upyog-ui-module-chb@1.0.22
-RUN yarn add @mseva/upyog-ui-module-asset@1.0.18
-RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.11
+RUN yarn add @mseva/digit-ui-module-obps@1.0.20
+RUN yarn add @mseva/digit-ui-module-sv@1.0.31
+RUN yarn add @mseva/upyog-ui-module-ads@1.0.36
+RUN yarn add @mseva/upyog-ui-module-chb@1.0.28
+RUN yarn add @mseva/upyog-ui-module-asset@1.0.24
+RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.17
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.1
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.1
+RUN yarn add @mseva/digit-ui-module-ndc@1.0.7
 RUN yarn add @mseva/upyog-ui-module-gc@1.0.0
 ARG WORK_DIR
 WORKDIR /app

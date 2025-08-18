@@ -36,6 +36,25 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     enabled: true,
   });
 
+  useEffect(() => {
+    if (!isMdmsLoading && formData?.data?.occupancyType) {
+      const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || [];
+
+      const matched = subOccupancyMaster.find((item) => item.name?.toLowerCase() === formData.data.occupancyType.toLowerCase());
+
+      if (matched) {
+        const formatted = {
+          code: matched.code,
+          name: matched.name,
+          i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(matched.code.toUpperCase(), "-", "_")}`,
+        };
+
+        setsubOccupancyObject({
+          Block_1: [formatted],
+        });
+      }
+    }
+  }, [formData?.data?.occupancyType, mdmsData, isMdmsLoading]);
 
   function getFloorData(block) {
     let floors = [];
@@ -56,11 +75,11 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
   function getsuboptions() {
     let suboccoption = [];
     // data &&
-      // data?.planDetail?.mdmsMasterData?.SubOccupancyType?.map((ob) => {
-        mdmsData?.BPA?.SubOccupancyType?.map((ob) => {
-        suboccoption.push({ code: ob.code, name: ob.name, i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(ob?.code?.toUpperCase(), "-", "_")}` });
-      });
-    return Digit.Utils.locale.sortDropdownNames(suboccoption,'i18nKey',t);
+    // data?.planDetail?.mdmsMasterData?.SubOccupancyType?.map((ob) => {
+    mdmsData?.BPA?.SubOccupancyType?.map((ob) => {
+      suboccoption.push({ code: ob.code, name: ob.name, i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(ob?.code?.toUpperCase(), "-", "_")}` });
+    });
+    return Digit.Utils.locale.sortDropdownNames(suboccoption, "i18nKey", t);
   }
 
   const ActionButton = ({ label, jumpTo }) => {
@@ -142,7 +161,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
   });
 
   const onSkip = () => onSelect();
-
+  console.log(formData, "F++++++");
   const goNext = () => {
     if (checkingFlow === "OCBPA") {
       if (!formData?.id) {
@@ -155,7 +174,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
         const userInfo = Digit.UserService.getUser();
         const accountId = userInfo?.info?.uuid;
         payload.tenantId = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.tenantId;
-        payload.workflow = { action: "INITIATE", assignes : [userInfo?.info?.uuid] };
+        payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] };
         payload.accountId = accountId;
         payload.documents = null;
 
@@ -215,7 +234,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     return returnValue ? returnValue : "NA";
   }
 
-  if (isMdmsLoading) return <Loader /> 
+  if (isMdmsLoading) return <Loader />;
 
   return (
     <React.Fragment>
@@ -228,18 +247,34 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
             style={{ border: "none" }}
             label={checkingFlow === "OCBPA" ? t("BPA_OC_EDCR_NO_LABEL") : t("BPA_EDCR_NO_LABEL")}
             text={data?.edcrNumber}
-            labelStyle={{wordBreak: "break-all"}} 
-            textStyle={{wordBreak: "break-all"}}
+            labelStyle={{ wordBreak: "break-all" }}
+            textStyle={{ wordBreak: "break-all" }}
           ></Row>
           <Row
             className="border-none"
             label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
-            text={<ActionButton label={t("Uploaded Plan.pdf")} jumpTo={data?.updatedDxfFile} />}
+            text={
+              <ActionButton
+                label={t("Uploaded Plan.pdf")}
+                jumpTo={data?.updatedDxfFile}
+                onClick={() => {
+                  console.log("");
+                }}
+              />
+            }
           ></Row>
           <Row
             className="border-none"
             label={t("BPA_SCRUNTINY_REPORT_OUTPUT")}
-            text={<ActionButton label={t("BPA_SCRUTINY_REPORT_PDF")} jumpTo={data?.planReport} />}
+            text={
+              <ActionButton
+                label={t("BPA_SCRUTINY_REPORT_PDF")}
+                jumpTo={data?.planReport}
+                onClick={() => {
+                  console.log("");
+                }}
+              />
+            }
           ></Row>
         </StatusTable>
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
@@ -295,7 +330,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
                 onSelect={(e) => selectOccupancy(e, data, block.number)}
                 isOBPSMultiple={true}
                 optionsKey="i18nKey"
-                ServerStyle={{ width: "100%", overflowX: "hidden"}}
+                ServerStyle={{ width: "100%", overflowX: "hidden" }}
                 t={t}
               />
             ) : null}

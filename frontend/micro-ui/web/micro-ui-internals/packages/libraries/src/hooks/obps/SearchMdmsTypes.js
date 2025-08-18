@@ -26,12 +26,11 @@ const SearchMdmsTypes = {
           "BPA"
         ),
       {
-        select: (data) =>{
-          return [...data?.BPA?.ApplicationType?.map((type) => ({
-              code: type.code,
-              i18nKey: `WF_BPA_${type.code}`,
-            }))]
-        },
+        select: (data) =>
+          (data?.BPA?.ApplicationType || []).map((type) => ({
+            code: type.code,
+            i18nKey: `WF_BPA_${type.code}`,
+          }))
       }
     ),
 

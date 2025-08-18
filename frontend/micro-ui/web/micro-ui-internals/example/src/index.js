@@ -9,6 +9,8 @@ import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 
 import { PTModule, PTLinks, PTComponents, PTReducers } from "@mseva/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@mseva/digit-ui-module-mcollect";
+import { ChallanGenerationModule, ChallanGenerationLinks } from "@mseva/digit-ui-module-challangeneration";
+import { RentAndLeaseModule, RentAndLeaseLinks } from "@mseva/digit-ui-module-rentandlease";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
@@ -17,6 +19,8 @@ import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-receipts";
 // import { initReportsComponents } from "@mseva/digit-ui-module-reports";
 import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
+import { initChallanGenerationComponents } from "@mseva/digit-ui-module-challangeneration";
+import { initRentAndLeaseComponents } from "@mseva/digit-ui-module-rentandlease";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
 import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
@@ -27,6 +31,7 @@ import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-c
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
 import { PTRModule, PTRLinks, PTRComponents, PTRReducers } from "@mseva/digit-ui-module-ptr";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
+import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
 import { ADSModule, ADSLinks, ADSComponents, ADSReducers } from "@mseva/upyog-ui-module-ads";
 import { CHBModule, CHBLinks, CHBComponents, CHBReducers } from "@mseva/upyog-ui-module-chb";
 import { ASSETComponents, ASSETLinks, ASSETModule } from "@mseva/upyog-ui-module-asset";
@@ -71,9 +76,13 @@ const enabledModules = [
   "ADS",
   "Swach",
   "SV",
+  "NDC",
   "CHB",
   "ASSET",
   "PGRAI",
+  "ChallanGeneration",
+  "RentAndLease",
+  "BPAStakeholder"
 ];
 
 const initTokens = (stateCode) => {
@@ -114,6 +123,10 @@ const initDigitUI = () => {
     ...PTComponents,
     MCollectLinks,
     MCollectModule,
+    ChallanGenerationModule, 
+    ChallanGenerationLinks,
+    RentAndLeaseModule,
+    RentAndLeaseLinks,
     HRMSModule,
     ReceiptsModule,
     BillsModule,
@@ -146,6 +159,8 @@ const initDigitUI = () => {
   initSWACHComponents();
   initDSSComponents();
   initMCollectComponents();
+  initChallanGenerationComponents();
+  initRentAndLeaseComponents();
   initHRMSComponents();
   initTLComponents();
   initReceiptsComponents();
@@ -156,6 +171,7 @@ const initDigitUI = () => {
   initWSComponents();
   initCommonPTComponents();
   initBillsComponents();
+  initNDCComponents();
   // initCustomisationComponents();
 
   const moduleReducers = (initData) => ({
@@ -166,6 +182,7 @@ const initDigitUI = () => {
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData),
     tl: TLReducers(initData),
+    ndc: NDCReducers(initData),
     ptr: PTRReducers(initData),
     ads: ADSReducers(initData),
     chb: CHBReducers(initData),

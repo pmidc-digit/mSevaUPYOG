@@ -115,6 +115,38 @@ const Urls = {
     file_fetch: "/filestore/v1/files/url",
   },
 
+  challangeneration: {
+    search: "/echallan-services/eChallan/v1/_search",
+    create: "/echallan-services/eChallan/v1/_create?",
+    fetch_bill: "/billing-service/bill/v2/_fetchbill?",
+    search_bill: "/egov-searcher/bill-genie/mcollectbills/_get",
+    search_bill_pt: "/egov-searcher/bill-genie/billswithaddranduser/_get",
+    update: "/echallan-services/eChallan/v1/_update",
+    download_pdf: "/egov-pdf/download/UC/mcollect-challan",
+    receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
+    bill_download: "/egov-pdf/download/BILL/consolidatedbill",
+    count: "/echallan-services/eChallan/v1/_count",
+    reciept_search: "/collection-services/payments/:businessService/_search",
+    generate_pdf: "/pdf-service/v1/_create",
+    file_fetch: "/filestore/v1/files/url",
+  },
+
+  rentAndLease: {
+    search: "/echallan-services/eChallan/v1/_search",
+    create: "/echallan-services/eChallan/v1/_create?",
+    fetch_bill: "/billing-service/bill/v2/_fetchbill?",
+    search_bill: "/egov-searcher/bill-genie/mcollectbills/_get",
+    search_bill_pt: "/egov-searcher/bill-genie/billswithaddranduser/_get",
+    update: "/echallan-services/eChallan/v1/_update",
+    download_pdf: "/egov-pdf/download/UC/mcollect-challan",
+    receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
+    bill_download: "/egov-pdf/download/BILL/consolidatedbill",
+    count: "/echallan-services/eChallan/v1/_count",
+    reciept_search: "/collection-services/payments/:businessService/_search",
+    generate_pdf: "/pdf-service/v1/_create",
+    file_fetch: "/filestore/v1/files/url",
+  },
+
   hrms: {
     search: "/egov-hrms/employees/_search",
     count: "/egov-hrms/employees/_count",
@@ -303,6 +335,12 @@ const Urls = {
     PGR_Create_AI: "/pgr-ai-services/v1/request/_create",
     PGR_Search_AI: "/pgr-ai-services/v1/request/_search",
     PGR_Update_AI: "/pgr-ai-services/v1/request/_update",
+  },
+  ndc: {
+    create: "/ndc-services/ndc/_create",
+    search: "/ndc-services/ndc/_search",
+    update: "/ndc-services/ndc/_update",
+    billingCalculate: "/ndc-calculator/v1/_calculate",
   },
 
   access_control: "/access/v1/actions/mdms/_get",

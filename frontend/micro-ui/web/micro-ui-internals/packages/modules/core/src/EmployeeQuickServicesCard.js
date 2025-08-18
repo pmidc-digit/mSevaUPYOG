@@ -105,11 +105,19 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <FSMIcon className="fill-path-primary-main" />;
       case "MCollect":
         return <MCollectIcon />;
+      case "ChallanGeneration":
+        return <MCollectIcon />;
+      case "RentAndLease":
+        return <MCollectIcon />;
       case "PGR":
+        return <PGRIcon />;
+      case "NDC":
         return <PGRIcon />;
       case "TL":
         return <TLIcon />;
       case "OBPS":
+        return <OBPSIcon />;
+      case "BPAStakeholder":
         return <OBPSIcon />;
       case "Bills":
         return <BillsIcon />;
@@ -117,8 +125,6 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
         return <PTIcon />;
       case "Swach":
         return <PGRIcon />;
-      case "NDC":
-        return <TLIcon />;
       case "HRMS":
         return <WSICon />;
       case "SV":

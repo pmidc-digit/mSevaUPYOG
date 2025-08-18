@@ -11,13 +11,23 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     sessionStorage.setItem("BPAREGintermediateValue", null);
   } else formData = formData;
 
+  //data presist for this form
+
+  const permitData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")) || {};
+  const storedLicneseType = permitData?.value?.LicneseType || {};
+
   let index = window.location.href?.split("/").pop();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [qualificationType, setQualificationType] = useState(formData?.LicneseType?.qualificationType || null);
-  const [LicenseType, setLicenseType] = useState(formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || null);
-  const [ArchitectNo, setArchitectNo] = useState(formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null);
-
+  const [qualificationType, setQualificationType] = useState(
+    formData?.LicneseType?.qualificationType || storedLicneseType?.qualificationType || null
+  );
+  const [LicenseType, setLicenseType] = useState(
+    formData?.LicneseType?.LicenseType || formData?.formData?.LicneseType?.LicenseType || storedLicneseType?.LicenseType || null
+  );
+  const [ArchitectNo, setArchitectNo] = useState(
+    formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || storedLicneseType?.ArchitectNo || null
+  );
   const { data: qualificationTypes, isLoading: isQualificationLoading, error: qualificationError } = Digit.Hooks.obps.useQualificationTypes(stateId);
   //console.log("qualificationTypes here", qualificationTypes);
   // let qualificationTypes = [],
@@ -62,6 +72,25 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       console.log("selectedQualificationType", selectedQualificationType, formData?.LicneseType?.qualificationType, qualificationTypes);
     }
   }, []);
+
+  useEffect(() => {
+    const currentPermit = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")) || {};
+    sessionStorage.setItem(
+      "Digit.BUILDING_PERMIT",
+      JSON.stringify({
+        ...currentPermit,
+        value: {
+          ...currentPermit.value,
+          LicneseType: {
+            LicenseType,
+            ArchitectNo,
+            selfCertification,
+            qualificationType,
+          },
+        },
+      })
+    );
+  }, [LicenseType, ArchitectNo, selfCertification, qualificationType]);
 
   function getLicenseType() {
     // let list = [];
@@ -170,7 +199,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     //const pattern = /^CA\/(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\/\d{5}$/;
     setArchitectNo(input);
     if (!isValidCOA(input) && input !== "") {
-      setErrorMessage("Invalid Council Number format! Format should be: CA<YEAR><5 DIGITS> (Year between 1972-2025) Example: CA/2023/12345");
+      setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_COA"));
     } else {
       setErrorMessage("");
     }
@@ -191,9 +220,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     setArchitectNo(input);
     // const pattern = /^(AITP|FITP)\/(19[7-9][2-9]|20[0-9][0-9]|202[0-5])\/\d{4}$/;
     if (!isValidAITPorFITP(input) && input !== "") {
-      setErrorMessage(
-        "Invalid AITP/FITP Number format! Format should be: AITP<YEAR><4 DIGITS> (Year between 1972-2025) Example: FITP/2023/1234 or AITP/2023/1234"
-      );
+      setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_AITP_OR_FITP"));
     } else {
       setErrorMessage("");
     }
@@ -203,19 +230,17 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     if (errorMessage !== "") return;
 
     if (LicenseType?.i18nKey.includes("ARCHITECT") && ArchitectNo === null) {
-      setErrorMessage("Invalid Council Number format! Format should be: CA<YEAR><5 DIGITS> (Year between 1972-2025) Example: CA/2023/12345");
+      setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_COA"));
       return;
     }
 
     if (LicenseType?.i18nKey.includes("TOWNPLANNER") && ArchitectNo === null) {
-      setErrorMessage(
-        "Invalid AITP/FITP Number format! Format should be: AITP<YEAR><4 DIGITS> (Year between 1972-2025) Example: FITP/2023/1234 or AITP/2023/1234"
-      );
+      setErrorMessage(t("BPA_INVALID_MESSAGE_FOR_AITP_OR_FITP"));
       return;
     }
 
     if (qualificationType === null) {
-      setErrorMessage("Select Qualification Type");
+      setErrorMessage(t("BPA_SELECT_QUALIFICATION_TYPE"));
       return;
     }
 
@@ -258,7 +283,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
               !qualificationType
             }
           >
-            <CardLabel>{"Qualification*"}</CardLabel>
+            <CardLabel>{t("BPA_QUALIFICATION_TYPE")}*</CardLabel>
             <div className={"form-pt-dropdown-only"}>
               {/* {data && ( */}
               <Dropdown
@@ -322,7 +347,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
             {LicenseType && LicenseType?.i18nKey.includes("TOWNPLANNER") && (
               <div>
-                <CardLabel>{`${t("ASSOCIATE_OR_FELLOW_NUMBER")}*`}</CardLabel>
+                <CardLabel>{t("BPA_ASSOCIATE_OR_FELLOW_NUMBER")}*</CardLabel>
                 <TextInput
                   t={t}
                   type={"text"}
@@ -360,12 +385,12 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                   <CheckBox
                     label={
                       LicenseType?.i18nKey.includes("ARCHITECT")
-                        ? "[DECLARATION UNDER SELF-CERTIFICATION SCHEME ('Residential') (BY ARCHITECT)]"
+                        ? t("DECLARATION_SELF_CERTIFICATION_RESIDENTIAL_ARCHITECT")
                         : LicenseType?.i18nKey.includes("_ENGINEER")
-                        ? "[DECLARATION UNDER SELF-CERTIFICATION SCHEME ('Residential') (BY ENGINEER)]"
+                        ? t("DECLARATION_SELF_CERTIFICATION_RESIDENTIAL_ENGINEER")
                         : LicenseType?.i18nKey.includes("SUPERVISOR")
-                        ? "[DECLARATION UNDER SELF-CERTIFICATION SCHEME ('Residential') (BY DESIGNER)]"
-                        : "[DECLARATION UNDER SELF-CERTIFICATION SCHEME ('Residential') (BY SUPERVISOR)]"
+                        ? t("DECLARATION_SELF_CERTIFICATION_RESIDENTIAL_SUPERVISOR")
+                        : t("DECLARATION_SELF_CERTIFICATION_RESIDENTIAL_DESIGNER")
                     }
                     onChange={selectSelfCertification}
                     value={selfCertification}
@@ -397,7 +422,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                 letterSpacing: "1px",
               }}
             >
-              Competencies
+              {t("BPA_COMPETENCIES")}
             </h1>
             <ul
               style={{

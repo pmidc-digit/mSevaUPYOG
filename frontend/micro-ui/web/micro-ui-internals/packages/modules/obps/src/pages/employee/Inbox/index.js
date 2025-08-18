@@ -207,7 +207,7 @@ const Inbox = ({ parentRoute }) => {
           </Link>
         </div>
       }
-      <InboxComposer
+      {/* <InboxComposer
         {...{
           isInboxLoading,
           PropsForInboxLinks,
@@ -218,7 +218,7 @@ const Inbox = ({ parentRoute }) => {
           propsForInboxMobileCards,
           formState,
         }}
-      ></InboxComposer>
+      ></InboxComposer> */}
     </>
   );
 };

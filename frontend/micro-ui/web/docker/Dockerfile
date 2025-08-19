@@ -11,14 +11,14 @@ RUN yarn add @mseva/digit-ui-module-noc@1.0.4
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.26
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.3
 RUN yarn add @mseva/digit-ui-module-core@1.0.32
-RUN yarn add @mseva/digit-ui-module-common@1.0.49
+RUN yarn add @mseva/digit-ui-module-common@1.0.50
 RUN yarn add @mseva/digit-ui-module-ws@1.0.4
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.3
 RUN yarn add @mseva/digit-ui-module-ptr@1.0.58
 RUN yarn add @mseva/digit-ui-module-swach@1.0.39
 RUN yarn add @mseva/digit-ui-module-pt@1.0.32
 RUN yarn add @mseva/digit-ui-module-tl@1.0.10
-RUN yarn add @mseva/digit-ui-module-obps@1.0.20
+RUN yarn add @mseva/digit-ui-module-obps@1.0.21
 RUN yarn add @mseva/digit-ui-module-sv@1.0.32
 RUN yarn add @mseva/upyog-ui-module-ads@1.0.37
 RUN yarn add @mseva/upyog-ui-module-chb@1.0.29

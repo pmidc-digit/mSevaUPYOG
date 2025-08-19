@@ -84,12 +84,17 @@ export const updateApiResponse = async ({ body }, next = {}) => {
   //console.log("workflowResponse"+JSON.stringify(workflowResponse));
 
   //calculate call
+  let firenocResponse
   let { FireNOCs = [], RequestInfo = {} } = body;
   for (var i = 0; i < FireNOCs.length; i++) {
-    let firenocResponse = await calculate(FireNOCs[i], RequestInfo);
+      firenocResponse = await calculate(FireNOCs[i], RequestInfo);
   }
 
   body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
+  body.FireNOCs[0].fireNOCDetails.additionalDetail = {
+  ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
+  validityYears: firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears
+};
   console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
 
   // payloads.push({

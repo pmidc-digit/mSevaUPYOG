@@ -35,8 +35,6 @@ public class ReceiptConsumer {
     @KafkaListener(topics = {"${kafka.topics.receipt.create}"})
     public void listenPayments(final HashMap<String, Object> record) {
     	log.info("Start ReceiptConsumer.listenPayments method.");
-    	log.debug("Start ReceiptConsumer.listenPayments method.");
-    	log.warn("Start ReceiptConsumer.listenPayments method.");
         paymentUpdateService.process(record);
         paymentNotificationService.process(record);
     }

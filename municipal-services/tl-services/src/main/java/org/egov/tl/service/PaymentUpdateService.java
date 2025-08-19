@@ -114,6 +114,8 @@ public class PaymentUpdateService {
 							break;
 					}
 				BusinessService businessService = workflowService.getBusinessService(licenses.get(0).getTenantId(), requestInfo,wfbusinessServiceName);
+				Map<String, BusinessService> businessServiceMap = new HashMap<>();
+				businessServiceMap.put(tenantId, businessService);
 
 
 					if (CollectionUtils.isEmpty(licenses))
@@ -153,7 +155,7 @@ public class PaymentUpdateService {
 					updateRequest.getLicenses()
 					.forEach(obj -> log.info("Request Object" + obj));
 					
-					Map<String,Boolean> idToIsStateUpdatableMap = util.getIdToIsStateUpdatableMap(businessService,licenses);
+					Map<String,Boolean> idToIsStateUpdatableMap = util.getIdToIsStateUpdatableMap(businessServiceMap,licenses);
 					repository.update(updateRequest,idToIsStateUpdatableMap);
 			}
 		 }

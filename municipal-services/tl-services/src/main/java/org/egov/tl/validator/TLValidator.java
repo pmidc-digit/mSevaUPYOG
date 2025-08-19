@@ -64,7 +64,7 @@ public class TLValidator {
      *  Validate the create Requesr
      * @param request The input TradeLicenseRequest Object
      */
-    public void validateCreate(TradeLicenseRequest request, Object mdmsData, Object billingSlabs) {
+    public void validateCreate(TradeLicenseRequest request, Map<String, Object> mdmsDataMap, Object billingSlabs) {
         List<TradeLicense> licenses = request.getLicenses();
         String businessService = request.getLicenses().isEmpty()?null:request.getLicenses().get(0).getBusinessService();
         if(licenses.get(0).getApplicationType() != null && licenses.get(0).getApplicationType().toString().equals(TLConstants.APPLICATION_TYPE_RENEWAL)){
@@ -74,7 +74,8 @@ public class TLValidator {
             businessService = businessService_TL;
         switch (businessService) {
             case businessService_TL:
-                valideDates(request, mdmsData);
+            	
+                valideDates(request, mdmsDataMap);
                 propertyValidator.validateProperty(request);
                 validateTLSpecificNotNullFields(request);
                 break;
@@ -83,7 +84,7 @@ public class TLValidator {
                 validateBPASpecificValidations(request);
                 break;
         }
-        mdmsValidator.validateMdmsData(request, mdmsData, billingSlabs);
+        mdmsValidator.validateMdmsData(request, mdmsDataMap, billingSlabs);
         validateInstitution(request);
         validateDuplicateDocuments(request);
     }
@@ -160,7 +161,7 @@ public class TLValidator {
      *  Validates the fromDate and toDate of the request
      * @param request The input TradeLicenseRequest Object
      */
-    private void valideDates(TradeLicenseRequest request ,Object mdmsData){
+    private void valideDates(TradeLicenseRequest request ,Map<String, Object> mdmsDataMap){
         request.getLicenses().forEach(license -> {
             Map<String,Long> taxPeriods = null;
             if(license.getValidTo()==null)
@@ -170,7 +171,7 @@ public class TLValidator {
 //            }else{
 //                taxPeriods = tradeUtil.getTaxPeriods(license,mdmsData);
 //            }
-            taxPeriods = tradeUtil.getTaxPeriods(license,mdmsData);                
+            taxPeriods = tradeUtil.getTaxPeriods(license,mdmsDataMap.get(license.getTenantId()));                
             if(license.getValidTo()!=null && license.getValidTo()>taxPeriods.get(TLConstants.MDMS_ENDDATE)){
                 Date expiry = new Date(license.getValidTo());
                 throw new CustomException("INVALID TO DATE"," Validto cannot be greater than: "+expiry);
@@ -324,7 +325,7 @@ public class TLValidator {
      *  Validates the update request
      * @param request The input TradeLicenseRequest Object
      */
-    public void validateUpdate(TradeLicenseRequest request, List<TradeLicense> searchResult, Object mdmsData, Object billingSlabs) {
+    public void validateUpdate(TradeLicenseRequest request, List<TradeLicense> searchResult, Map<String, Object> mdmsDataMap, Object billingSlabs) {
         List<TradeLicense> licenses = request.getLicenses();
         if (searchResult.size() != licenses.size())
             throw new CustomException("INVALID UPDATE", "The license to be updated is not in database");
@@ -337,7 +338,7 @@ public class TLValidator {
             businessService = businessService_TL;
         switch (businessService) {
             case businessService_TL:
-                valideDates(request, mdmsData);
+                valideDates(request, mdmsDataMap);
                 propertyValidator.validateProperty(request);
                 validateTLSpecificNotNullFields(request);
                 break;
@@ -346,10 +347,10 @@ public class TLValidator {
                 validateBPASpecificValidations(request);
                 break;
         }
-        mdmsValidator.validateMdmsData(request, mdmsData, billingSlabs);
+        mdmsValidator.validateMdmsData(request, mdmsDataMap, billingSlabs);
         validateTradeUnits(request);
         validateDuplicateDocuments(request);
-        setFieldsFromSearch(request, searchResult, mdmsData);
+        setFieldsFromSearch(request, searchResult, mdmsDataMap);
         validateOwnerActiveStatus(request);
     }
 
@@ -485,7 +486,7 @@ public class TLValidator {
      * @param request The input TradeLicenseRequest
      * @param searchResult The list of searched licenses
      */
-    private void setFieldsFromSearch(TradeLicenseRequest request, List<TradeLicense> searchResult, Object mdmsData) {
+    private void setFieldsFromSearch(TradeLicenseRequest request, List<TradeLicense> searchResult, Map<String, Object> mdmsDataMap) {
         Map<String,TradeLicense> idToTradeLicenseFromSearch = new HashMap<>();
         searchResult.forEach(tradeLicense -> {
             idToTradeLicenseFromSearch.put(tradeLicense.getId(),tradeLicense);
@@ -502,7 +503,7 @@ public class TLValidator {
                 case businessService_TL:
                     if (!idToTradeLicenseFromSearch.get(license.getId()).getFinancialYear().equalsIgnoreCase(license.getFinancialYear())
                             && license.getLicenseType().equals(TradeLicense.LicenseTypeEnum.PERMANENT)) {
-                        Map<String, Long> taxPeriods = tradeUtil.getTaxPeriods(license, mdmsData);
+                        Map<String, Long> taxPeriods = tradeUtil.getTaxPeriods(license, mdmsDataMap.get(license.getTenantId()));
                         license.setValidTo(taxPeriods.get(TLConstants.MDMS_ENDDATE));
                     }
                     break;

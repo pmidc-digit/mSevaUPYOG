@@ -130,7 +130,8 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
 
 function SelectDocument({ t, document: doc, setDocuments, error, setError, documents, setCheckRequiredFields, isCitizenUrl }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const stateId = Digit.ULBService.getStateId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
       ? { ...filteredDocument, active: true, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType }
@@ -181,7 +182,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
         } else {
           try {
             setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("PT", file, tenantId?.split(".")[0]);
+            const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {

@@ -20,7 +20,8 @@ const StakeholderResponse = (props) => {
   }
 
   const onSubmit = () => {
-    history.push(`/digit-ui/employee`);
+    history.push(`/digit-ui/employee/obps/stakeholder-inbox`);
+    window.location.reload();
   }
 
   return (

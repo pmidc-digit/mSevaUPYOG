@@ -8,6 +8,7 @@ import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.repository.NDCRepository;
 import org.egov.ndc.util.NDCConstants;
 import org.egov.ndc.util.NDCUtil;
+import org.egov.ndc.web.model.Workflow;
 import org.egov.ndc.web.model.bill.PaymentDetail;
 import org.egov.ndc.web.model.bill.PaymentRequest;
 import org.egov.ndc.web.model.ndc.ApplicantRequest;
@@ -68,15 +69,16 @@ public class PaymentUpdateService {
 	 * 
 	 * @param record The incoming message from receipt create consumer
 	 */
-	public void process(HashMap<String, Object> record) {
+	public void process(PaymentRequest record) {
 
+		log.info("Start PaymentUpdateService.process method.");
 		try {
 			PaymentRequest paymentRequest = mapper.convertValue(record,PaymentRequest.class);
 			RequestInfo requestInfo = paymentRequest.getRequestInfo();
 			List<PaymentDetail> paymentDetails = paymentRequest.getPayment().getPaymentDetails();
 			String tenantIdFromPaymentDetails = paymentRequest.getPayment().getTenantId();
 			for(PaymentDetail paymentDetail : paymentDetails){
-				if (paymentDetail.getBusinessService().equalsIgnoreCase(NDCConstants.NDC_BUSINESS_SERVICE)) {
+				if (paymentDetail.getBusinessService().equalsIgnoreCase(NDCConstants.NDC_BUSINESS_SERVICE )|| paymentDetail.getBusinessService().equalsIgnoreCase(NDCConstants.NDC_MODULE )) {
 					NdcApplicationSearchCriteria searchCriteria = new NdcApplicationSearchCriteria();
 					searchCriteria.setTenantId(tenantIdFromPaymentDetails);
 					searchCriteria.setUuid(Collections.singletonList(paymentDetail.getBill().getConsumerCode()));
@@ -85,7 +87,9 @@ public class PaymentUpdateService {
 					String tenantIdFromSearch = applications.get(0).getTenantId();
 
                     applications.forEach(application -> {
-								application.getWorkflow().setAction(NDCConstants.ACTION_PAY);
+								Workflow workflow=new Workflow();
+								workflow.setAction(NDCConstants.ACTION_PAY);
+								application.setWorkflow(workflow);
 								application.setAction(NDCConstants.ACTION_PAY);
 							}
 						);

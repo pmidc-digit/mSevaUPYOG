@@ -116,4 +116,7 @@ public class NDCConfiguration {
 
 	@Value("${egov.ndccalculator.endpoint}")
 	private String ndcCalculatorEndpoint;
+
+	@Value("${spring.kafka.consumer.group-id}")
+	private String kafkaGroupId;
 }

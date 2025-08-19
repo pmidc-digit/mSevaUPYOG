@@ -73,7 +73,7 @@ const popolateSearchResponse = result => {
     billingSlab.renew_percentage = rowData.renew_percentage;
     billingSlab.provisional_percentage = rowData.provisional_percentage;
     billingSlab.slab_description = rowData.slab_description;
-    billingSlab.validityyears = rowData.validityyears
+    billingSlab.validityyears = rowData.validityyears;
 
     // billingSlab.id = '0ce2dd8789d3aa634c4e81599824822b';
     // billingSlab.isActive = 1;

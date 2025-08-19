@@ -62,8 +62,7 @@ import StakeholderAcknowledgement from "./pages/citizen/StakeholderRegistration/
 import Architectconcent from "./pages/citizen/NewBuildingPermit/Architectconcent";
 import CitizenConsent from "./pages/citizen/BpaApplicationDetail/CitizenConsent";
 
-
-
+import getRootReducer from "./redux/reducers";
 
 
 
@@ -178,3 +177,5 @@ export const initOBPSComponents = () => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });
 };
+
+export const OBPSReducers = getRootReducer;

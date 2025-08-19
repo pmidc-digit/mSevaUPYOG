@@ -46,6 +46,7 @@ const App = ({ path }) => {
       <div className="ws-citizen-wrapper">
        {!location.pathname.includes("response") && !location.pathname.includes("openlink/stakeholder") && !location.pathname.includes("/acknowledgement") && !isDocScreenAfterEdcr && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
       <Switch>
+        {/*Here we will add our route for Layout */}
         <PrivateRoute path={`${path}/home`} component={BPACitizenHomeScreen} />
         <PrivateRoute path={`${path}/search/application`} component={(props) => <Search {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search/obps-application`} component={(props) => <Search {...props} parentRoute={path} />} />

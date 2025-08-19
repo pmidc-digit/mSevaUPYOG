@@ -840,9 +840,13 @@ class SwachService {
     try{let response = await fetch(url, options);
     response = await response.json();
     var fileURL = response["fileStoreIds"][0]["url"].split(",");
-    var fileName = geturl.parse(fileURL[0]);
-    fileName = path.basename(fileName.pathname);
-    fileName = fileName.substring(13);
+   // var fileName = geturl.parse(fileURL[0]);
+   // fileName = path.basename(fileName.pathname);
+   // fileName = fileName.substring(13);
+      const urlObj = new URL(fileURL);
+      const filePath = decodeURIComponent(urlObj.searchParams.get("name"));
+      const fileName = path.basename(filePath);
+      //console.log("fileNamefdfdfdfd",fileName)
     await this.downloadImage(fileURL[0].toString(), fileName);
     // console.log("Called Here");
     let imageInBase64String = fs.readFileSync(fileName, "base64");

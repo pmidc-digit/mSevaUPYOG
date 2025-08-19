@@ -1,18 +1,57 @@
-import { Loader } from "@mseva/digit-ui-react-components";
+import { Loader, CitizenHomeCard, CaseIcon } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useRouteMatch } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import EmployeeApp from "./pages/employee";
 import ApplicationOverview from "./pages/employee/ApplicationOverview";
 import NOCCard from "./pages/employee/EmployeeCard";
 import Inbox from "./pages/employee/Inbox";
 import NOCSearchApplication from "./pages/employee/SearchApplication/Search";
+import getRootReducer from "./redux/reducer";
 
-const NOCModule = ({ stateCode, userType, tenants }) => {
-  const moduleCode = "common-noc";
+import CitizenApp from "./pages/citizen";
+
+import NewNOCStepperForm from "./pageComponents/NewNOCStepper/NewNOCStepperForm";
+import NewNOCStepFormOne from "./pageComponents/NewNOCStepper/NewNOCStepFormOne";
+import NewNOCStepFormTwo from "./pageComponents/NewNOCStepper/NewNOCStepFormTwo";
+import NewNOCStepFormThree from "./pageComponents/NewNOCStepper/NewNOCStepFormThree";
+import NewNOCStepFormFour from "./pageComponents/NewNOCStepper/NewNOCStepFormFour";
+
+import NOCApplicantDetails from "./pageComponents/NOCApplicantDetails";
+import NOCProfessionalDetails from "./pageComponents/NOCProfessionalDetails";
+import NOCSiteDetails from "./pageComponents/NOCSiteDetails";
+import NOCSpecificationDetails from "./pageComponents/NOCSpecificationDetails";
+import NOCDocumentsRequired from "./pageComponents/NOCDocumentsRequired";
+import NOCSummary from "./pageComponents/NOCSummary";
+import NOCDocumentWithLatLong from "./pageComponents/NOCDocumentWithLatLong";
+
+
+export const NOCLinks = ({ matchPath, userType }) => {
+  const { t } = useTranslation();
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("NOC_MODULE", {});
+
+  useEffect(() => {
+    clearParams();
+  }, []);
+
+  const links = [
+    {
+      link: `${matchPath}/noc/new-application`,
+      i18nKey: t("NOC_NEW_APPLICATION"),
+    },
+    
+  ];
+
+  return <CitizenHomeCard header={t("ACTION_TEST_NOC")} links={links} Icon={() => <CaseIcon className="fill-path-primary-main" />} />;
+};
+
+
+export const NOCModule = ({ stateCode, userType, tenants }) => {
+  const moduleCode = "NOC";
   const { path, url } = useRouteMatch();
   const language = Digit.StoreData.getCurrentLanguage();
   const { isLoading, data: store } = Digit.Services.useStore({ stateCode, moduleCode, language });
-
+  
   Digit.SessionStorage.set("NOC_TENANTS", tenants);
 
   if (isLoading) {
@@ -20,18 +59,33 @@ const NOCModule = ({ stateCode, userType, tenants }) => {
   }
 
   if (userType === "citizen") {
-    return <div></div>;
+    return <CitizenApp/>;
   }
-
+   
   return <EmployeeApp path={path} stateCode={stateCode} />;
 };
+
+export const NOCReducers = getRootReducer;
 
 const componentsToRegister = {
   NOCModule,
   NOCCard,
+  NOCLinks,
   NOCApplicationOverview: ApplicationOverview,
   NOCInbox: Inbox,
-  NOCSearchApplication
+  NOCSearchApplication,
+  NewNOCStepperForm,
+  NewNOCStepFormOne,
+  NewNOCStepFormTwo,
+  NewNOCStepFormThree,
+  NewNOCStepFormFour,
+  NOCApplicantDetails,
+  NOCProfessionalDetails,
+  NOCSiteDetails,
+  NOCSpecificationDetails,
+  NOCDocumentsRequired,
+  NOCSummary,
+  NOCDocumentWithLatLong
 };
 
 export const initNOCComponents = () => {

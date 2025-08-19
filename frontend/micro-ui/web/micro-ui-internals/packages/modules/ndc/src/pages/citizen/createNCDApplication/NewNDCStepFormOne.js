@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { updateNDCForm } from "../../../redux/actions/NDCFormActions";
@@ -8,6 +8,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const user = Digit.UserService.getUser();
   const currentStepData = useSelector((state) =>
     state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {}
   );
@@ -27,7 +28,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     if (checkFormData?.apiData?.Applications?.[0]?.uuid) {
-      console.log("call update if data changes");
       onGoNext();
     } else createApplication(data);
 
@@ -42,11 +42,12 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     // Build owners array
     const owners = [
       {
-        name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
-        mobileNumber: data?.PropertyDetails?.mobileNumber,
+        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
+        name: user?.info?.name,
+        mobileNumber: user?.info?.mobileNumber,
         gender: data?.PropertyDetails?.gender,
-        emailId: data?.PropertyDetails?.email,
-        type: "CITIZEN",
+        emailId: user?.info?.emailId,
+        type: user?.info?.type,
       },
     ];
 

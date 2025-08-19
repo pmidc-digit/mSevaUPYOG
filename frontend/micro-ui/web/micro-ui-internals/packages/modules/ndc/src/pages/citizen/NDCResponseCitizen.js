@@ -23,7 +23,7 @@ const NDCResponseCitizen = (props) => {
   };
 
   const handlePayment = () => {
-    history.push(`/digit-ui/citizen/payment/collect/NDC/${ndcCode}/${tenantId}`);
+    history.push(`/digit-ui/citizen/payment/collect/NDC/${ndcCode}/${tenantId}?tenantId=${tenantId}`);
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
 

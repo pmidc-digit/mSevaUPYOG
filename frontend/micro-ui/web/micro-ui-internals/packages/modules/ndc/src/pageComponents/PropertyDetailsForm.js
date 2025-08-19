@@ -661,7 +661,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                       // setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber?.length > 0}
+                    // disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber?.length > 0}
                   />
                 )}
               />

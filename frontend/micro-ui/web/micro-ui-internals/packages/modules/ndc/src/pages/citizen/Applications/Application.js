@@ -53,7 +53,13 @@ const MyApplications = ({ view }) => {
                   <KeyNote keyValue={t(item)} note={t(filteredApplication[item])} />
                 ))}
 
-              {application?.Applications?.applicationStatus === "PENDINGPAYMENT" ? (
+              {application?.Applications?.applicationStatus === "APPROVED" && (
+                <Link to={`/digit-ui/citizen/ndc/search/application-overview/${application?.Applications?.uuid}`}>
+                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
+                </Link>
+              )}
+
+              {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
                 <Link
                   to={{
                     pathname: `/digit-ui/citizen/payment/collect/NDC/${application?.Applications?.uuid}/${tenantId}?tenantId=${tenantId}`,
@@ -62,10 +68,6 @@ const MyApplications = ({ view }) => {
                   <div style={{ marginTop: "10px" }}>
                     <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
                   </div>
-                </Link>
-              ) : (
-                <Link to={`/digit-ui/citizen/ndc/search/application-overview/${application?.Applications?.uuid}`}>
-                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
                 </Link>
               )}
               {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}

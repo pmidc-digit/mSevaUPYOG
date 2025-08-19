@@ -26,6 +26,7 @@
     "packages/modules/chb",
     "packages/modules/asset",
     "packages/modules/pgrai",
+    "packages/modules/noc",
     "packages/modules/challanGeneration",
     "packages/modules/rentAndLease",
     "packages/modules/ndc"

@@ -3,8 +3,6 @@ package org.egov.inbox.repository;
 import java.util.List;
 import java.util.Map;
 
-import org.egov.inbox.web.model.ndc.NdcApplicationResponse;
-import org.egov.inbox.web.model.ndc.NdcResult;
 import org.egov.tracer.model.ServiceCallException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -39,6 +37,7 @@ public class ServiceRequestRepository {
 		try {
 			//log.debug("Request: " + mapper.writeValueAsString(request));
 			response = restTemplate.postForObject(uri.toString(), request, Map.class);
+			log.info("Response: " + mapper.writeValueAsString(response));
 		} catch (HttpClientErrorException e) {
 			//log.error("External Service threw an Exception: ", e);
 			throw new ServiceCallException(e.getResponseBodyAsString());
@@ -84,27 +83,6 @@ public class ServiceRequestRepository {
 		try {
 			//log.debug("Request: " + mapper.writeValueAsString(request));
 			response = restTemplate.postForObject(uri.toString(), request, Integer.class);
-		} catch (HttpClientErrorException e) {
-			//log.error("External Service threw an Exception: ", e);
-			throw new ServiceCallException(e.getResponseBodyAsString());
-		} catch (Exception e) {
-			//log.error("Exception while fetching from searcher: ", e);
-			throw new ServiceCallException(e.getMessage());
-		}
-
-		return response;
-	}
-
-	public Object fetchNdcResult(StringBuilder uri, Object request) {
-		Object response = null;
-		//log.debug("URI: " + uri.toString());
-		NdcResult ndcResult;
-		try {
-			//log.debug("Request: " + mapper.writeValueAsString(request));
-			response = restTemplate.postForObject(uri.toString(), request, Object.class);
-			System.out.println(response);
-			ndcResult = restTemplate.postForObject(uri.toString(), request, NdcResult.class);
-			System.out.println(ndcResult);
 		} catch (HttpClientErrorException e) {
 			//log.error("External Service threw an Exception: ", e);
 			throw new ServiceCallException(e.getResponseBodyAsString());

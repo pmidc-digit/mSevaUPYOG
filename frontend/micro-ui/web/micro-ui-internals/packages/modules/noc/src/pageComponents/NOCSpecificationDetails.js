@@ -47,17 +47,17 @@ const NOCSpecificationDetails = (_props) => {
             <Controller
               control={control}
               name="specificationPlotArea"
-              rules={{
-                required: t("REQUIRED_FIELD"),
-                minLength: {
-                  value: 4,
-                  message: t("MIN_4_CHARACTERS_REQUIRED"),
-                },
-                maxLength: {
-                  value: 100,
-                  message: t("MAX_100_CHARACTERS_ALLOWED"),
-                },
-              }}
+              // rules={{
+              //   required: t("REQUIRED_FIELD"),
+              //   minLength: {
+              //     value: 4,
+              //     message: t("MIN_4_CHARACTERS_REQUIRED"),
+              //   },
+              //   maxLength: {
+              //     value: 100,
+              //     message: t("MAX_100_CHARACTERS_ALLOWED"),
+              //   },
+              // }}
               render={(props) => (
                 <TextInput
                   className="form-field"

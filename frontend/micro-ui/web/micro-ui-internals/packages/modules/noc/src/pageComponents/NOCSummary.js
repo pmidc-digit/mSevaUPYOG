@@ -64,11 +64,14 @@ function NOCSummary({ formData, t }) {
   const userInfo = Digit.UserService.getUser();
   const currentUser=userInfo?.info?.type;
 
+  let docs = formData?.documents?.documents?.documents;
+  console.log("documents here in summary", docs);
+
   return (
     <div style={pageStyle}>
 
-      {currentUser === "CITIZEN" ? (
-        <React.Fragment>
+      
+        
           <h2 style={headingStyle}>{t("NOC_APPLICANT_DETAILS")}</h2>
           <div style={sectionStyle}>
             {renderLabel(t("NOC_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
@@ -79,8 +82,10 @@ function NOCSummary({ formData, t }) {
             {renderLabel(t("NOC_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
             {renderLabel(t("NOC_APPLICANT_ADDRESS_LABEL"), formData?.applicationDetails?.applicantAddress)}
           </div>
-          </React.Fragment>
-      ): (
+        
+      
+      {formData?.applicationDetails?.professionalName && 
+        (
         <React.Fragment>
         <h2 style={headingStyle}>{t("NOC_PROFESSIONAL_DETAILS")}</h2>
           <div style={sectionStyle}>
@@ -90,11 +95,9 @@ function NOCSummary({ formData, t }) {
             {renderLabel(t("NOC_PROFESSIONAL_MOBILE_NO_LABEL"), formData?.applicationDetails?.professionalMobileNumber)}
             {renderLabel(t("NOC_PROFESSIONAL_ADDRESS_LABEL"), formData?.applicationDetails?.professionalAddress)}
           </div>
-        </React.Fragment>
-      )
-    
-    }
-
+         </React.Fragment>
+        )}
+        
       <h2 style={headingStyle}>{t("NOC_SITE_DETAILS")}</h2>
       <div style={sectionStyle}>
         {renderLabel(t("NOC_PLOT_NO_LABEL"), formData?.siteDetails?.plotNo)}

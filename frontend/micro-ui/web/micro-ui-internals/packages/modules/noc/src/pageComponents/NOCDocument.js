@@ -9,40 +9,30 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
   </svg>
 );
 
-function NOCDocument({ value = {} }) {
+function NOCDocument({ value = {}}) {
   const { t } = useTranslation();
-  const { isLoading, isError, error, data } = Digit.Hooks.tl.useTLDocumentSearch(
-    {
-      value,
-    },
-    { value }
-  );
-  let documents = window.location.href.includes("/tl/tradelicence/application/") ? value?.tradeLicenseDetail?.applicationDocuments : [];
-  if (value?.workflowDocs) documents = value?.workflowDocs;
-  if (value?.owners?.documents["ProofOfIdentity"]) documents.push(value.owners.documents["ProofOfIdentity"]);
-  if (value?.owners?.documents["ProofOfOwnership"]) documents.push(value.owners.documents["ProofOfOwnership"]);
-  if (value?.owners?.documents["OwnerPhotoProof"]) documents.push(value.owners.documents["OwnerPhotoProof"]);
+  const { isLoading, isError, error, data } = Digit.Hooks.noc.useNOCDocumentSearch({value},{value});
 
-  if (isLoading) {
-    return <Loader />;
-  }
+  let documents=[];
+  if(value?.workflowDocs) documents = value?.workflowDocs;
 
   return (
     <div style={{ marginTop: "19px" }}>
       <React.Fragment>
         <div style={{ display: "flex", flexWrap: "wrap" }}>
           {documents?.map((document, index) => {
-            let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
+            let documentLink = pdfDownloadLink(data.pdfFiles, document?.documentAttachment);
             return (
               <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
                 <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
                 <p style={{ marginTop: "8px", textAlign: "center" }}>
-                  {value?.workflowDocs ? t(`${document?.documentType}`) : t(`TL_${document?.documentType}_LABEL`)}
+                  {t(document?.documentType.replace(".", "_").toUpperCase())}
                 </p>
               </a>
             );
           })}
         </div>
+       
       </React.Fragment>
     </div>
   );

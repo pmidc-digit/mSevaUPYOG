@@ -3,12 +3,12 @@ import useInbox from "../useInbox";
 const useNDCInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm, getFilter } = filters;
   let { assignee } = filterForm;
-  const { applicationNo } = searchForm;
+  const { uuid } = searchForm;
   const { limit, offset } = tableForm;
   const user = Digit.UserService.getUser();
   const status = filters?.filterForm?.applicationStatus;
 
-  console.log("filters==", filters?.filterForm?.applicationStatus);
+  console.log("filters==", searchForm);
 
   const selectedStatuses = getFilter?.applicationStatus?.map((s) => s?.code) || [];
 
@@ -21,13 +21,16 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
       ...(status.length > 0 ? { status: status } : {}),
     },
 
-    moduleSearchCriteria: status.length > 0 ? {
-      status: status,
-      ...(applicationNo ? { applicationNo } : {}),
-    } : {
-      // status: status,
-      ...(applicationNo ? { applicationNo } : {}),
-    },
+    moduleSearchCriteria:
+      status.length > 0
+        ? {
+            status: status,
+            ...(uuid ? { uuid } : {}),
+          }
+        : {
+            // status: status,
+            ...(uuid ? { uuid } : {}),
+          },
     limit,
     offset,
   };

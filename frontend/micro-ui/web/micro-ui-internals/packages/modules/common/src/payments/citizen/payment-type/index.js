@@ -441,7 +441,7 @@ export const SelectPaymentType = (props) => {
             </div>
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAYER_NAME")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAYER_NUMBER")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}

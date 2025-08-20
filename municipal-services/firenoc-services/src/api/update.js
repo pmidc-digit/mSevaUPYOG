@@ -90,12 +90,22 @@ export const updateApiResponse = async ({ body }, next = {}) => {
       firenocResponse = await calculate(FireNOCs[i], RequestInfo);
   }
 
+ var validityYears =
+  (firenocResponse &&
+   firenocResponse.Calculation &&
+   firenocResponse.Calculation[0] &&
+   firenocResponse.Calculation[0].taxHeadEstimates &&
+   firenocResponse.Calculation[0].taxHeadEstimates[0] &&
+   firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears) != null
+    ? firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears
+    : 1;
+
   body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
   body.FireNOCs[0].fireNOCDetails.additionalDetail = {
   ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
-  validityYears: firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears
+  validityYears: validityYears
 };
-  console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
+ // console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
 
   // payloads.push({
   //   topic: envVariables.KAFKA_TOPICS_FIRENOC_UPDATE,

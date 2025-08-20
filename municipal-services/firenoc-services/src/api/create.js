@@ -87,11 +87,20 @@ export const createApiResponse = async ({ body }, res, next) => {
      firenocResponse = await calculate(FireNOCs[i], RequestInfo);
     // console.log("firenocResponse",JSON.stringify(firenocResponse))
   }
- 
+ var validityYears =
+  (firenocResponse &&
+   firenocResponse.Calculation &&
+   firenocResponse.Calculation[0] &&
+   firenocResponse.Calculation[0].taxHeadEstimates &&
+   firenocResponse.Calculation[0].taxHeadEstimates[0] &&
+   firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears) != null
+    ? firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears
+    : 1;
+
   body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
   body.FireNOCs[0].fireNOCDetails.additionalDetail = {
   ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
-  validityYears: firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears
+  validityYears: validityYears
 };
 
   console.log("Final Requested Body for Create"+ JSON.stringify(body));

@@ -671,8 +671,8 @@ public class TLValidator {
      * @param request The tradeLcienseRequest
      */
     private void validateDuplicateDocuments(TradeLicenseRequest request){
-        List<String> documentFileStoreIds = new LinkedList();
         request.getLicenses().forEach(license -> {
+        	List<String> documentFileStoreIds = new LinkedList();
             if(license.getTradeLicenseDetail().getApplicationDocuments()!=null){
                 license.getTradeLicenseDetail().getApplicationDocuments().forEach(
                         document -> {

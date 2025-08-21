@@ -138,7 +138,7 @@ public class TLRepository {
         	if(licensesForUpdate.size() > 1 ) {
         		licensesForUpdate.forEach(license -> {
         			TradeLicenseRequest request = new TradeLicenseRequest(requestInfo, Collections.singletonList(license));
-        			kafkaTemplate.send(config.getSaveTopic(), request);
+        			kafkaTemplate.send(config.getUpdateTopic(), request);
         		});
         		
         	}else

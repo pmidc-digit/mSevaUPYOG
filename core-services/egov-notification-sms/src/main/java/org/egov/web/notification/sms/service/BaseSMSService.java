@@ -39,6 +39,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 import java.security.cert.X509Certificate;
+import org.springframework.web.util.UriUtils;
+import java.nio.charset.StandardCharsets;
+
 
 @Slf4j
 abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
@@ -94,29 +97,29 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
         //submitToExternalSmsService(sms);
     }
 
-    
-    
-    
+
     private void routeToAws(Sms sms) {
         try {
-            // Build URL with proper encoding
-            String url = UriComponentsBuilder
-                    .fromHttpUrl(smsProperties.getBaseUrl()) // e.g. https://mseva.one1sewa.com/notification-sms/otp
-                    .queryParam("number", sms.getMobileNumber())
-                    .queryParam("msg", sms.getMessage())
-                    .queryParam("category", sms.getCategory())
-                    .queryParam("expirytime", sms.getExpiryTime())
-                    .build()
-                    .encode()
-                    .toUriString();
-
-            log.debug("Calling AWS SMS URL: {}", url);
-
-            // Create insecure RestTemplate (bypasses SSL validation)
             RestTemplate restTemplate = insecureRestTemplate();
 
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            // Prepare query parameters safely
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("number", sms.getMobileNumber());
+            params.add("msg", sms.getMessage()); // do NOT encode manually
+            params.add("category", String.valueOf(sms.getCategory()));
+            params.add("expirytime", sms.getExpiryTime() != null ? String.valueOf(sms.getExpiryTime()) : "60000");
 
+            // Build URI with Spring handling encoding
+            URI uri = UriComponentsBuilder
+                    .fromHttpUrl(smsProperties.getBaseUrl())
+                    .queryParams(params)
+                    .build()
+                    .encode() // only encodes unsafe chars
+                    .toUri();
+
+            log.debug("Calling AWS SMS with URI: {}", uri);
+
+            ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
             log.info("AWS SMS Response: status={} body={}", response.getStatusCode(), response.getBody());
 
         } catch (Exception e) {
@@ -124,6 +127,10 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
         }
     }
 
+
+
+
+    
     private RestTemplate insecureRestTemplate() throws Exception {
         TrustManager[] trustAllCerts = new TrustManager[]{
             new X509TrustManager() {

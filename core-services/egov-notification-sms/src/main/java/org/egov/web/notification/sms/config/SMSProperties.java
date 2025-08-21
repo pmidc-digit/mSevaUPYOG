@@ -38,6 +38,9 @@ public class SMSProperties {
     @Value("${sms.sender.secure.key}")
     public String secureKey;
 
+    @Value("${sms.aws.url}")
+    public String baseUrl;
+    
     @Value("#{${sms.config.map}}")
     Map<String, String> configMap;
 

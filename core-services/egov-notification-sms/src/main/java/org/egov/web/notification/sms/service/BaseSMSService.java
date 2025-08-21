@@ -24,6 +24,7 @@ import javax.net.ssl.*;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.*;
 
@@ -75,9 +76,41 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
             return;
         }
         log.info("calling submitToExternalSmsService() method");
-        submitToExternalSmsService(sms);
+        
+        routeToAws(sms);
+
+        //submitToExternalSmsService(sms);
     }
 
+    
+    
+    
+    private void routeToAws(Sms sms) {
+        try {
+            // Build URL with proper encoding
+            String url = UriComponentsBuilder
+                    .fromHttpUrl(smsProperties.getBaseUrl()) // e.g. https://mseva.one1sewa.com/notification-sms/otp
+                    .queryParam("number", sms.getMobileNumber())
+                    .queryParam("msg", sms.getMessage()) // only query param encoding happens
+                    .queryParam("category", sms.getCategory())
+                    .queryParam("expirytime", sms.getExpiryTime())
+                    .build()
+                    .encode()
+                    .toUriString();
+
+            log.debug("Calling AWS SMS URL: {}", url);
+
+            RestTemplate restTemplate = new RestTemplate();
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            log.info("AWS SMS Response: status={} body={}", response.getStatusCode(), response.getBody());
+
+        } catch (Exception e) {
+            log.error("Error while routing SMS to AWS", e);
+        }
+    }
+    
+    
     protected abstract void submitToExternalSmsService(Sms sms);
 
     protected <T> ResponseEntity<T> executeAPI(URI uri, HttpMethod method, HttpEntity<?> requestEntity, Class<T> type) {

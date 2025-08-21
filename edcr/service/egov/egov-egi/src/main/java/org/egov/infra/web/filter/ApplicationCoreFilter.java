@@ -78,6 +78,7 @@ import org.egov.infra.admin.master.service.CityService;
 import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.config.security.authentication.userdetail.CurrentUser;
 import org.egov.infra.security.utils.SecurityUtils;
+import org.egov.infra.web.utils.ThreadLocalLogger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,16 +98,20 @@ public class ApplicationCoreFilter implements Filter {
     private String cdnURL;
 
     @Resource(name = "cities")
-    private transient List<String> cities;
+    private List<String> cities;
 
     @Value("${client.id}")
     private String clientId;
 
 //    @Value("${app.version}_${app.build.no}")
 //    private String applicationRelease;
+	@Value("${is.environment.central.instance}")
+    private String isEnvironmentCentralInstance;
     
     private String applicationRelease = "2.1.2-SNAPSHOT";
 
+    @Value("${state.level.tenantid.length}")
+    private int stateLevelTenantIdLength;
     private static final Logger LOG = LoggerFactory.getLogger(ApplicationCoreFilter.class);
 
     @Override
@@ -114,9 +119,12 @@ public class ApplicationCoreFilter implements Filter {
         HttpServletRequest request = (HttpServletRequest) req;
         HttpSession session = request.getSession();
         try {
+        	ThreadLocalLogger.logAllThreadLocalValues("Core filter --Before request processing");
             prepareUserSession(session);
             prepareApplicationThreadLocal(session);
             prepareRestService(request, session);
+            LOG.info("Application core filter fielstore tenant ID*****->"+ApplicationThreadLocals.getFilestoreTenantID());
+            ThreadLocalLogger.logAllThreadLocalValues("Core filter --After request processing");
             chain.doFilter(request, resp);
         } finally {
             ApplicationThreadLocals.clearValues();
@@ -126,7 +134,23 @@ public class ApplicationCoreFilter implements Filter {
     private void prepareRestService(HttpServletRequest req, HttpSession session) {
         String requestURL = new StringBuilder().append(ApplicationThreadLocals.getDomainURL())
                 .append(req.getRequestURI()).toString();
-        if (requestURL.contains(ApplicationTenantResolverFilter.tenants.get("state"))
+        String fullTenant = req.getParameter("tenantId");
+        
+        String[] tenantArr = fullTenant == null ? new String[0] : fullTenant.split("\\.");
+        String stateName;
+        if(Boolean.TRUE.equals(Boolean.valueOf(isEnvironmentCentralInstance))) {
+        	stateName = getStateLevelTenant(fullTenant);
+        	ApplicationThreadLocals.setStateName(stateName);
+			/*
+			 * if (tenantArr.length == 3 || tenantArr.length == 2) {
+			 * 
+			 * } else { if(tenantArr.length == 1)
+			 * ApplicationThreadLocals.setStateName(tenantArr[0]); stateName = "state"; }
+			 */
+        } else {
+            stateName = "state";
+        }
+        if (requestURL.contains(ApplicationTenantResolverFilter.tenants.get(stateName))
                 && (requestURL.contains("/rest/") || requestURL.contains("/oauth/"))) {
             prepareThreadLocal(ApplicationThreadLocals.getTenantID());
 
@@ -154,10 +178,18 @@ public class ApplicationCoreFilter implements Filter {
     }
 
     private void prepareApplicationThreadLocal(HttpSession session) {
-    	LOG.info("Inside prepareApplicationThreadLocal method ");
-
+        String stateName;
+        String cityName;
+        if(Boolean.valueOf(isEnvironmentCentralInstance)) {
+            stateName = ApplicationThreadLocals.getStateName();
+            cityName = ApplicationThreadLocals.getCityName() == null ? (String) session.getAttribute(CITY_NAME_KEY) : ApplicationThreadLocals.getCityName();
+        } else  {
+            stateName = clientId;
+            cityName = (String) session.getAttribute(CITY_NAME_KEY);
+        }
+        LOG.warn("prepareApplicationThreadLocal*****->"+cityName);
         ApplicationThreadLocals.setCityCode((String) session.getAttribute(CITY_CODE_KEY));
-        ApplicationThreadLocals.setCityName((String) session.getAttribute(CITY_NAME_KEY));
+        ApplicationThreadLocals.setCityName(cityName);
         ApplicationThreadLocals.setCityNameLocal((String) session.getAttribute(CITY_LOCAL_NAME_KEY));
         ApplicationThreadLocals.setMunicipalityName((String) session.getAttribute(CITY_CORP_NAME_KEY));
         ApplicationThreadLocals.setUserId((Long) session.getAttribute(USERID_KEY));
@@ -166,7 +198,7 @@ public class ApplicationCoreFilter implements Filter {
             if (city != null) {
                 ApplicationThreadLocals.setDistrictCode(city.getDistrictCode());
                 ApplicationThreadLocals.setDistrictName(city.getDistrictName());
-                ApplicationThreadLocals.setStateName(clientId);
+                ApplicationThreadLocals.setStateName(stateName);
                 ApplicationThreadLocals.setGrade(city.getGrade());
             }
         }
@@ -181,11 +213,22 @@ public class ApplicationCoreFilter implements Filter {
         // TODO: get the city by tenant
         City city = this.cityService.findAll().get(0);
         if (city != null) {
+            String stateName;
+            String cityName;
+            if(Boolean.TRUE.equals(Boolean.valueOf(isEnvironmentCentralInstance))) {
+            	LOG.warn("city.getName()*****-->"+city.getName());
+                stateName = ApplicationThreadLocals.getStateName();
+                cityName = ApplicationThreadLocals.getCityName() == null ? city.getName() : ApplicationThreadLocals.getCityName();
+            } else  {
+                stateName = clientId;
+                cityName = city.getName();
+            }
+            LOG.warn("prepareThreadLocal*****-->"+cityName);
             ApplicationThreadLocals.setCityCode(city.getCode());
             ApplicationThreadLocals.setCityName(city.getName());
             ApplicationThreadLocals.setDistrictCode(city.getDistrictCode());
             ApplicationThreadLocals.setDistrictName(city.getDistrictName());
-            ApplicationThreadLocals.setStateName(clientId);
+            ApplicationThreadLocals.setStateName(stateName);
             ApplicationThreadLocals.setGrade(city.getGrade());
             ApplicationThreadLocals.setDomainName(city.getDomainURL());
             // ApplicationThreadLocals.setDomainURL("https://"+city.getDomainURL());
@@ -208,4 +251,19 @@ public class ApplicationCoreFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         // Nothing to be initialized
     }
+    
+    private String getStateLevelTenant(String tenantId) {
+
+		String[] tenantArray = tenantId.split("\\.");
+		String stateTenant = tenantArray[0];
+		
+		if (stateLevelTenantIdLength < tenantArray.length) {
+			for (int i = 1; i < stateLevelTenantIdLength; i++)
+				stateTenant = stateTenant.concat(".").concat(tenantArray[i]);
+		} else {
+			stateTenant = tenantId;
+		}
+	
+		return stateTenant;
+	}
 }

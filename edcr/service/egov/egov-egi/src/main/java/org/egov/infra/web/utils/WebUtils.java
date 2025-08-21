@@ -80,17 +80,23 @@ public final class WebUtils {
      * This will return only domain name from http request <br/>
      * eg: http://www.domain.com/cxt/xyz will return www.domain.com http://somehost:8090/cxt/xyz will return somehost
      **/
-    public static String extractRequestedDomainName(HttpServletRequest httpRequest) {
+    public static String extractRequestedDomainName(HttpServletRequest httpRequest, boolean isCentralInstance, String commonDomainName) {
     	LOG.info("inside extractRequestedDomainName method");
         String requestURL = httpRequest.getRequestURL().toString();
         String domainName = getDomainName(requestURL);
         LOG.info("Get domain name from request URL : " + domainName);
         if (domainName.contains(EDCR_SERVICE_INTERNAL_URL)) {
+			/*
+			 * if(isCentralInstance) { domainName = commonDomainName; } else {}
+			 */
+
             String host = httpRequest.getHeader("x-forwarded-host");
+            domainName = commonDomainName;
             if (StringUtils.isNotBlank(host)) {
-                domainName = host.toString().split(",")[0];
+                domainName = host.split(",")[0];
                 LOG.info("*****Domain Name*****" + domainName);
             }
+            LOG.info("*****Domain Name***** {}", domainName);
         }
         LOG.info("extracted domain name : "+ domainName);
         return domainName;
@@ -101,11 +107,10 @@ public final class WebUtils {
      * eg: http://www.domain.com/cxt/xyz will return www.domain.com http://somehost:8090/cxt/xyz will return somehost
      **/
     public static String extractRequestedDomainName(String requestURL) {
-        String domainName = getDomainName(requestURL);
-        return domainName;
+        return getDomainName(requestURL);
     }
 
-    private static String getDomainName(String requestURL) {
+    public static String getDomainName(String requestURL) {
         int domainNameStartIndex = requestURL.indexOf(SCHEME_DOMAIN_SEPARATOR) + 3;
         int domainNameEndIndex = requestURL.indexOf(FORWARD_SLASH, domainNameStartIndex);
         String domainName = requestURL.substring(domainNameStartIndex,
@@ -121,22 +126,28 @@ public final class WebUtils {
      * http://www.domain.com/cxt/xyz withContext value as true will return http://www.domain.com/cxt/ <br/>
      * http://www.domain.com/cxt/xyz withContext value as false will return http://www.domain.com
      **/
-    public static String extractRequestDomainURL(HttpServletRequest httpRequest, boolean withContext) {
+    public static String extractRequestDomainURL(HttpServletRequest httpRequest, boolean withContext, boolean isCentralInstance, String domainName) {
         StringBuilder url = new StringBuilder(httpRequest.getRequestURL());
         String domainURL = "";
         String protocol = httpRequest.getHeader("x-forwarded-proto");
         String host = httpRequest.getHeader("x-forwarded-host");
+	LOG.info("*****protocol Name***** {}", protocol);
         LOG.info("Extracted Host : " + host);
-        String domainName = getDomainName(url.toString());
-        LOG.info("domain : " + domainName);
-        if (domainName.contains(EDCR_SERVICE_INTERNAL_URL)) {
-        	LOG.info("domain URL contains : " + EDCR_SERVICE_INTERNAL_URL);
-            if (StringUtils.isNotBlank(protocol) && StringUtils.isNotBlank(host)) {
-                String proto = protocol.toString().split(",")[0];
-                String hostName = host.toString().split(",")[0];
-                domainURL = new StringBuilder().append(proto).append(SCHEME_DOMAIN_SEPARATOR).append(hostName).toString();
-                LOG.info("Domain URL*******" + domainURL);
+        String domainName1 = getDomainName(url.toString());
+        LOG.info("domain : " + domainName1);
+        if (getDomainName(url.toString()).contains(EDCR_SERVICE_INTERNAL_URL)) {
+        	String proto = "https";
+        	if(protocol != null)
+        		proto = protocol.split(",")[0];
+        	String hostName = domainName;
+        	if(host != null)
+        		hostName = host.split(",")[0];
+            if(isCentralInstance) {
+            	proto = "https";
+                hostName = domainName;
             }
+            domainURL = new StringBuilder().append(proto).append(SCHEME_DOMAIN_SEPARATOR).append(hostName).toString();
+            LOG.info("Domain URL******* {}", domainURL);
         } else {
         	LOG.info("domain URL not contains : " + EDCR_SERVICE_INTERNAL_URL);
             String uri = httpRequest.getRequestURI();

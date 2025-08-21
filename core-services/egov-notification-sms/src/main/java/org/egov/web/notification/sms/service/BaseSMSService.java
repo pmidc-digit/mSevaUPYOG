@@ -28,6 +28,18 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.*;
 
+
+
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.cert.X509Certificate;
+
 @Slf4j
 abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
 
@@ -91,7 +103,7 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
             String url = UriComponentsBuilder
                     .fromHttpUrl(smsProperties.getBaseUrl()) // e.g. https://mseva.one1sewa.com/notification-sms/otp
                     .queryParam("number", sms.getMobileNumber())
-                    .queryParam("msg", sms.getMessage()) // only query param encoding happens
+                    .queryParam("msg", sms.getMessage())
                     .queryParam("category", sms.getCategory())
                     .queryParam("expirytime", sms.getExpiryTime())
                     .build()
@@ -100,7 +112,9 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
 
             log.debug("Calling AWS SMS URL: {}", url);
 
-            RestTemplate restTemplate = new RestTemplate();
+            // Create insecure RestTemplate (bypasses SSL validation)
+            RestTemplate restTemplate = insecureRestTemplate();
+
             ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
 
             log.info("AWS SMS Response: status={} body={}", response.getStatusCode(), response.getBody());
@@ -108,6 +122,26 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
         } catch (Exception e) {
             log.error("Error while routing SMS to AWS", e);
         }
+    }
+
+    private RestTemplate insecureRestTemplate() throws Exception {
+        TrustManager[] trustAllCerts = new TrustManager[]{
+            new X509TrustManager() {
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {}
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {}
+                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+            }
+        };
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setSSLContext(sslContext)
+                .setSSLHostnameVerifier(NoopHostnameVerifier.INSTANCE)
+                .build();
+
+        return new RestTemplate(new HttpComponentsClientHttpRequestFactory(httpClient));
     }
     
     

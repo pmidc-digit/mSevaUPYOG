@@ -53,7 +53,7 @@ const MyApplications = ({ view }) => {
                   <KeyNote keyValue={t(item)} note={t(filteredApplication[item])} />
                 ))}
 
-              {application?.Applications?.applicationStatus === "APPROVED" && (
+              {application?.Applications?.applicationStatus != "PENDINGPAYMENT" && (
                 <Link to={`/digit-ui/citizen/ndc/search/application-overview/${application?.Applications?.uuid}`}>
                   <SubmitBar label={t("TL_VIEW_DETAILS")} />
                 </Link>

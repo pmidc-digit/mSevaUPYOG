@@ -17,7 +17,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
 
   function goNext(data) {
-    console.log(`Data in step ${config.currStepNumber} is: \n`, data);
     const missingFields = validateStepData(currentStepData);
 
     if (missingFields.length > 0) {
@@ -26,18 +25,13 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
     if (checkFormData?.apiData?.Applications?.[0]?.uuid) {
-      console.log("call update if data changes");
       onGoNext();
     } else createApplication(data);
 
     // onGoNext();
   }
 
-  console.log("checkFormData", checkFormData);
-
   const createApplication = async (data) => {
-    console.log("data", data);
-
     const applicant = Digit.UserService.getUser()?.info || {};
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
@@ -89,6 +83,13 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
         status: sc?.billData?.status,
       });
     });
+
+    if (data?.PropertyDetails?.tlNumber) {
+      ndcDetails.push({
+        businessService: "TL",
+        consumerCode: data?.PropertyDetails?.tlNumber,
+      });
+    }
 
     if (data?.PropertyDetails?.propertyBillData?.billData) {
       const billData = data?.PropertyDetails?.propertyBillData?.billData;
@@ -146,6 +147,11 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   //   }
   // };
 
+  const validatePropertyId = (value) => {
+    const regex = /^PT-\d{4}-\d{7,8}$/;
+    return regex.test(value);
+  };
+
   function validateStepData(data) {
     const missingFields = [];
     const invalidFields = [];
@@ -157,6 +163,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     // Mandatory Field Checks
     if (!cpt?.id) missingFields.push(t("NDC_MESSAGE_PROPERTY_ID"));
+    if (!validatePropertyId(cpt?.id)) missingFields.push(t("PT_PROPERTY_ID_INVALID"));
     if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push(t("NDC_MESSAGE_PLEASE_SEARCH_PROPERTY_ID"));
     if (!propertyDetails?.firstName) missingFields.push(t("NDC_MESSAGE_FIRST_NAME"));
     if (!propertyDetails?.lastName) missingFields.push(t("NDC_MESSAGE_LAST_NAME"));
@@ -205,8 +212,16 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       invalidFields.push(t("NDC_MESSAGE_FIRST_NAME_ONLY_ALPHABETS_ALLOWED"));
     }
 
-    if (propertyDetails?.lastName && !nameRegex.test(propertyDetails.lastName)) {
-      invalidFields.push(t("NDC_MESSAGE_LAST_NAME_ONLY_ALPHABETS_ALLOWED"));
+    // if (propertyDetails?.lastName && !nameRegex.test(propertyDetails.lastName)) {
+    //   invalidFields.push(t("NDC_MESSAGE_LAST_NAME_ONLY_ALPHABETS_ALLOWED"));
+    // }
+
+    if (propertyDetails?.lastName) {
+      if (!nameRegex.test(propertyDetails.lastName)) {
+        invalidFields.push(t("NDC_MESSAGE_LAST_NAME_ONLY_ALPHABETS_ALLOWED"));
+      } else if (propertyDetails.lastName.length > 100) {
+        invalidFields.push(t("NDC_MESSAGE_LAST_NAME_MAX_100_CHARACTERS"));
+      }
     }
 
     if (propertyDetails?.email && !emailRegex.test(propertyDetails.email)) {

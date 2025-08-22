@@ -45,7 +45,7 @@ const ApplicationDetail = () => {
   if (applicationDetails?.payments?.length > 0) {
     dowloadOptions.push({
       label: t("TL_RECEIPT"),
-      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, applicationDetails?.applicationData?.tenantId,applicationDetails?.payments),
+      onClick: () => downloadAndPrintReciept(applicationDetails?.payments?.[0]?.paymentDetails?.[0]?.businessService || "BPAREG", applicationDetails?.applicationData?.applicationNumber, "pb",applicationDetails?.payments),
     })
   }
 
@@ -53,8 +53,8 @@ const ApplicationDetail = () => {
     <div className={"employee-main-application-details"}>
         <div  className={"employee-application-details"}>
         <Header>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
+        <div style={{zIndex: "10", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
         <div>
-        <div style={{zIndex: "10",  position: "relative"}}>
         {applicationDetails?.payments?.length > 0 && 
         <MultiLink
           className="multilinkWrapper"
@@ -86,6 +86,7 @@ const ApplicationDetail = () => {
         MenuStyle={isMobile?{}:{right:"50px"}}
         closeToast={closeToast}
         timelineStatusPrefix={"WF_NEWTL_"}
+        propertyId={applicationDetails?.applicationData?.applicationNumber}
       />
     </div>
   )

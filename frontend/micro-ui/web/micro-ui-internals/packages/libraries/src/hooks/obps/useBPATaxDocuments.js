@@ -35,7 +35,7 @@ const useBPATaxDocuments = (stateId, formData, beforeUploadDocuments) => {
             documentsList.push(doc);
         });
 
-
+     console.log("documentsList here in hook", documentsList);
     return { data: documentsList , isLoading: bpaDocsLoading || commonDocsLoading }
 
 }

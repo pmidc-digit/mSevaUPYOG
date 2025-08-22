@@ -182,7 +182,6 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
         } else {
           try {
             setUploadedFile(null);
-            // const response = await Digit.UploadServices.Filestorage("PT", file, tenantId?.split(".")[0]);
             const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);

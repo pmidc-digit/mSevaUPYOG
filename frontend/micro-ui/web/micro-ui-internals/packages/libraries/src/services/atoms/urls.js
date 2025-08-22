@@ -183,6 +183,7 @@ const Urls = {
     receipt_download: "/egov-pdf/download/PAYMENT/consolidatedreceipt",
     edcrreportdownload: "/bpa-services/v1/bpa/_permitorderedcr",
     getSearchDetails: "/inbox/v1/dss/_search",
+    payment_search: "/collection-services/payments/BPREG/_search",
   },
   ptr: {
     create: "/pet-services/pet-registration/_create",

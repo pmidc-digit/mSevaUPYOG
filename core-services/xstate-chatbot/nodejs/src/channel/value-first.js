@@ -74,7 +74,7 @@ class ValueFirstWhatsAppProvider {
             throw new Error("Invalid imageInBase64String: Value is missing or not a string");
         }
 
-       console.log("Base64 Input Before Processing:", imageInBase64String.substring(0, 50) + "..."); // Print first 50 chars
+       //console.log("Base64 Input Before Processing:", imageInBase64String.substring(0, 50) + "..."); // Print first 50 chars
     
 
 
@@ -83,7 +83,7 @@ class ValueFirstWhatsAppProvider {
         let buff = Buffer.from(imageInBase64String, 'base64');
         var tempName = 'pgr-whatsapp-' + Date.now() + '.jpg'; 
 
-        console.log("Temp Filename:", tempName);
+       // console.log("Temp Filename:", tempName);
 
         /*fs.writeFile(tempName, buff, (err) => {
             if (err) throw err;
@@ -91,10 +91,10 @@ class ValueFirstWhatsAppProvider {
 
         try {
             var filestoreId = await this.fileStoreAPICall(tempName, buff);
-            console.log("FileStore ID:", filestoreId);
+            //console.log("FileStore ID:", filestoreId);
             return filestoreId;
         } catch (error) {
-            console.error("Error in fileStoreAPICall:", error);
+           // console.error("Error in fileStoreAPICall:", error);
             return null;
         }
 
@@ -115,7 +115,7 @@ class ValueFirstWhatsAppProvider {
           const metadata = await exifr.gps(imgBuffer);
       
             if (metadata && metadata.latitude && metadata.longitude) {
-                console.log('Metadata:', metadata);
+                //console.log('Metadata:', metadata);
                 return {
                     latitude: metadata.latitude.toString(),
                     longitude: metadata.longitude.toString(),
@@ -251,10 +251,10 @@ class ValueFirstWhatsAppProvider {
             method: "GET",
             origin: '*'
         }
-        console.log("Filestore URL", url)
+        //console.log("Filestore URL", url)
         let response = await fetch(url,options);
         response = await(response).json();
-        console.log("getFileForFileStoreId Response", response);
+        //console.log("getFileForFileStoreId Response", response);
         var fileURL = response['fileStoreIds'][0]['url'].split(",");
         /*var fileName = geturl.parse(fileURL[0]);
         fileName = path.basename(fileName.pathname);

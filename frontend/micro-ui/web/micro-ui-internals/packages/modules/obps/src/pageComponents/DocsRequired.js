@@ -21,7 +21,7 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
   sessionStorage.removeItem("clickOnBPAApplyAfterEDCR");
 
   const { data: homePageUrlLinks, isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["homePageUrlLinks"]);
-
+  console.log(docsList, "DOCS");
   const goNext = () => {
     if (JSON.parse(sessionStorage.getItem("BPAintermediateValue")) !== null) {
       let formData = JSON.parse(sessionStorage.getItem("BPAintermediateValue"));
@@ -107,6 +107,26 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
     }
   }, [!isLoading]);
 
+  const codedDocs = [
+    { code: "BPA_DOC_OWNERSHIP_DOCUMENT" },
+    { code: "BPA_DOC_DETAILED_LOCATION_PLAN" },
+    { code: "BPA_DOC_OWNER_SIGNED_UNDERTAKING" },
+    { code: "BPA_DOC_FIRM_DOCUMENTS" },
+    { code: "BPA_DOC_IMPROVEMENT_TRUST_NOC" },
+    { code: "BPA_DOC_INDEMNITY_BOND_BASEMENT" },
+    { code: "BPA_DOC_STRUCTURE_STABILITY_CERTIFICATE" },
+    { code: "BPA_DOC_STRUCTURE_DRAWINGS" },
+    { code: "BPA_DOC_SELF_DECLARATION_INDUSTRY" },
+    { code: "BPA_DOC_NOC_NEIGHBOR_BASEMENT" },
+    { code: "BPA_DOC_NOC_FIRE_DEPARTMENT" },
+    { code: "BPA_DOC_NOC_NHAI_PWD" },
+    { code: "BPA_DOC_NOC_AIRPORT_AUTHORITY" },
+    { code: "BPA_DOC_NOC_GAS_AUTHORITY" },
+    { code: "BPA_DOC_ANY_OTHER_NOC" },
+    { code: "BPA_DOC_ANY_OTHER_SUPPORTING" },
+    { code: "BPA_DOC_LAST_PROPERTY_TAX" },
+  ];
+
   if (isLoading) {
     return <Loader />;
   }
@@ -124,19 +144,12 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
           <Loader />
         ) : (
           <Fragment>
-            {docsList?.[0]?.map((doc, index) => (
-              <div>
-                <div style={{ fontWeight: 700, marginBottom: "8px" }} key={index}>
-                  <div style={{ display: "flex" }}>
-                    <div>{`${index + 1}.`}&nbsp;</div>
-                    <div>{` ${t(doc?.code.replace(".", "_"))}`}</div>
-                  </div>
+            {codedDocs.map((doc, index) => (
+              <div key={index} style={{ fontWeight: 700, marginBottom: "8px" }}>
+                <div style={{ display: "flex" }}>
+                  <div>{`${index + 1}.`}&nbsp;</div>
+                  <div>{t(doc.code)}</div>
                 </div>
-                {/* <div style={{ marginBottom: "16px" }}>
-                  {doc?.dropdownData?.map((value, index) =>
-                    doc?.dropdownData?.length !== index + 1 ? <span>{`${t(value?.i18nKey)}, `}</span> : <span>{`${t(value?.i18nKey)}`}</span>
-                  )}
-                </div> */}
               </div>
             ))}
           </Fragment>

@@ -156,7 +156,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
     const address = {};
     address.pincode = pincode;
     address.city = selectedCity;
-    address.locality = selectedLocality;
+    // address.locality = selectedLocality;
     address.street = street;
     address.landmark = landmark;
     address.geoLocation = geoLocation;
@@ -252,7 +252,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
           t={t}
           config={config}
           onSelect={handleSubmit}
-          isDisabled={!selectedCity || !selectedLocality || Pinerror}
+          isDisabled={!selectedCity || Pinerror}
           isMultipleAllow={true}
           forcedError={t(Pinerror)}
         >
@@ -335,7 +335,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
               disabled={propertyData?.address ? true : false}
             />
           )}
-          {!isOpen && selectedCity && localities && !propertyData?.address ? (
+          {/* {!isOpen && selectedCity && localities && !propertyData?.address ? (
             <span className={"form-pt-dropdown-only"}>
               <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel>
               <RadioOrSelect
@@ -366,9 +366,9 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
                 disabled={propertyData?.address ? true : false}
               />
             </span>
-          )}
+          )} */}
 
-          <CardLabel>{`${t("BPA_DETAILS_SRT_NAME_LABEL")}`}</CardLabel>
+          <CardLabel>{`${t("BPA_DETAILS_SRT_NAME_LABEL_NEW")}`}</CardLabel>
           {!isOpen && (
             <TextInput
               style={{}}

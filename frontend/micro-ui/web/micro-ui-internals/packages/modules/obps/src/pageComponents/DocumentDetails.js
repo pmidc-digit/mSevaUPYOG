@@ -85,6 +85,31 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
     }
   }, [documents, checkRequiredFields]);
 
+  const documentList = [
+    {
+      code: "OWNERSHIP_DOC",
+      label: "Ownership Document (Fard Jamabandi not older than 3 months, Registered Ownership / Lease Deed, Power of Attorney’s documents *",
+      required: true,
+    },
+    { code: "DETAILED_LOCATION_PLAN", label: "Detailed Location Plan *", required: true },
+    { code: "OWNER_SIGNED_UNDERTAKING", label: "Owner Signed Undertaking.", required: true },
+    { code: "FIRM_DOCS", label: "Firm’s Documents (if any)", required: false },
+    { code: "IMPROVEMENT_TRUST_NOC", label: "Improvement Trust Scheme NOC", required: false },
+    { code: "INDEMNITY_BASEMENT", label: "Indemnity bond for Basement", required: false },
+    { code: "STRUCTURE_STABILITY_CERT", label: "Structure Stability/Safety certificate", required: false },
+    { code: "STRUCTURE_DRAWINGS", label: "Structure Drawings", required: false },
+    { code: "SELF_DECLARATION", label: "Self-Declaration Regarding category of Industry", required: false },
+    { code: "NEIGHBOR_NOC", label: "NOC from Neighboring Plot/Building owners for basement", required: false },
+    { code: "FIRE_NOC", label: "NOC from Fire Department", required: false },
+    { code: "NHAI_PWD_NOC", label: "NOC from NHAI/PWD", required: false },
+    { code: "AIRPORT_AUTHORITY_NOC", label: "NOC from Airport Authority", required: false },
+    { code: "GAS_AUTHORITY_NOC", label: "NOC from Gas Authority of India (If Gas/ Fuel pipeline within 150 m radius)", required: false },
+    { code: "ANY_OTHER_NOC", label: "Any Other NOC", required: false },
+    { code: "ANY_OTHER_SUPPORTING_DOC", label: "Any Other supporting Document", required: false },
+    { code: "LAST_PROPERTY_TAX", label: "Last Property Tax", required: false },
+    { code: "PHOTOGRAPH_LAT_LONG", label: "Photograph with Latitude & Longitude", required: false },
+  ];
+
   return (
     <div>
       <Timeline currentStep={checkingFlow === "OCBPA" ? 3 : 3} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
@@ -387,8 +412,11 @@ const SelectDocument = React.memo(function MyComponent({
     return selectedUplDocs;
   }, [formData]);
 
+  console.log(formData, "FFF");
+  console.log(doc, "DDD");
+
   return (
-    <div /* style={{ marginBottom: "24px" }} */>
+    <div style={{ overflow: "scroll" }}>
       <CardLabel>{doc?.required ? `${t(doc?.code)} *` : `${t(doc?.code)}`}</CardLabel>
       <Dropdown
         t={t}
@@ -411,7 +439,7 @@ const SelectDocument = React.memo(function MyComponent({
       />
       {doc?.uploadedDocuments?.length && <DocumentsPreview isSendBackFlow={true} documents={doc?.uploadedDocuments} />}
 
-      {doc?.code === "SITEPHOTOGRAPH.ONE" &&
+      {doc?.code === "SITEPHOTOGRAPH_ONE" &&
         (sessionStorage.getItem("Latitude") && sessionStorage.getItem("Longitude") ? (
           <div>
             <p>Latitude: {sessionStorage.getItem("Latitude")}</p>

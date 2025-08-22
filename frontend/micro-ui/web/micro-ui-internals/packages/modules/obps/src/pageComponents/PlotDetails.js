@@ -38,6 +38,7 @@ const PlotDetails = ({ formData, onSelect, config }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const checkingFlow = formData?.uiFlow?.flow;
   const state = Digit.ULBService.getStateId();
+  const [errors, setErrors] = useState({});
   useEffect(() => {
     if (isEditApplication) {
       const newConfig = {
@@ -69,7 +70,31 @@ const PlotDetails = ({ formData, onSelect, config }) => {
 
   const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
 
+  const validate = () => {
+    let newErrors = {};
+
+    editConfig?.inputs?.forEach((input) => {
+      const value = formData?.data?.[input.name] || "";
+
+      if (input.isMandatory && !value) {
+        newErrors[input.name] = `${input.label} is required`;
+      }
+
+      if (input.type === "number" && value && isNaN(value)) {
+        newErrors[input.name] = `${input.label} must be a valid number`;
+      }
+
+      if (input.name === "wardnumber" && value && !/^[a-zA-Z0-9]+$/.test(value)) {
+        newErrors[input.name] = "Ward No must be alphanumeric";
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = (data) => {
+    if (!validate()) return;
     onSelect(editConfig?.key, { ...data });
   };
 
@@ -92,17 +117,19 @@ const PlotDetails = ({ formData, onSelect, config }) => {
   return (
     <div>
       <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
-      <FormStep config={editConfig} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
-        <StatusTable>
-          <Row
-            className="border-none"
-            label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}
-            text={data?.planDetail?.planInformation?.plotArea ? `${data?.planDetail?.planInformation?.plotArea} ${t(`BPA_SQ_MTRS_LABEL`)}` : "NA"}
-          />
-          <Row className="border-none" label={t(`BPA_PLOT_NUMBER_LABEL`)} text={data?.planDetail?.planInformation?.plotNo} />
-          <Row className="border-none" label={t(`BPA_KHATHA_NUMBER_LABEL`)} text={data?.planDetail?.planInfoProperties?.KHATA_NO} />
-        </StatusTable>
-      </FormStep>
+      <div style={{ height: "80vh", overflow: "scroll" }}>
+        <FormStep config={editConfig} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
+          <StatusTable>
+            <Row
+              className="border-none"
+              label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}
+              text={data?.planDetail?.planInformation?.plotArea ? `${data?.planDetail?.planInformation?.plotArea} ${t(`BPA_SQ_MTRS_LABEL`)}` : "NA"}
+            />
+            <Row className="border-none" label={t(`BPA_PLOT_NUMBER_LABEL`)} text={data?.planDetail?.planInformation?.plotNo} />
+            <Row className="border-none" label={t(`BPA_KHATHA_NUMBER_LABEL`)} text={data?.planDetail?.planInfoProperties?.KHATA_NO} />
+          </StatusTable>
+        </FormStep>
+      </div>
     </div>
   );
 };

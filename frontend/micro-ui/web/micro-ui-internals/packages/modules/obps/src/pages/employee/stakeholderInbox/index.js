@@ -114,12 +114,13 @@ const Inbox = ({ parentRoute }) => {
   const PropsForInboxLinks = {
     logoIcon: <CaseIcon />,
     headerText: "CS_COMMON_OBPS",
-    links: [{
-      text: t("BPA_SEARCH_PAGE_TITLE"),
-      link: "/digit-ui/employee/obps/search/application",
-      businessService: "BPA",
-      roles: ["BPAREG_EMPLOYEE", "BPAREG_APPROVER", "BPAREG_DOC_VERIFIER", "BPAREG_DOC_VERIFIER"],
-    }]
+    // links: [{
+    //   text: t("BPA_SEARCH_PAGE_TITLE"),
+    //   link: "/digit-ui/employee/obps/search/application",
+    //   businessService: "BPA",
+    //   roles: ["BPAREG_EMPLOYEE", "BPAREG_APPROVER", "BPAREG_DOC_VERIFIER", "BPAREG_DOC_VERIFIER"],
+    // }]
+    links:[]
   }
 
   const SearchFormFields = useCallback(({ registerRef, searchFormState, searchFieldComponents }) => <SearchFormFieldsComponents {...{ registerRef, searchFormState, searchFieldComponents }} />, [])

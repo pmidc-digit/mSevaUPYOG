@@ -273,6 +273,7 @@ const ApplicationDetails = (props) => {
             oldValue={oldValue}
             isInfoLabel={isInfoLabel}
             propertyId={propertyId}
+            moduleCode={moduleCode}
           />
           {showModal ? (
             <ActionModal

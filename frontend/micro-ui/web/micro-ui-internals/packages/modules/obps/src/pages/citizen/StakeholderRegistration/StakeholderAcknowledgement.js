@@ -40,7 +40,7 @@ const BannerPicker = (props) => {
 
 const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   const { t } = useTranslation();
-  const { id } = useParams();
+  // const { id } = useParams();
   //const isPropertyMutation = window.location.href.includes("property-mutation");
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
@@ -50,35 +50,89 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   let isOpenLinkFlow = window.location.href.includes("openlink");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   const licenseType = mutation?.data?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
+  // const applicationNumber = data?.result?.Licenses?.[0]?.applicationNumber || mutation?.data?.Licenses?.[0]?.applicationNumber;
+  const applicationNumber =
+    data?.result?.Licenses?.[0]?.applicationNumber ||
+    mutation?.data?.Licenses?.[0]?.applicationNumber ||
+    Digit.SessionStorage.get("Digit.BUILDING_PERMIT")?.result?.Licenses?.[0]?.applicationNumber;
 
+  console.log(applicationNumber, "Application Number");
   useEffect(() => {
     try {
       let tenantId = data?.result?.Licenses[0]?.tenantId ? data?.result?.Licenses[0]?.tenantId : tenantId;
       data.tenantId = tenantId;
-      let formdata = {};
-      formdata = convertToStakeholderObject(data);
+      let formdata = convertToStakeholderObject(data);
       mutation.mutate(formdata, {
         onSuccess,
       });
     } catch (err) {}
   }, []);
+  // useEffect(() => {
+  //   try {
+  //     let tenantId = data?.result?.Licenses[0]?.tenantId ? data?.result?.Licenses[0]?.tenantId : tenantId;
+  //     data.tenantId = tenantId;
+  //     let formdata = {};
+  //     formdata = convertToStakeholderObject(data);
+  //     mutation.mutate(formdata, {
+  //       onSuccess,
+  //     });
+  //   } catch (err) {}
+  // }, []);
   const state = tenantId?.split(".")[0];
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId?.split(".")[0],
-    id: id,
+    id: applicationNumber,
     moduleCode: "BPAREG",
   });
-  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: id, tenantId: state }, {});
+  // console.log(id, "IDDD");
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: applicationNumber, tenantId }, {});
+
+  // const handleDownloadPdf = async () => {
+  //   const Property = applicationDetails;
+  //   console.log("applicationDetails in StakeholderAck1", applicationDetails);
+  //   console.log("tenants", tenants);
+  //   const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+
+  //   const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
+
+  //   Digit.Utils.pdf.generate(acknowledgementData);
+  // };
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails;
-    console.log("applicationDetails in StakeholderAck", applicationDetails);
-    console.log("tenants", tenants);
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+    try {
+      const Property = applicationDetails;
 
-    const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
+      if (!Property) {
+        console.error("No application details found");
+        return;
+      }
 
-    Digit.Utils.pdf.generate(acknowledgementData);
+      // try to resolve tenantId safely
+      const propertyTenantId =
+        Property?.tenantId || Property?.Licenses?.[0]?.tenantId || Digit.SessionStorage.get("Digit.BUILDING_PERMIT")?.result?.Licenses?.[0]?.tenantId;
+
+      if (!propertyTenantId) {
+        console.error("No tenantId found in applicationDetails or sessionStorage");
+        return;
+      }
+
+      const tenantInfo = tenants?.find((tenant) => tenant.code === propertyTenantId);
+
+      if (!tenantInfo) {
+        console.error("No tenantInfo found for tenantId:", propertyTenantId);
+        return;
+      }
+
+      const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
+      console.log(acknowledgementData, "ACKO");
+
+      Digit.Utils.pdf.generate(acknowledgementData);
+    } catch (err) {
+      console.error("Error generating acknowledgement PDF", err);
+    }
   };
+
+  console.log("applicationDetails:", applicationDetails);
+  console.log("tenants:", tenants);
 
   return mutation.isLoading || mutation.isIdle ? (
     <Loader />

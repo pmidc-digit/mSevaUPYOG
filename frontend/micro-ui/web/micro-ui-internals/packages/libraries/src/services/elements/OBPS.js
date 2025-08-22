@@ -218,7 +218,7 @@ export const OBPSService = {
           { title: "BPA_APPLICANT_GENDER_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.gender || "NA" },
           { title: "BPA_OWNER_MOBILE_NO_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA" },
           { title: "BPA_APPLICANT_EMAIL_LABEL", value: License?.tradeLicenseDetail?.owners?.[0]?.emailId || "NA" },
-          { title: "BPA_APPLICANT_PAN_NO", value: License?.tradeLicenseDetail?.owners?.[0]?.pan || "NA" },
+          // { title: "BPA_APPLICANT_PAN_NO", value: License?.tradeLicenseDetail?.owners?.[0]?.pan || "NA" },
         ],
       },
       {
@@ -263,7 +263,7 @@ export const OBPSService = {
               title: "BPA_STATUS_LABEL",
               isTransLate: true,
               isStatus: true,
-              value: paymentRes?.Payments?.[0]?.totalAmountPaid ? "WF_BPA_PAID" : "NA",
+              value: (paymentRes?.Payments?.[0]?.totalAmountPaid !== null || paymentRes?.Payments?.[0]?.totalAmountPaid !== undefined) ? "WF_BPA_PAID" : "NA",
               isTransLate: true,
             },
           ],
@@ -868,4 +868,13 @@ export const OBPSService = {
       collectionBillDetails: collectionBillDetails,
     };
   },
+  paymentsearch: ({ tenantId, filters, auth }) =>
+    Request({
+      url: Urls.obps.payment_search,
+      useCache: false,
+      method: "POST",
+      auth: auth === false ? auth : true,
+      userService: auth === false ? auth : true,
+      params: { tenantId, ...filters },
+  })
 };

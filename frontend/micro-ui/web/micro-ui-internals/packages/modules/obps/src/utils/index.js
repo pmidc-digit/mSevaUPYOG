@@ -537,6 +537,7 @@ export const getapplicationdocstakeholder = (initial) => {
 };
 
 export const convertToStakeholderObject = (data) => {
+  console.log("dataconvertToStakeholderObject", data);
   let formData = {
     Licenses: [
       {
@@ -563,7 +564,7 @@ export const convertToStakeholderObject = (data) => {
               name: data?.formData?.LicneseDetails?.name,
               dob: null,
               emailId: data?.formData?.LicneseDetails?.email,
-              permanentAddress: data?.formData?.LicneseDetails?.PermanentAddress,
+              permanentAddress: data?.formData?.LicneseDetails?.PermanentAddress+" , "+data?.formData?.LicneseDetails?.SelectedDistrict?.name+ " , "+data?.formData?.LicneseDetails?.SelectedState?.name,
               correspondenceAddress: data?.Correspondenceaddress,
               pan: data?.formData?.LicneseDetails?.PanNumber,
               uuid: data?.result?.Licenses[0]?.tradeLicenseDetail?.owners?.[0]?.uuid,

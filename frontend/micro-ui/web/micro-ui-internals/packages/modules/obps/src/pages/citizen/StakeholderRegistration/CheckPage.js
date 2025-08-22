@@ -189,7 +189,6 @@ const CheckPage = ({ onSubmit, value }) => {
               ))}
             </StatusTable>
           </Card>
-          <h2>Hello</h2>
           <Card style={{ paddingRight: "16px" }}>
             <CardHeader styles={{ fontSize: "24px" }}>{t("BPA_SUMMARY_FEE_EST")}</CardHeader>
             <StatusTable>

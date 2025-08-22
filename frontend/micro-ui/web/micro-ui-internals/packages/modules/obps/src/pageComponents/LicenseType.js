@@ -183,7 +183,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   }
 
   function isValidCOA(input) {
-    let pattern = /^CA\/(\d{4})\/\d{5}$/;
+    let pattern = /^CA\/(\d{4})\/\d{5,6}$/;
     const match = input.match(pattern);
     if (!match) return false;
 

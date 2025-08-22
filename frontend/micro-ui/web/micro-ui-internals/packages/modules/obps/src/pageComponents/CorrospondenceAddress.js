@@ -43,7 +43,8 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   const goNext = () => {
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
       setIsDisableForNext(true);
-      console.log("dob here in payload", formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth): null);
+      // console.log("dob here in payload", formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth): null);
+      console.log("Correspondenceaddress", formData?.LicneseDetails);
       let payload = {
         Licenses: [
           {
@@ -55,7 +56,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                   name: formData?.LicneseDetails?.name,
                   dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth) : null,
                   emailId: formData?.LicneseDetails?.email,
-                  permanentAddress: formData?.LicneseDetails?.PermanentAddress,
+                  permanentAddress: formData?.LicneseDetails?.PermanentAddress + " , " + formData?.LicneseDetails?.SelectedDistrict?.name + " , " + formData?.LicneseDetails?.SelectedState?.name,
                   correspondenceAddress: Correspondenceaddress,
                   pan: formData?.LicneseDetails?.PanNumber,
                   // "permanentPinCode": "143001"

@@ -1,18 +1,20 @@
 package org.egov.ndc.service;
 
 import net.logstash.logback.encoder.org.apache.commons.lang.StringUtils;
+import org.egov.common.contract.request.PlainAccessRequest;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.workflow.ProcessInstance;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.repository.IdGenRepository;
 import org.egov.ndc.util.NDCConstants;
 import org.egov.ndc.util.NDCUtil;
 import org.egov.ndc.web.model.*;
 import org.egov.ndc.web.model.idgen.IdResponse;
-import org.egov.ndc.web.model.ndc.ApplicantRequest;
 import org.egov.ndc.web.model.ndc.Application;
 import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
 import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
 import org.egov.ndc.web.model.workflow.BusinessService;
+import org.egov.ndc.web.model.workflow.SearchCriteria;
 import org.egov.ndc.web.model.workflow.State;
 import org.egov.ndc.workflow.WorkflowService;
 import org.egov.tracer.model.CustomException;
@@ -249,5 +251,39 @@ public class EnrichmentService {
 //		criteria.setOwnerIds(set);
 //		criteria.setTenantId(requestInfo.getUserInfo().getTenantId());
 //	}
+
+	public void enrichProcessInstance(List<Application> applications, SearchCriteria criteria,
+									  RequestInfo requestInfo) {
+		if (CollectionUtils.isEmpty(applications))
+			return;
+
+		PlainAccessRequest apiPlainAccessRequest = requestInfo.getPlainAccessRequest();
+
+		Map<String, ProcessInstance> processInstances = null;
+		Set<String> applicationNumbers = applications.stream().map(Application::getUuid).collect(Collectors.toSet());
+
+		if (criteria.getTenantId() != null)
+			processInstances = workflowService.getProcessInstances(requestInfo, applicationNumbers,
+					criteria.getTenantId(), null);
+		else
+			processInstances = workflowService.getProcessInstances(requestInfo, applicationNumbers,
+					requestInfo.getUserInfo().getTenantId(), null);
+		for (Application application : applications) {
+			if (!org.apache.commons.lang3.ObjectUtils.isEmpty(processInstances.get(application.getUuid()))) {
+				ProcessInstance processInstance = processInstances.get(application.getUuid());
+				application.setProcessInstance(new ProcessInstance());
+				application.getProcessInstance().setBusinessService(processInstance.getBusinessService());
+				application.getProcessInstance().setModuleName(processInstance.getModuleName());
+				application.getProcessInstance().setComment(processInstance.getComment());
+				if (!org.apache.commons.lang3.ObjectUtils.isEmpty(processInstance.getAssignes()))
+					application.getProcessInstance().setAssignes(processInstance.getAssignes());
+				Workflow workflow = new Workflow();
+				workflow.setAction(processInstance.getAction());
+				workflow.setComment(processInstance.getComment());
+				application.setWorkflow(workflow);
+			}
+		}
+		requestInfo.setPlainAccessRequest(apiPlainAccessRequest);
+	}
 
 }

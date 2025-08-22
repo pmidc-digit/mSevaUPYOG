@@ -119,4 +119,7 @@ public class NDCConfiguration {
 
 	@Value("${spring.kafka.consumer.group-id}")
 	private String kafkaGroupId;
+
+	@Value("${workflow.process.path}")
+	private String wfProcessSearchPath;
 }

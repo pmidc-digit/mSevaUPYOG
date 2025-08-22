@@ -17,6 +17,7 @@ import org.egov.ndc.web.model.calculator.CalculationCriteria;
 import org.egov.ndc.web.model.calculator.CalculationReq;
 import org.egov.ndc.web.model.calculator.CalculationRes;
 import org.egov.ndc.web.model.ndc.*;
+import org.egov.ndc.web.model.workflow.SearchCriteria;
 import org.egov.ndc.workflow.WorkflowIntegrator;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -255,6 +256,9 @@ public class NDCService {
 			applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
 
 		}
+		SearchCriteria searchCriteria = new SearchCriteria();
+		searchCriteria.setTenantId(criteria.getTenantId());
+		enrichmentService.enrichProcessInstance(applications,searchCriteria,requestInfo);
 		return applications;
 	}
 

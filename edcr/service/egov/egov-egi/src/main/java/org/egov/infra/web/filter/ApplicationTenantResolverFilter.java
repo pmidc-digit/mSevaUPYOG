@@ -119,7 +119,7 @@ public class ApplicationTenantResolverFilter implements Filter {
     @Value("${state.level.tenantid.length}")
     private int stateLevelTenantIdLength;
     
-    private static final String EDCR_SERVICE_INTERNAL_URL = "egov-edcr.";
+    private static final String EDCR_SERVICE_INTERNAL_URL = "egov-edcr.egov";
     
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
@@ -127,6 +127,18 @@ public class ApplicationTenantResolverFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         MultiReadRequestWrapper customRequest = new MultiReadRequestWrapper(req);
         HttpSession session = customRequest.getSession();
+				
+		String commonDomainName = environmentSettings.getProperty("common.domain.name");        
+        StringBuilder url = new StringBuilder(customRequest.getRequestURL());
+        if (WebUtils.getDomainName(url.toString()).contains(EDCR_SERVICE_INTERNAL_URL)) {
+        	int startindex=url.indexOf(EDCR_SERVICE_INTERNAL_URL);
+        	LOG.info("startIndex", startindex);
+        	int endindex = startindex+EDCR_SERVICE_INTERNAL_URL.length();
+        	url.replace(startindex,endindex , commonDomainName);
+        	LOG.info("new URL ", url);
+        	//commonDomainName="sdc-uat.lgpunjab.gov.in";
+        }
+				
         ThreadLocalLogger.logAllThreadLocalValues("Tenant filter --Before request processing");
         LOG.info("Request URL--> {}", customRequest.getRequestURL());
         LOG.info("Request URI--> {}", customRequest.getRequestURI());

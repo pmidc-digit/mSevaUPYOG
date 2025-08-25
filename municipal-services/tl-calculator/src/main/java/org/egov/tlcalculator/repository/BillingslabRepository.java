@@ -32,6 +32,7 @@ public class BillingslabRepository {
 		List<BillingSlab> slabs = new ArrayList<>();
 		try {
 			slabs = jdbcTemplate.query(query, preparedStmtList.toArray(), billingSlabRowMapper);
+
 			if(CollectionUtils.isEmpty(slabs))
 				return new ArrayList<>();
 		}catch(Exception e) {

@@ -25,6 +25,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import java.math.BigDecimal;
+import java.net.SocketOption;
 import java.util.*;
 
 import static org.egov.tlcalculator.utils.TLCalculatorConstants.businessService_TL;
@@ -70,6 +71,7 @@ public class CalculationService {
    public List<Calculation> calculate(CalculationReq calculationReq, Boolean isEstimate){
        String tenantId = calculationReq.getCalulationCriteria().get(0).getTenantId();
        Object mdmsData = mdmsService.mDMSCall(calculationReq.getRequestInfo(),tenantId);
+       System.out.println(mdmsData);
        List<Calculation> calculations = getCalculation(calculationReq.getRequestInfo(),
                calculationReq.getCalulationCriteria(),mdmsData);
        CalculationRes calculationRes = CalculationRes.builder().calculations(calculations).build();
@@ -161,6 +163,7 @@ public class CalculationService {
 
       FeeAndBillingSlabIds tradeTypeFeeAndBillingSlabIds = getTradeUnitFeeAndBillingSlabIds(license,CalculationType
               .fromValue(tradeUnitCalculationType));
+      System.out.println(tradeTypeFeeAndBillingSlabIds + "ids");
       BigDecimal tradeUnitFee = tradeTypeFeeAndBillingSlabIds.getFee();
 
       estimatesAndSlabs.setTradeTypeFeeAndBillingSlabIds(tradeTypeFeeAndBillingSlabIds);
@@ -247,6 +250,7 @@ public class CalculationService {
 
 	  List<BigDecimal> tradeUnitFees = new LinkedList<>();
       List<TradeUnit> tradeUnits = license.getTradeLicenseDetail().getTradeUnits();
+      System.out.println(tradeUnits + "1" );
       List<String> billingSlabIds = new LinkedList<>();
       int i = 0;
        for(TradeUnit tradeUnit : tradeUnits)
@@ -265,13 +269,17 @@ public class CalculationService {
               }
               // Call the Search
               String query = queryBuilder.getSearchQuery(searchCriteria, preparedStmtList);
+             System.out.println(query + "query");
               log.info("query "+query);
               log.info("preparedStmtList "+preparedStmtList.toString());
+
               List<BillingSlab> billingSlabs = repository.getDataFromDB(query, preparedStmtList);
 
+              System.out.println(billingSlabs);
               if(billingSlabs.size()>1)
                   throw new CustomException("BILLINGSLAB ERROR","Found multiple BillingSlabs for the given TradeType");
               if(CollectionUtils.isEmpty(billingSlabs))
+
                   throw new CustomException("BILLINGSLAB ERROR","No BillingSlab Found for the given tradeType");
              System.out.println("TradeUnit: "+tradeUnit.getTradeType()+ " rate: "+billingSlabs.get(0).getRate());
 

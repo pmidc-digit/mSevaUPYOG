@@ -546,6 +546,7 @@ public class DemandService {
 					.additionalDetails(additionalDetailsJson)
 					.tenantId(lastDemand.getTenantId()).build();
 
+
 			lastDemand.getDemandDetails().add(newAdvanceDetail);
 
 			log.info("Advance added to last demand in demandToBeCreated: Consumer Code={}, Tax Amount={}",

@@ -50,7 +50,7 @@ public class PersistRepository {
     public void persist(String query, List<JsonMap> jsonMaps, Object jsonObj, String baseJsonPath) {
 
         List<Object[]> rows = getRows(jsonMaps,jsonObj,baseJsonPath);
-
+            System.out.println(rows + "rows");
         try {
             if( ! rows.isEmpty()) {
                 log.info("Executing query : "+ query);
@@ -200,14 +200,36 @@ public class PersistRepository {
      */
     private List<LinkedHashMap<String, Object>> extractData(String baseJsonPath, Object document) {
         List<LinkedHashMap<String, Object>> list = null;
+        Object result = null;
         if(baseJsonPath.contains("*")) {
             String arrayBasePath = baseJsonPath.substring(0, baseJsonPath.lastIndexOf(".*") + 2);
-            list = JsonPath.read(document, arrayBasePath);
+            result = JsonPath.read(document, arrayBasePath);
+
+            if(result instanceof List){
+                list=  (List<LinkedHashMap<String,Object>>) result;
+            }
+            if(result instanceof Map){
+                list = Collections.singletonList(new LinkedHashMap<>((Map<String,Object>) result));
+            }
+
+            System.out.println(list + "list");
         }
         else {
-            LinkedHashMap<String, Object> map = JsonPath.read(document, baseJsonPath);
-            list = Collections.singletonList(map);
+
+//            LinkedHashMap<String, Object> map = JsonPath.read(document, baseJsonPath);
+
+            result = JsonPath.read(document, baseJsonPath);
+            if(result instanceof List){
+                list=  (List<LinkedHashMap<String,Object>>) result;
+            }
+            if(result instanceof Map){
+                list = Collections.singletonList(new LinkedHashMap<>((Map<String,Object>) result));
+            }
+
+//            list = Collections.singletonList(map);
+//            System.out.println(list + "list");
         }
+        log.info("Extracted data type: {}", list.getClass().getName());
         return list;
     }
 

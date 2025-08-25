@@ -9,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
 
-import org.egov.bpa.web.model.AuditDetails.AuditDetailsBuilder;
+//import org.egov.bpa.web.model.AuditDetails.AuditDetailsBuilder;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;

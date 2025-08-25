@@ -206,7 +206,7 @@ public class WorkflowQueryBuilder {
 
         builder.append(" pi.id IN (").append(createQuery(ids)).append(")");
         addToPreparedStatement(preparedStmtList, ids);
-
+        System.out.println(preparedStmtList);
         builder.append(" ORDER BY wf_lastModifiedTime DESC ");
 
         return builder.toString();

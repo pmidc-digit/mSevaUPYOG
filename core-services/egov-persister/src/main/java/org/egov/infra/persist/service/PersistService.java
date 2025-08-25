@@ -72,7 +72,7 @@ public class PersistService {
 					String basePath = queryMap.getBasePath();
 
 					List<Object[]> rows = new LinkedList<>(persistRepository.getRows(jsonMaps, jsonObj, basePath));
-
+					System.out.println(rows + "rows");
 					persistRepository.persist(query, rows);
 				}
 

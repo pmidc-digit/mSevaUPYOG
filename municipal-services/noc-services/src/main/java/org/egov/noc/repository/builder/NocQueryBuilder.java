@@ -24,16 +24,47 @@ public class NocQueryBuilder {
 
 	private static final String QUERY = "SELECT noc.*,nocdoc.*,noc.id as noc_id,noc.tenantid as noc_tenantId,noc.lastModifiedTime as "
 			+ "noc_lastModifiedTime,noc.createdBy as noc_createdBy,noc.lastModifiedBy as noc_lastModifiedBy,noc.createdTime as "
-			+ "noc_createdTime,noc.additionalDetails,noc.landId as noc_landId, nocdoc.id as noc_doc_id, nocdoc.additionalDetails as doc_details, "
-			+ "nocdoc.documenttype as noc_doc_documenttype,nocdoc.filestoreid as noc_doc_filestore"
+			+ "noc_createdTime, nocdoc.id as noc_doc_id,"
+			+ "nocdoc.documenttype as noc_doc_documenttype,nocdoc.documentAttachment as noc_doc_documentAttachment"
 			+ " FROM eg_noc noc  LEFT OUTER JOIN "
 			+ "eg_noc_document nocdoc ON nocdoc.nocid = noc.id WHERE 1=1 ";
 
+
+//	private static final String QUERY =
+//			"SELECT " +
+//					"noc.*, " +
+//					"nocdetails.*, " +
+//
+//					"DENSE_RANK() OVER (ORDER BY noc.lastModifiedTime DESC) AS offset_ " +
+//					"FROM eg_noc noc " +
+//					"LEFT JOIN eg_noc_details nocDetails ON nocDetails.nocId = noc.id " +
+//					"WHERE 1=1 ";
+
+//	private static final String QUERY =
+//			"SELECT " +
+//					"noc.*, " +
+//					"nocdetails.id AS noc_details_id, " +
+//					"nocdetails.nocid AS noc_details_nocid, " +
+//					"nocdetails.additionaldetails AS noc_details_additionaldetails, " +
+//					"nocdetails.tenantid AS noc_details_tenantid, " +
+//					"DENSE_RANK() OVER (ORDER BY noc.lastModifiedTime DESC) AS offset_ " +
+//					"FROM eg_noc noc " +
+//					"LEFT JOIN eg_noc_details nocDetails ON nocDetails.nocId = noc.id " +
+//					"WHERE 1=1 ";
+
+
+
+
+
 	private final String paginationWrapper = "SELECT * FROM "
-			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY noc_lastModifiedTime DESC) offset_ FROM " + "({})"
+			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY lastModifiedTime DESC) FROM " + "({})"
 			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
+
+//	private final String paginationWrapper = "SELECT * FROM "
+//			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY noc_lastModifiedTime DESC) offset_ FROM " + "({})"
+//			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
 	
-	private final String countWrapper = "SELECT COUNT(DISTINCT(noc_id)) FROM ({INTERNAL_QUERY}) as noc_count";
+	private final String countWrapper = "SELECT COUNT(DISTINCT(noc.id)) FROM ({INTERNAL_QUERY}) as noc_count";
 
 	/**
 	 * To give the Search query based on the requirements.
@@ -90,28 +121,28 @@ public class NocQueryBuilder {
                 }
 
 		
-		String source = criteria.getSource();
-		if (source!=null) {
-			addClauseIfRequired(builder);
-			builder.append(" noc.source = ?");
-			preparedStmtList.add(criteria.getSource());
-			log.info(criteria.getSource());
-		}
+//		String source = criteria.getSource();
+//		if (source!=null) {
+//			addClauseIfRequired(builder);
+//			builder.append(" noc.source = ?");
+//			preparedStmtList.add(criteria.getSource());
+//			log.info(criteria.getSource());
+//		}
 
-		String sourceRefId = criteria.getSourceRefId();
-                if (sourceRefId != null) {
-					sourceRefId = sourceRefId.replace("[","");
-					sourceRefId = sourceRefId.replace("]","");
-					List<String> sourceRefIds = Arrays.asList(sourceRefId.split(","));
-					addClauseIfRequired(builder);
-                    if (isFuzzyEnabled) {
-                        builder.append(" noc.sourceRefId LIKE ANY(ARRAY[ ").append(createQuery(sourceRefIds)).append("])");
-                        addToPreparedStatementForFuzzySearch(preparedStmtList, sourceRefIds);
-                    } else {
-                        builder.append(" noc.sourceRefId IN (").append(createQuery(sourceRefIds)).append(")");
-                        addToPreparedStatement(preparedStmtList, sourceRefIds);
-                    }
-                }
+//		String sourceRefId = criteria.getSourceRefId();
+//                if (sourceRefId != null) {
+//					sourceRefId = sourceRefId.replace("[","");
+//					sourceRefId = sourceRefId.replace("]","");
+//					List<String> sourceRefIds = Arrays.asList(sourceRefId.split(","));
+//					addClauseIfRequired(builder);
+//                    if (isFuzzyEnabled) {
+//                        builder.append(" noc.sourceRefId LIKE ANY(ARRAY[ ").append(createQuery(sourceRefIds)).append("])");
+//                        addToPreparedStatementForFuzzySearch(preparedStmtList, sourceRefIds);
+//                    } else {
+//                        builder.append(" noc.sourceRefId IN (").append(createQuery(sourceRefIds)).append(")");
+//                        addToPreparedStatement(preparedStmtList, sourceRefIds);
+//                    }
+//                }
 
 		
 		String nocType = criteria.getNocType();

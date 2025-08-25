@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 import org.egov.bpa.web.model.Document;
-import org.egov.bpa.web.model.AuditDetails.AuditDetailsBuilder;
+//import org.egov.bpa.web.model.AuditDetails.AuditDetailsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;

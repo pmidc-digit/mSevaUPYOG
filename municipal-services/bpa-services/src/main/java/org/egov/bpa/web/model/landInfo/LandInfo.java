@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.egov.bpa.web.model.AuditDetails.AuditDetailsBuilder;
+//import org.egov.bpa.web.model.AuditDetails.AuditDetailsBuilder;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 import javax.validation.Valid;

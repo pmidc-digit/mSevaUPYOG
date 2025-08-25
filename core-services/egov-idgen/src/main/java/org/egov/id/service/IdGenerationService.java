@@ -125,7 +125,7 @@ public class IdGenerationService {
             }
         }
 
-        if (StringUtils.isEmpty(idRequest.getFormat()))
+         if (StringUtils.isEmpty(idRequest.getFormat()))
             throw new CustomException("ID_NOT_FOUND",
                     "No Format is available in the MDMS for the given name and tenant");
 

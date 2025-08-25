@@ -6,7 +6,7 @@ import { setNDCStep } from "../redux/actions/NDCFormActions";
 import { useTranslation } from "react-i18next";
 import NDCDocument from "../components/NDCDocument";
 
-const NDCSummary = ({ formData, goNext, ...props }) => {
+const NDCSummary = ({ formData, goNext, onGoBack }) => {
   const { pathname: url } = useLocation();
   const { t } = useTranslation();
   const history = useHistory();
@@ -75,7 +75,7 @@ const NDCSummary = ({ formData, goNext, ...props }) => {
 
   console.log("workflowDetails", workflowDetails?.data?.nextActions);
 
-    // ---------------- UI Styles ----------------
+  // ---------------- UI Styles ----------------
   const pageStyle = {
     padding: "2rem",
     backgroundColor: "#f9f9f9",
@@ -109,22 +109,21 @@ const NDCSummary = ({ formData, goNext, ...props }) => {
   };
 
   const documentsContainerStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "1rem",
-};
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+  };
 
-const documentCardStyle = {
-  flex: isCitizen? "1 1 18%" : "1 1 22%" ,   // around 4 per row
-  minWidth: "200px", // keeps it from shrinking too small
-  maxWidth: "250px", // prevents oversized stretching on big screens
-  backgroundColor: "#fdfdfd",
-  padding: "0.75rem",
-  border: "1px solid #e0e0e0",
-  borderRadius: "6px",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-};
-
+  const documentCardStyle = {
+    flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
+    minWidth: "200px", // keeps it from shrinking too small
+    maxWidth: "250px", // prevents oversized stretching on big screens
+    backgroundColor: "#fdfdfd",
+    padding: "0.75rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  };
 
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
@@ -151,27 +150,21 @@ const documentCardStyle = {
         {renderLabel(
           t("Water Connection"),
           formData?.NDCDetails?.PropertyDetails?.waterConnection?.length > 0
-            ? formData?.NDCDetails?.PropertyDetails?.waterConnection?.map(
-                (item, index) => <div key={index}>{item?.connectionNo}</div>
-              )
+            ? formData?.NDCDetails?.PropertyDetails?.waterConnection?.map((item, index) => <div key={index}>{item?.connectionNo}</div>)
             : "NA"
         )}
 
         {renderLabel(
           t("Sewerage Connection"),
           formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.length > 0
-            ? formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.map(
-                (item, index) => <div key={index}>{item?.connectionNo}</div>
-              )
+            ? formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.map((item, index) => <div key={index}>{item?.connectionNo}</div>)
             : "NA"
         )}
 
         {renderLabel(t("Property ID"), formData?.NDCDetails?.cpt?.id)}
         {renderLabel(
           t("Amount"),
-          getData?.totalAmount
-            ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(getData?.totalAmount)
-            : "NA"
+          getData?.totalAmount ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(getData?.totalAmount) : "NA"
         )}
       </div>
 
@@ -183,12 +176,7 @@ const documentCardStyle = {
           <div style={documentsContainerStyle}>
             {docs?.map((doc, index) => (
               <div key={index} style={documentCardStyle}>
-                <NDCDocument
-                  value={docs}
-                  Code={doc?.documentType}
-                  index={index}
-                  formData={formData}
-                />
+                <NDCDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
               </div>
             ))}
           </div>
@@ -197,25 +185,13 @@ const documentCardStyle = {
         )}
       </div>
 
-
       {/* Action Section */}
       <ActionBar>
-        {displayMenu &&
-        (workflowDetails?.data?.actionState?.nextActions ||
-          workflowDetails?.data?.nextActions) ? (
-          <Menu
-            localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`}
-            options={actions}
-            optionKey={"action"}
-            t={t}
-            onSelect={onActionSelect}
-          />
+        <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+        {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+          <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
         ) : null}
-        <SubmitBar
-          ref={menuRef}
-          label={t("WF_TAKE_ACTION")}
-          onSubmit={() => setDisplayMenu(!displayMenu)}
-        />
+        <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>
     </div>
   );

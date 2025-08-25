@@ -324,7 +324,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           fetchBill("PT", formData?.cpt?.id);
                         }}
                       >
-                        {`${t("CHECK_STATUS_FOR_PROPERTY")}`}
+                        {`${t("CHECK_STATUS")}`}
                       </button>
                     )}
 
@@ -352,14 +352,14 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginTop: "40px" }}>
             <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")}`}</CardLabel>
             {waterConnectionLoading ? (
               <Loader />
             ) : (
               <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 {propertyDetails?.waterConnection?.map((item, index) => (
-                  <div key={index} style={{ display: "flex", flexDirection: "row" }}>
+                  <div key={index} style={{ display: "flex", flexDirection: "row", gap: "25px" }}>
                     <Controller
                       key={index}
                       control={control}
@@ -455,14 +455,14 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {`${t("ADD_WATER")}`}
           </button>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginTop: "40px" }}>
             <CardLabel className="card-label-smaller">{`${t("NDC_SEWERAGE_CONNECTION")} `}</CardLabel>
             {sewerageConnectionLoading ? (
               <Loader />
             ) : (
               <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 {propertyDetails?.sewerageConnection?.map((item, index) => (
-                  <div key={index} style={{ display: "flex", flexDirection: "row" }}>
+                  <div key={index} style={{ display: "flex", flexDirection: "row", gap: "25px" }}>
                     <Controller
                       key={index}
                       control={control}
@@ -559,7 +559,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {`${t("ADD_SEWERAGE")}`}
           </button>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginTop: "40px" }}>
             <CardLabel className="card-label-smaller">{`${t("NDC_FIRST_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller

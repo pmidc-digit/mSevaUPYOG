@@ -44,21 +44,67 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch};
 
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+
   const onSubmit = (data) => {
     trigger();
-    if (errors.length > 0) {
-      console.log("Plz fill mandatory fields");
-      return;
-    }
-    goNext(data);
+    
+    dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
+    
+    // Use updated data 
+    callCreateAPI({ ...currentStepData, siteDetails:{...data} });
   };
+
+
+  const callCreateAPI= async (formData)=>{ 
+        
+        // Prepare nocFormData
+        const nocFormData = {...formData};
+
+        console.log("nocFormData ==>", nocFormData)
+    
+        // Final payload
+        const payload = {
+          Noc: {
+              applicationType: "NEW",
+              documents: [],
+              nocType: "NOC",
+              status: "ACTIVE",
+              tenantId,
+              workflow: {action: "INITIATE"},
+              nocDetails:{
+                additionalDetails: nocFormData,
+                tenantId
+              }
+            },
+        }
+
+        console.log("final Payload here==>", payload);
+        
+        // const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
+    
+        // if (response?.ResponseInfo?.status === "successful") {
+        //   dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
+        //   onGoNext();
+        //   return { isSuccess: true, response };
+        // } else {
+        //   return { isSuccess: false, response };
+        // }
+
+        setTimeout(()=>{
+          console.log("we are inside setTime out");
+        }, 1000);
+
+        onGoNext();
+  }
+
+
+
+
 
   function goNext(data) {
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     onGoNext();
-    // return;
-    // setError(`Please fill the following field: ${missingFields[0]}`);
-    // setShowToast(true);
   }
 
   function onGoBack(data) {

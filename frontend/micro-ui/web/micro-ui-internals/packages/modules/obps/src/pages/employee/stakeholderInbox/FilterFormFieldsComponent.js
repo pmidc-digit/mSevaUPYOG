@@ -92,7 +92,7 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
           }}
       />
     </FilterFormField>
-    {selectedBusinessService ? <FilterFormField>
+    {/* {selectedBusinessService ? <FilterFormField>
       <div className="filter-label" style={{fontSize: "18px", fontWeight: "600"}}>{t("ACTION_TEST_APPLICATION_STATUS")}</div>
       <Controller
         name="applicationStatus"
@@ -114,7 +114,7 @@ const FilterFormFieldsComponent = ({ statuses, isInboxLoading, registerRef, cont
           </>
         }}
       />
-    </FilterFormField> : null}
+    </FilterFormField> : null} */}
   </>
 }
 

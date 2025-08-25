@@ -13,6 +13,7 @@ import {
   ActionBar,
   SubmitBar,
   Menu,
+  LinkButton
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -23,6 +24,7 @@ import { format } from "date-fns";
 import NDCDocument from "../../../pageComponents/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
+import getAcknowledgementData from "../../../getAcknowlegment";
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
@@ -53,6 +55,9 @@ const CitizenApplicationOverview = () => {
 
   // const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCDetails(t, tenantId, { applicationNo: id });
   const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
+
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
 
   // const {
   //   isLoading: updatingApplication,
@@ -381,14 +386,29 @@ const CitizenApplicationOverview = () => {
   //   setShowModal(false);
   // };
 
+
+  const handleDownloadPdf = async () => {
+    const Property = applicationDetails;
+    console.log("applicationDetails in StakeholderAck", applicationDetails);
+    console.log("tenants", tenants);
+    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+
+    const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
+
+    console.log("acknowledgementData", acknowledgementData);
+    Digit.Utils.pdf.generate(acknowledgementData);
+  };
+
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
 
   return (
     <div className={"employee-main-application-details"}>
-      <div>
+      <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px"}}>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
+      
+      <LinkButton label={t("DOWNLOAD_CERTIFICATE")} style={{ color:"#A52A2A"}} onClick={handleDownloadPdf}></LinkButton>
       </div>
       {/* <ApplicationDetailsTemplate
         applicationDetails={appDetails}

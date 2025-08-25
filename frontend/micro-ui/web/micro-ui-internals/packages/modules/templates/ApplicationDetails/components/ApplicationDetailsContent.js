@@ -59,6 +59,7 @@ function ApplicationDetailsContent({
   oldValue,
   isInfoLabel = false,
   propertyId,
+  moduleCode
 }) {
   const { t } = useTranslation();
   const history = useHistory();
@@ -418,7 +419,7 @@ console.log(filteredAssessment);
     alert("access property");
   };
 
-   console.log("applicationDetails?.applicationDetails",applicationDetails)
+   console.log("applicationDetails?.applicationDetails",applicationDetails, businessService)
    console.log("infolabel",isInfoLabel)
    console.log("assessment details",assessmentDetails)
 
@@ -429,10 +430,17 @@ console.log(filteredAssessment);
    // tenantId: tenantId
    }
    const auth=true
+   if(moduleCode==="BPREG"){
+    Digit.OBPSService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
+      setPayments(response?.Payments)
+      console.log(response)  
+    })
+   }else{
     Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
       setPayments(response?.Payments)
       console.log(response)  
     })
+   }
    }
    catch(error){
    console.log(error)
@@ -674,8 +682,8 @@ console.log(filteredAssessment);
         </React.Fragment>
       ))}
         {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
-        <PaymentHistory payments={payments}/>
-        <ApplicationHistory applicationData={applicationDetails?.applicationData}/>
+        {/* <PaymentHistory payments={payments}/> */}
+        {/* <ApplicationHistory applicationData={applicationDetails?.applicationData}/> */}
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>

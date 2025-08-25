@@ -208,7 +208,10 @@ function SelectDocument({
   return (
     <div style={{ marginBottom: "24px" }}>
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t(doc?.code)}</CardLabel>
+        {console.log("doc", doc)}
+        <CardLabel className="card-label-smaller">
+          {t(doc?.code)} {doc?.required && " *"}
+        </CardLabel>
         <div className="field">
           <UploadFile
             id={"tl-doc"}

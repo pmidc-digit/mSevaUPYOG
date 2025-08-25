@@ -19,7 +19,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const tableColumnConfig = useMemo(() => {
     return [
       {
-        Header: t("NDC_APPLICATION_NO."),
+        Header: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
         accessor: "uuid",
         disableSortBy: true,
         Cell: ({ row }) => {
@@ -38,9 +38,9 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         Cell: ({ row }) => (row.original?.date ? GetCell(format(new Date(row.original?.date), "dd/MM/yyyy")) : ""),
       },
       {
-        Header: t("NOC_STATUS_LABEL"),
+        Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
         accessor: "status",
-        Cell: ({ row }) => row.original?.status,
+        Cell: ({ row }) => t(row.original?.status),
       },
       // {
       //   Header: t("ES_INBOX_NAME_LABEL"),

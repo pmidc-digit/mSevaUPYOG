@@ -60,8 +60,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   });
 
   useEffect(() => {
-    console.log("cptDetails in PropertyDetails Page", formData?.cpt);
-
     const owner = formData?.cpt?.details?.owners?.[0];
     const fullName = owner?.name?.split(" ");
     const firstName = fullName?.[0];
@@ -87,11 +85,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         ...combinedObject,
       };
     });
-
-    console.log("Filtered cptDetails in PropertyDetails Page", combinedObject);
   }, [formData?.cpt?.details]);
-
-  console.log("PropertyDetails: ", propertyDetails);
 
   useEffect(() => {
     // console.log("BillDataForW&S", waterConnectionBillData, sewerageConnectionBillData)
@@ -132,7 +126,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
   useEffect(() => {
     onSelect("PropertyDetails", propertyDetails, config);
-    console.log("PropertyDetailsValue", propertyDetails);
   }, [propertyDetails]);
 
   function addWaterConnection() {
@@ -360,7 +353,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")}`}</CardLabel>
             {waterConnectionLoading ? (
               <Loader />
             ) : (
@@ -463,7 +456,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </button>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NDC_SEWERAGE_CONNECTION")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("NDC_SEWERAGE_CONNECTION")} `}</CardLabel>
             {sewerageConnectionLoading ? (
               <Loader />
             ) : (
@@ -661,7 +654,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                       // setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber?.length > 0}
+                    // disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber?.length > 0}
                   />
                 )}
               />
@@ -694,6 +687,29 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </LabelFieldPair>
         </div>
       )}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("NDC_TL_NUMBER")}`}</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name={"tlNumber"}
+            defaultValue={propertyDetails?.tlNumber || ""}
+            render={(props) => (
+              <TextInput
+                value={propertyDetails?.tlNumber}
+                onChange={(e) => {
+                  setPropertyDetails((prev) => ({ ...prev, tlNumber: e.target.value }));
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  // setFocusIndex({ index: -1 });
+                  props.onBlur(e);
+                }}
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
       {showToast && <Toast isDleteBtn={true} error={showToast?.error} label={showToast?.label} onClose={closeToast} />}
       {showPayModal && (
         <PayWSBillModal

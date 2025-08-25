@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { updateNDCForm } from "../../../redux/actions/NDCFormActions";
@@ -8,6 +8,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const user = Digit.UserService.getUser();
   const currentStepData = useSelector((state) =>
     state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {}
   );
@@ -27,7 +28,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     if (checkFormData?.apiData?.Applications?.[0]?.uuid) {
-      console.log("call update if data changes");
       onGoNext();
     } else createApplication(data);
 
@@ -42,11 +42,12 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     // Build owners array
     const owners = [
       {
-        name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
-        mobileNumber: data?.PropertyDetails?.mobileNumber,
+        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
+        name: user?.info?.name,
+        mobileNumber: user?.info?.mobileNumber,
         gender: data?.PropertyDetails?.gender,
-        emailId: data?.PropertyDetails?.email,
-        type: "CITIZEN",
+        emailId: user?.info?.emailId,
+        type: user?.info?.type,
       },
     ];
 
@@ -131,6 +132,11 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     }
   };
 
+  const validatePropertyId = (value) => {
+    const regex = /^PT-\d{4}-\d{7,8}$/;
+    return regex.test(value);
+  };
+
   function validateStepData(data) {
     const missingFields = [];
     const invalidFields = [];
@@ -142,6 +148,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     // Mandatory Field Checks
     if (!cpt?.id) missingFields.push(t("NDC_MESSAGE_PROPERTY_ID"));
+    if (!validatePropertyId(cpt?.id)) missingFields.push(t("PT_PROPERTY_ID_INVALID"));
     if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push(t("NDC_MESSAGE_PLEASE_SEARCH_PROPERTY_ID"));
     if (!propertyDetails?.firstName) missingFields.push(t("NDC_MESSAGE_FIRST_NAME"));
     if (!propertyDetails?.lastName) missingFields.push(t("NDC_MESSAGE_LAST_NAME"));

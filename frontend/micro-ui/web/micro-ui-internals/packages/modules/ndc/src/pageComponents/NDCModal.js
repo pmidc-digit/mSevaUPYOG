@@ -1,4 +1,4 @@
-import { Loader, Modal, FormComposer } from "@mseva/digit-ui-react-components";
+import { Loader, Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 
 import { ModalConfig } from "../config/ModalConfig";
@@ -36,6 +36,9 @@ const NDCModal = ({
   businessService,
   moduleCode,
   workflowDetails,
+  showToast,
+  closeToast,
+  errors,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -182,6 +185,7 @@ const NDCModal = ({
         // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
+      {showToast && <Toast error={showToast.key === "error" ? true : false} label={errors} onClose={closeToast} />}
     </Modal>
   ) : (
     <Loader />

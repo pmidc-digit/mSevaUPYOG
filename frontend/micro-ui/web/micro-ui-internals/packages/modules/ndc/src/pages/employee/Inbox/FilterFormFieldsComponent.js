@@ -79,7 +79,7 @@ const FilterFormFieldsComponent = ({ statuses, controlFilterForm, applicationTyp
                 {statuses?.map((status, index) => (
                   <CheckBox
                     key={status.applicationstatus}
-                    label={`${status.applicationstatus} - ${status.count}`}
+                    label={`${t(status.applicationstatus)} - ${status.count}`}
                     value={status.applicationstatus}
                     checked={props.value.includes(status.applicationstatus)}
                     onChange={() => toggleStatus(status.applicationstatus)}

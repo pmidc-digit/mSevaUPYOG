@@ -123,7 +123,7 @@ public class ApplicationCoreFilter implements Filter {
             prepareUserSession(session);
             prepareApplicationThreadLocal(session);
             prepareRestService(request, session);
-            LOG.info("Application core filter fielstore tenant ID*****->"+ApplicationThreadLocals.getFilestoreTenantID());
+            LOG.info("Application core filter filestore tenant ID*****->"+ApplicationThreadLocals.getFilestoreTenantID());
             ThreadLocalLogger.logAllThreadLocalValues("Core filter --After request processing");
             chain.doFilter(request, resp);
         } finally {
@@ -150,6 +150,7 @@ public class ApplicationCoreFilter implements Filter {
         } else {
             stateName = "state";
         }
+        LOG.info("ApplicationTenantResolverFilter.tenants.get(stateName) -->" + ApplicationTenantResolverFilter.tenants.get(stateName));
         if (requestURL.contains(ApplicationTenantResolverFilter.tenants.get(stateName))
                 && (requestURL.contains("/rest/") || requestURL.contains("/oauth/"))) {
             prepareThreadLocal(ApplicationThreadLocals.getTenantID());

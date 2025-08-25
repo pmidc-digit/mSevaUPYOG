@@ -142,7 +142,7 @@ public class ApplicationTenantResolverFilter implements Filter {
         ThreadLocalLogger.logAllThreadLocalValues("Tenant filter --Before request processing");
         LOG.info("Request URL--> {}", customRequest.getRequestURL());
         LOG.info("Request URI--> {}", customRequest.getRequestURI());
-        String commonDomainName = environmentSettings.getProperty("common.domain.name");
+        //String commonDomainName = environmentSettings.getProperty("common.domain.name");
         LOG.info("Central instance: {}, Common domain name: {}", isEnvironmentCentralInstance, commonDomainName);
         String domainURL = extractRequestDomainURL(customRequest, false, isEnvironmentCentralInstance, commonDomainName);
         LOG.info("Extracted domain URL: {}", domainURL);

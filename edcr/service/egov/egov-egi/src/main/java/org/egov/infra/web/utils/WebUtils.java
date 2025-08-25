@@ -142,10 +142,10 @@ public final class WebUtils {
         	String hostName = domainName;
         	if(host != null)
         		hostName = host.split(",")[0];
-            if(isCentralInstance) {
-            	proto = "https";
-                hostName = domainName;
-            }
+            // if(isCentralInstance) {
+            // 	proto = "https";
+            //     hostName = domainName;
+            // }
             domainURL = new StringBuilder().append(proto).append(SCHEME_DOMAIN_SEPARATOR).append(hostName).toString();
             LOG.info("Domain URL******* {}", domainURL);
         } else {

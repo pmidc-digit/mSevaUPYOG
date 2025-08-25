@@ -112,6 +112,17 @@ public class AdvertisementBookingQueryBuilder {
 	
 	public static final String UPDATE_TIMER_STATUS = "UPDATE eg_adv_payment_timer SET status = ? WHERE booking_no = ?";
 
+	// Find bookings that are BOOKED and whose all cart rows have booking_date < today
+	public static final String FETCH_BOOKINGS_ELIGIBLE_FOR_VERIFICATION =
+	    "SELECT DISTINCT eabd.booking_id, eabd.booking_no, eabd.tenant_id " +
+	    "FROM eg_adv_booking_detail eabd " +
+	    "JOIN eg_adv_cart_detail eacd ON eabd.booking_id = eacd.booking_id " +
+	    "WHERE eabd.booking_status = 'BOOKED' " +
+	    "GROUP BY eabd.booking_id, eabd.booking_no, eabd.tenant_id ";
+
+	public static final String UPDATE_BOOKING_STATUS_BY_ID =
+	    "UPDATE eg_adv_booking_detail SET booking_status = ?, lastmodifiedby = ?, lastmodifiedtime = ? WHERE booking_id = ?";
+
 
 	
 	private Object createQueryParams(List<String> ids) {

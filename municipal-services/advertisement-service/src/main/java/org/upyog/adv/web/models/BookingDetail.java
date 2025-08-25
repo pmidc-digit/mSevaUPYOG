@@ -14,6 +14,7 @@ import org.upyog.adv.validator.CreateApplicationGroup;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.swagger.annotations.ApiModel;
+import org.upyog.adv.web.models.workflow.Workflow;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,50 +35,58 @@ import lombok.ToString;
 @Builder
 @ToString
 public class BookingDetail {
-	
+
 	@JsonProperty("bookingId")
 	private String bookingId;
-	
+
 	private String bookingNo;
-	
+
 	private Long paymentDate;
-	
+
 	private String draftId;
-	
+
 	private Long applicationDate;
-	
+
 	@NotBlank(groups = CreateApplicationGroup.class)
 	private String tenantId;
-	
+
 	@JsonProperty("bookingStatus")
 	private String bookingStatus;
-	
+
 	private String receiptNo;
-	
+
 	private String permissionLetterFilestoreId;
-	
+
 	private String paymentReceiptFilestoreId;
 
 	@NotNull
 	@Valid
 	private List<CartDetail> CartDetails;
-	
+
 	@JsonProperty("documents")
 	@Valid
 	private List<DocumentDetail> uploadedDocumentDetails;
-	
+
 	@Valid
 	private ApplicantDetail applicantDetail;
-	
-	@Valid 
+
+	@Valid
 	private Address address;
-	
+
+	@JsonProperty("auditDetails")
+	@Valid
 	private AuditDetails auditDetails;
-	
-	//private Long timerValue;
-	
- 	//private ProcessInstance workflow;
-	
+
+	// Workflow integration fields
+	@JsonProperty("businessService")
+	private String businessService; // e.g., "ADV-BOOKING"
+
+	@JsonProperty("workflow")
+	private Workflow workflow; // Action/comment/assignees passed to Workflow
+
+	// private Long timerValue;
+
+	// private ProcessInstance workflow;
 
 	public BookingDetail addUploadedDocumentDetailsItem(DocumentDetail uploadedDocumentDetailsItem) {
 		if (this.uploadedDocumentDetails == null) {
@@ -87,12 +96,15 @@ public class BookingDetail {
 		return this;
 	}
 
-
 	public BookingDetail addBookingSlots(CartDetail CartDetail) {
-		if(CartDetails == null){
+		if (CartDetails == null) {
 			CartDetails = new ArrayList<CartDetail>();
 		}
 		CartDetails.add(CartDetail);
 		return this;
+	}
+
+	public void setBookingStatus(String bookingStatus) {
+		this.bookingStatus = bookingStatus;
 	}
 }

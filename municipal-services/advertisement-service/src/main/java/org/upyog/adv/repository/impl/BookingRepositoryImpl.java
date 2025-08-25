@@ -96,35 +96,32 @@ public class BookingRepositoryImpl implements BookingRepository {
 		log.info("preparedStmtList :  " + preparedStmtList);
 		List<BookingDetail> bookingDetails = jdbcTemplate.query(query, preparedStmtList.toArray(), bookingRowmapper);
 
-		log.info("Fetched booking details size : " + bookingDetails.size());
+	log.info("Fetched booking details size : " + (bookingDetails != null ? bookingDetails.size() : null));
 
-		if (bookingDetails.size() == 0) {
-			return bookingDetails;
-		}
+	if (bookingDetails == null || bookingDetails.isEmpty()) {
+	    return bookingDetails;
+	}
 
-		HashMap<String, BookingDetail> bookingMap = bookingDetails.stream().collect(Collectors
-				.toMap(BookingDetail::getBookingId, Function.identity(), (left, right) -> left, HashMap::new));
-		log.info("Fetched booking details bookingMap : " + bookingMap);
+	Map<String, BookingDetail> bookingMap = bookingDetails.stream()
+		.collect(Collectors.toMap(BookingDetail::getBookingId, Function.identity(), (left, right) -> left, HashMap::new));
+	log.info("Fetched booking details bookingMap : " + bookingMap);
 		List<String> bookingIds = new ArrayList<String>();
 		bookingIds.addAll(bookingMap.keySet());
 		log.info("Fetched booking details bookingIds : " + bookingIds);
-		List<CartDetail> cartDetails = jdbcTemplate.query(queryBuilder.getSlotDetailsQuery(bookingIds),
+	List<CartDetail> cartDetails = jdbcTemplate.query(queryBuilder.getSlotDetailsQuery(bookingIds),
 				bookingIds.toArray(), cartDetailRowmapper);
-		cartDetails.stream().forEach(slotDetail -> {
+	if (cartDetails != null) cartDetails.stream().forEach(slotDetail -> {
 			log.info("fetched cartDetails " + bookingMap.get(slotDetail.getBookingId()));
 			bookingMap.get(slotDetail.getBookingId()).addBookingSlots(slotDetail);
 		});
 		log.info("Fetched booking details cartDetails : " + cartDetails);
 		List<DocumentDetail> documentDetails = jdbcTemplate.query(queryBuilder.getDocumentDetailsQuery(bookingIds),
 				bookingIds.toArray(), detailsRowMapper);
-
-		documentDetails.stream().forEach(documentDetail -> {
+	if (documentDetails != null) documentDetails.stream().forEach(documentDetail -> {
 			bookingMap.get(documentDetail.getBookingId()).addUploadedDocumentDetailsItem(documentDetail);
 		});
 		return bookingDetails;
 	}
-
-	@Override
 	public Integer getBookingCount(@Valid AdvertisementSearchCriteria criteria) {
 		List<Object> preparedStatement = new ArrayList<>();
 		String query = queryBuilder.getAdvertisementSearchQuery(criteria, preparedStatement);
@@ -184,7 +181,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 			);
 
 
-		if (!bookingListFromTimer.isEmpty()) {
+		if (bookingListFromTimer != null && !bookingListFromTimer.isEmpty()) {
 			return draftId;
 		}
 
@@ -416,6 +413,30 @@ public class BookingRepositoryImpl implements BookingRepository {
 	public void updateTimerBookingId(String bookingId, String bookingNo, String draftId) {
 		jdbcTemplate.update(AdvertisementBookingQueryBuilder.UPDATE_TIMER, bookingId, bookingNo, draftId);
 
+	}
+
+	@Override
+	public List<String> findBookingsEligibleForVerification() {
+		return jdbcTemplate.query(AdvertisementBookingQueryBuilder.FETCH_BOOKINGS_ELIGIBLE_FOR_VERIFICATION,
+				rs -> {
+				List<String> ids = new ArrayList<>();
+				while (rs.next()) {
+					ids.add(rs.getString("booking_id"));
+				}
+				return ids;
+			});
+	}
+
+	@Override
+	public void bulkUpdateBookingStatusById(List<String> bookingIds, String status, String lastModifiedBy) {
+		if (bookingIds == null || bookingIds.isEmpty()) return;
+		long now = BookingUtil.getCurrentTimestamp();
+		for (String id : bookingIds) {
+			jdbcTemplate.update(AdvertisementBookingQueryBuilder.UPDATE_BOOKING_STATUS_BY_ID, status, lastModifiedBy, now, id);
+			jdbcTemplate.update(AdvertisementBookingQueryBuilder.CART_UPDATE_QUERY, status, lastModifiedBy, now, id);
+			jdbcTemplate.update(AdvertisementBookingQueryBuilder.INSERT_BOOKING_DETAIL_AUDIT_QUERY, id);
+			jdbcTemplate.update(AdvertisementBookingQueryBuilder.INSERT_CART_DETAIL_AUDIT_QUERY, id);
+		}
 	}
 
 	@Override

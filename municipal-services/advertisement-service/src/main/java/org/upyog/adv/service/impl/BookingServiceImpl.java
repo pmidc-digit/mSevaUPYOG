@@ -28,14 +28,15 @@ import org.upyog.adv.service.PaymentTimerService;
 import org.upyog.adv.util.BookingUtil;
 import org.upyog.adv.util.MdmsUtil;
 import org.upyog.adv.validator.BookingValidator;
+import org.upyog.adv.workflow.WorkflowIntegrator;
 import org.upyog.adv.web.models.AdvertisementDraftDetail;
 import org.upyog.adv.web.models.AdvertisementSearchCriteria;
 import org.upyog.adv.web.models.AdvertisementSlotAvailabilityDetail;
-import org.upyog.adv.web.models.AdvertisementSlotAvailabilityResponse;
 import org.upyog.adv.web.models.AdvertisementSlotSearchCriteria;
 import org.upyog.adv.web.models.ApplicantDetail;
 import org.upyog.adv.web.models.BookingDetail;
 import org.upyog.adv.web.models.BookingRequest;
+import org.upyog.adv.web.models.workflow.Workflow;
 
 import digit.models.coremodels.PaymentDetail;
 import lombok.NonNull;
@@ -66,6 +67,9 @@ public class BookingServiceImpl implements BookingService {
 	@Autowired
 	private ADVEncryptionService encryptionService;
 
+	@Autowired(required = false)
+	private WorkflowIntegrator workflowIntegrator;
+
 	@Override
 	public BookingDetail createBooking(@Valid BookingRequest bookingRequest) {
 		log.info("Create advertisement booking for user : " + bookingRequest.getRequestInfo().getUserInfo().getId());
@@ -88,7 +92,20 @@ public class BookingServiceImpl implements BookingService {
 		// ENcrypt PII data of applicant
 		encryptionService.encryptObject(bookingRequest);
 
-	    demandService.createDemand(bookingRequest, mdmsData, true);
+		try {
+			if (workflowIntegrator != null && bookingRequest.getBookingApplication().getWorkflow() != null
+					&& StringUtils.isNotBlank(bookingRequest.getBookingApplication().getWorkflow().getAction())) {
+				String nextStatus = workflowIntegrator.transition(bookingRequest.getRequestInfo(), bookingRequest.getBookingApplication(),
+						bookingRequest.getBookingApplication().getWorkflow().getAction());
+				if (StringUtils.isNotBlank(nextStatus)) {
+					bookingRequest.getBookingApplication().setBookingStatus(nextStatus);
+				}
+			}
+		} catch (Exception ex) {
+			log.error("Workflow initiation failed for booking {}", bookingRequest.getBookingApplication().getBookingNo(), ex);
+		}
+
+		demandService.createDemand(bookingRequest, mdmsData, true);
 
 		// 4.Persist the request using persister service
 		bookingRepository.saveBooking(bookingRequest);
@@ -102,11 +119,11 @@ public class BookingServiceImpl implements BookingService {
 				bookingRequest.getRequestInfo());
 
 		List<AdvertisementDraftDetail> draftData = bookingRepository.getDraftData(uuid);
-		
+
 		String draftIdFromDraft = "";
 
 		if (draftData != null && !draftData.isEmpty()) {
-		     draftIdFromDraft = draftData.get(0).getDraftId(); 
+			draftIdFromDraft = draftData.get(0).getDraftId();
 		}
 
 		bookingRepository.updateTimerBookingId(bookingId, bookingDetails.getBookingNo(), draftIdFromDraft);
@@ -116,15 +133,19 @@ public class BookingServiceImpl implements BookingService {
 			bookingRepository.deleteDraftApplication(draftId);
 		}
 
+		// Initiate workflow if action provided
+
+
 		return bookingDetails;
 	}
 
 	@Override
 	public List<BookingDetail> getBookingDetails(AdvertisementSearchCriteria advertisementSearchCriteria,
 			RequestInfo info) {
-//	BookingValidator.validateSearch(info, advertisementSearchCriteria);
+		// BookingValidator.validateSearch(info, advertisementSearchCriteria);
 		List<BookingDetail> bookingDetails = new ArrayList<BookingDetail>();
-//	advertisementSearchCriteria  = addCreatedByMeToCriteria(advertisementSearchCriteria, info);
+		// advertisementSearchCriteria =
+		// addCreatedByMeToCriteria(advertisementSearchCriteria, info);
 
 		log.info("loading data based on criteria" + advertisementSearchCriteria);
 
@@ -186,44 +207,44 @@ public class BookingServiceImpl implements BookingService {
 
 		return availabilityDetailsResponse;
 	}
-	
+
 	@Override
 	public List<AdvertisementSlotAvailabilityDetail> getAdvertisementSlotAvailability(
-	        List<AdvertisementSlotSearchCriteria> criteriaList, RequestInfo requestInfo) {
+			List<AdvertisementSlotSearchCriteria> criteriaList, RequestInfo requestInfo) {
 
-	    List<AdvertisementSlotAvailabilityDetail> allAvailabilityDetails = new ArrayList<>();
-	        
-	    for (AdvertisementSlotSearchCriteria criteria : criteriaList) {
-	        List<AdvertisementSlotAvailabilityDetail> availabilityDetails = checkAdvertisementSlotAvailability(criteria, requestInfo);
-	        allAvailabilityDetails.addAll(availabilityDetails);
-	       
-	    }
+		List<AdvertisementSlotAvailabilityDetail> allAvailabilityDetails = new ArrayList<>();
 
-	    boolean isTimerRequiredForAnyCriteria = criteriaList.stream()
-	            .anyMatch(criteria -> criteria.getIsTimerRequired());
-	    
-	   boolean slotBookedFlag = setSlotBookedFlag(allAvailabilityDetails);
-	   log.info("Slot booked flag for criteria : " + slotBookedFlag);
-	   if (isTimerRequiredForAnyCriteria) {
-	    bookingRepository.deleteDataFromTimerAndDraft(requestInfo.getUserInfo().getUuid(), criteriaList.get(0).getDraftId(), criteriaList.get(0).getBookingId());
-	   }
-	    if (isTimerRequiredForAnyCriteria && !slotBookedFlag) {
-	        // Insert the timer for all criteria at once
-	        paymentTimerService.insertBookingIdForTimer(criteriaList, requestInfo, allAvailabilityDetails);
-	        log.info("Inserted booking ID for timer for all criteria.");
-	    }
+		for (AdvertisementSlotSearchCriteria criteria : criteriaList) {
+			List<AdvertisementSlotAvailabilityDetail> availabilityDetails = checkAdvertisementSlotAvailability(criteria,
+					requestInfo);
+			allAvailabilityDetails.addAll(availabilityDetails);
 
-	   
-	    return allAvailabilityDetails;
+		}
+
+		boolean isTimerRequiredForAnyCriteria = criteriaList.stream()
+				.anyMatch(criteria -> criteria.getIsTimerRequired());
+
+		boolean slotBookedFlag = setSlotBookedFlag(allAvailabilityDetails);
+		log.info("Slot booked flag for criteria : " + slotBookedFlag);
+		if (isTimerRequiredForAnyCriteria) {
+			bookingRepository.deleteDataFromTimerAndDraft(requestInfo.getUserInfo().getUuid(),
+					criteriaList.get(0).getDraftId(), criteriaList.get(0).getBookingId());
+		}
+		if (isTimerRequiredForAnyCriteria && !slotBookedFlag) {
+			// Insert the timer for all criteria at once
+			paymentTimerService.insertBookingIdForTimer(criteriaList, requestInfo, allAvailabilityDetails);
+			log.info("Inserted booking ID for timer for all criteria.");
+		}
+
+		return allAvailabilityDetails;
 	}
 
 	@Override
 	public boolean setSlotBookedFlag(List<AdvertisementSlotAvailabilityDetail> details) {
-	    // Check if any slot is booked and return true if so
-	    return details.stream()
-	            .anyMatch(slot -> BookingStatusEnum.BOOKED.toString().equals(slot.getSlotStaus()));
+		// Check if any slot is booked and return true if so
+		return details.stream()
+				.anyMatch(slot -> BookingStatusEnum.BOOKED.toString().equals(slot.getSlotStaus()));
 	}
-
 
 	private List<AdvertisementSlotAvailabilityDetail> convertToAdvertisementAvailabilityResponse(
 			AdvertisementSlotSearchCriteria criteria, List<AdvertisementSlotAvailabilityDetail> availabiltityDetails,
@@ -252,7 +273,6 @@ public class BookingServiceImpl implements BookingService {
 			availabiltityDetailsResponse.add(createAdvertisementSlotAvailabiltityDetail(criteria, date));
 		});
 
-	
 		// Set advertisement status to 'BOOKED' if already booked
 		availabiltityDetailsResponse.forEach(detail -> {
 			if (availabiltityDetails.contains(detail)) {
@@ -261,17 +281,15 @@ public class BookingServiceImpl implements BookingService {
 			}
 
 		});
-		
+
 		log.info("Availability details response after updating status: " + availabiltityDetailsResponse);
 
 		return availabiltityDetailsResponse;
 	}
 
-
-
 	public List<AdvertisementSlotAvailabilityDetail> updateSlotAvailaibilityStatusFromTimer(
 			List<AdvertisementSlotAvailabilityDetail> availabilityDetailsResponse,
-			AdvertisementSlotSearchCriteria criteria, RequestInfo requestInfo) { 
+			AdvertisementSlotSearchCriteria criteria, RequestInfo requestInfo) {
 
 		List<AdvertisementSlotAvailabilityDetail> bookedSlotsFromTimer = bookingRepository.getBookedSlots(criteria,
 				requestInfo);
@@ -283,53 +301,52 @@ public class BookingServiceImpl implements BookingService {
 				.stream().collect(Collectors.toMap(Function.identity(), Function.identity()));
 		log.info("Timer Details from db : " + bookedSlotsFromTimer);
 
-		bookedSlotsFromTimer.forEach(detail -> {
-			AdvertisementSlotAvailabilityDetail availabilityDetail = AdvertisementSlotAvailabilityDetail.builder()
-					.addType(detail.getAddType()).location(detail.getLocation()).faceArea(detail.getFaceArea())
-					.nightLight(detail.getNightLight()).bookingDate(detail.getBookingDate()).build();
+		if (bookedSlotsFromTimer != null)
+			bookedSlotsFromTimer.forEach(detail -> {
+				AdvertisementSlotAvailabilityDetail availabilityDetail = AdvertisementSlotAvailabilityDetail.builder()
+						.addType(detail.getAddType()).location(detail.getLocation()).faceArea(detail.getFaceArea())
+						.nightLight(detail.getNightLight()).bookingDate(detail.getBookingDate()).build();
 
-			// Check if the timerDetails set contains this booking and if it's created by
-			// the current user
-			// Update the slot status based on the comparison
-			if (availabilityDetailsResponse.contains(availabilityDetail)) {
-				
-				AdvertisementSlotAvailabilityDetail slotAvailabilityDetail = slotDetailsMap.get(availabilityDetail);
+				// Check if the timerDetails set contains this booking and if it's created by
+				// the current user
+				// Update the slot status based on the comparison
+				if (availabilityDetailsResponse.contains(availabilityDetail)) {
 
-				boolean isCreatedByCurrentUser = detail.getUuid().equals(requestInfo.getUserInfo().getUuid());
-				boolean existingBookingId =
-				detail.getBookingId().equals(criteria.getBookingId());
-				
-				boolean existingDraftId = false;
-				 String draftId = getDraftId(availabilityDetailsResponse, requestInfo);
-				 if(!StringUtils.isBlank(criteria.getDraftId())) {
-					 existingDraftId = draftId.equals(criteria.getDraftId());
-				 }
-				if (isCreatedByCurrentUser && (existingBookingId || existingDraftId)) {
-					log.info("inside booking created by me with same booking id ");
-					slotAvailabilityDetail.setSlotStaus(BookingStatusEnum.AVAILABLE.toString());
-				} else {
-					slotAvailabilityDetail.setSlotStaus(BookingStatusEnum.BOOKED.toString());
+					AdvertisementSlotAvailabilityDetail slotAvailabilityDetail = slotDetailsMap.get(availabilityDetail);
+
+					boolean isCreatedByCurrentUser = detail.getUuid().equals(requestInfo.getUserInfo().getUuid());
+					boolean existingBookingId = detail.getBookingId().equals(criteria.getBookingId());
+
+					boolean existingDraftId = false;
+					String draftId = getDraftId(availabilityDetailsResponse, requestInfo);
+					if (!StringUtils.isBlank(criteria.getDraftId())) {
+						existingDraftId = draftId.equals(criteria.getDraftId());
+					}
+					if (isCreatedByCurrentUser && (existingBookingId || existingDraftId)) {
+						log.info("inside booking created by me with same booking id ");
+						slotAvailabilityDetail.setSlotStaus(BookingStatusEnum.AVAILABLE.toString());
+					} else {
+						slotAvailabilityDetail.setSlotStaus(BookingStatusEnum.BOOKED.toString());
+					}
 				}
-			}
 
-		});
+			});
 
 		return availabilityDetailsResponse;
 
 	}
-	
+
 	@Override
 	public String getDraftId(List<AdvertisementSlotAvailabilityDetail> availabiltityDetailsResponse,
-            RequestInfo requestInfo) {
+			RequestInfo requestInfo) {
 		List<AdvertisementDraftDetail> draftData = bookingRepository.getDraftData(requestInfo.getUserInfo().getUuid());
 
 		if (draftData != null && !draftData.isEmpty()) {
-		    String draftId = draftData.get(0).getDraftId(); 
-		    return (draftId != null && !draftId.isEmpty()) ? draftId : null;
+			String draftId = draftData.get(0).getDraftId();
+			return (draftId != null && !draftId.isEmpty()) ? draftId : null;
 		}
 		return null;
 	}
-
 
 	private AdvertisementSlotAvailabilityDetail createAdvertisementSlotAvailabiltityDetail(
 			AdvertisementSlotSearchCriteria criteria, LocalDate date) {
@@ -360,13 +377,49 @@ public class BookingServiceImpl implements BookingService {
 					"Booking no not valid. Failed to update booking status for : " + bookingNo);
 		}
 
-//		String tenantId = bookingDetails.get(0).getTenantId();		
-//		Object mdmsData = mdmsUtil.mDMSCall(advertisementBookingRequest.getRequestInfo(), tenantId);
-//		bookingValidator.validateUpdate(advertisementBookingRequest.getBookingApplication(), mdmsData, advertisementBookingRequest.getBookingApplication().getBookingStatus());
+		// String tenantId = bookingDetails.get(0).getTenantId();
+		// Object mdmsData =
+		// mdmsUtil.mDMSCall(advertisementBookingRequest.getRequestInfo(), tenantId);
+		// bookingValidator.validateUpdate(advertisementBookingRequest.getBookingApplication(),
+		// mdmsData,
+		// advertisementBookingRequest.getBookingApplication().getBookingStatus());
+
+		// Preserve workflow/businessService from request (DB object won't have these)
+		Workflow incomingWorkflow = advertisementBookingRequest.getBookingApplication().getWorkflow();
+		String incomingBusinessService = advertisementBookingRequest.getBookingApplication().getBusinessService();
 
 		convertBookingRequest(advertisementBookingRequest, bookingDetails.get(0));
 
-		enrichmentService.enrichUpdateBookingRequest(advertisementBookingRequest, status);
+		// Restore workflow/businessService onto the DB-loaded booking object
+		advertisementBookingRequest.getBookingApplication().setWorkflow(incomingWorkflow);
+//		if (incomingBusinessService != null)
+//			advertisementBookingRequest.getBookingApplication().setBusinessService(incomingBusinessService);
+
+		// If workflow action present, transition and set status from WF response
+		boolean usedWorkflow = false;
+		try {
+			if (workflowIntegrator != null
+					&& advertisementBookingRequest.getBookingApplication().getWorkflow() != null
+					&& StringUtils.isNotBlank(
+							advertisementBookingRequest.getBookingApplication().getWorkflow().getAction())) {
+				String nextStatus = workflowIntegrator.transition(advertisementBookingRequest.getRequestInfo(),
+						advertisementBookingRequest.getBookingApplication(),
+						advertisementBookingRequest.getBookingApplication().getWorkflow().getAction());
+				if (StringUtils.isNotBlank(nextStatus)) {
+					advertisementBookingRequest.getBookingApplication().setBookingStatus(nextStatus);
+					if (advertisementBookingRequest.getBookingApplication().getCartDetails() != null) {
+						advertisementBookingRequest.getBookingApplication().getCartDetails()
+								.forEach(c -> c.setStatus(nextStatus));
+					}
+					usedWorkflow = true;
+				}
+			}
+		} catch (Exception ex) {
+			log.error("Workflow transition on update failed for booking {}", bookingNo, ex);
+		}
+
+		// Enrich (audit/payment date), and conditionally avoid overriding WF status
+		enrichmentService.enrichUpdateBookingRequest(advertisementBookingRequest, usedWorkflow ? null : status);
 
 		// Update payment date and receipt no on successful payment when payment detail
 		// object is received
@@ -396,13 +449,47 @@ public class BookingServiceImpl implements BookingService {
 					"Booking no not valid. Failed to update booking status for : " + bookingNo);
 		}
 
-//		String tenantId = bookingDetails.get(0).getTenantId();		
-//		Object mdmsData = mdmsUtil.mDMSCall(advertisementBookingRequest.getRequestInfo(), tenantId);
-//		bookingValidator.validateUpdate(advertisementBookingRequest.getBookingApplication(), mdmsData, advertisementBookingRequest.getBookingApplication().getBookingStatus());
+		// String tenantId = bookingDetails.get(0).getTenantId();
+		// Object mdmsData =
+		// mdmsUtil.mDMSCall(advertisementBookingRequest.getRequestInfo(), tenantId);
+		// bookingValidator.validateUpdate(advertisementBookingRequest.getBookingApplication(),
+		// mdmsData,
+		// advertisementBookingRequest.getBookingApplication().getBookingStatus());
+
+		// Preserve workflow/businessService from request (DB object won't have these)
+		Workflow incomingWorkflowSync = advertisementBookingRequest.getBookingApplication().getWorkflow();
+		String incomingBusinessServiceSync = advertisementBookingRequest.getBookingApplication().getBusinessService();
 
 		convertBookingRequest(advertisementBookingRequest, bookingDetails.get(0));
 
-		enrichmentService.enrichUpdateBookingRequest(advertisementBookingRequest, status);
+		// Restore workflow/businessService onto the DB-loaded booking object
+		advertisementBookingRequest.getBookingApplication().setWorkflow(incomingWorkflowSync);
+		if (incomingBusinessServiceSync != null)
+			advertisementBookingRequest.getBookingApplication().setBusinessService(incomingBusinessServiceSync);
+
+		boolean usedWorkflow = false;
+		try {
+			if (workflowIntegrator != null
+					&& advertisementBookingRequest.getBookingApplication().getWorkflow() != null
+					&& StringUtils.isNotBlank(
+							advertisementBookingRequest.getBookingApplication().getWorkflow().getAction())) {
+				String nextStatus = workflowIntegrator.transition(advertisementBookingRequest.getRequestInfo(),
+						advertisementBookingRequest.getBookingApplication(),
+						advertisementBookingRequest.getBookingApplication().getWorkflow().getAction());
+				if (StringUtils.isNotBlank(nextStatus)) {
+//					advertisementBookingRequest.getBookingApplication().setBookingStatus(nextStatus);
+					if (advertisementBookingRequest.getBookingApplication().getCartDetails() != null) {
+						advertisementBookingRequest.getBookingApplication().getCartDetails()
+								.forEach(c -> c.setStatus(nextStatus));
+					}
+					usedWorkflow = true;
+				}
+			}
+		} catch (Exception ex) {
+			log.error("Workflow transition on update (sync) failed for booking {}", bookingNo, ex);
+		}
+
+		enrichmentService.enrichUpdateBookingRequest(advertisementBookingRequest, usedWorkflow ? null : status);
 
 		// Update payment date and receipt no on successful payment when payment detail
 		// object is received
@@ -443,21 +530,19 @@ public class BookingServiceImpl implements BookingService {
 			// Update existing draft
 			enrichmentService.enrichUpdateAdvertisementDraftApplicationRequest(bookingRequest);
 			bookingRepository.updateDraftApplication(bookingRequest);
-		}else {
-		    enrichmentService.enrichCreateAdvertisementDraftApplicationRequest(bookingRequest);
-		    
-		    List<AdvertisementDraftDetail> draftData = bookingRepository
-		            .getDraftData(bookingRequest.getRequestInfo().getUserInfo().getUuid());
-		    
-		   
-		    if (draftData != null && !draftData.isEmpty()) {
-		        String draftIdInDraft = draftData.get(0).getDraftId(); 
-		        
-		        if (draftIdInDraft == null) {
-		            bookingRepository.saveDraftApplication(bookingRequest);
-		        }
-		    }
-		
+		} else {
+			enrichmentService.enrichCreateAdvertisementDraftApplicationRequest(bookingRequest);
+
+			List<AdvertisementDraftDetail> draftData = bookingRepository
+					.getDraftData(bookingRequest.getRequestInfo().getUserInfo().getUuid());
+
+			if (draftData != null && !draftData.isEmpty()) {
+				String draftIdInDraft = draftData.get(0).getDraftId();
+
+				if (draftIdInDraft == null) {
+					bookingRepository.saveDraftApplication(bookingRequest);
+				}
+			}
 
 		}
 
@@ -481,4 +566,3 @@ public class BookingServiceImpl implements BookingService {
 	}
 
 }
-

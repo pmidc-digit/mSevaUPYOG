@@ -2,7 +2,6 @@ package org.upyog.adv.repository;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import javax.validation.Valid;
 
@@ -73,5 +72,10 @@ public interface BookingRepository {
             AdvertisementSlotAvailabilityDetail availabilityDetailsResponse);
 
 	void deleteDataFromTimerAndDraft(String uuid, String draftId, String bookingId);
+
+	// Scheduler support: find bookings that completed their duration and move to verification
+	List<String> findBookingsEligibleForVerification();
+
+	void bulkUpdateBookingStatusById(List<String> bookingIds, String status, String lastModifiedBy);
 	
 }

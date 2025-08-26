@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.egov.noc.web.model.AuditDetails;
 import org.egov.noc.web.model.Document;
 import org.egov.noc.web.model.Noc;
+import org.egov.noc.web.model.NocDetails;
 import org.egov.noc.web.model.enums.ApplicationType;
 import org.egov.noc.web.model.enums.Status;
 import org.springframework.dao.DataAccessException;
@@ -30,35 +31,35 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 		Map<String, Noc> nocListMap = new HashMap<>();
 		Noc noc = new Noc();
 		while (rs.next()) {
-			String Id = rs.getString("noc_Id");
+			String Id = rs.getString("id");
 			if (nocListMap.getOrDefault(Id, null) == null) {
 				noc = new Noc();
 				noc.setTenantId(rs.getString("tenantid"));
-				noc.setId(rs.getString("noc_Id"));
+				noc.setId(rs.getString("id"));
 				noc.setApplicationNo(rs.getString("applicationNo"));
                 noc.setNocNo(rs.getString("nocNo"));
                 noc.setNocType(rs.getString("nocType"));
                 noc.setApplicationStatus(rs.getString("applicationStatus"));
-                noc.setApplicationType(ApplicationType.fromValue(rs.getString("applicationType")));
+//                noc.setApplicationType(ApplicationType.fromValue(rs.getString("applicationType")));
                 noc.setStatus(Status.fromValue(rs.getString("status")));
-                noc.setLandId(rs.getString("landId"));
-                noc.setSource(rs.getString("source"));
-                noc.setSourceRefId(rs.getString("sourceRefId"));
+//                noc.setLandId(rs.getString("landId"));
+//                noc.setSource(rs.getString("source"));
+//                noc.getNocDetails().getAdditionalDetails().setSourceRefId(rs.getString("sourceRefId"));
                 noc.setAccountId(rs.getString("AccountId"));
 
-                Object additionalDetails = new Gson().fromJson(rs.getString("additionalDetails").equals("{}")
-						|| rs.getString("additionalDetails").equals("null") ? null : rs.getString("additionalDetails"),
-						Object.class);
-                noc.setAdditionalDetails(additionalDetails);
+//                Object additionalDetails = new Gson().fromJson(rs.getString("additionalDetails").equals("{}")
+//						|| rs.getString("additionalDetails").equals("null") ? null : rs.getString("additionalDetails"),
+//						Object.class);
+//                noc.getNocDetails().setAdditionalDetails(additionalDetails);
                 
                 AuditDetails auditdetails = AuditDetails.builder()
-                        .createdBy(rs.getString("noc_createdBy"))
-                        .createdTime(rs.getLong("noc_createdTime"))
-                        .lastModifiedBy(rs.getString("noc_lastModifiedBy"))
-                        .lastModifiedTime(rs.getLong("noc_lastModifiedTime"))
+                        .createdBy(rs.getString("createdBy"))
+                        .createdTime(rs.getLong("createdTime"))
+                        .lastModifiedBy(rs.getString("lastModifiedBy"))
+                        .lastModifiedTime(rs.getLong("lastModifiedTime"))
                         .build();
 			    noc.setAuditDetails(auditdetails);
-				 
+
 			    nocListMap.put(Id, noc);
 			}
 			addChildrenToProperty(rs, noc);
@@ -71,7 +72,7 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 	 * @param noc
 	 * @throws SQLException
 	 */
-	@SuppressWarnings("unused")
+//	@SuppressWarnings("unused")
 	private void addChildrenToProperty(ResultSet rs, Noc noc) throws SQLException {
 		String documentId = rs.getString("noc_doc_id");
 		String tenantId = noc.getTenantId();
@@ -80,13 +81,30 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 		     Object additionalDetails = new Gson().fromJson(rs.getString("doc_details").equals("{}")
 						|| rs.getString("doc_details").equals("null") ? null : rs.getString("doc_details"),
 						Object.class);
-			applicationDocument.setId(documentId);
+			applicationDocument.setUuid(documentId);
 			applicationDocument.setDocumentType(rs.getString("documenttype"));
-			applicationDocument.setFileStoreId(rs.getString("noc_doc_filestore"));
+			applicationDocument.setDocumentAttachment(rs.getString("noc_doc_documentAttachment"));
 			applicationDocument.setDocumentUid(rs.getString("documentUid"));
-			applicationDocument.setAdditionalDetails(additionalDetails);
+//			applicationDocument.setAdditionalDetails(additionalDetails);
 			noc.addDocumentsItem(applicationDocument);
 		}
 	}
+//	private void addChildrenToProperty(ResultSet rs, Noc noc) throws SQLException {
+//		String id = rs.getString("noc_details_id");
+//		String tenantId = rs.getString("noc_details_tenantid");
+//		if (!StringUtils.isEmpty(id)) {
+//			NocDetails nocdetails = new NocDetails();
+//			Object additionalDetails = new Gson().fromJson(rs.getString("noc_details_additionaldetails").equals("{}")
+//							|| rs.getString("noc_details_additionaldetails").equals("null") ? null : rs.getString("noc_details_additionaldetails"),
+//					Object.class);
+//			nocdetails.setId(id);
+//
+//			nocdetails.setNocId(rs.getString("noc_details_nocid"));
+//			nocdetails.setAdditionalDetails(rs.getString("noc_details_additionaldetails"));
+//			nocdetails.setTenantId(rs.getString("noc_details_tenantid"));
+//			noc.nocDetails(nocdetails);
+//
+//		}
+//	}
 
 }

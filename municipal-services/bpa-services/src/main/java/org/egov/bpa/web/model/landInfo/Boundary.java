@@ -7,7 +7,7 @@ import java.util.Objects;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.egov.bpa.web.model.AuditDetails.AuditDetailsBuilder;
+//import org.egov.bpa.web.model.AuditDetails.AuditDetailsBuilder;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 

@@ -15,4 +15,5 @@ public class JsonMap {
 	private String parentPath;
 	private String format;
 
+
 }

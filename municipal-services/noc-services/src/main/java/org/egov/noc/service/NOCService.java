@@ -23,6 +23,7 @@ import org.egov.noc.web.model.RequestInfoWrapper;
 import org.egov.noc.web.model.bpa.BPA;
 import org.egov.noc.web.model.bpa.BPAResponse;
 import org.egov.noc.web.model.bpa.BPASearchCriteria;
+import org.egov.noc.web.model.enums.Status;
 import org.egov.noc.web.model.workflow.BusinessService;
 import org.egov.noc.web.model.workflow.ProcessInstance;
 import org.egov.noc.web.model.workflow.ProcessInstanceResponse;
@@ -82,7 +83,8 @@ public class NOCService {
 		nocValidator.validateCreate(nocRequest,  mdmsData);
 		enrichmentService.enrichCreateRequest(nocRequest, mdmsData);
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
-		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
+//		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
+			wfIntegrator.callWorkFlow(nocRequest,"noc");
 		}else{
 		  nocRequest.getNoc().setApplicationStatus(NOCConstants.CREATED_STATUS);
 		}
@@ -99,34 +101,52 @@ public class NOCService {
 		String tenantId = nocRequest.getNoc().getTenantId().split("\\.")[0];
 		Object mdmsData = nocUtil.mDMSCall(nocRequest.getRequestInfo(), tenantId);
 		Map<String, String> additionalDetails  ;
-		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getAdditionalDetails()))  {
-			additionalDetails = (Map) nocRequest.getNoc().getAdditionalDetails();
+		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getNocDetails().getAdditionalDetails()))  {
+			additionalDetails = (Map) nocRequest.getNoc().getNocDetails().getAdditionalDetails();
 		} else {
 			additionalDetails = nocValidator.getOrValidateBussinessService(nocRequest.getNoc(), mdmsData);
 		}
-		Noc searchResult = getNocForUpdate(nocRequest);
-		if(searchResult.getApplicationStatus().equalsIgnoreCase("AUTO_APPROVED")
-				&& nocRequest.getNoc().getApplicationStatus().equalsIgnoreCase("INPROGRESS"))
-		{
-			log.info("NOC_UPDATE_ERROR_AUTO_APPROVED_TO_INPROGRESS_NOTALLOWED");
-			throw new CustomException("AutoApproveException","NOC_UPDATE_ERROR_AUTO_APPROVED_TO_INPROGRESS_NOTALLOWED");
+		Noc searchResult= null;
+		if(nocRequest.getNoc().getApplicationStatus().equals(NOCConstants.NOC_UNDER_REVIEW)){
+			searchResult = new Noc();
+			searchResult.setAuditDetails(nocRequest.getNoc().getAuditDetails());
+			searchResult.setApplicationNo(nocRequest.getNoc().getApplicationNo());
+			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
+			nocRepository.update(nocRequest, Boolean.TRUE);
+
+		}else{
+			 searchResult = getNocForUpdate(nocRequest);
+			if(searchResult.getApplicationStatus().equalsIgnoreCase("AUTO_APPROVED")
+					&& nocRequest.getNoc().getApplicationStatus().equalsIgnoreCase("INPROGRESS"))
+			{
+				log.info("NOC_UPDATE_ERROR_AUTO_APPROVED_TO_INPROGRESS_NOTALLOWED");
+				throw new CustomException("AutoApproveException","NOC_UPDATE_ERROR_AUTO_APPROVED_TO_INPROGRESS_NOTALLOWED");
+			}
+			nocValidator.validateUpdate(nocRequest, searchResult, additionalDetails.get(NOCConstants.MODE), mdmsData);
+			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
+			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
+					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
+				wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
+				enrichmentService.postStatusEnrichment(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
+				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
+						nocRequest.getRequestInfo(), additionalDetails.get(NOCConstants.WORKFLOWCODE));
+				if(businessService == null)
+					nocRepository.update(nocRequest, true);
+				else
+					nocRepository.update(nocRequest, workflowService.isStateUpdatable(nocRequest.getNoc().getApplicationStatus(), businessService));
+			}else {
+				nocRepository.update(nocRequest, Boolean.FALSE);
+			}
 		}
-		nocValidator.validateUpdate(nocRequest, searchResult, additionalDetails.get(NOCConstants.MODE), mdmsData);
-		enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
-		
-		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
-				&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
-		   wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
-		   enrichmentService.postStatusEnrichment(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
-		   BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
-				   nocRequest.getRequestInfo(), additionalDetails.get(NOCConstants.WORKFLOWCODE));
-		   if(businessService == null)
-			   nocRepository.update(nocRequest, true);
-		   else
-			   nocRepository.update(nocRequest, workflowService.isStateUpdatable(nocRequest.getNoc().getApplicationStatus(), businessService));
-		}else {
-           nocRepository.update(nocRequest, Boolean.FALSE);
-		}
+
+
+
+
+
+
+
+
+
 		
 		return Arrays.asList(nocRequest.getNoc());
 	}
@@ -175,13 +195,24 @@ public class NOCService {
 			log.info("NOC CALL STARTED" + criteria.getSourceRefId());
 			nocs = nocRepository.getNocData(criteria);
 			nocs.forEach(noc -> {
-				Map<String, String> additionalDetails = noc.getAdditionalDetails() != null
-						? (Map<String, String>) noc.getAdditionalDetails()
+				Map<String, String> additionalDetails = noc.getNocDetails().getAdditionalDetails() != null
+						? (Map<String, String>) noc.getNocDetails().getAdditionalDetails()
 						: new HashMap<String, String>();
+
 				for (BPA bpa : bpas) {
-					if (bpa.getApplicationNo().equals(noc.getSourceRefId())) {
-						additionalDetails.put("applicantName", bpa.getLandInfo().getOwners().get(0).getName());
+
+					Object additionalDetailsObj = noc.getNocDetails().getAdditionalDetails();
+
+					if (additionalDetailsObj instanceof Map) {
+						Map<String, String> details = (Map<String, String>) additionalDetailsObj;
+
+						String sourceRefId = details.get(NOCConstants.SOURCE_RefId);
+						if (bpa.getApplicationNo().equals(sourceRefId)) {
+							additionalDetails.put("applicantName", bpa.getLandInfo().getOwners().get(0).getName());
+						}
 					}
+
+
 				}
 				StringBuilder url = new StringBuilder(config.getWfHost());
 				url.append(config.getWfProcessPath());
@@ -214,8 +245,8 @@ public class NOCService {
 			log.info("IN 2 NOC CALL STARTED" + criteria.getSourceRefId());
 			nocs = nocRepository.getNocData(criteria);
 			nocs.forEach(noc -> {
-				Map<String, String> additionalDetails = noc.getAdditionalDetails() != null
-						? (Map<String, String>) noc.getAdditionalDetails()
+				Map<String, String> additionalDetails = noc.getNocDetails().getAdditionalDetails() != null
+						? (Map<String, String>) noc.getNocDetails().getAdditionalDetails()
 						: new HashMap<String, String>();
 
 				// BPA CALL
@@ -223,7 +254,22 @@ public class NOCService {
 						.append(config.getBpaSearchEndpoint());
 
 				uri.append("?tenantId=").append(noc.getTenantId());
-				uri.append("&applicationNo=").append(noc.getSourceRefId());
+
+
+				Object additionalDetailsObj = noc.getNocDetails().getAdditionalDetails();
+
+				if (additionalDetailsObj instanceof Map) {
+					Map<String, String> details = (Map<String, String>) additionalDetailsObj;
+
+					String sourceRefId = details.get(NOCConstants.SOURCE_RefId);
+					if (sourceRefId != null) {
+						uri.append("&applicationNo=").append(sourceRefId);
+					}
+				}
+
+//					uri.append("&applicationNo=").append(noc.getSourceRefId());
+
+
 				System.out.println("BPA CALL STARTED");
 				LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri,
 						requestInfoWrapper);
@@ -274,8 +320,23 @@ public class NOCService {
 	 */
 	public Noc getNocForUpdate(NocRequest nocRequest) {		
 		List<String> ids = Arrays.asList(nocRequest.getNoc().getId());
+//		String mobileNumber = nocRequest.getRequestInfo().getUserInfo().getMobileNumber();
+        String tenantid = nocRequest.getNoc().getTenantId();
+		String nocNo = nocRequest.getNoc().getNocNo();
+		String noctype = nocRequest.getNoc().getNocType();
+
+		String applicationNo = nocRequest.getNoc().getApplicationNo();
+
 		NocSearchCriteria criteria = new NocSearchCriteria();
+		criteria.setTenantId(tenantid);
 		criteria.setIds(ids);
+		criteria.setNocNo(nocNo);
+		criteria.setNocType(noctype);
+
+		criteria.setApplicationNo(applicationNo);
+
+
+//		criteria.setMobileNumber(mobileNumber);
 		List<Noc> nocList = search(criteria, nocRequest.getRequestInfo());
 		if (CollectionUtils.isEmpty(nocList) ) {
 			StringBuilder builder = new StringBuilder();

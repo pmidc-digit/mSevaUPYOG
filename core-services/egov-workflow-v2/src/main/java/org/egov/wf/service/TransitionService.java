@@ -47,7 +47,6 @@ public class TransitionService {
      */
     public List<ProcessStateAndAction> getProcessStateAndActions(List<ProcessInstance> processInstances,Boolean isTransitionCall){
         List<ProcessStateAndAction> processStateAndActions = new LinkedList<>();
-
         BusinessService businessService = getBusinessService(processInstances);
         Map<String,ProcessInstance> idToProcessInstanceFromDbMap = prepareProcessStateAndAction(processInstances,businessService);
         List<String> allowedRoles = workflowUtil.rolesAllowedInService(businessService);
@@ -71,14 +70,24 @@ public class TransitionService {
                 processInstance.setBusinesssServiceSla(businessService.getBusinessServiceSla());
 
 
-            if(currentState==null){
-                    for(State state : businessService.getStates()){
-                        if(StringUtils.isEmpty(state.getState())){
-                            processStateAndAction.setCurrentState(state);
-                            break;
-                        }
+//            if(currentState==null){
+//                    for(State state : businessService.getStates()){
+//                        if(StringUtils.isEmpty(state.getState())){
+//                            processStateAndAction.setCurrentState(state);
+//                            break;
+//                        }
+//                    }
+//            }
+
+            if (currentState == null) {
+                for (State state : businessService.getStates()) {
+                    if (Boolean.TRUE.equals(state.getIsStartState())) {
+                        processStateAndAction.setCurrentState(state);
+                        break;
                     }
+                }
             }
+
             else processStateAndAction.setCurrentState(currentState);
 
             if(!CollectionUtils.isEmpty(processStateAndAction.getCurrentState().getActions())){

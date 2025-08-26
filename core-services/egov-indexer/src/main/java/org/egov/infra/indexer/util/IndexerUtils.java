@@ -22,6 +22,7 @@ import org.json.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
@@ -37,6 +38,8 @@ import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
+
+@Component
 public class IndexerUtils {
 
 	@Autowired

@@ -26,7 +26,6 @@ public class IdGenerationController {
 	/**
 	 * description: generate unique ID for property
 	 * 
-	 * @param IdGenerationRequest
 	 * @return IdGenerationResponse
 	 * @throws Exception
 	 */

@@ -225,10 +225,10 @@ public class UserService {
 		else if (url.indexOf(userCreateEndpoint) != -1)
 			dobFormat = "dd/MM/yyyy";
 		try {
-			Optional<Object> response = serviceRequestRepository.fetchResult(url, userRequest);
+			Object response = serviceRequestRepository.fetchResult(url, userRequest);
 
-			if (response.isPresent()) {
-				LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) response.get();
+			if (response!=null) {
+				LinkedHashMap<String, Object> responseMap = (LinkedHashMap<String, Object>) response;
 				parseResponse(responseMap, dobFormat);
 				UserDetailResponse userDetailResponse = mapper.convertValue(responseMap, UserDetailResponse.class);
 				return userDetailResponse;

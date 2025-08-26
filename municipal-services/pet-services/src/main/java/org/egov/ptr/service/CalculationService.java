@@ -51,8 +51,10 @@ public class CalculationService {
 				demandDetails.add(demandDetail);
 				demandDetails.add(demandDetail);
 			}
+
 		}
 		return demandDetails;
 
 	}
 }
+

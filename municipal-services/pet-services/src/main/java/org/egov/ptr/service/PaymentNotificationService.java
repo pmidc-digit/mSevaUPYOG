@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class PaymentNotificationService {
 
-	private static final String PET_SERVICES = "pet-services";
+	private static final String PET_SERVICES = "pet-service";
 
 	@Autowired
 	private NotificationUtil util;
@@ -115,9 +115,9 @@ public class PaymentNotificationService {
 		ProcessInstance processInstance = new ProcessInstance();
 		processInstance.setBusinessId(consumerCode);
 		processInstance.setAction("PAY");
-		processInstance.setModuleName("pet-services");
+		processInstance.setModuleName("pet-service");
 		processInstance.setTenantId(tenantId);
-		processInstance.setBusinessService("ptr");
+		processInstance.setBusinessService("pet-services");
 		processInstance.setDocuments(null);
 		processInstance.setComment(null);
 		processInstance.setAssignes(null);
@@ -137,13 +137,13 @@ public class PaymentNotificationService {
 			StringBuilder url = new StringBuilder(configs.getWfHost().concat(configs.getWfTransitionPath()));
 			log.info("URL for calling workflow service: {}", url);
 
-			Optional<Object> optional = serviceRequestRepository.fetchResult(url, workflowReq);
-			if (!optional.isPresent()) {
+			Object object = serviceRequestRepository.fetchResult(url, workflowReq);
+			if (object!=null) {
 				log.error("No response from workflow service for request: {}", workflowReq);
 				return null;
 			}
 
-			ProcessInstanceResponse response = mapper.convertValue(optional.get(), ProcessInstanceResponse.class);
+			ProcessInstanceResponse response = mapper.convertValue(object, ProcessInstanceResponse.class);
 			if (response == null || response.getProcessInstances() == null || response.getProcessInstances().isEmpty()) {
 				log.error("Empty response or process instances from workflow service");
 				return null;

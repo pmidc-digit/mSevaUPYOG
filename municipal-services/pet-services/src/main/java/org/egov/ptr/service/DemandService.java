@@ -48,22 +48,18 @@ public class DemandService {
 		PetRegistrationApplication petApplication = petReq.getPetRegistrationApplications().get(0);
 		User owner = User.builder().name(petApplication.getApplicantName()).emailId(petApplication.getEmailId())
 				.mobileNumber(petApplication.getMobileNumber()).tenantId(petApplication.getTenantId()).build();
-//		List<DemandDetail> demandDetails = calculationService.calculateDemand(petReq);
+		List<DemandDetail> demandDetails = calculationService.calculateDemand(petReq);
 		BigDecimal amountPayable = new BigDecimal(0);
 		String applicationType = petReq.getPetRegistrationApplications().get(0).getApplicationType();
-		if (applicationType.equals(PTRConstants.RENEW_PET_APPLICATION)) {
-			amountPayable = config.getRenewApplicationFee();
-		} else {
-			amountPayable = config.getNewApplicationFee();
-		}
 
-		List<DemandDetail> demandDetails = new LinkedList<>();
+
+
 		demandDetails.add(DemandDetail.builder().collectionAmount(BigDecimal.ZERO).taxAmount(amountPayable)
 				.taxHeadMasterCode("PET_REGISTRATION_FEE").tenantId(null).build());
 		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(owner)
-				.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(Long.valueOf("1680307199000"))
-				.taxPeriodTo(Long.valueOf("1711929599000")).consumerType(PET_BUSINESSSERVICE)
-				.businessService(config.getBusinessService()).additionalDetails(null).build();
+				.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(Long.valueOf("1743445800000"))
+				.taxPeriodTo(Long.valueOf("1774981799000")).consumerType(PET_BUSINESSSERVICE)
+				.businessService("pet-services").additionalDetails(null).build();
 		List<Demand> demands = new ArrayList<>();
 		demands.add(demand);
 

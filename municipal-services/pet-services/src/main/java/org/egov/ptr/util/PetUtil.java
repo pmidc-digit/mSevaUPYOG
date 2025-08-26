@@ -2,6 +2,7 @@ package org.egov.ptr.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MasterDetail;
@@ -38,13 +39,6 @@ public class PetUtil extends CommonUtils {
 	@Autowired
 	private PetConfiguration config;
 
-	/**
-	 * Utility method to fetch bill for validation of payment
-	 *
-	 * @param propertyId
-	 * @param tenantId
-	 * @param request    //
-	 */
 
 	public List<CalculationType> getcalculationType(RequestInfo requestInfo, String tenantId, String moduleName) {
 
@@ -52,8 +46,10 @@ public class PetUtil extends CommonUtils {
 		StringBuilder uri = new StringBuilder();
 		uri.append(config.getMdmsHost()).append(config.getMdmsEndpoint());
 
+
 		MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestCalculationType(requestInfo, tenantId, moduleName);
-		MdmsResponse mdmsResponse = mapper.convertValue(restRepo.fetchResult(uri, mdmsCriteriaReq), MdmsResponse.class);
+		Object o = restRepo.fetchResult(uri, mdmsCriteriaReq);
+		MdmsResponse mdmsResponse = mapper.convertValue(o , MdmsResponse.class);
 		if (mdmsResponse.getMdmsRes().get(PET_MASTER_MODULE_NAME) == null) {
 			throw new CustomException("FEE_NOT_AVAILABLE", "Pet registration fee not available.");
 		}

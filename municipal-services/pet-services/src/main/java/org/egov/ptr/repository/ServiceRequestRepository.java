@@ -29,7 +29,7 @@ public class ServiceRequestRepository {
 	 * Fetches results from a REST service using the uri and object
 	 * Performs basic validation to prevent unnecessary calls if payload lacks required criteria
 	 */
-	public Optional<Object> fetchResult(StringBuilder uri, Object request) {
+	public Object fetchResult(StringBuilder uri, Object request) {
 
 		mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
@@ -56,7 +56,7 @@ public class ServiceRequestRepository {
 			throw new CustomException("REST_CALL_EXCEPTION : " + uri.toString(), e.getMessage());
 		}
 
-		return Optional.ofNullable(response);
+		return response;
 	}
 
 	/**

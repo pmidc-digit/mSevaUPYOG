@@ -1,143 +1,184 @@
-curl --location 'https://dev.digit.org/egov-workflow-v2/egov-wf/businessservice/_create' \
+curl --location 'http://localhost:8080/egov-workflow-v2/egov-wf/businessservice/_create' \
 --header 'Content-Type: application/json' \
 --data '{
-    "RequestInfo": {
-        "apiId": "Rainmaker",
-        "action": "",
-        "did": 1,
-        "key": "",
-        "msgId": "20170310130900|en_IN",
-        "requesterId": "",
-        "ts": 1513579888683,
-        "ver": ".01",
-        "authToken": "b39181b1-5c6b-484a-b825-6be2f62012b8"
-    },
-    "BusinessServices": [
-        {
-            "tenantId": "pg",
-            "businessService": "ptr",
-            "business": "pet-services",
-            "businessServiceSla": null,
-            "states": [
-                {
-                    "sla": null,
-                    "state": null,
-                    "applicationStatus": null,
-                    "docUploadRequired": true,
-                    "isStartState": true,
-                    "isTerminateState": false,
-                    "isStateUpdatable": true,
-                    "actions": [
-                        {
-                            "action": "APPLY",
-                            "nextState": "APPLIED",
-                            "roles": [
-                                "CITIZEN",
-                                "PTR_CEMP"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "sla": null,
-                    "state": "APPLIED",
-                    "applicationStatus": "APPLIED",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": true,
-                    "isStateUpdatable": false,
-                    "actions": [
-                        {
-                            "action": "VERIFY",
-                            "nextState": "DOCVERIFIED",
-                            "roles": [
-                                "EMPLOYEE",
-                                "PTR_CEMP",
-                                "PTR_VERIFIER"
-                            ]
-                        },
-                        {
-                            "action": "REJECT",
-                            "nextState": "REJECTED",
-                            "roles": [
-                                "EMPLOYEE",
-                                "PTR_CEMP",
-                                "PTR_VERIFIER"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "sla": null,
-                    "state": "DOCVERIFIED",
-                    "applicationStatus": "DOCVERIFIED",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": true,
-                    "isStateUpdatable": false,
-                    "actions": [
-                        {
-                            "action": "APPROVE",
-                            "nextState": "APPROVED",
-                            "roles": [
-                                "EMPLOYEE",
-                                "PTR_CEMP",
-                                "PTR_APPROVER"
-                            ]
-                        },
-                        {
-                            "action": "REJECT",
-                            "nextState": "REJECTED",
-                            "roles": [
-                                "EMPLOYEE",
-                                "PTR_CEMP",
-                                "PTR_APPROVER"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "sla": null,
-                    "state": "APPROVED",
-                    "applicationStatus": "APPROVED",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": false,
-                    "isStateUpdatable": false,
-                    "actions": [
-                        {
-                            "action": "PAY",
-                            "nextState": "REGISTRATIONCOMPLETED",
-                            "roles": [
-                                "SYSTEM_PAYMENT",
-                                "CITIZEN",
-                                "EMPLOYEE",
-                                "PTR_CEMP"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "sla": null,
-                    "state": "REJECTED",
-                    "applicationStatus": "REJECTED",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": true,
-                    "isStateUpdatable": false,
-                    "actions": null
-                },
-                {
-                    "sla": null,
-                    "state": "REGISTRATIONCOMPLETED",
-                    "applicationStatus": "REGISTRATIONCOMPLETED",
-                    "docUploadRequired": false,
-                    "isStartState": false,
-                    "isTerminateState": true,
-                    "isStateUpdatable": false,
-                    "actions": null
-                }
-            ]
-        }
-    ]
+"RequestInfo": {
+"apiId": "Rainmaker",
+"ver": ".01",
+"ts": null,
+"action": "_create",
+"did": "1",
+"key": "",
+"msgId": "20170310130900|en_IN",
+"authToken": "eae1c041-f9c0-419a-b6ca-7dbc58be2abb",
+"userInfo": {
+"id": 4205963,
+"uuid": "c9f4569c-9cb4-47cd-917d-afae850824d5",
+"userName": "9992983014",
+"name": "Radha",
+"mobileNumber": "9992983014",
+"emailId": null,
+"locale": null,
+"type": "CITIZEN",
+"roles": [
+{
+"name": "Citizen",
+"code": "CITIZEN",
+"tenantId": "pb"
+}
+],
+"active": true,
+"tenantId": "pb",
+"permanentCity": "pb.adampur"
+}
+},
+"BusinessServices": [
+{
+"tenantId": "pb",
+"uuid": "9b853fe8-0284-4b66-aee8-1d276067c194",
+"businessService": "ptr",
+"business": "pet-service",
+"businessServiceSla": 2764800000,
+"states": [
+{
+"state": "START",
+"applicationStatus": "START",
+"isStartState": true,
+"isTerminateState": false,
+"isStateUpdatable": false,
+"actions": [
+{
+"currentState": "START",
+"action": "INITIATE",
+"nextState": "INITIATED",
+"roles": [
+"CITIZEN",
+"PET_REG_EMPLOYEE"
+],
+"active": true
+}
+]
+},
+{
+"state": "INITIATED",
+"applicationStatus": "INITIATED",
+"isStartState": false,
+"isTerminateState": false,
+"isStateUpdatable": false,
+"actions": [
+{
+"currentState": "INITIATED",
+"action": "INITIATE",
+"nextState": "INITIATED",
+"roles": [
+"CITIZEN",
+"PET_REG_EMPLOYEE"
+],
+"active": true
+},
+{
+"currentState": "INITIATED",
+"action": "APPLY",
+"nextState": "DOCUMENTVERIFY",
+"roles": [
+"CITIZEN",
+"PET_REG_EMPLOYEE"
+],
+"active": true
+}
+]
+},
+{
+"state": "DOCUMENTVERIFY",
+"applicationStatus": "DOCUMENTVERIFY",
+"isStartState": false,
+"isTerminateState": false,
+"isStateUpdatable": false,
+"actions": [
+{
+"currentState": "DOCUMENTVERIFY",
+"action": "SENDBACKTOCITIZEN",
+"nextState": "CITIZENACTIONREQUIRED-DV",
+"roles": [
+"PET_DOC_VERIFIER"
+],
+"active": true
+},
+{
+"currentState": "DOCUMENTVERIFY",
+"action": "REJECT",
+"nextState": "REJECTED",
+"roles": [
+"PET_DOC_VERIFIER"
+],
+"active": true
+},
+{
+"currentState": "DOCUMENTVERIFY",
+"action": "APPROVE",
+"nextState": "PENDINGPAYMENT",
+"roles": [
+"PET_DOC_VERIFIER",
+"PET_DOC_APPROVER"
+],
+"active": true
+}
+]
+},
+{
+"state": "CITIZENACTIONREQUIRED-DV",
+"applicationStatus": "CITIZENACTIONREQUIRED-DV",
+"isStartState": false,
+"isTerminateState": false,
+"isStateUpdatable": true,
+"actions": [
+{
+"currentState": "CITIZENACTIONREQUIRED-DV",
+"action": "RESUBMIT",
+"nextState": "DOCUMENTVERIFY",
+"roles": [
+"CITIZEN",
+"PET_REG_EMPLOYEE"
+],
+"active": true
+}
+]
+},
+{
+"state": "PENDINGPAYMENT",
+"applicationStatus": "PENDINGPAYMENT",
+"isStartState": false,
+"isTerminateState": false,
+"isStateUpdatable": false,
+"actions": [
+{
+"currentState": "PENDINGPAYMENT",
+"action": "PAY",
+"nextState": "APPROVED",
+"roles": [
+"PET_DOC_APPROVER",
+"SYSTEM"
+],
+"active": true
+}
+]
+},
+{
+"state": "APPROVED",
+"applicationStatus": "APPROVED",
+"isStartState": false,
+"isTerminateState": true,
+"isStateUpdatable": false,
+"actions": []
+},
+{
+"state": "REJECTED",
+"applicationStatus": "REJECTED",
+"isStartState": false,
+"isTerminateState": true,
+"isStateUpdatable": false,
+"actions": []
+}
+]
+}
+]
 }'

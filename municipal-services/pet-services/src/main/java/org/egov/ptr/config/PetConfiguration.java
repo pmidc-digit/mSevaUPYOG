@@ -181,9 +181,9 @@ public class PetConfiguration {
 	@Value("${egov.bill.gen.endpoint}")
 	private String billGenerateEndpoint;
 
-	@Value("${egov.ptr.newapplication.fee}")
+	/*@Value("${egov.ptr.newapplication.fee}")
 	private BigDecimal newApplicationFee;
 
 	@Value("${egov.ptr.renewapplication.fee}")
-	private BigDecimal renewApplicationFee;
+	private BigDecimal renewApplicationFee;*/
 }

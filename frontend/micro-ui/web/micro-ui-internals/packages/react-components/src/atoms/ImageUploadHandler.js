@@ -73,6 +73,7 @@ export const ImageUploadHandler = (props) => {
   }, [addUploadedImageIds, image]);
 
   function addImageThumbnails(thumbnailsData) {
+    //debugger
     var keys = Object.keys(thumbnailsData.data);
     var index = keys.findIndex((key) => key === "fileStoreIds");
     if (index > -1) {
@@ -84,7 +85,8 @@ export const ImageUploadHandler = (props) => {
     // }
 
     const newThumbnails = keys.map((key) => {
-      return { image: thumbnailsData.data[key].split(",")[2], key };
+      //return { image: thumbnailsData.data[key].split(",")[2], key };
+      return { image: thumbnailsData.data[key], key };
     });
 
     setUploadedImagesThumbs([...thumbnails, ...newThumbnails]);
@@ -93,6 +95,7 @@ export const ImageUploadHandler = (props) => {
   const submit = useCallback(async () => {
     if (uploadedImagesIds !== null && uploadedImagesIds.length > 0) {
       const res = await Digit.UploadServices.Filefetch(uploadedImagesIds, props.tenantId);
+      //console.log("Hellores",res)
       addImageThumbnails(res);
     }
   }, [uploadedImagesIds]);
@@ -109,7 +112,7 @@ export const ImageUploadHandler = (props) => {
     setUploadedImagesIds(newUploadedImagesIds);
     Digit.SessionStorage.set("PGR_CREATE_IMAGES", newUploadedImagesIds);
   }
-
+  //console.log("uploadedImagesThumbs",uploadedImagesThumbs)
   return (
     <React.Fragment>
       {error && <Toast error={true} label={error} onClose={() => setError(null)} />}

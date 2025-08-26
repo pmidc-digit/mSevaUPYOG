@@ -21,12 +21,12 @@ RUN yarn add @mseva/digit-ui-module-tl@1.0.14
 RUN yarn add @mseva/digit-ui-module-obps@1.0.24
 RUN yarn add @mseva/digit-ui-module-sv@1.0.38
 RUN yarn add @mseva/upyog-ui-module-ads@1.0.43
-RUN yarn add @mseva/upyog-ui-module-chb@1.0.35
+RUN yarn add @mseva/upyog-ui-module-chb@1.0.36
 RUN yarn add @mseva/upyog-ui-module-asset@1.0.31
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.23
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.2
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.2
-RUN yarn add @mseva/digit-ui-module-ndc@1.0.10
+RUN yarn add @mseva/digit-ui-module-ndc@1.0.11
 ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192

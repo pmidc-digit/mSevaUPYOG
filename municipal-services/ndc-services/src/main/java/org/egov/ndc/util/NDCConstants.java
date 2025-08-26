@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class NDCConstants {
 
-	public static final String SEARCH_MODULE = "rainmaker-ndcsrv";
+	public static final String SEARCH_MODULE = "rainmaker-ndc";
 	
 	public static final String NDC_MODULE = "NDC";
 	public static final String NDC_FEE_MODULE = "NdcFee";
@@ -67,9 +67,9 @@ public class NDCConstants {
 	
 	//sms notification
 
-	public static final String ACTION_STATUS_CREATED = "null_CREATED";
+	public static final String ACTION_STATUS_CREATED = "null_INITIATED";
 	
-	public static final String ACTION_STATUS_INITIATED = "INITIATE_INPROGRESS";
+	public static final String ACTION_STATUS_INITIATED = "INITIATE_INITIATED";
 	
 	public static final String ACTION_STATUS_REJECTED = "REJECT_REJECTED";
 	

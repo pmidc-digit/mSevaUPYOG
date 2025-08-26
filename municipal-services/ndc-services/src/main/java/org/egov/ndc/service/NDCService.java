@@ -208,10 +208,14 @@ public class NDCService {
 		if(ObjectUtils.isEmpty(ndcDeleteRequest.getUuid())){
 			throw new CustomException("APPLICANT_UUID_NULL", "Applicant uuid is null");
 		}
+		if(ObjectUtils.isEmpty(ndcDeleteRequest.getTenantId())){
+			throw new CustomException("APPLICANT_TENANT_NULL", "Applicant tenantId is null");
+		}
+
 		if(!ndcRepository.checkApplicationExists(ndcDeleteRequest.getUuid())) {
 			throw new CustomException("APPLICANT_NOT_FOUND", "Applicant uuid not found.");
 		}
-		Application application = searchNdcApplications(NdcApplicationSearchCriteria.builder().uuid(Collections.singletonList(ndcDeleteRequest.getUuid())).build(), ndcDeleteRequest.getRequestInfo()).get(0);
+		Application application = searchNdcApplications(NdcApplicationSearchCriteria.builder().tenantId(ndcDeleteRequest.getTenantId()).uuid(Collections.singletonList(ndcDeleteRequest.getUuid())).build(), ndcDeleteRequest.getRequestInfo()).get(0);
 		NdcApplicationRequest ndcApplicationRequest = NdcApplicationRequest.builder().requestInfo(ndcDeleteRequest.getRequestInfo()).build();
 		AuditDetails auditDetails = application.getAuditDetails();
 		auditDetails.setLastModifiedBy(ndcDeleteRequest.getRequestInfo().getUserInfo().getUuid());
@@ -235,7 +239,7 @@ public class NDCService {
 	public List<Application> searchNdcApplications(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {
 		List<Application> applications;
 		List<String> uuids = criteria.getUuid();
-				if (StringUtils.isBlank(criteria.getTenantId())) {
+				if (StringUtils.isBlank(criteria.getTenantId()) ) {
 			throw new CustomException("EG_NDC_TENANT_ID_NULL","Tenant ID must not be null or empty when UUID is not provided");
 		}
 		if (criteria.getMobileNumber() != null || criteria.getName() != null) {

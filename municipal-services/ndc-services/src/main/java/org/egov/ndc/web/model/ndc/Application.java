@@ -27,9 +27,6 @@ public class Application {
     @JsonProperty("tenantId")
     private String tenantId;
 
-//    @JsonProperty("fee")
-//    private BigDecimal fee;
-
     @JsonProperty("owners")
     private List<OwnerInfo> owners;
 

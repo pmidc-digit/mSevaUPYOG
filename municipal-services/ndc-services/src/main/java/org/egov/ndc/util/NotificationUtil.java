@@ -12,18 +12,17 @@ import org.egov.ndc.producer.Producer;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.web.model.Ndc;
 import org.egov.ndc.web.model.SMSRequest;
+import org.egov.ndc.web.model.ndc.Application;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
-import static org.egov.ndc.util.NDCConstants.ACTION_STATUS_CREATED;
-import static org.egov.ndc.util.NDCConstants.ACTION_STATUS_INITIATED;
-import static org.egov.ndc.util.NDCConstants.ACTION_STATUS_REJECTED;
-import static org.egov.ndc.util.NDCConstants.ACTION_STATUS_APPROVED;
 
 import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
+
+import static org.egov.ndc.util.NDCConstants.*;
 
 @Component
 @Slf4j
@@ -106,8 +105,9 @@ public class NotificationUtil {
 	 */
 	@SuppressWarnings("rawtypes")
 	public String getLocalizationMessages(String tenantId, RequestInfo requestInfo) {
-		LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(getUri(tenantId, requestInfo),
-				requestInfo);
+		Object o = serviceRequestRepository.fetchResult(getUri(tenantId, requestInfo), requestInfo);
+		System.out.println(o);
+		LinkedHashMap responseMap = (LinkedHashMap) o;
 		String jsonString = new JSONObject(responseMap).toString();
 		return jsonString;
 	}
@@ -121,7 +121,7 @@ public class NotificationUtil {
 	 *            The messages from localization
 	 * @return customized message based on ndc
 	 */
-	public String getCustomizedMsg(RequestInfo requestInfo, Ndc ndc, String localizationMessage) {
+	public String getCustomizedMsg(RequestInfo requestInfo, Application ndc, String localizationMessage) {
 		String message = null, messageTemplate;
 		String messageCode;
 		if(ndc.getWorkflow() == null)
@@ -188,15 +188,10 @@ public class NotificationUtil {
 	 *            Message from localization for initiate
 	 * @return customized message for initiate
 	 */
-	private String getInitiatedMsg(Ndc ndc, String message) {
-		String type = null;
-		if(ndc.getNdcType().equalsIgnoreCase(NDCConstants.FIRE_NDC_TYPE)){
-			type = "Fire";
-		}else{
-			type = "AAI";
-		}
+	private String getInitiatedMsg(Application ndc, String message) {
+		String type = NDC_MODULE;
 		message = message.replace("{1}", type);
-		message = message.replace("{2}", ndc.getApplicationNo());
+		message = message.replace("{2}", ndc.getUuid());
 		return message;
 	}
 

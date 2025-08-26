@@ -15,6 +15,9 @@ public class NdcDeleteRequest {
     @JsonProperty("uuid")
     private String uuid;
 
+    @JsonProperty("tenantId")
+    private String tenantId;
+
     @JsonProperty("active")
     private Boolean active;
 }

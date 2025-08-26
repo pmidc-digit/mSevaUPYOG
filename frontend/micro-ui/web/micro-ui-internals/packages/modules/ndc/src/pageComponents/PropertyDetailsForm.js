@@ -63,7 +63,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     const owner = formData?.cpt?.details?.owners?.[0];
     const fullName = owner?.name?.split(" ");
     const firstName = fullName?.[0];
-    const lastName = fullName?.[fullName.length - 1];
+    let lastName
+    if(fullName?.length>1){
+      lastName = fullName?.[fullName.length - 1];
+    }
     const email = owner?.email;
     const mobileNumber = owner?.mobileNumber;
     const address = owner?.permanentAddress;
@@ -344,7 +347,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     )}
 
                     {formData?.cpt?.id && propertyDetails?.propertyBillData?.billData?.totalAmount == 0 && (
-                      <div>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
+                      <div style={{ color: "green"}}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
                     )}
                   </div>
                 )}
@@ -418,7 +421,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           </button>
                         )}
 
-                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div>{t("NO_DUES")}</div>}
+                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green"}}>{t("NO_DUES")}</div>}
 
                         {item?.isEdit && (
                           <button

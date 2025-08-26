@@ -19,6 +19,9 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
     if (missingFields.length > 0) {
       setError(`${t("NDC_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
       return;
     }
     onGoNext();

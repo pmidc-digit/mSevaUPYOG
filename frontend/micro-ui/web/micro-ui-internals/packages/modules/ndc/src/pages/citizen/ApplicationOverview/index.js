@@ -159,7 +159,8 @@ const CitizenApplicationOverview = () => {
     const ndcObject = applicationDetails?.Applications?.[0];
     if (ndcObject) {
       const applicantData = {
-        address: ndcObject?.owners?.[0]?.correspondenceAddress,
+        address: ndcObject?.NdcDetails?.[0]?.
+          additionalDetails?.propertyAddress,
         email: ndcObject?.owners?.[0]?.emailId,
         mobile: ndcObject?.owners?.[0]?.mobileNumber,
         name: ndcObject?.owners?.[0]?.name,
@@ -408,7 +409,7 @@ const CitizenApplicationOverview = () => {
       <div style={{display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px"}}>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
       
-      <LinkButton label={t("DOWNLOAD_CERTIFICATE")} style={{ color:"#A52A2A"}} onClick={handleDownloadPdf}></LinkButton>
+      {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && <LinkButton label={t("DOWNLOAD_CERTIFICATE")} style={{ color:"#A52A2A"}} onClick={handleDownloadPdf}></LinkButton>}
       </div>
       {/* <ApplicationDetailsTemplate
         applicationDetails={appDetails}
@@ -453,7 +454,7 @@ const CitizenApplicationOverview = () => {
             <StatusTable>
               <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
               <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
-              <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} />
+              {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
               <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
               <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
             </StatusTable>

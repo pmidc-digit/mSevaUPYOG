@@ -107,7 +107,8 @@ const ApplicationOverview = () => {
     const ndcObject = applicationDetails?.Applications?.[0];
     if (ndcObject) {
       const applicantData = {
-        address: ndcObject?.owners?.[0]?.correspondenceAddress,
+        address: ndcObject?.NdcDetails?.[0]?.
+          additionalDetails?.propertyAddress,
         email: ndcObject?.owners?.[0]?.emailId,
         mobile: ndcObject?.owners?.[0]?.mobileNumber,
         name: ndcObject?.owners?.[0]?.name,
@@ -120,10 +121,10 @@ const ApplicationOverview = () => {
           item?.businessService === "WS"
             ? "NDC_WATER_SERVICE_CONNECTION"
             : item?.businessService === "SW"
-            ? "NDC_SEWERAGE_SERVICE_CONNECTION"
-            : item?.businessService === "PT"
-            ? "NDC_PROPERTY_TAX"
-            : item?.businessService,
+              ? "NDC_SEWERAGE_SERVICE_CONNECTION"
+              : item?.businessService === "PT"
+                ? "NDC_PROPERTY_TAX"
+                : item?.businessService,
         consumerCode: item?.consumerCode || "",
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
@@ -200,6 +201,7 @@ const ApplicationOverview = () => {
       // ✅ Delay navigation so toast shows
       setTimeout(() => {
         history.push("/digit-ui/employee/ndc/inbox");
+        window.location.reload();
       }, 2000);
 
       setSelectedAction(null);
@@ -250,8 +252,8 @@ const ApplicationOverview = () => {
                   Array.isArray(value)
                     ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
                     : typeof value === "object"
-                    ? t(value?.code || "N/A")
-                    : t(value || "N/A")
+                      ? t(value?.code || "N/A")
+                      : t(value || "N/A")
                 }
               />
             ))}
@@ -264,7 +266,7 @@ const ApplicationOverview = () => {
             <StatusTable>
               <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
               <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
-              <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} />
+              {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
               <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
               <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
             </StatusTable>
@@ -292,7 +294,7 @@ const ApplicationOverview = () => {
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}
-              // style={MenuStyle}
+            // style={MenuStyle}
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />

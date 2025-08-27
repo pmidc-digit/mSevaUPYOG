@@ -187,7 +187,7 @@ export const newConfig =[
                     "type": "component",
                     "route": "create-property",
                     "isMandatory": true,
-                    "component": "CreateEmployeeStepForm",
+                    "component": "GISComponent",
                     "key":"createProperty",
                     "texts": {
                         "headerCaption": "",

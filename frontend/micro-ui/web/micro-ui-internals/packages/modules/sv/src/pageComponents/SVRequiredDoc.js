@@ -44,7 +44,7 @@ const SVRequiredDoc = ({ t, config, onSelect, userType, formData }) => {
           </div>
         </div>
         <span>
-          <SubmitBar label={t("COMMON_NEXT")} onSubmit={onSelect} />
+          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={onSelect} />
         </span>
       </Card>
     </React.Fragment>

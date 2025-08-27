@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-common",
-  "version": "1.0.29",
+  "version": "1.0.56",
   "license": "MIT",
   "description": "Digit Common Payment Module",
   "main": "dist/index.js",
@@ -15,8 +15,8 @@
     "prepublish": "yarn build"
   },
   "dependencies": {
-    "@mseva/digit-ui-libraries": "1.0.30",
-    "@mseva/digit-ui-react-components": "1.0.4",
+    "@mseva/digit-ui-libraries": "1.0.50",
+    "@mseva/digit-ui-react-components": "1.0.5",
     "microbundle-crl": "^0.13.11",
     "react": "17.0.2",
     "react-dom": "17.0.2",

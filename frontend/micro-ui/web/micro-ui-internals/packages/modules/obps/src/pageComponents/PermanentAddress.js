@@ -10,12 +10,12 @@ import {
   BackButton,
   RadioOrSelect,
   MultiSelectDropdown,
+  Dropdown
 } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
 import Timeline from "../components/Timeline";
 
 const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) => {
-  
   let validation = {};
   const onSkip = () => onSelect();
   const [PermanentAddress, setPermanentAddress] = useState(
@@ -23,19 +23,23 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   );
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  console.log("tenantId",tenantId)
+  console.log("tenantId", tenantId);
   const stateId = Digit.ULBService.getStateId();
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode || "");
   const [ulbType, setUlbType] = useState("");
   const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [selectedState, setSelectedState] = useState(formData?.LicneseDetails?.SelectedState || formData?.formData?.LicneseDetails?.SelectedState || {})
+  const [selectedDistrict, setSelectedDistrict] = useState(formData?.LicneseDetails?.SelectedDistrict || formData?.formData?.LicneseDetails?.SelectedDistrict || {})
 
-  console.log("formData", formData);
+  const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(selectedState.code, "BPA", [{ name: "Districts" }]);
+
   // console.log("data: newConfig", newConfig);
-  
+
   // const [ulbTypes, setUlbTypes] = useState(["Abohar", "Adampur", "Ahmedgarh", "Ajnala", "Alawalpur", "Amargarh", "Amloh"]);
-  const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) =>tenant.name);
+  const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) => tenant.name);
   // console.log("tenantName=+",tenantName);
   useEffect(() => {
     const role = formData?.LicneseType?.LicenseType?.role;
@@ -92,16 +96,36 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
     }
   }
 
+  function SelectState(e) {
+    setSelectedState(e)
+  }
+
+  function SelectDistrict(e){
+    setSelectedDistrict(e)
+  }
+
   const goNext = () => {
+    // if(PermanentAddress === "" || PermanentAddress.length<4){
+    //   setErrorMessage("Enter valid address &  it should be greater than 3 characters");
+    //   return;
+    // }
+
+    if (pinCode === "" || pinCode.length < 6) {
+      setErrorMessage(t("BPA_PINCODE_ERROR_MESSAGE"));
+      return;
+    }
+
     // sessionStorage.setItem("CurrentFinancialYear", FY);
     if (!(formData?.result && formData?.result?.Licenses[0]?.id))
-      onSelect(config.key, { PermanentAddress: PermanentAddress, Pincode: pinCode, Ulb: selectedUlbTypes });
+      onSelect(config.key, { PermanentAddress: PermanentAddress, Pincode: pinCode, Ulb: selectedUlbTypes, SelectedState: selectedState, SelectedDistrict: selectedDistrict });
     else {
       let data = formData?.formData;
       console.log("data", data);
       data.LicneseDetails.PermanentAddress = PermanentAddress;
       data.LicneseDetails.Ulb = selectedUlbTypes;
       data.LicneseDetails.Pincode = pinCode;
+      data.LicneseDetails.SelectedState = selectedState;
+      data.LicneseDetails.SelectedDistrict = selectedDistrict;
       onSelect("", formData);
     }
   };
@@ -115,7 +139,13 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
         <Timeline currentStep={2} flow="STAKEHOLDER" />
-        <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!PermanentAddress}>
+        <FormStep
+          config={config}
+          onSelect={goNext}
+          onSkip={onSkip}
+          t={t}
+          isDisabled={!PermanentAddress || selectedUlbTypes.length === 0 || pinCode === "" || !selectedState?.code || !selectedDistrict?.code}
+        >
           <CardLabel>{`${t("BPA_PERMANANT_ADDRESS_LABEL")}*`}</CardLabel>
           <TextArea
             t={t}
@@ -127,26 +157,71 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
             value={PermanentAddress}
           />
 
-          <CardLabel>{"Pincode*"}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="Pcode"
-            minLength="6"
-            value={pinCode}
-            onChange={SelectPincode}
-            // disable={name && !isOpenLinkFlow ? true : false}
-            {...(validation = {
-              isRequired: true,
-              pattern: "^[0-9]{6}$",
-              type: "number",
-              title: t("Please enter a valid 6-digit pincode."),
-            })}
-          />
+          <div>
+            <CardLabel>{t("BPA_DETAILS_PIN_LABEL")}*</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              isMandatory={false}
+              optionKey="i18nKey"
+              name="Pcode"
+              minLength="6"
+              value={pinCode}
+              onChange={SelectPincode}
+              // disable={name && !isOpenLinkFlow ? true : false}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[0-9]{6}$",
+                type: "number",
+                title: t("BPA_PINCODE_ERROR_MESSAGE"),
+              })}
+            />
+            {errorMessage && (
+              <div
+                style={{
+                  color: "#d32f2f",
+                  fontSize: "12px",
+                  marginTop: "4px",
+                  marginBottom: "12px",
+                }}
+              >
+                {errorMessage}
+              </div>
+            )}
+          </div>
 
-          <CardLabel>{"ULB*"}</CardLabel>
+          <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
+          <div className={"form-pt-dropdown-only"}>
+            {/* {data && ( */}
+                  <Dropdown
+                    t={t}
+                    optionKey="code"
+                    // isMandatory={config.isMandatory}
+                    option={[{
+                      code: "pb",
+                      name: "Punjab",
+                      i18Code: "Punjab"
+                    }]}
+                    selected={selectedState}
+                    select={SelectState}
+                    // disable={true}
+                  />
+            {/* )} */}
+          </div>
+
+          {isLoading? <Loader /> :<div> <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
+                  <Dropdown
+                    t={t}
+                    optionKey="code"
+                    // isMandatory={config.isMandatory}
+                    option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                    selected={selectedDistrict}
+                    select={SelectDistrict}
+                    // disable={true}
+                  />
+          </div>}
+
+          <CardLabel>{t("BPA_SELECT_ULB")}*</CardLabel>
           <MultiSelectDropdown
             options={tenantName.map((ulb) => ({ ulbname: ulb }))}
             optionsKey="ulbname"

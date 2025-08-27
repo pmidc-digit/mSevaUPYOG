@@ -3,17 +3,17 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "react-query";
 import { useRouteMatch, useLocation, useHistory, Switch, Route, Redirect } from "react-router-dom";
 import { newConfig as newConfigBPA } from "../../../config/buildingPermitConfig";
-import {newConfig1} from "./NewConfig"
+import { newConfig1 } from "./NewConfig";
 // import CheckPage from "./CheckPage";
 // import OBPSAcknowledgement from "./OBPSAcknowledgement";
 
 const getPath = (path, params) => {
-  params && Object.keys(params).map(key => {
-    path = path.replace(`:${key}`, params[key]);
-  })
+  params &&
+    Object.keys(params).map((key) => {
+      path = path.replace(`:${key}`, params[key]);
+    });
   return path;
-}
-
+};
 
 const NewBuildingPermit = () => {
   const queryClient = useQueryClient();
@@ -27,7 +27,10 @@ const NewBuildingPermit = () => {
   sessionStorage.removeItem("BPA_SUBMIT_APP");
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("BUILDING_PERMIT", state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber }}} : {});
+  const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(
+    "BUILDING_PERMIT",
+    state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
+  );
   const stateId = Digit.ULBService.getStateId();
   let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(stateId, []);
 
@@ -39,22 +42,24 @@ const NewBuildingPermit = () => {
       return redirectWithHistory(`${getPath(match.path, match.params)}/check`);
     }
     redirectWithHistory(`${getPath(match.path, match.params)}/${nextStep}`);
-
-  }
+  };
 
   const onSuccess = () => {
     //clearParams();
     queryClient.invalidateQueries("PT_CREATE_PROPERTY");
   };
-  const createApplication = async () => {
+  const createApplication = async (data) => {
+    const response = await Digit.OBPSService.scrutinyDetails(data?.tenantId, {
+      edcrNumber: data?.edcrNumber,
+    });
+    console.log(response, "RESPO");
     history.push(`${getPath(match.path, match.params)}/acknowledgement`);
   };
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
     if (isFromCreateApi) setParams(data);
-    else if(key=== "")
-    setParams({...data});
-    else setParams({ ...params, ...{ [key]: { ...params[key], ...data }}});
+    else if (key === "") setParams({ ...data });
+    else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
     goNext(skipStep);
   };
   const handleSkip = () => {};
@@ -68,20 +73,25 @@ const NewBuildingPermit = () => {
   config.indexRoute = "docs-required";
 
   useEffect(() => {
-    if(sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
+    if (sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
       clearParams();
       sessionStorage.setItem("isPermitApplication", false);
     }
   }, []);
 
-  const CheckPage = Digit?.ComponentRegistryService?.getComponent('BPACheckPage') ;
-  const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent('BPAAcknowledgement');
+  const CheckPage = Digit?.ComponentRegistryService?.getComponent("BPACheckPage");
+  const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
 
   return (
     <Switch>
       {newConfig1.map((routeObj, index) => {
         const { component, texts, inputs, key } = routeObj;
         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
+        // let enrichedInputs
+
+        // if(inputs?.length > 0){
+        //   enrichedInputs = inputs?.map(()=>{})
+        // }
         return (
           <Route path={`${getPath(match.path, match.params)}/${routeObj.route}`} key={index}>
             <Component config={{ texts, inputs, key }} onSelect={handleSelect} onSkip={handleSkip} t={t} formData={params} />

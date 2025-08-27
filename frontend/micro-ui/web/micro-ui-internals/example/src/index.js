@@ -9,6 +9,8 @@ import { HRMSModule, initHRMSComponents } from "@mseva/digit-ui-module-hrms";
 
 import { PTModule, PTLinks, PTComponents, PTReducers } from "@mseva/digit-ui-module-pt";
 import { MCollectModule, MCollectLinks } from "@mseva/digit-ui-module-mcollect";
+import { ChallanGenerationModule, ChallanGenerationLinks } from "@mseva/digit-ui-module-challangeneration";
+import { RentAndLeaseModule, RentAndLeaseLinks } from "@mseva/digit-ui-module-rentandlease";
 import { TLModule, TLLinks, initTLComponents, TLReducers } from "@mseva/digit-ui-module-tl";
 import { initFSMComponents } from "@mseva/digit-ui-module-fsm";
 import { initPGRComponents } from "@mseva/digit-ui-module-pgr";
@@ -17,18 +19,21 @@ import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import { initReceiptsComponents, ReceiptsModule } from "@mseva/digit-ui-module-receipts";
 // import { initReportsComponents } from "@mseva/digit-ui-module-reports";
 import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
+import { initChallanGenerationComponents } from "@mseva/digit-ui-module-challangeneration";
+import { initRentAndLeaseComponents } from "@mseva/digit-ui-module-rentandlease";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
 import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
-import { initNOCComponents } from "@mseva/digit-ui-module-noc";
+import { initNOCComponents, NOCReducers, NOCLinks, NOCModule } from "@mseva/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
 import { DigitUI } from "@mseva/digit-ui-module-core";
 import { initCommonPTComponents, CommonPTModule } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents, BillsModule } from "@mseva/digit-ui-module-bills";
-import { PTRModule, PTRLinks, PTRComponents } from "@mseva/digit-ui-module-ptr";
+import { PTRModule, PTRLinks, PTRComponents, PTRReducers } from "@mseva/digit-ui-module-ptr";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
-import { ADSModule, ADSLinks, ADSComponents } from "@mseva/upyog-ui-module-ads";
-import { CHBModule, CHBLinks, CHBComponents } from "@mseva/upyog-ui-module-chb";
+import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
+import { ADSModule, ADSLinks, ADSComponents, ADSReducers } from "@mseva/upyog-ui-module-ads";
+import { CHBModule, CHBLinks, CHBComponents, CHBReducers } from "@mseva/upyog-ui-module-chb";
 import { ASSETComponents, ASSETLinks, ASSETModule } from "@mseva/upyog-ui-module-asset";
 import { PGRAIComponents, PGRAILinks, PGRAIModule } from "@mseva/upyog-ui-module-pgrai";
 
@@ -71,9 +76,13 @@ const enabledModules = [
   "ADS",
   "Swach",
   "SV",
+  "NDC",
   "CHB",
   "ASSET",
-  "PGRAI"
+  "PGRAI",
+  "ChallanGeneration",
+  "RentAndLease",
+  "BPAStakeholder"
 ];
 
 const initTokens = (stateCode) => {
@@ -114,6 +123,10 @@ const initDigitUI = () => {
     ...PTComponents,
     MCollectLinks,
     MCollectModule,
+    ChallanGenerationModule, 
+    ChallanGenerationLinks,
+    RentAndLeaseModule,
+    RentAndLeaseLinks,
     HRMSModule,
     ReceiptsModule,
     BillsModule,
@@ -137,13 +150,17 @@ const initDigitUI = () => {
     ...ASSETComponents,
     PGRAIModule,
     PGRAILinks,
-  ...PGRAIComponents
+    ...PGRAIComponents,
+    NOCModule,
+    NOCLinks
   });
   initFSMComponents();
   initPGRComponents();
   initSWACHComponents();
   initDSSComponents();
   initMCollectComponents();
+  initChallanGenerationComponents();
+  initRentAndLeaseComponents();
   initHRMSComponents();
   initTLComponents();
   initReceiptsComponents();
@@ -154,6 +171,7 @@ const initDigitUI = () => {
   initWSComponents();
   initCommonPTComponents();
   initBillsComponents();
+  initNDCComponents();
   // initCustomisationComponents();
 
   const moduleReducers = (initData) => ({
@@ -164,6 +182,11 @@ const initDigitUI = () => {
     ws: WSReducers(initData),
     engagement: SurveyReducers(initData),
     tl: TLReducers(initData),
+    ndc: NDCReducers(initData),
+    ptr: PTRReducers(initData),
+    ads: ADSReducers(initData),
+    chb: CHBReducers(initData),
+    noc: NOCReducers(initData),
   });
 
   window.Digit.Customizations = {

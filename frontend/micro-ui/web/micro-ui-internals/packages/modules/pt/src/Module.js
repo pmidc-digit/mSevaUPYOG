@@ -84,7 +84,7 @@ import PropertyDetailsCitizen from "./pages/citizen/MyProperties/PropertyDetails
 import {PropertyApplicationDetails}  from "./pages/citizen/MyProperties/PropertyApplicationDetails";
 import PTResponseCitizen from "./pages/citizen/PTResponseCitizen"
 import PTResponseEmployee from "./pages/employee/PTResponseEmployee"
-//import PTCitizenFeedback from "@upyog/digit-ui-module-core/src/components/PTCitizenFeedback";
+
 
 import EmployeeApp from "./pages/employee";
 import PTCard from "./components/PTCard";
@@ -145,6 +145,7 @@ import PTSummaryEmployee from "./pageComponents/PTSummaryEmployee";
 import { GISComponent } from './pageComponents/GISComponent';
 import { PTNewFormStepZeroCitizen } from './pages/citizen/Create/NewApplicationStepForm/PTNewFormStepZeroCitizen'
 import { GISIntegration } from './pages/citizen/GISIntegration';
+import { GISIntegration as GISIntegrationEmployee  } from "./pages/employee/GISIntegration";
 
 export const PTReducers = getRootReducer;
 
@@ -282,7 +283,8 @@ const componentsToRegister = {
   PTSummaryEmployee,
   GISComponent,
   PTNewFormStepZeroCitizen,
-  GISIntegration
+  GISIntegration,
+  GISIntegrationEmployee
   
 };
 

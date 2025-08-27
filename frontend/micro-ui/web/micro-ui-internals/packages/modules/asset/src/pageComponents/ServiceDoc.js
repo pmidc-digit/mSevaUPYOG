@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardSubHeader,CardSectionHeader, CardText, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
+import { Card, CardHeader, CardSubHeader, CardSectionHeader, CardText, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { useEffect } from "react";
 import { cardBodyStyle, stringReplaceAll } from "../utils";
 //import { map } from "lodash-es";
@@ -10,8 +10,6 @@ const ServiceDoc = ({ t, config, onSelect, userType, formData }) => {
 
   const docType = config?.isMutation ? ["MutationDocuments"] : "Documents";
 
-  
- 
   const { isLoading, data: Documentsob = {} } = Digit.Hooks.asset.useAssetDocumentsMDMS(stateId, "ASSET", docType);
   let docs = Documentsob?.ASSET?.Documents;
   function onSave() {}
@@ -24,16 +22,15 @@ const ServiceDoc = ({ t, config, onSelect, userType, formData }) => {
     <React.Fragment>
       <Card>
         <div>
-         
           <CardSectionHeader>{t("AST_REQ_SCREEN_LABEL")}</CardSectionHeader>
-          
-          <CardText style={{color: 'red'}}>{t('AST_DOCUMENT_ACCEPTED_PDF_JPG_PNG')}</CardText>
+
+          <CardText style={{ color: "red" }}>{t("AST_DOCUMENT_ACCEPTED_PDF_JPG_PNG")}</CardText>
 
           <div>
             {isLoading && <Loader />}
             {Array.isArray(docs)
               ? config?.isMutation
-                ? docs.map(({ code, dropdownData }, index) => ( 
+                ? docs.map(({ code, dropdownData }, index) => (
                     <div key={index}>
                       <CardSubHeader>
                         {index + 1}. {t(code)}
@@ -41,7 +38,7 @@ const ServiceDoc = ({ t, config, onSelect, userType, formData }) => {
                       <CardText className={"primaryColor"}>{dropdownData.map((dropdownData) => t(dropdownData?.code)).join(", ")}</CardText>
                     </div>
                   ))
-                : docs.map(({ code, dropdownData }, index) => ( 
+                : docs.map(({ code, dropdownData }, index) => (
                     <div key={index}>
                       <CardText className={"primaryColor"}>
                         {index + 1}. {t(stringReplaceAll(code, ".", "_"))}
@@ -57,7 +54,7 @@ const ServiceDoc = ({ t, config, onSelect, userType, formData }) => {
           </div>
         </div>
         <span>
-          <SubmitBar label={t("COMMON_NEXT")} onSubmit={onSelect} />
+          <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={onSelect} />
         </span>
       </Card>
     </React.Fragment>

@@ -82,6 +82,7 @@ const BpaApplicationDetail = () => {
     else{
       alert("Please verify yourself")
     }
+    
   }
 
   const checkLabels = () => {
@@ -141,7 +142,7 @@ const BpaApplicationDetail = () => {
         setOTPError(t("VERIFIED"));
         const currentTimestamp = new Date();
         setOTPVerifiedTimestamp(currentTimestamp);
-        sessionStorage.setItem('otpVerifiedTimestampcitizen', currentTimestamp.toString().replace(/GMT.*\((.*)\)/, '').trim());
+        sessionStorage.setItem('otpVerifiedTimestampcitizen', currentTimestamp.toISOString());
       } else {
         setIsOTPVerified(false);
         setOTPError(t("WRONG OTP"));

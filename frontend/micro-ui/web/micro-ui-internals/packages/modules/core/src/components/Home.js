@@ -63,6 +63,7 @@ export const processLinkData = (newData, code, t) => {
   return newObj;
 };
 const iconSelector = (code) => {
+  console.log("Icon Selector Code", code);
   switch (code) {
     case "PT":
       return <PTIcon className="fill-path-primary-main" />;
@@ -72,11 +73,17 @@ const iconSelector = (code) => {
       return <FSMIcon className="fill-path-primary-main" />;
     case "MCollect":
       return <MCollectIcon className="fill-path-primary-main" />;
+    case "ChallanGeneration":
+      return <MCollectIcon className="fill-path-primary-main" />;
+    case "RentAndLease":
+      return <MCollectIcon className="fill-path-primary-main" />;
     case "PGR":
       return <PGRIcon className="fill-path-primary-main" />;
     case "TL":
       return <TLIcon className="fill-path-primary-main" />;
     case "OBPS":
+      return <OBPSIcon className="fill-path-primary-main" />;
+    case "BPAStakeholder":
       return <OBPSIcon className="fill-path-primary-main" />;
     case "Bills":
       return <BillsIcon className="fill-path-primary-main" />;
@@ -86,9 +93,7 @@ const iconSelector = (code) => {
       return <PTRIcon className="fill-path-primary-main" />;
     case "ADS":
       return <PTRIcon className="fill-path-primary-main" />;
-    case "CHB":
-      return <PTRIcon className="fill-path-primary-main" />;
-    case "ASSET":
+    case "NDC":
       return <PTRIcon className="fill-path-primary-main" />;
     default:
       return <PTIcon className="fill-path-primary-main" />;
@@ -158,167 +163,136 @@ const CitizenHome = ({ modules, getCitizenMenu, fetchedCitizen, isLoading }) => 
   );
 };
 
-// const EmployeeHome = ({ modules }) => {
-//   const { t } = useTranslation();
-//   if (window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM", {});
-//   const columns = [
-//     { Header: "S. No", accessor: (row, i) => i + 1 },
-//     { Header: "Column1", accessor: "column1" },
-//     { Header: "Column2", accessor: "column2" },
-//     { Header: "Column3", accessor: "column3" },
-//   ];
-//   const userName = Digit.UserService.getUser();
-//   //console.log("User Info", userName)
-//   const apiData = {
-//     welcomeCard: {
-//       background:
-//         "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 100%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
-//       icon: "icon1.png",
-//       heading: "Welcome " + userName.info.name,
-//       content: "",
-//     },
-//     cards: [
-//       {
-//         heading: "Status",
-//         background: "#0A7FCE",
-//         icon: "icon1.png",
-//         content: "This is the content of card 1.",
-//       },
-//       {
-//         heading: "Notifications",
-//         background: "#F97316",
-//         icon: "icon2.png",
-//         content: "This is the content of card 2.",
-//       },
-//       {
-//         heading: "Events",
-//         background: "#8B5CF6",
-//         icon: "icon3.png",
-//         content:
-//           "This is the content of card 3.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.This is the content of card 3.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.This is the content of card 3.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.This is the content of card 3.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.",
-//       },
-//       {
-//         heading: "Complete your Profile",
-//         background: "#7DA3FD",
-//         icon: "icon4.png",
-//         content: "This is the content of card 4.",
-//       },
-//     ],
-//   };
-
-//   console.log("Modules: ", modules);
-//   return (
-//     <div className="employee-app-container employee-dashboard-container">
-//       <div
-//         className="employee-dashboard-welcome-card"
-//         style={{
-//           background:
-//             "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 80%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
-//           backgroundSize: "cover",
-//           backgroundPosition: "right",
-//           backgroundRepeat: "no-repeat",
-//         }}
-//       >
-//         <div className="employee-dashboard-welcome-card-entire-content">
-//           <div className="employee-dashboard-welcome-card-heading">{apiData.welcomeCard.heading}</div>
-//           <p className="employee-dashboard-welcome-card-content">{apiData.welcomeCard.content}</p>
-//           <div
-//             style={{
-//               width: "134px",
-//               height: "134px",
-//               background: "#D6D6D620",
-//               borderRadius: "0% 100% 0% 0%",
-//               position: "absolute",
-//               left: "1px",
-//               top: "70px",
-//             }}
-//           ></div>
-//         </div>
-//       </div>
-
-//       {/* <div className="employee-dashboard-card-grid">
-//         {apiData.cards.map((card, index) => (
-//           <Card key={index} card={card} />
-//         ))}
-//       </div> */}
-
-//       <div className="employee-dashboard-table-and-services">
-//         {/* <div className="employee-dashboard-table-container"> */}
-//         {/*  <div className="employee-dashboard-table-header">
-//              <div className="employee-dashboard-table-title">Table</div>
-//             <div className="employee-dashboard-view-all-link">
-//               <Link>View all &gt;</Link>
-//             </div> 
-//           </div> */}
-//         {/* <div className="employee-dashboard-table-content">
-//             <Table
-//               t={t}
-//               data={[]}
-//               columns={columns}
-//               getCellProps={(cellInfo) => ({
-//                 style: {
-//                   padding: "20px 18px",
-//                   fontSize: "16px",
-//                 },
-//               })}
-//               manualPagination={false}
-//             />
-//           </div> */}
-//         {/*  </div> */}
-
-//         <div className="employee-dashboard-quick-services-container">
-//           <div className="employee-dashboard-quick-services-header">
-//             <div className="employee-dashboard-quick-services-title">Quick Services</div>
-//             {/* <div className="employee-dashboard-view-all-link">
-//               <Link to={{ pathname: "/digit-ui/employee/services", state: { modules: modules } }}>View all &gt;</Link>
-//             </div> */}
-//           </div>
-//           <div className="employee-dashboard-module-card-wrapper">
-//             {modules.map((moduleData, index) => {
-//               //const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
-//               return <EmployeeQuickServicesCard moduleData={moduleData} />;
-//             })}
-//           </div>
-//           <div style={{ marginTop: "70px" }}>
-//             {/* modules.map(({ code }, index) => {
-//               console.log("dsjdgsh", code);
-//               const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
-//               return <Card key={index} />;
-//             })*/}
-//           </div>
-//           {/* </div> */}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-
-
-// Discussed with Anuj and uncommented for the demo
 const EmployeeHome = ({ modules }) => {
-  // const dashboardCemp = Digit.UserService.hasAccess(["DASHBOARD_EMPLOYEE"])?true:false;
-  if(window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM",{})
-    // const { data: dashboardConfig } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(),"common-masters",[{ name: "CommonConfig" }],
-    //   {
-    //     select: (data) => {
-    //       const formattedData = data?.["common-masters"]?.["CommonConfig"];
-    //       // Find the object with cityDashboardEnabled and return its isActive value
-    //       const cityDashboardObject = formattedData?.find(
-    //         (item) => item?.name === "cityDashboardEnabled"
-    //       );
-    //       return cityDashboardObject?.isActive;
-    //     },
-    //   }
-    // );
+  const { t } = useTranslation();
+  if (window.Digit.SessionStorage.get("PT_CREATE_EMP_TRADE_NEW_FORM")) window.Digit.SessionStorage.set("PT_CREATE_EMP_TRADE_NEW_FORM", {});
+  const columns = [
+    { Header: "S. No", accessor: (row, i) => i + 1 },
+    { Header: "Column1", accessor: "column1" },
+    { Header: "Column2", accessor: "column2" },
+    { Header: "Column3", accessor: "column3" },
+  ];
+  const userName = Digit.UserService.getUser();
+  //console.log("User Info", userName)
+  const apiData = {
+    welcomeCard: {
+      background:
+        "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 100%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
+      icon: "icon1.png",
+      heading: "Welcome " + userName.info.name,
+      content: "",
+    },
+    cards: [
+      {
+        heading: "Status",
+        background: "#0A7FCE",
+        icon: "icon1.png",
+        content: "This is the content of card 1.",
+      },
+      {
+        heading: "Notifications",
+        background: "#F97316",
+        icon: "icon2.png",
+        content: "This is the content of card 2.",
+      },
+      {
+        heading: "Events",
+        background: "#8B5CF6",
+        icon: "icon3.png",
+        content:
+          "This is the content of card 3.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.This is the content of card 3.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.This is the content of card 3.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.This is the content of card 3.Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod.",
+      },
+      {
+        heading: "Complete your Profile",
+        background: "#7DA3FD",
+        icon: "icon4.png",
+        content: "This is the content of card 4.",
+      },
+    ],
+  };
+
+  console.log("Modules: ", modules);
   return (
-    <div className="employee-app-container">
-      <br />
-      <div className="ground-container moduleCardWrapper gridModuleWrapper">
-        {modules.map(({ code }, index) => {
-          const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
-          return <Card key={index} />;
-        })}
+    <div className="employee-app-container employee-dashboard-container">
+      <div
+        className="employee-dashboard-welcome-card"
+        style={{
+          background:
+            "linear-gradient(90deg, #183F94 26.61%, rgba(234, 88, 12, 0) 80%), url('https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg')",
+          backgroundSize: "cover",
+          backgroundPosition: "right",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        <div className="employee-dashboard-welcome-card-entire-content">
+          <div className="employee-dashboard-welcome-card-heading">{apiData.welcomeCard.heading}</div>
+          <p className="employee-dashboard-welcome-card-content">{apiData.welcomeCard.content}</p>
+          <div
+            style={{
+              width: "134px",
+              height: "134px",
+              background: "#D6D6D620",
+              borderRadius: "0% 100% 0% 0%",
+              position: "absolute",
+              left: "1px",
+              top: "70px",
+            }}
+          ></div>
+        </div>
+      </div>
+
+      {/* <div className="employee-dashboard-card-grid">
+        {apiData.cards.map((card, index) => (
+          <Card key={index} card={card} />
+        ))}
+      </div> */}
+
+      <div className="employee-dashboard-table-and-services">
+        {/* <div className="employee-dashboard-table-container"> */}
+        {/*  <div className="employee-dashboard-table-header">
+             <div className="employee-dashboard-table-title">Table</div>
+            <div className="employee-dashboard-view-all-link">
+              <Link>View all &gt;</Link>
+            </div> 
+          </div> */}
+        {/* <div className="employee-dashboard-table-content">
+            <Table
+              t={t}
+              data={[]}
+              columns={columns}
+              getCellProps={(cellInfo) => ({
+                style: {
+                  padding: "20px 18px",
+                  fontSize: "16px",
+                },
+              })}
+              manualPagination={false}
+            />
+          </div> */}
+        {/*  </div> */}
+
+        <div className="employee-dashboard-quick-services-container">
+          <div className="employee-dashboard-quick-services-header">
+            <div className="employee-dashboard-quick-services-title">Quick Services</div>
+            {/* <div className="employee-dashboard-view-all-link">
+              <Link to={{ pathname: "/digit-ui/employee/services", state: { modules: modules } }}>View all &gt;</Link>
+            </div> */}
+          </div>
+          <div className="employee-dashboard-module-card-wrapper">
+            {modules.map((moduleData, index) => {
+              //const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
+              return <EmployeeQuickServicesCard moduleData={moduleData} />;
+            })}
+          </div>
+          <div style={{ marginTop: "70px" }}>
+            {/* modules.map(({ code }, index) => {
+              console.log("dsjdgsh", code);
+              const Card = Digit.ComponentRegistryService.getComponent(`${code}Card`) || (() => <React.Fragment />);
+              return <Card key={index} />;
+            })*/}
+          </div>
+          {/* </div> */}
+        </div>
       </div>
     </div>
   );

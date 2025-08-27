@@ -5,21 +5,36 @@ import Timeline from "../components/Timeline";
 
 const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex }) => {
   const { pathname: url } = useLocation();
+  // const userInfo = Digit.UserService.getUser();
   const userInfo = Digit.UserService.getUser();
   let validation = {};
   const tenantId = Digit.ULBService.getCurrentTenantId();
   let isOpenLinkFlow = window.location.href.includes("openlink");
   const uuid = userInfo?.info?.uuid;
+  const [getUserDetails, setGetUserDetails] = useState(null);
   const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(tenantId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
-  const [name, setName] = useState(
-    (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || ""
-  );
-  const [lastName, setLastName] = useState(() => {
-    const fullName = formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
+  const [name, setName] = useState(() => {
+    // (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
+    const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
     const nameParts = fullName.trim().split(" ");
+    //console.log("firstName here", nameParts[0]);
+    return nameParts.length ? nameParts[0] : "";
+  });
+  const [lastName, setLastName] = useState(() => {
+    const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
+    const nameParts = fullName.trim().split(" ");
+    // console.log("lastName here", nameParts[nameParts.length - 1]);
     return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
   });
-  const [middleName, setMiddleName] = useState("");
+  const [middleName, setMiddleName] = useState(() => {
+    const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
+
+    const nameParts = fullName.trim().split(" ");
+    // console.log("Middle name parts:", nameParts.slice(1, -1));
+
+    // Join middle name parts if there are more than two words
+    return nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "";
+  });
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(true);
@@ -28,10 +43,10 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     (!isOpenLinkFlow ? userInfo?.info?.emailId : "") || formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || ""
   );
   const [gender, setGender] = useState(
-    (!isOpenLinkFlow && userDetails
-      ? { i18nKey: `COMMON_GENDER_${userDetails?.user?.[0]?.gender}`, code: userDetails?.user?.[0]?.gender, value: userDetails?.user?.[0]?.gender }
-      : "") ||
-      formData?.LicneseDetails?.gender ||
+    formData?.LicneseDetails?.gender ||
+      (!isOpenLinkFlow && userDetails
+        ? { i18nKey: `COMMON_GENDER_${userDetails?.user?.[0]?.gender}`, code: userDetails?.user?.[0]?.gender, value: userDetails?.user?.[0]?.gender }
+        : "") ||
       formData?.formData?.LicneseDetails?.gender
   );
   const [mobileNumber, setMobileNumber] = useState(
@@ -41,7 +56,25 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       ""
   );
   const [PanNumber, setPanNumber] = useState(formData?.LicneseDetails?.PanNumber || formData?.formData?.LicneseDetails?.PanNumber || "");
+  const [errorMessage, setErrorMessage] = useState("");
+  // get user info from api
+  const getUserInfo = async () => {
+    const uuid = userInfo?.info?.uuid;
+    if (uuid) {
+      const usersResponse = await Digit.UserService.userSearch(tenantId, { uuid: [uuid] }, {});
+      if (usersResponse?.user?.length) {
+        const user = usersResponse.user[0];
+        setGetUserDetails(user);
+        if (user.dob) {
+          setDateOfBirth(user.dob);
+        }
+      }
+    }
+  };
 
+  useEffect(() => {
+    getUserInfo();
+  }, []);
   useEffect(() => {
     if (!gender?.code && userDetails?.user?.[0]?.gender && !isOpenLinkFlow) {
       setGender({
@@ -110,7 +143,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     }
 
     if (age < 18) {
-      alert(t("You must be at least 18 years old. Please enter a valid date of birth."));
+      alert(t("BPA_DOB_VALIDATION_MESSAGE"));
       return;
     }
 
@@ -127,8 +160,26 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       age--;
     }
 
+    if (gender?.code === null) {
+      setErrorMessage(t("BPA_APPLICANT_GENDER_PLACEHOLDER"));
+      return;
+    }
+
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
-      let licenseDet = { name: name, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
+      // let fullName = `${name} ${middleName} ${lastName}`;
+      // console.log("firstName before saving",name);
+      // console.log("middleName before saving", middleName);
+      // console.log("lastName before saving", lastName);
+      // console.log("fullName here", fullName);
+      let fullName = "";
+      if(name?.length>0){
+        fullName = name;
+      }if(middleName?.length>0){
+        fullName = fullName + " " + middleName;
+      }if(lastName?.length>0){
+        fullName = fullName + " " + lastName;
+      }
+      let licenseDet = { name: fullName, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
       onSelect(config.key, licenseDet);
     } else {
       let data = formData?.formData;
@@ -140,7 +191,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       onSelect("", formData);
     }
     if (age < 18) {
-      alert(t("You must be at least 18 years old to proceed"));
+      alert(t("BPA_DOB_VALIDATION_MESSAGE"));
     }
   };
 
@@ -152,9 +203,15 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
         {isOpenLinkFlow && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
         <Timeline currentStep={1} flow="STAKEHOLDER" />
         {!isLoading || !isUserLoading ? (
-          <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!name || !mobileNumber || !gender || !dateOfBirth}>
+          <FormStep
+            config={config}
+            onSelect={goNext}
+            onSkip={onSkip}
+            t={t}
+            isDisabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName}
+          >
             <div>
-              <CardLabel>{"Firstname*"}</CardLabel>
+              <CardLabel>{t("BPA_FIRST_NAME")}*</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -171,7 +228,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{"Middle name"}</CardLabel>
+              <CardLabel>{t("BPA_MIDDLE_NAME")}</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -188,7 +245,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{"Lastname*"}</CardLabel>
+              <CardLabel>{t("BPA_LAST_NAME")}*</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -205,7 +262,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{"Date of Birth"}</CardLabel>
+              <CardLabel>{t("BPA_APPLICANT_DOB_LABEL")}*</CardLabel>
               <DatePicker
                 date={dateOfBirth}
                 onChange={handleDateOfBirthChange}
@@ -230,21 +287,37 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 title: t("PT_NAME_ERROR_MESSAGE"),
               })}
             /> */}
-              <CardLabel>{`${t("BPA_APPLICANT_GENDER_LABEL")}*`}</CardLabel>
-              <RadioButtons
-                t={t}
-                options={menu}
-                optionsKey="code"
-                name="gender"
-                value={gender}
-                selectedOption={gender}
-                onSelect={setGenderName}
-                isDependent={true}
-                labelKey="COMMON_GENDER"
-                disable={gender && !isOpenLinkFlow ? true : false}
-                //disabled={isUpdateProperty || isEditProperty}
-              />
-              <CardLabel>{`${t("BPA_OWNER_MOBILE_NO_LABEL")}*`}</CardLabel>
+              <div>
+                <CardLabel>{`${t("BPA_APPLICANT_GENDER_LABEL")}*`}</CardLabel>
+                <RadioButtons
+                  t={t}
+                  options={menu}
+                  optionsKey="code"
+                  name="gender"
+                  value={gender}
+                  selectedOption={gender}
+                  onSelect={setGenderName}
+                  isDependent={true}
+                  labelKey="COMMON_GENDER"
+                  disable={gender && !isOpenLinkFlow ? true : false}
+                  //disabled={isUpdateProperty || isEditProperty}
+                />
+
+                {errorMessage && (
+                  <div
+                    style={{
+                      color: "#d32f2f",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                      marginBottom: "12px",
+                    }}
+                  >
+                    {errorMessage}
+                  </div>
+                )}
+              </div>
+
+              <CardLabel>{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}*`}</CardLabel>
               <MobileNumber
                 value={mobileNumber}
                 name="mobileNumber"

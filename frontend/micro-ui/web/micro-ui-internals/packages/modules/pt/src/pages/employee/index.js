@@ -163,6 +163,8 @@ const EmployeeApp = ({ path, url, userType }) => {
   const isLocation = window.location.href.includes("pt") || window.location.href.includes("application");
   const isNewRegistration = window.location.href.includes("new-application") || window.location.href.includes("modify-application") || window.location.href.includes("pt/application-details");
   const PTResponseEmployee = Digit?.ComponentRegistryService?.getComponent("PTResponseEmployee");
+  const GISIntegrationEmployee = Digit?.ComponentRegistryService?.getComponent("GISIntegrationEmployee");
+  const GISComponent = Digit?.ComponentRegistryService?.getComponent("GISComponent");
   return (
     <Switch>
       <React.Fragment>
@@ -189,7 +191,7 @@ const EmployeeApp = ({ path, url, userType }) => {
             )}
           />
           <PrivateRoute path={`${path}/new-application-SPA`} component={() => <NewApplication parentUrl={url} />} />
-          <PrivateRoute path={`${path}/new-application`} component={() => <NewPropertyStepForm parentUrl={url} />} />
+          <PrivateRoute path={`${path}/create-application`} component={() => <NewPropertyStepForm parentUrl={url} />} />
           <PrivateRoute path={`${path}/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/property-details/:id`} component={() => <PropertyDetails parentRoute={path} />} />
           <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
@@ -206,6 +208,8 @@ const EmployeeApp = ({ path, url, userType }) => {
           <PrivateRoute path={`${path}/property-mutate-docs-required/:id`} component={() => <DocsRequired parentRoute={path} />} />
           <PrivateRoute path={`${path}/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
           <PrivateRoute path={`${path}/property/response/:id`} component={(props) => <PTResponseEmployee {...props} t={t} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/property/gis-values`} component={() => <GISIntegrationEmployee />} />
+          <PrivateRoute path={`${path}/new-application`} component={() => <GISComponent  />} />
           <PrivateRoute
           
             path={`${path}/searchold`}

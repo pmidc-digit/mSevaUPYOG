@@ -205,6 +205,7 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
                 setValue(e.target.value, propertyIdInput.name);
               }}
               disable={false}
+              maxlength={16}
               defaultValue={undefined}
               style={{ width: "80%", float: "left", marginRight: "20px" }}
               {...propertyIdInput.validation}

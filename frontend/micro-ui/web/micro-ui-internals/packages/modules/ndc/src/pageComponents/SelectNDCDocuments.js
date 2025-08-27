@@ -11,7 +11,6 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", ["Documents"]);
 
-  console.log("Documents data:", data);
 
   const ndcDocuments = data?.NDC?.Documents;
 
@@ -113,7 +112,6 @@ function SelectDocument({
   };
 
   useEffect(() => {
-    // console.log("Selected Document Code:", uploadedFile, doc.code);
     if (uploadedFile) {
       setDocuments((prev) => {
         const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== doc?.code);
@@ -132,6 +130,8 @@ function SelectDocument({
           },
         ];
       });
+    }else if(uploadedFile === null){
+      setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
     }
     // if (!isHidden) {
     //   if (!uploadedFile || !doc?.code) {
@@ -208,7 +208,7 @@ function SelectDocument({
   return (
     <div style={{ marginBottom: "24px" }}>
       <LabelFieldPair>
-        {console.log("doc", doc)}
+        {/* {console.log("doc", doc)} */}
         <CardLabel className="card-label-smaller">
           {t(doc?.code)} {doc?.required && " *"}
         </CardLabel>
@@ -221,6 +221,7 @@ function SelectDocument({
             }}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
+            accept="image/*,.pdf"
             // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
         </div>

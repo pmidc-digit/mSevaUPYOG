@@ -89,12 +89,13 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
 
   // Function to handle the "Back" button click
   const onGoBack = (data) => {
+    console.log("here", data);
     onBackClick(config.key, data);
   };
 
   return (
     <React.Fragment>
-      <NDCSummary formData={formData} goNext={goNext} />
+      <NDCSummary formData={formData} goNext={goNext} onGoBack={onGoBack} />
     </React.Fragment>
   );
 };

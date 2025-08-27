@@ -39,19 +39,20 @@ public class CalculationService {
 	}
 
 	private List<DemandDetail> processCalculationForDemandGeneration(String tenantId,
-			List<CalculationType> calculationTypes, PetRegistrationRequest petRegistrationRequest) {
+																	 List<CalculationType> calculationTypes, PetRegistrationRequest petRegistrationRequest) {
 
 		String applicationType = petRegistrationRequest.getPetRegistrationApplications().get(0).getApplicationType();
 
 		List<DemandDetail> demandDetails = new ArrayList<>();
 		for (CalculationType type : calculationTypes) {
-			if (type.equals(applicationType)) {
-				DemandDetail demandDetail = DemandDetail.builder().taxAmount(type.getAmount())
-						.taxHeadMasterCode(type.getFeeType()).tenantId(tenantId).build();
-				demandDetails.add(demandDetail);
+			if (type.getApplicationType().equalsIgnoreCase(applicationType)) {
+				DemandDetail demandDetail = DemandDetail.builder()
+						.taxAmount(type.getAmount())
+						.taxHeadMasterCode(type.getFeeType())
+						.tenantId(tenantId)
+						.build();
 				demandDetails.add(demandDetail);
 			}
-
 		}
 		return demandDetails;
 

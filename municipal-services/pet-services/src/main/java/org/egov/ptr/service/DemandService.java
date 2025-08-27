@@ -53,13 +53,22 @@ public class DemandService {
 		String applicationType = petReq.getPetRegistrationApplications().get(0).getApplicationType();
 
 
+		amountPayable = demandDetails.stream()
+				.map(DemandDetail::getTaxAmount)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+		Demand demand = Demand.builder()
+				.consumerCode(consumerCode)
+				.demandDetails(demandDetails)
+				.payer(owner)
+				.minimumAmountPayable(amountPayable)
+				.tenantId(tenantId)
+				.taxPeriodFrom(Long.valueOf("1743445800000"))
+				.taxPeriodTo(Long.valueOf("1774981799000"))
+				.consumerType(PET_BUSINESSSERVICE)
+				.businessService("pet-services")
+				.additionalDetails(null)
+				.build();
 
-		demandDetails.add(DemandDetail.builder().collectionAmount(BigDecimal.ZERO).taxAmount(amountPayable)
-				.taxHeadMasterCode("PET_REGISTRATION_FEE").tenantId(null).build());
-		Demand demand = Demand.builder().consumerCode(consumerCode).demandDetails(demandDetails).payer(owner)
-				.minimumAmountPayable(amountPayable).tenantId(tenantId).taxPeriodFrom(Long.valueOf("1743445800000"))
-				.taxPeriodTo(Long.valueOf("1774981799000")).consumerType(PET_BUSINESSSERVICE)
-				.businessService("pet-services").additionalDetails(null).build();
 		List<Demand> demands = new ArrayList<>();
 		demands.add(demand);
 

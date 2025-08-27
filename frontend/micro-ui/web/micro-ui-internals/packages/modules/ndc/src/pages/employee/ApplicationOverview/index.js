@@ -13,6 +13,9 @@ const ApplicationOverview = () => {
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
+
+  const [showErrorToast, setShowErrorToastt] = useState(null);
+  const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
@@ -91,6 +94,10 @@ const ApplicationOverview = () => {
     setShowToast(null);
   };
 
+  const closeToastOne = () => {
+    setShowErrorToastt(null);
+  };
+
   const removeDuplicatesByUUID = (arr) => {
     const seen = new Set();
     return arr.filter((item) => {
@@ -107,7 +114,7 @@ const ApplicationOverview = () => {
     const ndcObject = applicationDetails?.Applications?.[0];
     if (ndcObject) {
       const applicantData = {
-        address: ndcObject?.owners?.[0]?.correspondenceAddress,
+        address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
         email: ndcObject?.owners?.[0]?.emailId,
         mobile: ndcObject?.owners?.[0]?.mobileNumber,
         name: ndcObject?.owners?.[0]?.name,
@@ -165,6 +172,8 @@ const ApplicationOverview = () => {
     // setSelectedAction(null);
     const payloadData = applicationDetails?.Applications[0];
 
+    console.log("data", data);
+
     const updatedApplicant = {
       ...payloadData,
       workflow: {},
@@ -175,13 +184,22 @@ const ApplicationOverview = () => {
       action: filtData.action,
       assignes: filtData?.assignee,
       comment: filtData?.comment,
-      documents: null,
+      documents: filtData?.wfDocuments,
     };
 
+    console.log("filtData", filtData);
+
     if (!filtData?.assignee && filtData.action == "FORWARD") {
-      // setShowToast(true);
-      setShowToast({ key: "error", message: "Assignee is mandatory" });
+      setShowToast({ key: "error" });
       setError("Assignee is mandatory");
+
+      return;
+    } else if (!filtData?.comment && (filtData?.action == "FORWARD" || filtData?.action == "REJECT")) {
+      // setShowToast({ key: "error", message: "Comment is mandatory" });
+      // setError("Comment is mandatory");
+      setErrorOne("Comment is mandatory");
+      setShowErrorToastt(true);
+
       return;
     }
 
@@ -195,11 +213,13 @@ const ApplicationOverview = () => {
       // ✅ Show success first
       setShowToast({ key: "success", message: "Successfully updated the status" });
       setError("Successfully updated the status");
+
       workflowDetails.revalidate();
 
       // ✅ Delay navigation so toast shows
       setTimeout(() => {
         history.push("/digit-ui/employee/ndc/inbox");
+        window.location.reload();
       }, 2000);
 
       setSelectedAction(null);
@@ -208,20 +228,6 @@ const ApplicationOverview = () => {
       setShowToast({ key: "error", message: "Something went wrong" });
       setError("Something went wrong");
     }
-
-    // const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
-    // setShowToast(true);
-    // setError("Successfully updated the status");
-    // workflowDetails.revalidate();
-
-    // // ✅ Delay navigation so toast shows
-    // setTimeout(() => {
-    //   history.push("/digit-ui/employee/ndc/inbox");
-    // }, 2000);
-    // // history.push("/digit-ui/employee/ndc/inbox");
-
-    // setSelectedAction(null);
-    // setShowModal(false);
   };
 
   const closeModal = () => {
@@ -232,6 +238,24 @@ const ApplicationOverview = () => {
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
+
+  // useEffect(() => {
+  //   if (showToast) {
+  //     const timer = setTimeout(() => {
+  //       setShowToast(null);
+  //     }, 3000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [showToast]);
+
+  // useEffect(() => {
+  //   if (showErrorToast) {
+  //     const timer = setTimeout(() => {
+  //       setShowErrorToastt(null);
+  //     }, 3000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [showErrorToast]);
 
   return (
     <div className={"employee-main-application-details"}>
@@ -264,7 +288,7 @@ const ApplicationOverview = () => {
             <StatusTable>
               <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
               <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
-              <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} />
+              {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
               <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
               <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
             </StatusTable>
@@ -315,9 +339,12 @@ const ApplicationOverview = () => {
           showToast={showToast}
           closeToast={closeToast}
           errors={error}
+          showErrorToast={showErrorToast}
+          errorOne={errorOne}
+          closeToastOne={closeToastOne}
         />
       ) : null}
-      {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
     </div>
   );
 };

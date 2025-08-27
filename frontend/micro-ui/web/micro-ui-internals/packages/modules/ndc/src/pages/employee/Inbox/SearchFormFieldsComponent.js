@@ -14,7 +14,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
             <div className="complaint-input-container" style={{ textAlign: "start" }}>
               <SearchField>
                 <label>{t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL")}</label>
-                <TextInput name="uuid" inputRef={registerRef({})} />
+                <TextInput style={{ marginTop: "10px" }} name="uuid" inputRef={registerRef({})} />
               </SearchField>
               {/* <SearchField>
                 <label>{t("CORE_COMMON_PHONE_NUMBER")}</label>

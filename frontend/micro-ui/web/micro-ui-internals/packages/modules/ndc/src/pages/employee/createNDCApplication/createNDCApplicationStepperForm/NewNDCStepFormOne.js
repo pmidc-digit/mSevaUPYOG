@@ -22,6 +22,9 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     if (missingFields.length > 0) {
       setError(`${missingFields[0]}`);
       setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
       return;
     }
     if (checkFormData?.apiData?.Applications?.[0]?.uuid) {

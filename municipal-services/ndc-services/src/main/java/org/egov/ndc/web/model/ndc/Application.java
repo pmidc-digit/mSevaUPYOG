@@ -6,10 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.egov.common.contract.workflow.ProcessInstance;
+
 import org.egov.ndc.web.model.AuditDetails;
 import org.egov.ndc.web.model.OwnerInfo;
 import org.egov.ndc.web.model.Workflow;
+import org.egov.ndc.web.model.workflow.ProcessInstance;
 
 import java.util.ArrayList;
 import java.util.List;

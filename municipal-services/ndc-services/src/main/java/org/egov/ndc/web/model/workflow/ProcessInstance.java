@@ -82,6 +82,10 @@ public class ProcessInstance {
       @JsonProperty("stateSla")
       private Long stateSla;
 
+      @JsonProperty("assignes")
+      @Valid
+      private List<User> assignes = null;
+
       @JsonProperty("businesssServiceSla")
       private Long businesssServiceSla;
 

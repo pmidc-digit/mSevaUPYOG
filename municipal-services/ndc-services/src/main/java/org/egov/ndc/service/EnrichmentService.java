@@ -275,11 +275,18 @@ public class EnrichmentService {
 				application.getProcessInstance().setBusinessService(processInstance.getBusinessService());
 				application.getProcessInstance().setModuleName(processInstance.getModuleName());
 				application.getProcessInstance().setComment(processInstance.getComment());
+				application.getProcessInstance().setDocuments(processInstance.getDocuments());
+				application.getProcessInstance().setAssignes(processInstance.getAssignes());
+				application.getProcessInstance().setAction(processInstance.getAction());
+				application.getProcessInstance().setState(processInstance.getState());
+				application.getProcessInstance().setId(processInstance.getId());
+				application.getProcessInstance().setTenantId(processInstance.getTenantId());
 				if (!org.apache.commons.lang3.ObjectUtils.isEmpty(processInstance.getAssignes()))
 					application.getProcessInstance().setAssignes(processInstance.getAssignes());
 				Workflow workflow = new Workflow();
 				workflow.setAction(processInstance.getAction());
 				workflow.setComment(processInstance.getComment());
+				workflow.setDocuments(processInstance.getDocuments());
 				application.setWorkflow(workflow);
 			}
 		}

@@ -39,6 +39,9 @@ const NDCModal = ({
   showToast,
   closeToast,
   errors,
+  showErrorToast,
+  errorOne,
+  closeToastOne,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -130,13 +133,16 @@ const NDCModal = ({
       wfDocuments: uploadedFile
         ? [
             {
-              documentType: action?.action + " DOC",
-              fileName: file?.name,
+              documentType: file?.type,
+              documentUid: file?.name,
               fileStoreId: uploadedFile,
             },
           ]
         : null,
     };
+
+    console.log("uploadedFile", uploadedFile, applicationData);
+
     submitAction({
       Licenses: [applicationData],
     });
@@ -186,6 +192,7 @@ const NDCModal = ({
       />
       {/* )} */}
       {showToast && <Toast error={showToast.key === "error" ? true : false} label={errors} onClose={closeToast} />}
+      {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
     </Modal>
   ) : (
     <Loader />

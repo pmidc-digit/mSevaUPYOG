@@ -13,6 +13,9 @@ const ApplicationOverview = () => {
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
+
+  const [showErrorToast, setShowErrorToastt] = useState(null);
+  const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
@@ -91,6 +94,10 @@ const ApplicationOverview = () => {
     setShowToast(null);
   };
 
+  const closeToastOne = () => {
+    setShowErrorToastt(null);
+  };
+
   const removeDuplicatesByUUID = (arr) => {
     const seen = new Set();
     return arr.filter((item) => {
@@ -107,8 +114,7 @@ const ApplicationOverview = () => {
     const ndcObject = applicationDetails?.Applications?.[0];
     if (ndcObject) {
       const applicantData = {
-        address: ndcObject?.NdcDetails?.[0]?.
-          additionalDetails?.propertyAddress,
+        address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
         email: ndcObject?.owners?.[0]?.emailId,
         mobile: ndcObject?.owners?.[0]?.mobileNumber,
         name: ndcObject?.owners?.[0]?.name,
@@ -121,10 +127,10 @@ const ApplicationOverview = () => {
           item?.businessService === "WS"
             ? "NDC_WATER_SERVICE_CONNECTION"
             : item?.businessService === "SW"
-              ? "NDC_SEWERAGE_SERVICE_CONNECTION"
-              : item?.businessService === "PT"
-                ? "NDC_PROPERTY_TAX"
-                : item?.businessService,
+            ? "NDC_SEWERAGE_SERVICE_CONNECTION"
+            : item?.businessService === "PT"
+            ? "NDC_PROPERTY_TAX"
+            : item?.businessService,
         consumerCode: item?.consumerCode || "",
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
@@ -166,6 +172,8 @@ const ApplicationOverview = () => {
     // setSelectedAction(null);
     const payloadData = applicationDetails?.Applications[0];
 
+    console.log("data", data);
+
     const updatedApplicant = {
       ...payloadData,
       workflow: {},
@@ -176,13 +184,22 @@ const ApplicationOverview = () => {
       action: filtData.action,
       assignes: filtData?.assignee,
       comment: filtData?.comment,
-      documents: null,
+      documents: filtData?.wfDocuments,
     };
 
+    console.log("filtData", filtData);
+
     if (!filtData?.assignee && filtData.action == "FORWARD") {
-      // setShowToast(true);
-      setShowToast({ key: "error", message: "Assignee is mandatory" });
+      setShowToast({ key: "error" });
       setError("Assignee is mandatory");
+
+      return;
+    } else if (!filtData?.comment && (filtData?.action == "FORWARD" || filtData?.action == "REJECT")) {
+      // setShowToast({ key: "error", message: "Comment is mandatory" });
+      // setError("Comment is mandatory");
+      setErrorOne("Comment is mandatory");
+      setShowErrorToastt(true);
+
       return;
     }
 
@@ -196,6 +213,7 @@ const ApplicationOverview = () => {
       // ✅ Show success first
       setShowToast({ key: "success", message: "Successfully updated the status" });
       setError("Successfully updated the status");
+
       workflowDetails.revalidate();
 
       // ✅ Delay navigation so toast shows
@@ -210,20 +228,6 @@ const ApplicationOverview = () => {
       setShowToast({ key: "error", message: "Something went wrong" });
       setError("Something went wrong");
     }
-
-    // const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
-    // setShowToast(true);
-    // setError("Successfully updated the status");
-    // workflowDetails.revalidate();
-
-    // // ✅ Delay navigation so toast shows
-    // setTimeout(() => {
-    //   history.push("/digit-ui/employee/ndc/inbox");
-    // }, 2000);
-    // // history.push("/digit-ui/employee/ndc/inbox");
-
-    // setSelectedAction(null);
-    // setShowModal(false);
   };
 
   const closeModal = () => {
@@ -234,6 +238,24 @@ const ApplicationOverview = () => {
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
+
+  // useEffect(() => {
+  //   if (showToast) {
+  //     const timer = setTimeout(() => {
+  //       setShowToast(null);
+  //     }, 3000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [showToast]);
+
+  // useEffect(() => {
+  //   if (showErrorToast) {
+  //     const timer = setTimeout(() => {
+  //       setShowErrorToastt(null);
+  //     }, 3000);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [showErrorToast]);
 
   return (
     <div className={"employee-main-application-details"}>
@@ -252,8 +274,8 @@ const ApplicationOverview = () => {
                   Array.isArray(value)
                     ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
                     : typeof value === "object"
-                      ? t(value?.code || "N/A")
-                      : t(value || "N/A")
+                    ? t(value?.code || "N/A")
+                    : t(value || "N/A")
                 }
               />
             ))}
@@ -294,7 +316,7 @@ const ApplicationOverview = () => {
               optionKey={"action"}
               t={t}
               onSelect={onActionSelect}
-            // style={MenuStyle}
+              // style={MenuStyle}
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
@@ -317,9 +339,12 @@ const ApplicationOverview = () => {
           showToast={showToast}
           closeToast={closeToast}
           errors={error}
+          showErrorToast={showErrorToast}
+          errorOne={errorOne}
+          closeToastOne={closeToastOne}
         />
       ) : null}
-      {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
     </div>
   );
 };

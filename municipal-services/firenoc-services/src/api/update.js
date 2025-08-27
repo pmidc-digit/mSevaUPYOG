@@ -90,21 +90,30 @@ export const updateApiResponse = async ({ body }, next = {}) => {
       firenocResponse = await calculate(FireNOCs[i], RequestInfo);
   }
 
- var validityYears =
-  (firenocResponse &&
-   firenocResponse.Calculation &&
-   firenocResponse.Calculation[0] &&
-   firenocResponse.Calculation[0].taxHeadEstimates &&
-   firenocResponse.Calculation[0].taxHeadEstimates[0] &&
-   firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears) != null
-    ? firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears
-    : 1;
+var validityYears =
+    (firenocResponse &&
+      firenocResponse.Calculation &&
+      firenocResponse.Calculation[0] &&
+      firenocResponse.Calculation[0].taxHeadEstimates &&
+      firenocResponse.Calculation[0].taxHeadEstimates[0] &&
+      firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears) != null
+      ? firenocResponse.Calculation[0].taxHeadEstimates[0].validityYears
+      : 1;
 
   body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
-  body.FireNOCs[0].fireNOCDetails.additionalDetail = {
-  ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
-  validityYears: validityYears
-};
+
+  if (body.FireNOCs[0].fireNOCDetails.applicationDate <= '1756252740000') {
+    body.FireNOCs[0].fireNOCDetails.additionalDetail = {
+      ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
+      validityYears: 1
+    };
+  } else {
+    body.FireNOCs[0].fireNOCDetails.additionalDetail = {
+      ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
+      validityYears: validityYears
+    };
+  }
+
  // console.log("FireNoc Request Body for Update"+JSON.stringify(body.FireNOCs));
 
   // payloads.push({

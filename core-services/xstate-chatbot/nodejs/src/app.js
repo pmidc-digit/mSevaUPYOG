@@ -20,10 +20,7 @@ const app = express();
     app.use(envVariables.contextPath, require('./channel/routes'));
     app.use(createProxyMiddleware('/', // replace with your endpoint
         { 
-            target: envVariables.egovServices.egovServicesHost,
-            changeOrigin: true,
-            secure: false,
-         } // replace with your target
+            target: envVariables.egovServices.egovServicesHost} // replace with your target
     ));
     module.exports = app;
     return app;

@@ -288,11 +288,15 @@ const pgr =  {
                   invoke: {
                     id: 'getCityAndLocality',
                     src: (context, event) => {
-                      if(event.message.type === 'location') {
+                      if(event.message && event.message.type === 'location') {
                         context.slots.pgr.geocode = event.message.input;
                         return pgrService.getCityAndLocalityForGeocode(event.message.input, context.extraInfo.tenantId);
                       }
-                      context.message = event.message.input;
+                      if(event.message) {
+                        context.message = event.message.input;
+                      } else {
+                        context.message = '1'; // Default to skip location sharing
+                      }
                       return Promise.resolve();
                     },
                     onDone: [

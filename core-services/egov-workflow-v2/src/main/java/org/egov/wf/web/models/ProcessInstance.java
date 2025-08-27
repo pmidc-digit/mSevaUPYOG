@@ -33,110 +33,117 @@ import lombok.ToString;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@EqualsAndHashCode(of = {"id"})
+@EqualsAndHashCode(of = { "id" })
 @ToString
-public class ProcessInstance   {
+public class ProcessInstance {
 
-        @Size(max=64)
-        @JsonProperty("id")
-        private String id = null;
+	@Size(max = 64)
+	@JsonProperty("id")
+	private String id = null;
 
-        @NotNull
-        @Size(max=128)
-        @JsonProperty("tenantId")
-        private String tenantId = null;
+	@NotNull
+	@Size(max = 128)
+	@JsonProperty("tenantId")
+	private String tenantId = null;
 
-        @NotNull
-        @Size(max=128)
-        @JsonProperty("businessService")
-        private String businessService = null;
+	@NotNull
+	@Size(max = 128)
+	@JsonProperty("businessService")
+	private String businessService = null;
 
-        @NotNull
-        @Size(max=128)
-        @JsonProperty("businessId")
-        private String businessId = null;
+	@NotNull
+	@Size(max = 128)
+	@JsonProperty("businessId")
+	private String businessId = null;
 
-        @NotNull
-        @Size(max=128)
-        @JsonProperty("action")
-        private String action = null;
+	@NotNull
+	@Size(max = 128)
+	@JsonProperty("action")
+	private String action = null;
 
-        @NotNull
-        @Size(max=64)
-        @JsonProperty("moduleName")
-        private String moduleName = null;
+	@NotNull
+	@Size(max = 64)
+	@JsonProperty("moduleName")
+	private String moduleName = null;
 
-        @JsonProperty("state")
-        private State state = null;
+	@JsonProperty("state")
+	private State state = null;
 
-        @Size(max=1024)
-        @JsonProperty("comment")
-        private String comment = null;
+	@Size(max = 200000)
+	@JsonProperty("comment")
+	private String comment = null;
 
-        @JsonProperty("documents")
-        @Valid
-        private List<Document> documents = null;
+	@JsonProperty("documents")
+	@Valid
+	private List<Document> documents = null;
 
-        @JsonProperty("assigner")
-        private User assigner = null;
+	@JsonProperty("assigner")
+	private User assigner = null;
 
-        @JsonProperty("assignes")
-        private List<User> assignes = null;
+	@JsonProperty("assignes")
+	private List<User> assignes = null;
 
-        @JsonProperty("nextActions")
-        @Valid
-        private List<Action> nextActions = null;
+	@JsonProperty("nextActions")
+	@Valid
+	private List<Action> nextActions = null;
 
-        @JsonProperty("stateSla")
-        private Long stateSla = null;
+	@JsonProperty("stateSla")
+	private Long stateSla = null;
 
-        @JsonProperty("businesssServiceSla")
-        private Long businesssServiceSla = null;
+	@JsonProperty("businesssServiceSla")
+	private Long businesssServiceSla = null;
 
-        @JsonProperty("previousStatus")
-        @Size(max=128)
-        private String previousStatus = null;
+	@JsonProperty("previousStatus")
+	@Size(max = 128)
+	private String previousStatus = null;
 
-        @JsonProperty("entity")
-        private Object entity = null;
+	@JsonProperty("entity")
+	private Object entity = null;
 
-        @JsonProperty("auditDetails")
-        private AuditDetails auditDetails = null;
+	@JsonProperty("auditDetails")
+	private AuditDetails auditDetails = null;
 
-        @JsonProperty("rating")
-        private Integer rating = null;
+	@JsonProperty("rating")
+	private Integer rating = null;
 
-        @JsonProperty("escalated")
-        private Boolean escalated = false;
+	@JsonProperty("escalated")
+	private Boolean escalated = false;
 
+	@JsonProperty("possibleActions")
+	private String possibleActions;
 
-        public ProcessInstance addDocumentsItem(Document documentsItem) {
-            if (this.documents == null) {
-            this.documents = new ArrayList<>();
-            }
-            if(!this.documents.contains(documentsItem))
-                this.documents.add(documentsItem);
+	public String getPossibleActions() {
+		return (possibleActions == null || possibleActions.trim().isEmpty())
+				? org.egov.wf.util.WorkflowConstants.ASSIGN_AND_MOVE_ALL
+				: possibleActions;
+	}
 
-        return this;
-        }
+	public ProcessInstance addDocumentsItem(Document documentsItem) {
+		if (this.documents == null) {
+			this.documents = new ArrayList<>();
+		}
+		if (!this.documents.contains(documentsItem))
+			this.documents.add(documentsItem);
 
-        public ProcessInstance addNextActionsItem(Action nextActionsItem) {
-            if (this.nextActions == null) {
-            this.nextActions = new ArrayList<>();
-            }
-            this.nextActions.add(nextActionsItem);
-            return this;
-        }
+		return this;
+	}
 
-        public ProcessInstance addUsersItem(User usersItem) {
-                if (this.assignes == null) {
-                        this.assignes = new ArrayList<>();
-                }
-                if(!this.assignes.contains(usersItem))
-                        this.assignes.add(usersItem);
+	public ProcessInstance addNextActionsItem(Action nextActionsItem) {
+		if (this.nextActions == null) {
+			this.nextActions = new ArrayList<>();
+		}
+		this.nextActions.add(nextActionsItem);
+		return this;
+	}
 
-                return this;
-        }
+	public ProcessInstance addUsersItem(User usersItem) {
+		if (this.assignes == null) {
+			this.assignes = new ArrayList<>();
+		}
+		if (!this.assignes.contains(usersItem))
+			this.assignes.add(usersItem);
+
+		return this;
+	}
 
 }
-

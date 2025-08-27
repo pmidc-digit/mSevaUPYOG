@@ -148,6 +148,17 @@ public class EnrichmentService {
         Map<String,String> errorMap = new HashMap<>();
         processStateAndActions.forEach(processStateAndAction -> {
 
+//        	if (!CollectionUtils.isEmpty(processStateAndAction.getProcessInstanceFromRequest().getAssignes())
+//               && (processStateAndAction.getProcessInstanceFromDb() != null)    
+//               && !CollectionUtils.isEmpty(processStateAndAction.getProcessInstanceFromDb().getAssignes())
+//                    && processStateAndAction.getProcessInstanceFromDb().getAssignes().size() > 1) {
+//                processStateAndAction.getProcessInstanceFromDb().getAssignes()
+//                        .removeIf(userp -> userp.getUuid().equals(requestInfo.getUserInfo().getUuid()));
+//                processStateAndAction.getProcessInstanceFromRequest()
+//                        .setAssignes(processStateAndAction.getProcessInstanceFromDb().getAssignes());
+//                //enrichAssignes(processStateAndAction.getProcessInstanceFromDb(), idToUserMap, errorMap);
+//            }
+//        	
             // Setting Assignes
             if(!CollectionUtils.isEmpty(processStateAndAction.getProcessInstanceFromRequest().getAssignes())){
                 enrichAssignes(processStateAndAction.getProcessInstanceFromRequest(), idToUserMap, errorMap);
@@ -205,7 +216,7 @@ public class EnrichmentService {
 
         for(Map.Entry<String, List<ProcessInstance>> entry : businessServiceToProcessInstance.entrySet()){
             try{
-             processStateAndActions.addAll(transitionService.getProcessStateAndActions(entry.getValue(),false));}
+             processStateAndActions.addAll(transitionService.getProcessStateAndActions(new ProcessInstanceRequest(requestInfo,entry.getValue()),false));}
             catch (Exception e){
                 log.error("Error while creating processStateAndActions",e);
             }
@@ -232,13 +243,13 @@ public class EnrichmentService {
             businessService.getStates().forEach(state -> {
                 state.setAuditDetails(auditDetails);
                 state.setUuid(UUID.randomUUID().toString());
-                state.setTenantId(tenantId);
+              //  state.setTenantId(tenantId);
                 if(!CollectionUtils.isEmpty(state.getActions()))
                     state.getActions().forEach(action -> {
                         action.setAuditDetails(auditDetails);
                         action.setUuid(UUID.randomUUID().toString());
                         action.setCurrentState(state.getUuid());
-                        action.setTenantId(tenantId);
+                      //  action.setTenantId(tenantId);
                         action.setActive(true);
                     });
             });

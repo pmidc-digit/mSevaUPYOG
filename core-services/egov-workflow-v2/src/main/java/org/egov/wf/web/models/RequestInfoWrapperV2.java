@@ -12,12 +12,9 @@ import org.egov.common.contract.request.RequestInfo;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class RequestInfoWrapper {
+public class RequestInfoWrapperV2 {
 
 	@JsonProperty("RequestInfo")
 	private RequestInfo requestInfo;
-
-	@JsonProperty("applicationEmployee")
-	private List<String> applicationEmployee;
 
 }

@@ -25,12 +25,6 @@ public class WorkflowConstants {
     public static final String JSONPATH_TEANANTIDS = "$.MdmsRes.tenant.tenants.*.code";
 
     public static final String MDMS_MODULE_TENANT= "tenant";
-    
-    public static final String MDMS_WF_SLA_CONFIG = "wfSlaConfig";
-
-    public static final String MDMS_COMMON_MASTERS = "common-masters";
-
-    public static final String SLOT_PERCENTAGE_PATH = "$.MdmsRes.common-masters.wfSlaConfig[0].slotPercentage";
 
     public static final String MDMS_TENANTS= "tenants";
 
@@ -51,5 +45,11 @@ public class WorkflowConstants {
     public static final String AUTO_ESC_EMPLOYEE_ROLE_CODE = "AUTO_ESCALATE";
     
     public static final String  FSM_MODULE="FSM";
+    
+    public static final String ASSIGN_AND_MOVE_ALL= "AMO";
+
+    public static final String MOVE_ONLY= "MO";
+
+    public static final String ASSIGN_ONLY= "AO";
 
 }

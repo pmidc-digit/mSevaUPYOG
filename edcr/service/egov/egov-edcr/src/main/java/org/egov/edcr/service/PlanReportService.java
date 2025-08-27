@@ -478,7 +478,7 @@ public class PlanReportService {
             } else {
 
                 AbstractColumn floorArea = ColumnBuilder.getNew()
-                        .setColumnProperty("totalFloorArea", BigDecimal.class.getName()).setTitle("Plot Area")
+                        .setColumnProperty("totalFloorArea", BigDecimal.class.getName()).setTitle("Total Plot Area")
                         .setWidth(120).setStyle(reportService.getTotalNumberStyle()).build();
 
 //                AbstractColumn carpetArea = ColumnBuilder.getNew()
@@ -500,7 +500,7 @@ public class PlanReportService {
               //  frb.addColumn(carpetArea);
             }
 
-            frb.setTitle("Plot Area (in m²)");
+            frb.setTitle("Ground Coverage (in m²)");
             frb.setTitleStyle(reportService.getTitleStyle());
             frb.setHeaderHeight(5);
             frb.setTopMargin(5);

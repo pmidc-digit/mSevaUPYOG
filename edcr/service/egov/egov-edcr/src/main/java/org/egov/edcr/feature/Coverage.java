@@ -337,7 +337,7 @@ public class Coverage extends FeatureProcess {
 		LOG.info("inside processCoverage()");
 		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
 		scrutinyDetail.setKey("Common_Coverage");
-		scrutinyDetail.setHeading("Plot Coverage");
+		scrutinyDetail.setHeading("Ground Coverage");
 		scrutinyDetail.addColumnHeading(1, RULE_NO);
 	   // scrutinyDetail.addColumnHeading(2, DEVELOPMENT_ZONE);
 

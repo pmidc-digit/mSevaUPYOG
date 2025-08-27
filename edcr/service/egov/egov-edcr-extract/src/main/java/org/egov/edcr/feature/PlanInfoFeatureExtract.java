@@ -722,8 +722,11 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 
 		
 		String khasraNo = planInfoProperties.get(DxfFileConstants.KHASRA_NO);
-		if (StringUtils.isNotBlank(khasraNo))
+		if (StringUtils.isNotBlank(khasraNo)) {
 			pi.setKhasraNo(khasraNo);
+		}else {
+			pl.addError(DxfFileConstants.KHASRA_NO, "KHASRA_NO is not defined in the Plan Information Layer");
+		}
 
 
 		String district = planInfoProperties.get(DxfFileConstants.DISTRICT);

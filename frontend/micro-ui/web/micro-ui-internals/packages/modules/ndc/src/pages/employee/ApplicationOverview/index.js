@@ -1,9 +1,58 @@
-import { Header, Row, StatusTable, Loader, Card, CardSubHeader, ActionBar, SubmitBar, Menu, Toast } from "@mseva/digit-ui-react-components";
+import { Header, Row, StatusTable, Loader, Card, CardSubHeader, ActionBar, SubmitBar, Menu, Toast, ConnectingCheckPoints, CheckPoint, TLTimeLine, DisplayPhotos, StarRated } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-import NDCDocument from "../../../pageComponents/NDCDocument";
+import NDCDocument from "../../../components/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
+
+const getTimelineCaptions = (checkpoint, index, arr, t) => {
+  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
+
+  const caption = {
+    date: checkpoint?.auditDetails?.lastModified,
+    name: checkpoint?.assigner?.name,
+    mobileNumber: checkpoint?.assigner?.mobileNumber,
+    source: checkpoint?.assigner?.source,
+  };
+
+  return (
+    <div>
+      {comment?.length>0 && (
+        <div className="TLComments">
+          <h3>{t("WF_COMMON_COMMENTS")}</h3>
+          <p style={{ overflowX: "scroll" }}>{comment}</p>
+        </div>
+      )}
+
+      {thumbnailsToShow?.thumbs?.length > 0 && (
+        <DisplayPhotos
+          srcs={thumbnailsToShow.thumbs}
+          onClick={(src, idx) => {
+            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+            Digit.Utils.zoomImage(fullImage);
+          }}
+        />
+      )}
+
+      {wfDocuments?.length > 0 && <div>
+        {wfDocuments?.map((doc, index) => (
+          <div key={index}>
+            <NDCDocument value={wfDocuments} Code={doc?.documentType} index={index} />
+          </div>
+        ))}
+        </div>
+      }
+
+      <div style={{ marginTop: "8px" }}>
+        {caption.date && <p>{caption.date}</p>}
+        {caption.name && <p>{caption.name}</p>}
+        {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
+        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
+      </div>
+    </div>
+  );
+};
+
 
 const ApplicationOverview = () => {
   const { id } = useParams();
@@ -24,7 +73,8 @@ const ApplicationOverview = () => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "NDC",
+    moduleCode: "ndc-services",
+    role: "EMPLOYEE"
   });
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
@@ -306,6 +356,30 @@ const ApplicationOverview = () => {
           )}
         </div>
       </Card>
+
+      {workflowDetails?.data?.timeline && (
+        <Card>
+          <CardSubHeader>{t("NDC_APPLICATION_TIMELINE")}</CardSubHeader>
+          {workflowDetails?.data?.timeline.length === 1 ? (
+            <CheckPoint
+              isCompleted={true}
+              label={t("NDC_STATUS_" + workflowDetails?.data?.timeline[0]?.status)}
+            />
+          ) : (
+            <ConnectingCheckPoints>
+              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
+                <CheckPoint
+                  keyValue={index}
+                  isCompleted={index === 0}
+                  label={t("NDC_STATUS_" + checkpoint.status)}
+                  customChild={getTimelineCaptions(checkpoint, index, arr, t)}
+                />
+              ))}
+            </ConnectingCheckPoints>
+          )}
+        </Card>
+      )}
+
 
       {actions && (
         <ActionBar>

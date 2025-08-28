@@ -152,7 +152,7 @@ public class WorkflowQueryBuilder {
 		StringBuilder with_query_builder = new StringBuilder(BASE_CLAUSE);
 
 		if(criteria.getAssignee() != null){
-			with_query_builder.append(	" left join eg_wf_assignee_v2 asg_inner ")
+			with_query_builder.append(	" left join eg_wf_assignee_v2 asg_inner on ")
 
 					.append("asg_inner.processinstanceid=pi_outer.id and asg_inner.is_current='true'");
 
@@ -393,7 +393,7 @@ public class WorkflowQueryBuilder {
 		StringBuilder with_query_builder = new StringBuilder(BASE_CLAUSE);
 
 		if(criteria.getAssignee() != null){
-			with_query_builder.append(	" left join eg_wf_assignee_v2 asg_inner ")
+			with_query_builder.append(	" left join eg_wf_assignee_v2 asg_inner on ")
 
 					.append("asg_inner.processinstanceid=pi_outer.id and asg_inner.is_current='true'");
 

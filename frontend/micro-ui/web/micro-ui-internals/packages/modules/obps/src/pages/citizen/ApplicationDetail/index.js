@@ -9,19 +9,20 @@ const ApplicationDetails = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const [documents, setDocuments] = useState({});
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const [showOptions, setShowOptions] = useState(false);
   const [dowloadOptions, setDowloadOptions] = useState([]);
   const { id: appNumber } = useParams();
   const params = { applicationNumber: appNumber };
   const stateCode = Digit.ULBService.getStateId();
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(stateCode, {}, params);
+  const { data: LicenseData, isLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, params);
   let License = LicenseData?.Licenses?.[0];
   const { data: mdmsRes, isLoading: mdmsResIsLoading } = Digit.Hooks.obps.useMDMS(stateCode, "StakeholderRegistraition", "TradeTypetoRoleMapping");
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
-      tenantId: stateCode,
+      tenantId: tenantId,
       businessService: "BPAREG",
       consumerCodes: id,
       isEmployee: false,
@@ -79,10 +80,12 @@ const ApplicationDetails = () => {
 
   return (
     <Fragment>
+    <div style={{ paddingBottom:"70px"}}>
       <div className="cardHeaderWithOptions" style={isMobile ? {} : {maxWidth:"980px"}}>
         {/* <div style={{display:'flex'}}> */}
         <Header styles={{ fontSize: "32px", marginLeft: isMobile ? "0px" : "10px" }}>{t("BPA_TASK_DETAILS_HEADER")}</Header>
-        <div  >
+        <div style={{zIndex: "10", display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+        <div>
         {reciept_data?.Payments?.length > 0 && (
           // <div style={{right: "3%", top: "20px", position: "absolute"}}>
           <MultiLink
@@ -92,7 +95,8 @@ const ApplicationDetails = () => {
             options={dowloadOptions}
             style={{ top: "90px" }}
           />
-        )}        
+        )}  
+        </div>      
         <LinkButton label={t("VIEW_TIMELINE")} style={{ color:"#A52A2A"}} onClick={handleViewTimeline}></LinkButton>
         {/* </div> */}
         </div>
@@ -132,7 +136,7 @@ const ApplicationDetails = () => {
               label={t(`BPA_APPLICANT_EMAIL_LABEL`)}
               text={License?.tradeLicenseDetail?.owners?.[0]?.emailId || t("CS_NA")}
             />
-            <Row className="border-none" label={t(`BPA_APPLICANT_PAN_NO`)} text={License?.tradeLicenseDetail?.owners?.[0]?.pan || t("CS_NA")} />
+            {/* <Row className="border-none" label={t(`BPA_APPLICANT_PAN_NO`)} text={License?.tradeLicenseDetail?.owners?.[0]?.pan || t("CS_NA")} /> */}
           </StatusTable>
         </Card>
         <Card>
@@ -180,6 +184,7 @@ const ApplicationDetails = () => {
         </Card>
         </div>       
       </div>
+    </div>
     </Fragment>
   );
 };

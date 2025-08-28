@@ -92,6 +92,10 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
         title: t("BPA_APPLICANT_EMAIL_LABEL"),
         value: application?.applicationDetails?.[2]?.values?.[3]?.value || "NA",
       },
+      {
+        title: t("BPA_APPLICANT_ULB_LIST"),
+        value: application?.applicationData?.tradeLicenseDetail?.additionalDetail?.qualificationType === "B-Arch" ? t("ALL_ULBS") : application?.applicationData?.tradeLicenseDetail?.additionalDetail?.Ulb?.map(ulb => t(ulb?.ulbname))?.join(', ') ?? "N/A",
+      },
     ],
   });
 
@@ -111,18 +115,21 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   });
 
   // Documents
-  const documents = application?.Licenses?.[0]?.tradeLicenseDetail?.documents || [];
-  const docDetails = documents.map((doc, index) => ({
+  // const documents = application?.Licenses?.[0]?.tradeLicenseDetail?.documents || [];
+  const documents = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values
+  const docDetails = documents?.map((doc, index) => ({
     title: `${t("CS_DOCUMENT")} ${index + 1}`,
-    value: doc.documentType || "NA",
+    value: t(`DOC_${doc.documentType}`) || "NA",
     link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
   }));
 
   details.push({
     title: t("BPA_APPLICATION_DOCUMENTS"),
-    values: docDetails.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
+    values: docDetails?.length ? docDetails : [{ title: t("CS_NO_DOCUMENTS_UPLOADED"), value: "NA" }],
   });
 
+  const imageURL = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values?.find(doc => doc?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.url || null;
+  // console.log("imageURL", imageURL);
   return {
     t: t,
     tenantId: tenantInfo?.code,
@@ -132,6 +139,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
     heading: t("NEW_STAKEHOLDER_REGISTRATION"),
     applicationNumber: application?.applicationData?.applicationNumber || "NA",
     details,
+    imageURL
   };
 };
 

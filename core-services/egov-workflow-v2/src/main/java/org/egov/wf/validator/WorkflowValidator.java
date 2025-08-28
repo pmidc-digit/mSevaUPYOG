@@ -44,7 +44,7 @@ public class WorkflowValidator {
     public void validateRequest(RequestInfo requestInfo, List<ProcessStateAndAction> processStateAndActions){
         String tenantId = processStateAndActions.get(0).getProcessInstanceFromRequest().getTenantId();
         String businessServiceCode = processStateAndActions.get(0).getProcessInstanceFromRequest().getBusinessService();
-        BusinessService businessService = businessUtil.getBusinessService(tenantId,businessServiceCode);
+        BusinessService businessService = businessUtil.getBusinessService(requestInfo,tenantId,businessServiceCode);
         validateAction(requestInfo,processStateAndActions,businessService);
         validateDocuments(processStateAndActions);
         validateAssignes(requestInfo, processStateAndActions);

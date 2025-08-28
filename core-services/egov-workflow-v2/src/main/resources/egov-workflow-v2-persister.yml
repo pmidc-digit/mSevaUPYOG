@@ -3,11 +3,11 @@ serviceMaps:
   mappings:
   - version: 1.0
     description: Persists workflow processInstanceFromRequest details in eg_workflow_v2  table
-    fromTopic: save-wf-transitions
+    fromTopic: save-wf-transitions-amo
     isTransaction: true
     queryMaps:
 
-    - query: INSERT INTO eg_wf_processinstance_v2( id,tenantid,businessService,businessId,moduleName,action,status,comment, assigner, stateSla,businessServiceSla, previousStatus, createdby, lastmodifiedby, createdtime, lastmodifiedtime, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    - query: INSERT INTO eg_wf_processinstance_v2( id,tenantid,businessService,businessId,moduleName,action,status,comment, assigner, assignee, stateSla, businessServiceSla, previousStatus, createdby, lastmodifiedby, createdtime, lastmodifiedtime, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
       basePath: ProcessInstances.*
       jsonMaps:
       - jsonPath: $.ProcessInstances.*.id
@@ -27,7 +27,9 @@ serviceMaps:
       - jsonPath: $.ProcessInstances.*.comment
 
       - jsonPath: $.ProcessInstances.*.assigner.uuid
-
+      
+      - jsonPath: $.ProcessInstances.*.assignee
+      
       - jsonPath: $.ProcessInstances.*.stateSla
 
       - jsonPath: $.ProcessInstances.*.businesssServiceSla
@@ -87,6 +89,19 @@ serviceMaps:
       - jsonPath: $.ProcessInstances[*][?({uuid} in @.assignes[*].uuid)].auditDetails.createdTime
 
       - jsonPath: $.ProcessInstances[*][?({uuid} in @.assignes[*].uuid)].auditDetails.lastModifiedTime
+      
+      
+    - query: UPDATE public.eg_wf_assignee_v2 wa SET lastmodifiedby=?, lastmodifiedtime=?, is_current='false' from public.eg_wf_processinstance_v2 pi where wa.processinstanceid= pi.id and pi.businessid =? and wa.assignee=?
+      basePath: ProcessInstances.*.assigner.*
+      jsonMaps:
+
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assigner[*].uuid)].auditDetails.lastModifiedBy
+
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assigner[*].uuid)].auditDetails.lastModifiedTime
+      
+      - jsonPath: $.ProcessInstances.*.businessId
+      
+      - jsonPath: $.ProcessInstances.*.assigner.*.uuid
 
 
 
@@ -274,3 +289,115 @@ serviceMaps:
       - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.lastModifiedBy
 
       - jsonPath: $.BusinessServices.*.states.*.actions.*.auditDetails.lastModifiedTime
+      
+  - version: 1.0
+    description: Persists workflow processInstanceFromRequest details in eg_workflow_v2  table
+    fromTopic: save-wf-transitions-ao
+    isTransaction: true
+    queryMaps:
+
+    - query: INSERT INTO eg_wf_processinstance_v2( id,tenantid,businessService,businessId,moduleName,action,status,comment, assigner, assignee, stateSla, businessServiceSla, previousStatus, createdby, lastmodifiedby, createdtime, lastmodifiedtime, rating) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      basePath: ProcessInstances.*
+      jsonMaps:
+      - jsonPath: $.ProcessInstances.*.id
+
+      - jsonPath: $.ProcessInstances.*.tenantId
+
+      - jsonPath: $.ProcessInstances.*.businessService
+
+      - jsonPath: $.ProcessInstances.*.businessId
+
+      - jsonPath: $.ProcessInstances.*.moduleName
+
+      - jsonPath: $.ProcessInstances.*.action
+
+      - jsonPath: $.ProcessInstances.*.state.uuid
+
+      - jsonPath: $.ProcessInstances.*.comment
+
+      - jsonPath: $.ProcessInstances.*.assigner.uuid
+      
+      - jsonPath: $.ProcessInstances.*.assignee
+      
+      - jsonPath: $.ProcessInstances.*.stateSla
+
+      - jsonPath: $.ProcessInstances.*.businesssServiceSla
+
+      - jsonPath: $.ProcessInstances.*.previousStatus
+
+      - jsonPath: $.ProcessInstances.*.auditDetails.createdBy
+
+      - jsonPath: $.ProcessInstances.*.auditDetails.lastModifiedBy
+
+      - jsonPath: $.ProcessInstances.*.auditDetails.createdTime
+
+      - jsonPath: $.ProcessInstances.*.auditDetails.lastModifiedTime
+
+      - jsonPath: $.ProcessInstances.*.rating
+
+
+    - query: INSERT INTO eg_wf_document_v2( id, tenantid, active, documenttype,documentUid, processinstanceid, filestoreid, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+      basePath: ProcessInstances.*.documents.*
+      jsonMaps:
+      - jsonPath: $.ProcessInstances.documents.*.id
+
+      - jsonPath: $.ProcessInstances.documents.*.tenantId
+
+      - jsonPath: $.ProcessInstances.documents.*.active
+
+      - jsonPath: $.ProcessInstances.documents.*.documentType
+
+      - jsonPath: $.ProcessInstances.documents.*.documentUid
+
+      - jsonPath: $.ProcessInstances[*][?({id} in @.documents[*].id)].id
+
+      - jsonPath: $.ProcessInstances.documents.*.fileStoreId
+
+      - jsonPath: $.ProcessInstances.documents.*.auditDetails.createdBy
+
+      - jsonPath: $.ProcessInstances.documents.*.auditDetails.lastModifiedBy
+
+      - jsonPath: $.ProcessInstances.documents.*.auditDetails.createdTime
+
+      - jsonPath: $.ProcessInstances.documents.*.auditDetails.lastModifiedTime
+
+
+    - query: INSERT INTO eg_wf_assignee_v2(processinstanceid, tenantid, assignee, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?);
+      basePath: ProcessInstances.*.assignes.*
+      jsonMaps:
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assignes[*].uuid)].id
+
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assignes[*].uuid)].tenantId
+
+      - jsonPath: $.ProcessInstances.*.assignes.*.uuid
+
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assignes[*].uuid)].auditDetails.createdBy
+
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assignes[*].uuid)].auditDetails.lastModifiedBy
+
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assignes[*].uuid)].auditDetails.createdTime
+
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assignes[*].uuid)].auditDetails.lastModifiedTime
+
+  - version: 1.0
+    description: Persists workflow processInstanceFromRequest details in eg_workflow_v2  table
+    fromTopic: save-wf-transitions-mo
+    isTransaction: true
+    queryMaps:
+
+    - query: UPDATE public.eg_wf_assignee_v2 wa SET lastmodifiedby=?, lastmodifiedtime=?, is_current='false' from public.eg_wf_processinstance_v2 pi where wa.processinstanceid= pi.id and pi.businessid =? and wa.assignee=?
+      basePath: ProcessInstances.*.assigner.*
+      jsonMaps:
+
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assigner[*].uuid)].auditDetails.lastModifiedBy
+
+      - jsonPath: $.ProcessInstances[*][?({uuid} in @.assigner[*].uuid)].auditDetails.lastModifiedTime
+      
+      - jsonPath: $.ProcessInstances.*.businessId
+      
+      - jsonPath: $.ProcessInstances.*.assigner.*.uuid
+
+
+
+
+        

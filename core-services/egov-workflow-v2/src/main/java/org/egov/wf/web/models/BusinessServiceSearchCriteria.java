@@ -5,6 +5,8 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import org.egov.common.contract.request.RequestInfo;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -18,6 +20,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class BusinessServiceSearchCriteria {
 
+	 @JsonProperty("RequestInfo")
+	    private RequestInfo requestInfo;
 
     @NotNull
     @JsonProperty("tenantId")
@@ -38,5 +42,6 @@ public class BusinessServiceSearchCriteria {
         this.businessServices = criteria.getBusinessServices();
         this.stateUuids = criteria.getStateUuids();
         this.actionUuids = criteria.getActionUuids();
+        this.requestInfo = criteria.getRequestInfo();
     }
 }

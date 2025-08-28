@@ -11,6 +11,7 @@ import org.egov.common.contract.request.User;
 import org.egov.wf.web.models.Action;
 import org.egov.wf.web.models.AuditDetails;
 import org.egov.wf.web.models.Document;
+import org.egov.wf.web.models.Employe;
 import org.egov.wf.web.models.ProcessInstance;
 import org.egov.wf.web.models.State;
 import org.springframework.dao.DataAccessException;
@@ -20,7 +21,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 @Component
-public class WorkflowRowMapper implements ResultSetExtractor<List<ProcessInstance>> {
+public class EmployeeRowMapper implements ResultSetExtractor<List<Employe>> {
 
 
     /**
@@ -30,80 +31,17 @@ public class WorkflowRowMapper implements ResultSetExtractor<List<ProcessInstanc
      * @throws SQLException
      * @throws DataAccessException
      */
-    public List<ProcessInstance> extractData(ResultSet rs) throws SQLException, DataAccessException {
-        Map<String,ProcessInstance> processInstanceMap = new LinkedHashMap<>();
-
+    public List<Employe> extractData(ResultSet rs) throws SQLException, DataAccessException {
+    	List<Employe> employeesList = new ArrayList<>();
         while (rs.next()){
-            String id = rs.getString("wf_id");
-            ProcessInstance processInstance = processInstanceMap.get(id);
-
-            if(processInstance==null) {
-                Long lastModifiedTime = rs.getLong("wf_lastModifiedTime");
-                if (rs.wasNull()) {
-                    lastModifiedTime = null;
-                }
-
-                Long sla = rs.getLong("sla");
-                if (rs.wasNull()) {
-                    sla = null;
-                }
-
-                Long businessServiceSla = rs.getLong("businessservicesla");
-                if (rs.wasNull()) {
-                    businessServiceSla = null;
-                }
-
-                AuditDetails auditdetails = AuditDetails.builder()
-                        .createdBy(rs.getString("wf_createdBy"))
-                        .createdTime(rs.getLong("wf_createdTime"))
-                        .lastModifiedBy(rs.getString("wf_lastModifiedBy"))
-                        .lastModifiedTime(lastModifiedTime)
-                        .build();
-
-
-                // Building the assigner object
-                String assignerUuid = rs.getString("assigner");
-                User assigner;
-                assigner = User.builder().uuid(assignerUuid).build();
-
-
-
-
-                State state = State.builder()
-                        .tenantId(rs.getString("st_tenantId"))
-                        .uuid(rs.getString("st_uuid"))
-                        .state(rs.getString("state"))
-                        .sla(sla)
-                        .applicationStatus(rs.getString("applicationStatus"))
-                        .isStartState(rs.getBoolean("isStartState"))
-                        .isTerminateState(rs.getBoolean("isTerminateState"))
-                        .docUploadRequired(rs.getBoolean("docuploadrequired"))
-                        .businessServiceId(rs.getString("businessserviceid"))
-                        .build();
-
-
-                processInstance = ProcessInstance.builder()
-                        .id(rs.getString("id"))
-                        .tenantId(rs.getString("tenantid"))
-                        .businessService(rs.getString("businessService"))
-                        .businessId(rs.getString("businessId"))
-                        .action(rs.getString("action"))
-                        .state(state)
-                        .comment(rs.getString("comment"))
-                        .assigner(assigner)
-                        .stateSla(sla)
-                        .businesssServiceSla(businessServiceSla)
-                        .previousStatus(rs.getString("previousStatus"))
-                        .moduleName(rs.getString("moduleName"))
-                        .auditDetails(auditdetails)
-                        .rating(rs.getInt("rating"))
-                        .escalated(rs.getBoolean("escalated"))
-                        .build();
-            }
-            addChildrenToProperty(rs,processInstance);
-            processInstanceMap.put(id,processInstance);
+            
+            Employe employees = new Employe();
+            employees.setId(rs.getString("id"));
+            employees.setName(rs.getString("name"));
+        
+            employeesList.add(employees);
         }
-        return new ArrayList<>(processInstanceMap.values());
+        return new ArrayList<>(employeesList);
     }
 
 

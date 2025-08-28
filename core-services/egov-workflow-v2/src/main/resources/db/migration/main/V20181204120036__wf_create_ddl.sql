@@ -107,6 +107,6 @@ CREATE TABLE  IF NOT EXISTS eg_wf_action_v2
    ON DELETE CASCADE
 );
 
-CREATE INDEX   IF NOT EXISTSidx_pi_wf_action ON eg_wf_action_v2 (action);
+CREATE INDEX   IF NOT EXISTS idx_pi_wf_action ON eg_wf_action_v2 (action);
 
 

@@ -1,6 +1,5 @@
 package org.egov.wf.web.controllers;
 
-
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -8,6 +7,10 @@ import javax.validation.Valid;
 
 import org.egov.wf.service.WorkflowService;
 import org.egov.wf.util.ResponseInfoFactory;
+import org.egov.wf.web.models.Employe;
+import org.egov.wf.web.models.EmployeesResponse;
+import org.egov.wf.web.models.FileEmployees;
+import org.egov.wf.web.models.FileEmployeesResponse;
 import org.egov.wf.web.models.ProcessInstance;
 import org.egov.wf.web.models.ProcessInstanceRequest;
 import org.egov.wf.web.models.ProcessInstanceResponse;
@@ -25,100 +28,123 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
 @RestController
 @RequestMapping("/egov-wf")
 public class WorkflowController {
 
+	private final ObjectMapper objectMapper;
+	
+	private final HttpServletRequest request;
 
-    private final ObjectMapper objectMapper;
+	private final WorkflowService workflowService;
 
-    private final HttpServletRequest request;
+	private final ResponseInfoFactory responseInfoFactory;
 
-    private final WorkflowService workflowService;
+	@Autowired
+	public WorkflowController(ObjectMapper objectMapper, HttpServletRequest request, WorkflowService workflowService,
+			ResponseInfoFactory responseInfoFactory) {
+		this.objectMapper = objectMapper;
+		this.request = request;
+		this.workflowService = workflowService;
+		this.responseInfoFactory = responseInfoFactory;
+	}
 
-    private final ResponseInfoFactory responseInfoFactory;
+	@RequestMapping(value = "/process/_transition", method = RequestMethod.POST)
+	public ResponseEntity<ProcessInstanceResponse> processTransition(
+			@Valid @RequestBody ProcessInstanceRequest processInstanceRequest) {
+		List<ProcessInstance> processInstances = workflowService.transition(processInstanceRequest);
+		ProcessInstanceResponse response = ProcessInstanceResponse.builder().processInstances(processInstances)
+				.responseInfo(responseInfoFactory
+						.createResponseInfoFromRequestInfo(processInstanceRequest.getRequestInfo(), true))
+				.build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
+	@RequestMapping(value = "/process/_search", method = RequestMethod.POST)
+	public ResponseEntity<ProcessInstanceResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+			@Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
+		List<ProcessInstance> processInstances = workflowService.search(requestInfoWrapper.getRequestInfo(), criteria);
+		Integer count = workflowService.getUserBasedProcessInstancesCount(requestInfoWrapper.getRequestInfo(),
+				criteria);
+		ProcessInstanceResponse response = ProcessInstanceResponse.builder().processInstances(processInstances)
+				.totalCount(count).build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
-    @Autowired
-    public WorkflowController(ObjectMapper objectMapper, HttpServletRequest request,
-                              WorkflowService workflowService, ResponseInfoFactory responseInfoFactory) {
-        this.objectMapper = objectMapper;
-        this.request = request;
-        this.workflowService = workflowService;
-        this.responseInfoFactory = responseInfoFactory;
-    }
+	@RequestMapping(value = "/process/_searchEmployee", method = RequestMethod.POST)
+	public ResponseEntity<EmployeesResponse> searchEmployee(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) {
+		List<Employe> processInstances = workflowService.searchEmployee(requestInfoWrapper.getRequestInfo(),
+				requestInfoWrapper.getApplicationEmployee(),
+				requestInfoWrapper.getRequestInfo().getUserInfo().getTenantId());
 
+		EmployeesResponse response = EmployeesResponse.builder().employee(processInstances).build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
+	@RequestMapping(value = "/process/_searchFileEmployee", method = RequestMethod.POST)
+	public ResponseEntity<FileEmployeesResponse> searchFileEmployee(
+			@Valid @RequestBody RequestInfoWrapper requestInfoWrapper) {
+		List<FileEmployees> processInstances = workflowService.searchFileEmployee(requestInfoWrapper.getRequestInfo(),
+				requestInfoWrapper.getApplicationEmployee(),
+				requestInfoWrapper.getRequestInfo().getUserInfo().getTenantId());
 
-        @RequestMapping(value="/process/_transition", method = RequestMethod.POST)
-        public ResponseEntity<ProcessInstanceResponse> processTransition(@Valid @RequestBody ProcessInstanceRequest processInstanceRequest) {
-                List<ProcessInstance> processInstances =  workflowService.transition(processInstanceRequest);
-                ProcessInstanceResponse response = ProcessInstanceResponse.builder().processInstances(processInstances)
-                        .responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(processInstanceRequest.getRequestInfo(), true))
-                        .build();
-                return new ResponseEntity<>(response,HttpStatus.OK);
-        }
+		FileEmployeesResponse response = FileEmployeesResponse.builder().employee(processInstances).build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
+	/**
+	 * Returns the count of records matching the given criteria
+	 * 
+	 * @param requestInfoWrapper
+	 * @param criteria
+	 * @return
+	 */
+	@RequestMapping(value = "/process/_count", method = RequestMethod.POST)
+	public ResponseEntity<Integer> count(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+			@Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
+		Integer count = workflowService.count(requestInfoWrapper.getRequestInfo(), criteria);
+		return new ResponseEntity<>(count, HttpStatus.OK);
+	}
 
+	@RequestMapping(value = "/escalate/_search", method = RequestMethod.POST)
+	public ResponseEntity<ProcessInstanceResponse> searchEscalatedApplications(
+			@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+			@Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
+		List<ProcessInstance> processInstances = workflowService
+				.escalatedApplicationsSearch(requestInfoWrapper.getRequestInfo(), criteria);
+		Integer count = workflowService.countEscalatedApplications(requestInfoWrapper.getRequestInfo(), criteria);
+		ProcessInstanceResponse response = ProcessInstanceResponse.builder().processInstances(processInstances)
+				.totalCount(count).build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 
+	/**
+	 * Returns the count of each status of records matching the given criteria
+	 * 
+	 * @param requestInfoWrapper
+	 * @param criteria
+	 * @return
+	 */
+	@RequestMapping(value = "/process/_statuscount", method = RequestMethod.POST)
+	public ResponseEntity<List> StatusCount(@Valid @RequestBody StatusCountRequest statusCountRequest,
+			@Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
+		ProcessInstanceSearchCriteria statusCriteria = statusCountRequest.getProcessInstanceSearchCriteria();
+		if (statusCriteria == null) {
+			statusCriteria = criteria;
+		}
+		List result = workflowService.statusCount(statusCountRequest.getRequestInfo(), statusCriteria);
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
 
-        @RequestMapping(value="/process/_search", method = RequestMethod.POST)
-        public ResponseEntity<ProcessInstanceResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-                                                              @Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
-        List<ProcessInstance> processInstances = workflowService.search(requestInfoWrapper.getRequestInfo(),criteria);
-        Integer count = workflowService.getUserBasedProcessInstancesCount(requestInfoWrapper.getRequestInfo(),criteria);
-            ProcessInstanceResponse response  = ProcessInstanceResponse.builder().processInstances(processInstances).totalCount(count).build();
-                return new ResponseEntity<>(response,HttpStatus.OK);
-        }
-
-    /**
-     * Returns the count of records matching the given criteria
-     * @param requestInfoWrapper
-     * @param criteria
-     * @return
-     */
-    @RequestMapping(value="/process/_count", method = RequestMethod.POST)
-        public ResponseEntity<Integer> count(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-                                                              @Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
-    		criteria.setIsNearingSlaCount(Boolean.FALSE);
-            Integer count = workflowService.count(requestInfoWrapper.getRequestInfo(),criteria);
-            return new ResponseEntity<>(count,HttpStatus.OK);
-        }
-
-    @RequestMapping(value="/escalate/_search", method = RequestMethod.POST)
-    public ResponseEntity<ProcessInstanceResponse> searchEscalatedApplications(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-                                                          @Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
-        List<ProcessInstance> processInstances = workflowService.escalatedApplicationsSearch(requestInfoWrapper.getRequestInfo(),criteria);
-        Integer count = workflowService.countEscalatedApplications(requestInfoWrapper.getRequestInfo(),criteria);
-        ProcessInstanceResponse response  = ProcessInstanceResponse.builder().processInstances(processInstances).totalCount(count)
-                .build();
-        return new ResponseEntity<>(response,HttpStatus.OK);
-    }
-
-    /**
-     * Returns the count of each status of records matching the given criteria
-     * @param requestInfoWrapper
-     * @param criteria
-     * @return
-     */
-    @RequestMapping(value = "/process/_statuscount", method = RequestMethod.POST)
-    public ResponseEntity<List> StatusCount(@Valid @RequestBody StatusCountRequest statusCountRequest,
-            @Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
-        ProcessInstanceSearchCriteria statusCriteria = statusCountRequest.getProcessInstanceSearchCriteria();
-        if (statusCriteria == null) {
-            statusCriteria = criteria;
-        }
-        List result = workflowService.statusCount(statusCountRequest.getRequestInfo(), statusCriteria);
-        return new ResponseEntity<>(result, HttpStatus.OK);
-    }
-    
-    @RequestMapping(value="/process/_nearingslacount", method = RequestMethod.POST)
-    public ResponseEntity<Integer> nearingSlaCount(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-                                         @Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
-        criteria.setIsNearingSlaCount(Boolean.TRUE);
-        Integer count = workflowService.count(requestInfoWrapper.getRequestInfo(),criteria);
-        return new ResponseEntity<>(count,HttpStatus.OK);
-    }
-
+	@RequestMapping(value = "/status/_search", method = RequestMethod.POST)
+	public ResponseEntity<ProcessInstanceResponse> statusSearch(
+			@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
+			@Valid @ModelAttribute ProcessInstanceSearchCriteria criteria) {
+		List<ProcessInstance> processInstances = workflowService.statuSearch(requestInfoWrapper.getRequestInfo(),
+				criteria);
+		// Integer count =
+		// workflowService.getUserBasedProcessInstancesCount(requestInfoWrapper.getRequestInfo(),criteria);
+		ProcessInstanceResponse response = ProcessInstanceResponse.builder().processInstances(processInstances).build();
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
 }

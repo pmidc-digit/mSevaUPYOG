@@ -37,17 +37,16 @@ public class MDMSService {
     }
 
 
-    public Map<String, Boolean> getStateLevelMapping(RequestInfo requestinfo) {
-    	stateLevelMapping(requestinfo);
-    	return this.stateLevelMapping;
+    public Map<String, Boolean> getStateLevelMapping() {
+        return this.stateLevelMapping;
     }
 
 
-   
-    public void stateLevelMapping(RequestInfo requestinfo){
+    @Bean
+    public void stateLevelMapping(){
         Map<String, Boolean> stateLevelMapping = new HashMap<>();
 
-        Object mdmsData = getBusinessServiceMDMS(requestinfo);
+        Object mdmsData = getBusinessServiceMDMS();
         List<HashMap<String, Object>> configs = JsonPath.read(mdmsData,JSONPATH_BUSINESSSERVICE_STATELEVEL);
 
 
@@ -78,8 +77,8 @@ public class MDMSService {
      * Calls MDMS service to fetch master data
      * @return
      */
-    public Object getBusinessServiceMDMS(RequestInfo requestinfo){
-        MdmsCriteriaReq mdmsCriteriaReq = getBusinessServiceMDMSRequest(requestinfo, workflowConfig.getStateLevelTenantId());
+    public Object getBusinessServiceMDMS(){
+        MdmsCriteriaReq mdmsCriteriaReq = getBusinessServiceMDMSRequest(new RequestInfo(), workflowConfig.getStateLevelTenantId());
         Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
         return result;
     }
@@ -187,6 +186,27 @@ public class MDMSService {
      */
     public StringBuilder getMdmsSearchUrl() {
         return new StringBuilder().append(config.getMdmsHost()).append(config.getMdmsEndPoint());
+    }
+    
+    public Integer fetchSlotPercentageForNearingSla(RequestInfo requestInfo) {
+        // master details for WF SLA module
+        List<MasterDetail> masterDetails = new ArrayList<>();
+
+        masterDetails.add(MasterDetail.builder().name(MDMS_WF_SLA_CONFIG).build());
+
+        List<ModuleDetail> wfModuleDtls = Collections.singletonList(ModuleDetail.builder().masterDetails(masterDetails)
+                .moduleName(MDMS_COMMON_MASTERS).build());
+
+        MdmsCriteria mdmsCriteria = MdmsCriteria.builder().moduleDetails(wfModuleDtls)
+                .tenantId(config.getStateLevelTenantId())
+                .build();
+
+        MdmsCriteriaReq mdmsCriteriaReq = MdmsCriteriaReq.builder().mdmsCriteria(mdmsCriteria)
+                .requestInfo(requestInfo).build();
+
+        Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+        return JsonPath.read(result, SLOT_PERCENTAGE_PATH);
+
     }
 
 

@@ -126,7 +126,7 @@ public class BusinessServiceValidator {
         criteria.setTenantId(tenantId);
         criteria.setBusinessServices(businessServiceCodes);
 
-        List<BusinessService> businessServices = repository.getBusinessServices(request.getRequestInfo(),criteria);
+        List<BusinessService> businessServices = repository.getBusinessServices(criteria);
         return businessServices;
     }
 

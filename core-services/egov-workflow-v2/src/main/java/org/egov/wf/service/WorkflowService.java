@@ -1,13 +1,5 @@
 package org.egov.wf.service;
 
-import static java.util.Objects.isNull;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.wf.config.WorkflowConfig;
 import org.egov.wf.repository.BusinessServiceRepository;
@@ -15,192 +7,179 @@ import org.egov.wf.repository.WorKflowRepository;
 import org.egov.wf.util.WorkflowConstants;
 import org.egov.wf.util.WorkflowUtil;
 import org.egov.wf.validator.WorkflowValidator;
-import org.egov.wf.web.models.Employe;
-import org.egov.wf.web.models.FileEmployees;
-import org.egov.wf.web.models.ProcessInstance;
-import org.egov.wf.web.models.ProcessInstanceRequest;
-import org.egov.wf.web.models.ProcessInstanceSearchCriteria;
-import org.egov.wf.web.models.ProcessStateAndAction;
+import org.egov.wf.web.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.egov.tracer.model.CustomException;
+import org.springframework.util.ObjectUtils;
+
+import static java.util.Objects.isNull;
+
+import java.util.*;
+
 
 @Service
 public class WorkflowService {
 
-	private WorkflowConfig config;
+    private WorkflowConfig config;
 
-	private TransitionService transitionService;
+    private TransitionService transitionService;
 
-	private EnrichmentService enrichmentService;
+    private EnrichmentService enrichmentService;
 
-	private WorkflowValidator workflowValidator;
+    private WorkflowValidator workflowValidator;
 
-	private StatusUpdateService statusUpdateService;
+    private StatusUpdateService statusUpdateService;
 
-	private WorKflowRepository workflowRepository;
+    private WorKflowRepository workflowRepository;
 
-	private WorkflowUtil util;
+    private WorkflowUtil util;
 
-	private BusinessServiceRepository businessServiceRepository;
+    private BusinessServiceRepository businessServiceRepository;
+    
+    @Autowired
+    private MDMSService mdmsService;
 
-	@Autowired
-	public WorkflowService(WorkflowConfig config, TransitionService transitionService,
-			EnrichmentService enrichmentService, WorkflowValidator workflowValidator,
-			StatusUpdateService statusUpdateService, WorKflowRepository workflowRepository, WorkflowUtil util,
-			BusinessServiceRepository businessServiceRepository) {
-		this.config = config;
-		this.transitionService = transitionService;
-		this.enrichmentService = enrichmentService;
-		this.workflowValidator = workflowValidator;
-		this.statusUpdateService = statusUpdateService;
-		this.workflowRepository = workflowRepository;
-		this.util = util;
-		this.businessServiceRepository = businessServiceRepository;
-	}
+    @Autowired
+    private BusinessMasterService businessMasterService;
 
-	/**
-	 * Creates or updates the processInstanceFromRequest
-	 * 
-	 * @param request The incoming request for workflow transition
-	 * @return The list of processInstanceFromRequest objects after taking action
-	 */
-	public List<ProcessInstance> transition(ProcessInstanceRequest request) {
-		RequestInfo requestInfo = request.getRequestInfo();
-		request.getProcessInstances().get(0).setAssigner(requestInfo.getUserInfo());
-		List<ProcessStateAndAction> processStateAndActions = transitionService.getProcessStateAndActionsv2(request,
-				true);
-		enrichmentService.enrichProcessRequest(requestInfo, processStateAndActions);
-		workflowValidator.validateRequest(requestInfo, processStateAndActions);
-		statusUpdateService.updateStatusV2(requestInfo, processStateAndActions);
-		return request.getProcessInstances();
-	}
 
-	/**
-	 * Fetches ProcessInstances from db based on processSearchCriteria
-	 * 
-	 * @param requestInfo The RequestInfo of the search request
-	 * @param criteria    The object containing Search params
-	 * @return List of processInstances based on search criteria
-	 */
-	public List<ProcessInstance> search(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
-		List<ProcessInstance> processInstances;
-		if (criteria.isNull())
-			processInstances = getUserBasedProcessInstances(requestInfo, criteria);
-		else
-			processInstances = workflowRepository.getProcessInstances(criteria);
-		if (CollectionUtils.isEmpty(processInstances))
-			return processInstances;
+    @Autowired
+    public WorkflowService(WorkflowConfig config, TransitionService transitionService,
+                           EnrichmentService enrichmentService, WorkflowValidator workflowValidator,
+                           StatusUpdateService statusUpdateService, WorKflowRepository workflowRepository,
+                           WorkflowUtil util,BusinessServiceRepository businessServiceRepository) {
+        this.config = config;
+        this.transitionService = transitionService;
+        this.enrichmentService = enrichmentService;
+        this.workflowValidator = workflowValidator;
+        this.statusUpdateService = statusUpdateService;
+        this.workflowRepository = workflowRepository;
+        this.util = util;
+        this.businessServiceRepository = businessServiceRepository;
+    }
 
-		enrichmentService.enrichUsersFromSearch(requestInfo, processInstances);
-		List<ProcessStateAndAction> processStateAndActions = enrichmentService.enrichNextActionForSearch(requestInfo,
-				processInstances);
-		// workflowValidator.validateSearch(requestInfo,processStateAndActions);
-		enrichmentService.enrichAndUpdateSlaForSearch(processInstances);
-		return processInstances;
-	}
 
-	public List<Employe> searchEmployee(RequestInfo requestInfo, List<String> criteria, String tenatnid) {
-		List<Employe> employees;
-		employees = workflowRepository.getEmployeeByApplication(criteria, tenatnid);
-		return employees;
-	}
+    /**
+     * Creates or updates the processInstanceFromRequest
+     * @param request The incoming request for workflow transition
+     * @return The list of processInstanceFromRequest objects after taking action
+     */
+    public List<ProcessInstance> transition(ProcessInstanceRequest request){
+        RequestInfo requestInfo = request.getRequestInfo();
 
-	public List<FileEmployees> searchFileEmployee(RequestInfo requestInfo, List<String> criteria, String tenatnid) {
-		List<FileEmployees> employees;
-		employees = workflowRepository.getEmployeeByApplicationfile(criteria, tenatnid);
-		return employees;
-	}
+        List<ProcessStateAndAction> processStateAndActions = transitionService.getProcessStateAndActions(request.getProcessInstances(),true);
+        enrichmentService.enrichProcessRequest(requestInfo,processStateAndActions);
+        workflowValidator.validateRequest(requestInfo,processStateAndActions);
+        statusUpdateService.updateStatus(requestInfo,processStateAndActions);
+        return request.getProcessInstances();
+    }
 
-	/**
-	 * Fetches ProcessInstances from db based on processSearchCriteria
-	 * 
-	 * @param requestInfo The RequestInfo of the search request
-	 * @param criteria    The object containing Search params
-	 * @return List of processInstances based on search criteria
-	 */
-	public List<ProcessInstance> searchV3(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
-		List<ProcessInstance> processInstances;
-		if (criteria.isNull())
-			processInstances = getUserBasedProcessInstances(requestInfo, criteria);
-		else
-			processInstances = workflowRepository.getProcessInstancesV3(criteria);
-		if (CollectionUtils.isEmpty(processInstances))
-			return processInstances;
 
-		enrichmentService.enrichUsersFromSearch(requestInfo, processInstances);
-		List<ProcessStateAndAction> processStateAndActions = enrichmentService.enrichNextActionForSearch(requestInfo,
-				processInstances);
-		// workflowValidator.validateSearch(requestInfo,processStateAndActions);
-		enrichmentService.enrichAndUpdateSlaForSearch(processInstances);
-		return processInstances;
-	}
+    /**
+     * Fetches ProcessInstances from db based on processSearchCriteria
+     * @param requestInfo The RequestInfo of the search request
+     * @param criteria The object containing Search params
+     * @return List of processInstances based on search criteria
+     */
+    public List<ProcessInstance> search(RequestInfo requestInfo,ProcessInstanceSearchCriteria criteria){
+        
+    	
+    	
+    	List<ProcessInstance> processInstances;
+        if(criteria.isNull())
+            processInstances = getUserBasedProcessInstances(requestInfo, criteria);
+        else processInstances = workflowRepository.getProcessInstances(criteria);
+        if(CollectionUtils.isEmpty(processInstances))
+            return processInstances;
 
-	public Integer count(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
-		Integer count;
-		if (criteria.isNull()) {
-			enrichSearchCriteriaFromUser(requestInfo, criteria);
-			count = workflowRepository.getInboxCount(criteria);
-		} else
-			count = workflowRepository.getProcessInstancesCount(criteria);
+        enrichmentService.enrichUsersFromSearch(requestInfo,processInstances);
+        List<ProcessStateAndAction> processStateAndActions = enrichmentService.enrichNextActionForSearch(requestInfo,processInstances);
+    //    workflowValidator.validateSearch(requestInfo,processStateAndActions);
+        enrichmentService.enrichAndUpdateSlaForSearch(processInstances);
+        return processInstances;
+    }
 
-		return count;
-	}
 
-	/**
-	 * Searches the processInstances based on user and its roles
-	 * 
-	 * @param requestInfo The RequestInfo of the search request
-	 * @param criteria    The object containing Search params
-	 * @return List of processInstances based on search criteria
-	 */
-	private List<ProcessInstance> getUserBasedProcessInstances(RequestInfo requestInfo,
-			ProcessInstanceSearchCriteria criteria) {
+    public Integer count(RequestInfo requestInfo,ProcessInstanceSearchCriteria criteria){
+        Integer count;
+        
+     // Enrich slot sla limit in case of nearingSla count
+        if(criteria.getIsNearingSlaCount()){
 
-		enrichSearchCriteriaFromUser(requestInfo, criteria);
-		List<ProcessInstance> processInstances = workflowRepository.getProcessInstancesForUserInbox(criteria);
+            if(ObjectUtils.isEmpty(criteria.getBusinessService()))
+                throw new CustomException("EG_WF_BUSINESSSRV_ERR", "Providing business service is mandatory for nearing escalation count");
 
-		processInstances = filterDuplicates(processInstances);
+            Integer slotPercentage = mdmsService.fetchSlotPercentageForNearingSla(requestInfo);
+            Long maxBusinessServiceSla = businessMasterService.getMaxBusinessServiceSla(criteria);
+            criteria.setSlotPercentageSlaLimit(maxBusinessServiceSla - slotPercentage * (maxBusinessServiceSla/100));
+        }
+        
+        if(criteria.isNull()){
+            enrichSearchCriteriaFromUser(requestInfo, criteria);
+            count = workflowRepository.getInboxCount(criteria);
+        }
+        else count = workflowRepository.getProcessInstancesCount(criteria);
 
-		return processInstances;
+        return count;
+    }
 
-	}
 
-	public Integer getUserBasedProcessInstancesCount(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
-		Integer count;
-		count = workflowRepository.getProcessInstancesForUserInboxCount(criteria);
-		return count;
-	}
 
-	/**
-	 * Removes duplicate businessId which got created due to simultaneous request
-	 * 
-	 * @param processInstances
-	 * @return
-	 */
-	private List<ProcessInstance> filterDuplicates(List<ProcessInstance> processInstances) {
 
-		if (CollectionUtils.isEmpty(processInstances))
-			return processInstances;
 
-		Map<String, ProcessInstance> businessIdToProcessInstanceMap = new LinkedHashMap<>();
+    /**
+     * Searches the processInstances based on user and its roles
+     * @param requestInfo The RequestInfo of the search request
+     * @param criteria The object containing Search params
+     * @return List of processInstances based on search criteria
+     */
+    private List<ProcessInstance> getUserBasedProcessInstances(RequestInfo requestInfo,
+                                       ProcessInstanceSearchCriteria criteria){
 
-		for (ProcessInstance processInstance : processInstances) {
-			businessIdToProcessInstanceMap.put(processInstance.getBusinessId(), processInstance);
-		}
+        enrichSearchCriteriaFromUser(requestInfo, criteria);
+        List<ProcessInstance> processInstances = workflowRepository.getProcessInstancesForUserInbox(criteria);
 
-		return new LinkedList<>(businessIdToProcessInstanceMap.values());
-	}
+        processInstances = filterDuplicates(processInstances);
 
-	public List statusCount(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
-		List result;
-		if (criteria.isNull() && !isNull(criteria.getBusinessService())
-				&& !criteria.getBusinessService().equalsIgnoreCase(WorkflowConstants.FSM_MODULE)) {
-			enrichSearchCriteriaFromUser(requestInfo, criteria);
-			result = workflowRepository.getInboxStatusCount(criteria);
-		} else {
+        return processInstances;
+
+    }
+    public Integer getUserBasedProcessInstancesCount(RequestInfo requestInfo,ProcessInstanceSearchCriteria criteria){
+        Integer count;
+        count = workflowRepository.getProcessInstancesForUserInboxCount(criteria);
+        return count;
+    }
+
+    /**
+     * Removes duplicate businessId which got created due to simultaneous request
+     * @param processInstances
+     * @return
+     */
+    private List<ProcessInstance> filterDuplicates(List<ProcessInstance> processInstances){
+
+        if(CollectionUtils.isEmpty(processInstances))
+            return processInstances;
+
+        Map<String,ProcessInstance> businessIdToProcessInstanceMap = new LinkedHashMap<>();
+
+        for(ProcessInstance processInstance : processInstances){
+            businessIdToProcessInstanceMap.put(processInstance.getBusinessId(), processInstance);
+        }
+
+        return new LinkedList<>(businessIdToProcessInstanceMap.values());
+    }
+    
+    public List statusCount(RequestInfo requestInfo,ProcessInstanceSearchCriteria criteria){
+        List result;
+        if(criteria.isNull() && !isNull(criteria.getBusinessService()) && !criteria.getBusinessService().equalsIgnoreCase(WorkflowConstants.FSM_MODULE)){
+        	enrichSearchCriteriaFromUser(requestInfo, criteria);
+            result = workflowRepository.getInboxStatusCount(criteria);
+        }
+        else {
 //        	List<String> origCriteriaStatuses = criteria.getStatus();
-			// enrichSearchCriteriaFromUser(requestInfo, criteria);
+        	// enrichSearchCriteriaFromUser(requestInfo, criteria);
 //        	String tenantId = (criteria.getTenantId() == null ? (requestInfo.getUserInfo().getTenantId()) :(criteria.getTenantId()));
 //        	List<String> finalCriteriaStatuses = new ArrayList<String>();
 //        	if(origCriteriaStatuses != null && !origCriteriaStatuses.isEmpty()) {
@@ -209,73 +188,63 @@ public class WorkflowService {
 //        		});
 //        		criteria.setStatus(finalCriteriaStatuses);
 //        	}
-			result = workflowRepository.getProcessInstancesStatusCount(criteria);
-		}
+        	result = workflowRepository.getProcessInstancesStatusCount(criteria);
+        }
 
-		return result;
-	}
+        return result;
+    }
 
-	/**
-	 * Enriches processInstance search criteria based on requestInfo
-	 * 
-	 * @param requestInfo
-	 * @param criteria
-	 */
-	private void enrichSearchCriteriaFromUser(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
+    /**
+     * Enriches processInstance search criteria based on requestInfo
+     * @param requestInfo
+     * @param criteria
+     */
+    private void enrichSearchCriteriaFromUser(RequestInfo requestInfo,ProcessInstanceSearchCriteria criteria){
 
-		/*
-		 * BusinessServiceSearchCriteria businessServiceSearchCriteria = new
-		 * BusinessServiceSearchCriteria();
-		 * 
-		 *//*
-			 * If tenantId is sent in query param processInstances only for that tenantId is
-			 * returned else all tenantIds for which the user has roles are returned
-			 *//*
-				 * if(criteria.getTenantId()!=null)
-				 * businessServiceSearchCriteria.setTenantIds(Collections.singletonList(criteria
-				 * .getTenantId())); else
-				 * businessServiceSearchCriteria.setTenantIds(util.getTenantIds(requestInfo.
-				 * getUserInfo()));
-				 * 
-				 * Map<String, Boolean> stateLevelMapping = stat
-				 * 
-				 * List<BusinessService> businessServices =
-				 * businessServiceRepository.getAllBusinessService(); List<String>
-				 * actionableStatuses =
-				 * util.getActionableStatusesForRole(requestInfo,businessServices,criteria);
-				 * criteria.setAssignee(requestInfo.getUserInfo().getUuid());
-				 * criteria.setStatus(actionableStatuses);
-				 */
+        /*BusinessServiceSearchCriteria businessServiceSearchCriteria = new BusinessServiceSearchCriteria();
 
-		util.enrichStatusesInSearchCriteria(requestInfo, criteria);
-		criteria.setAssignee(requestInfo.getUserInfo().getUuid());
+        *//*
+         * If tenantId is sent in query param processInstances only for that tenantId is returned
+         * else all tenantIds for which the user has roles are returned
+         * *//*
+        if(criteria.getTenantId()!=null)
+            businessServiceSearchCriteria.setTenantIds(Collections.singletonList(criteria.getTenantId()));
+        else
+            businessServiceSearchCriteria.setTenantIds(util.getTenantIds(requestInfo.getUserInfo()));
 
-	}
+        Map<String, Boolean> stateLevelMapping = stat
 
-	public List<ProcessInstance> escalatedApplicationsSearch(RequestInfo requestInfo,
-			ProcessInstanceSearchCriteria criteria) {
-		List<String> escalatedApplicationsBusinessIds;
-		List<ProcessInstance> escalatedApplications = new ArrayList<>();
-		criteria.setIsEscalatedCount(false);
+        List<BusinessService> businessServices = businessServiceRepository.getAllBusinessService();
+        List<String> actionableStatuses = util.getActionableStatusesForRole(requestInfo,businessServices,criteria);
+        criteria.setAssignee(requestInfo.getUserInfo().getUuid());
+        criteria.setStatus(actionableStatuses);*/
+
+        util.enrichStatusesInSearchCriteria(requestInfo, criteria);
+        criteria.setAssignee(requestInfo.getUserInfo().getUuid());
+
+
+    }
+
+
+    public List<ProcessInstance> escalatedApplicationsSearch(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
+        List<String> escalatedApplicationsBusinessIds;
+        List<ProcessInstance> escalatedApplications = new ArrayList<>();
+        criteria.setIsEscalatedCount(false);
 //        Set<String> autoEscalationEmployeesUuids = enrichmentService.enrichUuidsOfAutoEscalationEmployees(requestInfo, criteria);
-		// Set<String> statesToIgnore =
-		// enrichmentService.fetchStatesToIgnoreFromMdms(requestInfo,
-		// criteria.getTenantId());
-		escalatedApplicationsBusinessIds = workflowRepository.fetchEscalatedApplicationsBusinessIdsFromDb(requestInfo,
-				criteria);
-		if (CollectionUtils.isEmpty(escalatedApplicationsBusinessIds)) {
-			return escalatedApplications;
-		}
-		// SEARCH BASED ON FILTERED BUSINESS IDs DONE HERE
-		ProcessInstanceSearchCriteria searchCriteria = new ProcessInstanceSearchCriteria();
-		searchCriteria.setBusinessIds(escalatedApplicationsBusinessIds);
-		searchCriteria.setTenantId(criteria.getTenantId());
-		searchCriteria.setBusinessService(criteria.getBusinessService());
+        //Set<String> statesToIgnore = enrichmentService.fetchStatesToIgnoreFromMdms(requestInfo, criteria.getTenantId());
+        escalatedApplicationsBusinessIds = workflowRepository.fetchEscalatedApplicationsBusinessIdsFromDb(requestInfo,criteria);
+        if(CollectionUtils.isEmpty(escalatedApplicationsBusinessIds)){
+            return escalatedApplications;
+        }
+        // SEARCH BASED ON FILTERED BUSINESS IDs DONE HERE
+        ProcessInstanceSearchCriteria searchCriteria =  new ProcessInstanceSearchCriteria();
+        searchCriteria.setBusinessIds(escalatedApplicationsBusinessIds);
+        searchCriteria.setTenantId(criteria.getTenantId());
+        searchCriteria.setBusinessService(criteria.getBusinessService());
 //        searchCriteria.setHistory(true);
-		escalatedApplications = search(requestInfo, searchCriteria);
+        escalatedApplications = search(requestInfo, searchCriteria);
 
-		// Only last but one applications in history needs to show up where the employee
-		// failed to take action
+        // Only last but one applications in history needs to show up where the employee failed to take action
 
 //        HashMap<String, List<ProcessInstance>> businessIdsVsProcessInstancesMap = new HashMap<>();
 //        HashMap<String, Integer> occurenceMap = new HashMap<>();
@@ -300,25 +269,18 @@ public class WorkflowService {
 //                    });
 //                }
 //                if(autoEscalationEmployeesUuids.contains(businessIdsVsProcessInstancesMap.get(businessId).get(0).getAuditDetails().getCreatedBy()) && uuidsOfAssignees.contains(criteria.getAssignee())){
-		// if(!statesToIgnore.contains(businessIdsVsProcessInstancesMap.get(businessId).get(1).getState().getState()))
+                   //if(!statesToIgnore.contains(businessIdsVsProcessInstancesMap.get(businessId).get(1).getState().getState()))
 //                        escalatedApplications.add(businessIdsVsProcessInstancesMap.get(businessId).get(0));
 //                }
 //            }
 //        }
-		return escalatedApplications;
-	}
+        return escalatedApplications;
+    }
 
-	public Integer countEscalatedApplications(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
-		Integer count;
-		criteria.setIsEscalatedCount(true);
-		count = workflowRepository.getEscalatedApplicationsCount(requestInfo, criteria);
-		return count;
-	}
-
-	public List<ProcessInstance> statuSearch(RequestInfo requestInfo, ProcessInstanceSearchCriteria criteria) {
-		List<ProcessInstance> processInstances = workflowRepository.getStatusSearch(criteria);
-
-		return processInstances;
-	}
-
+    public Integer countEscalatedApplications(RequestInfo requestInfo,ProcessInstanceSearchCriteria criteria){
+        Integer count;
+        criteria.setIsEscalatedCount(true);
+        count = workflowRepository.getEscalatedApplicationsCount(requestInfo,criteria);
+        return count;
+    }
 }

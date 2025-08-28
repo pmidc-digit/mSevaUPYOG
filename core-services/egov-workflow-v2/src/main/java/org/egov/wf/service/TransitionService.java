@@ -1,5 +1,6 @@
 package org.egov.wf.service;
 
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.tracer.model.CustomException;
@@ -18,309 +19,171 @@ import java.util.stream.Collectors;
 @Service
 public class TransitionService {
 
-	private WorKflowRepository repository;
 
-	private BusinessServiceRepository businessServiceRepository;
+    private WorKflowRepository repository;
 
-	private WorkflowUtil workflowUtil;
+    private BusinessServiceRepository businessServiceRepository;
 
-	@Autowired
-	public TransitionService(WorKflowRepository repository, BusinessServiceRepository businessServiceRepository,
-			WorkflowUtil workflowUtil) {
-		this.repository = repository;
-		this.businessServiceRepository = businessServiceRepository;
-		this.workflowUtil = workflowUtil;
-	}
+    private WorkflowUtil workflowUtil;
 
-	/**
-	 * Creates list of ProcessStateAndAction from the list of the processInstances
-	 * 
-	 * @return List of ProcessStateAndAction containing the State object for status
-	 *         before the action and after the action and the Action object for the
-	 *         given action
-	 */
-	public List<ProcessStateAndAction> getProcessStateAndActions(ProcessInstanceRequest processInstances,
-			Boolean isTransitionCall) {
-		List<ProcessStateAndAction> processStateAndActions = new LinkedList<>();
 
-		BusinessService businessService = getBusinessService(processInstances);
-		Map<String, ProcessInstance> idToProcessInstanceFromDbMap = prepareProcessStateAndAction(
-				processInstances.getProcessInstances(), businessService);
-		List<String> allowedRoles = workflowUtil.rolesAllowedInService(businessService);
-		for (ProcessInstance processInstance : processInstances.getProcessInstances()) {
 
-			ProcessStateAndAction processStateAndAction = new ProcessStateAndAction();
-			processStateAndAction.setProcessInstanceFromRequest(processInstance);
+    @Autowired
+    public TransitionService(WorKflowRepository repository,
+                             BusinessServiceRepository businessServiceRepository,
+                             WorkflowUtil workflowUtil) {
+        this.repository = repository;
+        this.businessServiceRepository = businessServiceRepository;
+        this.workflowUtil = workflowUtil;
+    }
 
-			if (isTransitionCall) {
-				processStateAndAction.getProcessInstanceFromRequest().setModuleName(businessService.getBusiness());
-			}
-			// if(idToProcessInstanceFromDbMap!=null &&
-			// idToProcessInstanceFromDbMap.size()>0)
-			processStateAndAction
-					.setProcessInstanceFromDb(idToProcessInstanceFromDbMap.get(processInstance.getBusinessId()));
-			State currentState = null;
-			if (processStateAndAction.getProcessInstanceFromDb() != null && isTransitionCall)
-				currentState = processStateAndAction.getProcessInstanceFromDb().getState();
-			else if (!isTransitionCall)
-				currentState = processStateAndAction.getProcessInstanceFromRequest().getState();
 
-			// Assign businessSla when creating processInstance
-			if (processStateAndAction.getProcessInstanceFromDb() == null && isTransitionCall)
-				processInstance.setBusinesssServiceSla(businessService.getBusinessServiceSla());
 
-			if (currentState == null) {
-				for (State state : businessService.getStates()) {
-					if (StringUtils.isEmpty(state.getState())) {
-						processStateAndAction.setCurrentState(state);
-						break;
-					}
-				}
-			} else
-				processStateAndAction.setCurrentState(currentState);
 
-			if (!CollectionUtils.isEmpty(processStateAndAction.getCurrentState().getActions())) {
-				for (Action action : processStateAndAction.getCurrentState().getActions()) {
-					if (action.getAction().equalsIgnoreCase(processInstance.getAction())) {
-						if (action.getRoles().contains("*"))
-							action.setRoles(allowedRoles);
-						processStateAndAction.setAction(action);
-						break;
-					}
-				}
-			}
+    /**
+     * Creates list of ProcessStateAndAction from the list of the processInstances
+     * @return List of ProcessStateAndAction containing the State object for status before the action and after the action and
+     * the Action object for the given action
+     */
+    public List<ProcessStateAndAction> getProcessStateAndActions(List<ProcessInstance> processInstances,Boolean isTransitionCall){
+        List<ProcessStateAndAction> processStateAndActions = new LinkedList<>();
 
-			if (isTransitionCall) {
-				//TODO Renuka
-				if (processStateAndAction.getAction() == null)
-					throw new CustomException("INVALID ACTION",
-							"Action " + processStateAndAction.getProcessInstanceFromRequest().getAction()
-									+ " not found in config for the businessId: "
-									+ processStateAndAction.getProcessInstanceFromRequest().getBusinessId());
+        BusinessService businessService = getBusinessService(processInstances);
+        Map<String,ProcessInstance> idToProcessInstanceFromDbMap = prepareProcessStateAndAction(processInstances,businessService);
+        List<String> allowedRoles = workflowUtil.rolesAllowedInService(businessService);
+        for(ProcessInstance processInstance: processInstances){
 
-				for (State state : businessService.getStates()) {
-					if (state.getUuid().equalsIgnoreCase(processStateAndAction.getAction().getNextState())) {
-						processStateAndAction.setResultantState(state);
-						break;
-					}
-				}
-				// if remarks comes from one of multiple assignees, stay at same state-
-//				if (!CollectionUtils.isEmpty(processStateAndAction.getProcessInstanceFromRequest().getAssignes())
-//						&& (processStateAndAction.getProcessInstanceFromDb() != null)
-//						&& !CollectionUtils.isEmpty(processStateAndAction.getProcessInstanceFromDb().getAssignes())
-//						&& processStateAndAction.getProcessInstanceFromDb().getAssignes().size() > 1) {
-//					for (State state : businessService.getStates()) {
-//						if (state.getUuid().equalsIgnoreCase(processStateAndAction.getAction().getCurrentState())) {
-//							processStateAndAction.setResultantState(state);
-//							break;
-//						}
-//
-//					}
-//				}
+            ProcessStateAndAction processStateAndAction = new ProcessStateAndAction();
+            processStateAndAction.setProcessInstanceFromRequest(processInstance);
+            if(isTransitionCall){
+                processStateAndAction.getProcessInstanceFromRequest().setModuleName(businessService.getBusiness());
+            }
+            processStateAndAction.setProcessInstanceFromDb(idToProcessInstanceFromDbMap.get(processInstance.getBusinessId()));
+            State currentState = null;
+            if(processStateAndAction.getProcessInstanceFromDb()!=null && isTransitionCall)
+                currentState = processStateAndAction.getProcessInstanceFromDb().getState();
+            else if(!isTransitionCall)
+                currentState = processStateAndAction.getProcessInstanceFromRequest().getState();
 
-			}
 
-			processStateAndActions.add(processStateAndAction);
+            //Assign businessSla when creating processInstance
+            if(processStateAndAction.getProcessInstanceFromDb()==null && isTransitionCall)
+                processInstance.setBusinesssServiceSla(businessService.getBusinessServiceSla());
 
-		}
 
-		return processStateAndActions;
-	}
+            if(currentState==null){
+                    for(State state : businessService.getStates()){
+                        if(StringUtils.isEmpty(state.getState())){
+                            processStateAndAction.setCurrentState(state);
+                            break;
+                        }
+                    }
+            }
+            else processStateAndAction.setCurrentState(currentState);
 
-	
-	/**
-	 * Creates list of ProcessStateAndAction from the list of the processInstances
-	 * 
-	 * @return List of ProcessStateAndAction containing the State object for status
-	 *         before the action and after the action and the Action object for the
-	 *         given action
-	 */
-	public List<ProcessStateAndAction> getProcessStateAndActionsv2(ProcessInstanceRequest processInstances,
-			Boolean isTransitionCall) {
-		List<ProcessStateAndAction> processStateAndActions = new LinkedList<>();
+            if(!CollectionUtils.isEmpty(processStateAndAction.getCurrentState().getActions())){
+                for (Action action : processStateAndAction.getCurrentState().getActions()){
+                    if(action.getAction().equalsIgnoreCase(processInstance.getAction())){
+                        if(action.getRoles().contains("*"))
+                            action.setRoles(allowedRoles);
+                        processStateAndAction.setAction(action);
+                        break;
+                    }
+                }
+            }
 
-		BusinessService businessService = getBusinessService(processInstances);
-	
-		Map<String, ProcessInstance> idToProcessInstanceFromDbMap = prepareProcessStateAndActionv2(
-				processInstances.getProcessInstances(), businessService);
-		if(idToProcessInstanceFromDbMap==null || idToProcessInstanceFromDbMap.isEmpty())
-		{
-			idToProcessInstanceFromDbMap = prepareProcessStateAndAction(
-					processInstances.getProcessInstances(), businessService);
-		}
-		
-		List<String> allowedRoles = workflowUtil.rolesAllowedInService(businessService);
-		for (ProcessInstance processInstance : processInstances.getProcessInstances()) {
 
-			ProcessStateAndAction processStateAndAction = new ProcessStateAndAction();
-			processStateAndAction.setProcessInstanceFromRequest(processInstance);
+            if(isTransitionCall){
+                if(processStateAndAction.getAction()==null)
+                    throw new CustomException("INVALID ACTION","Action "+processStateAndAction.getProcessInstanceFromRequest().getAction()
+                            + " not found in config for the businessId: "
+                            +processStateAndAction.getProcessInstanceFromRequest().getBusinessId());
 
-			if (isTransitionCall) {
-				processStateAndAction.getProcessInstanceFromRequest().setModuleName(businessService.getBusiness());
-			}
-			// if(idToProcessInstanceFromDbMap!=null &&
-			// idToProcessInstanceFromDbMap.size()>0)
-			processStateAndAction
-					.setProcessInstanceFromDb(idToProcessInstanceFromDbMap.get(processInstance.getBusinessId()));
-			State currentState = null;
-			if (processStateAndAction.getProcessInstanceFromDb() != null && isTransitionCall)
-				currentState = processStateAndAction.getProcessInstanceFromDb().getState();
-			else if (!isTransitionCall)
-				currentState = processStateAndAction.getProcessInstanceFromRequest().getState();
+                for(State state : businessService.getStates()){
+                    if(state.getUuid().equalsIgnoreCase(processStateAndAction.getAction().getNextState())){
+                        processStateAndAction.setResultantState(state);
+                        break;
+                    }
+                }
+            }
 
-			// Assign businessSla when creating processInstance
-			if (processStateAndAction.getProcessInstanceFromDb() == null && isTransitionCall)
-				processInstance.setBusinesssServiceSla(businessService.getBusinessServiceSla());
+            processStateAndActions.add(processStateAndAction);
 
-			if (currentState == null) {
-				for (State state : businessService.getStates()) {
-					if (StringUtils.isEmpty(state.getState())) {
-						processStateAndAction.setCurrentState(state);
-						break;
-					}
-				}
-			} else
-				processStateAndAction.setCurrentState(currentState);
+        }
 
-			if (!CollectionUtils.isEmpty(processStateAndAction.getCurrentState().getActions())) {
-				for (Action action : processStateAndAction.getCurrentState().getActions()) {
-					if (action.getAction().equalsIgnoreCase(processInstance.getAction())) {
-						if (action.getRoles().contains("*"))
-							action.setRoles(allowedRoles);
-						processStateAndAction.setAction(action);
-						break;
-					}
-				}
-			}
 
-			if (isTransitionCall) {
-				//TODO Renuka
-				if (processStateAndAction.getAction() == null)
-					throw new CustomException("INVALID ACTION",
-							"Action " + processStateAndAction.getProcessInstanceFromRequest().getAction()
-									+ " not found in config for the businessId: "
-									+ processStateAndAction.getProcessInstanceFromRequest().getBusinessId());
+        return processStateAndActions;
+    }
 
-				for (State state : businessService.getStates()) {
-					if (state.getUuid().equalsIgnoreCase(processStateAndAction.getAction().getNextState())) {
-						processStateAndAction.setResultantState(state);
-						break;
-					}
-				}
-				// if remarks comes from one of multiple assignees, stay at same state-
-//				if (!CollectionUtils.isEmpty(processStateAndAction.getProcessInstanceFromRequest().getAssignes())
-//						&& (processStateAndAction.getProcessInstanceFromDb() != null)
-//						&& !CollectionUtils.isEmpty(processStateAndAction.getProcessInstanceFromDb().getAssignes())
-//						&& processStateAndAction.getProcessInstanceFromDb().getAssignes().size() > 1) {
-//					for (State state : businessService.getStates()) {
-//						if (state.getUuid().equalsIgnoreCase(processStateAndAction.getAction().getCurrentState())) {
-//							processStateAndAction.setResultantState(state);
-//							break;
-//						}
-//
-//					}
-//				}
 
-			}
 
-			processStateAndActions.add(processStateAndAction);
 
-		}
+    /**
+     * Current status of the incoming request is fetched from the DB and set
+     *
+     * If the request object is being created for the first time
+     *
+     * then state will remain null
+     *
+     * @param processInstances The list of ProcessInstance to be created
+     */
+    private Map<String,ProcessInstance> prepareProcessStateAndAction(List<ProcessInstance> processInstances,BusinessService businessService) {
 
-		return processStateAndActions;
-	}
+        /*
+         * preparing the criteria to search the process instances from DB
+         */
+        ProcessInstanceSearchCriteria criteria = new ProcessInstanceSearchCriteria();
+        List<String> businessIds = processInstances.stream().map(ProcessInstance::getBusinessId)
+                .collect(Collectors.toList());
+        criteria.setTenantId(processInstances.get(0).getTenantId());
+        criteria.setBusinessIds(businessIds);
+        /*
+         * fetching the result from repository
+         *
+         * converting the list of process instances to map of businessId and state
+         * object
+         */
+        List<ProcessInstance> processInstancesFromDB = repository.getProcessInstances(criteria);
 
-	/**
-	 * Current status of the incoming request is fetched from the DB and set
-	 *
-	 * If the request object is being created for the first time
-	 *
-	 * then state will remain null
-	 *
-	 * @param processInstances The list of ProcessInstance to be created
-	 */
-	private Map<String, ProcessInstance> prepareProcessStateAndAction(List<ProcessInstance> processInstances,
-			BusinessService businessService) {
+        Map<String, ProcessInstance> businessStateMap = new LinkedHashMap<>();
+        for(ProcessInstance processInstance : processInstancesFromDB){
+            businessStateMap.put(processInstance.getBusinessId(), processInstance);
+        }
 
-		/*
-		 * preparing the criteria to search the process instances from DB
-		 */
-		ProcessInstanceSearchCriteria criteria = new ProcessInstanceSearchCriteria();
-		List<String> businessIds = processInstances.stream().map(ProcessInstance::getBusinessId)
-				.collect(Collectors.toList());
-		criteria.setTenantId(processInstances.get(0).getTenantId());
-		criteria.setBusinessIds(businessIds);
-		/*
-		 * fetching the result from repository
-		 *
-		 * converting the list of process instances to map of businessId and state
-		 * object
-		 */
-		List<ProcessInstance> processInstancesFromDB = repository.getProcessInstances(criteria);
+        return businessStateMap;
+    }
 
-		Map<String, ProcessInstance> businessStateMap = new LinkedHashMap<>();
-		for (ProcessInstance processInstance : processInstancesFromDB) {
-			businessStateMap.put(processInstance.getBusinessId(), processInstance);
-		}
 
-		return businessStateMap;
-	}
 
-	/**
-	 * Current status of the incoming request is fetched from the DB and set
-	 *
-	 * If the request object is being created for the first time
-	 *
-	 * then state will remain null
-	 *
-	 * @param processInstances The list of ProcessInstance to be created
-	 */
-	private Map<String, ProcessInstance> prepareProcessStateAndActionv2(List<ProcessInstance> processInstances,
-			BusinessService businessService) {
+    private BusinessService getBusinessService(List<ProcessInstance> processInstances){
+        BusinessServiceSearchCriteria criteria = new BusinessServiceSearchCriteria();
+        String tenantId = processInstances.get(0).getTenantId();
+        String businessService = processInstances.get(0).getBusinessService();
+        criteria.setTenantId(tenantId);
+        criteria.setBusinessServices(Collections.singletonList(businessService));
+        List<BusinessService> businessServices = businessServiceRepository.getBusinessServices(criteria);
+        if(CollectionUtils.isEmpty(businessServices))
+            throw new CustomException("BUSINESSSERVICE ERROR","No bussinessService object found for businessSerice: "+
+                    businessService + " and tenantId: "+tenantId);
+        if(businessServices.size()!=1)
+            throw new CustomException("BUSINESSSERVICE ERROR","Multiple bussinessService object found for businessSerice: "+
+                    businessService + " and tenantId: "+tenantId);
+        return businessServices.get(0);
+    }
 
-		/*
-		 * preparing the criteria to search the process instances from DB
-		 */
-		ProcessInstanceSearchCriteria criteria = new ProcessInstanceSearchCriteria();
-		List<String> businessIds = processInstances.stream().map(ProcessInstance::getBusinessId)
-				.collect(Collectors.toList());
-		criteria.setTenantId(processInstances.get(0).getTenantId());
-		criteria.setBusinessIds(businessIds);
-		
-		criteria.setAssignee(processInstances.get(0).getAssigner().getUuid());
-		/*
-		 * 
-		 * fetching the result from repository
-		 *
-		 * converting the list of process instances to map of businessId and state
-		 * object
-		 */
-		List<ProcessInstance> processInstancesFromDB = repository.getProcessInstancesv2(criteria);
 
-		Map<String, ProcessInstance> businessStateMap = new LinkedHashMap<>();
-		for (ProcessInstance processInstance : processInstancesFromDB) {
-			businessStateMap.put(processInstance.getBusinessId(), processInstance);
-		}
 
-		return businessStateMap;
-	}
 
-	private BusinessService getBusinessService(ProcessInstanceRequest processInstances) {
-		BusinessServiceSearchCriteria criteria = new BusinessServiceSearchCriteria();
-		String tenantId = processInstances.getProcessInstances().get(0).getTenantId();
-		String businessService = processInstances.getProcessInstances().get(0).getBusinessService();
-		criteria.setTenantId(tenantId);
-		criteria.setBusinessServices(Collections.singletonList(businessService));
-		List<BusinessService> businessServices = businessServiceRepository
-				.getBusinessServices(processInstances.getRequestInfo(), criteria);
-		if (CollectionUtils.isEmpty(businessServices))
-			throw new CustomException("BUSINESSSERVICE ERROR", "No bussinessService object found for businessSerice: "
-					+ businessService + " and tenantId: " + tenantId);
-		if (businessServices.size() != 1)
-			throw new CustomException("BUSINESSSERVICE ERROR",
-					"Multiple bussinessService object found for businessSerice: " + businessService + " and tenantId: "
-							+ tenantId);
-		return businessServices.get(0);
-	}
+
+
+
+
+
+
+
+
+
+
+
 
 }

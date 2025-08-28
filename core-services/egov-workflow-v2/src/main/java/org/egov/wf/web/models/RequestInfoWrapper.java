@@ -2,10 +2,8 @@ package org.egov.wf.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-
-import java.util.List;
-
 import org.egov.common.contract.request.RequestInfo;
+
 
 @Getter
 @Setter
@@ -16,8 +14,4 @@ public class RequestInfoWrapper {
 
 	@JsonProperty("RequestInfo")
 	private RequestInfo requestInfo;
-
-	@JsonProperty("applicationEmployee")
-	private List<String> applicationEmployee;
-
 }

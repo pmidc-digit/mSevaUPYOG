@@ -1,27 +1,20 @@
 package org.egov.wf.repository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.egov.common.contract.request.RequestInfo;
+import lombok.extern.slf4j.Slf4j;
+import org.egov.common.contract.request.Role;
+import org.egov.tracer.model.CustomException;
 import org.egov.wf.config.WorkflowConfig;
 import org.egov.wf.repository.querybuilder.BusinessServiceQueryBuilder;
 import org.egov.wf.repository.rowmapper.BusinessServiceRowMapper;
 import org.egov.wf.service.MDMSService;
-import org.egov.wf.web.models.Action;
-import org.egov.wf.web.models.BusinessService;
-import org.egov.wf.web.models.BusinessServiceSearchCriteria;
-import org.egov.wf.web.models.State;
+import org.egov.wf.web.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.CollectionUtils;
 
-import lombok.extern.slf4j.Slf4j;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -54,16 +47,17 @@ public class BusinessServiceRepository {
 
 
 
-    public List<BusinessService> getBusinessServices(RequestInfo requestinfo,BusinessServiceSearchCriteria criteria){
+    public List<BusinessService> getBusinessServices(BusinessServiceSearchCriteria criteria){
         String query;
 
         List<String> stateLevelBusinessServices = new LinkedList<>();
         List<String> tenantBusinessServices = new LinkedList<>();
-        criteria.setRequestInfo(requestinfo);
-        Map<String, Boolean> stateLevelMapping = mdmsService.getStateLevelMapping(requestinfo);
+
+        Map<String, Boolean> stateLevelMapping = mdmsService.getStateLevelMapping();
 
         if(!CollectionUtils.isEmpty(criteria.getBusinessServices())){
-           criteria.getBusinessServices().forEach(businessService -> {
+
+            criteria.getBusinessServices().forEach(businessService -> {
                 if(stateLevelMapping.get(businessService)==null || stateLevelMapping.get(businessService))
                     stateLevelBusinessServices.add(businessService);
                 else
@@ -99,12 +93,12 @@ public class BusinessServiceRepository {
      * @return
      */
     @Cacheable(value = "roleTenantAndStatusesMapping")
-    public Map<String,Map<String,List<String>>> getRoleTenantAndStatusMapping(RequestInfo requestinfo){
+    public Map<String,Map<String,List<String>>> getRoleTenantAndStatusMapping(){
 
 
         Map<String, Map<String,List<String>>> roleTenantAndStatusMapping = new HashMap();
 
-        List<BusinessService> businessServices = getAllBusinessService(requestinfo);
+        List<BusinessService> businessServices = getAllBusinessService();
 
         for(BusinessService businessService : businessServices){
 
@@ -157,13 +151,13 @@ public class BusinessServiceRepository {
      * Returns all the avialable businessServices
      * @return
      */
-    private List<BusinessService> getAllBusinessService(RequestInfo requestinfo){
+    private List<BusinessService> getAllBusinessService(){
 
         List<Object> preparedStmtList = new ArrayList<>();
         String query = queryBuilder.getBusinessServices(new BusinessServiceSearchCriteria(), preparedStmtList);
 
         List<BusinessService> businessServices = jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-        List<BusinessService> filterBusinessServices = filterBusinessServices(requestinfo,businessServices);
+        List<BusinessService> filterBusinessServices = filterBusinessServices((businessServices));
 
         return filterBusinessServices;
     }
@@ -174,9 +168,9 @@ public class BusinessServiceRepository {
      * @param businessServices
      * @return
      */
-    private List<BusinessService> filterBusinessServices(RequestInfo requestinfo,List<BusinessService> businessServices){
+    private List<BusinessService> filterBusinessServices(List<BusinessService> businessServices){
 
-        Map<String, Boolean> stateLevelMapping = mdmsService.getStateLevelMapping(requestinfo);
+        Map<String, Boolean> stateLevelMapping = mdmsService.getStateLevelMapping();
         List<BusinessService> filteredBusinessService = new LinkedList<>();
 
         for(BusinessService businessService : businessServices){

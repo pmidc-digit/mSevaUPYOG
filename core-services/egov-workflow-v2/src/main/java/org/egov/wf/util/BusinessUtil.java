@@ -1,6 +1,5 @@
 package org.egov.wf.util;
 
-import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
 import org.egov.wf.repository.BusinessServiceRepository;
 import org.egov.wf.web.models.BusinessService;
@@ -28,11 +27,11 @@ public class BusinessUtil {
      * @param businessService The businessService code of the businessService
      * @return BusinessService
      */
-    public BusinessService getBusinessService(RequestInfo requestInfo,String tenantId,String businessService){
+    public BusinessService getBusinessService(String tenantId,String businessService){
         BusinessServiceSearchCriteria criteria = new BusinessServiceSearchCriteria();
         criteria.setTenantId(tenantId);
         criteria.setBusinessServices(Collections.singletonList(businessService));
-        List<BusinessService> businessServices = businessServiceRepository.getBusinessServices(requestInfo,criteria);
+        List<BusinessService> businessServices = businessServiceRepository.getBusinessServices(criteria);
         if(CollectionUtils.isEmpty(businessServices))
             throw new CustomException("INVALID REQUEST","No BusinessService found for businessService: "+criteria.getBusinessServices());
         return businessServices.get(0);

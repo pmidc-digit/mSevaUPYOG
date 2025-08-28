@@ -92,9 +92,5 @@ public class WorkflowConfig {
 	@Value("${persister.moall.transition.wf.topic}")
 	private String moveAllTopic;
 	
-	@Value("${egov.hrms.host}")
-	private String hrmsHost;
-	
-	@Value("${egov.hrms.workDir.path}")
-	private String hrmsPath;
+
 }

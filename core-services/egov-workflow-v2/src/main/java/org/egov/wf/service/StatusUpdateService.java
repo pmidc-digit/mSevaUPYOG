@@ -81,14 +81,14 @@ public class StatusUpdateService {
 			}
 			processStateAndAction.getProcessInstanceFromRequest().setState(processStateAndAction.getResultantState());
 
-			if (processStateAndAction.getProcessInstanceFromRequest().getAssignes() != null
-					&& processStateAndAction.getProcessInstanceFromRequest().getAssignes().size() > 0)
-				for (User user : processStateAndAction.getProcessInstanceFromRequest().getAssignes()) {
-
-					String employeeTenant = getFirstAssigneeByRole(user.getUuid(), requestInfo);
-
-					user.setTenantId(employeeTenant);
-				}
+//			if (processStateAndAction.getProcessInstanceFromRequest().getAssignes() != null
+//					&& processStateAndAction.getProcessInstanceFromRequest().getAssignes().size() > 0)
+//				for (User user : processStateAndAction.getProcessInstanceFromRequest().getAssignes()) {
+//
+////					String employeeTenant = getFirstAssigneeByRole(user.getUuid(), requestInfo);
+////
+////					user.setTenantId(employeeTenant);
+//				}
 
 			if (processStateAndAction.getProcessInstanceFromRequest().getAssignes() != null
 					&& processStateAndAction.getProcessInstanceFromRequest().getAssignes().size() > 0) {
@@ -123,22 +123,5 @@ public class StatusUpdateService {
 		}
 	}
 
-	public String getFirstAssigneeByRole(String uuid, RequestInfo requestInfo) {
 
-		StringBuilder uri = new StringBuilder();
-		uri.append(config.getHrmsHost());
-		uri.append(config.getHrmsPath());
-		uri.append("?uuids=" + uuid);
-
-		RequestInfoWrapperV2 requestInfoWrapper = new RequestInfoWrapperV2();
-		requestInfoWrapper.setRequestInfo(requestInfo);
-		Object fetchResult = serviceRequestRepository.fetchResult(uri, requestInfoWrapper);
-		log.info("fecth result" + fetchResult);
-		EmployeesResponseTenant employeeResponse = null;
-		employeeResponse = mapper.convertValue(fetchResult, EmployeesResponseTenant.class);
-
-		String tenant = employeeResponse.getEmployee().get(0).getTenantId();
-
-		return tenant;
-	}
 }

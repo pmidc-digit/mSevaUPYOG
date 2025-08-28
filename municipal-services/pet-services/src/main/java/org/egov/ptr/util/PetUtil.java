@@ -11,6 +11,7 @@ import org.egov.mdms.model.MdmsCriteriaReq;
 import org.egov.mdms.model.MdmsResponse;
 import org.egov.mdms.model.ModuleDetail;
 import org.egov.ptr.config.PetConfiguration;
+import org.egov.ptr.models.BreedType;
 import org.egov.ptr.models.CalculationType;
 import org.egov.ptr.repository.ServiceRequestRepository;
 import org.egov.tracer.model.CustomException;
@@ -40,9 +41,9 @@ public class PetUtil extends CommonUtils {
 	private PetConfiguration config;
 
 
-	public List<CalculationType> getcalculationType(RequestInfo requestInfo, String tenantId, String moduleName) {
+	public List<BreedType> getcalculationType(RequestInfo requestInfo, String tenantId, String moduleName) {
 
-		List<CalculationType> calculationTypes = new ArrayList<CalculationType>();
+		List<BreedType> calculationTypes = new ArrayList<BreedType>();
 		StringBuilder uri = new StringBuilder();
 		uri.append(config.getMdmsHost()).append(config.getMdmsEndpoint());
 
@@ -53,11 +54,11 @@ public class PetUtil extends CommonUtils {
 		if (mdmsResponse.getMdmsRes().get(PET_MASTER_MODULE_NAME) == null) {
 			throw new CustomException("FEE_NOT_AVAILABLE", "Pet registration fee not available.");
 		}
-		JSONArray jsonArray = mdmsResponse.getMdmsRes().get(PET_MASTER_MODULE_NAME).get(CALCULATION_TYPE);
+		JSONArray jsonArray = mdmsResponse.getMdmsRes().get(PET_MASTER_MODULE_NAME).get("BreedType");
 
 		try {
 			calculationTypes = mapper.readValue(jsonArray.toJSONString(),
-					mapper.getTypeFactory().constructCollectionType(List.class, CalculationType.class));
+					mapper.getTypeFactory().constructCollectionType(List.class, BreedType.class));
 		} catch (JsonProcessingException e) {
 			log.info("Exception occured while converting calculation type  for pet registration: " + e);
 		}
@@ -69,7 +70,8 @@ public class PetUtil extends CommonUtils {
 	private MdmsCriteriaReq getMdmsRequestCalculationType(RequestInfo requestInfo, String tenantId, String moduleName) {
 
 		MasterDetail masterDetail = new MasterDetail();
-		masterDetail.setName(CALCULATION_TYPE);
+//		masterDetail.setName(CALCULATION_TYPE);
+		masterDetail.setName("BreedType");
 		List<MasterDetail> masterDetailList = new ArrayList<>();
 		masterDetailList.add(masterDetail);
 

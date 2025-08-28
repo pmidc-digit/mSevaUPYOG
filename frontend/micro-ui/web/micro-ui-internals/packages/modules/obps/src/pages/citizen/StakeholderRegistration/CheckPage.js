@@ -30,14 +30,22 @@ const CheckPage = ({ onSubmit, value }) => {
   let isopenlink = window.location.href.includes("/openlink/");
   const isMobile = window.Digit.Utils.browser.isMobile();
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
+  let storedData = Digit.SessionStorage.get("Digit.BUILDING_PERMIT");
 
-  if (isopenlink)
-    window.onunload = function () {
-      sessionStorage.removeItem("Digit.BUILDING_PERMIT");
-    };
+  // if (isopenlink)
+  //   window.onunload = function () {
+  //     sessionStorage.removeItem("Digit.BUILDING_PERMIT");
+  //   };
 
-  const { result, formData, documents } = value;
-  let consumerCode = value?.result?.Licenses[0].applicationNumber;
+  // 🔄 Merge props + storage fallback
+  const safeValue = value && Object.keys(value).length > 0 ? value : storedData || {};
+  const { result, formData, documents } = safeValue;
+
+  console.log(safeValue, "Final Value after refresh handling");
+
+  // const { result, formData, documents } = value;
+  console.log(value, "VVVV");
+  let consumerCode = result?.Licenses[0].applicationNumber;
   const fetchBillParams = { consumerCode };
 
   const { data: paymentDetails, isLoading } = Digit.Hooks.obps.useBPAREGgetbill(
@@ -54,8 +62,10 @@ const CheckPage = ({ onSubmit, value }) => {
     history.push(jumpTo);
   }
 
-  if(isLoading){
-    return <Loader />
+  console.log(formData, "CHECK FORM");
+
+  if (isLoading) {
+    return <Loader />;
   }
 
   return (
@@ -162,7 +172,7 @@ const CheckPage = ({ onSubmit, value }) => {
                 style={{ width: "100px", display: "inline" }}
                 onClick={() => routeTo(`${routeLink}/correspondence-address`)}
               /> */}
-              <CardText style={isMobile ? { color: "black" } : { color: "black", fontSize: "16px" }}>{t(value?.Correspondenceaddress)}</CardText>
+              <CardText style={isMobile ? { color: "black" } : { color: "black", fontSize: "16px" }}>{t(safeValue?.Correspondenceaddress)}</CardText>
             </StatusTable>
           </Card>
           <Card style={{ paddingRight: "16px" }}>
@@ -180,7 +190,7 @@ const CheckPage = ({ onSubmit, value }) => {
                     <div style={{ fontSize: "12px", color: "#505A5F", fontWeight: 400, lineHeight: "15px" }}>{`${t(doc?.info)}`}</div>
                   ) : null}
                   <StatusTable>
-                    <OBPSDocument value={value} Code={doc?.documentType} index={index} isNOC={false} svgStyles={{}} isStakeHolder={true} />
+                    <OBPSDocument value={safeValue} Code={doc?.documentType} index={index} isNOC={false} svgStyles={{}} isStakeHolder={true} />
                     {documents?.documents?.length != index + 1 ? (
                       <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
                     ) : null}
@@ -189,7 +199,6 @@ const CheckPage = ({ onSubmit, value }) => {
               ))}
             </StatusTable>
           </Card>
-          <h2>Hello</h2>
           <Card style={{ paddingRight: "16px" }}>
             <CardHeader styles={{ fontSize: "24px" }}>{t("BPA_SUMMARY_FEE_EST")}</CardHeader>
             <StatusTable>

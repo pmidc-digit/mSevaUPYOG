@@ -203,7 +203,13 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
         {isOpenLinkFlow && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
         <Timeline currentStep={1} flow="STAKEHOLDER" />
         {!isLoading || !isUserLoading ? (
-          <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={!name || !mobileNumber || !gender || !dateOfBirth}>
+          <FormStep
+            config={config}
+            onSelect={goNext}
+            onSkip={onSkip}
+            t={t}
+            isDisabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName}
+          >
             <div>
               <CardLabel>{t("BPA_FIRST_NAME")}*</CardLabel>
               <TextInput

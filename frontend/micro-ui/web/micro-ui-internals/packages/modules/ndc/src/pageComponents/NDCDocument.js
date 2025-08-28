@@ -18,25 +18,51 @@ function NDCDocument({ value = {} }) {
     { value }
   );
   let documents = [];
-  if(value?.workflowDocs) documents = value?.workflowDocs;
-//   if(value?.owners?.documents["ProofOfIdentity"]) documents.push(value.owners.documents["ProofOfIdentity"]);
-//   if(value?.owners?.documents["ProofOfOwnership"]) documents.push(value.owners.documents["ProofOfOwnership"]);
-//   if(value?.owners?.documents["OwnerPhotoProof"]) documents.push(value.owners.documents["OwnerPhotoProof"]);
+  if (value?.workflowDocs) documents = value?.workflowDocs;
+  //   if(value?.owners?.documents["ProofOfIdentity"]) documents.push(value.owners.documents["ProofOfIdentity"]);
+  //   if(value?.owners?.documents["ProofOfOwnership"]) documents.push(value.owners.documents["ProofOfOwnership"]);
+  //   if(value?.owners?.documents["OwnerPhotoProof"]) documents.push(value.owners.documents["OwnerPhotoProof"]);
 
-//   if (isLoading) {
-//     return <Loader />;
-//   }
+  //   if (isLoading) {
+  //     return <Loader />;
+  //   }
 
   return (
     <div style={{ marginTop: "19px" }}>
       <React.Fragment>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
           {documents?.map((document, index) => {
             let documentLink = pdfDownloadLink(data.pdfFiles, document?.documentAttachment);
             return (
-              <a target="_" href={documentLink} style={{ minWidth: "100px",marginRight:"10px" }} key={index}>
-                <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                <p style={{ marginTop: "8px",textAlign:"center" }}>{value?.workflowDocs ? t(`${document?.documentType}`) : t(`TL_${document?.documentType}_LABEL`)}</p>
+              <a
+                target="_"
+                href={documentLink}
+                key={index}
+                style={{
+                  width: "120px", // ✅ fixed card size
+                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
+              >
+                <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px", borderRadius: "4px" }} />
+                <p
+                  style={{
+                    marginTop: "8px",
+                    fontSize: "12px",
+                    wordWrap: "break-word",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2, // ✅ allow max 2 lines
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  {value?.workflowDocs ? t(`${document?.documentType}`) : t(`TL_${document?.documentType}_LABEL`)}
+                </p>
               </a>
             );
           })}

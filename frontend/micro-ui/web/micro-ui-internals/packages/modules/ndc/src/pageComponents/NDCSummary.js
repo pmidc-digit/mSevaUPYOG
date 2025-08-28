@@ -6,7 +6,7 @@ import { setNDCStep } from "../redux/actions/NDCFormActions";
 import { useTranslation } from "react-i18next";
 import NDCDocument from "../components/NDCDocument";
 
-const NDCSummary = ({ formData, goNext, ...props }) => {
+const NDCSummary = ({ formData, goNext, onGoBack }) => {
   const { pathname: url } = useLocation();
   const { t } = useTranslation();
   const history = useHistory();
@@ -22,6 +22,8 @@ const NDCSummary = ({ formData, goNext, ...props }) => {
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
+
+  const isCitizen = window.location.href.includes("citizen");
 
   const [getData, setData] = useState();
   const [displayMenu, setDisplayMenu] = useState(false);
@@ -73,107 +75,123 @@ const NDCSummary = ({ formData, goNext, ...props }) => {
 
   console.log("workflowDetails", workflowDetails?.data?.nextActions);
 
+  // ---------------- UI Styles ----------------
+  const pageStyle = {
+    padding: "2rem",
+    backgroundColor: "#f9f9f9",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    color: "#333",
+  };
+
+  const sectionStyle = {
+    backgroundColor: "#ffffff",
+    padding: "1rem 1.5rem",
+    borderRadius: "8px",
+    marginBottom: "2rem",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+  };
+
+  const headingStyle = {
+    fontSize: "1.5rem",
+    borderBottom: "2px solid #ccc",
+    paddingBottom: "0.3rem",
+    color: "#2e4a66",
+    marginTop: "2rem",
+    marginBottom: "1rem",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    borderBottom: "1px dashed #e0e0e0",
+    padding: "0.5rem 0",
+    color: "#333",
+  };
+
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+  };
+
+  const documentCardStyle = {
+    flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
+    minWidth: "200px", // keeps it from shrinking too small
+    maxWidth: "250px", // prevents oversized stretching on big screens
+    backgroundColor: "#fdfdfd",
+    padding: "0.75rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  };
+
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+
+  const renderLabel = (label, value) => (
+    <div style={labelFieldPairStyle}>
+      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div>{value || "NA"}</div>
+    </div>
+  );
+
   return (
-    <div className="application-summary">
-      <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{t("Application Summary")}</h2>
+    <div style={pageStyle}>
+      <h2 style={headingStyle}>{t("Application Summary")}</h2>
 
-      <div className="summary-section">
-        {/* <div className="section-header">
-          <h3>{t("Property Details")}</h3>
-          <label onClick={() => dispatch(setNDCStep(1))}>{t("EDIT")}</label>
-        </div> */}
-        <div className="section-content">
-          <LabelFieldPair>
-            <CardLabel>{t("First Name")}</CardLabel>
-            <div>{formData?.NDCDetails?.PropertyDetails?.firstName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Last Name")}</CardLabel>
-            <div>{formData?.NDCDetails?.PropertyDetails?.lastName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Mobile Number")}</CardLabel>
-            <div>{formData?.NDCDetails?.PropertyDetails?.mobileNumber || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Email ID")}</CardLabel>
-            <div>{formData?.NDCDetails?.PropertyDetails?.email || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Address")}</CardLabel>
-            <div>{formData?.NDCDetails?.PropertyDetails?.address || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("NDC Reason")}</CardLabel>
-            <div>{t(formData?.NDCDetails?.NDCReason?.i18nKey) || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Water Connection")}</CardLabel>
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              {formData?.NDCDetails?.PropertyDetails?.waterConnection?.length > 0
-                ? formData?.NDCDetails?.PropertyDetails?.waterConnection?.map((item, index) => (
-                    <div key={item.connectionNo + index}>{item.connectionNo}</div>
-                  ))
-                : "NA"}
-            </div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Sewerage Connection")}</CardLabel>
-            <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              {formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.length > 0
-                ? formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.map((item, index) => (
-                    <div key={item.connectionNo + index}>{item.connectionNo}</div>
-                  ))
-                : "NA"}
-            </div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Property ID")}</CardLabel>
-            <div>{formData?.NDCDetails?.cpt?.id || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Amount")}</CardLabel>
-            <div>{getData?.totalAmount || "NA"}</div>
-          </LabelFieldPair>
-        </div>
+      {/* Property Details Section */}
+      <div style={sectionStyle}>
+        {renderLabel(t("First Name"), formData?.NDCDetails?.PropertyDetails?.firstName)}
+        {renderLabel(t("Last Name"), formData?.NDCDetails?.PropertyDetails?.lastName)}
+        {renderLabel(t("Mobile Number"), formData?.NDCDetails?.PropertyDetails?.mobileNumber)}
+        {renderLabel(t("Email ID"), formData?.NDCDetails?.PropertyDetails?.email)}
+        {renderLabel(t("Address"), formData?.NDCDetails?.PropertyDetails?.address)}
+        {renderLabel(t("NDC Reason"), t(formData?.NDCDetails?.NDCReason?.i18nKey))}
+
+        {renderLabel(
+          t("Water Connection"),
+          formData?.NDCDetails?.PropertyDetails?.waterConnection?.length > 0
+            ? formData?.NDCDetails?.PropertyDetails?.waterConnection?.map((item, index) => <div key={index}>{item?.connectionNo}</div>)
+            : "NA"
+        )}
+
+        {renderLabel(
+          t("Sewerage Connection"),
+          formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.length > 0
+            ? formData?.NDCDetails?.PropertyDetails?.sewerageConnection?.map((item, index) => <div key={index}>{item?.connectionNo}</div>)
+            : "NA"
+        )}
+
+        {renderLabel(t("Property ID"), formData?.NDCDetails?.cpt?.id)}
+        {renderLabel(
+          t("Amount"),
+          getData?.totalAmount ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(getData?.totalAmount) : "NA"
+        )}
       </div>
 
-      <div className="summary-section">
-        {/* <div className="section-header">
-          <h3>{t("Documents")}</h3>
-          <label onClick={() => dispatch(setNDCStep(2))}>{t("EDIT")}</label>
-        </div> */}
-        <div className="section-content">
-          {/* {formData?.DocummentDetails?.documents?.documents?.map((doc, index) => (
-                <LabelFieldPair key={index}>
-                  <CardLabel>{t("Document")}</CardLabel>
-                  <div>{doc?.documentType || "NA"}</div>
-                </LabelFieldPair>
-              ))} */}
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("NDC_DOCUMENTS_DETAILS")}</CardSubHeader>
-          <StatusTable>
+      {/* Documents Section */}
+      {/* Documents Section */}
+      <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
+      <div style={sectionStyle}>
+        {docs?.length > 0 ? (
+          <div style={documentsContainerStyle}>
             {docs?.map((doc, index) => (
-              <NDCDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
+              <div key={index} style={documentCardStyle}>
+                <NDCDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
+              </div>
             ))}
-          </StatusTable>
-        </div>
+          </div>
+        ) : (
+          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
+        )}
       </div>
 
+      {/* Action Section */}
       <ActionBar>
+        <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
         {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
-          <Menu
-            localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`}
-            options={actions}
-            optionKey={"action"}
-            t={t}
-            onSelect={onActionSelect}
-            // style={MenuStyle}
-          />
+          <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
         ) : null}
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-        {/* <SubmitBar label="Next" submit="submit" /> */}
-
-        {/* <SubmitBar label={t("WF_TAKE_ACTION")} /> */}
       </ActionBar>
     </div>
   );

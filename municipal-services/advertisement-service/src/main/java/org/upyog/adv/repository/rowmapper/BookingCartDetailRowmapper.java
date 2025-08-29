@@ -34,6 +34,7 @@ public class BookingCartDetailRowmapper implements ResultSetExtractor<List<CartD
 					//TODO; Need to parse into boolean
 					.nightLight(rs.getObject("night_light") != null ? rs.getBoolean("night_light") : null) 
 					.auditDetails(BookingUtil.getAuditDetails(rs))
+					.advertisementId(rs.getString("advertisement_id"))
 					.build();
 
 			cartDetails.add(slotDetail);

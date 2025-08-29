@@ -64,5 +64,8 @@ public class CartDetail {
 	private String status = null;
 	
 	private AuditDetails auditDetails;
+
+	@JsonProperty("advertisementId")
+	private String advertisementId = null;
 	
 }

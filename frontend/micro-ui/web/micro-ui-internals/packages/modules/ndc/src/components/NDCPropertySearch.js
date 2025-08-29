@@ -42,13 +42,14 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
   const [searchPropertyId, setSearchPropertyId] = useState(formData?.cpt?.id || urlPropertyId !== "null" ? urlPropertyId : "");
   const [showToast, setShowToast] = useState(null);
   const [propertyDetails, setPropertyDetails] = useState(() => {
-    if( formData?.cpt?.details && Object.keys(formData?.cpt?.details).length > 0) {
-      return { Properties: [{...formData?.cpt?.details}] };
-    } else{
+    if (formData?.cpt?.details && Object.keys(formData?.cpt?.details).length > 0) {
+      return { Properties: [{ ...formData?.cpt?.details }] };
+    } else {
       return {
         Properties: [],
       };
-    }});
+    }
+  });
   const isMobile = window.Digit.Utils.browser.isMobile();
   const serachParams = window.location.href.includes("?")
     ? window.location.href.substring(window.location.href.indexOf("?") + 1, window.location.href.length)
@@ -72,11 +73,11 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
       setPropertyDetails(propertyDetailsFetch);
       setShowToast(null);
     } else {
-      if(isfirstRender.current){
+      if (isfirstRender.current) {
         isfirstRender.current = false;
         return;
       }
-      if(!formData?.cpt?.details){
+      if (!formData?.cpt?.details) {
         console.log("Property Id not found in response", propertyId);
         setPropertyDetails({});
         setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
@@ -90,8 +91,8 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
   }, [propertyId]);
 
   useEffect(() => {
-    if ((isLoading == false && error && error == true) && propertyDetails?.Properties?.length == 0) {
-      console.log("Error Caught",error, propertyDetails);
+    if (isLoading == false && error && error == true && propertyDetails?.Properties?.length == 0) {
+      console.log("Error Caught", error, propertyDetails);
       setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
     }
   }, [error, propertyDetails]);
@@ -100,7 +101,6 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
     // sessionStorage.setItem("Digit_FSM_PT", JSON.stringify(propertyDetails?.Properties[0]));
     // localStorage.setItem("pgrProperty", JSON.stringify(propertyDetails?.Properties[0]));
     // sessionStorage.setItem("wsProperty", JSON.stringify(propertyDetails?.Properties[0]));
-
   }, [propertyDetails, pathname]);
 
   const searchProperty = () => {
@@ -108,10 +108,11 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
       setShowToast({ error: true, label: "PT_ENTER_PROPERTY_ID_AND_SEARCH" });
       return;
     }
-    if(propertyId !== searchPropertyId){ 
+
+    if (propertyId !== searchPropertyId) {
       setPropertyDetails({
         Properties: [],
-      })
+      });
       setSearchPropertyId(propertyId);
     }
     // if (window.location.pathname.includes("/tl/new-application")) {
@@ -164,16 +165,17 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
   let clns = "";
   if (window.location.href.includes("/ws/")) clns = ":";
 
-
   const propertyIdInput = {
     label: "PROPERTY_ID",
     type: "text",
     name: "id",
-    validation: {
-      // isRequired: true,
-      // pattern: Digit.Utils.getPattern('Name'),
-      // title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
-    },
+    // validation: {
+    //   pattern: "^PT-\\d{4}-\\d{7,8}$",
+    //   title: t("PT_PROPERTY_ID_INVALID"),
+    //   // isRequired: true,
+    //   // pattern: Digit.Utils.getPattern('Name'),
+    //   // title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
+    // },
     // isMandatory: isPropertyIdMandatory,
   };
 
@@ -185,65 +187,48 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
     return formData && formData[config.key] ? formData[config.key][input] : undefined;
   }
 
-  // function handleSearchProperty() {
-  //   if (window.location.href.includes("digit-ui/citizen")) {
-  //     history.replace(`/digit-ui/citizen/commonpt/property/citizen-search?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state });
-  //   }
-  //   if (window.location.href.includes("digit-ui/employee")) {
-  //     history.replace(`/digit-ui/employee/commonpt/search?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state });
-  //   }
-  // }
-
-  function handleCreateProperty() {
-    if (window.location.href.includes("digit-ui/citizen")) {
-      history.replace(`/digit-ui/citizen/commonpt/property/new-application?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state });
-    }
-    if (window.location.href.includes("digit-ui/employee")) {
-      history.replace(`/digit-ui/employee/commonpt/new-application?redirectToUrl=${redirectBackUrl}&${serachParams}`, { ...state });
-    }
-  }
-
   return (
     <React.Fragment>
-        <div style={{ marginBottom: "16px" }}>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller" style={getInputStyles()}>
-              {`${t(propertyIdInput.label)}`}
-              {propertyIdInput.isMandatory ? "*" : null}
-            </CardLabel>
-            <div className="field" style={{ marginTop: "20px", display: "flex" }} ref={myElementRef} id="search-property-field">
-              <TextInput
-                key={propertyIdInput.name}
-                value={getValue(propertyIdInput.name)} //{propertyId}
-                onChange={(e) => {
-                  setPropertyId(e.target.value);
-                  // onSelect(config.key, { id: e.target.value });
-                  setValue(e.target.value, propertyIdInput.name);
-                }}
-                disable={false}
-                defaultValue={undefined}
-                style={{ width: "80%", float: "left", marginRight: "20px" }}
-                {...propertyIdInput.validation}
-              />
-              <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
-                {`${t("PT_SEARCH")}`}
-              </button>
-            </div>
-          </LabelFieldPair>
-          
-          {showToast && (
-            <Toast
-              isDleteBtn={true}
-              labelstyle={{ width: "100%" }}
-              error={showToast.error}
-              warning={showToast.warning}
-              label={t(showToast.label)}
-              onClose={() => {
-                setShowToast(null);
+      <div style={{ marginBottom: "16px" }}>
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller" style={getInputStyles()}>
+            {`${t(propertyIdInput.label)}`}
+            {propertyIdInput.isMandatory ? "*" : null}
+          </CardLabel>
+          <div className="field" style={{ marginTop: "20px", display: "flex" }} ref={myElementRef} id="search-property-field">
+            <TextInput
+              key={propertyIdInput.name}
+              value={getValue(propertyIdInput.name)} //{propertyId}
+              onChange={(e) => {
+                setPropertyId(e.target.value);
+                // onSelect(config.key, { id: e.target.value });
+                setValue(e.target.value, propertyIdInput.name);
               }}
+              disable={false}
+              maxlength={16}
+              defaultValue={undefined}
+              style={{ width: "80%", float: "left", marginRight: "20px" }}
+              {...propertyIdInput.validation}
             />
-          )}
-        </div>
+            <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
+              {`${t("PT_SEARCH")}`}
+            </button>
+          </div>
+        </LabelFieldPair>
+
+        {showToast && (
+          <Toast
+            isDleteBtn={true}
+            labelstyle={{ width: "100%" }}
+            error={showToast.error}
+            warning={showToast.warning}
+            label={t(showToast.label)}
+            onClose={() => {
+              setShowToast(null);
+            }}
+          />
+        )}
+      </div>
     </React.Fragment>
   );
 };

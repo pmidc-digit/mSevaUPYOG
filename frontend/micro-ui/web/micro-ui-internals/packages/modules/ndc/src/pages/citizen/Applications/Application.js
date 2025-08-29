@@ -1,11 +1,11 @@
 import { Card, Header, KeyNote, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 
 const MyApplications = ({ view }) => {
   const { t } = useTranslation();
-
+  const history = useHistory();
   const userInfo = Digit.UserService.getUser()?.info || {};
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   console.log("userInfo========", userInfo);
@@ -29,6 +29,11 @@ const MyApplications = ({ view }) => {
 
   console.log("data", data);
 
+  const handlePayment = () => {
+    history.push(`/digit-ui/citizen/payment/collect/NDC/${ndcCode}/${tenantId}`);
+    // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
+  };
+
   if (isLoading) {
     return <Loader />;
   }
@@ -38,6 +43,7 @@ const MyApplications = ({ view }) => {
       <Header>{`${t("TL_MY_APPLICATIONS_HEADER")}`}</Header>
       {data?.data?.map((application, index) => {
         const filteredApplication = Object.fromEntries(Object.entries(application).filter(([key]) => key !== "Applications"));
+        console.log("application?.Applications?.applicationStatus", application?.Applications);
         return (
           <div key={`card-${index}`}>
             <Card>
@@ -46,19 +52,25 @@ const MyApplications = ({ view }) => {
                 .map((item) => (
                   <KeyNote keyValue={t(item)} note={t(filteredApplication[item])} />
                 ))}
-              {/* <Link to={`/digit-ui/citizen/tl/tradelicence/application/${application?.raw?.applicationNumber}/${application.raw?.tenantId}`}>
-                <SubmitBar label={t(application?.raw?.status != "PENDINGPAYMENT" ? "TL_VIEW_DETAILS" : "TL_VIEW_DETAILS_PAY")} />
-              </Link>{" "} */}
-              {/* {application?.raw?.status === "PENDINGPAYMENT" ? (
-                  <Link
+
+              {application?.Applications?.applicationStatus != "PENDINGPAYMENT" && (
+                <Link to={`/digit-ui/citizen/ndc/search/application-overview/${application?.Applications?.uuid}`}>
+                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
+                </Link>
+              )}
+
+              {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
+                <Link
                   to={{
-                    pathname : `/digit-ui/citizen/payment/collect/${data?.[0]?.raw?.businessService}/${application?.raw?.applicationNumber}`,
-                  }}>
-                    <div style={{marginTop:"10px"}}>
-                    <SubmitBar label ={t("COMMON_MAKE_PAYMENT")}/>
-                    </div>
-                  </Link>
-              ):null} */}
+                    pathname: `/digit-ui/citizen/payment/collect/NDC/${application?.Applications?.uuid}/${tenantId}?tenantId=${tenantId}`,
+                  }}
+                >
+                  <div style={{ marginTop: "10px" }}>
+                    <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
+                  </div>
+                </Link>
+              )}
+              {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
             </Card>
           </div>
         );

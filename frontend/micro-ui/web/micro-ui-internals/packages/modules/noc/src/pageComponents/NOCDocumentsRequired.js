@@ -69,7 +69,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
               />
             );
           })}
-          {error && <Toast label={error} onClose={() => setError(null)} error />}
+          {error && <Toast label={error} isDleteBtn={true} onClose={() => setError(null)} error />}
         </FormStep>
       ) : (
         <Loader />
@@ -159,6 +159,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             documentType: selectedDocument?.code,
             filestoreId: uploadedFile,
             documentUid: uploadedFile,
+            documentAttachment: uploadedFile
           },
         ];
       });
@@ -200,6 +201,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       if (file) {
         setLoading(true);
         if (file.size >= 5242880) {
+          setLoading(false);
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
           // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
         } else {
@@ -247,8 +249,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             console.log("lat====", lat);
             if (lat && lon) {
               // Convert GPS coordinates to decimal format
-              const latDecimal = convertToDecimal(lat);
-              const lonDecimal = convertToDecimal(lon);
+              const latDecimal = convertToDecimal(lat).toFixed(2);
+              const lonDecimal = convertToDecimal(lon).toFixed(2);
               resolve({ latitude: latDecimal, longitude: lonDecimal });
             } else {
               resolve({ latitude: null, longitude: null });
@@ -288,12 +290,14 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       ) : null}
       {!doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
+          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))} 
+            <span>{doc?.required ? " *" : ""}</span>
+          </CardLabel>
         </LabelFieldPair>
       ) : null}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller"></CardLabel>
-        {doc?.code === "OWNER.BUILDINGDRAWING" ? (
+        {(doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO") ? (
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {
@@ -303,7 +307,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".pdf"
+            accept=".jpg, .jpeg, .png"
             buttonType="button"
             error={!uploadedFile}
           />

@@ -22,7 +22,7 @@ import { initMCollectComponents } from "@mseva/digit-ui-module-mcollect";
 import { initChallanGenerationComponents } from "@mseva/digit-ui-module-challangeneration";
 import { initRentAndLeaseComponents } from "@mseva/digit-ui-module-rentandlease";
 import { PaymentModule, PaymentLinks, paymentConfigs } from "@mseva/digit-ui-module-common";
-import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
+import { initOBPSComponents, OBPSReducers } from "@mseva/digit-ui-module-obps";
 import { initEngagementComponents, SurveyReducers } from "@mseva/digit-ui-module-engagement";
 import { initNOCComponents, NOCReducers, NOCLinks, NOCModule } from "@mseva/digit-ui-module-noc";
 import { initWSComponents, WSReducers } from "@mseva/digit-ui-module-ws";
@@ -187,6 +187,7 @@ const initDigitUI = () => {
     ads: ADSReducers(initData),
     chb: CHBReducers(initData),
     noc: NOCReducers(initData),
+    obps: OBPSReducers(initData)
   });
 
   window.Digit.Customizations = {

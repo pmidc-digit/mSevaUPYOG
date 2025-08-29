@@ -58,7 +58,7 @@ const EmployeeApp = ({ path }) => {
         <PrivateRoute path={`${path}/new-application`} component={NewNOCApplication} />
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
-        <PrivateRoute path={`${path}/response`} component={Response} />
+        <PrivateRoute path={`${path}/response/:id`} component={Response} />
       </Switch>
     </Fragment>
   );

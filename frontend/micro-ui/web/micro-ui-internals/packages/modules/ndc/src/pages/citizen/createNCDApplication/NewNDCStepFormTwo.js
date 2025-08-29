@@ -17,8 +17,11 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
     console.log(`Data in step ${config.currStepNumber} is: \n`, finaldata);
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
-      setError(`${t("NDC_MESSAGE_"+missingFields[0].replace(".", "_").toUpperCase())}`);
+      setError(`${t("NDC_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
       return;
     }
     onGoNext();

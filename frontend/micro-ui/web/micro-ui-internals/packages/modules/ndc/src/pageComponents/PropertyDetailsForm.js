@@ -60,12 +60,13 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   });
 
   useEffect(() => {
-    console.log("cptDetails in PropertyDetails Page", formData?.cpt);
-
     const owner = formData?.cpt?.details?.owners?.[0];
     const fullName = owner?.name?.split(" ");
     const firstName = fullName?.[0];
-    const lastName = fullName?.[fullName.length - 1];
+    let lastName
+    if(fullName?.length>1){
+      lastName = fullName?.[fullName.length - 1];
+    }
     const email = owner?.email;
     const mobileNumber = owner?.mobileNumber;
     const address = owner?.permanentAddress;
@@ -87,11 +88,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         ...combinedObject,
       };
     });
-
-    console.log("Filtered cptDetails in PropertyDetails Page", combinedObject);
   }, [formData?.cpt?.details]);
-
-  console.log("PropertyDetails: ", propertyDetails);
 
   useEffect(() => {
     // console.log("BillDataForW&S", waterConnectionBillData, sewerageConnectionBillData)
@@ -132,7 +129,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
   useEffect(() => {
     onSelect("PropertyDetails", propertyDetails, config);
-    console.log("PropertyDetailsValue", propertyDetails);
   }, [propertyDetails]);
 
   function addWaterConnection() {
@@ -331,7 +327,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           fetchBill("PT", formData?.cpt?.id);
                         }}
                       >
-                        {`${t("CHECK_STATUS_FOR_PROPERTY")}`}
+                        {`${t("CHECK_STATUS")}`}
                       </button>
                     )}
 
@@ -351,7 +347,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     )}
 
                     {formData?.cpt?.id && propertyDetails?.propertyBillData?.billData?.totalAmount == 0 && (
-                      <div>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
+                      <div style={{ color: "green"}}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
                     )}
                   </div>
                 )}
@@ -359,14 +355,14 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")} * `}</CardLabel>
+          <LabelFieldPair style={{ marginTop: "40px" }}>
+            <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")}`}</CardLabel>
             {waterConnectionLoading ? (
               <Loader />
             ) : (
               <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 {propertyDetails?.waterConnection?.map((item, index) => (
-                  <div key={index} style={{ display: "flex", flexDirection: "row" }}>
+                  <div key={index} style={{ display: "flex", flexDirection: "row", gap: "25px" }}>
                     <Controller
                       key={index}
                       control={control}
@@ -425,7 +421,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           </button>
                         )}
 
-                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div>{t("NO_DUES")}</div>}
+                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green"}}>{t("NO_DUES")}</div>}
 
                         {item?.isEdit && (
                           <button
@@ -462,14 +458,14 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {`${t("ADD_WATER")}`}
           </button>
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NDC_SEWERAGE_CONNECTION")} * `}</CardLabel>
+          <LabelFieldPair style={{ marginTop: "40px" }}>
+            <CardLabel className="card-label-smaller">{`${t("NDC_SEWERAGE_CONNECTION")} `}</CardLabel>
             {sewerageConnectionLoading ? (
               <Loader />
             ) : (
               <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                 {propertyDetails?.sewerageConnection?.map((item, index) => (
-                  <div key={index} style={{ display: "flex", flexDirection: "row" }}>
+                  <div key={index} style={{ display: "flex", flexDirection: "row", gap: "25px" }}>
                     <Controller
                       key={index}
                       control={control}
@@ -566,7 +562,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {`${t("ADD_SEWERAGE")}`}
           </button>
 
-          <LabelFieldPair>
+          <LabelFieldPair style={{ marginTop: "40px" }}>
             <CardLabel className="card-label-smaller">{`${t("NDC_FIRST_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller
@@ -661,7 +657,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                       // setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber?.length > 0}
+                    // disabled={formData?.cpt?.details?.owners?.[0]?.mobileNumber?.length > 0}
                   />
                 )}
               />
@@ -694,6 +690,29 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </LabelFieldPair>
         </div>
       )}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("NDC_TL_NUMBER")}`}</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name={"tlNumber"}
+            defaultValue={propertyDetails?.tlNumber || ""}
+            render={(props) => (
+              <TextInput
+                value={propertyDetails?.tlNumber}
+                onChange={(e) => {
+                  setPropertyDetails((prev) => ({ ...prev, tlNumber: e.target.value }));
+                  props.onChange(e.target.value);
+                }}
+                onBlur={(e) => {
+                  // setFocusIndex({ index: -1 });
+                  props.onBlur(e);
+                }}
+              />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
       {showToast && <Toast isDleteBtn={true} error={showToast?.error} label={showToast?.label} onClose={closeToast} />}
       {showPayModal && (
         <PayWSBillModal

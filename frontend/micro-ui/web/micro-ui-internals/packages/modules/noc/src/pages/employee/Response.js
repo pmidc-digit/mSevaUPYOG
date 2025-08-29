@@ -9,10 +9,20 @@ const Response = (props) => {
   const { t } = useTranslation();
   const history = useHistory();
   const nocData = state?.data?.Noc?.[0];
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
 
   const onSubmit = () => {
     history.push(`/digit-ui/employee`);
   }
+
+  const onGoToNOC = () => {
+    history.push(`/digit-ui/employee/noc/inbox`);
+  };
+
+   const handlePayment = () => {
+    history.push(`/digit-ui/employee/payment/collect/NOC/${ndcCode}/${tenantId}`);
+    // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
+  };
 
   return (
     <div>
@@ -27,10 +37,9 @@ const Response = (props) => {
         />
         { nocData?.applicationStatus !== "REJECTED" ? <CardText>{t(`NOC_${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_SUB_HEADER`)}</CardText> : null}
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
-          <SubmitBar
-            label={t("CORE_COMMON_GO_TO_HOME")}
-            onSubmit={onSubmit}
-          />
+          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
+          <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
+          <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />
         </ActionBar>
       </Card>
     </div>

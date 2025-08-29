@@ -150,10 +150,10 @@ const basementAreaValues= watch("basementArea");
                 name="plotNo"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  minLength: {
-                    value: 4,
-                    message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -184,10 +184,10 @@ const basementAreaValues= watch("basementArea");
                 name="proposedSiteAddress"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  minLength: {
-                    value: 4,
-                    message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 200,
                     message: t("MAX_200_CHARACTERS_ALLOWED"),
@@ -265,10 +265,10 @@ const basementAreaValues= watch("basementArea");
                 name="khasraNo"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  minLength: {
-                    value: 4,
-                    message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -298,10 +298,10 @@ const basementAreaValues= watch("basementArea");
                 name="hadbastNo"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  minLength: {
-                    value: 4,
-                    message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -348,10 +348,10 @@ const basementAreaValues= watch("basementArea");
                 name="areaLeftForRoadWidening"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  minLength: {
-                    value: 4,
-                    message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -402,10 +402,10 @@ const basementAreaValues= watch("basementArea");
                 name="roadWidthAtSite"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  minLength: {
-                    value: 4,
-                    message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -490,10 +490,10 @@ const basementAreaValues= watch("basementArea");
                     value: /^[0-9]*\.?[0-9]+$/,
                     message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
                   },
-                  minLength: {
-                    value: 1,
-                    message: t("MIN_1_CHARACTER_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 1,
+                  //   message: t("MIN_1_CHARACTER_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -533,10 +533,10 @@ const basementAreaValues= watch("basementArea");
                     value: /^[0-9]*\.?[0-9]+$/,
                     message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
                   },
-                  minLength: {
-                    value: 1,
-                    message: t("MIN_1_CHARACTER_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 1,
+                  //   message: t("MIN_1_CHARACTER_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -609,10 +609,10 @@ const basementAreaValues= watch("basementArea");
                 name="wardNo"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  minLength: {
-                    value: 2,
-                    message: t("MIN_2_CHARACTERS_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 2,
+                  //   message: t("MIN_2_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -685,10 +685,10 @@ const basementAreaValues= watch("basementArea");
                 name="villageName"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  minLength: {
-                    value: 4,
-                    message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  },
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),

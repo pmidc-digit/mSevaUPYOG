@@ -70,6 +70,7 @@ const NOCProfessionalDetails = (_props) => {
                   props.onBlur(e);
                 }}
                 t={t}
+                disabled="true"
               />
             )}
           />
@@ -101,6 +102,7 @@ const NOCProfessionalDetails = (_props) => {
                   props.onBlur(e);
                 }}
                 t={t}
+                disabled="true"
               />
             )}
           />
@@ -152,7 +154,7 @@ const NOCProfessionalDetails = (_props) => {
                 message: t("INVALID_MOBILE_NUMBER"),
               },
             }}
-            render={(props) => <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} />}
+            render={(props) => <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} disable="true"/>}
           />
         </div>
       </LabelFieldPair>

@@ -221,6 +221,7 @@ const ApplicationDetails = (props) => {
     return <Loader />;
   }
   const onSubmit =async(data)=> {
+    console.log("JJJJJJ");
     const bpaApplicationDetails = await Digit.OBPSService.BPASearch(tenantId, {applicationNo: applicationData?.applicationNo});
     const riskType = Digit.Utils.obps.calculateRiskType(
       mdmsData?.BPA?.RiskTypeComputation,

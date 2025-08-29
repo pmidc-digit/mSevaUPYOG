@@ -10,6 +10,7 @@ import NOCSearchApplication from "./pages/employee/SearchApplication/Search";
 import getRootReducer from "./redux/reducer";
 
 import CitizenApp from "./pages/citizen";
+import NOCResponseCitizen from "./pages/citizen/NOCResponseCitizen";
 
 import NewNOCStepperForm from "./pageComponents/NewNOCStepper/NewNOCStepperForm";
 import NewNOCStepFormOne from "./pageComponents/NewNOCStepper/NewNOCStepFormOne";
@@ -85,7 +86,8 @@ const componentsToRegister = {
   NOCSpecificationDetails,
   NOCDocumentsRequired,
   NOCSummary,
-  NOCDocumentWithLatLong
+  NOCDocumentWithLatLong,
+  NOCResponseCitizen
 };
 
 export const initNOCComponents = () => {

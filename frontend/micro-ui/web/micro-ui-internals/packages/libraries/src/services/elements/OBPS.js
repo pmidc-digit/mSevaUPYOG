@@ -263,7 +263,10 @@ export const OBPSService = {
               title: "BPA_STATUS_LABEL",
               isTransLate: true,
               isStatus: true,
-              value: (paymentRes?.Payments?.[0]?.totalAmountPaid !== null || paymentRes?.Payments?.[0]?.totalAmountPaid !== undefined) ? "WF_BPA_PAID" : "NA",
+              value:
+                paymentRes?.Payments?.[0]?.totalAmountPaid !== null || paymentRes?.Payments?.[0]?.totalAmountPaid !== undefined
+                  ? "WF_BPA_PAID"
+                  : "NA",
               isTransLate: true,
             },
           ],
@@ -280,6 +283,7 @@ export const OBPSService = {
   },
   BPADetailsPage: async (tenantId, filters) => {
     const response = await OBPSService.BPASearch(tenantId, filters);
+    console.log(response, "APPP");
     let appDocumentFileStoreIds = response?.BPA?.[0]?.documents?.map((docId) => docId.fileStoreId);
     if (!appDocumentFileStoreIds) appDocumentFileStoreIds = [];
     response?.BPA?.[0]?.additionalDetails?.fieldinspection_pending?.map((fiData) => {
@@ -287,6 +291,8 @@ export const OBPSService = {
         if (fiDoc?.fileStoreId) appDocumentFileStoreIds.push(fiDoc?.fileStoreId);
       });
     });
+
+    console.log(response, "EEEEE");
 
     if (!response?.BPA?.length) {
       return;
@@ -301,15 +307,17 @@ export const OBPSService = {
     const mdmsRes = await MdmsService.getMultipleTypes(tenantId, "BPA", ["RiskTypeComputation", "CheckList"]);
     const riskType = Digit.Utils.obps.calculateRiskType(mdmsRes?.BPA?.RiskTypeComputation, edcr?.planDetail?.plot?.area, edcr?.planDetail?.blocks);
     BPA.riskType = riskType;
-    const nocResponse = await OBPSService.NOCSearch(BPA?.tenantId, { sourceRefId: BPA?.applicationNo });
-    const noc = nocResponse?.Noc;
+    // const nocResponse = await OBPSService.NOCSearch(BPA?.tenantId, { sourceRefId: BPA?.applicationNo });
+    // const noc = nocResponse?.Noc;
+    const noc = [];
     const filter = { approvalNo: edcr?.permitNumber };
     const bpaResponse = await OBPSService.BPASearch(tenantId, { ...filter });
     const comparisionRep = {
       ocdcrNumber: BPA?.edcrNumber.includes("OCDCR") ? BPA?.edcrNumber : bpaResponse?.BPA?.[0]?.edcrNumber,
       edcrNumber: bpaResponse?.BPA?.[0]?.edcrNumber.includes("OCDCR") ? BPA?.edcrNumber : bpaResponse?.BPA?.[0]?.edcrNumber,
     };
-    const comparisionReport = await OBPSService.comparisionReport(BPA?.tenantId, { ...comparisionRep });
+    // const comparisionReport = await OBPSService.comparisionReport(BPA?.tenantId, { ...comparisionRep });
+    const comparisionReport = [];
 
     noc?.map((nocDetails) => {
       nocDetails?.documents?.map((nocDoc) => {
@@ -333,7 +341,7 @@ export const OBPSService = {
     else if (BPA?.businessService === "BPA_OC") appBusinessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"];
 
     let fetchBillRes = {};
-
+    console.log(appBusinessService, "GGGGG");
     if (appBusinessService?.[1]) {
       fetchBillRes = await Digit.PaymentService.fetchBill(BPA?.tenantId, {
         consumerCode: BPA?.applicationNo,
@@ -688,11 +696,11 @@ export const OBPSService = {
       asSectionHeader: true,
       isCommon: true,
       values: [
-        { title: "BPA_DETAILS_PIN_LABEL", value: BPA?.landInfo?.address?.pincode },
-        { title: "BPA_CITY_LABEL", value: BPA?.landInfo?.address?.city },
-        { title: "BPA_LOC_MOHALLA_LABEL", value: BPA?.landInfo?.address?.locality?.name },
-        { title: "BPA_DETAILS_SRT_NAME_LABEL", value: BPA?.landInfo?.address?.street },
-        { title: "ES_NEW_APPLICATION_LOCATION_LANDMARK", value: BPA?.landInfo?.address?.landmark },
+        { title: ("BPA_DETAILS_PIN_LABEL"), value: BPA?.landInfo?.address?.pincode },
+        { title: ("BPA_CITY_LABEL"), value: BPA?.landInfo?.address?.city },
+        { title: ("BPA_LOC_MOHALLA_LABEL"), value: BPA?.landInfo?.address?.locality?.name },
+        { title: ("BPA_DETAILS_SRT_NAME_LABEL"), value: BPA?.landInfo?.address?.street },
+        { title: ("ES_NEW_APPLICATION_LOCATION_LANDMARK"), value: BPA?.landInfo?.address?.landmark },
       ],
     };
 
@@ -876,5 +884,5 @@ export const OBPSService = {
       auth: auth === false ? auth : true,
       userService: auth === false ? auth : true,
       params: { tenantId, ...filters },
-  })
+    }),
 };

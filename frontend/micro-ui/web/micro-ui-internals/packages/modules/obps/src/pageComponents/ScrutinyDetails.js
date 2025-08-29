@@ -301,11 +301,12 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
             <Row
               className="border-none"
               label={t("BPA_TOTAL_BUILT_UP_AREA_HEADER")}
-              text={
+            text={
                 data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea
-                  ? `${data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea} ${t("BPA_SQ_MTRS_LABEL")}`
+                  ? `${Number(data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
                   : t("NA")
               }
+
             ></Row>
             <Row
               className="border-none"
@@ -317,7 +318,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
               label={t("BPA_HEIGHT_FROM_GROUND_BUILDING")}
               text={
                 data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight
-                  ? `${data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight} ${t("BPA_MTRS_LABEL")}`
+                  ? `${Number(data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight).toFixed(2)} ${t("BPA_MTRS_LABEL")}`
                   : t("NA")
               }
             ></Row>
@@ -338,7 +339,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
               // }
               text={t("N/A")}
             ></Row>
-            <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text={t("N/A")}></Row>
+            <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}></Row>
             <Row
               className="border-none"
               label={t("BPA_ECS_REQUIRED")}

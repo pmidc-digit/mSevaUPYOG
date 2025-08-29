@@ -189,7 +189,20 @@ const NOCApplicantDetails = (_props) => {
             <Controller
               control={control}
               name="applicantDateOfBirth"
-              rules={{ required: t("REQUIRED_FIELD") }}
+              rules={{ 
+                required: t("REQUIRED_FIELD") ,
+                validate: (value) => {
+                    const today = new Date();
+                    const dob = new Date(value);
+                    const age = today.getFullYear() - dob.getFullYear();
+                    const m = today.getMonth() - dob.getMonth();
+                    const d = today.getDate() - dob.getDate();
+
+                    const is18OrOlder = age >= 18 ||
+                    (age === 18 && (m > 0 || (m === 0 && d >= 0)));
+                    return is18OrOlder || t("DOB_MUST_BE_18_YEARS_OLD");
+                  },
+              }}
               render={(props) => (
                 <TextInput
                   type="date"

@@ -38,6 +38,87 @@ const BannerPicker = (props) => {
   );
 };
 
+const StakeholderAcknowledgementChild = ({mutation , applicationNumber, isOpenLinkFlow}) => {
+  const { t } = useTranslation();
+  const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: applicationNumber, tenantId }, {});
+  const licenseType = mutation?.data?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
+
+  const handleDownloadPdf = async () => {
+    try {
+      const Property = applicationDetails;
+      console.log("applicationDetails in StakeholderAck1", applicationDetails);
+
+      if (!Property) {
+        console.error("No application details found");
+        return;
+      }
+
+      // try to resolve tenantId safely
+      const propertyTenantId =
+        Property?.tenantId || Property?.Licenses?.[0]?.tenantId || Digit.SessionStorage.get("Digit.BUILDING_PERMIT")?.result?.Licenses?.[0]?.tenantId;
+
+      if (!propertyTenantId) {
+        console.error("No tenantId found in applicationDetails or sessionStorage");
+        return;
+      }
+
+      const tenantInfo = tenants?.find((tenant) => tenant.code === propertyTenantId);
+
+      if (!tenantInfo) {
+        console.error("No tenantInfo found for tenantId:", propertyTenantId);
+        return;
+      }
+
+      const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
+      console.log(acknowledgementData, "ACKO");
+
+      Digit.Utils.pdf.generateBPAREG(acknowledgementData);
+    } catch (err) {
+      console.error("Error generating acknowledgement PDF", err);
+    }
+  };
+
+  return !applicationDetails? <Loader /> :(
+    <Card>
+          <BannerPicker t={t} data={mutation.data} isSuccess={mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
+          {mutation.isSuccess && <CardText>{`${t(`TRADELICENSE_TRADETYPE_${licenseType}`)}${t(`CS_FILE_STAKEHOLDER_RESPONSE`)}`}</CardText>}
+          {!mutation.isSuccess && <CardText>{t("CS_FILE_PROPERTY_FAILED_RESPONSE")}</CardText>}
+          {mutation.isSuccess && !isOpenLinkFlow && (
+            <Link
+              to={{
+                pathname: `/digit-ui/citizen/payment/collect/${mutation.data.Licenses[0].businessService}/${mutation.data.Licenses[0].applicationNumber}/${mutation.data.Licenses[0].tenantId}?tenantId=${mutation.data.Licenses[0].tenantId}`,
+                state: { tenantId: mutation.data.Licenses[0].tenantId },
+              }}
+            >
+              <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
+            </Link>
+          )}
+          {mutation.isSuccess && (
+            <div style={{ marginTop: "10px" }}>
+              <SubmitBar label={t("CS_COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+            </div>
+          )}
+          {!isOpenLinkFlow && (
+            <Link to={`/digit-ui/citizen`}>
+              <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
+            </Link>
+          )}
+          {mutation.isSuccess && isOpenLinkFlow && (
+            <Link
+              to={{
+                pathname: `/digit-ui/citizen`,
+              }}
+            >
+              <SubmitBar label={t("BPA_COMMON_PROCEED_NEXT")} />
+            </Link>
+          )}
+        </Card>
+  )
+}
+
 const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   const { t } = useTranslation();
   // const { id } = useParams();
@@ -85,7 +166,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
     moduleCode: "BPAREG",
   });
   // console.log(id, "IDDD");
-  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: applicationNumber, tenantId }, {});
+  // const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: applicationNumber, tenantId }, {});
 
   // const handleDownloadPdf = async () => {
   //   const Property = applicationDetails;
@@ -97,42 +178,43 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
 
   //   Digit.Utils.pdf.generate(acknowledgementData);
   // };
-  const handleDownloadPdf = async () => {
-    try {
-      const Property = applicationDetails;
+  // const handleDownloadPdf = async () => {
+  //   try {
+  //     const Property = applicationDetails;
+  //     console.log("applicationDetails in StakeholderAck1", applicationDetails);
 
-      if (!Property) {
-        console.error("No application details found");
-        return;
-      }
+  //     if (!Property) {
+  //       console.error("No application details found");
+  //       return;
+  //     }
 
-      // try to resolve tenantId safely
-      const propertyTenantId =
-        Property?.tenantId || Property?.Licenses?.[0]?.tenantId || Digit.SessionStorage.get("Digit.BUILDING_PERMIT")?.result?.Licenses?.[0]?.tenantId;
+  //     // try to resolve tenantId safely
+  //     const propertyTenantId =
+  //       Property?.tenantId || Property?.Licenses?.[0]?.tenantId || Digit.SessionStorage.get("Digit.BUILDING_PERMIT")?.result?.Licenses?.[0]?.tenantId;
 
-      if (!propertyTenantId) {
-        console.error("No tenantId found in applicationDetails or sessionStorage");
-        return;
-      }
+  //     if (!propertyTenantId) {
+  //       console.error("No tenantId found in applicationDetails or sessionStorage");
+  //       return;
+  //     }
 
-      const tenantInfo = tenants?.find((tenant) => tenant.code === propertyTenantId);
+  //     const tenantInfo = tenants?.find((tenant) => tenant.code === propertyTenantId);
 
-      if (!tenantInfo) {
-        console.error("No tenantInfo found for tenantId:", propertyTenantId);
-        return;
-      }
+  //     if (!tenantInfo) {
+  //       console.error("No tenantInfo found for tenantId:", propertyTenantId);
+  //       return;
+  //     }
 
-      const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
-      console.log(acknowledgementData, "ACKO");
+  //     const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
+  //     console.log(acknowledgementData, "ACKO");
 
-      Digit.Utils.pdf.generate(acknowledgementData);
-    } catch (err) {
-      console.error("Error generating acknowledgement PDF", err);
-    }
-  };
+  //     Digit.Utils.pdf.generate(acknowledgementData);
+  //   } catch (err) {
+  //     console.error("Error generating acknowledgement PDF", err);
+  //   }
+  // };
 
-  console.log("applicationDetails:", applicationDetails);
-  console.log("tenants:", tenants);
+  // console.log("applicationDetails:", applicationDetails);
+  // console.log("tenants:", tenants);
 
   return mutation.isLoading || mutation.isIdle ? (
     <Loader />
@@ -142,7 +224,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
         {/* {isOpenLinkFlow &&<OpenLinkContainer />}
     <div style={isOpenLinkFlow?{marginTop:"60px", width:isCitizenUrl?"100%":"70%", marginLeft:"auto",marginRight:"auto"}:{}}> */}
         {isOpenLinkFlow && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        <Card>
+        {/* <Card>
           <BannerPicker t={t} data={mutation.data} isSuccess={mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
           {mutation.isSuccess && <CardText>{`${t(`TRADELICENSE_TRADETYPE_${licenseType}`)}${t(`CS_FILE_STAKEHOLDER_RESPONSE`)}`}</CardText>}
           {!mutation.isSuccess && <CardText>{t("CS_FILE_PROPERTY_FAILED_RESPONSE")}</CardText>}
@@ -175,7 +257,8 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
               <SubmitBar label={t("BPA_COMMON_PROCEED_NEXT")} />
             </Link>
           )}
-        </Card>
+        </Card> */}
+        <StakeholderAcknowledgementChild {...{applicationNumber, mutation, isOpenLinkFlow}} />
       </div>
     </div>
     // </div>

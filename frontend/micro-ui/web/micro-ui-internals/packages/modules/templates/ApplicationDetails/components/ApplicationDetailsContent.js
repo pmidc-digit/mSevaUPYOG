@@ -190,9 +190,9 @@ console.log(filteredAssessment);
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         name: checkpoint?.assignes?.[0]?.name,
-        mobileNumber: applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid && applicationData?.processInstance?.assignes?.[0]?.mobileNumber
-            ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
-            : checkpoint?.assignes?.[0]?.mobileNumber,
+        // mobileNumber: applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid && applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+        //     ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+        //     : checkpoint?.assignes?.[0]?.mobileNumber,
         comment: t(checkpoint?.comment),
         wfComment: previousCheckpoint ? previousCheckpoint.wfComment : [],
         thumbnailsToShow: checkpoint?.thumbnailsToShow,

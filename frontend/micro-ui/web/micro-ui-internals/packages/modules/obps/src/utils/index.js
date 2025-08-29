@@ -555,8 +555,10 @@ export const convertToStakeholderObject = (data) => {
         tradeLicenseDetail: {
           ...data?.result?.Licenses[0]?.tradeLicenseDetail,
           additionalDetail: {
+            qualificationType: data?.formData?.LicneseType?.qualificationType?.name,
             counsilForArchNo: data?.formData?.LicneseType?.ArchitectNo,
             isSelfCertificationRequired: data?.formData?.LicneseType?.selfCertification,
+            Ulb: data?.formData?.LicneseDetails?.Ulb,
           },
           tradeUnits: [
             {

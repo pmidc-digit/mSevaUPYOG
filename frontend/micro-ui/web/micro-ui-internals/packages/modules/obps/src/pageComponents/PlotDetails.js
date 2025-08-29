@@ -114,6 +114,27 @@ const PlotDetails = ({ formData, onSelect, config }) => {
     ...formData?.data,
   };
 
+
+
+const handleChange = (name, value, validation) => {
+  let error = "";
+
+  if (validation?.required && !value.trim()) {
+    error = validation.errorMessage || `${name} is required`;
+  }
+
+  if (!error && validation?.pattern && value) {
+    const regex = new RegExp(validation.pattern);
+    if (!regex.test(value)) {
+      error = validation.errorMessage || validation.title;
+    }
+  }
+
+  setErrors((prev) => ({ ...prev, [name]: error }));
+};
+
+
+
   return (
     <div>
       <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
@@ -127,6 +148,8 @@ const PlotDetails = ({ formData, onSelect, config }) => {
             />
             <Row className="border-none" label={t(`BPA_PLOT_NUMBER_LABEL`)} text={data?.planDetail?.planInformation?.plotNo} />
             <Row className="border-none" label={t(`BPA_KHATHA_NUMBER_LABEL`)} text={data?.planDetail?.planInfoProperties?.KHATA_NO} />
+
+            
           </StatusTable>
         </FormStep>
       </div>

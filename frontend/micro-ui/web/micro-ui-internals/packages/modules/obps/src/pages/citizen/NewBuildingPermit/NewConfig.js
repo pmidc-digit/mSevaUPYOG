@@ -146,7 +146,8 @@ export const newConfig1 = [
     inputs: [
       {
         label: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL",
-        type: "textarea",
+        type: "text",
+        placeholder: "Give Land Registration Detail...", 
         validation: {
           required: true,
           title: "Enter registration details",
@@ -157,6 +158,7 @@ export const newConfig1 = [
       {
         label: "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
         type: "text",
+        placeholder: "Enter boundary wall length (in meters)", 
         validation: {
           required: true,
           pattern: "^[0-9]*$",
@@ -168,6 +170,7 @@ export const newConfig1 = [
       {
         label: "BPA_WARD_NUMBER_LABEL",
         type: "text",
+        placeholder:"Ward Number",
         validation: {
           required: true,
           pattern: "^[a-zA-Z0-9 -]+$",
@@ -179,6 +182,7 @@ export const newConfig1 = [
       {
         label: "BPA_ZONE_NUMBER_LABEL",
         type: "text",
+        placeholder:"Zone Number",
         validation: {
           required: true,
           title: "Enter zone number",
@@ -200,6 +204,7 @@ export const newConfig1 = [
       {
         label: "BPA_ARCHITECT_ID",
         type: "text",
+        
         validation: {
           required: true,
           title: "Enter architect ID",
@@ -211,6 +216,7 @@ export const newConfig1 = [
       {
         label: "BPA_PROPERTY_UID",
         type: "text",
+        placeholder:"Property UID",
         validation: {
           required: true,
           title: "Enter property UID",
@@ -221,6 +227,7 @@ export const newConfig1 = [
       },
       {
         label: "BPA_NUMBER_OF_BATHS",
+        placeholder:"Number Of Bathrooms",
         type: "text",
         validation: {
           required: true,
@@ -232,6 +239,7 @@ export const newConfig1 = [
       },
       {
         label: "BPA_NUMBER_OF_KITCHENS",
+        placeholder:"Number Of Kitchens",
         type: "text",
         validation: {
           required: true,
@@ -244,6 +252,7 @@ export const newConfig1 = [
       {
         label: "BPA_APPROX_INHABITANTS_FOR_ACCOMODATION",
         type: "text",
+        placeholder:"Approx Number Of Inhabitants For Accomodation",
         validation: {
           required: true,
           pattern: "^[0-9]+$",
@@ -255,6 +264,7 @@ export const newConfig1 = [
       {
         label: "BPA_DISTANCE_FROM_SEWER",
         type: "text",
+        placeholder:"Distance From Sewer",
         validation: {
           required: true,
           pattern: "^[0-9]+$",
@@ -265,6 +275,7 @@ export const newConfig1 = [
       },
       {
         label: "BPA_SOURCE_OF_WATER",
+        placeholder:"Source Of Water",
         type: "text",
         validation: {
           required: true,
@@ -276,6 +287,7 @@ export const newConfig1 = [
       {
         label: "BPA_NUMBER_OF_WATER_CLOSETS",
         type: "text",
+        placeholder:"Number Of Water Closets",
         validation: {
           required: true,
           pattern: "^[0-9]+$",
@@ -286,6 +298,7 @@ export const newConfig1 = [
       },
       {
         label: "BPA_MATERIAL_TO-BE_USED_IN_WALLS",
+        placeholder:"e.g. Cement, Bricks, etc",
         type: "text",
         validation: {
           required: true,
@@ -297,6 +310,7 @@ export const newConfig1 = [
       },
       {
         label: "BPA_MATERIAL_TO-BE_USED_IN_FLOOR",
+         placeholder:"e.g. Cement, Bricks, etc",
         type: "text",
         validation: {
           required: true,
@@ -308,6 +322,7 @@ export const newConfig1 = [
       },
       {
         label: "BPA_MATERIAL_TO-BE_USED_IN_ROOFS",
+         placeholder:"e.g. Cement, Bricks, etc",
         type: "text",
         validation: {
           required: true,

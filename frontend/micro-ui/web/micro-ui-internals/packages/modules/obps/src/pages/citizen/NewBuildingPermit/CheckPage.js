@@ -1488,6 +1488,8 @@ const CheckPage = ({ onSubmit, value }) => {
     return stored || value?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "";
   });
 
+  console.log(value, "VAL");
+
   const [otherCharges, setOtherCharges] = useState(() => {
     const stored = sessionStorage.getItem("otherCharges");
     return stored || value?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "";
@@ -1578,6 +1580,7 @@ const CheckPage = ({ onSubmit, value }) => {
 
   // Replace/add this section after the existing building extract section:
   const planInfoProps = getPlanInfoProperties();
+  console.log(planInfoProps, "PLAN");
 
   const plotDataFromStorage = getPlotDataFromStorage();
 
@@ -1627,6 +1630,8 @@ const CheckPage = ({ onSubmit, value }) => {
   } = value;
 
   const isEditApplication = window.location.href.includes("editApplication");
+
+  console.log(value, "DEKHO");
 
   // Initialize agreement states with sessionStorage persistence
   const [agree, setAgree] = useState(() => {
@@ -2240,6 +2245,7 @@ const CheckPage = ({ onSubmit, value }) => {
     <React.Fragment>
       <Timeline currentStep={4} />
       <Header styles={{ marginLeft: "10px" }}>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
+      <div style={{height:"75vh", overflow:"scroll", marginTop:"30px"}}>
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={plotDataFromStorage?.applicationNumber} />
@@ -2364,7 +2370,8 @@ const CheckPage = ({ onSubmit, value }) => {
             <Row
               className="border-none"
               label={t("BPA_PLOT_AREA_M2")}
-              text={`${planInfoProps?.PLOT_AREA_M2 || t("CS_NA")} ${planInfoProps?.PLOT_AREA_M2 ? t("BPA_SQ_MTRS_LABEL") : ""}`}
+              // text=`{${planInfoProps?.planDetail?.plotArea?.area ? t("BPA_SQ_MTRS_LABEL") : ""}`
+            text={planInfoProps?.planDetail?.plot?.area || t("CS_NA")}
             />
             {console.log(planInfoProps, "PLAN")}
             <Row
@@ -2419,7 +2426,7 @@ const CheckPage = ({ onSubmit, value }) => {
             <Row className="border-none" label={t("BPA_AVG_PLOT_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH} />
 
             <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
-            <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={planInfoProps?.ROAD_TYPE || t("CS_NA")} />
+            <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={planInfoProps?.planDetail?.plot?.area || t("CS_NA")} />
             <Row className="border-none" label={t("BPA_ROAD_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.ROAD_WIDTH} />
 
             <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
@@ -2557,7 +2564,7 @@ const CheckPage = ({ onSubmit, value }) => {
                   />
                   <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber || "N/A"} />
                   <Row className="border-none" label={t(`CORE_COMMON_EMAIL_ID`)} text={ob?.emailId || t("CS_NA")} />
-                  <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner || false}`} />
+                  <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner === true ? "YES" : "NO"}`} />
                 </StatusTable>
               </div>
             ))}
@@ -2574,17 +2581,17 @@ const CheckPage = ({ onSubmit, value }) => {
           <Row
             className="border-none"
             label={t(`BPA_ULB_TYPE_LABEL`)}
-            text={owners?.Ulblisttype?.value || value?.additionalDetails?.Ulblisttype || t("CS_NA")}
+            text={owners?.Ulblisttype ||  t("CS_NA")}
           />
           <Row
             className="border-none"
             label={t(`BPA_ULB_NAME_LABEL`)}
-            text={owners?.UlbName?.code || value?.additionalDetails?.UlbName || t("CS_NA")}
+            text={owners?.UlbName || t("CS_NA")}
           />
           <Row
             className="border-none"
             label={t(`BPA_DISTRICT_LABEL`)}
-            text={owners?.District?.code || value?.additionalDetails?.District || t("CS_NA")}
+            text={owners?.District || t("CS_NA")}
           />
           <Row
             className="border-none"
@@ -2663,7 +2670,7 @@ const CheckPage = ({ onSubmit, value }) => {
           <Row
             className="border-none"
             label={t(`BPA_APPL_FEES`)}
-            text={`₹ ${value?.additionalDetails?.P1charges || paymentDetails?.Bill[0]?.billDetails[0]?.amount}`}
+            // text={`₹ ${value?.additionalDetails?.P1charges || paymentDetails?.Bill[0]?.billDetails[0]?.amount}`}
           />
           <Row
             className="border-none"
@@ -2780,10 +2787,10 @@ const CheckPage = ({ onSubmit, value }) => {
           />
           {value?.status === "INITIATED" && (
             <div>
-              <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
-              <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} />
+              {/* <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel> */}
+              {/* <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} /> */}
               <br></br>
-              {showMobileInput && (
+              {/* {showMobileInput && (
                 <React.Fragment>
                   <br></br>
                   <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
@@ -2792,6 +2799,7 @@ const CheckPage = ({ onSubmit, value }) => {
                     type="tel"
                     isMandatory={true}
                     optionKey="i18nKey"
+                    disable={true} 
                     name="mobileNumber"
                     value={mobileNumber}
                     onChange={handleMobileNumberChange}
@@ -2799,9 +2807,9 @@ const CheckPage = ({ onSubmit, value }) => {
                   />
                   <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
                 </React.Fragment>
-              )}
+              )} */}
               <br></br>
-              {showOTPInput && (
+              {/* {showOTPInput && (
                 <React.Fragment>
                   <br></br>
                   <CardLabel>{t("BPA_OTP")}</CardLabel>
@@ -2809,7 +2817,7 @@ const CheckPage = ({ onSubmit, value }) => {
                   <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
                   {otpError && <CardLabel style={{ color: "red" }}>{otpError}</CardLabel>}
                 </React.Fragment>
-              )}
+              )} */}
             </div>
           )}
         </StatusTable>
@@ -2843,6 +2851,7 @@ const CheckPage = ({ onSubmit, value }) => {
               isMandatory={true}
               optionKey="i18nKey"
               name="mobileNumber"
+              disable={true} 
               value={mobileNumber}
               onChange={handleMobileNumberChange}
               {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
@@ -2850,7 +2859,8 @@ const CheckPage = ({ onSubmit, value }) => {
             <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
           </React.Fragment>
         )}
-        {showOTPInput && !isOTPVerified && (
+
+        {/* {showOTPInput && !isOTPVerified && (
           <React.Fragment>
             <br />
             <CardLabel>{t("BPA_OTP")}</CardLabel>
@@ -2858,7 +2868,7 @@ const CheckPage = ({ onSubmit, value }) => {
             <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
             {otpError && <CardLabel style={{ color: otpError === t("VERIFIED") ? "green" : "red" }}>{otpError}</CardLabel>}
           </React.Fragment>
-        )}
+        )} */}
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "1px", marginTop: "20px", marginBottom: "20px" }} />
         <div style={{ marginBottom: "30px" }}>
           {/* <CHANGE> This checkbox already has checked prop, keeping it as is */}
@@ -2880,6 +2890,7 @@ const CheckPage = ({ onSubmit, value }) => {
               isMandatory={true}
               optionKey="i18nKey"
               name="ownerMobileNumber"
+              disable={true} 
               value={ownerMobileNumber}
               onChange={handleOwnerMobileNumberChange}
               {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
@@ -2920,6 +2931,7 @@ const CheckPage = ({ onSubmit, value }) => {
           disabled={!agree || !isOTPVerified || !isOwnerOTPVerified || isSubmitting}
         />
       </Card>
+      </div>
     </React.Fragment>
   );
 };

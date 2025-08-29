@@ -16,7 +16,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     applicationType === "BUILDING_OC_PLAN_SCRUTINY" &&
     (window.location.href.includes("obps/inbox") || window.location.href.includes("obps/bpa/inbox"))
   ) {
-    businessService = "BPA_OC";
+    businessService = ["BPA_LOW", "BPA"];
   }
 
   let _filters = {
@@ -28,9 +28,10 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
         moduleName !== "BPAREG"
           ? businessService
             ? [businessService]
-            : ["BPA_LOW", "BPA", "BPA_OC"]
+            : ["BPA_LOW", "BPA"]
           : businessService
           ? [businessService.identifier]
+          // ? [businessService]
           :["ARCHITECT", "ENGINEER", "TOWNPLANNER", "SUPERVISOR"],
           // : ["ARCHITECT", "BUILDER", "ENGINEER", "STRUCTURALENGINEER", "TOWNPLANNER", "SUPERVISOR"],
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
@@ -51,6 +52,8 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   if (!applicationNo) {
     _filters = { ..._filters, offset };
   }
+
+
 
   return useInbox({
     tenantId,

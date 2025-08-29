@@ -90,14 +90,13 @@ const WrapPaymentComponent = (props) => {
   );
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
-    select: (data) =>
-      data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
+    select: (data) => data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
     retry: false,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
 
-  console.log("generatePdfKeyInResponse", generatePdfKey, business_service)
+  console.log("generatePdfKeyInResponse", generatePdfKey, business_service);
 
   const payments = data?.payments;
 
@@ -263,27 +262,26 @@ const WrapPaymentComponent = (props) => {
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...paymentData }] }, generatePdfKeyForWs);
         } else if (paymentData.paymentDetails[0].businessService.includes("BPA")) {
           const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-          let updatedpayments
-          if(paymentData.paymentDetails[0].businessService.includes("BPAREG")){
+          let updatedpayments;
+          if (paymentData.paymentDetails[0].businessService.includes("BPAREG")) {
             updatedpayments = {
-            ...paymentData,
-            paymentDetails: [
-              {
-                ...paymentData?.paymentDetails?.[0],
-                additionalDetails: {
-                  ...paymentData?.paymentDetails?.[0]?.additionalDetails,
-                  stakeholderType: "Applicant"
-                }
-              }
-            ],
-            additionalDetails: {
-              ...paymentData.additionalDetails,
-              designation: designation,
-              ulbType: ulbType,
-            },
-          };
-          }
-          else{
+              ...paymentData,
+              paymentDetails: [
+                {
+                  ...paymentData?.paymentDetails?.[0],
+                  additionalDetails: {
+                    ...paymentData?.paymentDetails?.[0]?.additionalDetails,
+                    stakeholderType: "Applicant",
+                  },
+                },
+              ],
+              additionalDetails: {
+                ...paymentData.additionalDetails,
+                designation: designation,
+                ulbType: ulbType,
+              },
+            };
+          } else {
             updatedpayments = {
               ...paymentData,
               additionalDetails: {
@@ -291,7 +289,7 @@ const WrapPaymentComponent = (props) => {
                 designation: designation,
                 ulbType: ulbType,
               },
-            }; 
+            };
           }
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
@@ -1050,7 +1048,7 @@ export const SuccessfulZeroPayment = (props) => {
 
 const WrapPaymentZeroComponent = (props) => {
   const { t } = useTranslation();
-  const {state ={} } = useLocation();
+  const { state = {} } = useLocation();
   const transactionData = state?.transactionData;
   console.log("StateData: ", transactionData);
   const queryClient = useQueryClient();
@@ -1072,13 +1070,12 @@ const WrapPaymentZeroComponent = (props) => {
     { enabled: window.location.href.includes("bpa") || window.location.href.includes("BPA") }
   );
 
-//   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearchNew(
-//     {
-//         tenantId: tenantId,
-//         billIds: transactionData?.billId
-//     },
-// ); 
-
+  //   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearchNew(
+  //     {
+  //         tenantId: tenantId,
+  //         billIds: transactionData?.billId
+  //     },
+  // );
 
   const cities = Digit.Hooks.useTenants();
   let ulbType = "";
@@ -1094,21 +1091,21 @@ const WrapPaymentZeroComponent = (props) => {
 
   const newTenantId = business_service.includes("WS.ONE_TIME_FEE" || "SW.ONE_TIME_FEE") ? Digit.ULBService.getStateId() : tenantId;
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-      {
-        tenantId,
-        businessService: business_service,
-        receiptNumbers: data?.payments?.Payments?.[0]?.paymentDetails[0].receiptNumber,
+    {
+      tenantId,
+      businessService: business_service,
+      receiptNumbers: data?.payments?.Payments?.[0]?.paymentDetails[0].receiptNumber,
+    },
+    {
+      retry: false,
+      staleTime: Infinity,
+      refetchOnWindowFocus: false,
+      select: (dat) => {
+        return dat.Payments[0];
       },
-      {
-        retry: false,
-        staleTime: Infinity,
-        refetchOnWindowFocus: false,
-        select: (dat) => {
-          return dat.Payments[0];
-        },
-        enabled: allowFetchBill,
-      }
-    );
+      enabled: allowFetchBill,
+    }
+  );
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
@@ -1118,8 +1115,8 @@ const WrapPaymentZeroComponent = (props) => {
     refetchOnWindowFocus: false,
   });
 
-  console.log("PaymentsData",reciept_data)
-  const payments = reciept_data;  // changed here
+  console.log("PaymentsData", reciept_data);
+  const payments = reciept_data; // changed here
 
   useEffect(() => {
     return () => {
@@ -1128,11 +1125,9 @@ const WrapPaymentZeroComponent = (props) => {
     };
   }, []);
 
-
   if (isLoading || recieptDataLoading) {
     return <Loader />;
   }
-
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -1278,7 +1273,7 @@ const WrapPaymentZeroComponent = (props) => {
         }
       }
     }
-    console.log("PaymentsData",response )
+    console.log("PaymentsData", response);
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     if (fileStore && fileStore[response.filestoreIds[0]]) {
       window.open(fileStore[response.filestoreIds[0]], "_blank");

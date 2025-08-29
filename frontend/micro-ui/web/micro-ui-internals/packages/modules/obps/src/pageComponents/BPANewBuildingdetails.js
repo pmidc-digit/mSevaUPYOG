@@ -1930,133 +1930,133 @@ import { Controller, useForm } from "react-hook-form";
 // export default BPANewBuildingdetails;
 
 const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
-  const { pathname: url } = useLocation();
-  const index = window.location.href.charAt(window.location.href.length - 1);
-  let validation = {};
+  const { pathname: url } = useLocation()
+  const index = window.location.href.charAt(window.location.href.length - 1)
+  let validation = {}
 
-  const SESSION_STORAGE_KEY = "Digit.BUILDING_PERMIT";
+  const SESSION_STORAGE_KEY = "Digit.BUILDING_PERMIT"
 
   const getSessionData = () => {
     try {
-      const stored = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      const stored = sessionStorage.getItem(SESSION_STORAGE_KEY)
       if (stored) {
-        const parsed = JSON.parse(stored);
-        return parsed.value || {};
+        const parsed = JSON.parse(stored)
+        return parsed.value || {}
       }
     } catch (error) {
-      console.error("Error reading session storage:", error);
+      console.error("Error reading session storage:", error)
     }
-    return {};
-  };
+    return {}
+  }
 
-  const sessionData = getSessionData();
-  console.log(sessionData, "SESSION DATA");
-  const cityData = sessionData.city || {};
-  console.log(cityData, "CITY DATA");
-  const dataObj = sessionData.data || {};
-  console.log(formData, "FORMDATA");
+  const sessionData = getSessionData()
+  console.log(sessionData, "SESSION DATA")
+  const cityData = sessionData.city || {}
+  console.log(cityData, "CITY DATA")
+  const dataObj = sessionData.data || {}
+  console.log(formData, "FORMDATA")
 
   const [UlbName, setUlbName] = useState(() => {
-    const cityName = formData?.address?.city?.name;
-    return cityName || "";
-  });
+    const cityName = formData?.address?.city?.name
+    return cityName || ""
+  })
 
   const [District, setDistrict] = useState(() => {
-    const districtName = formData?.address?.city?.city?.districtName;
-    return districtName || "";
-  });
+    const districtName = formData?.address?.city?.city?.districtName
+    return districtName || ""
+  })
 
   const [Ulblisttype, setUlblisttype] = useState(() => {
-    const cityType = formData?.address?.city?.city?.ulbType;
-    return cityType || "";
-  });
+    const cityType = formData?.address?.city?.city?.ulbType
+    return cityType || ""
+  })
 
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({})
 
-  const [approvedColony, setapprovedColony] = useState(formData?.owners?.approvedColony || "");
-  const [masterPlan, setmasterPlan] = useState(formData?.owners?.masterPlan || "");
-  const [buildingStatus, setbuildingStatus] = useState(formData?.owners?.buildingStatus || "");
-  const [purchasedFAR, setpurchasedFAR] = useState(formData?.owners?.purchasedFAR || "");
-  const [greenbuilding, setgreenbuilding] = useState(formData?.owners?.greenbuilding || "");
-  const [restrictedArea, setrestrictedArea] = useState(formData?.owners?.restrictedArea || "");
-  const [proposedSite, setproposedSite] = useState(formData?.owners?.proposedSite || "");
-  const [nameofApprovedcolony, setnameofApprovedcolony] = useState(formData?.owners?.nameofApprovedcolony || "");
-  const [NocNumber, setNocNumber] = useState(formData?.owners?.NocNumber || "");
-  const [schemesselection, setschemesselection] = useState(formData?.owners?.schemesselection || "");
-  const [schemeName, setschemeName] = useState(formData?.owners?.schemeName || "");
-  const [transferredscheme, settransferredscheme] = useState("Pre-Approved Standard Designs" || "");
-  const [rating, setrating] = useState(formData?.owners?.rating || "");
-  const [use, setUse] = useState(formData?.owners?.use || "");
-  const [uploadedFile, setUploadedFile] = useState(formData?.owners?.uploadedFile);
-  const [greenuploadedFile, setGreenUploadedFile] = useState(formData?.owners?.greenuploadedFile);
-  const [uploadMessage, setUploadMessage] = useState("");
-  const [ecbcElectricalLoad, setEcbcElectricalLoad] = useState(formData?.owners?.ecbcElectricalLoad || "");
-  const [ecbcDemandLoad, setEcbcDemandLoad] = useState(formData?.owners?.ecbcDemandLoad || "");
-  const [ecbcAirConditioned, setEcbcAirConditioned] = useState(formData?.owners?.ecbcAirConditioned || "");
+  const [approvedColony, setapprovedColony] = useState(formData?.owners?.approvedColony || "")
+  const [masterPlan, setmasterPlan] = useState(formData?.owners?.masterPlan || "")
+  const [buildingStatus, setbuildingStatus] = useState(formData?.owners?.buildingStatus || "")
+  const [purchasedFAR, setpurchasedFAR] = useState(formData?.owners?.purchasedFAR || "")
+  const [greenbuilding, setgreenbuilding] = useState(formData?.owners?.greenbuilding || "")
+  const [restrictedArea, setrestrictedArea] = useState(formData?.owners?.restrictedArea || "")
+  const [proposedSite, setproposedSite] = useState(formData?.owners?.proposedSite || "")
+  const [nameofApprovedcolony, setnameofApprovedcolony] = useState(formData?.owners?.nameofApprovedcolony || "")
+  const [NocNumber, setNocNumber] = useState(formData?.owners?.NocNumber || "")
+  const [schemesselection, setschemesselection] = useState(formData?.owners?.schemesselection || "")
+  const [schemeName, setschemeName] = useState(formData?.owners?.schemeName || "")
+  const [transferredscheme, settransferredscheme] = useState("Pre-Approved Standard Designs" || "")
+  const [rating, setrating] = useState(formData?.owners?.rating || "")
+  const [use, setUse] = useState(formData?.owners?.use || "")
+  const [uploadedFile, setUploadedFile] = useState(formData?.owners?.uploadedFile)
+  const [greenuploadedFile, setGreenUploadedFile] = useState(formData?.owners?.greenuploadedFile)
+  const [uploadMessage, setUploadMessage] = useState("")
+  const [ecbcElectricalLoad, setEcbcElectricalLoad] = useState(formData?.owners?.ecbcElectricalLoad || "")
+  const [ecbcDemandLoad, setEcbcDemandLoad] = useState(formData?.owners?.ecbcDemandLoad || "")
+  const [ecbcAirConditioned, setEcbcAirConditioned] = useState(formData?.owners?.ecbcAirConditioned || "")
 
-  const [ecbcElectricalLoadFile, setEcbcElectricalLoadFile] = useState(formData?.owners?.ecbcElectricalLoadFile);
-  const [ecbcDemandLoadFile, setEcbcDemandLoadFile] = useState(formData?.owners?.ecbcDemandLoadFile);
-  const [ecbcAirConditionedFile, setEcbcAirConditionedFile] = useState(formData?.owners?.ecbcAirConditionedFile);
+  const [ecbcElectricalLoadFile, setEcbcElectricalLoadFile] = useState(formData?.owners?.ecbcElectricalLoadFile)
+  const [ecbcDemandLoadFile, setEcbcDemandLoadFile] = useState(formData?.owners?.ecbcDemandLoadFile)
+  const [ecbcAirConditionedFile, setEcbcAirConditionedFile] = useState(formData?.owners?.ecbcAirConditionedFile)
 
-  const [ecbcElectricalLoadFileObj, setEcbcElectricalLoadFileObj] = useState();
-  const [ecbcDemandLoadFileObj, setEcbcDemandLoadFileObj] = useState();
-  const [ecbcAirConditionedFileObj, setEcbcAirConditionedFileObj] = useState();
+  const [ecbcElectricalLoadFileObj, setEcbcElectricalLoadFileObj] = useState()
+  const [ecbcDemandLoadFileObj, setEcbcDemandLoadFileObj] = useState()
+  const [ecbcAirConditionedFileObj, setEcbcAirConditionedFileObj] = useState()
 
   const validateFields = () => {
-    const newErrors = {};
+    const newErrors = {}
 
-    if (!UlbName) newErrors.UlbName = "ULB Name is required";
-    if (!District) newErrors.District = "District is required";
-    if (!Ulblisttype) newErrors.Ulblisttype = "ULB Type is required";
-    if (!approvedColony) newErrors.approvedColony = "Approved Colony is required";
-    if (!masterPlan) newErrors.masterPlan = "Master Plan is required";
-    if (!buildingStatus) newErrors.buildingStatus = "Building Status is required";
-    if (!purchasedFAR) newErrors.purchasedFAR = "Purchased FAR is required";
-    if (!greenbuilding) newErrors.greenbuilding = "Green Building is required";
-    if (!restrictedArea) newErrors.restrictedArea = "Restricted Area is required";
-    if (!proposedSite) newErrors.proposedSite = "Proposed Site Type is required";
+    if (!UlbName) newErrors.UlbName = "ULB Name is required"
+    if (!District) newErrors.District = "District is required"
+    if (!Ulblisttype) newErrors.Ulblisttype = "ULB Type is required"
+    if (!approvedColony) newErrors.approvedColony = "Approved Colony is required"
+    if (!masterPlan) newErrors.masterPlan = "Master Plan is required"
+    if (!buildingStatus) newErrors.buildingStatus = "Building Status is required"
+    if (!purchasedFAR) newErrors.purchasedFAR = "Purchased FAR is required"
+    if (!greenbuilding) newErrors.greenbuilding = "Green Building is required"
+    if (!restrictedArea) newErrors.restrictedArea = "Restricted Area is required"
+    if (!proposedSite) newErrors.proposedSite = "Proposed Site Type is required"
 
-    if (!ecbcElectricalLoad) newErrors.ecbcElectricalLoad = "ECBC Electrical Load is required";
-    if (!ecbcDemandLoad) newErrors.ecbcDemandLoad = "ECBC Demand Load is required";
-    if (!ecbcAirConditioned) newErrors.ecbcAirConditioned = "ECBC Air Conditioned Area is required";
+    if (!ecbcElectricalLoad) newErrors.ecbcElectricalLoad = "ECBC Electrical Load is required"
+    if (!ecbcDemandLoad) newErrors.ecbcDemandLoad = "ECBC Demand Load is required"
+    if (!ecbcAirConditioned) newErrors.ecbcAirConditioned = "ECBC Air Conditioned Area is required"
 
     // Conditional validations
     if (approvedColony?.code === "YES" && !nameofApprovedcolony) {
-      newErrors.nameofApprovedcolony = "Approved Colony Name is required";
+      newErrors.nameofApprovedcolony = "Approved Colony Name is required"
     }
 
     if (approvedColony?.code === "NO" && !NocNumber && !uploadedFile) {
-      newErrors.NocNumber = "NOC Number or NOC Document is required";
+      newErrors.NocNumber = "NOC Number or NOC Document is required"
     }
 
     if (greenbuilding?.code === "YES") {
-      if (!greenuploadedFile) newErrors.greenuploadedFile = "Green Building Document is required";
-      if (!rating) newErrors.rating = "Rating is required";
+      if (!greenuploadedFile) newErrors.greenuploadedFile = "Green Building Document is required"
+      if (!rating) newErrors.rating = "Rating is required"
     }
 
     if (masterPlan?.code === "YES" && !use) {
-      newErrors.use = "Use is required";
+      newErrors.use = "Use is required"
     }
 
     if (ecbcElectricalLoad?.code === "YES" && !ecbcElectricalLoadFile) {
-      newErrors.ecbcElectricalLoadFile = "ECBC Electrical Load Certificate is required";
+      newErrors.ecbcElectricalLoadFile = "ECBC Electrical Load Certificate is required"
     }
 
     if (ecbcDemandLoad?.code === "YES" && !ecbcDemandLoadFile) {
-      newErrors.ecbcDemandLoadFile = "ECBC Demand Load Certificate is required";
+      newErrors.ecbcDemandLoadFile = "ECBC Demand Load Certificate is required"
     }
 
     if (ecbcAirConditioned?.code === "YES" && !ecbcAirConditionedFile) {
-      newErrors.ecbcAirConditionedFile = "ECBC Air Conditioned Area Certificate is required";
+      newErrors.ecbcAirConditionedFile = "ECBC Air Conditioned Area Certificate is required"
     }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
   const saveToSessionStorage = () => {
     try {
-      const currentData = getSessionData();
+      const currentData = getSessionData()
       const updatedData = {
         ...currentData,
         buildingDetails: {
@@ -2087,22 +2087,22 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
           ecbcAirConditionedFile,
           lastUpdated: Date.now(),
         },
-      };
+      }
 
       const sessionStorageData = {
         value: updatedData,
         ttl: 86400,
         expiry: Date.now() + 86400 * 1000,
-      };
+      }
 
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionStorageData));
+      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionStorageData))
     } catch (error) {
-      console.error("Error saving to session storage:", error);
+      console.error("Error saving to session storage:", error)
     }
-  };
+  }
 
   useEffect(() => {
-    saveToSessionStorage();
+    saveToSessionStorage()
   }, [
     approvedColony,
     masterPlan,
@@ -2129,117 +2129,137 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
     ecbcElectricalLoadFile,
     ecbcDemandLoadFile,
     ecbcAirConditionedFile,
-  ]);
+  ])
 
-  const [files, setFiles] = useState();
-  const [file, setFile] = useState();
-  const Webview = !Digit.Utils.browser.isMobile();
-  const acceptFormat = ".pdf";
+  const [files, setFiles] = useState()
+  const [file, setFile] = useState()
+  const Webview = !Digit.Utils.browser.isMobile()
+  const acceptFormat = ".pdf"
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       if (file && file?.type) {
         if (!acceptFormat?.split(",")?.includes(`.${file?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, file: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }));
+          setErrors((prev) => ({ ...prev, file: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
         } else if (file.size >= 2000000) {
-          setErrors((prev) => ({ ...prev, file: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }));
+          setErrors((prev) => ({ ...prev, file: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           try {
-            const response = await Digit.UploadServices.Filestorage("property-upload", file, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage(
+              "property-upload",
+              file,
+              Digit.ULBService.getStateId(),
+            )
             if (response?.data?.files?.length > 0) {
-              setUploadedFile(response?.data?.files[0]?.fileStoreId);
+              setUploadedFile(response?.data?.files[0]?.fileStoreId)
             } else {
-              setErrors((prev) => ({ ...prev, file: t("PT_FILE_UPLOAD_ERROR") }));
+              setErrors((prev) => ({ ...prev, file: t("PT_FILE_UPLOAD_ERROR") }))
             }
           } catch (err) {}
         }
       }
-    })();
-  }, [file]);
+    })()
+  }, [file])
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       if (files && files?.type) {
         if (!acceptFormat?.split(",")?.includes(`.${files?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, files: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }));
+          setErrors((prev) => ({ ...prev, files: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
         } else if (files.size >= 2000000) {
-          setErrors((prev) => ({ ...prev, files: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }));
+          setErrors((prev) => ({ ...prev, files: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           try {
-            const response = await Digit.UploadServices.Filestorage("property-upload", files, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage(
+              "property-upload",
+              files,
+              Digit.ULBService.getStateId(),
+            )
             if (response?.data?.files?.length > 0) {
-              setGreenUploadedFile(response?.data?.files[0]?.fileStoreId);
+              setGreenUploadedFile(response?.data?.files[0]?.fileStoreId)
             } else {
-              setErrors((prev) => ({ ...prev, files: t("PT_FILE_UPLOAD_ERROR") }));
+              setErrors((prev) => ({ ...prev, files: t("PT_FILE_UPLOAD_ERROR") }))
             }
           } catch (err) {}
         }
       }
-    })();
-  }, [files]);
+    })()
+  }, [files])
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       if (ecbcElectricalLoadFileObj && ecbcElectricalLoadFileObj?.type) {
         if (!acceptFormat?.split(",")?.includes(`.${ecbcElectricalLoadFileObj?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }));
+          setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
         } else if (ecbcElectricalLoadFileObj.size >= 2000000) {
-          setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }));
+          setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           try {
-            const response = await Digit.UploadServices.Filestorage("property-upload", ecbcElectricalLoadFileObj, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage(
+              "property-upload",
+              ecbcElectricalLoadFileObj,
+              Digit.ULBService.getStateId(),
+            )
             if (response?.data?.files?.length > 0) {
-              setEcbcElectricalLoadFile(response?.data?.files[0]?.fileStoreId);
+              setEcbcElectricalLoadFile(response?.data?.files[0]?.fileStoreId)
             } else {
-              setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_FILE_UPLOAD_ERROR") }));
+              setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: t("PT_FILE_UPLOAD_ERROR") }))
             }
           } catch (err) {}
         }
       }
-    })();
-  }, [ecbcElectricalLoadFileObj]);
+    })()
+  }, [ecbcElectricalLoadFileObj])
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       if (ecbcDemandLoadFileObj && ecbcDemandLoadFileObj?.type) {
         if (!acceptFormat?.split(",")?.includes(`.${ecbcDemandLoadFileObj?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }));
+          setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
         } else if (ecbcDemandLoadFileObj.size >= 2000000) {
-          setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }));
+          setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           try {
-            const response = await Digit.UploadServices.Filestorage("property-upload", ecbcDemandLoadFileObj, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage(
+              "property-upload",
+              ecbcDemandLoadFileObj,
+              Digit.ULBService.getStateId(),
+            )
             if (response?.data?.files?.length > 0) {
-              setEcbcDemandLoadFile(response?.data?.files[0]?.fileStoreId);
+              setEcbcDemandLoadFile(response?.data?.files[0]?.fileStoreId)
             } else {
-              setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_FILE_UPLOAD_ERROR") }));
+              setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: t("PT_FILE_UPLOAD_ERROR") }))
             }
           } catch (err) {}
         }
       }
-    })();
-  }, [ecbcDemandLoadFileObj]);
+    })()
+  }, [ecbcDemandLoadFileObj])
 
   useEffect(() => {
-    (async () => {
+    ;(async () => {
       if (ecbcAirConditionedFileObj && ecbcAirConditionedFileObj?.type) {
         if (!acceptFormat?.split(",")?.includes(`.${ecbcAirConditionedFileObj?.type?.split("/")?.pop()}`)) {
-          setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }));
+          setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
         } else if (ecbcAirConditionedFileObj.size >= 2000000) {
-          setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }));
+          setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
         } else {
           try {
-            const response = await Digit.UploadServices.Filestorage("property-upload", ecbcAirConditionedFileObj, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage(
+              "property-upload",
+              ecbcAirConditionedFileObj,
+              Digit.ULBService.getStateId(),
+            )
             if (response?.data?.files?.length > 0) {
-              setEcbcAirConditionedFile(response?.data?.files[0]?.fileStoreId);
+              setEcbcAirConditionedFile(response?.data?.files[0]?.fileStoreId)
             } else {
-              setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_FILE_UPLOAD_ERROR") }));
+              setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: t("PT_FILE_UPLOAD_ERROR") }))
             }
           } catch (err) {}
         }
       }
-    })();
-  }, [ecbcAirConditionedFileObj]);
+    })()
+  }, [ecbcAirConditionedFileObj])
 
   const approvedcolonyStatus = [
     {
@@ -2254,7 +2274,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
       code: "LAL_LAKEER",
       i18nKey: "LAL LAKEER",
     },
-  ];
+  ]
 
   const common = [
     {
@@ -2265,7 +2285,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
       code: "NO",
       i18nKey: "NO",
     },
-  ];
+  ]
 
   const Typeofproposedsite = [
     {
@@ -2284,33 +2304,33 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
       code: "Existing",
       i18nKey: "Existing",
     },
-  ];
+  ]
 
   const yesNoOptions = [
     { code: "YES", i18nKey: "YES" },
     { code: "NO", i18nKey: "NO" },
-  ];
+  ]
 
-  const stateId = Digit.ULBService.getStateId();
+  const stateId = Digit.ULBService.getStateId()
 
-  const { data: ulbList } = Digit.Hooks.obps.useUlbType(stateId, "BPA", "UlbType");
-  const { data: districtMenu } = Digit.Hooks.obps.useDistricts(stateId, "BPA", "Districts");
-  const { data: ULB } = Digit.Hooks.obps.useULBList(stateId, "BPA", "Ulb");
+  const { data: ulbList } = Digit.Hooks.obps.useUlbType(stateId, "BPA", "UlbType")
+  const { data: districtMenu } = Digit.Hooks.obps.useDistricts(stateId, "BPA", "Districts")
+  const { data: ULB } = Digit.Hooks.obps.useULBList(stateId, "BPA", "Ulb")
 
-  const ulblists = [];
-  const menu = [];
-  const ulb = [];
+  const ulblists = []
+  const menu = []
+  const ulb = []
 
   ulbList &&
     ulbList.map((ulbtypelist) => {
       if (ulbtypelist?.Districts === District?.code || ulbtypelist?.Districts === District?.value)
-        ulblists.push({ i18nKey: `${ulbtypelist.name}`, code: `${ulbtypelist.code}`, value: `${ulbtypelist.name}` });
-    });
+        ulblists.push({ i18nKey: `${ulbtypelist.name}`, code: `${ulbtypelist.code}`, value: `${ulbtypelist.name}` })
+    })
 
   districtMenu &&
     districtMenu.map((districts) => {
-      menu.push({ i18nKey: `${districts.name}`, code: `${districts.code}`, value: `${districts.name}` });
-    });
+      menu.push({ i18nKey: `${districts.name}`, code: `${districts.code}`, value: `${districts.name}` })
+    })
 
   ULB &&
     ULB.map((ulblist) => {
@@ -2319,18 +2339,23 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
           i18nKey: `${ulblist.name}`,
           code: `${ulblist.code}`,
           value: `${ulblist.name}`,
-        });
+        })
       }
-    });
+    })
 
-  const { data: commonBuilding } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "BPA", [{ name: "BuildingStatus" }], {
-    select: (data) => {
-      const formattedData = data?.["BPA"]?.["BuildingStatus"];
-      return formattedData;
+  const { data: commonBuilding } = Digit.Hooks.useCustomMDMS(
+    Digit.ULBService.getStateId(),
+    "BPA",
+    [{ name: "BuildingStatus" }],
+    {
+      select: (data) => {
+        const formattedData = data?.["BPA"]?.["BuildingStatus"]
+        return formattedData
+      },
     },
-  });
+  )
 
-  const building_status = [];
+  const building_status = []
 
   commonBuilding &&
     commonBuilding.map((selectBuilding) => {
@@ -2338,17 +2363,22 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
         i18nKey: `BPA_${selectBuilding.code}`,
         code: `${selectBuilding.code}`,
         value: `${selectBuilding.name}`,
-      });
-    });
+      })
+    })
 
-  const { data: commonrating } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "BPA", [{ name: "RatingValue" }], {
-    select: (data) => {
-      const formattedData = data?.["BPA"]?.["RatingValue"];
-      return formattedData;
+  const { data: commonrating } = Digit.Hooks.useCustomMDMS(
+    Digit.ULBService.getStateId(),
+    "BPA",
+    [{ name: "RatingValue" }],
+    {
+      select: (data) => {
+        const formattedData = data?.["BPA"]?.["RatingValue"]
+        return formattedData
+      },
     },
-  });
+  )
 
-  const selectRating = [];
+  const selectRating = []
 
   commonrating &&
     commonrating.map((selectRatings) => {
@@ -2356,17 +2386,22 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
         i18nKey: `BPA_${selectRatings.code}`,
         code: `${selectRatings.code}`,
         value: `${selectRatings.name}`,
-      });
-    });
+      })
+    })
 
-  const { data: commonmasterFields } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "BPA", [{ name: "MasterFields" }], {
-    select: (data) => {
-      const formattedData = data?.["BPA"]?.["MasterFields"];
-      return formattedData;
+  const { data: commonmasterFields } = Digit.Hooks.useCustomMDMS(
+    Digit.ULBService.getStateId(),
+    "BPA",
+    [{ name: "MasterFields" }],
+    {
+      select: (data) => {
+        const formattedData = data?.["BPA"]?.["MasterFields"]
+        return formattedData
+      },
     },
-  });
+  )
 
-  const selectmasterDrop = [];
+  const selectmasterDrop = []
 
   commonmasterFields &&
     commonmasterFields.map((selectMaster) => {
@@ -2374,145 +2409,145 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
         i18nKey: `BPA_${selectMaster.code}`,
         code: `${selectMaster.code}`,
         value: `${selectMaster.name}`,
-      });
-    });
+      })
+    })
 
-  const { control } = useForm();
+  const { control } = useForm()
 
   function setdistrict(option) {
-    setDistrict(option);
-    setUlblisttype(""); // Reset ULB type when district changes
-    setErrors((prev) => ({ ...prev, District: "", Ulblisttype: "" }));
+    setDistrict(option)
+    setUlblisttype("") // Reset ULB type when district changes
+    setErrors((prev) => ({ ...prev, District: "", Ulblisttype: "" }))
   }
 
   function setulbname(option) {
-    setUlbName(option);
-    setErrors((prev) => ({ ...prev, UlbName: "" }));
+    setUlbName(option)
+    setErrors((prev) => ({ ...prev, UlbName: "" }))
   }
 
   function setulblisttype(option) {
-    setUlblisttype(option);
-    setErrors((prev) => ({ ...prev, Ulblisttype: "" }));
+    setUlblisttype(option)
+    setErrors((prev) => ({ ...prev, Ulblisttype: "" }))
   }
 
   function setApprovedColony(option) {
-    setapprovedColony(option);
-    setErrors((prev) => ({ ...prev, approvedColony: "" }));
+    setapprovedColony(option)
+    setErrors((prev) => ({ ...prev, approvedColony: "" }))
   }
 
   function setMasterPlan(option) {
-    setmasterPlan(option);
-    setErrors((prev) => ({ ...prev, masterPlan: "" }));
+    setmasterPlan(option)
+    setErrors((prev) => ({ ...prev, masterPlan: "" }))
   }
 
   function setBuildingStatus(option) {
-    setbuildingStatus(option);
-    setErrors((prev) => ({ ...prev, buildingStatus: "" }));
+    setbuildingStatus(option)
+    setErrors((prev) => ({ ...prev, buildingStatus: "" }))
   }
 
   function setPurchasedFAR(option) {
-    setpurchasedFAR(option);
-    setErrors((prev) => ({ ...prev, purchasedFAR: "" }));
+    setpurchasedFAR(option)
+    setErrors((prev) => ({ ...prev, purchasedFAR: "" }))
   }
 
   function setGreenbuilding(option) {
-    setgreenbuilding(option);
-    setErrors((prev) => ({ ...prev, greenbuilding: "" }));
+    setgreenbuilding(option)
+    setErrors((prev) => ({ ...prev, greenbuilding: "" }))
   }
 
   function setRestrictedArea(option) {
-    setrestrictedArea(option);
-    setErrors((prev) => ({ ...prev, restrictedArea: "" }));
+    setrestrictedArea(option)
+    setErrors((prev) => ({ ...prev, restrictedArea: "" }))
   }
 
   function setProposedSite(option) {
-    setproposedSite(option);
-    setErrors((prev) => ({ ...prev, proposedSite: "" }));
+    setproposedSite(option)
+    setErrors((prev) => ({ ...prev, proposedSite: "" }))
   }
 
   function setEcbcElectricalLoadHandler(option) {
-    console.log("[v0] ECBC Electrical Load selected:", option);
-    console.log("[v0] Option code:", option?.code);
-    setEcbcElectricalLoad(option);
-    setErrors((prev) => ({ ...prev, ecbcElectricalLoad: "" }));
+    console.log("[v0] ECBC Electrical Load selected:", option)
+    console.log("[v0] Option code:", option?.code)
+    setEcbcElectricalLoad(option)
+    setErrors((prev) => ({ ...prev, ecbcElectricalLoad: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("[v0] State after update:", option);
-    }, 100);
+      console.log("[v0] State after update:", option)
+    }, 100)
   }
 
   function setEcbcDemandLoadHandler(option) {
-    console.log("[v0] ECBC Demand Load selected:", option);
-    console.log("[v0] Option code:", option?.code);
-    setEcbcDemandLoad(option);
-    setErrors((prev) => ({ ...prev, ecbcDemandLoad: "" }));
+    console.log("[v0] ECBC Demand Load selected:", option)
+    console.log("[v0] Option code:", option?.code)
+    setEcbcDemandLoad(option)
+    setErrors((prev) => ({ ...prev, ecbcDemandLoad: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("[v0] State after update:", option);
-    }, 100);
+      console.log("[v0] State after update:", option)
+    }, 100)
   }
 
   function setEcbcAirConditionedHandler(option) {
-    console.log("[v0] ECBC Air Conditioned selected:", option);
-    console.log("[v0] Option code:", option?.code);
-    setEcbcAirConditioned(option);
-    setErrors((prev) => ({ ...prev, ecbcAirConditioned: "" }));
+    console.log("[v0] ECBC Air Conditioned selected:", option)
+    console.log("[v0] Option code:", option?.code)
+    setEcbcAirConditioned(option)
+    setErrors((prev) => ({ ...prev, ecbcAirConditioned: "" }))
     // Force component re-render
     setTimeout(() => {
-      console.log("[v0] State after update:", option);
-    }, 100);
+      console.log("[v0] State after update:", option)
+    }, 100)
   }
 
   function setNameapprovedcolony(e) {
-    setnameofApprovedcolony(e.target.value);
-    setErrors((prev) => ({ ...prev, nameofApprovedcolony: "" }));
+    setnameofApprovedcolony(e.target.value)
+    setErrors((prev) => ({ ...prev, nameofApprovedcolony: "" }))
   }
 
   function setnocNumber(e) {
-    setNocNumber(e.target.value);
-    setErrors((prev) => ({ ...prev, NocNumber: "" }));
+    setNocNumber(e.target.value)
+    setErrors((prev) => ({ ...prev, NocNumber: "" }))
   }
 
   function selectfile(e) {
-    setUploadedFile(e.target.files[0]);
-    setFile(e.target.files[0]);
-    setErrors((prev) => ({ ...prev, file: "" }));
+    setUploadedFile(e.target.files[0])
+    setFile(e.target.files[0])
+    setErrors((prev) => ({ ...prev, file: "" }))
   }
 
   function onClick(e) {
-    console.log("inside_NOC_search");
+    console.log("inside_NOC_search")
   }
 
   function selectfiles(e) {
-    setGreenUploadedFile(e.target.files[0]);
-    setFiles(e.target.files[0]);
-    setErrors((prev) => ({ ...prev, files: "" }));
+    setGreenUploadedFile(e.target.files[0])
+    setFiles(e.target.files[0])
+    setErrors((prev) => ({ ...prev, files: "" }))
   }
 
   function selectEcbcElectricalLoadFile(e) {
-    setEcbcElectricalLoadFile(e.target.files[0]);
-    setEcbcElectricalLoadFileObj(e.target.files[0]);
-    setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: "" }));
+    setEcbcElectricalLoadFile(e.target.files[0])
+    setEcbcElectricalLoadFileObj(e.target.files[0])
+    setErrors((prev) => ({ ...prev, ecbcElectricalLoadFile: "" }))
   }
 
   function selectEcbcDemandLoadFile(e) {
-    setEcbcDemandLoadFile(e.target.files[0]);
-    setEcbcDemandLoadFileObj(e.target.files[0]);
-    setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: "" }));
+    setEcbcDemandLoadFile(e.target.files[0])
+    setEcbcDemandLoadFileObj(e.target.files[0])
+    setErrors((prev) => ({ ...prev, ecbcDemandLoadFile: "" }))
   }
 
   function selectEcbcAirConditionedFile(e) {
-    setEcbcAirConditionedFile(e.target.files[0]);
-    setEcbcAirConditionedFileObj(e.target.files[0]);
-    setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: "" }));
+    setEcbcAirConditionedFile(e.target.files[0])
+    setEcbcAirConditionedFileObj(e.target.files[0])
+    setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: "" }))
   }
 
   const goNext = () => {
     if (!validateFields()) {
-      return;
+      return
     }
 
-    const owners = formData.owners && formData.owners[index];
+    const owners = formData.owners && formData.owners[index]
     const ownerStep = {
       ...owners,
       approvedColony,
@@ -2539,22 +2574,22 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
       ecbcElectricalLoadFile,
       ecbcDemandLoadFile,
       ecbcAirConditionedFile,
-    };
-    const updatedFormData = { ...formData };
+    }
+    const updatedFormData = { ...formData }
 
     if (!updatedFormData.owners) {
-      updatedFormData.owners = [];
+      updatedFormData.owners = []
     }
 
-    onSelect(config.key, { ...formData[config.key], ...ownerStep }, updatedFormData, false, index);
-  };
+    onSelect(config.key, { ...formData[config.key], ...ownerStep }, updatedFormData, false, index)
+  }
 
-  const onSkip = () => onSelect();
+  const onSkip = () => onSelect()
 
   const ErrorMessage = ({ error }) => {
-    if (!error) return null;
-    return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{error}</div>;
-  };
+    if (!error) return null
+    return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{error}</div>
+  }
 
   return (
     <React.Fragment>
@@ -2617,6 +2652,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 selected={approvedColony}
                 select={setApprovedColony}
                 option={approvedcolonyStatus}
+                placeholder="Select Colony"
                 optionKey="i18nKey"
                 t={t}
               />
@@ -2634,6 +2670,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 optionKey="i18nKey"
                 name="nameofApprovedcolony"
                 value={nameofApprovedcolony}
+                placeholder="Approved Colony Name"
                 onChange={setNameapprovedcolony}
                 style={{ width: "86%" }}
                 ValidationRequired={false}
@@ -2656,8 +2693,8 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                   type={"text"}
                   isMandatory={false}
                   optionKey="i18nKey"
-                  defaultValue={formData?.owners?.NocNumber}
                   name="NocNumber"
+                  placeholder="NOC Number"
                   value={NocNumber}
                   onChange={setnocNumber}
                   style={{ width: "86%" }}
@@ -2688,8 +2725,8 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 style={{ width: "86%" }}
                 onUpload={selectfile}
                 onDelete={() => {
-                  setUploadedFile(null);
-                  setFile("");
+                  setUploadedFile(null)
+                  setFile("")
                 }}
                 message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
                 error={errors.file}
@@ -2705,7 +2742,15 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
             name={"masterPlan"}
             defaultValue={masterPlan}
             render={(props) => (
-              <Dropdown className="form-field" selected={masterPlan} select={setMasterPlan} option={common} optionKey="i18nKey" t={t} />
+              <Dropdown
+                placeholder="Have Master Plan?"
+                className="form-field"
+                selected={masterPlan}
+                select={setMasterPlan}
+                option={common}
+                optionKey="i18nKey"
+                t={t}
+              />
             )}
           />
           <ErrorMessage error={errors.masterPlan} />
@@ -2718,7 +2763,15 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 name={"use"}
                 defaultValue={use}
                 render={(props) => (
-                  <Dropdown className="form-field" selected={use} select={setUse} option={selectmasterDrop} optionKey="i18nKey" t={t} />
+                  <Dropdown
+                    placeholder="USE"
+                    className="form-field"
+                    selected={use}
+                    select={setUse}
+                    option={selectmasterDrop}
+                    optionKey="i18nKey"
+                    t={t}
+                  />
                 )}
               />
               {errors.use && <ErrorMessage error={errors.use} />}
@@ -2736,6 +2789,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 selected={buildingStatus}
                 select={setBuildingStatus}
                 option={building_status}
+                placeholder="Building Status"
                 optionKey="i18nKey"
                 t={t}
               />
@@ -2749,7 +2803,15 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
             name={"purchasedFAR"}
             defaultValue={purchasedFAR}
             render={(props) => (
-              <Dropdown className="form-field" selected={purchasedFAR} select={setPurchasedFAR} option={common} optionKey="i18nKey" t={t} />
+              <Dropdown
+                placeholder="Purchased FAR"
+                className="form-field"
+                selected={purchasedFAR}
+                select={setPurchasedFAR}
+                option={common}
+                optionKey="i18nKey"
+                t={t}
+              />
             )}
           />
           <ErrorMessage error={errors.purchasedFAR} />
@@ -2760,7 +2822,15 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
             name={"greenbuilding"}
             defaultValue={greenbuilding}
             render={(props) => (
-              <Dropdown className="form-field" selected={greenbuilding} select={setGreenbuilding} option={common} optionKey="i18nKey" t={t} />
+              <Dropdown
+                placeholder="Is Green Building?"
+                className="form-field"
+                selected={greenbuilding}
+                select={setGreenbuilding}
+                option={common}
+                optionKey="i18nKey"
+                t={t}
+              />
             )}
           />
           <ErrorMessage error={errors.greenbuilding} />
@@ -2771,8 +2841,8 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 id={"green-building-doc"}
                 onUpload={selectfiles}
                 onDelete={() => {
-                  setGreenUploadedFile(null);
-                  setFiles("");
+                  setGreenUploadedFile(null)
+                  setFiles("")
                 }}
                 message={greenuploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
                 error={errors.files}
@@ -2786,7 +2856,15 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 name={"rating"}
                 defaultValue={rating}
                 render={(props) => (
-                  <Dropdown className="form-field" selected={rating} select={setrating} option={selectRating} optionKey="i18nKey" t={t} />
+                  <Dropdown
+                    placeholder="Select Ratings"
+                    className="form-field"
+                    selected={rating}
+                    select={setrating}
+                    option={selectRating}
+                    optionKey="i18nKey"
+                    t={t}
+                  />
                 )}
               />
               {errors.rating && <ErrorMessage error={errors.rating} />}
@@ -2799,7 +2877,15 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
             name={"restrictedArea"}
             defaultValue={restrictedArea}
             render={(props) => (
-              <Dropdown className="form-field" selected={restrictedArea} select={setRestrictedArea} option={common} optionKey="i18nKey" t={t} />
+              <Dropdown
+                placeholder="Is Restricted Area?"
+                className="form-field"
+                selected={restrictedArea}
+                select={setRestrictedArea}
+                option={common}
+                optionKey="i18nKey"
+                t={t}
+              />
             )}
           />
           <ErrorMessage error={errors.restrictedArea} />
@@ -2815,6 +2901,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 selected={proposedSite}
                 select={setProposedSite}
                 option={Typeofproposedsite}
+                placeholder="Proposed Site Type"
                 optionKey="i18nKey"
                 t={t}
               />
@@ -2833,30 +2920,13 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 selected={ecbcElectricalLoad}
                 select={setEcbcElectricalLoadHandler}
                 option={yesNoOptions}
+                placeholder="Electrical Load > 100Kw?"
                 optionKey="i18nKey"
                 t={t}
               />
             )}
           />
           <ErrorMessage error={errors.ecbcElectricalLoad} />
-          {ecbcElectricalLoad?.code === "YES" && (
-            <div style={{ marginTop: "10px" }}>
-              <UploadFile
-                id={"ecbc-electrical-load-doc"}
-                style={{ width: "86%" }}
-                value={ecbcElectricalLoadFile}
-                onUpload={selectEcbcElectricalLoadFile}
-                onDelete={() => {
-                  setEcbcElectricalLoadFile(null);
-                  setEcbcElectricalLoadFileObj("");
-                }}
-                message={ecbcElectricalLoadFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                error={errors.ecbcElectricalLoadFile}
-                // uploadMessage={"Certificate from PEDA Consultant"}
-              />
-              {errors.ecbcElectricalLoadFile && <ErrorMessage error={errors.ecbcElectricalLoadFile} />}
-            </div>
-          )}
 
           <CardLabel>{`ECBC - Proposed Demand of Electrical Load is above 120 Kw *`}</CardLabel>
           <Controller
@@ -2869,30 +2939,13 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 selected={ecbcDemandLoad}
                 select={setEcbcDemandLoadHandler}
                 option={yesNoOptions}
+                placeholder="Electrical Load > 120Kw?"
                 optionKey="i18nKey"
                 t={t}
               />
             )}
           />
           <ErrorMessage error={errors.ecbcDemandLoad} />
-          {ecbcDemandLoad?.code === "YES" && (
-            <div style={{ marginTop: "10px" }}>
-              <UploadFile
-                id={"ecbc-demand-load-doc"}
-                style={{ width: "86%" }}
-                value={ecbcDemandLoadFile}
-                onUpload={selectEcbcDemandLoadFile}
-                onDelete={() => {
-                  setEcbcDemandLoadFile(null);
-                  setEcbcDemandLoadFileObj("");
-                }}
-                message={ecbcDemandLoadFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                error={errors.ecbcDemandLoadFile}
-                // uploadMessage={"Certificate from PEDA Consultant"}
-              />
-              {errors.ecbcDemandLoadFile && <ErrorMessage error={errors.ecbcDemandLoadFile} />}
-            </div>
-          )}
 
           <CardLabel>{`ECBC - Proposed Air Conditioned Area above 500 sq.mt *`}</CardLabel>
           <Controller
@@ -2905,34 +2958,101 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
                 selected={ecbcAirConditioned}
                 select={setEcbcAirConditionedHandler}
                 option={yesNoOptions}
+                placeholder="Conditioned Area > 500 sq.mt?"
                 optionKey="i18nKey"
                 t={t}
               />
             )}
           />
           <ErrorMessage error={errors.ecbcAirConditioned} />
-          {ecbcAirConditioned?.code === "YES" && (
+
+          {(ecbcElectricalLoad?.code === "YES" ||
+            ecbcDemandLoad?.code === "YES" ||
+            ecbcAirConditioned?.code === "YES") && (
             <div style={{ marginTop: "10px" }}>
               <UploadFile
-                id={"ecbc-air-conditioned-doc"}
+                id={
+                  ecbcElectricalLoad?.code === "YES"
+                    ? "ecbc-electrical-load-doc"
+                    : ecbcDemandLoad?.code === "YES"
+                      ? "ecbc-demand-load-doc"
+                      : "ecbc-air-conditioned-doc"
+                }
                 style={{ width: "86%" }}
-                value={ecbcAirConditionedFile}
-                onUpload={selectEcbcAirConditionedFile}
-                onDelete={() => {
-                  setEcbcAirConditionedFile(null);
-                  setEcbcAirConditionedFileObj("");
+                value={
+                  ecbcElectricalLoad?.code === "YES"
+                    ? ecbcElectricalLoadFile
+                    : ecbcDemandLoad?.code === "YES"
+                      ? ecbcDemandLoadFile
+                      : ecbcAirConditionedFile
+                }
+                onUpload={(file) => {
+                  // Clear other files so only one is kept at a time
+                  setEcbcElectricalLoadFile(null)
+                  setEcbcElectricalLoadFileObj("")
+                  setEcbcDemandLoadFile(null)
+                  setEcbcDemandLoadFileObj("")
+                  setEcbcAirConditionedFile(null)
+                  setEcbcAirConditionedFileObj("")
+
+                  if (ecbcElectricalLoad?.code === "YES") {
+                    selectEcbcElectricalLoadFile(file)
+                  } else if (ecbcDemandLoad?.code === "YES") {
+                    selectEcbcDemandLoadFile(file)
+                  } else {
+                    selectEcbcAirConditionedFile(file)
+                  }
                 }}
-                message={ecbcAirConditionedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                error={errors.ecbcAirConditionedFile}
-                // uploadMessage={"Certificate from PEDA Consultant"}
+                onDelete={() => {
+                  if (ecbcElectricalLoad?.code === "YES") {
+                    setEcbcElectricalLoadFile(null)
+                    setEcbcElectricalLoadFileObj("")
+                  } else if (ecbcDemandLoad?.code === "YES") {
+                    setEcbcDemandLoadFile(null)
+                    setEcbcDemandLoadFileObj("")
+                  } else {
+                    setEcbcAirConditionedFile(null)
+                    setEcbcAirConditionedFileObj("")
+                  }
+                }}
+                message={
+                  ecbcElectricalLoad?.code === "YES"
+                    ? ecbcElectricalLoadFile
+                      ? `1 ${t(`FILEUPLOADED`)}`
+                      : t(`ES_NO_FILE_SELECTED_LABEL`)
+                    : ecbcDemandLoad?.code === "YES"
+                      ? ecbcDemandLoadFile
+                        ? `1 ${t(`FILEUPLOADED`)}`
+                        : t(`ES_NO_FILE_SELECTED_LABEL`)
+                      : ecbcAirConditionedFile
+                        ? `1 ${t(`FILEUPLOADED`)}`
+                        : t(`ES_NO_FILE_SELECTED_LABEL`)
+                }
+                error={
+                  ecbcElectricalLoad?.code === "YES"
+                    ? errors.ecbcElectricalLoadFile
+                    : ecbcDemandLoad?.code === "YES"
+                      ? errors.ecbcDemandLoadFile
+                      : errors.ecbcAirConditionedFile
+                }
               />
-              {errors.ecbcAirConditionedFile && <ErrorMessage error={errors.ecbcAirConditionedFile} />}
+              {errors.ecbcElectricalLoadFile || errors.ecbcDemandLoadFile || errors.ecbcAirConditionedFile ? (
+                <ErrorMessage
+                  error={
+                    ecbcElectricalLoad?.code === "YES"
+                      ? errors.ecbcElectricalLoadFile
+                      : ecbcDemandLoad?.code === "YES"
+                        ? errors.ecbcDemandLoadFile
+                        : errors.ecbcAirConditionedFile
+                  }
+                />
+              ) : null}
             </div>
           )}
         </div>
       </FormStep>
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default BPANewBuildingdetails;
+export default BPANewBuildingdetails

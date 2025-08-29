@@ -29,7 +29,14 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
   let [cities, setcitiesopetions] = useState(allCities);
   let validation = {};
   let cityCode = formData?.data?.edcrDetails?.tenantId;
-  formData = { address: { ...formData?.address } };
+  // formData = { address: { ...formData?.address } };
+
+  if (!formData.address) {
+    formData.address = {};
+  }
+
+  console.log(formData, "DDDDD");
+
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   // useEffect(() => {
@@ -235,11 +242,17 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
     formData.address["city"] = city;
   }
 
+  // function selectLocality(locality) {
+  //   if (formData?.address?.locality) {
+  //     formData.address["locality"] = locality;
+  //   }
+  //   setSelectedLocality(locality);
+  //   sessionStorage.setItem("currLocality", JSON.stringify(locality));
+  // }
+
   function selectLocality(locality) {
-    if (formData?.address?.locality) {
-      formData.address["locality"] = locality;
-    }
     setSelectedLocality(locality);
+    formData.address["locality"] = locality;
     sessionStorage.setItem("currLocality", JSON.stringify(locality));
   }
 
@@ -322,7 +335,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
               disabled={propertyData?.address ? true : false}
             />
           )}
-          <CardLabel>{`${t("BPA_CITY_LABEL")}*`}</CardLabel>
+          {/* <CardLabel>{`${t("BPA_CITY_LABEL")}*`}</CardLabel>
           {!isOpen && (
             <RadioOrSelect
               options={cities.sort((a, b) => a.name.localeCompare(b.name))}
@@ -334,8 +347,17 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
               //labelKey="TENANT_TENANTS"
               disabled={propertyData?.address ? true : false}
             />
-          )}
-          {/* {!isOpen && selectedCity && localities && !propertyData?.address ? (
+          )} */}
+          <CardLabel>{`${t("BPA_CITY_LABEL")}*`}</CardLabel>
+            {!isOpen && (
+              <TextInput
+                value={selectedCity?.name || ""}
+                disable={true}         // makes input non-editable
+                style={{ background: "#f1f1f1" }} // optional grey background to show it’s disabled
+              />
+            )}
+
+          {!isOpen && selectedCity && localities && !propertyData?.address ? (
             <span className={"form-pt-dropdown-only"}>
               <CardLabel>{`${t("BPA_LOC_MOHALLA_LABEL")}*`}</CardLabel>
               <RadioOrSelect
@@ -366,9 +388,9 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
                 disabled={propertyData?.address ? true : false}
               />
             </span>
-          )} */}
+          )}
 
-          <CardLabel>{`${t("BPA_DETAILS_SRT_NAME_LABEL_NEW")}`}</CardLabel>
+          {/* <CardLabel>{`${t("BPA_DETAILS_SRT_NAME_LABEL_NEW")}`}</CardLabel>
           {!isOpen && (
             <TextInput
               style={{}}
@@ -380,8 +402,8 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
               value={street}
               disabled={propertyData?.address ? true : false}
             />
-          )}
-          <CardLabel>{`${t("ES_NEW_APPLICATION_LOCATION_LANDMARK")}`}</CardLabel>
+          )} */}
+          {/* <CardLabel>{`${t("ES_NEW_APPLICATION_LOCATION_LANDMARK")}`}</CardLabel>
           {!isOpen && (
             <TextInput
               style={{}}
@@ -398,7 +420,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
               //     title: t("BPA_INVALID_NAME"),
               // })}
             />
-          )}
+          )} */}
         </FormStep>
       )}
     </div>

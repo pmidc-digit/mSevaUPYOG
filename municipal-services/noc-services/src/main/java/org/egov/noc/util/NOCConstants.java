@@ -8,7 +8,7 @@ public class NOCConstants {
 	public static final String SEARCH_MODULE = "rainmaker-nocsrv";
 	
 	public static final String NOC_MODULE = "NOC";
-	public static final String NOC_UNDER_REVIEW = "UNDER_REVIEW";
+	public static final String NOC_INITIATED = "INITIATED";
 	
 	public static final String NOC_TYPE = "NocType";
 	public static final String SOURCE_RefId = "SourceRefId";

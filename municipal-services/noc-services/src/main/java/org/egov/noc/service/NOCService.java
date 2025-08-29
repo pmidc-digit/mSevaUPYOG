@@ -84,7 +84,7 @@ public class NOCService {
 		enrichmentService.enrichCreateRequest(nocRequest, mdmsData);
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
 //		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
-			wfIntegrator.callWorkFlow(nocRequest,"noc");
+			wfIntegrator.callWorkFlow(nocRequest,"obpas_noc");
 		}else{
 		  nocRequest.getNoc().setApplicationStatus(NOCConstants.CREATED_STATUS);
 		}
@@ -107,7 +107,7 @@ public class NOCService {
 			additionalDetails = nocValidator.getOrValidateBussinessService(nocRequest.getNoc(), mdmsData);
 		}
 		Noc searchResult= null;
-		if(nocRequest.getNoc().getApplicationStatus().equals(NOCConstants.NOC_UNDER_REVIEW)){
+		if(nocRequest.getNoc().getApplicationStatus().equals(NOCConstants.NOC_INITIATED)){
 			searchResult = new Noc();
 			searchResult.setAuditDetails(nocRequest.getNoc().getAuditDetails());
 			searchResult.setApplicationNo(nocRequest.getNoc().getApplicationNo());

@@ -1,15 +1,13 @@
 import React,{useEffect} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Toast, ActionBar, SubmitBar} from "@mseva/digit-ui-react-components";
-import { UPDATE_NOCNewApplication_FORM } from "../../redux/action/NOCNewApplicationActions";
+import { UPDATE_OBPS_FORM } from "../../../redux/actions/OBPSActions";
 import { useState } from "react";
-import NOCSiteDetails from "../NOCSiteDetails";
-import NOCSpecificationDetails from "../NOCSpecificationDetails";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 
-const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
+const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
@@ -31,7 +29,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-21px" };
 
   const currentStepData = useSelector(function (state) {
-    return state.noc.NOCNewApplicationFormReducer.formData;
+    return state.obps.OBPSFormReducer.formData;
   });
 
 //   useEffect(() => {
@@ -49,7 +47,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const onSubmit = (data) => {
     trigger();
     
-    dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
+    dispatch(UPDATE_OBPS_FORM(config.key, data));
     
     // Use updated data 
     callCreateAPI({ ...currentStepData, siteDetails:{...data} });
@@ -103,7 +101,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
 
   function goNext(data) {
-    dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
+    dispatch(UPDATE_OBPS_FORM(config.key, data));
     onGoNext();
   }
 
@@ -116,12 +114,19 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     setError("");
   };
 
+  const LayoutLocalityInfo = Digit?.ComponentRegistryService?.getComponent("LayoutLocalityInfo");
+  const LayoutSiteDetails = Digit?.ComponentRegistryService?.getComponent("LayoutSiteDetails");
+  const LayoutSpecificationDetails = Digit?.ComponentRegistryService?.getComponent("LayoutSpecificationDetails");
+  const LayoutCLUDetails = Digit?.ComponentRegistryService?.getComponent("LayoutCLUDetails");
+
   return (
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="employeeCard">
-          <NOCSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-          <NOCSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+          <LayoutLocalityInfo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+          <LayoutSiteDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+          <LayoutSpecificationDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+          <LayoutCLUDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
         </div>
         <ActionBar>
           <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
@@ -134,4 +139,4 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   );
 };
 
-export default NewNOCStepFormTwo;
+export default LayoutStepFormTwo;

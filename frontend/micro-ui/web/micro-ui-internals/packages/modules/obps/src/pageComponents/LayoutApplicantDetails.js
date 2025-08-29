@@ -15,7 +15,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 
-const NOCApplicantDetails = (_props) => {
+const LayoutApplicantDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -42,10 +42,10 @@ const NOCApplicantDetails = (_props) => {
 
   return (
     <React.Fragment>
-      <CardSectionHeader className="card-section-header">{t("NOC_APPLICANT_DETAILS")}</CardSectionHeader>
+      <CardSectionHeader className="card-section-header">{t("BPA_APPLICANT_DETAILS")}</CardSectionHeader>
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_FIRM_OWNER_NAME_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_FIRM_OWNER_NAME_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -79,7 +79,7 @@ const NOCApplicantDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.applicantOwnerOrFirmName ? errors.applicantOwnerOrFirmName.message : ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_EMAIL_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_EMAIL_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -109,7 +109,7 @@ const NOCApplicantDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.applicantEmailId?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}`}</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -131,7 +131,7 @@ const NOCApplicantDetails = (_props) => {
         </LabelFieldPair>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -150,7 +150,7 @@ const NOCApplicantDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -184,7 +184,7 @@ const NOCApplicantDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.applicantAddress?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_DOB_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_DOB_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -223,7 +223,7 @@ const NOCApplicantDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.applicantDateOfBirth?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_GENDER_LABEL")}`}*</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_APPLICANT_GENDER_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -251,4 +251,4 @@ const NOCApplicantDetails = (_props) => {
   );
 };
 
-export default NOCApplicantDetails;
+export default LayoutApplicantDetails;

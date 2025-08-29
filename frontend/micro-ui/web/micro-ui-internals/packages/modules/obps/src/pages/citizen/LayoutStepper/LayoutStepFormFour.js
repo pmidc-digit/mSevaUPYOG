@@ -1,18 +1,18 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_NOCNewApplication_FORM, RESET_NOC_NEW_APPLICATION_FORM } from "../../redux/action/NOCNewApplicationActions";
+import { UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../../../redux/actions/OBPSActions";
 import { useState } from "react";
 import _ from "lodash";
 import { useHistory, useLocation } from "react-router-dom";
 
-const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
+const LayoutStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
-    return state.noc.NOCNewApplicationFormReducer.formData || {};
+    return state.obps.OBPSFormReducer.formData || {};
   });
 
   const history = useHistory();
@@ -115,7 +115,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const onFormValueChange = (setValue = true, data) => {
     //console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
-      dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
+      dispatch(UPDATE_OBPS_FORM(config.key, data));
     }
   };
 
@@ -139,4 +139,4 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export default NewNOCStepFormFour;
+export default LayoutStepFormFour;

@@ -10,6 +10,7 @@ const App = () => {
   const { path, url, ...match } = useRouteMatch();
   const { t } = useTranslation();
   const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
+  const NOCResponseCitizen = Digit.ComponentRegistryService.getComponent("NOCResponseCitizen");
 
   return (
     <span className={"noc-citizen"} style={{ width: "100%" }}>
@@ -17,6 +18,7 @@ const App = () => {
         <AppContainer>
           {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}
           <PrivateRoute path={`${path}/new-application`} component={NewNOCApplication} />
+          <PrivateRoute path={`${path}/response/:id`} component={NOCResponseCitizen} />
         </AppContainer>
       </Switch>
     </span>

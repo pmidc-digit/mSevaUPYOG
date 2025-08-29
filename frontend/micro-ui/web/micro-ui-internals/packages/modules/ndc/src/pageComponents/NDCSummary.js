@@ -55,7 +55,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: formData?.apiData?.Applications?.[0]?.uuid,
-    moduleCode: "NDC",
+    moduleCode: "ndc-services",
   });
 
   const userRoles = user?.info?.roles?.map((e) => e.code);

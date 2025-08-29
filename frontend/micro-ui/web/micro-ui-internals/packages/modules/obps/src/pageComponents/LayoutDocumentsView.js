@@ -9,7 +9,7 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
   </svg>
 );
 
-function NOCDocument({ value = {}}) {
+function LayoutDocumentsView({ value = {}}) {
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.noc.useNOCDocumentSearch({value},{value});
 
@@ -38,4 +38,4 @@ function NOCDocument({ value = {}}) {
   );
 }
 
-export default NOCDocument;
+export default LayoutDocumentsView;

@@ -1,11 +1,11 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_NOCNewApplication_FORM } from "../../redux/action/NOCNewApplicationActions";
+import { UPDATE_OBPS_FORM } from "../../../redux/actions/OBPSActions";
 import { useState } from "react";
 import _ from "lodash";
 
-const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
+const LayoutStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
@@ -13,8 +13,8 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
 
   const currentStepData = useSelector(function (state) {
-    return state.noc.NOCNewApplicationFormReducer.formData && state.noc.NOCNewApplicationFormReducer.formData[config?.key]
-      ? state.noc.NOCNewApplicationFormReducer.formData[config?.key]
+    return state.obps.OBPSFormReducer.formData && state.obps.OBPSFormReducer.formData[config?.key]
+      ? state.obps.OBPSFormReducer.formData[config?.key]
       : {};
   });
 
@@ -40,11 +40,12 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   function validation(documents) {
     if (!isLoading) {
-      const nocDocumentsType = data?.NOC?.Documents || [];
+      const layoutDocumentsType = data?.BPA?.LayoutDocuments || [];
       const documentsData = documents?.documents?.documents || [];
 
-      // Step 1: Extract required document codes from nocDocumentsType
-      const requiredDocs = nocDocumentsType.filter((doc) => doc.required).map((doc) => doc.code);
+      // Step 1: Extract required document codes from layoutDocumentsType
+      const requiredDocs = layoutDocumentsType.filter((doc) => doc.required).map((doc) => doc.code);
+      console.log("required Documnets in Layout", requiredDocs);
 
       // Step 2: Extract uploaded documentTypes
       const uploadedDocs = documentsData.map((doc) => doc.documentType);
@@ -63,7 +64,7 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const onFormValueChange = (setValue = true, data) => {
     console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
-      dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
+      dispatch(UPDATE_OBPS_FORM(config.key, data));
     }
   };
 
@@ -87,4 +88,4 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export default NewNOCStepFormThree;
+export default LayoutStepFormThree;

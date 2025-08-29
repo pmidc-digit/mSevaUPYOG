@@ -15,14 +15,8 @@ import {
   UploadFile
 } from "@mseva/digit-ui-react-components";
 
-const NOCSpecificationDetails = (_props) => {
+const LayoutSpecificationDetails = (_props) => {
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
-
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const stateId = Digit.ULBService.getStateId();
-  const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.specificationBuildingCategory || []);
-
-  const { data: buildingCategory, isLoading: isLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
 
   useEffect(() => {
     console.log("currentStepData4", currentStepData);
@@ -38,11 +32,11 @@ const NOCSpecificationDetails = (_props) => {
 
   return (
     <React.Fragment>
-      <CardSectionHeader>{t("NOC_SPECIFICATION_DETAILS")}</CardSectionHeader>
+      <CardSectionHeader>{t("BPA_SPECIFICATION_DETAILS")}</CardSectionHeader>
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")}`}</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("BPA_PLOT_AREA_JAMA_BANDI_LABEL")}`}</CardLabel>
           <div className="field">
             <Controller
               control={control}
@@ -75,28 +69,10 @@ const NOCSpecificationDetails = (_props) => {
           </div>
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{errors?.specificationPlotArea ? errors.specificationPlotArea.message : ""}</CardLabelError>
-
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_BUILDING_CATEGORY_LABEL")}`}*</CardLabel>
-          {/* <div className="field"> */}
-          {!isLoading && buildingCategory.length > 0 && (
-            <Controller
-              control={control}
-              name={"specificationBuildingCategory"}
-              rules={{ required: t("REQUIRED_FIELD") }}
-              render={(props) => (
-                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={buildingCategory} optionKey="name" />
-              )}
-            />
-          )}
-          {/* </div> */}
-        </LabelFieldPair>
-        <CardLabelError style={errorStyle}>
-          {errors?.specificationBuildingCategory ? errors.specificationBuildingCategory.message : ""}
-        </CardLabelError>
       </div>
+      <BreakLine />
     </React.Fragment>
   );
 };
 
-export default NOCSpecificationDetails;
+export default LayoutSpecificationDetails;

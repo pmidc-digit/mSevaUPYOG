@@ -1,22 +1,20 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {Loader,Toast, ActionBar, SubmitBar, Dropdown, CardLabelError, LabelFieldPair, CardLabel } from "@mseva/digit-ui-react-components";
-import { UPDATE_NOCNewApplication_FORM } from "../../redux/action/NOCNewApplicationActions";
+import { UPDATE_OBPS_FORM } from "../../../redux/actions/OBPSActions";
 import { useState, useEffect } from "react";
-import NOCApplicantDetails from "../NOCApplicantDetails";
-import NOCProfessionalDetails from "../NOCProfessionalDetails";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm } from "react-hook-form";
 
-const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
+const LayoutStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
-    return state.noc.NOCNewApplicationFormReducer.formData;
+    return state.obps.OBPSFormReducer.formData;
   });
 
   const userInfo = Digit.UserService.getUser();
@@ -46,7 +44,7 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   };
 
   function goNext(data) {
-    dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
+    dispatch(UPDATE_OBPS_FORM(config.key, data));
     onGoNext();
   }
 
@@ -96,7 +94,8 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     }
   }, []);
 
-
+  const LayoutProfessionalDetails = Digit?.ComponentRegistryService?.getComponent("LayoutProfessionalDetails");
+  const LayoutApplicantDetails = Digit?.ComponentRegistryService?.getComponent("LayoutApplicantDetails");
 
   return (
     <React.Fragment>
@@ -105,12 +104,12 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
             
         {isRegisteredStakeHolder ? (
             <React.Fragment>
-             <NOCProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
-             <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+             <LayoutProfessionalDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+             <LayoutApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           ): (
             <React.Fragment>
-             <NOCApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
+             <LayoutApplicantDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} {...commonProps} />
             </React.Fragment>
           )
         }   
@@ -125,4 +124,4 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
   );
 };
 
-export default NewNOCStepFormOne;
+export default LayoutStepFormOne;

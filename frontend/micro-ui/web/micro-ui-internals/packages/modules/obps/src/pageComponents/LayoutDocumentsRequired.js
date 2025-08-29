@@ -12,7 +12,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import EXIF from "exif-js";
 
-const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
+const LayoutDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(formData?.documents?.documents);
   const [error, setError] = useState(null);
@@ -21,8 +21,8 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
 
   const stateId = Digit.ULBService.getStateId();
 
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
-  //console.log("data for documents here", data)
+  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "BPA", ["LayoutDocuments"]);
+  console.log("data for documents here", data)
   //console.log("formData here =====", formData);
 
   const handleSubmit = () => {
@@ -54,7 +54,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {data?.NOC?.Documents?.map((document, index) => {
+          {data?.BPA?.LayoutDocuments?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}
@@ -361,4 +361,4 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   );
 }
 
-export default NOCDocumentsRequired;
+export default LayoutDocumentsRequired;

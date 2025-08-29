@@ -2,12 +2,13 @@ import { Header, Row, StatusTable, Loader, Card, CardSubHeader, ActionBar, Submi
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
-import NDCDocument from "../../../components/NDCDocument";
+import NDCDocument from "../../../pageComponents/NDCDocument";
+import NDCDocumentTimline from "../../../components/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-
+  console.log("wfDocuments",wfDocuments)
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     name: checkpoint?.assigner?.name,
@@ -37,7 +38,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       {wfDocuments?.length > 0 && <div>
         {wfDocuments?.map((doc, index) => (
           <div key={index}>
-            <NDCDocument value={wfDocuments} Code={doc?.documentType} index={index} />
+            <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
           </div>
         ))}
         </div>

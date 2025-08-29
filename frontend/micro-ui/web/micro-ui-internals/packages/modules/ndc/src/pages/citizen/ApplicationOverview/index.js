@@ -27,6 +27,7 @@ import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDeta
 import { businessServiceList, convertEpochToDate, stringReplaceAll } from "../../../utils";
 import { format } from "date-fns";
 import NDCDocument from "../../../pageComponents/NDCDocument";
+import NDCDocumentTimline from "../../../components/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
@@ -37,7 +38,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     name: checkpoint?.assigner?.name,
-    mobileNumber: checkpoint?.assigner?.mobileNumber,
+    // mobileNumber: checkpoint?.assigner?.mobileNumber,
     source: checkpoint?.assigner?.source,
   };
 
@@ -63,7 +64,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
       {wfDocuments?.length > 0 && <div>
         {wfDocuments?.map((doc, index) => (
           <div key={index}>
-            <NDCDocument value={wfDocuments} Code={doc?.documentType} index={index} />
+            <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
           </div>
         ))}
         </div>

@@ -24,7 +24,7 @@ public class NdcRowMapper implements ResultSetExtractor<List<Application>> {
 
 	@Override
 	public List<Application> extractData(ResultSet rs) throws SQLException, DataAccessException {
-		Map<String, Application> applicationHashMap = new HashMap<>();
+		Map<String, Application> applicationHashMap = new LinkedHashMap<>();
 		while (rs.next()) {
 			String applicationId = rs.getString("a_uuid");
 			Application application = applicationHashMap.get(applicationId);

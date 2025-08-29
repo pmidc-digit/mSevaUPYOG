@@ -1,12 +1,3 @@
 #!/bin/sh
 
-flyway \
-  -url=jdbc:postgresql://localhost:5432/pg1 \
-  -table=public \
-  -user=postgres \
-  -password=postgres \
-  -locations=db/migration/main \
-  -baselineOnMigrate=true \
-  -outOfOrder=false \
-  -ignoreMissingMigrations=true \
-  migrate
+flyway -url=$DB_URL -table=$SCHEMA_TABLE -user=$FLYWAY_USER -password=$FLYWAY_PASSWORD -locations=$FLYWAY_LOCATIONS -baselineOnMigrate=true -outOfOrder=true -validateOnMigrate=false  migrate

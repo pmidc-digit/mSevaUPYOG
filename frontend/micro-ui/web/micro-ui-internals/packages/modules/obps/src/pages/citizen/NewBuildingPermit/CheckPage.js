@@ -2790,7 +2790,7 @@ const CheckPage = ({ onSubmit, value }) => {
               {/* <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel> */}
               {/* <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} /> */}
               <br></br>
-              {/* {showMobileInput && (
+              {showMobileInput && (
                 <React.Fragment>
                   <br></br>
                   <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
@@ -2807,9 +2807,9 @@ const CheckPage = ({ onSubmit, value }) => {
                   />
                   <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
                 </React.Fragment>
-              )} */}
+              )}
               <br></br>
-              {/* {showOTPInput && (
+              {showOTPInput && (
                 <React.Fragment>
                   <br></br>
                   <CardLabel>{t("BPA_OTP")}</CardLabel>
@@ -2817,7 +2817,7 @@ const CheckPage = ({ onSubmit, value }) => {
                   <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
                   {otpError && <CardLabel style={{ color: "red" }}>{otpError}</CardLabel>}
                 </React.Fragment>
-              )} */}
+              )}
             </div>
           )}
         </StatusTable>

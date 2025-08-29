@@ -1664,6 +1664,7 @@ const submitAction = (workflow) => {
   setIsEnableLoader(true);
 
   const app = data?.applicationData || {};
+  app.riskType = app?.additionalDetails?.riskType
   const docs = Array.isArray(app.documents) ? app.documents : [];
 
   // Keep one per documentType; prefer entries that have fileStoreId

@@ -282,6 +282,7 @@ export const OBPSService = {
     };
   },
   BPADetailsPage: async (tenantId, filters) => {
+    console.log("edcrInHooks")
     const response = await OBPSService.BPASearch(tenantId, filters);
     console.log(response, "APPP");
     let appDocumentFileStoreIds = response?.BPA?.[0]?.documents?.map((docId) => docId.fileStoreId);
@@ -294,9 +295,11 @@ export const OBPSService = {
 
     console.log(response, "EEEEE");
 
-    if (!response?.BPA?.length) {
-      return;
-    }
+    // if (!response?.BPA?.length) {
+    //   return;
+    // }
+
+    console.log("After If");
     sessionStorage.setItem(
       "BPA_ARCHITECT_NAME",
       JSON.stringify(response?.BPA?.[0]?.additionalDetails?.typeOfArchitect ? response?.BPA?.[0]?.additionalDetails?.typeOfArchitect : "ARCHITECT")
@@ -310,7 +313,8 @@ export const OBPSService = {
     // const nocResponse = await OBPSService.NOCSearch(BPA?.tenantId, { sourceRefId: BPA?.applicationNo });
     // const noc = nocResponse?.Noc;
     const noc = [];
-    const filter = { approvalNo: edcr?.permitNumber };
+    console.log("edcrInHooks", edcr)
+    const filter = { approvalNo: response?.BPA?.[0]?.approvalNo };
     const bpaResponse = await OBPSService.BPASearch(tenantId, { ...filter });
     const comparisionRep = {
       ocdcrNumber: BPA?.edcrNumber.includes("OCDCR") ? BPA?.edcrNumber : bpaResponse?.BPA?.[0]?.edcrNumber,
@@ -593,6 +597,8 @@ export const OBPSService = {
       });
     }
 
+    console.log("Log 5");
+
     const basicDetails = {
       title: "BPA_BASIC_DETAILS_TITLE",
       asSectionHeader: true,
@@ -646,6 +652,8 @@ export const OBPSService = {
       },
     };
 
+    console.log("Log 4");
+
     const buildingExtractionDetails = {
       title: "",
       isScrutinyDetails: true,
@@ -690,6 +698,8 @@ export const OBPSService = {
         ],
       },
     };
+
+    console.log("Log 3");
 
     const addressDetails = {
       title: "BPA_NEW_TRADE_DETAILS_HEADER_DETAILS",
@@ -751,20 +761,35 @@ export const OBPSService = {
       },
     };
 
+    console.log("Log 2");
+
     let approvalChecks = [];
     let approvalChecksDetails = {};
     if (BPA?.status === "APPROVAL_INPROGRESS") {
-      mdmsRes?.BPA?.CheckList.forEach((checklist) => {
-        if (
-          checklist?.RiskType === riskType &&
-          checklist?.applicationType === edcr?.appliactionType &&
-          checklist?.ServiceType === edcr?.applicationSubType &&
-          checklist?.WFState === "PENDINGAPPROVAL" &&
-          checklist?.conditions?.length > 0
-        ) {
-          approvalChecks.push(...checklist?.conditions);
-        }
-      });
+      // mdmsRes?.BPA?.CheckList.forEach((checklist) => {
+      //   if (
+      //     checklist?.RiskType === riskType &&
+      //     checklist?.applicationType === edcr?.appliactionType &&
+      //     checklist?.ServiceType === edcr?.applicationSubType &&
+      //     checklist?.WFState === "PENDINGAPPROVAL" &&
+      //     checklist?.conditions?.length > 0
+      //   ) {
+      //     approvalChecks.push(...checklist?.conditions);
+      //   }
+      // });
+
+      mdmsRes?.BPA?.CheckList?.forEach((checklist) => {
+          if (
+            checklist?.RiskType === riskType &&
+            checklist?.applicationType === edcr?.applicationType && // also fixed typo here
+            checklist?.ServiceType === edcr?.applicationSubType &&
+            checklist?.WFState === "PENDINGAPPROVAL" &&
+            checklist?.conditions?.length > 0
+          ) {
+            approvalChecks.push(...checklist?.conditions);
+          }
+        });
+
 
       approvalChecksDetails = {
         title: "", //window.location.href.includes("/employee") ? "" : "BPA_PERMIT_CONDITIONS",
@@ -779,6 +804,7 @@ export const OBPSService = {
 
     if (riskType == "LOW" && approvalChecks.length > 0) approvalChecksDetails = {};
 
+    console.log("Log 1")
     // if(inspectionReport) details.push(inspectionReport);\
     let val;
     var i;
@@ -862,6 +888,19 @@ export const OBPSService = {
     }
 
     let bpaFilterDetails = details?.filter((data) => data);
+
+    console.log("ServiceLOG", {
+      applicationData: BPA,
+      applicationDetails: bpaFilterDetails,
+      tenantId: BPA?.tenantId,
+      edcrDetails: edcr,
+      nocData: noc,
+      comparisionReport: comparisionReport?.comparisonDetail,
+      businessService: BPA?.businessService,
+      applicationNo: BPA?.applicationNo,
+      applicationStatus: BPA?.status,
+      collectionBillDetails: collectionBillDetails,
+    })
 
     return {
       applicationData: BPA,

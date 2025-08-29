@@ -923,6 +923,7 @@ export const getOCEDCRDetails = async (edcrNumber, tenantId) => {
 
 export const ocScrutinyDetailsData = async (edcrNumber, tenantId) => {
   const scrutinyDetails = await getOCEDCRDetails(edcrNumber, tenantId);
+  console.log(scrutinyDetails, "OOOO*****");
   if (!scrutinyDetails?.edcrDetail?.[0]?.edcrNumber) {
     return { type: "ERROR", message: scrutinyDetails ? scrutinyDetails : "BPA_NO_RECORD_FOUND" };
   }

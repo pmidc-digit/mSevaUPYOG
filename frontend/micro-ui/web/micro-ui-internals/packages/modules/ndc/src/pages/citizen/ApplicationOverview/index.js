@@ -14,6 +14,11 @@ import {
   SubmitBar,
   Menu,
   LinkButton,
+  ConnectingCheckPoints,
+  CheckPoint,
+  TLTimeLine,
+  DisplayPhotos,
+  StarRated
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -25,6 +30,54 @@ import NDCDocument from "../../../pageComponents/NDCDocument";
 import NDCModal from "../../../pageComponents/NDCModal";
 import { set } from "lodash";
 import getAcknowledgementData from "../../../getAcknowlegment";
+
+const getTimelineCaptions = (checkpoint, index, arr, t) => {
+  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
+
+  const caption = {
+    date: checkpoint?.auditDetails?.lastModified,
+    name: checkpoint?.assigner?.name,
+    mobileNumber: checkpoint?.assigner?.mobileNumber,
+    source: checkpoint?.assigner?.source,
+  };
+
+  return (
+    <div>
+      {comment?.length>0 && (
+        <div className="TLComments">
+          <h3>{t("WF_COMMON_COMMENTS")}</h3>
+          <p style={{ overflowX: "scroll" }}>{comment}</p>
+        </div>
+      )}
+
+      {thumbnailsToShow?.thumbs?.length > 0 && (
+        <DisplayPhotos
+          srcs={thumbnailsToShow.thumbs}
+          onClick={(src, idx) => {
+            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+            Digit.Utils.zoomImage(fullImage);
+          }}
+        />
+      )}
+
+      {wfDocuments?.length > 0 && <div>
+        {wfDocuments?.map((doc, index) => (
+          <div key={index}>
+            <NDCDocument value={wfDocuments} Code={doc?.documentType} index={index} />
+          </div>
+        ))}
+        </div>
+      }
+
+      <div style={{ marginTop: "8px" }}>
+        {caption.date && <p>{caption.date}</p>}
+        {caption.name && <p>{caption.name}</p>}
+        {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
+        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
+      </div>
+    </div>
+  );
+};
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
@@ -43,6 +96,12 @@ const CitizenApplicationOverview = () => {
   const { isLoading: nocDocsLoading, data: nocDocs } = Digit.Hooks.pt.usePropertyMDMS(state, "NDC", ["Documents"]);
 
   const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
+
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: id,
+    moduleCode: "ndc-services",
+  });
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -192,6 +251,29 @@ const CitizenApplicationOverview = () => {
           )}
         </div>
       </Card>
+
+      {workflowDetails?.data?.timeline && (
+        <Card>
+          <CardSubHeader>{t("NDC_APPLICATION_TIMELINE")}</CardSubHeader>
+          {workflowDetails?.data?.timeline.length === 1 ? (
+            <CheckPoint
+              isCompleted={true}
+              label={t("NDC_STATUS_" + workflowDetails?.data?.timeline[0]?.status)}
+            />
+          ) : (
+            <ConnectingCheckPoints>
+              {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
+                <CheckPoint
+                  keyValue={index}
+                  isCompleted={index === 0}
+                  label={t("NDC_STATUS_" + checkpoint.status)}
+                  customChild={getTimelineCaptions(checkpoint, index, arr, t)}
+                />
+              ))}
+            </ConnectingCheckPoints>
+          )}
+        </Card>
+      )}
     </div>
   );
 };

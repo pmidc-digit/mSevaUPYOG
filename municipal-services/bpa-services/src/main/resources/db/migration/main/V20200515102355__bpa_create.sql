@@ -66,3 +66,7 @@ CREATE INDEX bpa_index  ON eg_bpa_buildingplan
     status,
     edcrnumber
 );
+CREATE SEQUENCE public."SEQ_EG_BP_PN";
+
+ALTER SEQUENCE public."SEQ_EG_BP_PN"
+    OWNER TO egovprod;

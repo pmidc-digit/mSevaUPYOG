@@ -80,6 +80,7 @@ export const SelectPaymentType = (props) => {
   const { name, mobileNumber } = state;
 
   const billDetails = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
+  console.log(billDetails, "BILL");
 
   const userOptions = ["OWNER", "OTHER"];
 

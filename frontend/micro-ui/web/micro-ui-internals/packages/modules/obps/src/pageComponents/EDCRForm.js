@@ -90,6 +90,9 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
 
   const { isLoading, data: citymodules } = Digit.Hooks.obps.useMDMS(stateId, "tenant", ["citymodule"]);
 
+
+  // const tenantId = localStorage.getItem("CITIZEN.CITY");
+
   useEffect(() => {
     if (citymodules?.tenant?.citymodule?.length > 0) {
       const list = citymodules?.tenant?.citymodule?.filter((data) => data.code == "BPAAPPLY");
@@ -152,73 +155,10 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
   }
 
   return (
-    // <FormStep
-    //     t={t}
-    //     config={config}
-    //     onSelect={handleSubmit}
-    //     onSkip={onSkip}
-    //     isDisabled={!tenantIdData || !name || !coreArea || !file || isSubmitBtnDisable}
-    //     onAdd={onAdd}
-    //     isMultipleAllow={true}
-    // >
-    //     <CardLabel>{`${t("EDCR_SCRUTINY_CITY")} *`}</CardLabel>
-    //     <Dropdown
-    //         t={t}
-    //         isMandatory={false}
-    //         option={citymoduleList}
-    //         selected={tenantIdData}
-    //         optionKey="i18nKey"
-    //         select={setTypeOfTenantID}
-    //         uploadMessage={uploadMessage}
-    //     />
-    //     <CardLabel>{`${t("EDCR_SCRUTINY_NAME_LABEL")} *`}</CardLabel>
-    //     <TextInput
-    //         isMandatory={false}
-    //         optionKey="i18nKey"
-    //         t={t}
-    //         name="applicantName"
-    //         onChange={setApplicantName}
-    //         uploadMessage={uploadMessage}
-    //         value={name}
-    //         {...(validation = {
-    //             isRequired: true,
-    //             //pattern: "^[a-zA-Z]+(( )+[a-zA-z]+)*$",
-    //             pattern: "^[a-zA-Z ]+$",
-    //             type: "text",
-    //             title: t("TL_NAME_ERROR_MESSAGE"),
-    //         })}
-    //     />
-    //     <CardLabel>{`${t("BPA_CORE_AREA")}`}</CardLabel>
-    //     <Dropdown
-    //         t={t}
-    //         isMandatory={false}
-    //         option={common}
-    //         selected={coreArea}
-    //         optionKey="i18nKey"
-    //         select={setCoreArea}
-    //         uploadMessage={uploadMessage}
-    //     />
-    //     <CardLabel>{`${t("BPA_PLAN_DIAGRAM_LABEL")} *`}</CardLabel>
-    //     <UploadFile
-    //         id={"edcr-doc"}
-    //         extraStyleName={"propertyCreate"}
-    //         // accept=".dxf"
-    //         onUpload={selectfile}
-    //         onDelete={() => {
-    //             setUploadedFile(null);
-    //             setFile("");
-    //         }}
-    //         message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-    //         error={error}
-    //         uploadMessage={uploadMessage}
-    //     />
-    //     <div style={{ disabled: "true", height: "30px", width: "100%", fontSize: "14px" }}>{t("EDCR_UPLOAD_FILE_LIMITS_LABEL")}</div>
-    //     {isShowToast && <Toast error={isShowToast.key} label={t(isShowToast.label)} onClose={() => setIsShowToast(null)} isDleteBtn={true} />}
-    //     {/* {isSubmitBtnDisable ? <Loader /> : null} */}
-    // </FormStep>
+
 
     <React.Fragment>
-      <FormStep config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={!isFormValid()} t={t}>
+      <FormStep  config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={!isFormValid()} t={t}>
         <CardLabel>{t("EDCR_APPLICANT_NAME")}</CardLabel>
         <TextInput t={t} isMandatory={true} type="text" name="applicantName" value={name} onChange={(e) => setName(e.target.value)} />
 

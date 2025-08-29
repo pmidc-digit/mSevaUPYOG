@@ -147,6 +147,7 @@ public class EnrichmentService {
 
 	public void enrichPetApplicationUponUpdate(PetRegistrationRequest petRegistrationRequest) {
 		// Enrich lastModifiedTime and lastModifiedBy in case of update
+		enrichDocuments(petRegistrationRequest.getPetRegistrationApplications().get(0));
 		for (PetRegistrationApplication application : petRegistrationRequest.getPetRegistrationApplications()) {
 			application.getAuditDetails().setLastModifiedTime(System.currentTimeMillis());
 			application.getAuditDetails()

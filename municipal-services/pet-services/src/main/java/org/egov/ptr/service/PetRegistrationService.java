@@ -5,8 +5,11 @@ import static org.egov.ptr.util.PTRConstants.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.ptr.config.PetConfiguration;
+import org.egov.ptr.models.AuditDetails;
 import org.egov.ptr.models.PetApplicationSearchCriteria;
 import org.egov.ptr.models.PetRegistrationApplication;
 import org.egov.ptr.models.PetRegistrationRequest;
@@ -90,6 +93,36 @@ public class PetRegistrationService {
 //		existingApplication.setWorkflow(petRegistrationRequest.getPetRegistrationApplications().get(0).getWorkflow());
 //		petRegistrationRequest.setPetRegistrationApplications(Collections.singletonList(existingApplication));
 
+//		if (existingApplication.getDocuments() != null) {
+//			existingApplication.getDocuments().forEach(document -> {
+//				if (document.getId() == null) {
+//					document.setId(UUID.randomUUID().toString());
+//				}
+//
+//				AuditDetails auditDetails = document.getAuditDetails();
+//
+//
+//				// Add this check to prevent the NullPointerException
+//				if (auditDetails == null) {
+//					auditDetails = new AuditDetails();
+//				}
+//
+//				// Now it's safe to work with the auditDetails object
+//				String userId = petRegistrationRequest.getRequestInfo().getUserInfo().getUuid();
+//				long currentTime = System.currentTimeMillis();
+//
+//				if (auditDetails.getCreatedBy() == null) {
+//					auditDetails.setCreatedBy(userId);
+//				}
+//				if (auditDetails.getCreatedTime() == null) {
+//					auditDetails.setCreatedTime(currentTime);
+//				}
+//
+//				auditDetails.setLastModifiedBy(userId);
+//				auditDetails.setLastModifiedTime(currentTime);
+//				document.setAuditDetails(auditDetails);
+//			});
+//		}
 		enrichmentService.enrichPetApplicationUponUpdate(petRegistrationRequest);
 
 		if (petRegistrationRequest.getPetRegistrationApplications().get(0).getWorkflow().getAction()

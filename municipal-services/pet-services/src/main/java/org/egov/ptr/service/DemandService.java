@@ -5,16 +5,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.ptr.config.PetConfiguration;
-import org.egov.ptr.models.Demand;
-import org.egov.ptr.models.DemandDetail;
-import org.egov.ptr.models.PetRegistrationApplication;
-import org.egov.ptr.models.PetRegistrationRequest;
+import org.egov.ptr.models.*;
+import org.egov.ptr.models.collection.GetBillCriteria;
 import org.egov.ptr.repository.DemandRepository;
 import org.egov.ptr.repository.ServiceRequestRepository;
 import org.egov.ptr.util.PTRConstants;
 import org.egov.ptr.util.PetUtil;
+import org.egov.ptr.web.contracts.RequestInfoWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -73,6 +73,39 @@ public class DemandService {
 		demands.add(demand);
 
 		return demandRepository.saveDemand(petReq.getRequestInfo(), demands);
+	}
+
+
+	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+
+		if (getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);
+//		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+		DemandResponse res = mapper.convertValue(
+				serviceRequestRepository.fetchResult(petUtil.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+				DemandResponse.class);
+		if (CollectionUtils.isEmpty(res.getDemands())) {
+			Map<String, String> map = new HashMap<>();
+			map.put(EMPTY_DEMAND_ERROR_CODE, EMPTY_DEMAND_ERROR_MESSAGE);
+		}
+
+		Map<String,List<Demand>> consumerCodeToDemandMap = new HashMap<>();
+		res.getDemands().forEach(demand -> {
+			if(consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
+				consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
+			else {
+				List<Demand> demands = new LinkedList<>();
+				demands.add(demand);
+				consumerCodeToDemandMap.put(demand.getConsumerCode(),demands);
+			}
+		});
+
+//		if (!CollectionUtils.isEmpty(consumerCodeToDemandMap)) {
+//			List<Demand> demandsToBeUpdated = new LinkedList<>();
+//			DemandRequest request = DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfo).build();
+//			StringBuilder updateDemandUrl = petUtil.getUpdateDemandUrl();
+//            repository.fetchResult(updateDemandUrl, request);
+//		}
+		return res;
 	}
 
 }

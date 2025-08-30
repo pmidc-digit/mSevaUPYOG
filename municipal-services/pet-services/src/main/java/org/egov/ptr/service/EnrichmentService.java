@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +20,7 @@ import org.egov.ptr.models.PetRegistrationApplication;
 import org.egov.ptr.models.PetRegistrationRequest;
 import org.egov.ptr.models.PetRenewalAuditDetails;
 import org.egov.ptr.util.PetUtil;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -88,7 +90,9 @@ public class EnrichmentService {
 	}
 
 	private boolean isNewPetApplication(PetRegistrationApplication application) {
-		return NEW_PET_APPLICATION.equals(application.getApplicationType()) && (application.getPetToken().isEmpty()||application.getPetToken()==null);
+		String petToken = application.getPetToken();
+		return NEW_PET_APPLICATION.equals(application.getApplicationType())
+				&& (petToken == null || petToken.isEmpty());
 	}
 
 	private boolean isRenewPetApplication(PetRegistrationApplication application) {
@@ -96,9 +100,23 @@ public class EnrichmentService {
 	}
 
 	private void enrichNewPetToken(PetRegistrationApplication application, RequestInfo requestInfo, String tenantId) {
-		String petTokenId = petUtil
-				.getIdList(requestInfo, tenantId, config.getPetTokenName(), config.getPetTokenFormat(), 1).get(0);
-		application.setPetToken(petTokenId);
+		try {
+			List<String> tokenIds = petUtil.getIdList(requestInfo, tenantId,
+					config.getPetTokenName(), config.getPetTokenFormat(), 1);
+
+			if (tokenIds == null || tokenIds.isEmpty()) {
+				log.error("ID generation service returned empty list");
+				throw new CustomException("IDGEN_ERROR", "Failed to generate pet token");
+			}
+
+			application.setPetToken(tokenIds.get(0));
+		} catch (Exception e) {
+			log.error("Error calling ID generation service: {}", e.getMessage());
+			// Fallback token generation
+			String fallbackToken = "PG-" + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+					+ "-" + System.currentTimeMillis();
+			application.setPetToken(fallbackToken);
+		}
 	}
 
 	private void enrichAddress(PetRegistrationApplication application) {

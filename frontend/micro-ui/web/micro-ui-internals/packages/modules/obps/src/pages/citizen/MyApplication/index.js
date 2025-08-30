@@ -27,7 +27,7 @@ const MyApplication = () => {
 
   console.log(requestor, "PPPP");
 
-  const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, {mobile: requestor}, {cacheTime : 0});
+  const { data, isLoading, revalidate } = Digit.Hooks.obps.useBPAREGSearch(tenantId, {}, {mobileNumber: requestor}, {cacheTime : 0});
   const { data: bpaData, isLoading: isBpaSearchLoading, revalidate: bpaRevalidate } = Digit.Hooks.obps.useBPASearch(tenantId, {
     requestor,
     mobileNumber: requestor,
@@ -162,6 +162,12 @@ const MyApplication = () => {
     <Fragment>
       {/* <h1>HHhhhhhhhhhh</h1> */}
       <Header styles={{ marginLeft: "10px" }}>{`${t("BPA_MY_APPLICATIONS")} ${getTotalCount(data?.Licenses?.length, bpaData?.length)}`}</Header>
+      <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
+        <span>{`${t("BPA_NOT_ABLE_TO_FIND_APP_MSG")} `} </span>
+        <span className="link">
+          <Link to="/digit-ui/citizen/obps/search/obps-application">{t("BPA_CLICK_HERE_TO_SEARCH_LINK")}</Link>
+        </span>
+      </div>
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
           return (
@@ -241,12 +247,6 @@ const MyApplication = () => {
         }
       })}
 
-      <div style={{ marginLeft: "16px", marginTop: "16px", marginBottom: "46px" }}>
-        <span>{`${t("BPA_NOT_ABLE_TO_FIND_APP_MSG")} `} </span>
-        <span className="link">
-          <Link to="/digit-ui/citizen/obps/search/obps-application">{t("BPA_CLICK_HERE_TO_SEARCH_LINK")}</Link>
-        </span>
-      </div>
     </Fragment>
   );
 };

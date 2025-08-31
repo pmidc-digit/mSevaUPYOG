@@ -26,7 +26,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
   console.log(params, "UU");
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
-    tenantId: params?.applicationData?.tenantId,
+    tenantId: data?.tenantId,
     id: id,
     moduleCode: "OBPS",
     config: {
@@ -38,29 +38,30 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const [isFileUploaded, setIsFileUploaded] = useState(false);
   const architectname = workflowDetails?.data?.timeline?.[0]?.assigner?.name;
   const mobileNumber = workflowDetails?.data?.timeline?.[0]?.assigner?.mobileNumber;
-  const khasranumber = params?.additionalDetails?.khasraNumber;
+  const khasranumber = data?.applicationData?.additionalDetails?.khasraNumber;
   const ulbname = params?.additionalDetails?.UlbName;
   const district = params?.additionalDetails?.District;
-  const ward = params?.additionalDetails?.wardnumber;
-  const area = params?.additionalDetails?.area;
+  const ward = data?.applicationData?.additionalDetails?.wardnumber;
+  const area = data?.applicationData?.additionalDetails?.area;
   const applicationnumber = params?.applicationNo;
-  const architectid = params?.additionalDetails?.architectid;
-  const architecttype = params?.additionalDetails?.typeOfArchitect;
+  const architectid = data?.applicationData?.additionalDetails?.architectid;
+  const architecttype = data?.applicationData?.additionalDetails?.typeOfArchitect;
   // const TimeStamp = otpVerifiedTimestamp;
   const ulbselection = params?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "Commissioner" : "Executive Officer";
   const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
+  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
 
   const updatedAdditionalDetails = {
-    ...params?.additionalDetails,
+    ...data?.applicationData?.additionalDetails,
     TimeStamp: otpVerifiedTimestamp,
   };
 
   // Update the entire data object with the new additionalDetails
   const updatedData = {
-    ...params,
+    applicationNo: data?.applicationNo,
+    tenantId: data?.tenantId,
     applicationData: {
-      ...params,
-      additionalDetails: updatedAdditionalDetails,
+      ...updatedAdditionalDetails,
     },
   };
 
@@ -73,10 +74,10 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     
     Dear Sir or Madam,
 
-    I/We, Shri/Smt/Kum. <b>${params?.owners?.owners.map(
+    I/We, Shri/Smt/Kum. <b>${data?.applicationData?.landInfo?.owners.map(
       (item) => item?.name
     )}</b> under signed owner of land bearing Kh. No. <b>${khasranumber}</b> of ULB 
-    <b>${params?.owners?.UlbName}</b> Area <b>${area}</b> (Sq.mts.), ward number <b>${ward}</b>, City <b>${params?.address?.city?.name}</b>
+    <b>${data?.applicationData?.tenantId}</b> Area <b>${area}</b> (Sq.mts.), ward number <b>${ward}</b>, City <b>${data?.applicationData?.landInfo?.address?.city}</b>
     
     I/We hereby declare that the Architect name <b>${ownername}</b> (<b>${architecttype}</b>) Architect ID 
     <b>${architectid}</b> is appointed by me/us and is authorized to make representation/application 
@@ -100,7 +101,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     This Document is Verified By OTP at <b>${TimeStamp}
 
 
-    Name of Owner - <b>${params?.owners?.owners?.[0]?.name}</b>
+    Name of Owner - <b>${ownername}</b>
     Mobile Number - <b>${ownermobileNumber}</b>
     Email Id  - <b>${ownerEmail}</b>
     
@@ -231,10 +232,10 @@ console.log(result, "RESULT");
             <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
           </div>
           <br></br>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          {!isCitizenDeclared && <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <br></br>
             <SubmitBar label={t("BPA_UPLOAD")} onSubmit={uploadSelfDeclaration} disabled={isUploading || isFileUploaded} />
-          </div>
+          </div>}
         </div>
       </Modal>
     </div>

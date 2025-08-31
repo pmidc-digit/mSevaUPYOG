@@ -926,7 +926,7 @@ const WrapPaymentComponent = (props) => {
             {t("BPA_OC_CERTIFICATE")}
           </div>
         ) : null}
-        {bpaData?.[0]?.businessService === "BPA_LOW" ? (
+        {/* {bpaData?.[0]?.businessService === "BPA_LOW" ? (
           <div
             className="primary-label-btn d-grid"
             style={{ marginLeft: "unset" }}
@@ -944,7 +944,7 @@ const WrapPaymentComponent = (props) => {
             <DownloadPrefixIcon />
             {t("BPA_PERMIT_ORDER")}
           </div>
-        ) : null}
+        ) : null} */}
       </div>
       {business_service?.includes("PT") && (
         <div style={{ marginTop: "10px" }}>

@@ -123,6 +123,9 @@ public class InboxService {
     private NDCInboxFilterService ndcInboxFilterService;
 
     @Autowired
+    private PETInboxFilterService petInboxFilterService;
+
+    @Autowired
     private WSInboxFilterService wsInboxFilterService;
     
     @Autowired
@@ -223,9 +226,10 @@ public class InboxService {
 
         Map<String, Long> businessServiceSlaMap = new HashMap<>();
 
-        boolean isNdcFlag = criteria.getProcessSearchCriteria().getModuleName().equalsIgnoreCase(NDC_MODULE);
+    boolean isNdcFlag = criteria.getProcessSearchCriteria().getModuleName().equalsIgnoreCase(NDC_MODULE);
+    boolean isPetFlag = "pet-service".equalsIgnoreCase(criteria.getProcessSearchCriteria().getModuleName());
 
-        if(isNdcFlag){
+    if(isNdcFlag || isPetFlag){
             moduleSearchCriteria.put("tenantId", criteria.getTenantId());
             moduleSearchCriteria.put("offset", criteria.getOffset());
             moduleSearchCriteria.put("limit", criteria.getLimit());
@@ -245,13 +249,22 @@ public class InboxService {
             HashMap<String, String> StatusIdNameMap = workflowService.getActionableStatusesForRole(requestInfo, bussinessSrvs,
                     processCriteria);
 
-            if(isNdcFlag) {
+        if(isNdcFlag) {
                 List<String> matchingIds = StatusIdNameMap.entrySet().stream()
                         .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
                         .map(Map.Entry::getKey)
                         .collect(Collectors.toList());
                 if(!(moduleSearchCriteria.containsKey("wfStatus") && moduleSearchCriteria.get("wfStatus") != null) && !ObjectUtils.isEmpty(matchingIds))
                 moduleSearchCriteria.put("wfStatus", matchingIds);
+            }
+            if(isPetFlag) {
+                List<String> matchingIdsPet = StatusIdNameMap.entrySet().stream()
+                        .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
+                        .map(Map.Entry::getKey)
+                        .collect(Collectors.toList());
+                if(!(moduleSearchCriteria.containsKey("wfStatus") && moduleSearchCriteria.get("wfStatus") != null) && !ObjectUtils.isEmpty(matchingIdsPet))
+                    moduleSearchCriteria.put("wfStatus", matchingIdsPet);
+
             }
 
             String applicationStatusParam = srvMap.get("applsStatusParam");
@@ -487,6 +500,24 @@ public class InboxService {
                     businessKeys.addAll(applicationNumbers);
                     moduleSearchCriteria.remove(STATUS_PARAM);
 //                    moduleSearchCriteria.remove(MOBILE_NUMBER_PARAM);
+                    moduleSearchCriteria.remove(LOCALITY_PARAM);
+                    moduleSearchCriteria.remove(OFFSET_PARAM);
+                } else {
+                    isSearchResultEmpty = true;
+                }
+            }
+
+            if (processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
+                    && isPetFlag) {
+                // If neither id nor applicationNumber provided to searcher, derive applicationNumbers from WF first
+                totalCount = petInboxFilterService.fetchApplicationCountFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                List<String> applicationNumbers = petInboxFilterService.fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    String applNosParam = srvMap.get("applNosParam");
+                    if (StringUtils.isEmpty(applNosParam)) applNosParam = "applicationNumber";
+                    moduleSearchCriteria.put(applNosParam, applicationNumbers);
+                    businessKeys.addAll(applicationNumbers);
+                    moduleSearchCriteria.remove(STATUS_PARAM);
                     moduleSearchCriteria.remove(LOCALITY_PARAM);
                     moduleSearchCriteria.remove(OFFSET_PARAM);
                 } else {
@@ -784,7 +815,7 @@ public class InboxService {
             		processCriteria.setStatus(matchingKeys);
             		processInstanceResponse = workflowService.getProcessInstance(processCriteria, requestInfo);
             	}
-            	else {
+                else {
                     if(isNdcFlag) {
                         List<String> matchingIdsNdc = StatusIdNameMap.entrySet().stream()
                                     .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
@@ -793,6 +824,15 @@ public class InboxService {
 
                         processCriteria.setStatus(matchingIdsNdc);
 
+                    }
+
+                    if(isPetFlag) {
+                        List<String> matchingIdsPet = StatusIdNameMap.entrySet().stream()
+                                .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
+                                .map(Map.Entry::getKey)
+                                .collect(Collectors.toList());
+                        if(!(moduleSearchCriteria.containsKey("wfStatus") && moduleSearchCriteria.get("wfStatus") != null) && !ObjectUtils.isEmpty(matchingIdsPet))
+                            moduleSearchCriteria.put("wfStatus", matchingIdsPet);
                     }
 
             		processInstanceResponse = workflowService.getProcessInstance(processCriteria, requestInfo);

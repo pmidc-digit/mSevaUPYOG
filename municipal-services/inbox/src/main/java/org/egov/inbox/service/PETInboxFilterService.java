@@ -1,0 +1,137 @@
+package org.egov.inbox.service;
+
+import static org.egov.inbox.util.NdcConstants.ASSIGNEE_PARAM;
+import static org.egov.inbox.util.NdcConstants.BUSINESS_SERVICE_PARAM;
+import static org.egov.inbox.util.NdcConstants.DESC_PARAM;
+import static org.egov.inbox.util.NdcConstants.LIMIT_PARAM;
+import static org.egov.inbox.util.NdcConstants.LOCALITY_PARAM;
+import static org.egov.inbox.util.NdcConstants.NO_OF_RECORDS_PARAM;
+import static org.egov.inbox.util.NdcConstants.OFFSET_PARAM;
+import static org.egov.inbox.util.NdcConstants.REQUESTINFO_PARAM;
+import static org.egov.inbox.util.NdcConstants.SEARCH_CRITERIA_PARAM;
+import static org.egov.inbox.util.NdcConstants.SORT_ORDER_PARAM;
+import static org.egov.inbox.util.NdcConstants.STATUS_PARAM;
+import static org.egov.inbox.util.NdcConstants.TENANT_ID_PARAM;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.egov.common.contract.request.RequestInfo;
+import org.egov.inbox.repository.ServiceRequestRepository;
+import org.egov.inbox.web.model.InboxSearchCriteria;
+import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
+import org.springframework.web.client.RestTemplate;
+
+import com.jayway.jsonpath.JsonPath;
+
+@Service
+public class PETInboxFilterService {
+
+    @Value("${egov.searcher.host}")
+    private String searcherHost;
+
+    @Value("${egov.searcher.pet.search.path:}")
+    private String petInboxSearcherEndpoint;
+
+    @Value("${egov.searcher.pet.search.desc.path:}")
+    private String petInboxSearcherDescEndpoint;
+
+    @Value("${egov.searcher.pet.count.path:}")
+    private String petInboxSearcherCountEndpoint;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Autowired
+    private ServiceRequestRepository serviceRequestRepository;
+
+    public List<String> fetchApplicationNumbersFromSearcher(InboxSearchCriteria criteria,
+            HashMap<String, String> StatusIdNameMap, RequestInfo requestInfo) {
+        HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
+        ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
+
+        Map<String, Object> searcherRequest = new HashMap<>();
+        Map<String, Object> searchCriteria = getSearchCriteria(criteria, StatusIdNameMap, moduleSearchCriteria, processCriteria);
+        // Paginating searcher results
+        searchCriteria.put(OFFSET_PARAM, criteria.getOffset());
+        searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
+        moduleSearchCriteria.put(LIMIT_PARAM, criteria.getLimit());
+
+        searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
+        searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
+
+        StringBuilder uri = new StringBuilder();
+        if (moduleSearchCriteria.containsKey(SORT_ORDER_PARAM)
+                && Objects.equals(moduleSearchCriteria.get(SORT_ORDER_PARAM), DESC_PARAM)
+                && petInboxSearcherDescEndpoint != null && !petInboxSearcherDescEndpoint.isEmpty()) {
+            uri.append(searcherHost).append(petInboxSearcherDescEndpoint);
+        } else {
+            uri.append(searcherHost).append(petInboxSearcherEndpoint);
+        }
+
+        Object result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
+        List<String> applicationNumbers = JsonPath.read(result, "$.PetRegistrationApplications.[*].applicationnumber");
+
+        return applicationNumbers == null ? new ArrayList<>() : applicationNumbers;
+    }
+
+    private Map<String, Object> getSearchCriteria(InboxSearchCriteria criteria, HashMap<String, String> StatusIdNameMap,
+            HashMap<String, Object> moduleSearchCriteria, ProcessInstanceSearchCriteria processCriteria) {
+        Map<String, Object> searchCriteria = new HashMap<>();
+
+        searchCriteria.put(TENANT_ID_PARAM, criteria.getTenantId());
+        searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());
+
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(LOCALITY_PARAM)) {
+            searchCriteria.put(LOCALITY_PARAM, moduleSearchCriteria.get(LOCALITY_PARAM));
+        }
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("wfStatus")) {
+            searchCriteria.put("wfStatus", moduleSearchCriteria.get("wfStatus"));
+        }
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("applicationNumber")) {
+            searchCriteria.put("applicationNumber", moduleSearchCriteria.get("applicationNumber"));
+        }
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("uuid")) {
+            searchCriteria.put("id", moduleSearchCriteria.get("uuid"));
+        }
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(STATUS_PARAM)) {
+            List<String> statusIdList = StatusIdNameMap.keySet().stream()
+                    .collect(Collectors.toList());
+            searchCriteria.put(STATUS_PARAM, statusIdList);
+        }
+        if (!ObjectUtils.isEmpty(processCriteria.getAssignee())) {
+            searchCriteria.put(ASSIGNEE_PARAM, processCriteria.getAssignee());
+        }
+        if (!ObjectUtils.isEmpty(processCriteria.getStatus())) {
+            searchCriteria.put(STATUS_PARAM, processCriteria.getStatus());
+        }
+        return searchCriteria;
+    }
+
+    public Integer fetchApplicationCountFromSearcher(InboxSearchCriteria criteria,
+            HashMap<String, String> StatusIdNameMap, RequestInfo requestInfo){
+        // Prefer count endpoint if configured, else fall back to search size
+        if (petInboxSearcherCountEndpoint != null && !petInboxSearcherCountEndpoint.isEmpty()) {
+            HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
+            ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
+            Map<String, Object> searcherRequest = new HashMap<>();
+            Map<String, Object> searchCriteria = getSearchCriteria(criteria, StatusIdNameMap, moduleSearchCriteria, processCriteria);
+            searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
+            searcherRequest.put(SEARCH_CRITERIA_PARAM, searchCriteria);
+            StringBuilder citizenUri = new StringBuilder();
+            citizenUri.append(searcherHost).append(petInboxSearcherCountEndpoint);
+            Object result = restTemplate.postForObject(citizenUri.toString(), searcherRequest, Map.class);
+            Double count = JsonPath.read(result, "$.TotalCount[0].count");
+            return count == null ? 0 : count.intValue();
+        } else {
+            List<String> apps = fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
+            return apps.size();
+        }
+    }
+}

@@ -257,15 +257,21 @@ public class InboxService {
                 if(!(moduleSearchCriteria.containsKey("wfStatus") && moduleSearchCriteria.get("wfStatus") != null) && !ObjectUtils.isEmpty(matchingIds))
                 moduleSearchCriteria.put("wfStatus", matchingIds);
             }
-            if(isPetFlag) {
-                List<String> matchingIdsPet = StatusIdNameMap.entrySet().stream()
-                        .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
-                        .map(Map.Entry::getKey)
-                        .collect(Collectors.toList());
-                if(!(moduleSearchCriteria.containsKey("wfStatus") && moduleSearchCriteria.get("wfStatus") != null) && !ObjectUtils.isEmpty(matchingIdsPet))
-                    moduleSearchCriteria.put("wfStatus", matchingIdsPet);
-
-            }
+//            if (isPetFlag) {
+//                List<String> matchingIdsPet = StatusIdNameMap.entrySet().stream()
+//                        .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
+//                        .map(Map.Entry::getKey) // ✅ this gives UUIDs
+//                        .collect(Collectors.toList());
+//
+//                // Always use `status` with UUIDs
+//                if (!ObjectUtils.isEmpty(matchingIdsPet)) {
+//                    moduleSearchCriteria.put("status", matchingIdsPet);
+//                } else {
+//                    // If no status provided, put all UUIDs
+//                    moduleSearchCriteria.put("status", new ArrayList<>(StatusIdNameMap.keySet()));
+//                }
+//
+//            }
 
             String applicationStatusParam = srvMap.get("applsStatusParam");
             String businessIdParam = srvMap.get("businessIdProperty");
@@ -291,13 +297,23 @@ public class InboxService {
                     });
                 	moduleSearchCriteria.put(applicationStatusParam, StringUtils.arrayToDelimitedString(statuses.toArray(), ","));
                 }
+                else if (processCriteria.getModuleName().equals("pet-service") && !CollectionUtils.isEmpty(processCriteria.getStatus())) {
+                    List<String> statuses = new ArrayList<>();
+                    processCriteria.getStatus().forEach(status -> {
+                        // For PET, we directly use the status values as-is (instead of looking them up in StatusIdNameMap)
+                        statuses.add(status);
+                    });
+                    moduleSearchCriteria.put(applicationStatusParam, StringUtils.arrayToDelimitedString(statuses.toArray(), ","));
+                }
                 else if (!CollectionUtils.isEmpty(processCriteria.getStatus())) {
                     List<String> statuses = new ArrayList<String>();
                     processCriteria.getStatus().forEach(status -> {
                         statuses.add(StatusIdNameMap.get(status));
                     });
                     moduleSearchCriteria.put(applicationStatusParam, StringUtils.arrayToDelimitedString(statuses.toArray(), ","));
-                } else {
+                }
+
+                else {
                     moduleSearchCriteria.put(applicationStatusParam,
                             StringUtils.arrayToDelimitedString(StatusIdNameMap.values().toArray(), ","));
                 }
@@ -831,8 +847,7 @@ public class InboxService {
                                 .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
                                 .map(Map.Entry::getKey)
                                 .collect(Collectors.toList());
-                        if(!(moduleSearchCriteria.containsKey("wfStatus") && moduleSearchCriteria.get("wfStatus") != null) && !ObjectUtils.isEmpty(matchingIdsPet))
-                            moduleSearchCriteria.put("wfStatus", matchingIdsPet);
+                      processCriteria.setStatus(matchingIdsPet);
                     }
 
             		processInstanceResponse = workflowService.getProcessInstance(processCriteria, requestInfo);

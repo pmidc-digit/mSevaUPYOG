@@ -91,8 +91,20 @@ public class PETInboxFilterService {
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(LOCALITY_PARAM)) {
             searchCriteria.put(LOCALITY_PARAM, moduleSearchCriteria.get(LOCALITY_PARAM));
         }
-        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("wfStatus")) {
-            searchCriteria.put("wfStatus", moduleSearchCriteria.get("wfStatus"));
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("status")) {
+            // Split the incoming comma-separated status string into a List
+            List<String> requestedStatuses = Arrays.asList(moduleSearchCriteria.get("status").toString().split(","));
+
+            // Collect the UUIDs (keys) whose values match the requested statuses
+            List<String> matchingIdsPet = StatusIdNameMap.entrySet().stream()
+                    .filter(entry -> requestedStatuses.contains(entry.getValue()))
+                    .map(Map.Entry::getKey) // ✅ UUIDs (keys) from the map
+                    .collect(Collectors.toList());
+
+            // Put only the matching UUIDs into the search criteria
+            if (!matchingIdsPet.isEmpty()) {
+                searchCriteria.put("status", matchingIdsPet);
+            }
         }
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("applicationNumber")) {
             searchCriteria.put("applicationNumber", moduleSearchCriteria.get("applicationNumber"));
@@ -100,16 +112,8 @@ public class PETInboxFilterService {
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey("uuid")) {
             searchCriteria.put("id", moduleSearchCriteria.get("uuid"));
         }
-        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(STATUS_PARAM)) {
-            List<String> statusIdList = StatusIdNameMap.keySet().stream()
-                    .collect(Collectors.toList());
-            searchCriteria.put(STATUS_PARAM, statusIdList);
-        }
         if (!ObjectUtils.isEmpty(processCriteria.getAssignee())) {
             searchCriteria.put(ASSIGNEE_PARAM, processCriteria.getAssignee());
-        }
-        if (!ObjectUtils.isEmpty(processCriteria.getStatus())) {
-            searchCriteria.put(STATUS_PARAM, processCriteria.getStatus());
         }
         return searchCriteria;
     }
@@ -127,7 +131,7 @@ public class PETInboxFilterService {
             StringBuilder citizenUri = new StringBuilder();
             citizenUri.append(searcherHost).append(petInboxSearcherCountEndpoint);
             Object result = restTemplate.postForObject(citizenUri.toString(), searcherRequest, Map.class);
-            Double count = JsonPath.read(result, "$.TotalCount[0].count");
+            Double count = JsonPath.read(result, "$.totalCount[0].totalcount");
             return count == null ? 0 : count.intValue();
         } else {
             List<String> apps = fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);

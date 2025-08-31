@@ -1549,10 +1549,10 @@ const BpaApplicationDetail = () => {
 
   function onActionSelect(action) {
     const path = data?.applicationData?.businessService == "BPA_OC" ? "ocbpa" : "bpa";
-    if(!agree || !isCitizenDeclared || !isTocAccepted){
-      alert("Please Accept Terms, Upload and Accept Decleration");
-      return 
-    }
+    // if(!agree || !isCitizenDeclared || !isTocAccepted){
+    //   alert("Please Accept Terms, Upload and Accept Decleration");
+    //   return 
+    // }
     if (action === "FORWARD") {
       history.replace(
         `/digit-ui/citizen/obps/sendbacktocitizen/ocbpa/${data?.applicationData?.tenantId}/${data?.applicationData?.applicationNo}/check`,

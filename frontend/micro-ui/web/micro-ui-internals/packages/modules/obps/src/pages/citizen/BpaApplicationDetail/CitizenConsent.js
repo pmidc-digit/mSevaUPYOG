@@ -70,7 +70,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const selfdeclarationform = `
     To,
     <b>${ulbselection}</b>
-    <b>${params?.owners?.UlbName}</b> 
+    <b>${data?.applicationData?.tenantId}</b> 
     
     Dear Sir or Madam,
 

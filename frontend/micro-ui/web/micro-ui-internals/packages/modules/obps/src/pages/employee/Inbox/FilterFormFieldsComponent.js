@@ -8,7 +8,7 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
   const { t } = useTranslation()
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = localStorage.getItem("Citizen.tenant-id");
-  const { data: applicationTypesOfBPA, isLoading: loadingApplicationTypesOfBPA } = Digit.Hooks.obps.SearchMdmsTypes.useApplicationTypes(stateId);
+  const { data: applicationTypesOfBPA, isLoading: loadingApplicationTypesOfBPA } = Digit.Hooks.obps.SearchMdmsTypes.useApplicationTypes("pb");
 
   const availableOptions = [
     { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },

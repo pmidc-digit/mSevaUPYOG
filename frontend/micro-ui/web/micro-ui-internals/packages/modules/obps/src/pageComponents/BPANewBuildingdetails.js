@@ -2301,8 +2301,8 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
       i18nKey: "Revised",
     },
     {
-      code: "Existing",
-      i18nKey: "Existing",
+      code: "Re-validation",
+      i18nKey: "Re-validation",
     },
   ]
 
@@ -2909,7 +2909,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
           />
           <ErrorMessage error={errors.proposedSite} />
 
-          <CardLabel>{`ECBC - Proposed Connected Electrical Load is above 100 Kw *`}</CardLabel>
+          <CardLabel>{`ECBC - Proposed Connected Electrical Load is above 100 Kw`}</CardLabel>
           <Controller
             control={control}
             name={"ecbcElectricalLoad"}
@@ -2928,7 +2928,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
           />
           <ErrorMessage error={errors.ecbcElectricalLoad} />
 
-          <CardLabel>{`ECBC - Proposed Demand of Electrical Load is above 120 Kw *`}</CardLabel>
+          <CardLabel>{`ECBC - Proposed Demand of Electrical Load is above 120 Kw`}</CardLabel>
           <Controller
             control={control}
             name={"ecbcDemandLoad"}
@@ -2947,7 +2947,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
           />
           <ErrorMessage error={errors.ecbcDemandLoad} />
 
-          <CardLabel>{`ECBC - Proposed Air Conditioned Area above 500 sq.mt *`}</CardLabel>
+          <CardLabel>{`ECBC - Proposed Air Conditioned Area above 500 sq.mt`}</CardLabel>
           <Controller
             control={control}
             name={"ecbcAirConditioned"}

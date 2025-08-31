@@ -198,12 +198,31 @@ function SelectDocument({
 
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
+  const [geoLocation, setGeoLocation] = useState({ latitude: null, longitude: null });
+const [showGeo, setShowGeo] = useState(false);
+
 
   const handleSelectDocument = (value) => setSelectedDocument(value);
 
-  function selectfile(e) {
-    setFile(e.target.files[0]);
+async function selectfile(e) {
+  const uploaded = e.target.files[0];
+  setFile(uploaded);
+
+  if (uploaded) {
+    const geo = await extractGeoLocation(uploaded);
+    setGeoLocation(geo);
+
+    if (!geo.latitude || !geo.longitude) {
+      setError("This image does not contain GPS location data");
+      setUploadedFile(null);
+    } else {
+      // ⏳ Delay showing location (e.g., 2s)
+      setShowGeo(false);
+      setTimeout(() => setShowGeo(true), 2000);
+    }
   }
+}
+
   const { dropdownData } = doc;
   // const { dropdownFilter, enabledActions, filterCondition } = doc?.additionalDetails;
   var dropDownData = dropdownData;
@@ -291,12 +310,43 @@ function SelectDocument({
   }, [file]);
 
 
+// Converts GPS DMS to decimal
+function convertToDecimal([degrees, minutes, seconds], ref) {
+  const d = degrees?.numerator / degrees?.denominator || 0;
+  const m = minutes?.numerator / minutes?.denominator || 0;
+  const s = seconds?.numerator / seconds?.denominator || 0;
+
+  let decimal = d + m / 60 + s / 3600;
+  if (ref === "S" || ref === "W") {
+    decimal = -decimal;
+  }
+  return decimal;
+}
+
+function extractGeoLocation(file) {
+  return new Promise((resolve) => {
+    EXIF.getData(file, function () {
+      const lat = EXIF.getTag(this, "GPSLatitude");
+      const lon = EXIF.getTag(this, "GPSLongitude");
+      const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+      const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+
+      if (lat && lon && latRef && lonRef) {
+        const latitude = convertToDecimal(lat, latRef);
+        const longitude = convertToDecimal(lon, lonRef);
+        resolve({ latitude, longitude });
+      } else {
+        resolve({ latitude: null, longitude: null });
+      }
+    });
+  });
+}
 
   return (
     <div style={{ marginBottom: "24px" }}>
       <LabelFieldPair>
         {/* {console.log("doc", doc)} */}
-        <CardLabel className="card-label-smaller">
+        <CardLabel style={{width:"100%"}} className="card-label-smaller">
           {t(doc?.code)} {doc?.required && " *"}
         </CardLabel>
         <div className="field">
@@ -312,6 +362,13 @@ function SelectDocument({
             // disabled={enabledActions?.[action].disableUpload || !selectedDocument?.code}
           />
         </div>
+        {doc.code === "SITEPHOTOGRAPH_ONE" && showGeo && geoLocation.latitude && geoLocation.longitude && (
+          <div style={{ marginTop: "1rem", padding: "0.5rem", border: "1px solid #ccc", borderRadius: "8px" }}>
+            <strong>📍 Extracted Geo Location:</strong>
+            <div>Latitude: {geoLocation.latitude}</div>
+            <div>Longitude: {geoLocation.longitude}</div>
+          </div>
+        )}
       </LabelFieldPair>
 
       

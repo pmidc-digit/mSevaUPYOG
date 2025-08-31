@@ -11,7 +11,8 @@ const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
   const { t } = useTranslation();
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem("CITIZEN.CITY");
 
   const searchFormDefaultValues = {};
 

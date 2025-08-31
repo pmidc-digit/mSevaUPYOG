@@ -332,33 +332,30 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
             <Row
               className="border-none"
               label={t("BPA_PERMISSIBLE_FAR")}
-              // text={
-              //   data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea
-              //     ? `${data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea} ${t("BPA_SQ_MTRS_LABEL")}`
-              //     : t("NA")
-              // }
-              text={t("N/A")}
+              text={data?.planDetail?.farDetails?.permissableFar ? data?.planDetail?.farDetails?.permissableFar : "N?A"}
+                
+                
+              // text={t("N/A")}
             ></Row>
-            <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}></Row>
+            {/* <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}></Row> */}
+            <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text="1"></Row>
             <Row
               className="border-none"
               label={t("BPA_ECS_REQUIRED")}
               // text={
-              //   data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight
-              //     ? `${data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight} ${t("BPA_MTRS_LABEL")}`
-              //     : t("NA")
+              //  data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
+                
               // }
-              text={t("N/A")}
+              text={t("1")}
             ></Row>
             <Row
               className="border-none"
               label={t("BPA_ECS_PROVIDED")}
-              // text={
-              //   data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight
-              //     ? `${data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight} ${t("BPA_MTRS_LABEL")}`
-              //     : t("NA")
-              // }
-              text={t("N/A")}
+              text={
+                data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
+                 
+              }
+              // text={t("N/A")}
             ></Row>
           </StatusTable>
 
@@ -396,7 +393,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
                 ) : null}
                 <div style={{ overflowX: "scroll" }}>
                   <Table
-                    className="customTable table-fixed-first-column table-border-style"
+                     className="customTable table-fixed-first-column table-border-style"
                     t={t}
                     disableSort={false}
                     autoSort={true}

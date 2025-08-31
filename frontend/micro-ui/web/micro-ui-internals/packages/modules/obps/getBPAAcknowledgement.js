@@ -46,7 +46,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
   const getBPAAcknowledgement=async(application,tenantInfo,t)=>{
     const user = Digit.UserService.getUser();
     
-    console.log("application",application);
+    console.log("application detail",application);
     const owner=application?.landInfo?.owners
     return{
         t: t,
@@ -159,7 +159,7 @@ const getMohallaLocale = (value = "", tenantId = "") => {
                     },
                     { 
                         title: t("BPA_IS_PRIMARY_OWNER_LABEL"), 
-                        value: application?.landInfo?.owners[0]?.isPrimaryOwner || "NA"
+                        value: application?.landInfo?.owners[0]?.isPrimaryOwner === true ? "Yes" : "No" || "NA"
                     }
 
                 ]
@@ -202,14 +202,14 @@ const getMohallaLocale = (value = "", tenantId = "") => {
                         title: t("BPA_LOC_MOHALLA_LABEL"), 
                         value: application?.landInfo?.address?.locality?.name || "NA"
                     },
-                    { 
-                        title: t("BPA_DETAILS_SRT_NAME_LABEL"), 
-                        value: application?.landInfo?.address?.street || "NA"
-                    },
-                    { 
-                        title: t("ES_NEW_APPLICATION_LOCATION_LANDMARK"), 
-                        value: application?.landInfo?.address?.landmark || "NA"
-                    }
+                    // { 
+                    //     title: t("BPA_DETAILS_SRT_NAME_LABEL"), 
+                    //     value: application?.landInfo?.address?.street || "NA"
+                    // },
+                    // { 
+                    //     title: t("ES_NEW_APPLICATION_LOCATION_LANDMARK"), 
+                    //     value: application?.landInfo?.address?.landmark || "NA"
+                    // }
                 ]
             },
             {

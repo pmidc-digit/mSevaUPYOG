@@ -2265,8 +2265,8 @@ const CheckPage = ({ onSubmit, value }) => {
         <StatusTable>
           <CardHeader>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
           <LinkButton
-            label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
-            style={{ width: "100px", display: "inline" }}
+           label={<EditIcon color="white" style={{color:"white"}}  />}
+            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
             onClick={() => routeTo(`${routeLink}/plot-details`)}
           />
 
@@ -2426,7 +2426,7 @@ const CheckPage = ({ onSubmit, value }) => {
             <Row className="border-none" label={t("BPA_AVG_PLOT_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH} />
 
             <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
-            <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={planInfoProps?.planDetail?.plot?.area || t("CS_NA")} />
+            <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={planInfoProps?.planDetail?.planInfoProperties?.ROAD_TYPE || t("CS_NA")} />
             <Row className="border-none" label={t("BPA_ROAD_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.ROAD_WIDTH} />
 
             <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
@@ -2506,23 +2506,23 @@ const CheckPage = ({ onSubmit, value }) => {
         <StatusTable>
           <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
           <LinkButton
-            label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
-            style={{ width: "100px", display: "inline" }}
+            label={<EditIcon color="white" style={{color:"white"}}  />}
+            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
             onClick={() => routeTo(`${routeLink}/location`)}
           />
           <Row className="border-none" textStyle={{ paddingLeft: "12px" }} label={t(`BPA_DETAILS_PIN_LABEL`)} text={address?.pincode || t("CS_NA")} />
           <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={address?.city?.name || t("CS_NA")} />
           <Row className="border-none" label={t(`BPA_LOC_MOHALLA_LABEL`)} text={address?.locality?.name || t("CS_NA")} />
-          <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} />
-          <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} />
+          {/* <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} /> */}
+          {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
         </StatusTable>
       </Card>
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
           <LinkButton
-            label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
-            style={{ width: "100px", display: "inline" }}
+            label={<EditIcon color="white" style={{color:"white"}}  />}
+            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
             onClick={() => routeTo(`${routeLink}/owner-details`)}
           />
           {ownersData &&
@@ -2564,7 +2564,7 @@ const CheckPage = ({ onSubmit, value }) => {
                   />
                   <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber || "N/A"} />
                   <Row className="border-none" label={t(`CORE_COMMON_EMAIL_ID`)} text={ob?.emailId || t("CS_NA")} />
-                  <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner === true ? "YES" : "NO"}`} />
+                  <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner === true ? "Yes" : "No"}`} />
                 </StatusTable>
               </div>
             ))}
@@ -2648,8 +2648,8 @@ const CheckPage = ({ onSubmit, value }) => {
         <StatusTable>
           <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
           <LinkButton
-            label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
-            style={{ width: "100px", display: "inline" }}
+            label={<EditIcon color="white" style={{color:"white"}}  />}
+            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
             onClick={() => routeTo(`${routeLink}/document-details`)}
           />
           {

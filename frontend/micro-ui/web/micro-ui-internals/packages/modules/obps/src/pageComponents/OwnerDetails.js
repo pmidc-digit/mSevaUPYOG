@@ -1716,11 +1716,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                       <LinkButton
                         label={
                           <DeleteIcon
-                            style={{ float: "right", position: "relative", bottom: "5px" }}
+                            style={{  bottom: "5px" }}
                             fill={!(fields.length == 1) ? "#494848" : "#FAFAFA"}
                           />
                         }
-                        style={{ width: "100px", display: "inline", background: "black" }}
+                        style={{ width: "50px", display: "inline",justifyContent:"center", alighItem:"center", background: "black", float:"right" }}
                         onClick={(e) => handleRemove(index)}
                       />
                     )}

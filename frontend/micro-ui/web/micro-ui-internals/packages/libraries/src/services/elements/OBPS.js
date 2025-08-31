@@ -305,15 +305,17 @@ export const OBPSService = {
       JSON.stringify(response?.BPA?.[0]?.additionalDetails?.typeOfArchitect ? response?.BPA?.[0]?.additionalDetails?.typeOfArchitect : "ARCHITECT")
     );
     const [BPA] = response?.BPA;
+    console.log(BPA, "KHA");
     const edcrResponse = await OBPSService.scrutinyDetails(BPA?.tenantId, { edcrNumber: BPA?.edcrNumber });
     const [edcr] = edcrResponse?.edcrDetail;
+    console.log(edcr, "KHATA");
     const mdmsRes = await MdmsService.getMultipleTypes(tenantId, "BPA", ["RiskTypeComputation", "CheckList"]);
     const riskType = Digit.Utils.obps.calculateRiskType(mdmsRes?.BPA?.RiskTypeComputation, edcr?.planDetail?.plot?.area, edcr?.planDetail?.blocks);
     BPA.riskType = riskType;
     // const nocResponse = await OBPSService.NOCSearch(BPA?.tenantId, { sourceRefId: BPA?.applicationNo });
     // const noc = nocResponse?.Noc;
     const noc = [];
-    console.log("edcrInHooks", edcr)
+    console.log("edcrInHooks", BPA)
     const filter = { approvalNo: response?.BPA?.[0]?.approvalNo };
     const bpaResponse = await OBPSService.BPASearch(tenantId, { ...filter });
     const comparisionRep = {
@@ -612,7 +614,7 @@ export const OBPSService = {
         { title: "BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL", value: `WF_BPA_${edcr?.appliactionType}` },
         { title: "BPA_BASIC_DETAILS_SERVICE_TYPE_LABEL", value: edcr?.applicationSubType },
         { title: "BPA_BASIC_DETAILS_OCCUPANCY_LABEL", value: edcr?.planDetail?.planInformation?.occupancy },
-        { title: "BPA_BASIC_DETAILS_RISK_TYPE_LABEL", value: `WF_BPA_${riskType}`, isInsert: true },
+        { title: "BPA_BASIC_DETAILS_RISK_TYPE_LABEL", value: `${BPA?.additionalDetails?.riskType}`, isInsert: true },
         { title: "BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL", value: edcr?.planDetail?.planInformation?.applicantName },
       ],
     };
@@ -629,7 +631,7 @@ export const OBPSService = {
           isUnit: "BPA_SQ_FT_LABEL",
         },
         { title: "BPA_PLOT_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.plotNo || "NA", isNotTranslated: true },
-        { title: "BPA_KHATHA_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.khataNo || "NA", isNotTranslated: true },
+        { title: "BPA_KHATHA_NUMBER_LABEL", value: edcr?.planDetail?.planInformation?.khatuniNo || "NA", isNotTranslated: true },
         { title: "BPA_HOLDING_NUMBER_LABEL", value: BPA?.additionalDetails?.holdingNo || "NA", isNotTranslated: true },
         { title: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL", value: BPA?.additionalDetails?.registrationDetails || "NA", isNotTranslated: true },
         { title: "BPA_BOUNDARY_WALL_LENGTH_LABEL", value: BPA?.additionalDetails?.boundaryWallLength || "NA", isNotTranslated: true },
@@ -665,7 +667,7 @@ export const OBPSService = {
             value: " ",
             isHeader: true,
           },
-          { title: "BPA_TOTAL_BUILT_UP_AREA_HEADER", value: edcr?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea, isUnit: "BPA_SQ_MTRS_LABEL" },
+          { title: "BPA_TOTAL_BUILT_UP_AREA_HEADER", value: Number(edcr?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea).toFixed(2), isUnit: "BPA_SQ_MTRS_LABEL" },
           { title: "BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL", value: edcr?.planDetail?.blocks?.[0]?.building?.totalFloors || "NA" },
           { title: "BPA_HEIGHT_FROM_GROUND_LEVEL", value: edcr?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeigh, isUnit: "BPA_MTRS_LABEL" },
         ],
@@ -709,8 +711,8 @@ export const OBPSService = {
         { title: ("BPA_DETAILS_PIN_LABEL"), value: BPA?.landInfo?.address?.pincode },
         { title: ("BPA_CITY_LABEL"), value: BPA?.landInfo?.address?.city },
         { title: ("BPA_LOC_MOHALLA_LABEL"), value: BPA?.landInfo?.address?.locality?.name },
-        { title: ("BPA_DETAILS_SRT_NAME_LABEL"), value: BPA?.landInfo?.address?.street },
-        { title: ("ES_NEW_APPLICATION_LOCATION_LANDMARK"), value: BPA?.landInfo?.address?.landmark },
+        // { title: ("BPA_DETAILS_SRT_NAME_LABEL"), value: BPA?.landInfo?.address?.street },
+        // { title: ("ES_NEW_APPLICATION_LOCATION_LANDMARK"), value: BPA?.landInfo?.address?.landmark },
       ],
     };
 
@@ -733,7 +735,7 @@ export const OBPSService = {
               { title: "BPA_APPLICANT_GENDER_LABEL", value: owner?.gender },
               { title: "CORE_COMMON_MOBILE_NUMBER", value: owner?.mobileNumber },
               { title: "CORE_COMMON_EMAIL_ID", value: owner?.emailId },
-              { title: "BPA_IS_PRIMARY_OWNER_LABEL", value: owner?.isPrimaryOwner, isNotTranslated: false },
+              { title: "BPA_IS_PRIMARY_OWNER_LABEL", value: owner?.isPrimaryOwner === true ? "Yes" : "No", isNotTranslated: false },
             ],
           };
         }),

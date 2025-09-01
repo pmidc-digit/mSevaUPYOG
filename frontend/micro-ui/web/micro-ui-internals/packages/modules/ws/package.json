@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-ws",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/Module.js",

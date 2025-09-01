@@ -85,7 +85,7 @@ public class CommonUtils {
 		IdGenerationRequest request = IdGenerationRequest.builder().idRequests(reqList).requestInfo(requestInfo)
 				.build();
 		StringBuilder uri = new StringBuilder(configs.getIdGenHost()).append(configs.getIdGenPath());
-		IdGenerationResponse response = mapper.convertValue(restRepo.fetchResult(uri, request).get(),
+		IdGenerationResponse response = mapper.convertValue(restRepo.fetchResult(uri, request),
 				IdGenerationResponse.class);
 
 		List<IdResponse> idResponses = response.getIdResponses();
@@ -113,11 +113,11 @@ public class CommonUtils {
 
 		StringBuilder uri = new StringBuilder(configs.getMdmsHost()).append(configs.getMdmsEndpoint());
 		MdmsCriteriaReq criteriaReq = prepareMdMsRequest(tenantId, moduleName, names, filter, requestInfo);
-		Optional<Object> response = restRepo.fetchResult(uri, criteriaReq);
+		Object response = restRepo.fetchResult(uri, criteriaReq);
 
 		try {
-			if (response.isPresent()) {
-				return JsonPath.read(response.get(), jsonpath);
+			if (response!=null) {
+				return JsonPath.read(response, jsonpath);
 			}
 		} catch (Exception e) {
 			throw new CustomException(ErrorConstants.INVALID_TENANT_ID_MDMS_KEY,

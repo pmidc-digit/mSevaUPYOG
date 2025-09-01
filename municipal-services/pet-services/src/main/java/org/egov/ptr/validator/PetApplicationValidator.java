@@ -51,12 +51,21 @@ public class PetApplicationValidator {
 		});
 	}
 
+//	public PetRegistrationApplication validateApplicationExistence(
+//			PetRegistrationApplication petRegistrationApplication) {
+//		return repository.getApplications(PetApplicationSearchCriteria.builder()
+//				.applicationNumber(petRegistrationApplication.getApplicationNumber()).build()).get(0);
+//	}
+
 	public PetRegistrationApplication validateApplicationExistence(
 			PetRegistrationApplication petRegistrationApplication) {
-		return repository.getApplications(PetApplicationSearchCriteria.builder()
+		PetRegistrationApplication petRegistrationApplication1 = repository.getApplications(PetApplicationSearchCriteria.builder()
 				.applicationNumber(petRegistrationApplication.getApplicationNumber()).build()).get(0);
-	}
+		if (petRegistrationApplication1 == null)
+			throw new CustomException("EG_PTR_ERR", "No pet registration application found for the given application number");
 
+		return petRegistrationApplication1;
+	}
 	/**
 	 * Validates if MasterData is properly fetched for the given MasterData names
 	 * 

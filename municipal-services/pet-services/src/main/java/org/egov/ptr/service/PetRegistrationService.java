@@ -5,8 +5,11 @@ import static org.egov.ptr.util.PTRConstants.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
+
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.ptr.config.PetConfiguration;
+import org.egov.ptr.models.AuditDetails;
 import org.egov.ptr.models.PetApplicationSearchCriteria;
 import org.egov.ptr.models.PetRegistrationApplication;
 import org.egov.ptr.models.PetRegistrationRequest;
@@ -87,8 +90,6 @@ public class PetRegistrationService {
 	public PetRegistrationApplication updatePtrApplication(PetRegistrationRequest petRegistrationRequest) {
 		PetRegistrationApplication existingApplication = validator
 				.validateApplicationExistence(petRegistrationRequest.getPetRegistrationApplications().get(0));
-		existingApplication.setWorkflow(petRegistrationRequest.getPetRegistrationApplications().get(0).getWorkflow());
-		petRegistrationRequest.setPetRegistrationApplications(Collections.singletonList(existingApplication));
 
 		enrichmentService.enrichPetApplicationUponUpdate(petRegistrationRequest);
 

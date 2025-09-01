@@ -6,11 +6,22 @@ import org.egov.ptr.config.PetConfiguration;
 import org.egov.ptr.models.Demand;
 import org.egov.ptr.models.DemandRequest;
 import org.egov.ptr.models.DemandResponse;
+import org.egov.ptr.models.collection.GetBillCriteria;
+import org.egov.ptr.util.PetUtil;
+import org.egov.ptr.web.contracts.RequestInfoWrapper;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.CollectionUtils;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import static org.egov.ptr.util.PTRConstants.EMPTY_DEMAND_ERROR_CODE;
+import static org.egov.ptr.util.PTRConstants.EMPTY_DEMAND_ERROR_MESSAGE;
 
 @Repository
 public class DemandRepository {
@@ -24,9 +35,11 @@ public class DemandRepository {
 	@Autowired
 	private ObjectMapper mapper;
 
+	@Autowired
+	private PetUtil petUtil;
 	/**
 	 * Creates demand
-	 * 
+	 *
 	 * @param requestInfo The RequestInfo of the calculation Request
 	 * @param demands     The demands to be created
 	 * @return The list of demand created
@@ -51,24 +64,26 @@ public class DemandRepository {
 
 	/**
 	 * Updates the demand
-	 * 
+	 *
 	 * @param requestInfo The RequestInfo of the calculation Request
 	 * @param demands     The demands to be updated
 	 * @return The list of demand updated
 	 */
-	public List<Demand> updateDemand(RequestInfo requestInfo, List<Demand> demands) {
-		StringBuilder url = new StringBuilder(config.getBillingHost());
-		url.append(config.getDemandUpdateEndpoint());
-		DemandRequest request = new DemandRequest(requestInfo, demands);
-		Object result = serviceRequestRepository.fetchResult(url, request);
-		DemandResponse response = null;
-		try {
-			response = mapper.convertValue(result, DemandResponse.class);
-		} catch (IllegalArgumentException e) {
-			throw new CustomException("PARSING ERROR", "Failed to parse response of update demand");
-		}
-		return response.getDemands();
+//	public List<Demand> updateDemand(RequestInfo requestInfo, List<Demand> demands) {
+//		StringBuilder url = new StringBuilder(config.getBillingHost());
+//		url.append(config.getDemandUpdateEndpoint());
+//		DemandRequest request = new DemandRequest(requestInfo, demands);
+//		Object result = serviceRequestRepository.fetchResult(url, request);
+//		DemandResponse response = null;
+//		try {
+//			response = mapper.convertValue(result, DemandResponse.class);
+//		} catch (IllegalArgumentException e) {
+//			throw new CustomException("PARSING ERROR", "Failed to parse response of update demand");
+//		}
+//		return response.getDemands();
+//
+//	}
 
-	}
+
 
 }

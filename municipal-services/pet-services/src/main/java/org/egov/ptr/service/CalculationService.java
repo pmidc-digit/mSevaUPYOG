@@ -1,5 +1,6 @@
 package org.egov.ptr.service;
 
+import org.egov.ptr.models.BreedType;
 import org.egov.ptr.models.CalculationType;
 import org.egov.ptr.models.DemandDetail;
 import org.egov.ptr.models.PetRegistrationRequest;
@@ -30,7 +31,7 @@ public class CalculationService {
 	public List<DemandDetail> calculateDemand(PetRegistrationRequest petRegistrationRequest) {
 		String tenantId = petRegistrationRequest.getPetRegistrationApplications().get(0).getTenantId();
 
-		List<CalculationType> calculationTypes = mdmsUtil.getcalculationType(petRegistrationRequest.getRequestInfo(),
+		List<BreedType> calculationTypes = mdmsUtil.getcalculationType(petRegistrationRequest.getRequestInfo(),
 				tenantId, PTRConstants.PET_MASTER_MODULE_NAME);
 
 		log.info("Retrieved calculation types: {}", calculationTypes);
@@ -39,16 +40,28 @@ public class CalculationService {
 	}
 
 	private List<DemandDetail> processCalculationForDemandGeneration(String tenantId,
-			List<CalculationType> calculationTypes, PetRegistrationRequest petRegistrationRequest) {
+																	 List<BreedType> calculationTypes, PetRegistrationRequest petRegistrationRequest) {
 
 		String applicationType = petRegistrationRequest.getPetRegistrationApplications().get(0).getApplicationType();
 
 		List<DemandDetail> demandDetails = new ArrayList<>();
-		for (CalculationType type : calculationTypes) {
-			if (type.equals(applicationType)) {
-				DemandDetail demandDetail = DemandDetail.builder().taxAmount(type.getAmount())
-						.taxHeadMasterCode(type.getFeeType()).tenantId(tenantId).build();
+		for (BreedType type : calculationTypes) {
+			if(applicationType.equalsIgnoreCase("NEWAPPLICATION") && petRegistrationRequest.getPetRegistrationApplications().get(0).getPetDetails().getBreedType().equals(type.getName())) {
+//			if (type.getNewapplication().equalsIgnoreCase(applicationType)) {
+				DemandDetail demandDetail = DemandDetail.builder()
+						.taxAmount(type.getNewapplication())
+						.taxHeadMasterCode(type.getFeeType())
+						.tenantId(tenantId)
+						.build();
 				demandDetails.add(demandDetail);
+			}
+			if(applicationType.equalsIgnoreCase("RENEWAPPLICATION")){
+//			if (type.getNewapplication().equalsIgnoreCase(applicationType)) {
+				DemandDetail demandDetail = DemandDetail.builder()
+						.taxAmount(type.getRenewapplication())
+						.taxHeadMasterCode(type.getFeeType())
+						.tenantId(tenantId)
+						.build();
 				demandDetails.add(demandDetail);
 			}
 		}
@@ -56,3 +69,4 @@ public class CalculationService {
 
 	}
 }
+

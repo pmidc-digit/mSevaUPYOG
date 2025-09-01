@@ -106,13 +106,13 @@ public class NotificationUtil {
 		}
 
 		responseMap = (LinkedHashMap) serviceRequestRepository
-				.fetchResult(getUri(tenantId, requestInfo, locale), requestInfo).get();
+				.fetchResult(getUri(tenantId, requestInfo, locale), requestInfo);
 		jsonString = new JSONObject(responseMap).toString();
 
 		if (StringUtils.isEmpty(jsonString) && isRetryNeeded) {
 
 			responseMap = (LinkedHashMap) serviceRequestRepository
-					.fetchResult(getUri(tenantId, requestInfo, NOTIFICATION_LOCALE), requestInfo).get();
+					.fetchResult(getUri(tenantId, requestInfo, NOTIFICATION_LOCALE), requestInfo);
 			jsonString = new JSONObject(responseMap).toString();
 			if (StringUtils.isEmpty(jsonString))
 				throw new CustomException("EG_PTR_LOCALE_ERROR", "Localisation values not found for Pet notifications");
@@ -192,7 +192,7 @@ public class NotificationUtil {
 		for (String mobileNo : mobileNumbers) {
 			userSearchRequest.put("userName", mobileNo);
 			try {
-				Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest).get();
+				Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest);
 				if (null != user) {
 					String uuid = JsonPath.read(user, "$.user[0].uuid");
 					mapOfPhnoAndUUIDs.put(mobileNo, uuid);
@@ -287,7 +287,7 @@ public class NotificationUtil {
 		for (String mobileNo : mobileNumbers) {
 			userSearchRequest.put("userName", mobileNo);
 			try {
-				Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest).get();
+				Object user = serviceRequestRepository.fetchResult(uri, userSearchRequest);
 				if (null != user) {
 					if (JsonPath.read(user, "$.user[0].emailId") != null) {
 						String email = JsonPath.read(user, "$.user[0].emailId");

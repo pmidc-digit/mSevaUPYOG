@@ -230,7 +230,7 @@ public class PTRConstants {
 
 	public static final String USREVENTS_EVENT_POSTEDBY = "SYSTEM-PTR";
 
-	public static final String PET_BUSINESSSERVICE = "ptr";
+	public static final String PET_BUSINESSSERVICE = "pet-services";
 
 	public static final String STATUS_APPLIED = "Applied";
 
@@ -265,4 +265,14 @@ public class PTRConstants {
 	public static final String BILLING_SERVICE = "BillingService";
 
 	public static final String CALCULATION_TYPE = "CalculationType";
+	public static final String CONSUMER_CODE_SEARCH_FIELD_NAME = "consumerCode=";
+	public static final String DEMAND_STATUS_PARAM = "status=";
+	public static final String DEMAND_STATUS_ACTIVE = "ACTIVE";
+	public static final String paymentcompleted = "isPaymentCompleted=false";
+	public static final String DEMAND_START_DATE_PARAM = "periodFrom=";
+	public static final String DEMAND_END_DATE_PARAM = "periodTo=";
+	public static final String EMPTY_DEMAND_ERROR_CODE = "EMPTY_DEMANDS";
+	public static final String EMPTY_DEMAND_ERROR_MESSAGE = "No demand found for the given bill generate criteria";
+
+
 }

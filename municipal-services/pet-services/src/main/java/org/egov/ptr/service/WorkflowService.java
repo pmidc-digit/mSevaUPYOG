@@ -57,7 +57,7 @@ public class WorkflowService {
 		ProcessInstance processInstance = new ProcessInstance();
 		processInstance.setBusinessId(application.getApplicationNumber());
 		processInstance.setAction(workflow.getAction());
-		processInstance.setModuleName("pet-services");
+		processInstance.setModuleName("pet-service");
 		processInstance.setTenantId(application.getTenantId());
 		processInstance.setBusinessService("ptr");
 		processInstance.setDocuments(workflow.getDocuments());
@@ -91,8 +91,8 @@ public class WorkflowService {
 
 		ProcessInstanceResponse response = null;
 		StringBuilder url = new StringBuilder(configs.getWfHost().concat(configs.getWfTransitionPath()));
-		Optional<Object> optional = serviceRequestRepository.fetchResult(url, workflowReq);
-		response = mapper.convertValue(optional.get(), ProcessInstanceResponse.class);
+		Object object = serviceRequestRepository.fetchResult(url, workflowReq);
+		response = mapper.convertValue(object, ProcessInstanceResponse.class);
 		return response.getProcessInstances().get(0).getState();
 	}
 
@@ -107,10 +107,10 @@ public class WorkflowService {
 
 		StringBuilder url = getSearchURLWithParams(tenantId, businessService);
 		RequestInfoWrapper requestInfoWrapper = RequestInfoWrapper.builder().requestInfo(requestInfo).build();
-		Optional<Object> result = restRepo.fetchResult(url, requestInfoWrapper);
+		Object result = restRepo.fetchResult(url, requestInfoWrapper);
 		BusinessServiceResponse response = null;
 		try {
-			response = mapper.convertValue(result.get(), BusinessServiceResponse.class);
+			response = mapper.convertValue(result, BusinessServiceResponse.class);
 		} catch (IllegalArgumentException e) {
 			throw new CustomException("PARSING ERROR", "Failed to parse response of workflow business service search");
 		}
@@ -181,11 +181,11 @@ public class WorkflowService {
 
 		StringBuilder url = getWorkflowSearchURLWithParams(tenantId, businessId);
 
-		Optional<Object> res = restRepo.fetchResult(url, requestInfoWrapper);
+		Object res = restRepo.fetchResult(url, requestInfoWrapper);
 		ProcessInstanceResponse response = null;
 
 		try {
-			response = mapper.convertValue(res.get(), ProcessInstanceResponse.class);
+			response = mapper.convertValue(res, ProcessInstanceResponse.class);
 		} catch (Exception e) {
 			throw new CustomException("PARSING_ERROR", "Failed to parse workflow search response");
 		}

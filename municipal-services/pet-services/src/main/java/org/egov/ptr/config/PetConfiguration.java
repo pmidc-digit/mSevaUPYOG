@@ -1,6 +1,8 @@
 package org.egov.ptr.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.*;
 import org.egov.tracer.config.TracerConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +13,10 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-
 import java.math.BigDecimal;
 import java.util.TimeZone;
 
-@Import({ TracerConfiguration.class })
+@Import({TracerConfiguration.class})
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -34,6 +35,10 @@ public class PetConfiguration {
 	@Bean
 	@Autowired
 	public MappingJackson2HttpMessageConverter jacksonConverter(ObjectMapper objectMapper) {
+		// Register JavaTimeModule so LocalDate and other java.time types are handled
+		objectMapper.registerModule(new JavaTimeModule());
+		objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
 		MappingJackson2HttpMessageConverter converter = new MappingJackson2HttpMessageConverter();
 		converter.setObjectMapper(objectMapper);
 		return converter;
@@ -57,7 +62,6 @@ public class PetConfiguration {
 	private String userSearchEndpoint;
 
 	// IDGEN config
-
 	@Value("${egov.idgen.host}")
 	private String idGenHost;
 
@@ -113,6 +117,7 @@ public class PetConfiguration {
 
 	@Value("${egov.localization.fallback.locale}")
 	private String fallBackLocale;
+
 	// USER EVENTS
 	@Value("${egov.ui.app.host}")
 	private String uiAppHost;
@@ -145,7 +150,6 @@ public class PetConfiguration {
 	private String wfStatusActive;
 
 	// ##### mdms
-
 	@Value("${egov.mdms.host}")
 	private String mdmsHost;
 
@@ -153,7 +157,6 @@ public class PetConfiguration {
 	private String mdmsEndpoint;
 
 	// Billing-Service
-
 	@Value("${egbs.host}")
 	private String egbsHost;
 
@@ -177,11 +180,10 @@ public class PetConfiguration {
 
 	@Value("${egov.bill.gen.endpoint}")
 	private String billGenerateEndpoint;
-	
-	@Value("${egov.ptr.newapplication.fee}")
+
+	/*@Value("${egov.ptr.newapplication.fee}")
 	private BigDecimal newApplicationFee;
-	
+
 	@Value("${egov.ptr.renewapplication.fee}")
-	private BigDecimal renewApplicationFee;
-	
+	private BigDecimal renewApplicationFee;*/
 }

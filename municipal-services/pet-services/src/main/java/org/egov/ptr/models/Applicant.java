@@ -1,8 +1,13 @@
 package org.egov.ptr.models;
 
 import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -85,9 +90,11 @@ public class Applicant {
 	@JsonProperty("active")
 	private Boolean active = null;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("dob")
 	private LocalDate dob = null;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("pwdExpiryDate")
 	private LocalDate pwdExpiryDate = null;
 
@@ -122,12 +129,14 @@ public class Applicant {
 	@JsonProperty("createdBy")
 	private Long createdBy = null;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("createdDate")
 	private LocalDate createdDate = null;
 
 	@JsonProperty("lastModifiedBy")
 	private Long lastModifiedBy = null;
 
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	@JsonProperty("lastModifiedDate")
 	private LocalDate lastModifiedDate = null;
 

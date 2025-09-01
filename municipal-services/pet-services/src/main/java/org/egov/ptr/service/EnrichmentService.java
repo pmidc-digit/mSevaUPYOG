@@ -49,11 +49,11 @@ public class EnrichmentService {
 		String tenantId = applications.get(0).getTenantId();
 
 		// Generate a list of application numbers using ID generator
-//		List<String> petRegistrationIdList = petUtil.getIdList(requestInfo, tenantId, config.getPetIdGenName(),
-//				config.getPetIdGenFormat(), applications.size());
+		List<String> petRegistrationIdList = petUtil.getIdList(requestInfo, tenantId, config.getPetIdGenName(),
+				config.getPetIdGenFormat(), applications.size());
 
 
-		List<String> petRegistrationIdList = Arrays.asList(UUID.randomUUID().toString());
+//		List<String> petRegistrationIdList = Arrays.asList(UUID.randomUUID().toString());
 		// Prepare audit details once (can be reused across applications)
 		AuditDetails commonAuditDetails = AuditDetails.builder().createdBy(requestInfo.getUserInfo().getUuid())
 				.createdTime(System.currentTimeMillis()).lastModifiedBy(requestInfo.getUserInfo().getUuid())

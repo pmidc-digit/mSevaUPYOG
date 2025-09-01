@@ -57,7 +57,7 @@ CREATE TABLE public.eg_noc_document(
         ON DELETE NO ACTION
 );
 
-CREATE INDEX noc_index  ON public.eg_noc 
+CREATE INDEX noc_index  ON public.eg_noc
 (
     applicationno,
     nocno,

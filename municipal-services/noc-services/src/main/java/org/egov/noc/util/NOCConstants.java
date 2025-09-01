@@ -6,10 +6,10 @@ import org.springframework.stereotype.Component;
 public class NOCConstants {
 
 	public static final String SEARCH_MODULE = "rainmaker-nocsrv";
-	
+	public static final String NOC_BUSINESS_SERVICE = "obpas_noc";
 	public static final String NOC_MODULE = "NOC";
 	public static final String NOC_INITIATED = "INITIATED";
-	
+	public static final String ACTION_PAY ="PAY";
 	public static final String NOC_TYPE = "NocType";
 	public static final String SOURCE_RefId = "SourceRefId";
 	// mdms path codes

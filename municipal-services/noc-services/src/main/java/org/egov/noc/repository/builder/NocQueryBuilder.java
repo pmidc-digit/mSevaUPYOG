@@ -22,12 +22,36 @@ public class NocQueryBuilder {
 	@Value("${egov.noc.fuzzysearch.isFuzzyEnabled}")
 	private boolean isFuzzyEnabled;
 
-	private static final String QUERY = "SELECT noc.*,nocdoc.*,noc.id as noc_id,noc.tenantid as noc_tenantId,noc.lastModifiedTime as "
-			+ "noc_lastModifiedTime,noc.createdBy as noc_createdBy,noc.lastModifiedBy as noc_lastModifiedBy,noc.createdTime as "
-			+ "noc_createdTime, nocdoc.id as noc_doc_id,"
-			+ "nocdoc.documenttype as noc_doc_documenttype,nocdoc.documentAttachment as noc_doc_documentAttachment"
-			+ " FROM eg_noc noc  LEFT OUTER JOIN "
-			+ "eg_noc_document nocdoc ON nocdoc.nocid = noc.id WHERE 1=1 ";
+//	private static final String QUERY = "SELECT noc.*,nocdoc.*,noc.id as noc_id,noc.tenantid as noc_tenantId,noc.lastModifiedTime as "
+//			+ "noc_lastModifiedTime,noc.createdBy as noc_createdBy,noc.lastModifiedBy as noc_lastModifiedBy,noc.createdTime as "
+//			+ "noc_createdTime, nocdoc.id as noc_doc_id,"
+//			+ "nocdoc.documenttype as noc_doc_documenttype,nocdoc.documentAttachment as noc_doc_documentAttachment"
+//			+ " FROM eg_noc noc  LEFT OUTER JOIN "
+//			+ "eg_noc_document nocdoc ON nocdoc.nocid = noc.id WHERE 1=1 ";
+
+
+
+
+
+
+	private static final String QUERY =
+			"SELECT noc.*, " +
+					"json_build_object(" +
+					"'id', details.id, " +
+					"'nocid', details.nocid, " +
+					"'additionalDetails', details.additionalDetails" +
+					") AS nocDetails, " +
+					"json_agg(json_build_object(" +
+					"'uuid', nocdoc.uuid, " +
+					"'documentType', nocdoc.documenttype, " +
+					"'documentAttachment', nocdoc.documentAttachment)) AS documents " +
+					"FROM eg_noc noc " +
+					"LEFT JOIN eg_noc_details details ON details.nocid = noc.id " +
+					"LEFT JOIN eg_noc_document nocdoc ON nocdoc.nocid = noc.id " +
+					"WHERE 1=1";
+
+
+
 
 
 //	private static final String QUERY =
@@ -56,9 +80,15 @@ public class NocQueryBuilder {
 
 
 
+//	private final String paginationWrapper = "SELECT * FROM "
+//			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY noc_lastModifiedTime DESC) FROM " + "({})"
+//			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
+
+
 	private final String paginationWrapper = "SELECT * FROM "
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY lastModifiedTime DESC) FROM " + "({})"
-			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
+			+ " result)";
+
 
 //	private final String paginationWrapper = "SELECT * FROM "
 //			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY noc_lastModifiedTime DESC) offset_ FROM " + "({})"
@@ -161,7 +191,11 @@ public class NocQueryBuilder {
                         addToPreparedStatement(preparedStmtList, status);
                 }
 
-		
+		builder.append(" GROUP BY noc.id, noc.tenantid, noc.lastModifiedTime, noc.createdBy, ")
+				.append("noc.lastModifiedBy, noc.createdTime, noc.applicationNo, noc.nocNo, noc.nocType,details.id, details.nocid, details.additionalDetails ");
+
+
+
 		log.info(criteria.toString());
 		log.info("Final Query");
 		log.info(builder.toString());
@@ -198,12 +232,12 @@ public class NocQueryBuilder {
 		if (criteria.getOffset() != null)
 			offset = criteria.getOffset();
 
-		if (limit == -1) {
-			finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
-		} else {
-			preparedStmtList.add(offset);
-			preparedStmtList.add(limit + offset);
-		}
+//		if (limit == -1) {
+////			finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
+//		} else {
+//			preparedStmtList.add(offset);
+//			preparedStmtList.add(limit + offset);
+//		}
 
 		log.info(finalQuery.toString());
 		return finalQuery;

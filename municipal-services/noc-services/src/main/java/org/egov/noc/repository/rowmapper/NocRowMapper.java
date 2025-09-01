@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.noc.web.model.AuditDetails;
 import org.egov.noc.web.model.Document;
@@ -19,6 +21,8 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
+
+import static org.reflections.Reflections.log;
 
 @Component
 public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
@@ -73,22 +77,22 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 	 * @throws SQLException
 	 */
 //	@SuppressWarnings("unused")
-	private void addChildrenToProperty(ResultSet rs, Noc noc) throws SQLException {
-		String documentId = rs.getString("noc_doc_id");
-		String tenantId = noc.getTenantId();
-		if (!StringUtils.isEmpty(documentId)) {
-			Document applicationDocument = new Document();
-		     Object additionalDetails = new Gson().fromJson(rs.getString("doc_details").equals("{}")
-						|| rs.getString("doc_details").equals("null") ? null : rs.getString("doc_details"),
-						Object.class);
-			applicationDocument.setUuid(documentId);
-			applicationDocument.setDocumentType(rs.getString("documenttype"));
-			applicationDocument.setDocumentAttachment(rs.getString("noc_doc_documentAttachment"));
-			applicationDocument.setDocumentUid(rs.getString("documentUid"));
-//			applicationDocument.setAdditionalDetails(additionalDetails);
-			noc.addDocumentsItem(applicationDocument);
-		}
-	}
+//	private void addChildrenToProperty(ResultSet rs, Noc noc) throws SQLException {
+//		String documentId = rs.getString("uuid");
+//		String tenantId = noc.getTenantId();
+//		if (!StringUtils.isEmpty(documentId)) {
+//			Document applicationDocument = new Document();
+////		     Object additionalDetails = new Gson().fromJson(rs.getString("doc_details").equals("{}")
+////						|| rs.getString("doc_details").equals("null") ? null : rs.getString("doc_details"),
+////						Object.class);
+//			applicationDocument.setUuid(documentId);
+//			applicationDocument.setDocumentType(rs.getString("documentType"));
+//			applicationDocument.setDocumentAttachment(rs.getString("documentAttachment"));
+//			applicationDocument.setDocumentUid(rs.getString("documentUid"));
+////			applicationDocument.setAdditionalDetails(additionalDetails);
+//			noc.addDocumentsItem(applicationDocument);
+//		}
+//	}
 //	private void addChildrenToProperty(ResultSet rs, Noc noc) throws SQLException {
 //		String id = rs.getString("noc_details_id");
 //		String tenantId = rs.getString("noc_details_tenantid");
@@ -106,5 +110,37 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 //
 //		}
 //	}
+
+
+	private void addChildrenToProperty(ResultSet rs, Noc noc) throws SQLException {
+		String documentsJson = rs.getString("documents");
+
+		if (!StringUtils.isEmpty(documentsJson)) {
+			try {
+				List<Document> documents = new Gson().fromJson(documentsJson, new TypeToken<List<Document>>() {}.getType());
+				for (Document doc : documents) {
+					// Optional: set tenantId or other fields if needed
+					doc.setDocumentUid(doc.getUuid()); // if you need to copy uuid to documentUid
+					noc.addDocumentsItem(doc);
+				}
+			} catch (JsonSyntaxException e) {
+				log.error("Failed to parse documents JSON", e);
+			}
+
+
+
+			String nocDetailsJson = rs.getString("nocDetails");
+
+			if (!StringUtils.isEmpty(nocDetailsJson) && !"null".equals(nocDetailsJson)) {
+				try {
+					NocDetails details = new Gson().fromJson(nocDetailsJson, NocDetails.class);
+					noc.nocDetails(details);
+				} catch (JsonSyntaxException e) {
+					log.error("Failed to parse nocDetails JSON", e);
+				}
+			}
+
+		}
+	}
 
 }

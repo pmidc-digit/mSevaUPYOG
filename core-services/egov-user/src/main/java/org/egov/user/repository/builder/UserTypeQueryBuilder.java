@@ -73,11 +73,17 @@ public class UserTypeQueryBuilder {
     		+ "    addr.tenantid as addr_tenantid, addr.userid as addr_userid" 
     		+ " FROM eg_user userdata LEFT OUTER JOIN eg_user_address addr ON userdata.id = addr.userid ";
 
+//    private static final String PAGINATION_WRAPPER = "SELECT * FROM " +
+//            "(SELECT *, DENSE_RANK() OVER (ORDER BY id) offset_ FROM " +
+//            "({baseQuery})" +
+//            " result) result_offset " +
+//            "WHERE offset_ > ? AND offset_ <= ?";
+
     private static final String PAGINATION_WRAPPER = "SELECT * FROM " +
             "(SELECT *, DENSE_RANK() OVER (ORDER BY id) offset_ FROM " +
             "({baseQuery})" +
-            " result) result_offset " +
-            "WHERE offset_ > ? AND offset_ <= ?";
+            " result) ";
+
 
     public static final String SELECT_NEXT_SEQUENCE_USER = "select nextval('seq_eg_user')";
 

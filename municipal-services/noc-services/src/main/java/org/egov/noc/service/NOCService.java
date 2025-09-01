@@ -23,6 +23,9 @@ import org.egov.noc.web.model.RequestInfoWrapper;
 import org.egov.noc.web.model.bpa.BPA;
 import org.egov.noc.web.model.bpa.BPAResponse;
 import org.egov.noc.web.model.bpa.BPASearchCriteria;
+import org.egov.noc.web.model.calculator.CalculationCriteria;
+import org.egov.noc.web.model.calculator.CalculationReq;
+import org.egov.noc.web.model.calculator.CalculationRes;
 import org.egov.noc.web.model.enums.Status;
 import org.egov.noc.web.model.workflow.BusinessService;
 import org.egov.noc.web.model.workflow.ProcessInstance;
@@ -55,6 +58,9 @@ public class NOCService {
 	
 	@Autowired
 	private NOCRepository nocRepository;
+
+	@Autowired
+	private NOCConfiguration nocConfiguration;
 	
 	@Autowired
 	private EnrichmentService enrichmentService;
@@ -91,6 +97,31 @@ public class NOCService {
 		nocRepository.save(nocRequest);
 		return Arrays.asList(nocRequest.getNoc());
 	}
+
+	public void getCalculation(NocRequest request){
+
+		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
+		CalculationCriteria calculationCriteria = CalculationCriteria.builder()
+				.nocRequest(request)
+				.tenantId(request.getNoc().getTenantId())
+				.applicationNumber(request.getNoc().getApplicationNo())
+				.build();
+		calculationCriteriaList.add(calculationCriteria);
+
+		CalculationReq calculationReq = CalculationReq.builder()
+				.requestInfo(request.getRequestInfo())
+				.calculationCriteria(calculationCriteriaList)
+				.build();
+
+		StringBuilder url = new StringBuilder().append(nocConfiguration.getNocCalculatorHost())
+				.append(nocConfiguration.getNocCalculatorEndpoint());
+		Object response = serviceRequestRepository.fetchResult(url, calculationReq);
+		CalculationRes calculationRes = mapper.convertValue(response, CalculationRes.class);
+		log.info("Calculation Response: " + calculationRes);
+	}
+
+
+
 	/**
 	 * entry point from controller, takes care of next level logic from controller to update NOC application
 	 * @param nocRequest
@@ -112,6 +143,19 @@ public class NOCService {
 			searchResult.setAuditDetails(nocRequest.getNoc().getAuditDetails());
 			searchResult.setApplicationNo(nocRequest.getNoc().getApplicationNo());
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
+			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
+					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
+				wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
+				enrichmentService.postStatusEnrichment(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
+				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
+						nocRequest.getRequestInfo(), additionalDetails.get(NOCConstants.WORKFLOWCODE));
+				if(businessService == null)
+					nocRepository.update(nocRequest, true);
+				else
+					nocRepository.update(nocRequest, workflowService.isStateUpdatable(nocRequest.getNoc().getApplicationStatus(), businessService));
+			}else {
+				nocRepository.update(nocRequest, Boolean.FALSE);
+			}
 			nocRepository.update(nocRequest, Boolean.TRUE);
 
 		}else{
@@ -122,7 +166,7 @@ public class NOCService {
 				log.info("NOC_UPDATE_ERROR_AUTO_APPROVED_TO_INPROGRESS_NOTALLOWED");
 				throw new CustomException("AutoApproveException","NOC_UPDATE_ERROR_AUTO_APPROVED_TO_INPROGRESS_NOTALLOWED");
 			}
-			nocValidator.validateUpdate(nocRequest, searchResult, additionalDetails.get(NOCConstants.MODE), mdmsData);
+//			nocValidator.validateUpdate(nocRequest, searchResult, additionalDetails.get(NOCConstants.MODE), mdmsData);
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
@@ -130,6 +174,12 @@ public class NOCService {
 				enrichmentService.postStatusEnrichment(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
 						nocRequest.getRequestInfo(), additionalDetails.get(NOCConstants.WORKFLOWCODE));
+
+
+				if (nocRequest.getNoc().getWorkflow().getAction().equalsIgnoreCase(NOCConstants.ACTION_APPROVE)) {
+					getCalculation(nocRequest);
+				}
+
 				if(businessService == null)
 					nocRepository.update(nocRequest, true);
 				else

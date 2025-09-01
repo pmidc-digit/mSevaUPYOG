@@ -70,25 +70,25 @@ public class TransitionService {
                 processInstance.setBusinesssServiceSla(businessService.getBusinessServiceSla());
 
 
-//            if(currentState==null){
-//                    for(State state : businessService.getStates()){
-//                        if(StringUtils.isEmpty(state.getState())){
-//                            processStateAndAction.setCurrentState(state);
-//                            break;
-//                        }
+            if(currentState==null){
+                    for(State state : businessService.getStates()){
+                        if(StringUtils.isEmpty(state.getState())){
+                            processStateAndAction.setCurrentState(state);
+                            break;
+                        }
+                    }
+            }else {processStateAndAction.setCurrentState(currentState);}
+
+//            if (currentState == null) {
+//                for (State state : businessService.getStates()) {
+//                    if (Boolean.TRUE.equals(state.getIsStartState())) {
+//                        processStateAndAction.setCurrentState(state);
+//                        break;
 //                    }
+//                }
 //            }
 
-            if (currentState == null) {
-                for (State state : businessService.getStates()) {
-                    if (Boolean.TRUE.equals(state.getIsStartState())) {
-                        processStateAndAction.setCurrentState(state);
-                        break;
-                    }
-                }
-            }
 
-            else processStateAndAction.setCurrentState(currentState);
 
             if(!CollectionUtils.isEmpty(processStateAndAction.getCurrentState().getActions())){
                 for (Action action : processStateAndAction.getCurrentState().getActions()){

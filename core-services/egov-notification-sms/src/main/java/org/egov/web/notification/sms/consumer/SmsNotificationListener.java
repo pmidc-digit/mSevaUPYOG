@@ -75,6 +75,15 @@ public class SmsNotificationListener {
                 }
             } else {
                 smsService.sendSMS(request.toDomain());
+                 /* Long expiryTime = request.getExpiryTime();
+                Long currentTime = System.currentTimeMillis();
+                if (expiryTime < currentTime) {
+                    log.info("SMS Expired");
+                    if (!StringUtils.isEmpty(expiredSmsTopic))
+                        kafkaTemplate.send(expiredSmsTopic, request);
+                } else {
+                    smsService.sendSMS(request.toDomain());
+                }*/
             }
         } catch (RestClientException rx) {
             log.info("Going to backup SMS Service", rx);

@@ -153,15 +153,22 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
 
     public MultiValueMap<String, String> getSmsRequestBody(Sms sms) {
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+
+        boolean isOtp = isOtpMessage(sms);
+
+        // Choose credentials based on URL type
+        String username = isOtp ? smsProperties.getUsername() : smsProperties.getSmsUsername();
+        String password = isOtp ? smsProperties.getPassword() : smsProperties.getSmsPassword();
+
         for (String key : smsProperties.getConfigMap().keySet()) {
             String value = smsProperties.getConfigMap().get(key);
             if (value.startsWith("$")) {
                 switch (value) {
                     case "$username":
-                        map.add(key, /*smsProperties.getUsername()*/"pbdwss.sms");
+                        map.add(key,/*username);*/"pbdwss.sms");
                         break;
                     case "$password":
-                        map.add(key, /*smsProperties.getPassword()*/"Nkyf%403254");
+                        map.add(key,/*password)*/"Nkyf%403254");
                         break;
                     case "$senderid":
                         map.add(key, smsProperties.getSenderid());
@@ -237,4 +244,25 @@ abstract public class BaseSMSService implements SMSService, SMSBodyBuilder {
         }
     }
 
+    protected String resolveGatewayUrl(Sms sms) {
+        try {
+
+            if (isOtpMessage(sms)) {
+                return smsProperties.getUrl();
+            } else {
+                return smsProperties.getSmsUrl();
+            }
+        } catch (Exception e) {
+            log.warn("resolveGatewayUrl: error reading env props, will fallback to smsProperties.getUrl()", e);
+        }
+
+
+        return "sms and otp url is not configure";
+
+    }
+
+    protected boolean isOtpMessage(Sms sms) {
+
+        return  sms.getCategory() != null && sms.getCategory() == Category.OTP;
+    }
 }

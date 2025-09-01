@@ -109,9 +109,18 @@ public class NICSMSServiceImpl extends BaseSMSService {
 		log.info("submitToExternalSmsService() start");
 		try {
 
+			String url = resolveGatewayUrl(sms);
 			String final_data = "";
-			final_data += "username=" + smsProperties.getUsername();
-			final_data += "&pin=" + smsProperties.getPassword();
+			if(url.equalsIgnoreCase(smsProperties.getSmsUrl())){
+				final_data += "username=" + smsProperties.getSmsUsername();
+				final_data += "&pin=" + smsProperties.getSmsPassword();
+			} else if(url.equalsIgnoreCase(smsProperties.getUrl())) {
+				final_data += "username=" + smsProperties.getUsername();
+				final_data += "&pin=" + smsProperties.getPassword();
+			}
+			//String final_data = "";
+			//final_data += "username=" + smsProperties.getUsername();
+			//final_data += "&pin=" + smsProperties.getPassword();
 
 			String smsBody = sms.getMessage();
 			log.info("smsBody"+smsBody);
@@ -147,7 +156,9 @@ public class NICSMSServiceImpl extends BaseSMSService {
 				final_data += "&dlt_template_id=" + sms.getTemplateId();
 
 			if (smsProperties.isSmsEnabled()) {
-				HttpsURLConnection conn = (HttpsURLConnection) new URL(smsProperties.getUrl() + "?" + final_data)
+				/*HttpsURLConnection conn = (HttpsURLConnection) new URL(smsProperties.getUrl() + "?" + final_data)
+						.openConnection();*/
+				HttpsURLConnection conn = (HttpsURLConnection) new URL(url + "?" + final_data)
 						.openConnection();
 				conn.setSSLSocketFactory(sslContext.getSocketFactory());
 				conn.setDoOutput(true);
@@ -162,7 +173,7 @@ public class NICSMSServiceImpl extends BaseSMSService {
 				}
 				log.info("conn: " + conn.toString());
 				if (smsProperties.isDebugMsggateway()) {
-					log.info("sms api url : " + smsProperties.getUrl());
+					log.info("sms api url : " + url);
 					log.info("sms response: " + stringBuffer.toString());
 					log.info("sms data: " + final_data);
 				}

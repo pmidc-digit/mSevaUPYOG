@@ -94,7 +94,7 @@ export const WorkflowService = {
       url: Urls.WorkFlow,
       useCache: true,
       method: "POST",
-      params: { tenantId: "pb.amritsar", businessServices },
+      params: { tenantId: stateCode, businessServices },
       auth: true,
     });
   },

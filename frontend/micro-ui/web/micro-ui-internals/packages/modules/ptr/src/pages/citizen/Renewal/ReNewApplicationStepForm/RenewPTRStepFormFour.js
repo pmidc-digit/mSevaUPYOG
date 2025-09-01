@@ -5,17 +5,14 @@ import { useState } from "react";
 import _ from "lodash";
 import { useHistory, useRouteMatch } from "react-router-dom";
 
-const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
+const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const { path } = useRouteMatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
   const history = useHistory();
-  // const tenantId = window.localStorage.getItem("Citizen.tenant-id");
+  const tenantId = window.localStorage.getItem("Citizen.tenant-id");
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = window.location.href.includes("citizen")
-    ? window.localStorage.getItem("CITIZEN.CITY")
-    : window.localStorage.getItem("Employee.tenant-id");
   console.log("goNext triggered");
 
   const currentStepData = useSelector(function (state) {
@@ -57,9 +54,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   //   }
 
   //   onGoNext();
-  // }s
-
-  const isCitizen = window.location.href.includes("citizen");
+  // }
 
   async function goNext(data) {
     const { missingFields, notFormattedFields } = validateStepData(currentStepData);
@@ -78,16 +73,9 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     const res = await onSubmit(currentStepData, data);
     if (res) {
-      // history.replace(`/digit-ui/citizen/ptr/petservice/response/${currentStepData?.CreatedResponse?.applicationNumber}`, {
-      //   applicationData: currentStepData?.CreatedResponse,
-      // });
-
-      history.replace(
-        `/digit-ui/${isCitizen ? "citizen" : "employee"}/ptr/petservice/response/${currentStepData?.CreatedResponse?.applicationNumber}`,
-        {
-          applicationData: currentStepData?.CreatedResponse,
-        }
-      );
+      history.replace(`/digit-ui/citizen/ptr/petservice/response/${currentStepData?.CreatedResponse?.applicationNumber}`, {
+        applicationData: currentStepData?.CreatedResponse,
+      });
       // onGoNext();
     } else {
       console.error("Submission failed, not moving to next step.");
@@ -321,4 +309,4 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export default NewPTRStepFormFour;
+export default RenewPTRStepFormFour;

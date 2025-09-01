@@ -78,14 +78,14 @@ import { UPDATE_PTRNewApplication_FORM } from "../../redux/action/PTRNewApplicat
 import { useState } from "react";
 import _ from "lodash";
 
-const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
+const RenewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
   const stateId = Digit.ULBService.getStateId();
   const { isLoading: isDocsLoading, data: mdmsData } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", ["Documents"]);
-  console.log("mdmsData", mdmsData);
+  console.log('mdmsData', mdmsData)
 
   const currentStepData = useSelector(function (state) {
     return state.ptr.PTRNewApplicationFormReducer.formData && state.ptr.PTRNewApplicationFormReducer.formData[config?.key]
@@ -93,45 +93,39 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
-  console.log("mdms?.NDC?.Documents", mdmsData?.NDC?.Documents);
+  console.log('mdms?.NDC?.Documents', mdmsData?.NDC?.Documents)
   const makeDocumentsValidator = (mdms) => {
-    const requiredCodes = (mdms?.NDC?.Documents || []).filter((d) => d?.required).map((d) => d.code);
+  const requiredCodes = (mdms?.NDC?.Documents || [])
+    .filter((d) => d?.required)
+    .map((d) => d.code);
 
-    return (documents = []) => {
-      const errors = {};
-      if (!requiredCodes?.length) return errors;
-      for (const code of requiredCodes) {
-        const satisfied = documents?.some((doc) => doc?.documentType?.includes?.(code) && (doc?.filestoreId || doc?.fileStoreId));
-        console.log("satisfied", satisfied);
-        if (!satisfied) {
-          errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
-          break;
-        }
+  return (documents = []) => {
+    const errors = {};
+    if (!requiredCodes?.length) return errors;
+    for (const code of requiredCodes) {
+      const satisfied = documents?.some(
+        (doc) =>
+          doc?.documentType?.includes?.(code) &&
+          (doc?.filestoreId || doc?.fileStoreId)
+      );
+      console.log('satisfied', satisfied)
+      if (!satisfied) {
+        errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
+        break;
       }
-      return errors;
-    };
+    }
+    return errors;
   };
+};
 
-  console.log("currentStepData?.documents?.documents ", currentStepData?.documents?.documents);
+console.log('currentStepData?.documents?.documents ', currentStepData?.documents?.documents )
 
-  //   function goNext(data) {
-  //     console.log("goNext data in NewPTRStepFormThree: ", data);
-
-  //     const { missingFields, notFormattedFields } = validateStepData(currentStepData);
-
-  //     if (missingFields.length > 0) {
-  //       setError(`Please fill the following field: ${missingFields[0]}`);
-  //       setShowToast(true);
-  //       return;
-  //     }
-  //     onGoNext();
-  //   }
   function goNext(data) {
     console.log("goNext data in NewPTRStepFormThree: ", data);
 
     const validator = makeDocumentsValidator(mdmsData);
-    const docErrors = validator(data?.documents?.documents || []);
-    console.log("docErrors", docErrors);
+    const docErrors = validator(data?.documents?.documents  || []);
+    console.log('docErrors', docErrors)
 
     // if (docErrors?.missingRequired) {
     //   setError("Please fill in all required fields");
@@ -172,4 +166,4 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   );
 };
 
-export default NewPTRStepFormThree;
+export default RenewPTRStepFormThree;

@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
-
 import PTRDesktopInbox from "../../components/PTRDesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 
@@ -22,8 +21,10 @@ const Inbox = ({
   EmptyResultInboxComp,
 }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-
-  console.log("here");
+  console.log("EmptyResultInboxComp", EmptyResultInboxComp);
+  console.log("useNewInboxAPI", useNewInboxAPI);
+  console.log("here", moduleCode, tenantId);
+  console.log("initialStates", initialStates);
 
   const { t } = useTranslation();
   const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
@@ -62,7 +63,7 @@ const Inbox = ({
   useEffect(() => {
     setPageOffset(0);
   }, [searchParams]);
-
+console.log('datapp', data)
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
   };

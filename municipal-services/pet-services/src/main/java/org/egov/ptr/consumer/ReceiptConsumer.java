@@ -2,6 +2,8 @@ package org.egov.ptr.consumer;
 
 import java.util.HashMap;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.egov.ptr.models.collection.PaymentRequest;
 import org.egov.ptr.service.PaymentNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,12 +22,12 @@ public class ReceiptConsumer {
 	@Autowired
 	private PaymentNotificationService paymentNotificationService;
 
-	@KafkaListener(topics = { "${kafka.topics.receipt.create}" })
-	public void listenPayments(final HashMap<String, Object> record,
-			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
+	public void listenPayments(final String rawRecord,@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
-		log.info("Pet Appplication Received to update workflow after PAY ");
+		log.info("Incoming raw message: {}", rawRecord);
 		try {
+			PaymentRequest record = new ObjectMapper().readValue(rawRecord, PaymentRequest.class);
 			paymentNotificationService.process(record, topic);
 		} catch (JsonProcessingException e) {
 			log.info("Catch block in listenPayments method of Pet service consumer");

@@ -49,10 +49,10 @@ public class PaymentNotificationService {
 	 * Process the incoming record and topic from the payment notification consumer.
 	 * Performs defensive null checks and validates the payment request before proceeding.
 	 */
-	public void process(HashMap<String, Object> record, String topic) throws JsonProcessingException {
-		log.info("Receipt consumer class entry {}", record);
+	public void process(PaymentRequest paymentRequest, String topic) throws JsonProcessingException {
+		log.info("Receipt consumer class entry {}", paymentRequest);
 		try {
-			PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
+//			PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
 			log.info("Payment request in pet method: {}", paymentRequest);
 
 			// Defensive checks for null or empty payment data
@@ -117,7 +117,7 @@ public class PaymentNotificationService {
 		processInstance.setAction("PAY");
 		processInstance.setModuleName("pet-service");
 		processInstance.setTenantId(tenantId);
-		processInstance.setBusinessService("pet-services");
+		processInstance.setBusinessService("ptr");
 		processInstance.setDocuments(null);
 		processInstance.setComment(null);
 		processInstance.setAssignes(null);

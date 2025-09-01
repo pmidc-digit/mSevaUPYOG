@@ -2,7 +2,7 @@ import React, { useEffect, useState, Fragment, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
 import { useHistory } from "react-router-dom";
-import { Header, ActionBar, MultiLink, SubmitBar, Menu, Modal, ButtonSelector, Toast } from "@mseva/digit-ui-react-components";
+import { Header, ActionBar, MultiLink, SubmitBar, Menu, Modal, ButtonSelector, Toast, Loader } from "@mseva/digit-ui-react-components";
 import * as func from "../../../utils";
 import { ifUserRoleExists, downloadPdf, downloadAndOpenPdf } from "../../../utils";
 import WSInfoLabel from "../../../pageComponents/WSInfoLabel";
@@ -22,12 +22,11 @@ const GetConnectionDetails = () => {
   const connectionType = filters?.connectionType;
   const [showOptions, setShowOptions] = useState(false);
   const stateCode = Digit.ULBService.getStateId();
-  console.log("serviceType",serviceType)
   const actionConfig = ["COLLECT","SINGLE DEMAND","CANCEL DEMAND","MODIFY CONNECTION","DISCONNECTION_BUTTON"];
   const { isLoading, isError, data: applicationDetails, error } = Digit.Hooks.ws.useConnectionDetail(t, tenantId, applicationNumber, serviceType===("WS"||"WATER")?"WATER":serviceType===("SW"||"SEWARAGE")?"SEWARAGE":"", {
     privacy: Digit.Utils.getPrivacyObject(),
+    enabled: !!(tenantId && applicationNumber && serviceType)
   });
-  console.log("application Details",applicationDetails)
   const menuRef = useRef();
   const actionMenuRef = useRef();
   sessionStorage.removeItem("IsDetailsExists");
@@ -35,12 +34,10 @@ const GetConnectionDetails = () => {
 
   const { isLoading: isLoadingDemand, data: demandData } = Digit.Hooks.useDemandSearch(
     { consumerCode: applicationDetails?.applicationData?.connectionNo, businessService: (serviceType === "WATER" || serviceType ==="WS") ? "WS" : (serviceType === "SEWARAGE" || serviceType ==="SW")? "SW":"", tenantId },
-    { enabled: !!applicationDetails?.applicationData?.applicationNo }
+    { enabled: !!(applicationDetails?.applicationData?.applicationNo && applicationDetails?.applicationData?.connectionNo) }
   );
-  console.log("service type in connection.js",serviceType)
-console.log("Demand data",demandData)
-const [demandDetails,setDemandDetails]=useState([])
-let arr=[]
+  const [demandDetails,setDemandDetails]=useState([])
+  let arr=[]
 const dateFormat=(dateString)=>{
 // Convert the timestamp to a Date object
 const date = new Date(dateString);
@@ -57,17 +54,19 @@ return formattedDate;
 const[totalDemandTax,setTotalDemandTax]=useState(0)
 const [totalBalanceTax,setTotalBalanceTax]=useState(0)
 useEffect(() => {
- 
-  if (demandData?.Demands?.length > 0) {
-   
-   let td=0;
-   let tb=0;
-    demandData.Demands.map((item)=>{
-      let obj={}
-     console.log("item",item)
-     obj.taxPeriodFrom =dateFormat(item.taxPeriodFrom)
-     obj.taxPeriodTo =dateFormat(item.taxPeriodTo)
-     console.log("obj",obj)
+  try {
+    if (demandData?.Demands?.length > 0) {
+     
+     let td=0;
+     let tb=0;
+      demandData.Demands.map((item)=>{
+        if (!item || !item.demandDetails || !Array.isArray(item.demandDetails) || item.demandDetails.length === 0) {
+          return; // Skip invalid items
+        }
+        
+        let obj={}
+       obj.taxPeriodFrom = item.taxPeriodFrom ? dateFormat(item.taxPeriodFrom) : "N/A"
+       obj.taxPeriodTo = item.taxPeriodTo ? dateFormat(item.taxPeriodTo) : "N/A"
 
      if(item.demandDetails[0].taxHeadMasterCode==="WS_CHARGE"||item.demandDetails[0].taxHeadMasterCode==="SW_CHARGE"||item.demandDetails[0].taxHeadMasterCode==="SW_DISCHARGE_CHARGE"){
     
@@ -154,9 +153,11 @@ useEffect(() => {
     arr.push(obj)
     setDemandDetails(arr)
   }
+  } catch (error) {
+    console.error("Error processing demand data:", error);
+    setDemandDetails([]);
+  }
 },[demandData])
-console.log("arr",arr)
-console.log("arr",demandDetails)
   const [showModal, setshowModal] = useState(false);
   const [billData, setBilldata] = useState([]);
   const [showActionToast, setshowActionToast] = useState(null);
@@ -190,11 +191,59 @@ console.log("arr",demandDetails)
     setBilldata(res.Amendments);
   }, []);
 
+  // Cleanup effect to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      // Clear any timers, subscriptions, or async operations
+      setShowToast(null);
+      setshowActionToast(null);
+      setshowModal(false);
+    };
+  }, []);
+
+  // Issue 16 Fix: Connection details download function
   const downloadConnectionDetails = async () => {
-    const tenantInfo = applicationDetails?.applicationData?.tenantId;
-    let result = applicationDetails?.applicationData;
-    const PDFdata = getConnectionDetailsPDF({ ...result }, { ...applicationDetails?.propertyDetails }, tenantInfo, t);
-    PDFdata.then((ress) => Digit.Utils.pdf.generatev1(ress));
+    try {
+      const tenantInfo = applicationDetails?.applicationData?.tenantId;
+      let result = applicationDetails?.applicationData;
+      
+      if (!result || !tenantInfo) {
+        console.error("Missing application data or tenant information");
+        return;
+      }
+      
+      // Ensure we have the required connection data
+      const connectionData = {
+        ...result,
+        applicationNo: result.applicationNo || result.connectionNo,
+        connectionNo: result.connectionNo || result.applicationNo,
+        // Add any missing required fields
+        auditDetails: result.auditDetails || { createdTime: Date.now() },
+        additionalDetails: result.additionalDetails || {}
+      };
+      
+      const propertyData = {
+        ...applicationDetails?.propertyDetails,
+        // Ensure property has required fields
+        owners: applicationDetails?.propertyDetails?.owners || []
+      };
+      
+      console.log("Connection data for PDF:", connectionData);
+      console.log("Property data for PDF:", propertyData);
+      
+      const PDFdata = await getConnectionDetailsPDF(connectionData, propertyData, tenantInfo, t);
+      
+      if (PDFdata) {
+        await Digit.Utils.pdf.generate(PDFdata);
+      }
+    } catch (error) {
+      console.error("Error downloading connection details:", error);
+      // Show user-friendly error message
+      setshowActionToast({
+        key: "error",
+        label: "PDF_DOWNLOAD_ERROR",
+      });
+    }
   };
 
   const downloadApplicationDetails = async () => {
@@ -211,10 +260,23 @@ console.log("arr",demandDetails)
   const closeBillToast = () => {
     setshowActionToast(null);
   };
-  setTimeout(() => {
-    closeBillToast();
-  }, 10000);
+  
+  // Fix memory leak: Move setTimeout inside useEffect
+  useEffect(() => {
+    if (showActionToast) {
+      const timer = setTimeout(() => {
+        closeBillToast();
+      }, 10000);
+      
+      // Cleanup function to clear timeout if component unmounts
+      return () => clearTimeout(timer);
+    }
+  }, [showActionToast]);
 
+  // Issue 8 Fix: Connection workflow validation
+  // checkWorkflow is derived from applicationDetails.isApplicationApproved
+  // This now correctly checks for active blocking workflows instead of terminated ones
+  // See WS/Search.js connectionDetails function for the corrected logic
   const checkApplicationStatus = applicationDetails?.applicationData?.status === "Active" ? true : false;
   const checkWorkflow = applicationDetails?.isApplicationApproved;
 
@@ -226,8 +288,6 @@ console.log("arr",demandDetails)
       });
       return;
     }
-    console.log("checkappstatus",checkApplicationStatus)
-    console.log("get modidy application det",applicationDetails)
     if (applicationDetails?.fetchBillsData !== undefined && applicationDetails?.fetchBillsData?.[0]?.totalAmount > 0) {
       setshowActionToast({
         key: "error",
@@ -283,6 +343,10 @@ console.log("arr",demandDetails)
   };
   Digit.Hooks.useClickOutside(actionMenuRef, closeActionMenu, displayMenu);
 
+  /**
+   * Issue 8 Fix: Disconnection button with workflow validation
+   * Allows disconnection for active connections with proper workflow checks
+   */
   const getDisconnectionButton = () => {
     let pathname = `/digit-ui/employee/ws/new-disconnection`;
 
@@ -293,7 +357,6 @@ console.log("arr",demandDetails)
       });
     }
     else{
-      console.log("due",due,applicationDetails)
         if (billData[0]?.status === "ACTIVE" || applicationDetails?.fetchBillsData?.length <=0 || due == "0" || due < 0) {
           Digit.SessionStorage.set("WS_DISCONNECTION", applicationDetails);
           history.push(`${pathname}`);
@@ -304,6 +367,7 @@ console.log("arr",demandDetails)
         }
     }
   };
+  // Issue 23 Fix: Restoration button for temporary disconnections
   const getRestorationButton = () => {
     let pathname = `/digit-ui/employee/ws/new-restoration`;
 
@@ -342,23 +406,25 @@ console.log("arr",demandDetails)
   const showAction= checkApplicationStatusForDisconnection ? actionConfig : actionConfig.filter((item) => item !== "DISCONNECTION_BUTTON");
 const showActionRestoration = ["RESTORATION_BUTTON"]
 
+  // Working bill download function - Issue 16 Fix
   async function getBillSearch() {
     if (applicationDetails?.fetchBillsData?.length > 0) {
-      const service = serviceType === "WATER" ? "WS" : "SW";
-      let wsSearchFilters = {
-        isConnectionSearch: true,
-        connectionNumber: applicationDetails?.applicationData?.connectionNo,
-      };
-      const wsConnectionDetails = await Digit.WSService.search({ tenantId, filters: wsSearchFilters, businessService: service });
-      let filters = {
-        applicationNumber:
-          serviceType === "WATER"
-            ? wsConnectionDetails?.WaterConnection?.[0]?.applicationNo
-            : wsConnectionDetails?.SewerageConnections?.[0]?.applicationNo,
-        bussinessService: service,
-      };
-      if (wsConnectionDetails?.WaterConnection?.length > 0 || wsConnectionDetails?.SewerageConnections?.length > 0) {
-        downloadAndOpenPdf(applicationDetails?.applicationData?.connectionNo, filters);
+      const connectionNo = applicationDetails?.applicationData?.connectionNo;
+      const service = (serviceType === "WATER" || serviceType === "WS" || connectionNo?.includes("WS")) ? "WS" : "SW";
+      
+      try {
+        const response = await Digit.ReceiptsService.bill_download(
+          service, 
+          connectionNo, 
+          tenantId, 
+          "consolidatedbill"
+        );
+        
+        if (response && response.status >= 200 && response.status < 300) {
+          downloadPdf(new Blob([response.data], { type: "application/pdf" }), `BILL-${connectionNo}.pdf`);
+        }
+      } catch (error) {
+        console.error("Error in bill download:", error);
       }
     }
   }
@@ -487,6 +553,7 @@ const showActionRestoration = ["RESTORATION_BUTTON"]
             </div>
           </Modal>
         ) : null}
+        {showToast && <Toast error={showToast.error} label={t(`${showToast.label}`)} onClose={closeToast} />}
         {showActionToast && <Toast error={showActionToast.key} label={t(`${showActionToast.label}`)} onClose={closeBillToast} />}
       </div>
     </Fragment>

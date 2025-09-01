@@ -1,6 +1,24 @@
 import React ,{useState}from 'react'
 
+/**
+ * ISSUE 9 FIX: PaymentHistory Component
+ * 
+ * Purpose: Displays payment history for WS/SW applications in an accordion format
+ * 
+ * Problem Solved: Payment history was not visible in application details
+ * Previously, payment data was not being fetched or displayed to users
+ * 
+ * Implementation: 
+ * - Receives payment data from parent component (ApplicationDetailsContent)
+ * - Displays payments in a collapsible accordion interface
+ * - Shows payment details like amount, date, receipt number, payment mode
+ * - Handles empty payment states gracefully
+ * 
+ * Data Flow:
+ * ApplicationDetailsContent (fetches payments via API) → PaymentHistory (displays)
+ */
 const PaymentHistory = ({payments}) => {
+       // ACCORDION STATE: Controls expand/collapse of payment history section
        const [isOpen, setIsOpen] = useState(false);
     
         const toggleAccordion = () => {
@@ -37,7 +55,56 @@ const PaymentHistory = ({payments}) => {
             {isOpen && (
                 <div className="accordion-body" style={{ padding: " 15px", backgroundColor: "#fff" }}>
              {payments?.length===0 && (
-                <div style={{color:'red', fontSize:'16px'}}>No Payemnts found</div>
+                <div style={{color:'red', fontSize:'16px'}}>No Payments found</div>
+             )}
+             {payments?.length > 0 && (
+                <div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '10px' }}>
+                        <thead>
+                            <tr style={{ backgroundColor: '#f5f5f5' }}>
+                                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Receipt Number</th>
+                                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Transaction Date</th>
+                                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Amount Paid</th>
+                                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Payment Mode</th>
+                                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Transaction ID</th>
+                                <th style={{ border: '1px solid #ddd', padding: '8px', textAlign: 'left' }}>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {payments.map((payment, index) => (
+                                <tr key={payment.id || index}>
+                                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                        {payment.paymentDetails?.[0]?.receiptNumber || payment.receiptNumber || 'N/A'}
+                                    </td>
+                                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                        {payment.transactionDate ? new Date(payment.transactionDate).toLocaleDateString() : 'N/A'}
+                                    </td>
+                                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                        ₹{payment.totalAmountPaid || payment.amount || '0'}
+                                    </td>
+                                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                        {payment.paymentMode || payment.instrumentType || 'N/A'}
+                                    </td>
+                                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                        {payment.transactionNumber || payment.instrumentNumber || 'N/A'}
+                                    </td>
+                                    <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                        <span style={{ 
+                                            color: payment.paymentStatus === 'NEW' || payment.paymentStatus === 'SUCCESSFUL' ? 'green' : 
+                                                   payment.paymentStatus === 'FAILED' ? 'red' : 'orange',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            {payment.paymentStatus || 'N/A'}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    <div style={{ marginTop: '10px', fontSize: '14px', color: '#666' }}>
+                        Total Payments: {payments.length}
+                    </div>
+                </div>
              )}
           </div>
             )}

@@ -67,7 +67,43 @@ function ApplicationDetailsContent({
   const [payments,setPayments]=useState([])
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
-  console.log("appl", applicationDetails);
+
+  // ISSUE 9 FIX: Fetch payment history for WS applications
+  // Payment history was not displaying because the payment data fetch was missing
+  // Added payment API integration to show payment history in application details
+  useEffect(() => {
+    const fetchPaymentHistory = async () => {
+      // WS PAYMENT INTEGRATION: Only fetch payments for WS module applications
+      if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
+        try {
+          // BUSINESS SERVICE MAPPING: Map serviceType to correct business service code
+          const businessService = applicationData?.serviceType === "SEWERAGE" ? "SW" : "WS";
+          
+          // PAYMENT API CALL: Use the correct payment search API structure matching the working curl
+          // This API call retrieves all payment records for the given connection
+          const requestParams = {
+            tenantId: applicationData?.tenantId || tenantId,
+            consumerCodes: applicationData?.connectionNo,
+            businessService: businessService,
+            consumerCode: applicationData?.connectionNo
+          };
+          
+          const paymentData = await Digit.WSService.paymentsearch(requestParams);
+          
+          // PAYMENT DATA PROCESSING: Handle different response structures from the payment API
+          if (Array.isArray(paymentData) && paymentData.length > 0) {
+            setPayments(paymentData);
+          } else if (paymentData?.Payments && paymentData.Payments.length > 0) {
+            setPayments(paymentData.Payments);
+          }
+        } catch (error) {
+          console.error("Payment fetch error:", error);
+        }
+      }
+    };
+
+    fetchPaymentHistory();
+  }, [applicationData?.connectionNo, applicationData?.tenantId, applicationData?.serviceType, tenantId]);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -105,13 +141,9 @@ const normalizedDate = normalizeDate(record.assessmentDate);
  }
 });
 
-
-console.log("grouped",latestMap)
-
 // Step 3: Convert grouped object to array
 const filteredAssessment=Array.from(latestMap.values());
 setFiltered(filteredAssessment)
-console.log(filteredAssessment);
 
       setAssessmentDetails(assessmentData?.Assessments)
       billData = await Digit.PaymentService.fetchBill(tenantId, {
@@ -160,6 +192,9 @@ console.log(filteredAssessment);
     return `${day}/${month}/${year}`;
   };
   const getTimelineCaptions = (checkpoint, index = 0, timeline) => {
+    // Issue 18 Fix: Add null checks for timeline data to prevent undefined errors
+    if (!checkpoint) return null;
+    
     if (checkpoint.state === "OPEN" || (checkpoint.status === "INITIATED" && !window.location.href.includes("/obps/"))) {
       const caption = {
         date: convertEpochToDateDMY(applicationData?.auditDetails?.createdTime),
@@ -185,25 +220,29 @@ console.log(filteredAssessment);
           },
         },
       };
-      const previousCheckpoint = timeline[index - 1];
+      // Issue 18 Fix: Safe access to timeline array with proper bounds checking
+      const previousCheckpoint = (timeline && Array.isArray(timeline) && index > 0 && index - 1 < timeline.length) 
+        ? timeline[index - 1] 
+        : null;
+      
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
-        name: checkpoint?.assignes?.[0]?.name,
+        name: checkpoint?.assignes?.[0]?.name || "N/A",
         mobileNumber: applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid && applicationData?.processInstance?.assignes?.[0]?.mobileNumber
             ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
-            : checkpoint?.assignes?.[0]?.mobileNumber,
-        comment: t(checkpoint?.comment),
-        wfComment: previousCheckpoint ? previousCheckpoint.wfComment : [],
-        thumbnailsToShow: checkpoint?.thumbnailsToShow,
+            : checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
+        comment: checkpoint?.comment ? t(checkpoint.comment) : "N/A",
+        wfComment: previousCheckpoint ? (previousCheckpoint.wfComment || []) : [],
+        thumbnailsToShow: checkpoint?.thumbnailsToShow || [],
       };
 
       return <TLCaption data={caption} OpenImage={OpenImage} privacy={privacy} />;
     } else {
       const caption = {
         date: convertEpochToDateDMY(applicationData?.auditDetails?.lastModifiedTime),
-        name: checkpoint?.assignes?.[0]?.name,
-        wfComment: checkpoint?.wfComment,
-        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
+        name: checkpoint?.assignes?.[0]?.name || "N/A",
+        wfComment: checkpoint?.wfComment || [],
+        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
       };
 
       return <TLCaption data={caption} />;
@@ -302,7 +341,6 @@ console.log(filteredAssessment);
   const toggleTimeline = () => {
     setShowAllTimeline((prev) => !prev);
   };
-  console.log("demand Data arr", demandData);
   const totalDemandInterest = demandData?.reduce((sum, item) => sum + item.demandInterest, 0);
   const totalDemandPenality = demandData?.reduce((sum, item) => sum + item.demandPenality, 0);
   const totalCollectionTax = demandData?.reduce((sum, item) => sum + item.collectionTax, 0);
@@ -315,6 +353,8 @@ console.log(filteredAssessment);
   const closeToast = () => {
     setShowToast(null);
   };
+
+  // (Redirect handled centrally in ApplicationDetails template on mutation success)
 
   // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
   const updatePropertyStatus = async (propertyData, status, propertyIds) => {
@@ -340,7 +380,6 @@ console.log(filteredAssessment);
     };
     // try {
     const response = await Digit.PTService.updatePT({ Property: { ...payload } }, tenantId, propertyIds);
-    console.log("response from inactive/active", response);
     //   const result = await response.json();
     //   if (response.ok) {
     //     alert(`Property marked as ${status} successfully!`);
@@ -418,10 +457,6 @@ console.log(filteredAssessment);
     alert("access property");
   };
 
-   console.log("applicationDetails?.applicationDetails",applicationDetails)
-   console.log("infolabel",isInfoLabel)
-   console.log("assessment details",assessmentDetails)
-
    useEffect(()=>{
    try{
    let filters={
@@ -431,11 +466,10 @@ console.log(filteredAssessment);
    const auth=true
     Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
       setPayments(response?.Payments)
-      console.log(response)  
     })
    }
    catch(error){
-   console.log(error)
+   // Error handling for payment search
    }
    },[])
   return (
@@ -674,6 +708,10 @@ console.log(filteredAssessment);
         </React.Fragment>
       ))}
         {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
+        {/* ISSUE 9 FIX: Payment History Component Integration
+            This component displays the payment history fetched by the useEffect above
+            Shows payment details including amount, date, receipt number, and payment mode
+            Only displays when payments data is available from the API call */}
         <PaymentHistory payments={payments}/>
         <ApplicationHistory applicationData={applicationDetails?.applicationData}/>
 

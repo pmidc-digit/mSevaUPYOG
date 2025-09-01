@@ -28,7 +28,7 @@ public class BookingSlotDetailRowmapper implements ResultSetExtractor<List<CartD
 					.bookingToTime(LocalTime.parse(rs.getString("booking_to_time")))
 					.status(rs.getString("status"))
 					.faceArea(rs.getString("face_area"))
-					.bookingId(rs.getString("advertisement_id"))
+					.bookingId(rs.getString("advertisementId"))
 					.build();
 
 			bookingSlotDetails.add(cartDetail);

@@ -16,36 +16,46 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   });
 
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
+  let tenantId;
+
+  if(window.location.href.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
+
+  else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
+  
+  //console.log("tenantId here==>", tenantId);
 
   const goNext = async(data)=> {
     console.log("formData in parent SummaryPage", currentStepData);
 
-   // try{
+   try{
       const res = await onSubmit(currentStepData);
       
-      console.log("we reached here finally !!!");
-      
-      // if (res?.isSuccess) {
-      //   if(window.location.href.includes("citizen")){
-      //     //modify below as per response from api
-      //     history.push("/digit-ui/citizen/noc/response/" + res?.response?.Noc?.uuid);
-      //   }
+      if (res?.isSuccess) {
+        if(window.location.href.includes("citizen")){
+           console.log("we are calling citizen response page")
+           history.replace({
+           pathname:`/digit-ui/citizen/noc/response/${res?.response?.Noc?.[0]?.applicationNo}`,
+           state: { data: res?.response }
+        });
+        }
 
-      //   else{
-      //      //modify below as per response from api
-      //     history.push("/digit-ui/employee/noc/response/" + res?.response?.Noc?.uuid);
-      //   }
+        else{
+           console.log("we are calling employee response page")
+           history.replace({
+           pathname: `/digit-ui/employee/noc/response/${res?.response?.Noc?.[0]?.applicationNo}`,
+           state: { data: res?.response }
+        });
+        }
         
-      // } else {
-      //   console.error("Submission failed, not moving to next step.", res?.response);
-      //   alert(`Submission Failed ${res?.response}`)
-      // }
-   // }catch(e){
-       //alert(`Error: ${error?.message}`);
+      } else {
+        console.error("Submission failed, not moving to next step.", res?.response);
+        // alert(`Submission Failed ${res?.response}`)
+      }
+   }catch(e){
+       alert(`Error: ${error?.message}`);
      
-   // }
+   }
 
     
    onGoNext();
@@ -55,40 +65,37 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     console.log("formData inside onSubmit", data);
 
     const finalPayload = mapToNOCPayload(data);
-    console.log("finalPayload here==", finalPayload);
-
-    //remove below once completed
-    setTimeout(()=>{
-      console.log("we are here in setTimeOut")
-    },1000);
-
-    return true;
+    console.log("finalPayload here==>", finalPayload);
     
-    // const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
-    // dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-    // if (response?.ResponseInfo?.status === "successful") {
-    //       return { isSuccess: true, response };
-    // } else {
-    //       return { isSuccess: false, response };
-    // }
+    const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
+    dispatch(RESET_NOC_NEW_APPLICATION_FORM());
+    if (response?.ResponseInfo?.status === "successful") {
+          console.log("success: Update API ")
+          return { isSuccess: true, response };
+    } else {
+          console.log("Error: Update API");
+          return { isSuccess: false, response };
+    }
   }
 
   function mapToNOCPayload(nocFormData){
     console.log("nocFormData", nocFormData);
 
-    const updatedApplication= {
-        applicationType: "NEW",
-        documents: [],
-        nocType: "NOC",
-        status: "ACTIVE",
-        tenantId,
-        workflow: {action: "INITIATE"},
-        nocDetails:{
-            //modify below from apiData key using redux
-            additionalDetails: {applicationDetails:{...nocFormData?.applicationDetails}, siteDetails:{...nocFormData?.siteDetails}},
-            tenantId
-        }
-    }
+  //  const updatedApplication = {
+  //   ...nocFormData?.apiData?.Noc?.[0],
+  //   nocDetails: nocFormData?.apiData?.Noc?.[0]?.nocDetails,
+  //   documents:[]
+  //  }
+
+   const updatedApplication = {
+    ...nocFormData?.apiData?.Noc?.[0],
+    nocDetails: {
+     ...nocFormData?.apiData?.Noc?.[0]?.nocDetails,
+     //update data with redux as we can not use old data for update api 
+     additionalDetails: {applicationDetails:{...nocFormData?.applicationDetails}, siteDetails:{...nocFormData?.siteDetails}}
+    },
+    documents:[]
+   }
     
    const docsArray = nocFormData?.documents?.documents?.documents || [];
      docsArray.forEach((doc) => {
@@ -102,8 +109,6 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const payload={
       Noc:{...updatedApplication}
     }
-
-    console.log("payload in mapTONOCPayload", payload);
 
     return payload;
   }

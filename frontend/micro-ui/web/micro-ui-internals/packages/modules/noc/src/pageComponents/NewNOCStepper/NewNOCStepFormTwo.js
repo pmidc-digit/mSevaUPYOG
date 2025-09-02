@@ -44,15 +44,27 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch};
 
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  let tenantId;
+
+  if(window.location.href.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
+
+  else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
+  
+  // console.log("tenantId here==>", tenantId);
 
   const onSubmit = (data) => {
     trigger();
     
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     
-    // Use updated data 
+    //Use updated data 
+    if (currentStepData?.apiData?.Noc?.[0]?.applicationNo) {
+      onGoNext();
+    } else {
     callCreateAPI({ ...currentStepData, siteDetails:{...data} });
+    }
+
+   // callCreateAPI({ ...currentStepData, siteDetails:{...data} });
   };
 
 
@@ -81,21 +93,19 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
         console.log("final Payload here==>", payload);
         
-        // const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
+        const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
     
-        // if (response?.ResponseInfo?.status === "successful") {
-        //   dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
-        //   onGoNext();
-        //   return { isSuccess: true, response };
-        // } else {
-        //   return { isSuccess: false, response };
-        // }
+        if (response?.ResponseInfo?.status === "successful") {
+          console.log("success :create api executed successfully !!!");
+          dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
+          onGoNext();
+          return { isSuccess: true, response };
+        } else {
+          console.log("error  : create api not executed successfully !!!");
+          return { isSuccess: false, response };
+        }
 
-        setTimeout(()=>{
-          console.log("we are inside setTime out");
-        }, 1000);
-
-        onGoNext();
+        // onGoNext();
   }
 
 

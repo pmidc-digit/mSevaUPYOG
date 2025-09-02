@@ -2,7 +2,9 @@ package org.egov.infra.indexer.consumer;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.egov.infra.indexer.service.IndexerService;
-import org.egov.infra.indexer.util.DLQHandler;
+import org.egov.infra.indexer.service.IndexerException;
+import org.egov.tracer.kafka.ErrorQueueProducer;
+import org.egov.tracer.model.ErrorQueueContract;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +31,13 @@ public class CoreIndexMessageListener implements MessageListener<String, String>
 	private IndexerService indexerService;
 
 	@Autowired
-	private DLQHandler dlqHandler;
+	private ErrorQueueProducer errorQueueProducer;
+
+	@Value("${tracer.errorsTopic}")
+	private String errorTopic;
+
+	@Value("${tracer.errorsPublish}")
+	private boolean publishErrors;
 
 	@Value("${egov.statelevel.tenantId}")
 	private String stateLevelTenantId;
@@ -56,7 +64,58 @@ public class CoreIndexMessageListener implements MessageListener<String, String>
 		try {
 			indexerService.esIndexer(data.topic(), data.value());
 		} catch (Exception e) {
-			dlqHandler.handleError(data.value(), e, "CoreIndexMessageListener", data.topic());
+			log.error("error while indexing: ", e);
+			
+			// Send directly to DLQ using tracer's ErrorQueueProducer
+			if (publishErrors) {
+				try {
+					// Extract actual index names from IndexerException if available
+					String targetIndexNames = "unknown";
+					if (e instanceof IndexerException) {
+						IndexerException indexerEx = (IndexerException) e;
+						targetIndexNames = indexerEx.getTargetIndexNames();
+					}
+					
+					String source = "egov-indexer -> " + targetIndexNames;
+					
+					log.info("DLQ Debug - Topic: {}, TargetIndexes: {}, Source: {}", data.topic(), targetIndexNames, source);
+					sendToDLQ(data.value(), e, correlationId, source);
+					log.info("Successfully sent failed message to DLQ topic: {} for indexes: {}", errorTopic, targetIndexNames);
+					// Don't re-throw - message has been handled and sent to DLQ
+					return;
+				} catch (Exception dlqException) {
+					log.error("Failed to send message to DLQ: ", dlqException);
+					// Fall back to re-throwing if DLQ fails
+				}
+			}
+			
+			throw new RuntimeException("Failed to index message - routing to DLQ", e); // Re-throw as fallback
+		}
+	}
+
+	/**
+	 * Send failed message to DLQ using tracer's ErrorQueueProducer
+	 */
+	private void sendToDLQ(String messageBody, Exception exception, String correlationId, String enhancedSource) {
+		try {
+			// Create ErrorQueueContract using the correct field names from tracer library
+			StackTraceElement[] elements = exception.getStackTrace();
+			
+			ErrorQueueContract errorContract = ErrorQueueContract.builder()
+					.id(UUID.randomUUID().toString())
+					.correlationId(correlationId)
+					.body(messageBody)
+					.source(enhancedSource)
+					.ts(new Date().getTime())
+					.exception(Arrays.asList(elements))
+					.message(exception.getMessage())
+					.build();
+			
+			// Send to DLQ using tracer's ErrorQueueProducer
+			errorQueueProducer.sendMessage(errorContract);
+		} catch (Exception e) {
+			log.error("Failed to create or send ErrorQueueContract to DLQ", e);
+			throw e;
 		}
 	}
 
@@ -77,5 +136,6 @@ public class CoreIndexMessageListener implements MessageListener<String, String>
 			}
 		}
 	}
+
 
 }

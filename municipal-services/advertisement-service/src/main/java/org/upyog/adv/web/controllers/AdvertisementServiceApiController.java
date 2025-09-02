@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,7 +61,7 @@ public class AdvertisementServiceApiController {
 
 	@RequestMapping(value = "/v1/_create", method = RequestMethod.POST)
 	public ResponseEntity<AdvertisementResponse> createBooking(
-			@ApiParam(value = "Details for theadvertisement booking time, payment and documents", required = true) @Valid @RequestBody BookingRequest bookingRequest) {
+			@ApiParam(value = "Details for theadvertisement booking time, payment and documents", required = true) @Valid @RequestBody BookingRequest bookingRequest) throws JsonProcessingException {
 		log.info("bookingRequest : {}" , bookingRequest);
 		log.info("bookingRequest.isDraftApplication() {} ", bookingRequest.isDraftApplication());
 		validationService.validateRequest(bookingRequest);
@@ -151,7 +152,7 @@ public class AdvertisementServiceApiController {
 	 // Gets the demand 
 	 @RequestMapping(value = "/v1/_estimate", method = RequestMethod.POST)
 		public ResponseEntity<AdvertisementDemandEstimationResponse> v1GetEstimateDemand(
-				@ApiParam(value = "Details for the advertisement booking for demand estimation", required = true) @Valid @RequestBody AdvertisementDemandEstimationCriteria estimationCriteria) {
+				@ApiParam(value = "Details for the advertisement booking for demand estimation", required = true) @Valid @RequestBody AdvertisementDemandEstimationCriteria estimationCriteria) throws JsonProcessingException {
 			List<Demand> demands = demandService.getDemand(estimationCriteria);
 			ResponseInfo info = BookingUtil.createReponseInfo(estimationCriteria.getRequestInfo(), BookingConstants.ADVERTISEMENT_DEMAND_ESTIMATION,
 					StatusEnum.SUCCESSFUL);

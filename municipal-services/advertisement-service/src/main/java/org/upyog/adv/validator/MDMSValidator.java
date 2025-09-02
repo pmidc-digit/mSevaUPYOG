@@ -33,8 +33,8 @@ public class MDMSValidator {
 		 * MdmsUtil.setMDMSDataMap(masterData); }
 		 */
 		String[] masterArray = { BookingConstants.ADD_TYPE,
-				BookingConstants.DOCUMENTS,
-				BookingConstants.FACE_AREA, BookingConstants.LOCATION};
+				BookingConstants.ADV_TAX_AMOUNT,
+				BookingConstants.ADVERTISEMENT, BookingConstants.LOCATION};
 		
 		log.info("Validating master data from MDMS for : " + bookingRequest.getBookingApplication().getBookingNo());
 

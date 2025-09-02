@@ -3,18 +3,20 @@ package org.upyog.adv.service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.upyog.adv.config.BookingConfiguration;
 import org.upyog.adv.constants.BookingConstants;
 import org.upyog.adv.util.MdmsUtil;
+import org.upyog.adv.web.models.Advertisements;
 import org.upyog.adv.web.models.BookingRequest;
+
 import org.upyog.adv.web.models.CalculationType;
 import org.upyog.adv.web.models.CartDetail;
 import org.upyog.adv.web.models.billing.DemandDetail;
@@ -38,13 +40,14 @@ public class CalculationService {
 	// Returns Demand detail: 
 	//Gets the headMasters from the billing service and calculation type from mdms
 	//Calls processCalculationForDemandGeneration to get the demand detail
-	public List<DemandDetail> calculateDemand(BookingRequest bookingRequest, List<String> taxRateCodes) { 
+	public List<DemandDetail> calculateDemand(BookingRequest bookingRequest, List<String> taxRateCodes) throws JsonProcessingException {
 
 		String tenantId = bookingRequest.getBookingApplication().getTenantId().split("\\.")[0];
 		
 	List<TaxHeadMaster> headMasters = mdmsUtil.getTaxHeadMasterList(bookingRequest.getRequestInfo(), tenantId , BookingConstants.BILLING_SERVICE);
 
-		List<CalculationType> calculationTypes = mdmsUtil.getcalculationType(bookingRequest.getRequestInfo(), tenantId , config.getModuleName(), bookingRequest.getBookingApplication().getCartDetails().get(0) );
+		List<Advertisements> calculationTypes = mdmsUtil.getAdvertisements(bookingRequest.getRequestInfo(), tenantId , config.getModuleName(), bookingRequest.getBookingApplication().getCartDetails().get(0) );
+
 
 
 		log.info("calculationTypes " + calculationTypes);
@@ -60,7 +63,7 @@ public class CalculationService {
 	//Demand is generated using billing service, using the taxHeadCode and feeType
 	//GST,SGST tax  codes are stored to calculate final amount
 	private List<DemandDetail> processCalculationForDemandGeneration(String tenantId,
-			List<CalculationType> calculationTypes, BookingRequest bookingRequest, List<TaxHeadMaster> headMasters, List<String> taxRateCodes) {
+			List<Advertisements> advertisements, BookingRequest bookingRequest, List<TaxHeadMaster> headMasters, List<String> taxRateCodes) {
 
 		Map<String, Long> advBookingDaysMap = bookingRequest.getBookingApplication().getCartDetails()
 				.stream().collect(Collectors.groupingBy(CartDetail::getAddType, Collectors.counting()));
@@ -75,24 +78,47 @@ public class CalculationService {
 		log.info("tax head codes  : " + taxHeadCodes);
 
 		//Demand for which tax is applicable is stored
-		List<CalculationType> taxableFeeType = new ArrayList<>();
-		
-		BigDecimal advBookingDays = new BigDecimal(advBookingDaysMap.get(bookingRequest.getBookingApplication().getCartDetails().get(0).getAddType()));
-		
-		for (CalculationType type : calculationTypes) {
-			if (taxHeadCodes.contains(type.getFeeType())) {
-				
+		List<Advertisements> taxableFeeType = new ArrayList<>();
+
+		CartDetail cartDetail = bookingRequest.getBookingApplication().getCartDetails().get(0);
+		BigDecimal advBookingDays = new BigDecimal(advBookingDaysMap.get(cartDetail.getAddType()));
+
+
+//		BigDecimal advBookingDays = new BigDecimal(advBookingDaysMap.get(bookingRequest.getBookingApplication().getCartDetails().get(0).getAddType()));
+		String advertisementId = cartDetail.getAdvertisementId();
+
+		for (Advertisements type : advertisements) {
+			if (taxHeadCodes.contains(type.getFeeType()) && type.getId().equals(Integer.parseInt(advertisementId))) {
 				if (type.isTaxApplicable()) {
-					//Add taxable fee 
+					//Add taxable fee
 					taxableFeeType.add(type);
 				} else if (!taxRateCodes.contains(type.getFeeType())) {
 					DemandDetail data =  DemandDetail.builder().taxAmount(type.getAmount())
-					.taxHeadMasterCode(type.getFeeType()).tenantId(tenantId).build();
+							.taxHeadMasterCode(type.getFeeType()).tenantId(tenantId).build();
 					//Add fixed fee for which tax is not applicable
 					demandDetails.add(data);
 				}
 			}
 		}
+
+
+
+
+
+//		for (Advertisements adv : advertisements) {
+//			if (adv.getId().equals(Integer.parseInt(advertisementId))) {
+//
+//					DemandDetail data =  DemandDetail.builder()
+//							.taxAmount(adv.getAmount())
+//							.tenantId(tenantId)
+////							.collectionAmount(adv.getAmount())
+//							.taxHeadMasterCode(adv.getFeeType()).tenantId(tenantId).build();
+//					//Add fixed fee for which tax is not applicable
+//
+//					demandDetails.add(data);
+//				}
+////			}
+//		}
 		
 		log.info("taxable fee type : " + taxableFeeType);
 
@@ -110,10 +136,10 @@ public class CalculationService {
 
 		log.info("Total Taxable amount for the booking : " + totalTaxableAmount);
 
-		for (CalculationType type : calculationTypes) {
+		for (Advertisements type : advertisements) {
 		    if (taxRateCodes.stream().anyMatch(code -> code.trim().equalsIgnoreCase(type.getFeeType().trim()))) {
 		        DemandDetail demandDetail = DemandDetail.builder()
-		                .taxAmount(calculateAmount(totalTaxableAmount, type.getRate()))
+		                .taxAmount(calculateAmount(totalTaxableAmount, BigDecimal.valueOf(18)))
 		                .taxHeadMasterCode(type.getFeeType()).tenantId(tenantId).build();
 		        demandDetails.add(demandDetail);
 		    }

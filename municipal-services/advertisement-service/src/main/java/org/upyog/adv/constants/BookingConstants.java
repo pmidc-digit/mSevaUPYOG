@@ -13,6 +13,7 @@ public class BookingConstants {
 	public static final String FACE_AREA = "FaceArea";
 
 	public static final String LOCATION = "Location";
+	public static final String SUBMIT = "SUBMIT";
 
 	public static final String DOCUMENTS = "Documents";
 
@@ -47,6 +48,7 @@ public class BookingConstants {
 	public static final String ADV_CALCULATION_TYPE = "CalculationType";
 
 	public static final String ADV_TAX_AMOUNT = "TaxAmount";
+	public static final String ADVERTISEMENT = "Advertisements";
 
 	public static final String ADVERTISEMENT_DEMAND_ESTIMATION = "Advertisement booking amount estimation details fetched sussessfully";
 

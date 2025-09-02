@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.egov.common.contract.request.User;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class DemandService {
 	 * @return
 	 */
 
-	public List<Demand> createDemand(BookingRequest bookingRequest, Object mdmsData, boolean generateDemand) {
+	public List<Demand> createDemand(BookingRequest bookingRequest, Object mdmsData, boolean generateDemand) throws JsonProcessingException {
 		String tenantId = bookingRequest.getBookingApplication().getTenantId();
 		// String consumerCode = "ADV-8e9d3352-1014-4ed2-97c0-24454ced19c1";
 		String consumerCode = bookingRequest.getBookingApplication().getBookingNo();
@@ -99,7 +100,7 @@ public class DemandService {
 	
 	
 	//This gets the demand for request without getting booking number by calling teh create demand method
-	public List<Demand> getDemand(AdvertisementDemandEstimationCriteria estimationCriteria){
+	public List<Demand> getDemand(AdvertisementDemandEstimationCriteria estimationCriteria) throws JsonProcessingException {
 		log.info("Getting demand for request without booking no");
 
 		

@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.egov.common.contract.request.RequestInfo;
 import org.upyog.adv.enums.BookingStatusEnum;
 import org.upyog.adv.web.models.AdvertisementSearchCriteria;
@@ -17,7 +18,7 @@ import lombok.NonNull;
 
 public interface BookingService {
 
-	BookingDetail createBooking(@Valid BookingRequest bookingRequest);
+	BookingDetail createBooking(@Valid BookingRequest bookingRequest) throws JsonProcessingException;
 	
 	List<AdvertisementSlotAvailabilityDetail> checkAdvertisementSlotAvailability(AdvertisementSlotSearchCriteria criteria, RequestInfo requestInfo) ;
 

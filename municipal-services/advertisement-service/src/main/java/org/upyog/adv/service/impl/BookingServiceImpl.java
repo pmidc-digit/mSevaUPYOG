@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.tracer.model.CustomException;
@@ -71,7 +72,7 @@ public class BookingServiceImpl implements BookingService {
 	private WorkflowIntegrator workflowIntegrator;
 
 	@Override
-	public BookingDetail createBooking(@Valid BookingRequest bookingRequest) {
+	public BookingDetail createBooking(@Valid BookingRequest bookingRequest) throws JsonProcessingException {
 		log.info("Create advertisement booking for user : " + bookingRequest.getRequestInfo().getUserInfo().getId());
 		String uuid = bookingRequest.getRequestInfo().getUserInfo().getUuid();
 		// TODO move to util calss 
@@ -104,9 +105,6 @@ public class BookingServiceImpl implements BookingService {
 		} catch (Exception ex) {
 			log.error("Workflow initiation failed for booking {}", bookingRequest.getBookingApplication().getBookingNo(), ex);
 		}
-
-		demandService.createDemand(bookingRequest, mdmsData, true);
-
 		// 4.Persist the request using persister service
 		bookingRepository.saveBooking(bookingRequest);
 
@@ -402,9 +400,17 @@ public class BookingServiceImpl implements BookingService {
 					&& advertisementBookingRequest.getBookingApplication().getWorkflow() != null
 					&& StringUtils.isNotBlank(
 							advertisementBookingRequest.getBookingApplication().getWorkflow().getAction())) {
+
 				String nextStatus = workflowIntegrator.transition(advertisementBookingRequest.getRequestInfo(),
 						advertisementBookingRequest.getBookingApplication(),
 						advertisementBookingRequest.getBookingApplication().getWorkflow().getAction());
+				if(advertisementBookingRequest.getBookingApplication().getWorkflow().getAction().equalsIgnoreCase(BookingConstants.SUBMIT)){
+
+					Object mdmsData = mdmsUtil.mDMSCall(advertisementBookingRequest.getRequestInfo(), advertisementBookingRequest.getBookingApplication().getTenantId());
+					demandService.createDemand(advertisementBookingRequest, mdmsData, true);
+
+				}
+
 				if (StringUtils.isNotBlank(nextStatus)) {
 					advertisementBookingRequest.getBookingApplication().setBookingStatus(nextStatus);
 					if (advertisementBookingRequest.getBookingApplication().getCartDetails() != null) {

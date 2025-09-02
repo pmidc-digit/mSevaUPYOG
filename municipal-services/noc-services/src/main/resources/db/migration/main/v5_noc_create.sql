@@ -8,12 +8,12 @@ CREATE TABLE public.eg_noc(
     lastmodifiedby character varying(256),
     createdtime bigint,
     lastmodifiedtime bigint,
-    nocNo character varying(64) DEFAULT NULL,
+    nocno character varying(64) DEFAULT NULL,
     applicationType character varying(64) NOT NULL,
-    nocType character varying(64) NOT NULL,
+    noctype character varying(64) NOT NULL,
     accountid character varying(256) DEFAULT NULL,
-    source character varying(64) NOT NULL,
---    sourcerefid character varying(256) NOT NULL,
+
+
     applicationstatus character varying(64) NOT NULL,
     CONSTRAINT pk_eg_noc PRIMARY KEY (id)
 );
@@ -29,22 +29,21 @@ CREATE TABLE public.eg_noc_auditdetails(
     lastmodifiedby character varying(256),
     createdtime bigint,
     lastmodifiedtime bigint,
-    nocNo character varying(64) DEFAULT NULL,
+    nocno character varying(64) DEFAULT NULL,
     applicationType character varying(64) NOT NULL,
-    nocType character varying(64) NOT NULL,
+    noctype character varying(64) NOT NULL,
     accountid character varying(256) DEFAULT NULL,
-    source character varying(64) NOT NULL,
---    sourcerefid character varying(256) NOT NULL,
+
     applicationstatus character varying(64) NOT NULL
 );
 
 CREATE TABLE public.eg_noc_document(
-    id character varying(64) NOT NULL,
+    uuid character varying(64) NOT NULL,
     documenttype character varying(64),
-    filestoreid character varying(64),
+    documentattachment character varying(64),
     documentuid character varying(64),
     nocid character varying(64),
-    additionaldetails jsonb,
+
     createdby character varying(64),
     lastmodifiedby character varying(64),
     createdtime bigint,

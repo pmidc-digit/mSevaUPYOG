@@ -36,6 +36,8 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     enabled: true,
   });
 
+  console.log(subOccupancy, "OCCUPANCY");
+
   useEffect(() => {
     if (!isMdmsLoading && formData?.data?.occupancyType) {
       const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || [];
@@ -250,7 +252,16 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
   }
 
   if (isMdmsLoading) return <Loader />;
-
+  function getBlockSubOccupancy(index) {
+    let subOccupancyString = "";
+    let returnValueArray = [];
+    subOccupancyObject &&
+      subOccupancyObject[`Block_${index + 1}`] &&
+      subOccupancyObject[`Block_${index + 1}`].map((ob) => {
+        returnValueArray.push(`${t(stringReplaceAll(ob?.i18nKey?.toUpperCase(), "-", "_"))}`);
+      });
+    return returnValueArray?.length ? returnValueArray.join(", ") : "NA";
+  }
   return (
     <React.Fragment>
       <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
@@ -363,56 +374,48 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
           <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
           {data?.planDetail?.blocks?.map((block, index) => (
             <div key={index} style={{ marginTop: "20px" }}>
-              <CardSubHeader style={{ fontSize: "18px" }}>
-                {t("BPA_BLOCK_SUBHEADER")} {index + 1}
-              </CardSubHeader>
-              {/* {!(checkingFlow === "OCBPA") ? (
-                <CardSectionHeader style={{ fontWeight: "normal" }} className="card-label-smaller">
-                  {t("BPA_OCCUPANCY_LABEL")}
-                </CardSectionHeader>
-              ) : null} */}
-              {!(checkingFlow === "OCBPA") ? (
-                <CardSectionHeader style={{ fontWeight: "normal" }} className="card-label-smaller">
-                  {t("BPA_SUB_OCCUPANCY_LABEL")}
-                </CardSectionHeader>
-              ) : null}
+   
 
-              {!(checkingFlow === "OCBPA") ? (
-                <div className="tag-container">
-                  {subOccupancyObject[`Block_${block.number}`] &&
-                    subOccupancyObject[`Block_${block.number}`].length > 0 &&
-                    subOccupancyObject[`Block_${block.number}`]?.map((value, index) => <RemoveableTag key={index} text={`${t(value["i18nKey"])}`} />)}
-                </div>
-              ) : null}
 
-              <div style={{ marginTop: "20px" }}>
-                {checkingFlow === "OCBPA" ? (
-                  <StatusTable>
-                    <Row className="border-none" label={`${t("BPA_SUB_OCCUPANCY_LABEL")}`} text={getSubOccupancyValues(index)}></Row>
-                  </StatusTable>
-                ) : null}
-                <div style={{ overflowX: "scroll" }}>
-                  <Table
-                     className="customTable table-fixed-first-column table-border-style"
-                    t={t}
-                    disableSort={false}
-                    autoSort={true}
-                    manualPagination={false}
-                    isPaginationRequired={false}
-                    //globalSearch={filterValue}
-                    initSortId="S N "
-                    //onSearch={onSearch}
-                    //data={[{Floor:"ground floor",Level:1,Occupancy:"self",BuildupArea:440,FloorArea:400,CarpetArea:380,key:"ground floor"},{Floor:"first floor",Level:1,Occupancy:"self",BuildupArea:450,FloorArea:410,CarpetArea:390,key:"first floor"},{Floor:"second floor",Level:1,Occupancy:"self",BuildupArea:400,FloorArea:350,CarpetArea:300,key:"second floor"}]}
-                    data={getFloorData(block)}
-                    columns={tableColumns}
-                    getCellProps={(cellInfo) => {
-                      return {
-                        style: {},
-                      };
-                    }}
-                  />
-                </div>
-              </div>
+
+
+
+              <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+              {t("BPA_BLOCK_SUBHEADER")} {index + 1}
+            </CardSubHeader>
+            <StatusTable>
+              <Row
+                className="border-none"
+                textStyle={{ wordBreak: "break-word" }}
+                label={t("BPA_SUB_OCCUPANCY_LABEL")}
+                text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
+              ></Row>
+            </StatusTable>
+            <div style={{ overflow: "scroll" }}>
+              <Table
+                className="customTable table-fixed-first-column table-border-style"
+                t={t}
+                disableSort={false}
+                autoSort={true}
+                manualPagination={false}
+                isPaginationRequired={false}
+                initSortId="S N "
+                data={getFloorData(block)}
+                columns={tableColumns}
+                getCellProps={(cellInfo) => {
+                  return {
+                    style: {},
+                  };
+                }}
+              />
+            </div>
+
+
+
+
+
+
+     
             </div>
           ))}
           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />

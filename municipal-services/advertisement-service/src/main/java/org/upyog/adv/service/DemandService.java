@@ -75,7 +75,7 @@ public class DemandService {
 																								
 				.collect(Collectors.toList());
 
-		List<DemandDetail> demandDetails = calculationService.calculateDemand(bookingRequest, taxRateCodes);
+		List<DemandDetail> demandDetails = calculationService.calculateDemand(bookingRequest, taxRateCodes, mdmsData);
 
 		LocalDate maxdate = getMaxBookingDate(bookingDetail);
 

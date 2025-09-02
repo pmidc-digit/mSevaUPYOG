@@ -14,11 +14,8 @@ import org.springframework.stereotype.Service;
 import org.upyog.adv.config.BookingConfiguration;
 import org.upyog.adv.constants.BookingConstants;
 import org.upyog.adv.util.MdmsUtil;
-import org.upyog.adv.web.models.Advertisements;
-import org.upyog.adv.web.models.BookingRequest;
+import org.upyog.adv.web.models.*;
 
-import org.upyog.adv.web.models.CalculationType;
-import org.upyog.adv.web.models.CartDetail;
 import org.upyog.adv.web.models.billing.DemandDetail;
 import org.upyog.adv.web.models.billing.TaxHeadMaster;
 
@@ -35,15 +32,21 @@ public class CalculationService {
 
 	/**
 	 * @param bookingRequest
+	 * @param mdmsData
 	 * @return
 	 */
 	// Returns Demand detail: 
 	//Gets the headMasters from the billing service and calculation type from mdms
 	//Calls processCalculationForDemandGeneration to get the demand detail
-	public List<DemandDetail> calculateDemand(BookingRequest bookingRequest, List<String> taxRateCodes) throws JsonProcessingException {
+	public List<DemandDetail> calculateDemand(BookingRequest bookingRequest, List<String> taxRateCodes, Object mdmsData) throws JsonProcessingException {
 
 		String tenantId = bookingRequest.getBookingApplication().getTenantId().split("\\.")[0];
-		
+		Map<String, Object> mdmsDataMap = (Map<String, Object>) mdmsData;
+
+
+		List<Map<String, Object>> taxRateList = (List<Map<String, Object>>) ((Map<String, Object>) ((Map<String, Object>) mdmsDataMap
+				.get("MdmsRes")).get("Advertisement")).get("TaxAmount");
+
 	List<TaxHeadMaster> headMasters = mdmsUtil.getTaxHeadMasterList(bookingRequest.getRequestInfo(), tenantId , BookingConstants.BILLING_SERVICE);
 
 		List<Advertisements> calculationTypes = mdmsUtil.getAdvertisements(bookingRequest.getRequestInfo(), tenantId , config.getModuleName(), bookingRequest.getBookingApplication().getCartDetails().get(0) );
@@ -53,24 +56,19 @@ public class CalculationService {
 		log.info("calculationTypes " + calculationTypes);
 
 		List<DemandDetail> demandDetails = processCalculationForDemandGeneration(tenantId, calculationTypes,
-				bookingRequest, headMasters, taxRateCodes);
+				bookingRequest, headMasters, taxRateCodes, taxRateList);
 
 		return demandDetails;
 
 	}
 
-	 //Returns Demand detail:
-	//Demand is generated using billing service, using the taxHeadCode and feeType
-	//GST,SGST tax  codes are stored to calculate final amount
+
 	private List<DemandDetail> processCalculationForDemandGeneration(String tenantId,
-			List<Advertisements> advertisements, BookingRequest bookingRequest, List<TaxHeadMaster> headMasters, List<String> taxRateCodes) {
+                                                                     List<Advertisements> advertisements, BookingRequest bookingRequest, List<TaxHeadMaster> headMasters, List<String> taxRateCodes, Object taxRateList) {
 
 		Map<String, Long> advBookingDaysMap = bookingRequest.getBookingApplication().getCartDetails()
 				.stream().collect(Collectors.groupingBy(CartDetail::getAddType, Collectors.counting()));
-		//GST,SGST tax  codes are stored to calculate final amount
-//		List<String> taxCodes = Arrays.asList(config.getApplicableTaxes().split(","));
-//		log.info("tax applicable on booking  : " + taxCodes);
-		//Demand will be generated using billing service for booking
+
 		final List<DemandDetail> demandDetails = new LinkedList<>();
 		
         List<String> taxHeadCodes = headMasters.stream().map(head -> head.getCode()).collect(Collectors.toList());
@@ -103,22 +101,6 @@ public class CalculationService {
 
 
 
-
-
-//		for (Advertisements adv : advertisements) {
-//			if (adv.getId().equals(Integer.parseInt(advertisementId))) {
-//
-//					DemandDetail data =  DemandDetail.builder()
-//							.taxAmount(adv.getAmount())
-//							.tenantId(tenantId)
-////							.collectionAmount(adv.getAmount())
-//							.taxHeadMasterCode(adv.getFeeType()).tenantId(tenantId).build();
-//					//Add fixed fee for which tax is not applicable
-//
-//					demandDetails.add(data);
-//				}
-////			}
-//		}
 		
 		log.info("taxable fee type : " + taxableFeeType);
 
@@ -136,14 +118,27 @@ public class CalculationService {
 
 		log.info("Total Taxable amount for the booking : " + totalTaxableAmount);
 
-		for (Advertisements type : advertisements) {
-		    if (taxRateCodes.stream().anyMatch(code -> code.trim().equalsIgnoreCase(type.getFeeType().trim()))) {
-		        DemandDetail demandDetail = DemandDetail.builder()
-		                .taxAmount(calculateAmount(totalTaxableAmount, BigDecimal.valueOf(18)))
-		                .taxHeadMasterCode(type.getFeeType()).tenantId(tenantId).build();
-		        demandDetails.add(demandDetail);
-		    }
-		}
+		List<Map<String, Object>> taxRateListMap = (List<Map<String, Object>>)taxRateList;
+
+
+		taxRateListMap.forEach(rateMap -> {
+			// Extract values from map
+			String feeType = (String) rateMap.get("feeType");
+			BigDecimal rate = new BigDecimal(rateMap.get("rate").toString());
+
+			// Calculate tax amount
+			BigDecimal taxAmount = calculateAmount(totalTaxableAmount, rate);
+
+			// Build DemandDetail object
+			DemandDetail demandDetail = DemandDetail.builder()
+					.taxAmount(taxAmount)
+					.taxHeadMasterCode(feeType) // use feeType here
+					.tenantId(tenantId)         // pass tenantId
+					.build();
+
+			demandDetails.add(demandDetail);
+		});
+
 
 
 		return demandDetails;

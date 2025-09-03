@@ -8,7 +8,7 @@ const OBPSResponse = (props) => {
   const { state } = props.location;
   const { t } = useTranslation();
   // const tenantId = Digit.ULBService.getCurrentTenantId();
-  const tenantId = localStorage.getItem("CITIZEN.CITY")
+  const tenantId = window.location.href.includes("employee")? localStorage.getItem("tenant-id") : localStorage.getItem("CITIZEN.CITY")
   const bpaData = state?.data?.BPA?.[0];
   const [applicationData, setApplicationData] = useState({});
   const [isLoader, setIsLoader] = useState(true);
@@ -38,7 +38,7 @@ const OBPSResponse = (props) => {
     });
 
     console.log(fetchBill, "FETCHEDBILL");
-    if (bpaResponse?.BPA?.[0]?.status == "APPROVED" && fetchBill?.Bill[0] && fetchBill?.Bill[0]?.totalAmount != 0) setSanctionFee("_SAN_FEE");
+    if (bpaResponse?.BPA?.[0]?.status == "APPROVED" && fetchBill?.Bill?.[0] && fetchBill?.Bill?.[0]?.totalAmount != 0) setSanctionFee("_SAN_FEE");
     setIsLoader(false);
     setApplicationData(bpaResponse?.BPA?.[0]);
     setBillData(fetchBill?.Bill);

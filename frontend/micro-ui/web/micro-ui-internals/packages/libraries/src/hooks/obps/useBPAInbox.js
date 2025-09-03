@@ -23,7 +23,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     tenantId,
     processSearchCriteria: {
       assignee: assignee === "ASSIGNED_TO_ME" ? user?.info?.uuid : "",
-      moduleName: moduleName !== "BPAREG" ? "bpa-services" : "BPAREG",
+      moduleName: moduleName !== "BPAREG" ? "bpa-service" : "BPAREG",
       businessService:
         moduleName !== "BPAREG"
           ? businessService
@@ -80,7 +80,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           sla: application?.businessObject?.status.match(/^(APPROVED)$/)
             ? "CS_NA"
             : Math.round(application.ProcessInstance?.businesssServiceSla / (24 * 60 * 60 * 1000)),
-          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || "ASSIGNED_TO_ALL",
+          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || "DOCUMENT_VERIFIER",
         })),
         totalCount: data.totalCount,
         nearingSlaCount: data?.nearingSlaCount,

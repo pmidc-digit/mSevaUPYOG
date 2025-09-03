@@ -44,6 +44,7 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
   // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
   const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
+  const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
 
   // update session only if setParams exists and we need to write the timestamp
   useEffect(() => {
@@ -244,10 +245,14 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
             ))}
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+          {!isArchitectDeclared && <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
             <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
             <SubmitBar label={t("BPA_UPLOAD")} onSubmit={uploadSelfDeclaration} disabled={isUploading || isFileUploaded} />
-          </div>
+          </div>}
+          
+          {isArchitectDeclared && <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>
+            <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
+          </div>}
         </div>
       </Modal>
     </div>

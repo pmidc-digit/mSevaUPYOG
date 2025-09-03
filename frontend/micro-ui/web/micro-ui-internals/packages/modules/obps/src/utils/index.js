@@ -555,8 +555,10 @@ export const convertToStakeholderObject = (data) => {
         tradeLicenseDetail: {
           ...data?.result?.Licenses[0]?.tradeLicenseDetail,
           additionalDetail: {
+            qualificationType: data?.formData?.LicneseType?.qualificationType?.name,
             counsilForArchNo: data?.formData?.LicneseType?.ArchitectNo,
             isSelfCertificationRequired: data?.formData?.LicneseType?.selfCertification,
+            Ulb: data?.formData?.LicneseDetails?.Ulb,
           },
           tradeUnits: [
             {
@@ -782,16 +784,23 @@ export const convertEpochToDate = (dateEpoch) => {
   }
 };
 
+// export const getBusinessServices = (businessService, status) => {
+//   let billBusinessService = "BPA.NC_APP_FEE";
+//   if (businessService === "BPA_LOW") {
+//     billBusinessService = "BPA.LOW_RISK_PERMIT_FEE";
+//   } else if (businessService === "BPA") {
+//     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
+//   } else if (businessService === "BPA_OC") {
+//     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_OC_APP_FEE" : "BPA.NC_OC_SAN_FEE";
+//   }
+//   return billBusinessService;
+// };
+
+
 export const getBusinessServices = (businessService, status) => {
-  let billBusinessService = "BPA.NC_APP_FEE";
-  if (businessService === "BPA_LOW") {
-    billBusinessService = "BPA.LOW_RISK_PERMIT_FEE";
-  } else if (businessService === "BPA") {
-    billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
-  } else if (businessService === "BPA_OC") {
-    billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_OC_APP_FEE" : "BPA.NC_OC_SAN_FEE";
-  }
-  return billBusinessService;
+  // let billBusinessService = "BPA.NC_APP_FEE";
+  
+  return "BPA.NC_APP_FEE";
 };
 
 export const downloadPdf = (blob, fileName) => {
@@ -923,6 +932,7 @@ export const getOCEDCRDetails = async (edcrNumber, tenantId) => {
 
 export const ocScrutinyDetailsData = async (edcrNumber, tenantId) => {
   const scrutinyDetails = await getOCEDCRDetails(edcrNumber, tenantId);
+  console.log(scrutinyDetails, "OOOO*****");
   if (!scrutinyDetails?.edcrDetail?.[0]?.edcrNumber) {
     return { type: "ERROR", message: scrutinyDetails ? scrutinyDetails : "BPA_NO_RECORD_FOUND" };
   }

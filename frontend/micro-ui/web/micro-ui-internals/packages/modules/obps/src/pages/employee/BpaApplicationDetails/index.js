@@ -13,7 +13,8 @@ const BpaApplicationDetail = () => {
 
   const { id } = useParams();
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem('tenant-id')
   const [showToast, setShowToast] = useState(null);
   const [canSubmit, setSubmitValve] = useState(false);
   const defaultValues = {};
@@ -27,13 +28,15 @@ const BpaApplicationDetail = () => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   const { isLoading: bpaDocsLoading, data: bpaDocs } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["DocTypeMapping"]);
   const [viewTimeline, setViewTimeline]=useState(false);
-  let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(stateId, []);
+  let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(tenantId, []);
 
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateId, "BPA", ["RiskTypeComputation"]);
 
   const { data = {}, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
 
-
+  console.log("DATA DATA", data);
+const application = data?.BPA?.[0] || {};
+console.log(application, "YYY");
   let businessService = [];
 
   if(data?.applicationData?.businessService === "BPA_LOW")
@@ -79,9 +82,9 @@ const BpaApplicationDetail = () => {
        response = { filestoreIds: [payments?.fileStoreId] };      
     }
     else{
-       response = await Digit.PaymentService.generatePdf(stateId, { Payments: [{...payments}] }, "bpa-receipt");
+       response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{...payments}] }, "bpa-receipt");
     }    
-    const fileStore = await Digit.PaymentService.printReciept(stateId, { fileStoreIds: response.filestoreIds[0] });
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
 
@@ -398,6 +401,7 @@ const BpaApplicationDetail = () => {
         cardClassName={"employeeCard-override"}
       />}
       </div>
+     
     </Fragment>
   )
 };

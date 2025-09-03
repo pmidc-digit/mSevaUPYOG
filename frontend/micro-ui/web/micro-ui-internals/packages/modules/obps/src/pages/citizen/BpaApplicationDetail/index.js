@@ -1195,6 +1195,7 @@ import {
   CardText,
   CardSubHeader,
   CardLabel,
+  OTPInput
 } from "@mseva/digit-ui-react-components"
 import React, { Fragment, useEffect, useState } from "react"
 import { useParams, useHistory } from "react-router-dom"
@@ -1280,6 +1281,7 @@ const BpaApplicationDetail = () => {
     setAgree(!agree)
   }
 
+  const state = Digit.ULBService.getStateId()
   const [showTermsPopup, setShowTermsPopup] = useState(false)
   const [showMobileInput, setShowMobileInput] = useState(false)
   const [mobileNumber, setMobileNumber] = useState(citizenmobilenumber || "")
@@ -1287,7 +1289,9 @@ const BpaApplicationDetail = () => {
   const [otp, setOTP] = useState("")
   const [isOTPVerified, setIsOTPVerified] = useState(false)
   const [otpError, setOTPError] = useState("")
+  const [otpSuccess, setOTPSuccess] = useState("");
   const [otpVerifiedTimestamp, setOTPVerifiedTimestamp] = useState(null)
+  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
 
   const handleTermsLinkClick = (e) => {
     e.preventDefault()
@@ -1304,7 +1308,9 @@ const BpaApplicationDetail = () => {
     return (
       <div>
         {t("I_AGREE_TO_BELOW_UNDERTAKING")}
-        <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />
+        <br />
+        {!isCitizenDeclared && <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
+        {isCitizenDeclared && <div  onClick={handleTermsLinkClick} style={{color: "green"}} >{t("VIEW_DECLARATION")} </div>}
       </div>
     )
   }
@@ -1351,7 +1357,7 @@ const BpaApplicationDetail = () => {
       const response = await Digit.UserService.authenticate(requestData)
       if (response.ResponseInfo.status === "Access Token generated successfully") {
         setIsOTPVerified(true)
-        setOTPError(t("VERIFIED"))
+        setOTPSuccess(t("VERIFIED"))
         const currentTimestamp = new Date()
         setOTPVerifiedTimestamp(currentTimestamp)
         sessionStorage.setItem("otpVerifiedTimestampcitizen", currentTimestamp.toISOString())
@@ -1460,7 +1466,6 @@ const BpaApplicationDetail = () => {
       currentDate.getFullYear() + "-" + (currentDate.getMonth() + 1) + "-" + currentDate.getDate(),
     )
     const requestData = { ...data?.applicationData, edcrDetail: [{ ...data?.edcrDetails }] }
-    const state = Digit.ULBService.getStateId()
 
     let count = 0
 
@@ -1543,7 +1548,11 @@ const BpaApplicationDetail = () => {
   }
 
   function onActionSelect(action) {
-    const path = data?.applicationData?.businessService == "BPA_OC" ? "ocbpa" : "bpa"
+    const path = data?.applicationData?.businessService == "BPA_OC" ? "ocbpa" : "bpa";
+    // if(!agree || !isCitizenDeclared || !isTocAccepted){
+    //   alert("Please Accept Terms, Upload and Accept Decleration");
+    //   return 
+    // }
     if (action === "FORWARD") {
       history.replace(
         `/digit-ui/citizen/obps/sendbacktocitizen/ocbpa/${data?.applicationData?.tenantId}/${data?.applicationData?.applicationNo}/check`,
@@ -1664,6 +1673,7 @@ const submitAction = (workflow) => {
   setIsEnableLoader(true);
 
   const app = data?.applicationData || {};
+  app.riskType = app?.additionalDetails?.riskType
   const docs = Array.isArray(app.documents) ? app.documents : [];
 
   // Keep one per documentType; prefer entries that have fileStoreId
@@ -1929,6 +1939,7 @@ const submitAction = (workflow) => {
 
   return (
     <Fragment>
+      <div style={{paddingBottom: "50px"}}>
       <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
         <Header styles={{ fontSize: "32px", marginLeft: "10px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
         <div>
@@ -2126,7 +2137,7 @@ const submitAction = (workflow) => {
                         : null}
 
                       {/* to get Document values */}
-                      {detail?.isDocumentDetails && detail?.additionalDetails?.obpsDocuments?.[0]?.values && (
+                      {detail?.isDocumentDetails && (detail?.additionalDetails?.obpsDocuments?.[0]?.values.length>0 ? (
                         <div style={{ marginTop: "-8px" }}>
                           {
                             <DocumentsPreview
@@ -2143,7 +2154,25 @@ const submitAction = (workflow) => {
                             />
                           }
                         </div>
-                      )}
+                      ):
+                      (
+                        <div style={{ marginTop: "-8px" }}>
+                          {
+                            <DocumentsPreview
+                              documents={getOrderDocuments(data?.applicationData?.documents)}
+                              svgStyles={{}}
+                              isSendBackFlow={false}
+                              isHrLine={true}
+                              titleStyles={{
+                                fontSize: "20px",
+                                lineHeight: "24px",
+                                fontWeight: 700,
+                                marginBottom: "10px",
+                              }}
+                            />
+                          }
+                        </div>
+                      ))}
 
                       {/* to get FieldInspection values */}
                       {detail?.isFieldInspection &&
@@ -2417,7 +2446,7 @@ const submitAction = (workflow) => {
                   <React.Fragment>
                     <br></br>
                     <CardLabel>{t("BPA_OTP")}</CardLabel>
-                    <TextInput
+                    {/* <TextInput
                       t={t}
                       type="text"
                       isMandatory={true}
@@ -2426,10 +2455,12 @@ const submitAction = (workflow) => {
                       value={otp}
                       onChange={handleOTPChange}
                       {...{ required: true, pattern: "[0-9]{6}", type: "tel", title: t("BPA_INVALID_OTP") }}
-                    />
+                    /> */}
+                    <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
 
                     <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
-                    {otpError && <CardLabel style={{ color: "red" }}>{otpError}</CardLabel>}
+                    {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
+                    {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
                   </React.Fragment>
                 )}
               </div>
@@ -2441,12 +2472,13 @@ const submitAction = (workflow) => {
                   onChange={setdeclarationhandler}
                   styles={{ height: "auto" }}
                   //disabled={!agree}
+                  checked={agree}
                 />
 
                 {showTermsPopup && (
                   <CitizenConsent
-                    showTermsPopup={showTermsPopup}
-                    setShowTermsPopup={setShowTermsPopup}
+                    showTermsPopupOwner={showTermsPopup}
+                    setShowTermsPopupOwner={setShowTermsPopup}
                     otpVerifiedTimestamp={otpVerifiedTimestamp} // Pass timestamp as a prop
                     bpaData={data?.applicationData} // Pass the complete BPA application data
                     tenantId={tenantId} // Pass tenant ID for API calls
@@ -2489,6 +2521,7 @@ const submitAction = (workflow) => {
           style={{ zIndex: "1000" }}
         />
       )}
+    </div>
     </Fragment>
   )
 }

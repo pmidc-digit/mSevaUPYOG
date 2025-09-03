@@ -1,75 +1,80 @@
 package org.egov.ptr.models.collection;
 
-import java.math.BigDecimal;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.*;
+
+import org.egov.ptr.models.AuditDetails;
+import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.math.BigDecimal;
 
-import org.egov.ptr.models.AuditDetails;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @EqualsAndHashCode
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PaymentDetail {
 
-	@Size(max = 64)
-	@JsonProperty("id")
-	private String id;
+    @Size(max=64)
+    @JsonProperty("id")
+    private String id;
 
-	@Size(max = 64)
-	@JsonProperty("tenantId")
-	private String tenantId;
+    @Size(max=64)
+    private String paymentId;
 
-	@JsonProperty("totalDue")
-	private BigDecimal totalDue;
+    @SafeHtml
+    @Size(max=64)
+    @JsonProperty("tenantId")
+    private String tenantId;
 
-	@NotNull
-	@JsonProperty("totalAmountPaid")
-	private BigDecimal totalAmountPaid;
+    @JsonProperty("totalDue")
+    private BigDecimal totalDue;
 
-	@Size(max = 64)
-	@JsonProperty("receiptNumber")
-	private String receiptNumber;
+    @NotNull
+    @JsonProperty("totalAmountPaid")
+    private BigDecimal totalAmountPaid;
 
-	@Size(max = 64)
-	@JsonProperty("manualReceiptNumber")
-	private String manualReceiptNumber;
+    @Size(max=64)
+    @JsonProperty("receiptNumber")
+    private String receiptNumber;
 
-	@JsonProperty("manualReceiptDate")
-	private Long manualReceiptDate;
+    @SafeHtml
+    @Size(max=64)
+    @JsonProperty("manualReceiptNumber")
+    private String manualReceiptNumber;
+    
+    @JsonProperty("manualReceiptDate")
+    private Long manualReceiptDate;
 
-	@JsonProperty("receiptDate")
-	private Long receiptDate;
+    @JsonProperty("receiptDate")
+    private Long receiptDate = null;
 
-	@JsonProperty("receiptType")
-	private String receiptType;
+    @SafeHtml
+    @JsonProperty("receiptType")
+    private String receiptType = null;
 
-	@JsonProperty("businessService")
-	private String businessService;
+    @SafeHtml
+    @JsonProperty("businessService")
+    private String businessService;
 
-	@NotNull
-	@Size(max = 64)
-	@JsonProperty("billId")
-	private String billId;
+    @NotNull
+    @Size(max=64)
+    @JsonProperty("billId")
+    private String billId;
 
-	@JsonProperty("bill")
-	private Bill bill;
+    @JsonProperty("bill")
+    private Bill bill;
 
-	@JsonProperty("additionalDetails")
-	private JsonNode additionalDetails;
+    @JsonProperty("additionalDetails")
+    private JsonNode additionalDetails;
 
-	@JsonProperty("auditDetails")
-	private AuditDetails auditDetails;
+    @JsonProperty("auditDetails")
+    private AuditDetails auditDetails;
 
 }

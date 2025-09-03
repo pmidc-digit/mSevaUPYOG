@@ -1,26 +1,17 @@
 package org.egov.ptr.models.collection;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.validation.Valid;
-
-import org.egov.ptr.models.AuditDetails;
-import org.springframework.util.CollectionUtils;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.*;
+import org.egov.ptr.models.AuditDetails;
+import org.springframework.util.CollectionUtils;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import javax.validation.Valid;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,123 +21,125 @@ import lombok.ToString;
 @AllArgsConstructor
 @EqualsAndHashCode
 public class Bill {
-	// TODO some of the fields are mandatory in yml, lets discuss billdetail and
-	// billaccountdetail also for more clarity
+    // TODO some of the fields are mandatory in yml, lets discuss billDetail and billAccountDetail also for more clarity
 
-	@JsonProperty("id")
-	private String id;
+	  @JsonProperty("id")
+	  private String id = null;
 
-	@JsonProperty("mobileNumber")
-	private String mobileNumber;
+	  @JsonProperty("mobileNumber")
+	  private String mobileNumber = null;
 
-	@JsonProperty("paidBy")
-	private String paidBy;
+	  @JsonProperty("paidBy")
+	  private String paidBy = null;
 
-	@JsonProperty("payerName")
-	private String payerName;
+	  @JsonProperty("payerName")
+	  private String payerName = null;
 
-	@JsonProperty("payerAddress")
-	private String payerAddress;
+	  @JsonProperty("payerAddress")
+	  private String payerAddress = null;
 
-	@JsonProperty("payerEmail")
-	private String payerEmail;
+	  @JsonProperty("payerEmail")
+	  private String payerEmail = null;
 
-	@JsonProperty("payerId")
-	private String payerId;
+	  @JsonProperty("payerId")
+	  private String payerId = null;
 
-	@JsonProperty("status")
-	private StatusEnum status;
+	  @JsonProperty("status")
+	  private StatusEnum status = null;
 
-	@JsonProperty("reasonForCancellation")
-	private String reasonForCancellation;
+	  @JsonProperty("reasonForCancellation")
+ 	  private String reasonForCancellation = null;
 
-	@JsonProperty("isCancelled")
-	private Boolean isCancelled;
+	  @JsonProperty("isCancelled")
+	  private Boolean isCancelled = null;
 
-	@JsonProperty("additionalDetails")
-	private JsonNode additionalDetails;
+	  @JsonProperty("additionalDetails")
+	  private JsonNode additionalDetails = null;
 
-	@JsonProperty("billDetails")
-	@Valid
-	private List<BillDetail> billDetails;
+	  @JsonProperty("billDetails")
+	  @Valid
+	  private List<BillDetail> billDetails = null;
 
-	@JsonProperty("tenantId")
-	private String tenantId;
+	  @JsonProperty("tenantId")
+	  private String tenantId = null;
 
-	@JsonProperty("auditDetails")
-	private AuditDetails auditDetails;
+	  @JsonProperty("auditDetails")
+	  private AuditDetails auditDetails = null;
 
-	@JsonProperty("collectionModesNotAllowed")
-	private List<String> collectionModesNotAllowed;
+	  @JsonProperty("collectionModesNotAllowed")
+	  private List<String> collectionModesNotAllowed = null;
 
-	@JsonProperty("partPaymentAllowed")
-	private Boolean partPaymentAllowed;
+	  @JsonProperty("partPaymentAllowed")
+	  private Boolean partPaymentAllowed = null;
 
-	@JsonProperty("isAdvanceAllowed")
-	private Boolean isAdvanceAllowed;
+	  @JsonProperty("isAdvanceAllowed")
+	  private Boolean isAdvanceAllowed;
 
-	@JsonProperty("minimumAmountToBePaid")
-	private BigDecimal minimumAmountToBePaid;
+	  @JsonProperty("minimumAmountToBePaid")
+	  private BigDecimal minimumAmountToBePaid = null;
 
-	@JsonProperty("businessService")
-	private String businessService;
+	  @JsonProperty("businessService")
+	  private String businessService = null;
 
-	@JsonProperty("totalAmount")
-	private BigDecimal totalAmount;
+	  @JsonProperty("totalAmount")
+	  private BigDecimal totalAmount = null;
 
-	@JsonProperty("consumerCode")
-	private String consumerCode;
+	  @JsonProperty("consumerCode")
+	  private String consumerCode = null;
 
-	@JsonProperty("billNumber")
-	private String billNumber;
+	  @JsonProperty("billNumber")
+	  private String billNumber = null;
 
-	@JsonProperty("billDate")
-	private Long billDate;
+	  @JsonProperty("billDate")
+	  private Long billDate = null;
 
-	@JsonProperty("amountPaid")
-	private BigDecimal amountPaid;
+	  @JsonProperty("amountPaid")
+	  private BigDecimal amountPaid;
+
+
 
 	public enum StatusEnum {
-		ACTIVE("ACTIVE"),
+	  ACTIVE("ACTIVE"),
 
-		CANCELLED("CANCELLED"),
+	  CANCELLED("CANCELLED"),
 
-		PAID("PAID"),
+	  PAID("PAID"),
 
-		EXPIRED("EXPIRED");
+	  EXPIRED("EXPIRED");
 
-		private String value;
+	  private String value;
 
-		StatusEnum(String value) {
-			this.value = value;
-		}
-
-		@Override
-		@JsonValue
-		public String toString() {
-			return String.valueOf(value);
-		}
-
-		public static boolean contains(String test) {
-			for (StatusEnum val : StatusEnum.values()) {
-				if (val.name().equalsIgnoreCase(test)) {
-					return true;
-				}
-			}
-			return false;
-		}
-
-		@JsonCreator
-		public static StatusEnum fromValue(String text) {
-			for (StatusEnum b : StatusEnum.values()) {
-				if (String.valueOf(b.value).equals(text)) {
-					return b;
-				}
-			}
-			return null;
-		}
-
+	  StatusEnum(String value) {
+	  this.value = value;
 	}
+
+
+	@Override
+	@JsonValue
+	public String toString() {
+		return String.valueOf(value);
+	}
+
+	public static boolean contains(String test) {
+		for (StatusEnum val : StatusEnum.values()) {
+			if (val.name().equalsIgnoreCase(test)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@JsonCreator
+	public static StatusEnum fromValue(String text) {
+		for (StatusEnum b : StatusEnum.values()) {
+			if (String.valueOf(b.value).equals(text)) {
+				return b;
+			}
+		}
+		return null;
+	}
+
+  }
 
 	public Boolean addBillDetail(BillDetail billDetail) {
 
@@ -162,5 +155,6 @@ public class Bill {
 				return false;
 		}
 	}
+
 
 }

@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Optional;
 
+import org.egov.common.contract.request.Role;
 import org.egov.ptr.config.PetConfiguration;
 import org.egov.ptr.models.ProcessInstance;
 import org.egov.ptr.models.ProcessInstanceRequest;
@@ -25,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class PaymentNotificationService {
 
-	private static final String PET_SERVICES = "pet-service";
+	private static final String PET_SERVICES = "pet-services";
 
 	@Autowired
 	private NotificationUtil util;
@@ -86,6 +87,8 @@ public class PaymentNotificationService {
 			return;
 		}
 		log.info("Process instance of pet application {}", processInstance);
+		Role role = Role.builder().code("SYSTEM_PAYMENT").tenantId(paymentRequest.getPayment().getTenantId()).build();
+		paymentRequest.getRequestInfo().getUserInfo().getRoles().add(role);
 		ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(paymentRequest.getRequestInfo(),
 				Collections.singletonList(processInstance));
 		callWorkFlow(workflowRequest);

@@ -1,5 +1,6 @@
 package org.egov.ptr.models.collection;
 
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -14,14 +15,14 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 public class PaymentRequest {
 
-	@NotNull
-	@Valid
-	@JsonProperty("RequestInfo")
-	private RequestInfo requestInfo;
+    @NotNull
+    @Valid
+    @JsonProperty("RequestInfo")
+    private RequestInfo requestInfo;
 
-	@NotNull
-	@Valid
-	@JsonProperty("Payment")
-	private Payment payment;
+    @NotNull
+    @Valid
+    @JsonProperty("Payment")
+    private Payment payment;
 
 }

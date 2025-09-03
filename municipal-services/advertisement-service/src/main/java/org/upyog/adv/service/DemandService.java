@@ -2,29 +2,37 @@ package org.upyog.adv.service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.common.contract.request.User;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.upyog.adv.config.BookingConfiguration;
 import org.upyog.adv.constants.BookingConstants;
 import org.upyog.adv.repository.DemandRepository;
+import org.upyog.adv.repository.ServiceRequestRepository;
 import org.upyog.adv.util.BookingUtil;
+import org.upyog.adv.util.DemandUtil;
 import org.upyog.adv.util.MdmsUtil;
 import org.upyog.adv.validator.BookingValidator;
 import org.upyog.adv.web.models.AdvertisementDemandEstimationCriteria;
 import org.upyog.adv.web.models.BookingDetail;
 import org.upyog.adv.web.models.BookingRequest;
+import org.upyog.adv.web.models.RequestInfoWrapper;
 import org.upyog.adv.web.models.billing.Demand;
 import org.upyog.adv.web.models.billing.DemandDetail;
 
 import lombok.extern.slf4j.Slf4j;
+import org.upyog.adv.web.models.billing.DemandResponse;
+import org.upyog.adv.web.models.billing.GetBillCriteria;
+
+import static org.upyog.adv.constants.BookingConstants.EMPTY_DEMAND_ERROR_CODE;
+import static org.upyog.adv.constants.BookingConstants.EMPTY_DEMAND_ERROR_MESSAGE;
 
 @Service
 @Slf4j
@@ -44,6 +52,16 @@ public class DemandService {
 
 	@Autowired
 	private MdmsUtil mdmsUtil;
+
+	@Autowired
+	private DemandUtil demandUtil;
+
+
+	@Autowired
+	private ObjectMapper mapper;
+
+	@Autowired
+	private ServiceRequestRepository serviceRequestRepository;
 	
 	
 	/**
@@ -124,8 +142,29 @@ public class DemandService {
 				.max( LocalDate :: compareTo)
 		        .get();
 	}
-	
-	
-	
+
+	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+
+		if (getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);
+		DemandResponse res = mapper.convertValue(
+				serviceRequestRepository.fetchResult(demandUtil.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+				DemandResponse.class);
+		if (CollectionUtils.isEmpty(res.getDemands())) {
+			Map<String, String> map = new HashMap<>();
+			map.put(EMPTY_DEMAND_ERROR_CODE, EMPTY_DEMAND_ERROR_MESSAGE);
+		}
+
+		Map<String,List<Demand>> consumerCodeToDemandMap = new HashMap<>();
+		res.getDemands().forEach(demand -> {
+			if(consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
+				consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
+			else {
+				List<Demand> demands = new LinkedList<>();
+				demands.add(demand);
+				consumerCodeToDemandMap.put(demand.getConsumerCode(),demands);
+			}
+		});
+		return res;
+	}
 
 }

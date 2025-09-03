@@ -55,7 +55,11 @@ public class NOCService {
 	
 	@Autowired
 	private NOCUtil nocUtil;
-	
+
+	@Autowired
+	UserService userService;
+
+
 	@Autowired
 	private NOCRepository nocRepository;
 
@@ -94,6 +98,7 @@ public class NOCService {
 		}else{
 		  nocRequest.getNoc().setApplicationStatus(NOCConstants.CREATED_STATUS);
 		}
+		userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
 		nocRepository.save(nocRequest);
 		return Arrays.asList(nocRequest.getNoc());
 	}

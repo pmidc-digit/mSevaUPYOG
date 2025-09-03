@@ -24,7 +24,7 @@ public class NocQueryBuilder {
 
 //	private static final String QUERY = "SELECT noc.*,nocdoc.*,noc.id as noc_id,noc.tenantid as noc_tenantId,noc.lastModifiedTime as "
 //			+ "noc_lastModifiedTime,noc.createdBy as noc_createdBy,noc.lastModifiedBy as noc_lastModifiedBy,noc.createdTime as "
-//			+ "noc_createdTime, nocdoc.id as noc_doc_id,"
+//			+ "noc_createdTime, nocdoc.uuid as noc_doc_id,"
 //			+ "nocdoc.documenttype as noc_doc_documenttype,nocdoc.documentAttachment as noc_doc_documentAttachment"
 //			+ " FROM eg_noc noc  LEFT OUTER JOIN "
 //			+ "eg_noc_document nocdoc ON nocdoc.nocid = noc.id WHERE 1=1 ";
@@ -87,7 +87,7 @@ public class NocQueryBuilder {
 
 	private final String paginationWrapper = "SELECT * FROM "
 			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY lastModifiedTime DESC) FROM " + "({})"
-			+ " result)";
+			+ " result) ranked_result";
 
 
 //	private final String paginationWrapper = "SELECT * FROM "
@@ -198,6 +198,7 @@ public class NocQueryBuilder {
 
 		log.info(criteria.toString());
 		log.info("Final Query");
+
 		log.info(builder.toString());
 		if(isCount)
 	            return addCountWrapper(builder.toString());
@@ -233,7 +234,7 @@ public class NocQueryBuilder {
 			offset = criteria.getOffset();
 
 //		if (limit == -1) {
-////			finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
+//			finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
 //		} else {
 //			preparedStmtList.add(offset);
 //			preparedStmtList.add(limit + offset);

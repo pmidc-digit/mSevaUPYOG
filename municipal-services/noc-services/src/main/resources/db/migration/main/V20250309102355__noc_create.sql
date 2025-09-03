@@ -1,4 +1,4 @@
-CREATE TABLE public.eg_noc(
+CREATE TABLE eg_noc(
     id character varying(64) NOT NULL,
     applicationno character varying(64),
     tenantid character varying(256),
@@ -18,7 +18,7 @@ CREATE TABLE public.eg_noc(
     CONSTRAINT pk_eg_noc PRIMARY KEY (id)
 );
 
-CREATE TABLE public.eg_noc_auditdetails(
+CREATE TABLE eg_noc_auditdetails(
     id character varying(64) NOT NULL,
     applicationno character varying(64),
     tenantid character varying(256),
@@ -37,7 +37,7 @@ CREATE TABLE public.eg_noc_auditdetails(
     applicationstatus character varying(64) NOT NULL
 );
 
-CREATE TABLE public.eg_noc_document(
+CREATE TABLE eg_noc_document(
     uuid character varying(64) NOT NULL,
     documenttype character varying(64),
     documentattachment character varying(64),
@@ -48,14 +48,14 @@ CREATE TABLE public.eg_noc_document(
     lastmodifiedby character varying(64),
     createdtime bigint,
     lastmodifiedtime bigint,
-    CONSTRAINT uk_eg_noc_document PRIMARY KEY (id),
+    CONSTRAINT uk_eg_noc_document PRIMARY KEY (uuid),
     CONSTRAINT fk_eg_noc_document FOREIGN KEY (nocid)
         REFERENCES public.eg_noc (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
 
-CREATE TABLE public.eg_noc_details(
+CREATE TABLE eg_noc_details(
     id character varying(64) NOT NULL,
     nocid character varying(64) NOT NULL,
     -- Applicant Details
@@ -72,7 +72,7 @@ CREATE TABLE public.eg_noc_details(
         ON DELETE CASCADE
 );
 
-CREATE INDEX noc_index ON public.eg_noc
+CREATE INDEX noc_index ON eg_noc
 (
     applicationno,
     nocno,
@@ -82,4 +82,4 @@ CREATE INDEX noc_index ON public.eg_noc
     noctype
 );
 
-CREATE INDEX idx_eg_noc_details_nocid ON public.eg_noc_details (nocid);
+CREATE INDEX idx_eg_noc_details_nocuuid ON eg_noc_details (nocid);

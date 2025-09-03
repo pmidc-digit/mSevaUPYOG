@@ -39,13 +39,20 @@ public class FuzzySearchService {
 
     public List<Property> getProperties(RequestInfo requestInfo, PropertyCriteria criteria) {
 
+        validateFuzzySearchCriteria(criteria);
 
-        List<String> idsFromDB = propertyRepository.getPropertyIds(criteria);
+        // For fuzzy search with name only, get all property IDs from tenant to enable fuzzy matching
+        List<String> idsFromDB;
+        if (criteria.getName() != null && criteria.getDoorNo() == null && criteria.getOldPropertyId() == null) {
+            // For name-based fuzzy search, use the original criteria since we need the name parameter
+            // to pass the PropertyQueryBuilder validation
+            idsFromDB = propertyRepository.getPropertyIds(criteria, requestInfo);
+        } else {
+            idsFromDB = propertyRepository.getPropertyIds(criteria, requestInfo);
+        }
 
         if(CollectionUtils.isEmpty(idsFromDB))
             return new LinkedList<>();
-
-        validateFuzzySearchCriteria(criteria);
 
         Object esResponse = elasticSearchRepository.fuzzySearchProperties(criteria, idsFromDB);
 
@@ -158,6 +165,10 @@ public class FuzzySearchService {
 
         if(criteria.getOldPropertyId() == null && criteria.getName() == null && criteria.getDoorNo() == null)
             throw new CustomException("INVALID_SEARCH_CRITERIA","The search criteria is invalid");
+        
+        // For name-based fuzzy search, tenantId is required
+        if(criteria.getName() != null && criteria.getTenantId() == null)
+            throw new CustomException("INVALID_SEARCH_CRITERIA","TenantId is required for name-based fuzzy search");
 
     }
 

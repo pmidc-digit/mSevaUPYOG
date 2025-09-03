@@ -141,6 +141,13 @@ public class PropertyRepository {
 		return jdbcTemplate.query(query, preparedStmtList.toArray(), new SingleColumnRowMapper<>());
 	}
 
+	public List<String> getPropertyIds(PropertyCriteria criteria, RequestInfo requestInfo) {
+
+		List<Object> preparedStmtList = new ArrayList<>();
+		String query = queryBuilder.getPropertySearchQuery(criteria, preparedStmtList, false, true, requestInfo);
+		return jdbcTemplate.query(query, preparedStmtList.toArray(), new SingleColumnRowMapper<>());
+	}
+
 	public List<Property> getPropertiesForBulkSearch(PropertyCriteria criteria, Boolean isPlainSearch) {
 		List<Object> preparedStmtList = new ArrayList<>();
 		String query = queryBuilder.getPropertyQueryForBulkSearch(criteria, preparedStmtList, isPlainSearch);

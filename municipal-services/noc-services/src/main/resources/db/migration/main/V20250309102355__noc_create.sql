@@ -48,7 +48,7 @@ CREATE TABLE public.eg_noc_document(
     lastmodifiedby character varying(64),
     createdtime bigint,
     lastmodifiedtime bigint,
-    CONSTRAINT uk_eg_noc_document PRIMARY KEY (id),
+    CONSTRAINT uk_eg_noc_document PRIMARY KEY (uuid),
     CONSTRAINT fk_eg_noc_document FOREIGN KEY (nocid)
         REFERENCES public.eg_noc (id) MATCH SIMPLE
         ON UPDATE NO ACTION
@@ -82,4 +82,4 @@ CREATE INDEX noc_index ON public.eg_noc
     noctype
 );
 
-CREATE INDEX idx_eg_noc_details_nocid ON public.eg_noc_details (nocid);
+CREATE INDEX idx_eg_noc_details_nocuuid ON public.eg_noc_details (nocid);

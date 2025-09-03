@@ -5,6 +5,7 @@ package org.upyog.adv.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.upyog.adv.config.BookingConfiguration;
 import org.upyog.adv.repository.ServiceRequestRepository;
@@ -12,6 +13,7 @@ import org.upyog.adv.web.models.billing.GetBillCriteria;
 
 import static org.upyog.adv.constants.BookingConstants.*;
 
+@Component
 public class DemandUtil {
 
 

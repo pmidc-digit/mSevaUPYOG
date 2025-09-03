@@ -46,16 +46,10 @@ public class PaymentService {
 	@Autowired
 	private BookingRepositoryImpl bookingRepo;
 
-	/**
-	 *
-	 * @param record
-	 * @param topic
-	 */
-	public void process(HashMap<String, Object> record, String topic) throws JsonProcessingException {
-		log.info(" Receipt consumer class entry " + record.toString());
+
+	public void process(PaymentRequest paymentRequest, String topic) throws JsonProcessingException {
+		log.info(" Receipt consumer class entry " + paymentRequest.toString());
 		try {
-			PaymentRequest paymentRequest = mapper.convertValue(record, PaymentRequest.class);
-			log.info("paymentRequest : " + paymentRequest);
 			String businessService = paymentRequest.getPayment().getPaymentDetails().get(0).getBusinessService();
 			log.info("Payment request processing in ADV method for businessService : " + businessService);
 			if (configs.getBusinessServiceName()

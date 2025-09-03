@@ -4,6 +4,8 @@ package org.upyog.adv.kafka.consumer;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import digit.models.coremodels.PaymentRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -25,16 +27,15 @@ public class PaymentUpdateConsumer {
 
 	@Autowired
 	private PaymentService paymentService;
-	
 
-	@KafkaListener(topics = { "${kafka.topics.receipt.create}" })
-	public void paymentSuccess(final HashMap<String, Object> record,
-			@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+
+	@KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
+	public void listenPayments(final String rawRecord,@Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
 
 		log.info("ADV Appplication Received to update workflow after PAY for topic : " + topic);
-		//TODO: need to remove after testing
-		log.info("Strigifed json : " + BookingUtil.beuatifyJson(record));
+
 		try {
+			PaymentRequest record = new ObjectMapper().readValue(rawRecord, PaymentRequest.class);
 			paymentService.process(record, topic);
 		} catch (JsonProcessingException e) {
 			log.error("Exception occurred while processing payment reciept : ", e.getMessage());

@@ -10,11 +10,13 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.egov.noc.web.model.OwnerInfo;
 import org.egov.noc.web.model.enums.ApplicationType;
 import org.egov.noc.web.model.enums.Status;
 import org.hibernate.validator.constraints.SafeHtml;
@@ -31,6 +33,7 @@ import javax.validation.constraints.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Data
 public class Noc   {
   @SafeHtml
   @JsonProperty("id")
@@ -52,6 +55,10 @@ public class Noc   {
   
   @JsonProperty("applicationType")
   private ApplicationType applicationType = null;
+
+
+  @JsonProperty("owners")
+  private List<OwnerInfo> owners;
 
   @SafeHtml
   @JsonProperty("nocType")

@@ -1,26 +1,31 @@
 package org.egov.pt.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.jayway.jsonpath.JsonPath;
+import static org.egov.pt.util.PTConstants.ES_DATA_PATH;
+
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pt.models.Property;
 import org.egov.pt.models.PropertyCriteria;
 import org.egov.pt.repository.ElasticSearchRepository;
 import org.egov.pt.repository.PropertyRepository;
-import org.egov.pt.web.contracts.FuzzySearchCriteria;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
 
-import static org.egov.pt.util.PTConstants.ES_DATA_PATH;
-
+import lombok.extern.slf4j.Slf4j;
 
 @Component
+@Slf4j
 public class FuzzySearchService {
 
     private ElasticSearchRepository elasticSearchRepository;
@@ -28,6 +33,7 @@ public class FuzzySearchService {
     private ObjectMapper mapper;
 
     private PropertyRepository propertyRepository;
+
 
     @Autowired
     public FuzzySearchService(ElasticSearchRepository elasticSearchRepository, ObjectMapper mapper, PropertyRepository repository) {
@@ -39,22 +45,10 @@ public class FuzzySearchService {
 
     public List<Property> getProperties(RequestInfo requestInfo, PropertyCriteria criteria) {
 
+        log.info("criteria=" + criteria);
         validateFuzzySearchCriteria(criteria);
-
-        // For fuzzy search with name only, get all property IDs from tenant to enable fuzzy matching
-        List<String> idsFromDB;
-        if (criteria.getName() != null && criteria.getDoorNo() == null && criteria.getOldPropertyId() == null) {
-            // For name-based fuzzy search, use the original criteria since we need the name parameter
-            // to pass the PropertyQueryBuilder validation
-            idsFromDB = propertyRepository.getPropertyIds(criteria, requestInfo);
-        } else {
-            idsFromDB = propertyRepository.getPropertyIds(criteria, requestInfo);
-        }
-
-        if(CollectionUtils.isEmpty(idsFromDB))
-            return new LinkedList<>();
-
-        Object esResponse = elasticSearchRepository.fuzzySearchProperties(criteria, idsFromDB);
+    
+        Object esResponse = elasticSearchRepository.fuzzySearchProperties(criteria, new LinkedList<>());
 
         Map<String, Set<String>> tenantIdToPropertyId = getTenantIdToPropertyIdMap(esResponse);
 
@@ -66,8 +60,7 @@ public class FuzzySearchService {
 
             PropertyCriteria propertyCriteria = PropertyCriteria.builder().tenantId(tenantId).propertyIds(propertyIds).build();
 
-            properties.addAll(propertyRepository.getPropertiesWithOwnerInfo(propertyCriteria,requestInfo,false));
-
+            properties.addAll(propertyRepository.getPropertiesWithOwnerInfo(propertyCriteria, requestInfo, false));
         }
 
         List<Property> orderedProperties = orderByESScore(properties, esResponse);
@@ -98,8 +91,11 @@ public class FuzzySearchService {
                     for (Map<String, Object> map : data) {
 
                         String propertyId = JsonPath.read(map, "$.propertyId");
-
-                        orderedProperties.add(idToPropertyMap.get(propertyId));
+                        Property property = idToPropertyMap.get(propertyId);
+                        
+                        if (property != null) {
+                            orderedProperties.add(property);
+                        }
                     }
 
                 }
@@ -124,7 +120,6 @@ public class FuzzySearchService {
 
         List<Map<String, Object>> data;
         Map<String, Set<String>> tenantIdToPropertyIds = new LinkedHashMap<>();
-
 
         try {
             data = JsonPath.read(esResponse, ES_DATA_PATH);
@@ -165,12 +160,7 @@ public class FuzzySearchService {
 
         if(criteria.getOldPropertyId() == null && criteria.getName() == null && criteria.getDoorNo() == null)
             throw new CustomException("INVALID_SEARCH_CRITERIA","The search criteria is invalid");
-        
-        // For name-based fuzzy search, tenantId is required
-        if(criteria.getName() != null && criteria.getTenantId() == null)
-            throw new CustomException("INVALID_SEARCH_CRITERIA","TenantId is required for name-based fuzzy search");
 
     }
-
 
 }

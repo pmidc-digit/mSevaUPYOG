@@ -47,7 +47,8 @@ public class WorkflowService {
 					petRegistrationRequest.getRequestInfo());
 			ProcessInstanceRequest workflowRequest = new ProcessInstanceRequest(petRegistrationRequest.getRequestInfo(),
 					Collections.singletonList(processInstance));
-			callWorkFlow(workflowRequest);
+			State state = callWorkFlow(workflowRequest);
+			petRegistrationRequest.getPetRegistrationApplications().get(0).setStatus(state.getApplicationStatus());
 		});
 	}
 

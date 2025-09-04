@@ -40,13 +40,13 @@ public class DemandService {
 
 	@Autowired
 	private BookingConfiguration config;
-	
+
 	@Autowired
 	private CalculationService calculationService;
 
 	@Autowired
 	private DemandRepository demandRepository;
-	
+
 	@Autowired
 	private BookingValidator bookingValidator;
 
@@ -56,115 +56,134 @@ public class DemandService {
 	@Autowired
 	private DemandUtil demandUtil;
 
-
 	@Autowired
 	private ObjectMapper mapper;
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
-	
-	
+
+
 	/**
-	 * 1. Fetch tax heads from mdms tax-heads.json 2. Map amount to tax heads from
-	 * CalculateType.json 3. Create XDemand for particular tax heads 4. Bill will be
-	 * automatically generated when fetch bill api is called for demand created by
-	 * this API
-	 * 
+	 * 1. Fetch tax heads from mdms tax-heads.json
+	 * 2. Map amount to tax heads from CalculateType.json
+	 * 3. Create Demand for particular tax heads
+	 * 4. Bill will be automatically generated when fetch bill api is called for demand created by this API
+	 *
 	 * @param bookingRequest
 	 * @return
 	 */
-
 	public List<Demand> createDemand(BookingRequest bookingRequest, Object mdmsData, boolean generateDemand) throws JsonProcessingException {
 		String tenantId = bookingRequest.getBookingApplication().getTenantId();
-		// String consumerCode = "ADV-8e9d3352-1014-4ed2-97c0-24454ced19c1";
 		String consumerCode = bookingRequest.getBookingApplication().getBookingNo();
 		BookingDetail bookingDetail = bookingRequest.getBookingApplication();
 		User user = bookingRequest.getRequestInfo().getUserInfo();
 
-		User owner = User.builder().name(user.getName()).emailId(user.getEmailId()).mobileNumber(user.getMobileNumber())
+		User owner = User.builder()
+				.name(user.getName())
+				.emailId(user.getEmailId())
+				.mobileNumber(user.getMobileNumber())
 				.build();
 
 		Map<String, Object> mdmsDataMap = (Map<String, Object>) mdmsData;
 
-		
 		List<Map<String, Object>> taxRateList = (List<Map<String, Object>>) ((Map<String, Object>) ((Map<String, Object>) mdmsDataMap
 				.get("MdmsRes")).get("Advertisement")).get("TaxAmount");
-		List<String> taxRateCodes = taxRateList.stream().map(tax -> (String) tax.get("feeType")) 
-																								
+
+		List<String> taxRateCodes = taxRateList.stream()
+				.map(tax -> (String) tax.get("feeType"))
 				.collect(Collectors.toList());
 
 		List<DemandDetail> demandDetails = calculationService.calculateDemand(bookingRequest, taxRateCodes, mdmsData);
 
+		// 🔹 Round off each tax head independently before creating Demand
+		demandDetails.forEach(detail -> {
+			if (detail.getTaxAmount() != null) {
+				BigDecimal rounded = new BigDecimal(Math.ceil(detail.getTaxAmount().doubleValue()));
+				detail.setTaxAmount(rounded);
+			}
+		});
+
 		LocalDate maxdate = getMaxBookingDate(bookingDetail);
 
-		
-		Demand demand = Demand.builder().consumerCode(consumerCode)
-				 .demandDetails(demandDetails).payer(owner)
-				 .tenantId(tenantId)
-				.taxPeriodFrom(BookingUtil.getCurrentTimestamp()).taxPeriodTo(BookingUtil.minusOneDay(maxdate))
-				.consumerType(config.getModuleName()).businessService(config.getBusinessServiceName()).additionalDetails(null).build();
+		Demand demand = Demand.builder()
+				.consumerCode(consumerCode)
+				.demandDetails(demandDetails)
+				.payer(owner)
+				.tenantId(tenantId)
+				.taxPeriodFrom(BookingUtil.getCurrentTimestamp())
+				.taxPeriodTo(BookingUtil.minusOneDay(maxdate))
+				.consumerType(config.getModuleName())
+				.businessService(config.getBusinessServiceName())
+				.additionalDetails(null)
+				.build();
 
 		List<Demand> demands = new ArrayList<>();
 		demands.add(demand);
+
 		if (!generateDemand) {
-			BigDecimal totalAmount = demandDetails.stream().map(DemandDetail::getTaxAmount).reduce(BigDecimal.ZERO,
-					BigDecimal::add);
+			BigDecimal totalAmount = demandDetails.stream()
+					.map(DemandDetail::getTaxAmount)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
 			demand.setAdditionalDetails(totalAmount);
 			return demands;
 		}
+
 		log.info("Sending call to billing service for generating demand for booking no : " + consumerCode);
 		return demandRepository.saveDemand(bookingRequest.getRequestInfo(), demands);
 	}
-	
-	
-	//This gets the demand for request without getting booking number by calling teh create demand method
+
+
+	// This gets the demand for request without getting booking number by calling the create demand method
 	public List<Demand> getDemand(AdvertisementDemandEstimationCriteria estimationCriteria) throws JsonProcessingException {
 		log.info("Getting demand for request without booking no");
 
-		
 		String tenantId = estimationCriteria.getTenantId().split("\\.")[0];
 		if (estimationCriteria.getTenantId().split("\\.").length == 1) {
 			throw new CustomException(BookingConstants.INVALID_TENANT, "Please provide valid tenant id for booking creation");
 		}
-		BookingDetail bookingDetail = BookingDetail.builder().tenantId(tenantId)
+		BookingDetail bookingDetail = BookingDetail.builder()
+				.tenantId(tenantId)
 				.CartDetails(estimationCriteria.getCartDetails())
 				.build();
-		BookingRequest bookingRequest = BookingRequest.builder().bookingApplication(bookingDetail)
-				.requestInfo(estimationCriteria.getRequestInfo()).build();
+		BookingRequest bookingRequest = BookingRequest.builder()
+				.bookingApplication(bookingDetail)
+				.requestInfo(estimationCriteria.getRequestInfo())
+				.build();
 		Object mdmsData = mdmsUtil.mDMSCall(bookingRequest.getRequestInfo(), tenantId);
 		List<Demand> demands = createDemand(bookingRequest, mdmsData, false);
 		return demands;
 	}
-	
+
 	private LocalDate getMaxBookingDate(BookingDetail bookingDetail) {
-		
-		return bookingDetail.getCartDetails().stream().map(detail -> detail.getBookingDate())
-				.max( LocalDate :: compareTo)
-		        .get();
+		return bookingDetail.getCartDetails().stream()
+				.map(detail -> detail.getBookingDate())
+				.max(LocalDate::compareTo)
+				.get();
 	}
 
 	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+		if (getBillCriteria.getAmountExpected() == null)
+			getBillCriteria.setAmountExpected(BigDecimal.ZERO);
 
-		if (getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);
 		DemandResponse res = mapper.convertValue(
 				serviceRequestRepository.fetchResult(demandUtil.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
 				DemandResponse.class);
+
 		if (CollectionUtils.isEmpty(res.getDemands())) {
 			Map<String, String> map = new HashMap<>();
 			map.put(EMPTY_DEMAND_ERROR_CODE, EMPTY_DEMAND_ERROR_MESSAGE);
 		}
 
-		Map<String,List<Demand>> consumerCodeToDemandMap = new HashMap<>();
+		Map<String, List<Demand>> consumerCodeToDemandMap = new HashMap<>();
 		res.getDemands().forEach(demand -> {
-			if(consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
+			if (consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
 				consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
 			else {
 				List<Demand> demands = new LinkedList<>();
 				demands.add(demand);
-				consumerCodeToDemandMap.put(demand.getConsumerCode(),demands);
+				consumerCodeToDemandMap.put(demand.getConsumerCode(), demands);
 			}
 		});
 		return res;
 	}
-
 }

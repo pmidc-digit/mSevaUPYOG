@@ -9,19 +9,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.upyog.adv.config.BookingConfiguration;
 import org.upyog.adv.enums.BookingStatusEnum;
-import org.upyog.adv.repository.BookingRepository;
-import org.upyog.adv.repository.ServiceRequestRepository;
 import org.upyog.adv.repository.impl.BookingRepositoryImpl;
 import org.upyog.adv.web.models.BookingDetail;
 import org.upyog.adv.web.models.BookingRequest;
+import org.upyog.adv.web.models.billing.PaymentRequest;
 import org.upyog.adv.web.models.transaction.Transaction;
 import org.upyog.adv.web.models.transaction.TransactionRequest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import digit.models.coremodels.PaymentRequest;
-import digit.models.coremodels.ProcessInstance;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -117,8 +114,6 @@ public class PaymentService {
 			BookingRequest bookingRequest = BookingRequest.builder()
 					.requestInfo(requestInfo).bookingApplication(bookingDetail).build();
 			bookingService.updateBooking(bookingRequest, null, status);
-            
         }
     }
-
 }

@@ -29,6 +29,7 @@ import org.upyog.adv.service.PaymentTimerService;
 import org.upyog.adv.util.BookingUtil;
 import org.upyog.adv.util.MdmsUtil;
 import org.upyog.adv.validator.BookingValidator;
+import org.upyog.adv.web.models.billing.PaymentDetail;
 import org.upyog.adv.workflow.WorkflowIntegrator;
 import org.upyog.adv.web.models.AdvertisementDraftDetail;
 import org.upyog.adv.web.models.AdvertisementSearchCriteria;
@@ -39,7 +40,6 @@ import org.upyog.adv.web.models.BookingDetail;
 import org.upyog.adv.web.models.BookingRequest;
 import org.upyog.adv.web.models.workflow.Workflow;
 
-import digit.models.coremodels.PaymentDetail;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -464,6 +464,10 @@ public class BookingServiceImpl implements BookingService {
 
 		// Preserve workflow/businessService from request (DB object won't have these)
 		Workflow incomingWorkflowSync = advertisementBookingRequest.getBookingApplication().getWorkflow();
+		if(incomingWorkflowSync==null){
+			incomingWorkflowSync = new Workflow();
+			incomingWorkflowSync.setAction("PAY");
+		}
 		String incomingBusinessServiceSync = advertisementBookingRequest.getBookingApplication().getBusinessService();
 
 		convertBookingRequest(advertisementBookingRequest, bookingDetails.get(0));
@@ -479,6 +483,7 @@ public class BookingServiceImpl implements BookingService {
 					&& advertisementBookingRequest.getBookingApplication().getWorkflow() != null
 					&& StringUtils.isNotBlank(
 							advertisementBookingRequest.getBookingApplication().getWorkflow().getAction())) {
+				advertisementBookingRequest.getBookingApplication().getWorkflow();
 				String nextStatus = workflowIntegrator.transition(advertisementBookingRequest.getRequestInfo(),
 						advertisementBookingRequest.getBookingApplication(),
 						advertisementBookingRequest.getBookingApplication().getWorkflow().getAction());

@@ -13,8 +13,8 @@ import org.upyog.adv.web.models.AdvertisementSlotSearchCriteria;
 import org.upyog.adv.web.models.BookingDetail;
 import org.upyog.adv.web.models.BookingRequest;
 
-import digit.models.coremodels.PaymentDetail;
 import lombok.NonNull;
+import org.upyog.adv.web.models.billing.PaymentDetail;
 
 public interface BookingService {
 

@@ -94,7 +94,7 @@ public class NocQueryBuilder {
 //			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY noc_lastModifiedTime DESC) offset_ FROM " + "({})"
 //			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
 	
-	private final String countWrapper = "SELECT COUNT(DISTINCT(noc.id)) FROM ({INTERNAL_QUERY}) as noc_count";
+	private final String countWrapper = "SELECT COUNT(DISTINCT(noc_count.id)) FROM ({INTERNAL_QUERY}) as noc_count";
 
 	/**
 	 * To give the Search query based on the requirements.

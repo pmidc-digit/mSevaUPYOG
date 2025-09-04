@@ -568,8 +568,7 @@ public class PropertyService {
 			}
 
 		if (!criteria.getIsRequestForDuplicatePropertyValidation()
-				&& (criteria.getDoorNo() != null || criteria.getOldPropertyId() != null || 
-				    (criteria.getName() != null && criteria.getTenantId() != null))) {
+				&& (criteria.getDoorNo() != null || criteria.getName() != null || criteria.getOldPropertyId() != null)) {
 			properties = fuzzySearchService.getProperties(requestInfo, criteria);
 		} else {
 			if (criteria.getMobileNumber() != null || criteria.getName() != null || criteria.getOwnerIds() != null) {

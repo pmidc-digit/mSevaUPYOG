@@ -3,8 +3,8 @@ package org.upyog.adv.web.models.billing;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
+import digit.models.coremodels.AuditDetails;
 import lombok.*;
-import org.egov.ptr.models.AuditDetails;
 import org.hibernate.validator.constraints.SafeHtml;
 
 import javax.validation.constraints.NotNull;

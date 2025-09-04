@@ -3,7 +3,7 @@ package org.upyog.adv.web.models.billing;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
-import org.egov.ptr.models.AuditDetails;
+import org.upyog.adv.web.models.AuditDetails;
 
 import javax.validation.constraints.Size;
 import java.math.BigDecimal;

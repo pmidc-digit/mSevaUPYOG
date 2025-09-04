@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.*;
-import org.egov.ptr.models.AuditDetails;
 import org.springframework.util.CollectionUtils;
+import org.upyog.adv.web.models.AuditDetails;
 
 import javax.validation.Valid;
 import java.math.BigDecimal;

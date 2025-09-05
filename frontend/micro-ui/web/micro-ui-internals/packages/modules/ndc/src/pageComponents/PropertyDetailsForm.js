@@ -147,7 +147,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   }
 
   async function fetchBill(bussinessService, consumercodes, index) {
-    setPropertyLoader(true);
     if (bussinessService === "WS") {
       const updated = [...propertyDetails.waterConnection];
       updated[index].isLoading = true;
@@ -163,6 +162,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         sewerageConnection: updated,
       }));
     } else if (bussinessService === "PT") {
+      setPropertyLoader(true);
       let updated = { ...propertyDetails?.propertyBillData };
       updated.isLoading = true;
       setPropertyDetails((prev) => ({
@@ -281,13 +281,19 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     } else if (billData?.businessService === "SW") {
       service = "SEWERAGE";
     } else if (billData?.businessService === "PT") {
-      service = "PROPERTY";
+      service = "PT";
     }
-
-    const payUrl =
-      "https://sdc-uat.lgpunjab.gov.in" +
-      `/${userType}/wns/viewBill?connectionNumber=${billData?.consumerCode}&tenantId=${billData?.tenantId}&service=${service}`;
-    // const payUrl =`/${userType}/egov-common/pay?consumerCode=${billData?.consumerCode}&tenantId=${billData?.tenantId}&businessService=${billData?.businessService}`
+    let payUrl;
+    if (billData?.businessService === "PT") {
+      payUrl =
+        "https://sdc-uat.lgpunjab.gov.in" +
+        `/${userType}/egov-common/pay?consumerCode=${billData?.consumerCode}&tenantId=${billData?.tenantId}&businessService=${service}`;
+    } else {
+      payUrl =
+        "https://sdc-uat.lgpunjab.gov.in" +
+        `/${userType}/wns/viewBill?connectionNumber=${billData?.consumerCode}&tenantId=${billData?.tenantId}&service=${service}`;
+      // const payUrl =`/${userType}/egov-common/pay?consumerCode=${billData?.consumerCode}&tenantId=${billData?.tenantId}&businessService=${billData?.businessService}`
+    }
     window.open(payUrl, "_blank");
 
     if (billData?.businessService === "WS") {
@@ -331,12 +337,13 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                       <button
                         className="submit-bar"
                         type="button"
-                        style={{ color: "white" }}
+                        style={{ color: "white", fontSize: "13px" }}
                         onClick={() => {
                           fetchBill("PT", formData?.cpt?.id);
                         }}
                       >
-                        {`${t("CHECK_STATUS")}`}
+                        {/* {`${t("CHECK_STATUS_Property")}`} */}
+                        Check Status for Property
                       </button>
                     )}
 
@@ -406,12 +413,13 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           <button
                             className="submit-bar"
                             type="button"
-                            style={{ color: "white" }}
+                            style={{ color: "white", fontSize: "13px" }}
                             onClick={() => {
                               fetchBill("WS", item.connectionNo, index);
                             }}
                           >
-                            {`${t("CHECK_STATUS")}`}
+                            {/* {`${t("CHECK_STATUS")}`} */}
+                            Check Status for Water
                           </button>
                         )}
 
@@ -516,12 +524,13 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           <button
                             className="submit-bar"
                             type="button"
-                            style={{ color: "white" }}
+                            style={{ color: "white", fontSize: "13px" }}
                             onClick={() => {
                               fetchBill("SW", item.connectionNo, index, item.isEdit);
                             }}
                           >
-                            {`${t("CHECK_STATUS")}`}
+                            {/* {`${t("CHECK_STATUS")}`} */}
+                            Check Status for Sewerage
                           </button>
                         )}
 
@@ -529,7 +538,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           <button
                             className="submit-bar"
                             type="button"
-                            style={{ color: "white", padding: "3px 100px" }}
+                            style={{ color: "white" }}
                             onClick={() => {
                               // setSelectedBillData(item?.billData);
                               // setShowPayModal(true);

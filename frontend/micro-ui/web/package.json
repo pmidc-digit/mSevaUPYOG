@@ -35,15 +35,9 @@
   },
   "dependencies": {
     "@mseva/digit-ui-react-components": "1.0.5",
-<<<<<<< HEAD
     "@pmidc/upyog-css": "1.0.29",
-    "@mseva/digit-ui-module-ptr": "1.0.68",
-    "@mseva/digit-ui-libraries": "1.0.54",
-=======
-    "@pmidc/upyog-css": "1.0.26",
     "@mseva/digit-ui-module-ptr": "1.0.71",
     "@mseva/digit-ui-libraries": "1.0.57",
->>>>>>> 2766805b3a1763834f2cc835a13a94235502cd5f
     "@mseva/digit-ui-module-bills": "1.0.6",
     "@mseva/digit-ui-module-common": "1.0.63",
     "@mseva/digit-ui-module-commonpt": "1.0.4",

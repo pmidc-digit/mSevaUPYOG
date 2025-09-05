@@ -436,7 +436,21 @@ const pgr =  {
                 process: {
                   invoke: {
                     id: 'cityFuzzySearch',
-                    src: (context, event) => pgrService.getCity(event.message.input,context.user.locale),
+                    src: (context, event) => {
+                      try {
+                        // Add null checking for event structure
+                        if (event && event.message && event.message.input) {
+                          return pgrService.getCity(event.message.input, context.user.locale);
+                        } else {
+                          // Handle case where event.message is undefined
+                          console.error("Invalid event structure for PGR city search:", event);
+                          return Promise.resolve(null);
+                        }
+                      } catch (error) {
+                        console.error("Error in PGR city search:", error);
+                        return Promise.resolve(null);
+                      }
+                    },
                     onDone: {
                       target: 'route',
                       cond: (context, event) => event.data,
@@ -542,7 +556,21 @@ const pgr =  {
                 process: {
                   invoke: {
                     id: 'localityFuzzySearch',
-                    src: (context, event) => pgrService.getLocality(event.message.input, context.slots.pgr["city"], context.user.locale),
+                    src: (context, event) => {
+                      try {
+                        // Add null checking for event structure
+                        if (event && event.message && event.message.input) {
+                          return pgrService.getLocality(event.message.input, context.slots.pgr["city"], context.user.locale);
+                        } else {
+                          // Handle case where event.message is undefined
+                          console.error("Invalid event structure for PGR locality search:", event);
+                          return Promise.resolve(null);
+                        }
+                      } catch (error) {
+                        console.error("Error in PGR locality search:", error);
+                        return Promise.resolve(null);
+                      }
+                    },
                     onDone: {
                       target: 'route',
                       cond: (context, event) => event.data,

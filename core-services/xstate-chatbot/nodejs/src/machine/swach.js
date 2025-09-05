@@ -416,11 +416,23 @@ const swach = {
           invoke: {
             id: "swachAttendenceCityFuzzySearch",
             src: (context, event) => {
-              // console.log("Swach Get City")
-              return swachService.getCity(
-                event.message.input,
-                context.user.locale
-              );
+              try {
+                // console.log("Swach Get City")
+                // Add null checking for event structure
+                if (event && event.message && event.message.input) {
+                  return swachService.getCity(
+                    event.message.input,
+                    context.user.locale
+                  );
+                } else {
+                  // Handle case where event.message is undefined
+                  console.error("Invalid event structure for attendance city search:", event);
+                  return Promise.resolve(null);
+                }
+              } catch (error) {
+                console.error("Error in attendance city search:", error);
+                return Promise.resolve(null);
+              }
             },
             onDone: {
               target: "route",
@@ -555,12 +567,24 @@ const swach = {
           invoke: {
             id: "swachAttendenceLocalityFuzzySearch",
             src: (context, event) => {
-              // console.log("Swach Get City")
-              return swachService.getLocality(
-                event.message.input,
-                context.slots.attendence["city"],
-                context.user.locale
-              );
+              try {
+                // console.log("Swach Get City")
+                // Add null checking for event structure
+                if (event && event.message && event.message.input) {
+                  return swachService.getLocality(
+                    event.message.input,
+                    context.slots.attendence["city"],
+                    context.user.locale
+                  );
+                } else {
+                  // Handle case where event.message is undefined
+                  console.error("Invalid event structure for attendance locality search:", event);
+                  return Promise.resolve(null);
+                }
+              } catch (error) {
+                console.error("Error in attendance locality search:", error);
+                return Promise.resolve(null);
+              }
             },
             onDone: {
               target: "route",
@@ -1419,11 +1443,23 @@ const swach = {
                   invoke: {
                     id: "swachCityFuzzySearch",
                     src: (context, event) => {
-                      // console.log("Swach Get City")
-                      return swachService.getCity(
-                        event.message.input,
-                        context.user.locale
-                      );
+                      try {
+                        // console.log("Swach Get City")
+                        // Add null checking for event structure
+                        if (event && event.message && event.message.input) {
+                          return swachService.getCity(
+                            event.message.input,
+                            context.user.locale
+                          );
+                        } else {
+                          // Handle case where event.message is undefined
+                          console.error("Invalid event structure for city search:", event);
+                          return Promise.resolve(null);
+                        }
+                      } catch (error) {
+                        console.error("Error in city search:", error);
+                        return Promise.resolve(null);
+                      }
                     },
                     onDone: {
                       target: "route",

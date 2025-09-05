@@ -208,7 +208,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
             onSelect={goNext}
             onSkip={onSkip}
             t={t}
-            isDisabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName}
+            isDisabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName || !email}
           >
             <div>
               <CardLabel>{t("BPA_FIRST_NAME")}*</CardLabel>
@@ -325,7 +325,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 disable={mobileNumber && !isOpenLinkFlow ? true : false}
                 {...{ required: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
               />
-              <CardLabel>{t("BPA_APPLICANT_EMAIL_LABEL")}</CardLabel>
+              <CardLabel>{`${t("BPA_APPLICANT_EMAIL_LABEL")}*`}</CardLabel>
               <TextInput
                 t={t}
                 type={"email"}

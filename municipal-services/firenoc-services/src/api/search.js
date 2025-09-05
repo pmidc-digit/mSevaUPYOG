@@ -87,8 +87,8 @@ export const searchApiResponse = async (request, next = {}) => {
   let sqlQuery = text;
   if (queryObj.hasOwnProperty("mobileNumber")) {
     // console.log("mobile number");
-    //let userSearchResponse = await searchByMobileNumber(
-      let userSearchResponse = await searchByUserName(
+    let userSearchResponse = await searchByMobileNumber(
+      //let userSearchResponse = await searchByUserName(
       queryObj.mobileNumber,
       envVariables.EGOV_DEFAULT_STATE_ID
     );
@@ -247,7 +247,7 @@ export const searchApiResponse = async (request, next = {}) => {
 
 if(queryObj.hasOwnProperty("fireNOCType"))
 {     
-  console.log("shdgsfdshdshfdv")
+  //console.log("shdgsfdshdshfdv")
  sqlQuery=`${sqlQuery}  FD.firenoctype='${queryObj.fireNOCType}' AND`;
 
 }

@@ -1349,7 +1349,13 @@ public class Far extends FeatureProcess {
 
 		for (Block block : pl.getBlocks()) {
 		    for (Floor floor : block.getBuilding().getFloors()) {
+	            //BigDecimal floorArea = floor.getArea() != null ? floor.getArea() : BigDecimal.ZERO;
+	            
+	            //LOG.info("Floor Area : -> " + floorArea);
+
 		        for (org.egov.common.entity.edcr.Balcony balcony : floor.getBalconies()) {
+		        	
+		        	LOG.info("Data for Floor :::: " + floor.getNumber());
 
 		            List<BigDecimal> widths = balcony.getWidths();
 		            List<Measurement> measurements = balcony.getMeasurements();
@@ -1387,14 +1393,38 @@ public class Far extends FeatureProcess {
 		                    DcrConstants.ROUNDMODE_MEASUREMENTS
 		                );
 
+		                LOG.info("Balcony width above 0.91m, included in FAR: " + width);
+	                    LOG.info("Balcony area   : " + area);
+	                    LOG.info("Balcony length : " + length);
+	                    LOG.info("Balcony height : " + height);
 		                if (width.compareTo(threshold) > 0) {
-		                    LOG.info("Balcony width above 0.91m, included in FAR: " + width);
-		                    LOG.info("Balcony area   : " + area);
-		                    LOG.info("Balcony length : " + length);
-		                    LOG.info("Balcony height : " + height);
+		                    
 
-		                    totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
+		                    //totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
 		                    //providedFar = providedFar.add(area);
+		                    
+		                    // Add to this floor’s floor area
+	                        //floorArea = floorArea.add(area);
+		                    
+		                 // Add to total built-up area
+	                        totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
+
+	                        // ✅ Also distribute balcony area into each occupancy of this floor
+	                        for (Occupancy occ : floor.getOccupancies()) {
+	                            BigDecimal occFloorArea = occ.getFloorArea() != null ? occ.getFloorArea() : BigDecimal.ZERO;
+	                            BigDecimal occBuiltUpArea = occ.getBuiltUpArea() != null ? occ.getBuiltUpArea() : BigDecimal.ZERO;
+
+	                            LOG.info("Floor Area : " + occ.getFloorArea());
+	                            LOG.info("Floor Built Up Area : " + occ.getBuiltUpArea());
+
+	                            
+	                            occ.setFloorArea(occFloorArea.add(area));
+	                            occ.setBuiltUpArea(occBuiltUpArea.add(area));
+
+	                            LOG.info("Updated Occupancy [type=" + occ.getType() + "] floorArea=" + occ.getFloorArea()
+	                                    + ", builtUpArea=" + occ.getBuiltUpArea());
+	                        }
+		                    
 		                    addedToFar = true;
 		                    break; // Only add once per balcony
 		                }
@@ -1404,6 +1434,9 @@ public class Far extends FeatureProcess {
 		                LOG.info("Balcony width <= 0.91m, excluded from FAR.");
 		            }
 		        }
+		     // update floor area for current floor
+	            //floor.setArea(floorArea);
+	            //LOG.info("Updated floor area for Floor " + floor.getNumber() + " : " + floorArea);
 		    }
 		}
 

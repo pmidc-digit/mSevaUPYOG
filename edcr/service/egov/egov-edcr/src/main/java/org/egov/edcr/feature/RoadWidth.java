@@ -67,6 +67,7 @@ import static org.egov.edcr.constants.DxfFileConstants.F;
 import static org.egov.edcr.constants.DxfFileConstants.F_CB;
 import static org.egov.edcr.constants.DxfFileConstants.F_RT;
 import static org.egov.edcr.constants.DxfFileConstants.G;
+import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -91,6 +92,7 @@ public class RoadWidth extends FeatureProcess {
     public static final BigDecimal TWELVE_POINT_TWENTY = BigDecimal.valueOf(12.20);
     public static final BigDecimal THREE = BigDecimal.valueOf(3);
     public static final String NEW = "NEW";
+    public static final String ROADWIDTH = "Road Width";
 
     @Override
     public Map<String, Date> getAmendments() {
@@ -107,6 +109,9 @@ public class RoadWidth extends FeatureProcess {
        
         if (pl.getPlanInformation() != null && pl.getPlanInformation().getRoadWidth() != null) {
             BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
+            if (roadWidth == null || roadWidth.compareTo(BigDecimal.ZERO) == 0) {
+                pl.addError(ROADWIDTH, getLocaleMessage(OBJECTNOTDEFINED, ROADWIDTH));
+            }
             String roadType = pl.getPlanInformation().getRoadType() != null ? pl.getPlanInformation().getRoadType() : "Mention Road type in PlanInfo" ;
             String typeOfArea = pl.getPlanInformation().getTypeOfArea();
             if (typeOfArea != null

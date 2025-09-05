@@ -117,8 +117,8 @@ public class FarExtract extends FeatureExtract {
                 String typical = "";
                 LOG.error("Working on Block  " + block.getNumber() + " For layer Name " + s);
                 polyLinesByLayer = Util.getPolyLinesByLayer(pl.getDoc(), s);
-                if (polyLinesByLayer.isEmpty())
-                    continue;
+//                if (polyLinesByLayer.isEmpty())
+//                    continue;
                 String typicalStr = Util.getMtextByLayerName(pl.getDoc(), s);
 
                 if (typicalStr != null) {
@@ -531,7 +531,7 @@ public class FarExtract extends FeatureExtract {
 
     pl.setSubFeatureColorCodesMaster(featureAndsubFeatureCC);
     }
-
+   
     private void extractFloorHeight(PlanDetail pl, Block block, Floor floor) {
         String floorHeightLayerName = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber() + "_"
                 + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + floor.getNumber() + "_"
@@ -565,7 +565,13 @@ public class FarExtract extends FeatureExtract {
 //					" Stilt Floor height is not defined in layer " + floorHeightLayerName);
 //		}
 //
-//        
+//
+        if(checkStiltFloor(pl,block,floor)) {
+        	floor.setIsStiltFloor(true);
+        }else {
+        	floor.setIsStiltFloor(false);
+        }
+        
    		 if (!flrHeights.isEmpty()) {
    			floor.setFloorHeights(flrHeights);
    		} else {
@@ -573,6 +579,43 @@ public class FarExtract extends FeatureExtract {
    		}
     }
 
+    private Boolean checkStiltFloor(PlanDetail pl, Block block, Floor floor) {        
+        String stiltFlrLayer = layerNames.getLayerName("LAYER_NAME_BLOCK_NAME_PREFIX") + block.getNumber()
+        + "_" + layerNames.getLayerName("LAYER_NAME_FLOOR_NAME_PREFIX") + floor.getNumber() + "_"
+        + layerNames.getLayerName("LAYER_NAME_STILT");
+
+        // --- Stilt floor check ---
+        List<String> stiltParkLayerNames = Util.getLayerNamesLike(pl.getDoc(), stiltFlrLayer);
+
+        if (!stiltParkLayerNames.isEmpty()) {        	
+            LOG.info("Block {} ,Floor {} is STILT Floor ,layerName {} ", 
+                    block.getNumber(), floor.getNumber() , stiltParkLayerNames);
+            // If any stilt layer is present, mark floor as stilt and try to get its height
+            //floor.setIsStiltFloor(true);
+            
+            List<BigDecimal> stiltHeights = new ArrayList<>();
+            for (String stiltLayer : stiltParkLayerNames) {
+                List<BigDecimal> heights = Util.getListOfDimensionValueByLayer(pl, stiltLayer);
+                if (heights != null && !heights.isEmpty()) {
+                    stiltHeights.addAll(heights);
+                }
+            }
+
+            LOG.info("stiltHeights : " + stiltHeights);
+             
+            // check stilt max height
+            //pl.addError(FLOOR_STILT_HEIGHT_DESC,
+            //getLocaleMessage(OBJECTNOTDEFINED, FLOOR_STILT_HEIGHT_DESC + floor.getNumber()));
+            
+            return true;            
+        } else {
+        	LOG.info("Block {} Floor {} is not STILT Floor ,layerName {}  ", 
+                    block.getNumber(), floor.getNumber() , stiltFlrLayer);
+        	return false;            
+        }        
+    }
+    
+    
     @Override
     public PlanDetail validate(PlanDetail pl) {
         if (pl.getPlot().getArea() == null || pl.getPlot().getArea().doubleValue() == 0)

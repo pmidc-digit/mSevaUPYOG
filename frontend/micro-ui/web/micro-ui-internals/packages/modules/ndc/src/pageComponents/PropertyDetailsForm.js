@@ -63,8 +63,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     const owner = formData?.cpt?.details?.owners?.[0];
     const fullName = owner?.name?.split(" ");
     const firstName = fullName?.[0];
-    let lastName
-    if(fullName?.length>1){
+    let lastName;
+    if (fullName?.length > 1) {
       lastName = fullName?.[fullName.length - 1];
     }
     const email = owner?.email;
@@ -347,7 +347,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     )}
 
                     {formData?.cpt?.id && propertyDetails?.propertyBillData?.billData?.totalAmount == 0 && (
-                      <div style={{ color: "green"}}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
+                      <div style={{ color: "green" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
                     )}
                   </div>
                 )}
@@ -360,9 +360,9 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {waterConnectionLoading ? (
               <Loader />
             ) : (
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {propertyDetails?.waterConnection?.map((item, index) => (
-                  <div key={index} style={{ display: "flex", flexDirection: "row", gap: "25px" }}>
+                  <div key={index} style={{ display: "flex", flexDirection: "row", alignItems: "baseline", gap: "16px" }}>
                     <Controller
                       key={index}
                       control={control}
@@ -392,7 +392,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     {item.isLoading ? (
                       <Loader />
                     ) : (
-                      <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         {item?.connectionNo && !item?.billData?.id && (
                           <button
                             className="submit-bar"
@@ -412,8 +412,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                             type="button"
                             style={{ color: "white" }}
                             onClick={() => {
-                              // setSelectedBillData(item?.billData);
-                              // setShowPayModal(true);
                               redirectToPayBill(item?.billData, index, item.isEdit);
                             }}
                           >
@@ -421,7 +419,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           </button>
                         )}
 
-                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green"}}>{t("NO_DUES")}</div>}
+                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green" }}>{t("NO_DUES")}</div>}
 
                         {item?.isEdit && (
                           <button
@@ -463,9 +461,17 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {sewerageConnectionLoading ? (
               <Loader />
             ) : (
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {propertyDetails?.sewerageConnection?.map((item, index) => (
-                  <div key={index} style={{ display: "flex", flexDirection: "row", gap: "25px" }}>
+                  <div
+                    key={index}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "baseline",
+                      gap: "16px",
+                    }}
+                  >
                     <Controller
                       key={index}
                       control={control}
@@ -496,7 +502,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     {item.isLoading ? (
                       <Loader />
                     ) : (
-                      <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                         {item?.connectionNo && !item?.billData?.id && (
                           <button
                             className="submit-bar"

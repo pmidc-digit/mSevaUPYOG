@@ -27,6 +27,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     : window.localStorage.getItem("Employee.tenant-id");
 
   const [showToast, setShowToast] = useState(null);
+  const [propertyLoader, setPropertyLoader] = useState(false);
   // const [error, setError] = useState("");
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedBillData, setSelectedBillData] = useState({});
@@ -146,6 +147,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   }
 
   async function fetchBill(bussinessService, consumercodes, index) {
+    setPropertyLoader(true);
     if (bussinessService === "WS") {
       const updated = [...propertyDetails.waterConnection];
       updated[index].isLoading = true;
@@ -169,92 +171,99 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       }));
     }
 
-    const result = await Digit.PaymentService.fetchBill(tenantId, {
-      businessService: bussinessService,
-      consumerCode: consumercodes,
-    });
+    try {
+      const result = await Digit.PaymentService.fetchBill(tenantId, {
+        businessService: bussinessService,
+        consumerCode: consumercodes,
+      });
+      setPropertyLoader(false);
 
-    if (result?.Bill?.length > 0) {
-      if (result?.Bill[0]?.totalAmount > 0) {
-        setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
+      if (result?.Bill?.length > 0) {
+        if (result?.Bill[0]?.totalAmount > 0) {
+          setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
+        } else {
+          setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") });
+        }
+        if (bussinessService === "WS") {
+          const updated = [...propertyDetails.waterConnection];
+          updated[index].billData = result?.Bill[0];
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            waterConnection: updated,
+          }));
+        } else if (bussinessService === "SW") {
+          const updated = [...propertyDetails.sewerageConnection];
+          updated[index].billData = result?.Bill[0];
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            sewerageConnection: updated,
+          }));
+        } else if (bussinessService === "PT") {
+          let updated = { ...propertyDetails.propertyBillData };
+          updated.billData = result?.Bill[0];
+          updated.isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            propertyBillData: updated,
+          }));
+        }
+      } else if (result?.Bill) {
+        setShowToast({ error: true, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
+        if (bussinessService === "WS") {
+          const updated = [...propertyDetails.waterConnection];
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            waterConnection: updated,
+          }));
+        } else if (bussinessService === "SW") {
+          const updated = [...propertyDetails.sewerageConnection];
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            sewerageConnection: updated,
+          }));
+        } else if (bussinessService === "PT") {
+          let updated = { ...propertyDetails.propertyBillData };
+          updated.isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            propertyBillData: updated,
+          }));
+        }
+        // setError(t("No Bills Found For this consumer number"));
       } else {
-        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") });
+        setShowToast({ error: true, label: t("INVALID_CONSUMER_NUMBER") });
+        if (bussinessService === "WS") {
+          const updated = [...propertyDetails.waterConnection];
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            waterConnection: updated,
+          }));
+        } else if (bussinessService === "SW") {
+          const updated = [...propertyDetails.sewerageConnection];
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            sewerageConnection: updated,
+          }));
+        } else if (bussinessService === "PT") {
+          let updated = { ...propertyDetails.propertyBillData };
+          updated.isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            propertyBillData: updated,
+          }));
+        }
+        // setError(t("Invalid Consumer Number"));
       }
-      if (bussinessService === "WS") {
-        const updated = [...propertyDetails.waterConnection];
-        updated[index].billData = result?.Bill[0];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          waterConnection: updated,
-        }));
-      } else if (bussinessService === "SW") {
-        const updated = [...propertyDetails.sewerageConnection];
-        updated[index].billData = result?.Bill[0];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          sewerageConnection: updated,
-        }));
-      } else if (bussinessService === "PT") {
-        let updated = { ...propertyDetails.propertyBillData };
-        updated.billData = result?.Bill[0];
-        updated.isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          propertyBillData: updated,
-        }));
-      }
-    } else if (result?.Bill) {
-      setShowToast({ error: true, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
-      if (bussinessService === "WS") {
-        const updated = [...propertyDetails.waterConnection];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          waterConnection: updated,
-        }));
-      } else if (bussinessService === "SW") {
-        const updated = [...propertyDetails.sewerageConnection];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          sewerageConnection: updated,
-        }));
-      } else if (bussinessService === "PT") {
-        let updated = { ...propertyDetails.propertyBillData };
-        updated.isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          propertyBillData: updated,
-        }));
-      }
-      // setError(t("No Bills Found For this consumer number"));
-    } else {
-      setShowToast({ error: true, label: t("INVALID_CONSUMER_NUMBER") });
-      if (bussinessService === "WS") {
-        const updated = [...propertyDetails.waterConnection];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          waterConnection: updated,
-        }));
-      } else if (bussinessService === "SW") {
-        const updated = [...propertyDetails.sewerageConnection];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          sewerageConnection: updated,
-        }));
-      } else if (bussinessService === "PT") {
-        let updated = { ...propertyDetails.propertyBillData };
-        updated.isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          propertyBillData: updated,
-        }));
-      }
-      // setError(t("Invalid Consumer Number"));
+    } catch (error) {
+      console.error("Error fetching bill:", error);
+      setPropertyLoader(false);
+      setShowToast({ error: true, label: t("NDC_MESSAGE_FETCH_FAILED") });
     }
   }
 
@@ -314,7 +323,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           <LabelFieldPair>
             <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               <div style={{ display: "flex", flexDirection: "row" }}>
-                {propertyDetails?.propertyBillData?.isLoading ? (
+                {propertyLoader ? (
                   <Loader />
                 ) : (
                   <div>

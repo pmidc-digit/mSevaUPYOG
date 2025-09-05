@@ -65,7 +65,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       if (usersResponse?.user?.length) {
         const user = usersResponse.user[0];
         setGetUserDetails(user);
-        if (user.dob) {
+        if (user?.dob) {
           setDateOfBirth(user.dob);
         }
       }

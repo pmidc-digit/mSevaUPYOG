@@ -150,10 +150,10 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   //   }
   // };
 
-  const validatePropertyId = (value) => {
-    const regex = /^PT-\d{4}-\d{7,8}$/;
-    return regex.test(value);
-  };
+  // const validatePropertyId = (value) => {
+  //   const regex = /^PT-\d{4}-\d{7,8}$/;
+  //   return regex.test(value);
+  // };
 
   function validateStepData(data) {
     const missingFields = [];
@@ -166,7 +166,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     // Mandatory Field Checks
     if (!cpt?.id) missingFields.push(t("NDC_MESSAGE_PROPERTY_ID"));
-    if (!validatePropertyId(cpt?.id)) missingFields.push(t("PT_PROPERTY_ID_INVALID"));
+    // if (!validatePropertyId(cpt?.id)) missingFields.push(t("PT_PROPERTY_ID_INVALID"));
     if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push(t("NDC_MESSAGE_PLEASE_SEARCH_PROPERTY_ID"));
     if (!propertyDetails?.firstName) missingFields.push(t("NDC_MESSAGE_FIRST_NAME"));
     if (!propertyDetails?.lastName) missingFields.push(t("NDC_MESSAGE_LAST_NAME"));

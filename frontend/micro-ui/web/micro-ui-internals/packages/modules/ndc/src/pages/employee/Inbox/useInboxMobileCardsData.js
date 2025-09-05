@@ -5,19 +5,14 @@ import { Controller, useFormContext } from "react-hook-form";
 import { format } from "date-fns";
 
 const useInboxMobileCardsData = ({ parentRoute, table }) => {
+  console.log("table", table);
   const { t } = useTranslation();
 
   const dataForMobileInboxCards = table?.map((value) => {
     return {
-      [t("NOC_APP_NO_LABEL")]: value?.Applicant?.uuid,
-      // [t("TL_COMMON_TABLE_COL_APP_DATE")]:  format(new Date(value?.date), 'dd/MM/yyyy'),
-      [t("NOC_EMAIL_LABEL")]: value?.Applicant?.email || "NA",
-      // [t("ES_INBOX_LOCALITY")]: locality,
-      [t("NOC_STATUS_LABEL")]: t(value?.Applicant?.applicationStatus) || t("NOC_STATUS_PENDING"),
-      [t("ES_INBOX_NAME_LABEL")]: value?.Applicant?.firstname
-        ? value?.Applicant?.firstname + " " + value?.Applicant?.lastname
-        : value?.Applicant?.lastname || "",
-      // [t("ES_INBOX_SLA_DAYS_REMAINING")]: t(value?.sla)
+      [t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL")]: value?.applicationId,
+      [t("TL_COMMON_TABLE_COL_APP_DATE")]: format(new Date(value?.date), "dd/MM/yyyy"),
+      [t("PT_COMMON_TABLE_COL_STATUS_LABEL")]: value?.status,
     };
   });
 
@@ -57,7 +52,7 @@ const useInboxMobileCardsData = ({ parentRoute, table }) => {
   return {
     data: dataForMobileInboxCards,
     linkPrefix: `${parentRoute}/inbox/application-overview/`,
-    serviceRequestIdKey: t("NOC_APP_NO_LABEL"),
+    serviceRequestIdKey: t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL"),
     MobileSortFormValues,
   };
 };

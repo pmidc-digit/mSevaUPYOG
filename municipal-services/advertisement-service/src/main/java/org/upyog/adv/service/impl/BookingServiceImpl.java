@@ -488,7 +488,7 @@ public class BookingServiceImpl implements BookingService {
 						advertisementBookingRequest.getBookingApplication(),
 						advertisementBookingRequest.getBookingApplication().getWorkflow().getAction());
 				if (StringUtils.isNotBlank(nextStatus)) {
-//					advertisementBookingRequest.getBookingApplication().setBookingStatus(nextStatus);
+					advertisementBookingRequest.getBookingApplication().setBookingStatus(nextStatus);
 					if (advertisementBookingRequest.getBookingApplication().getCartDetails() != null) {
 						advertisementBookingRequest.getBookingApplication().getCartDetails()
 								.forEach(c -> c.setStatus(nextStatus));

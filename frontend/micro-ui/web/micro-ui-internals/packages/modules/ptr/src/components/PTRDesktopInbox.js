@@ -6,7 +6,6 @@ import InboxLinks from "./inbox/InboxLink";
 import SearchApplication from "./inbox/search";
 
 const PTRDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
-  
   const { data, useNewInboxAPI } = props;
   const { t } = useTranslation();
   const [FilterComponent, setComp] = useState(() => Digit.ComponentRegistryService?.getComponent(filterComponent));
@@ -24,10 +23,10 @@ const PTRDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
     result = <Loader />;
   } else if (clearSearchCalled) {
     result = null;
-  } else if (!data || data?.length === 0 || (useNewInboxAPI && data?.[0].dataEmpty)) {
+  } else if (!data || data?.length === 0 || (useNewInboxAPI && data?.[0]?.dataEmpty)) {
     result =
       (EmptyInboxComp && <EmptyInboxComp data={data} />) ||
-      (data?.length === 0 || (useNewInboxAPI && data?.[0].dataEmpty) ? (
+      (data?.length === 0 || (useNewInboxAPI && data?.[0]?.dataEmpty) ? (
         <Card style={{ marginTop: 20 }}>
           {t("CS_MYAPPLICATIONS_NO_APPLICATION")
             .split("\\n")

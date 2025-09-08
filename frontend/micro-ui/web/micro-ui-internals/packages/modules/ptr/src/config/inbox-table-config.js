@@ -20,6 +20,7 @@
         {
           Header: t("PTR_APPLICATION_NUMBER"),
           Cell: ({ row }) => {
+            console.log('row', row)
             return (
               <div>
                 <span className="link">

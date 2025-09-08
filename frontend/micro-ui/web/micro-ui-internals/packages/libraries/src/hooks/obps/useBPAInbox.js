@@ -1,7 +1,9 @@
 import useInbox from "../useInbox";
+import { useTranslation } from "react-i18next";
 
 const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm } = filters;
+  const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   let { moduleName, businessService, applicationStatus, locality, assignee, applicationType } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
@@ -80,7 +82,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           sla: application?.businessObject?.status.match(/^(APPROVED)$/)
             ? "CS_NA"
             : Math.round(application.ProcessInstance?.businesssServiceSla / (24 * 60 * 60 * 1000)),
-          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || "DOCUMENT_VERIFIER",
+          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || t("DOCUMENT_VERIFIER",)
         })),
         totalCount: data.totalCount,
         nearingSlaCount: data?.nearingSlaCount,

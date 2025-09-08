@@ -17,7 +17,7 @@ import { useHistory, useParams } from "react-router-dom";
 import getPetAcknowledgementData from "../../getPetAcknowledgementData";
 import PTRWFApplicationTimeline from "../../pageComponents/PTRWFApplicationTimeline";
 import { pdfDownloadLink } from "../../utils";
-
+import PTRDocument from "../../pageComponents/PTRDocument";
 import get from "lodash/get";
 import { size } from "lodash";
 
@@ -38,20 +38,9 @@ const PTRApplicationDetails = () => {
     filters: { applicationNumber: acknowledgementIds },
   });
 
-  console.log("detailsPageeeeeee", data);
-
   const [billData, setBillData] = useState(null);
 
-  // let serviceSearchArgs = {
-  //   tenantId : tenantId,
-  //   code: [`PTR_${data?.PetRegistrationApplications?.[0]?.creationReason}`],
-  //   module: ["PTR"],
-  //   referenceIds : [data?.PetRegistrationApplications?.[0]?.applicationNumber]
-
-  // }
-
   const PetRegistrationApplications = get(data, "PetRegistrationApplications", []);
-  console.log("PetRegistrationApplications", PetRegistrationApplications);
 
   const petId = get(data, "PetRegistrationApplications[0].applicationNumber", []);
 
@@ -108,11 +97,6 @@ const PTRApplicationDetails = () => {
     };
     pet_details.workflow = workflow;
   }
-
-  // let owners = [];
-  // owners = application?.owners;
-  // let docs = [];
-  // docs = application?.documents;
 
   if (isLoading || auditDataLoading) {
     return <Loader />;
@@ -177,9 +161,6 @@ const PTRApplicationDetails = () => {
       onClick: () => printCertificate(),
     });
 
-  console.log("pet_details", pet_details);
-  console.log("dowloadOptions", dowloadOptions);
-
   return (
     <React.Fragment>
       <div>
@@ -201,10 +182,11 @@ const PTRApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("PTR_ADDRESS_HEADER")}</CardSubHeader>
           <StatusTable>
+            <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressId || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_PINCODE")} text={pet_details?.address?.pincode || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_CITY")} text={pet_details?.address?.city || t("CS_NA")} />
+            {/* <Row className="border-none" label={t("PTR_CITY")} text={pet_details?.address?.city || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_STREET_NAME")} text={pet_details?.address?.street || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_HOUSE_NO")} text={pet_details?.address?.doorNo || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_HOUSE_NO")} text={pet_details?.address?.doorNo || t("CS_NA")} /> */}
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("PTR_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
@@ -229,16 +211,22 @@ const PTRApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
           </StatusTable>
 
-          {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("PTR_DOCUMENT_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("PTR_DOCUMENT_DETAILS")}</CardSubHeader>
           <div>
-            {Array.isArray(docs) ? (
-              docs.length > 0 && <PTRDocument pet_details={pet_details}></PTRDocument>
+            {Array.isArray(application?.documents) && application.documents.length > 0 ? (
+              <PTRDocument
+                petdetail={{
+                  documents: application.documents, // ✅ pass all docs
+                  applicationNumber: application.applicationNumber,
+                }}
+              />
             ) : (
               <StatusTable>
                 <Row className="border-none" text={t("PTR_NO_DOCUMENTS_MSG")} />
               </StatusTable>
             )}
-          </div> */}
+          </div>
+
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (
             <Toast

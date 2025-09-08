@@ -44,13 +44,15 @@ const Inbox = ({
     ? Digit.Hooks.useNewInboxGeneral({
         tenantId,
         ModuleCode: moduleCode,
-        filters: { ...searchParams, ...paginationParams, sortParams },
+        // filters: { ...searchParams, ...paginationParams, sortParams },
+        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
       })
     : Digit.Hooks.useInboxGeneral({
         tenantId,
         businessService: moduleCode,
         isInbox,
-        filters: { ...searchParams, ...paginationParams, sortParams },
+        // filters: { ...searchParams, ...paginationParams, sortParams },
+        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
         rawWfHandler,
         rawSearchHandler,
         combineResponse,
@@ -63,7 +65,6 @@ const Inbox = ({
   useEffect(() => {
     setPageOffset(0);
   }, [searchParams]);
-console.log('datapp', data)
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
   };
@@ -105,12 +106,11 @@ console.log('datapp', data)
           searchParams={searchParams}
           sortParams={sortParams}
           linkPrefix={`${parentRoute}/application-details/`}
-          tableConfig={rest?.tableConfig ? res?.tableConfig : TableConfig(t)["PTR"]}
+          tableConfig={rest?.tableConfig ? rest?.tableConfig : TableConfig(t)["PTR"]}
           filterComponent={filterComponent}
           EmptyResultInboxComp={EmptyResultInboxComp}
           useNewInboxAPI={useNewInboxAPI}
         />
-        // <div></div>
       );
     } else {
       return (

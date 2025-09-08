@@ -16,13 +16,15 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-  console.log("goNext triggered");
 
   const currentStepData = useSelector(function (state) {
     return state.ptr.PTRNewApplicationFormReducer.formData || {};
   });
 
-  console.log("currentStepDatafourstep", currentStepData);
+  const onGoToPTR = () => {
+    history.push(`/digit-ui/citizen/ptr-home`);
+  };
+
 
   function validateStepData(data) {
     const missingFields = [];
@@ -30,35 +32,6 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
     return { missingFields, notFormattedFields };
   }
-
-  // async function goNext(data) {
-  //   const { missingFields, notFormattedFields } = validateStepData(currentStepData);
-
-  //   if (missingFields.length > 0) {
-  //     setError(`Please fill the following field: ${missingFields[0]}`);
-  //     setShowToast(true);
-  //     return;
-  //   }
-
-  //   if (notFormattedFields.length > 0) {
-  //     setError(`Please format the following field: ${notFormattedFields[0]}`);
-  //     setShowToast(true);
-  //     return;
-  //   }
-
-  //   const res = await onSubmit(currentStepData);
-  //   console.log("API response: ", res);
-
-  //   if (res) {
-  //     console.log("Submission successful, moving to next step.");
-  //     // history.replace("/digit-ui/citizen/ptr-home");
-  //   } else {
-  //     console.error("Submission failed, not moving to next step.");
-  //   }
-
-  //   onGoNext();
-  // }s
-
   const isCitizen = window.location.href.includes("citizen");
 
   async function goNext(data) {
@@ -76,22 +49,28 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    const res = await onSubmit(currentStepData, data);
-    if (res) {
-      // history.replace(`/digit-ui/citizen/ptr/petservice/response/${currentStepData?.CreatedResponse?.applicationNumber}`, {
-      //   applicationData: currentStepData?.CreatedResponse,
-      // });
+    try {
+      const res = await onSubmit(currentStepData, data);
 
-      history.replace(
-        `/digit-ui/${isCitizen ? "citizen" : "employee"}/ptr/petservice/response/${currentStepData?.CreatedResponse?.applicationNumber}`,
-        {
-          applicationData: currentStepData?.CreatedResponse,
+      if (res?.isSuccess) {
+        const action = res?.response?.PetRegistrationApplications?.[0]?.workflow?.action;
+
+        if (action == "CANCEL") {
+          alert("Cancelled Application");
+          onGoToPTR();
+        } else {
+          history.replace(
+            `/digit-ui/${isCitizen ? "citizen" : "employee"}/ptr/petservice/response/${currentStepData?.CreatedResponse?.applicationNumber}`,
+            { applicationData: currentStepData?.CreatedResponse }
+          );
         }
-      );
-      // onGoNext();
-    } else {
-      console.error("Submission failed, not moving to next step.");
-      setError(res?.Errors?.message || "Update failed");
+      } else {
+        setError(res?.Errors?.message || "Update failed");
+        setShowToast(true);
+      }
+    } catch (error) {
+      alert(`Error: ${error?.message}`);
+      setError(error?.message || "Update failed");
       setShowToast(true);
     }
   }
@@ -129,116 +108,13 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     const response = await Digit.PTRService.update({ PetRegistrationApplications: [formData] }, tenantId);
-    return response?.ResponseInfo?.status === "successful";
+    // return response?.ResponseInfo?.status === "successful";
+    if (response?.ResponseInfo?.status === "successful") {
+      return { isSuccess: true, response };
+    } else {
+      return { isSuccess: false, response };
+    }
   };
-
-  // const onSubmit = async (data, selectedAction) => {
-  //   try {
-  //     const { CreatedResponse, ownerDetails, petDetails: petDetailsFromData, documents: documentWrapper } = data;
-
-  //     const { applicant, petDetails, documents, applicantName, mobileNumber, workflow: existingWorkflow, ...otherDetails } = CreatedResponse;
-
-  //     const formData = {
-  //       applicant: ownerDetails,
-  //       documents: documentWrapper?.documents?.documents || [],
-  //       petDetails: {
-  //         ...petDetailsFromData,
-  //         breedType: petDetailsFromData?.breedType?.name || "",
-  //         petType: petDetailsFromData?.petType?.name || "",
-  //         petGender: petDetailsFromData?.petGender?.name || "",
-  //       },
-  //       ...otherDetails,
-  //       workflow: {
-  //         ...existingWorkflow,
-  //         action: selectedAction?.action || "",
-  //         comments: selectedAction?.action || "",
-  //         status: selectedAction?.action || "",
-  //       },
-  //       applicantName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`,
-  //       mobileNumber: ownerDetails?.mobileNumber,
-  //     };
-
-  //     const response = await Digit.PTRService.update({ PetRegistrationApplications: [formData] }, tenantId);
-
-  //     if (response?.ResponseInfo?.status === "successful") {
-  //       onGoNext();
-  //       // return true;
-  //     } else {
-  //       setError(err.message || "Update Failed!");
-  //       setShowToast(true);
-  //     }
-  //   } catch (err) {
-  //     console.error("Update API error:", err);
-  //     setError(err.message || "Something went wrong");
-  //     setShowToast(true);
-  //     // return false;
-  //   }
-  // };
-
-  // async function goNext(selectedAction) {
-  //   const { missingFields, notFormattedFields } = validateStepData(currentStepData);
-
-  //   if (missingFields.length > 0) {
-  //     setError(`Please fill the following field: ${missingFields[0]}`);
-  //     setShowToast(true);
-  //     return;
-  //   }
-
-  //   if (notFormattedFields.length > 0) {
-  //     setError(`Please format the following field: ${notFormattedFields[0]}`);
-  //     setShowToast(true);
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await onSubmit(currentStepData, selectedAction);
-  //     console.log("response", response);
-
-  //     if (response === true) {
-  //       console.log("Submission successful, moving to next step.");
-  //       onGoNext();
-  //     } else {
-  //       console.error("Submission failed due to business logic.");
-  //       setError(response?.Errors?.message || "Update failed due to invalid data or workflow state.");
-  //       setShowToast(true);
-  //     }
-  //   } catch (err) {
-  //     console.error("API call failed:", err);
-  //     setError(err.message || "Something went wrong during submission.");
-  //     setShowToast(true);
-  //   }
-  // }
-
-  // const onSubmit = async (data, selectedAction) => {
-  //   const { CreatedResponse, ownerDetails, petDetails: petDetailsFromData, documents: documentWrapper } = data;
-
-  //   const { applicant, petDetails, documents, applicantName, mobileNumber, workflow: existingWorkflow, ...otherDetails } = CreatedResponse;
-
-  //   const formData = {
-  //     applicant: ownerDetails,
-  //     documents: documentWrapper?.documents?.documents || [],
-  //     petDetails: {
-  //       ...petDetailsFromData,
-  //       breedType: petDetailsFromData?.breedType?.name || "",
-  //       petType: petDetailsFromData?.petType?.name || "",
-  //       petGender: petDetailsFromData?.petGender?.name || "",
-  //     },
-  //     ...otherDetails,
-  //     workflow: {
-  //       ...existingWorkflow,
-  //       action: selectedAction?.action || "",
-  //       comments: selectedAction?.action || "",
-  //       status: selectedAction?.action || "",
-  //     },
-  //     applicantName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`,
-  //     mobileNumber: ownerDetails?.mobileNumber,
-  //   };
-
-  //   console.log("Submitting formData:", formData);
-
-  //   // Return the full response to let goNext handle it
-  //   return await Digit.PTRService.update({ PetRegistrationApplications: [formData] }, tenantId);
-  // };
 
   function onGoBack(data) {
     onBackClick(config.key, data);
@@ -252,7 +128,6 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const menuRef = useRef();
   let user = Digit.UserService.getUser();
   const [displayMenu, setDisplayMenu] = useState(false);
-  console.log("displayMenu", displayMenu);
 
   const closeMenu = () => {
     setDisplayMenu(false);
@@ -266,7 +141,6 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     moduleCode: "PTR",
   });
 
-  console.log("workflowDetails", workflowDetails);
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
@@ -311,9 +185,6 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           />
         ) : null}
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
-        {/* <SubmitBar label="Next" submit="submit" /> */}
-
-        {/* <SubmitBar label={t("WF_TAKE_ACTION")} /> */}
       </ActionBar>
 
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}

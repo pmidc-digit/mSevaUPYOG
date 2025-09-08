@@ -25,22 +25,11 @@ const PTRWFApplicationTimeline = (props) => {
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
 
-  console.log("props", props);
-  // const workflowDetails = Digit.Hooks.useWorkflowDetails({
-  //   tenantId: props.application?.tenantId,
-  //   id: props.application?.applicationNumber,
-  //   moduleCode: businessService,
-  // });
-
-  // console.log('workflowDetails', workflowDetails)
-
   const { isLoading, data } = Digit.Hooks.useWorkflowDetails({
     tenantId: props.application?.tenantId,
     id: props.application?.applicationNumber,
     moduleCode: "ptr",
   });
-
-  console.log("data", data);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -75,8 +64,6 @@ const PTRWFApplicationTimeline = (props) => {
 
   const isCitizen = window.location.href.includes("citizen");
 
-  console.log("businessService", businessService);
-
   const showNextActions = (nextActions) => {
     let nextAction = nextActions?.length > 0 && nextActions[0];
     const next = nextActions?.map((action) => action?.action);
@@ -97,7 +84,7 @@ const PTRWFApplicationTimeline = (props) => {
 
                 pathname: isCitizen
                   ? `/digit-ui/citizen/payment/my-bills/${businessService}/${props?.application?.applicationNumber}`
-                  : `/digit-ui/employee/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}`,
+                  : `/digit-ui/employee/payment/collect/pet-services/${props?.application?.applicationNumber}/${tenantId}?tenantId=${tenantId}`,
 
                 state: { tenantId: props.application.tenantId, applicationNumber: props?.application?.applicationNumber },
               }}
@@ -123,7 +110,6 @@ const PTRWFApplicationTimeline = (props) => {
   let user = Digit.UserService.getUser();
   const menuRef = useRef();
   const userRoles = user?.info?.roles?.map((e) => e.code);
-  console.log("userRoles", userRoles);
   let actions =
     data?.actionState?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
@@ -132,10 +118,7 @@ const PTRWFApplicationTimeline = (props) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
-  console.log("actions", actions);
-
   const [displayMenu, setDisplayMenu] = useState(false);
-  console.log("displayMenu", displayMenu);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
@@ -155,10 +138,6 @@ const PTRWFApplicationTimeline = (props) => {
   };
 
   function onActionSelect(action) {
-    console.log("action", action);
-    // "SENDBACKTOCITIZEN"
-    // "REJECT"
-    // "VERIFY"
     const payload = {
       action: [action],
     };
@@ -183,7 +162,6 @@ const PTRWFApplicationTimeline = (props) => {
       workflow: {},
     };
 
-    console.log("datayyy", data);
     const filtData = data?.Licenses?.[0];
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -204,7 +182,6 @@ const PTRWFApplicationTimeline = (props) => {
     };
 
     try {
-      // const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
       const response = await Digit.PTRService.update({
         tenantId,
         ...finalPayload,
@@ -228,20 +205,6 @@ const PTRWFApplicationTimeline = (props) => {
       setShowToast({ key: "error", message: "Something went wrong" });
       setError("Something went wrong");
     }
-
-    // const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
-    // setShowToast(true);
-    // setError("Successfully updated the status");
-    // workflowDetails.revalidate();
-
-    // // ✅ Delay navigation so toast shows
-    // setTimeout(() => {
-    //   history.push("/digit-ui/employee/ndc/inbox");
-    // }, 2000);
-    // // history.push("/digit-ui/employee/ndc/inbox");
-
-    // setSelectedAction(null);
-    // setShowModal(false);
   };
 
   if (isLoading) {

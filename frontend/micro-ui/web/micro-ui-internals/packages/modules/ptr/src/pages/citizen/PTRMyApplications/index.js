@@ -10,7 +10,6 @@ export const PTRMyApplications = () => {
   const user = Digit.UserService.getUser().info;
 
   let filter = window.location.href.split("/").pop();
-  console.log("filter", filter);
   let t1;
   let off;
   if (!isNaN(parseInt(filter))) {
@@ -19,17 +18,13 @@ export const PTRMyApplications = () => {
   } else {
     t1 = 4;
   }
+  
   let filter1 = !isNaN(parseInt(filter))
     ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
     : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0", mobileNumber: user?.mobileNumber, tenantId };
 
-  const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({ filters: {} });
-  // const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch(
-  //   { tenantId, filters: filter1 },
-  //   {}
-  // );
+  const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({ tenantId, filters: filter1 }, {});
 
-  console.log("datafetched", data);
   const { PetRegistrationApplications: applicationsList } = data || {};
   let combinedApplicationNumber = applicationsList?.length > 0 ? applicationsList?.map((ob) => ob?.applicationNumber) : [];
   let serviceSearchArgs = {
@@ -42,7 +37,6 @@ export const PTRMyApplications = () => {
     { filters: { serviceSearchArgs }, enabled: combinedApplicationNumber?.length > 0 ? true : false, cacheTime: 0 }
   );
 
-  console.log("servicedata", servicedata);
   function getLabelValue(curservice) {
     let foundValue = servicedata?.Service?.find((ob) => ob?.referenceId?.includes(curservice?.applicationNumber));
 
@@ -54,7 +48,6 @@ export const PTRMyApplications = () => {
     return <Loader />;
   }
 
-  console.log("applicationsList", applicationsList?.length);
 
   return (
     <React.Fragment>

@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -186,79 +187,73 @@ public class EstimationService {
 
 		if (billingSlabs == null || billingSlabs.isEmpty())
 			throw new CustomException("INVALID_BILLING_SLAB", "Billing Slab are Empty");
-//		if (billingSlabs.size() > 1)
-//			throw new CustomException("INVALID_BILLING_SLAB",
-//					"More than one billing slab found");
-		// Add Billing Slab Ids
-		billingSlabIds.add(billingSlabs.get(0).getId());
 
-		// Sewerage Charge Calculation
 		Double totalUnits = getCalculationUnit(sewerageConnection, calculationAttribute, criteria, property);
-//		if (totalUnits == 0.0)
-//			return sewerageCharge;
-		BillingSlab billSlab = billingSlabs.get(0);
-		if (isRangeCalculation(calculationAttribute)) {
 
-			String waterSubUsageType = (String) additionalDetail.getOrDefault(SWCalculationConstant.WATER_SUBUSAGE_TYPE,
-					null);
-			if (waterSubUsageType == null || waterSubUsageType.isEmpty()) {
-				if (property.getUsageCategory().equalsIgnoreCase("RESIDENTIAL"))
-					waterSubUsageType = "USAGE_DOM_NA";
-				else if (property.getUsageCategory().equalsIgnoreCase("COMMERCIAL"))
-					waterSubUsageType = "USAGE_COMM_NA";
-				else if (property.getUsageCategory().equalsIgnoreCase("INDUSTRIAL"))
-					waterSubUsageType = "USAGE_COMM_NA";
-				else if (property.getUsageCategory().equalsIgnoreCase("INSTITUTIONAL"))
-					waterSubUsageType = "USAGE_COMM_NA";
-			}
-			for (Slab slab : billSlab.getSlabs()) {
+		for (BillingSlab billSlab : billingSlabs) {
+			if (isRangeCalculation(calculationAttribute)) {
 
-				boolean slabCondition = false;
-
-				if (waterSubUsageType != null) {
-					slabCondition = totalUnits >= slab.getFrom() && totalUnits <= slab.getTo()
-							&& slab.getEffectiveFrom() <= System.currentTimeMillis()
-							&& slab.getEffectiveTo() >= System.currentTimeMillis()
-							&& waterSubUsageType.equalsIgnoreCase(billSlab.getWaterSubUsageType());
-				} else {
-					slabCondition = totalUnits >= slab.getFrom() && totalUnits <= slab.getTo()
-							&& slab.getEffectiveFrom() <= System.currentTimeMillis()
-							&& slab.getEffectiveTo() >= System.currentTimeMillis();
+				String waterSubUsageType = (String) additionalDetail
+						.getOrDefault(SWCalculationConstant.WATER_SUBUSAGE_TYPE, null);
+				if (waterSubUsageType == null || waterSubUsageType.isEmpty()) {
+					if (property.getUsageCategory().equalsIgnoreCase("RESIDENTIAL"))
+						waterSubUsageType = "USAGE_DOM_NA";
+					else if (property.getUsageCategory().equalsIgnoreCase("COMMERCIAL"))
+						waterSubUsageType = "USAGE_COMM_NA";
+					else if (property.getUsageCategory().equalsIgnoreCase("INDUSTRIAL"))
+						waterSubUsageType = "USAGE_COMM_NA";
+					else if (property.getUsageCategory().equalsIgnoreCase("INSTITUTIONAL"))
+						waterSubUsageType = "USAGE_COMM_NA";
 				}
+				for (Slab slab : billSlab.getSlabs()) {
 
-				if (slabCondition) {
-					sewerageCharge = BigDecimal.valueOf((slab.getCharge()));
-					request.setTaxPeriodFrom(criteria.getFrom());
-					request.setTaxPeriodTo(criteria.getTo());
-					if (request.getTaxPeriodFrom() > 0 && request.getTaxPeriodTo() > 0) {
-						if (sewerageConnection.getConnectionExecutionDate() > request.getTaxPeriodFrom()) {
-							long milli_sec_btw_conn_date = Math
-									.abs(request.getTaxPeriodTo() - sewerageConnection.getConnectionExecutionDate());
-							long milli_sec_btw_quarter = Math
-									.abs(request.getTaxPeriodTo() - request.getTaxPeriodFrom());
-							// Converting milli seconds to days
-							long days_conn_date = TimeUnit.MILLISECONDS.toDays(milli_sec_btw_conn_date) + 1;
-							long days_quarter = TimeUnit.MILLISECONDS.toDays(milli_sec_btw_quarter) + 1;
+					boolean slabCondition = false;
 
-							// sewerageCharge = BigDecimal.valueOf((totalUnits * slab.getCharge() *
-							// daysDifference));
-							// sewerageCharge = sewerageCharge.add(BigDecimal.valueOf(days_conn_date *
-							// (slab.getCharge() / days_quarter)).setScale(2, 2));
-							sewerageCharge = BigDecimal.valueOf(days_conn_date * (slab.getCharge() / days_quarter))
-									.setScale(2, 2);
+					if (waterSubUsageType != null) {
+						slabCondition = totalUnits >= slab.getFrom() && totalUnits <= slab.getTo()
+								&& slab.getEffectiveFrom() <= System.currentTimeMillis()
+								&& slab.getEffectiveTo() >= System.currentTimeMillis()
+								&& waterSubUsageType.equalsIgnoreCase(billSlab.getWaterSubUsageType());
+					} else {
+						slabCondition = totalUnits >= slab.getFrom() && totalUnits <= slab.getTo()
+								&& slab.getEffectiveFrom() <= System.currentTimeMillis()
+								&& slab.getEffectiveTo() >= System.currentTimeMillis();
+					}
+
+					if (slabCondition) {
+						sewerageCharge = BigDecimal.valueOf((slab.getCharge()));
+						request.setTaxPeriodFrom(criteria.getFrom());
+						request.setTaxPeriodTo(criteria.getTo());
+						if (request.getTaxPeriodFrom() > 0 && request.getTaxPeriodTo() > 0) {
+							if (sewerageConnection.getConnectionExecutionDate() > request.getTaxPeriodFrom()) {
+								long milli_sec_btw_conn_date = Math.abs(
+										request.getTaxPeriodTo() - sewerageConnection.getConnectionExecutionDate());
+								long milli_sec_btw_quarter = Math
+										.abs(request.getTaxPeriodTo() - request.getTaxPeriodFrom());
+								// Converting milli seconds to days
+								long days_conn_date = TimeUnit.MILLISECONDS.toDays(milli_sec_btw_conn_date) + 1;
+								long days_quarter = TimeUnit.MILLISECONDS.toDays(milli_sec_btw_quarter) + 1;
+
+								// sewerageCharge = BigDecimal.valueOf((totalUnits * slab.getCharge() *
+								// daysDifference));
+								// sewerageCharge = sewerageCharge.add(BigDecimal.valueOf(days_conn_date *
+								// (slab.getCharge() / days_quarter)).setScale(2, 2));
+								sewerageCharge = BigDecimal.valueOf(days_conn_date * (slab.getCharge() / days_quarter))
+										.setScale(2, 2);
+							}
+
 						}
 
+						if (billSlab.getMinimumCharge() > sewerageCharge.doubleValue()) {
+							sewerageCharge = BigDecimal.valueOf(billSlab.getMinimumCharge());
+						}
+						break;
 					}
-
-					if (billSlab.getMinimumCharge() > sewerageCharge.doubleValue()) {
-						sewerageCharge = BigDecimal.valueOf(billSlab.getMinimumCharge());
-					}
-					break;
 				}
-			}
 
-		} else {
-			sewerageCharge = BigDecimal.valueOf(billSlab.getMinimumCharge());
+			} else {
+				sewerageCharge = BigDecimal.valueOf(billSlab.getMinimumCharge());
+			}
 		}
 		return sewerageCharge;
 	}
@@ -624,20 +619,32 @@ public class EstimationService {
 		//
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 		// BigDecimal otherCharges=BigDecimal.ZERO;
-		HashMap<String, Object> additionalDetails = mapper
-				.convertValue(criteria.getSewerageConnection().getAdditionalDetails(), HashMap.class);
-		String concategory = additionalDetails.get(SWCalculationConstant.connectionCategory) != null
-				? additionalDetails.get(SWCalculationConstant.connectionCategory).toString()
-				: "null";
-		// if
-		// (additionalDetails.get(SWCalculationConstant.connectionCategory).toString().equalsIgnoreCase("REGULARIZED"))
-		// {
-		if (concategory.equalsIgnoreCase("REGULARIZED")) {
-			if (!(otherCharges.compareTo(BigDecimal.ZERO) == 0))
-				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_OTHER_CHARGE)
-						.estimateAmount(otherCharges.setScale(2, 2)).build());
+		
+		/*
+		 For legacy and Regularized wave off of rest fee slab -PI-18845
+		 --->Abhishek Rana
+		 
+		 */
+		Map<String, Object> additionalDetails = Optional.ofNullable(criteria.getSewerageConnection().getAdditionalDetails())
+		        .map(val -> mapper.convertValue(val, HashMap.class))
+		        .orElse(new HashMap<>());
 
-		} else {
+		String concategory = additionalDetails.get(SWCalculationConstant.connectionCategory) != null
+		        ? additionalDetails.get(SWCalculationConstant.connectionCategory).toString()
+		        : "null";
+
+		if ("REGULARIZED".equalsIgnoreCase(concategory) || "LEGACY".equalsIgnoreCase(concategory)) {
+			/*
+			 For legacy sw connection - PI-18845
+			 --->Sharan Gakhar (branch : pmidc_testing)
+			 
+			 */
+			//			if (otherCharges.compareTo(BigDecimal.ZERO) != 0) {
+		    otherCharges = (otherCharges == null) ? BigDecimal.ZERO : otherCharges;
+	        	estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_OTHER_CHARGE)
+    				.estimateAmount(otherCharges.setScale(2, 2)).build());
+		}
+		else {
 			if (!(formFee.compareTo(BigDecimal.ZERO) == 0))
 				estimates.add(TaxHeadEstimate.builder().taxHeadCode(SWCalculationConstant.SW_FORM_FEE)
 						.estimateAmount(formFee.setScale(2, 2)).build());

@@ -253,17 +253,18 @@ public class EstimationService {
 			Double totalUOM = getUnitOfMeasurement(property, waterConnection, calculationAttribute, criteria);
 //			if (totalUOM == 0.0)
 //				return waterCharge;
-			BillingSlab billSlab = billingSlabs.get(0);
+			for (BillingSlab billSlab : billingSlabs) {
+			    billingSlabIds.add(billSlab.getId());  // collect all slab IDs
+			    log.debug(" Billing Slab Id For Water Charge Calculation --->  " + billingSlabIds.toString());
 
-			log.info("totalUOM: " + totalUOM);
+			    List<Slab> filteredSlabs = billSlab.getSlabs().stream()
+			            .filter(slab -> slab.getFrom() <= totalUOM && slab.getTo() >= totalUOM
+			                    && slab.getEffectiveFrom() <= System.currentTimeMillis()
+			                    && slab.getEffectiveTo() >= System.currentTimeMillis())
+			            .collect(Collectors.toList());
 
-			log.info("Before billingslab  filter: " + billSlab.toString());
+			    if (filteredSlabs.isEmpty()) continue; // skip slabs not valid for this UOM
 
-			List<Slab> filteredSlabs = billSlab.getSlabs().stream()
-					.filter(slab -> slab.getFrom() <= totalUOM && slab.getTo() >= totalUOM
-							&& slab.getEffectiveFrom() <= System.currentTimeMillis()
-							&& slab.getEffectiveTo() >= System.currentTimeMillis())
-					.collect(Collectors.toList());
 			log.info("After billingslab  filter: " + filteredSlabs.size());
 			// IF calculation type is flat then take flat rate else take slab and calculate
 			// the charge
@@ -344,6 +345,7 @@ public class EstimationService {
 				}
 			} else {
 				waterCharge = BigDecimal.valueOf(billSlab.getMinimumCharge());
+			}
 			}
 			return waterCharge;
 		}
@@ -773,15 +775,25 @@ public class EstimationService {
 		BigDecimal tax = totalCharge.multiply(taxAndCessPercentage.divide(WSCalculationConstant.HUNDRED));
 		List<TaxHeadEstimate> estimates = new ArrayList<>();
 		//
+		
+		/*
+		 For legacy and Regularized wave off of rest fee slab -PI-18845
+		 --->Abhishek Rana
+		 
+		 */
 		HashMap<String, Object> additionalDetails = mapper
 				.convertValue(criteria.getWaterConnection().getAdditionalDetails(), HashMap.class);
-		if (additionalDetails.get(WSCalculationConstant.connectionCategory).toString()
-				.equalsIgnoreCase("REGULARIZED")) {
+		Object categoryObj = additionalDetails.get(WSCalculationConstant.connectionCategory);
+		String category = categoryObj != null ? categoryObj.toString().toUpperCase() : null;
 
-			if (!(otherCharges.compareTo(BigDecimal.ZERO) == 0))
-				estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_OTHER_CHARGE)
-						.estimateAmount(otherCharges.setScale(2, 2)).build());
-
+		if ("REGULARIZED".equals(category) || "LEGACY".equals(category)) {
+//		    if (otherCharges.compareTo(BigDecimal.ZERO) != 0) {
+			otherCharges = (otherCharges == null) ? BigDecimal.ZERO : otherCharges;
+		        estimates.add(TaxHeadEstimate.builder()
+		                .taxHeadCode(WSCalculationConstant.WS_OTHER_CHARGE)
+		                .estimateAmount(otherCharges.setScale(2, 2))
+		                .build());
+		    
 		} else {
 			if (!(formFee.compareTo(BigDecimal.ZERO) == 0))
 				estimates.add(TaxHeadEstimate.builder().taxHeadCode(WSCalculationConstant.WS_FORM_FEE)

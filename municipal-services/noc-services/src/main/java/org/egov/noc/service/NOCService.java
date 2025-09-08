@@ -186,6 +186,7 @@ public class NOCService {
 				if(businessService == null)
 					nocRepository.update(nocRequest, true);
 				else
+
 					nocRepository.update(nocRequest, workflowService.isStateUpdatable(nocRequest.getNoc().getApplicationStatus(), businessService));
 			}else {
 				nocRepository.update(nocRequest, Boolean.FALSE);

@@ -154,9 +154,11 @@ public class EnrichmentService {
 
 				for (Document doc : documents) {
 //					doc.setId(UUID.randomUUID().toString()); // Set your desired ID here
-					doc.setNocId(nocRequest.getNoc().getId());
-					doc.setDocumentUid(UUID.randomUUID().toString());
+					if (doc.getDocumentUid() == null) {
+						doc.setNocId(nocRequest.getNoc().getId());
+						doc.setDocumentUid(UUID.randomUUID().toString());
 //					doc.setDocumentAttachment(UUID.randomUUID().toString());
+					}
 
 				}
 			});
@@ -169,10 +171,12 @@ public class EnrichmentService {
 
 
 				for (Document doc : documents) {
+					if (doc.getDocumentUid() == null){
 					doc.setUuid(UUID.randomUUID().toString()); // Set your desired ID here
 					doc.setNocId(nocRequest.getNoc().getId());
 					doc.setDocumentUid(UUID.randomUUID().toString());
 					doc.setDocumentAttachment(UUID.randomUUID().toString());
+					}
 				}
 			});
 		}

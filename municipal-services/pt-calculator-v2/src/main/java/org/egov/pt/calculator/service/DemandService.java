@@ -324,62 +324,82 @@ public class DemandService {
 				 */				
 				JSONArray otsArray = (JSONArray) timeBasedExmeptionMasterMap.get("Ots");
 
-			
-					if (otsArray != null && !otsArray.isEmpty()) {
-					    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-					    boolean anyOtsApplied = false;
+				if (otsArray != null && !otsArray.isEmpty()) {
+				    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+				    boolean anyOtsApplied = false;
 
-					    int demandFY = getFinancialYearStart(demand.getTaxPeriodFrom());
+				    int demandFY = getFinancialYearStart(demand.getTaxPeriodFrom());
 
-					    for (Object item : otsArray) {
-					        if (item instanceof Map) {
-					            Map<String, Object> penaltyMap = (Map<String, Object>) item;
-					            boolean otsEnabledFlag = Boolean.parseBoolean(String.valueOf(penaltyMap.get("isOTSEnabled")));
+				    for (Object item : otsArray) {
+				        if (item instanceof Map) {
+				            Map<String, Object> penaltyMap = (Map<String, Object>) item;
+				            boolean otsEnabledFlag = Boolean.parseBoolean(String.valueOf(penaltyMap.get("isOTSEnabled")));
 
-					            if (otsEnabledFlag) {
+				            if (otsEnabledFlag) {
+				                Long localStartingEpoch = null;
+				                Long localOtsEndEpoch = null;
 
-					                Long localStartingEpoch = null;
-					                Long localOtsEndEpoch = null;
-					                BigDecimal localOtsRate = BigDecimal.ZERO;
+				                if (penaltyMap.get("startingDay") != null) {
+				                    LocalDate localDate = LocalDate.parse(penaltyMap.get("startingDay").toString(), formatter);
+				                    localStartingEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+				                }
 
-					                if (penaltyMap.get("startingDay") != null) {
-					                    LocalDate localDate = LocalDate.parse(penaltyMap.get("startingDay").toString(), formatter);
-					                    localStartingEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-					                }
+				                if (penaltyMap.get("OTSEndDate") != null) {
+				                    LocalDate localDate = LocalDate.parse(penaltyMap.get("OTSEndDate").toString(), formatter);
+				                    localOtsEndEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+				                }
 
-					                if (penaltyMap.get("OTSEndDate") != null) {
-					                    LocalDate localDate = LocalDate.parse(penaltyMap.get("OTSEndDate").toString(), formatter);
-					                    localOtsEndEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-					                }
+				                // Extract interest and penalty rates
+				                BigDecimal interestRate = penaltyMap.get("interestRatePercent") != null
+				                        ? new BigDecimal(penaltyMap.get("interestRatePercent").toString())
+				                        : null;
+				                BigDecimal penaltyRate = penaltyMap.get("penaltyRatePercent") != null
+				                        ? new BigDecimal(penaltyMap.get("penaltyRatePercent").toString())
+				                        : null;
 
-					                if (penaltyMap.get("rate") != null) {
-					                    localOtsRate = new BigDecimal(penaltyMap.get("rate").toString());
-					                }
+				                // If JSON has explicit financial year mapping
+				                String fyApplicable = penaltyMap.get("financialYearsApplicable") != null
+				                        ? penaltyMap.get("financialYearsApplicable").toString()
+				                        : null;
 
-					                if (localStartingEpoch != null && localOtsEndEpoch != null) {
-					                    int otsFYStart = getFinancialYearStart(localStartingEpoch);
-					                    int otsFYEnd = getFinancialYearStart(localOtsEndEpoch);
+				                if (fyApplicable != null) {
+				                    int otsFY = getFinancialYearStart(
+				                            LocalDate.parse("01/04/" + fyApplicable.split("-")[0], DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+				                                    .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+				                    );
 
-					                    if (demandFY >= otsFYStart && demandFY <= otsFYEnd) {
-					                        log.info("OTS is Enabled and Applicable for FY: {} (Rate: {})", demandFY, localOtsRate);
-					                        otsEnabled(demand, localOtsRate);
-					                        anyOtsApplied = true;
-					                    }
+				                    if (demandFY == otsFY) {
+				                        log.info("OTS is Enabled for FY: {} (InterestRate: {}, PenaltyRate: {})",
+				                                demandFY, interestRate, penaltyRate);
+				                        otsEnabled(demand, interestRate, penaltyRate);
+				                        anyOtsApplied = true;
+				                    }
+				                }
+				                // Else check by date validity
+				                else if (localStartingEpoch != null && localOtsEndEpoch != null &&
+				                        demand.getTaxPeriodFrom() >= localStartingEpoch &&
+				                        localOtsEndEpoch >= System.currentTimeMillis()) {
 
-					                }
-					            }
-					        }
-					    }
+				                    log.info("OTS Enabled (Date Based) for Period {} - {}, InterestRate: {}, PenaltyRate: {}",
+				                            demand.getTaxPeriodFrom(), demand.getTaxPeriodTo(), interestRate, penaltyRate);
 
-					    if (!anyOtsApplied) {
-					        log.info("No applicable OTS found for FY: {}. Applying normal exemptions.", demandFY);
-					        applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
-					    }
+				                    otsEnabled(demand, interestRate, penaltyRate);
+				                    anyOtsApplied = true;
+				                }
+				            }
+				        }
+				    }
 
-					} else {
-					    log.info("OTS array empty. Applying normal exemptions.");
-					    applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
-					}
+				    if (!anyOtsApplied) {
+				        log.info("No applicable OTS found for FY: {}. Applying normal exemptions.", demandFY);
+				        applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
+				    }
+
+				} else {
+				    log.info("OTS array empty. Applying normal exemptions.");
+				    applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
+				}
+
 
 
 				roundOffDecimalForDemand(demand, requestInfoWrapper);
@@ -780,7 +800,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 	 * OTS Configuration Fix - PI-18953 ( Abhishek Rana)
 	 */	
 	
-	private boolean otsEnabled(Demand demand, BigDecimal rate) {
+	private boolean otsEnabled(Demand demand, BigDecimal interestRate, BigDecimal penaltyRate) {
 	    String demandId = demand.getId();
 	    String tenantId = demand.getTenantId();
 	    List<DemandDetail> details = demand.getDemandDetails();
@@ -813,16 +833,22 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 	    BigDecimal unpaidPenalty = totalPenalty.subtract(collectedPenalty);
 	    BigDecimal unpaidInterest = totalInterest.subtract(collectedInterest);
 
-	    BigDecimal penaltyWaveoff = unpaidPenalty.multiply(rate)
-	    	    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
-	    	    .setScale(0, RoundingMode.HALF_UP);
+	    BigDecimal penaltyWaveoff = BigDecimal.ZERO;
+	    BigDecimal interestWaveoff = BigDecimal.ZERO;
 
-	    	BigDecimal interestWaveoff = unpaidInterest.multiply(rate)
-	    	    .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
-	    	    .setScale(0, RoundingMode.HALF_UP);
+	    if (penaltyRate != null) {
+	        penaltyWaveoff = unpaidPenalty.multiply(penaltyRate)
+	                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+	                .setScale(0, RoundingMode.HALF_UP);
+	    }
 
+	    if (interestRate != null) {
+	        interestWaveoff = unpaidInterest.multiply(interestRate)
+	                .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)
+	                .setScale(0, RoundingMode.HALF_UP);
+	    }
 
-	    if (unpaidPenalty.compareTo(BigDecimal.ZERO) > 0) {
+	    if (unpaidPenalty.compareTo(BigDecimal.ZERO) > 0 && penaltyWaveoff.compareTo(BigDecimal.ZERO) > 0) {
 	        if (existingPenaltyWaveoff != null) {
 	            existingPenaltyWaveoff.setTaxAmount(penaltyWaveoff.negate());
 	        } else {
@@ -835,8 +861,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 	        }
 	    }
 
-
-	    if (unpaidInterest.compareTo(BigDecimal.ZERO) > 0) {
+	    if (unpaidInterest.compareTo(BigDecimal.ZERO) > 0 && interestWaveoff.compareTo(BigDecimal.ZERO) > 0) {
 	        if (existingInterestWaveoff != null) {
 	            existingInterestWaveoff.setTaxAmount(interestWaveoff.negate());
 	        } else {
@@ -851,6 +876,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 
 	    return true;
 	}
+
 
 
 

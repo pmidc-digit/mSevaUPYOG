@@ -326,7 +326,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     <div style={{ marginBottom: "16px" }}>
       {formData?.cpt?.details && (
         <div>
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
               <div style={{ display: "flex", flexDirection: "row" }}>
                 {propertyLoader ? (
@@ -342,7 +342,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           fetchBill("PT", formData?.cpt?.id);
                         }}
                       >
-                        {/* {`${t("CHECK_STATUS_Property")}`} */}
                         Check Status for Property
                       </button>
                     )}
@@ -352,9 +351,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                         className="submit-bar"
                         type="button"
                         style={{ color: "white" }}
-                        onClick={() => {
-                          // setSelectedBillData(propertyDetails?.propertyBillData?.billData);
-                          // setShowPayModal(true);
+                        onClick={() => {                          
                           redirectToPayBill(propertyDetails?.propertyBillData?.billData);
                         }}
                       >
@@ -369,7 +366,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                 )}
               </div>
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
 
           <LabelFieldPair style={{ marginTop: "40px" }}>
             <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")}`}</CardLabel>

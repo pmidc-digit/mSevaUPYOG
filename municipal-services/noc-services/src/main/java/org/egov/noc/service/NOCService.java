@@ -16,10 +16,7 @@ import org.egov.noc.repository.ServiceRequestRepository;
 import org.egov.noc.util.NOCConstants;
 import org.egov.noc.util.NOCUtil;
 import org.egov.noc.validator.NOCValidator;
-import org.egov.noc.web.model.Noc;
-import org.egov.noc.web.model.NocRequest;
-import org.egov.noc.web.model.NocSearchCriteria;
-import org.egov.noc.web.model.RequestInfoWrapper;
+import org.egov.noc.web.model.*;
 import org.egov.noc.web.model.bpa.BPA;
 import org.egov.noc.web.model.bpa.BPAResponse;
 import org.egov.noc.web.model.bpa.BPASearchCriteria;
@@ -94,7 +91,7 @@ public class NOCService {
 		enrichmentService.enrichCreateRequest(nocRequest, mdmsData);
 		if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow()) && !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
 //		  wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
-			wfIntegrator.callWorkFlow(nocRequest,"obpas_noc");
+			wfIntegrator.callWorkFlow(nocRequest,NOCConstants.NOC_BUSINESS_SERVICE);
 		}else{
 		  nocRequest.getNoc().setApplicationStatus(NOCConstants.CREATED_STATUS);
 		}
@@ -143,17 +140,17 @@ public class NOCService {
 			additionalDetails = nocValidator.getOrValidateBussinessService(nocRequest.getNoc(), mdmsData);
 		}
 		Noc searchResult= null;
-		if(nocRequest.getNoc().getApplicationStatus().equals(NOCConstants.NOC_INITIATED)){
+		if(nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE) || nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_APPLY)){
 			searchResult = new Noc();
 			searchResult.setAuditDetails(nocRequest.getNoc().getAuditDetails());
 			searchResult.setApplicationNo(nocRequest.getNoc().getApplicationNo());
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
-				wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
-				enrichmentService.postStatusEnrichment(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
+				wfIntegrator.callWorkFlow(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
+				enrichmentService.postStatusEnrichment(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
-						nocRequest.getRequestInfo(), additionalDetails.get(NOCConstants.WORKFLOWCODE));
+						nocRequest.getRequestInfo(), NOCConstants.NOC_BUSINESS_SERVICE);
 				if(businessService == null)
 					nocRepository.update(nocRequest, true);
 				else
@@ -172,13 +169,14 @@ public class NOCService {
 				throw new CustomException("AutoApproveException","NOC_UPDATE_ERROR_AUTO_APPROVED_TO_INPROGRESS_NOTALLOWED");
 			}
 //			nocValidator.validateUpdate(nocRequest, searchResult, additionalDetails.get(NOCConstants.MODE), mdmsData);
+
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
-				wfIntegrator.callWorkFlow(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
-				enrichmentService.postStatusEnrichment(nocRequest, additionalDetails.get(NOCConstants.WORKFLOWCODE));
+				wfIntegrator.callWorkFlow(nocRequest,NOCConstants.NOC_BUSINESS_SERVICE);
+				enrichmentService.postStatusEnrichment(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
-						nocRequest.getRequestInfo(), additionalDetails.get(NOCConstants.WORKFLOWCODE));
+						nocRequest.getRequestInfo(), NOCConstants.NOC_BUSINESS_SERVICE);
 
 
 				if (nocRequest.getNoc().getWorkflow().getAction().equalsIgnoreCase(NOCConstants.ACTION_APPROVE)) {
@@ -194,12 +192,10 @@ public class NOCService {
 			}
 		}
 
-
-
-
-
-
-
+		List<OwnerInfo> owners = nocRequest.getNoc().getOwners();
+		if (owners != null) {
+			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
+		}
 
 
 		

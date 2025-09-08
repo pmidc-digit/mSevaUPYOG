@@ -637,7 +637,7 @@ export const SuccessfulPayment = (props) => {
               </div>
             ) : null}
 
-            {businessService !== "chb-services" &&
+            {/* {businessService !== "chb-services" &&
               businessService !== "adv-services" &&
               businessService !== "sv-services" &&
               businessService !== "pet-services" && (
@@ -652,7 +652,7 @@ export const SuccessfulPayment = (props) => {
                   </svg>
                   {t("CS_COMMON_PRINT_RECEIPT")}
                 </div>
-              )}
+              )} */}
 
             {businessService == "sv-services" ? (
               <div

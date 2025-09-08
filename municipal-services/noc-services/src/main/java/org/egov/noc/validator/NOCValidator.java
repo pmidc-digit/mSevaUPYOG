@@ -109,13 +109,13 @@ public class NOCValidator {
 		}
 		Object additionalDetailsObj = noc.getNocDetails().getAdditionalDetails();
 		Map<String, String> businessValues = new HashMap<>();
-		businessValues.put(NOCConstants.MODE, (String) jsonOutput.get(0).get(NOCConstants.MODE));
+//		businessValues.put(NOCConstants.MODE, (String) jsonOutput.get(0).get(NOCConstants.MODE));
 		String uniquePropertyId = UUID.randomUUID().toString();
 		businessValues.put(NOCConstants.SOURCE_RefId, uniquePropertyId);
-		if (jsonOutput.get(0).get(NOCConstants.MODE).equals(NOCConstants.ONLINE_MODE))
-			businessValues.put(NOCConstants.WORKFLOWCODE, (String) jsonOutput.get(0).get(NOCConstants.ONLINE_WF));
-		else
-			businessValues.put(NOCConstants.WORKFLOWCODE, (String) jsonOutput.get(0).get(NOCConstants.OFFLINE_WF));
+//		if (jsonOutput.get(0).get(NOCConstants.MODE).equals(NOCConstants.ONLINE_MODE))
+//			businessValues.put(NOCConstants.WORKFLOWCODE, (String) jsonOutput.get(0).get(NOCConstants.ONLINE_WF));
+//		else
+//			businessValues.put(NOCConstants.WORKFLOWCODE, (String) jsonOutput.get(0).get(NOCConstants.OFFLINE_WF));
 
 		if (!ObjectUtils.isEmpty(noc.getWorkflow()) && !StringUtils.isEmpty(noc.getWorkflow().getAction()) && noc.getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE)) {
 			businessValues.put(NOCConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));

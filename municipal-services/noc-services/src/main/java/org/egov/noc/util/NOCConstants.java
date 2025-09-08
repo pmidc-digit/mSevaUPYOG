@@ -12,6 +12,7 @@ public class NOCConstants {
 	public static final String ACTION_PAY ="PAY";
 	public static final String NOC_TYPE = "NocType";
 	public static final String SOURCE_RefId = "SourceRefId";
+	public static final String ACTION_APPLY = "APPLY";
 	// mdms path codes
 
     public static final String NOC_JSONPATH_CODE = "$.MdmsRes.NOC";

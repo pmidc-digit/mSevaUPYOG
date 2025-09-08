@@ -724,7 +724,7 @@ const bills = {
             let messageText = event.message.input;
             messageText = messageText.toLowerCase();
             let isValid = ((messageText === 'main menu' || messageText === 'pay other bill') && dialog.validateInputType(event, 'button'));
-            //let textValid = (messageText === '1' || messageText === '2');
+            let textValid = (messageText === '1' || messageText === '2');
             context.message = {
               isValid: (isValid || textValid),
               messageContent: messageText

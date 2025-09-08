@@ -332,56 +332,36 @@ public class DemandService {
 
 				    for (Object item : otsArray) {
 				        if (item instanceof Map) {
-				            Map<String, Object> penaltyMap = (Map<String, Object>) item;
-				            boolean otsEnabledFlag = Boolean.parseBoolean(String.valueOf(penaltyMap.get("isOTSEnabled")));
+				            Map<String, Object> otsMap = (Map<String, Object>) item;
+				            boolean otsEnabledFlag = Boolean.parseBoolean(String.valueOf(otsMap.get("isOTSEnabled")));
 
 				            if (otsEnabledFlag) {
-				                Long localStartingEpoch = null;
-				                Long localOtsEndEpoch = null;
+				                Long otsEndEpoch = null;
+				                BigDecimal interestRate = BigDecimal.ZERO;
+				                BigDecimal penaltyRate = BigDecimal.ZERO;
 
-				                if (penaltyMap.get("startingDay") != null) {
-				                    LocalDate localDate = LocalDate.parse(penaltyMap.get("startingDay").toString(), formatter);
-				                    localStartingEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+				                if (otsMap.get("OTSEndDate") != null) {
+				                    LocalDate localDate = LocalDate.parse(otsMap.get("OTSEndDate").toString(), formatter);
+				                    otsEndEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
 				                }
 
-				                if (penaltyMap.get("OTSEndDate") != null) {
-				                    LocalDate localDate = LocalDate.parse(penaltyMap.get("OTSEndDate").toString(), formatter);
-				                    localOtsEndEpoch = localDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
+				                if (otsMap.get("interestRatePercent") != null) {
+				                    interestRate = new BigDecimal(otsMap.get("interestRatePercent").toString());
 				                }
 
-				                // Extract interest and penalty rates
-				                BigDecimal interestRate = penaltyMap.get("interestRatePercent") != null
-				                        ? new BigDecimal(penaltyMap.get("interestRatePercent").toString())
-				                        : null;
-				                BigDecimal penaltyRate = penaltyMap.get("penaltyRatePercent") != null
-				                        ? new BigDecimal(penaltyMap.get("penaltyRatePercent").toString())
-				                        : null;
-
-				                // If JSON has explicit financial year mapping
-				                String fyApplicable = penaltyMap.get("financialYearsApplicable") != null
-				                        ? penaltyMap.get("financialYearsApplicable").toString()
-				                        : null;
-
-				                if (fyApplicable != null) {
-				                    int otsFY = getFinancialYearStart(
-				                            LocalDate.parse("01/04/" + fyApplicable.split("-")[0], DateTimeFormatter.ofPattern("dd/MM/yyyy"))
-				                                    .atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-				                    );
-
-				                    if (demandFY == otsFY) {
-				                        log.info("OTS is Enabled for FY: {} (InterestRate: {}, PenaltyRate: {})",
-				                                demandFY, interestRate, penaltyRate);
-				                        otsEnabled(demand, interestRate, penaltyRate);
-				                        anyOtsApplied = true;
-				                    }
+				                if (otsMap.get("penaltyRatePercent") != null) {
+				                    penaltyRate = new BigDecimal(otsMap.get("penaltyRatePercent").toString());
 				                }
-				                // Else check by date validity
-				                else if (localStartingEpoch != null && localOtsEndEpoch != null &&
-				                        demand.getTaxPeriodFrom() >= localStartingEpoch &&
-				                        localOtsEndEpoch >= System.currentTimeMillis()) {
 
-				                    log.info("OTS Enabled (Date Based) for Period {} - {}, InterestRate: {}, PenaltyRate: {}",
-				                            demand.getTaxPeriodFrom(), demand.getTaxPeriodTo(), interestRate, penaltyRate);
+				                String fyApplicable = otsMap.get("financialYearsApplicable") != null
+				                        ? otsMap.get("financialYearsApplicable").toString() : null;
+
+				                // Check if demand FY matches OTS FY and OTS has not ended yet
+				                if (fyApplicable != null && fyApplicable.contains(demandFY + "-" + (demandFY + 1))
+				                        && otsEndEpoch != null && otsEndEpoch >= System.currentTimeMillis()) {
+
+				                    log.info("OTS is Enabled and Applicable for FY: {} (Interest: {}%, Penalty: {}%)",
+				                            fyApplicable, interestRate, penaltyRate);
 
 				                    otsEnabled(demand, interestRate, penaltyRate);
 				                    anyOtsApplied = true;
@@ -399,6 +379,7 @@ public class DemandService {
 				    log.info("OTS array empty. Applying normal exemptions.");
 				    applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
 				}
+
 
 
 

@@ -40,14 +40,13 @@ public class EnrichmentService {
 		bookingDetail.setAuditDetails(auditDetails);
 		bookingDetail.setBookingId(bookingId);
 		bookingDetail.setApplicationDate(auditDetails.getCreatedTime());
-		bookingDetail.setBookingStatus(BookingStatusEnum.valueOf(bookingDetail.getBookingStatus()).toString());
+		// Remove manual status setting - let workflow engine handle status
 		
-		//Updating id and status for slot details
+		//Updating id for slot details (remove manual status setting)
 		bookingDetail.getBookingSlotDetails().stream().forEach(slot -> {
 			slot.setBookingId(bookingId);
 			slot.setSlotId(CommunityHallBookingUtil.getRandonUUID());
-			//Check Slot staus before setting TODO: booking_created
-			slot.setStatus(BookingStatusEnum.valueOf(slot.getStatus()).toString());
+			// Remove manual slot status setting - workflow will handle this
 			slot.setAuditDetails(auditDetails);
 		});
 		
@@ -73,6 +72,14 @@ public class EnrichmentService {
 		log.info("Enriched booking request for booking no :" + customIds.get(0));
 
 		bookingDetail.setBookingNo(customIds.get(0));
+
+		// Set business service and module name in workflow if workflow object is provided
+		if (bookingDetail.getWorkflow() != null) {
+			bookingDetail.getWorkflow().setBusinessService(config.getBusinessServiceName());
+			bookingDetail.getWorkflow().setModuleName(config.getModuleName());
+			bookingDetail.getWorkflow().setTenantId(bookingDetail.getTenantId());
+			bookingDetail.getWorkflow().setBusinessId(customIds.get(0));
+		}
 
 	}
 
@@ -100,16 +107,22 @@ public class EnrichmentService {
 	public void enrichUpdateBookingRequest(CommunityHallBookingRequest communityHallsBookingRequest, BookingStatusEnum statusEnum) {
 		AuditDetails auditDetails = CommunityHallBookingUtil.getAuditDetails(communityHallsBookingRequest.getRequestInfo().getUserInfo().getUuid(), false);
 		CommunityHallBookingDetail bookingDetail = communityHallsBookingRequest.getHallsBookingApplication();
-		if(statusEnum != null) {
-			bookingDetail.setBookingStatus(statusEnum.toString());
-			//bookingDetail.setReceiptNo(paymentRequest.getPayment().getTransactionNumber());;
-			bookingDetail.getBookingSlotDetails().stream().forEach(slot -> {
-				slot.setStatus(statusEnum.toString());
-			});
+		
+		// Remove manual status setting - workflow engine will handle all status transitions
+		// Only set payment date for payment-related updates
+		if (statusEnum != null && (statusEnum == BookingStatusEnum.BOOKED || statusEnum == BookingStatusEnum.PAYMENT_FAILED)) {
+			communityHallsBookingRequest.getHallsBookingApplication().setPaymentDate(auditDetails.getLastModifiedTime());
 		}
-		communityHallsBookingRequest.getHallsBookingApplication().setPaymentDate(auditDetails.getLastModifiedTime());
+		
 		communityHallsBookingRequest.getHallsBookingApplication().setAuditDetails(auditDetails);
 		
+		// Enrich workflow metadata if workflow object exists
+		if (bookingDetail.getWorkflow() != null) {
+			bookingDetail.getWorkflow().setBusinessService("CHB");
+			bookingDetail.getWorkflow().setModuleName("CHB");
+			bookingDetail.getWorkflow().setTenantId(bookingDetail.getTenantId());
+			bookingDetail.getWorkflow().setBusinessId(bookingDetail.getBookingNo());
+		}
 	}
 
 }

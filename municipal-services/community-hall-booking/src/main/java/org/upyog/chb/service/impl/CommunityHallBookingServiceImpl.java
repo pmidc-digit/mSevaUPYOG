@@ -19,13 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.upyog.chb.constants.CommunityHallBookingConstants;
+import org.upyog.chb.constants.WorkflowStatus;
 import org.upyog.chb.enums.BookingStatusEnum;
 import org.upyog.chb.repository.CommunityHallBookingRepository;
-import org.upyog.chb.service.BookingTimerService;
-import org.upyog.chb.service.CHBEncryptionService;
-import org.upyog.chb.service.CommunityHallBookingService;
-import org.upyog.chb.service.DemandService;
-import org.upyog.chb.service.EnrichmentService;
+import org.upyog.chb.service.*;
 import org.upyog.chb.util.CommunityHallBookingUtil;
 import org.upyog.chb.util.MdmsUtil;
 import org.upyog.chb.validator.CommunityHallBookingValidator;
@@ -51,10 +48,8 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 	@Autowired
 	private CommunityHallBookingValidator hallBookingValidator;
 
-	/*
-	 * @Autowired private WorkflowService workflowService;
-	 */
-
+	@Autowired
+	private WorkflowService workflowService;
 	@Autowired
 	private EnrichmentService enrichmentService;
 
@@ -96,10 +91,11 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		 * cancelled otherwise after payment booking will be auto approved
 		 * 
 		 */
-
-		// 3.Update workflow of the application
-		// workflowService.updateWorkflow(communityHallsBookingRequest,
-		// WorkflowStatus.CREATE);
+		//3.Update workflow of the application - only if workflow object is provided
+		if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null 
+				&& communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction() != null) {
+			workflowService.updateWorkflow(communityHallsBookingRequest, WorkflowStatus.CREATE);
+		}
 
 		demandService.createDemand(communityHallsBookingRequest, mdmsData, true);
 
@@ -212,7 +208,15 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 
 		convertBookingRequest(communityHallsBookingRequest, bookingDetails.get(0));
 
-		enrichmentService.enrichUpdateBookingRequest(communityHallsBookingRequest, status);
+		// Only enrich with audit details and workflow metadata - no manual status setting
+		enrichmentService.enrichUpdateBookingRequest(communityHallsBookingRequest, null);
+		
+		//Update workflow for status transitions - only if workflow object is provided in request
+		if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null 
+				&& communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction() != null) {
+			workflowService.updateWorkflow(communityHallsBookingRequest, WorkflowStatus.UPDATE);
+		}
+		
 		//Update payment date and receipt no on successful payment when payment detail object is received
 		if (paymentDetail != null) {
 			communityHallsBookingRequest.getHallsBookingApplication().setReceiptNo(paymentDetail.getReceiptNumber());
@@ -247,6 +251,18 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		}
 		CommunityHallBookingDetail bookingDetail = bookingDetails.get(0);
 		communityHallsBookingRequest.setHallsBookingApplication(bookingDetail);
+		
+		// Handle workflow transition for synchronous updates - only if workflow action is provided
+		if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null 
+				&& communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction() != null) {
+			try {
+				workflowService.updateWorkflow(communityHallsBookingRequest, WorkflowStatus.UPDATE);
+			} catch (Exception e) {
+				log.error("Error updating workflow for booking {}: {}", bookingNo, e.getMessage());
+				// Continue with status update even if workflow fails
+			}
+		}
+		
 		bookingRepository.updateBookingSynchronously(bookingDetail.getBookingId(), communityHallsBookingRequest.getRequestInfo().getUserInfo().getUuid(), paymentDetail, status.toString());
 		if(deleteBookingTimer) {
 			log.info("Deleting booking timer with booking id  {}", communityHallsBookingRequest.getHallsBookingApplication().getBookingId());

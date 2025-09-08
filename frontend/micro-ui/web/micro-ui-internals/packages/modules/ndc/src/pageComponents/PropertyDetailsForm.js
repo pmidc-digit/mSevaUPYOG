@@ -465,7 +465,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           <button
             className="submit-bar"
             type="button"
-            style={{ color: "white" }}
+            style={{ color: "white", fontSize: "13px" }}
             onClick={() => {
               addWaterConnection();
             }}
@@ -578,7 +578,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           <button
             className="submit-bar"
             type="button"
-            style={{ color: "white" }}
+            style={{ color: "white", fontSize: " 13px" }}
             onClick={() => {
               addSewerageConnection();
             }}

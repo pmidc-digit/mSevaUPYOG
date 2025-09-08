@@ -147,7 +147,7 @@ export const addUUIDAndAuditDetails = async (request, method = "_update") => {
             let chkUserSearchResponse={}
             chkuserSearchReqCriteria.userName =get(owners[owneriter], "mobileNumber");
             chkuserSearchReqCriteria.mobileNumber = get(owners[owneriter],"mobileNumber");
-            chkuserSearchReqCriteria.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
+            //chkuserSearchReqCriteria.tenantId = envVariables.EGOV_DEFAULT_STATE_ID;
             chkUserSearchResponse = await userService.searchUser(
               RequestInfo,
               chkuserSearchReqCriteria

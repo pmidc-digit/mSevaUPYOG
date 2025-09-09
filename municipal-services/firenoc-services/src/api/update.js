@@ -103,7 +103,8 @@ var validityYears =
   body.FireNOCs = updateStatus(FireNOCs, workflowResponse);
 
   //if (body.FireNOCs[0].fireNOCDetails.applicationDate <= '1756252740000' || body.FireNOCs[0].dateOfApplied <= '1756252740000') {
-  if (body.FireNOCs[0].dateOfApplied <= '1756252740000') {
+  if(body.FireNOCs[0].fireNOCDetails.auditDetails.lastModifiedTime <= '1756252740000'){
+  //if (body.FireNOCs[0].dateOfApplied <= '1756252740000') {
     body.FireNOCs[0].fireNOCDetails.additionalDetail = {
       ...body.FireNOCs[0].fireNOCDetails.additionalDetail,
       validityYears: 1

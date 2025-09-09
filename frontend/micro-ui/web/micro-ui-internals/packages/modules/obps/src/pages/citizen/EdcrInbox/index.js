@@ -9,7 +9,8 @@ import useInboxTableConfig from "./useInboxTableConfig";
 const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem("Citizen.tenant-id");
   const searchFormDefaultValues = {};
   const filterFormDefaultValues = {
     appliactionType: "",

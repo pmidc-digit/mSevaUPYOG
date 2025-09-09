@@ -1,11 +1,13 @@
-import { CardLabel, FormStep, LinkButton, RadioOrSelect, TextInput } from "@mseva/digit-ui-react-components";
+import { CardLabel, FormStep, LinkButton, Loader, RadioOrSelect, TextInput, UploadFile } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import GIS from "./GIS";
 import Timeline from "../components/Timeline";
 import { stringReplaceAll } from "../utils";
+import EXIF from "exif-js";
 
-const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast }) => {
+
+const LocationDetails = ({ t, config, onSelect, userType, formData,setFormData, ownerIndex = 0, addNewOwner, isShowToast }) => {
   let propertyData = JSON.parse(sessionStorage.getItem("Digit_OBPS_PT"));
   let currCity = JSON.parse(sessionStorage.getItem("currentCity")) || {};
   let currPincode = sessionStorage.getItem("currentPincode");
@@ -29,7 +31,14 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
   let [cities, setcitiesopetions] = useState(allCities);
   let validation = {};
   let cityCode = formData?.data?.edcrDetails?.tenantId;
-  // formData = { address: { ...formData?.address } };
+const [sitePhotoGraph, setSitePhotoGraph] = useState(formData?.documents)
+const [uploadedFile, setUploadedFile] = useState(null);
+const [geoLocationFromImg, setGeoLocationFromImg] = useState({ latitude: null, longitude: null });
+const [errors, setError] = useState(null);
+
+const [isUploading, setIsUploading] = useState(false);
+
+
 
   if (!formData.address) {
     formData.address = {};
@@ -39,26 +48,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
-  // useEffect(() => {
-  //   if (!selectedCity || !localities) {
-  //     cities =
-  //     userType && userType === "employee"
-  //         ? allCities.filter((city) => city.code === tenantId)
-  //         : pincode
-  //           ? allCities.filter((city) => city?.pincode?.some((pin) => pin == Number(pincode)))
-  //           : allCities;
-  //     setcitiesopetions(cities);
-  //     if (cities?.length == 0) {
-  //       setPinerror("BPA_PIN_NOT_VALID_ERROR");
-  //     } else if ( cities.length == 1) {
-  //       let selectCity = selectedCity?.code ? selectedCity?.code : selectedCity ? selectedCity : "";
-  //       if (cities?.[0].code != selectCity) {
-  //         setPinerror("BPA_PIN_NOT_VALID_ERROR")
-  //       }
-  //     }
-  //   }
 
-  // }, [pincode]);
 
   useEffect(() => {
     if (!selectedCity || !localities) {
@@ -179,22 +169,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
     setIsOpen(false);
     setPinerror(null);
   }
-  // function selectPincode(e) {
-  //   setPinerror(null);
-  //   if(((typeof e === 'object' && e !== null) ? e.target.value : e) !== "")
-  //   if(!(((typeof e === 'object' && e !== null) ? e.target.value : e).match(/^[1-9][0-9]{5}$/)))
-  //   {
-  //     setPinerror("BPA_PIN_NOT_VALID_ERROR");
-  //   }
-  //   formData.address["pincode"] = (typeof e === 'object' && e !== null) ? e.target.value : e;
-  //   setPincode((typeof e === 'object' && e !== null) ? e.target.value : e);
-  //   sessionStorage.setItem("currentPincode", (typeof e === 'object' && e !== null) ? e.target.value : e);
-  //   sessionStorage.setItem("currentCity", JSON.stringify({ }));
-  //   sessionStorage.setItem("currLocality", JSON.stringify({ }));
-  //   setSelectedLocality(null);
-  //   setLocalities(null);
-  //   //setSelectedCity(null);
-  // }
+
 
   function selectPincode(e) {
     const val = typeof e === "object" && e !== null ? e.target.value : e;
@@ -226,8 +201,7 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
     sessionStorage.setItem("currLocality", JSON.stringify({}));
     setPincode("");
     setSelectedLocality(null);
-    //setLocalities(null);
-    //setSelectedCity(null);
+
   }
 
   function selectLandmark(e) {
@@ -242,19 +216,88 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
     formData.address["city"] = city;
   }
 
-  // function selectLocality(locality) {
-  //   if (formData?.address?.locality) {
-  //     formData.address["locality"] = locality;
-  //   }
-  //   setSelectedLocality(locality);
-  //   sessionStorage.setItem("currLocality", JSON.stringify(locality));
-  // }
+
 
   function selectLocality(locality) {
     setSelectedLocality(locality);
     formData.address["locality"] = locality;
     sessionStorage.setItem("currLocality", JSON.stringify(locality));
   }
+
+
+
+  function convertToDecimal([degrees, minutes, seconds], ref) {
+  const d = degrees?.numerator / degrees?.denominator || 0;
+  const m = minutes?.numerator / minutes?.denominator || 0;
+  const s = seconds?.numerator / seconds?.denominator || 0;
+
+  let decimal = d + m / 60 + s / 3600;
+  if (ref === "S" || ref === "W") decimal = -decimal;
+  return decimal;
+}
+
+function extractGeoLocation(file) {
+  return new Promise((resolve) => {
+    EXIF.getData(file, function () {
+      const lat = EXIF.getTag(this, "GPSLatitude");
+      const lon = EXIF.getTag(this, "GPSLongitude");
+      const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+      const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+
+      if (lat && lon && latRef && lonRef) {
+        const latitude = convertToDecimal(lat, latRef);
+        const longitude = convertToDecimal(lon, lonRef);
+        resolve({ latitude, longitude });
+      } else {
+        resolve({ latitude: null, longitude: null });
+      }
+    });
+  });
+}
+
+async function selectfiles(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+
+  const geo = await extractGeoLocation(file);
+  if (!geo.latitude || !geo.longitude) {
+    setError("This image does not contain GPS location data");
+    setUploadedFile(null);
+    setGeoLocationFromImg({ latitude: null, longitude: null });
+    return;
+  }
+
+  setError(null);
+  setGeoLocationFromImg(geo);
+  setIsUploading(true)
+
+  try {
+  
+    const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+    if (response?.data?.files?.length > 0) {
+      const fileStoreId = response.data.files[0].fileStoreId;
+      setUploadedFile(fileStoreId);
+
+
+      setSitePhotoGraph(fileStoreId);
+      formData.documents = { ...formData.documents, sitePhotoGraph: fileStoreId };
+
+
+  
+
+    } else {
+      setError("File upload failed");
+    }
+  } catch (err) {
+    setError("File upload error");
+  }finally{
+    setIsUploading(false)
+  }
+}
+
+
+
 
   return (
     <div>
@@ -335,25 +378,13 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
               disabled={propertyData?.address ? true : false}
             />
           )}
-          {/* <CardLabel>{`${t("BPA_CITY_LABEL")}*`}</CardLabel>
-          {!isOpen && (
-            <RadioOrSelect
-              options={cities.sort((a, b) => a.name.localeCompare(b.name))}
-              selectedOption={selectedCity}
-              optionKey="code"
-              onSelect={selectCity}
-              t={t}
-              isDependent={true}
-              //labelKey="TENANT_TENANTS"
-              disabled={propertyData?.address ? true : false}
-            />
-          )} */}
+
           <CardLabel>{`${t("BPA_CITY_LABEL")}*`}</CardLabel>
             {!isOpen && (
               <TextInput
                 value={selectedCity?.name || ""}
-                disable={true}         // makes input non-editable
-                style={{ background: "#f1f1f1" }} // optional grey background to show it’s disabled
+                disable={true}        
+                style={{ background: "#f1f1f1" }} 
               />
             )}
 
@@ -389,38 +420,39 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, ownerIndex =
               />
             </span>
           )}
+           <CardLabel>{`${t("BPA_LOC_SITE_PHOTOGRAPH")}*`}</CardLabel>
 
-          {/* <CardLabel>{`${t("BPA_DETAILS_SRT_NAME_LABEL_NEW")}`}</CardLabel>
-          {!isOpen && (
-            <TextInput
-              style={{}}
-              isMandatory={false}
-              optionKey="i18nKey"
-              t={t}
-              name="street"
-              onChange={selectStreet}
-              value={street}
-              disabled={propertyData?.address ? true : false}
-            />
-          )} */}
-          {/* <CardLabel>{`${t("ES_NEW_APPLICATION_LOCATION_LANDMARK")}`}</CardLabel>
-          {!isOpen && (
-            <TextInput
-              style={{}}
-              isMandatory={false}
-              optionKey="i18nKey"
-              t={t}
-              name="landmark"
-              onChange={selectLandmark}
-              value={landmark}
-              disabled={propertyData?.address ? true : false}
-              // {...(validation = {
-              //     isRequired: true,
-              //     pattern: getPattern("Name"),
-              //     title: t("BPA_INVALID_NAME"),
-              // })}
-            />
-          )} */}
+
+
+              <UploadFile
+                id="loc-site-photo"
+                onUpload={selectfiles}
+                onDelete={() => {
+                  setSitePhotoGraph(null);
+                  setFiles(null);
+                }}
+                message={sitePhotoGraph ? `1 ${t("CS_ACTION_FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                accept=".jpg,.jpeg,.png"
+              />
+
+
+              {isUploading && (
+                <div style={{ marginTop: "12px" }}>
+                  <Loader />
+                  <span style={{ marginLeft: "8px" }}>{t ? t("CS_FILE_UPLOADING") : "Uploading image..."}</span>
+                </div>
+              )}
+
+
+              {!isUploading && geoLocationFromImg.latitude && geoLocationFromImg.longitude && (
+                <div style={{ marginTop: "12px", padding: "8px", border: "1px solid #D6D5D4", borderRadius: 8 }}>
+                  <strong>📍 Extracted Geo Location</strong>
+                  <div>Latitude: {geoLocationFromImg.latitude}</div>
+                  <div>Longitude: {geoLocationFromImg.longitude}</div>
+                </div>
+              )}
+
+
         </FormStep>
       )}
     </div>

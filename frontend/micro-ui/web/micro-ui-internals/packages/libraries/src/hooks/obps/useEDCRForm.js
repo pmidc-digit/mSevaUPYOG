@@ -187,6 +187,7 @@ useEffect(() => {
       if (cluApprove?.code !== "NO") {
         if (!coreArea) return false;
       }
+      
       return !!dxfFile;
     }
 

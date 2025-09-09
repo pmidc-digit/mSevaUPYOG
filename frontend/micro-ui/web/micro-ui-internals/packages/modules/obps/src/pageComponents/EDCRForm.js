@@ -1,5 +1,5 @@
 import { CardLabel, Dropdown, FormStep, LinkButton, Loader, TextInput, Toast, UploadFile } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { getPattern, stringReplaceAll, sortDropdownNames } from "../utils";
 
@@ -8,6 +8,7 @@ import useEDCRForm from "../../../../libraries/src/hooks/obps/useEDCRForm";
 const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast, isSubmitBtnDisable, setIsShowToast }) => {
   const { pathname: url } = useLocation();
   const history = useHistory();
+  const containerRef = useRef(null);
   //actual state up side
 
   // want to have same update name in my form
@@ -61,12 +62,14 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     siteReserved,
     siteReservedOptions,
 
+    showSkip,
+
     tenantIdData,
     ulb,
     uploadMessage,
     uploadedFile,
   } = useEDCRForm({ formData });
-  let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId() || "pb.amritsar"; // fallback hardcoded tenant (update this to your ULB)
+  let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId() || "pb.amritsar"; 
 
   const stateId = Digit.ULBService.getStateId();
   console.log(stateId, tenantId, t, "TEN STATE");
@@ -122,6 +125,28 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     }
   }, [uploadMessage, isShowToast, isSubmitBtnDisable]);
 
+
+useEffect(() => {
+  const container = containerRef.current;
+  if (!container) return;
+
+  const hideSkip = () => {
+    const skipBtn = container.querySelector('button.skip, button[data-testid="skip-button"]');
+    if (skipBtn) {
+      skipBtn.style.display = "none";
+    }
+  };
+
+  hideSkip();
+
+  const mo = new MutationObserver(hideSkip);
+  mo.observe(container, { childList: true, subtree: true });
+
+  return () => mo.disconnect();
+}, []);
+
+
+
   function onAdd() {
     setUploadMessage("NEED TO DELETE");
   }
@@ -158,7 +183,20 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
 
 
     <React.Fragment>
-      <FormStep  config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={!isFormValid()} t={t}>
+
+
+
+      <div  
+      onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+      }
+    }}
+    ref={containerRef}
+    >
+
+      
+      <FormStep  config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={handleSubmit} isDisabled={!isFormValid()} t={t}>
         <CardLabel>{t("EDCR_APPLICANT_NAME")}</CardLabel>
         <TextInput t={t} isMandatory={true} type="text" name="applicantName" value={name} onChange={(e) => setName(e.target.value)} />
 
@@ -229,12 +267,12 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
             <CardLabel>{t("EDCR_SCRUTINY_CLU_APPROVED")}</CardLabel>
             <Dropdown t={t} isMandatory={true} option={cluApproveOptions} selected={cluApprove} optionKey="value" select={setCluApproved} />
 
-            {cluApprove?.code !== "NO" && (
+          
               <React.Fragment>
                 <CardLabel>{t("EDCR_IS_CORE_AREA")}</CardLabel>
                 <Dropdown t={t} isMandatory={true} option={coreAreaOptions} selected={coreArea} optionKey="value" select={setcoreArea} />
               </React.Fragment>
-            )}
+          
           </React.Fragment>
         )}
 
@@ -258,6 +296,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
           </React.Fragment>
         )}
       </FormStep>
+      </div>
     </React.Fragment>
   );
 };

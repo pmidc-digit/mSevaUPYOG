@@ -797,6 +797,22 @@ input[type="number"] {
   font-size: 1.2rem;
 }
 
+.ndc_property_search .text-input {
+  width: 100%;
+  max-width: 300px;
+}
+
+.action-bar-wrap {
+  display: flex;
+  justify-content: end;
+  gap: 10px;
+}
+
+.action-bar-wrap .submit-bar {
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
 @media screen and (max-width: 768px) {
   .citizen .inboxButton {
     font-size: 1rem;

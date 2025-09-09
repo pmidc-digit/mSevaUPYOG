@@ -113,6 +113,8 @@ const ApplicationDetails = (props) => {
     setWarningPopUp(false);
   };
 
+  console.log("ActionsInPayment2", workflowDetails)
+
   const submitAction = async (data, nocData = false, isOBPS = {}) => {
     if(data?.Property?.workflow?.comment?.length == 0 || (data?.Licenses?.[0]?.action === "INITIATE"? data?.Licenses?.[0]?.additionalDetail?.validityYears?.length == 0 : data?.Licenses?.[0]?.comment?.length == 0) || data?.WaterConnection?.comment?.length == 0 || data?.SewerageConnection?.comment?.length == 0 || data?.BPA?.comment?.length == 0)
     {

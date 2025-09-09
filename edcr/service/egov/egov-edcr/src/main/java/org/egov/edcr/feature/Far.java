@@ -184,6 +184,8 @@ public class Far extends FeatureProcess {
 	public static final BigDecimal PLOT_AREA_ABOVE_1000_SQM = new BigDecimal(Integer.MAX_VALUE); // Use an appropriate
 																									// upper bound
 
+	public static final BigDecimal EXCLUDE_BALCONY_WIDTH_ABOVE_4_FEET_FROM_FAR = new BigDecimal("0.91");
+	
 	@Override
 	public Plan validate(Plan pl) {
 		if (pl.getPlot() == null || (pl.getPlot() != null
@@ -633,10 +635,13 @@ public class Far extends FeatureProcess {
 		pl.setTotalSurrenderRoadArea(surrenderRoadArea.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
 				DcrConstants.ROUNDMODE_MEASUREMENTS));
 		BigDecimal plotArea = pl.getPlot() != null ? pl.getPlot().getArea().add(surrenderRoadArea) : BigDecimal.ZERO;
+		
+		updateFarAsPerBalconyWidth(pl);
+		
 		if (plotArea.doubleValue() > 0)
-			providedFar = pl.getVirtualBuilding().getTotalFloorArea()
-							.divide(plotArea, DECIMALDIGITS_MEASUREMENTS,ROUNDMODE_MEASUREMENTS);
-
+			providedFar = pl.getVirtualBuilding().getTotalBuitUpArea()
+							.divide(plotArea, DECIMALDIGITS_MEASUREMENTS,ROUNDMODE_MEASUREMENTS);		
+		
 		pl.setFarDetails(new FarDetails());
 		pl.getFarDetails().setProvidedFar(providedFar.doubleValue());
 		String typeOfArea = pl.getPlanInformation().getTypeOfArea();
@@ -1335,4 +1340,111 @@ public class Far extends FeatureProcess {
 	public Map<String, Date> getAmendments() {
 		return new LinkedHashMap<>();
 	}
+	
+	private void updateFarAsPerBalconyWidth(Plan pl){
+		BigDecimal totalBuiltUpArea1 = pl.getVirtualBuilding().getTotalBuitUpArea();
+		//LOG.info("Far before new case added 0.91 > -> Far : " +  " totalBuildUpArea : " + totalBuiltUpArea);
+		// Code added for: Balcony width > 0.91m is included in FAR calculation
+		//BigDecimal totalBuiltUpArea1 = BigDecimal.ZERO;
+
+		for (Block block : pl.getBlocks()) {
+		    for (Floor floor : block.getBuilding().getFloors()) {
+	            //BigDecimal floorArea = floor.getArea() != null ? floor.getArea() : BigDecimal.ZERO;
+	            
+	            //LOG.info("Floor Area : -> " + floorArea);
+
+		        for (org.egov.common.entity.edcr.Balcony balcony : floor.getBalconies()) {
+		        	
+		        	LOG.info("Data for Floor :::: " + floor.getNumber());
+
+		            List<BigDecimal> widths = balcony.getWidths();
+		            List<Measurement> measurements = balcony.getMeasurements();
+
+		            // Skip if measurement list is empty
+		            if (measurements == null || measurements.isEmpty()) {
+		                LOG.warn("No measurement found for balcony, skipping.");
+		                continue;
+		            }
+
+		            Measurement m = measurements.get(0);
+
+		            // Round measurement values once
+		            BigDecimal area = m.getArea() != null
+		                ? m.getArea().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
+		                : BigDecimal.ZERO;
+		            BigDecimal length = m.getLength() != null
+		                ? m.getLength().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
+		                : BigDecimal.ZERO;
+		            BigDecimal height = m.getHeight() != null
+		                ? m.getHeight().setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS, DcrConstants.ROUNDMODE_MEASUREMENTS)
+		                : BigDecimal.ZERO;
+
+		            // Round threshold for comparison
+		            BigDecimal threshold = EXCLUDE_BALCONY_WIDTH_ABOVE_4_FEET_FROM_FAR.setScale(
+		                DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+		                DcrConstants.ROUNDMODE_MEASUREMENTS
+		            );
+
+		            boolean addedToFar = false;
+
+		            for (BigDecimal rawWidth : widths) {
+		                BigDecimal width = rawWidth.setScale(
+		                    DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+		                    DcrConstants.ROUNDMODE_MEASUREMENTS
+		                );
+
+		                LOG.info("Balcony width above 0.91m, included in FAR: " + width);
+	                    LOG.info("Balcony area   : " + area);
+	                    LOG.info("Balcony length : " + length);
+	                    LOG.info("Balcony height : " + height);
+		                if (width.compareTo(threshold) > 0) {
+		                    
+
+		                    //totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
+		                    //providedFar = providedFar.add(area);
+		                    
+		                    // Add to this floor’s floor area
+	                        //floorArea = floorArea.add(area);
+		                    
+		                 // Add to total built-up area
+	                        totalBuiltUpArea1 = totalBuiltUpArea1.add(area);
+
+	                        // ✅ Also distribute balcony area into each occupancy of this floor
+	                        for (Occupancy occ : floor.getOccupancies()) {
+	                            BigDecimal occFloorArea = occ.getFloorArea() != null ? occ.getFloorArea() : BigDecimal.ZERO;
+	                            BigDecimal occBuiltUpArea = occ.getBuiltUpArea() != null ? occ.getBuiltUpArea() : BigDecimal.ZERO;
+
+	                            LOG.info("Floor Area : " + occ.getFloorArea());
+	                            LOG.info("Floor Built Up Area : " + occ.getBuiltUpArea());
+
+	                            
+	                            occ.setFloorArea(occFloorArea.add(area));
+	                            occ.setBuiltUpArea(occBuiltUpArea.add(area));
+
+	                            LOG.info("Updated Occupancy [type=" + occ.getType() + "] floorArea=" + occ.getFloorArea()
+	                                    + ", builtUpArea=" + occ.getBuiltUpArea());
+	                        }
+		                    
+		                    addedToFar = true;
+		                    break; // Only add once per balcony
+		                }
+		            }
+
+		            if (!addedToFar) {
+		                LOG.info("Balcony width <= 0.91m, excluded from FAR.");
+		            }
+		        }
+		     // update floor area for current floor
+	            //floor.setArea(floorArea);
+	            //LOG.info("Updated floor area for Floor " + floor.getNumber() + " : " + floorArea);
+		    }
+		}
+
+		//pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea1);
+
+
+		LOG.info("Far after new case added 0.91 > " + " totalBuildUpArea : " + totalBuiltUpArea1);
+		pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea1);
+	}
+	
 }

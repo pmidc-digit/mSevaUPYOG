@@ -79,7 +79,7 @@ public class WaterTankCapacity extends FeatureProcess {
         scrutinyDetail = new ScrutinyDetail();
         scrutinyDetail.addColumnHeading(1, RULE_NO);
         scrutinyDetail.addColumnHeading(2, DESCRIPTION);
-        scrutinyDetail.addColumnHeading(3, REQUIRED);
+        scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
         scrutinyDetail.addColumnHeading(4, PROVIDED);
         scrutinyDetail.addColumnHeading(5, STATUS);
         scrutinyDetail.setKey("Common_Water tank capacity");
@@ -133,11 +133,11 @@ public class WaterTankCapacity extends FeatureProcess {
         Map<String, String> details = new HashMap<>();
         details.put(RULE_NO, ruleNo);
         details.put(DESCRIPTION, ruleDesc);
-        details.put(REQUIRED, expected);
+        details.put(PERMISSIBLE, expected);
         details.put(PROVIDED, actual);
         details.put(STATUS, status);
-        scrutinyDetail.getDetail().add(details);
-        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        //scrutinyDetail.getDetail().add(details);
+        //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
     }
 
     @Override

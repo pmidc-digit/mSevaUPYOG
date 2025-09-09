@@ -377,9 +377,9 @@ const ApplicationOverview = () => {
 
       {workflowDetails?.data?.timeline && (
         <Card>
-          <CardSubHeader>{t("NDC_APPLICATION_TIMELINE")}</CardSubHeader>
+          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint isCompleted={true} label={t("NDC_STATUS_" + workflowDetails?.data?.timeline[0]?.status)} />
+            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
           ) : (
             <ConnectingCheckPoints>
               {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (

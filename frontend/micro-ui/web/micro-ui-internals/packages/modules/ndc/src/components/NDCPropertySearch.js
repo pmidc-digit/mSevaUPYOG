@@ -59,7 +59,7 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
         dues: {},
       };
     }
-  })
+  });
   const isMobile = window.Digit.Utils.browser.isMobile();
   const serachParams = window.location.href.includes("?")
     ? window.location.href.substring(window.location.href.indexOf("?") + 1, window.location.href.length)
@@ -203,12 +203,12 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
     return formData && formData[config.key] ? formData[config.key][input] : undefined;
   }
 
-  async function fetchBill(){
-    try{
+  async function fetchBill() {
+    try {
       const result = await Digit.PaymentService.fetchBill(tenantId, {
         businessService: "PT",
         consumerCode: formData?.cpt?.id,
-      })
+      });
       if (result?.Bill?.length > 0) {
         if (result?.Bill[0]?.totalAmount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
@@ -216,13 +216,12 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
           setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") });
         }
         setPropertyDues({ dues: result?.Bill[0] });
-      }else if (result?.Bill){
+      } else if (result?.Bill) {
         setShowToast({ error: true, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
-      }else{
+      } else {
         setShowToast({ error: true, label: t("INVALID_CONSUMER_NUMBER") });
       }
-
-    }catch(error){
+    } catch (error) {
       setShowToast({ error: true, label: t("NDC_MESSAGE_FETCH_FAILED") });
     }
   }
@@ -231,8 +230,8 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
     const userType = window.location.href.includes("employee") ? "employee" : "citizen";
 
     const payUrl =
-        "https://sdc-uat.lgpunjab.gov.in" +
-        `/${userType}/egov-common/pay?consumerCode=${formData?.cpt?.id}&tenantId=${formData?.cpt?.details?.tenantId}&businessService=PT`;
+      "https://sdc-uat.lgpunjab.gov.in" +
+      `/${userType}/egov-common/pay?consumerCode=${formData?.cpt?.id}&tenantId=${formData?.cpt?.details?.tenantId}&businessService=PT`;
 
     window.open(payUrl, "_blank");
     setPropertyDues({});
@@ -246,7 +245,7 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
             {`${t(propertyIdInput.label)}`}
             {propertyIdInput.isMandatory ? "*" : null}
           </CardLabel>
-          <div className="field" style={{ marginTop: "20px", display: "flex" }} ref={myElementRef} id="search-property-field">
+          <div className="field" style={{ marginTop: "20px", display: "flex", gap: "20px" }} ref={myElementRef} id="search-property-field">
             <TextInput
               key={propertyIdInput.name}
               value={getValue(propertyIdInput.name)} //{propertyId}
@@ -264,36 +263,32 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
             <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
               {`${t("PT_SEARCH")}`}
             </button>
-            {
-              formData?.cpt?.details && !formData?.cpt?.dues && (
-                <button
-                        className="submit-bar"
-                        type="button"
-                        style={{ color: "white", fontSize: "13px" }}
-                        onClick={() => {
-                          fetchBill("PT", formData?.cpt?.id);
-                        }}
-                      >
-                        {/* {`${t("CHECK_STATUS_Property")}`} */}
-                        Check Status
-                </button>
-              )
-            }
-            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount > 0 && (
-                      <button
-                        className="submit-bar"
-                        type="button"
-                        style={{ color: "white" }}
-                        onClick={() => {
-                          redirectToPayBill(formData?.cpt?.dues?.totalAmount);
-                        }}
-                      >
-                        {`${t("PAY_DUES")}`}
-                      </button>
-                    )}
-            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount == 0 && (
-                      <div style={{ color: "green" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
+            {formData?.cpt?.details && !formData?.cpt?.dues && (
+              <button
+                className="submit-bar"
+                type="button"
+                style={{ color: "white", fontSize: "13px" }}
+                onClick={() => {
+                  fetchBill("PT", formData?.cpt?.id);
+                }}
+              >
+                {/* {`${t("CHECK_STATUS_Property")}`} */}
+                Check Status
+              </button>
             )}
+            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount > 0 && (
+              <button
+                className="submit-bar"
+                type="button"
+                style={{ color: "white" }}
+                onClick={() => {
+                  redirectToPayBill(formData?.cpt?.dues?.totalAmount);
+                }}
+              >
+                {`${t("PAY_DUES")}`}
+              </button>
+            )}
+            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount == 0 && <div style={{ color: "green" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}
           </div>
         </LabelFieldPair>
 

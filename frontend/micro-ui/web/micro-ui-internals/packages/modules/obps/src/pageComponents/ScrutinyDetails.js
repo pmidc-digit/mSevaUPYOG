@@ -65,9 +65,9 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
         Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
         Level: ob.number,
         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
-        BuildupArea: ob.occupancies?.[0]?.builtUpArea,
-        FloorArea: ob.occupancies?.[0]?.floorArea || 0,
-        CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
+        BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
+        FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
+        // CarpetArea: Number(ob.occupancies?.[0]?.CarpetArea).toFixed(2) || 0,
         key: t(`BPA_FLOOR_NAME_${ob.number}`),
       });
     });
@@ -266,7 +266,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     <React.Fragment>
       <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
       <div style={{ height: "80vh", overflow: "scroll" }}>
-        <FormStep t={t} config={config} onSelect={goNext} onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */>
+        <FormStep t={t} config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={goNext} onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */>
           <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
           <StatusTable style={{ border: "none" }}>
             <Row

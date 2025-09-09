@@ -30,9 +30,10 @@ const NewNOCStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setValue,
     formState: { errors },
     trigger,
+    reset
   } = useForm();
 
-  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle};
+  const commonProps = { Controller, control, setValue, errors, trigger, errorStyle, reset};
 
   const onSubmit = (data) => {
     //console.log("data in first step", data);

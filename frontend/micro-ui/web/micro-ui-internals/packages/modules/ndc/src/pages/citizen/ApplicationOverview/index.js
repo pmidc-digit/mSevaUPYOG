@@ -18,7 +18,7 @@ import {
   CheckPoint,
   TLTimeLine,
   DisplayPhotos,
-  StarRated
+  StarRated,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -44,7 +44,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
   return (
     <div>
-      {comment?.length>0 && (
+      {comment?.length > 0 && (
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
           <p style={{ overflowX: "scroll" }}>{comment}</p>
@@ -61,14 +61,15 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         />
       )}
 
-      {wfDocuments?.length > 0 && <div>
-        {wfDocuments?.map((doc, index) => (
-          <div key={index}>
-            <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
-          </div>
-        ))}
+      {wfDocuments?.length > 0 && (
+        <div>
+          {wfDocuments?.map((doc, index) => (
+            <div key={index}>
+              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
+            </div>
+          ))}
         </div>
-      }
+      )}
 
       <div style={{ marginTop: "8px" }}>
         {caption.date && <p>{caption.date}</p>}
@@ -255,12 +256,9 @@ const CitizenApplicationOverview = () => {
 
       {workflowDetails?.data?.timeline && (
         <Card>
-          <CardSubHeader>{t("NDC_APPLICATION_TIMELINE")}</CardSubHeader>
+          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint
-              isCompleted={true}
-              label={t("NDC_STATUS_" + workflowDetails?.data?.timeline[0]?.status)}
-            />
+            <CheckPoint isCompleted={true} label={t("NDC_STATUS_" + workflowDetails?.data?.timeline[0]?.status)} />
           ) : (
             <ConnectingCheckPoints>
               {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (

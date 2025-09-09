@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Header } from "@mseva/digit-ui-react-components";
-
 import PTRDesktopInbox from "../../components/PTRDesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 
@@ -22,8 +21,10 @@ const Inbox = ({
   EmptyResultInboxComp,
 }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
-
-  console.log("here");
+  console.log("EmptyResultInboxComp", EmptyResultInboxComp);
+  console.log("useNewInboxAPI", useNewInboxAPI);
+  console.log("here", moduleCode, tenantId);
+  console.log("initialStates", initialStates);
 
   const { t } = useTranslation();
   const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
@@ -43,13 +44,15 @@ const Inbox = ({
     ? Digit.Hooks.useNewInboxGeneral({
         tenantId,
         ModuleCode: moduleCode,
-        filters: { ...searchParams, ...paginationParams, sortParams },
+        // filters: { ...searchParams, ...paginationParams, sortParams },
+        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
       })
     : Digit.Hooks.useInboxGeneral({
         tenantId,
         businessService: moduleCode,
         isInbox,
-        filters: { ...searchParams, ...paginationParams, sortParams },
+        // filters: { ...searchParams, ...paginationParams, sortParams },
+        filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
         rawWfHandler,
         rawSearchHandler,
         combineResponse,
@@ -62,7 +65,6 @@ const Inbox = ({
   useEffect(() => {
     setPageOffset(0);
   }, [searchParams]);
-
   const fetchNextPage = () => {
     setPageOffset((prevState) => prevState + pageSize);
   };
@@ -104,12 +106,11 @@ const Inbox = ({
           searchParams={searchParams}
           sortParams={sortParams}
           linkPrefix={`${parentRoute}/application-details/`}
-          tableConfig={rest?.tableConfig ? res?.tableConfig : TableConfig(t)["PTR"]}
+          tableConfig={rest?.tableConfig ? rest?.tableConfig : TableConfig(t)["PTR"]}
           filterComponent={filterComponent}
           EmptyResultInboxComp={EmptyResultInboxComp}
           useNewInboxAPI={useNewInboxAPI}
         />
-        // <div></div>
       );
     } else {
       return (

@@ -245,7 +245,7 @@ import useSurveyQuestionInbox from "./surveys/useSurveyQuestionInbox";
 
 import useNOCDetails from "./noc/useNOCDetails";
 import useNOCInbox from "./noc/useInbox";
-import useNOCSearchApplication from "./noc/useSearchApplications";
+import {useNOCSearchApplication, useNOCCitizenSearchApplication} from "./noc/useSearchApplications";
 import useBuildingCategory from "./noc/useBuildingCategory";
 import useBuildingType from "./noc/useBuildingType";
 import useRoadType from "./noc/useRoadType";
@@ -679,6 +679,7 @@ const noc = {
   useNOCApplicationActions,
   useInbox: useNOCInbox,
   useNOCSearchApplication,
+  useNOCCitizenSearchApplication,
   useBuildingCategory,
   useBuildingType,
   useRoadType,

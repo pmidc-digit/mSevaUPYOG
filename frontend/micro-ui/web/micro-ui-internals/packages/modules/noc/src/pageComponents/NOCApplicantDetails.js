@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   LabelFieldPair,
   TextInput,
@@ -12,11 +12,13 @@ import {
   SubmitBar,
   CardSectionHeader,
   RadioButtons,
+  SearchIcon,
+  Toast
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 
 const NOCApplicantDetails = (_props) => {
-  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle } = _props;
+  const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, reset } = _props;
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -40,10 +42,103 @@ const NOCApplicantDetails = (_props) => {
     }
   }, [currentStepData, setValue]);
 
+  //For fetching user details
+   const [mobileNo,setMobileNo]=useState("");
+   const [showToast, setShowToast]=useState(null);
+   const[userInfo, setUserInfo]=useState(null);
+   let Webview = !Digit.Utils.browser.isMobile();
+
+   const closeToast = () => {
+    setShowToast(null);
+   };
+
+   const getOwnerDetails= async ()=>{
+    if(mobileNo === "" || mobileNo.length!==10){
+        setShowToast({ key: "true", error: true, message: "ERR_MOBILE_NUMBER_INCORRECT" });
+        return;   
+    }
+   
+    const userResponse = await Digit.UserService.userSearch(Digit.ULBService.getStateId(), {userName: mobileNo}, {});
+    
+    if (userResponse?.user?.length === 0) {
+        setShowToast({ key: "true", warning: true, message: "ERR_MOBILE_NUMBER_NOT_REGISTERED" });
+        return;
+    }
+    else{
+       setUserInfo(userResponse?.user?.[0]);
+    }
+    
+   }
+
+   useEffect(()=>{
+    if(userInfo){
+      
+     Object.entries(userInfo).forEach(([key,value])=>{
+      if(key === "name"){
+          setValue("applicantOwnerOrFirmName", value, { shouldValidate: true, shouldDirty: true });
+      }
+      else if(key ==="emailId"){
+          setValue("applicantEmailId", value, { shouldValidate: true, shouldDirty: true });
+      }
+      else if(key ==="gender"){
+          setValue("applicantGender", value, { shouldValidate: true, shouldDirty: true });
+      }
+      else if(key ==="dob"){
+          setValue("applicantDateOfBirth", value, { shouldValidate: true, shouldDirty: true });
+      }
+      else if(key ==="fatherOrHusbandName"){
+          setValue("applicantFatherHusbandName", value);
+      }
+      else if(key ==="permanentAddress"){
+          setValue("applicantAddress", value, { shouldValidate: true, shouldDirty: true });
+      }
+     })
+    }
+   },[userInfo])
+
+  //  console.log("userInfo", userInfo);
+
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("NOC_APPLICANT_DETAILS")}</CardSectionHeader>
       <div>
+
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="applicantMobileNumber"
+              rules={{
+                required: t("REQUIRED_FIELD"),
+                pattern: {
+                  value: /^[6-9]\d{9}$/,
+                  message: t("INVALID_MOBILE_NUMBER"),
+                },
+              }}
+              render={(props) => 
+              <TextInput
+                  value={props.value}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                    setMobileNo(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t}
+              />
+            }
+            />
+          </div>
+          <div style={{ position: "relative", zIndex: "100", right: "35px", marginTop: "-24px", marginRight: Webview ? "-20px" : "-20px" }}
+              onClick={getOwnerDetails}>
+                {" "}<SearchIcon />{" "}
+          </div>
+        </LabelFieldPair>
+        <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
+
+
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_FIRM_OWNER_NAME_LABEL")}`}*</CardLabel>
           <div className="field">
@@ -52,10 +147,6 @@ const NOCApplicantDetails = (_props) => {
               name="applicantOwnerOrFirmName"
               rules={{
                 required: t("REQUIRED_FIELD"),
-                minLength: {
-                  value: 4,
-                  message: t("MIN_4_CHARACTERS_REQUIRED"),
-                },
                 maxLength: {
                   value: 100,
                   message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -63,7 +154,7 @@ const NOCApplicantDetails = (_props) => {
               }}
               render={(props) => (
                 <TextInput
-                  value={props.value}
+                  value={props.value || userInfo?.name}
                   onChange={(e) => {
                     props.onChange(e.target.value);
                   }}
@@ -93,7 +184,7 @@ const NOCApplicantDetails = (_props) => {
               }}
               render={(props) => (
                 <TextInput
-                  value={props.value}
+                  value={props.value ||  userInfo?.emailId}
                   onChange={(e) => {
                     props.onChange(e.target.value);
                   }}
@@ -116,7 +207,7 @@ const NOCApplicantDetails = (_props) => {
               name="applicantFatherHusbandName"
               render={(props) => (
                 <TextInput
-                  value={props.value}
+                  value={props.value || userInfo?.fatherOrHusbandName}
                   onChange={(e) => {
                     props.onChange(e.target.value);
                   }}
@@ -130,7 +221,7 @@ const NOCApplicantDetails = (_props) => {
           </div>
         </LabelFieldPair>
 
-        <LabelFieldPair>
+        {/* <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
@@ -147,7 +238,7 @@ const NOCApplicantDetails = (_props) => {
             />
           </div>
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError>
+        <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError> */}
 
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
@@ -157,10 +248,10 @@ const NOCApplicantDetails = (_props) => {
               name="applicantAddress"
               rules={{
                 required: t("REQUIRED_FIELD"),
-                minLength: {
-                  value: 4,
-                  message: t("MIN_4_CHARACTERS_REQUIRED"),
-                },
+                // minLength: {
+                //   value: 4,
+                //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                // },
                 maxLength: {
                   value: 100,
                   message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -168,7 +259,7 @@ const NOCApplicantDetails = (_props) => {
               }}
               render={(props) => (
                 <TextArea
-                  value={props.value}
+                  value={props.value || userInfo?.permanentAddress}
                   onChange={(e) => {
                     props.onChange(e.target.value);
                   }}
@@ -206,7 +297,7 @@ const NOCApplicantDetails = (_props) => {
               render={(props) => (
                 <TextInput
                   type="date"
-                  value={props.value}
+                  value={props.value || userInfo?.dob}
                   onChange={(e) => {
                     props.onChange(e.target.value);
                   }}
@@ -234,7 +325,7 @@ const NOCApplicantDetails = (_props) => {
                   t={t}
                   options={menu}
                   optionsKey="code"
-                  value={props.value}
+                  value={props.value || userInfo?.gender}
                   selectedOption={props.value}
                   onSelect={(e) => {
                     props.onChange(e);
@@ -247,6 +338,9 @@ const NOCApplicantDetails = (_props) => {
         </LabelFieldPair>
         <CardLabelError style={errorStyle}>{errors?.applicantGender?.message || ""}</CardLabelError>
       </div>
+       {showToast && (
+            <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />
+        )}
     </React.Fragment>
   );
 };

@@ -28,7 +28,7 @@ export const NOCService = {
       data: details,
       useCache: true,
       userService: true,
-      method: "PUT",
+      method: "POST",
       params: { tenantId, ...filters },
       auth: true,
     }),

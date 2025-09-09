@@ -10,7 +10,8 @@ import { businessServiceList } from "../../../utils";
 const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
 
   const searchFormDefaultValues = {
     // mobileNumber: "",
@@ -109,10 +110,13 @@ const Inbox = ({ parentRoute }) => {
     {},
     t
   );
+ 
+  //Add handleFilter here
+
 
   const { isLoading: isInboxLoading, data: { statuses, totalCount } = {} } = Digit.Hooks.noc.useInbox({
     tenantId,
-    filters: { ...formState },
+    filters: { ...formState },//add filter here also
   });
 
   let table = [];
@@ -121,10 +125,10 @@ const Inbox = ({ parentRoute }) => {
     logoIcon: <ComplaintIcon />,
     headerText: "ACTION_TEST_NOC",
     links: [
-      {
-        text: t("ES_COMMON_APPLICATION_SEARCH"),
-        link: "/digit-ui/employee/noc/search",
-      },
+      // {
+      //   text: t("ES_COMMON_APPLICATION_SEARCH"),
+      //   link: "/digit-ui/employee/noc/search",
+      // },
       {
         text: t("NOC_NEW_APPLICATION"),
         link: "/digit-ui/employee/noc/new-application",

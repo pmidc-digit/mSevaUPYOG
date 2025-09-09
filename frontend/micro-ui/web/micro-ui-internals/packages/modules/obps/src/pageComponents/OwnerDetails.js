@@ -1495,7 +1495,16 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
       payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] }
       payload.accountId = accountId
       // payload.documents = null;
-      payload.documents = getDocumentforBPA(formData?.documents?.documents, formData?.PrevStateDocuments)
+      // payload.documents = getDocumentforBPA(formData?.documents?.documents, formData?.PrevStateDocuments)
+      const docsFromFn = getDocumentforBPA(formData?.documents?.documents, formData?.PrevStateDocuments) || [];
+      const docsFromForm = formData?.documents?.documents || [];
+
+      // Merge, but avoid duplicates
+      payload.documents = [
+        ...docsFromFn,
+        ...docsFromForm.filter(doc => !docsFromFn.some(d => d.documentType === doc.documentType))
+      ];
+
       // payload.documents = documents && documents.length > 0 ? documents : [];
 
       payload.additionalDetails = { GISPlaceName: formData?.address?.placeName }

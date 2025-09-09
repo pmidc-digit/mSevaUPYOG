@@ -136,8 +136,8 @@ public class WaterTankCapacity extends FeatureProcess {
         details.put(PERMISSIBLE, expected);
         details.put(PROVIDED, actual);
         details.put(STATUS, status);
-        scrutinyDetail.getDetail().add(details);
-        pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+        //scrutinyDetail.getDetail().add(details);
+        //pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
     }
 
     @Override

@@ -210,9 +210,12 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           }));
         }
       } else if (result?.Bill) {
-        setShowToast({ error: true, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
+        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
         if (bussinessService === "WS") {
           const updated = [...propertyDetails.waterConnection];
+          updated[index].billData = {
+            totalAmount: 0,
+          };
           updated[index].isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
@@ -220,6 +223,9 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           }));
         } else if (bussinessService === "SW") {
           const updated = [...propertyDetails.sewerageConnection];
+          updated[index].billData = {
+            totalAmount: 0,
+          };
           updated[index].isLoading = false;
           setPropertyDetails((prev) => ({
             ...prev,
@@ -235,10 +241,13 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         }
         // setError(t("No Bills Found For this consumer number"));
       } else {
-        setShowToast({ error: true, label: t("INVALID_CONSUMER_NUMBER") });
+        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
         if (bussinessService === "WS") {
           const updated = [...propertyDetails.waterConnection];
           updated[index].isLoading = false;
+          updated[index].billData = {
+            totalAmount: 0,
+          };
           setPropertyDetails((prev) => ({
             ...prev,
             waterConnection: updated,
@@ -246,6 +255,9 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         } else if (bussinessService === "SW") {
           const updated = [...propertyDetails.sewerageConnection];
           updated[index].isLoading = false;
+          updated[index].billData = {
+            totalAmount: 0,
+          };
           setPropertyDetails((prev) => ({
             ...prev,
             sewerageConnection: updated,

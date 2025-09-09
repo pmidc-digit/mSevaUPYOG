@@ -217,9 +217,11 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
         }
         setPropertyDues({ dues: result?.Bill[0] });
       }else if (result?.Bill){
-        setShowToast({ error: true, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
+        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
+        setPropertyDues({ dues: { totalAmount: 0 } });
       }else{
-        setShowToast({ error: true, label: t("INVALID_CONSUMER_NUMBER") });
+        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
+        setPropertyDues({ dues: { totalAmount: 0 } });
       }
 
     }catch(error){

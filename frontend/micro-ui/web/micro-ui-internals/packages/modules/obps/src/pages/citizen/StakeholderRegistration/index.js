@@ -13,7 +13,7 @@ const StakeholderRegistration = () => {
   const { pathname, state } = useLocation();
   const history = useHistory();
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(
     "BUILDING_PERMIT",
     state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}

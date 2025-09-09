@@ -65,7 +65,7 @@ export const filterFunctions = {
     }
 
     if (applicationStatus && applicationStatus?.[0]?.applicationStatus) {
-      workflowFilters.status = applicationStatus.map((status) => status.uuid);
+      workflowFilters.status = applicationStatus.map((status) => status.code || status.state);
       if (applicationStatus?.some((e) => e.nonActionableRole)) {
         searchFilters.fetchNonActionableRecords = true;
       }
@@ -80,12 +80,13 @@ export const filterFunctions = {
       searchFilters.mobileNumber = mobileNumber;
     }
 
+    console.log("servicesPTR", services);
     if (services) {
       workflowFilters.businessService = services;
     }
     searchFilters["isInboxSearch"] = true;
     searchFilters["creationReason"] = ["CREATE"];
-    workflowFilters["moduleName"] = "pet-services";
+    workflowFilters["moduleName"] = "pet-service";
 
     return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder };
   },
@@ -180,59 +181,54 @@ export const filterFunctions = {
     return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder };
   },
   ASSET: (filtersArg) => {
-  
-        let { uuid } = Digit.UserService.getUser()?.info || {};
-    
-        const searchFilters = {};
-        const workflowFilters = {};
-    
-        const { applicationNo, assetParentCategory,assetClassification, limit, offset, sortBy, sortOrder, total, applicationStatus, services } = filtersArg || {};
-    
-        if (filtersArg?.applicationNo) {
-          searchFilters.applicationNo = filtersArg?.applicationNo;
-        }
-        if (filtersArg?.assetParentCategory) {
-          searchFilters.assetParentCategory = filtersArg?.assetParentCategory;
-        }
-        if (filtersArg?.assetClassification) {
-          searchFilters.assetClassification = filtersArg?.assetClassification;
-        }
-        
-        
-        if (applicationStatus && applicationStatus?.[0]?.applicationStatus) {
-          workflowFilters.status = applicationStatus.map((status) => status.uuid);
-          if (applicationStatus?.some((e) => e.nonActionableRole)) {
-            searchFilters.fetchNonActionableRecords = true;
-          }
-        }
-        if (filtersArg?.locality?.length) {
-          searchFilters.locality = filtersArg?.locality.map((item) => item.code.split("_").pop());
-        }
-        if (filtersArg?.uuid && filtersArg?.uuid.code === "ASSIGNED_TO_ME") {
-          workflowFilters.assignee = uuid;
-        }
-        if (applicationNo) {
-          searchFilters.applicationNo = applicationNo;
-        }
-        if (assetClassification) {
-          searchFilters.assetClassification = assetClassification.code;
-        }
+    let { uuid } = Digit.UserService.getUser()?.info || {};
 
-        if (assetParentCategory) {
-          searchFilters.assetParentCategory = assetParentCategory;
-        }
-    
-    
-        if (services) {
-          workflowFilters.businessService = services;
-        }
-        searchFilters["isInboxSearch"] = true;
-        searchFilters["creationReason"] = ["asset-create"];
-        workflowFilters["moduleName"] = "asset-services";
-    
-    
-       
-        return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder };
-  }
+    const searchFilters = {};
+    const workflowFilters = {};
 
+    const { applicationNo, assetParentCategory, assetClassification, limit, offset, sortBy, sortOrder, total, applicationStatus, services } =
+      filtersArg || {};
+
+    if (filtersArg?.applicationNo) {
+      searchFilters.applicationNo = filtersArg?.applicationNo;
+    }
+    if (filtersArg?.assetParentCategory) {
+      searchFilters.assetParentCategory = filtersArg?.assetParentCategory;
+    }
+    if (filtersArg?.assetClassification) {
+      searchFilters.assetClassification = filtersArg?.assetClassification;
+    }
+
+    if (applicationStatus && applicationStatus?.[0]?.applicationStatus) {
+      workflowFilters.status = applicationStatus.map((status) => status.uuid);
+      if (applicationStatus?.some((e) => e.nonActionableRole)) {
+        searchFilters.fetchNonActionableRecords = true;
+      }
+    }
+    if (filtersArg?.locality?.length) {
+      searchFilters.locality = filtersArg?.locality.map((item) => item.code.split("_").pop());
+    }
+    if (filtersArg?.uuid && filtersArg?.uuid.code === "ASSIGNED_TO_ME") {
+      workflowFilters.assignee = uuid;
+    }
+    if (applicationNo) {
+      searchFilters.applicationNo = applicationNo;
+    }
+    if (assetClassification) {
+      searchFilters.assetClassification = assetClassification.code;
+    }
+
+    if (assetParentCategory) {
+      searchFilters.assetParentCategory = assetParentCategory;
+    }
+
+    if (services) {
+      workflowFilters.businessService = services;
+    }
+    searchFilters["isInboxSearch"] = true;
+    searchFilters["creationReason"] = ["asset-create"];
+    workflowFilters["moduleName"] = "asset-services";
+
+    return { searchFilters, workflowFilters, limit, offset, sortBy, sortOrder };
+  },
 };

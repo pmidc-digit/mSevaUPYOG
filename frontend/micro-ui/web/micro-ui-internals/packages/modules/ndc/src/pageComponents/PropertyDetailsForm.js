@@ -27,6 +27,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     : window.localStorage.getItem("Employee.tenant-id");
 
   const [showToast, setShowToast] = useState(null);
+  const [propertyLoader, setPropertyLoader] = useState(false);
   // const [error, setError] = useState("");
   const [showPayModal, setShowPayModal] = useState(false);
   const [selectedBillData, setSelectedBillData] = useState({});
@@ -63,8 +64,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     const owner = formData?.cpt?.details?.owners?.[0];
     const fullName = owner?.name?.split(" ");
     const firstName = fullName?.[0];
-    let lastName
-    if(fullName?.length>1){
+    let lastName;
+    if (fullName?.length > 1) {
       lastName = fullName?.[fullName.length - 1];
     }
     const email = owner?.email;
@@ -161,6 +162,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         sewerageConnection: updated,
       }));
     } else if (bussinessService === "PT") {
+      setPropertyLoader(true);
       let updated = { ...propertyDetails?.propertyBillData };
       updated.isLoading = true;
       setPropertyDetails((prev) => ({
@@ -169,92 +171,113 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       }));
     }
 
-    const result = await Digit.PaymentService.fetchBill(tenantId, {
-      businessService: bussinessService,
-      consumerCode: consumercodes,
-    });
+    try {
+      const result = await Digit.PaymentService.fetchBill(tenantId, {
+        businessService: bussinessService,
+        consumerCode: consumercodes,
+      });
+      setPropertyLoader(false);
 
-    if (result?.Bill?.length > 0) {
-      if (result?.Bill[0]?.totalAmount > 0) {
-        setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
+      console.log("result======???????", result);
+
+      if (result?.Bill?.length > 0) {
+        if (result?.Bill[0]?.totalAmount > 0) {
+          setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
+        } else {
+          setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") });
+        }
+        if (bussinessService === "WS") {
+          const updated = [...propertyDetails.waterConnection];
+          updated[index].billData = result?.Bill[0];
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            waterConnection: updated,
+          }));
+        } else if (bussinessService === "SW") {
+          const updated = [...propertyDetails.sewerageConnection];
+          updated[index].billData = result?.Bill[0];
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            sewerageConnection: updated,
+          }));
+        } else if (bussinessService === "PT") {
+          let updated = { ...propertyDetails.propertyBillData };
+          updated.billData = result?.Bill[0];
+          updated.isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            propertyBillData: updated,
+          }));
+        }
+      } else if (result?.Bill) {
+        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
+        if (bussinessService === "WS") {
+          const updated = [...propertyDetails.waterConnection];
+          updated[index].billData = {
+            totalAmount: 0,
+          };
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            waterConnection: updated,
+          }));
+        } else if (bussinessService === "SW") {
+          const updated = [...propertyDetails.sewerageConnection];
+          updated[index].billData = {
+            totalAmount: 0,
+          };
+          updated[index].isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            sewerageConnection: updated,
+          }));
+        } else if (bussinessService === "PT") {
+          let updated = { ...propertyDetails.propertyBillData };
+          updated.isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            propertyBillData: updated,
+          }));
+        }
+        // setError(t("No Bills Found For this consumer number"));
       } else {
-        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") });
+        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
+        if (bussinessService === "WS") {
+          const updated = [...propertyDetails.waterConnection];
+          updated[index].isLoading = false;
+          updated[index].billData = {
+            totalAmount: 0,
+          };
+          setPropertyDetails((prev) => ({
+            ...prev,
+            waterConnection: updated,
+          }));
+        } else if (bussinessService === "SW") {
+          const updated = [...propertyDetails.sewerageConnection];
+          updated[index].isLoading = false;
+          updated[index].billData = {
+            totalAmount: 0,
+          };
+          setPropertyDetails((prev) => ({
+            ...prev,
+            sewerageConnection: updated,
+          }));
+        } else if (bussinessService === "PT") {
+          let updated = { ...propertyDetails.propertyBillData };
+          updated.isLoading = false;
+          setPropertyDetails((prev) => ({
+            ...prev,
+            propertyBillData: updated,
+          }));
+        }
+        // setError(t("Invalid Consumer Number"));
       }
-      if (bussinessService === "WS") {
-        const updated = [...propertyDetails.waterConnection];
-        updated[index].billData = result?.Bill[0];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          waterConnection: updated,
-        }));
-      } else if (bussinessService === "SW") {
-        const updated = [...propertyDetails.sewerageConnection];
-        updated[index].billData = result?.Bill[0];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          sewerageConnection: updated,
-        }));
-      } else if (bussinessService === "PT") {
-        let updated = { ...propertyDetails.propertyBillData };
-        updated.billData = result?.Bill[0];
-        updated.isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          propertyBillData: updated,
-        }));
-      }
-    } else if (result?.Bill) {
-      setShowToast({ error: true, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
-      if (bussinessService === "WS") {
-        const updated = [...propertyDetails.waterConnection];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          waterConnection: updated,
-        }));
-      } else if (bussinessService === "SW") {
-        const updated = [...propertyDetails.sewerageConnection];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          sewerageConnection: updated,
-        }));
-      } else if (bussinessService === "PT") {
-        let updated = { ...propertyDetails.propertyBillData };
-        updated.isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          propertyBillData: updated,
-        }));
-      }
-      // setError(t("No Bills Found For this consumer number"));
-    } else {
-      setShowToast({ error: true, label: t("INVALID_CONSUMER_NUMBER") });
-      if (bussinessService === "WS") {
-        const updated = [...propertyDetails.waterConnection];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          waterConnection: updated,
-        }));
-      } else if (bussinessService === "SW") {
-        const updated = [...propertyDetails.sewerageConnection];
-        updated[index].isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          sewerageConnection: updated,
-        }));
-      } else if (bussinessService === "PT") {
-        let updated = { ...propertyDetails.propertyBillData };
-        updated.isLoading = false;
-        setPropertyDetails((prev) => ({
-          ...prev,
-          propertyBillData: updated,
-        }));
-      }
-      // setError(t("Invalid Consumer Number"));
+    } catch (error) {
+      console.error("Error fetching bill:", error);
+      setPropertyLoader(false);
+      setShowToast({ error: true, label: t("NDC_MESSAGE_FETCH_FAILED") });
     }
   }
 
@@ -272,13 +295,19 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     } else if (billData?.businessService === "SW") {
       service = "SEWERAGE";
     } else if (billData?.businessService === "PT") {
-      service = "PROPERTY";
+      service = "PT";
     }
-
-    const payUrl =
-      "https://sdc-uat.lgpunjab.gov.in" +
-      `/${userType}/wns/viewBill?connectionNumber=${billData?.consumerCode}&tenantId=${billData?.tenantId}&service=${service}`;
-    // const payUrl =`/${userType}/egov-common/pay?consumerCode=${billData?.consumerCode}&tenantId=${billData?.tenantId}&businessService=${billData?.businessService}`
+    let payUrl;
+    if (billData?.businessService === "PT") {
+      payUrl =
+        "https://sdc-uat.lgpunjab.gov.in" +
+        `/${userType}/egov-common/pay?consumerCode=${billData?.consumerCode}&tenantId=${billData?.tenantId}&businessService=${service}`;
+    } else {
+      payUrl =
+        "https://sdc-uat.lgpunjab.gov.in" +
+        `/${userType}/wns/viewBill?connectionNumber=${billData?.consumerCode}&tenantId=${billData?.tenantId}&service=${service}`;
+      // const payUrl =`/${userType}/egov-common/pay?consumerCode=${billData?.consumerCode}&tenantId=${billData?.tenantId}&businessService=${billData?.businessService}`
+    }
     window.open(payUrl, "_blank");
 
     if (billData?.businessService === "WS") {
@@ -311,58 +340,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     <div style={{ marginBottom: "16px" }}>
       {formData?.cpt?.details && (
         <div>
-          <LabelFieldPair>
-            <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <div style={{ display: "flex", flexDirection: "row" }}>
-                {propertyDetails?.propertyBillData?.isLoading ? (
-                  <Loader />
-                ) : (
-                  <div>
-                    {formData?.cpt?.id && !propertyDetails?.propertyBillData?.billData?.id && (
-                      <button
-                        className="submit-bar"
-                        type="button"
-                        style={{ color: "white" }}
-                        onClick={() => {
-                          fetchBill("PT", formData?.cpt?.id);
-                        }}
-                      >
-                        {`${t("CHECK_STATUS")}`}
-                      </button>
-                    )}
-
-                    {formData?.cpt?.id && propertyDetails?.propertyBillData?.billData?.totalAmount > 0 && (
-                      <button
-                        className="submit-bar"
-                        type="button"
-                        style={{ color: "white" }}
-                        onClick={() => {
-                          // setSelectedBillData(propertyDetails?.propertyBillData?.billData);
-                          // setShowPayModal(true);
-                          redirectToPayBill(propertyDetails?.propertyBillData?.billData);
-                        }}
-                      >
-                        {`${t("PAY_DUES")}`}
-                      </button>
-                    )}
-
-                    {formData?.cpt?.id && propertyDetails?.propertyBillData?.billData?.totalAmount == 0 && (
-                      <div style={{ color: "green"}}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </LabelFieldPair>
-
           <LabelFieldPair style={{ marginTop: "40px" }}>
             <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")}`}</CardLabel>
             {waterConnectionLoading ? (
               <Loader />
             ) : (
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
                 {propertyDetails?.waterConnection?.map((item, index) => (
-                  <div key={index} style={{ display: "flex", flexDirection: "row", gap: "25px" }}>
+                  <div
+                    className="ndc_property_search"
+                    key={index}
+                    style={{ display: "flex", flexDirection: "row", alignItems: "baseline", gap: "16px" }}
+                  >
                     <Controller
                       key={index}
                       control={control}
@@ -392,17 +381,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     {item.isLoading ? (
                       <Loader />
                     ) : (
-                      <div>
-                        {item?.connectionNo && !item?.billData?.id && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        {item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
                           <button
                             className="submit-bar"
                             type="button"
-                            style={{ color: "white" }}
+                            style={{ color: "white", fontSize: "13px" }}
                             onClick={() => {
                               fetchBill("WS", item.connectionNo, index);
                             }}
                           >
-                            {`${t("CHECK_STATUS")}`}
+                            {`${t("CHECK_STATUS_WATER")}`}
+                            {/* Check Status for Water */}
                           </button>
                         )}
 
@@ -412,8 +402,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                             type="button"
                             style={{ color: "white" }}
                             onClick={() => {
-                              // setSelectedBillData(item?.billData);
-                              // setShowPayModal(true);
                               redirectToPayBill(item?.billData, index, item.isEdit);
                             }}
                           >
@@ -421,7 +409,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           </button>
                         )}
 
-                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green"}}>{t("NO_DUES")}</div>}
+                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green" }}>{t("NO_DUES")}</div>}
 
                         {item?.isEdit && (
                           <button
@@ -450,7 +438,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           <button
             className="submit-bar"
             type="button"
-            style={{ color: "white" }}
+            style={{ color: "white", fontSize: "12px" }}
             onClick={() => {
               addWaterConnection();
             }}
@@ -463,9 +451,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {sewerageConnectionLoading ? (
               <Loader />
             ) : (
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
                 {propertyDetails?.sewerageConnection?.map((item, index) => (
-                  <div key={index} style={{ display: "flex", flexDirection: "row", gap: "25px" }}>
+                  <div
+                    className="ndc_property_search"
+                    key={index}
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "baseline",
+                      gap: "16px",
+                    }}
+                  >
                     <Controller
                       key={index}
                       control={control}
@@ -496,17 +493,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                     {item.isLoading ? (
                       <Loader />
                     ) : (
-                      <div>
-                        {item?.connectionNo && !item?.billData?.id && (
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        {item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
                           <button
                             className="submit-bar"
                             type="button"
-                            style={{ color: "white" }}
+                            style={{ color: "white", fontSize: "13px" }}
                             onClick={() => {
                               fetchBill("SW", item.connectionNo, index, item.isEdit);
                             }}
                           >
-                            {`${t("CHECK_STATUS")}`}
+                            {`${t("CHECK_STATUS_SEWERAGE")}`}
+                            {/* Check Status for Sewerage */}
                           </button>
                         )}
 
@@ -514,7 +512,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           <button
                             className="submit-bar"
                             type="button"
-                            style={{ color: "white", padding: "3px 100px" }}
+                            style={{ color: "white" }}
                             onClick={() => {
                               // setSelectedBillData(item?.billData);
                               // setShowPayModal(true);
@@ -525,7 +523,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           </button>
                         )}
 
-                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div>{t("NO_DUES")}</div>}
+                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green" }}>{t("NO_DUES")}</div>}
 
                         {item?.isEdit && (
                           <button
@@ -554,7 +552,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           <button
             className="submit-bar"
             type="button"
-            style={{ color: "white" }}
+            style={{ color: "white", fontSize: " 12px" }}
             onClick={() => {
               addSewerageConnection();
             }}

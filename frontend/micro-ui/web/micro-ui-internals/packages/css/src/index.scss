@@ -1,10 +1,9 @@
 /*@import 'normalize.css';*/
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
-
 
 @import "tailwindcss/base";
 
@@ -124,7 +123,7 @@
 .display-none {
   display: none;
 }
-.primary-label-btn{
+.primary-label-btn {
   margin: 10px auto 0px !important;
 }
 .p-unset {
@@ -205,7 +204,7 @@
 }
 
 .clear-search-label {
-  color: #2947A3;
+  color: #2947a3;
   cursor: pointer;
 }
 
@@ -230,7 +229,6 @@
     color: #a82227;
     margin-left: 8px;
     white-space: nowrap;
-
   }
 }
 
@@ -524,12 +522,10 @@ input[type="number"] {
   width: 100% !important;
 }
 
-
-.edcr-citizen-inbox{ 
-   thead th:first-child{
-  min-width:100px; 
-}
-
+.edcr-citizen-inbox {
+  thead th:first-child {
+    min-width: 100px;
+  }
 }
 
 .error-boundary {
@@ -559,7 +555,6 @@ input[type="number"] {
       padding: 8px 24px;
       color: white;
       cursor: pointer;
-     
     }
   }
 }
@@ -670,30 +665,28 @@ input[type="number"] {
   }
 }
 
-.ws-button{
-  border:1px solid grey;
-  display:block;
-   background-color:grey;
-   height:50%;
-   width:80%;
-   text-align:'center';
-   margin-top:6%;
-   color:'white';
+.ws-button {
+  border: 1px solid grey;
+  display: block;
+  background-color: grey;
+  height: 50%;
+  width: 80%;
+  text-align: "center";
+  margin-top: 6%;
+  color: "white";
 }
-.ws-search-button{
-  border:1px solid black;
-  display:block;
-  
-   height:50%;
-   width:80%;
-   text-align:'center';
-   margin-top:6%;
-   color: 'white';
-  
- 
+.ws-search-button {
+  border: 1px solid black;
+  display: block;
+
+  height: 50%;
+  width: 80%;
+  text-align: "center";
+  margin-top: 6%;
+  color: "white";
 }
-.button{
-  color:'white'
+.button {
+  color: "white";
 }
 .plumber-details-new-value-wrapper {
   flex: 2 1 auto;
@@ -762,51 +755,79 @@ input[type="number"] {
   }
 }
 
-.employee-app-wrapper{
-min-height: calc(100vh - 8em);
+.employee-app-wrapper {
+  min-height: calc(100vh - 8em);
 }
-.submit-bar header{
-  line-height: 2.0rem !important;
+.submit-bar header {
+  line-height: 2rem !important;
 }
-.logo-removeBorderRadiusLogo svg{
+.logo-removeBorderRadiusLogo svg {
   width: 50px;
   height: 60px;
 }
 
 .icon-banner-employee {
-    background-color:#d7aefc !important;
+  background-color: #d7aefc !important;
 }
-.icon-banner-employee svg{
-  background-color: #0D43A7 !important;
+.icon-banner-employee svg {
+  background-color: #0d43a7 !important;
   width: 40px;
   height: 40px;
 }
-.inboxButton{
-    border: none;
-    color: white;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 14px;
-    margin: 4px 2px;
-    cursor: pointer;
-    height: fit-content;
-    border-radius: 5px;
-    font-family: sans-serif;
-    font-weight: 700;
+.inboxButton {
+  border: none;
+  color: white;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  margin: 4px 2px;
+  cursor: pointer;
+  height: fit-content;
+  border-radius: 5px;
+  font-family: sans-serif;
+  font-weight: 700;
 }
-.employee .inboxButton{
+.employee .inboxButton {
   padding: 5px 15px;
-  background: #ba2b36
+  background: #ba2b36;
 }
-.citizen .inboxButton{
+.citizen .inboxButton {
   padding: 15px;
-  font-size: 1.2rem
+  font-size: 1.2rem;
+}
+
+.ndc_property_search .text-input {
+  width: 100%;
+  max-width: 300px;
+}
+
+.action-bar-wrap {
+  display: flex;
+  justify-content: end;
+  gap: 10px;
+}
+
+.action-bar-wrap .submit-bar {
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 @media screen and (max-width: 768px) {
-  .citizen .inboxButton{
+  .citizen .inboxButton {
     font-size: 1rem;
   }
 }
 
+@media screen and (max-width: 768px) {
+  .stepper {
+    display: grid !important;
+  }
+  .action-bar-wrap {
+    padding: 10px 0;
+    text-align: center;
+  }
+  .submit-bar {
+    font-size: 11px;
+  }
+}

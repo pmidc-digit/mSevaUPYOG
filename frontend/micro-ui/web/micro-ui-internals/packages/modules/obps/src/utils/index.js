@@ -70,6 +70,7 @@ export const convertToNocObject = (data, datafromflow) => {
 };
 
 export const getBPAFormData = async (data, mdmsData, history, t) => {
+  console.log(data, "PPPP");
   const edcrResponse = await Digit.OBPSService.scrutinyDetails(data?.tenantId, { edcrNumber: data?.edcrNumber });
   const APIScrutinyDetails = edcrResponse?.edcrDetail[0];
   const getBlockIds = (unit) => {
@@ -138,11 +139,7 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
 
   data.owners = {
     owners: data?.landInfo?.owners,
-    ownershipCategory: {
-      active: true,
-      code: data?.landInfo?.ownershipCategory,
-      i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${data?.landInfo?.ownershipCategory.replaceAll(".", "_")}`,
-    },
+    ownershipCategory: data?.ownershipCategory?.code,
   };
 
   data.riskType = Digit.Utils.obps.calculateRiskType(
@@ -225,6 +222,8 @@ export const getDocumentforBPA = (docs, PrevStateDocs) => {
     fileStoreId: sessionStorage.getItem("ArchitectConsentdocFilestoreid"),
     fileStore: sessionStorage.getItem("ArchitectConsentdocFilestoreid"),
   };
+
+  console.log(architectConsentForm);
 
   docs &&
     docs.map((ob) => {
@@ -476,9 +475,19 @@ export const convertToBPAObject = (data, isOCBPA = false, isSendBackTOCitizen = 
       applicationDate: data?.applicationDate,
       status: isSendBackTOCitizen ? data.status : data.status ? data.status : "INITIATED",
       documents: getDocumentforBPA(data?.documents?.documents, data?.PrevStateDocuments),
+      // landInfo: isOCBPA
+      //   ? data?.landInfo
+      //   : { ...data?.landInfo, ownershipCategory: getOwnerShipCategory(data, isOCBPA), owners: getBPAOwners(data, isOCBPA), unit: getBPAUnit(data) },
+
       landInfo: isOCBPA
         ? data?.landInfo
-        : { ...data?.landInfo, ownershipCategory: getOwnerShipCategory(data, isOCBPA), owners: getBPAOwners(data, isOCBPA), unit: getBPAUnit(data) },
+        : {
+            ...data?.landInfo,
+            ownershipCategory: getOwnerShipCategory(data, isOCBPA)?.code ?? getOwnerShipCategory(data, isOCBPA),
+            owners: getBPAOwners(data, isOCBPA),
+            unit: getBPAUnit(data),
+          },
+
       assignee: isSendBackTOCitizen ? data.assignee : [],
       workflow: {
         action: "SEND_TO_CITIZEN",
@@ -546,8 +555,10 @@ export const convertToStakeholderObject = (data) => {
         tradeLicenseDetail: {
           ...data?.result?.Licenses[0]?.tradeLicenseDetail,
           additionalDetail: {
+            qualificationType: data?.formData?.LicneseType?.qualificationType?.name,
             counsilForArchNo: data?.formData?.LicneseType?.ArchitectNo,
             isSelfCertificationRequired: data?.formData?.LicneseType?.selfCertification,
+            Ulb: data?.formData?.LicneseDetails?.Ulb,
           },
           tradeUnits: [
             {
@@ -564,7 +575,12 @@ export const convertToStakeholderObject = (data) => {
               name: data?.formData?.LicneseDetails?.name,
               dob: null,
               emailId: data?.formData?.LicneseDetails?.email,
-              permanentAddress: data?.formData?.LicneseDetails?.PermanentAddress+" , "+data?.formData?.LicneseDetails?.SelectedDistrict?.name+ " , "+data?.formData?.LicneseDetails?.SelectedState?.name,
+              permanentAddress:
+                data?.formData?.LicneseDetails?.PermanentAddress +
+                " , " +
+                data?.formData?.LicneseDetails?.SelectedDistrict?.name +
+                " , " +
+                data?.formData?.LicneseDetails?.SelectedState?.name,
               correspondenceAddress: data?.Correspondenceaddress,
               pan: data?.formData?.LicneseDetails?.PanNumber,
               uuid: data?.result?.Licenses[0]?.tradeLicenseDetail?.owners?.[0]?.uuid,
@@ -629,6 +645,8 @@ export const getBPAEditDetails = async (data, APIScrutinyDetails, mdmsData, nocd
       });
     return blocks;
   };
+
+  console.log("DATA", data);
 
   const getBlocksforFlow = (unit) => {
     let arr = [];
@@ -705,11 +723,7 @@ export const getBPAEditDetails = async (data, APIScrutinyDetails, mdmsData, nocd
 
   data.owners = {
     owners: data?.landInfo?.owners,
-    ownershipCategory: {
-      active: true,
-      code: data?.landInfo?.ownershipCategory,
-      i18nKey: `COMMON_MASTERS_OWNERSHIPCATEGORY_${data?.landInfo?.ownershipCategory.replaceAll(".", "_")}`,
-    },
+    ownershipCategory: data?.ownershipCategory?.code,
   };
 
   data.riskType = Digit.Utils.obps.calculateRiskType(
@@ -770,16 +784,23 @@ export const convertEpochToDate = (dateEpoch) => {
   }
 };
 
+// export const getBusinessServices = (businessService, status) => {
+//   let billBusinessService = "BPA.NC_APP_FEE";
+//   if (businessService === "BPA_LOW") {
+//     billBusinessService = "BPA.LOW_RISK_PERMIT_FEE";
+//   } else if (businessService === "BPA") {
+//     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
+//   } else if (businessService === "BPA_OC") {
+//     billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_OC_APP_FEE" : "BPA.NC_OC_SAN_FEE";
+//   }
+//   return billBusinessService;
+// };
+
+
 export const getBusinessServices = (businessService, status) => {
-  let billBusinessService = "BPA.NC_APP_FEE";
-  if (businessService === "BPA_LOW") {
-    billBusinessService = "BPA.LOW_RISK_PERMIT_FEE";
-  } else if (businessService === "BPA") {
-    billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
-  } else if (businessService === "BPA_OC") {
-    billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_OC_APP_FEE" : "BPA.NC_OC_SAN_FEE";
-  }
-  return billBusinessService;
+  // let billBusinessService = "BPA.NC_APP_FEE";
+  
+  return "BPA.NC_APP_FEE";
 };
 
 export const downloadPdf = (blob, fileName) => {
@@ -911,6 +932,7 @@ export const getOCEDCRDetails = async (edcrNumber, tenantId) => {
 
 export const ocScrutinyDetailsData = async (edcrNumber, tenantId) => {
   const scrutinyDetails = await getOCEDCRDetails(edcrNumber, tenantId);
+  console.log(scrutinyDetails, "OOOO*****");
   if (!scrutinyDetails?.edcrDetail?.[0]?.edcrNumber) {
     return { type: "ERROR", message: scrutinyDetails ? scrutinyDetails : "BPA_NO_RECORD_FOUND" };
   }

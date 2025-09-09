@@ -204,9 +204,9 @@ const CheckPage = ({ onSubmit, value }) => {
         Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
         Level: ob.number,
         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
-        BuildupArea: ob.occupancies?.[0]?.builtUpArea,
-        FloorArea: ob.occupancies?.[0]?.floorArea || 0,
-        CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
+        BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
+        FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
+        // CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
         key: t(`BPA_FLOOR_NAME_${ob.number}`),
       });
     });
@@ -237,7 +237,7 @@ const CheckPage = ({ onSubmit, value }) => {
   if (pdfLoading || recieptDataLoading) {
     return <Loader />;
   }
-
+console.log("object");
   return (
     <React.Fragment>
       <Timeline currentStep={4} flow={value?.uiFlow?.flow === "OCBPA" ? "OCBPA" : ""} />
@@ -392,8 +392,8 @@ const CheckPage = ({ onSubmit, value }) => {
               <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={address?.pincode || t("CS_NA")} />
               <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={address?.city?.name || t("CS_NA")} />
               <Row className="border-none" label={t(`BPA_LOC_MOHALLA_LABEL`)} text={address?.locality?.name || t("CS_NA")} />
-              <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} />
-              <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} />
+              {/* <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} /> */}
+              {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
             </StatusTable>
           </Card>
           <Card style={{ paddingRight: "16px" }}>
@@ -410,7 +410,7 @@ const CheckPage = ({ onSubmit, value }) => {
                     <Row className="border-none" label={t(`CORE_COMMON_NAME`)} text={ob?.name} />
                     <Row className="border-none" label={t(`BPA_APPLICANT_GENDER_LABEL`)} text={t(ob?.gender?.i18nKey)} />
                     <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber} />
-                    <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner}`} />
+                    <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner === true ? "Yes" : "No"}`} />
                   </StatusTable>
                 </div>
               ))}

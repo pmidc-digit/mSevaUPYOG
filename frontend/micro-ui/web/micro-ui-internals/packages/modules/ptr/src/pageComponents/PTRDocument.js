@@ -11,13 +11,9 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 
 function PTRDocument({ petdetail = {} }) {
   const { t } = useTranslation();
-  // const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePetDocumentSearch({
-  //   petdetail,
-  // });
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", [
-    "Documents",
-  ]);
   const documents = petdetail?.documents || [];
+  const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePetDocumentSearch({ petdetail });
+
 
   if (isLoading) {
     return <Loader />;
@@ -27,16 +23,16 @@ function PTRDocument({ petdetail = {} }) {
     <div style={{ marginTop: "19px" }}>
       <React.Fragment>
         <div style={{ display: "flex", flexWrap: "wrap" }}>
-          {documents?.map((document, index) => {
-            
-            let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
-            return (
-              <a target="_" href={documentLink} style={{ minWidth: "160px" }} key={index}>
-                <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                <p style={{ marginTop: "8px" }}>{t(`PT_${document?.documentType.replace(".","_")}`)}</p>
-              </a>
-            );
-          })}
+          {documents?.length > 0 &&
+            documents?.map((document, index) => {
+              let documentLink = pdfDownloadLink(data.pdfFiles, document?.filestoreId);
+              return (
+                <a target="_" href={documentLink} style={{ minWidth: "160px" }} key={index}>
+                  <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
+                  <p style={{ marginTop: "8px" }}>{t(`PT_${document?.documentType.replace(".", "_")}`)}</p>
+                </a>
+              );
+            })}
         </div>
       </React.Fragment>
     </div>

@@ -2,25 +2,35 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import { SubmitBar } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifiedTimestamp }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const { state } = useLocation();
   const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   const ownername = user?.info?.name;
+  console.log(user, "OWNER NAME");
   const ownermobileNumber = user?.info.mobileNumber;
   const ownerEmail = user?.info?.emailId;
   const { id } = useParams();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const { data } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem("CITIZEN.CITY")
+  // const { data } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
+  const [params, setParams] = Digit.Hooks.useSessionStorage(
+    "BUILDING_PERMIT",
+    state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
+  );
+  const { data, isLoading } = Digit.Hooks.obps.useBPADetailsPage(tenantId, { applicationNo: id });
+
+  console.log(params, "UU");
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
-    tenantId: data?.applicationData?.tenantId,
+    tenantId: data?.tenantId,
     id: id,
     moduleCode: "OBPS",
     config: {
-      enabled: !!data,
+      enabled: !!params,
     },
   });
 
@@ -29,15 +39,17 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const architectname = workflowDetails?.data?.timeline?.[0]?.assigner?.name;
   const mobileNumber = workflowDetails?.data?.timeline?.[0]?.assigner?.mobileNumber;
   const khasranumber = data?.applicationData?.additionalDetails?.khasraNumber;
-  const ulbname = data?.applicationData?.additionalDetails?.UlbName;
-  const district = data?.applicationData?.additionalDetails?.District;
+  const ulbname = params?.additionalDetails?.UlbName;
+  const district = params?.additionalDetails?.District;
   const ward = data?.applicationData?.additionalDetails?.wardnumber;
   const area = data?.applicationData?.additionalDetails?.area;
-  const applicationnumber = data?.applicationNo;
+  const applicationnumber = params?.applicationNo;
   const architectid = data?.applicationData?.additionalDetails?.architectid;
   const architecttype = data?.applicationData?.additionalDetails?.typeOfArchitect;
-  const TimeStamp = otpVerifiedTimestamp;
-  const ulbselection = data?.applicationData?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "Commissioner" : "Executive Officer";
+  // const TimeStamp = otpVerifiedTimestamp;
+  const ulbselection = params?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "Commissioner" : "Executive Officer";
+  const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
+  const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
 
   const updatedAdditionalDetails = {
     ...data?.applicationData?.additionalDetails,
@@ -46,24 +58,28 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
 
   // Update the entire data object with the new additionalDetails
   const updatedData = {
-    ...data,
+    applicationNo: data?.applicationNo,
+    tenantId: data?.tenantId,
     applicationData: {
-      ...data?.applicationData,
-      additionalDetails: updatedAdditionalDetails,
+      ...updatedAdditionalDetails,
     },
   };
+
+  console.log(data, "DatA");
 
   const selfdeclarationform = `
     To,
     <b>${ulbselection}</b>
-    <b>${ulbname}</b> 
+    <b>${data?.applicationData?.tenantId}</b> 
     
     Dear Sir or Madam,
 
-    I/We, Shri/Smt/Kum. <b>${ownername}</b> under signed owner of land bearing Kh. No. <b>${khasranumber}</b> of ULB 
-    <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts.), ward number <b>${ward}</b>, City <b>${district}</b>
+    I/We, Shri/Smt/Kum. <b>${data?.applicationData?.landInfo?.owners.map(
+      (item) => item?.name
+    )}</b> under signed owner of land bearing Kh. No. <b>${khasranumber}</b> of ULB 
+    <b>${data?.applicationData?.tenantId}</b> Area <b>${area}</b> (Sq.mts.), ward number <b>${ward}</b>, City <b>${data?.applicationData?.landInfo?.address?.city}</b>
     
-    I/We hereby declare that the Architect name <b>${architectname}</b> (<b>${architecttype}</b>) Architect ID 
+    I/We hereby declare that the Architect name <b>${ownername}</b> (<b>${architecttype}</b>) Architect ID 
     <b>${architectid}</b> is appointed by me/us and is authorized to make representation/application 
     with regard to aforesaid construction to any of the authorities.
 
@@ -88,6 +104,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     Name of Owner - <b>${ownername}</b>
     Mobile Number - <b>${ownermobileNumber}</b>
     Email Id  - <b>${ownerEmail}</b>
+    
                                                                   
     `;
 
@@ -102,6 +119,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     return (currentLine.trim() === lineToCheck1 && nextLine?.trim() === lineToCheck2) || currentLine.trim() === lineToCheck3;
   };
 
+  console.log("HELLO");
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -115,7 +133,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
       setIsUploading(true); // Set isUploading to true before starting the upload
 
       let result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [updatedData] }, "ownerconsent");
-
+console.log(result, "RESULT");
       if (result?.filestoreIds[0]?.length > 0) {
         alert("File Uploaded Successfully");
         sessionStorage.setItem("CitizenConsentdocFilestoreid", result?.filestoreIds[0]);
@@ -214,10 +232,10 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
             <SubmitBar label={t("BPA_CLOSE")} onSubmit={closeModal} />
           </div>
           <br></br>
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          {!isCitizenDeclared && <div style={{ display: "flex", justifyContent: "flex-end" }}>
             <br></br>
             <SubmitBar label={t("BPA_UPLOAD")} onSubmit={uploadSelfDeclaration} disabled={isUploading || isFileUploaded} />
-          </div>
+          </div>}
         </div>
       </Modal>
     </div>

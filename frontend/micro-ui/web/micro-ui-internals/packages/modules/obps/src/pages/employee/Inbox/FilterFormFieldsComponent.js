@@ -6,8 +6,9 @@ import cloneDeep from "lodash/cloneDeep";
 
 const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, controlFilterForm, setFilterFormValue, filterFormState, getFilterFormValue, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant }) => {
   const { t } = useTranslation()
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const { data: applicationTypesOfBPA, isLoading: loadingApplicationTypesOfBPA } = Digit.Hooks.obps.SearchMdmsTypes.useApplicationTypes(tenantId);
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const stateId = localStorage.getItem("Citizen.tenant-id");
+  const { data: applicationTypesOfBPA, isLoading: loadingApplicationTypesOfBPA } = Digit.Hooks.obps.SearchMdmsTypes.useApplicationTypes("pb");
 
   const availableOptions = [
     { code: "ASSIGNED_TO_ME", name: `${t("ES_INBOX_ASSIGNED_TO_ME")}` },
@@ -17,7 +18,6 @@ const FilterFormFieldsComponent = ({statuses, isInboxLoading, registerRef, contr
   const selectedApplicationType = useWatch({control: controlFilterForm, name: "applicationType", defaultValue: filterFormState?.applicationType || null});
   const availableBusinessServicesOptions = Digit.Hooks.obps.useBusinessServiceBasedOnServiceType({applicationType: selectedApplicationType})
   const selectedBusinessService = useWatch({control: controlFilterForm, name: "businessService", defaultValue: filterFormState?.businessService || null});
-  
   const selectrole = (listOfSelections, props) => {
     const res = listOfSelections.map( (propsData) => {
       const data = propsData[1]

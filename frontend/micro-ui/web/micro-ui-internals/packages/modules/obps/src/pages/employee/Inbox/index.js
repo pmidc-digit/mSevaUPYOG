@@ -11,7 +11,8 @@ const Inbox = ({ parentRoute }) => {
   window.scroll(0, 0);
   const { t } = useTranslation();
 
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentTenantId() : localStorage.getItem("CITIZEN.CITY");
 
   const searchFormDefaultValues = {};
 
@@ -207,7 +208,8 @@ const Inbox = ({ parentRoute }) => {
           </Link>
         </div>
       }
-      {/* <InboxComposer
+      
+      <InboxComposer
         {...{
           isInboxLoading,
           PropsForInboxLinks,
@@ -218,7 +220,7 @@ const Inbox = ({ parentRoute }) => {
           propsForInboxMobileCards,
           formState,
         }}
-      ></InboxComposer> */}
+      ></InboxComposer>
     </>
   );
 };

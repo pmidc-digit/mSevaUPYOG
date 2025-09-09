@@ -12,11 +12,11 @@ const InboxLinks = ({ parentRoute, businessService }) => {
       link: "/digit-ui/employee/ptr/petservice/new-application",
       roles: [],
     },
-    {
-      text: "PTR_SEARCH_PET",
-      link: `/digit-ui/employee/ptr/petservice/search`,
-      roles: [],
-    },
+    // {
+    //   text: "PTR_SEARCH_PET",
+    //   link: `/digit-ui/employee/ptr/petservice/search`,
+    //   roles: [],
+    // },
     // {
     //   text: "PTR_COMMON_APPLICATION_SEARCH",
     //   link: `/digit-ui/employee/ptr/application-search`,

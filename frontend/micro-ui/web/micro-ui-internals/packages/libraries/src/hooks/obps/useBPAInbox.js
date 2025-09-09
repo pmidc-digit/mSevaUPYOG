@@ -1,7 +1,9 @@
 import useInbox from "../useInbox";
+import { useTranslation } from "react-i18next";
 
 const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm } = filters;
+  const { t } = useTranslation();
   const user = Digit.UserService.getUser();
   let { moduleName, businessService, applicationStatus, locality, assignee, applicationType } = filterForm;
   const { mobileNumber, applicationNo } = searchForm;
@@ -16,21 +18,22 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
     applicationType === "BUILDING_OC_PLAN_SCRUTINY" &&
     (window.location.href.includes("obps/inbox") || window.location.href.includes("obps/bpa/inbox"))
   ) {
-    businessService = "BPA_OC";
+    businessService = ["BPA_LOW", "BPA"];
   }
 
   let _filters = {
     tenantId,
     processSearchCriteria: {
       assignee: assignee === "ASSIGNED_TO_ME" ? user?.info?.uuid : "",
-      moduleName: moduleName !== "BPAREG" ? "bpa-services" : "BPAREG",
+      moduleName: moduleName !== "BPAREG" ? "bpa-service" : "BPAREG",
       businessService:
         moduleName !== "BPAREG"
           ? businessService
             ? [businessService]
-            : ["BPA_LOW", "BPA", "BPA_OC"]
+            : ["BPA_LOW", "BPA"]
           : businessService
           ? [businessService.identifier]
+          // ? [businessService]
           :["ARCHITECT", "ENGINEER", "TOWNPLANNER", "SUPERVISOR"],
           // : ["ARCHITECT", "BUILDER", "ENGINEER", "STRUCTURALENGINEER", "TOWNPLANNER", "SUPERVISOR"],
       ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
@@ -51,6 +54,8 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
   if (!applicationNo) {
     _filters = { ..._filters, offset };
   }
+
+
 
   return useInbox({
     tenantId,
@@ -77,7 +82,7 @@ const useBPAInbox = ({ tenantId, filters, config = {} }) => {
           sla: application?.businessObject?.status.match(/^(APPROVED)$/)
             ? "CS_NA"
             : Math.round(application.ProcessInstance?.businesssServiceSla / (24 * 60 * 60 * 1000)),
-          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || "ASSIGNED_TO_ALL",
+          assignedOwner: application?.ProcessInstance?.assignes?.[0]?.name || t("DOCUMENT_VERIFIER",)
         })),
         totalCount: data.totalCount,
         nearingSlaCount: data?.nearingSlaCount,

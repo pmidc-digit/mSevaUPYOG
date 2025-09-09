@@ -39,6 +39,8 @@ const PlotDetails = ({ formData, onSelect, config }) => {
   const checkingFlow = formData?.uiFlow?.flow;
   const state = Digit.ULBService.getStateId();
   const [errors, setErrors] = useState({});
+
+  
   useEffect(() => {
     if (isEditApplication) {
       const newConfig = {
@@ -114,11 +116,49 @@ const PlotDetails = ({ formData, onSelect, config }) => {
     ...formData?.data,
   };
 
+
+
+const handleChange = (name, value, validation) => {
+  let error = "";
+
+  if (validation?.required && !value.trim()) {
+    error = validation.errorMessage || `${name} is required`;
+  }
+
+  if (!error && validation?.pattern && value) {
+    const regex = new RegExp(validation.pattern);
+    if (!regex.test(value)) {
+      error = validation.errorMessage || validation.title;
+    }
+  }
+
+  setErrors((prev) => ({ ...prev, [name]: error }));
+};
+
+const configWithErrors = {
+    ...editConfig,
+    inputs: editConfig.inputs.map((input) => ({
+      ...input,
+      customJSX: (
+        <React.Fragment>
+          {errors[input.name] && (
+            <p style={{ color: "red", fontSize: "14px", marginTop: "4px" }}>
+              {errors[input.name]}
+            </p>
+          )}
+        </React.Fragment>
+      ),
+      onChange: (e) => handleChange(input.name, e.target.value, input.validation),
+    })),
+  };
+
+
+
   return (
     <div>
       <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
       <div style={{ height: "80vh", overflow: "scroll" }}>
-        <FormStep config={editConfig} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
+        <FormStep config={configWithErrors} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
           <StatusTable>
             <Row
               className="border-none"
@@ -127,6 +167,8 @@ const PlotDetails = ({ formData, onSelect, config }) => {
             />
             <Row className="border-none" label={t(`BPA_PLOT_NUMBER_LABEL`)} text={data?.planDetail?.planInformation?.plotNo} />
             <Row className="border-none" label={t(`BPA_KHATHA_NUMBER_LABEL`)} text={data?.planDetail?.planInfoProperties?.KHATA_NO} />
+
+            
           </StatusTable>
         </FormStep>
       </div>

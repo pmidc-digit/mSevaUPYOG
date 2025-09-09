@@ -1488,6 +1488,8 @@ const CheckPage = ({ onSubmit, value }) => {
     return stored || value?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "";
   });
 
+  console.log(value, "VAL");
+
   const [otherCharges, setOtherCharges] = useState(() => {
     const stored = sessionStorage.getItem("otherCharges");
     return stored || value?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "";
@@ -1506,6 +1508,7 @@ const CheckPage = ({ onSubmit, value }) => {
   const [gaushalaFees, setGaushalaFees] = useState(() => sessionStorage.getItem("GaushalaFees") || "");
   const [malbafees, setMalbafees] = useState(() => sessionStorage.getItem("Malbafees") || "");
   const [waterCharges, setWaterCharges] = useState(() => sessionStorage.getItem("WaterCharges") || "");
+  const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
 
   const [ownersData, setOwnersData] = useState(() => {
     // <CHANGE> Simplified owner data retrieval from multiple possible sources
@@ -1578,6 +1581,7 @@ const CheckPage = ({ onSubmit, value }) => {
 
   // Replace/add this section after the existing building extract section:
   const planInfoProps = getPlanInfoProperties();
+  console.log(planInfoProps, "PLAN");
 
   const plotDataFromStorage = getPlotDataFromStorage();
 
@@ -1628,6 +1632,8 @@ const CheckPage = ({ onSubmit, value }) => {
 
   const isEditApplication = window.location.href.includes("editApplication");
 
+  console.log(value, "DEKHO");
+
   // Initialize agreement states with sessionStorage persistence
   const [agree, setAgree] = useState(() => {
     const stored = sessionStorage.getItem("professionalAgree");
@@ -1658,6 +1664,7 @@ const CheckPage = ({ onSubmit, value }) => {
   });
 
   const [otpError, setOTPError] = useState("");
+  const [otpSuccess, setOTPSuccess] = useState("");
 
   const [otpVerifiedTimestamp, setOTPVerifiedTimestamp] = useState(() => {
     const stored = sessionStorage.getItem("otpVerifiedTimestamp");
@@ -1786,7 +1793,9 @@ const CheckPage = ({ onSubmit, value }) => {
     return (
       <div>
         {t("I_AGREE_TO_BELOW_UNDERTAKING")}
-        <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />
+        <br />
+        {!isArchitectDeclared && <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
+        {isArchitectDeclared && <div  onClick={handleTermsLinkClick} style={{color: "green"}} >{t("VIEW_DECLARATION")} </div>}
       </div>
     );
   };
@@ -1842,7 +1851,7 @@ const CheckPage = ({ onSubmit, value }) => {
       const response = await Digit.UserService.authenticate(requestData);
       if (response.ResponseInfo.status === "Access Token generated successfully") {
         setIsOTPVerified(true);
-        setOTPError(t("VERIFIED"));
+        setOTPSuccess(t("VERIFIED"));
         const currentTimestamp = new Date();
         setOTPVerifiedTimestamp(currentTimestamp);
         sessionStorage.setItem("otpVerifiedTimestamp", currentTimestamp.toISOString());
@@ -1859,7 +1868,8 @@ const CheckPage = ({ onSubmit, value }) => {
   };
 
   const setdeclarationhandler = (e) => {
-    e.preventDefault(); // Prevent form submission
+    // e.preventDefault(); // Prevent form submission
+    console.log("setdeclarationhandler", e);
     if (!isOTPVerified) {
       setShowMobileInput(true);
     } else {
@@ -2104,7 +2114,7 @@ const CheckPage = ({ onSubmit, value }) => {
     { name: "BPA_TABLE_COL_OCCUPANCY", id: "Occupancy" },
     { name: "BPA_TABLE_COL_BUILDUPAREA", id: "BuildupArea" },
     { name: "BPA_TABLE_COL_FLOORAREA", id: "FloorArea" },
-    { name: "BPA_TABLE_COL_CARPETAREA", id: "CarpetArea" },
+    // { name: "BPA_TABLE_COL_CARPETAREA", id: "CarpetArea" },
   ];
 
   const accessData = (plot) => {
@@ -2129,9 +2139,9 @@ const CheckPage = ({ onSubmit, value }) => {
         Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
         Level: ob.number,
         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
-        BuildupArea: ob.occupancies?.[0]?.builtUpArea,
-        FloorArea: ob.occupancies?.[0]?.floorArea || 0,
-        CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
+        BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
+        FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
+        // CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
         key: t(`BPA_FLOOR_NAME_${ob.number}`),
       });
     });
@@ -2236,10 +2246,51 @@ const CheckPage = ({ onSubmit, value }) => {
     setFile(e.target.files[0]);
   }
 
+
+  console.log(getOrderDocuments(applicationDocs), "DOC DOC DOC");
+// const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+//   id: index,
+//   // localize the title here
+//   title: doc.title ? t(`BPA_${doc.title}`) : t("CS_NA"),
+//   fileUrl: doc.values?.[0]?.fileURL || null,
+// }));
+
+const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+  id: index,
+  title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+  fileUrl: doc.values?.[0]?.fileURL || null,
+}));
+
+
+
+const documentsColumns = [
+  {
+    Header: t("BPA_DOCUMENT_NAME"),
+    accessor: "title",
+    Cell: ({ value }) => value || t("CS_NA"),
+  },
+  {
+    Header: t("BPA_DOCUMENT_FILE"),
+    accessor: "fileUrl",
+    Cell: ({ value }) =>
+      value ? (
+        <LinkButton
+          label={t("View")}
+          onClick={() => routeTo(value)}
+        />
+      ) : (
+        t("CS_NA")
+      ),
+  },
+];
+
+
+
   return (
     <React.Fragment>
       <Timeline currentStep={4} />
-      <Header styles={{ marginLeft: "10px" }}>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
+      <Header>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
+      <div style={{height:"75vh", overflow:"scroll", marginTop:"30px"}}>
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={plotDataFromStorage?.applicationNumber} />
@@ -2259,14 +2310,14 @@ const CheckPage = ({ onSubmit, value }) => {
         <StatusTable>
           <CardHeader>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
           <LinkButton
-            label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
-            style={{ width: "100px", display: "inline" }}
+           label={<EditIcon color="white" style={{color:"white"}}  />}
+            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
             onClick={() => routeTo(`${routeLink}/plot-details`)}
           />
 
           <Row
             className="border-none"
-            textStyle={{ paddingLeft: "12px" }}
+            // textStyle={{ paddingLeft: "12px" }}
             label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}
             text={
               plotDataFromStorage?.planDetail?.planInformation?.plotArea ||
@@ -2320,41 +2371,98 @@ const CheckPage = ({ onSubmit, value }) => {
         </StatusTable>
       </Card>
       <Card style={{ paddingRight: "16px" }}>
+
+
+
+
+
         <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
-        <StatusTable style={{ border: "none" }}>
-          <Row className="border-none" label={t("BPA_EDCR_NO_LABEL")} text={data?.scrutinyNumber?.edcrNumber}></Row>
-          <CardSubHeader>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</CardSubHeader>
-          <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.updatedDxfFile)} />
-          <p
-            style={{
-              marginTop: "8px",
-              marginBottom: "20px",
-              textAlign: "Left",
-              fontSize: "16px",
-              lineHeight: "19px",
-              color: "#505A5F",
-              fontWeight: "400",
-            }}
-          >
-            {t(`Uploaded Plan.pdf`)}
-          </p>
-          <CardSubHeader>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</CardSubHeader>
-          <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.planReport)} />
-          <p
-            style={{
-              marginTop: "8px",
-              marginBottom: "20px",
-              textAlign: "Left",
-              fontSize: "16px",
-              lineHeight: "19px",
-              color: "#505A5F",
-              fontWeight: "400",
-            }}
-          >
-            {t(`BPA_SCRUTINY_REPORT_PDF`)}
-          </p>
-        </StatusTable>
+
+        <div
+          style={{
+            marginTop: "19px",
+            background: "#FAFAFA",
+            border: "1px solid #D6D5D4",
+            borderRadius: "4px",
+            padding: "8px",
+            lineHeight: "19px",
+            maxWidth: "960px",
+            minWidth: "280px",
+          }}
+        >
+          <StatusTable>
+            <Row
+              className="border-none"
+              textStyle={{ wordBreak: "break-word" }}
+              label={t("BPA_EDCR_NO_LABEL")}
+              text={data?.scrutinyNumber?.edcrNumber || t("CS_NA")}
+            />
+            <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+              {t("BPA_UPLOADED_PLAN_DIAGRAM")}
+            </CardSubHeader>
+            <Row
+              className="border-none"
+              text={
+                datafromAPI?.updatedDxfFile ? (
+                  <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.updatedDxfFile)} />
+                ) : (
+                  t("CS_NA")
+                )
+              }
+            />
+            <p
+              style={{
+                marginTop: "8px",
+                marginBottom: "20px",
+                textAlign: "left",
+                fontSize: "16px",
+                lineHeight: "19px",
+                color: "#505A5F",
+                fontWeight: "400",
+              }}
+            >
+              {t(`Uploaded Plan.pdf`)}
+            </p>
+
+            <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+              {t("BPA_SCRUNTINY_REPORT_OUTPUT")}
+            </CardSubHeader>
+            <Row
+              className="border-none"
+              text={
+                datafromAPI?.planReport ? (
+                  <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.planReport)} />
+                ) : (
+                  t("CS_NA")
+                )
+              }
+            />
+            <p
+              style={{
+                marginTop: "8px",
+                marginBottom: "20px",
+                textAlign: "left",
+                fontSize: "16px",
+                lineHeight: "19px",
+                color: "#505A5F",
+                fontWeight: "400",
+              }}
+            >
+              {t(`BPA_SCRUTINY_REPORT_PDF`)}
+            </p>
+          </StatusTable>
+        </div>
+
+
+
+
+
+
+
+
+
+
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader>
 
@@ -2364,7 +2472,8 @@ const CheckPage = ({ onSubmit, value }) => {
             <Row
               className="border-none"
               label={t("BPA_PLOT_AREA_M2")}
-              text={`${planInfoProps?.PLOT_AREA_M2 || t("CS_NA")} ${planInfoProps?.PLOT_AREA_M2 ? t("BPA_SQ_MTRS_LABEL") : ""}`}
+              // text=`{${planInfoProps?.planDetail?.plotArea?.area ? t("BPA_SQ_MTRS_LABEL") : ""}`
+            text={planInfoProps?.planDetail?.plot?.area || t("CS_NA")}
             />
             {console.log(planInfoProps, "PLAN")}
             <Row
@@ -2419,7 +2528,7 @@ const CheckPage = ({ onSubmit, value }) => {
             <Row className="border-none" label={t("BPA_AVG_PLOT_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.AVG_PLOT_WIDTH} />
 
             <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_ROAD_DETAILS")}</CardSubHeader>
-            <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={planInfoProps?.ROAD_TYPE || t("CS_NA")} />
+            <Row className="border-none" label={t("BPA_ROAD_TYPE")} text={planInfoProps?.planDetail?.planInfoProperties?.ROAD_TYPE || t("CS_NA")} />
             <Row className="border-none" label={t("BPA_ROAD_WIDTH")} text={plotDataFromStorage?.planDetail?.planInfoProperties?.ROAD_WIDTH} />
 
             <CardSubHeader style={{ fontSize: "18px", marginTop: "20px" }}>{t("BPA_SUSTAINABILITY_FEATURES")}</CardSubHeader>
@@ -2495,27 +2604,30 @@ const CheckPage = ({ onSubmit, value }) => {
           ></Row>
         </StatusTable>
       </Card>
+
+
+
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
           <LinkButton
-            label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
-            style={{ width: "100px", display: "inline" }}
+            label={<EditIcon color="white" style={{color:"white"}}  />}
+            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
             onClick={() => routeTo(`${routeLink}/location`)}
           />
-          <Row className="border-none" textStyle={{ paddingLeft: "12px" }} label={t(`BPA_DETAILS_PIN_LABEL`)} text={address?.pincode || t("CS_NA")} />
+          <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={address?.pincode || t("CS_NA")} />
           <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={address?.city?.name || t("CS_NA")} />
           <Row className="border-none" label={t(`BPA_LOC_MOHALLA_LABEL`)} text={address?.locality?.name || t("CS_NA")} />
-          <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} />
-          <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} />
+          {/* <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} /> */}
+          {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
         </StatusTable>
       </Card>
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
           <LinkButton
-            label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
-            style={{ width: "100px", display: "inline" }}
+            label={<EditIcon color="white" style={{color:"white"}}  />}
+            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
             onClick={() => routeTo(`${routeLink}/owner-details`)}
           />
           {ownersData &&
@@ -2546,7 +2658,7 @@ const CheckPage = ({ onSubmit, value }) => {
                 <StatusTable>
                   <Row
                     className="border-none"
-                    textStyle={index == 0 && ownersData.length == 1 ? { paddingLeft: "12px" } : {}}
+                    // textStyle={index == 0 && ownersData.length == 1 ? { paddingLeft: "12px" } : {}}
                     label={t(`CORE_COMMON_NAME`)}
                     text={ob?.name || "N/A"}
                   />
@@ -2557,7 +2669,7 @@ const CheckPage = ({ onSubmit, value }) => {
                   />
                   <Row className="border-none" label={t(`CORE_COMMON_MOBILE_NUMBER`)} text={ob?.mobileNumber || "N/A"} />
                   <Row className="border-none" label={t(`CORE_COMMON_EMAIL_ID`)} text={ob?.emailId || t("CS_NA")} />
-                  <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner || false}`} />
+                  <Row className="border-none" label={t(`BPA_IS_PRIMARY_OWNER_LABEL`)} text={`${ob?.isPrimaryOwner === true ? "Yes" : "No"}`} />
                 </StatusTable>
               </div>
             ))}
@@ -2574,17 +2686,17 @@ const CheckPage = ({ onSubmit, value }) => {
           <Row
             className="border-none"
             label={t(`BPA_ULB_TYPE_LABEL`)}
-            text={owners?.Ulblisttype?.value || value?.additionalDetails?.Ulblisttype || t("CS_NA")}
+            text={owners?.Ulblisttype ||  t("CS_NA")}
           />
           <Row
             className="border-none"
             label={t(`BPA_ULB_NAME_LABEL`)}
-            text={owners?.UlbName?.code || value?.additionalDetails?.UlbName || t("CS_NA")}
+            text={owners?.UlbName || t("CS_NA")}
           />
           <Row
             className="border-none"
             label={t(`BPA_DISTRICT_LABEL`)}
-            text={owners?.District?.code || value?.additionalDetails?.District || t("CS_NA")}
+            text={owners?.District || t("CS_NA")}
           />
           <Row
             className="border-none"
@@ -2637,25 +2749,40 @@ const CheckPage = ({ onSubmit, value }) => {
           />
         </StatusTable>
       </Card>
+
+
+
+
+
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
-          <LinkButton
-            label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
-            style={{ width: "100px", display: "inline" }}
-            onClick={() => routeTo(`${routeLink}/document-details`)}
-          />
-          {
-            <DocumentsPreview
-              documents={getOrderDocuments(applicationDocs)}
-              svgStyles={{}}
-              isSendBackFlow={false}
-              isHrLine={true}
-              titleStyles={{ fontSize: "18px", lineHeight: "24px", fontWeight: 700, marginBottom: "10px" }}
-            />
-          }
+        <Table
+          className="customTable table-border-style"
+          t={t}
+          data={documentsData}
+          columns={documentsColumns}
+          getCellProps={() => ({ style: {} })}
+          disableSort={false}
+          autoSort={true}
+          manualPagination={false}
+          isPaginationRequired={false}
+        />
         </StatusTable>
       </Card>
+
+
+
+
+
+
+
+
+
+
+
+
+
       <Card style={{ paddingRight: "16px" }}>
         <CardSubHeader>{t("BPA_SUMMARY_FEE_EST")}</CardSubHeader>
         <StatusTable>
@@ -2663,7 +2790,7 @@ const CheckPage = ({ onSubmit, value }) => {
           <Row
             className="border-none"
             label={t(`BPA_APPL_FEES`)}
-            text={`₹ ${value?.additionalDetails?.P1charges || paymentDetails?.Bill[0]?.billDetails[0]?.amount}`}
+            // text={`₹ ${value?.additionalDetails?.P1charges || paymentDetails?.Bill[0]?.billDetails[0]?.amount}`}
           />
           <Row
             className="border-none"
@@ -2780,8 +2907,8 @@ const CheckPage = ({ onSubmit, value }) => {
           />
           {value?.status === "INITIATED" && (
             <div>
-              <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
-              <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} />
+              {/* <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel> */}
+              {/* <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} /> */}
               <br></br>
               {showMobileInput && (
                 <React.Fragment>
@@ -2792,6 +2919,7 @@ const CheckPage = ({ onSubmit, value }) => {
                     type="tel"
                     isMandatory={true}
                     optionKey="i18nKey"
+                    disable={true} 
                     name="mobileNumber"
                     value={mobileNumber}
                     onChange={handleMobileNumberChange}
@@ -2807,7 +2935,8 @@ const CheckPage = ({ onSubmit, value }) => {
                   <CardLabel>{t("BPA_OTP")}</CardLabel>
                   <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
                   <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
-                  {otpError && <CardLabel style={{ color: "red" }}>{otpError}</CardLabel>}
+                  {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
+                  {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
                 </React.Fragment>
               )}
             </div>
@@ -2823,18 +2952,17 @@ const CheckPage = ({ onSubmit, value }) => {
           )}
         </div>
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-      </Card>
-      <Card>
-        <div style={{ marginBottom: "30px" }}>
+      {/* </Card>
+      <Card> */}
+        {/* <div style={{ marginBottom: "30px" }}>
           {isOTPVerified && isOwnerOTPVerified && (
             <div>
-              {/* <CHANGE> This checkbox already has checked prop, keeping it as is */}
               <CheckBox label={checkLabels()} onChange={setdeclarationhandler} styles={{ height: "auto" }} checked={agree} />
             </div>
           )}
           {isOTPVerified && <CardLabel style={{ color: "green", marginTop: "10px" }}>✓ {t("PROFESSIONAL_VERIFICATION_COMPLETED")}</CardLabel>}
-        </div>
-        {showMobileInput && !isOTPVerified && (
+        </div> */}
+        {/* {showMobileInput && !isOTPVerified && (
           <React.Fragment>
             <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
             <TextInput
@@ -2843,14 +2971,16 @@ const CheckPage = ({ onSubmit, value }) => {
               isMandatory={true}
               optionKey="i18nKey"
               name="mobileNumber"
+              disable={true} 
               value={mobileNumber}
               onChange={handleMobileNumberChange}
               {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
             />
             <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
           </React.Fragment>
-        )}
-        {showOTPInput && !isOTPVerified && (
+        )} */}
+
+        {/* {showOTPInput && !isOTPVerified && (
           <React.Fragment>
             <br />
             <CardLabel>{t("BPA_OTP")}</CardLabel>
@@ -2858,10 +2988,9 @@ const CheckPage = ({ onSubmit, value }) => {
             <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
             {otpError && <CardLabel style={{ color: otpError === t("VERIFIED") ? "green" : "red" }}>{otpError}</CardLabel>}
           </React.Fragment>
-        )}
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "1px", marginTop: "20px", marginBottom: "20px" }} />
+        )} */}
+        {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "1px", marginTop: "20px", marginBottom: "20px" }} />
         <div style={{ marginBottom: "30px" }}>
-          {/* <CHANGE> This checkbox already has checked prop, keeping it as is */}
           <CheckBox
             label={ownerCheckLabels()}
             onChange={setOwnerDeclarationHandler}
@@ -2870,8 +2999,8 @@ const CheckPage = ({ onSubmit, value }) => {
             disabled={!isOTPVerified}
           />
           {isOwnerOTPVerified && <CardLabel style={{ color: "green", marginTop: "10px" }}>✓ {t("OWNER_VERIFICATION_COMPLETED")}</CardLabel>}
-        </div>
-        {showOwnerMobileInput && !isOwnerOTPVerified && (
+        </div> */}
+        {/* {showOwnerMobileInput && !isOwnerOTPVerified && (
           <React.Fragment>
             <CardLabel>{t("OWNER_MOBILE_NUMBER")}</CardLabel>
             <TextInput
@@ -2880,6 +3009,7 @@ const CheckPage = ({ onSubmit, value }) => {
               isMandatory={true}
               optionKey="i18nKey"
               name="ownerMobileNumber"
+              disable={true} 
               value={ownerMobileNumber}
               onChange={handleOwnerMobileNumberChange}
               {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
@@ -2902,8 +3032,8 @@ const CheckPage = ({ onSubmit, value }) => {
             setShowTermsPopupOwner={setShowTermsPopupOwner}
             otpVerifiedTimestamp={otpVerifiedTimestamp}
           />
-        )}
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+        )} */}
+        {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
         <SubmitBar
           label={isSubmitting ? t("SUBMITTING...") : t("BPA_SEND_TO_CITIZEN_LABEL")}
           onSubmit={async () => {
@@ -2917,9 +3047,10 @@ const CheckPage = ({ onSubmit, value }) => {
               setIsSubmitting(false);
             }
           }}
-          disabled={!agree || !isOTPVerified || !isOwnerOTPVerified || isSubmitting}
+          disabled={!agree || !isOTPVerified || isSubmitting}
         />
       </Card>
+      </div>
     </React.Fragment>
   );
 };

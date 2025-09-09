@@ -8,7 +8,6 @@ export const PTRMyApplications = () => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const user = Digit.UserService.getUser().info;
-  
 
   let filter = window.location.href.split("/").pop();
   let t1;
@@ -19,28 +18,30 @@ export const PTRMyApplications = () => {
   } else {
     t1 = 4;
   }
+  
   let filter1 = !isNaN(parseInt(filter))
     ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
-    : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0",mobileNumber:user?.mobileNumber, tenantId };
+    : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0", mobileNumber: user?.mobileNumber, tenantId };
 
-  const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({ filters: filter1 }, { filters: filter1 });
-  
-  const {PetRegistrationApplications: applicationsList } = data || {};
+  const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({ tenantId, filters: filter1 }, {});
+
+  const { PetRegistrationApplications: applicationsList } = data || {};
   let combinedApplicationNumber = applicationsList?.length > 0 ? applicationsList?.map((ob) => ob?.applicationNumber) : [];
   let serviceSearchArgs = {
-    tenantId : tenantId,
-    referenceIds : combinedApplicationNumber,
-  }
+    tenantId: tenantId,
+    referenceIds: combinedApplicationNumber,
+  };
 
-  const { isLoading:serviceloading, data : servicedata} = Digit.Hooks.useFeedBackSearch({ filters: { serviceSearchArgs } },{ filters: { serviceSearchArgs }, enabled : combinedApplicationNumber?.length > 0 ?true : false, cacheTime : 0 });
+  const { isLoading: serviceloading, data: servicedata } = Digit.Hooks.useFeedBackSearch(
+    { filters: { serviceSearchArgs } },
+    { filters: { serviceSearchArgs }, enabled: combinedApplicationNumber?.length > 0 ? true : false, cacheTime: 0 }
+  );
 
-  function getLabelValue(curservice){
+  function getLabelValue(curservice) {
     let foundValue = servicedata?.Service?.find((ob) => ob?.referenceId?.includes(curservice?.applicationNumber));
 
-    if(foundValue)
-    return t("CS_CF_VIEW")
-    else
-    return t("CS_CF_TRACK")
+    if (foundValue) return t("CS_CF_VIEW");
+    else return t("CS_CF_TRACK");
   }
 
   if (isLoading || serviceloading) {
@@ -55,7 +56,7 @@ export const PTRMyApplications = () => {
         {applicationsList?.length > 0 &&
           applicationsList.map((application, index) => (
             <div key={index}>
-              <PetApplication application={application} tenantId={user?.permanentCity} buttonLabel={getLabelValue(application)}/>
+              <PetApplication application={application} tenantId={user?.permanentCity} buttonLabel={getLabelValue(application)} />
             </div>
           ))}
         {!applicationsList?.length > 0 && <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("PTR_NO_APPLICATION_FOUND_MSG")}</p>}
@@ -68,7 +69,6 @@ export const PTRMyApplications = () => {
           </div>
         )}
       </div>
-
       <p style={{ marginLeft: "16px", marginTop: "16px" }}>
         {t("PTR_TEXT_NOT_ABLE_TO_FIND_THE_APPLICATION")}{" "}
         <span className="link" style={{ display: "block" }}>

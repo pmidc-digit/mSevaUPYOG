@@ -1074,12 +1074,12 @@ function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenan
     layout: "noBorders",
     margin: [0, -65, 40, 20],
     table:{
-      widths: ['20%', '*', '10%'],
+      widths: ['60%'],
       body:[
         [
           {
             image: logo|| getBase64Image(tenantId) || localGovLogo,
-            width: 70,
+            width: 120,
             margin: [10, 10],
             fit:[50,50]
           }, 
@@ -1107,26 +1107,26 @@ function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenan
       ]
     }
 })
-headerData.push({
-  style : 'tableExample',
-  layout: "noBorders",
-  margin:[0,-20,7,0],
+// headerData.push({
+//   style : 'tableExample',
+//   layout: "noBorders",
+//   margin:[0,-20,7,0],
  
-  table:{
-    widths:['100%'],
-    body:[
-      [
-        {
+//   table:{
+//     widths:['100%'],
+//     body:[
+//       [
+//         {
           
-          text: `Application Number: ${applicationNumber}`,
-          alignment:"right",
-          fontSize: 9,
-          //bold: true      
-        },
-      ]
-    ]
-  }
-})
+//           text: `Application Number: ${applicationNumber}`,
+//           alignment:"right",
+//           fontSize: 9,
+//           //bold: true      
+//         },
+//       ]
+//     ]
+//   }
+// })
 
   return headerData;
   

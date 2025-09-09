@@ -51,6 +51,10 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
     title: t("CS_APPLICATION_DETAILS"),
     values: [
       {
+        title: t("CS_APPLICATION_NUMBER"),
+        value: application?.applicationData?.applicationNumber || "NA",
+      },
+      {
         title: t("REGISTRATION_FILED_DATE"),
         value: Digit.DateUtils.ConvertTimestampToDate(application?.applicationData?.auditDetails?.createdTime, "dd/MM/yyyy") || "NA",
       },

@@ -11,14 +11,18 @@ const App = () => {
   const { t } = useTranslation();
   const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
   const NOCResponseCitizen = Digit.ComponentRegistryService.getComponent("NOCResponseCitizen");
+  const NOCCitizenMyApplications = Digit.ComponentRegistryService.getComponent("NOCCitizenMyApplications");
+  const NOCCitizenApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCCitizenApplicationOverview");
 
   return (
-    <span className={"noc-citizen"} style={{ width: "100%" }}>
+    <span className={"pgr-citizen-wrapper"} style={{ width: "100%" }}>
       <Switch>
         <AppContainer>
           {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}
           <PrivateRoute path={`${path}/new-application`} component={NewNOCApplication} />
           <PrivateRoute path={`${path}/response/:id`} component={NOCResponseCitizen} />
+          <PrivateRoute path={`${path}/my-application`} component={NOCCitizenMyApplications} />
+          <PrivateRoute path={`${path}/search/application-overview/:id`} component={NOCCitizenApplicationOverview} />
         </AppContainer>
       </Switch>
     </span>

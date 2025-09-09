@@ -14,6 +14,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const userInfo = Digit.UserService.getUser()?.info || {};
 
   const {
     control,
@@ -73,7 +74,15 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         // Prepare nocFormData
         const nocFormData = {...formData};
 
-        console.log("nocFormData ==>", nocFormData)
+        // console.log("nocFormData ==>", nocFormData)
+    
+        const ownerObj={
+          mobileNumber: userInfo?.mobileNumber || "",
+          name: userInfo?.name || "",
+          emailId:userInfo?.emailId || "",
+          type: userInfo?.type || "",
+          userName: userInfo?.userName || ""
+        }
     
         // Final payload
         const payload = {
@@ -83,6 +92,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
               nocType: "NOC",
               status: "ACTIVE",
               tenantId,
+              owners:[ownerObj],
               workflow: {action: "INITIATE"},
               nocDetails:{
                 additionalDetails: nocFormData,

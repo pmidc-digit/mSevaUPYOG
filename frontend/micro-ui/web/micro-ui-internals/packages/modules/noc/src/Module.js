@@ -26,6 +26,9 @@ import NOCDocumentsRequired from "./pageComponents/NOCDocumentsRequired";
 import NOCSummary from "./pageComponents/NOCSummary";
 import NOCDocumentWithLatLong from "./pageComponents/NOCDocumentWithLatLong";
 
+import MyApplications from "./pages/citizen/Applications/MyApplications";
+import CitizenApplicationOverview from "./pages/citizen/Applications/ApplicationsOverview";
+
 
 export const NOCLinks = ({ matchPath, userType }) => {
   const { t } = useTranslation();
@@ -87,7 +90,9 @@ const componentsToRegister = {
   NOCDocumentsRequired,
   NOCSummary,
   NOCDocumentWithLatLong,
-  NOCResponseCitizen
+  NOCResponseCitizen,
+  NOCCitizenMyApplications: MyApplications,
+  NOCCitizenApplicationOverview: CitizenApplicationOverview
 };
 
 export const initNOCComponents = () => {

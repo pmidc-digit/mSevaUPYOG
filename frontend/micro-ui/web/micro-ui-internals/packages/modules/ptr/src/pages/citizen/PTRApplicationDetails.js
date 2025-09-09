@@ -1,12 +1,23 @@
-import { Card, CardSubHeader, Header, LinkButton, Loader, Row, StatusTable, MultiLink, PopUp, Toast, SubmitBar } from "@mseva/digit-ui-react-components";
+import {
+  Card,
+  CardSubHeader,
+  Header,
+  LinkButton,
+  Loader,
+  Row,
+  StatusTable,
+  MultiLink,
+  PopUp,
+  Toast,
+  SubmitBar,
+} from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
 import getPetAcknowledgementData from "../../getPetAcknowledgementData";
 import PTRWFApplicationTimeline from "../../pageComponents/PTRWFApplicationTimeline";
 import { pdfDownloadLink } from "../../utils";
-
-
+import PTRDocument from "../../pageComponents/PTRDocument";
 import get from "lodash/get";
 import { size } from "lodash";
 
@@ -21,56 +32,35 @@ const PTRApplicationDetails = () => {
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
- 
 
-  const { isLoading, isError,error, data } = Digit.Hooks.ptr.usePTRSearch(
-    {
-      tenantId,
-      filters: { applicationNumber: acknowledgementIds },
-    },
-  );
+  const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({
+    tenantId,
+    filters: { applicationNumber: acknowledgementIds },
+  });
 
-
- 
-
- 
-  const [billData, setBillData]=useState(null);
-
-  // let serviceSearchArgs = {
-  //   tenantId : tenantId,
-  //   code: [`PTR_${data?.PetRegistrationApplications?.[0]?.creationReason}`], 
-  //   module: ["PTR"],
-  //   referenceIds : [data?.PetRegistrationApplications?.[0]?.applicationNumber]
-    
-  // }
-
-
+  const [billData, setBillData] = useState(null);
 
   const PetRegistrationApplications = get(data, "PetRegistrationApplications", []);
-  
-  
-  const petId = get(data, "PetRegistrationApplications[0].applicationNumber", []);
-  
-  let  pet_details = (PetRegistrationApplications && PetRegistrationApplications.length > 0 && PetRegistrationApplications[0]) || {};
-  const application =  pet_details;
 
-  
+  const petId = get(data, "PetRegistrationApplications[0].applicationNumber", []);
+
+  let pet_details = (PetRegistrationApplications && PetRegistrationApplications.length > 0 && PetRegistrationApplications[0]) || {};
+  const application = pet_details;
+
   sessionStorage.setItem("ptr-pet", JSON.stringify(application));
 
-  
+  const [loading, setLoading] = useState(false);
 
-  const [loading, setLoading]=useState(false);
-
-  const fetchBillData=async()=>{
+  const fetchBillData = async () => {
     setLoading(true);
-    const result= await Digit.PaymentService.fetchBill(tenantId,{ businessService: "pet-services", consumerCode: acknowledgementIds, });
-  
-  setBillData(result);
-  setLoading(false);
-};
-useEffect(()=>{
-fetchBillData();
-}, [tenantId, acknowledgementIds]); 
+    const result = await Digit.PaymentService.fetchBill(tenantId, { businessService: "pet-services", consumerCode: acknowledgementIds });
+
+    setBillData(result);
+    setLoading(false);
+  };
+  useEffect(() => {
+    fetchBillData();
+  }, [tenantId, acknowledgementIds]);
 
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditResponse } = Digit.Hooks.ptr.usePTRSearch(
     {
@@ -79,7 +69,6 @@ fetchBillData();
     },
     {
       enabled: true,
-      
     }
   );
 
@@ -92,8 +81,6 @@ fetchBillData();
     },
     { enabled: acknowledgementIds ? true : false }
   );
-
-  
 
   if (!pet_details.workflow) {
     let workflow = {
@@ -108,24 +95,12 @@ fetchBillData();
       documents: null,
       assignes: null,
     };
-     pet_details.workflow = workflow;
+    pet_details.workflow = workflow;
   }
-
-  
-
-  
-
- 
-  // let owners = [];
-  // owners = application?.owners;
-  // let docs = [];
-  // docs = application?.documents;
 
   if (isLoading || auditDataLoading) {
     return <Loader />;
   }
-
- 
 
   const getAcknowledgementData = async () => {
     const applications = application || {};
@@ -136,8 +111,8 @@ fetchBillData();
   };
 
   let documentDate = t("CS_NA");
-  if ( pet_details?.additionalDetails?.documentDate) {
-    const date = new Date( pet_details?.additionalDetails?.documentDate);
+  if (pet_details?.additionalDetails?.documentDate) {
+    const date = new Date(pet_details?.additionalDetails?.documentDate);
     const month = Digit.Utils.date.monthNames[date.getMonth()];
     documentDate = `${date.getDate()} ${month} ${date.getFullYear()}`;
   }
@@ -147,7 +122,7 @@ fetchBillData();
     response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "petservice-receipt");
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
-  };
+  }
 
   const handleDownload = async (document, tenantid) => {
     let tenantId = tenantid ? tenantid : tenantId;
@@ -157,7 +132,11 @@ fetchBillData();
   };
 
   const printCertificate = async () => {
-    let response = await Digit.PaymentService.generatePdf(tenantId, { PetRegistrationApplications: [data?.PetRegistrationApplications?.[0]] }, "petservicecertificate");
+    let response = await Digit.PaymentService.generatePdf(
+      tenantId,
+      { PetRegistrationApplications: [data?.PetRegistrationApplications?.[0]] },
+      "petservicecertificate"
+    );
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   };
@@ -169,26 +148,25 @@ fetchBillData();
     onClick: () => getAcknowledgementData(),
   });
 
-  //commented out, need later for download receipt and certificate 
+  //commented out, need later for download receipt and certificate
   if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
 
-    
   if (reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED")
     dowloadOptions.push({
       label: t("PTR_CERTIFICATE"),
       onClick: () => printCertificate(),
     });
-  
+
   return (
     <React.Fragment>
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("PTR_PET_APPLICATION_DETAILS")}</Header>
-          {dowloadOptions && dowloadOptions.length > 0 && (
+          {PetRegistrationApplications?.status == "approved" && dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
               onHeadClick={() => setShowOptions(!showOptions)}
@@ -199,25 +177,26 @@ fetchBillData();
         </div>
         <Card>
           <StatusTable>
-            <Row
-              className="border-none"
-              label={t("PTR_APPLICATION_NO_LABEL")}
-              text={pet_details?.applicationNumber} 
-            />
+            <Row className="border-none" label={t("PTR_APPLICATION_NO_LABEL")} text={pet_details?.applicationNumber} />
           </StatusTable>
-           
+
           <CardSubHeader style={{ fontSize: "24px" }}>{t("PTR_ADDRESS_HEADER")}</CardSubHeader>
           <StatusTable>
+            <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressId || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_PINCODE")} text={pet_details?.address?.pincode || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_CITY")} text={pet_details?.address?.city || t("CS_NA")} />
+            {/* <Row className="border-none" label={t("PTR_CITY")} text={pet_details?.address?.city || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_STREET_NAME")} text={pet_details?.address?.street || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_HOUSE_NO")} text={pet_details?.address?.doorNo || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_HOUSE_NO")} text={pet_details?.address?.doorNo || t("CS_NA")} /> */}
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("PTR_APPLICANT_DETAILS_HEADER")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("PTR_APPLICANT_NAME")} text={pet_details?.applicantName || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_FATHER/HUSBAND_NAME")} text={pet_details?.fatherName || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("PTR_FATHER/HUSBAND_NAME")}
+              text={pet_details?.fatherName || pet_details?.fatherOrHusbandName || t("CS_NA")}
+            />
             <Row className="border-none" label={t("PTR_APPLICANT_MOBILE_NO")} text={pet_details?.mobileNumber || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_APPLICANT_EMAILID")} text={pet_details?.emailId || t("CS_NA")} />
           </StatusTable>
@@ -232,28 +211,33 @@ fetchBillData();
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
           </StatusTable>
 
-
-          {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("PTR_DOCUMENT_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("PTR_DOCUMENT_DETAILS")}</CardSubHeader>
           <div>
-            {Array.isArray(docs) ? (
-              docs.length > 0 && <PTRDocument pet_details={pet_details}></PTRDocument>
+            {Array.isArray(application?.documents) && application.documents.length > 0 ? (
+              <PTRDocument
+                petdetail={{
+                  documents: application.documents, // ✅ pass all docs
+                  applicationNumber: application.applicationNumber,
+                }}
+              />
             ) : (
               <StatusTable>
                 <Row className="border-none" text={t("PTR_NO_DOCUMENTS_MSG")} />
               </StatusTable>
             )}
-          </div> */}
+          </div>
+
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (
-          <Toast
-            error={showToast.key}
-            label={t(showToast.label)}
-            style={{bottom:"0px"}}
-            onClose={() => {
-              setShowToast(null);
-            }}
-          />
-        )}
+            <Toast
+              error={showToast.key}
+              label={t(showToast.label)}
+              style={{ bottom: "0px" }}
+              onClose={() => {
+                setShowToast(null);
+              }}
+            />
+          )}
         </Card>
 
         {popup && <PTCitizenFeedbackPopUp setpopup={setpopup} setShowToast={setShowToast} data={data} />}
@@ -263,11 +247,3 @@ fetchBillData();
 };
 
 export default PTRApplicationDetails;
-            
-           
-           
-            
-
-         
-
-        

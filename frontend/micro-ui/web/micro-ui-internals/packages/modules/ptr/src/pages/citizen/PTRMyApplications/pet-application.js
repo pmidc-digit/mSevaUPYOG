@@ -4,9 +4,10 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 const PetApplication = ({ application, tenantId, buttonLabel }) => {
-  
-  
   const { t } = useTranslation();
+// http://localhost:3000/digit-ui/citizen/payment/collect/PTR/PB-PTR-2025-08-26-000389/null
+  console.log("application?.applicationNumber", application?.applicationNumber);
+  console.log("application?.status", application?.status);
   return (
     <Card>
       <KeyNote keyValue={t("PTR_APPLICATION_NO_LABEL")} note={application?.applicationNumber} />
@@ -14,9 +15,15 @@ const PetApplication = ({ application, tenantId, buttonLabel }) => {
       <KeyNote keyValue={t("PTR_APPLICATION_CATEGORY")} note={t("PTR_APPLICATION")} />
       <KeyNote keyValue={t("PTR_SEARCH_PET_TYPE")} note={application?.petDetails?.petType} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`PTR_COMMON_${application?.status}`)} />
-      <Link to={`/digit-ui/citizen/ptr/petservice/application/${application?.applicationNumber}/${application?.tenantId}`}>
-        <SubmitBar label={buttonLabel} />
-      </Link>
+      {application?.status == "Pending" ? (
+        <Link to={`/digit-ui/citizen/payment/collect/PTR/${application?.applicationNumber}/${application?.tenantId}`}>
+          <SubmitBar label={"Pending For Payment"} />
+        </Link>
+      ) : (
+        <Link to={`/digit-ui/citizen/ptr/petservice/application/${application?.applicationNumber}/${application?.tenantId}`}>
+          <SubmitBar label={buttonLabel} />
+        </Link>
+      )}
     </Card>
   );
 };

@@ -214,7 +214,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
             setCheckRequiredFields(true);
           }}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-          iserror={error}
+          // iserror={error}
         />
       ) : (
         <UploadFile
@@ -226,7 +226,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
             setCheckRequiredFields(true);
           }}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-          iserror={error}
+          // iserror={error}
         />
       )}
     </div>

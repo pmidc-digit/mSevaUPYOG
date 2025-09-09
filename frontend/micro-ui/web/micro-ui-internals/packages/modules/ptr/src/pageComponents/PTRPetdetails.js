@@ -441,9 +441,6 @@ const OwnerForm = (_props) => {
           <CardLabelError style={errorStyle}>
             {localFormState.touched.vaccinationNumber ? errors?.vaccinationNumber?.message : ""}
           </CardLabelError>
-
-
-
         </div>
       </div>
       {showToast?.label && (

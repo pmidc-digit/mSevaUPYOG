@@ -7,12 +7,11 @@ import { useTranslation } from "react-i18next";
 import PTRCitizenPet from "../PTRCitizenPet";
 import _ from "lodash";
 
-const NewPTRStepFormTwo = ({ config, onGoNext, onBackClick }) => {
+const RenewPTRStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
-  
 
   const currentStepData = useSelector(function (state) {
     return state.ptr.PTRNewApplicationFormReducer.formData;
@@ -32,6 +31,7 @@ const NewPTRStepFormTwo = ({ config, onGoNext, onBackClick }) => {
     setError("");
   };
 
+  console.log("config", config);
 
   return (
     <React.Fragment>
@@ -41,4 +41,4 @@ const NewPTRStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   );
 };
 
-export default NewPTRStepFormTwo;
+export default RenewPTRStepFormTwo;

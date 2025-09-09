@@ -5,13 +5,13 @@ import { Link } from "react-router-dom";
 
 const PetApplication = ({ application, tenantId, buttonLabel }) => {
   const { t } = useTranslation();
-// http://localhost:3000/digit-ui/citizen/payment/collect/PTR/PB-PTR-2025-08-26-000389/null
+  // http://localhost:3000/digit-ui/citizen/payment/collect/PTR/PB-PTR-2025-08-26-000389/null
   console.log("application?.applicationNumber", application?.applicationNumber);
   console.log("application?.status", application?.status);
   return (
     <Card>
-      <KeyNote keyValue={t("PTR_APPLICATION_NO_LABEL")} note={application?.applicationNumber} />
-      <KeyNote keyValue={t("PTR_APPLICANT_NAME")} note={application?.applicantName} />
+      <KeyNote keyValue={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} note={application?.applicationNumber} />
+      <KeyNote keyValue={t("REPORT_FSM_RESULT_APPLICANTNAME")} note={application?.applicantName} />
       <KeyNote keyValue={t("PTR_APPLICATION_CATEGORY")} note={t("PTR_APPLICATION")} />
       <KeyNote keyValue={t("PTR_SEARCH_PET_TYPE")} note={application?.petDetails?.petType} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`PTR_COMMON_${application?.status}`)} />

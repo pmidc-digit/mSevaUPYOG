@@ -19,46 +19,39 @@ Note- Please Do Not Copy and paste this file without understanding the context  
 
 */
 
-
-
-
 import { PTRService } from "../../elements/PTR";
 
 export const PTRSearch = {
-  
   all: async (tenantId, filters = {}) => {
-    
     const response = await PTRService.search({ tenantId, filters });
-    
+
     return response;
   },
 
-  
   application: async (tenantId, filters = {}) => {
     const response = await PTRService.search({ tenantId, filters });
     return response.PetRegistrationApplications[0];
   },
   RegistrationDetails: ({ PetRegistrationApplications: response, t }) => {
     return [
-
       {
-        title: "PTR_APPLICANT_DETAILS_HEADER",
+        title: "ES_TITLE_APPLICANT_DETAILS",
         asSectionHeader: true,
         values: [
-          { title: "PTR_APPLICATION_NUMBER", value: response?.applicationNumber },
-          { title: "PTR_APPLICANT_NAME", value: response?.applicantName },
-          { title: "PTR_FATHER/HUSBAND_NAME", value: response?.fatherName },
-          { title: "PTR_APPLICANT_MOBILE_NO", value: response?.mobileNumber },
-          { title: "PTR_APPLICANT_EMAILID", value: response?.emailId },
+          { title: "REPORT_FSM_RESULT_APPLICATION_NO", value: response?.applicationNumber },
+          { title: "REPORT_FSM_RESULT_APPLICANTNAME", value: response?.applicantName },
+          { title: "NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL", value: response?.fatherName },
+          { title: "MOBILE", value: response?.mobileNumber },
+          { title: "CORE_COMMON_PROFILE_EMAIL", value: response?.emailId },
         ],
       },
 
       {
-        title: "PTR_PET_DETAILS_HEADER",
+        title: "ES_TITILE_PET_DETAILS",
         asSectionHeader: true,
         values: [
-          { title: "PTR_PET_TYPE", value: response?.petDetails?.petType },
-          { title: "PTR_BREED_TYPE", value: response?.petDetails?.breedType },
+          { title: "PTR_SEARCH_PET_TYPE", value: response?.petDetails?.petType },
+          { title: "PTR_SEARCH_BREED_TYPE", value: response?.petDetails?.breedType },
           { title: "PTR_PET_NAME", value: response?.petDetails?.petName },
           { title: "PTR_DOCTOR_NAME", value: response?.petDetails?.doctorName },
           { title: "PTR_CLINIC_NAME", value: response?.petDetails?.clinicName },
@@ -66,8 +59,6 @@ export const PTRSearch = {
           { title: "PTR_VACCINATION_NUMBER", value: response?.petDetails?.vaccinationNumber },
           { title: "PTR_PET_AGE", value: response?.petDetails?.petAge },
           { title: "PTR_PET_SEX", value: response?.petDetails?.petGender },
-
-
         ],
       },
 
@@ -77,31 +68,25 @@ export const PTRSearch = {
         values: [
           { title: "PTR_ADDRESS_PINCODE", value: response?.address?.pincode },
           { title: "PTR_ADDRESS_CITY", value: response?.address?.city },
-          { title: "PTR_STREET_NAME",value: response?.address?.street, },
-          { title: "PTR_HOUSE_NO",value: response?.address?.doorNo,},
-          
-  
+          { title: "PTR_STREET_NAME", value: response?.address?.street },
+          { title: "PTR_HOUSE_NO", value: response?.address?.doorNo },
         ],
       },
 
       {
-        title: "PTR_DOCUMENT_DETAILS",
+        title: "ES_TITLE_DOCS",
         additionalDetails: {
-          
           documents: [
             {
-             
-              values: response?.documents
-                ?.map((document) => {
-
-                  return {
-                    title: `PTR_${document?.documentType.replace(".", "_")}`,
-                    documentType: document?.documentType,
-                    documentUid: document?.documentUid,
-                    fileStoreId: document?.filestoreId,
-                    status: document.status,
-                  };
-                }),
+              values: response?.documents?.map((document) => {
+                return {
+                  title: `PTR_${document?.documentType.replace(".", "_")}`,
+                  documentType: document?.documentType,
+                  documentUid: document?.documentUid,
+                  fileStoreId: document?.filestoreId,
+                  status: document.status,
+                };
+              }),
             },
           ],
         },
@@ -117,7 +102,6 @@ export const PTRSearch = {
       applicationDetails: PTRSearch.RegistrationDetails({ PetRegistrationApplications: response, t }),
       applicationData: response,
       transformToAppDetailsForEmployee: PTRSearch.RegistrationDetails,
-      
     };
   },
 };

@@ -1,4 +1,20 @@
-import { Header, Row, StatusTable, Loader, Card, CardSubHeader, ActionBar, SubmitBar, Menu, Toast, ConnectingCheckPoints, CheckPoint, TLTimeLine, DisplayPhotos, StarRated } from "@mseva/digit-ui-react-components";
+import {
+  Header,
+  Row,
+  StatusTable,
+  Loader,
+  Card,
+  CardSubHeader,
+  ActionBar,
+  SubmitBar,
+  Menu,
+  Toast,
+  ConnectingCheckPoints,
+  CheckPoint,
+  TLTimeLine,
+  DisplayPhotos,
+  StarRated,
+} from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
@@ -8,7 +24,7 @@ import NDCModal from "../../../pageComponents/NDCModal";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  console.log("wfDocuments",wfDocuments)
+  console.log("wfDocuments", wfDocuments);
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     name: checkpoint?.assigner?.name,
@@ -18,7 +34,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 
   return (
     <div>
-      {comment?.length>0 && (
+      {comment?.length > 0 && (
         <div className="TLComments">
           <h3>{t("WF_COMMON_COMMENTS")}</h3>
           <p style={{ overflowX: "scroll" }}>{comment}</p>
@@ -35,14 +51,15 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
         />
       )}
 
-      {wfDocuments?.length > 0 && <div>
-        {wfDocuments?.map((doc, index) => (
-          <div key={index}>
-            <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
-          </div>
-        ))}
+      {wfDocuments?.length > 0 && (
+        <div>
+          {wfDocuments?.map((doc, index) => (
+            <div key={index}>
+              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
+            </div>
+          ))}
         </div>
-      }
+      )}
 
       <div style={{ marginTop: "8px" }}>
         {caption.date && <p>{caption.date}</p>}
@@ -53,7 +70,6 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
     </div>
   );
 };
-
 
 const ApplicationOverview = () => {
   const { id } = useParams();
@@ -75,7 +91,7 @@ const ApplicationOverview = () => {
     tenantId: tenantId,
     id: id,
     moduleCode: "ndc-services",
-    role: "EMPLOYEE"
+    role: "EMPLOYEE",
   });
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
@@ -163,12 +179,13 @@ const ApplicationOverview = () => {
 
   useEffect(() => {
     const ndcObject = applicationDetails?.Applications?.[0];
+    console.log("ndcObject", ndcObject);
     if (ndcObject) {
       const applicantData = {
-        address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
-        email: ndcObject?.owners?.[0]?.emailId,
-        mobile: ndcObject?.owners?.[0]?.mobileNumber,
         name: ndcObject?.owners?.[0]?.name,
+        mobile: ndcObject?.owners?.[0]?.mobileNumber,
+        email: ndcObject?.owners?.[0]?.emailId,
+        address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
         applicationNo: ndcObject?.uuid,
       };
@@ -360,12 +377,9 @@ const ApplicationOverview = () => {
 
       {workflowDetails?.data?.timeline && (
         <Card>
-          <CardSubHeader>{t("NDC_APPLICATION_TIMELINE")}</CardSubHeader>
+          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint
-              isCompleted={true}
-              label={t("NDC_STATUS_" + workflowDetails?.data?.timeline[0]?.status)}
-            />
+            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
           ) : (
             <ConnectingCheckPoints>
               {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
@@ -380,7 +394,6 @@ const ApplicationOverview = () => {
           )}
         </Card>
       )}
-
 
       {actions && (
         <ActionBar>

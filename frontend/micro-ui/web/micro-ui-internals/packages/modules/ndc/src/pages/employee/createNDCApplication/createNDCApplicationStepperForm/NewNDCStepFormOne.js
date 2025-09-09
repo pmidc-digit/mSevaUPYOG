@@ -138,23 +138,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     }
   };
 
-  // const onSubmit = async (data) => {
-  //   const finalPayload = mapToNDCPayload(data);
-
-  //   const response = await Digit.NDCService.NDCcreate({ tenantId, filters: { skipWorkFlow: true }, details: finalPayload });
-
-  //   if (response?.ResponseInfo?.status === "successful") {
-  //     return { isSuccess: true, response };
-  //   } else {
-  //     return { isSuccess: false, response };
-  //   }
-  // };
-
-  const validatePropertyId = (value) => {
-    const regex = /^PT-\d{4}-\d{7,8}$/;
-    return regex.test(value);
-  };
-
   function validateStepData(data) {
     const missingFields = [];
     const invalidFields = [];
@@ -164,9 +147,37 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const propertyDetails = data?.PropertyDetails || {};
     const NDCReason = data?.NDCReason || {};
 
+    if (data?.cpt?.dues?.totalAmount != 0) {
+      invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_PROPERTY_TAX")} ${cpt?.id}`);
+    }
+    if (data?.cpt?.dues?.id && data?.dues?.totalAmount > 0) {
+      invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_PROPERTY_TAX")} ${cpt?.id}`);
+    }
+
+    if (propertyDetails?.waterConnection?.length > 0) {
+      propertyDetails.waterConnection.forEach((value) => {
+        if (value?.billData?.totalAmount != 0) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
+        }
+        if (value?.billData?.id && value?.billData?.totalAmount > 0) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
+        }
+      });
+    }
+
+    if (propertyDetails?.sewerageConnection?.length > 0) {
+      propertyDetails.sewerageConnection.forEach((value) => {
+        if (value?.billData?.totalAmount != 0) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
+        }
+        if (value?.billData?.id && value?.billData?.totalAmount > 0) {
+          invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
+        }
+      });
+    }
+
     // Mandatory Field Checks
     if (!cpt?.id) missingFields.push(t("NDC_MESSAGE_PROPERTY_ID"));
-    if (!validatePropertyId(cpt?.id)) missingFields.push(t("PT_PROPERTY_ID_INVALID"));
     if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push(t("NDC_MESSAGE_PLEASE_SEARCH_PROPERTY_ID"));
     if (!propertyDetails?.firstName) missingFields.push(t("NDC_MESSAGE_FIRST_NAME"));
     if (!propertyDetails?.lastName) missingFields.push(t("NDC_MESSAGE_LAST_NAME"));
@@ -177,35 +188,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     // if (propertyDetails?.sewerageConnection?.length === 0) missingFields.push(t("NDC_MESSAGE_SEWERAGE_CONNECTION"));
     if (!NDCReason?.code) missingFields.push(t("NDC_MESSAGE_NDC_REASON"));
 
-    // if (propertyDetails?.waterConnection?.length > 0) {
-    //   propertyDetails.waterConnection.forEach(value => {
-    //     if (!value?.billData?.id) {
-    //       invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
-    //     }
-    //     if (value?.billData?.id && value?.billData?.totalAmount > 0) {
-    //       invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_WATER_CONNECTION")} ${value?.connectionNo}`);
-    //     }
-    //   });
-    // }
-
-    // if (propertyDetails?.sewerageConnection?.length > 0) {
-    //   propertyDetails.sewerageConnection.forEach(value => {
-    //     if (!value?.billData?.id) {
-    //       invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
-    //     }
-    //     if (value?.billData?.id && value?.billData?.totalAmount > 0) {
-    //       invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_SEWERAGE_CONNECTION")} ${value?.connectionNo}`);
-    //     }
-    //   });
-    // }
-
-    // if (!propertyDetails?.propertyBillData?.billData?.id) {
-    //       invalidFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_PROPERTY_TAX")} ${cpt?.id}`);
-    //     }
-    //     if (propertyDetails?.propertyBillData?.billData?.id && propertyDetails?.propertyBillData?.billData?.totalAmount > 0) {
-    //       invalidFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_PROPERTY_TAX")} ${cpt?.id}`);
-    //     }
-
     // Format Validations
     const nameRegex = /^[A-Za-z\s]+$/;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -214,10 +196,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     if (propertyDetails?.firstName && !nameRegex.test(propertyDetails.firstName)) {
       invalidFields.push(t("NDC_MESSAGE_FIRST_NAME_ONLY_ALPHABETS_ALLOWED"));
     }
-
-    // if (propertyDetails?.lastName && !nameRegex.test(propertyDetails.lastName)) {
-    //   invalidFields.push(t("NDC_MESSAGE_LAST_NAME_ONLY_ALPHABETS_ALLOWED"));
-    // }
 
     if (propertyDetails?.lastName) {
       if (!nameRegex.test(propertyDetails.lastName)) {

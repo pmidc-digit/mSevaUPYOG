@@ -57,7 +57,7 @@ const WrapPaymentComponent = (props) => {
     ulbType = selectedTenantData?.city?.ulbGrade;
   }
 
-  const { label } = Digit.Hooks.useApplicationsForBusinessServiceSearch({ businessService: business_service }, { enabled: false });
+  // const { label } = Digit.Hooks.useApplicationsForBusinessServiceSearch({ businessService: business_service }, { enabled: false });
 
   // const { data: demand } = Digit.Hooks.useDemandSearch(
   //   { consumerCode, businessService: business_service },
@@ -753,7 +753,7 @@ const WrapPaymentComponent = (props) => {
       />
       <CardText></CardText>
       <StatusTable>
-        <Row rowContainerStyle={rowContainerStyle} last label={t(label)} text={applicationNo} />
+        <Row rowContainerStyle={rowContainerStyle} last label={t("APPLICATION_NUMBER")} text={applicationNo} />
         {/** TODO : move this key and value into the hook based on business Service */}
         {(business_service === "PT" || workflw) && (
           <Row
@@ -966,6 +966,15 @@ const WrapPaymentComponent = (props) => {
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
       ) : null}
+
+      <div
+          className="link"
+          style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
+          onClick={printReciept}
+        >
+          {t("CS_DOWNLOAD_RECEIPT")}
+        </div>
+
       {business_service?.includes("WS") ? (
         <div
           className="link"
@@ -1003,7 +1012,7 @@ const WrapPaymentComponent = (props) => {
         </div>
       ) : null}
       {!(business_service == "TL") ||
-        (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
+         (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
       {!(business_service == "TL") ||
         (!business_service?.includes("PT") && (
           <div className="link" style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}>

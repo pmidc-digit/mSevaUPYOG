@@ -81,7 +81,7 @@ public class PaymentUpdateService {
 				if (paymentDetail.getBusinessService().equalsIgnoreCase(NOCConstants.NOC_BUSINESS_SERVICE )|| paymentDetail.getBusinessService().equalsIgnoreCase(NOCConstants.NOC_MODULE )) {
 					NocSearchCriteria searchCriteria = new NocSearchCriteria();
 					searchCriteria.setTenantId(tenantIdFromPaymentDetails);
-//					searchCriteria.setUuid(Collections.singletonList(paymentDetail.getBill().getConsumerCode()));
+					searchCriteria.setApplicationNo(Collections.singletonList(paymentDetail.getBill().getConsumerCode()).get(0));
 					List<Noc> nocs = nocService.search(searchCriteria, requestInfo);
 
 					String tenantIdFromSearch = nocs.get(0).getTenantId();

@@ -39,6 +39,8 @@ const PlotDetails = ({ formData, onSelect, config }) => {
   const checkingFlow = formData?.uiFlow?.flow;
   const state = Digit.ULBService.getStateId();
   const [errors, setErrors] = useState({});
+
+  
   useEffect(() => {
     if (isEditApplication) {
       const newConfig = {
@@ -133,13 +135,30 @@ const handleChange = (name, value, validation) => {
   setErrors((prev) => ({ ...prev, [name]: error }));
 };
 
+const configWithErrors = {
+    ...editConfig,
+    inputs: editConfig.inputs.map((input) => ({
+      ...input,
+      customJSX: (
+        <React.Fragment>
+          {errors[input.name] && (
+            <p style={{ color: "red", fontSize: "14px", marginTop: "4px" }}>
+              {errors[input.name]}
+            </p>
+          )}
+        </React.Fragment>
+      ),
+      onChange: (e) => handleChange(input.name, e.target.value, input.validation),
+    })),
+  };
+
 
 
   return (
     <div>
       <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
       <div style={{ height: "80vh", overflow: "scroll" }}>
-        <FormStep config={editConfig} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
+        <FormStep config={configWithErrors} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
           <StatusTable>
             <Row
               className="border-none"

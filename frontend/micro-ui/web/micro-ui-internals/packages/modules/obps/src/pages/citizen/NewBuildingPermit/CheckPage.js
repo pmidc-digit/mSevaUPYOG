@@ -2114,7 +2114,7 @@ const CheckPage = ({ onSubmit, value }) => {
     { name: "BPA_TABLE_COL_OCCUPANCY", id: "Occupancy" },
     { name: "BPA_TABLE_COL_BUILDUPAREA", id: "BuildupArea" },
     { name: "BPA_TABLE_COL_FLOORAREA", id: "FloorArea" },
-    { name: "BPA_TABLE_COL_CARPETAREA", id: "CarpetArea" },
+    // { name: "BPA_TABLE_COL_CARPETAREA", id: "CarpetArea" },
   ];
 
   const accessData = (plot) => {
@@ -2139,9 +2139,9 @@ const CheckPage = ({ onSubmit, value }) => {
         Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
         Level: ob.number,
         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
-        BuildupArea: ob.occupancies?.[0]?.builtUpArea,
-        FloorArea: ob.occupancies?.[0]?.floorArea || 0,
-        CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
+        BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
+        FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
+        // CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
         key: t(`BPA_FLOOR_NAME_${ob.number}`),
       });
     });
@@ -2246,10 +2246,50 @@ const CheckPage = ({ onSubmit, value }) => {
     setFile(e.target.files[0]);
   }
 
+
+  console.log(getOrderDocuments(applicationDocs), "DOC DOC DOC");
+// const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+//   id: index,
+//   // localize the title here
+//   title: doc.title ? t(`BPA_${doc.title}`) : t("CS_NA"),
+//   fileUrl: doc.values?.[0]?.fileURL || null,
+// }));
+
+const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+  id: index,
+  title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+  fileUrl: doc.values?.[0]?.fileURL || null,
+}));
+
+
+
+const documentsColumns = [
+  {
+    Header: t("BPA_DOCUMENT_NAME"),
+    accessor: "title",
+    Cell: ({ value }) => value || t("CS_NA"),
+  },
+  {
+    Header: t("BPA_DOCUMENT_FILE"),
+    accessor: "fileUrl",
+    Cell: ({ value }) =>
+      value ? (
+        <LinkButton
+          label={t("View")}
+          onClick={() => routeTo(value)}
+        />
+      ) : (
+        t("CS_NA")
+      ),
+  },
+];
+
+
+
   return (
     <React.Fragment>
       <Timeline currentStep={4} />
-      <Header styles={{ marginLeft: "10px" }}>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
+      <Header>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
       <div style={{height:"75vh", overflow:"scroll", marginTop:"30px"}}>
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
@@ -2277,7 +2317,7 @@ const CheckPage = ({ onSubmit, value }) => {
 
           <Row
             className="border-none"
-            textStyle={{ paddingLeft: "12px" }}
+            // textStyle={{ paddingLeft: "12px" }}
             label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}
             text={
               plotDataFromStorage?.planDetail?.planInformation?.plotArea ||
@@ -2331,41 +2371,98 @@ const CheckPage = ({ onSubmit, value }) => {
         </StatusTable>
       </Card>
       <Card style={{ paddingRight: "16px" }}>
+
+
+
+
+
         <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
-        <StatusTable style={{ border: "none" }}>
-          <Row className="border-none" label={t("BPA_EDCR_NO_LABEL")} text={data?.scrutinyNumber?.edcrNumber}></Row>
-          <CardSubHeader>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</CardSubHeader>
-          <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.updatedDxfFile)} />
-          <p
-            style={{
-              marginTop: "8px",
-              marginBottom: "20px",
-              textAlign: "Left",
-              fontSize: "16px",
-              lineHeight: "19px",
-              color: "#505A5F",
-              fontWeight: "400",
-            }}
-          >
-            {t(`Uploaded Plan.pdf`)}
-          </p>
-          <CardSubHeader>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</CardSubHeader>
-          <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.planReport)} />
-          <p
-            style={{
-              marginTop: "8px",
-              marginBottom: "20px",
-              textAlign: "Left",
-              fontSize: "16px",
-              lineHeight: "19px",
-              color: "#505A5F",
-              fontWeight: "400",
-            }}
-          >
-            {t(`BPA_SCRUTINY_REPORT_PDF`)}
-          </p>
-        </StatusTable>
+
+        <div
+          style={{
+            marginTop: "19px",
+            background: "#FAFAFA",
+            border: "1px solid #D6D5D4",
+            borderRadius: "4px",
+            padding: "8px",
+            lineHeight: "19px",
+            maxWidth: "960px",
+            minWidth: "280px",
+          }}
+        >
+          <StatusTable>
+            <Row
+              className="border-none"
+              textStyle={{ wordBreak: "break-word" }}
+              label={t("BPA_EDCR_NO_LABEL")}
+              text={data?.scrutinyNumber?.edcrNumber || t("CS_NA")}
+            />
+            <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+              {t("BPA_UPLOADED_PLAN_DIAGRAM")}
+            </CardSubHeader>
+            <Row
+              className="border-none"
+              text={
+                datafromAPI?.updatedDxfFile ? (
+                  <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.updatedDxfFile)} />
+                ) : (
+                  t("CS_NA")
+                )
+              }
+            />
+            <p
+              style={{
+                marginTop: "8px",
+                marginBottom: "20px",
+                textAlign: "left",
+                fontSize: "16px",
+                lineHeight: "19px",
+                color: "#505A5F",
+                fontWeight: "400",
+              }}
+            >
+              {t(`Uploaded Plan.pdf`)}
+            </p>
+
+            <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+              {t("BPA_SCRUNTINY_REPORT_OUTPUT")}
+            </CardSubHeader>
+            <Row
+              className="border-none"
+              text={
+                datafromAPI?.planReport ? (
+                  <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.planReport)} />
+                ) : (
+                  t("CS_NA")
+                )
+              }
+            />
+            <p
+              style={{
+                marginTop: "8px",
+                marginBottom: "20px",
+                textAlign: "left",
+                fontSize: "16px",
+                lineHeight: "19px",
+                color: "#505A5F",
+                fontWeight: "400",
+              }}
+            >
+              {t(`BPA_SCRUTINY_REPORT_PDF`)}
+            </p>
+          </StatusTable>
+        </div>
+
+
+
+
+
+
+
+
+
+
         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader>
 
@@ -2507,6 +2604,9 @@ const CheckPage = ({ onSubmit, value }) => {
           ></Row>
         </StatusTable>
       </Card>
+
+
+
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
@@ -2515,7 +2615,7 @@ const CheckPage = ({ onSubmit, value }) => {
             style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
             onClick={() => routeTo(`${routeLink}/location`)}
           />
-          <Row className="border-none" textStyle={{ paddingLeft: "12px" }} label={t(`BPA_DETAILS_PIN_LABEL`)} text={address?.pincode || t("CS_NA")} />
+          <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={address?.pincode || t("CS_NA")} />
           <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={address?.city?.name || t("CS_NA")} />
           <Row className="border-none" label={t(`BPA_LOC_MOHALLA_LABEL`)} text={address?.locality?.name || t("CS_NA")} />
           {/* <Row className="border-none" label={t(`BPA_DETAILS_SRT_NAME_LABEL`)} text={address?.street || t("CS_NA")} /> */}
@@ -2558,7 +2658,7 @@ const CheckPage = ({ onSubmit, value }) => {
                 <StatusTable>
                   <Row
                     className="border-none"
-                    textStyle={index == 0 && ownersData.length == 1 ? { paddingLeft: "12px" } : {}}
+                    // textStyle={index == 0 && ownersData.length == 1 ? { paddingLeft: "12px" } : {}}
                     label={t(`CORE_COMMON_NAME`)}
                     text={ob?.name || "N/A"}
                   />
@@ -2649,25 +2749,40 @@ const CheckPage = ({ onSubmit, value }) => {
           />
         </StatusTable>
       </Card>
+
+
+
+
+
       <Card style={{ paddingRight: "16px" }}>
         <StatusTable>
           <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
-          <LinkButton
-            label={<EditIcon color="white" style={{color:"white"}}  />}
-            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
-            onClick={() => routeTo(`${routeLink}/document-details`)}
-          />
-          {
-            <DocumentsPreview
-              documents={getOrderDocuments(applicationDocs)}
-              svgStyles={{}}
-              isSendBackFlow={false}
-              isHrLine={true}
-              titleStyles={{ fontSize: "18px", lineHeight: "24px", fontWeight: 700, marginBottom: "10px" }}
-            />
-          }
+        <Table
+          className="customTable table-border-style"
+          t={t}
+          data={documentsData}
+          columns={documentsColumns}
+          getCellProps={() => ({ style: {} })}
+          disableSort={false}
+          autoSort={true}
+          manualPagination={false}
+          isPaginationRequired={false}
+        />
         </StatusTable>
       </Card>
+
+
+
+
+
+
+
+
+
+
+
+
+
       <Card style={{ paddingRight: "16px" }}>
         <CardSubHeader>{t("BPA_SUMMARY_FEE_EST")}</CardSubHeader>
         <StatusTable>

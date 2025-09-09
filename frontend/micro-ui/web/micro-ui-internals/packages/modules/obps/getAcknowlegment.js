@@ -122,7 +122,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   // const documents = application?.Licenses?.[0]?.tradeLicenseDetail?.documents || [];
   const documents = application?.applicationDetails?.find(detail => detail.title === "BPA_DOCUMENT_DETAILS_LABEL")?.additionalDetails?.documentsWithUrl?.[0]?.values
   const docDetails = documents?.map((doc, index) => ({
-    title: `${t("CS_DOCUMENT")} ${index + 1}`,
+    title: `${index + 1}`,
     value: t(`DOC_${doc.documentType}`) || "NA",
     link: doc.fileStoreId ? Digit.Utils.getFileUrl(doc.fileStoreId) : "",
   }));
@@ -137,10 +137,10 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   return {
     t: t,
     tenantId: tenantInfo?.code,
-    name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade?.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
+    name: t("BPA_ACKNOWLEDGEMENT_TITLE"),
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
-    heading: t("NEW_STAKEHOLDER_REGISTRATION"),
+    heading: t("LOCAL_GOVERNMENT_PUNJAB"),
     applicationNumber: application?.applicationData?.applicationNumber || "NA",
     details,
     imageURL

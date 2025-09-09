@@ -1060,7 +1060,7 @@ function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenan
         body:[
           [{
             
-              text: `Issued by the ${name}`, 
+              text: `${name}`, 
               alignment:"center",
               fontSize: 11,
               //bold: true
@@ -1079,9 +1079,9 @@ function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenan
         [
           {
             image: logo|| getBase64Image(tenantId) || localGovLogo,
-            width: 120,
+            width: 78,
             margin: [10, 10],
-            fit:[50,50]
+            // fit:[50,50]
           }, 
           
       ]
@@ -1091,16 +1091,16 @@ function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenan
   headerData.push({
     style : 'tableExample',
     layout: "noBorders",
-    margin: [420, -90, 0, 20],
+    margin: [420, -135, 0, 20],
     table:{
       widths: ['40%', '*', '20%'],
       body:[
         [
           {
             image: logo|| getBase64Image(tenantId) || defaultLogo,
-            width: 70,
+            width: 65,
             margin: [10, 10],
-            fit:[50,50]
+            // fit:[50,50]
           }, 
           
       ]

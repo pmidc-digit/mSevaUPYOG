@@ -1,22 +1,9 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef, use } from "react";
-import {
-  CardLabel,
-  LabelFieldPair,
-  SearchAction,
-  Dropdown,
-  TextInput,
-  LinkButton,
-  CardLabelError,
-  MobileNumber,
-  DatePicker,
-  Loader,
-  Toast,
-  StatusTable,
-  Row,
-} from "@mseva/digit-ui-react-components";
+import React, { useState, useEffect, useRef } from "react";
+import { CardLabel, LabelFieldPair, TextInput, Loader, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
-import { useLocation, Link, useHistory } from "react-router-dom";
+import { useLocation, useHistory } from "react-router-dom";
+
 const getAddress = (address, t) => {
   return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
     address?.landmark ? `${address?.landmark}, ` : ""
@@ -25,19 +12,17 @@ const getAddress = (address, t) => {
   }`;
 };
 
-export const PropertySearchNSummary = ({ config, onSelect, userType, formData, setError, formState, clearErrors }) => {
+export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const myElementRef = useRef(null);
   let { pathname, state } = useLocation();
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
   const isEditScreen = pathname.includes("/modify-application/");
-  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY"); //Digit.ULBService.getCurrentTenantId();
-  const isEmpNewApplication =
-    window.location.href.includes("/employee/tl/new-application") || window.location.href.includes("/citizen/tl/tradelicence/new-application");
-  const isEmpRenewLicense =
-    window.location.href.includes("/employee/tl/renew-application-details") || window.location.href.includes("/employee/tl/edit-application-details");
+  const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
   const search = useLocation().search;
   const urlPropertyId = new URLSearchParams(search).get("propertyId");
+  const isfirstRender = useRef(true);
+
   const [propertyId, setPropertyId] = useState(formData?.cpt?.id || (urlPropertyId !== "null" ? urlPropertyId : "") || "");
   const [searchPropertyId, setSearchPropertyId] = useState(formData?.cpt?.id || urlPropertyId !== "null" ? urlPropertyId : "");
   const [showToast, setShowToast] = useState(null);
@@ -50,7 +35,6 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
       };
     }
   });
-
   const [propertyDues, setPropertyDues] = useState(() => {
     if (formData?.cpt?.dues && Object.keys(formData?.cpt?.dues).length > 0) {
       return { dues: { ...formData?.cpt?.dues } };
@@ -60,11 +44,7 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
       };
     }
   });
-  const isMobile = window.Digit.Utils.browser.isMobile();
-  const serachParams = window.location.href.includes("?")
-    ? window.location.href.substring(window.location.href.indexOf("?") + 1, window.location.href.length)
-    : "";
-  const myElementRef = useRef(null);
+  const [isSearchClicked, setIsSearchClicked] = useState(false);
 
   const { isLoading, isError, error, data: propertyDetailsFetch } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: searchPropertyId }, tenantId: tenantId },
@@ -75,8 +55,6 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
-
-  const isfirstRender = useRef(true);
 
   useEffect(() => {
     if (propertyDetailsFetch && propertyDetailsFetch?.Properties && propertyDetailsFetch?.Properties?.length > 0) {
@@ -95,8 +73,6 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
     }
   }, [propertyDetailsFetch]);
 
-  console.log("FormDaraInNDCPropertySearch", formData, propertyDetails, tenantId);
-
   useEffect(() => {
     if (propertyId && (window.location.href.includes("/renew-application-details/") || window.location.href.includes("/edit-application-details/")))
       setSearchPropertyId(propertyId);
@@ -108,11 +84,9 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
       setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
     }
   }, [error, propertyDetails]);
+
   useEffect(() => {
     onSelect(config.key, { ...formData[config.key], details: propertyDetails?.Properties?.[0] });
-    // sessionStorage.setItem("Digit_FSM_PT", JSON.stringify(propertyDetails?.Properties[0]));
-    // localStorage.setItem("pgrProperty", JSON.stringify(propertyDetails?.Properties[0]));
-    // sessionStorage.setItem("wsProperty", JSON.stringify(propertyDetails?.Properties[0]));
   }, [propertyDetails, pathname]);
 
   useEffect(() => {
@@ -126,37 +100,21 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
     }
 
     if (propertyId !== searchPropertyId) {
-      setPropertyDetails({
-        Properties: [],
-      });
+      setPropertyDetails({ Properties: [] });
       setSearchPropertyId(propertyId);
+      setIsSearchClicked(true);
     }
-    // if (window.location.pathname.includes("/tl/new-application")) {
-    //   history.push(`/digit-ui/employee/tl/new-application?propertyId=${propertyId}`);
-    //   const scrollConst = 1600;
-    //   setTimeout(() => window.scrollTo(0, scrollConst), 0);
-    // }
+  };
 
-    // if (window.location.pathname.includes("/tl/tradelicence/new-application")) {
-    //   history.push(`/digit-ui/citizen/tl/tradelicence/new-application?propertyId=${propertyId}`);
-    //   const scrollConst = 1600;
-    //   setTimeout(() => window.scrollTo(0, scrollConst), 0);
-    //   // const offsetTop= myElementRef.current.offsetTop;
-    //   // setTimeout(() => window.scrollTo({top: offsetTop, behavior: "smooth"}),0);
-    //   // const element=document.getElementById("search-property-field");
-    //   // element.scrollIntoView({behavior:"smooth"})
-    // }
-
-    // if (window.location.pathname.includes("/ws/new-application")) history.push(`/digit-ui/employee/ws/new-application?propertyId=${propertyId}`);
-    // const scrollConst = 460;
-    // setTimeout(() => window.scrollTo(0, scrollConst), 0);
+  const handlePropertyChange = (e) => {
+    setPropertyId(e.target.value);
+    setValue(e.target.value, propertyIdInput.name);
+    setIsSearchClicked(false); // ✅ show button again when input changes
   };
 
   if (isEditScreen) {
     return <React.Fragment />;
   }
-
-  const redirectBackUrl = window.location.pathname;
 
   let propertyAddress = "";
 
@@ -169,15 +127,6 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
     } else return {};
   };
 
-  const getOwnerNames = (propertyData) => {
-    const getActiveOwners = propertyData?.owners?.filter((owner) => owner?.active);
-    const getOwnersList = getActiveOwners
-      .sort((a, b) => a?.additionalDetails?.ownerSequence - b?.additionalDetails?.ownerSequence)
-      ?.map((activeOwner) => activeOwner?.name)
-      ?.join(",");
-    return getOwnersList ? getOwnersList : t("NA");
-  };
-
   let clns = "";
   if (window.location.href.includes("/ws/")) clns = ":";
 
@@ -185,14 +134,6 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
     label: "PROPERTY_ID",
     type: "text",
     name: "id",
-    // validation: {
-    //   pattern: "^PT-\\d{4}-\\d{7,8}$",
-    //   title: t("PT_PROPERTY_ID_INVALID"),
-    //   // isRequired: true,
-    //   // pattern: Digit.Utils.getPattern('Name'),
-    //   // title: t("CORE_COMMON_APPLICANT_NAME_INVALID"),
-    // },
-    // isMandatory: isPropertyIdMandatory,
   };
 
   function setValue(value, input) {
@@ -241,48 +182,53 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
 
   return (
     <React.Fragment>
+      {isLoading && <Loader />}
       <div style={{ marginBottom: "16px" }}>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller" style={getInputStyles()}>
             {`${t(propertyIdInput.label)}`}
             {propertyIdInput.isMandatory ? "*" : null}
           </CardLabel>
-          <div className="field" style={{ marginTop: "20px", display: "flex", gap: "20px" }} ref={myElementRef} id="search-property-field">
+          <div
+            className="field ndc_property_search"
+            style={{ marginTop: "20px", display: "flex", gap: "16px", alignItems: "baseline", width: "100%" }}
+            ref={myElementRef}
+            id="search-property-field"
+          >
             <TextInput
               key={propertyIdInput.name}
               value={getValue(propertyIdInput.name)} //{propertyId}
-              onChange={(e) => {
-                setPropertyId(e.target.value);
-                // onSelect(config.key, { id: e.target.value });
-                setValue(e.target.value, propertyIdInput.name);
-              }}
+              onChange={handlePropertyChange}
               disable={false}
               maxlength={16}
               defaultValue={undefined}
-              style={{ width: "80%", float: "left", marginRight: "20px" }}
               {...propertyIdInput.validation}
             />
-            <button className="submit-bar" type="button" style={{ color: "white" }} onClick={searchProperty}>
-              {`${t("PT_SEARCH")}`}
-            </button>
+
+            {!isSearchClicked && (
+              <button className="submit-bar" type="button" style={{ color: "white", width: "100%", maxWidth: "100px" }} onClick={searchProperty}>
+                {`${t("PT_SEARCH")}`}
+              </button>
+            )}
+
             {formData?.cpt?.details && !formData?.cpt?.dues && (
               <button
                 className="submit-bar"
                 type="button"
-                style={{ color: "white", fontSize: "13px" }}
+                style={{ color: "white", fontSize: "13px", width: "100%", maxWidth: "180px" }}
                 onClick={() => {
                   fetchBill("PT", formData?.cpt?.id);
                 }}
               >
-                {/* {`${t("CHECK_STATUS_Property")}`} */}
-                Check Status
+                {`${t("CHECK_STATUS_PROPERTY")}`}
+                {/* Check Status */}
               </button>
             )}
             {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount > 0 && (
               <button
                 className="submit-bar"
                 type="button"
-                style={{ color: "white" }}
+                style={{ color: "white", width: "100%", maxWidth: "100px" }}
                 onClick={() => {
                   redirectToPayBill(formData?.cpt?.dues?.totalAmount);
                 }}
@@ -290,7 +236,9 @@ export const PropertySearchNSummary = ({ config, onSelect, userType, formData, s
                 {`${t("PAY_DUES")}`}
               </button>
             )}
-            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount == 0 && <div style={{ color: "green" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}
+            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount == 0 && (
+              <div style={{ color: "green", width: "100%", maxWidth: "75px" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
+            )}
           </div>
         </LabelFieldPair>
 

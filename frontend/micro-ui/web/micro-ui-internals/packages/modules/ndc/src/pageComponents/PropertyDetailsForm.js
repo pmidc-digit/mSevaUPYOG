@@ -178,6 +178,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       });
       setPropertyLoader(false);
 
+      console.log("result======???????", result);
+
       if (result?.Bill?.length > 0) {
         if (result?.Bill[0]?.totalAmount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
@@ -338,56 +340,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     <div style={{ marginBottom: "16px" }}>
       {formData?.cpt?.details && (
         <div>
-          {/* <LabelFieldPair>
-            <div className="field" style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-              <div style={{ display: "flex", flexDirection: "row" }}>
-                {propertyLoader ? (
-                  <Loader />
-                ) : (
-                  <div>
-                    {formData?.cpt?.id && !propertyDetails?.propertyBillData?.billData?.id && (
-                      <button
-                        className="submit-bar"
-                        type="button"
-                        style={{ color: "white", fontSize: "13px" }}
-                        onClick={() => {
-                          fetchBill("PT", formData?.cpt?.id);
-                        }}
-                      >
-                        Check Status for Property
-                      </button>
-                    )}
-
-                    {formData?.cpt?.id && propertyDetails?.propertyBillData?.billData?.totalAmount > 0 && (
-                      <button
-                        className="submit-bar"
-                        type="button"
-                        style={{ color: "white" }}
-                        onClick={() => {                          
-                          redirectToPayBill(propertyDetails?.propertyBillData?.billData);
-                        }}
-                      >
-                        {`${t("PAY_DUES")}`}
-                      </button>
-                    )}
-
-                    {formData?.cpt?.id && propertyDetails?.propertyBillData?.billData?.totalAmount == 0 && (
-                      <div style={{ color: "green" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-          </LabelFieldPair> */}
-
           <LabelFieldPair style={{ marginTop: "40px" }}>
             <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")}`}</CardLabel>
             {waterConnectionLoading ? (
               <Loader />
             ) : (
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
                 {propertyDetails?.waterConnection?.map((item, index) => (
-                  <div key={index} style={{ display: "flex", flexDirection: "row", alignItems: "baseline", gap: "16px" }}>
+                  <div
+                    className="ndc_property_search"
+                    key={index}
+                    style={{ display: "flex", flexDirection: "row", alignItems: "baseline", gap: "16px" }}
+                  >
                     <Controller
                       key={index}
                       control={control}
@@ -418,7 +382,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                       <Loader />
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {item?.connectionNo && !item?.billData?.id && (
+                        {item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
                           <button
                             className="submit-bar"
                             type="button"
@@ -427,8 +391,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                               fetchBill("WS", item.connectionNo, index);
                             }}
                           >
-                            {/* {`${t("CHECK_STATUS")}`} */}
-                            Check Status for Water
+                            {`${t("CHECK_STATUS_WATER")}`}
+                            {/* Check Status for Water */}
                           </button>
                         )}
 
@@ -487,9 +451,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             {sewerageConnectionLoading ? (
               <Loader />
             ) : (
-              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div className="field" style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
                 {propertyDetails?.sewerageConnection?.map((item, index) => (
                   <div
+                    className="ndc_property_search"
                     key={index}
                     style={{
                       display: "flex",
@@ -529,7 +494,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                       <Loader />
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {item?.connectionNo && !item?.billData?.id && (
+                        {item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
                           <button
                             className="submit-bar"
                             type="button"
@@ -538,8 +503,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                               fetchBill("SW", item.connectionNo, index, item.isEdit);
                             }}
                           >
-                            {/* {`${t("CHECK_STATUS")}`} */}
-                            Check Status for Sewerage
+                            {`${t("CHECK_STATUS_SEWERAGE")}`}
+                            {/* Check Status for Sewerage */}
                           </button>
                         )}
 
@@ -558,7 +523,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                           </button>
                         )}
 
-                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div>{t("NO_DUES")}</div>}
+                        {item?.connectionNo && item?.billData?.totalAmount == 0 && <div style={{ color: "green" }}>{t("NO_DUES")}</div>}
 
                         {item?.isEdit && (
                           <button

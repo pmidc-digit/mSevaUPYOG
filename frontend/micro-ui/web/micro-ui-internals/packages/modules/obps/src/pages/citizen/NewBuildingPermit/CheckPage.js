@@ -2248,12 +2248,19 @@ const CheckPage = ({ onSubmit, value }) => {
 
 
   console.log(getOrderDocuments(applicationDocs), "DOC DOC DOC");
+// const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+//   id: index,
+//   // localize the title here
+//   title: doc.title ? t(`BPA_${doc.title}`) : t("CS_NA"),
+//   fileUrl: doc.values?.[0]?.fileURL || null,
+// }));
+
 const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
   id: index,
-  // localize the title here
-  title: doc.title ? t(`BPA_${doc.title}`) : t("CS_NA"),
+  title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
   fileUrl: doc.values?.[0]?.fileURL || null,
 }));
+
 
 
 const documentsColumns = [

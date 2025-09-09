@@ -36,7 +36,7 @@ const LayoutLocalityInfo = (_props) => {
     if (formattedData) {
       //console.log("coming here", formattedData);
       Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value);
+        if(key!== "floorArea")setValue(key, value);
       });
     }
   }, [currentStepData, setValue]);

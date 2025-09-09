@@ -42,7 +42,13 @@ const LayoutStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   const commonProps = { Controller, control, setValue, errors, errorStyle, useFieldArray, watch};
 
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  // const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+
+  let tenantId;
+
+  if(window.location.href.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
+
+  else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
 
   const onSubmit = (data) => {
     trigger();

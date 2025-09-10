@@ -10,7 +10,7 @@ RUN yarn add @mseva/digit-ui-module-pgr@1.0.8
 RUN yarn add @mseva/digit-ui-module-noc@1.0.8
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.27
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.4
-RUN yarn add @mseva/digit-ui-module-core@1.0.34
+RUN yarn add @mseva/digit-ui-module-core@1.0.35
 RUN yarn add @mseva/digit-ui-module-common@1.0.65
 RUN yarn add @mseva/digit-ui-module-ws@1.0.5
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.4
@@ -26,7 +26,7 @@ RUN yarn add @mseva/upyog-ui-module-asset@1.0.39
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.31
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.2
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.2
-RUN yarn add @mseva/digit-ui-module-ndc@1.0.16
+RUN yarn add @mseva/digit-ui-module-ndc@1.0.17
 ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192

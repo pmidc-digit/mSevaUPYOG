@@ -139,6 +139,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   function validateStepData(data) {
+    console.log("data", data);
+
     const missingFields = [];
     const invalidFields = [];
 

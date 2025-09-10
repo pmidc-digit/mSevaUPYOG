@@ -1,8 +1,8 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
+import {Menu, ActionBar, FormComposer, Toast, SubmitBar } from "@mseva/digit-ui-react-components";
 import { UPDATE_NOCNewApplication_FORM, RESET_NOC_NEW_APPLICATION_FORM } from "../../redux/action/NOCNewApplicationActions";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import _ from "lodash";
 import { useHistory, useLocation } from "react-router-dom";
 
@@ -15,80 +15,107 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     return state.noc.NOCNewApplicationFormReducer.formData || {};
   });
 
+  const menuRef = useRef();
+  let user = Digit.UserService.getUser();
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+  const [displayMenu, setDisplayMenu] = useState(false);
+
+  const closeMenu = () => {
+    setDisplayMenu(false);
+  };
+
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
+
   const history = useHistory();
-  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
+  let tenantId;
 
-  const goNext = async(data)=> {
+  if(window.location.href.includes("citizen"))tenantId=window.localStorage.getItem("CITIZEN.CITY");
+
+  else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
+  
+
+  const goNext = async(action)=> {
     console.log("formData in parent SummaryPage", currentStepData);
 
-   // try{
-      const res = await onSubmit(currentStepData);
+   try{
+      const res = await onSubmit(currentStepData,action);
       
-      console.log("we reached here finally !!!");
-      
-      // if (res?.isSuccess) {
-      //   if(window.location.href.includes("citizen")){
-      //     //modify below as per response from api
-      //     history.push("/digit-ui/citizen/noc/response/" + res?.response?.Noc?.uuid);
-      //   }
+      if (res?.isSuccess) {
+        if(window.location.href.includes("citizen")){
+           console.log("we are calling citizen response page")
+           history.replace({
+           pathname:`/digit-ui/citizen/noc/response/${res?.response?.Noc?.[0]?.applicationNo}`,
+           state: { data: res?.response }
+        });
+        }
 
-      //   else{
-      //      //modify below as per response from api
-      //     history.push("/digit-ui/employee/noc/response/" + res?.response?.Noc?.uuid);
-      //   }
+        else{
+           console.log("we are calling employee response page")
+           history.replace({
+           pathname: `/digit-ui/employee/noc/response/${res?.response?.Noc?.[0]?.applicationNo}`,
+           state: { data: res?.response }
+        });
+        }
         
-      // } else {
-      //   console.error("Submission failed, not moving to next step.", res?.response);
-      //   alert(`Submission Failed ${res?.response}`)
-      // }
-   // }catch(e){
-       //alert(`Error: ${error?.message}`);
-     
-   // }
+      } else {
+        console.error("Submission failed, not moving to next step.", res?.response);
+        setError(res?.Errors?.[0]?.message || "Update failed, Please try again");
+        setShowToast(true);
+        
+      }
+   }catch(e){
+      //  alert(`Error: ${error?.message}`);
+     setError(res?.Errors?.[0]?.message || "Update failed due to some error occurred");
+     setShowToast(true);
+   }
 
     
    onGoNext();
   }
 
-  const onSubmit= async (data)=>{
+  const onSubmit= async (data, selectedAction)=>{
     console.log("formData inside onSubmit", data);
 
-    const finalPayload = mapToNOCPayload(data);
-    console.log("finalPayload here==", finalPayload);
-
-    //remove below once completed
-    setTimeout(()=>{
-      console.log("we are here in setTimeOut")
-    },1000);
-
-    return true;
+    const finalPayload = mapToNOCPayload(data, selectedAction);
+    console.log("finalPayload here==>", finalPayload);
     
-    // const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
-    // dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-    // if (response?.ResponseInfo?.status === "successful") {
-    //       return { isSuccess: true, response };
-    // } else {
-    //       return { isSuccess: false, response };
-    // }
+    const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
+    //dispatch(RESET_NOC_NEW_APPLICATION_FORM());
+    if (response?.ResponseInfo?.status === "successful") {
+          console.log("success: Update API ")
+          dispatch(RESET_NOC_NEW_APPLICATION_FORM());
+          return { isSuccess: true, response };
+
+    } else {
+          console.log("Error: Update API");
+          return { isSuccess: false, response };
+    }
   }
 
-  function mapToNOCPayload(nocFormData){
+  function mapToNOCPayload(nocFormData, selectedAction){
     console.log("nocFormData", nocFormData);
 
-    const updatedApplication= {
-        applicationType: "NEW",
-        documents: [],
-        nocType: "NOC",
-        status: "ACTIVE",
-        tenantId,
-        workflow: {action: "INITIATE"},
-        nocDetails:{
-            //modify below from apiData key using redux
-            additionalDetails: {applicationDetails:{...nocFormData?.applicationDetails}, siteDetails:{...nocFormData?.siteDetails}},
-            tenantId
-        }
+   const updatedApplication = {
+    ...nocFormData?.apiData?.Noc?.[0],
+    workflow:{
+      //need to discuss
+      action: selectedAction?.action || "",
+      // assignes:selectedAction?.action || "",
+      // status:selectedAction?.action || "",
+    },
+    nocDetails: {
+     ...nocFormData?.apiData?.Noc?.[0]?.nocDetails,
+     //update data with redux as we can not use old data for update api 
+     additionalDetails: {
+      ...nocFormData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails,
+      applicationDetails:{...nocFormData?.applicationDetails}, 
+      siteDetails:{...nocFormData?.siteDetails}
     }
+   
+    },
+    documents:[]
+   }
     
    const docsArray = nocFormData?.documents?.documents?.documents || [];
      docsArray.forEach((doc) => {
@@ -102,8 +129,6 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const payload={
       Noc:{...updatedApplication}
     }
-
-    console.log("payload in mapTONOCPayload", payload);
 
     return payload;
   }
@@ -123,6 +148,35 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     setShowToast(false);
     setError("");
   };
+   
+  console.log("currentStepData in StepFour", currentStepData);
+  const applicationNo=currentStepData?.apiData?.Noc?.[0]?.applicationNo || "";
+  console.log("applicationNo here==>", applicationNo);
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: applicationNo,
+    moduleCode: "NOC",
+  });
+
+  console.log("workflow Details here==>", workflowDetails);
+
+  let actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
+
+  console.log("actions here", actions);
+
+  function onActionSelect(action) {
+    goNext(action);
+    console.log("selectedAction here", action);
+  }
+
+  
+
   return (
     <React.Fragment>
       <FormComposer
@@ -134,6 +188,24 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
+      <ActionBar>
+        <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+        {/* {actions ? (
+          <Menu
+            localeKeyPrefix={`WF_${"NOC"}`}
+            options={actions}
+            optionKey={"action"}
+            t={t}
+            onSelect={onActionSelect}
+            // style={MenuStyle}
+          />
+        ) : null} */}
+        {(displayMenu &&  actions) ? (
+                  <Menu localeKeyPrefix={`WF_${"NOC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+          ) : null}
+        <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+      </ActionBar>
+
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );

@@ -57,6 +57,11 @@ export const businessServiceList = (isCode= false) => {
     return newAvailableBusinessServices;
 }
 
+export const pdfDocumentName = (documentLink = "", index = 0) => {
+  let documentName = decodeURIComponent(documentLink.split("?")[0].split("/").pop().slice(13)) || `Document - ${index + 1}`;
+  return documentName;
+};
+
 export const pdfDownloadLink = (documents = {}, fileStoreId = "", format = "") => {
 
   let downloadLink = documents[fileStoreId] || "";

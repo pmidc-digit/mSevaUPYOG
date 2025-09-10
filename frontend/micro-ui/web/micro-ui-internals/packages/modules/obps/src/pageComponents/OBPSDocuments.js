@@ -70,9 +70,9 @@ function OBPSDocument({
                     style={{ minWidth: "80px", marginRight: "10px", maxWidth: "100px", height: "auto" }}
                     key={index}
                   >
-                    <div style={{ display: "flex", justifyContent: "center" }}>
+                    {/* <div style={{ display: "flex", justifyContent: "center" }}>
                       <PDFSvg />
-                    </div>
+                    </div> */}
                     {isStakeHolder ? (
                       <p style={{ marginTop: "8px", textAlign: "center", color: "#505A5F" }}>
                         {t(`BPAREG_HEADER_${stringReplaceAll(Code?.toUpperCase(), ".", "_")}`)}

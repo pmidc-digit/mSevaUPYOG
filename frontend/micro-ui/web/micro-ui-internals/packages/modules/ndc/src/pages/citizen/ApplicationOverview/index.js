@@ -181,7 +181,7 @@ const CitizenApplicationOverview = () => {
     const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
 
     console.log("acknowledgementData", acknowledgementData);
-    Digit.Utils.pdf.generate(acknowledgementData);
+    Digit.Utils.pdf.generateBPAREG(acknowledgementData);
   };
 
   if (isLoading || isDetailsLoading) {

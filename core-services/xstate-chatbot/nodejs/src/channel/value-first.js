@@ -224,6 +224,22 @@ class ValueFirstWhatsAppProvider {
     }
 
     async downloadImage(url,filename) {  
+
+        if (!filename || filename.trim() === '') {
+        const timestamp = Date.now();
+        filename = `temp_download_${timestamp}.jpg`;
+        console.warn(`Empty filename detected, using fallback: ${filename}`);
+    }
+    
+    // Ensure filename is a string and not empty after trim
+    filename = filename.toString().trim();
+    if (filename === '') {
+        filename = `fallback_${Date.now()}.jpg`;
+        console.warn(`Invalid filename after processing, using: ${filename}`);
+    }
+    
+    console.log("downloadImage - Using filename:", filename);
+    
         const writer = fs.createWriteStream(filename);
       
         const response = await axios({

@@ -288,11 +288,12 @@ const pgr =  {
                   invoke: {
                     id: 'getCityAndLocality',
                     src: (context, event) => {
-                      if(event.message && event.message.type === 'location') {
+                      // Add null checks for event and event.message
+                      if(event && event.message && event.message.type === 'location') {
                         context.slots.pgr.geocode = event.message.input;
                         return pgrService.getCityAndLocalityForGeocode(event.message.input, context.extraInfo.tenantId);
                       }
-                      if(event.message) {
+                      if(event && event.message) {
                         context.message = event.message.input;
                       } else {
                         context.message = '1'; // Default to skip location sharing
@@ -838,8 +839,22 @@ const pgr =  {
                 console.log(complaintDetails);
                 let message = dialog.get_message(messages.fileComplaint.persistComplaint, context.user.locale);
                 console.log(message);
-                message = message.replace('{{complaintNumber}}', complaintDetails.complaintNumber);
-                message = message.replace('{{complaintLink}}', complaintDetails.complaintLink);
+                
+                // Add null checks for complaintDetails
+                if (complaintDetails && complaintDetails.complaintNumber) {
+                  message = message.replace('{{complaintNumber}}', complaintDetails.complaintNumber);
+                } else {
+                  console.warn('Complaint details or complaint number is missing');
+                  message = message.replace('{{complaintNumber}}', 'N/A');
+                }
+                
+                if (complaintDetails && complaintDetails.complaintLink) {
+                  message = message.replace('{{complaintLink}}', complaintDetails.complaintLink);
+                } else {
+                  console.warn('Complaint link is missing');
+                  message = message.replace('{{complaintLink}}', '#');
+                }
+                
                 let closingStatement = dialog.get_message(messages.fileComplaint.closingStatement, context.user.locale);
                 message = message + closingStatement;
                 dialog.sendMessage(context, message);

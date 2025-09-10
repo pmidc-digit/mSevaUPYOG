@@ -26,11 +26,18 @@ class UserService {
     try {
       let user = await this.loginUser(mobileNumber, tenantId);
       if (!user) {
-        await this.createUser(mobileNumber, tenantId);
+        console.log(`Initial login failed for ${mobileNumber}, attempting to create user`);
+        let createResult = await this.createUser(mobileNumber, tenantId);
+        if (!createResult) {
+          throw new Error(`Failed to create user for ${mobileNumber}`);
+        }
+        // Add a small delay before retry login to allow for database consistency
+        await new Promise(resolve => setTimeout(resolve, 1000));
         user = await this.loginUser(mobileNumber, tenantId);
       }
-
-      if (!user) throw new Error('Unable to login after user creation');
+      if (!user) {
+        throw new Error(`Unable to login after user creation for ${mobileNumber}`);
+      }
       
       user = await this.enrichuserDetails(user);
       return user;

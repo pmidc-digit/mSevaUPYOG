@@ -545,6 +545,21 @@ class PGRService {
   }
 
   async downloadImage(url, filename) {
+      // Fix: Validate filename before creating WriteStream
+  if (!filename || filename.trim() === '') {
+    const timestamp = Date.now();
+    filename = `pgr_download_${timestamp}.jpg`;
+    console.warn(`Empty filename detected in PGR, using fallback: ${filename}`);
+  }
+  
+  filename = filename.toString().trim();
+  if (filename === '') {
+    filename = `pgr_fallback_${Date.now()}.jpg`;
+    console.warn(`Invalid filename after processing in PGR, using: ${filename}`);
+  }
+  
+  console.log("PGR downloadImage - Using filename:", filename);
+  
     const writer = fs.createWriteStream(filename);
 
     const response = await axios({

@@ -1244,7 +1244,10 @@ const BpaApplicationDetail = () => {
   sessionStorage.setItem("BPA_IS_ALREADY_WENT_OFF_DETAILS", JSON.stringify(false))
 
   const user = Digit.UserService.getUser()
+  const userInfo = JSON.parse(localStorage.getItem("user-info") || "{}");
+  
 
+  
   const citizenmobilenumber = user?.info?.mobileNumber
 
   const history = useHistory()
@@ -1276,6 +1279,9 @@ const BpaApplicationDetail = () => {
     },
   })
 
+  console.log("workflowDetailsINBPADetailsPage", workflowDetails);
+  const isSameMobile = workflowDetails?.processInstances?.[0]?.assignes?.[0]?.mobileNumber === userInfo?.mobileNumber;
+  console.log(isSameMobile, "IS MOBILE NUMBER");
   const [agree, setAgree] = useState(false)
   const setdeclarationhandler = () => {
     setAgree(!agree)
@@ -2410,7 +2416,7 @@ const submitAction = (workflow) => {
           )
         })}
 
-      {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && (
+      {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isSameMobile && (
         <div>
           <Card>
             <React.Fragment>
@@ -2446,16 +2452,7 @@ const submitAction = (workflow) => {
                   <React.Fragment>
                     <br></br>
                     <CardLabel>{t("BPA_OTP")}</CardLabel>
-                    {/* <TextInput
-                      t={t}
-                      type="text"
-                      isMandatory={true}
-                      optionKey="i18nKey"
-                      name="otp"
-                      value={otp}
-                      onChange={handleOTPChange}
-                      {...{ required: true, pattern: "[0-9]{6}", type: "tel", title: t("BPA_INVALID_OTP") }}
-                    /> */}
+                   
                     <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
 
                     <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />

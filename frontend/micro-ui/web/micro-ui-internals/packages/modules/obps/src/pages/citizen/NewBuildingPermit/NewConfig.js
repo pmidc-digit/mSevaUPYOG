@@ -27,6 +27,7 @@ export const newConfig1 = [
     component: "PlotDetails",
     key: "data",
     nextStep: "scrutiny-details",
+    step: 1,
     texts: {
       headerCaption: "BPA_SCRUTINY_DETAILS",
       header: "BPA_PLOT_DETAILS_TITLE",
@@ -34,114 +35,7 @@ export const newConfig1 = [
       submitBarLabel: "CS_COMMON_NEXT",
       //"skipText": "CORE_COMMON_SKIP_CONTINUE"
     },
-    // inputs: [
-    //   {
-    //     label: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL",
-    //     type: "textarea",
-    //     validation: {},
-    //     name: "registrationDetails",
-    //   },
-    //   {
-    //     label: "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
-    //     type: "text",
-    //     validation: {
-    //       pattern: "^[0-9]*$",
-    //       title: "Enter in Numbers[0-9]",
-    //       errorMessage: "Boundary wall length must be a number",
-    //       required: true,
-    //     },
-    //     name: "boundaryWallLength",
-    //   },
-    //   {
-    //     label: "BPA_WARD_NUMBER_LABEL",
-    //     type: "text",
-    //     validation: {
-    //       pattern: "^[a-zA-Z0-9 -]+$",
-    //       required: true,
-    //     },
-    //     name: "wardnumber",
-    //   },
-    //   {
-    //     label: "BPA_ZONE_NUMBER_LABEL",
-    //     type: "text",
-    //     validation: {},
-    //     name: "zonenumber",
-    //   },
-    //   {
-    //     label: "BPA_KHASRA_NUMBER_LABEL",
-    //     type: "text",
-    //     validation: { required: true },
-    //     name: "khasraNumber",
-    //     disable: true,
-    //   },
-    //   {
-    //     label: "BPA_ARCHITECT_ID",
-    //     type: "text",
-    //     validation: { required: true },
-    //     name: "architectid",
-    //     disable: true,
-    //   },
-    //   {
-    //     label: "BPA_PROPERTY_UID",
-    //     type: "text",
-    //     validation: {},
-    //     name: "propertyuid",
-    //   },
-    //   {
-    //     label: "BPA_NUMBER_OF_BATHS",
-    //     type: "text",
-    //     validation: {},
-    //     name: "bathnumber",
-    //   },
-    //   {
-    //     label: "BPA_NUMBER_OF_KITCHENS",
-    //     type: "text",
-    //     validation: {},
-    //     name: "kitchenNumber",
-    //   },
-    //   {
-    //     label: "BPA_APPROX_INHABITANTS_FOR_ACCOMODATION",
-    //     type: "text",
-    //     validation: {},
-    //     name: "approxinhabitants",
-    //   },
-    //   {
-    //     label: "BPA_DISTANCE_FROM_SEWER",
-    //     type: "text",
-    //     validation: {},
-    //     name: "distancefromsewer",
-    //   },
-    //   {
-    //     label: "BPA_SOURCE_OF_WATER",
-    //     type: "text",
-    //     validation: {},
-    //     name: "sourceofwater",
-    //   },
-    //   {
-    //     label: "BPA_NUMBER_OF_WATER_CLOSETS",
-    //     type: "text",
-    //     validation: {},
-    //     name: "watercloset",
-    //   },
-    //   {
-    //     label: "BPA_MATERIAL_TO-BE_USED_IN_WALLS",
-    //     type: "text",
-    //     validation: {},
-    //     name: "materialused",
-    //   },
-    //   {
-    //     label: "BPA_MATERIAL_TO-BE_USED_IN_FLOOR",
-    //     type: "text",
-    //     validation: {},
-    //     name: "materialusedinfloor",
-    //   },
-    //   {
-    //     label: "BPA_MATERIAL_TO-BE_USED_IN_ROOFS",
-    //     type: "text",
-    //     validation: { pattern: "^[A-Za-z\\s]+$" },
-    //     name: "materialusedinroofs",
-    //   },
-    // ],
+
 
     inputs: [
       {
@@ -340,6 +234,7 @@ export const newConfig1 = [
     nextStep: "location",
     hideInEmployee: true,
     key: "subOccupancy",
+    step: 2,
     texts: {
       headerCaption: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
       header: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
@@ -394,6 +289,7 @@ export const newConfig1 = [
     nextStep: "additional-building-details",
     hideInEmployee: true,
     key: "address",
+    step: 3,
     texts: {
       headerCaption: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
       header: "BPA_NEW_TRADE_DETAILS_HEADER_DETAILS_NEW",
@@ -407,6 +303,7 @@ export const newConfig1 = [
     component: "BPANewBuildingdetails",
     nextStep: "owner-details",
     key: "owners",
+    step:4,
     texts: {
       header: "BPA_ADDITIONAL_BUILDING_DETAILS",
       submitBarLabel: "CS_COMMON_NEXT",
@@ -417,6 +314,7 @@ export const newConfig1 = [
     component: "OwnerDetails",
     nextStep: "document-details",
     key: "owners",
+    step:5,
     texts: {
       headerCaption: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
       header: "BPA_APPLICANT_DETAILS_HEADER",

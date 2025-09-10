@@ -168,7 +168,7 @@ const configWithErrors = {
             <Row className="border-none" label={t(`BPA_PLOT_NUMBER_LABEL`)} text={data?.planDetail?.planInformation?.plotNo} />
             <Row className="border-none" label={t(`BPA_KHATHA_NUMBER_LABEL`)} text={data?.planDetail?.planInfoProperties?.KHATA_NO} />
 
-            
+           
           </StatusTable>
         </FormStep>
       </div>

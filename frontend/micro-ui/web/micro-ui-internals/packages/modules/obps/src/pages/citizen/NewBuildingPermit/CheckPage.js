@@ -1632,7 +1632,7 @@ const CheckPage = ({ onSubmit, value }) => {
 
   const isEditApplication = window.location.href.includes("editApplication");
 
-  console.log(value, "DEKHO");
+ 
 
   // Initialize agreement states with sessionStorage persistence
   const [agree, setAgree] = useState(() => {

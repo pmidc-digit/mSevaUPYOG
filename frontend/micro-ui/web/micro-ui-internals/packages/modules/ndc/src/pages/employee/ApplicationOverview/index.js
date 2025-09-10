@@ -319,9 +319,9 @@ const ApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div>
+      {/* <div>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
-      </div>
+      </div> */}
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
@@ -391,7 +391,7 @@ const ApplicationOverview = () => {
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
-              localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`}
+              localeKeyPrefix={`WF_EDITRENEWAL`}
               options={actions}
               optionKey={"action"}
               t={t}

@@ -305,6 +305,8 @@ import useWSConfigMDMS from "./ws/useWSConfigMDMS";
 import useFeedBackSearch from "./useFeedBackSearch";
 
 import usePetMDMS from "./ptr/usePetMDMS";
+import useDocumentsMDMS from "./ptr/useDocumentsMDMS";
+
 import useBreedTypeMDMS from "./ptr/useBreedTypeMDMS";
 import usePTRCreateAPI from "./ptr/usePTRCreateAPI";
 import usePTRPetMDMS from "./ptr/usePTRPetMDMS";
@@ -425,6 +427,7 @@ const ptr = {
   usePetMDMS,
   usePTRPetMDMS,
   useBreedTypeMDMS,
+  useDocumentsMDMS,
   usePTRCreateAPI,
   usePTRApplicationAction,
   usePTRGenderMDMS,

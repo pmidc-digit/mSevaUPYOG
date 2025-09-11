@@ -54,6 +54,9 @@ public class NocQueryBuilder {
 
 
 
+
+
+
 //	private static final String QUERY =
 //			"SELECT " +
 //					"noc.*, " +
@@ -116,12 +119,23 @@ public class NocQueryBuilder {
 			log.info(criteria.getTenantId());
 		}
 
+
+
+
 		List<String> ids = criteria.getIds();
 		if (!CollectionUtils.isEmpty(ids)) {
 			addClauseIfRequired(builder);
 			builder.append(" noc.id IN (").append(createQuery(ids)).append(")");
 			addToPreparedStatement(preparedStmtList, ids);
-		}		
+		}
+
+		List<String> ownerIds = criteria.getOwnerIds();
+		if (!CollectionUtils.isEmpty(ownerIds)) {
+			addClauseIfRequired(builder);
+			builder.append(" (noc.accountId IN (").append(createQuery(ownerIds)).append(")) ");
+			addToPreparedStatement(preparedStmtList, ownerIds);
+		}
+
 
 		String applicationNo = criteria.getApplicationNo();
                 if (applicationNo != null) {

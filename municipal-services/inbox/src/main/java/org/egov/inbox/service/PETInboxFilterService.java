@@ -115,6 +115,10 @@ public class PETInboxFilterService {
         if (!ObjectUtils.isEmpty(processCriteria.getAssignee())) {
             searchCriteria.put(ASSIGNEE_PARAM, processCriteria.getAssignee());
         }
+        if(moduleSearchCriteria!=null && moduleSearchCriteria.containsKey("petType"))
+        {
+            searchCriteria.put("petType", moduleSearchCriteria.get("petType"));
+        }
         return searchCriteria;
     }
 

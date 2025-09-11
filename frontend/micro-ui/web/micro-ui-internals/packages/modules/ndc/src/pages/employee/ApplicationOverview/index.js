@@ -24,7 +24,6 @@ import NDCModal from "../../../pageComponents/NDCModal";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
-  console.log("wfDocuments", wfDocuments);
   const caption = {
     date: checkpoint?.auditDetails?.lastModified,
     name: checkpoint?.assigner?.name,
@@ -179,7 +178,6 @@ const ApplicationOverview = () => {
 
   useEffect(() => {
     const ndcObject = applicationDetails?.Applications?.[0];
-    console.log("ndcObject", ndcObject);
     if (ndcObject) {
       const applicantData = {
         name: ndcObject?.owners?.[0]?.name,
@@ -210,7 +208,6 @@ const ApplicationOverview = () => {
   }, [applicationDetails?.Applications]);
 
   useEffect(() => {
-    console.log("applicationDetails", applicationDetails);
     if (applicationDetails) {
       setIsDetailsLoading(true);
       const { Applicant: details } = applicationDetails?.Applications?.[0];
@@ -219,7 +216,6 @@ const ApplicationOverview = () => {
   }, [applicationDetails]);
 
   function onActionSelect(action) {
-    console.log("action", action);
     const payload = {
       Licenses: [action],
     };
@@ -240,8 +236,6 @@ const ApplicationOverview = () => {
     // setSelectedAction(null);
     const payloadData = applicationDetails?.Applications[0];
 
-    console.log("data", data);
-
     const updatedApplicant = {
       ...payloadData,
       workflow: {},
@@ -254,8 +248,6 @@ const ApplicationOverview = () => {
       comment: filtData?.comment,
       documents: filtData?.wfDocuments,
     };
-
-    console.log("filtData", filtData);
 
     if (!filtData?.assignee && filtData.action == "FORWARD") {
       setShowToast({ key: "error" });
@@ -327,9 +319,9 @@ const ApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div>
+      {/* <div>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
-      </div>
+      </div> */}
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
@@ -386,7 +378,7 @@ const ApplicationOverview = () => {
                 <CheckPoint
                   keyValue={index}
                   isCompleted={index === 0}
-                  label={t("NDC_STATUS_" + checkpoint.status)}
+                  label={t(checkpoint.status)}
                   customChild={getTimelineCaptions(checkpoint, index, arr, t)}
                 />
               ))}
@@ -395,11 +387,11 @@ const ApplicationOverview = () => {
         </Card>
       )}
 
-      {actions && (
+      {applicationDetails?.Applications?.[0]?.applicationStatus !== "INITIATED" && actions && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
-              localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`}
+              localeKeyPrefix={`WF_EDITRENEWAL`}
               options={actions}
               optionKey={"action"}
               t={t}
@@ -408,6 +400,18 @@ const ApplicationOverview = () => {
             />
           ) : null}
           <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+        </ActionBar>
+      )}
+
+      {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && (
+        <ActionBar>
+          <SubmitBar
+            label={t("COMMON_EDIT")}
+            onSubmit={() => {
+              const id = applicationDetails?.Applications?.[0]?.uuid;
+              history.push(`/digit-ui/employee/ndc/create/${id}`);
+            }}
+          />
         </ActionBar>
       )}
 

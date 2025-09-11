@@ -148,17 +148,17 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
   console.log("License Type List", getLicenseType());
 
   function mapQualificationToLicense(qualification) {
-    let license = null;
+    let license = getLicenseType().find((type) => type.i18nKey.includes(qualification?.role));
 
-    if (qualification.name == "B-Arch") {
-      license = getLicenseType().find((type) => type.i18nKey.includes("ARCHITECT"));
-    } else if (qualification.name == "BE/B-Tech") {
-      license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
-    } else if (qualification.name == "Diploma in Civil Engineering/Architect") {
-      license = getLicenseType().find((type) => type.i18nKey.includes("SUPERVISOR"));
-    } else if (qualification.name == "Town and Country Planning") {
-      license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
-    }
+    // if (qualification.name == "B-Arch") {
+    //   license = getLicenseType().find((type) => type.i18nKey.includes("ARCHITECT"));
+    // } else if (qualification.name == "BE/B-Tech") {
+    //   license = getLicenseType().find((type) => type.i18nKey.includes("ENGINEER"));
+    // } else if (qualification.name == "Diploma in Civil Engineering/Architect") {
+    //   license = getLicenseType().find((type) => type.i18nKey.includes("SUPERVISOR"));
+    // } else if (qualification.name == "Town and Country Planning") {
+    //   license = getLicenseType().find((type) => type.i18nKey.includes("TOWNPLANNER"));
+    // }
 
     if (license) {
       setLicenseType(license);
@@ -377,18 +377,19 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
 
             {LicenseType &&
               (LicenseType?.i18nKey.includes("ARCHITECT") ||
-                LicenseType?.i18nKey.includes("_ENGINEER") ||
-                LicenseType?.i18nKey.includes("SUPERVISOR")) && (
+                LicenseType?.i18nKey.includes("ENGINEER") ||
+                LicenseType?.i18nKey.includes("SUPERVISOR") ||
+                LicenseType?.i18nKey.includes("TOWNPLANNER")) && (
                 <div>
                   <CheckBox
                     label={
                       LicenseType?.i18nKey.includes("ARCHITECT")
                         ? t("DECLARATION_SELF_CERTIFICATION_RESIDENTIAL_ARCHITECT")
-                        : LicenseType?.i18nKey.includes("_ENGINEER")
+                        : LicenseType?.i18nKey.includes("ENGINEER")
                         ? t("DECLARATION_SELF_CERTIFICATION_RESIDENTIAL_ENGINEER")
                         : LicenseType?.i18nKey.includes("SUPERVISOR")
                         ? t("DECLARATION_SELF_CERTIFICATION_RESIDENTIAL_SUPERVISOR")
-                        : t("DECLARATION_SELF_CERTIFICATION_RESIDENTIAL_DESIGNER")
+                        : t("DECLARATION_SELF_CERTIFICATION_RESIDENTIAL_TOWNPLANNER")
                     }
                     onChange={selectSelfCertification}
                     value={selfCertification}

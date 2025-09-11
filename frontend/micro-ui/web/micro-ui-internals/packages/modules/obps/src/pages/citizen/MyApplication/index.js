@@ -92,7 +92,7 @@ const MyApplication = () => {
     };
 
     sessionStorage.setItem("BPAREGintermediateValue", JSON.stringify(intermediateData));
-    history.push("/digit-ui/citizen/obps/stakeholder/apply/stakeholder-docs-required");
+    history.push("/digit-ui/citizen/obps/stakeholder/apply/provide-license-type");
   };
   useEffect(() => {
     return () => {

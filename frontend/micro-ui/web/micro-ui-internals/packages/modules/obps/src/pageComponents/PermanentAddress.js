@@ -14,7 +14,7 @@ import {
   ActionBar,
   SubmitBar
 } from "@mseva/digit-ui-react-components";
-import React, { useState, useEffect, useMemo, } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Timeline from "../components/Timeline";
 
 const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) => {
@@ -40,10 +40,25 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const stateOptions = useMemo(() => {return [{code: "pb",name: "Punjab",i18Code: "Punjab"}]},[])
   const isMobile = window.Digit.Utils.browser.isMobile();
 
+  const uniqueDistricts = useMemo(() => {
+  if (isLoading || !districtList?.BPA?.Ulb?.length) return [];
+
+  return [
+    ...new Set(districtList.BPA.Ulb.map(item => item.Districts?.trim()))
+  ]
+    .filter(Boolean) // remove null/undefined/empty
+    .sort((a, b) => a.localeCompare(b))
+    .map(district => ({
+      name: district,
+      code: district
+    }));
+}, [isLoading, districtList]);
   // console.log("data: newConfig", newConfig);
 
   // const [ulbTypes, setUlbTypes] = useState(["Abohar", "Adampur", "Ahmedgarh", "Ajnala", "Alawalpur", "Amargarh", "Amloh"]);
   const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) => tenant.name);
+
+  
   // console.log("tenantName=+",tenantName);
   useEffect(() => {
     const role = formData?.LicneseType?.LicenseType?.role;
@@ -229,7 +244,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                     t={t}
                     optionKey="code"
                     // isMandatory={config.isMandatory}
-                    option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                    // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                    option={uniqueDistricts}
                     selected={selectedDistrict}
                     select={SelectDistrict}
                     // disable={true}

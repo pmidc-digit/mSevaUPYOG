@@ -11,6 +11,12 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   const tenantId = Digit.ULBService.getCurrentTenantId();
   let isOpenLinkFlow = window.location.href.includes("openlink");
   const uuid = userInfo?.info?.uuid;
+  const [disable, setDisable] = useState({
+    lastName: false,
+    middleName: false,
+    gender: false,
+    dateOfBirth: false,
+  });
   const [getUserDetails, setGetUserDetails] = useState(null);
   const { data: userDetails, isLoading: isUserLoading } = Digit.Hooks.useUserSearch(tenantId, { uuid: [uuid] }, {}, { enabled: uuid ? true : false });
   const [name, setName] = useState(() => {
@@ -24,17 +30,27 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
     const nameParts = fullName.trim().split(" ");
     // console.log("lastName here", nameParts[nameParts.length - 1]);
+    if(nameParts.length > 1 ){
+      setDisable((prev) => ({ ...prev, lastName: true }));
+    }
     return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
   });
   const [middleName, setMiddleName] = useState(() => {
     const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
 
     const nameParts = fullName.trim().split(" ");
-    // console.log("Middle name parts:", nameParts.slice(1, -1));
+    console.log("Middle name parts:", nameParts.slice(1, -1));
+    if(nameParts.length === 3 && nameParts.slice(1, -1).length > 0 && nameParts.slice(1, -1)[0] !== ""){
+      setDisable((prev) => ({ ...prev, middleName: true }));
+    }
+    if(nameParts.length > 3 && nameParts.slice(1, -1).length > 0 && nameParts.slice(1, -1)[1] !== ""){
+      setDisable((prev) => ({ ...prev, middleName: true }));
+    }
 
     // Join middle name parts if there are more than two words
     return nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "";
   });
+  console.log("disable state", disable);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(true);
@@ -67,6 +83,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
         const user = usersResponse.user[0];
         setGetUserDetails(user);
         if (user?.dob) {
+          setDisable((prev) => ({ ...prev, dateOfBirth: true }));
           setDateOfBirth(user.dob);
         }
       }
@@ -80,6 +97,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   }, []);
   useEffect(() => {
     if (!gender?.code && userDetails?.user?.[0]?.gender && !isOpenLinkFlow) {
+      setDisable((prev) => ({ ...prev, gender: true }));
       setGender({
         i18nKey: `COMMON_GENDER_${userDetails?.user?.[0]?.gender}`,
         code: userDetails?.user?.[0]?.gender,
@@ -256,7 +274,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 name="Mname"
                 value={middleName}
                 onChange={SelectMiddleName}
-                // disable={middleName && !isOpenLinkFlow ? true : false}
+                disable={disable?.middleName}
                 {...(validation = {
                   isRequired: false,
                   pattern: "^[a-zA-Z ]*$",
@@ -273,7 +291,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 name="Lname"
                 value={lastName}
                 onChange={SelectLastName}
-                // disable={lastName && !isOpenLinkFlow ? true : false}
+                disable={disable?.lastName}
                 {...(validation = {
                   isRequired: true,
                   pattern: "^[a-zA-Z ]*$",
@@ -288,6 +306,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 min="1900-01-01"
                 max={new Date().toISOString().split("T")[0]}
                 isRequired={true}
+                disabled={disable?.dateOfBirth}
               />
               {/* <CardLabel>{`${t("BPA_APPLICANT_NAME_LABEL")}*`}</CardLabel>
             <TextInput
@@ -318,8 +337,8 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   onSelect={setGenderName}
                   isDependent={true}
                   labelKey="COMMON_GENDER"
-                  disable={gender && !isOpenLinkFlow ? true : false}
-                  //disabled={isUpdateProperty || isEditProperty}
+                  // disable={gender && !isOpenLinkFlow ? true : false}
+                  disabled={disable?.gender}
                 />
 
                 {errorMessage && (

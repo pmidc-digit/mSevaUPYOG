@@ -10,7 +10,7 @@ const GetActionMessage = (props) => {
   const { t } = useTranslation();
   if (props.isSuccess) {
     return !window.location.href.includes("edit-application")
-      ? `${t(`TRADELICENSE_TRADETYPE_${LicenseType}`)}${t(`CS_STAKEHOLDER_APPLICATION_SUCCESS`)}`
+      ? `${t(`TRADELICENSE_TRADETYPE_${LicenseType}`)} ${t(`CS_STAKEHOLDER_APPLICATION_SUCCESS`)}`
       : t("CS_PROPERTY_UPDATE_APPLICATION_SUCCESS");
   } else if (props.isLoading) {
     return !window.location.href.includes("edit-application") ? t("CS_STAKEHOLDER_APPLICATION_PENDING") : t("CS_PROPERTY_UPDATE_APPLICATION_PENDING");

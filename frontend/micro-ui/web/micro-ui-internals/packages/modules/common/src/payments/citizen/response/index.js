@@ -967,13 +967,13 @@ const WrapPaymentComponent = (props) => {
         </div>
       ) : null}
 
-      <div
+      {/* <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
           onClick={printReciept}
         >
           {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
+        </div> */}
 
       {business_service?.includes("WS") ? (
         <div

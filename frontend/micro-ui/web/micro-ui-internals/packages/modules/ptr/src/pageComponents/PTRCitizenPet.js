@@ -102,16 +102,16 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
     }
   }, [currentStepData, setValue]);
 
-  const onlyAlphabets = /^[A-Za-z\s]{3,50}$/;
-  const onlyNumbers = /^[0-9]{1,}$/;
-  const alphaNum = /^[A-Za-z0-9]{1,20}$/;
+  const onlyAlphabets = /^[A-Za-z\s]+$/; // Allows any number of letters and spaces
+  const onlyNumbers = /^[0-9]+$/; // Allows any number of digits
+  const alphaNum = /^[A-Za-z0-9]+$/; // Allows any number of letters and digits
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
     return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "2%", fontSize: "12px", marginTop: "-21px" };
+  const errorStyle = { width: "70%", fontSize: "12px", marginTop: "-18px" };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -156,7 +156,6 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
       {errors.breedType && <CardLabelError style={errorStyle}>{getErrorMessage("breedType")}</CardLabelError>}
       {/* PET GENDER */}
       <CardLabel>{t("PTR_PET_GENDER")} *</CardLabel>
-      {errors.petGender && <CardLabelError>{getErrorMessage("petGender")}</CardLabelError>}
       <Controller
         control={control}
         name="petGender"
@@ -166,7 +165,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
         )}
       />
       {errors.petGender && <CardLabelError style={errorStyle}>{getErrorMessage("petGender")}</CardLabelError>}
-      <CardLabel>{`${t("PTR_COLOR")}`}</CardLabel>
+      <CardLabel>{`${t("PTR_COLOR")}`} *</CardLabel>
       <Controller
         control={control}
         name="petColor"
@@ -284,7 +283,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
             border: "1px solid",
             background: "transparent",
             color: "#2947a3",
-            marginRight:"5px"
+            marginRight: "5px",
           }}
           onSubmit={onGoBack}
         />

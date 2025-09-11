@@ -3,9 +3,11 @@ package org.egov.hrms.repository;
 import org.apache.commons.lang3.StringUtils;
 import org.egov.hrms.config.PropertiesManager;
 import org.egov.hrms.model.EmployeeWithWard;
+import org.egov.hrms.model.Employee;
 import org.egov.hrms.web.contract.EmployeeSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -23,6 +25,12 @@ public class EmployeeQueryBuilder {
 	@Autowired
 	private PropertiesManager properties;
 	
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
+
+	@Autowired
+	private EmployeeRowMapper rowMapper;
+
 	/**
 	 * Returns query for searching employees
 	 * 
@@ -33,6 +41,18 @@ public class EmployeeQueryBuilder {
 		StringBuilder builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
 		addWhereClause(criteria, builder, preparedStmtList);
 		return paginationClause(criteria, builder);
+	}
+	
+	public String getEmployeeSearchQueryV2(EmployeeSearchCriteria criteria,List <Object> preparedStmtList , String Count) {
+		StringBuilder builder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES);
+		addWhereClause(criteria, builder, preparedStmtList);
+		return paginationClauseV2(criteria, builder,preparedStmtList , Count);
+	}
+
+	public String getEmployeeSearchQueryCount(EmployeeSearchCriteria criteria,List <Object> preparedStmtListV1 ) {
+		StringBuilder countBuilder = new StringBuilder(EmployeeQueries.HRMS_GET_EMPLOYEES_COUNT);
+		addWhereClause(criteria,countBuilder,preparedStmtListV1);
+		return paginationClauseCount(criteria, countBuilder,preparedStmtListV1);
 	}
 
 	
@@ -129,6 +149,30 @@ public class EmployeeQueryBuilder {
 		
 		return pagination;
 	}
+	
+	public String paginationClauseV2(EmployeeSearchCriteria criteria, StringBuilder builder,List <Object> preparedStmtList , String Count) {
+		String pagination = EmployeeQueries.HRMS_PAGINATION_V1_WRAPPER;
+		pagination = pagination.replace("{}", builder.toString());
+		if(null != criteria.getOffset())
+			pagination = pagination.replace("$offset", criteria.getOffset().toString());
+		else
+			pagination = pagination.replace("$offset", "0");
+		
+		if(null != criteria.getLimit()){
+			Integer limit = criteria.getLimit() + criteria.getOffset();
+			pagination = pagination.replace("$limit", limit.toString());
+		}
+		else
+			pagination = pagination.replace("$limit", Count);
+		
+		return pagination;
+	}
+	
+	public String paginationClauseCount(EmployeeSearchCriteria criteria, StringBuilder builder,List <Object> preparedStmtList ) {
+		String pagination = EmployeeQueries.HRMS_PAGINATION_COUNT_WRAPPER;
+		pagination = pagination.replace("{}", builder.toString());
+		return pagination;
+	} 
 
 	public String getAssignmentSearchQuery(EmployeeSearchCriteria criteria, List<Object> preparedStmtList) {
 		StringBuilder builder = new StringBuilder(EmployeeQueries.HRMS_GET_ASSIGNMENT);

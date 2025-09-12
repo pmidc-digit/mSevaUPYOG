@@ -34,6 +34,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 accessor: "submissionDate",
                 Cell: ({row}) => row.original?.["submissionDate"] ? GetCell(format(new Date(row.original?.["submissionDate"]), 'dd/MM/yyyy')) : "NA"
         },
+        
         {
             Header: t("ES_INBOX_LOCALITY"),
             accessor: (row) => t(row?.locality),

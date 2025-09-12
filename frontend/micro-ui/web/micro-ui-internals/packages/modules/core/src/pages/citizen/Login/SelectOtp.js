@@ -109,7 +109,7 @@ const SelectOtp = ({ config, otp, onOtpChange, onResend, onSelect, t, error, use
         </p>
       )}
       {!error && <CardLabelError>{t("CS_INVALID_OTP")}</CardLabelError>}
-      {!errorRegister && <CardLabelError style={{ cursor: "pointer" }}>{t("CS_ALREADY_REGISTERED")}</CardLabelError>}
+      {/* {!errorRegister && <CardLabelError style={{ cursor: "pointer" }}>{t("CS_ALREADY_REGISTERED")}</CardLabelError>} */}
     </FormStep>
   );
 };

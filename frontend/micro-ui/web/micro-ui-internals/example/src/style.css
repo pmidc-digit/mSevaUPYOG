@@ -1,0 +1,17 @@
+.preview-image {
+  max-width: 250px;
+  height: 300px;
+  border: 33px solid #ddd;
+  border-radius: 8px;
+  margin-top: 8px;
+
+  &:hover {
+    border-color: #aaa;
+  }
+}
+.doc-preview{
+  width: 100%;
+  height: 500px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}

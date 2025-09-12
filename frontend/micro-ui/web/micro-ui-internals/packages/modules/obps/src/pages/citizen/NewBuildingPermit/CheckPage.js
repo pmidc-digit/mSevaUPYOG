@@ -2288,7 +2288,7 @@ const documentsColumns = [
 
   return (
     <React.Fragment>
-      <Timeline currentStep={4} />
+      {/* <Timeline currentStep={4} /> */}
       <Header>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
       <div style={{height:"75vh", overflow:"scroll", marginTop:"30px"}}>
       <Card style={{ paddingRight: "16px" }}>

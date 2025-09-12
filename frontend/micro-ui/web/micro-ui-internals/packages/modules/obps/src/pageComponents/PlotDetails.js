@@ -155,10 +155,8 @@ const configWithErrors = {
 
 
   return (
-    <div>
-      <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
-      <div style={{ height: "80vh", overflow: "scroll" }}>
-        <FormStep config={configWithErrors} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
+
+        <FormStep  config={configWithErrors} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
           <StatusTable>
             <Row
               className="border-none"
@@ -171,8 +169,7 @@ const configWithErrors = {
            
           </StatusTable>
         </FormStep>
-      </div>
-    </div>
+
   );
 };
 

@@ -167,15 +167,51 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     setShowToast(null);
   };
 
-  const tableColumns = useMemo(() => {
-    return tableHeader?.map((ob) => ({
-      Header: t(`${ob.name}`),
-      accessor: accessData(ob.id),
-      id: ob.id,
-      //symbol: plot?.symbol,
-      //sortType: sortRows,
-    }));
-  });
+  // const tableColumns = useMemo(() => {
+  //   return tableHeader?.map((ob) => ({
+  //     Header: t(`${ob.name}`),
+  //     accessor: accessData(ob.id),
+  //     id: ob.id,
+  //     //symbol: plot?.symbol,
+  //     //sortType: sortRows,
+  //   }));
+  // });
+
+    const tableColumns = useMemo(() => {
+          return tableHeader?.map((ob) => {
+            if (ob.id === "BuildupArea") {
+              return {
+                Header: t(`${ob.name}`),
+                accessor: accessData(ob.id),
+                id: ob.id,
+                Footer: (info) => {
+                  const total = info.rows.reduce((sum, row) => sum + (Number(row.values.BuildupArea) || 0), 0);
+                  return `${t("BPA_TOTAL_BUILDUPAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`;
+                },
+              };
+            } else if (ob.id === "FloorArea") {
+              return {
+                Header: t(`${ob.name}`),
+                accessor: accessData(ob.id),
+                id: ob.id,
+                Footer: (info) => {
+                  const total = info.rows.reduce((sum, row) => sum + (Number(row.values.FloorArea) || 0), 0);
+                  return `${t("BPA_TOTAL_FLOORAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`;
+                },
+              };
+            } else {
+              return {
+                Header: t(`${ob.name}`),
+                accessor: accessData(ob.id),
+                id: ob.id,
+              };
+            }
+          });
+        }, [t]);
+
+
+
+
 
   const onSkip = () => onSelect();
   console.log(formData, "F++++++");
@@ -262,13 +298,49 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
       });
     return returnValueArray?.length ? returnValueArray.join(", ") : "NA";
   }
+
+function getFloorData(block) {
+  let floors = [];
+  let totalBuiltUpArea = 0;
+  let totalFloorArea = 0;
+
+  block?.building?.floors?.forEach((ob) => {
+    const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0;
+    const floor = Number(ob.occupancies?.[0]?.floorArea) || 0;
+
+    totalBuiltUpArea += builtUp;
+    totalFloorArea += floor;
+
+    floors.push({
+      Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
+      Level: ob.number,
+      Occupancy: t(`${ob.occupancies?.[0]?.type}`),
+      BuildupArea: Number(builtUp).toFixed(2),
+      FloorArea: Number(floor).toFixed(2),
+    });
+  });
+
+  // Add Totals Row
+  floors.push({
+    Floor: t("BPA_TOTAL"),
+    Level: "",
+    Occupancy: "",
+    BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+    FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+  });
+
+  return floors;
+}
+
+
   return (
     <React.Fragment>
-      <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
-      <div style={{ height: "80vh", overflow: "scroll" }}>
+      {/* <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} /> */}
+      <div style={{ width:"100%" }}>
         <FormStep t={t} config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={goNext} onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */>
-          <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
-          <StatusTable style={{ border: "none" }}>
+          <div style={{border:"none", boxShadow:"none"}}>
+            <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+          <StatusTable>
             <Row
               className="border-none"
               style={{ border: "none" }}
@@ -372,52 +444,54 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
 
           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
           <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
-          {data?.planDetail?.blocks?.map((block, index) => (
-            <div key={index} style={{ marginTop: "20px" }}>
-   
+         
 
+          {data?.planDetail?.blocks?.map((block, index) => {
+            const { floors, totalBuiltUpArea, totalFloorArea } = getFloorData(block);
 
+            return (
+              <div key={index} style={{ marginTop: "20px" }}>
+                <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+                  {t("BPA_BLOCK_SUBHEADER")} {index + 1}
+                </CardSubHeader>
 
+                <StatusTable>
+                  <Row
+                    className="border-none"
+                    textStyle={{ wordBreak: "break-word" }}
+                    label={t("BPA_SUB_OCCUPANCY_LABEL")}
+                    text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
+                  />
+                </StatusTable>
 
-
-              <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
-              {t("BPA_BLOCK_SUBHEADER")} {index + 1}
-            </CardSubHeader>
-            <StatusTable>
-              <Row
-                className="border-none"
-                textStyle={{ wordBreak: "break-word" }}
-                label={t("BPA_SUB_OCCUPANCY_LABEL")}
-                text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
-              ></Row>
-            </StatusTable>
-            <div style={{ overflow: "scroll" }}>
-              <Table
-                className="customTable table-fixed-first-column table-border-style"
-                t={t}
-                disableSort={false}
-                autoSort={true}
-                manualPagination={false}
-                isPaginationRequired={false}
-                initSortId="S N "
-                data={getFloorData(block)}
-                columns={tableColumns}
-                getCellProps={(cellInfo) => {
+                <div style={{ overflow: "scroll" }}>
+                  <Table
+                    className="customTable table-fixed-first-column table-border-style"
+                    t={t}
+                    disableSort={true}
+                    autoSort={false}
+                    manualPagination={false}
+                    isPaginationRequired={false}
+                    initSortId="S N "
+                    data={getFloorData(block)}
+                    columns={tableColumns}
+                    showFooter={true}
+                     getCellProps={(cellInfo) => {
                   return {
                     style: {},
                   };
                 }}
-              />
-            </div>
+                  />
+                </div>
+
+         
+             
+              </div>
+            );
+          })}
 
 
 
-
-
-
-     
-            </div>
-          ))}
           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
           <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
           <StatusTable style={{ border: "none" }}>
@@ -430,6 +504,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
               }
             ></Row>
           </StatusTable>
+          </div>
         </FormStep>
         {showToast && <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
       </div>

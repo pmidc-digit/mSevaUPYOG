@@ -70,7 +70,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: stepperConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-// console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
+console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
 
 const NewNOCStepperForm = () => {
   const history = useHistory();
@@ -82,7 +82,7 @@ const NewNOCStepperForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  // console.log("formStatePTR: ", formState);
+  console.log("formStatePTR: ", formState);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_NOCNewApplication_STEP(updatedStepNumber));

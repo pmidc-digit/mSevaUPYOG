@@ -105,9 +105,9 @@ const BasicDetails = ({ formData, onSelect, config }) => {
   }
 
   return (
-    <div>
+    <div style={{width:"100%"}}>
       {showToast && <Toast error={true} label={t(`${showToast?.message}`)} onClose={closeToast} isDleteBtn={true} />}
-      <Timeline />
+      {/* <Timeline /> */}
       <div className={isMobile ? "obps-search" : ""} style={!isMobile ? { margin: "8px" } : {}}>
         <Label>{t(`OBPS_SEARCH_EDCR_NUMBER`)}</Label>
         <TextInput

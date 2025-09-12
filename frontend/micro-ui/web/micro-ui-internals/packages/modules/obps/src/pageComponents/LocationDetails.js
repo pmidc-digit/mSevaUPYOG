@@ -14,7 +14,8 @@ const LocationDetails = ({ t, config, onSelect, userType, formData,setFormData, 
   let currLocality = JSON.parse(sessionStorage.getItem("currentLocality")) || {};
   const allCities = Digit.Hooks.obps.useTenants();
   const { pathname: url } = useLocation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = localStorage.getItem("tenant-id")
   const stateId = Digit.ULBService.getStateId();
   const [Pinerror, setPinerror] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -93,6 +94,14 @@ const [isUploading, setIsUploading] = useState(false);
       }
     }
   }, [cities]);
+
+useEffect(() => {
+  if (formData?.documents?.sitePhotoGraph) {
+    setUploadedFile(formData.documents.sitePhotoGraph);
+  }
+}, [formData?.documents]);
+
+
 
   const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
@@ -268,6 +277,7 @@ async function selectfiles(e) {
     return;
   }
 
+
   setError(null);
   setGeoLocationFromImg(geo);
   setIsUploading(true)
@@ -278,6 +288,7 @@ async function selectfiles(e) {
     if (response?.data?.files?.length > 0) {
       const fileStoreId = response.data.files[0].fileStoreId;
       setUploadedFile(fileStoreId);
+console.log("Uploaded FileStoreId:", fileStoreId);
 
 
       setSitePhotoGraph(fileStoreId);
@@ -301,7 +312,7 @@ async function selectfiles(e) {
 
   return (
     <div>
-      {!isOpen && <Timeline />}
+      {/* {!isOpen && <Timeline />} */}
       {isOpen && <GIS t={t} onSelect={onSelect} formData={formData} handleRemove={handleRemove} onSave={onSave} />}
       {!isOpen && (
         <FormStep
@@ -435,6 +446,20 @@ async function selectfiles(e) {
                 accept=".jpg,.jpeg,.png"
               />
 
+     
+            {uploadedFile && (
+              <div style={{ marginTop: "16px" }}>
+                <CardLabel>{t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW")}</CardLabel>
+                <div>
+                  <img className="preview-image"
+                  src={`${window.location.origin}/filestore/v1/files/id?tenantId=${tenantId}&fileStoreId=${uploadedFile}`}
+                  alt="Uploaded site"
+                />
+                </div>
+              </div>
+            )}
+
+
 
               {isUploading && (
                 <div style={{ marginTop: "12px" }}>
@@ -447,8 +472,8 @@ async function selectfiles(e) {
               {!isUploading && geoLocationFromImg.latitude && geoLocationFromImg.longitude && (
                 <div style={{ marginTop: "12px", padding: "8px", border: "1px solid #D6D5D4", borderRadius: 8 }}>
                   <strong>📍 Extracted Geo Location</strong>
-                  <div>Latitude: {geoLocationFromImg.latitude}</div>
-                  <div>Longitude: {geoLocationFromImg.longitude}</div>
+                  <div>Latitude: {Number(geoLocationFromImg.latitude).toFixed(6)}</div>
+                  <div>Longitude: {Number(geoLocationFromImg.longitude).toFixed(6)}</div>
                 </div>
               )}
 

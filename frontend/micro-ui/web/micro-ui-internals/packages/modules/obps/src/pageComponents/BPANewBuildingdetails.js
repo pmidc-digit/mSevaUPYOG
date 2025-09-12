@@ -5,6 +5,7 @@ import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon } from
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
+import Stepper from "../../../../react-components/src/customComponents/Stepper";
 
 
 
@@ -14,6 +15,35 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
   let validation = {}
 
   const SESSION_STORAGE_KEY = "Digit.BUILDING_PERMIT"
+  const tenantId = localStorage.getItem("tenant-id")
+
+const createEmployeeConfig = [
+  {
+    route: "plot-details",
+    head: "APPLICATION DETAILS",
+    stepLabel: "NOC_APPLICATION_DETAILS",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+    key: "data",
+    
+  },
+  {
+    route: "scrutiny-details",
+    head: "SITE DETAILS",
+    stepLabel: "NOC_SITE_DETAILS",
+    stepNumber: 4,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+    key: "subOccupancy",
+    withoutLabel: true,
+    
+  },
+
+
+];
 
   const getSessionData = () => {
     try {
@@ -83,6 +113,8 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
 
   const [ecbcCertificateFile, setEcbcCertificateFile] = useState(null);
 const [ecbcCertificateFileObj, setEcbcCertificateFileObj] = useState(null);
+
+const [step, setStep] = useState("")
 
 
   const validateFields = () => {
@@ -200,6 +232,8 @@ if (anyYes && !ecbcCertificateFile) {
       console.error("Error saving to session storage:", error)
     }
   }
+
+  sessionStorage.setItem("set-step",3)
 
   useEffect(() => {
     saveToSessionStorage()
@@ -336,6 +370,20 @@ if (anyYes && !ecbcCertificateFile) {
       }
     })()
   }, [ecbcAirConditionedFileObj])
+
+
+useEffect(() => {
+  if (ecbcCertificateFile) {
+    fetch(
+      `${window.location.origin}/filestore/v1/files/id?tenantId=${tenantId}&fileStoreId=${ecbcCertificateFile}`
+    )
+      .then(res => res.blob())
+      .then(blob => {
+        const url = URL.createObjectURL(blob);
+        setPreviewUrl(url);
+      });
+  }
+}, [ecbcCertificateFile]);
 
   const approvedcolonyStatus = [
     {
@@ -667,11 +715,18 @@ if (anyYes && !ecbcCertificateFile) {
     return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{error}</div>
   }
 
+  const handleSubmit = () => {
+
+  }
+
   return (
     <React.Fragment>
-      <Timeline currentStep={2} />
+     
       <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
-        <div style={{height:"76vh", overflow:"scroll"}}>
+       <div className="test-card-demo"> 
+          {/* <Timeline currentStep={2} /> */}
+          {/* <Stepper stepsList={createEmployeeConfig} onSubmit={handleSubmit} step={step} setStep={setStep} /> */}
+        <div>
           <CardLabel>{`${t("BPA_ULB_NAME")} *`}</CardLabel>
           <TextInput
             t={t}
@@ -1057,6 +1112,19 @@ if (anyYes && !ecbcCertificateFile) {
                 }}
                 message={ecbcCertificateFileObj?.name || "Choose a file"}
               />
+
+             {ecbcCertificateFile && (
+              <div style={{ marginTop: "16px" }}>
+                <CardLabel>{t("BPA_DOC_PREVIEW")}</CardLabel>
+                <iframe className="doc-preview"
+                  src={`${window.location.origin}/filestore/v1/files/id?tenantId=${tenantId}&fileStoreId=${ecbcCertificateFile}`}
+                  title="PDF Preview"
+                 
+                />
+              </div>
+            )}
+
+
               {errors.ecbcCertificateFile && (
                 <p className="error" style={{ color: "red" }}>
                   {errors.ecbcCertificateFile}
@@ -1067,6 +1135,7 @@ if (anyYes && !ecbcCertificateFile) {
 
 
         </div>
+       </div>
       </FormStep>
     </React.Fragment>
   )

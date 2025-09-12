@@ -3,19 +3,22 @@ import React from "react";
 import { Route, Switch, useRouteMatch } from "react-router-dom";
 import { shouldHideBackButton } from "../../utils";
 import { useTranslation } from "react-i18next";
-
+import SearchApp from "../employee/SearchApp";
 const hideBackButtonConfig = [];
 
 const App = () => {
   const { path, url, ...match } = useRouteMatch();
   const { t } = useTranslation();
   const ADSCreate = Digit?.ComponentRegistryService?.getComponent("NewADSStepperForm");
+
   // const ADSCreate = Digit?.ComponentRegistryService?.getComponent("ADSCreate");
   // const ADSCreate = Digit?.ComponentRegistryService?.getComponent("NewPTRStepperForm");
 
   //  to show back button on top left of the page in order to go back to previous page
   const ADSMyApplications = Digit?.ComponentRegistryService?.getComponent("ADSMyApplications");
   const ADSApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ADSApplicationDetails");
+  const ADSResponse = Digit?.ComponentRegistryService?.getComponent("ADSResponseCitizen");
+  const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("CitizenApplicationOverview");
   //this has been added in order show my bookings page
   return (
     <span className={"ads-citizen"} style={{ width: "100%" }}>
@@ -25,6 +28,8 @@ const App = () => {
           <PrivateRoute path={`${path}/bookad`} component={ADSCreate} />
           <PrivateRoute path={`${path}/myBookings`} component={ADSMyApplications}></PrivateRoute>
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={ADSApplicationDetails}></PrivateRoute>
+          <PrivateRoute path={`${path}/adsservice/:response/:bookingNo`} component={ADSResponse}></PrivateRoute>
+          <PrivateRoute path={`${path}/adsservice/:application-overview/:bookingNo`} component={ApplicationOverview}></PrivateRoute>
         </AppContainer>
       </Switch>
     </span>

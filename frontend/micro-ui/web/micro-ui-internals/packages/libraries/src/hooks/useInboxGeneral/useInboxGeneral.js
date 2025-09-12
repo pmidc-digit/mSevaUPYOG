@@ -7,10 +7,19 @@ import { getSearchFields } from "./searchFields";
 import { TLService } from "../../services/elements/TL";
 import { SVService } from "../../services/elements/SV";
 import { CHBServices } from "../../services/elements/CHB";
+import { ADSServices } from "../../services/elements/ADS";
 import { ASSETService } from "../../services/elements/ASSET";
 import { PTRService } from "../../services/elements/PTR";
 
 const inboxConfig = (tenantId, filters) => ({
+  ADV: {
+    services: ["ADV"],
+    searchResponseKey: "BookingApplication",
+    businessIdsParamForSearch: "bookingNo",
+    businessIdAliasForSearch: "bookingNo",
+    fetchFilters: filterFunctions.ADV,
+    _searchFn: () => ADSServices.search({ tenantId, filters }),
+  },
   PT: {
     services: ["PT.CREATE"],
     searchResponseKey: "Properties",

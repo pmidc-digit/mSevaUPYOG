@@ -26,6 +26,28 @@ const inboxSearchFields = {
       },
     },
   ],
+  ADV: [
+    {
+      label: "ADV_BOOKING_NUMBER",
+      name: "bookingNo",
+      // minLength: "10",
+      roles: [],
+    },
+    {
+      label: "ES_SEARCH_BOOKING_MOBILE_NO",
+      name: "mobileNumber",
+      type: "mobileNumber",
+      maxLength: 10,
+      minLength: 0,
+      roles: [],
+      pattern: "^$|[6-9][0-9]{9}",
+      errorMessages: {
+        pattern: "",
+        minLength: "",
+        maxLength: "",
+      },
+    },
+  ],
   PTR: [
     {
       label: "REPORT_FSM_RESULT_APPLICATION_NO",

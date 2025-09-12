@@ -10,28 +10,60 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
+  const stateId = Digit.ULBService.getStateId();
+  const { isLoading: isDocsLoading, data: mdmsData } = Digit.Hooks.ads.useADSDocumentsMDMS(
+    stateId,
+    "Advertisements",
+    ["Documents"]
+  );
+
   const currentStepData = useSelector(function (state) {
     return state.ads.ADSNewApplicationFormReducer.formData && state.ads.ADSNewApplicationFormReducer.formData[config?.key]
       ? state.ads.ADSNewApplicationFormReducer.formData[config?.key]
       : {};
   });
 
+  const makeDocumentsValidator = (mdms) => {
+    const requiredCodes = (mdms?.NDC?.Documents || [])
+      .filter((d) => d?.required)
+      .map((d) => d.code);
+
+    return (documents = []) => {
+      const errors = {};
+      if (!requiredCodes?.length) return errors;
+      for (const code of requiredCodes) {
+        const satisfied = documents?.some(
+          (doc) =>
+            doc?.documentType?.includes?.(code) &&
+            (doc?.filestoreId || doc?.fileStoreId) 
+        );
+        if (!satisfied) {
+          errors.missingRequired = "ADS_MISSING_REQUIRED_DOCUMENTS";
+          break;
+        }
+      }
+      return errors;
+    };
+  };
+  
   function goNext(data) {
-    console.log("goNext data in NewPTRStepFormThree: ", data);
+    console.log("goNext data in NewADSStepFormThree: ", data);
 
-    const { missingFields, notFormattedFields } = validateStepData(currentStepData);
+    const validator = makeDocumentsValidator(mdmsData);
+    const docsArray = currentStepData?.documents?.documents || [];
+    const docErrors = validator(docsArray);
 
-    if (missingFields.length > 0) {
-      setError(`Please fill the following field: ${missingFields[0]}`);
+    if (docErrors?.missingRequired) {
+      setError("Please upload all required documents");
       setShowToast(true);
       return;
     }
+
+    
     onGoNext();
   }
 
   function validateStepData(data) {
-    // const pets = data?.pets || [];
-
     const missingFields = [];
     const notFormattedFields = [];
 

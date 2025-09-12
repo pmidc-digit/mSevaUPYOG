@@ -298,9 +298,8 @@ public class DemandService {
 				consumerCodeToDemandMap.put(demand.getConsumerCode(),demands);
 			}
 		});
-		  Long startingDayEpoch = null;
-          Long otsEndDateEpoch = null;
-          BigDecimal otsRate = null;
+		
+		
 		if (!CollectionUtils.isEmpty(consumerCodeToDemandMap)) {
 		List<Demand> demandsToBeUpdated = new LinkedList<>();
 
@@ -319,23 +318,36 @@ public class DemandService {
 						&& CalculatorConstants.DEMAND_CANCELLED_STATUS.equalsIgnoreCase(demand.getStatus().toString()))
 					throw new CustomException(CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR,
 							CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR_MSG);
+			
+				
 				/*
 				 * OTS Configuration Fix - PI-18953 ( Abhishek Rana)
 				 */				
+			
+				applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
+
 				JSONArray otsArray = (JSONArray) timeBasedExmeptionMasterMap.get("Ots");
 
 				if (otsArray != null && !otsArray.isEmpty()) {
 				    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-				    boolean anyOtsApplied = false;
-
 				    int demandFY = getFinancialYearStart(demand.getTaxPeriodFrom());
+				    boolean otsApplied = false;
+
+				    String demandFYShort = demandFY + "-" + String.valueOf(demandFY + 1).substring(2);
+				    String demandFYLong  = demandFY + "-" + (demandFY + 1);
 
 				    for (Object item : otsArray) {
 				        if (item instanceof Map) {
 				            Map<String, Object> otsMap = (Map<String, Object>) item;
 				            boolean otsEnabledFlag = Boolean.parseBoolean(String.valueOf(otsMap.get("isOTSEnabled")));
+				            String fyApplicable = otsMap.get("financialYearsApplicable") != null
+				                    ? otsMap.get("financialYearsApplicable").toString()
+				                    : null;
 
-				            if (otsEnabledFlag) {
+				            boolean fyMatches = fyApplicable != null &&
+				                                (fyApplicable.equals(demandFYShort) || fyApplicable.equals(demandFYLong));
+
+				            if (otsEnabledFlag && fyMatches) {
 				                Long otsEndEpoch = null;
 				                BigDecimal interestRate = BigDecimal.ZERO;
 				                BigDecimal penaltyRate = BigDecimal.ZERO;
@@ -353,31 +365,50 @@ public class DemandService {
 				                    penaltyRate = new BigDecimal(otsMap.get("penaltyRatePercent").toString());
 				                }
 
-				                String fyApplicable = otsMap.get("financialYearsApplicable") != null
-				                        ? otsMap.get("financialYearsApplicable").toString() : null;
-
-				                // Check if demand FY matches OTS FY and OTS has not ended yet
-				                if (fyApplicable != null && fyApplicable.contains(demandFY + "-" + (demandFY + 1))
-				                        && otsEndEpoch != null && otsEndEpoch >= System.currentTimeMillis()) {
-
+				                if (otsEndEpoch != null && otsEndEpoch >= System.currentTimeMillis()) {
 				                    log.info("OTS is Enabled and Applicable for FY: {} (Interest: {}%, Penalty: {}%)",
 				                            fyApplicable, interestRate, penaltyRate);
-
 				                    otsEnabled(demand, interestRate, penaltyRate);
-				                    anyOtsApplied = true;
+				                    otsApplied = true;
+				                    break; 
 				                }
 				            }
 				        }
 				    }
 
-				    if (!anyOtsApplied) {
-				        log.info("No applicable OTS found for FY: {}. Applying normal exemptions.", demandFY);
-				        applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
+				    if (!otsApplied) {
+				        Map<String, BigDecimal> originalAmounts = demand.getDemandDetails().stream()
+				                .filter(d -> PT_TIME_PENALTY.equals(d.getTaxHeadMasterCode()) 
+				                          || PT_TIME_INTEREST.equals(d.getTaxHeadMasterCode()))
+				                .collect(Collectors.groupingBy(
+				                        DemandDetail::getTaxHeadMasterCode,
+				                        Collectors.mapping(DemandDetail::getTaxAmount,
+				                                Collectors.reducing(BigDecimal.ZERO, BigDecimal::add))
+				                ));
+
+				        BigDecimal totalPenaltyAmount = originalAmounts.getOrDefault(PT_TIME_PENALTY, BigDecimal.ZERO);
+				        BigDecimal totalInterestAmount = originalAmounts.getOrDefault(PT_TIME_INTEREST, BigDecimal.ZERO);
+
+				        demand.getDemandDetails().forEach(detail -> {
+				            String taxHead = detail.getTaxHeadMasterCode();
+
+				            if (CalculatorConstants.OTS_PENALTY_WAVEOFF.equals(taxHead) && totalPenaltyAmount.compareTo(BigDecimal.ZERO) == 0) {
+				                detail.setTaxAmount(BigDecimal.ZERO);
+				                log.info("OTS expired -> Reset OTS penalty wave-off to 0 for taxHead: {}", taxHead);
+				            }
+
+				            if (CalculatorConstants.OTS_INTEREST_WAVEOFF.equals(taxHead) && totalInterestAmount.compareTo(BigDecimal.ZERO) == 0) {
+				                detail.setTaxAmount(BigDecimal.ZERO);
+				                log.info("OTS expired -> Reset OTS interest wave-off to 0 for taxHead: {}", taxHead);
+				            }
+				        });
+
+				        log.info("No valid OTS for demand FY: {}. Cleared OTS wave-offs only where total PT_TIME_PENALTY/INTEREST collected amount is 0.", demandFY);
 				    }
 
+
 				} else {
-				    log.info("OTS array empty. Applying normal exemptions.");
-				    applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap, taxPeriods);
+				    log.info("OTS array empty. No wave-offs to apply for demand: {}", demand.getId());
 				}
 
 

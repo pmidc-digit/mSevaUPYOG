@@ -191,7 +191,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     // Format Validations
     const nameRegex = /^[A-Za-z\s]+$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
     const mobileRegex = /^[6-9]\d{9}$/;
 
     if (propertyDetails?.firstName && !nameRegex.test(propertyDetails.firstName)) {

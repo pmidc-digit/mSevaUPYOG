@@ -375,6 +375,8 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }, [apiDataCheck]);
 
+  console.log("propertyDetails====", propertyDetails, formData);
+
   return (
     <div style={{ marginBottom: "16px" }}>
       {(formData?.cpt?.details || apiDataCheck?.[0]?.NdcDetails) && (
@@ -657,19 +659,19 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
               <Controller
                 control={control}
                 name={"email"}
-                defaultValue=""
+                defaultValue={propertyDetails?.email || ""}
                 render={(props) => (
                   <TextInput
                     value={props?.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
                       setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
                       // setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.email?.length > 0}
+                    disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
                   />
                 )}
               />

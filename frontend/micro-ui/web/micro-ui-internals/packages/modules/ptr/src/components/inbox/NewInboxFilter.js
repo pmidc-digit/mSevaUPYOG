@@ -83,16 +83,13 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
 
   const onRadioChange = (value) => {
     setSelectedAssigned(value);
-    const assigneeCode = value.code === "ASSIGNED_TO_ME" ? uuid : "";
-    const updatedWfFilters = { ...wfFilters, assignee: [{ code: assigneeCode }] };
-    setWfFilters(updatedWfFilters);
+    setWfFilters({ uuid: value }); // ✅ this is what the backend expects
     onFilterChange({
       ..._searchParams,
-      wfFilters: updatedWfFilters,
+      uuid: value, // ✅ send as 'uuid' with code
     });
   };
 
-  console.log("statusMap", statusMap);
 
   return (
     <React.Fragment>

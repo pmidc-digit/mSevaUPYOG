@@ -1,20 +1,34 @@
-import { Card, CardSubHeader, CardSectionHeader, Header, Loader, Row, StatusTable, MultiLink } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useMemo, useState } from "react";
+import {
+  Card,
+  CardSubHeader,
+  CardSectionHeader,
+  Header,
+  Loader,
+  Row,
+  StatusTable,
+  MultiLink,
+  ActionBar,
+  SubmitBar,
+  Menu,
+  Toast,
+} from "@mseva/digit-ui-react-components";
+import React, { useRef, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams, Link } from "react-router-dom";
 import ADSDocument from "../../pageComponents/ADSDocument";
 import ApplicationTable from "../../components/ApplicationTable";
 import { pdfDownloadLink } from "../../utils";
-
+import ADSModal from "../../pageComponents/ADSModal";
 import get from "lodash/get";
 import { size } from "lodash";
-
+import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
 /*
  * ADSApplicationDetails includes hooks for data fetching, translation, and state management.
  * The component displays various application details, such as applicant information,
  * booking data, and related documents, using components  ApplicationTable.
  */
 const ADSApplicationDetails = () => {
+  const [wfActionsState, setWfActionsState] = useState([]); // not strictly required but kept for parity
   const { t } = useTranslation();
   const history = useHistory();
   const { acknowledgementIds, tenantId } = useParams();
@@ -22,11 +36,39 @@ const ADSApplicationDetails = () => {
   const [showOptions, setShowOptions] = useState(false);
   const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
+
+  // removed businessServiceData & businessLoading (we now use workflowDetails)
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const menuRef = useRef();
+  const [actionError, setActionError] = useState(null);
+
+  function normalizeAssignees(assignee) {
+    if (!assignee) return null;
+
+    const extract = (item) => {
+      if (!item) return null;
+      if (typeof item === "string") return item;
+      // common object shapes: { uuid }, { id }, { employeeId }, { code }
+      return item.uuid || item.id || item.employeeId || item.code || null;
+    };
+
+    if (Array.isArray(assignee)) {
+      const mapped = assignee.map((it) => extract(it)).filter(Boolean);
+      return mapped.length ? mapped : null;
+    }
+
+    // single object or string
+    const single = extract(assignee);
+    return single ? [single] : null;
+  }
+
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
-  const { isLoading, isError, error, data, refetch } = Digit.Hooks.ads.useADSSearch({
+  const { isLoading, isError, error, data: adsData, refetch } = Digit.Hooks.ads.useADSSearch({
     tenantId,
     filters: { bookingNo: acknowledgementIds },
   });
@@ -34,8 +76,8 @@ const ADSApplicationDetails = () => {
 
   const [billData, setBillData] = useState(null);
 
-  const BookingApplication = get(data, "bookingApplication", []);
-  const adsId = get(data, "bookingApplication[0].bookingNo", []);
+  const BookingApplication = get(adsData, "bookingApplication", []);
+  const adsId = get(adsData, "bookingApplication[0].bookingNo", []);
 
   let ads_details = (BookingApplication && BookingApplication.length > 0 && BookingApplication[0]) || {};
   const application = ads_details;
@@ -44,16 +86,33 @@ const ADSApplicationDetails = () => {
 
   const [loading, setLoading] = useState(false);
 
-  const fetchBillData = async () => {
-    setLoading(true);
-    const result = await Digit.PaymentService.fetchBill(tenantId, { businessService: "adv-services", consumerCode: acknowledgementIds });
+  const businessServicMINE = "advandhoarding";
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId,
+    id: acknowledgementIds,
+    moduleCode: businessServicMINE,
+  });
 
-    setBillData(result);
-    setLoading(false);
-  };
+  console.log("workflowDetails :>> ", workflowDetails);
+
+  const wfActions =
+    workflowDetails?.data?.nextActions?.map((a) => ({
+      ...a,
+      action: a?.action,
+      buttonLabel: (a?.action || "").replace(/_/g, " ").toUpperCase(),
+      assignee: a?.assignee || null,
+      nextStateUuid: a?.nextState || null,
+    })) || [];
+
   useEffect(() => {
-    fetchBillData();
-  }, [tenantId, acknowledgementIds]);
+    setWfActionsState(wfActions);
+  }, [JSON.stringify(wfActions)]); // stringify so deep changes trigger effect
+
+  // removed refreshBusinessService & its useEffect
+  const closeMenu = () => {
+    setDisplayMenu(false);
+  };
+  Digit.Hooks.useClickOutside && Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
   const { isLoading: auditDataLoading, isError: isAuditError, data: auditResponse } = Digit.Hooks.ads.useADSSearch(
     {
@@ -65,20 +124,11 @@ const ADSApplicationDetails = () => {
     }
   );
 
-  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-    {
-      tenantId: tenantId,
-      businessService: "adv-services",
-      consumerCodes: acknowledgementIds,
-      isEmployee: false,
-    },
-    { enabled: acknowledgementIds ? true : false }
-  );
-
   let docs = [];
-  docs = application?.documents;
+  docs = application?.documents ?? [];
 
-  if (isLoading || auditDataLoading) {
+  // Use workflowDetails.isLoading instead of businessLoading
+  if (isLoading || auditDataLoading || workflowDetails?.isLoading) {
     return <Loader />;
   }
 
@@ -90,7 +140,7 @@ const ADSApplicationDetails = () => {
   }
   // in progress
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let application = data?.bookingApplication?.[0];
+    let application = adsData?.bookingApplication?.[0];
     let fileStoreId = application?.paymentReceiptFilestoreId;
     if (!fileStoreId) {
       let response = { filestoreIds: [payments?.fileStoreId] };
@@ -109,7 +159,7 @@ const ADSApplicationDetails = () => {
     window.open(fileStore[fileStoreId], "_blank");
   }
   async function getPermissionLetter({ tenantId, payments, ...params }) {
-    let application = data?.bookingApplication?.[0];
+    let application = adsData?.bookingApplication?.[0];
     let fileStoreId = application?.permissionLetterFilestoreId;
     if (!fileStoreId) {
       const response = await Digit.PaymentService.generatePdf(tenantId, { bookingApplication: [application] }, "advpermissionletter");
@@ -127,6 +177,136 @@ const ADSApplicationDetails = () => {
     window.open(fileStore[fileStoreId], "_blank");
   }
 
+  function onActionSelect(wfAction) {
+    console.log("selected wfAction:", wfAction);
+    if (!wfAction) return;
+
+    if (wfAction.action === "PAY") {
+      const appNo = ads_details?.bookingNo || acknowledgementIds;
+      return history.push(`/digit-ui/citizen/payment/collect/adv-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
+    }
+
+    if (wfAction.action === "SUBMIT" || wfAction.action === "INITIATE") {
+      const payloadAction = {
+        action: wfAction.action,
+        assignee: wfAction.assignee || null,
+        comment: wfAction.comment || "",
+        nextState: wfAction.nextState || wfAction.nextStateUuid || null,
+        status: wfAction.status || wfAction.nextStateUuid || "",
+      };
+      return submitAction({ Licenses: [payloadAction] });
+    }
+
+    // otherwise open modal and pass raw action object
+    setSelectedAction({
+      action: wfAction.action,
+      assignee: wfAction.assignee || null,
+      comment: wfAction.comment || "",
+      nextState: wfAction.nextState || wfAction.nextStateUuid || null,
+      status: wfAction.status || null,
+      rawAction: wfAction,
+    });
+    setShowModal(true);
+  }
+
+  const submitAction = async (dataPayload) => {
+    const payloadSource = adsData?.bookingApplication?.[0] ?? ads_details ?? null;
+    if (!payloadSource) {
+      setShowToast({ key: "error", message: "Application data not loaded. Try reloading the page." });
+      setActionError("Application data not loaded");
+      return;
+    }
+    console.log("dataPayLoad is :>> ", dataPayload);
+    // Support both shapes: old { Licenses: [...] } or raw object (from wfActions)
+    const filtData = dataPayload?.Licenses?.[0] || dataPayload;
+    const normalizedAssignee = normalizeAssignees(filtData?.assignee || filtData?.assignees || filtData?.assigneeUuid);
+
+    console.log("filtData :>> ", filtData);
+
+    if (!filtData || !filtData.action) {
+      setShowToast({ key: "error", message: "No workflow action provided" });
+      setActionError("No workflow action provided");
+      return;
+    }
+
+    // Find the matching state using live workflowDetails (falls back to filtData.status)
+    const matchingState =
+      workflowDetails?.data?.processInstances?.find((p) => (p?.nextActions || []).some((a) => a?.action === filtData.action))?.state?.state ||
+      filtData.status ||
+      "";
+
+    const formData = {
+      tenantId: tenantId,
+      ...payloadSource,
+      bookingStatus: filtData.status
+        ? filtData.status === "INITIATED"
+          ? "BOOKING_CREATED"
+          : filtData.status === "REFUND"
+          ? "CANCELLED"
+          : filtData.status
+        : filtData.nextState === "INITIATED"
+        ? "BOOKING_CREATED"
+        : filtData.nextState === "REFUND"
+        ? "CANCELLED"
+        : payloadSource?.bookingStatus,
+      documents: payloadSource?.documents || payloadSource?.Documents || [],
+      workflow: {
+        // Use live workflow businessService if available
+        businessService: workflowDetails?.data?.applicationBusinessService || "ADV",
+        states: matchingState || filtData.status || "",
+        action: filtData.action || "",
+        comments: filtData.comment || filtData.action || "",
+        status: filtData.status || filtData.nextState || "",
+        ...(normalizedAssignee ? { assignee: normalizedAssignee } : {}),
+        // assignee: filtData.assignee[0] || filtData.assignee || null,
+      },
+    };
+
+    const requestBody = { bookingApplication: formData };
+    // enforce assignee for FORWARD (same as before)
+    if (!filtData?.assignee && filtData.action === "FORWARD") {
+      setShowToast({ key: "error", message: "Assignee is mandatory" });
+      setActionError("Assignee is mandatory");
+      return;
+    }
+
+    try {
+      if (!Digit?.ADSServices || typeof Digit.ADSServices.update !== "function") {
+        throw new Error("Digit.ADSServices.update is not available in this runtime");
+      }
+
+      const response = await Digit.ADSServices.update(requestBody, tenantId);
+
+      if (response?.ResponseInfo?.status === "SUCCESSFUL" || response?.status === "SUCCESSFUL") {
+        setShowToast({ key: "success", message: "Successfully updated the status" });
+        setActionError("Successfully updated the status");
+
+        // refresh live workflow details so UI picks up new actions
+        workflowDetails?.revalidate?.();
+
+        setTimeout(() => {
+          history.push("/digit-ui/citizen/ads-home");
+        }, 1200);
+
+        setSelectedAction(null);
+        setShowModal(false);
+      } else {
+        console.error("ADS update returned non-successful response:", response);
+        setShowToast({ key: "error", message: (t && t("SOMETHING_WENT_WRONG")) || "Failed to update" });
+        setActionError("Failed to update");
+      }
+    } catch (err) {
+      console.error("submitAction error:", err);
+      if (err?.message && err.message.includes("ADSServices.update is not available")) {
+        setShowToast({ key: "error", message: "Update function not available. Check Digit.ADSServices" });
+        setActionError("Update function not available");
+      } else {
+        setShowToast({ key: "error", message: "Something went wrong" });
+        setActionError("Something went wrong");
+      }
+    }
+  };
+
   const handleDownload = async (document, tenantid) => {
     let tenantId = tenantid ? tenantid : tenantId;
     const res = await Digit.UploadServices.Filefetch([document?.fileStoreId], tenantId);
@@ -136,22 +316,11 @@ const ADSApplicationDetails = () => {
 
   let dowloadOptions = [];
 
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
-    dowloadOptions.push({
-      label: t("ADS_FEE_RECEIPT"),
-      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-    });
-  if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
-    dowloadOptions.push({
-      label: t("ADS_PERMISSION_LETTER"),
-      onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
-    });
-
   const columns = [
     { Header: `${t("ADS_TYPE")}`, accessor: "addType" },
     { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
     { Header: `${t("ADS_NIGHT_LIGHT")}`, accessor: "nightLight" },
-    { Header: `${t("ADS_BOOKING_DATE")}`, accessor: "bookingDate" },
+    { Header: `${t("ADS_BOOKING_START_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
   ];
   const adslistRows =
@@ -180,33 +349,16 @@ const ADSApplicationDetails = () => {
           <StatusTable>
             <Row className="border-none" label={t("ADS_BOOKING_NO")} text={ads_details?.bookingNo} />
           </StatusTable>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_PAYMENT_DETAILS")}</CardSubHeader>
-          <StatusTable>
-            <Row
-              className="border-none"
-              label={t("ADS_TOTAL_AMOUNT")}
-              text={
-                billData?.Bill?.[0]?.totalAmount > 0 ? (
-                  <span>
-                    ₹ {billData?.Bill?.[0]?.totalAmount || t("CS_NA")} <strong style={{ color: "#a82227" }}>({t("PENDING_PAYMENT")})</strong>
-                  </span>
-                ) : (
-                  <span>
-                    ₹ {reciept_data?.Payments?.[0]?.totalAmountPaid || t("CS_NA")} <strong style={{ color: "green" }}>({t("PAYMENT_PAID")})</strong>
-                  </span>
-                )
-              }
-            />
-          </StatusTable>
+
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("ADS_APPLICANT_NAME")} text={ads_details?.applicantDetail?.applicantName || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_MOBILE_NUMBER")} text={ads_details?.applicantDetail?.applicantMobileNo || t("CS_NA")} />
-            <Row
+            {/* <Row
               className="border-none"
               label={t("ADS_ALT_MOBILE_NUMBER")}
               text={ads_details?.applicantDetail?.applicantAlternateMobileNo || t("CS_NA")}
-            />
+            /> */}
             <Row className="border-none" label={t("ADS_EMAIL_ID")} text={ads_details?.applicantDetail?.applicantEmailId || t("CS_NA")} />
           </StatusTable>
 
@@ -244,7 +396,10 @@ const ADSApplicationDetails = () => {
               <ADSDocument value={docs} Code={doc?.documentType} index={index} />
             ))}
           </StatusTable>
+          <ADSWFApplicationTimeline application={application} id={ads_details?.bookingNo} userType={"citizen"} />
         </Card>
+
+        {showToast && <Toast error={showToast.key === "error"} label={actionError || error} onClose={() => setShowToast(null)} />}
       </div>
     </React.Fragment>
   );

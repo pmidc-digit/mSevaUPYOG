@@ -555,7 +555,7 @@ export const convertToStakeholderObject = (data) => {
         tradeLicenseDetail: {
           ...data?.result?.Licenses[0]?.tradeLicenseDetail,
           additionalDetail: {
-            qualificationType: data?.formData?.LicneseType?.qualificationType?.name,
+            qualificationType: typeof data?.formData?.LicneseType?.qualificationType === "string" ? data?.formData?.LicneseType?.qualificationType : data?.formData?.LicneseType?.qualificationType?.name,
             counsilForArchNo: data?.formData?.LicneseType?.ArchitectNo,
             isSelfCertificationRequired: data?.formData?.LicneseType?.selfCertification,
             Ulb: data?.formData?.LicneseDetails?.Ulb,
@@ -572,7 +572,13 @@ export const convertToStakeholderObject = (data) => {
               ...data?.result?.Licenses[0]?.tradeLicenseDetail?.owners?.[0],
               gender: data?.formData?.LicneseDetails?.gender?.code,
               mobileNumber: data?.formData?.LicneseDetails?.mobileNumber,
-              name: data?.formData?.LicneseDetails?.name,
+              name: [
+                data?.formData?.LicneseDetails?.name?.trim(),
+                data?.formData?.LicneseDetails?.middleName?.trim(),
+                data?.formData?.LicneseDetails?.lastName?.trim(),
+              ]
+                .filter(Boolean)
+                .join(" "),
               dob: null,
               emailId: data?.formData?.LicneseDetails?.email,
               permanentAddress:
@@ -609,14 +615,17 @@ export const getUniqueItemsFromArray = (data, identifier) => {
 
 export const convertDateToEpoch = (dateString, dayStartOrEnd = "dayend") => {
   //example input format : "2018-10-02"
+  console.log("dateString", dateString);
   try {
     const parts = dateString.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
     const DateObj = new Date(Date.UTC(parts[1], parts[2] - 1, parts[3]));
     DateObj.setMinutes(DateObj.getMinutes() + DateObj.getTimezoneOffset());
+    console.log("DateObj", DateObj);
     if (dayStartOrEnd === "dayend") {
       DateObj.setHours(DateObj.getHours() + 24);
       DateObj.setSeconds(DateObj.getSeconds() - 1);
     }
+    console.log("DateObj.getTime()", DateObj.getTime());
     return DateObj.getTime();
   } catch (e) {
     return dateString;

@@ -1,4 +1,4 @@
-import { BackButton, CardLabel, FormStep, Loader, MobileNumber, RadioButtons, TextInput, DatePicker } from "@mseva/digit-ui-react-components";
+import { BackButton, CardLabel, FormStep, Loader, MobileNumber, RadioButtons, TextInput, DatePicker, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Timeline from "../components/Timeline";
@@ -54,7 +54,8 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [isPasswordValid, setIsPasswordValid] = useState(true);
-  const [dateOfBirth, setDateOfBirth] = useState(formData?.LicneseDetails?.dateOfBirth || ""); // State for the date field
+  const [dateOfBirth, setDateOfBirth] = useState(formData?.LicneseDetails?.dateOfBirth || formData?.formData?.LicneseDetails?.dateOfBirth || ""); // State for the date field
+  const [age, setAge] = useState(0);
   const [email, setEmail] = useState(
     (!isOpenLinkFlow ? userInfo?.info?.emailId : "") || formData?.LicneseDetails?.email || formData?.formData?.LicneseDetails?.email || ""
   );
@@ -89,6 +90,8 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     }
   };
 
+  const isMobile = window.Digit.Utils.browser.isMobile();
+
   useEffect(() => {
     getUserInfo();
   }, []);
@@ -102,6 +105,21 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       });
     }
   }, [userDetails]);
+
+  useEffect(() => {
+    if (dateOfBirth) {
+      const today = new Date();
+      const birthDate = new Date(dateOfBirth);
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDifference = today.getMonth() - birthDate.getMonth();
+
+      if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+
+      setAge(age);
+    }
+  }, [dateOfBirth]);
   const stateId = Digit.ULBService.getStateId();
 
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
@@ -206,6 +224,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       data.LicneseDetails.gender = gender;
       data.LicneseDetails.email = email;
       data.LicneseDetails.PanNumber = PanNumber;
+      data.LicneseDetails.dateOfBirth = dateOfBirth;
       onSelect("", formData);
     }
     if (age < 18) {
@@ -219,14 +238,14 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
     <div>
       <div className={isOpenLinkFlow ? "OpenlinkContainer" : ""}>
         {isOpenLinkFlow && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        <Timeline currentStep={1} flow="STAKEHOLDER" />
+        {isMobile && <Timeline currentStep={1} flow="STAKEHOLDER" />}
         {!isLoading || !isUserLoading ? (
           <FormStep
             config={config}
-            onSelect={goNext}
-            onSkip={onSkip}
+            // onSelect={goNext}
+            // onSkip={onSkip}
             t={t}
-            isDisabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName || !email}
+            // isDisabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName || !email}
           >
             <div>
               <CardLabel>{t("BPA_FIRST_NAME")}*</CardLabel>
@@ -439,6 +458,13 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
           <Loader />
         )}
       </div>
+      <ActionBar>
+        <SubmitBar
+          label={t("CS_COMMON_NEXT")}
+          onSubmit={goNext}
+          disabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName || !email || (age < 18)}
+        />
+      </ActionBar>
     </div>
   );
 };

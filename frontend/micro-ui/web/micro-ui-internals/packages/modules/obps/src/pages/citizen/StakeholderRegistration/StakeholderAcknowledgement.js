@@ -83,7 +83,7 @@ const StakeholderAcknowledgementChild = ({mutation , applicationNumber, isOpenLi
 
   return !applicationDetails? <Loader /> :(
     <Card>
-          <BannerPicker t={t} data={mutation.data} isSuccess={mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
+          <BannerPicker t={t} data={mutation.data} isSuccess={isStakeholderRegistered || mutation.isSuccess} isLoading={mutation.isIdle || mutation.isLoading} />
           {mutation.isSuccess && <CardText>{`${t(`TRADELICENSE_TRADETYPE_${licenseType}`)}${t(`CS_FILE_STAKEHOLDER_RESPONSE`)}`}</CardText>}
           {!mutation.isSuccess && <CardText>{t("CS_FILE_PROPERTY_FAILED_RESPONSE")}</CardText>}
           {mutation.isSuccess && !isOpenLinkFlow && (
@@ -97,6 +97,91 @@ const StakeholderAcknowledgementChild = ({mutation , applicationNumber, isOpenLi
             </Link>
           )}
           {mutation.isSuccess && (
+            <div style={{ marginTop: "10px" }}>
+              <SubmitBar label={t("CS_COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
+            </div>
+          )}
+          {!isOpenLinkFlow && (
+            <Link to={`/digit-ui/citizen`}>
+              <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
+            </Link>
+          )}
+          {mutation.isSuccess && isOpenLinkFlow && (
+            <Link
+              to={{
+                pathname: `/digit-ui/citizen`,
+              }}
+            >
+              <SubmitBar label={t("BPA_COMMON_PROCEED_NEXT")} />
+            </Link>
+          )}
+        </Card>
+  )
+}
+
+const StakeholderAcknowledgementChildNotMutation = ({mutation , applicationNumber, isOpenLinkFlow}) => {
+  const { t } = useTranslation();
+  const tenantId = window?.localStorage?.getItem("CITIZEN.CITY");
+  const { data: storeData } = Digit.Hooks.useStore.getInitData();
+  const { tenants } = storeData || {};
+  const { data: applicationDetails } = Digit.Hooks.obps.useLicenseDetails(tenantId, { applicationNumber: applicationNumber, tenantId }, {});
+  const licenseType = mutation?.data?.Licenses?.[0]?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType?.split(".")[0] || "ARCHITECT";
+
+  const handleDownloadPdf = async () => {
+    try {
+      const Property = applicationDetails;
+      console.log("applicationDetails in StakeholderAck1", applicationDetails);
+
+      if (!Property) {
+        console.error("No application details found");
+        return;
+      }
+
+      // try to resolve tenantId safely
+      const propertyTenantId =
+        Property?.tenantId || Property?.Licenses?.[0]?.tenantId || Digit.SessionStorage.get("Digit.BUILDING_PERMIT")?.result?.Licenses?.[0]?.tenantId;
+
+      if (!propertyTenantId) {
+        console.error("No tenantId found in applicationDetails or sessionStorage");
+        return;
+      }
+
+      const tenantInfo = tenants?.find((tenant) => tenant.code === propertyTenantId);
+
+      if (!tenantInfo) {
+        console.error("No tenantInfo found for tenantId:", propertyTenantId);
+        return;
+      }
+
+      const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
+      console.log(acknowledgementData, "ACKO");
+
+      Digit.Utils.pdf.generateBPAREG(acknowledgementData);
+    } catch (err) {
+      console.error("Error generating acknowledgement PDF", err);
+    }
+  };
+
+  const isStakeholderRegistered = sessionStorage.getItem("isStakeholderRegistered") || false;
+  const  mutationData = JSON.parse(sessionStorage.getItem("stakeholder.mutationData")) || {};
+
+  console.log("Mutationdata 2", mutation.data)
+
+  return !applicationDetails? <Loader /> :(
+    <Card>
+          <BannerPicker t={t} data={mutationData} isSuccess={isStakeholderRegistered}  />
+          {<CardText>{`${t(`TRADELICENSE_TRADETYPE_${licenseType}`)}${t(`CS_FILE_STAKEHOLDER_RESPONSE`)}`}</CardText>}
+          {!isOpenLinkFlow && (
+            <Link
+              to={{
+                pathname: `/digit-ui/citizen/payment/collect/${mutationData.Licenses[0].businessService}/${mutationData.Licenses[0].applicationNumber}/${mutationData.Licenses[0].tenantId}?tenantId=${mutationData.Licenses[0].tenantId}`,
+                state: { tenantId: mutationData.Licenses[0].tenantId },
+              }}
+            >
+              <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
+            </Link>
+          )}
+          {(
             <div style={{ marginTop: "10px" }}>
               <SubmitBar label={t("CS_COMMON_DOWNLOAD")} onSubmit={handleDownloadPdf} />
             </div>
@@ -136,6 +221,8 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
     data?.result?.Licenses?.[0]?.applicationNumber ||
     mutation?.data?.Licenses?.[0]?.applicationNumber ||
     Digit.SessionStorage.get("Digit.BUILDING_PERMIT")?.result?.Licenses?.[0]?.applicationNumber;
+  
+  const isStakeholderRegistered = sessionStorage.getItem("isStakeholderRegistered") || false;
 
   console.log(applicationNumber, "Application Number");
   useEffect(() => {
@@ -216,7 +303,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
   // console.log("applicationDetails:", applicationDetails);
   // console.log("tenants:", tenants);
 
-  return mutation.isLoading || mutation.isIdle ? (
+  return !isStakeholderRegistered &&(mutation.isLoading || mutation.isIdle) ? (
     <Loader />
   ) : (
     <div>
@@ -258,7 +345,7 @@ const StakeholderAcknowledgement = ({ data, onSuccess }) => {
             </Link>
           )}
         </Card> */}
-        <StakeholderAcknowledgementChild {...{applicationNumber, mutation, isOpenLinkFlow}} />
+        {isStakeholderRegistered? <StakeholderAcknowledgementChildNotMutation {...{applicationNumber, mutation, isOpenLinkFlow}} /> :<StakeholderAcknowledgementChild {...{applicationNumber, mutation, isOpenLinkFlow}} />}
       </div>
     </div>
     // </div>

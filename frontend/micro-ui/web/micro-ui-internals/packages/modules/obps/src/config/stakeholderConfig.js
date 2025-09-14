@@ -17,12 +17,13 @@ export const newConfig = [
             headerCaption: "BPA_LICENSE_DET_CAPTION",
             header: "BPA_LICENSE_TYPE",
             cardText: "BPA_LICENSE_TYPE_TEXT",
-            submitBarLabel: "CS_COMMON_NEXT",
+            // submitBarLabel: "CS_COMMON_NEXT",  
           },
           nextStep: "license-details",
           key: "LicneseType",
           withoutLabel: true,
           hideInEmployee: true,
+          step: "1"
         },
         {
           type: "component",
@@ -33,12 +34,13 @@ export const newConfig = [
             headerCaption: "BPA_LICENSE_DET_CAPTION",
             header: "BPA_LICENSE_DET_CAPTION",
             cardText: "BPA_LICENSE_DETAILS_TEXT",
-            submitBarLabel: "CS_COMMON_NEXT",
+            // submitBarLabel: "CS_COMMON_NEXT",
           },
           nextStep: "Permanent-address",
           key: "LicneseDetails",
           withoutLabel: true,
           hideInEmployee: true,
+          step: "1"
         },
         {
             type: "component",
@@ -48,13 +50,14 @@ export const newConfig = [
             texts: {
               headerCaption: "BPA_NEW_ADDRESS_HEADER_DETAILS",
               header: "BPA_LICENSEE_PERM_ADDR_HEADER",
-              cardText: "BPA_LICENSEE_PERMANENT_TEXT",
-              submitBarLabel: "CS_COMMON_NEXT",
+              cardText: "BPA_LICENSEE_CORRESPONDENCE_TEXT",
+              // submitBarLabel: "CS_COMMON_NEXT",
             },
             nextStep: "correspondence-address",
             key: "LicneseDetails",
             withoutLabel: true,
             hideInEmployee: true,
+            step: "2"
           },
         {
             type: "component",
@@ -64,13 +67,14 @@ export const newConfig = [
             texts: {
               headerCaption: "BPA_NEW_ADDRESS_HEADER_DETAILS",
               header: "BPA_LICENSEE_CORRESPONDENCE_LABEL",
-              cardText: "BPA_LICENSEE_CORRESPONDENCE_TEXT",
-              submitBarLabel: "CS_COMMON_NEXT",
+              // cardText: "BPA_LICENSEE_CORRESPONDENCE_TEXT",
+              // submitBarLabel: "CS_COMMON_NEXT",
             },
             nextStep: "stakeholder-document-details",
             key: "LicneseDetails",
             withoutLabel: true,
             hideInEmployee: true,
+            step: "2"
         },
         {
             route: "stakeholder-document-details",
@@ -80,8 +84,9 @@ export const newConfig = [
             texts: {
               headerCaption: "BPA_DOCUMENT_DETAILS_LABEL",
               header: "BPA_LICENSEE_DOCUMENT_DETAILS_HEADER",
-              submitBarLabel: "CS_COMMON_NEXT"
-            }
+              // submitBarLabel: "CS_COMMON_NEXT"
+            },
+            step: "3"
         },
 
 

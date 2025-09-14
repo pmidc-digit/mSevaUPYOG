@@ -957,7 +957,7 @@ const WrapPaymentComponent = (props) => {
           </Link>
         </div>
       )}
-      {business_service?.includes("PT") ? (
+      {/* {business_service?.includes("PT") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -965,17 +965,17 @@ const WrapPaymentComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
+      ) : null} */}
 
-      {/* <div
+      <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
           onClick={printReciept}
         >
           {t("CS_DOWNLOAD_RECEIPT")}
-        </div> */}
+        </div>
 
-      {business_service?.includes("WS") ? (
+      {/* {business_service?.includes("WS") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -983,8 +983,8 @@ const WrapPaymentComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("SW") ? (
+      ) : null} */}
+      {/* {business_service?.includes("SW") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -992,8 +992,8 @@ const WrapPaymentComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("FSM") ? (
+      ) : null} */}
+      {/* {business_service?.includes("FSM") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1001,8 +1001,8 @@ const WrapPaymentComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("BPA") ? (
+      ) : null} */}
+      {/* {business_service?.includes("BPA") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1010,7 +1010,7 @@ const WrapPaymentComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
+      ) : null} */}
       {!(business_service == "TL") ||
          (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
       {!(business_service == "TL") ||
@@ -1937,7 +1937,7 @@ const WrapPaymentZeroComponent = (props) => {
           </Link>
         </div>
       )} */}
-      {business_service?.includes("PT") ? (
+      {/* {business_service?.includes("PT") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1945,8 +1945,8 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("WS") ? (
+      ) : null} */}
+      {/* {business_service?.includes("WS") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1954,8 +1954,8 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("SW") ? (
+      ) : null} */}
+      {/* {business_service?.includes("SW") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1963,8 +1963,8 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("FSM") ? (
+      ) : null} */}
+      {/* {business_service?.includes("FSM") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1972,8 +1972,8 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("BPA") ? (
+      ) : null} */}
+      {/* {business_service?.includes("BPA") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1981,7 +1981,7 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
+      ) : null} */}
       {!(business_service == "TL") ||
         (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
       {!(business_service == "TL") ||

@@ -83,12 +83,14 @@ public class PaymentNotificationService {
 						.build();
 				CommunityHallBookingRequest bookingRequest = CommunityHallBookingRequest.builder()
 						.requestInfo(paymentRequest.getRequestInfo()).hallsBookingApplication(bookingDetail).build();
-				
+
+				//Call Workflow to initiate the process-instance with action-PAY
+				updateWorkflowStatus(paymentRequest);
+
 				//now updating booking status directly using jdbc template
 				//deleting booking timer
 				bookingService.updateBookingSynchronously(bookingRequest, paymentRequest.getPayment().getPaymentDetails().get(0), BookingStatusEnum.BOOKED,
 						true);
-				
 			}
 		} catch (IllegalArgumentException e) {
 			log.error("Illegal argument exception occured while sending notification CHB : " + e.getMessage());
@@ -122,7 +124,6 @@ public class PaymentNotificationService {
 		processInstance.setAssignes(null);
 
 		return processInstance;
-
 	}
 
 	public State callWorkFlow(ProcessInstanceRequest workflowReq) {

@@ -33,6 +33,7 @@ import org.upyog.chb.web.models.CommunityHallBookingRequest;
 import org.upyog.chb.web.models.CommunityHallBookingSearchCriteria;
 import org.upyog.chb.web.models.CommunityHallSlotAvailabilityDetail;
 import org.upyog.chb.web.models.CommunityHallSlotAvailabilityResponse;
+import org.upyog.chb.web.models.workflow.ProcessInstance;
 import org.upyog.chb.web.models.CommunityHallSlotSearchCriteria;
 
 import digit.models.coremodels.PaymentDetail;
@@ -83,7 +84,7 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		// 2. Add fields that has custom logic like booking no, ids using UUID
 		enrichmentService.enrichCreateBookingRequest(communityHallsBookingRequest);
 		
-		//ENcrypt PII data of applicant
+		//ENcrypt PII data of applicant for storage
 		encryptionService.encryptObject(communityHallsBookingRequest);
 
 		/**
@@ -97,12 +98,15 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 			workflowService.updateWorkflow(communityHallsBookingRequest, WorkflowStatus.CREATE);
 		}
 
-		demandService.createDemand(communityHallsBookingRequest, mdmsData, true);
-
 		// 4.Persist the request using persister service
 		bookingRepository.saveCommunityHallBooking(communityHallsBookingRequest);
 
-		return communityHallsBookingRequest.getHallsBookingApplication();
+		// 5. Decrypt the data before returning to client
+		CommunityHallBookingDetail decryptedBookingDetail = encryptionService.decryptObject(
+				communityHallsBookingRequest.getHallsBookingApplication(), 
+				communityHallsBookingRequest.getRequestInfo());
+
+		return decryptedBookingDetail;
 	}
 	
 	@Override
@@ -190,7 +194,16 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 	@Override
 	public CommunityHallBookingDetail updateBooking(CommunityHallBookingRequest communityHallsBookingRequest,
 			PaymentDetail paymentDetail, BookingStatusEnum status) {
+		
+		// Add null safety checks
+		if (communityHallsBookingRequest == null || communityHallsBookingRequest.getHallsBookingApplication() == null) {
+			throw new CustomException("INVALID_REQUEST", "Booking request or booking application cannot be null");
+		}
+		
 		String bookingNo = communityHallsBookingRequest.getHallsBookingApplication().getBookingNo();
+		// Extract tenant ID from booking application (same as create method)
+		String tenantId = communityHallsBookingRequest.getHallsBookingApplication().getTenantId().split("\\.")[0];
+		Object mdmsData = mdmsUtil.mDMSCall(communityHallsBookingRequest.getRequestInfo(), tenantId);
 		log.info("Updating booking for booking no : " + bookingNo);
 		if (bookingNo == null) {
 			throw new CustomException("INVALID_BOOKING_CODE",
@@ -206,10 +219,26 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		
 		hallBookingValidator.validateUpdate(communityHallsBookingRequest.getHallsBookingApplication(), bookingDetails.get(0));
 
+		// Preserve the workflow object from request before converting
+		ProcessInstance workflowFromRequest = communityHallsBookingRequest.getHallsBookingApplication().getWorkflow();
+		
 		convertBookingRequest(communityHallsBookingRequest, bookingDetails.get(0));
+		
+		// Restore the workflow object from the original request (don't let DB data overwrite it)
+		if (workflowFromRequest != null) {
+			communityHallsBookingRequest.getHallsBookingApplication().setWorkflow(workflowFromRequest);
+		}
 
 		// Only enrich with audit details and workflow metadata - no manual status setting
 		enrichmentService.enrichUpdateBookingRequest(communityHallsBookingRequest, null);
+
+		// Check if workflow and action are not null before accessing
+		if(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null 
+				&& communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction() != null
+				&& communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction().equalsIgnoreCase("VERIFIED"))
+		{
+			demandService.createDemand(communityHallsBookingRequest, mdmsData, true);
+		}
 		
 		//Update workflow for status transitions - only if workflow object is provided in request
 		if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null 
@@ -225,7 +254,13 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		bookingRepository.updateBooking(communityHallsBookingRequest);
 		log.info("fetched booking detail and updated status "
 				+ communityHallsBookingRequest.getHallsBookingApplication().getBookingStatus());
-		return communityHallsBookingRequest.getHallsBookingApplication();
+		
+		// Decrypt the data before returning to client
+		CommunityHallBookingDetail decryptedBookingDetail = encryptionService.decryptObject(
+				communityHallsBookingRequest.getHallsBookingApplication(), 
+				communityHallsBookingRequest.getRequestInfo());
+				
+		return decryptedBookingDetail;
 	}
 	
 	/**

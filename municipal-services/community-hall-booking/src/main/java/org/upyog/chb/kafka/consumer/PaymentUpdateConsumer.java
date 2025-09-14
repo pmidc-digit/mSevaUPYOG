@@ -38,7 +38,6 @@ public class PaymentUpdateConsumer {
 		} catch (JsonProcessingException e) {
 			log.error("Exception occurred while processing payment reciept : ", e.getMessage());
 		}
-
 	}
 	
 	@KafkaListener(topics = { "${kafka.topics.update.pg.txns}" })

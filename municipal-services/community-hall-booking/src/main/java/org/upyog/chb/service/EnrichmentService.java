@@ -118,8 +118,8 @@ public class EnrichmentService {
 		
 		// Enrich workflow metadata if workflow object exists
 		if (bookingDetail.getWorkflow() != null) {
-			bookingDetail.getWorkflow().setBusinessService("CHB");
-			bookingDetail.getWorkflow().setModuleName("CHB");
+			bookingDetail.getWorkflow().setBusinessService(config.getBusinessServiceName());
+			bookingDetail.getWorkflow().setModuleName(config.getModuleName());
 			bookingDetail.getWorkflow().setTenantId(bookingDetail.getTenantId());
 			bookingDetail.getWorkflow().setBusinessId(bookingDetail.getBookingNo());
 		}

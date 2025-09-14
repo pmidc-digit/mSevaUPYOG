@@ -285,21 +285,23 @@ async function selectfiles(e) {
   try {
   
     const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
-    if (response?.data?.files?.length > 0) {
-      const fileStoreId = response.data.files[0].fileStoreId;
-      setUploadedFile(fileStoreId);
-console.log("Uploaded FileStoreId:", fileStoreId);
+if (response?.data?.files?.length > 0) {
+  const fileStoreId = response.data.files[0].fileStoreId;
+  setUploadedFile(fileStoreId);
+  console.log("Uploaded FileStoreId:", fileStoreId);
+
+  setSitePhotoGraph(fileStoreId);
+
+  // 🔥 Update formData
+  formData.documents = { ...formData.documents, sitePhotoGraph: fileStoreId };
+
+  // 🔥 Persist in sessionStorage so update API can pick it later
+  sessionStorage.setItem("BUILDING_PERMIT", JSON.stringify(formData));
+} else {
+  setError("File upload failed");
+}
 
 
-      setSitePhotoGraph(fileStoreId);
-      formData.documents = { ...formData.documents, sitePhotoGraph: fileStoreId };
-
-
-  
-
-    } else {
-      setError("File upload failed");
-    }
   } catch (err) {
     setError("File upload error");
   }finally{

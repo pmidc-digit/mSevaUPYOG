@@ -5,6 +5,7 @@ import { useRouteMatch, useLocation, useHistory, Switch, Route, Redirect } from 
 import { newConfig as newConfigBPA } from "../../../config/buildingPermitConfig";
 import { newConfig1 } from "./NewConfig";
 import Stepper from "../../../../../../react-components/src/customComponents/Stepper";
+import { Loader } from "@mseva/digit-ui-react-components";
 // import CheckPage from "./CheckPage";
 // import OBPSAcknowledgement from "./OBPSAcknowledgement";
 
@@ -16,473 +17,6 @@ const getPath = (path, params) => {
   return path;
 };
 
-// const NewBuildingPermit = () => {
-//   const queryClient = useQueryClient();
-//   const { t } = useTranslation();
-//   const { path, url } = useRouteMatch();
-//   const { pathname, state } = useLocation();
-//   const match = useRouteMatch();
-//   const history = useHistory();
-//   const location = useLocation();
-//   Digit.SessionStorage.set("OBPS_PT", "true");
-//   sessionStorage.removeItem("BPA_SUBMIT_APP");
-// const currentRoute = pathname.split("/").pop();
-
-// const [applicationId, setApplicationId] = useState(null)
-
-
-
-// // find index of the current step
-// // const currentStep = newConfig1.findIndex((r) => r.route === currentRoute);
-
-
-
-
-
-//   const stepNumbers = {
-//   "docs-required": 1,
-//   "basic-details": 2,
-//   "plots-details": 3,
-//   "scrutiny-details" : 4,
-//   "location" : 5,
-//   "additional-building-details" : 6,
-//   "owner-details": 7,
-//   "document-details": 8,
-//   "check": 9
-// };
-
-// const createEmployeeConfig = [
-//   {
-//     head: "DOCUMENT DETAILS",
-//     stepLabel: "Documents",
-//     stepNumber: 1,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "dummy",
-//     key: "applicationDetails",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "CS_COMMON_NEXT",
-//     },
-//   },
-//   {
-//     head: "SCRUTINY DETAIL",
-//     stepLabel: "Application Detail",
-//     stepNumber: 2,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "dummy",
-//     key: "siteDetails",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "CS_COMMON_NEXT",
-//     },
-//   },
-//   {
-//     head: "PLOT DETAILS",
-//     stepLabel: "Plot Detail",
-//     stepNumber: 3,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "dummy",
-//     key: "documents",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "CS_COMMON_NEXT",
-//     },
-//   },
-//   {
-//     head: "SCRUTINY DETAILS",
-//     stepLabel: "Scrutiny",
-//     stepNumber: 4,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "dummy",
-//     key: "summary",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "CS_COMMON_SUBMIT",
-//     },
-//   },
-//     {
-//     head: "LOCATION DETAILS",
-//     stepLabel: "Location Detail",
-//     stepNumber: 5,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "dummy",
-//     key: "summary",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "CS_COMMON_SUBMIT",
-//     },
-//   },
-//   {
-//     head: "BUILDING DETAILS",
-//     stepLabel: "Building Detail",
-//     stepNumber: 6,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "dummy",
-//     key: "summary",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "CS_COMMON_SUBMIT",
-//     },
-//   },
-//   {
-//     head: "OWNER DETAILS",
-//     stepLabel: "Owner Detail",
-//     stepNumber: 7,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "dummy",
-//     key: "summary",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "CS_COMMON_SUBMIT",
-//     },
-//   },
-//   {
-//     head: " DOCUMENTS DETAILS",
-//     stepLabel: "Documents",
-//     stepNumber: 8,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "dummy",
-//     key: "summary",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "CS_COMMON_SUBMIT",
-//     },
-//   },
-//   {
-//     head: "SUMMARY DETAILS",
-//     stepLabel: "Summary ",
-//     stepNumber: 9,
-//     isStepEnabled: true,
-//     type: "component",
-//     component: "dummy",
-//     key: "summary",
-//     withoutLabel: true,
-//     texts: {
-//       submitBarLabel: "CS_COMMON_SUBMIT",
-//     },
-//   },
-
-
-// ];
-
-//   const currentStep = createEmployeeConfig.findIndex((r) => r.route === currentRoute);
-// const safeStep = currentStep >= 0 ? currentStep + 1 : 1;
-  
-//   const tenantId = window.location.href.includes("citizen") ? localStorage.getItem("CITIZEN.CITY") : Digit.ULBService.getCurrentTenantId();
-//   // const { mutate: updateApplication, isLoading } = Digit.Hooks.obps.useObpsAPI(tenantId);
-//   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(
-//     "BUILDING_PERMIT",
-//     state?.edcrNumber ? { data: { scrutinyNumber: { edcrNumber: state?.edcrNumber } } } : {}
-//   );
-//   const stateId = Digit.ULBService.getStateId();
-//   let { data: newConfig } = Digit.Hooks.obps.SearchMdmsTypes.getFormConfig(stateId, []);
-//   console.log(newConfig, "DATATATATA");
-//   const goNext = (skipStep) => {
-//     const currentPath = pathname.split("/").pop();
-//     const { nextStep } = newConfig1.find((routeObj) => routeObj.route === currentPath);
-//     let redirectWithHistory = history.push;
-//     if (nextStep === null) {
-//       return redirectWithHistory(`${getPath(match.path, match.params)}/check`);
-//     }
-//     redirectWithHistory(`${getPath(match.path, match.params)}/${nextStep}`);
-//   };
-
-//   const onSuccess = () => {
-//     //clearParams();
-//     queryClient.invalidateQueries("PT_CREATE_PROPERTY");
-//   };
-//   const createApplication = async (data) => {
-//     const response = await Digit.OBPSService.scrutinyDetails(data?.tenantId, {
-//       edcrNumber: data?.edcrNumber,
-//     });
-//     console.log(response, "RESPO");
-//     history.push(`${getPath(match.path, match.params)}/acknowledgement`);
-//   };
-
-
-//   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
-//     let updatedParams
-
-//     if (isFromCreateApi) {
-//       setParams(data)
-//       updatedParams = data
-//     } else if (key === "") {
-//       updatedParams = { ...data }
-//       setParams(updatedParams)
-//     } else {
-//       updatedParams = { ...params, ...{ [key]: { ...params[key], ...data } } }
-//       setParams(updatedParams)
-//     }
-
-//     console.log("payload on handleSelect", updatedParams)
-
-//     saveDraft(updatedParams)
-
-//     goNext(skipStep)
-//   }
-
-
-//   const handleSkip = () => {};
-
-//   // const state = tenantId.split(".")[0];
-//   let config = [];
-//   newConfig = newConfig?.BuildingPermitConfig ? newConfig?.BuildingPermitConfig : newConfigBPA;
-//   newConfig.forEach((obj) => {
-//     config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
-//   });
-//   config.indexRoute = "docs-required";
-
-//   useEffect(() => {
-//     if (sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
-//       clearParams();
-//       sessionStorage.setItem("isPermitApplication", false);
-//     }
-//   }, []);
-
-//   const CheckPage = Digit?.ComponentRegistryService?.getComponent("BPACheckPage");
-//   const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
-
-
-//   const saveDraft = async (formData) => {
-//     try {
-//       const currentStepNumber = stepNumbers[currentRoute] || 1
-
-//       const payload = {}
-//       payload.edcrNumber = formData?.data?.scrutinyNumber?.edcrNumber || ""
-//       payload.riskType = formData?.data?.riskType || ""
-//       payload.applicationType = formData?.data?.applicationType || ""
-//       payload.serviceType = formData?.data?.serviceType || ""
-
-//       const userInfo = JSON.parse(localStorage.getItem("user-info") || "{}")
-//       const accountId = userInfo?.uuid
-
-//       payload.tenantId = tenantId
-//       payload.accountId = accountId
-
-//       // Documents handling
-//       const docsFromForm = formData?.documents?.documents || []
-//       payload.documents = docsFromForm.length > 0 ? docsFromForm : []
-
-//       // Additional Details - comprehensive structure matching owner-detail
-//       payload.additionalDetails = { GISPlaceName: formData?.address?.placeName || "" }
-//       payload.additionalDetails.boundaryWallLength = formData?.data?.boundaryWallLength || ""
-//       payload.additionalDetails.area =
-//         formData?.data?.edcrDetails?.planDetail?.planInformation?.plotArea?.toString() || ""
-//       payload.additionalDetails.height =
-//         formData?.data?.edcrDetails?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString() || ""
-//       payload.additionalDetails.usage = formData?.data?.occupancyType || ""
-//       payload.additionalDetails.builtUpArea =
-//         formData?.data?.edcrDetails?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString() || ""
-
-//       // Owner name from owners array or fallback
-//       const owners = formData?.owners?.owners || []
-//       payload.additionalDetails.ownerName = owners.length > 0 ? owners.map((obj) => obj.name || "").join(",") : ""
-
-//       // Conditional fields - only add if data exists, otherwise empty string
-//       payload.additionalDetails.registrationDetails = formData?.data?.registrationDetails || ""
-//       payload.additionalDetails.applicationType = formData?.data?.applicationType || ""
-//       payload.additionalDetails.serviceType = formData?.data?.serviceType || ""
-//       payload.additionalDetails.wardnumber = formData?.data?.wardnumber || ""
-//       payload.additionalDetails.zonenumber = formData?.data?.zonenumber || ""
-//       payload.additionalDetails.khasraNumber = formData?.data?.khasraNumber || ""
-//       payload.additionalDetails.architectid = formData?.data?.architectid || ""
-//       payload.additionalDetails.propertyuid = formData?.data?.propertyuid || ""
-//       payload.additionalDetails.bathnumber = formData?.data?.bathnumber || ""
-//       payload.additionalDetails.kitchenNumber = formData?.data?.kitchenNumber || ""
-//       payload.additionalDetails.approxinhabitants = formData?.data?.approxinhabitants || ""
-//       payload.additionalDetails.materialusedinfloor = formData?.data?.materialusedinfloor || ""
-//       payload.additionalDetails.distancefromsewer = formData?.data?.distancefromsewer || ""
-//       payload.additionalDetails.sourceofwater = formData?.data?.sourceofwater || ""
-//       payload.additionalDetails.watercloset = formData?.data?.watercloset || ""
-//       payload.additionalDetails.materialused = formData?.data?.materialused || ""
-//       payload.additionalDetails.materialusedinroofs = formData?.data?.materialusedinroofs || ""
-
-//       // Owner-specific additional details
-//       payload.additionalDetails.approvedColony = formData?.owners?.approvedColony?.code || ""
-//       payload.additionalDetails.buildingStatus = formData?.owners?.buildingStatus?.code || ""
-//       payload.additionalDetails.greenbuilding = formData?.owners?.greenbuilding?.code || ""
-//       payload.additionalDetails.masterPlan = formData?.owners?.masterPlan?.code || ""
-//       payload.additionalDetails.proposedSite = formData?.owners?.proposedSite?.code || ""
-//       payload.additionalDetails.purchasedFAR = formData?.owners?.purchasedFAR?.code || ""
-//       payload.additionalDetails.restrictedArea = formData?.owners?.restrictedArea?.code || ""
-//       payload.additionalDetails.schemes = formData?.owners?.schemes?.i18nKey || ""
-
-//       if (formData?.owners?.UlbName?.code) {
-//         payload.additionalDetails.UlbName = formData.owners.UlbName.code
-//           .toLowerCase()
-//           .replace(/^\w/, (c) => c.toUpperCase())
-//       } else {
-//         payload.additionalDetails.UlbName = ""
-//       }
-
-//       payload.additionalDetails.District = formData?.owners?.District?.code || ""
-//       payload.additionalDetails.nameofApprovedcolony = formData?.owners?.nameofApprovedcolony || ""
-//       payload.additionalDetails.NocNumber = formData?.owners?.NocNumber || ""
-//       payload.additionalDetails.coreArea = formData?.owners?.coreArea?.code || ""
-//       payload.additionalDetails.schemesselection = formData?.owners?.schemesselection?.i18nKey || ""
-//       payload.additionalDetails.schemeName = formData?.owners?.schemeName || ""
-//       payload.additionalDetails.transferredscheme = formData?.owners?.transferredscheme || ""
-//       payload.additionalDetails.Ulblisttype = formData?.owners?.Ulblisttype?.value || ""
-//       payload.additionalDetails.uploadedFileNoc = formData?.owners?.uploadedFile || ""
-//       payload.additionalDetails.rating = formData?.owners?.rating?.code || ""
-//       payload.additionalDetails.uploadedFileGreenBuilding = formData?.owners?.greenuploadedFile || ""
-//       payload.additionalDetails.use = formData?.owners?.use?.code || ""
-
-//       // Architect info
-//       payload.additionalDetails.architectName = userInfo?.name || ""
-//       payload.additionalDetails.architectMobileNumber = userInfo?.mobileNumber || ""
-
-//       // Session storage architect info (fallback to empty strings)
-//       payload.additionalDetails.typeOfArchitect = "ARCHITECT"
-//       payload.additionalDetails.stakeholderName = ""
-//       payload.additionalDetails.stakeholderRegistrationNumber = ""
-//       payload.additionalDetails.stakeholderAddress = ""
-//       payload.additionalDetails.isSelfCertificationRequired = "false"
-
-//       // Land Info structure
-//       payload.landInfo = {}
-//       payload.landInfo.address = {}
-
-//       payload.landInfo.address.city = formData?.address?.city?.code || tenantId
-
-//       if (formData?.address?.locality?.code) {
-//         payload.landInfo.address.locality = { code: formData.address.locality.code }
-//       } else {
-//         payload.landInfo.address.locality = { code: tenantId }
-//       }
-
-//       payload.landInfo.address.pincode = formData?.address?.pincode || ""
-//       payload.landInfo.address.landmark = formData?.address?.landmark || ""
-//       payload.landInfo.address.street = formData?.address?.street || ""
-//       payload.landInfo.address.geoLocation = formData?.address?.geoLocation || {}
-
-//       // Owners conversion
-//       const conversionOwners = []
-//       if (owners.length > 0) {
-//         owners.forEach((owner) => {
-//           conversionOwners.push({
-//             ...owner,
-//             active: true,
-//             name: owner.name || "",
-//             emailId: owner.emailId || "",
-//             aadharNumber: owner.aadharNumber || "",
-//             mobileNumber: owner.mobileNumber || "",
-//             isPrimaryOwner: owner.isPrimaryOwner || false,
-//             gender: owner.gender?.code || owner.gender || "",
-//             fatherOrHusbandName: "NAME",
-//           })
-//         })
-//       }
-
-//       payload.landInfo.owners = conversionOwners
-//       payload.landInfo.ownershipCategory =
-//         formData?.owners?.ownershipCategory?.code || formData?.owners?.ownershipCategory || ""
-//       payload.landInfo.tenantId = tenantId
-
-//       // Units - fallback to empty array if not available
-//       payload.landInfo.unit = formData?.landInfo?.unit || []
-
-//       const requestPayload = {
-//         BPA: payload,
-//         RequestInfo: {
-//           apiId: "Rainmaker",
-//           authToken: localStorage.getItem("token") || "",
-//           userInfo: userInfo,
-//           msgId: `${Date.now()}|en_IN`,
-//           plainAccessRequest: {},
-//         },
-//       }
-
-//     if (currentStepNumber < 3) {
-//       console.log("Skipping API call before step 3. Only saving formData locally.");
-//       return;
-//     }
-
-//     if (currentStepNumber === 3 && !applicationId) {
-//       console.log(">>> CREATE API at step 3");
-//       requestPayload.BPA.workflow = {
-//         action: "INITIATE",
-//         assignes: [userInfo.uuid],
-//       };
-
-//       const res = await Digit.OBPSService.create(requestPayload, tenantId);
-//       console.log("Create API response:", res);
-
-//       setApplicationId(res.BPA.applicationNo);
-//       setParams(res.BPA);
-//       return;
-//     }
-
-//     console.log(">>> UPDATE API (Save Draft), step:", currentStepNumber);
-//     requestPayload.BPA.workflow = { action: "SAVE_AS_DRAFT" };
-
-//     if (applicationId) {
-//       requestPayload.BPA.applicationNo = applicationId;
-//     }
-
-//     const res = await Digit.OBPSService.update(requestPayload, tenantId);
-//     console.log("Updated Draft:", res);
-//     setParams(res.BPA);
-
-//   } catch (err) {
-//     console.error("Save draft failed:", err);
-//   }
-// };
-
-
-//   return (
-//     <div className="card" style={{display: "flex", flexDirection: "row", paddingTop:"100px", border:"none", boxShadow:"none"}}>
-//       <div style={{width:"fit-content"}}>
-
-//     <Stepper style={{marginRight:"100px",display:"flex", flexDirection:"row", justifyContent:"flex-start", width:"auto", maxWidth: "fit-content" }} stepsList={createEmployeeConfig} step={safeStep}  />
-//       </div>
-//    <div style={{width:"100%", marginLeft:"100px"}}>
-//      <Switch >
-//       {newConfig1.map((routeObj, index) => {
-//         const { component, texts, inputs, key, currentStep } = routeObj;
-//         const Component = typeof component === "string" ? Digit.ComponentRegistryService.getComponent(component) : component;
-
-//         return (
-
-//            <Route path={`${getPath(match.path, match.params)}/${routeObj.route}`} key={index}>
-//             <Component style={{width:"100%"}}
-//               config={{ texts, inputs, key }}
-//               onSelect={handleSelect}
-//               onSkip={handleSkip}
-//               t={t}
-//               formData={params}
-//             />
-//           </Route>
-
-
-
-//         );
-//       })}
-//       <Route path={`${getPath(match.path, match.params)}/check`}>
-//         <CheckPage onSubmit={createApplication} value={params} />
-//       </Route>
-//       <Route path={`${getPath(match.path, match.params)}/acknowledgement`}>
-//         <OBPSAcknowledgement data={params} onSuccess={onSuccess} />
-//       </Route>
-//       <Route>
-//         <Redirect to={`${getPath(match.path, match.params)}/${config.indexRoute}`} />
-//       </Route>
-//     </Switch>
-//    </div>
-//     </div>
-//   );
-// };
-
-// export default NewBuildingPermit;
-
 
 const NewBuildingPermit = () => {
   const queryClient = useQueryClient()
@@ -493,7 +27,7 @@ const NewBuildingPermit = () => {
   const history = useHistory()
   const location = useLocation()
 
-  // Set session storage
+
   if (typeof Digit !== "undefined") {
     Digit.SessionStorage.set("OBPS_PT", "true")
   }
@@ -502,8 +36,9 @@ const NewBuildingPermit = () => {
   const currentRoute = pathname.split("/").pop()
   const [applicationId, setApplicationId] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [createApiResponse, setCreateApiResponse] = useState(null)
 
-  // Fixed step numbers mapping
+
   const stepNumbers = {
     "docs-required": 1,
     "basic-details": 2,
@@ -516,7 +51,6 @@ const NewBuildingPermit = () => {
     "check": 9,
   }
 
-  // Fixed stepper configuration with proper route mapping
   const createEmployeeConfig = [
     {
       head: "DOCUMENT DETAILS",
@@ -648,7 +182,7 @@ const NewBuildingPermit = () => {
 
   const getCurrentStep = () => {
     const stepNumber = stepNumbers[currentRoute]
-    console.log("[v0] Current route:", currentRoute, "Step number:", stepNumber)
+    console.log("  Current route:", currentRoute, "Step number:", stepNumber)
     return stepNumber || 1
   }
 
@@ -675,6 +209,7 @@ const NewBuildingPermit = () => {
 
   console.log(newConfig, "DATATATATA")
 
+
   const goNext = (skipStep) => {
     const currentPath = pathname.split("/").pop()
     const currentConfigItem = newConfig1.find((routeObj) => routeObj.route === currentPath)
@@ -694,310 +229,593 @@ const NewBuildingPermit = () => {
   }
 
   const onSuccess = () => {
-    if (clearParams) clearParams()
+    //clearParams();
     queryClient.invalidateQueries("PT_CREATE_PROPERTY")
   }
 
-  const createApplication = async (data) => {
-    if (typeof Digit !== "undefined") {
-      const response = await Digit.OBPSService.scrutinyDetails(data?.tenantId, {
-        edcrNumber: data?.edcrNumber,
-      })
-      console.log(response, "RESPO")
-    }
-    history.push(`${getPath(match.path, match.params)}/acknowledgement`)
-  }
 
-  const handleSelect = async (key, data, skipStep, isFromCreateApi) => {
+  const createApplication = async (data) => {
     setIsLoading(true)
 
-    let updatedParams
-
-    if (isFromCreateApi) {
-      setParams(data)
-      updatedParams = data
-    } else if (key === "") {
-      updatedParams = { ...data }
-      setParams(updatedParams)
-    } else {
-      updatedParams = { ...params, ...{ [key]: { ...params[key], ...data } } }
-      setParams(updatedParams)
-    }
-
-    console.log("[v0] payload on handleSelect", updatedParams)
-
     try {
-      await saveDraft(updatedParams)
-      goNext(skipStep)
-    } catch (error) {
-      console.error("[v0] Error in handleSelect:", error)
-      // Don't navigate if API call fails
-    } finally {
+      const userInfo = Digit.UserService.getUser()
+      const accountId = userInfo?.info?.uuid
+      const actualTenantId = localStorage.getItem("CITIZEN.CITY") || userInfo?.info?.tenantId || tenantId || "pb"
+
+      const payload = {
+        ...data,
+        workflow: { action: "SEND_TO_CITIZEN", assignes: [accountId] },
+        tenantId: actualTenantId,
+      }
+
+      const result = await Digit.OBPSService.update({ BPA: payload }, tenantId)
       setIsLoading(false)
+      history.push(`${getPath(match.path, match.params)}/acknowledgement`)
+    } catch (error) {
+      setIsLoading(false)
+      console.error("Final submission failed:", error)
     }
   }
 
-  const handleSkip = () => {}
+  // const handleSelect = async (key, data, skipStep, isFromCreateApi) => {
+  //   const currentPath = pathname.split("/").pop()
+  //   const currentStepNumber = stepNumbers[currentPath]
 
-  // Configuration setup
-  let config = []
-  newConfig = newConfig?.BuildingPermitConfig ? newConfig?.BuildingPermitConfig : newConfigBPA
-  if (Array.isArray(newConfig)) {
-    newConfig.forEach((obj) => {
-      if (obj.body && Array.isArray(obj.body)) {
-        config = config.concat(obj.body.filter((a) => !a.hideInCitizen))
-      }
-    })
-  }
-  config.indexRoute = "docs-required"
+  //   // For steps 3 and onwards, handle API calls for save as draft
+  //   if (currentStepNumber >= 3 && currentStepNumber <= 8) {
+  //     setIsLoading(true)
 
-  useEffect(() => {
-    if (sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") === "true") {
-      if (clearParams) clearParams()
-      sessionStorage.setItem("isPermitApplication", "false")
-    }
-  }, [clearParams])
+  //     try {
+  //       const userInfo = Digit.UserService.getUser()
+  //       const accountId = userInfo?.info?.uuid
+  //       const actualTenantId = localStorage.getItem("CITIZEN.CITY") || userInfo?.info?.tenantId || tenantId || "pb"
 
-  // Component registry fallbacks
-  const CheckPage =
-    typeof Digit !== "undefined"
-      ? Digit?.ComponentRegistryService?.getComponent("BPACheckPage")
-      : ({ onSubmit, value }) => <div>Check Page Component</div>
+  //       // Merge current form data with existing params
+  //       const updatedParams = isFromCreateApi
+  //         ? data
+  //         : key === ""
+  //           ? { ...params, ...data }
+  //           : { ...params, [key]: { ...params[key], ...data } }
 
-  const OBPSAcknowledgement =
-    typeof Digit !== "undefined"
-      ? Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement")
-      : ({ data, onSuccess }) => <div>Acknowledgement Component</div>
+  //       const hasApplicationNo =
+  //         updatedParams?.applicationNo ||
+  //         updatedParams?.data?.applicationNo ||
+  //         params?.applicationNo ||
+  //         params?.data?.applicationNo ||
+  //         createApiResponse?.BPA?.[0]?.applicationNo
 
-  const saveDraft = async (formData) => {
-    try {
-      const currentStepNumber = stepNumbers[currentRoute] || 1
-      console.log("[v0] saveDraft called for step:", currentStepNumber, "route:", currentRoute)
+  //       const workflowAction = hasApplicationNo ? "SAVE_AS_DRAFT" : "INITIATE"
 
-      const payload = {}
-      payload.edcrNumber = formData?.data?.scrutinyNumber?.edcrNumber || ""
-      payload.riskType = formData?.data?.riskType || ""
-      payload.applicationType = formData?.data?.applicationType || ""
-      payload.serviceType = formData?.data?.serviceType || ""
+  //       console.log(
+  //         "[v0] Current step:",
+  //         currentStepNumber,
+  //         "hasApplicationNo:",
+  //         hasApplicationNo,
+  //         "workflowAction:",
+  //         workflowAction,
+  //         "applicationNo value:",
+  //         hasApplicationNo,
+  //       )
 
-      const userInfo = JSON.parse(localStorage.getItem("user-info") || "{}")
-      const accountId = userInfo?.uuid
+  //       let payload
 
-      payload.tenantId = tenantId
-      payload.accountId = accountId
+  //       if (hasApplicationNo) {
+  //         const createResponse = createApiResponse?.BPA?.[0]
 
-      // Documents handling
-      const docsFromForm = formData?.documents?.documents || []
-      payload.documents = docsFromForm.length > 0 ? docsFromForm : []
+  //         // For UPDATE API - include fields from create response
+  //         payload = {
+  //           BPA: {
+  //             id: createResponse?.id || updatedParams?.id || "",
+  //             applicationNo: hasApplicationNo,
+  //             businessService: createResponse?.businessService || "BPA_LOW",
+  //             landId: createResponse?.landId || null,
+  //             status: createResponse?.status || "INITIATED",
+  //             edcrNumber: updatedParams?.data?.edcrDetails?.edcrNumber || createResponse?.edcrNumber || "",
+  //             riskType: updatedParams?.data?.riskType || createResponse?.riskType || "LOW",
+  //             applicationType: updatedParams?.data?.applicationType || createResponse?.applicationType || "",
+  //             serviceType: updatedParams?.data?.serviceType || createResponse?.serviceType || "",
+  //             tenantId: actualTenantId,
+  //             accountId: accountId,
+  //             documents: updatedParams?.documents?.documents || [],
+  //             landInfo:
+  //               currentStepNumber >= 7 && updatedParams?.landInfo?.owners?.length > 0
+  //                 ? {
+  //                     ...createResponse?.landInfo,
+  //                     owners: updatedParams.landInfo.owners,
+  //                     ownershipCategory:
+  //                       updatedParams?.landInfo?.ownershipCategory || createResponse?.landInfo?.ownershipCategory,
+  //                     address: {
+  //                       ...createResponse?.landInfo?.address,
+  //                       ...(updatedParams?.data?.address?.doorNo && { doorNo: updatedParams.data.address.doorNo }),
+  //                       ...(updatedParams?.data?.address?.buildingName && {
+  //                         buildingName: updatedParams.data.address.buildingName,
+  //                       }),
+  //                       ...(updatedParams?.data?.address?.street && { street: updatedParams.data.address.street }),
+  //                       ...(updatedParams?.data?.address?.pincode && { pincode: updatedParams.data.address.pincode }),
+  //                       ...(updatedParams?.data?.address?.landmark && {
+  //                         landmark: updatedParams.data.address.landmark,
+  //                       }),
+  //                       ...(updatedParams?.data?.address?.plotNo && { plotNo: updatedParams.data.address.plotNo }),
+  //                     },
+  //                   }
+  //                 : null,
+  //             additionalDetails: {
+  //               // Only include additionalDetails that have been filled out
+  //               ...(updatedParams?.data?.boundaryWallLength && {
+  //                 boundaryWallLength: updatedParams.data.boundaryWallLength,
+  //               }),
+  //               ...(updatedParams?.data?.registrationDetails && {
+  //                 registrationDetails: updatedParams.data.registrationDetails,
+  //               }),
+  //               ...(updatedParams?.data?.wardnumber && { wardnumber: updatedParams.data.wardnumber }),
+  //               ...(updatedParams?.data?.zonenumber && { zonenumber: updatedParams.data.zonenumber }),
+  //               ...(updatedParams?.data?.khasraNumber && { khasraNumber: updatedParams.data.khasraNumber }),
+  //               ...(updatedParams?.data?.architectid && { architectid: updatedParams.data.architectid }),
+  //               ...(updatedParams?.data?.propertyuid && { propertyuid: updatedParams.data.propertyuid }),
+  //               ...(updatedParams?.data?.bathnumber && { bathnumber: updatedParams.data.bathnumber }),
+  //               ...(updatedParams?.data?.kitchenNumber && { kitchenNumber: updatedParams.data.kitchenNumber }),
+  //               ...(updatedParams?.data?.approxinhabitants && {
+  //                 approxinhabitants: updatedParams.data.approxinhabitants,
+  //               }),
+  //               ...(updatedParams?.data?.materialusedinfloor && {
+  //                 materialusedinfloor: updatedParams.data.materialusedinfloor,
+  //               }),
+  //               ...(updatedParams?.data?.distancefromsewer && {
+  //                 distancefromsewer: updatedParams.data.distancefromsewer,
+  //               }),
+  //               ...(updatedParams?.data?.sourceofwater && { sourceofwater: updatedParams.data.sourceofwater }),
+  //               ...(updatedParams?.data?.watercloset && { watercloset: updatedParams.data.watercloset }),
+  //               ...(updatedParams?.data?.materialused && { materialused: updatedParams.data.materialused }),
+  //               ...(updatedParams?.data?.materialusedinroofs && {
+  //                 materialusedinroofs: updatedParams.data.materialusedinroofs,
+  //               }),
+  //               // Static required fields
+  //               applicationType: "BUILDING_PLAN_SCRUTINY",
+  //               serviceType: "NEW_CONSTRUCTION",
+  //               architectName: "",
+  //               architectMobileNumber: "",
+  //               typeOfArchitect: "ARCHITECT",
+  //               isSelfCertificationRequired: "false",
+  //             },
+  //             workflow: {
+  //               action: workflowAction,
+  //               assignes: [accountId],
+  //             },
+  //             ...(createResponse?.auditDetails && {
+  //               auditDetails: createResponse.auditDetails,
+  //             }),
+  //           },
+  //           RequestInfo: {
+  //             apiId: "Rainmaker",
+  //             authToken: userInfo?.access_token || "",
+  //             msgId: `${Date.now()}|en_IN`,
+  //             plainAccessRequest: {},
+  //           },
+  //         }
+  //       } else {
+  //         // For CREATE API - use the complete payload structure (keep existing create logic)
+  //         payload = {
+  //           BPA: {
+  //             edcrNumber: updatedParams?.data?.edcrDetails?.edcrNumber || "",
+  //             riskType: updatedParams?.data?.riskType || "LOW",
+  //             applicationType: updatedParams?.data?.applicationType || "",
+  //             serviceType: updatedParams?.data?.serviceType || "",
+  //             tenantId: actualTenantId,
+  //             accountId: accountId,
+  //             documents: updatedParams?.documents?.documents || [],
+  //             additionalDetails: {
+  //               GISPlaceName: updatedParams?.address?.placeName || "",
+  //               boundaryWallLength: updatedParams?.data?.boundaryWallLength || "",
+  //               area: updatedParams?.data?.area || "",
+  //               height: updatedParams?.data?.height || "",
+  //               usage: updatedParams?.data?.occupancyType || "",
+  //               builtUpArea: updatedParams?.data?.builtUpArea || "",
+  //               ownerName: updatedParams?.landInfo?.owners?.map((owner) => owner.name).join(",") || "",
+  //               registrationDetails: updatedParams?.data?.registrationDetails || "",
+  //               applicationType: "BUILDING_PLAN_SCRUTINY",
+  //               serviceType: "NEW_CONSTRUCTION",
+  //               wardnumber: updatedParams?.data?.wardnumber || "",
+  //               zonenumber: updatedParams?.data?.zonenumber || "",
+  //               khasraNumber: updatedParams?.data?.khasraNumber || "",
+  //               architectid: updatedParams?.data?.architectid || "",
+  //               propertyuid: updatedParams?.data?.propertyuid || "",
+  //               bathnumber: updatedParams?.data?.bathnumber || "",
+  //               kitchenNumber: updatedParams?.data?.kitchenNumber || "",
+  //               approxinhabitants: updatedParams?.data?.approxinhabitants || "",
+  //               materialusedinfloor: updatedParams?.data?.materialusedinfloor || "",
+  //               distancefromsewer: updatedParams?.data?.distancefromsewer || "",
+  //               sourceofwater: updatedParams?.data?.sourceofwater || "",
+  //               watercloset: updatedParams?.data?.watercloset || "",
+  //               materialused: updatedParams?.data?.materialused || "",
+  //               materialusedinroofs: updatedParams?.data?.materialusedinroofs || "",
+  //               approvedColony: "",
+  //               buildingStatus: "",
+  //               greenbuilding: "",
+  //               masterPlan: "",
+  //               proposedSite: "",
+  //               purchasedFAR: "",
+  //               restrictedArea: "",
+  //               schemes: "",
+  //               UlbName: "",
+  //               District: "",
+  //               nameofApprovedcolony: "",
+  //               NocNumber: "",
+  //               coreArea: "",
+  //               schemesselection: "",
+  //               schemeName: "",
+  //               transferredscheme: "",
+  //               Ulblisttype: "",
+  //               uploadedFileNoc: "",
+  //               uploadedFileGreenBuilding: "",
+  //               use: "",
+  //               architectName: "",
+  //               architectMobileNumber: "",
+  //               typeOfArchitect: "ARCHITECT",
+  //               stakeholderName: "",
+  //               stakeholderRegistrationNumber: "",
+  //               stakeholderAddress: "",
+  //               isSelfCertificationRequired: "false",
+  //             },
+  //             workflow: {
+  //               action: workflowAction,
+  //               assignes: [accountId],
+  //             },
+  //           },
+  //           RequestInfo: {
+  //             apiId: "Rainmaker",
+  //             authToken: userInfo?.access_token || "",
+  //             msgId: `${Date.now()}|en_IN`,
+  //             plainAccessRequest: {},
+  //           },
+  //         }
+  //       }
 
-      // Additional Details - comprehensive structure matching owner-detail
-      payload.additionalDetails = { GISPlaceName: formData?.address?.placeName || "" }
-      payload.additionalDetails.boundaryWallLength = formData?.data?.boundaryWallLength || ""
-      payload.additionalDetails.area =
-        formData?.data?.edcrDetails?.planDetail?.planInformation?.plotArea?.toString() || ""
-      payload.additionalDetails.height =
-        formData?.data?.edcrDetails?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString() || ""
-      payload.additionalDetails.usage = formData?.data?.occupancyType || ""
-      payload.additionalDetails.builtUpArea =
-        formData?.data?.edcrDetails?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString() || ""
+  //       const apiCall = hasApplicationNo
+  //         ? Digit.OBPSService.update(payload, tenantId)
+  //         : Digit.OBPSService.create(payload, tenantId)
 
-      // Owner name from owners array or fallback
-      const owners = formData?.owners?.owners || []
-      payload.additionalDetails.ownerName = owners.length > 0 ? owners.map((obj) => obj.name || "").join(",") : ""
+  //       const result = await apiCall
 
-      // Conditional fields - only add if data exists, otherwise empty string
-      payload.additionalDetails.registrationDetails = formData?.data?.registrationDetails || ""
-      payload.additionalDetails.applicationType = formData?.data?.applicationType || ""
-      payload.additionalDetails.serviceType = formData?.data?.serviceType || ""
-      payload.additionalDetails.wardnumber = formData?.data?.wardnumber || ""
-      payload.additionalDetails.zonenumber = formData?.data?.zonenumber || ""
-      payload.additionalDetails.khasraNumber = formData?.data?.khasraNumber || ""
-      payload.additionalDetails.architectid = formData?.data?.architectid || ""
-      payload.additionalDetails.propertyuid = formData?.data?.propertyuid || ""
-      payload.additionalDetails.bathnumber = formData?.data?.bathnumber || ""
-      payload.additionalDetails.kitchenNumber = formData?.data?.kitchenNumber || ""
-      payload.additionalDetails.approxinhabitants = formData?.data?.approxinhabitants || ""
-      payload.additionalDetails.materialusedinfloor = formData?.data?.materialusedinfloor || ""
-      payload.additionalDetails.distancefromsewer = formData?.data?.distancefromsewer || ""
-      payload.additionalDetails.sourceofwater = formData?.data?.sourceofwater || ""
-      payload.additionalDetails.watercloset = formData?.data?.watercloset || ""
-      payload.additionalDetails.materialused = formData?.data?.materialused || ""
-      payload.additionalDetails.materialusedinroofs = formData?.data?.materialusedinroofs || ""
+  //       if (!hasApplicationNo && result?.BPA?.length > 0) {
+  //         setCreateApiResponse(result)
+  //       }
 
-      // Owner-specific additional details
-      payload.additionalDetails.approvedColony = formData?.owners?.approvedColony?.code || ""
-      payload.additionalDetails.buildingStatus = formData?.owners?.buildingStatus?.code || ""
-      payload.additionalDetails.greenbuilding = formData?.owners?.greenbuilding?.code || ""
-      payload.additionalDetails.masterPlan = formData?.owners?.masterPlan?.code || ""
-      payload.additionalDetails.proposedSite = formData?.owners?.proposedSite?.code || ""
-      payload.additionalDetails.purchasedFAR = formData?.owners?.purchasedFAR?.code || ""
-      payload.additionalDetails.restrictedArea = formData?.owners?.restrictedArea?.code || ""
-      payload.additionalDetails.schemes = formData?.owners?.schemes?.i18nKey || ""
+  //       if (result?.BPA?.length > 0) {
+  //         result.BPA[0].owners = {
+  //           owners: result?.BPA?.[0]?.landInfo?.owners || [],
+  //           ownershipCategory: "",
+  //         }
+  //         result.BPA[0].address = result?.BPA?.[0]?.landInfo?.address || {}
+  //         result.BPA[0].address.city = { code: actualTenantId }
+  //         result.BPA[0].address.locality = { code: "ALOC1" }
+  //         result.BPA[0].placeName = ""
+  //         result.BPA[0].data = { ...updatedParams.data }
+  //         result.BPA[0].BlockIds = []
+  //         result.BPA[0].subOccupancy = {}
+  //         result.BPA[0].uiFlow = { flow: "STAKEHOLDER" }
 
-      if (formData?.owners?.UlbName?.code) {
-        payload.additionalDetails.UlbName = formData.owners.UlbName.code
-          .toLowerCase()
-          .replace(/^\w/, (c) => c.toUpperCase())
-      } else {
-        payload.additionalDetails.UlbName = ""
-      }
+  //         if (result.BPA[0].applicationNo) {
+  //           result.BPA[0].data.applicationNo = result.BPA[0].applicationNo
+  //         }
 
-      payload.additionalDetails.District = formData?.owners?.District?.code || ""
-      payload.additionalDetails.nameofApprovedcolony = formData?.owners?.nameofApprovedcolony || ""
-      payload.additionalDetails.NocNumber = formData?.owners?.NocNumber || ""
-      payload.additionalDetails.coreArea = formData?.owners?.coreArea?.code || ""
-      payload.additionalDetails.schemesselection = formData?.owners?.schemesselection?.i18nKey || ""
-      payload.additionalDetails.schemeName = formData?.owners?.schemeName || ""
-      payload.additionalDetails.transferredscheme = formData?.owners?.transferredscheme || ""
-      payload.additionalDetails.Ulblisttype = formData?.owners?.Ulblisttype?.value || ""
-      payload.additionalDetails.uploadedFileNoc = formData?.owners?.uploadedFile || ""
-      payload.additionalDetails.rating = formData?.owners?.rating?.code || ""
-      payload.additionalDetails.uploadedFileGreenBuilding = formData?.owners?.greenuploadedFile || ""
-      payload.additionalDetails.use = formData?.owners?.use?.code || ""
+  //         setParams(result.BPA[0])
+  //         setIsLoading(false)
+  //         goNext(skipStep)
+  //       }
+  //     } catch (error) {
+  //       setIsLoading(false)
+  //       console.error("API call failed:", error)
+  //       // Handle error - you might want to show a toast or error message
+  //     }
+  //   } else {
+  //     // For steps 1-2, just update params and go next (no API call needed)
+  //     if (isFromCreateApi) setParams(data)
+  //     else if (key === "") setParams({ ...params, ...data })
+  //     else setParams({ ...params, [key]: { ...params[key], ...data } })
+  //     goNext(skipStep)
+  //   }
+  // }
 
-      // Architect info
-      payload.additionalDetails.architectName = userInfo?.name || ""
-      payload.additionalDetails.architectMobileNumber = userInfo?.mobileNumber || ""
+    const handleSelect = async (key, data, skipStep, isFromCreateApi) => {
+    const currentPath = pathname.split("/").pop()
+    const currentStepNumber = stepNumbers[currentPath]
+    console.log("Databefoire",key, data, params)
 
-      // Session storage architect info (fallback to empty strings)
-      payload.additionalDetails.typeOfArchitect = "ARCHITECT"
-      payload.additionalDetails.stakeholderName = ""
-      payload.additionalDetails.stakeholderRegistrationNumber = ""
-      payload.additionalDetails.stakeholderAddress = ""
-      payload.additionalDetails.isSelfCertificationRequired = "false"
+    // For steps 3 and onwards, handle API calls for save as draft
+    if (currentStepNumber >= 3 && currentStepNumber <= 8) {
+      setIsLoading(true)
 
-      // Land Info structure - send null for validation issues from backend
-      if (currentStepNumber < 7) {
-        // Before owner-details step, send landInfo as null for validation
-        payload.landInfo = null
-      } else {
-        // From owner-details step onwards, send proper landInfo
-        payload.landInfo = {}
-        payload.landInfo.address = {}
+      try {
+        const userInfo = Digit.UserService.getUser()
+        const accountId = userInfo?.info?.uuid
+        const actualTenantId = localStorage.getItem("CITIZEN.CITY") || userInfo?.info?.tenantId || tenantId || "pb"
 
-        payload.landInfo.address.city = formData?.address?.city?.code || tenantId
-
-        if (formData?.address?.locality?.code) {
-          payload.landInfo.address.locality = { code: formData.address.locality.code }
+        let updatedParams
+        if (isFromCreateApi) {
+          updatedParams = data
+        } else if (key === "") {
+          // Merge at root level but preserve existing data object
+          updatedParams = {
+            // ...params,
+            ...data,
+            // data: { ...params.data, ...data.data },
+            data: { ...data.data },
+          }
         } else {
-          payload.landInfo.address.locality = { code: tenantId }
+          // Merge specific key but also preserve and merge data object
+          updatedParams = {
+            // ...params,
+            // [key]: { ...params[key], ...data },
+            // data: { ...params.data, ...data.data },
+            [key]: { ...data },
+            data: { ...data.data },
+          }
         }
 
-        payload.landInfo.address.pincode = formData?.address?.pincode || ""
-        payload.landInfo.address.landmark = formData?.address?.landmark || ""
-        payload.landInfo.address.street = formData?.address?.street || ""
-        payload.landInfo.address.geoLocation = formData?.address?.geoLocation || {}
-
-        // Owners conversion
-        const conversionOwners = []
-        if (owners.length > 0) {
-          owners.forEach((owner) => {
-            conversionOwners.push({
-              ...owner,
-              active: true,
-              name: owner.name || "",
-              emailId: owner.emailId || "",
-              aadharNumber: owner.aadharNumber || "",
-              mobileNumber: owner.mobileNumber || "",
-              isPrimaryOwner: owner.isPrimaryOwner || false,
-              gender: owner.gender?.code || owner.gender || "",
-              fatherOrHusbandName: "NAME",
-            })
-          })
+        try {
+          const stored = sessionStorage.getItem("BUILDING_PERMIT")
+          if (stored) {
+            const storedData = JSON.parse(stored)
+            updatedParams = {
+              ...updatedParams,
+              data: { ...updatedParams.data, ...storedData },
+            }
+          }
+        } catch (err) {
+          console.error("Failed to parse BUILDING_PERMIT sessionStorage", err)
         }
 
-        payload.landInfo.owners = conversionOwners
-        payload.landInfo.ownershipCategory =
-          formData?.owners?.ownershipCategory?.code || formData?.owners?.ownershipCategory || ""
-        payload.landInfo.tenantId = tenantId
+        console.log("[v0] Updated params with accumulated data:", updatedParams)
 
-        // Units - fallback to empty array if not available
-        payload.landInfo.unit = formData?.landInfo?.unit || []
-      }
+        const hasApplicationNo =
+          updatedParams?.applicationNo ||
+          updatedParams?.data?.applicationNo ||
+          params?.applicationNo ||
+          params?.data?.applicationNo ||
+          createApiResponse?.BPA?.[0]?.applicationNo
 
-      const requestPayload = {
-        BPA: payload,
-        RequestInfo: {
-          apiId: "Rainmaker",
-          authToken: localStorage.getItem("token") || "",
-          userInfo: userInfo,
-          msgId: `${Date.now()}|en_IN`,
-          plainAccessRequest: {},
+        const workflowAction = hasApplicationNo ? "SAVE_AS_DRAFT" : "INITIATE"
+
+        console.log(
+          "[v0] Current step:",
+          currentStepNumber,
+          "hasApplicationNo:",
+          hasApplicationNo,
+          "workflowAction:",
+          workflowAction,
+          "applicationNo value:",
+          hasApplicationNo,
+        )
+
+        // 🔹 Transform session-stored documents object into array for API
+          let documentsArray = [];
+          if (updatedParams?.documents) {
+            Object.entries(updatedParams.documents).forEach(([key, value]) => {
+              if (value) {
+                documentsArray.push({
+                  documentType: key.toUpperCase(), // e.g. "SITEPHOTOGRAPH"
+                  fileStoreId: value,
+                });
+              }
+            });
+          }
+
+
+        let payload
+
+        if (hasApplicationNo) {
+          const createResponse = createApiResponse?.BPA?.[0]
+
+          // For UPDATE API - include fields from create response
+          payload = {
+            BPA: {
+              id: createResponse?.id || updatedParams?.id || "",
+              applicationNo: hasApplicationNo,
+              businessService: createResponse?.businessService || "BPA_LOW",
+              landId: createResponse?.landId || null,
+              status: createResponse?.status || "INITIATED",
+              edcrNumber: updatedParams?.data?.edcrDetails?.edcrNumber || createResponse?.edcrNumber || "",
+              riskType: updatedParams?.data?.riskType || createResponse?.riskType || "LOW",
+              applicationType: updatedParams?.data?.applicationType || createResponse?.applicationType || "",
+              serviceType: updatedParams?.data?.serviceType || createResponse?.serviceType || "",
+              tenantId: actualTenantId,
+              accountId: accountId,
+              // documents: updatedParams?.documents?.documents || [],
+              documents: documentsArray,
+
+             landInfo:
+  currentStepNumber >= 5 && updatedParams?.landInfo?.owners?.length > 0
+    ? {
+        ...createResponse?.landInfo,
+        owners: updatedParams.landInfo.owners,
+        ownershipCategory:
+          updatedParams?.landInfo?.ownershipCategory || createResponse?.landInfo?.ownershipCategory,
+        address: {
+          ...createResponse?.landInfo?.address,
+          ...(updatedParams?.data?.address?.doorNo && { doorNo: updatedParams.data.address.doorNo }),
+          ...(updatedParams?.data?.address?.buildingName && { buildingName: updatedParams.data.address.buildingName }),
+          ...(updatedParams?.data?.address?.street && { street: updatedParams.data.address.street }),
+          ...(updatedParams?.data?.address?.pincode && { pincode: updatedParams.data.address.pincode }),
+          ...(updatedParams?.data?.address?.landmark && { landmark: updatedParams.data.address.landmark }),
+          ...(updatedParams?.data?.address?.plotNo && { plotNo: updatedParams.data.address.plotNo }),
+          ...(updatedParams?.data?.address?.locality && { locality: updatedParams.data.address.locality }),
         },
       }
+    : null,
 
-      if (currentStepNumber < 3) {
-        console.log("[v0] Skipping API call before step 3. Only saving formData locally.")
-        return
-      }
+additionalDetails: {
+  ...(createResponse?.additionalDetails || {}),   
+  ...(updatedParams?.data || {}),                 
+  applicationType: "BUILDING_PLAN_SCRUTINY",
+  serviceType: "NEW_CONSTRUCTION",
+  architectName: "",
+  architectMobileNumber: "",
+  typeOfArchitect: "ARCHITECT",
+  isSelfCertificationRequired: "false",
+},
 
-      if (currentStepNumber === 3 && !applicationId) {
-        console.log("[v0] >>> CREATE API at step 3 (plot-details)")
-        requestPayload.BPA.workflow = {
-          action: "INITIATE",
-          assignes: [userInfo.uuid],
-        }
-
-        console.log("[v0] Create API payload:", JSON.stringify(requestPayload, null, 2))
-
-        if (typeof Digit !== "undefined") {
-          try {
-            const res = await Digit.OBPSService.create(requestPayload, tenantId)
-            console.log("[v0] Create API response:", res)
-            if (res?.BPA?.applicationNo) {
-              setApplicationId(res.BPA.applicationNo)
-              const updatedFormData = { ...formData, ...res.BPA }
-              setParams(updatedFormData)
-              console.log("[v0] Application created with ID:", res.BPA.applicationNo)
-            }
-          } catch (error) {
-            console.error("[v0] Create API failed:", error)
-            throw error // Re-throw to prevent navigation
+              workflow: {
+                action: workflowAction,
+                assignes: [accountId],
+              },
+              ...(createResponse?.auditDetails && {
+                auditDetails: createResponse.auditDetails,
+              }),
+            },
+            RequestInfo: {
+              apiId: "Rainmaker",
+              authToken: userInfo?.access_token || "",
+              msgId: `${Date.now()}|en_IN`,
+              plainAccessRequest: {},
+            },
           }
         } else {
-          console.log("[v0] Digit not available, mocking create API response")
-          const mockApplicationId = `BPA-${Date.now()}`
-          setApplicationId(mockApplicationId)
-          console.log("[v0] Mock application created with ID:", mockApplicationId)
-        }
-        return
-      }
+          // For CREATE API - use the complete payload structure (keep existing create logic)
+          payload = {
+            BPA: {
+              edcrNumber: updatedParams?.data?.edcrDetails?.edcrNumber || "",
+              riskType: updatedParams?.data?.riskType || "LOW",
+              applicationType: updatedParams?.data?.applicationType || "",
+              serviceType: updatedParams?.data?.serviceType || "",
+              tenantId: actualTenantId,
+              accountId: accountId,
+              // documents: updatedParams?.documents?.documents || [],
+              documents: documentsArray,
 
-      if (currentStepNumber > 3) {
-        console.log("[v0] >>> UPDATE API (Save Draft), step:", currentStepNumber)
-        requestPayload.BPA.workflow = { action: "SAVE_AS_DRAFT" }
-
-        if (applicationId) {
-          requestPayload.BPA.applicationNo = applicationId
-          console.log("[v0] Using existing application ID:", applicationId)
-        } else {
-          console.warn("[v0] No application ID found for update API")
-          return
-        }
-
-        console.log("[v0] Update API payload:", JSON.stringify(requestPayload, null, 2))
-
-        if (typeof Digit !== "undefined") {
-          try {
-            const res = await Digit.OBPSService.update(requestPayload, tenantId)
-            console.log("[v0] Updated Draft:", res)
-            if (res?.BPA) {
-              setParams(res.BPA)
-            }
-          } catch (error) {
-            console.error("[v0] Update API failed:", error)
-            throw error // Re-throw to prevent navigation
+              additionalDetails: {
+                GISPlaceName: updatedParams?.address?.placeName || "",
+                boundaryWallLength: updatedParams?.data?.boundaryWallLength || "",
+                area: updatedParams?.data?.area || "",
+                height: updatedParams?.data?.height || "",
+                usage: updatedParams?.data?.occupancyType || "",
+                builtUpArea: updatedParams?.data?.builtUpArea || "",
+                ownerName: updatedParams?.landInfo?.owners?.map((owner) => owner.name).join(",") || "",
+                registrationDetails: updatedParams?.data?.registrationDetails || "",
+                applicationType: "BUILDING_PLAN_SCRUTINY",
+                serviceType: "NEW_CONSTRUCTION",
+                wardnumber: updatedParams?.data?.wardnumber || "",
+                zonenumber: updatedParams?.data?.zonenumber || "",
+                khasraNumber: updatedParams?.data?.khasraNumber || "",
+                architectid: updatedParams?.data?.architectid || "",
+                propertyuid: updatedParams?.data?.propertyuid || "",
+                bathnumber: updatedParams?.data?.bathnumber || "",
+                kitchenNumber: updatedParams?.data?.kitchenNumber || "",
+                approxinhabitants: updatedParams?.data?.approxinhabitants || "",
+                materialusedinfloor: updatedParams?.data?.materialusedinfloor || "",
+                distancefromsewer: updatedParams?.data?.distancefromsewer || "",
+                sourceofwater: updatedParams?.data?.sourceofwater || "",
+                watercloset: updatedParams?.data?.watercloset || "",
+                materialused: updatedParams?.data?.materialused || "",
+                materialusedinroofs: updatedParams?.data?.materialusedinroofs || "",
+                approvedColony: "",
+                buildingStatus: "",
+                greenbuilding: "",
+                masterPlan: "",
+                proposedSite: "",
+                purchasedFAR: "",
+                restrictedArea: "",
+                schemes: "",
+                UlbName: "",
+                District: "",
+                nameofApprovedcolony: "",
+                NocNumber: "",
+                coreArea: "",
+                schemesselection: "",
+                schemeName: "",
+                transferredscheme: "",
+                Ulblisttype: "",
+                uploadedFileNoc: "",
+                uploadedFileGreenBuilding: "",
+                use: "",
+                architectName: "",
+                architectMobileNumber: "",
+                typeOfArchitect: "ARCHITECT",
+                stakeholderName: "",
+                stakeholderRegistrationNumber: "",
+                stakeholderAddress: "",
+                isSelfCertificationRequired: "false",
+              },
+              workflow: {
+                action: workflowAction,
+                assignes: [accountId],
+              },
+            },
+            RequestInfo: {
+              apiId: "Rainmaker",
+              authToken: userInfo?.access_token || "",
+              msgId: `${Date.now()}|en_IN`,
+              plainAccessRequest: {},
+            },
           }
-        } else {
-          console.log("[v0] Digit not available, mocking update API response")
-          console.log("[v0] Mock update completed for application:", applicationId)
         }
+
+        console.log("payloadInBPA", payload)
+
+        const apiCall = hasApplicationNo
+          ? Digit.OBPSService.update(payload, tenantId)
+          : Digit.OBPSService.create(payload, tenantId)
+
+        const result = await apiCall
+
+        if (!hasApplicationNo && result?.BPA?.length > 0) {
+          setCreateApiResponse(result)
+        }
+
+        if (result?.BPA?.length > 0) {
+          result.BPA[0].owners = {
+            owners: result?.BPA?.[0]?.landInfo?.owners || [],
+            ownershipCategory: "",
+          }
+          result.BPA[0].address = result?.BPA?.[0]?.landInfo?.address || {}
+          result.BPA[0].address.city = { code: actualTenantId }
+          result.BPA[0].address.locality = { code: "ALOC1" }
+          result.BPA[0].placeName = ""
+          result.BPA[0].data = { ...updatedParams.data }
+          result.BPA[0].BlockIds = []
+          result.BPA[0].subOccupancy = {}
+          result.BPA[0].uiFlow = { flow: "STAKEHOLDER" }
+
+          if (result.BPA[0].applicationNo) {
+            result.BPA[0].data.applicationNo = result.BPA[0].applicationNo
+          }
+
+          setParams(result.BPA[0])
+          setIsLoading(false)
+          goNext(skipStep)
+        }
+      } catch (error) {
+        setIsLoading(false)
+        console.error("API call failed:", error)
+        // Handle error - you might want to show a toast or error message
       }
-    } catch (err) {
-      console.error("[v0] Save draft failed:", err)
-      throw err // Re-throw to prevent navigation on error
+    } else {
+      // For steps 1-2, just update params and go next (no API call needed)
+      if (isFromCreateApi) setParams(data)
+      else if (key === "") setParams({ ...params, ...data })
+      else setParams({ ...params, [key]: { ...params[key], ...data } })
+      goNext(skipStep)
     }
   }
+
+  const handleSkip = () => {};
+
+  // const state = tenantId.split(".")[0];
+  let config = [];
+  newConfig = newConfig?.BuildingPermitConfig ? newConfig?.BuildingPermitConfig : newConfigBPA;
+  newConfig.forEach((obj) => {
+    config = config.concat(obj.body.filter((a) => !a.hideInCitizen));
+  });
+  config.indexRoute = "docs-required";
+
+  useEffect(() => {
+    if (sessionStorage.getItem("isPermitApplication") && sessionStorage.getItem("isPermitApplication") == "true") {
+      clearParams();
+      sessionStorage.setItem("isPermitApplication", false);
+    }
+  }, []);
+
+  const CheckPage = Digit?.ComponentRegistryService?.getComponent("BPACheckPage");
+  const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
 
   return (
     <div
@@ -1011,9 +829,7 @@ const NewBuildingPermit = () => {
       }}
     >
       <div style={{ width: "fit-content" }}>
-        <div style={{ marginBottom: "10px", fontSize: "12px", color: "#666" }}>
-          Current Route: {currentRoute} | Step: {currentStep}
-        </div>
+      
         <Stepper
           style={{
             marginRight: "100px",
@@ -1044,7 +860,9 @@ const NewBuildingPermit = () => {
               zIndex: 1000,
             }}
           >
-            <div>Processing...</div>
+            <div>
+              <Loader />
+            </div>
           </div>
         )}
 

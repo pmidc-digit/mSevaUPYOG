@@ -114,6 +114,8 @@ const createEmployeeConfig = [
   const [ecbcCertificateFile, setEcbcCertificateFile] = useState(null);
 const [ecbcCertificateFileObj, setEcbcCertificateFileObj] = useState(null);
 
+const [previewUrl, setPreviewUrl] = useState(null); 
+
 const [step, setStep] = useState("")
 
 

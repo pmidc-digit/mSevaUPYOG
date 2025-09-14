@@ -535,9 +535,10 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
     const owner = formData.owners
     const ownerStep = { ...owner, owners: fields, ownershipCategory: ownershipCategory }
 
-    if (!formData?.id) {
+    if (formData?.id) {
       setIsDisable(true)
 
+      // Application already exists, just update with owner details
       const conversionOwners = []
       ownerStep?.owners?.map((owner) => {
         conversionOwners.push({
@@ -553,151 +554,26 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
         })
       })
 
-      const payload = {}
-      payload.edcrNumber = formData?.data?.scrutinyNumber?.edcrNumber
-      payload.riskType = formData?.data?.riskType
-      payload.applicationType = formData?.data?.applicationType
-      payload.serviceType = formData?.data?.serviceType
-
-      const userInfo = Digit.UserService.getUser()
-      const accountId = userInfo?.info?.uuid
-
-      payload.tenantId = formData?.address?.city?.code
-      payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] }
-      payload.accountId = accountId
-      // payload.documents = null;
-      // payload.documents = getDocumentforBPA(formData?.documents?.documents, formData?.PrevStateDocuments)
-      const docsFromFn = getDocumentforBPA(formData?.documents?.documents, formData?.PrevStateDocuments) || [];
-      const docsFromForm = formData?.documents?.documents || [];
-
-      // Merge, but avoid duplicates
-      payload.documents = [
-        ...docsFromFn,
-        ...docsFromForm.filter(doc => !docsFromFn.some(d => d.documentType === doc.documentType))
-      ];
-
-      // payload.documents = documents && documents.length > 0 ? documents : [];
-
-      payload.additionalDetails = { GISPlaceName: formData?.address?.placeName }
-      payload.additionalDetails.boundaryWallLength = formData?.data?.boundaryWallLength || "NA"
-      payload.additionalDetails.area =
-        formData?.data.edcrDetails.planDetail.planInformation.plotArea?.toString() || "NA"
-      payload.additionalDetails.height =
-        formData?.data.edcrDetails.planDetail.blocks[0].building.buildingHeight?.toString() || "NA"
-      payload.additionalDetails.usage = formData?.data.occupancyType || "NA"
-      payload.additionalDetails.builtUpArea =
-        formData?.data.edcrDetails.planDetail.blocks[0].building.totalBuitUpArea?.toString() || "NA"
-      payload.additionalDetails.ownerName = conversionOwners.map((obj) => obj.name).join(",")
-
-      if (formData?.data?.registrationDetails)
-        payload.additionalDetails.registrationDetails = formData?.data?.registrationDetails
-      if (formData?.data?.applicationType) payload.additionalDetails.applicationType = formData?.data?.applicationType
-      if (formData?.data?.serviceType) payload.additionalDetails.serviceType = formData?.data?.serviceType
-      if (formData?.data?.wardnumber) payload.additionalDetails.wardnumber = formData?.data?.wardnumber
-      if (formData?.data?.zonenumber) payload.additionalDetails.zonenumber = formData?.data?.zonenumber
-      if (formData?.data?.khasraNumber) payload.additionalDetails.khasraNumber = formData?.data?.khasraNumber
-      if (formData?.data?.architectid) payload.additionalDetails.architectid = formData?.data?.architectid
-      if (formData?.data?.propertyuid) payload.additionalDetails.propertyuid = formData?.data?.propertyuid
-      if (formData?.data?.bathnumber) payload.additionalDetails.bathnumber = formData?.data?.bathnumber
-      if (formData?.data?.kitchenNumber) payload.additionalDetails.kitchenNumber = formData?.data?.kitchenNumber
-      if (formData?.data?.approxinhabitants)
-        payload.additionalDetails.approxinhabitants = formData?.data?.approxinhabitants
-      if (formData?.data?.materialusedinfloor)
-        payload.additionalDetails.materialusedinfloor = formData?.data?.materialusedinfloor
-      if (formData?.data?.distancefromsewer)
-        payload.additionalDetails.distancefromsewer = formData?.data?.distancefromsewer
-      if (formData?.data?.sourceofwater) payload.additionalDetails.sourceofwater = formData?.data?.sourceofwater
-      if (formData?.data?.watercloset) payload.additionalDetails.watercloset = formData?.data?.watercloset
-      if (formData?.data?.materialused) payload.additionalDetails.materialused = formData?.data?.materialused
-      if (formData?.data?.materialusedinroofs)
-        payload.additionalDetails.materialusedinroofs = formData?.data?.materialusedinroofs
-      if (formData?.owners?.approvedColony?.code)
-        payload.additionalDetails.approvedColony = formData?.owners?.approvedColony?.code
-      if (formData?.owners?.buildingStatus?.code)
-        payload.additionalDetails.buildingStatus = formData?.owners?.buildingStatus?.code
-      if (formData?.owners?.greenbuilding?.code)
-        payload.additionalDetails.greenbuilding = formData?.owners?.greenbuilding?.code
-      if (formData?.owners?.masterPlan?.code) payload.additionalDetails.masterPlan = formData?.owners?.masterPlan?.code
-      if (formData?.owners?.proposedSite?.code)
-        payload.additionalDetails.proposedSite = formData?.owners?.proposedSite?.code
-      if (formData?.owners?.purchasedFAR?.code)
-        payload.additionalDetails.purchasedFAR = formData?.owners?.purchasedFAR?.code
-      if (formData?.owners?.restrictedArea?.code)
-        payload.additionalDetails.restrictedArea = formData?.owners?.restrictedArea?.code
-      if (formData?.owners?.schemes?.i18nKey) payload.additionalDetails.schemes = formData?.owners?.schemes?.i18nKey
-      if (formData?.owners?.UlbName?.code) {
-        payload.additionalDetails.UlbName = formData?.owners?.UlbName?.code
-          .toLowerCase()
-          .replace(/^\w/, (c) => c.toUpperCase())
-      }
-      if (formData?.owners?.District?.code) payload.additionalDetails.District = formData?.owners?.District?.code
-      if (formData?.owners?.nameofApprovedcolony)
-        payload.additionalDetails.nameofApprovedcolony = formData?.owners?.nameofApprovedcolony
-      if (formData?.owners?.NocNumber) payload.additionalDetails.NocNumber = formData?.owners?.NocNumber
-      if (formData?.owners?.coreArea?.code) payload.additionalDetails.coreArea = formData?.owners?.coreArea?.code
-      if (formData?.owners?.schemesselection?.i18nKey)
-        payload.additionalDetails.schemesselection = formData?.owners?.schemesselection?.i18nKey
-      if (formData?.owners?.schemeName) payload.additionalDetails.schemeName = formData?.owners?.schemeName
-      if (formData?.owners?.transferredscheme)
-        payload.additionalDetails.transferredscheme = formData?.owners?.transferredscheme
-      if (formData?.owners?.Ulblisttype?.value)
-        payload.additionalDetails.Ulblisttype = formData?.owners?.Ulblisttype?.value
-      if (formData?.owners?.uploadedFile) payload.additionalDetails.uploadedFileNoc = formData?.owners?.uploadedFile
-      if (formData?.owners?.rating?.code) payload.additionalDetails.rating = formData?.owners?.rating?.code
-      if (formData?.owners?.greenuploadedFile)
-        payload.additionalDetails.uploadedFileGreenBuilding = formData?.owners?.greenuploadedFile
-      if (formData?.owners?.use?.code) payload.additionalDetails.use = formData?.owners?.use?.code
-
-      if (user?.info?.name) payload.additionalDetails.architectName = user?.info?.name
-      if (user?.info?.mobileNumber) payload.additionalDetails.architectMobileNumber = user?.info?.mobileNumber
-
-      payload.landInfo = {}
-      payload.landInfo.address = {}
-
-      if (formData?.address?.city?.code) {
-        payload.landInfo.address.city = formData?.address?.city?.code
+      const payload = {
+        id: formData.id,
+        applicationNumber: formData.applicationNumber,
+        edcrNumber: formData?.data?.scrutinyNumber?.edcrNumber,
+        riskType: formData?.data?.riskType,
+        applicationType: formData?.data?.applicationType,
+        serviceType: formData?.data?.serviceType,
+        tenantId: formData?.address?.city?.code,
+        workflow: { action: "SAVE_AS_DRAFT" }, // Using SAVE_AS_DRAFT for updates
+        accountId: Digit.UserService.getUser()?.info?.uuid,
+        documents: formData?.documents?.documents || [],
+        landInfo: {
+          ...formData.landInfo,
+          owners: conversionOwners,
+          ownershipCategory: ownershipCategory?.code ?? ownershipCategory,
+        },
+        additionalDetails: formData.additionalDetails || {},
       }
 
-      if (formData?.address?.locality?.code) {
-        payload.landInfo.address.locality = { code: formData?.address?.locality?.code }
-      } else if (formData?.address?.city?.code) {
-        payload.landInfo.address.locality = { code: formData?.address?.city?.code }
-      } else {
-        setIsDisable(false)
-        setShowToast({ key: "true", error: true, message: "Locality is required to proceed." })
-        return
-      }
-
-      if (formData?.address?.pincode) payload.landInfo.address.pincode = formData?.address?.pincode
-      if (formData?.address?.landmark) payload.landInfo.address.landmark = formData?.address?.landmark
-      if (formData?.address?.street) payload.landInfo.address.street = formData?.address?.street
-      if (formData?.address?.geoLocation) payload.landInfo.address.geoLocation = formData?.address?.geoLocation
-
-      payload.landInfo.owners = conversionOwners
-      // payload.landInfo.ownershipCategory = ownershipCategory.code;
-      payload.landInfo.ownershipCategory = ownershipCategory?.code ?? ownershipCategory
-      payload.landInfo.tenantId = formData?.address?.city?.code
-
-      // Units
-      payload.landInfo.unit = getUnitsForAPI(formData)
-
-      // Architect info from session
-      const nameOfAchitect = sessionStorage.getItem("BPA_ARCHITECT_NAME")
-      const parsedArchitectName = nameOfAchitect ? JSON.parse(nameOfAchitect) : "ARCHITECT"
-      payload.additionalDetails.typeOfArchitect = parsedArchitectName
-      payload.additionalDetails.stakeholderName = JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_NAME"))
-      payload.additionalDetails.stakeholderRegistrationNumber = JSON.parse(
-        sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"),
-      )
-      payload.additionalDetails.stakeholderAddress = JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS"))
-
-      let isSelfCertificationRequired = sessionStorage.getItem("isSelfCertificationRequired")
-      if (isSelfCertificationRequired === "undefined" || isSelfCertificationRequired === null) {
-        isSelfCertificationRequired = "false"
-      }
-      payload.additionalDetails.isSelfCertificationRequired = isSelfCertificationRequired.toString()
-
-      Digit.OBPSService.create({ BPA: payload }, tenantId)
+      Digit.OBPSService.update({ BPA: payload }, tenantId)
         .then((result) => {
           if (result?.BPA?.length > 0) {
             result?.BPA?.[0]?.landInfo?.owners?.forEach((owner) => {
@@ -720,17 +596,19 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
             onSelect("", result.BPA[0], "", true)
           }
         })
-        .catch((e) => {
+        .catch((error) => {
+          console.error("Error updating application:", error)
+          setError("Failed to update application. Please try again.")
           setIsDisable(false)
           setShowToast({
             key: "true",
             error: true,
-            message: e?.response?.data?.Errors?.[0]?.message || "Submission failed",
+            message: error?.response?.data?.Errors?.[0]?.message || "Update failed",
           })
         })
     } else {
-      // Editing case
-      onSelect(config.key, ownerStep)
+      setError("Application not found. Please start from the beginning.")
+      setIsDisable(false)
     }
   }
 
@@ -753,7 +631,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
 
   return (
     <div>
-      <Timeline currentStep={3} />
+      {/* <Timeline currentStep={3} /> */}
       <FormStep
         config={config}
         onSelect={goNext}
@@ -795,12 +673,16 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
                     {ismultiple && (
                       <LinkButton
                         label={
-                          <DeleteIcon
-                            style={{  bottom: "5px" }}
-                            fill={!(fields.length == 1) ? "#494848" : "#FAFAFA"}
-                          />
+                          <DeleteIcon style={{ bottom: "5px" }} fill={!(fields.length == 1) ? "#494848" : "#FAFAFA"} />
                         }
-                        style={{ width: "50px", display: "inline",justifyContent:"center", alighItem:"center", background: "black", float:"right" }}
+                        style={{
+                          width: "50px",
+                          display: "inline",
+                          justifyContent: "center",
+                          alighItem: "center",
+                          background: "black",
+                          float: "right",
+                        }}
                         onClick={(e) => handleRemove(index)}
                       />
                     )}

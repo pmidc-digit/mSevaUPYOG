@@ -813,6 +813,26 @@ input[type="number"] {
   margin: 0 !important;
 }
 
+.ndc_card_labels {
+  width: 100%;
+  max-width: 200px;
+}
+
+.downLoadButton {
+  color: "#A52A2A";
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+}
+
+.ndc_label {
+  padding-bottom: 20px;
+}
+
+.ndc_card_main {
+  padding: 25px 25px;
+}
+
 @media screen and (max-width: 768px) {
   .citizen .inboxButton {
     font-size: 1rem;

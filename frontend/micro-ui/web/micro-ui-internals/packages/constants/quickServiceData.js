@@ -60,7 +60,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "TL",
@@ -144,7 +144,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "RentAndLease",
@@ -156,7 +156,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "Engagement",
@@ -172,7 +172,7 @@ export const quickServiceModules = {
     },
     {
       moduleCode: "PTR",
-      moduleName: "PTR",
+      moduleName: "Pet Registration",
       bgColor: "#00cccd",
       labelKey: "",
       icon: "",

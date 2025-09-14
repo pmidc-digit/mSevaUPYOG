@@ -94,7 +94,7 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
       Access: moduleData.access, // Merge the Access key
     }));
 
-  //console.log("updatedModuleData",updatedModuleData)
+  console.log("updatedModuleData", updatedModuleData);
   const iconSelector = (code) => {
     switch (code) {
       case "PT":
@@ -184,7 +184,7 @@ const EmployeeQuickServicesCard = ({ moduleData }) => {
             padding: "2rem 2rem",
           }}
         >
-          {updatedModuleData[0]?.moduleCode}
+          {updatedModuleData[0]?.moduleName}
         </div>
       </Link>
     </div>

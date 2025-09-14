@@ -4,6 +4,13 @@ export const config = [
     stepNumber: 1,
     body: [
       {
+        name: "NDC_COMMON_NDC_REASON",
+        type: "component",
+        component: "SelectNDCReason",
+        key: "NDCReason",
+        withoutLabel: true,
+      },
+      {
         name: "",
         type: "component",
         component: "NDCPropertySearch",
@@ -15,13 +22,6 @@ export const config = [
         type: "component",
         component: "PropertyDetailsFormCitizen",
         key: "PropertyDetails",
-        withoutLabel: true,
-      },
-      {
-        name: "NDC_COMMON_NDC_REASON",
-        type: "component",
-        component: "SelectNDCReason",
-        key: "NDCReason",
         withoutLabel: true,
       },
     ],

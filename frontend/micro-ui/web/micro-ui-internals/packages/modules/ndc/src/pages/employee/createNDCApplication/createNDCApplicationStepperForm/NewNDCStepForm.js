@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
-import { useHistory } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { config } from "../../../../config/citizen/CitizenNDCApplicationConfig";
-import { setNDCStep } from "../../../../redux/actions/NDCFormActions";
+import { setNDCStep, updateNDCForm } from "../../../../redux/actions/NDCFormActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
 const createEmployeeConfig = [
@@ -58,6 +58,7 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
 
 export const NewNDCStepForm = () => {
   const history = useHistory();
+  // const { id } = useParams();
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(null);
@@ -66,7 +67,15 @@ export const NewNDCStepForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  // console.log("formStateNDC", formState);
+  const id = window.location.pathname.split("/").pop();
+
+  const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
+
+  useEffect(() => {
+    if (applicationDetails?.Applications.length) {
+      dispatch(updateNDCForm("responseData", applicationDetails?.Applications));
+    }
+  }, [applicationDetails]);
 
   const setStep = (updatedStepNumber) => {
     dispatch(setNDCStep(updatedStepNumber));

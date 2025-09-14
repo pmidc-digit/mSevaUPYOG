@@ -135,10 +135,10 @@ const CitizenApplicationOverview = () => {
     const ndcObject = applicationDetails?.Applications?.[0];
     if (ndcObject) {
       const applicantData = {
-        address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
-        email: ndcObject?.owners?.[0]?.emailId,
-        mobile: ndcObject?.owners?.[0]?.mobileNumber,
         name: ndcObject?.owners?.[0]?.name,
+        mobile: ndcObject?.owners?.[0]?.mobileNumber,
+        email: ndcObject?.owners?.[0]?.emailId,
+        address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
         applicationNo: ndcObject?.uuid,
       };
@@ -176,7 +176,7 @@ const CitizenApplicationOverview = () => {
     const Property = applicationDetails;
     console.log("applicationDetails in StakeholderAck", applicationDetails);
     console.log("tenants", tenants);
-    const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
+    const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.tenantId);
 
     const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
 
@@ -190,16 +190,16 @@ const CitizenApplicationOverview = () => {
 
   return (
     <div className={"employee-main-application-details"}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
-        <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
+      <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
+        {/* <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header> */}
 
         {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
-          <LinkButton label={t("DOWNLOAD_CERTIFICATE")} style={{ color: "#A52A2A" }} onClick={handleDownloadPdf}></LinkButton>
+          <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
         )}
       </div>
 
-      <Card>
-        <CardSubHeader>{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
+      <Card className="ndc_card_main">
+        <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
           {console.log("displayData?.applicantData", displayData?.applicantData)}
           {displayData?.applicantData &&
@@ -219,8 +219,8 @@ const CitizenApplicationOverview = () => {
         </StatusTable>
       </Card>
 
-      <Card>
-        <CardSubHeader>{t("NDC_APPLICATION_NDC_DETAILS_OVERVIEW")}</CardSubHeader>
+      <Card className="ndc_card_main">
+        <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_NDC_DETAILS_OVERVIEW")}</CardSubHeader>
         {displayData?.NdcDetails?.map((detail, index) => (
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
@@ -243,8 +243,8 @@ const CitizenApplicationOverview = () => {
         </div>
       </Card> */}
 
-      <Card>
-        <CardSubHeader>{t("NDC_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
+      <Card className="ndc_card_main">
+        <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
         <div style={{ display: "flex", gap: "16px" }}>
           {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
             <NDCDocument value={{ workflowDocs: displayData?.Documents }} />
@@ -255,17 +255,17 @@ const CitizenApplicationOverview = () => {
       </Card>
 
       {workflowDetails?.data?.timeline && (
-        <Card>
-          <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+        <Card className="ndc_card_main">
+          <CardSubHeader className="ndc_label">{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
           {workflowDetails?.data?.timeline.length === 1 ? (
-            <CheckPoint isCompleted={true} label={t("NDC_STATUS_" + workflowDetails?.data?.timeline[0]?.status)} />
+            <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
           ) : (
             <ConnectingCheckPoints>
               {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
                 <CheckPoint
                   keyValue={index}
                   isCompleted={index === 0}
-                  label={t("NDC_STATUS_" + checkpoint.status)}
+                  label={t(checkpoint.status)}
                   customChild={getTimelineCaptions(checkpoint, index, arr, t)}
                 />
               ))}

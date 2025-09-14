@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { CardLabel, LabelFieldPair, TextInput, Loader, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
+import { useDispatch, useSelector } from "react-redux";
 import _ from "lodash";
-import { useLocation, useHistory } from "react-router-dom";
+import { resetNDCForm } from "../redux/actions/NDCFormActions";
+import { useLocation } from "react-router-dom";
 
 const getAddress = (address, t) => {
   return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
@@ -15,16 +17,24 @@ const getAddress = (address, t) => {
 export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
   const { t } = useTranslation();
   const myElementRef = useRef(null);
+  const dispatch = useDispatch();
   let { pathname, state } = useLocation();
   state = state && (typeof state === "string" || state instanceof String) ? JSON.parse(state) : state;
+  const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
   const isEditScreen = pathname.includes("/modify-application/");
   const tenantId = window.location.href.includes("employee") ? Digit.ULBService.getCurrentPermanentCity() : localStorage.getItem("CITIZEN.CITY");
   const search = useLocation().search;
   const urlPropertyId = new URLSearchParams(search).get("propertyId");
   const isfirstRender = useRef(true);
 
-  const [propertyId, setPropertyId] = useState(formData?.cpt?.id || (urlPropertyId !== "null" ? urlPropertyId : "") || "");
-  const [searchPropertyId, setSearchPropertyId] = useState(formData?.cpt?.id || urlPropertyId !== "null" ? urlPropertyId : "");
+  const ptFromApi = apiDataCheck?.[0]?.NdcDetails?.find((item) => item.businessService == "PT");
+
+  console.log("ptFromApi", ptFromApi);
+
+  const [propertyId, setPropertyId] = useState(formData?.cpt?.id || (urlPropertyId !== "null" ? urlPropertyId : "") || ptFromApi?.consumerCode || "");
+  const [searchPropertyId, setSearchPropertyId] = useState(
+    formData?.cpt?.id || (urlPropertyId !== "null" ? urlPropertyId : "") || ptFromApi?.consumerCode || ""
+  );
   const [showToast, setShowToast] = useState(null);
   const [propertyDetails, setPropertyDetails] = useState(() => {
     if (formData?.cpt?.details && Object.keys(formData?.cpt?.details).length > 0) {
@@ -44,7 +54,10 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       };
     }
   });
+
   const [isSearchClicked, setIsSearchClicked] = useState(false);
+  const [getNoDue, setNoDue] = useState(false);
+  const [getCheckStatus, setCheckStats] = useState(false);
 
   const { isLoading, isError, error, data: propertyDetailsFetch } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: searchPropertyId }, tenantId: tenantId },
@@ -56,17 +69,29 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
     }
   );
 
+  console.log("apiDataCheck", apiDataCheck);
+
+  useEffect(() => {
+    if (ptFromApi?.consumerCode) {
+      setIsSearchClicked(true);
+      setPropertyId(ptFromApi.consumerCode);
+      setSearchPropertyId(ptFromApi.consumerCode);
+      setNoDue(true);
+      onSelect(config.key, { ...formData[config.key], id: ptFromApi.consumerCode });
+    }
+  }, [ptFromApi]);
+
   useEffect(() => {
     if (propertyDetailsFetch && propertyDetailsFetch?.Properties && propertyDetailsFetch?.Properties?.length > 0) {
       setPropertyDetails(propertyDetailsFetch);
       setShowToast(null);
+      setCheckStats(true);
     } else {
       if (isfirstRender.current) {
         isfirstRender.current = false;
         return;
       }
       if (!formData?.cpt?.details) {
-        console.log("Property Id not found in response", propertyId);
         setPropertyDetails({});
         setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
       }
@@ -80,7 +105,6 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
 
   useEffect(() => {
     if (isLoading == false && error && error == true && propertyDetails?.Properties?.length == 0) {
-      console.log("Error Caught", error, propertyDetails);
       setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
     }
   }, [error, propertyDetails]);
@@ -103,6 +127,8 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       setPropertyDetails({ Properties: [] });
       setSearchPropertyId(propertyId);
       setIsSearchClicked(true);
+
+      // dispatch(resetNDCForm());
     }
   };
 
@@ -110,6 +136,8 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
     setPropertyId(e.target.value);
     setValue(e.target.value, propertyIdInput.name);
     setIsSearchClicked(false); // ✅ show button again when input changes
+    setNoDue(false);
+    setCheckStats(false);
   };
 
   if (isEditScreen) {
@@ -154,15 +182,21 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
         if (result?.Bill[0]?.totalAmount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
         } else {
-          setShowToast({ error: false, label: t("NDC_MESSAGE_NO_DUES_FOUND") });
+          setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_PROPERTY") });
+          setNoDue(true);
+          setCheckStats(false);
         }
         setPropertyDues({ dues: result?.Bill[0] });
       } else if (result?.Bill) {
-        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
+        setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_PROPERTY") });
         setPropertyDues({ dues: { totalAmount: 0 } });
+        setNoDue(true);
+        setCheckStats(false);
       } else {
-        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
+        setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_PROPERTY") });
         setPropertyDues({ dues: { totalAmount: 0 } });
+        setNoDue(true);
+        setCheckStats(false);
       }
     } catch (error) {
       setShowToast({ error: true, label: t("NDC_MESSAGE_FETCH_FAILED") });
@@ -180,12 +214,22 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
     setPropertyDues({});
   }
 
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(null);
+      }, 3000); // auto close after 3 sec
+
+      return () => clearTimeout(timer); // cleanup
+    }
+  }, [showToast]);
+
   return (
     <React.Fragment>
       {isLoading && <Loader />}
       <div style={{ marginBottom: "16px" }}>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller" style={getInputStyles()}>
+          <CardLabel className="card-label-smaller ndc_card_labels" style={getInputStyles()}>
             {`${t(propertyIdInput.label)}`}
             {propertyIdInput.isMandatory ? "*" : null}
           </CardLabel>
@@ -197,7 +241,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
           >
             <TextInput
               key={propertyIdInput.name}
-              value={getValue(propertyIdInput.name)} //{propertyId}
+              value={propertyId} //{propertyId}
               onChange={handlePropertyChange}
               disable={false}
               maxlength={16}
@@ -211,7 +255,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
               </button>
             )}
 
-            {formData?.cpt?.details && !formData?.cpt?.dues && (
+            {!apiDataCheck?.[0]?.NdcDetails && getCheckStatus && (
               <button
                 className="submit-bar"
                 type="button"
@@ -224,7 +268,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
                 {/* Check Status */}
               </button>
             )}
-            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount > 0 && (
+            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount > 0 && !isSearchClicked && (
               <button
                 className="submit-bar"
                 type="button"
@@ -236,9 +280,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
                 {`${t("PAY_DUES")}`}
               </button>
             )}
-            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount == 0 && (
-              <div style={{ color: "green", width: "100%", maxWidth: "75px" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>
-            )}
+            {getNoDue && <div style={{ color: "green", width: "100%", maxWidth: "75px" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}
           </div>
         </LabelFieldPair>
 

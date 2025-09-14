@@ -148,6 +148,8 @@ const NDCModal = ({
     });
   }
 
+  console.log("config.label.submit", config);
+
   useEffect(() => {
     if (action) {
       setConfig(

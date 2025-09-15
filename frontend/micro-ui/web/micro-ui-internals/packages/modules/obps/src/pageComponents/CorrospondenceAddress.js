@@ -57,7 +57,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                 {
                   gender: formData?.LicneseDetails?.gender?.code,
                   mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  name: formData?.LicneseDetails?.name,
+                  name: [formData?.LicneseDetails?.name.trim(), formData?.LicneseDetails?.middleName.trim(), formData?.LicneseDetails?.lastName.trim()].filter(Boolean).join(" ").trim(),
                   dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
                   emailId: formData?.LicneseDetails?.email,
                   permanentAddress:

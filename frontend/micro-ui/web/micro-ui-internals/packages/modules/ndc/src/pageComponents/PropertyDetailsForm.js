@@ -375,6 +375,14 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }, [apiDataCheck]);
 
+  useEffect(() => {
+    if (formData?.cpt?.details?.owners) {
+      const formDataEmail = formData?.cpt?.details?.owners?.[0]?.emailId;
+      setValue("email", formDataEmail);
+      setPropertyDetails((prev) => ({ ...prev, email: formDataEmail }));
+    }
+  }, [formData?.cpt?.details?.owners]);
+
   console.log("propertyDetails====", propertyDetails, formData);
 
   return (
@@ -659,7 +667,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
               <Controller
                 control={control}
                 name={"email"}
-                defaultValue={propertyDetails?.email || formData?.cpt?.details?.owners?.[0]?.emailId}
+                defaultValue={propertyDetails?.email}
                 render={(props) => (
                   <TextInput
                     value={props?.value}

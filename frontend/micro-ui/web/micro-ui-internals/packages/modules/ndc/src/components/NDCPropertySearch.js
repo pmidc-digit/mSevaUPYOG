@@ -275,13 +275,13 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
               <button
                 className="submit-bar"
                 type="button"
-                style={{ color: "white", width: "100%", maxWidth: "100px" }}
+                style={{ color: "white", width: "100%", maxWidth: "190px" }}
                 onClick={() => {
                   redirectToPayBill(formData?.cpt?.dues?.totalAmount);
                   setPayDuesButton(false);
                 }}
               >
-                {`${t("PAY_DUES")}`}
+                {`${t("PAY_DUES")} (Rs.${formData?.cpt?.dues?.totalAmount})`}
               </button>
             )}
             {getNoDue && <div style={{ color: "green", width: "100%", maxWidth: "75px" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}

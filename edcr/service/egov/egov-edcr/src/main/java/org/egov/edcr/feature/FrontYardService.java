@@ -76,6 +76,7 @@ import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.edcr.constants.DxfFileConstants;
+import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -258,7 +259,7 @@ public class FrontYardService extends GeneralRule {
 
 							}
 
-							if (errors.isEmpty()) {
+							//if (errors.isEmpty()) {
 								Map<String, String> details = new HashMap<>();
 								details.put(RULE_NO, frontYardResult.subRule);
 								details.put(LEVEL,
@@ -275,7 +276,7 @@ public class FrontYardService extends GeneralRule {
 								}
 								scrutinyDetail.getDetail().add(details);
 								pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-							}
+							//}
 
 						}
 					}
@@ -321,8 +322,12 @@ public class FrontYardService extends GeneralRule {
 
 	    // Set minVal based on plot area
 	    if (plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-	        // Plot area is less than zero
-	    	errors.put("Plot Area Error:", "Plot area cannot be less than "+MIN_PLOT_AREA);
+	    	if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_PLOT_AREA)) {				
+				// Plot area is less than zero
+		    	errors.put("Plot Area Error:", "Plot area cannot be less than "+MIN_PLOT_AREA);
+				pl.addErrors(errors);
+            }
+	        
 	    }else if (plotArea.compareTo(PLOT_AREA_100_SQM) <= 0) {
 	        minVal = MIN_VAL_100_SQM;
 	    } else if (plotArea.compareTo(PLOT_AREA_150_SQM) <= 0) {
@@ -341,6 +346,9 @@ public class FrontYardService extends GeneralRule {
 
 	    // Validate minimum and mean value
 	    valid = validateMinimumAndMeanValue(min, mean, minVal, mean);
+	    if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_COVERAGE)) {
+			valid=true;
+		}
 
 //	    // Add error if plot area is less than or equal to 10
 //	    if (plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
@@ -880,7 +888,7 @@ public class FrontYardService extends GeneralRule {
 		Boolean valid = false;
 		if (min.compareTo(minval) >= 0 && mean.compareTo(meanval) >= 0) {
 			valid = true;
-		}
+		}		
 		return valid;
 	}
 }

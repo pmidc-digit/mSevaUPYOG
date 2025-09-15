@@ -77,6 +77,7 @@ import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.edcr.constants.DxfFileConstants;
+import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.utils.StringUtils;
 import org.springframework.stereotype.Service;
 
@@ -307,8 +308,11 @@ public class RearYardService extends GeneralRule {
 
 		// Set minVal based on plot area
 		if (plotArea.compareTo(MIN_PLOT_AREA) <= 0) {
-			// Plot area is less than zero
-			errors.put("Plot Area Error:", "Plot area cannot be less than " + MIN_PLOT_AREA);
+			if (!Far.shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_PLOT_AREA)) {				
+				// Plot area is less than zero
+				errors.put("Plot Area Error:", "Plot area cannot be less than " + MIN_PLOT_AREA);
+				pl.addErrors(errors);
+            }			
 		} else if (plotArea.compareTo(PLOT_AREA_100_SQM) <= 0) {
 			minVal = MIN_VAL_300_PlUS_SQM;
 		} else if (plotArea.compareTo(PLOT_AREA_150_SQM) <= 0) {

@@ -377,7 +377,15 @@ public class Parking extends FeatureProcess {
             			totalECS + " ECS" ,
             			Result.Not_Accepted.getResultVal()
         				);
-            } else {
+            }else if (BigDecimal.valueOf(noOfrequiredParking).compareTo(totalECS) > 0) {
+            	// Case 2: Required parking count more than provided ECS
+            	String status=Result.Not_Accepted.getResultVal();
+            	if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_ECS)) {
+            		status=Result.Accepted.getResultVal();
+            	}
+                setReportOutputDetails1(pl,"4.2.1","Parking",noOfrequiredParking + " ECS ( plotArea " + plotArea + " )",
+                    totalECS + " ECS",status);
+            }else {
 //                setReportOutputDetails(pl, RULE_, RULE__DESCRIPTION, requiredCarParkingArea + SQMTRS,
 //                        totalProvidedCarParkingArea + SQMTRS, Result.Accepted.getResultVal());
             	setReportOutputDetails1(pl,"4.2.1", "Parking", noOfrequiredParking + " ECS"  +  " ( plotArea " + plotArea + " ) " ,

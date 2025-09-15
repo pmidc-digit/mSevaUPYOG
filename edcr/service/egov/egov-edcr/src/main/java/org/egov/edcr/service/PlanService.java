@@ -33,7 +33,8 @@ import org.egov.common.entity.edcr.PlanFeature;
 import org.egov.common.entity.edcr.PlanInformation;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.contract.ComparisonRequest;
-import org.egov.edcr.contract.EdcrRequest;
+//import org.egov.edcr.contract.EdcrRequest;
+import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.edcr.entity.Amendment;
 import org.egov.edcr.entity.AmendmentDetails;
 import org.egov.edcr.entity.ApplicationType;
@@ -198,82 +199,85 @@ public class PlanService {
 
 		List<PlanFeature> features = featureService.getFeatures();		
 
-		if (edcrRequest.getAreaType().equalsIgnoreCase("SCHEME_AREA")) {
-			// Get scheme name
-			if (edcrRequest.getSchName() != null && !edcrRequest.getSchName().isEmpty()) {
-				// Upload or Select layout + control sheet
-				// Master is created for scheme-wise layout and control sheets for all ULBs
-				if (edcrRequest.getSiteReserved()) {
-					if (edcrRequest.getApprovedCS()) {
-						// Exempt scrutiny
-						// uploadPDF();
-						// proceedToFormFill();
-						// as of now not implemented the code for control sheet
-					} else {
-						// No approved control sheet
-						// min plot area and road width not required
-						// uploadDXF();
-						Set<Class<?>> classesToRemove = new HashSet<>(Arrays.asList(PlotArea.class, RoadWidth.class));
-
-						features.removeIf(feature -> feature.getRuleClass() != null
-								&& classesToRemove.contains(feature.getRuleClass()));
-					}
-				} else {
-					// Not reserved
-					// Mark as "Scrutiny as per PMBL"
-					// uploadDXF();
-					// process file normally
-				}
-			} else {
-				LOG.info("Error: Scheme Name is required");
-			}
-
-		} else if (edcrRequest.getAreaType().equalsIgnoreCase("NON_SCHEME_AREA")) {
-			Set<Class<?>> classesToRemove = new HashSet<>();
-			if (edcrRequest.getCluApprove()) {
-				// Check for min plot area and road width
-				// If both present, no scrutiny needed
-				LOG.info("Min plot area and road width met. No scrutiny required.");
-				classesToRemove.addAll(Arrays.asList(PlotArea.class, RoadWidth.class));
-			}
-
-			if ("yes".equalsIgnoreCase(edcrRequest.getCoreArea())) {
-				// Exempt plot coverage, front setback and ECS
-				LOG.info("Core area: coverage, setback and ECS exempted.");
-				classesToRemove.addAll(Arrays.asList(Coverage.class, Parking.class, FrontYardService.class));
-			} else {
-				// Not a core area
-				// Scrutiny will be done as per PMBL
-				LOG.info("Scrutiny as per PMBL.");
-				// process normally
-			}
-
-			features.removeIf(
-					feature -> feature.getRuleClass() != null && classesToRemove.contains(feature.getRuleClass()));
-
-		} else {
-			// Not CLU approved
-			// Scrutiny will be done as per PMBL
-			LOG.info("Scrutiny as per PMBL.");
-			// process normally
-		}
-		
-		LOG.info("*** Features for Processing Plan file start *** ");
-		
-		features.forEach(feature -> {
-		    if (feature.getRuleClass() != null) {
-		    	LOG.info("Feature name : " + feature.getRuleClass().getSimpleName());
-		    } else {
-		    	LOG.info("Feature name : " + feature.getName());
-		    }
-		});
+//		if (edcrRequest.getAreaType().equalsIgnoreCase("SCHEME_AREA")) {
+//			// Get scheme name
+//			if (edcrRequest.getSchName() != null && !edcrRequest.getSchName().isEmpty()) {
+//				// Upload or Select layout + control sheet
+//				// Master is created for scheme-wise layout and control sheets for all ULBs
+//				if (edcrRequest.getSiteReserved()) {
+//					if (edcrRequest.getApprovedCS()) {
+//						// Exempt scrutiny
+//						// uploadPDF();
+//						// proceedToFormFill();
+//						// as of now not implemented the code for control sheet
+//					} else {
+//						// No approved control sheet
+//						// min plot area and road width not required
+//						// uploadDXF();
+//						Set<Class<?>> classesToRemove = new HashSet<>(Arrays.asList(PlotArea.class, RoadWidth.class));
+//
+//						features.removeIf(feature -> feature.getRuleClass() != null
+//								&& classesToRemove.contains(feature.getRuleClass()));
+//					}
+//				} else {
+//					// Not reserved
+//					// Mark as "Scrutiny as per PMBL"
+//					// uploadDXF();
+//					// process file normally
+//				}
+//			} else {
+//				LOG.info("Error: Scheme Name is required");
+//			}
+//
+//		} else if (edcrRequest.getAreaType().equalsIgnoreCase("NON_SCHEME_AREA")) {
+//			Set<Class<?>> classesToRemove = new HashSet<>();
+//			if (edcrRequest.getCluApprove()) {
+//				// Check for min plot area and road width
+//				// If both present, no scrutiny needed
+//				LOG.info("Min plot area and road width met. No scrutiny required.");
+//				classesToRemove.addAll(Arrays.asList(PlotArea.class, RoadWidth.class));
+//			}
+//
+//			if ("yes".equalsIgnoreCase(edcrRequest.getCoreArea())) {
+//				// Exempt plot coverage, front setback and ECS
+//				LOG.info("Core area: coverage, setback and ECS exempted.");
+//				classesToRemove.addAll(Arrays.asList(Coverage.class, Parking.class, FrontYardService.class));
+//			} else {
+//				// Not a core area
+//				// Scrutiny will be done as per PMBL
+//				LOG.info("Scrutiny as per PMBL.");
+//				// process normally
+//			}
+//
+//			features.removeIf(
+//					feature -> feature.getRuleClass() != null && classesToRemove.contains(feature.getRuleClass()));
+//
+//		} else {
+//			// Not CLU approved
+//			// Scrutiny will be done as per PMBL
+//			LOG.info("Scrutiny as per PMBL.");
+//			// process normally
+//		}
+//		
+//		LOG.info("*** Features for Processing Plan file start *** ");
+//		
+//		features.forEach(feature -> {
+//		    if (feature.getRuleClass() != null) {
+//		    	LOG.info("Feature name : " + feature.getRuleClass().getSimpleName());
+//		    } else {
+//		    	LOG.info("Feature name : " + feature.getName());
+//		    }
+//		});
 		
 		LOG.info("*** Features for Processing Plan file end *** ");
         Plan plan = extractService.extract(dcrApplication.getSavedDxfFile(), amd, asOnDate,
                 features);
         plan.setCoreArea(dcrApplication.getCoreArea());
-	LOG.info("coreArea" + plan.getCoreArea());
-
+        LOG.info("coreArea" + plan.getCoreArea());
+        // remove requestInfo before plan processing
+        edcrRequest.setRequestInfo(null);
+        //Setting edcr Data to Plan        
+        plan.setEdcrRequest(edcrRequest);
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
 //        plan = applyRules(plan, amd, cityDetails);
         plan = applyRules(plan, amd, cityDetails,features);
@@ -433,7 +437,7 @@ public class PlanService {
     private Plan applyRules(Plan plan, Amendment amd, Map<String, String> cityDetails, List<PlanFeature> feature) {
 
         // check whether valid amendments are present
-        int index = -1;
+       int index = -1;
         AmendmentDetails[] a = null;
         int length = amd.getDetails().size();
         if (!amd.getDetails().isEmpty()) {
@@ -663,3 +667,5 @@ public class PlanService {
         }
     }
 }
+
+

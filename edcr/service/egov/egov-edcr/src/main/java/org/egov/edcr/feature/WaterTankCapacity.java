@@ -76,38 +76,39 @@ public class WaterTankCapacity extends FeatureProcess {
 
     @Override
     public Plan process(Plan pl) {
-        scrutinyDetail = new ScrutinyDetail();
-        scrutinyDetail.addColumnHeading(1, RULE_NO);
-        scrutinyDetail.addColumnHeading(2, DESCRIPTION);
-        scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
-        scrutinyDetail.addColumnHeading(4, PROVIDED);
-        scrutinyDetail.addColumnHeading(5, STATUS);
-        scrutinyDetail.setKey("Common_Water tank capacity");
-        String subRule = RULE_59_10_vii;
-        String subRuleDesc = RULE_59_10_vii_DESCRIPTION;
-        BigDecimal expectedWaterTankCapacity = BigDecimal.ZERO;
-
-        if (pl.getUtility() != null && pl.getVirtualBuilding() != null
-                && pl.getUtility().getWaterTankCapacity() != null) {
-            // No of persons = total builtup area / 12.5(occupant load)
-            // Required Water tank capacity = 135 * no of persons
-            Boolean valid = false;
-            BigDecimal totalBuitUpArea = pl.getVirtualBuilding().getTotalBuitUpArea();
-            BigDecimal noOfPersons = totalBuitUpArea.divide(TWELVE_POINTFIVE, DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-                    DcrConstants.ROUNDMODE_MEASUREMENTS);
-            expectedWaterTankCapacity = ONEHUNDRED_THIRTYFIVE
-                    .multiply(noOfPersons.setScale(0, BigDecimal.ROUND_HALF_UP));
-            expectedWaterTankCapacity = expectedWaterTankCapacity.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-                    DcrConstants.ROUNDMODE_MEASUREMENTS);
-            BigDecimal providedWaterTankCapacity = pl.getUtility().getWaterTankCapacity();
-            providedWaterTankCapacity = providedWaterTankCapacity.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-                    DcrConstants.ROUNDMODE_MEASUREMENTS);
-            if (providedWaterTankCapacity.compareTo(expectedWaterTankCapacity) >= 0) {
-                valid = true;
-            }
-            processWaterTankCapacity(pl, "", subRule, subRuleDesc, expectedWaterTankCapacity, valid);
-        }
-
+    
+//        scrutinyDetail = new ScrutinyDetail();
+//        scrutinyDetail.addColumnHeading(1, RULE_NO);
+//        scrutinyDetail.addColumnHeading(2, DESCRIPTION);
+//        scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
+//        scrutinyDetail.addColumnHeading(4, PROVIDED);
+//        scrutinyDetail.addColumnHeading(5, STATUS);
+//        scrutinyDetail.setKey("Common_Water tank capacity");
+//        String subRule = RULE_59_10_vii;
+//        String subRuleDesc = RULE_59_10_vii_DESCRIPTION;
+//        BigDecimal expectedWaterTankCapacity = BigDecimal.ZERO;
+//
+//        if (pl.getUtility() != null && pl.getVirtualBuilding() != null
+//                && pl.getUtility().getWaterTankCapacity() != null) {
+//            // No of persons = total builtup area / 12.5(occupant load)
+//            // Required Water tank capacity = 135 * no of persons
+//            Boolean valid = false;
+//            BigDecimal totalBuitUpArea = pl.getVirtualBuilding().getTotalBuitUpArea();
+//            BigDecimal noOfPersons = totalBuitUpArea.divide(TWELVE_POINTFIVE, DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+//                    DcrConstants.ROUNDMODE_MEASUREMENTS);
+//            expectedWaterTankCapacity = ONEHUNDRED_THIRTYFIVE
+//                    .multiply(noOfPersons.setScale(0, BigDecimal.ROUND_HALF_UP));
+//            expectedWaterTankCapacity = expectedWaterTankCapacity.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+//                    DcrConstants.ROUNDMODE_MEASUREMENTS);
+//            BigDecimal providedWaterTankCapacity = pl.getUtility().getWaterTankCapacity();
+//            providedWaterTankCapacity = providedWaterTankCapacity.setScale(DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+//                    DcrConstants.ROUNDMODE_MEASUREMENTS);
+//            if (providedWaterTankCapacity.compareTo(expectedWaterTankCapacity) >= 0) {
+//                valid = true;
+//            }
+//            processWaterTankCapacity(pl, "", subRule, subRuleDesc, expectedWaterTankCapacity, valid);
+//        }
+//
         return pl;
     }
 

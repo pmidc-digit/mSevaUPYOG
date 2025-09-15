@@ -196,5 +196,12 @@ public class DcrConstants {
     public static final String MDMS_EDCR_MODULE = "EDCR";
     public static final String PORTICO_DISTANCETO_EXTERIORWALL = "Block %s Portico %s Portico distance to exteriorwall";
     public static final String PDF_EXT = "application/pdf";
+    
+    //edcr skip validation constants
+    public static final String EDCR_SKIP_PLOT_AREA = "PlotArea";
+    public static final String EDCR_SKIP_ROAD_WIDTH = "RoadWidth";
+    public static final String EDCR_SKIP_PLOT_COVERAGE = "PlotCoverage";
+    public static final String EDCR_SKIP_FRONT_SETBACK = "FrontSetback";
+    public static final String EDCR_SKIP_ECS = "ECS";
 
 }

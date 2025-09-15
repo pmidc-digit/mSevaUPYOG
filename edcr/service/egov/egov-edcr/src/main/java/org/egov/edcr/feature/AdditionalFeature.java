@@ -291,6 +291,9 @@ public class AdditionalFeature extends FeatureProcess {
             boolean isAccepted = false;
             ScrutinyDetail scrutinyDetail = getNewScrutinyDetailRoadArea(
                     "Block_" + block.getNumber() + "_" + "Number of Floors");
+            if (block.getBuilding().getFloorsAboveGround() == null) {
+                block.getBuilding().setFloorsAboveGround(BigDecimal.ZERO);
+            }
             BigDecimal floorAbvGround = block.getBuilding().getFloorsAboveGround();
             String requiredFloorCount = StringUtils.EMPTY;
 

@@ -116,11 +116,14 @@ public class LiftService extends FeatureProcess {
                     if ((DxfFileConstants.A
                             .equals(plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode())
                             || DxfFileConstants.B.equals(
-                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getSubtype().getCode())
+                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode())
                             || DxfFileConstants.E.equals(
-                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getSubtype().getCode())
+                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode())
                             || DxfFileConstants.F.equals(
-                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getSubtype().getCode()))) {
+                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode())
+                            || DxfFileConstants.G.equals(
+                                    plan.getVirtualBuilding().getMostRestrictiveFarHelper().getType().getCode()))
+                    		) {
                         noOfLiftsRqrd = BigDecimal.valueOf(1);
                         boolean valid = BigDecimal.valueOf(Double.valueOf(block.getNumberOfLifts()))
                                 .compareTo(noOfLiftsRqrd) >= 0;

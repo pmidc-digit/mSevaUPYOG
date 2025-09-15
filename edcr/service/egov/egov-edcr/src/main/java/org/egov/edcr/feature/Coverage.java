@@ -134,6 +134,7 @@ public class Coverage extends FeatureProcess {
 		BigDecimal plotArea = pl.getPlot().getArea(); // add for get total plot area
 
 		String coreArea = pl.getCoreArea();
+		BigDecimal coverageArea = BigDecimal.ZERO;
 		int noOfFloors = 0;
 		Set<OccupancyTypeHelper> occupancyList = new HashSet<>();
 		// add for getting OccupancyType
@@ -163,13 +164,25 @@ public class Coverage extends FeatureProcess {
 			}
 			if (block.getBuilding() != null) {
 				block.getBuilding().setCoverageArea(coverageAreaWithoutDeduction.subtract(coverageDeductionArea));
-				BigDecimal coverage = BigDecimal.ZERO;
-				if (pl.getPlot().getPlotBndryArea().doubleValue() > 0)
-					coverage = block.getBuilding().getCoverageArea().multiply(BigDecimal.valueOf(100)).divide(
-							plotArea, DcrConstants.DECIMALDIGITS_MEASUREMENTS,
-							DcrConstants.ROUNDMODE_MEASUREMENTS);
+				
+				try {
+					if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
+				        coverageArea = block.getBuilding()
+				                .getCoverageArea()
+				                .multiply(BigDecimal.valueOf(100))
+				                .divide(
+				                    plotArea,
+				                    DcrConstants.DECIMALDIGITS_MEASUREMENTS,
+				                    DcrConstants.ROUNDMODE_MEASUREMENTS
+				                );
+				    }
+				} catch (ArithmeticException ex) {
+				    // Log or handle divide-by-zero safely
+				    // LOGGER.warn("Divide by zero while calculating coverage", ex);
+					coverageArea = BigDecimal.ZERO;
+				}
 
-				block.getBuilding().setCoverage(coverage);
+				block.getBuilding().setCoverage(coverageArea);
 
 				totalCoverageArea = totalCoverageArea.add(block.getBuilding().getCoverageArea());
 				// totalCoverage =
@@ -222,7 +235,8 @@ public class Coverage extends FeatureProcess {
 				&& A.equals(mostRestrictiveOccupancy.getType().getCode())
 				) {
 			//if (occupancyList != null && occupancyList.size() > 1) {
-				processCoverage(pl,mostRestrictiveOccupancy.getType().getName(), totalCoverage, permissibleCoverageValue);
+				processCoverage(pl,mostRestrictiveOccupancy.getType().getName(), totalCoverage, 
+						permissibleCoverageValue,coverageArea,plotArea);
 		//	}
 //			else if (A.equals(mostRestrictiveOccupancy.getType().getCode())
 //					|| F.equals(mostRestrictiveOccupancy.getType().getCode())) {
@@ -332,20 +346,18 @@ public class Coverage extends FeatureProcess {
 		return permissibleCoverage;
 	}
 
-	private void processCoverage(Plan pl, String occupancy, BigDecimal coverage, BigDecimal upperLimit
-			) {
+	private void processCoverage(Plan pl, String occupancy, BigDecimal coverage, BigDecimal upperLimit,
+		BigDecimal coverageArea, BigDecimal plotArea) {
 		LOG.info("inside processCoverage()");
 		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
 		scrutinyDetail.setKey("Common_Coverage");
 		scrutinyDetail.setHeading("Ground Coverage");
 		scrutinyDetail.addColumnHeading(1, RULE_NO);
 	   // scrutinyDetail.addColumnHeading(2, DEVELOPMENT_ZONE);
-
 		scrutinyDetail.addColumnHeading(2, OCCUPANCY);
-		  scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
+		scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
 		scrutinyDetail.addColumnHeading(4, PROVIDED);
 		scrutinyDetail.addColumnHeading(5, STATUS);
-
 		if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial"))) {
 			scrutinyDetail.addColumnHeading(6, DESCRIPTION);
 			//scrutinyDetail.addColumnHeading(5, PERMISSIBLE);
@@ -354,12 +366,25 @@ public class Coverage extends FeatureProcess {
 		String desc = getLocaleMessage(RULE_DESCRIPTION_KEY, upperLimit.toString());
 		String actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString() +" %");
 		String expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +" %");
-		if (coverage.doubleValue() <= upperLimit.doubleValue() || occupancy.equalsIgnoreCase("Residential")
-				|| occupancy.equalsIgnoreCase("Mercantile / Commercial")) {
+		
+		Boolean validateCoverage = false;
+		
+		if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_COVERAGE)) {
+			validateCoverage = true;
+		}else {
+			if(coverage.doubleValue() <= upperLimit.doubleValue()) {
+				validateCoverage = true;
+			}else {
+				validateCoverage = false;
+			}
+		}
+		
+		if (validateCoverage 
+				&& (occupancy.equalsIgnoreCase("Residential")
+				|| occupancy.equalsIgnoreCase("Mercantile / Commercial"))) {
 			Map<String, String> details = new HashMap<>();
 			details.put(RULE_NO, RULE);
-		//	details.put(DEVELOPMENT_ZONE, developmentZone);
-
+			//details.put(DEVELOPMENT_ZONE, developmentZone);
 			details.put(OCCUPANCY, occupancy);
 			details.put(PERMISSIBLE, expectedResult);
 			details.put(PROVIDED, actualResult);
@@ -375,7 +400,7 @@ public class Coverage extends FeatureProcess {
 		} else {
 			Map<String, String> details = new HashMap<>();
 			details.put(RULE_NO, RULE);
-		//	details.put(DEVELOPMENT_ZONE, developmentZone);
+			//details.put(DEVELOPMENT_ZONE, developmentZone);
 			details.put(OCCUPANCY, occupancy);
 			details.put(PERMISSIBLE, expectedResult);
 			details.put(PROVIDED, actualResult);
@@ -387,7 +412,6 @@ public class Coverage extends FeatureProcess {
 			}
 			scrutinyDetail.getDetail().add(details);
 			pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
-
 		}
 
 	}

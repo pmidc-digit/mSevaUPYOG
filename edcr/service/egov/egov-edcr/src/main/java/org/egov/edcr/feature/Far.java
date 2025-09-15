@@ -100,6 +100,7 @@ import java.util.Set;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.common.entity.dcr.helper.OccupancyHelperDetail;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Building;
@@ -564,7 +565,7 @@ public class Far extends FeatureProcess {
 		if (!distinctOccupancyTypesHelper.isEmpty()) {
 			int allResidentialOccTypesForPlan = 0;
 			for (OccupancyTypeHelper occupancy : distinctOccupancyTypesHelper) {
-				LOG.info("occupancy :" + occupancy);
+				LOG.info("occupancy :" + occupancy.getType().getName());
 				// setting residentialBuilding
 				int residentialOccupancyType = 0;
 				if (occupancy.getType() != null && A.equals(occupancy.getType().getCode())) {
@@ -937,9 +938,12 @@ public class Far extends FeatureProcess {
 		System.out.println("Type of area: " + typeOfArea);
 		// Start Rule updated by Bimal on 14 March 2024
 		
-			if (plotArea.compareTo(BigDecimal.ZERO) < 0) {
-				errors.put("Plot Area Error:", "Plot area cannot be less than 0.");
-				pl.addErrors(errors);
+			if (plotArea.compareTo(BigDecimal.ZERO) < 0) {				
+				if (!shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_PLOT_AREA)) {
+					errors.put("Plot Area Error:", "Plot area cannot be less than 0.");
+					pl.addErrors(errors);
+                }
+				
 			} else if (plotArea.compareTo(PLOT_AREA_UP_TO_100_SQM) <= 0) {
 				isAccepted = far.compareTo(FAR_UP_TO_2_00) <= 0;
 				LOG.info("FAR_UP_TO_2_00: " + isAccepted);
@@ -1446,5 +1450,47 @@ public class Far extends FeatureProcess {
 		LOG.info("Far after new case added 0.91 > " + " totalBuildUpArea : " + totalBuiltUpArea1);
 		pl.getVirtualBuilding().setTotalBuitUpArea(totalBuiltUpArea1);
 	}
+	
+	static boolean shouldSkipValidation(EdcrRequest edcrRequest, String validationType) {
+	    if (edcrRequest == null || edcrRequest.getAreaType() == null) {
+	        return false;
+	    }
+
+	    // SCHEME_AREA
+	    if ("SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
+	        if (edcrRequest.getSchName() != null && !edcrRequest.getSchName().isEmpty()) {
+	            if (Boolean.TRUE.equals(edcrRequest.getSiteReserved())) {
+	                if (!Boolean.TRUE.equals(edcrRequest.getApprovedCS())) {
+	                    // Skip PlotArea & RoadWidth validation
+	                    if ("PlotArea".equalsIgnoreCase(validationType) || "RoadWidth".equalsIgnoreCase(validationType)) {
+	                        return true;
+	                    }
+	                }
+	            }
+	        }
+	    }
+
+	    // NON_SCHEME_AREA
+	    else if ("NON_SCHEME_AREA".equalsIgnoreCase(edcrRequest.getAreaType())) {
+	        if (Boolean.TRUE.equals(edcrRequest.getCluApprove())) {
+	            // Skip PlotArea & RoadWidth validation
+	            if ("PlotArea".equalsIgnoreCase(validationType) || "RoadWidth".equalsIgnoreCase(validationType)) {
+	                return true;
+	            }
+	        }
+
+	        if ("yes".equalsIgnoreCase(edcrRequest.getCoreArea())) {
+	            // Skip plot coverage, front setback and ECS validation
+	            if ("PlotCoverage".equalsIgnoreCase(validationType)
+	                    || "FrontSetback".equalsIgnoreCase(validationType)
+	                    || "ECS".equalsIgnoreCase(validationType)) {
+	                return true;
+	            }
+	        }
+	    }
+
+	    return false;
+	}
+
 	
 }

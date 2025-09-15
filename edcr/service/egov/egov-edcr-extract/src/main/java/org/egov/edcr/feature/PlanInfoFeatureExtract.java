@@ -73,10 +73,18 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 		if (!plotBoundaries.isEmpty()) {
 			DXFLWPolyline plotBndryPolyLine = plotBoundaries.get(0);
 			((PlotDetail) pl.getPlot()).setPolyLine(plotBndryPolyLine);
-			pl.getPlot().setPlotBndryArea(Util.getPolyLineArea(plotBndryPolyLine));
-		} else
+			//pl.getPlot().setPlotBndryArea(Util.getPolyLineArea(plotBndryPolyLine));
+			BigDecimal area = Util.getPolyLineArea(plotBndryPolyLine);
+			if (area == null) {
+			    pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
+			} else {
+			    pl.getPlot().setPlotBndryArea(area);
+			}
+		} else {
+			pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
 			pl.addError(layerNames.getLayerName("LAYER_NAME_PLOT_BOUNDARY"),
 					getLocaleMessage(OBJECTNOTDEFINED, layerNames.getLayerName("LAYER_NAME_PLOT_BOUNDARY")));
+		}
 	}
 
 	private void extractBuildingFootprint(PlanDetail pl) {

@@ -110,7 +110,19 @@ public class RoadWidth extends FeatureProcess {
         if (pl.getPlanInformation() != null && pl.getPlanInformation().getRoadWidth() != null) {
             BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
             if (roadWidth == null || roadWidth.compareTo(BigDecimal.ZERO) == 0) {
-                pl.addError(ROADWIDTH, getLocaleMessage(OBJECTNOTDEFINED, ROADWIDTH));
+                boolean skipValidation = false;
+
+                if ("SCHEME_AREA".equalsIgnoreCase(pl.getEdcrRequest().getAreaType())
+                		&& !Boolean.TRUE.equals(pl.getEdcrRequest().getApprovedCS())) {
+                    skipValidation = true;
+                } else if ("NON_SCHEME_AREA".equalsIgnoreCase(pl.getEdcrRequest().getAreaType())
+                        && Boolean.TRUE.equals(pl.getEdcrRequest().getCluApprove())) {
+                    skipValidation = true;
+                }
+
+                if (!skipValidation) {
+                    pl.addError(ROADWIDTH, getLocaleMessage(OBJECTNOTDEFINED, ROADWIDTH));
+                }
             }
             String roadType = pl.getPlanInformation().getRoadType() != null ? pl.getPlanInformation().getRoadType() : "Mention Road type in PlanInfo" ;
             String typeOfArea = pl.getPlanInformation().getTypeOfArea();

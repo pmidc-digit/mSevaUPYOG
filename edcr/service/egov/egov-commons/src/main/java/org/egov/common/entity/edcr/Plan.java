@@ -60,11 +60,14 @@ import java.util.Map;
 
 import javax.persistence.Transient;
 
+import org.egov.common.edcr.model.EdcrRequest;
 import org.egov.common.entity.bpa.SubOccupancy;
 import org.egov.common.entity.bpa.Usage;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+
 
 /*All the details extracted from the plan are referred in this object*/
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -245,8 +248,18 @@ public class Plan implements Serializable {
     private List<ICT> icts = new ArrayList<>();
     
     private String coreArea;
+    
+    private EdcrRequest edcrRequest;       
 
-    public List<BigDecimal> getCanopyDistanceFromPlotBoundary() {
+    public EdcrRequest getEdcrRequest() {
+		return edcrRequest;
+	}
+
+	public void setEdcrRequest(EdcrRequest edcrRequest) {
+		this.edcrRequest = edcrRequest;
+	}
+
+	public List<BigDecimal> getCanopyDistanceFromPlotBoundary() {
         return canopyDistanceFromPlotBoundary;
     }
 

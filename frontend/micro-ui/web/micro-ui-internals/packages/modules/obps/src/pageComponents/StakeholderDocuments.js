@@ -9,6 +9,8 @@ import {
   CitizenInfoLabel,
   OpenLinkContainer,
   BackButton,
+  ActionBar,
+  SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 
@@ -22,6 +24,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   let isopenlink = window.location.href.includes("/openlink/");
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   if (isopenlink)
     window.onunload = function () {
@@ -84,7 +87,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     <div>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        <Timeline currentStep={3} flow="STAKEHOLDER" />
+        {isMobile && <Timeline currentStep={3} flow="STAKEHOLDER" />}
         {!isLoading ? (
           <FormStep
             t={t}
@@ -123,6 +126,9 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
           />
         )}
       </div>
+      <ActionBar>
+        <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleSubmit} disabled={enableSubmit} />
+      </ActionBar>
     </div>
     // </div>
   );

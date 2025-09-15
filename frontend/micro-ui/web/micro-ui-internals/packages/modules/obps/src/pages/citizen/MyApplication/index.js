@@ -38,7 +38,12 @@ const MyApplication = () => {
 
   console.log(bpaData, "BBBB");
   const getBPAREGFormData = (data) => {
+    console.log("data in getBPAREGFormData", data);
     let license = data;
+    const address = license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress;
+    const state = address?.split(",")?.[address?.split(",")?.length - 1]?.trim();
+    const distrcit = address?.split(",")?.[address?.split(",")?.length - 2]?.trim();
+    const permanentAddress = address?.split(",")?.slice(0, address?.split(",")?.length - 2)?.join(",")?.trim();
     let intermediateData = {
       Correspondenceaddress:
         license?.tradeLicenseDetail?.owners?.[0]?.correspondenceAddress ||
@@ -52,7 +57,7 @@ const MyApplication = () => {
       formData: {
         LicneseDetails: {
           PanNumber: license?.tradeLicenseDetail?.owners?.[0]?.pan,
-          PermanentAddress: license?.tradeLicenseDetail?.owners?.[0]?.permanentAddress,
+          PermanentAddress: permanentAddress,
           email: license?.tradeLicenseDetail?.owners?.[0]?.emailId,
           gender: {
             code: license?.tradeLicenseDetail?.owners?.[0]?.gender,
@@ -61,6 +66,11 @@ const MyApplication = () => {
           },
           mobileNumber: license?.tradeLicenseDetail?.owners?.[0]?.mobileNumber,
           name: license?.tradeLicenseDetail?.owners?.[0]?.name,
+          SelectedState: state || "",
+          SelectedDistrict: distrcit || "",
+          pincode: license?.tradeLicenseDetail?.address?.pincode || "",
+          Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
+          dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
         },
         LicneseType: {
           LicenseType: {
@@ -69,6 +79,8 @@ const MyApplication = () => {
             tradeType: license?.tradeLicenseDetail?.tradeUnits?.[0]?.tradeType,
           },
           ArchitectNo: license?.tradeLicenseDetail?.additionalDetail?.counsilForArchNo || null,
+          selfCertification: license?.tradeLicenseDetail?.additionalDetail?.isSelfCertificationRequired || false,
+          qualificationType: license?.tradeLicenseDetail?.additionalDetail?.qualificationType || null,
         },
       },
       isAddressSame:

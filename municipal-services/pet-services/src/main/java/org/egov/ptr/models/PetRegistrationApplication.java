@@ -11,7 +11,6 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
-import org.egov.ptr.models.*;
 
 @ApiModel(description = "A Object holds the basic data for a Pet Registration Application")
 @Getter
@@ -32,31 +31,16 @@ public class PetRegistrationApplication {
 	@JsonProperty("applicationNumber")
 	private String applicationNumber;
 
-	@NotBlank
-	@ApiModelProperty(required = true, value = "Name of the applicant")
-	@JsonProperty("applicantName")
-	private String applicantName;
-
 	@JsonProperty("fatherName")
 	private String fatherName;
-
-	@NotBlank
-	@Pattern(regexp = "^[6-9]\\d{9}$", message = "Invalid mobile number")
-	@ApiModelProperty(required = true, value = "Applicant mobile number")
-	@JsonProperty("mobileNumber")
-	private String mobileNumber;
-
-	@Email
-	@JsonProperty("emailId")
-	private String emailId;
 
 	@Valid
 	@JsonProperty("address")
 	private Address address;
 
 	@Valid
-	@JsonProperty("applicant")
-	private Applicant applicant;
+	@JsonProperty("owner")
+	private Owner owner;
 
 	@JsonProperty("auditDetails")
 	private AuditDetails auditDetails;

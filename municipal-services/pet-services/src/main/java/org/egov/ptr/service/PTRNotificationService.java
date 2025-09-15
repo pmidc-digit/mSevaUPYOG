@@ -46,7 +46,7 @@ public class PTRNotificationService {
 		String tenantId = request.getPetRegistrationApplications().get(0).getTenantId();
 		String localizationMessages = util.getLocalizationMessages(tenantId, request.getRequestInfo());
 		List<String> toUsers = new ArrayList<>();
-		String mobileNumber = request.getPetRegistrationApplications().get(0).getMobileNumber();
+		String mobileNumber = request.getPetRegistrationApplications().get(0).getOwner().getMobileNumber();
 
 		Map<String, String> mapOfPhoneNoAndUUIDs = fetchUserUUIDs(mobileNumber, request.getRequestInfo(), tenantId);
 

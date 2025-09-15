@@ -1,13 +1,11 @@
 package org.egov.ptr.service;
 
-import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,17 +13,18 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.ptr.config.PetConfiguration;
 import org.egov.ptr.models.Address;
 import org.egov.ptr.models.AuditDetails;
+import org.egov.ptr.models.Owner;
 import org.egov.ptr.models.PetDetails;
 import org.egov.ptr.models.PetRegistrationApplication;
 import org.egov.ptr.models.PetRegistrationRequest;
 import org.egov.ptr.models.PetRenewalAuditDetails;
+import org.egov.ptr.repository.OwnerRepository;
 import org.egov.ptr.util.PetUtil;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import io.jaegertracing.thriftjava.Log;
 import lombok.extern.slf4j.Slf4j;
 
 import static org.egov.ptr.util.PTRConstants.*;
@@ -42,6 +41,9 @@ public class EnrichmentService {
 
 	@Autowired
 	private PetUtil petUtil;
+
+	@Autowired
+	private OwnerRepository ownerRepository;
 
 	public void enrichPetApplication(PetRegistrationRequest petRegistrationRequest) {
 		RequestInfo requestInfo = petRegistrationRequest.getRequestInfo();
@@ -74,9 +76,11 @@ public class EnrichmentService {
 //			application.setStatus(STATUS_APPLIED);
 			application.setExpireFlag(false);
 
-			// Enrich address and pet details
+			// Enrich address, pet details, and owner
 			enrichAddress(application);
 			enrichPetDetails(application);
+			enrichOwner(application, requestInfo);
+
 
 			if (isRenewPetApplication(application)) {
 				enrichRenewalDetails(application, validityDateUnix);
@@ -131,6 +135,23 @@ public class EnrichmentService {
 		petDetails.setId(UUID.randomUUID().toString());
 	}
 
+	private void enrichOwner(PetRegistrationApplication application, RequestInfo requestInfo) {
+		Owner owner = application.getOwner();
+		if (owner != null) {
+			// Set default values for owner
+			owner.setUuid(UUID.randomUUID().toString());
+			owner.setIsPrimaryOwner(true); // Default to primary owner
+			owner.setOwnerType("INDIVIDUAL"); // Default owner type
+			owner.setStatus("ACTIVE");
+			owner.setTenantId(application.getTenantId());
+			
+			// Set owner name and mobile number from application for user service integration
+			owner.setName(application.getOwner().getName());
+			owner.setMobileNumber(application.getOwner().getMobileNumber());
+			owner.setEmailId(application.getOwner().getEmailId());
+		}
+	}
+
 	private void enrichRenewalDetails(PetRegistrationApplication application, long validityDateUnix) {
 		PetRenewalAuditDetails petRenewalAuditDetails = new PetRenewalAuditDetails();
 		petRenewalAuditDetails.setId(application.getPetToken());
@@ -179,6 +200,175 @@ public class EnrichmentService {
 				if (isNewPetApplication(application)) {
 					enrichNewPetToken(application, petRegistrationRequest.getRequestInfo(), application.getTenantId());
 					log.info("Pet Token Generated : "+ application.getPetToken());
+				}
+			}
+		}
+	}
+
+	/**
+	 * Enriches user details for search results
+	 *
+	 * @param applications List of pet registration applications
+	 * @param requestInfo Request info containing user information
+	 */
+	public void enrichUserDetails(List<PetRegistrationApplication> applications, RequestInfo requestInfo) {
+		if (CollectionUtils.isEmpty(applications)) {
+			return;
+		}
+
+		for (PetRegistrationApplication application : applications) {
+			// Initialize owner from registration fields if missing
+			if (application.getOwner() == null) {
+				Owner owner = Owner.builder()
+					.tenantId(application.getTenantId())
+					.name("") // Will be populated from user service
+					.mobileNumber("") // Will be populated from user service
+					.emailId("") // Will be populated from user service
+					.build();
+				application.setOwner(owner);
+			}
+
+			// Enrich owner with user details from user service
+			if (application.getOwner() != null) {
+				enrichOwnerUserDetails(application.getOwner(), requestInfo);
+			}
+		}
+	}
+
+	/**
+	 * Enriches owner user details by fetching from user service
+	 *
+	 * @param owner Owner object to enrich
+	 * @param requestInfo Request info containing user information
+	 */
+	private void enrichOwnerUserDetails(Owner owner, RequestInfo requestInfo) {
+		try {
+			// Create user search request based on owner details
+			org.egov.ptr.models.user.UserSearchRequest userSearchRequest = userService
+					.getBaseUserSearchRequest(owner.getTenantId(), requestInfo);
+
+			// Search by mobile number if available
+			if (owner.getMobileNumber() != null) {
+				userSearchRequest.setMobileNumber(owner.getMobileNumber());
+			}
+
+			// Search by name if available
+			if (owner.getName() != null) {
+				userSearchRequest.setName(owner.getName());
+			}
+
+			// Fetch user details
+			org.egov.ptr.models.user.UserDetailResponse userDetailResponse = userService.getUser(userSearchRequest);
+
+			// If user found, enrich owner with user details
+			if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+				org.egov.ptr.models.user.User user = userDetailResponse.getUser().get(0);
+				enrichOwnerFromUser(owner, user);
+			}
+		} catch (Exception e) {
+			log.warn("Failed to enrich user details for owner: {}", e.getMessage());
+		}
+	}
+
+	/**
+	 * Enriches owner object with user details
+	 *
+	 * @param owner Owner object to enrich
+	 * @param user User object containing user details
+	 */
+	private void enrichOwnerFromUser(Owner owner, org.egov.ptr.models.user.User user) {
+		// Set user-specific fields
+		owner.setId(user.getId());
+		owner.setUuid(user.getUuid());
+		owner.setUserName(user.getUserName());
+		owner.setActive(user.getActive());
+		owner.setCreatedBy(user.getCreatedBy());
+		owner.setCreatedDate(user.getCreatedDate());
+		owner.setLastModifiedBy(user.getLastModifiedBy());
+		owner.setLastModifiedDate(user.getLastModifiedDate());
+		// Set roles directly since Owner model uses the same Role type
+		owner.setRoles(user.getRoles());
+		owner.setType(user.getType());
+		owner.setTenantId(user.getTenantId());
+	}
+
+	/**
+	 * Saves owner metadata to the ptr_owner table
+	 */
+	public void saveOwnerMetadata(PetRegistrationRequest petRegistrationRequest) {
+		PetRegistrationApplication application = petRegistrationRequest.getPetRegistrationApplications().get(0);
+		Owner owner = application.getOwner();
+		
+		if (owner != null) {
+			ownerRepository.saveOwner(
+				owner,
+				application.getId(),
+				application.getTenantId(),
+				petRegistrationRequest.getRequestInfo().getUserInfo().getUuid(),
+				System.currentTimeMillis()
+			);
+		}
+	}
+
+	/**
+	 * Enriches owner details from user service for search results
+	 */
+	public void enrichOwnerDetailsFromUserService(List<PetRegistrationApplication> applications, RequestInfo requestInfo) {
+		for (PetRegistrationApplication application : applications) {
+			Owner owner = application.getOwner();
+			if (owner != null && owner.getUuid() != null) {
+				try {
+					// Fetch user details from user service using the stored UUID
+					org.egov.ptr.models.user.UserSearchRequest userSearchRequest = 
+						userService.getBaseUserSearchRequest(application.getTenantId(), requestInfo);
+					userSearchRequest.setUuid(java.util.Collections.singleton(owner.getUuid()));
+					
+					org.egov.ptr.models.user.UserDetailResponse userDetailResponse = 
+						userService.getUser(userSearchRequest);
+					
+					if (userDetailResponse != null && !CollectionUtils.isEmpty(userDetailResponse.getUser())) {
+						org.egov.ptr.models.user.User user = userDetailResponse.getUser().get(0);
+						
+						// Populate owner with complete user details
+						owner.setId(user.getId());
+						owner.setUuid(user.getUuid());
+						owner.setUserName(user.getUserName());
+						owner.setPassword(user.getPassword());
+						owner.setSalutation(user.getSalutation());
+						owner.setName(user.getName());
+						owner.setGender(user.getGender());
+						owner.setMobileNumber(user.getMobileNumber());
+						owner.setEmailId(user.getEmailId());
+						owner.setAltContactNumber(user.getAltContactNumber());
+						owner.setPan(user.getPan());
+						owner.setAadhaarNumber(user.getAadhaarNumber());
+						owner.setPermanentAddress(user.getPermanentAddress());
+						owner.setPermanentCity(user.getPermanentCity());
+						owner.setPermanentPincode(user.getPermanentPincode());
+						owner.setCorrespondenceCity(user.getCorrespondenceCity());
+						owner.setCorrespondencePincode(user.getCorrespondencePincode());
+						owner.setCorrespondenceAddress(user.getCorrespondenceAddress());
+						owner.setActive(user.getActive());
+						owner.setDob(user.getDob());
+						owner.setPwdExpiryDate(user.getPwdExpiryDate());
+						owner.setLocale(user.getLocale());
+						owner.setType(user.getType());
+						owner.setSignature(user.getSignature());
+						owner.setAccountLocked(user.getAccountLocked());
+						owner.setRoles(user.getRoles());
+						owner.setFatherOrHusbandName(user.getFatherOrHusbandName());
+						owner.setBloodGroup(user.getBloodGroup());
+						owner.setIdentificationMark(user.getIdentificationMark());
+						owner.setPhoto(user.getPhoto());
+						owner.setCreatedBy(user.getCreatedBy());
+						owner.setCreatedDate(user.getCreatedDate());
+						owner.setLastModifiedBy(user.getLastModifiedBy());
+						owner.setLastModifiedDate(user.getLastModifiedDate());
+						owner.setTenantId(user.getTenantId());
+					}
+				} catch (Exception e) {
+					// Log error but don't fail the search
+					System.err.println("Error fetching user details for owner: " + owner.getUuid() + ", Error: " + e.getMessage());
 				}
 			}
 		}

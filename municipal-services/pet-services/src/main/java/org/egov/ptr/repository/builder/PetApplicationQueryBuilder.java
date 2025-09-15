@@ -22,10 +22,9 @@ public class PetApplicationQueryBuilder {
 //
 //	private static final String FROM_TABLES = " FROM eg_ptr_registration ptr LEFT JOIN eg_ptr_address add ON ptr.id = add.registrationid LEFT JOIN eg_ptr_petdetails pet on ptr.id = pet.petDetailsId LEFT JOIN eg_ptr_applicationdocuments doc on ptr.id = doc.petApplicationId ";
 
-	// Updated BASE_PTR_QUERY with new columns from eg_ptr_registration
+	// Updated BASE_PTR_QUERY with new columns from eg_ptr_registration (removed applicant fields)
 	private static final String BASE_PTR_QUERY = " SELECT ptr.id as pid, ptr.tenantid as ptenantid, ptr.applicationnumber as papplicationnumber, "
-	        + "ptr.applicantname as papplicantname, ptr.fathername as pfathername, ptr.mobileNumber as pmobileNumber, "
-	        + "ptr.emailId as pemailId, ptr.applicationType as papplicationtype, ptr.validityDate as pvaliditydate, "
+	        + "ptr.applicationType as papplicationtype, ptr.validityDate as pvaliditydate, "
 	        + "ptr.status as pstatus, ptr.expireFlag as pexpireflag, ptr.petToken as ppettoken, ptr.previousApplicationNumber as ppreviousapplicationnumber, ptr.propertyId as ppropertyId, "
 	        + "ptr.createdby as pcreatedby, ptr.lastmodifiedby as plastmodifiedby, ptr.createdtime as pcreatedtime, ptr.lastmodifiedtime as plastmodifiedtime ,";
 
@@ -42,15 +41,23 @@ public class PetApplicationQueryBuilder {
 	        + "add.type as atype, add.addressline1 as aaddressline1, add.addressline2 as aaddressline2, add.landmark as alandmark, "
 	        + "add.street as astreet, add.city as acity, add.locality as alocality, add.pincode as apincode, add.detail as adetail, add.registrationid as aregistrationid ,";
 
+	// Owner SELECT query for the new ptr_owner table
+	private static final String OWNER_SELECT_QUERY = " owner.uuid as ouuid, owner.tenantid as otenantid, owner.ptrregistrationid as optrregistrationid, "
+	        + "owner.status as ostatus, owner.isprimaryowner as oisprimaryowner, owner.ownertype as oownertype, "
+	        + "owner.ownershippercentage as oownershippercentage, owner.institutionid as oinstitutionid, owner.relationship as orelationship, "
+	        + "owner.createdby as ocreatedby, owner.createdtime as ocreatedtime, owner.lastmodifiedby as olastmodifiedby, "
+	        + "owner.lastmodifiedtime as olastmodifiedtime, owner.additionaldetails as oadditionaldetails ,";
+
 	// No changes needed for the DOCUMENTS_SELECT_QUERY
 	private static final String DOCUMENTS_SELECT_QUERY = " doc.id as did, doc.tenantid as dtenantid, doc.documentType as documentType, "
 	        + "doc.filestoreId as dfilestoreId, doc.documentUid as ddocumentUid, doc.active as dactive, doc.petApplicationId as dpetApplicationId ";
 
-	// No changes needed for the FROM_TABLES query
+	// Updated FROM_TABLES query to include owner table
 	private static final String FROM_TABLES = " FROM eg_ptr_registration ptr "
 	        + "LEFT JOIN eg_ptr_address add ON ptr.id = add.registrationid "
 	        + "LEFT JOIN eg_ptr_petdetails pet on ptr.id = pet.petDetailsId "
-	        + "LEFT JOIN eg_ptr_applicationdocuments doc on ptr.id = doc.petApplicationId ";
+	        + "LEFT JOIN eg_ptr_applicationdocuments doc on ptr.id = doc.petApplicationId "
+	        + "LEFT JOIN eg_ptr_owner owner on ptr.id = owner.ptrregistrationid ";
 
 	
 	private final String ORDERBY_CREATEDTIME = " ORDER BY ptr.createdtime DESC ";
@@ -59,6 +66,7 @@ public class PetApplicationQueryBuilder {
 		StringBuilder query = new StringBuilder(BASE_PTR_QUERY);
 		query.append(PET_SELECT_QUERY);
 		query.append(ADDRESS_SELECT_QUERY);
+		query.append(OWNER_SELECT_QUERY);
 		query.append(DOCUMENTS_SELECT_QUERY);
 		query.append(FROM_TABLES);
 
@@ -82,11 +90,12 @@ public class PetApplicationQueryBuilder {
 			query.append(" ptr.applicationnumber = ? ");
 			preparedStmtList.add(criteria.getApplicationNumber());
 		}
-		if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
-			addClauseIfRequired(query, preparedStmtList);
-			query.append(" ptr.mobilenumber = ? ");
-			preparedStmtList.add(criteria.getMobileNumber());
-		}
+		// Mobile number search removed as it's now stored in user service
+		// if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
+		//	addClauseIfRequired(query, preparedStmtList);
+		//	query.append(" owner.uuid IN (SELECT uuid FROM eg_user WHERE mobilenumber = ?) ");
+		//	preparedStmtList.add(criteria.getMobileNumber());
+		// }
 		if (!ObjectUtils.isEmpty(criteria.getPetType())) {
 			addClauseIfRequired(query, preparedStmtList);
 			query.append(" LOWER(pet.pettype) = LOWER(?) ");

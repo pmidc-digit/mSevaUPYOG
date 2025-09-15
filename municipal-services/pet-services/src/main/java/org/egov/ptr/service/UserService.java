@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.Role;
-import org.egov.ptr.models.OwnerInfo;
+import org.egov.ptr.models.Owner;
 import org.egov.ptr.models.PetRegistrationApplication;
 import org.egov.ptr.models.PetRegistrationRequest;
 import org.egov.ptr.models.user.CreateUserRequest;
@@ -40,6 +40,7 @@ public class UserService {
 
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
+
 
 	@Value("${egov.user.host}")
 	private String userHost;
@@ -66,16 +67,40 @@ public class UserService {
 		PetRegistrationApplication petApplication = request.getPetRegistrationApplications().get(0);
 		RequestInfo requestInfo = request.getRequestInfo();
 		Role role = getCitizenRole();
-		OwnerInfo owner = new OwnerInfo();
+		Owner owner = petApplication.getOwner();
+		if (owner == null) {
+			// Create owner from application data if not provided
+			owner = Owner.builder()
+				.name(petApplication.getOwner().getName())
+				.mobileNumber(petApplication.getOwner().getMobileNumber())
+				.emailId(petApplication.getOwner().getEmailId())
+				.tenantId(petApplication.getTenantId())
+				.build();
+		}
 		addUserDefaultFields(petApplication.getTenantId(), role, owner);
+
+		// Ensure user-service compatible fields before create/update call
+		owner.setCreatedBy(null);
+		owner.setCreatedDate(null);
+		owner.setLastModifiedBy(null);
+		owner.setLastModifiedDate(null);
+		owner.setDob(null);
+		owner.setPwdExpiryDate(null);
+		owner.setSignature(null);
+		owner.setPhoto(null);
+		owner.setAccountLocked(false);
+		// Keep locale minimal or null as per user-service expectations
+		// owner.setLocale("en_IN"); // uncomment if required by environment
+		
 		UserDetailResponse userDetailResponse = userExists(owner, requestInfo);
-		List<OwnerInfo> existingUsersFromService = userDetailResponse.getUser();
-		Map<String, OwnerInfo> ownerMapFromSearch = existingUsersFromService.stream()
-				.collect(Collectors.toMap(OwnerInfo::getUuid, Function.identity()));
+		List<org.egov.ptr.models.user.User> existingUsersFromService = userDetailResponse.getUser();
+		Map<String, org.egov.ptr.models.user.User> ownerMapFromSearch = existingUsersFromService.stream()
+				.collect(Collectors.toMap(org.egov.ptr.models.user.User::getUuid, Function.identity()));
 
 		if (CollectionUtils.isEmpty(existingUsersFromService)) {
 
-			owner.setUserName(UUID.randomUUID().toString());
+			// Preserve the original username provided by the user, don't generate random UUID
+			// owner.setUserName(UUID.randomUUID().toString());
 			userDetailResponse = createUser(requestInfo, owner);
 
 		} else {
@@ -86,11 +111,14 @@ public class UserService {
 						ownerMapFromSearch.get(uuid));
 			} else {
 
-				owner.setUserName(UUID.randomUUID().toString());
+				// Preserve the original username provided by the user, don't generate random UUID
+				// owner.setUserName(UUID.randomUUID().toString());
 				userDetailResponse = createUser(requestInfo, owner);
 			}
 		}
 		setOwnerFields(owner, userDetailResponse, requestInfo);
+		
+		// OwnerInfo persistence handled by persister. No direct DB writes here.
 	}
 
 	/**
@@ -98,7 +126,7 @@ public class UserService {
 	 * 
 	 */
 	private UserDetailResponse updateExistingUser(PetRegistrationApplication petApplication, RequestInfo requestInfo,
-			Role role, OwnerInfo ownerFromRequest, OwnerInfo ownerInfoFromSearch) {
+			Role role, Owner ownerFromRequest, org.egov.ptr.models.user.User ownerInfoFromSearch) {
 
 		UserDetailResponse userDetailResponse;
 
@@ -106,19 +134,23 @@ public class UserService {
 		ownerFromRequest.setUuid(ownerInfoFromSearch.getUuid());
 		addUserDefaultFields(petApplication.getTenantId(), role, ownerFromRequest);
 
+		// Convert Owner to User for user service call
+		org.egov.ptr.models.user.User user = convertOwnerToUser(ownerFromRequest);
 		StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userUpdateEndpoint);
-		userDetailResponse = userCall(new CreateUserRequest(requestInfo, ownerFromRequest), uri);
+		userDetailResponse = userCall(new CreateUserRequest(requestInfo, user), uri);
 		if (userDetailResponse.getUser().get(0).getUuid() == null) {
 			throw new CustomException("INVALID USER RESPONSE", "The user updated has uuid as null");
 		}
 		return userDetailResponse;
 	}
 
-	private UserDetailResponse createUser(RequestInfo requestInfo, OwnerInfo owner) {
+	private UserDetailResponse createUser(RequestInfo requestInfo, Owner owner) {
 		UserDetailResponse userDetailResponse;
 		StringBuilder uri = new StringBuilder(userHost).append(userContextPath).append(userCreateEndpoint);
 
-		CreateUserRequest userRequest = CreateUserRequest.builder().requestInfo(requestInfo).user(owner).build();
+		// Convert Owner to User for user service call
+		org.egov.ptr.models.user.User user = convertOwnerToUser(owner);
+		CreateUserRequest userRequest = CreateUserRequest.builder().requestInfo(requestInfo).user(user).build();
 
 		userDetailResponse = userCall(userRequest, uri);
 
@@ -138,7 +170,7 @@ public class UserService {
 	 * @param role     The role of the user set in this case to CITIZEN
 	 * @param owner    The user whose fields are to be set
 	 */
-	private void addUserDefaultFields(String tenantId, Role role, OwnerInfo owner) {
+	private void addUserDefaultFields(String tenantId, Role role, Owner owner) {
 
 		owner.setActive(true);
 		owner.setTenantId(tenantId);
@@ -164,7 +196,7 @@ public class UserService {
 	 * @return UserDetailResponse containing the user if present and the
 	 *         responseInfo
 	 */
-	private UserDetailResponse userExists(OwnerInfo owner, RequestInfo requestInfo) {
+	private UserDetailResponse userExists(Owner owner, RequestInfo requestInfo) {
 
 		UserSearchRequest userSearchRequest = getBaseUserSearchRequest(owner.getTenantId(), requestInfo);
 		userSearchRequest.setMobileNumber(owner.getMobileNumber());
@@ -183,7 +215,7 @@ public class UserService {
 	 * @param listOfMobileNumber list of unique mobileNumbers in the
 	 *                           PetRegistrationRequest
 	 */
-	private void setUserName(OwnerInfo owner, Set<String> listOfMobileNumber) {
+	private void setUserName(Owner owner, Set<String> listOfMobileNumber) {
 
 		if (listOfMobileNumber.contains(owner.getMobileNumber())) {
 			owner.setUserName(owner.getMobileNumber());
@@ -295,16 +327,19 @@ public class UserService {
 	 * @param userDetailResponse userDetailResponse from the user Service
 	 *                           corresponding to the given owner
 	 */
-	private void setOwnerFields(OwnerInfo owner, UserDetailResponse userDetailResponse, RequestInfo requestInfo) {
-
-		owner.setUuid(userDetailResponse.getUser().get(0).getUuid());
-		owner.setId(userDetailResponse.getUser().get(0).getId());
-		owner.setUserName((userDetailResponse.getUser().get(0).getUserName()));
+	private void setOwnerFields(Owner owner, UserDetailResponse userDetailResponse, RequestInfo requestInfo) {
+		org.egov.ptr.models.user.User user = userDetailResponse.getUser().get(0);
+		
+		// Convert User back to Owner and update the owner object
+		Owner updatedOwner = convertUserToOwner(user);
+		owner.setUuid(updatedOwner.getUuid());
+		owner.setId(updatedOwner.getId());
+		owner.setUserName(updatedOwner.getUserName());
 		owner.setCreatedBy(requestInfo.getUserInfo().getUuid());
 		owner.setCreatedDate(System.currentTimeMillis());
 		owner.setLastModifiedBy(requestInfo.getUserInfo().getUuid());
 		owner.setLastModifiedDate(System.currentTimeMillis());
-		owner.setActive(userDetailResponse.getUser().get(0).getActive());
+		owner.setActive(updatedOwner.getActive());
 	}
 
 	/**
@@ -338,7 +373,7 @@ public class UserService {
 		return tenantId.split("\\.")[0];
 	}
 
-	private UserDetailResponse searchedSingleUserExists(OwnerInfo owner, RequestInfo requestInfo) {
+	private UserDetailResponse searchedSingleUserExists(Owner owner, RequestInfo requestInfo) {
 
 		UserSearchRequest userSearchRequest = getBaseUserSearchRequest(owner.getTenantId(), requestInfo);
 		userSearchRequest.setUserType(owner.getType());
@@ -348,6 +383,122 @@ public class UserService {
 
 		StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);
 		return userCall(userSearchRequest, uri);
+	}
+
+	/**
+	 * Populates owner info from pet application data
+	 * 
+	 * @param owner Owner object to populate
+	 * @param petApplication PetRegistrationApplication object
+	 */
+	private void populateOwnerFromApplication(Owner owner, PetRegistrationApplication petApplication) {
+		// Set basic information from application
+		owner.setName(petApplication.getOwner().getName());
+		owner.setMobileNumber(petApplication.getOwner().getMobileNumber());
+		owner.setEmailId(petApplication.getOwner().getEmailId());
+		
+		// Set owner-specific fields
+		owner.setOwnerType("INDIVIDUAL"); // Default to individual owner
+		owner.setIsPrimaryOwner(true); // Default to primary owner
+		owner.setOwnershipPercentage("100"); // Default to 100% ownership
+		
+		// Set audit fields
+		owner.setCreatedBy(petApplication.getAuditDetails() != null ? 
+			petApplication.getAuditDetails().getCreatedBy() : null);
+		owner.setCreatedDate(petApplication.getAuditDetails() != null ? 
+			petApplication.getAuditDetails().getCreatedTime() : System.currentTimeMillis());
+		owner.setLastModifiedBy(petApplication.getAuditDetails() != null ? 
+			petApplication.getAuditDetails().getLastModifiedBy() : null);
+		owner.setLastModifiedDate(petApplication.getAuditDetails() != null ? 
+			petApplication.getAuditDetails().getLastModifiedTime() : System.currentTimeMillis());
+	}
+
+	// OwnerInfo reads happen via user search APIs; no direct owner table access here.
+
+	/**
+	 * Converts Owner to User for user service calls
+	 */
+	private org.egov.ptr.models.user.User convertOwnerToUser(Owner owner) {
+		org.egov.ptr.models.user.User user = new org.egov.ptr.models.user.User();
+		user.setId(owner.getId());
+		user.setUuid(owner.getUuid());
+		user.setUserName(owner.getUserName());
+		user.setPassword(owner.getPassword());
+		user.setSalutation(owner.getSalutation());
+		user.setName(owner.getName());
+		user.setGender(owner.getGender());
+		user.setMobileNumber(owner.getMobileNumber());
+		user.setEmailId(owner.getEmailId());
+		user.setAltContactNumber(owner.getAltContactNumber());
+		user.setPan(owner.getPan());
+		user.setAadhaarNumber(owner.getAadhaarNumber());
+		user.setPermanentAddress(owner.getPermanentAddress());
+		user.setPermanentCity(owner.getPermanentCity());
+		user.setPermanentPincode(owner.getPermanentPincode());
+		user.setCorrespondenceCity(owner.getCorrespondenceCity());
+		user.setCorrespondencePincode(owner.getCorrespondencePincode());
+		user.setCorrespondenceAddress(owner.getCorrespondenceAddress());
+		user.setActive(owner.getActive());
+		user.setDob(owner.getDob());
+		user.setPwdExpiryDate(owner.getPwdExpiryDate());
+		user.setLocale(owner.getLocale());
+		user.setType(owner.getType());
+		user.setSignature(owner.getSignature());
+		user.setAccountLocked(owner.getAccountLocked());
+		user.setRoles(owner.getRoles());
+		user.setFatherOrHusbandName(owner.getFatherOrHusbandName());
+		user.setBloodGroup(owner.getBloodGroup());
+		user.setIdentificationMark(owner.getIdentificationMark());
+		user.setPhoto(owner.getPhoto());
+		user.setCreatedBy(owner.getCreatedBy());
+		user.setCreatedDate(owner.getCreatedDate());
+		user.setLastModifiedBy(owner.getLastModifiedBy());
+		user.setLastModifiedDate(owner.getLastModifiedDate());
+		user.setTenantId(owner.getTenantId());
+		return user;
+	}
+
+	/**
+	 * Converts User to Owner for pet service use
+	 */
+	private Owner convertUserToOwner(org.egov.ptr.models.user.User user) {
+		Owner owner = new Owner();
+		owner.setId(user.getId());
+		owner.setUuid(user.getUuid());
+		owner.setUserName(user.getUserName());
+		owner.setPassword(user.getPassword());
+		owner.setSalutation(user.getSalutation());
+		owner.setName(user.getName());
+		owner.setGender(user.getGender());
+		owner.setMobileNumber(user.getMobileNumber());
+		owner.setEmailId(user.getEmailId());
+		owner.setAltContactNumber(user.getAltContactNumber());
+		owner.setPan(user.getPan());
+		owner.setAadhaarNumber(user.getAadhaarNumber());
+		owner.setPermanentAddress(user.getPermanentAddress());
+		owner.setPermanentCity(user.getPermanentCity());
+		owner.setPermanentPincode(user.getPermanentPincode());
+		owner.setCorrespondenceCity(user.getCorrespondenceCity());
+		owner.setCorrespondencePincode(user.getCorrespondencePincode());
+		owner.setCorrespondenceAddress(user.getCorrespondenceAddress());
+		owner.setActive(user.getActive());
+		owner.setDob(user.getDob());
+		owner.setPwdExpiryDate(user.getPwdExpiryDate());
+		owner.setLocale(user.getLocale());
+		owner.setType(user.getType());
+		owner.setSignature(user.getSignature());
+		owner.setAccountLocked(user.getAccountLocked());
+		owner.setRoles(user.getRoles());
+		owner.setFatherOrHusbandName(user.getFatherOrHusbandName());
+		owner.setBloodGroup(user.getBloodGroup());
+		owner.setIdentificationMark(user.getIdentificationMark());
+		owner.setPhoto(user.getPhoto());
+		owner.setCreatedBy(user.getCreatedBy());
+		owner.setCreatedDate(user.getCreatedDate());
+		owner.setLastModifiedBy(user.getLastModifiedBy());
+		owner.setLastModifiedDate(user.getLastModifiedDate());
+		owner.setTenantId(user.getTenantId());
+		return owner;
 	}
 
 }

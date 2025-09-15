@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import org.egov.ptr.models.PetRegistrationRequest;
 import org.egov.ptr.service.PTRNotificationService;
+import org.egov.ptr.service.EnrichmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
@@ -22,6 +23,9 @@ public class PetNotificationConsumer {
 	private PTRNotificationService notificationService;
 
 	@Autowired
+	private EnrichmentService enrichmentService;
+
+	@Autowired
 	private ObjectMapper mapper;
 
 	@KafkaListener(topics = { "${ptr.kafka.create.topic}", "${ptr.kafka.update.topic}" })
@@ -37,9 +41,12 @@ public class PetNotificationConsumer {
 			log.error("Error while listening to value: " + record + " on topic: " + topic + ": " + e);
 		}
 
-		log.info("Pet Appplication Received: "
+		log.info("Pet Application Received: "
 				+ petRequest.getPetRegistrationApplications().get(0).getApplicationNumber());
 
+		// Save owner metadata after registration is persisted
+		enrichmentService.saveOwnerMetadata(petRequest);
+		
 		notificationService.process(petRequest);
 	}
 

@@ -50,14 +50,25 @@ public class PetApplicationRowMapper implements ResultSetExtractor<List<PetRegis
 					    .identificationMark(rs.getString("ptidentificationmark"))
 					    .build();
 
+					// Create owner object from owner table data
+					Owner owner = null;
+					if (rs.getString("ouuid") != null) {
+						owner = Owner.builder()
+							.uuid(rs.getString("ouuid"))
+							.status(rs.getString("ostatus"))
+							.isPrimaryOwner(rs.getBoolean("oisprimaryowner"))
+							.ownerType(rs.getString("oownertype"))
+							.ownershipPercentage(rs.getString("oownershippercentage"))
+							.institutionId(rs.getString("oinstitutionid"))
+							.relationship(rs.getString("orelationship"))
+							.tenantId(rs.getString("otenantid"))
+							.build();
+					}
+
 					petRegistrationApplication = PetRegistrationApplication.builder()
 					    .applicationNumber(rs.getString("papplicationnumber"))
 					    .tenantId(rs.getString("ptenantid"))
 					    .id(rs.getString("pid"))
-					    .applicantName(rs.getString("papplicantname"))
-					    .fatherName(rs.getString("pfathername"))
-					    .emailId(rs.getString("pemailid"))
-					    .mobileNumber(rs.getString("pmobilenumber"))
 					    .applicationType(rs.getString("papplicationtype"))
 					    .validityDate(rs.getLong("pvaliditydate"))  
 					    .status(rs.getString("pstatus"))
@@ -66,6 +77,7 @@ public class PetApplicationRowMapper implements ResultSetExtractor<List<PetRegis
 					    .previousApplicationNumber(rs.getString("ppreviousapplicationnumber"))
 					    .propertyId(rs.getString("ppropertyid"))
 					    .petDetails(petdetails)
+					    .owner(owner)
 					    .auditDetails(auditdetails)
 					    .build();
 

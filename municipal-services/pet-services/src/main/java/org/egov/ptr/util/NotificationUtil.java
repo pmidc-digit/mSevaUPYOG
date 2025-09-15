@@ -391,7 +391,7 @@ public class NotificationUtil {
 	}
 
 	private String getMessageWithNumberAndPetDetails(PetRegistrationApplication petApplication, String message) {
-		message = message.replace("{1}", petApplication.getApplicantName());
+		message = message.replace("{1}", petApplication.getOwner().getName());
 		message = message.replace("{2}", petApplication.getPetDetails().getPetName());
 		message = message.replace("{3}", petApplication.getApplicationNumber());
 		return message;

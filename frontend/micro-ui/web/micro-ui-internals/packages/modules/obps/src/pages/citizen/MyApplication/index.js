@@ -68,7 +68,7 @@ const MyApplication = () => {
           name: license?.tradeLicenseDetail?.owners?.[0]?.name,
           SelectedState: state || "",
           SelectedDistrict: distrcit || "",
-          pincode: license?.tradeLicenseDetail?.address?.pincode || "",
+          Pincode: license?.tradeLicenseDetail?.address?.pincode || "",
           Ulb: license?.tradeLicenseDetail?.additionalDetail?.Ulb || [],
           dateOfBirth: data?.tradeLicenseDetail?.owners?.[0]?.dob ? Digit.Utils.date.getDate(data?.tradeLicenseDetail?.owners?.[0]?.dob) || null : null,
         },

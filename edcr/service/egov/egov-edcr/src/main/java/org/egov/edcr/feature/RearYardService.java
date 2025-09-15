@@ -331,6 +331,10 @@ public class RearYardService extends GeneralRule {
 
 		// Validate minimum and mean value
 		valid = validateMinimumAndMeanValue(min, mean, minVal, mean, plotArea);
+		if (min.compareTo(minVal) >= 0) {		    
+		}else {
+			valid=false;
+		}
 
 //		    // Add error if plot area is less than or equal to 10
 //		    if (plotArea.compareTo(MIN_PLOT_AREA) <= 0) {

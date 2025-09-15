@@ -83,3 +83,6 @@ CREATE INDEX noc_index ON eg_noc
 );
 
 CREATE INDEX idx_eg_noc_details_nocuuid ON eg_noc_details (nocid);
+
+CREATE SEQUENCE IF NOT EXISTS SEQ_EG_NOC_RECEIPT_ID;
+

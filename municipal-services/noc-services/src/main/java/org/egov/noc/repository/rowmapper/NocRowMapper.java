@@ -44,7 +44,7 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
                 noc.setNocNo(rs.getString("nocNo"));
                 noc.setNocType(rs.getString("nocType"));
                 noc.setApplicationStatus(rs.getString("applicationStatus"));
-//                noc.setApplicationType(ApplicationType.fromValue(rs.getString("applicationType")));
+                noc.setApplicationType(ApplicationType.fromValue(rs.getString("applicationType")));
                 noc.setStatus(Status.fromValue(rs.getString("status")));
 //                noc.setLandId(rs.getString("landId"));
 //                noc.setSource(rs.getString("source"));
@@ -67,6 +67,7 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 			    nocListMap.put(Id, noc);
 			}
 			addChildrenToProperty(rs, noc);
+
 		}
 		return new ArrayList<>(nocListMap.values());
 	}
@@ -134,7 +135,10 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 			if (!StringUtils.isEmpty(nocDetailsJson) && !"null".equals(nocDetailsJson)) {
 				try {
 					NocDetails details = new Gson().fromJson(nocDetailsJson, NocDetails.class);
+					details.setAuditDetails(noc.getAuditDetails());
 					noc.nocDetails(details);
+
+
 				} catch (JsonSyntaxException e) {
 					log.error("Failed to parse nocDetails JSON", e);
 				}

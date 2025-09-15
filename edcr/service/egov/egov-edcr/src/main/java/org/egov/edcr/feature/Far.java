@@ -202,15 +202,15 @@ public class Far extends FeatureProcess {
 		decideNocIsRequired(pl);
 		HashMap<String, String> errorMsgs = new HashMap<>();
 		int errors = pl.getErrors().size();
-		System.out.println("hi inside process");
+		LOG.info("hi inside process");
 		validate(pl);
 		
-		System.out.println("plotarea" + pl.getPlot().getArea());
+		LOG.info("plotarea : " + pl.getPlot().getArea());
 		
 		int validatedErrors = pl.getErrors().size();
 		if (validatedErrors > errors) {
-			System.out.println("hi inside error");
-			System.out.println("error" + pl.getErrors().get(PLOT_AREA));
+			LOG.info("hi inside error");
+			LOG.error("error" + pl.getErrors().get(PLOT_AREA));
 			return pl;
 		}
 		BigDecimal totalExistingBuiltUpArea = BigDecimal.ZERO;
@@ -933,9 +933,10 @@ public class Far extends FeatureProcess {
 		boolean isAccepted = false;
 		
 		LOG.info("Processing FAR (Residential) for punjab as per new Bylaws");
-		System.out.println("Processing FAR (Residential) for punjab as per new Bylaws");
+		LOG.info("Processing FAR (Residential) for punjab as per new Bylaws");
 		LOG.info("Type of area: " + typeOfArea);
-		System.out.println("Type of area: " + typeOfArea);
+		LOG.info("Type of area: " + typeOfArea);
+		
 		// Start Rule updated by Bimal on 14 March 2024
 		
 			if (plotArea.compareTo(BigDecimal.ZERO) < 0) {				

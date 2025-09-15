@@ -128,7 +128,7 @@ public class Coverage_Citya extends FeatureProcess {
 	public Plan process(Plan pl) {
 		LOG.info("inside Coverage process()");
 		validate(pl);
-		System.out.println("coverage corearea" + pl.getCoreArea());
+		LOG.info("coverage corearea : " + pl.getCoreArea());
 		BigDecimal totalCoverage = BigDecimal.ZERO;
 		BigDecimal totalCoverageArea = BigDecimal.ZERO;
 //		BigDecimal area = pl.getPlot().getArea(); // add for get total plot area

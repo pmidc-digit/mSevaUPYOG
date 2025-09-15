@@ -601,7 +601,7 @@ public class HeightOfRoom extends FeatureProcess {
 										totalWindowArea = totalWindowArea.add(windowArea);
 									}
 
-									System.out.println(
+									LOG.info(
 											"Total Window Area for Room " + room.getNumber() + " = " + totalWindowArea);
 								}
 
@@ -616,7 +616,7 @@ public class HeightOfRoom extends FeatureProcess {
 										totalDoorArea = totalDoorArea.add(doorArea);
 									}
 
-									System.out.println(
+									LOG.info(
 											"Total Door Area for Room " + room.getNumber() + " = " + totalDoorArea);
 								}
 
@@ -712,7 +712,7 @@ public class HeightOfRoom extends FeatureProcess {
 										for (Door door : room.getDoors()) {
 											BigDecimal doorHeight = door.getDoorHeight().setScale(2, BigDecimal.ROUND_HALF_UP);
 											BigDecimal doorWidth = door.getDoorWidth();
-											System.out.println("rum number" + room.getNumber());
+											LOG.info("room number : " + room.getNumber());
 
 											if (doorHeight.compareTo(MIN_DOOR_HEIGHT) >= 0
 													&& doorWidth.compareTo(MIN_DOOR_WIDTH) >= 0) {

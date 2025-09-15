@@ -99,7 +99,7 @@ public class FetchEdcrRulesMdms {
 	            Map<String, Object> params,
 	            ArrayList<String> valueFromColumn) {
 
-	        System.out.println("inside getPermissibleValue method" + edcrRuleList);
+	    	LOG.info("inside getPermissibleValue method" + edcrRuleList);
 	        
 	       
 	        String paramsFeature = params.get("feature").toString().toLowerCase(); 

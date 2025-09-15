@@ -151,7 +151,7 @@ public class GeneralStair_Citya extends FeatureProcess {
                             for (org.egov.common.entity.edcr.GeneralStair generalStair : generalStairs) {
                             	
                          flrHt = generalStair.getFloorHeight();
-                        System.out.println("flrHt___" + flrHt);
+                         LOG.info("flrHt___" + flrHt);
                             	   List<StairLanding> landings1 = generalStair.getLandings();
                                    totalLandings += landings1.size();
                                    
@@ -164,7 +164,7 @@ public class GeneralStair_Citya extends FeatureProcess {
                                        BigDecimal risers = flight.getNoOfRises();
                                        totalRisers = totalRisers.add(risers);
                                    }
-                                   System.out.println("total totalRisers " + totalRisers);
+                                   LOG.info("total totalRisers " + totalRisers);
                                    
                                    // Sum the landing widths
                                    for (StairLanding landing : landings1) {
@@ -176,11 +176,11 @@ public class GeneralStair_Citya extends FeatureProcess {
                                    }
                                    
                                    
-                                   System.out.println("total landings " + totalLandingWidth);
+                                   LOG.info("total landings " + totalLandingWidth);
                                    
                                    totalSteps = totalRisers.add(totalLandingWidth);
                                    
-                                   System.out.println("total totalSteps " + totalSteps);
+                                   LOG.info("total totalSteps " + totalSteps);
                                    
                                    
 
@@ -220,8 +220,8 @@ public class GeneralStair_Citya extends FeatureProcess {
                     }
                 }
                 
-                System.out.println("landnig" + totalLandings);
-                System.out.println("flights" + totalFlights);
+                LOG.info("landnig" + totalLandings);
+                LOG.info("flights" + totalFlights);
                
                String occupancyName = "";
         		String subOccupancyName = "";
@@ -277,7 +277,7 @@ public class GeneralStair_Citya extends FeatureProcess {
                 
 
                 
-                System.out.println("riserHt====" + riserHeight);
+                LOG.info("riserHt====" + riserHeight);
                 
                 if (riserHeight.compareTo(value) <= 0) {
                     setReportOutputDetailsFloorStairWise(plan, RULE, "","", "" + value, "" + 
@@ -353,7 +353,7 @@ public class GeneralStair_Citya extends FeatureProcess {
                             scrutinyDetailLanding);
                 }
             }
-            System.out.println("minn" + minWidth);
+            LOG.info("minn" + minWidth);
             }else {
                 errors.put(
                         "General Stair landing width not defined in block " + block.getNumber() + " floor "

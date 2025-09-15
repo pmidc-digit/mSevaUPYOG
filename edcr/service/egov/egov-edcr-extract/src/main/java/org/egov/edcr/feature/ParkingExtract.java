@@ -304,7 +304,7 @@ public class ParkingExtract extends FeatureExtract {
                         Point m1Point = m1Next.getPoint();
 
                         if (Util.pointsEquals(mPoint, m1Point)) {
-                            System.out.println("duplicate points = " + mPoint + ", "+ m1Point);
+                        	LOGGER.info("duplicate points = " + mPoint + ", "+ m1Point);
                             duplicatePoint++;
                         }
 

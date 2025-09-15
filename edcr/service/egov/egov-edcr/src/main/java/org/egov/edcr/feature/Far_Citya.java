@@ -214,15 +214,15 @@ public class Far_Citya extends FeatureProcess {
 		decideNocIsRequired(pl);
 		HashMap<String, String> errorMsgs = new HashMap<>();
 		int errors = pl.getErrors().size();
-		System.out.println("hi inside process");
+		LOG.info("hi inside process");
 		validate(pl);
 		
-		System.out.println("plotarea" + pl.getPlot().getArea());
+		LOG.info("plotarea" + pl.getPlot().getArea());
 		
 		int validatedErrors = pl.getErrors().size();
 		if (validatedErrors > errors) {
-			System.out.println("hi inside error");
-			System.out.println("error" + pl.getErrors().get(PLOT_AREA));
+			LOG.info("hi inside error");
+			LOG.error("error" + pl.getErrors().get(PLOT_AREA));
 			return pl;
 		}
 		BigDecimal totalExistingBuiltUpArea = BigDecimal.ZERO;
@@ -947,9 +947,9 @@ public class Far_Citya extends FeatureProcess {
 //		boolean isAccepted = false;
 //		
 //		LOG.info("Processing FAR (Residential) for punjab as per new Bylaws");
-//		System.out.println("Processing FAR (Residential) for punjab as per new Bylaws");
+//		LOG.info("Processing FAR (Residential) for punjab as per new Bylaws");
 //		LOG.info("Type of area: " + typeOfArea);
-//		System.out.println("Type of area: " + typeOfArea);
+//		LOG.info("Type of area: " + typeOfArea);
 //		// Start Rule updated by Bimal on 14 March 2024
 //		
 //			if (plotArea.compareTo(BigDecimal.ZERO) < 0) {
@@ -1127,13 +1127,13 @@ public class Far_Citya extends FeatureProcess {
 	private void processFarResidential(Plan pl, OccupancyTypeHelper occupancyType, BigDecimal far, String typeOfArea,
 			BigDecimal roadWidth, HashMap<String, String> errors, String feature, String occupancyName, Map<String, List<Map<String, Object>>> edcrRuleList) {
 		
-		System.out.println("under processFarResidentoal");
-		System.out.println("+++++" );
+		LOG.info("under processFarResidentoal");
+		LOG.info("+++++" );
 		// occupancyName = occupancyType.getType().getName();
-		System.out.println("+++++" + pl.getPlot().getArea());
+		LOG.info("+++++" + pl.getPlot().getArea());
 		
 		BigDecimal plotArea = pl.getPlot().getArea();
-		System.out.println("plotarea" + plotArea);
+		LOG.info("plotarea" + plotArea);
 	
 		BigDecimal permissibleFar = BigDecimal.ZERO;
 		
@@ -1143,18 +1143,18 @@ public class Far_Citya extends FeatureProcess {
 		params.put("occupancy", occupancyName);
 		params.put("plotArea", plotArea);
 		
-		System.out.println("Featureeee" + params.get("feature"));
+		LOG.info("Featureeee" + params.get("feature"));
 		ArrayList<String> valueFromColumn = new ArrayList<>();
 		valueFromColumn.add("permissibleValue");
 		
 		List<Map<String, Object>> permissibleValue = new ArrayList<>();
-		System.out.println("listt" + pl.getEdcrRulesFeatures());
+		LOG.info("listt" + pl.getEdcrRulesFeatures());
 		try {
 		 //permissibleValue = edcrRestService.getPermissibleValue1(pl.getEdcrRulesFeatures(), params, valueFromColumn);
 		 permissibleValue = fetchEdcrRulesMdms.getPermissibleValue(pl.getEdcrRulesFeatures(), params, valueFromColumn);
 
 			LOG.info("permissibleValue" + permissibleValue);
-			System.out.println("permis___+++" + permissibleValue);
+			LOG.info("permis___+++" + permissibleValue);
 		
 		} catch (NullPointerException e) {
 			
@@ -1164,17 +1164,17 @@ public class Far_Citya extends FeatureProcess {
 		
 		String expectedResult = StringUtils.EMPTY;
 		boolean isAccepted = false;
-		System.out.println("+++++" + occupancyName + plotArea + permissibleValue);
+		LOG.info("+++++" + occupancyName + plotArea + permissibleValue);
       
 		if (!permissibleValue.isEmpty() && permissibleValue.get(0).containsKey("permissibleValue")) {
 		    permissibleFar = BigDecimal.valueOf(Double.valueOf(permissibleValue.get(0).get("permissibleValue").toString())) ;
 		}
 
-		System.out.println("farrr+" + permissibleFar);
+		LOG.info("farrr+" + permissibleFar);
 		isAccepted = far.compareTo(permissibleFar) <= 0;
 		pl.getFarDetails().setPermissableFar(permissibleFar.doubleValue());
 		expectedResult = "<= " + permissibleFar;
-	System.out.println("ec" + expectedResult);
+		LOG.info("ec" + expectedResult);
 		if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
 			buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
 		}

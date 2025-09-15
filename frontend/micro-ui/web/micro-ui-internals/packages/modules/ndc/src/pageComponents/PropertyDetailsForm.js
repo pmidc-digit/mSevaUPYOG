@@ -659,7 +659,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
               <Controller
                 control={control}
                 name={"email"}
-                defaultValue={propertyDetails?.email || ""}
+                defaultValue={propertyDetails?.email || formData?.cpt?.details?.owners?.[0]?.emailId}
                 render={(props) => (
                   <TextInput
                     value={props?.value}

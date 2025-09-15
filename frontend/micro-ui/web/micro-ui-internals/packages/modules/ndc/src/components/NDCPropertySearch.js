@@ -58,6 +58,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
   const [isSearchClicked, setIsSearchClicked] = useState(false);
   const [getNoDue, setNoDue] = useState(false);
   const [getCheckStatus, setCheckStats] = useState(false);
+  const [getPayDuesButton, setPayDuesButton] = useState(false);
 
   const { isLoading, isError, error, data: propertyDetailsFetch } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: searchPropertyId }, tenantId: tenantId },
@@ -138,6 +139,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
     setIsSearchClicked(false); // ✅ show button again when input changes
     setNoDue(false);
     setCheckStats(false);
+    setPayDuesButton(false);
   };
 
   if (isEditScreen) {
@@ -181,6 +183,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       if (result?.Bill?.length > 0) {
         if (result?.Bill[0]?.totalAmount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
+          setPayDuesButton(true);
         } else {
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_PROPERTY") });
           setNoDue(true);
@@ -255,7 +258,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
               </button>
             )}
 
-            {!apiDataCheck?.[0]?.NdcDetails && getCheckStatus && (
+            {!apiDataCheck?.[0]?.NdcDetails && getCheckStatus && !getPayDuesButton && (
               <button
                 className="submit-bar"
                 type="button"
@@ -268,13 +271,14 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
                 {/* Check Status */}
               </button>
             )}
-            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount > 0 && !isSearchClicked && (
+            {getPayDuesButton && (
               <button
                 className="submit-bar"
                 type="button"
                 style={{ color: "white", width: "100%", maxWidth: "100px" }}
                 onClick={() => {
                   redirectToPayBill(formData?.cpt?.dues?.totalAmount);
+                  setPayDuesButton(false);
                 }}
               >
                 {`${t("PAY_DUES")}`}

@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationActions";
 import NOCDocument from "./NOCDocument";
 
-function NOCSummary({ formData, t }) {
+function NOCSummary({ currentStepData:formData, t }) {
   const { pathname: url } = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
@@ -136,7 +136,9 @@ function NOCSummary({ formData, t }) {
       <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>
         {Array.isArray(formData?.documents?.documents?.documents) && formData.documents.documents.documents.length > 0 ? (
+          <div className="documentsContainerStyle">
           <NOCDocument value={{ workflowDocs: formData.documents.documents.documents }}></NOCDocument>
+          </div>
         ) : (
           <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
         )}

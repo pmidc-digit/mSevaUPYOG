@@ -220,9 +220,14 @@ const getDocuments = async (appData, t) => {
   };
 };
 
-export const getNOCAcknowledgementData = async (appData, tenantInfo, t) => {
+export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
+  let appData;
 
-  //console.log("appData here in ACK==", appData);
+  if(window.location.href.includes("employee"))appData=applicationDetails;
+  else{
+    appData=applicationDetails?.Noc?.[0] || {};
+  }
+  console.log("appData here in DownloadACK", appData);
 
   let detailsArr=[];
 

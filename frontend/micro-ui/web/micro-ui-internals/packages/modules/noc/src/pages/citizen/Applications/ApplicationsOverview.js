@@ -29,6 +29,7 @@ const CitizenApplicationOverview = () => {
   const [displayData, setDisplayData] = useState({});
 
   const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  console.log("applicationDetails here==>", applicationDetails);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -56,19 +57,28 @@ const CitizenApplicationOverview = () => {
   // };
 
   useEffect(()=>{
-    const nocObject = applicationDetails?.Applications?.[0];
+    const nocObject = applicationDetails?.Noc?.[0];
 
     if(nocObject){
       const applicantDetails = nocObject?.nocDetails?.additionalDetails?.applicationDetails;
 
       const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails;
+
+      const Documents= nocObject?.documents || [];
       
       console.log("applicantDetails",applicantDetails);
       console.log("siteDetails", siteDetails);
-      setDisplayData({applicantDetails, siteDetails});
+        
+      const finalDisplayData = {
+       applicantDetails: applicantDetails ? [applicantDetails] : [],
+       siteDetails: siteDetails ? [siteDetails] : [],
+       Documents: Documents.length > 0 ? Documents: []
+      };
+
+      setDisplayData(finalDisplayData);
     }
 
-  },[applicationDetails?.Applications])
+  },[applicationDetails?.Noc])
 
 
 
@@ -95,17 +105,17 @@ const CitizenApplicationOverview = () => {
     return <Loader />;
   }
 
+  console.log("displayData here", displayData);
+
   return (
     <div className={"employee-main-application-details"}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px" }}>
         <Header styles={{ fontSize: "32px" }}>{t("NDC_APP_OVER_VIEW_HEADER")}</Header>
 
-        {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
+        {applicationDetails?.Noc?.[0]?.applicationStatus === "APPROVED" && (
           <LinkButton label={t("DOWNLOAD_CERTIFICATE")} style={{ color: "#A52A2A" }} onClick={handleDownloadPdf}></LinkButton>
         )}
       </div>
-
-      /**If no applicants then show MSG as per PGR */
 
       <Card>
         <CardSubHeader>{t("NOC_APPLICANT_DETAILS")}</CardSubHeader>
@@ -115,7 +125,7 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_FIRM_OWNER_NAME_LABEL")} text={detail?.applicantOwnerOrFirmName || "N/A"} />
               <Row label={t("NOC_APPLICANT_EMAIL_LABEL")} text={detail?.applicantEmailId || "N/A"} />
               <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.applicantFatherHusbandName || "N/A"} />
-              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber} />
+              <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
               <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
               <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || "N/A"} />
               <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
@@ -124,20 +134,23 @@ const CitizenApplicationOverview = () => {
         ))}
       </Card>
 
-      <Card>
-        <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
         {displayData?.applicantDetails?.professionalName && displayData?.applicantDetails?.map((detail, index) => (
+          <React.Fragment>
+           <Card>
+          <CardSubHeader>{t("NOC_PROFESSIONAL_DETAILS")}</CardSubHeader>
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("NOC_PROFESSIONAL_NAME_LABEL")} text={detail?.professionalName || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_EMAIL_LABEL")} text={detail?.professionalEmailId || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL")} text={detail?.professionalRegId || "N/A"} />
-              <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber} />
+              <Row label={t("NOC_PROFESSIONAL_MOBILE_NO_LABEL")} text={detail?.professionalMobileNumber || "N/A"} />
               <Row label={t("NOC_PROFESSIONAL_ADDRESS_LABEL")} text={detail?.professionalAddress || "N/A"} />
             </StatusTable>
           </div>
+          </Card>
+          </React.Fragment>
         ))}
-      </Card>
+      
 
       <Card>
         <CardSubHeader>{t("NOC_SITE_DETAILS")}</CardSubHeader>

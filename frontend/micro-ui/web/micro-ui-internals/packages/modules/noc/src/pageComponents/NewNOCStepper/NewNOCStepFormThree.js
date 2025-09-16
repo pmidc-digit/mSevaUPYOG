@@ -18,6 +18,12 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
+  const coordinates = useSelector(function (state) {
+        return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
+  });
+
+  console.log("parentStepThree coordinates", coordinates);
+
   function goNext(finaldata) {
     //console.log(`Data in step ${config.currStepNumber} is: \n`, finaldata);
     const missingFields = validation(finaldata);
@@ -26,13 +32,24 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       setShowToast(true);
       return;
     }
+    
+    // if(window.location.href.includes("new-application") && (!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()))){
+    //   setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
+    //   setShowToast(true);
+    //   return;
+    // }
 
-    if(!sessionStorage.getItem("Latitude1") || !sessionStorage.getItem("Longitude1") || !sessionStorage.getItem("Latitude2") || !sessionStorage.getItem("Longitude2") ){
+    //  if(window.location.href.includes("edit-application") && (!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()))){
+    //   setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
+    //   setShowToast(true);
+    //   return;
+    // }
+
+     if(!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()) ||  !(coordinates?.Longitude1?.trim()) || !(coordinates?.Longitude2?.trim())){
       setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
       setShowToast(true);
       return;
     }
-    //Check for Location Details
 
     onGoNext();
     //}
@@ -61,7 +78,7 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+    //console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     }

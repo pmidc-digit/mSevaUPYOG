@@ -20,7 +20,7 @@ const NOCSpecificationDetails = (_props) => {
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
-  const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.specificationBuildingCategory || []);
+  const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.specificationBuildingCategory || null);
 
   const { data: buildingCategory, isLoading: isLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
 
@@ -85,7 +85,14 @@ const NOCSpecificationDetails = (_props) => {
               name={"specificationBuildingCategory"}
               rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
-                <Dropdown className="form-field" select={props.onChange} selected={props.value} option={buildingCategory} optionKey="name" />
+                <Dropdown className="form-field" 
+                select={(e)=>{
+                  setSelectedBuildingCategory(e);
+                  props.onChange(e)
+                }} 
+                selected={props.value} 
+                option={buildingCategory} 
+                optionKey="name" />
               )}
             />
           )}

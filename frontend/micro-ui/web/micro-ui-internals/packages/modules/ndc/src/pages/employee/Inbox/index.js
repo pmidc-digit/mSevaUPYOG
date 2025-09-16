@@ -38,19 +38,19 @@ const Inbox = ({ parentRoute }) => {
   function formReducer(state, payload) {
     switch (payload.action) {
       case "mutateSearchForm":
-        Digit.SessionStorage.set("NOC.INBOX", { ...state, searchForm: payload.data });
+        Digit.SessionStorage.set("NDC.INBOX", { ...state, searchForm: payload.data });
         return { ...state, searchForm: payload.data };
       case "mutateFilterForm":
-        Digit.SessionStorage.set("NOC.INBOX", { ...state, filterForm: payload.data });
+        Digit.SessionStorage.set("NDC.INBOX", { ...state, filterForm: payload.data });
         return { ...state, filterForm: payload.data };
       case "mutateTableForm":
-        Digit.SessionStorage.set("NOC.INBOX", { ...state, tableForm: payload.data });
+        Digit.SessionStorage.set("NDC.INBOX", { ...state, tableForm: payload.data });
         return { ...state, tableForm: payload.data };
       default:
         break;
     }
   }
-  const InboxObjectInSessionStorage = Digit.SessionStorage.get("NOC.INBOX");
+  const InboxObjectInSessionStorage = Digit.SessionStorage.get("NDC.INBOX");
 
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("sourceRefId", null);

@@ -14,12 +14,15 @@ export const useNOCCitizenSearchApplication = (params, tenantId, config = {}, t)
     staleTime: Infinity,
     select: (data) => {
       console.log("data in useNOCCitizenSearchApplication hook ", data);
-      const applications = data?.data?.Applications || [];
-      const count = data?.data?.totalCount || 0;
+      const applications = data?.data?.Noc || [];
+      const count = data?.data?.count || 0;
 
-      const mappedData = applications.map((owner) => ({
-        BPA_APPLICATION_NUMBER_LABEL: owner?.applicationNo,
-        TL_LOCALIZATION_OWNER_NAME: owner?.owners[0]?.name,
+      // console.log("count in hook", count);
+      // console.log("applications in hook", applications);
+
+      const mappedData = applications?.map((owner) => ({
+        NOC_APPLICATION_NUMBER : owner?.applicationNo,
+        // TL_LOCALIZATION_OWNER_NAME: owner?.owners[0]?.name,
         TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL: owner?.applicationStatus,
 
         Applications: owner,

@@ -54,7 +54,7 @@ const NOCApplicantDetails = (_props) => {
 
    const getOwnerDetails= async ()=>{
     if(mobileNo === "" || mobileNo.length!==10){
-        setShowToast({ key: "true", error: true, message: "ERR_MOBILE_NUMBER_INCORRECT" });
+        setShowToast({ key: "true", error: true, message: "INVALID_MOBILE_NUMBER" });
         return;   
     }
    

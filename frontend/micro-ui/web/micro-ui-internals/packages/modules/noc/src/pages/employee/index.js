@@ -20,7 +20,7 @@ const NOCBreadCrumbs = ({ location }) => {
     },
     {
       path: "/digit-ui/employee/noc/inbox/application-overview/:id",
-      content: t("NOC_APP_OVER_VIEW_HEADER"),
+      content: t("NOC_APPLICATION_OVERVIEW_HEADER"),
       show: location.pathname.includes("noc/inbox/application-overview") ? true : false,
     },
     {
@@ -43,6 +43,8 @@ const EmployeeApp = ({ path }) => {
   const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCApplicationOverview");
   const Inbox = Digit?.ComponentRegistryService?.getComponent("NOCInbox");
   const NewNOCApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCStepperForm");
+  const NOCEmployeeApplicationOverview = Digit?.ComponentRegistryService?.getComponent("NOCEmployeeApplicationOverview");
+  const NewNOCEditApplication = Digit?.ComponentRegistryService?.getComponent("NewNOCEditApplication");
 
   const isResponse = window.location.href.includes("/response");
   const isMobile = window.Digit.Utils.browser.isMobile();
@@ -53,9 +55,11 @@ const EmployeeApp = ({ path }) => {
         <NOCBreadCrumbs location={location} />
       </div> : null} 
       <Switch>
-        <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} />
+        {/* <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={ApplicationOverview} /> */}
+        <PrivateRoute path={`${path}/inbox/application-overview/:id`} component={NOCEmployeeApplicationOverview} />
         <PrivateRoute path={`${path}/search/application-overview/:id`} component={ApplicationOverview} />
         <PrivateRoute path={`${path}/new-application`} component={NewNOCApplication} />
+        <PrivateRoute path={`${path}/edit-application/:id`} component={NewNOCEditApplication} />
         <PrivateRoute path={`${path}/inbox`} component={(props) => <Inbox {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/search`} component={(props) => <SearchApplication {...props} parentRoute={path} />} />
         <PrivateRoute path={`${path}/response/:id`} component={Response} />

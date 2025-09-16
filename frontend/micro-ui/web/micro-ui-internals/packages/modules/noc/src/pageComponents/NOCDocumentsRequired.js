@@ -11,24 +11,44 @@ import {
   CitizenInfoLabel,
 } from "@mseva/digit-ui-react-components";
 import EXIF from "exif-js";
+import { useDispatch, useSelector } from "react-redux";
+import { UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates} from "../redux/action/NOCNewApplicationActions";
 
 const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(formData?.documents?.documents);
+  console.log("documents in childStep three", documents);
   const [error, setError] = useState(null);
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
+  const [geocoordinates,setGeoCoordinates]= useState(null);
 
   const stateId = Digit.ULBService.getStateId();
+  const dispatch = useDispatch();
 
   const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NOC", ["Documents"]);
   //console.log("data for documents here", data)
   //console.log("formData here =====", formData);
 
+  const coordinates = useSelector(function (state) {
+      return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
+  });
+
+  useEffect(()=>{
+    if(Object.keys(coordinates).length>0){
+      setGeoCoordinates(coordinates);
+    }
+  },[coordinates]);
+
+  console.log("coordiantes (from redux)", coordinates);
+
+  console.log("geocoordinates", geocoordinates);
+
   const handleSubmit = () => {
     let document = formData.documents;
     let documentStep;
     documentStep = { ...document, documents: documents };
+    //console.log("documentStep", documentStep);
     onSelect(config.key, documentStep);
   };
   const onSkip = () => onSelect();
@@ -66,6 +86,10 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
                 documents={documents}
                 setCheckRequiredFields={setCheckRequiredFields}
                 handleSubmit={handleSubmit}
+                geocoordinates={geocoordinates}
+                setGeoCoordinates={setGeoCoordinates}
+                // coordinates={coordinates}
+                dispatch={dispatch}
               />
             );
           })}
@@ -78,7 +102,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   );
 };
 
-function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
+function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id, geocoordinates, setGeoCoordinates,dispatch }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   // console.log("filetetetetet",filteredDocument, documents, doc);
 
@@ -112,22 +136,43 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
       if (doc?.code === "OWNER.SITEPHOTOGRAPHONE") {
         if (location.latitude !== null && location.longitude !== null) {
-          sessionStorage.setItem("Latitude1", location.latitude);
-          sessionStorage.setItem("Longitude1", location.longitude);
+          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude1",location.latitude));
+          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude1",location.longitude));
+          setGeoCoordinates((prev)=>{
+          return {
+            ...prev,
+            Latitude1:location.latitude,
+            Longitude1:location.longitude
+          }
+          })
         } else {
-          sessionStorage.removeItem("Latitude1");
-          sessionStorage.removeItem("Longitude1");
+          if(window.location.pathname.includes("edit")){
+          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude1",""));
+          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude1",""));
+          }
+
           alert("Please upload a photo with location details.");
         }
       }
 
       if (doc?.code === "OWNER.SITEPHOTOGRAPHTWO") {
         if (location.latitude !== null && location.longitude !== null) {
-          sessionStorage.setItem("Latitude2", location.latitude);
-          sessionStorage.setItem("Longitude2", location.longitude);
+          
+          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude2",location.latitude));
+          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude2",location.longitude));
+          setGeoCoordinates((prev)=>{
+          return {
+            ...prev,
+            Latitude2:location.latitude,
+            Longitude2:location.longitude
+          }
+          })
         } else {
-          sessionStorage.removeItem("Latitude2");
-          sessionStorage.removeItem("Longitude2");
+          if(window.location.pathname.includes("edit")){
+          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude2",""));
+          dispatch(UPDATE_NOCNewApplication_CoOrdinates("Longitude2",""));
+          }
+          
           alert("Please upload a photo with location details.");
         }
       }
@@ -327,34 +372,38 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           />
         )}
 
-        {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&
-        (sessionStorage.getItem("Latitude1") && sessionStorage.getItem("Longitude1") ? (
-          <div>
-            <p>Latitude: {sessionStorage.getItem("Latitude1")}</p>
-            <p>Longitude: {sessionStorage.getItem("Longitude1")}</p>
-            {/* {setIsNextButtonDisabled(false)}  */}
-          </div>
-        ) : (
-          <div>
-            <p style={{ color: "red" }}>Please upload a Photo with Location details.</p>
-            {/* {setIsNextButtonDisabled(true)}  */}
-          </div>
-        ))}
+       {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  window.location.href.includes("new-application") &&
+        (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&
+           <div>
+               <p>Latitude: {geocoordinates.Latitude1}</p>
+               <p>Longitude: {geocoordinates.Longitude1}</p>
+           </div> 
+        }
 
-        {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&
-        (sessionStorage.getItem("Latitude2") && sessionStorage.getItem("Longitude2") ? (
-          <div>
-            <p>Latitude: {sessionStorage.getItem("Latitude2")}</p>
-            <p>Longitude: {sessionStorage.getItem("Longitude2")}</p>
-            {/* {setIsNextButtonDisabled(false)}  */}
-          </div>
-        ) : (
-          <div>
-            <p style={{ color: "red" }}>Please upload a Photo with Location details.</p>
-            {/* {setIsNextButtonDisabled(true)}  */}
-          </div>
-        ))}
+       {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  window.location.href.includes("new-application") &&
+        (geocoordinates?.Latitude2 && geocoordinates?.Longitude2 ) &&
+           <div>
+               <p>Latitude: {geocoordinates.Latitude2}</p>
+               <p>Longitude: {geocoordinates.Longitude2}</p>
+           </div>  
+       }
 
+      
+       {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  window.location.href.includes("edit-application") &&
+        (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&
+           <div>
+               <p>Latitude: {geocoordinates.Latitude1}</p>
+               <p>Longitude: {geocoordinates.Longitude1}</p>
+           </div> 
+       }
+
+       {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  window.location.href.includes("edit-application") &&
+        (geocoordinates?.Latitude2 && geocoordinates?.Longitude2 ) &&
+           <div>
+               <p>Latitude: {geocoordinates.Latitude2}</p>
+               <p>Longitude: {geocoordinates.Longitude2}</p>
+           </div>  
+       }
 
       </LabelFieldPair>
     </div>

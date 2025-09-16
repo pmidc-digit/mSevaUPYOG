@@ -8,13 +8,15 @@ import NOCSpecificationDetails from "../NOCSpecificationDetails";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
+import { useLocation } from "react-router-dom";
 
 const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const [showToast, setShowToast] = useState(false);
-  const [error, setError] = useState("");
+  const [showToast, setShowToast] = useState(null);
+  const [error, setError] = useState(null);
   const userInfo = Digit.UserService.getUser()?.info || {};
+
 
   const {
     control,
@@ -72,17 +74,24 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const callCreateAPI= async (formData)=>{ 
         
         // Prepare nocFormData
-        const nocFormData = {...formData};
+      const nocFormData = {...formData};
 
-        // console.log("nocFormData ==>", nocFormData)
-    
-        const ownerObj={
-          mobileNumber: userInfo?.mobileNumber || "",
-          name: userInfo?.name || "",
-          emailId:userInfo?.emailId || "",
-          type: userInfo?.type || "",
-          userName: userInfo?.userName || ""
-        }
+       // console.log("nocFormData ==>", nocFormData)
+
+      const ownerObj = window.location.href.includes("citizen")
+       ? {
+       mobileNumber: userInfo?.mobileNumber || "",
+       name: userInfo?.name || "",
+       emailId: userInfo?.emailId || "",
+       userName: userInfo?.userName || ""
+      }
+     : {
+       mobileNumber: nocFormData?.applicationDetails?.applicantMobileNumber || "",
+       name: nocFormData?.applicationDetails?.applicantOwnerOrFirmName || "",
+       emailId: nocFormData?.applicationDetails?.applicantEmailId || "",
+       userName: nocFormData?.applicationDetails?.applicantMobileNumber || ""
+      };
+
     
         // Final payload
         const payload = {
@@ -112,6 +121,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           return { isSuccess: true, response };
         } else {
           console.log("error  : create api not executed successfully !!!");
+          setShowToast({ key: "error", message: "Something went wrong, try after sometime" });
+          setError("Something went wrong, try after sometime");
           return { isSuccess: false, response };
         }
 
@@ -132,8 +143,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }
 
   const closeToast = () => {
-    setShowToast(false);
-    setError("");
+    setShowToast(null);
+    setError(null);
   };
 
   return (
@@ -149,7 +160,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         </ActionBar>
       </form>
 
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast.key == "error" ? true: false} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

@@ -40,7 +40,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
     }
   },[coordinates]);
 
-  console.log("coordiantes (from redux)", coordinates);
+  console.log("coordinates (from redux)", coordinates);
 
   console.log("geocoordinates", geocoordinates);
 

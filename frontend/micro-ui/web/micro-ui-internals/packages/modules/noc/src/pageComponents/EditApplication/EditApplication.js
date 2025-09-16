@@ -93,9 +93,7 @@ const EditApplication = () => {
   const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails || {};
   const documents = nocObject?.documents || [];
   const coordinates= nocObject?.nocDetails?.additionalDetails?.coordinates || {};
-  // console.log("coordinates here in edit", coordinates);
-
-
+  
   const setStep = (updatedStepNumber) => {
     dispatch(SET_NOCNewApplication_STEP(updatedStepNumber));
   };
@@ -116,18 +114,17 @@ const EditApplication = () => {
        },
       };
 
-      // Object.keys(coordinates).forEach((key)=>{
-      //   dispatch(UPDATE_NOCNewApplication_CoOrdinates({key, value: coordinates[key]}));
-      // });
-      //dispatch(UPDATE_NOCNewApplication_CoOrdinates("Latitude1",location.latitude));
-
+        Object.entries(coordinates).forEach(([key,value])=>{
+        dispatch(UPDATE_NOCNewApplication_CoOrdinates(key, value));
+        });
+      
         dispatch(UPDATE_NOCNewApplication_FORM("applicationDetails", applicantDetails));
         dispatch(UPDATE_NOCNewApplication_FORM("siteDetails", siteDetails));
         dispatch(UPDATE_NOCNewApplication_FORM("documents", formattedDocuments));
         dispatch(UPDATE_NOCNewApplication_FORM("apiData", applicationDetails));
-        dispatch(UPDATE_NOCNewApplication_CoOrdinates("coordinates",{...coordinates}));
+        
     }
-  }, [isLoading, applicationDetails, coordinates]);
+  }, [isLoading, applicationDetails]);
 
   // console.log("formData",formData);
 

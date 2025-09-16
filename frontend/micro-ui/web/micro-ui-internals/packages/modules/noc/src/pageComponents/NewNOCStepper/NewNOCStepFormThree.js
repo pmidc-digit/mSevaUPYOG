@@ -22,7 +22,7 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
         return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
   });
 
-  console.log("parentStepThree coordinates", coordinates);
+  console.log("coordinates from redux", coordinates);
 
   function goNext(finaldata) {
     //console.log(`Data in step ${config.currStepNumber} is: \n`, finaldata);

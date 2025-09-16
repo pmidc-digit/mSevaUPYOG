@@ -174,6 +174,11 @@ import {
   InfoIcon,
   LoginIcon,
   PTRIcon,
+  NDCIcon,
+  NOCIcon,
+  ADSIcone,
+  SVIcon,
+  CHBIcon
 } from "./atoms/svgindex";
 import Table from "./atoms/Table";
 import TelePhone from "./atoms/TelePhone";
@@ -446,7 +451,12 @@ export {
   TimerIcon,
   RupeeSymbol,
   ValidityTimeIcon,
+  NDCIcon,
+  NOCIcon,
   AddIcon,
+  ADSIcone,
+  SVIcon,
+  CHBIcon,
   AddNewIcon,
   ViewReportIcon,
   InboxIcon,

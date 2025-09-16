@@ -65,6 +65,9 @@ const Profile = ({ info, stateName, t }) => {
           <div className="label-text"> {info.emailId} </div>
         </div>
       )}
+      <div id="profile-links">
+          Edit
+      </div>
       <div className="profile-divider"></div>
       {window.location.href.includes("/employee") &&
         !window.location.href.includes("/employee/user/login") &&
@@ -122,39 +125,6 @@ export const CitizenSideBar = ({ isOpen, isMobile = false, toggleSidebar, onLogo
   if (isFetched && user && user.access_token) {
     profileItem = <Profile info={user?.info} stateName={stateInfo?.name} t={t} />;
     menuItems = menuItems.filter((item) => item?.id !== "login-btn" && item?.id !== "help-line");
-    menuItems = [
-      ...menuItems,
-      {
-        text: t("EDIT_PROFILE"),
-        element: "PROFILE",
-        icon: "EditPencilIcon",
-        populators: {
-          onClick: showProfilePage,
-        },
-      },
-      {
-        text: t("CORE_COMMON_LOGOUT"),
-        element: "LOGOUT",
-        icon: "LogoutIcon",
-        populators: {
-          onClick: onLogout,
-        },
-      },
-      {
-        text: (
-          <React.Fragment>
-            {t("CS_COMMON_HELPLINE")}
-            <div className="telephone" style={{ marginTop: "-10%" }}>
-              <div className="link">
-                <a href={`tel:${filteredTenantContact}`}>{filteredTenantContact}</a>
-              </div>
-            </div>
-          </React.Fragment>
-        ),
-        element: "Helpline",
-        icon: "Phone",
-      },
-    ];
   }
 
   let configEmployeeSideBar = {};

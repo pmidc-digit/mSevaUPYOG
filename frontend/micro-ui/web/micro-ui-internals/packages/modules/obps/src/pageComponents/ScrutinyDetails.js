@@ -18,95 +18,681 @@ import { Link, useHistory, useParams } from "react-router-dom";
 import Timeline from "../components/Timeline";
 import { stringReplaceAll } from "../utils";
 
-const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
-  const { t } = useTranslation();
-  const history = useHistory();
-  const [subOccupancy, setsubOccupancy] = useState([]);
-  const [subOccupancyObject, setsubOccupancyObject] = useState(formData?.subOccupancy || formData?.landInfo?.unit || {});
-  const [subOccupancyOption, setsubOccupancyOption] = useState([]);
-  const [floorData, setfloorData] = useState([]);
-  let scrutinyNumber = `DCR82021WY7QW`;
-  let user = Digit.UserService.getUser();
-  const tenantId = user?.info?.permanentCity || Digit.ULBService.getCurrentTenantId();
-  const checkingFlow = formData?.uiFlow?.flow;
-  const [showToast, setShowToast] = useState(null);
-  const stateCode = Digit.ULBService.getStateId();
-  const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["SubOccupancyType"]);
+// const ScrutinyDetails = ({ onSelect, userType, formData, config, onLoad }) => {
+//   const { t } = useTranslation();
+//   const history = useHistory();
+//     const [editConfig, setEditConfig] = useState(config)
+//   const [subOccupancy, setsubOccupancy] = useState([]);
+//   const [subOccupancyObject, setsubOccupancyObject] = useState(formData?.subOccupancy || formData?.landInfo?.unit || {});
+//   const [subOccupancyOption, setsubOccupancyOption] = useState([]);
+//   const [floorData, setfloorData] = useState([]);
+//   let scrutinyNumber = `DCR82021WY7QW`;
+//   let user = Digit.UserService.getUser();
+//   const tenantId = user?.info?.permanentCity || Digit.ULBService.getCurrentTenantId();
+//   const checkingFlow = formData?.uiFlow?.flow;
+//   const [showToast, setShowToast] = useState(null);
+//   const stateCode = Digit.ULBService.getStateId();
+//   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["SubOccupancyType"]);
+//   const { data, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, formData?.data?.scrutinyNumber, {
+//     enabled: true,
+//   });
+
+//   console.log(subOccupancy, "OCCUPANCY");
+//   console.log("formData in scrutiny page", formData);
+
+//   useEffect(() => {
+//     if (!isMdmsLoading && formData?.data?.occupancyType) {
+//       const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || [];
+
+//       const matched = subOccupancyMaster.find((item) => item.name?.toLowerCase() === formData.data.occupancyType.toLowerCase());
+
+//       if (matched) {
+//         const formatted = {
+//           code: matched.code,
+//           name: matched.name,
+//           i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(matched.code.toUpperCase(), "-", "_")}`,
+//         };
+
+//         setsubOccupancyObject({
+//           Block_1: [formatted],
+//         });
+//       }
+//     }
+//   }, [formData?.data?.occupancyType, mdmsData, isMdmsLoading]);
+
+//   useEffect(()=>{
+//     onLoad();
+//   },[])
+
+//   console.log(formData, "occupancy");
+
+//   function getFloorData(block) {
+//     let floors = [];
+//     block?.building?.floors?.map((ob) => {
+//       floors.push({
+//         Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
+//         Level: ob.number,
+//         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
+//         BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
+//         FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
+//         // CarpetArea: Number(ob.occupancies?.[0]?.CarpetArea).toFixed(2) || 0,
+//         key: t(`BPA_FLOOR_NAME_${ob.number}`),
+//       });
+//     });
+//     return floors;
+//   }
+
+//   function getsuboptions() {
+//     let suboccoption = [];
+//     // data &&
+//     // data?.planDetail?.mdmsMasterData?.SubOccupancyType?.map((ob) => {
+//     mdmsData?.BPA?.SubOccupancyType?.map((ob) => {
+//       suboccoption.push({ code: ob.code, name: ob.name, i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(ob?.code?.toUpperCase(), "-", "_")}` });
+//     });
+//     return Digit.Utils.locale.sortDropdownNames(suboccoption, "i18nKey", t);
+//   }
+
+//   //do not touch this action button
+
+//   const ActionButton = ({ label, jumpTo }) => {
+//     const { t } = useTranslation();
+
+//     async function downloadFile(e) {
+//       e.preventDefault();
+//       e.stopPropagation();
+
+//       if (jumpTo) {
+//         const link = document.createElement("a");
+//         link.href = jumpTo;
+//         link.download = label || "document";
+//         link.style.display = "none";
+
+//         document.body.appendChild(link);
+//         link.click();
+//         document.body.removeChild(link);
+//       }
+//     }
+
+//     return <LinkButton label={t(label)} onClick={downloadFile} />;
+//   };
+
+//   const tableHeader = [
+//     {
+//       name: "BPA_TABLE_COL_FLOOR",
+//       id: "Floor",
+//     },
+//     {
+//       name: "BPA_TABLE_COL_LEVEL",
+//       id: "Level",
+//     },
+//     {
+//       name: "BPA_TABLE_COL_OCCUPANCY",
+//       id: "Occupancy",
+//     },
+//     {
+//       name: "BPA_TABLE_COL_BUILDUPAREA",
+//       id: "BuildupArea",
+//     },
+//     {
+//       name: "BPA_TABLE_COL_FLOORAREA",
+//       id: "FloorArea",
+//     },
+//     // {
+//     //   name: "BPA_TABLE_COL_CARPETAREA",
+//     //   id: "CarpetArea",
+//     // },
+//   ];
+//   const selectOccupancy = (e, data, num) => {
+//     let blocks = subOccupancyObject;
+//     let newSubOccupancy = [];
+//     e &&
+//       e?.map((ob) => {
+//         newSubOccupancy.push(ob?.[1]);
+//       });
+//     blocks[`Block_${num}`] = newSubOccupancy;
+//     setsubOccupancy(newSubOccupancy);
+//     setsubOccupancyObject(blocks);
+//   };
+
+//   const onRemove = (index, key, num) => {
+//     let afterRemove = subOccupancyObject[`Block_${num}`].filter((value, i) => {
+//       return i !== index;
+//     });
+//     setsubOccupancy(afterRemove);
+//     let temp = subOccupancyObject;
+//     temp[`Block_${num}`] = afterRemove;
+//     setsubOccupancyObject(temp);
+//   };
+
+//   const accessData = (plot) => {
+//     const name = plot;
+//     return (originalRow, rowIndex, columns) => {
+//       return originalRow[name];
+//     };
+//   };
+
+//   const closeToast = () => {
+//     setShowToast(null);
+//   };
+
+//   // const tableColumns = useMemo(() => {
+//   //   return tableHeader?.map((ob) => ({
+//   //     Header: t(`${ob.name}`),
+//   //     accessor: accessData(ob.id),
+//   //     id: ob.id,
+//   //     //symbol: plot?.symbol,
+//   //     //sortType: sortRows,
+//   //   }));
+//   // });
+
+//     const tableColumns = useMemo(() => {
+//           return tableHeader?.map((ob) => {
+//             if (ob.id === "BuildupArea") {
+//               return {
+//                 Header: t(`${ob.name}`),
+//                 accessor: accessData(ob.id),
+//                 id: ob.id,
+//                 Footer: (info) => {
+//                   const total = info.rows.reduce((sum, row) => sum + (Number(row.values.BuildupArea) || 0), 0);
+//                   return `${t("BPA_TOTAL_BUILDUPAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`;
+//                 },
+//               };
+//             } else if (ob.id === "FloorArea") {
+//               return {
+//                 Header: t(`${ob.name}`),
+//                 accessor: accessData(ob.id),
+//                 id: ob.id,
+//                 Footer: (info) => {
+//                   const total = info.rows.reduce((sum, row) => sum + (Number(row.values.FloorArea) || 0), 0);
+//                   return `${t("BPA_TOTAL_FLOORAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`;
+//                 },
+//               };
+//             } else {
+//               return {
+//                 Header: t(`${ob.name}`),
+//                 accessor: accessData(ob.id),
+//                 id: ob.id,
+//               };
+//             }
+//           });
+//         }, [t]);
+
+
+
+
+
+//   const onSkip = () => onSelect();
+//   console.log(formData, "F++++++");
+//   const goNext = () => {
+//     if (checkingFlow === "OCBPA") {
+//       if (!formData?.id) {
+//         let payload = {};
+//         payload.edcrNumber = formData?.edcrNumber?.edcrNumber ? formData?.edcrNumber?.edcrNumber : formData?.data?.scrutinyNumber?.edcrNumber;
+//         payload.riskType = formData?.data?.riskType;
+//         payload.applicationType = formData?.data?.applicationType;
+//         payload.serviceType = formData?.data?.serviceType;
+
+//         const userInfo = Digit.UserService.getUser();
+//         const accountId = userInfo?.info?.uuid;
+//         payload.tenantId = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.tenantId;
+//         payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] };
+//         payload.accountId = accountId;
+//         payload.documents = null;
+
+//         // Additonal details
+//         payload.additionalDetails = {};
+//         if (formData?.data?.holdingNumber) payload.additionalDetails.holdingNo = formData?.data?.holdingNumber;
+//         if (formData?.data?.registrationDetails) payload.additionalDetails.registrationDetails = formData?.data?.registrationDetails;
+//         if (formData?.data?.applicationType) payload.additionalDetails.applicationType = formData?.data?.applicationType;
+//         if (formData?.data?.serviceType) payload.additionalDetails.serviceType = formData?.data?.serviceType;
+
+//         //For LandInfo
+//         payload.landInfo = formData?.data?.bpaData?.bpaApprovalResponse?.[0].landInfo || {};
+
+//         let nameOfAchitect = sessionStorage.getItem("BPA_ARCHITECT_NAME");
+//         let parsedArchitectName = nameOfAchitect ? JSON.parse(nameOfAchitect) : "ARCHITECT";
+//         payload.additionalDetails.typeOfArchitect = parsedArchitectName;
+//         // create BPA call
+//         Digit.OBPSService.create({ BPA: payload }, tenantId)
+//           .then((result, err) => {
+//             if (result?.BPA?.length > 0) {
+//               result.BPA[0].data = formData.data;
+//               result.BPA[0].uiFlow = formData?.uiFlow;
+//               onSelect("", result.BPA[0], "", true);
+//             }
+//           })
+//           .catch((e) => {
+//             setShowToast({ key: "true", message: e?.response?.data?.Errors[0]?.message || null });
+//           });
+//       } else {
+//         onSelect("", formData, "", true);
+//       }
+//     } else {
+//       onSelect(editConfig.key, subOccupancyObject);
+//     }
+//   };
+
+//   const clearall = (num) => {
+//     let res = [];
+//     let temp = subOccupancyObject;
+//     temp[`Block_${num}`] = res;
+//     setsubOccupancy(res);
+//     setsubOccupancyObject(temp);
+//   };
+
+//   function getSubOccupancyValues(index) {
+//     let values = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.unit;
+//     let returnValue = "";
+//     if (values?.length > 0) {
+//       let splitArray = values[index]?.usageCategory?.split(",");
+//       if (splitArray?.length) {
+//         const returnValueArray = splitArray?.map((data) =>
+//           data ? `${t(`BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(data?.toUpperCase(), "-", "_")}`)}` : "NA"
+//         );
+//         returnValue = returnValueArray.join(", ");
+//       }
+//     }
+//     return returnValue ? returnValue : "NA";
+//   }
+
+//   if (isMdmsLoading) return <Loader />;
+//   function getBlockSubOccupancy(index) {
+//     let subOccupancyString = "";
+//     let returnValueArray = [];
+//     subOccupancyObject &&
+//       subOccupancyObject[`Block_${index + 1}`] &&
+//       subOccupancyObject[`Block_${index + 1}`].map((ob) => {
+//         returnValueArray.push(`${t(stringReplaceAll(ob?.i18nKey?.toUpperCase(), "-", "_"))}`);
+//       });
+//     return returnValueArray?.length ? returnValueArray.join(", ") : "NA";
+//   }
+
+// function getFloorData(block) {
+//   let floors = [];
+//   let totalBuiltUpArea = 0;
+//   let totalFloorArea = 0;
+
+//   block?.building?.floors?.forEach((ob) => {
+//     const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0;
+//     const floor = Number(ob.occupancies?.[0]?.floorArea) || 0;
+
+//     totalBuiltUpArea += builtUp;
+//     totalFloorArea += floor;
+
+//     floors.push({
+//       Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
+//       Level: ob.number,
+//       Occupancy: t(`${ob.occupancies?.[0]?.type}`),
+//       BuildupArea: Number(builtUp).toFixed(2),
+//       FloorArea: Number(floor).toFixed(2),
+//     });
+//   });
+
+//   // Add Totals Row
+//   floors.push({
+//     Floor: t("BPA_TOTAL"),
+//     Level: "",
+//     Occupancy: "",
+//     BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+//     FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+//   });
+
+//   return floors;
+// }
+
+//   return (
+//     <React.Fragment>
+//       {/* <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} /> */}
+//       <div style={{ width:"100%" }}>
+//         <FormStep t={t} config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={goNext} onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */>
+//           <div style={{border:"none", boxShadow:"none"}}>
+//             <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+//           <StatusTable>
+//             <Row
+//               className="border-none"
+//               style={{ border: "none" }}
+//               label={checkingFlow === "OCBPA" ? t("BPA_OC_EDCR_NO_LABEL") : t("BPA_EDCR_NO_LABEL")}
+//               text={data?.edcrNumber}
+//               labelStyle={{ wordBreak: "break-all" }}
+//               textStyle={{ wordBreak: "break-all" }}
+//             ></Row>
+//             <Row
+//               className="border-none"
+//               label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
+//               text={
+//                 <ActionButton
+//                   label={t("Uploaded Plan.pdf")}
+//                   jumpTo={data?.updatedDxfFile}
+//                   onClick={() => {
+//                     console.log("");
+//                   }}
+//                 />
+//               }
+//             ></Row>
+//             <Row
+//               className="border-none"
+//               label={t("BPA_SCRUNTINY_REPORT_OUTPUT")}
+//               text={
+//                 <ActionButton
+//                   label={t("BPA_SCRUTINY_REPORT_PDF")}
+//                   jumpTo={data?.planReport}
+//                   onClick={() => {
+//                     console.log("");
+//                   }}
+//                 />
+//               }
+//             ></Row>
+//           </StatusTable>
+//           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+//           <CardSubHeader style={{ fontSize: "20px" }}>
+//             {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_EXTRACT_HEADER") : t("BPA_BUILDING_EXTRACT_HEADER")}
+//           </CardSubHeader>
+//           <StatusTable style={{ border: "none" }}>
+//             <Row
+//               className="border-none"
+//               label={t("BPA_TOTAL_BUILT_UP_AREA_HEADER")}
+//             text={
+//                 data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea
+//                   ? `${Number(data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
+//                   : t("NA")
+//               }
+
+//             ></Row>
+//             <Row
+//               className="border-none"
+//               label={t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}
+//               text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}
+//             ></Row>
+//             <Row
+//               className="border-none"
+//               label={t("BPA_HEIGHT_FROM_GROUND_BUILDING")}
+//               text={
+//                 data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight
+//                   ? `${Number(data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight).toFixed(2)} ${t("BPA_MTRS_LABEL")}`
+//                   : t("NA")
+//               }
+//             ></Row>
+//           </StatusTable>
+
+//           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+//           <CardSubHeader style={{ fontSize: "20px" }}>
+//             {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_FAR_ECS") : t("BPA_ACTUAL_BUILDING_FAR_ECS")}
+//           </CardSubHeader>
+//           <StatusTable style={{ border: "none" }}>
+//             <Row
+//               className="border-none"
+//               label={t("BPA_PERMISSIBLE_FAR")}
+//               text={data?.planDetail?.farDetails?.permissableFar ? data?.planDetail?.farDetails?.permissableFar : "N?A"}
+                
+                
+//               // text={t("N/A")}
+//             ></Row>
+//             {/* <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}></Row> */}
+//             <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text="1"></Row>
+//             <Row
+//               className="border-none"
+//               label={t("BPA_ECS_REQUIRED")}
+//               // text={
+//               //  data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
+                
+//               // }
+//               text={t("1")}
+//             ></Row>
+//             <Row
+//               className="border-none"
+//               label={t("BPA_ECS_PROVIDED")}
+//               text={
+//                 data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
+                 
+//               }
+//               // text={t("N/A")}
+//             ></Row>
+//           </StatusTable>
+
+//           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+//           <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
+         
+
+//           {data?.planDetail?.blocks?.map((block, index) => {
+//             const { floors, totalBuiltUpArea, totalFloorArea } = getFloorData(block);
+
+//             return (
+//               <div key={index} style={{ marginTop: "20px" }}>
+//                 <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+//                   {t("BPA_BLOCK_SUBHEADER")} {index + 1}
+//                 </CardSubHeader>
+
+//                 <StatusTable>
+//                   <Row
+//                     className="border-none"
+//                     textStyle={{ wordBreak: "break-word" }}
+//                     label={t("BPA_SUB_OCCUPANCY_LABEL")}
+//                     text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
+//                   />
+//                 </StatusTable>
+
+//                 <div style={{ overflow: "scroll" }}>
+//                   <Table
+//                     className="customTable table-fixed-first-column table-border-style"
+//                     t={t}
+//                     disableSort={true}
+//                     autoSort={false}
+//                     manualPagination={false}
+//                     isPaginationRequired={false}
+//                     initSortId="S N "
+//                     data={getFloorData(block)}
+//                     columns={tableColumns}
+//                     showFooter={true}
+//                      getCellProps={(cellInfo) => {
+//                   return {
+//                     style: {},
+//                   };
+//                 }}
+//                   />
+//                 </div>
+
+         
+             
+//               </div>
+//             );
+//           })}
+
+
+
+//           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+//           <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
+//           <StatusTable style={{ border: "none" }}>
+//             <Row
+//               label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
+//               text={
+//                 data?.planDetail?.planInformation?.demolitionArea
+//                   ? `${data?.planDetail?.planInformation?.demolitionArea} ${t("BPA_SQ_MTRS_LABEL")}`
+//                   : t("CS_NA")
+//               }
+//             ></Row>
+//           </StatusTable>
+//           </div>
+//         </FormStep>
+//         {showToast && <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
+//       </div>
+//     </React.Fragment>
+//   );
+// };
+
+// export default ScrutinyDetails;
+
+
+
+
+const ScrutinyDetails = ({ onSelect, userType, formData, config, onLoad }) => {
+  const { t } = useTranslation()
+  const history = useHistory()
+  const [editConfig, setEditConfig] = useState(config)
+  const [subOccupancy, setsubOccupancy] = useState([])
+  const [subOccupancyObject, setsubOccupancyObject] = useState(() => {
+    // Try to get from formData first, then from existing data structures
+    return (
+      formData?.subOccupancy ||
+      formData?.landInfo?.unit ||
+      formData?.data?.subOccupancy ||
+      formData?.data?.landInfo?.unit ||
+      {}
+    )
+  })
+  const [subOccupancyOption, setsubOccupancyOption] = useState([])
+  const [floorData, setfloorData] = useState([])
+  const scrutinyNumber = `DCR82021WY7QW`
+  const user = Digit.UserService.getUser()
+  const tenantId = user?.info?.permanentCity || Digit.ULBService.getCurrentTenantId()
+  const checkingFlow = formData?.uiFlow?.flow
+  const [showToast, setShowToast] = useState(null)
+  const stateCode = Digit.ULBService.getStateId()
+  const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["SubOccupancyType"])
   const { data, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, formData?.data?.scrutinyNumber, {
     enabled: true,
-  });
+  })
 
-  console.log(subOccupancy, "OCCUPANCY");
+  console.log(subOccupancy, "OCCUPANCY")
+  console.log("formData in scrutiny page", formData)
 
   useEffect(() => {
     if (!isMdmsLoading && formData?.data?.occupancyType) {
-      const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || [];
+      const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || []
 
-      const matched = subOccupancyMaster.find((item) => item.name?.toLowerCase() === formData.data.occupancyType.toLowerCase());
+      const matched = subOccupancyMaster.find(
+        (item) => item.name?.toLowerCase() === formData.data.occupancyType.toLowerCase(),
+      )
 
       if (matched) {
         const formatted = {
           code: matched.code,
           name: matched.name,
           i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(matched.code.toUpperCase(), "-", "_")}`,
-        };
+        }
 
-        setsubOccupancyObject({
-          Block_1: [formatted],
-        });
+        setsubOccupancyObject((prev) => {
+          if (Object.keys(prev).length === 0) {
+            return { Block_1: [formatted] }
+          }
+          return prev
+        })
       }
     }
-  }, [formData?.data?.occupancyType, mdmsData, isMdmsLoading]);
+  }, [formData?.data?.occupancyType, mdmsData, isMdmsLoading])
+
+  useEffect(() => {
+    if (data?.planDetail?.blocks && Object.keys(subOccupancyObject).length === 0) {
+      const newSubOccupancyObject = {}
+
+      data.planDetail.blocks.forEach((block, index) => {
+        const blockKey = `Block_${index + 1}`
+        const occupancies = []
+
+        // Extract occupancy types from floors
+        block?.building?.floors?.forEach((floor) => {
+          floor?.occupancies?.forEach((occupancy) => {
+            if (occupancy.type && !occupancies.find((occ) => occ.code === occupancy.type)) {
+              // Find matching occupancy from MDMS data
+              const matchedOccupancy = mdmsData?.BPA?.SubOccupancyType?.find(
+                (item) => item.code?.toLowerCase() === occupancy.type?.toLowerCase(),
+              )
+
+              if (matchedOccupancy) {
+                occupancies.push({
+                  code: matchedOccupancy.code,
+                  name: matchedOccupancy.name,
+                  i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(matchedOccupancy.code.toUpperCase(), "-", "_")}`,
+                })
+              }
+            }
+          })
+        })
+
+        if (occupancies.length > 0) {
+          newSubOccupancyObject[blockKey] = occupancies
+        }
+      })
+
+      if (Object.keys(newSubOccupancyObject).length > 0) {
+        setsubOccupancyObject(newSubOccupancyObject)
+      }
+    }
+  }, [data, mdmsData, subOccupancyObject])
+
+  useEffect(() => {
+    onLoad()
+  }, [])
+
+  console.log(formData, "occupancy")
 
   function getFloorData(block) {
-    let floors = [];
-    block?.building?.floors?.map((ob) => {
+    const floors = []
+    let totalBuiltUpArea = 0
+    let totalFloorArea = 0
+
+    block?.building?.floors?.forEach((ob) => {
+      const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0
+      const floor = Number(ob.occupancies?.[0]?.floorArea) || 0
+
+      totalBuiltUpArea += builtUp
+      totalFloorArea += floor
+
       floors.push({
         Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
         Level: ob.number,
         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
-        BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
-        FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
-        // CarpetArea: Number(ob.occupancies?.[0]?.CarpetArea).toFixed(2) || 0,
-        key: t(`BPA_FLOOR_NAME_${ob.number}`),
-      });
-    });
-    return floors;
+        BuildupArea: Number(builtUp).toFixed(2),
+        FloorArea: Number(floor).toFixed(2),
+      })
+    })
+
+    // Add Totals Row
+    floors.push({
+      Floor: t("BPA_TOTAL"),
+      Level: "",
+      Occupancy: "",
+      BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+      FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+    })
+
+    return floors
   }
 
   function getsuboptions() {
-    let suboccoption = [];
-    // data &&
-    // data?.planDetail?.mdmsMasterData?.SubOccupancyType?.map((ob) => {
+    const suboccoption = []
     mdmsData?.BPA?.SubOccupancyType?.map((ob) => {
-      suboccoption.push({ code: ob.code, name: ob.name, i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(ob?.code?.toUpperCase(), "-", "_")}` });
-    });
-    return Digit.Utils.locale.sortDropdownNames(suboccoption, "i18nKey", t);
+      suboccoption.push({
+        code: ob.code,
+        name: ob.name,
+        i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(ob?.code?.toUpperCase(), "-", "_")}`,
+      })
+    })
+    return Digit.Utils.locale.sortDropdownNames(suboccoption, "i18nKey", t)
   }
 
   //do not touch this action button
 
   const ActionButton = ({ label, jumpTo }) => {
-    const { t } = useTranslation();
+    const { t } = useTranslation()
 
     async function downloadFile(e) {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault()
+      e.stopPropagation()
 
       if (jumpTo) {
-        const link = document.createElement("a");
-        link.href = jumpTo;
-        link.download = label || "document";
-        link.style.display = "none";
+        const link = document.createElement("a")
+        link.href = jumpTo
+        link.download = label || "document"
+        link.style.display = "none"
 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
       }
     }
 
-    return <LinkButton label={t(label)} onClick={downloadFile} />;
-  };
+    return <LinkButton label={t(label)} onClick={downloadFile} />
+  }
 
   const tableHeader = [
     {
@@ -129,387 +715,385 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
       name: "BPA_TABLE_COL_FLOORAREA",
       id: "FloorArea",
     },
-    // {
-    //   name: "BPA_TABLE_COL_CARPETAREA",
-    //   id: "CarpetArea",
-    // },
-  ];
+  ]
+
   const selectOccupancy = (e, data, num) => {
-    let blocks = subOccupancyObject;
-    let newSubOccupancy = [];
+    const newSubOccupancy = []
     e &&
       e?.map((ob) => {
-        newSubOccupancy.push(ob?.[1]);
-      });
-    blocks[`Block_${num}`] = newSubOccupancy;
-    setsubOccupancy(newSubOccupancy);
-    setsubOccupancyObject(blocks);
-  };
+        newSubOccupancy.push(ob?.[1])
+      })
+
+    setsubOccupancyObject((prev) => ({
+      ...prev,
+      [`Block_${num}`]: newSubOccupancy,
+    }))
+    setsubOccupancy(newSubOccupancy)
+  }
 
   const onRemove = (index, key, num) => {
-    let afterRemove = subOccupancyObject[`Block_${num}`].filter((value, i) => {
-      return i !== index;
-    });
-    setsubOccupancy(afterRemove);
-    let temp = subOccupancyObject;
-    temp[`Block_${num}`] = afterRemove;
-    setsubOccupancyObject(temp);
-  };
+    setsubOccupancyObject((prev) => {
+      const currentBlock = prev[`Block_${num}`] || []
+      const afterRemove = currentBlock.filter((value, i) => i !== index)
+
+      return {
+        ...prev,
+        [`Block_${num}`]: afterRemove,
+      }
+    })
+
+    // Update subOccupancy state as well
+    const afterRemove = subOccupancyObject[`Block_${num}`]?.filter((value, i) => i !== index) || []
+    setsubOccupancy(afterRemove)
+  }
 
   const accessData = (plot) => {
-    const name = plot;
+    const name = plot
     return (originalRow, rowIndex, columns) => {
-      return originalRow[name];
-    };
-  };
+      return originalRow[name]
+    }
+  }
 
   const closeToast = () => {
-    setShowToast(null);
-  };
+    setShowToast(null)
+  }
 
-  // const tableColumns = useMemo(() => {
-  //   return tableHeader?.map((ob) => ({
-  //     Header: t(`${ob.name}`),
-  //     accessor: accessData(ob.id),
-  //     id: ob.id,
-  //     //symbol: plot?.symbol,
-  //     //sortType: sortRows,
-  //   }));
-  // });
+  const tableColumns = useMemo(() => {
+    return tableHeader?.map((ob) => {
+      if (ob.id === "BuildupArea") {
+        return {
+          Header: t(`${ob.name}`),
+          accessor: accessData(ob.id),
+          id: ob.id,
+          Footer: (info) => {
+            const total = info.rows.reduce((sum, row) => sum + (Number(row.values.BuildupArea) || 0), 0)
+            return `${t("BPA_TOTAL_BUILDUPAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
+          },
+        }
+      } else if (ob.id === "FloorArea") {
+        return {
+          Header: t(`${ob.name}`),
+          accessor: accessData(ob.id),
+          id: ob.id,
+          Footer: (info) => {
+            const total = info.rows.reduce((sum, row) => sum + (Number(row.values.FloorArea) || 0), 0)
+            return `${t("BPA_TOTAL_FLOORAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
+          },
+        }
+      } else {
+        return {
+          Header: t(`${ob.name}`),
+          accessor: accessData(ob.id),
+          id: ob.id,
+        }
+      }
+    })
+  }, [t])
 
-    const tableColumns = useMemo(() => {
-          return tableHeader?.map((ob) => {
-            if (ob.id === "BuildupArea") {
-              return {
-                Header: t(`${ob.name}`),
-                accessor: accessData(ob.id),
-                id: ob.id,
-                Footer: (info) => {
-                  const total = info.rows.reduce((sum, row) => sum + (Number(row.values.BuildupArea) || 0), 0);
-                  return `${t("BPA_TOTAL_BUILDUPAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`;
-                },
-              };
-            } else if (ob.id === "FloorArea") {
-              return {
-                Header: t(`${ob.name}`),
-                accessor: accessData(ob.id),
-                id: ob.id,
-                Footer: (info) => {
-                  const total = info.rows.reduce((sum, row) => sum + (Number(row.values.FloorArea) || 0), 0);
-                  return `${t("BPA_TOTAL_FLOORAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`;
-                },
-              };
-            } else {
-              return {
-                Header: t(`${ob.name}`),
-                accessor: accessData(ob.id),
-                id: ob.id,
-              };
-            }
-          });
-        }, [t]);
-
-
-
-
-
-  const onSkip = () => onSelect();
-  console.log(formData, "F++++++");
+  const onSkip = () => onSelect()
+  console.log(formData, "F++++++")
   const goNext = () => {
+    console.log("subOccupancyObject before API call:", subOccupancyObject)
+    console.log("editConfig.key:", editConfig?.key)
+
     if (checkingFlow === "OCBPA") {
       if (!formData?.id) {
-        let payload = {};
-        payload.edcrNumber = formData?.edcrNumber?.edcrNumber ? formData?.edcrNumber?.edcrNumber : formData?.data?.scrutinyNumber?.edcrNumber;
-        payload.riskType = formData?.data?.riskType;
-        payload.applicationType = formData?.data?.applicationType;
-        payload.serviceType = formData?.data?.serviceType;
+        const payload = {}
+        payload.edcrNumber = formData?.edcrNumber?.edcrNumber
+          ? formData?.edcrNumber?.edcrNumber
+          : formData?.data?.scrutinyNumber?.edcrNumber
+        payload.riskType = formData?.data?.riskType
+        payload.applicationType = formData?.data?.applicationType
+        payload.serviceType = formData?.data?.serviceType
 
-        const userInfo = Digit.UserService.getUser();
-        const accountId = userInfo?.info?.uuid;
-        payload.tenantId = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.tenantId;
-        payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] };
-        payload.accountId = accountId;
-        payload.documents = null;
+        const userInfo = Digit.UserService.getUser()
+        const accountId = userInfo?.info?.uuid
+        payload.tenantId = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.tenantId
+        payload.workflow = { action: "INITIATE", assignes: [userInfo?.info?.uuid] }
+        payload.accountId = accountId
+        payload.documents = null
 
         // Additonal details
-        payload.additionalDetails = {};
-        if (formData?.data?.holdingNumber) payload.additionalDetails.holdingNo = formData?.data?.holdingNumber;
-        if (formData?.data?.registrationDetails) payload.additionalDetails.registrationDetails = formData?.data?.registrationDetails;
-        if (formData?.data?.applicationType) payload.additionalDetails.applicationType = formData?.data?.applicationType;
-        if (formData?.data?.serviceType) payload.additionalDetails.serviceType = formData?.data?.serviceType;
+        payload.additionalDetails = {}
+        if (formData?.data?.holdingNumber) payload.additionalDetails.holdingNo = formData?.data?.holdingNumber
+        if (formData?.data?.registrationDetails)
+          payload.additionalDetails.registrationDetails = formData?.data?.registrationDetails
+        if (formData?.data?.applicationType) payload.additionalDetails.applicationType = formData?.data?.applicationType
+        if (formData?.data?.serviceType) payload.additionalDetails.serviceType = formData?.data?.serviceType
+
+        payload.subOccupancy = subOccupancyObject
 
         //For LandInfo
-        payload.landInfo = formData?.data?.bpaData?.bpaApprovalResponse?.[0].landInfo || {};
+        payload.landInfo = formData?.data?.bpaData?.bpaApprovalResponse?.[0].landInfo || {}
 
-        let nameOfAchitect = sessionStorage.getItem("BPA_ARCHITECT_NAME");
-        let parsedArchitectName = nameOfAchitect ? JSON.parse(nameOfAchitect) : "ARCHITECT";
-        payload.additionalDetails.typeOfArchitect = parsedArchitectName;
+        if (Object.keys(subOccupancyObject).length > 0) {
+          payload.landInfo.unit = subOccupancyObject
+        }
+
+        const nameOfAchitect = sessionStorage.getItem("BPA_ARCHITECT_NAME")
+        const parsedArchitectName = nameOfAchitect ? JSON.parse(nameOfAchitect) : "ARCHITECT"
+        payload.additionalDetails.typeOfArchitect = parsedArchitectName
+
+        console.log("Final payload with subOccupancy:", payload)
+
         // create BPA call
         Digit.OBPSService.create({ BPA: payload }, tenantId)
           .then((result, err) => {
             if (result?.BPA?.length > 0) {
-              result.BPA[0].data = formData.data;
-              result.BPA[0].uiFlow = formData?.uiFlow;
-              onSelect("", result.BPA[0], "", true);
+              result.BPA[0].data = formData.data
+              result.BPA[0].uiFlow = formData?.uiFlow
+              result.BPA[0].subOccupancy = subOccupancyObject
+              onSelect("", result.BPA[0], "", true)
             }
           })
           .catch((e) => {
-            setShowToast({ key: "true", message: e?.response?.data?.Errors[0]?.message || null });
-          });
+            setShowToast({ key: "true", message: e?.response?.data?.Errors[0]?.message || null })
+          })
       } else {
-        onSelect("", formData, "", true);
+        const updatedFormData = {
+          ...formData,
+          subOccupancy: subOccupancyObject,
+          data: {
+            ...formData.data,
+            subOccupancy: subOccupancyObject,
+          },
+        }
+        onSelect("", updatedFormData, "", true)
       }
     } else {
-      onSelect(config.key, subOccupancyObject);
+      console.log("Passing subOccupancyObject to onSelect:", subOccupancyObject)
+      onSelect(editConfig?.key, subOccupancyObject)
     }
-  };
-
-  const clearall = (num) => {
-    let res = [];
-    let temp = subOccupancyObject;
-    temp[`Block_${num}`] = res;
-    setsubOccupancy(res);
-    setsubOccupancyObject(temp);
-  };
-
-  function getSubOccupancyValues(index) {
-    let values = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.unit;
-    let returnValue = "";
-    if (values?.length > 0) {
-      let splitArray = values[index]?.usageCategory?.split(",");
-      if (splitArray?.length) {
-        const returnValueArray = splitArray?.map((data) =>
-          data ? `${t(`BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(data?.toUpperCase(), "-", "_")}`)}` : "NA"
-        );
-        returnValue = returnValueArray.join(", ");
-      }
-    }
-    return returnValue ? returnValue : "NA";
   }
 
-  if (isMdmsLoading) return <Loader />;
+  const clearall = (num) => {
+    setsubOccupancyObject((prev) => ({
+      ...prev,
+      [`Block_${num}`]: [],
+    }))
+    setsubOccupancy([])
+  }
+
+  function getSubOccupancyValues(index) {
+    const values = formData?.data?.bpaData?.bpaApprovalResponse?.[0]?.landInfo?.unit
+    let returnValue = ""
+    if (values?.length > 0) {
+      const splitArray = values[index]?.usageCategory?.split(",")
+      if (splitArray?.length) {
+        const returnValueArray = splitArray?.map((data) =>
+          data ? `${t(`BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(data?.toUpperCase(), "-", "_")}`)}` : "NA",
+        )
+        returnValue = returnValueArray.join(", ")
+      }
+    }
+    return returnValue ? returnValue : "NA"
+  }
+
   function getBlockSubOccupancy(index) {
-    let subOccupancyString = "";
-    let returnValueArray = [];
+    const subOccupancyString = ""
+    const returnValueArray = []
     subOccupancyObject &&
       subOccupancyObject[`Block_${index + 1}`] &&
       subOccupancyObject[`Block_${index + 1}`].map((ob) => {
-        returnValueArray.push(`${t(stringReplaceAll(ob?.i18nKey?.toUpperCase(), "-", "_"))}`);
-      });
-    return returnValueArray?.length ? returnValueArray.join(", ") : "NA";
+        returnValueArray.push(`${t(stringReplaceAll(ob?.i18nKey?.toUpperCase(), "-", "_"))}`)
+      })
+    return returnValueArray?.length ? returnValueArray.join(", ") : "NA"
   }
 
-function getFloorData(block) {
-  let floors = [];
-  let totalBuiltUpArea = 0;
-  let totalFloorArea = 0;
-
-  block?.building?.floors?.forEach((ob) => {
-    const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0;
-    const floor = Number(ob.occupancies?.[0]?.floorArea) || 0;
-
-    totalBuiltUpArea += builtUp;
-    totalFloorArea += floor;
-
-    floors.push({
-      Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
-      Level: ob.number,
-      Occupancy: t(`${ob.occupancies?.[0]?.type}`),
-      BuildupArea: Number(builtUp).toFixed(2),
-      FloorArea: Number(floor).toFixed(2),
-    });
-  });
-
-  // Add Totals Row
-  floors.push({
-    Floor: t("BPA_TOTAL"),
-    Level: "",
-    Occupancy: "",
-    BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
-    FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
-  });
-
-  return floors;
-}
-
-
+  if (isMdmsLoading) return <Loader />
   return (
     <React.Fragment>
       {/* <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} /> */}
-      <div style={{ width:"100%" }}>
-        <FormStep t={t} config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={goNext} onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */>
-          <div style={{border:"none", boxShadow:"none"}}>
+      <div style={{ width: "100%" }}>
+        <FormStep
+          t={t}
+          config={{ ...config, texts: { ...config.texts, skipText: null } }}
+          onSelect={goNext}
+          onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */
+        >
+          <div style={{ border: "none", boxShadow: "none" }}>
             <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
-          <StatusTable>
-            <Row
-              className="border-none"
-              style={{ border: "none" }}
-              label={checkingFlow === "OCBPA" ? t("BPA_OC_EDCR_NO_LABEL") : t("BPA_EDCR_NO_LABEL")}
-              text={data?.edcrNumber}
-              labelStyle={{ wordBreak: "break-all" }}
-              textStyle={{ wordBreak: "break-all" }}
-            ></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
-              text={
-                <ActionButton
-                  label={t("Uploaded Plan.pdf")}
-                  jumpTo={data?.updatedDxfFile}
-                  onClick={() => {
-                    console.log("");
-                  }}
-                />
-              }
-            ></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_SCRUNTINY_REPORT_OUTPUT")}
-              text={
-                <ActionButton
-                  label={t("BPA_SCRUTINY_REPORT_PDF")}
-                  jumpTo={data?.planReport}
-                  onClick={() => {
-                    console.log("");
-                  }}
-                />
-              }
-            ></Row>
-          </StatusTable>
-          <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-          <CardSubHeader style={{ fontSize: "20px" }}>
-            {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_EXTRACT_HEADER") : t("BPA_BUILDING_EXTRACT_HEADER")}
-          </CardSubHeader>
-          <StatusTable style={{ border: "none" }}>
-            <Row
-              className="border-none"
-              label={t("BPA_TOTAL_BUILT_UP_AREA_HEADER")}
-            text={
-                data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea
-                  ? `${Number(data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
-                  : t("NA")
-              }
-
-            ></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}
-              text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}
-            ></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_HEIGHT_FROM_GROUND_BUILDING")}
-              text={
-                data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight
-                  ? `${Number(data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight).toFixed(2)} ${t("BPA_MTRS_LABEL")}`
-                  : t("NA")
-              }
-            ></Row>
-          </StatusTable>
-
-          <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-          <CardSubHeader style={{ fontSize: "20px" }}>
-            {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_FAR_ECS") : t("BPA_ACTUAL_BUILDING_FAR_ECS")}
-          </CardSubHeader>
-          <StatusTable style={{ border: "none" }}>
-            <Row
-              className="border-none"
-              label={t("BPA_PERMISSIBLE_FAR")}
-              text={data?.planDetail?.farDetails?.permissableFar ? data?.planDetail?.farDetails?.permissableFar : "N?A"}
-                
-                
-              // text={t("N/A")}
-            ></Row>
-            {/* <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}></Row> */}
-            <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text="1"></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_ECS_REQUIRED")}
-              // text={
-              //  data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
-                
-              // }
-              text={t("1")}
-            ></Row>
-            <Row
-              className="border-none"
-              label={t("BPA_ECS_PROVIDED")}
-              text={
-                data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
-                 
-              }
-              // text={t("N/A")}
-            ></Row>
-          </StatusTable>
-
-          <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-          <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
-         
-
-          {data?.planDetail?.blocks?.map((block, index) => {
-            const { floors, totalBuiltUpArea, totalFloorArea } = getFloorData(block);
-
-            return (
-              <div key={index} style={{ marginTop: "20px" }}>
-                <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
-                  {t("BPA_BLOCK_SUBHEADER")} {index + 1}
-                </CardSubHeader>
-
-                <StatusTable>
-                  <Row
-                    className="border-none"
-                    textStyle={{ wordBreak: "break-word" }}
-                    label={t("BPA_SUB_OCCUPANCY_LABEL")}
-                    text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
+            <StatusTable>
+              <Row
+                className="border-none"
+                style={{ border: "none" }}
+                label={checkingFlow === "OCBPA" ? t("BPA_OC_EDCR_NO_LABEL") : t("BPA_EDCR_NO_LABEL")}
+                text={data?.edcrNumber}
+                labelStyle={{ wordBreak: "break-all" }}
+                textStyle={{ wordBreak: "break-all" }}
+              ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
+                text={
+                  <ActionButton
+                    label={t("Uploaded Plan.pdf")}
+                    jumpTo={data?.updatedDxfFile}
+                    onClick={() => {
+                      console.log("")
+                    }}
                   />
-                </StatusTable>
-
-                <div style={{ overflow: "scroll" }}>
-                  <Table
-                    className="customTable table-fixed-first-column table-border-style"
-                    t={t}
-                    disableSort={true}
-                    autoSort={false}
-                    manualPagination={false}
-                    isPaginationRequired={false}
-                    initSortId="S N "
-                    data={getFloorData(block)}
-                    columns={tableColumns}
-                    showFooter={true}
-                     getCellProps={(cellInfo) => {
-                  return {
-                    style: {},
-                  };
-                }}
+                }
+              ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_SCRUNTINY_REPORT_OUTPUT")}
+                text={
+                  <ActionButton
+                    label={t("BPA_SCRUTINY_REPORT_PDF")}
+                    jumpTo={data?.planReport}
+                    onClick={() => {
+                      console.log("")
+                    }}
                   />
+                }
+              ></Row>
+            </StatusTable>
+            <hr
+              style={{
+                color: "#cccccc",
+                backgroundColor: "#cccccc",
+                height: "2px",
+                marginTop: "20px",
+                marginBottom: "20px",
+              }}
+            />
+            <CardSubHeader style={{ fontSize: "20px" }}>
+              {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_EXTRACT_HEADER") : t("BPA_BUILDING_EXTRACT_HEADER")}
+            </CardSubHeader>
+            <StatusTable style={{ border: "none" }}>
+              <Row
+                className="border-none"
+                label={t("BPA_TOTAL_BUILT_UP_AREA_HEADER")}
+                text={
+                  data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea
+                    ? `${Number(data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
+                    : t("NA")
+                }
+              ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_SCRUTINY_DETAILS_NUMBER_OF_FLOORS_LABEL")}
+                text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}
+              ></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_HEIGHT_FROM_GROUND_BUILDING")}
+                text={
+                  data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight
+                    ? `${Number(data?.planDetail?.blocks?.[0]?.building?.declaredBuildingHeight).toFixed(2)} ${t("BPA_MTRS_LABEL")}`
+                    : t("NA")
+                }
+              ></Row>
+            </StatusTable>
+
+            <hr
+              style={{
+                color: "#cccccc",
+                backgroundColor: "#cccccc",
+                height: "2px",
+                marginTop: "20px",
+                marginBottom: "20px",
+              }}
+            />
+            <CardSubHeader style={{ fontSize: "20px" }}>
+              {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_FAR_ECS") : t("BPA_ACTUAL_BUILDING_FAR_ECS")}
+            </CardSubHeader>
+            <StatusTable style={{ border: "none" }}>
+              <Row
+                className="border-none"
+                label={t("BPA_PERMISSIBLE_FAR")}
+                text={
+                  data?.planDetail?.farDetails?.permissableFar ? data?.planDetail?.farDetails?.permissableFar : "N?A"
+                }
+              ></Row>
+              {/* <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}></Row> */}
+              <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text="1"></Row>
+              <Row className="border-none" label={t("BPA_ECS_REQUIRED")} text={t("1")}></Row>
+              <Row
+                className="border-none"
+                label={t("BPA_ECS_PROVIDED")}
+                text={data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"}
+              ></Row>
+            </StatusTable>
+
+            <hr
+              style={{
+                color: "#cccccc",
+                backgroundColor: "#cccccc",
+                height: "2px",
+                marginTop: "20px",
+                marginBottom: "20px",
+              }}
+            />
+            <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
+            {data?.planDetail?.blocks?.map((block, index) => {
+              const { floors, totalBuiltUpArea, totalFloorArea } = getFloorData(block)
+
+              return (
+                <div key={index} style={{ marginTop: "20px" }}>
+                  <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+                    {t("BPA_BLOCK_SUBHEADER")} {index + 1}
+                  </CardSubHeader>
+
+                  <StatusTable>
+                    <Row
+                      className="border-none"
+                      textStyle={{ wordBreak: "break-word" }}
+                      label={t("BPA_SUB_OCCUPANCY_LABEL")}
+                      text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
+                    />
+                  </StatusTable>
+
+                  <div style={{ overflow: "scroll" }}>
+                    <Table
+                      className="customTable table-fixed-first-column table-border-style"
+                      t={t}
+                      disableSort={true}
+                      autoSort={false}
+                      manualPagination={false}
+                      isPaginationRequired={false}
+                      initSortId="S N "
+                      data={getFloorData(block)}
+                      columns={tableColumns}
+                      showFooter={true}
+                      getCellProps={(cellInfo) => {
+                        return {
+                          style: {},
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
+              )
+            })}
 
-         
-             
-              </div>
-            );
-          })}
-
-
-
-          <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-          <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
-          <StatusTable style={{ border: "none" }}>
-            <Row
-              label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
-              text={
-                data?.planDetail?.planInformation?.demolitionArea
-                  ? `${data?.planDetail?.planInformation?.demolitionArea} ${t("BPA_SQ_MTRS_LABEL")}`
-                  : t("CS_NA")
-              }
-            ></Row>
-          </StatusTable>
+            <hr
+              style={{
+                color: "#cccccc",
+                backgroundColor: "#cccccc",
+                height: "2px",
+                marginTop: "20px",
+                marginBottom: "20px",
+              }}
+            />
+            <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
+            <StatusTable style={{ border: "none" }}>
+              <Row
+                label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
+                text={
+                  data?.planDetail?.planInformation?.demolitionArea
+                    ? `${data?.planDetail?.planInformation?.demolitionArea} ${t("BPA_SQ_MTRS_LABEL")}`
+                    : t("CS_NA")
+                }
+              ></Row>
+            </StatusTable>
           </div>
         </FormStep>
         {showToast && <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
       </div>
     </React.Fragment>
-  );
-};
+  )
+}
 
-export default ScrutinyDetails;
+export default ScrutinyDetails

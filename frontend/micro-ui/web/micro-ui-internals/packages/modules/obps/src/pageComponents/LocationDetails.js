@@ -45,7 +45,7 @@ const [isUploading, setIsUploading] = useState(false);
     formData.address = {};
   }
 
-  console.log(formData, "DDDDD");
+  console.log(formData, "formData in location page");
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -167,6 +167,8 @@ useEffect(() => {
     address.landmark = landmark;
     address.geoLocation = geoLocation;
     address.placeName = placeName;
+    console.log("LocationAPI", config.key, address);
+    
     onSelect(config.key, address);
   };
 

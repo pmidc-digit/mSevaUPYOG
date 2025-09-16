@@ -9,7 +9,8 @@ import Stepper from "../../../../react-components/src/customComponents/Stepper";
 
 
 
-const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
+const BPANewBuildingdetails = ({ t, config, onSelect, formData, onLoad}) => {
+  console.log("formData in new building plan", formData);
   const { pathname: url } = useLocation()
   const index = window.location.href.charAt(window.location.href.length - 1)
   let validation = {}
@@ -386,6 +387,10 @@ useEffect(() => {
       });
   }
 }, [ecbcCertificateFile]);
+
+  useEffect(()=>{
+    onLoad();
+  },[])
 
   const approvedcolonyStatus = [
     {

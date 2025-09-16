@@ -290,6 +290,8 @@ public class EnrichmentService {
 		owner.setRoles(user.getRoles());
 		owner.setType(user.getType());
 		owner.setTenantId(user.getTenantId());
+		// Set father/husband name
+		owner.setFatherOrHusbandName(user.getFatherOrHusbandName());
 	}
 
 	/**
@@ -365,6 +367,9 @@ public class EnrichmentService {
 						owner.setLastModifiedBy(user.getLastModifiedBy());
 						owner.setLastModifiedDate(user.getLastModifiedDate());
 						owner.setTenantId(user.getTenantId());
+						
+						// Populate father name in the application from user service
+						application.setFatherName(user.getFatherOrHusbandName());
 					}
 				} catch (Exception e) {
 					// Log error but don't fail the search

@@ -55,7 +55,7 @@ export const filterFunctions = {
     const searchFilters = {};
     const workflowFilters = {};
 
-    const { applicationNumbers, mobileNumber, limit, offset, sortBy, sortOrder, total, applicationStatus, services } = filtersArg || {};
+    const { applicationNumbers, mobileNumber, limit, offset, sortBy, sortOrder, total, applicationStatus, services,petType } = filtersArg || {};
 
     if (filtersArg?.applicationNumber) {
       searchFilters.applicationNumber = filtersArg?.applicationNumber;
@@ -80,7 +80,10 @@ export const filterFunctions = {
       searchFilters.mobileNumber = mobileNumber;
     }
 
-    console.log("servicesPTR", services);
+     if (petType) {
+      searchFilters.petType = petType;
+    }
+
     if (services) {
       workflowFilters.businessService = services;
     }

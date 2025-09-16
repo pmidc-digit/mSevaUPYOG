@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 const App = () => {
   const { path, url, ...match } = useRouteMatch();
-  console.log("NDC Citizen App Loaded", path);
+  const { t } = useTranslation();
 
   const NewNDCStepForm = Digit.ComponentRegistryService.getComponent("NewNDCStepFormCitizen");
   const MyApplications = Digit.ComponentRegistryService.getComponent("MyApplications");
@@ -14,6 +14,7 @@ const App = () => {
 
   return (
     <span className={"tl-citizen"}>
+      <BackButton>{t("CS_COMMON_BACK")}</BackButton>
       <Switch>
         <AppContainer>
           <PrivateRoute path={`${path}/new-application`} component={NewNDCStepForm} />

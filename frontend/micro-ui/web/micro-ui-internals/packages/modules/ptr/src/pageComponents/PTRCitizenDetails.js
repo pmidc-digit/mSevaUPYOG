@@ -6,8 +6,12 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const userInfo = Digit.UserService.getUser();
-  const mobileNumber = userInfo?.info?.mobileNumber;
+  console.log("userInfo?.info", userInfo?.info);
+  const { mobileNumber, emailId, name } = userInfo?.info;
+  // Split full name into firstName (all but last word) and lastName (last word)
+  const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
 
+  const isCitizen = window.location.href.includes("citizen");
   const {
     control,
     handleSubmit,
@@ -15,9 +19,14 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     formState: { errors },
     trigger,
   } = useForm({
-    defaultValues: {
-      mobileNumber: mobileNumber || "", // prefill here
-    },
+    defaultValues: isCitizen
+      ? {
+          mobileNumber: mobileNumber || "",
+          emailId: emailId || "",
+          firstName: firstName || "",
+          lastName: lastName || "",
+        }
+      : {},
   });
 
   const onSubmit = (data) => {
@@ -58,7 +67,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     return fallbackMessages[fieldName] || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", marginLeft: "2%", fontSize: "12px", marginTop: "-21px" };
+  const errorStyle = { width: "70%", fontSize: "12px", marginTop: "-18px" };
 
   return (
     <React.Fragment>
@@ -75,8 +84,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
                 message: t("PTR_FIRST_NAME_INVALID"),
               },
-              minLength: { value: 3, message: t("PTR_FIRST_NAME_MIN_LENGTH") },
-              maxLength: { value: 40, message: t("PTR_FIRST_NAME_MAX_LENGTH") },
+              // minLength: { value: 3, message: t("PTR_FIRST_NAME_MIN_LENGTH") },
+              // maxLength: { value: 40, message: t("PTR_FIRST_NAME_MAX_LENGTH") },
             }}
             render={({ value, onChange, onBlur }) => (
               <TextInput
@@ -104,8 +113,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
                 message: t("PTR_FIRST_NAME_INVALID"),
               },
-              minLength: { value: 3, message: t("PTR_LAST_NAME_MIN_LENGTH") },
-              maxLength: { value: 40, message: t("PTR_LAST_NAME_MAX_LENGTH") },
+              // minLength: { value: 3, message: t("PTR_LAST_NAME_MIN_LENGTH") },
+              // maxLength: { value: 40, message: t("PTR_LAST_NAME_MAX_LENGTH") },
             }}
             render={({ value, onChange, onBlur }) => (
               <TextInput
@@ -187,8 +196,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                 value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
                 message: t("PTR_FATHER_HUSBAND_NAME_INVALID"),
               },
-              minLength: { value: 1, message: t("PTR_FATHER_HUSBAND_NAME_MIN_LENGTH") },
-              maxLength: { value: 50, message: t("PTR_FATHER_HUSBAND_NAME_MAX_LENGTH") },
+              // minLength: { value: 1, message: t("PTR_FATHER_HUSBAND_NAME_MIN_LENGTH") },
+              // maxLength: { value: 50, message: t("PTR_FATHER_HUSBAND_NAME_MAX_LENGTH") },
             }}
             render={({ value, onChange, onBlur }) => (
               <TextInput
@@ -212,11 +221,12 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             rules={{
               required: t("NDC_MESSAGE_ADDRESS"),
               pattern: {
-                value: /^[A-Za-z0-9\s.,'/-]{10,}$/,
+                // value: /^[A-Za-z0-9\s.,'/-]{10,}$/,
+                value: /^[A-Za-z0-9\s.,'/-]+$/,
                 message: t("PTR_ADDRESS_INVALID"),
               },
-              minLength: { value: 10, message: t("PTR_ADDRESS_MIN_LENGTH") },
-              maxLength: { value: 500, message: t("PTR_ADDRESS_MAX_LENGTH") },
+              // minLength: { value: 10, message: t("PTR_ADDRESS_MIN_LENGTH") },
+              // maxLength: { value: 500, message: t("PTR_ADDRESS_MAX_LENGTH") },
             }}
             render={({ value, onChange, onBlur }) => (
               <TextArea

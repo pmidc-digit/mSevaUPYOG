@@ -13,6 +13,7 @@ import {
   DeleteIcon,
 } from "@mseva/digit-ui-react-components";
 import { useForm, Controller } from "react-hook-form";
+import { useSelector } from "react-redux";
 import { useTranslation } from "react-i18next";
 import _, { add, first, last, set } from "lodash";
 import { useLocation } from "react-router-dom";
@@ -25,6 +26,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
+  const apiDataCheck = useSelector((state) => state.ndc.NDCForm?.formData?.responseData);
 
   const [showToast, setShowToast] = useState(null);
   const [propertyLoader, setPropertyLoader] = useState(false);
@@ -92,41 +94,58 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   }, [formData?.cpt?.details]);
 
   useEffect(() => {
-    // console.log("BillDataForW&S", waterConnectionBillData, sewerageConnectionBillData)
-    if (!formData?.PropertyDetails?.waterConnection?.length > 0) {
-      setPropertyDetails((prev) => {
-        const waterConnection = waterConnectionData?.map((item) => ({
+    let waterConnection;
+    if (apiDataCheck?.[0]?.NdcDetails) {
+      const resData = apiDataCheck?.[0]?.NdcDetails.filter((item) => {
+        return item.businessService == "WS";
+      });
+
+      waterConnection =
+        // item?.billData?.totalAmount
+        resData?.map((item) => ({
+          connectionNo: item?.consumerCode,
+          isEdit: false,
+          billData: { totalAmount: 0 },
+          isLoading: false,
+        })) || [];
+    } else {
+      waterConnection =
+        waterConnectionData?.map((item) => ({
           connectionNo: item?.connectionNo,
           isEdit: false,
           billData: {},
           isLoading: false,
-        }));
-
-        return {
-          ...prev,
-          waterConnection: waterConnection,
-        };
-      });
+        })) || [];
     }
-  }, [waterConnectionData, waterConnectionLoading]);
+
+    setPropertyDetails((prev) => ({ ...prev, waterConnection }));
+  }, [waterConnectionData, apiDataCheck]);
 
   useEffect(() => {
-    if (!formData?.PropertyDetails?.sewerageConnection?.length > 0) {
-      setPropertyDetails((prev) => {
-        const sewerageConnection = sewerageConnectionData?.map((item) => ({
+    let sewerageConnection;
+    if (apiDataCheck?.[0]?.NdcDetails) {
+      const resData = apiDataCheck?.[0]?.NdcDetails.filter((item) => {
+        return item.businessService == "SW";
+      });
+      sewerageConnection =
+        resData?.map((item) => ({
+          connectionNo: item?.consumerCode,
+          isEdit: false,
+          billData: { totalAmount: 0 },
+          isLoading: false,
+        })) || [];
+    } else {
+      sewerageConnection =
+        sewerageConnectionData?.map((item) => ({
           connectionNo: item?.connectionNo,
           isEdit: false,
           billData: {},
           isLoading: false,
-        }));
-
-        return {
-          ...prev,
-          sewerageConnection: sewerageConnection,
-        };
-      });
+        })) || [];
     }
-  }, [sewerageConnectionData, sewerageConnectionLoading]);
+
+    setPropertyDetails((prev) => ({ ...prev, sewerageConnection }));
+  }, [sewerageConnectionData, apiDataCheck]);
 
   useEffect(() => {
     onSelect("PropertyDetails", propertyDetails, config);
@@ -178,8 +197,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       });
       setPropertyLoader(false);
 
-      console.log("result======???????", result);
-
       if (result?.Bill?.length > 0) {
         if (result?.Bill[0]?.totalAmount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
@@ -212,7 +229,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           }));
         }
       } else if (result?.Bill) {
-        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
         if (bussinessService === "WS") {
           const updated = [...propertyDetails.waterConnection];
           updated[index].billData = {
@@ -223,6 +239,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             ...prev,
             waterConnection: updated,
           }));
+          setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_WS") });
         } else if (bussinessService === "SW") {
           const updated = [...propertyDetails.sewerageConnection];
           updated[index].billData = {
@@ -233,6 +250,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             ...prev,
             sewerageConnection: updated,
           }));
+          setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_SW") });
         } else if (bussinessService === "PT") {
           let updated = { ...propertyDetails.propertyBillData };
           updated.isLoading = false;
@@ -240,10 +258,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             ...prev,
             propertyBillData: updated,
           }));
+          setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_PROPERTY") });
         }
         // setError(t("No Bills Found For this consumer number"));
       } else {
-        setShowToast({ error: false, label: t("NDC_MESSAGE_NO_BILLS_FOUND_FOR_THIS_CONSUMER_NUMBER") });
         if (bussinessService === "WS") {
           const updated = [...propertyDetails.waterConnection];
           updated[index].isLoading = false;
@@ -254,6 +272,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             ...prev,
             waterConnection: updated,
           }));
+          setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_WS") });
         } else if (bussinessService === "SW") {
           const updated = [...propertyDetails.sewerageConnection];
           updated[index].isLoading = false;
@@ -264,6 +283,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             ...prev,
             sewerageConnection: updated,
           }));
+          setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_SW") });
         } else if (bussinessService === "PT") {
           let updated = { ...propertyDetails.propertyBillData };
           updated.isLoading = false;
@@ -271,6 +291,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             ...prev,
             propertyBillData: updated,
           }));
+          setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_PROPERTY") });
         }
         // setError(t("Invalid Consumer Number"));
       }
@@ -336,12 +357,30 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
   const PayWSBillModal = Digit?.ComponentRegistryService?.getComponent("PayWSBillModal");
 
+  useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => {
+        setShowToast(null);
+      }, 3000); // auto close after 3 sec
+
+      return () => clearTimeout(timer); // cleanup
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    if (apiDataCheck) {
+      const apiEmail = apiDataCheck?.[0]?.owners?.[0]?.emailId || "";
+      setValue("email", apiEmail);
+      setPropertyDetails((prev) => ({ ...prev, email: apiEmail }));
+    }
+  }, [apiDataCheck]);
+
   return (
     <div style={{ marginBottom: "16px" }}>
-      {formData?.cpt?.details && (
+      {(formData?.cpt?.details || apiDataCheck?.[0]?.NdcDetails) && (
         <div>
           <LabelFieldPair style={{ marginTop: "40px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NDC_WATER_CONNECTION")}`}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_WATER_CONNECTION")}`}</CardLabel>
             {waterConnectionLoading ? (
               <Loader />
             ) : (
@@ -382,7 +421,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                       <Loader />
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
+                        {!apiDataCheck?.[0]?.NdcDetails && item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
                           <button
                             className="submit-bar"
                             type="button"
@@ -447,7 +486,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </button>
 
           <LabelFieldPair style={{ marginTop: "40px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NDC_SEWERAGE_CONNECTION")} `}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_SEWERAGE_CONNECTION")} `}</CardLabel>
             {sewerageConnectionLoading ? (
               <Loader />
             ) : (
@@ -494,7 +533,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                       <Loader />
                     ) : (
                       <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
+                        {!apiDataCheck?.[0]?.NdcDetails && item?.connectionNo && !item?.billData?.id && item?.billData?.totalAmount != 0 && (
                           <button
                             className="submit-bar"
                             type="button"
@@ -561,7 +600,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </button>
 
           <LabelFieldPair style={{ marginTop: "40px" }}>
-            <CardLabel className="card-label-smaller">{`${t("NDC_FIRST_NAME")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FIRST_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -587,7 +626,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NDC_LAST_NAME")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_LAST_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -613,18 +652,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NDC_EMAIL")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_EMAIL")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name={"email"}
-                defaultValue={propertyDetails?.email || ""}
+                defaultValue=""
                 render={(props) => (
                   <TextInput
-                    value={propertyDetails?.email}
+                    value={props?.value}
                     onChange={(e) => {
-                      setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
                       props.onChange(e.target.value);
+                      setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
                     }}
                     onBlur={(e) => {
                       // setFocusIndex({ index: -1 });
@@ -638,7 +677,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NDC_MOBILE_NUMBER")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_MOBILE_NUMBER")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -663,7 +702,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </LabelFieldPair>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NDC_ADDRESS")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_ADDRESS")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -689,7 +728,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         </div>
       )}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{`${t("NDC_TL_NUMBER")}`}</CardLabel>
+        <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_TL_NUMBER")}`}</CardLabel>
         <div className="field">
           <Controller
             control={control}

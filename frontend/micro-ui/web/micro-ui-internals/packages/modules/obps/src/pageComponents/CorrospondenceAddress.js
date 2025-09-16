@@ -1,4 +1,4 @@
-import { BackButton, CardLabel, CheckBox, FormStep, TextArea, Toast } from "@mseva/digit-ui-react-components";
+import { ActionBar, BackButton, CardLabel, CheckBox, FormStep, SubmitBar, TextArea, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState } from "react";
 import Timeline from "../components/Timeline";
 import { convertDateToEpoch } from "../utils";
@@ -19,6 +19,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
   const stateId = Digit.ULBService.getStateId();
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   if (isopenlink)
     window.onunload = function () {
@@ -47,7 +48,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
     if (!(formData?.result && formData?.result?.Licenses[0]?.id)) {
       setIsDisableForNext(true);
       // console.log("dob here in payload", formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth): null);
-      console.log("Correspondenceaddress", formData?.LicneseDetails);
+      console.log("Correspondenceaddress", formData?.LicneseDetails?.dateOfBirth);
       let payload = {
         Licenses: [
           {
@@ -56,8 +57,8 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                 {
                   gender: formData?.LicneseDetails?.gender?.code,
                   mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  name: formData?.LicneseDetails?.name,
-                  dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicenseDetails?.dateOfBirth) : null,
+                  name: [formData?.LicneseDetails?.name.trim(), formData?.LicneseDetails?.middleName.trim(), formData?.LicneseDetails?.lastName.trim()].filter(Boolean).join(" ").trim(),
+                  dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
                   emailId: formData?.LicneseDetails?.email,
                   permanentAddress:
                     formData?.LicneseDetails?.PermanentAddress +
@@ -127,7 +128,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
     <React.Fragment>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        <Timeline currentStep={2} flow="STAKEHOLDER" />
+        {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />}
         <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={isDisableForNext}>
           <CheckBox
             label={t("BPA_SAME_AS_PERMANENT_ADDRESS")}
@@ -161,6 +162,13 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
           }}
         />
       )}
+    <ActionBar>
+      <SubmitBar
+        label={t("CS_COMMON_NEXT")}
+          onSubmit={goNext}
+          disabled={isDisableForNext || Correspondenceaddress.trim() === "" ? true : false}
+      />
+    </ActionBar>
     </React.Fragment>
   );
 };

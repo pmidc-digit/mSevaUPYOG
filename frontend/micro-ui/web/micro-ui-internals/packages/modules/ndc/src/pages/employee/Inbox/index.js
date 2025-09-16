@@ -142,7 +142,7 @@ const Inbox = ({ parentRoute }) => {
 
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,
-    headerText: "NDC Module",
+    headerText: `${t("MODULE_NKS_NO_DUE_CERTIFICATE_FEES")}`,
     links: [
       {
         text: "Create NDC Application",

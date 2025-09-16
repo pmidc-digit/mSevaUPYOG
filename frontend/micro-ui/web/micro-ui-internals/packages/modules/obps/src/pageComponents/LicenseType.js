@@ -367,6 +367,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                       fontSize: "12px",
                       marginTop: "4px",
                       marginBottom: "12px",
+                      fontStyle: "italic",
                     }}
                   >
                     {errorMessage}

@@ -15,11 +15,11 @@ export const newConfig = [
           component: "LicenseType",
           texts: {
             headerCaption: "BPA_LICENSE_DET_CAPTION",
-            header: "BPA_LICENSE_TYPE",
+            // header: "BPA_LICENSE_TYPE",
             cardText: "BPA_LICENSE_TYPE_TEXT",
             // submitBarLabel: "CS_COMMON_NEXT",  
           },
-          nextStep: "license-details",
+          nextStep: "licensee-details",
           key: "LicneseType",
           withoutLabel: true,
           hideInEmployee: true,
@@ -27,12 +27,12 @@ export const newConfig = [
         },
         {
           type: "component",
-          route: "license-details",
+          route: "licensee-details",
           isMandatory: true,
           component: "LicenseDetails",
           texts: {
             headerCaption: "BPA_LICENSE_DET_CAPTION",
-            header: "BPA_LICENSE_DET_CAPTION",
+            // header: "BPA_LICENSE_DET_CAPTION",
             cardText: "BPA_LICENSE_DETAILS_TEXT",
             // submitBarLabel: "CS_COMMON_NEXT",
           },
@@ -49,7 +49,7 @@ export const newConfig = [
             component: "PermanentAddress",
             texts: {
               headerCaption: "BPA_NEW_ADDRESS_HEADER_DETAILS",
-              header: "BPA_LICENSEE_PERM_ADDR_HEADER",
+              // header: "BPA_LICENSEE_PERM_ADDR_HEADER",
               cardText: "BPA_LICENSEE_CORRESPONDENCE_TEXT",
               // submitBarLabel: "CS_COMMON_NEXT",
             },
@@ -66,7 +66,7 @@ export const newConfig = [
             component: "CorrospondenceAddress",
             texts: {
               headerCaption: "BPA_NEW_ADDRESS_HEADER_DETAILS",
-              header: "BPA_LICENSEE_CORRESPONDENCE_LABEL",
+              // header: "BPA_LICENSEE_CORRESPONDENCE_LABEL",
               // cardText: "BPA_LICENSEE_CORRESPONDENCE_TEXT",
               // submitBarLabel: "CS_COMMON_NEXT",
             },
@@ -83,7 +83,7 @@ export const newConfig = [
             key: "documents",
             texts: {
               headerCaption: "BPA_DOCUMENT_DETAILS_LABEL",
-              header: "BPA_LICENSEE_DOCUMENT_DETAILS_HEADER",
+              // header: "BPA_LICENSEE_DOCUMENT_DETAILS_HEADER",
               // submitBarLabel: "CS_COMMON_NEXT"
             },
             step: "3"

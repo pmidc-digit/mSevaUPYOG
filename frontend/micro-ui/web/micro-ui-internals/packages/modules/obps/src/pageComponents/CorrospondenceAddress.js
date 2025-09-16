@@ -166,7 +166,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
       <SubmitBar
         label={t("CS_COMMON_NEXT")}
           onSubmit={goNext}
-          disabled={isDisableForNext}
+          disabled={isDisableForNext || Correspondenceaddress.trim() === "" ? true : false}
       />
     </ActionBar>
     </React.Fragment>

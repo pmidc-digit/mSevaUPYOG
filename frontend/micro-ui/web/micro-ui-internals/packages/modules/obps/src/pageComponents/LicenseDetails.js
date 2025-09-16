@@ -73,7 +73,11 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       ""
   );
   const [PanNumber, setPanNumber] = useState(formData?.LicneseDetails?.PanNumber || formData?.formData?.LicneseDetails?.PanNumber || "");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState({
+    gender: "",
+    email: "",
+    dateOfBirth: "",
+  });
   // get user info from api
   const getUserInfo = async () => {
     const uuid = userInfo?.info?.uuid;
@@ -178,10 +182,10 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       age--;
     }
 
-    if (age < 18) {
-      alert(t("BPA_DOB_VALIDATION_MESSAGE"));
-      return;
-    }
+    // if (age < 18) {
+    //   alert(t("BPA_DOB_VALIDATION_MESSAGE"));
+    //   return;
+    // }
 
     setDateOfBirth(date);
   }
@@ -189,15 +193,24 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   const goNext = () => {
     const today = new Date();
     const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
+    // let age = today.getFullYear() - birthDate.getFullYear();
     const monthDifference = today.getMonth() - birthDate.getMonth();
 
-    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
+    // if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+    //   age--;
+    // }
 
     if (gender?.code === null) {
-      setErrorMessage(t("BPA_APPLICANT_GENDER_PLACEHOLDER"));
+      setErrorMessage((prev) => ({...prev, gender: t("BPA_APPLICANT_GENDER_PLACEHOLDER")}));
+      return;
+    }
+    if (age < 18) {
+      setErrorMessage((prev) => ({...prev, dateOfBirth: t("BPA_DOB_VALIDATION_MESSAGE")}));
+      // alert(t("BPA_DOB_VALIDATION_MESSAGE"));
+      return;
+    }
+    if(!email.match(Digit.Utils.getPattern("Email"))){
+      setErrorMessage((prev) => ({ ...prev, email: t("BPA_APPLICANT_EMAIL_VALIDATION_MESSAGE") }));
       return;
     }
 
@@ -227,12 +240,11 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       data.LicneseDetails.dateOfBirth = dateOfBirth;
       onSelect("", formData);
     }
-    if (age < 18) {
-      alert(t("BPA_DOB_VALIDATION_MESSAGE"));
-    }
   };
 
   const onSkip = () => onSelect();
+
+  const errorStyle = { color: "#E74C3C", fontSize: "12px", marginTop: "4px", marginBottom: "12px", fontStyle: "italic" };
 
   return (
     <div>
@@ -299,6 +311,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
+              <div>
               <CardLabel>{t("BPA_APPLICANT_DOB_LABEL")}*</CardLabel>
               <DatePicker
                 date={dateOfBirth}
@@ -308,6 +321,14 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 isRequired={true}
                 disabled={disable?.dateOfBirth}
               />
+              {errorMessage?.dateOfBirth?.length>0 && (
+                  <div
+                    style={errorStyle}
+                  >
+                    {errorMessage?.dateOfBirth}
+                  </div>
+                )}
+              </div>
               {/* <CardLabel>{`${t("BPA_APPLICANT_NAME_LABEL")}*`}</CardLabel>
             <TextInput
               t={t}
@@ -341,16 +362,11 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   disabled={disable?.gender}
                 />
 
-                {errorMessage && (
+                {errorMessage?.gender?.length>0 && (
                   <div
-                    style={{
-                      color: "#d32f2f",
-                      fontSize: "12px",
-                      marginTop: "4px",
-                      marginBottom: "12px",
-                    }}
+                    style={errorStyle}
                   >
-                    {errorMessage}
+                    {errorMessage?.gender}
                   </div>
                 )}
               </div>
@@ -363,6 +379,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                 disable={mobileNumber && !isOpenLinkFlow ? true : false}
                 {...{ required: true, pattern: "[6-9]{1}[0-9]{9}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
               />
+              <div>
               <CardLabel>{`${t("BPA_APPLICANT_EMAIL_LABEL")}*`}</CardLabel>
               <TextInput
                 t={t}
@@ -381,6 +398,14 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
                 }}
               />
+              {errorMessage?.email?.length>0 && (
+                  <div
+                    style={errorStyle}
+                  >
+                    {errorMessage?.email}
+                  </div>
+                )}
+              </div>
               {/* <CardLabel>{`${t("BPA_APPLICANT_PAN_NO")}`}</CardLabel>
             <TextInput
               t={t}
@@ -462,7 +487,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
         <SubmitBar
           label={t("CS_COMMON_NEXT")}
           onSubmit={goNext}
-          disabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName || !email || (age < 18)}
+          disabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName || !email }
         />
       </ActionBar>
     </div>

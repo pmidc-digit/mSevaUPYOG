@@ -853,7 +853,8 @@
 					<font size="8"/>
 					<paragraph leftIndent="3"/>
 				</textElement>
-				<textFieldExpression><![CDATA["TECHNICAL PERSON LICENSEE NAME"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["PROFESSIONAL'S NAME"]]></textFieldExpression>
+				<!--<textFieldExpression><![CDATA["TECHNICAL PERSON LICENSEE NAME"]]></textFieldExpression> -->
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement x="12" y="186" width="16" height="21" uuid="d12adcfd-088c-420f-8ded-a567ef05e071"/>

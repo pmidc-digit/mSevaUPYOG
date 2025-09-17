@@ -49,6 +49,8 @@ package org.egov.edcr.feature;
 
 import static org.egov.edcr.constants.DxfFileConstants.A;
 import static org.egov.edcr.constants.DxfFileConstants.A_AF;
+import static org.egov.edcr.constants.DxfFileConstants.A_PO;
+import static org.egov.edcr.constants.DxfFileConstants.A_R;
 import static org.egov.edcr.constants.DxfFileConstants.F;
 import static org.egov.edcr.constants.DxfFileConstants.F_H;
 import static org.egov.edcr.constants.DxfFileConstants.F_RT;
@@ -57,6 +59,7 @@ import static org.egov.edcr.constants.DxfFileConstants.F_CB;
 import static org.egov.edcr.constants.DxfFileConstants.F_IT;
 import static org.egov.edcr.constants.DxfFileConstants.G;
 import static org.egov.edcr.constants.DxfFileConstants.PARKING_SLOT;
+import static org.egov.edcr.utility.DcrConstants.REAR_YARD_DESC;
 import static org.egov.edcr.utility.DcrConstants.SQMTRS;
 
 import java.math.BigDecimal;
@@ -79,6 +82,7 @@ import org.egov.common.entity.edcr.ParkingHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.utility.DcrConstants;
 import org.egov.edcr.utility.Util;
 import org.springframework.stereotype.Service;
@@ -323,7 +327,13 @@ public class Parking extends FeatureProcess {
         
         // Only process/calculate/report two-wheeler parking if plotArea <= 100
         if (pl.getPlot() != null && plotArea.doubleValue() <= 100) {
-             processTwoWheelerParking(pl, helper);
+            for (final Occupancy occupancy : pl.getOccupancies()) {
+                OccupancyTypeHelper mostRestrictiveOccupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
+                if (occupancy.getTypeHelper().getSubtype() != null && ((mostRestrictiveOccupancyType.getType() != null
+                                && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())))) {                    
+                    processTwoWheelerParking(pl, helper);
+                }
+            }
         }
   
         Integer noOfrequiredParking = 0;
@@ -351,6 +361,17 @@ public class Parking extends FeatureProcess {
 //            } else if (coverParkingArea.doubleValue() > 0) {
 //                requiredCarParkArea += COVER_ECS * noOfrequiredParking;
 //            }
+        } else if (mostRestrictiveOccupancy != null && F.equals(mostRestrictiveOccupancy.getType().getCode())) {
+            BigDecimal plotCoveredArea = pl.getVirtualBuilding().getTotalCoverageArea();
+            if (plotCoveredArea != null && plotCoveredArea.compareTo(BigDecimal.ZERO) > 0) {
+                // 1 ECS per 50 sqm
+                BigDecimal divisor = BigDecimal.valueOf(50);
+
+                // Divide and always round UP since ECS must be whole
+                BigDecimal requiredParking = plotCoveredArea.divide(divisor, 0, RoundingMode.CEILING);
+
+                noOfrequiredParking = requiredParking.intValue();
+            }
         }
         
         
@@ -365,7 +386,9 @@ public class Parking extends FeatureProcess {
      
         
         // Conditionally report Car Parking details (Section 4.2.1) ONLY if plotArea > 100
-        if (pl.getPlot() != null && plotArea.doubleValue() > 100) {
+        if (pl.getPlot() != null 
+        		//&& plotArea.doubleValue() > 100
+        		) {
 
             if (totalProvidedCarParkArea.doubleValue() == 0) {
                 pl.addError(RULE__DESCRIPTION,

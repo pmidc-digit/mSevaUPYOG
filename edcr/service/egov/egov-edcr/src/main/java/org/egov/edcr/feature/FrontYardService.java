@@ -61,6 +61,7 @@ import static org.egov.edcr.utility.DcrConstants.FRONT_YARD_DESC;
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -135,7 +136,15 @@ public class FrontYardService extends GeneralRule {
 
 	public static final String BSMT_FRONT_YARD_DESC = "Basement Front Yard";
 	private static final int PLOTAREA_300 = 300;
+	
+	// Constants for Commercial
+	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_20 = BigDecimal.valueOf(0.20);
+	private static final BigDecimal COMMERCIAL_FRONT_SETBACK_PERCENT_15 = BigDecimal.valueOf(0.15);
 
+	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_41_82 = BigDecimal.valueOf(41.82);
+	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_104_5 = BigDecimal.valueOf(104.5);
+	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_209 = BigDecimal.valueOf(209);
+	private static final BigDecimal COMMERCIAL_PLOT_AREA_LIMIT_418_21 = BigDecimal.valueOf(418.21);
 	private class FrontYardResult {
 		String rule;
 		String subRule;
@@ -244,18 +253,20 @@ public class FrontYardService extends GeneralRule {
 									 * pl, setback.getLevel(), block.getName(), plot, FRONT_YARD_DESC, min, mean,
 									 * occupancy.getTypeHelper(), frontYardResult); }
 									 */
-								} 	// Condition removed by Bimal 18-March-2924 type to calculate frontyard for residential occupancy only 
+								 	// Condition removed by Bimal 18-March-2924 type to calculate frontyard for residential occupancy only 
 									/*
 									 * else if (G.equalsIgnoreCase(occupancy.getTypeHelper().getType().getCode())) {
 									 * checkFrontYardForIndustrial(pl, block.getBuilding(), block.getName(),
 									 * setback.getLevel(), plot, FRONT_YARD_DESC, min, mean,
 									 * occupancy.getTypeHelper(), frontYardResult); }
 									 */
-									/*
-									 * else { checkFrontYardOtherOccupancies(pl, block.getBuilding(),
-									 * block.getName(), setback.getLevel(), plot, FRONT_YARD_DESC, min, mean,
-									 * occupancy.getTypeHelper(), frontYardResult); }
-									 */
+									
+								}else { 
+									checkFrontYardOtherOccupancies(pl, block.getBuilding(),
+									  block.getName(), setback.getLevel(), plot, FRONT_YARD_DESC, min, mean,
+									  occupancy.getTypeHelper(), frontYardResult,errors); 
+									 }
+									 
 
 							}
 
@@ -642,7 +653,7 @@ public class FrontYardService extends GeneralRule {
 
 	private Boolean checkFrontYardOtherOccupancies(Plan pl, Building building, String blockName, Integer level,
 			Plot plot, String frontYardFieldName, BigDecimal min, BigDecimal mean,
-			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult) {
+			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult, HashMap<String, String> errors) {
 		Boolean valid = false;
 		String subRule = RULE_37_TWO_A;
 		String rule = FRONT_YARD_DESC;
@@ -681,8 +692,8 @@ public class FrontYardService extends GeneralRule {
 		}
 		// IT,ITES
 		if (mostRestrictiveOccupancy.getType() != null
-				&& F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {
-			// nil as per commercial
+				&& F.equalsIgnoreCase(mostRestrictiveOccupancy.getType().getCode())) {		
+			minVal = getMinValueForCommercial(pl,plot.getArea(),errors);
 			subRule = RULE_37_TWO_I;
 		}
 
@@ -691,8 +702,8 @@ public class FrontYardService extends GeneralRule {
 		compareFrontYardResult(blockName, min, mean, mostRestrictiveOccupancy, frontYardResult, valid, subRule, rule,
 				minVal, meanVal, level);
 		return valid;
-	}
-
+	}	
+	
 	private void compareFrontYardResult(String blockName, BigDecimal min, BigDecimal mean,
 			OccupancyTypeHelper mostRestrictiveOccupancy, FrontYardResult frontYardResult, Boolean valid,
 			String subRule, String rule, BigDecimal minVal, BigDecimal meanVal, Integer level) {
@@ -891,4 +902,36 @@ public class FrontYardService extends GeneralRule {
 		}		
 		return valid;
 	}
+	
+	private BigDecimal getMinValueForCommercial(Plan pl,BigDecimal plotArea, HashMap<String, String> errors) {
+
+	    LOG.info("getMinValueForCommercial for Commercial:");
+
+	    BigDecimal minVal = BigDecimal.ZERO;
+	    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
+	    	errors.put("Plot Area error","Plot area can not be 0");
+	    	pl.addErrors(errors);
+	    	return BigDecimal.ZERO;
+	    }
+
+	    //Set minVal dynamically using constants
+	    if (plotArea.compareTo(BigDecimal.ZERO) > 0 
+	    		&& plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_41_82) <= 0) {
+	        minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_20); // 20%
+	    } else if (plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_41_82) > 0 
+	    		&& plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_104_5) <= 0) {
+	        minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_15); // 15%
+	    } else if (plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_104_5) > 0 
+	    		&& plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_209) <= 0) {
+	        minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_15); // 15%
+	    } else if (plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_209) > 0 
+	    		&& plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_418_21) <= 0) {
+	        minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_15); // 15%
+	    } else if (plotArea.compareTo(COMMERCIAL_PLOT_AREA_LIMIT_418_21) > 0) {
+	        minVal = plotArea.multiply(COMMERCIAL_FRONT_SETBACK_PERCENT_20); // 20%
+	    }
+
+	    return minVal.setScale(2, RoundingMode.HALF_UP);
+	}
+	
 }

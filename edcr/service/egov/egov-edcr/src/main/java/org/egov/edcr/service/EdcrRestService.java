@@ -204,7 +204,11 @@ public class EdcrRestService {
             edcrApplication.setApplicantName(edcrRequest.getApplicantName());
         else
             edcrApplication.setApplicantName(DxfFileConstants.ANONYMOUS_APPLICANT);
-        edcrApplication.setArchitectInformation(DxfFileConstants.ANONYMOUS_APPLICANT);
+        if(edcrRequest.getApplicantName()!=null) {
+        	edcrApplication.setArchitectInformation(edcrRequest.getApplicantName());
+        }else {
+        	edcrApplication.setArchitectInformation(DxfFileConstants.ANONYMOUS_APPLICANT);
+        }
         edcrApplication.setServiceType(edcrRequest.getApplicationSubType());
         if (edcrRequest.getAppliactionType() == null)
             edcrApplication.setApplicationType(ApplicationType.PERMIT);

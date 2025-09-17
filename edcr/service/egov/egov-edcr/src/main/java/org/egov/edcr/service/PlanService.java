@@ -287,7 +287,11 @@ public class PlanService {
                 .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
                 || (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()
                         .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
-                        && StringUtils.isBlank(comparisonDcrNumber))) {
+                        && StringUtils.isBlank(comparisonDcrNumber))
+               || (ApplicationType.BUILDING_PLAN_SCRUTINY.getApplicationTypeVal()
+                        .equalsIgnoreCase(dcrApplication.getApplicationType().getApplicationType())
+                        && StringUtils.isBlank(comparisonDcrNumber))
+                ) {
             InputStream reportStream = generateReport(plan, amd, dcrApplication);
             saveOutputReport(dcrApplication, reportStream, plan);
         } else if (ApplicationType.OCCUPANCY_CERTIFICATE.getApplicationTypeVal()

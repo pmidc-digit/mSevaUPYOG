@@ -956,5 +956,5 @@ config:
       - work-dir: "core-services/egov-esign"
         image-name: "egov-esign"
         dockerfile: "build/maven/Dockerfile"
-      - work-dir: "core-services/egov-esign/src/main/resources/db"
-        image-name: "egov-esign-db"
+     # - work-dir: "core-services/egov-esign/src/main/resources/db"
+      #  image-name: "egov-esign-db"

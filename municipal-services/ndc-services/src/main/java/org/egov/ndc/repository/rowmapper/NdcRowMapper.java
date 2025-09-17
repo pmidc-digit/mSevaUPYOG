@@ -70,7 +70,7 @@ public class NdcRowMapper implements ResultSetExtractor<List<Application>> {
 					.applicationId(rs.getString("d_applicationid"))
 					.businessService(rs.getString("businessservice"))
 					.consumerCode(rs.getString("consumercode"))
-					.dueAmount(rs.getBigDecimal("dueamount"))
+					.duePending(rs.getBoolean("isduepending"))
 					.status(rs.getString("status"))
 					.additionalDetails(getJsonValue((PGobject) rs.getObject("additionaldetails")))
 					.build();

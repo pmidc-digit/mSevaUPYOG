@@ -6,10 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.egov.ndc.web.model.OwnerInfo;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @Data
 @Builder
@@ -31,8 +27,8 @@ public class NdcDetailsRequest {
     @JsonProperty("additionalDetails")
     private JsonNode additionalDetails;
 
-    @JsonProperty("dueAmount")
-    private BigDecimal dueAmount;
+    @JsonProperty("isDuePending")
+    private Boolean duePending;
 
     @JsonProperty("status")
     private String status;

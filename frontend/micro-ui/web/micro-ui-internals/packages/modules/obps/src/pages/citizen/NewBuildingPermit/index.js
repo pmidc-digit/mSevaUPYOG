@@ -57,6 +57,7 @@ const NewBuildingPermit = () => {
   };
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
+    console.log("KeyandDataforSession", key, data);
     if (isFromCreateApi) setParams(data);
     else if (key === "") setParams({ ...data });
     else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });

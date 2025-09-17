@@ -44,7 +44,11 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
   // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
   const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
+  const DateOnly = TimeStamp ? new Date(TimeStamp).toISOString().split("T")[0] : "";
+
   const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
+
+  console.log(params, "PARAM");
 
   // update session only if setParams exists and we need to write the timestamp
   useEffect(() => {
@@ -65,66 +69,164 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   }, [params, setParams, TimeStamp]);
 
   // Build the declaration string — use TimeStamp (always defined as string)
-  const selfdeclarationform = `
-   To,
-   <b>${ulbgrade}</b>
-   <b>${district}</b>
+  // const selfdeclarationform = `
+  //  To,
+  //  <b>${ulbgrade}</b>
+  //  <b>${district}</b>
    
    
-   Dear Sir or Madam,
+  //  Dear Sir or Madam,
 
-   I, under signed Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype}</b>) having Registration No. 
-   <b>${architectid}</b> is appointed by the <b>${ownername}</b> Mobile number <b>${mobile}</b> for the development on
-   land bearing Kh. No <b>${khasranumber}</b> Area <b>${area}</b> (Sq.mts).
+  //  I, under signed Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype}</b>) having Registration No. 
+  //  <b>${architectid}</b> is appointed by the <b>${ownername}</b> Mobile number <b>${mobile}</b> for the development on
+  //  land bearing Kh. No <b>${khasranumber}</b> Area <b>${area}</b> (Sq.mts).
     
-   This site falls in ward number <b>${ward}</b> zone number <b>${zone}</b>  in the Master plan of 
-   <b>${district}</b> and the proposed Residential/Commercial/Industrial construction is permi
-   -ssible in this area.
+  //  This site falls in ward number <b>${ward}</b> zone number <b>${zone}</b>  in the Master plan of 
+  //  <b>${district}</b> and the proposed Residential/Commercial/Industrial construction is permi
+  //  -ssible in this area.
   
-   I am currently registered as <b>${architecttype}</b> with the Competent Authority and empane
-   -lled under Self-Certification Scheme.
+  //  I am currently registered as <b>${architecttype}</b> with the Competent Authority and empane
+  //  -lled under Self-Certification Scheme.
   
-   I hereby certify that I/we have appointed by the owner to prepare the plans, sections and 
-   details, structural details as required under the Punjab Municipal Building Byelaws for the 
-   above mentioned project. 
+  //  I hereby certify that I/we have appointed by the owner to prepare the plans, sections and 
+  //  details, structural details as required under the Punjab Municipal Building Byelaws for the 
+  //  above mentioned project. 
   
-   That the drawings prepared and uploaded along with other necessary documents on this 
-   E-Naksha Platform are as per the provisions of Punjab Municipal Building Byelaws and th
-   -is building plan has been applied under Self-Certification Scheme. 
+  //  That the drawings prepared and uploaded along with other necessary documents on this 
+  //  E-Naksha Platform are as per the provisions of Punjab Municipal Building Byelaws and th
+  //  -is building plan has been applied under Self-Certification Scheme. 
   
-   I certify that:
-   That I am fully conversant with the provisions of the Punjab Municipal Building Byelaws and 
-   other applicable instructions/ regulations, which are in force and I undertake to fulfill the 
-   same.
+  //  I certify that:
+  //  That I am fully conversant with the provisions of the Punjab Municipal Building Byelaws and 
+  //  other applicable instructions/ regulations, which are in force and I undertake to fulfill the 
+  //  same.
   
-   That plans have been prepared within the framework of provisions of the Master Plan and app
-   -licable Building Bye Laws / Regulations. 
+  //  That plans have been prepared within the framework of provisions of the Master Plan and app
+  //  -licable Building Bye Laws / Regulations. 
   
-   That site does not falls in any prohibited area/ government land/ encroachment or any other 
-   land restricted for building construction or in any unauthorized colony. 
+  //  That site does not falls in any prohibited area/ government land/ encroachment or any other 
+  //  land restricted for building construction or in any unauthorized colony. 
   
-   That plan is in conformity to structural safety norms. 
+  //  That plan is in conformity to structural safety norms. 
   
-   That I have seen the originals of all the documents uploaded and Nothing is concealed 
-   thereof. 
+  //  That I have seen the originals of all the documents uploaded and Nothing is concealed 
+  //  thereof. 
   
-   That all the requisite documents/NOC required to be uploaded have been uploaded on 
-   E-Naksha portal along with plan. 
+  //  That all the requisite documents/NOC required to be uploaded have been uploaded on 
+  //  E-Naksha portal along with plan. 
   
-   That above stated facts are true and all the requisite documents uploaded with this E-Naksha plan.
+  //  That above stated facts are true and all the requisite documents uploaded with this E-Naksha plan.
    
 
 
-   This Document is Verified By OTP at <b>${TimeStamp}</b>
+  //  This Document is Verified By OTP at <b>${TimeStamp}</b>
 
 
-   Name of Professional - <b>${architecname}</b> 
-   Designation - <b>${architecttype}</b>
-   Architect Id - <b>${architectid}</b> 
-   Mobile Number - <b>${architectmobileNumber}</b>
+  //  Name of Professional - <b>${architecname}</b> 
+  //  Designation - <b>${architecttype}</b>
+  //  Architect Id - <b>${architectid}</b> 
+  //  Mobile Number - <b>${architectmobileNumber}</b>
    
                                   
-    `;
+  //   `;
+
+
+
+const selfdeclarationform = `
+  <div style="font-family: 'Times New Roman', Times, serif; color:#000; font-size:16px; line-height:1.18; padding:0; margin-top:-100px">
+
+    <h2 style="text-align:center; font-size:20px; margin:0 0 6px 0; font-weight:700; text-transform:uppercase;">
+      DECLARATION UNDER SELF-CERTIFICATION SCHEME
+    </h2>
+    <div style="text-align:center; margin-top:-78px;">
+      <div style="font-size:16px; margin:0;">(For ${params?.additionalDetails?.usage || '<Type of Construction>'} Construction)</div>
+      <div style="font-size:16px; margin:2px 0 0 0;">(By Architect/ Civil Engineer/ Building Designer and Supervisor)</div>
+    </div>
+
+    <div style="margin-top:-52px;">
+      <p style="margin-bottom:-32px;"><strong>To:</strong></p>
+      <p style="margin-bottom:-32px;"><strong>${params?.owners?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"}</strong></p>
+      <p style="margin-bottom:-32px;">${params?.landInfo?.address?.city?.city?.ulbType}</p>
+      <p style="margin-bottom:-32px;">${params?.landInfo?.address?.city?.city?.districtName}</p>
+    </div>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir or Madam,</strong></p>
+
+    <p style="margin-top:-30px;margin-bottom:-32px;">
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype }</b> is appointed by the owner <b>${ownername}</b> (Mobile: <b>${mobile}</b>) for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${params?.additionalDetails?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${params?.additionalDetails?.proposedSiteAddress}</b>.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;">
+      This site falls in Ward Number <b>${ward}</b>, zone number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed Residential/Commercial/Industrial construction is permissible in this area.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;">
+      I am currently registered as (<b>${architecttype || "<Professional's User Type>"}</b>) with the Competent Authority and empanelled under Self-Certification Scheme.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;">
+      I hereby certify that I/we have been appointed by the owner to prepare the plans, sections and details, structural details as required under the Punjab Municipal Building Byelaws for the above-mentioned project.
+    </p>
+
+    <p style="margin-top:-52px;margin-bottom:-32px;">
+      That the drawings prepared and uploaded along with other necessary documents on this eNaksha portal are as per the provisions of Punjab Municipal Building Byelaws and this building plan has been applied under Self-Certification Scheme. I certify that:
+    </p>
+
+    <ol style="margin-top:-52px;margin-bottom:-32px; padding:0;">
+      <li style="margin-top:-5px;margin-bottom:-5px;">1. That I am fully conversant with the provisions of the Punjab Municipal Building Byelaws and other applicable instructions/regulations, which are in force and I undertake to fulfil the same.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">2. That plans have been prepared within the framework of provisions of the Master Plan and applicable Building Bye Laws / Regulations.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">3. That site does not fall in any prohibited area/ government land/ encroachment or any other land restricted for building construction or in any unauthorized colony.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">4. That plan is in conformity to structural safety norms.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">5. That I have seen the originals of all the documents uploaded and nothing is concealed thereof.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">6. That all the requisite documents/NOC required to be uploaded have been uploaded on eNaksha portal along with plan.</li>
+      <li style="margin-top:-5px;margin-bottom:-5px;">7. That above stated facts are true and all the requisite documents uploaded with this eNaksha plan have been signed by the owner/owners in my presence.</li>
+    </ol>
+
+   
+
+    <!-- Signature / details table (dotted cells like your doc) -->
+    <table style="width:100%; border-collapse:collapse; margin-top:-52px; font-size:13px;">
+      <tr>
+        <td style="width:48%; vertical-align:top; padding:6px; border:1px dotted #000;">
+          <div style="font-weight:700; margin-bottom:6px;">Date:</div>
+          <div style="min-height:70px;">${DateOnly}</div>
+
+        </td>
+
+        <td style="width:52%; vertical-align:top; padding:0 0 0 0; border:1px dotted #000;">
+          <table style="width:100%; border-collapse:collapse;">
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; width:40%; font-weight:700;">Name of Professional:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${architecname}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Registration No.:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${architectid || '<Registration Number>'}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Address:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${params?.additionalDetails?.professionalAddress}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${architectmobileNumber}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">e-Mail:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${user?.info?.emailId}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; font-weight:700;">Signature:</td>
+              <td style="padding:6px;">Verified through OTP on <b>${TimeStamp || '<date> <time>'}</b></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+`;
+
+
 
   // right aligned check lines (constructed using current values)
   const isRightAlignedLine = (line) => {
@@ -230,19 +332,21 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
     <div>
       <Modal isOpen={showTermsPopup} onRequestClose={closeModal} contentLabel="Self-Declaration" style={modalStyles}>
         <div>
-          <h2 style={modalStyles.heading}>DECLARATION UNDER SELF-CERTIFICATION SCHEME</h2>
+          {/* <h2 style={modalStyles.heading}>DECLARATION UNDER SELF-CERTIFICATION SCHEME</h2>
           <h3 style={modalStyles.subheading}>(For proposed Construction)</h3>
-          <h3 style={modalStyles.subheading}>(By Architect/ Civil Engineer/ Building Designer and Supervisor)</h3>
+          <h3 style={modalStyles.subheading}>(By Architect/ Civil Engineer/ Building Designer and Supervisor)</h3> */}
 
           <div style={{ whiteSpace: "pre-wrap", wordWrap: "break-word", textAlign: "justify", fontFamily: "Roboto, serif" }}>
-            {selfdeclarationform.split("\n").map((line, index, arr) => (
+            {/* {selfdeclarationform.split("\n").map((line, index, arr) => (
               <React.Fragment key={index}>
                 <div style={isRightAlignedLine(line) ? modalStyles.rightAlignedText : {}} dangerouslySetInnerHTML={{ __html: line || "&nbsp;" }} />
 
-                {/* add spacing when needed */}
+            
                 {shouldAddSpacing(line, arr[index + 1]) && <div style={{ marginBottom: "2rem" }} />}
               </React.Fragment>
-            ))}
+            ))} */}
+            <div dangerouslySetInnerHTML={{ __html: selfdeclarationform }} />
+
           </div>
 
           {!isArchitectDeclared && <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem", marginTop: "1rem" }}>

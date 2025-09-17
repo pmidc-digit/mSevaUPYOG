@@ -49,7 +49,7 @@ const NOCEmployeeHomeCard = () => {
 
   useEffect(() => {
     if (location.pathname === "/digit-ui/employee") {
-      Digit.SessionStorage.del("NOC.INBOX");
+      Digit.SessionStorage.del("NDC.INBOX");
     }
   }, [location.pathname]);
 

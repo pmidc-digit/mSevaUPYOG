@@ -4,6 +4,7 @@ import { useRouteMatch } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import EmployeeApp from "./pages/employee";
 import ApplicationOverview from "./pages/employee/ApplicationOverview";
+import NOCEmployeeApplicationOverview from "./pages/employee/ApplicationOverview/ApplicationOverview";
 import NOCCard from "./pages/employee/EmployeeCard";
 import Inbox from "./pages/employee/Inbox";
 import NOCSearchApplication from "./pages/employee/SearchApplication/Search";
@@ -25,6 +26,7 @@ import NOCSpecificationDetails from "./pageComponents/NOCSpecificationDetails";
 import NOCDocumentsRequired from "./pageComponents/NOCDocumentsRequired";
 import NOCSummary from "./pageComponents/NOCSummary";
 import NOCDocumentWithLatLong from "./pageComponents/NOCDocumentWithLatLong";
+import EditApplication from "./pageComponents/EditApplication/EditApplication";
 
 import MyApplications from "./pages/citizen/Applications/MyApplications";
 import CitizenApplicationOverview from "./pages/citizen/Applications/ApplicationsOverview";
@@ -92,7 +94,9 @@ const componentsToRegister = {
   NOCDocumentWithLatLong,
   NOCResponseCitizen,
   NOCCitizenMyApplications: MyApplications,
-  NOCCitizenApplicationOverview: CitizenApplicationOverview
+  NOCCitizenApplicationOverview: CitizenApplicationOverview,
+  NOCEmployeeApplicationOverview,
+  NewNOCEditApplication: EditApplication
 };
 
 export const initNOCComponents = () => {

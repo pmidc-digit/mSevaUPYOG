@@ -8,7 +8,7 @@ const MyApplications = ({ view }) => {
   const history = useHistory();
   const userInfo = Digit.UserService.getUser()?.info || {};
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
-  console.log("userInfo========", userInfo);
+  //console.log("userInfo========", userInfo);
 
   const { isLoading, data, isError, error } = Digit.Hooks.noc.useNOCCitizenSearchApplication({ mobileNumber: userInfo.mobileNumber }, tenantId);
 
@@ -29,7 +29,7 @@ const MyApplications = ({ view }) => {
       )}
       {data?.data?.map((application, index) => {
         const filteredApplication = Object.fromEntries(Object.entries(application).filter(([key]) => key !== "Applications"));
-        console.log("applications here==>", application?.Applications);
+        //console.log("filtered Applications here==>", filteredApplication);
         return (
           <div key={`card-${index}`}>
             <Card>
@@ -40,7 +40,7 @@ const MyApplications = ({ view }) => {
                 ))}
 
               {application?.Applications?.applicationStatus != "PENDINGPAYMENT" && (
-                <Link to={`/digit-ui/citizen/noc/search/application-overview/${application?.Applications?.uuid}`}>
+                <Link to={`/digit-ui/citizen/noc/search/application-overview/${application?.Applications?.applicationNo}`}>
                   <SubmitBar label={t("TL_VIEW_DETAILS")} />
                 </Link>
               )}
@@ -48,7 +48,7 @@ const MyApplications = ({ view }) => {
               {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
                 <Link
                   to={{
-                    pathname: `/digit-ui/citizen/payment/collect/NOC/${application?.Applications?.uuid}/${tenantId}?tenantId=${tenantId}`,
+                    pathname: `/digit-ui/citizen/payment/collect/obpas_noc/${application?.Applications?.uuid}/${tenantId}?tenantId=${tenantId}`,
                   }}
                 >
                   <div style={{ marginTop: "10px" }}>

@@ -79,9 +79,10 @@ public class PaymentUpdateService {
 			String tenantIdFromPaymentDetails = paymentRequest.getPayment().getTenantId();
 			for(PaymentDetail paymentDetail : paymentDetails){
 				if (paymentDetail.getBusinessService().equalsIgnoreCase(NOCConstants.NOC_BUSINESS_SERVICE )|| paymentDetail.getBusinessService().equalsIgnoreCase(NOCConstants.NOC_MODULE )) {
+					log.info("Start PaymentUpdateService.process method.");
 					NocSearchCriteria searchCriteria = new NocSearchCriteria();
 					searchCriteria.setTenantId(tenantIdFromPaymentDetails);
-					searchCriteria.setApplicationNo(Collections.singletonList(paymentDetail.getBill().getConsumerCode()).get(0));
+					searchCriteria.setApplicationNo(paymentDetail.getBill().getConsumerCode());
 					List<Noc> nocs = nocService.search(searchCriteria, requestInfo);
 
 					String tenantIdFromSearch = nocs.get(0).getTenantId();
@@ -107,7 +108,7 @@ public class PaymentUpdateService {
 					/*
 					 * calling workflow to update status
 					 */
-					wfIntegrator.callWorkFlow(updateRequest,NOCConstants.NOC_BUSINESS_SERVICE);
+//					wfIntegrator.callWorkFlow(updateRequest,NOCConstants.NOC_BUSINESS_SERVICE);
 //                    log.info(" applications uuid is : {}", updateRequest.getApplications().get(0).getUuid());
 //                    log.info(" the status of the applications is : {}", updateRequest.getApplications().get(0).getApplicationStatus());
 					enrichmentService.postStatusEnrichment(updateRequest,NOCConstants.NOC_BUSINESS_SERVICE);

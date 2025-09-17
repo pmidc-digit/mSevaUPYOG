@@ -182,6 +182,7 @@ public class EnrichmentService {
 		}
 
 		nocRequest.getNoc().setApplicationNo(searchResult.getApplicationNo());
+
 		nocRequest.getNoc().getAuditDetails().setCreatedBy(searchResult.getAuditDetails().getCreatedBy());
 		nocRequest.getNoc().getAuditDetails().setCreatedTime(searchResult.getAuditDetails().getCreatedTime());
 
@@ -217,10 +218,10 @@ public class EnrichmentService {
 					noc.getNocDetails().setAdditionalDetails(additionalDetail);
 				}
 
-				List<IdResponse> idResponses = idGenRepository
-						.getId(nocRequest.getRequestInfo(), noc.getTenantId(), config.getApplicationNoIdgenName(), 1)
-						.getIdResponses();
-				noc.setNocNo(idResponses.get(0).getId());
+//				List<IdResponse> idResponses = idGenRepository
+//						.getId(nocRequest.getRequestInfo(), noc.getTenantId(), config.getApplicationNoIdgenName(), 1)
+//						.getIdResponses();
+//				noc.setNocNo(idResponses.get(0).getId());
 			}
 			if (state.equalsIgnoreCase(NOCConstants.VOIDED_STATUS)) {
 				noc.setStatus(Status.INACTIVE);

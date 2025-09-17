@@ -132,4 +132,8 @@ public class NOCConfiguration {
     @Value("${egov.bpa.search.endpoint}")
     private String bpaSearchEndpoint;
 
+
+	@Value("${spring.kafka.consumer.group-id}")
+	private String kafkaGroupId;
+
 }

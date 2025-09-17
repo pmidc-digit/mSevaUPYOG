@@ -66,7 +66,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Floor;
-import org.egov.common.entity.edcr.Occupancy;
 import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
@@ -401,16 +400,7 @@ public class AdditionalFeature extends FeatureProcess {
 				String minRequiredFloorHeight = StringUtils.EMPTY;
 				String maxPermissibleFloorHeight = StringUtils.EMPTY;
 				
-				//minRequiredFloorHeight = "2.75" + DcrConstants.IN_METER;
-				for (final Occupancy occupancy : pl.getOccupancies()) {
-	                OccupancyTypeHelper mostRestrictiveOccupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
-	                if (occupancy.getTypeHelper().getSubtype() != null && ((mostRestrictiveOccupancyType.getType() != null
-	                                && DxfFileConstants.A.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())))) {                    
-	                	minRequiredFloorHeight = "2.75" + DcrConstants.IN_METER;
-	                }else {
-	                	minRequiredFloorHeight = "3.00" + DcrConstants.IN_METER;
-	                }
-	            }
+				minRequiredFloorHeight = "2.75" + DcrConstants.IN_METER;
 				maxPermissibleFloorHeight = "4.40" + DcrConstants.IN_METER;
 				floor.setIsStiltFloor(false);
 				

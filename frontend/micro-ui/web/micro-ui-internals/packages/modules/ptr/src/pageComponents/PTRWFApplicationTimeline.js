@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
 import PTRWFCaption from "./PTRWFCaption";
 import PTRModal from "./PTRModal";
+import PTRWFDocument from "./PTRWFDocument";
 
 const PTRWFApplicationTimeline = (props) => {
   const { t } = useTranslation();
@@ -24,34 +25,53 @@ const PTRWFApplicationTimeline = (props) => {
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
-
+  const [latestComment, setLatestComment] = useState(null);
   const { isLoading, data } = Digit.Hooks.useWorkflowDetails({
     tenantId: props.application?.tenantId,
     id: props.application?.applicationNumber,
     moduleCode: "ptr",
+    config: { staleTime: 0, refetchOnMount: "always" },
   });
+
+  console.log(" majordata :>> ", data);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
 
   const getTimelineCaptions = (checkpoint) => {
+    console.log("checkpoint is :>> ", checkpoint);
     if (checkpoint.state === "OPEN") {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         source: props.application?.channel || "",
+        // mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
       };
       return <PTRWFCaption data={caption} />;
     } else if (checkpoint.state) {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         name: checkpoint?.assignes?.[0]?.name,
-        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
-        comment: t(checkpoint?.comment),
-        wfComment: checkpoint.wfComment,
+        // mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
+        // comment: latestComment,
+        comment: checkpoint.state === "INITIATED" ? null : checkpoint?.wfComment?.[0],
+        wfDocuments: checkpoint?.wfDocuments,
         thumbnailsToShow: checkpoint?.thumbnailsToShow,
       };
-      return <PTRWFCaption data={caption} OpenImage={OpenImage} />;
+      return (
+        <div>
+          <PTRWFCaption data={caption} OpenImage={OpenImage} />
+          {checkpoint?.wfDocuments?.length > 0 && (
+            <div>
+              {checkpoint?.wfDocuments?.map((doc, index) => (
+                <div key={index}>
+                  <PTRWFDocument value={checkpoint?.wfDocuments} Code={doc?.documentType} index={index} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
     } else {
       const caption = {
         date: Digit.DateUtils.ConvertTimestampToDate(props.application?.auditDetails.lastModified),
@@ -153,9 +173,12 @@ const PTRWFApplicationTimeline = (props) => {
   }
 
   const submitAction = async (data) => {
+    console.log("data  HUHHHH:>> ", data);
     // setShowModal(false);
     // setSelectedAction(null);
     const payloadData = props.application;
+
+    console.log("payloadData :>> ", payloadData);
 
     const updatedApplicant = {
       ...payloadData,
@@ -163,27 +186,28 @@ const PTRWFApplicationTimeline = (props) => {
     };
 
     const filtData = data?.Licenses?.[0];
+    console.log("filtData whyy :>> ", filtData);
+    setLatestComment(filtData?.comment);
     updatedApplicant.workflow = {
       action: filtData.action,
       assignes: filtData?.assignee,
-      comment: filtData?.comment,
+      comments: filtData?.comment,
       documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
     };
-
     if (!filtData?.assignee && filtData.action == "FORWARD") {
       // setShowToast(true);
       setShowToast({ key: "error", message: "Assignee is mandatory" });
       setError("Assignee is mandatory");
       return;
     }
-
+    console.log("updatedApplicant :>> ", updatedApplicant);
     const finalPayload = {
       PetRegistrationApplications: [updatedApplicant],
     };
-
+    console.log("finalPayload :>> ", finalPayload);
     try {
       const response = await Digit.PTRService.update({
-        tenantId,
+        // tenantId,
         ...finalPayload,
       });
 
@@ -276,7 +300,6 @@ const PTRWFApplicationTimeline = (props) => {
               state={state}
               id={props.application?.applicationNumber}
               applicationDetails={props.application}
-              // applicationData={applicationDetails?.applicationData}
               closeModal={closeModal}
               submitAction={submitAction}
               actionData={data?.timeline}
@@ -284,6 +307,7 @@ const PTRWFApplicationTimeline = (props) => {
               showToast={showToast}
               closeToast={closeToast}
               errors={error}
+              setShowToast={setShowToast}
             />
           ) : null}
         </Fragment>

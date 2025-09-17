@@ -15,7 +15,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
 
   const assignedToOptions = useMemo(
     () => [
-      { code: "ASSIGNED_TO_ME", name: t("ASSIGNED_TO_ME") },
+      { code: "ASSIGNED_TO_ME", name: "Assigned To Me" },
       { code: "ASSIGNED_TO_ALL", name: t("ASSIGNED_TO_ALL") },
     ],
     [t]
@@ -89,7 +89,6 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
       uuid: value, // ✅ send as 'uuid' with code
     });
   };
-
 
   return (
     <React.Fragment>

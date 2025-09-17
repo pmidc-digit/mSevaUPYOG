@@ -16,6 +16,7 @@ export const TableConfig = (t) => ({
       {
         Header: t("REPORT_FSM_RESULT_APPLICATION_NO"),
         Cell: ({ row }) => {
+          console.log("row :>> ", row);
           console.log("row", row);
           return (
             <div>
@@ -33,9 +34,9 @@ export const TableConfig = (t) => ({
       {
         Header: t("REPORT_FSM_RESULT_APPLICANTNAME"),
         Cell: (row) => {
-          return GetCell(`${row?.cell?.row?.original?.searchData?.["applicantName"]}`);
+          return GetCell(`${row?.cell?.row?.original?.searchData?.owner?.["name"]}`);
         },
-        mobileCell: (original) => GetMobCell(original?.searchData?.["applicantName"]),
+        mobileCell: (original) => GetMobCell(original?.searchData?.owner?.["name"]),
       },
       {
         Header: t("PTR_SEARCH_PET_TYPE"),
@@ -60,6 +61,20 @@ export const TableConfig = (t) => ({
           return GetCell(t(`${row?.original?.workflowData?.state?.["applicationStatus"]}`));
         },
         mobileCell: (original) => GetMobCell(t(`ES_PTR_COMMON_STATUS_${original?.workflowData?.state?.["applicationStatus"]}`)),
+      },
+
+      {
+        Header: t("PTR_DATE"),
+        Cell: ({ row }) => {
+          const createdTime = row.original?.searchData?.auditDetails?.["createdTime"];
+          const dateStr = createdTime ? new Date(createdTime).toLocaleDateString("en-GB") : "";
+          return GetCell(dateStr);
+        },
+        mobileCell: (original) => {
+          const createdTime = original?.searchData?.auditDetails?.["createdTime"];
+          const dateStr = createdTime ? new Date(createdTime).toLocaleDateString("en-GB") : "";
+          return GetMobCell(dateStr);
+        },
       },
     ],
     serviceRequestIdKey: (original) => original?.[t("PTR_INBOX_UNIQUE_APPLICATION_NUMBER")]?.props?.children,

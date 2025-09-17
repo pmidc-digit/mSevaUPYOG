@@ -1,9 +1,19 @@
 import React, { useEffect } from "react";
-import { TextInput, CardLabel, Dropdown, ActionBar, SubmitBar, CardLabelError } from "@mseva/digit-ui-react-components";
+import {
+  TextInput,
+  CardLabel,
+  Dropdown,
+  ActionBar,
+  SubmitBar,
+  CardLabelError,
+  LabelFieldPair,
+  CardSectionHeader,
+} from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { UPDATE_PTRNewApplication_FORM } from "../redux/action/PTRNewApplicationActions";
 import { convertEpochToDateInput } from "../utils/index";
+import CustomDatePicker from "./CustomDatePicker";
 
 const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) => {
   const stateId = Digit.ULBService.getStateId();
@@ -13,6 +23,20 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
   const { data: mdmsPetData } = Digit.Hooks.ptr.usePTRPetMDMS(tenantId);
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0]; // yyyy-mm-dd for max
+  const minVaccineDate = new Date();
+  minVaccineDate.setFullYear(minVaccineDate.getFullYear() - 20);
+  const minVaccineDateStr = minVaccineDate.toISOString().split("T")[0];
+  function yearsSince(dateStr) {
+    if (!dateStr) return 0;
+    const d = new Date(dateStr);
+    const now = new Date();
+    let years = now.getFullYear() - d.getFullYear();
+    const monthDiff = now.getMonth() - d.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < d.getDate())) years--;
+    return years >= 0 ? years : 0;
+  }
 
   const {
     control,
@@ -45,11 +69,13 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
 
     const { address, lastName, firstName, pincode, ...filteredOwnerDetails } = currentStepData.ownerDetails;
     const formData = {
-      tenantId,
-      applicant: {
+      tenantId, //change applicant to owner
+
+      owner: {
         ...filteredOwnerDetails,
         name: `${firstName} ${lastName}`,
-        userName: `${firstName} ${lastName}`,
+        // userName: `${firstName} ${lastName}`,
+        userName: filteredOwnerDetails?.mobileNumber,
         tenantId,
         type: "CITIZEN",
       },
@@ -70,7 +96,8 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
         addressId: currentStepData.ownerDetails.address,
       },
       applicationType: "NEWAPPLICATION",
-      applicantName: `${firstName} ${lastName}`,
+      ownerName: `${firstName} ${lastName}`, //change to ownerName
+      fatherName: filteredOwnerDetails?.fatherOrHusbandName,
       mobileNumber: filteredOwnerDetails?.mobileNumber,
       workflow: {
         action: "INITIATE",
@@ -102,189 +129,256 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
     }
   }, [currentStepData, setValue]);
 
+  const selectedVaccineDate = watch("lastVaccineDate");
+  useEffect(() => {
+    // re-trigger petAge validation whenever vaccine date changes
+    if (selectedVaccineDate) {
+      trigger("petAge");
+    }
+  }, [selectedVaccineDate, trigger]);
+
   const onlyAlphabets = /^[A-Za-z\s]+$/; // Allows any number of letters and spaces
   const onlyNumbers = /^[0-9]+$/; // Allows any number of digits
   const alphaNum = /^[A-Za-z0-9]+$/; // Allows any number of letters and digits
-
+  const decimalNumber = /^\d+(\.\d{1,2})?$/;
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
     return errors[fieldName]?.message || t("PTR_FIELD_REQUIRED");
   };
 
-  const errorStyle = { width: "70%", fontSize: "12px", marginTop: "-18px" };
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      {/* PET NAME */}
-      <CardLabel>{t("PTR_PET_NAME")} *</CardLabel>
-      <Controller
-        control={control}
-        name="petName"
-        rules={{
-          required: t("PTR_PET_NAME_REQUIRED"),
-          pattern: {
-            value: onlyAlphabets,
-            message: t("PTR_PET_NAME_INVALID"),
-          },
-        }}
-        render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("petName")} t={t} />}
-      />
-      {errors.petName && <CardLabelError style={errorStyle}>{getErrorMessage("petName")}</CardLabelError>}
-      {/* PET TYPE */}
-      <CardLabel>{t("PTR_SEARCH_PET_TYPE")} *</CardLabel>
-      <Controller
-        control={control}
-        name="petType"
-        rules={{ required: t("PTR_PET_TYPE_REQUIRED") }}
-        render={(props) => (
-          <Dropdown className="form-field" select={props.onChange} selected={props.value} option={mdmsPetData?.petTypes} optionKey="i18nKey" />
-        )}
-      />
-      {errors.petType && <CardLabelError style={errorStyle}>{getErrorMessage("petType")}</CardLabelError>}
-      {/* BREED TYPE */}
-      <CardLabel>{t("PTR_SEARCH_BREED_TYPE")} *</CardLabel>
-      <Controller
-        control={control}
-        name="breedType"
-        rules={{ required: t("PTR_BREED_TYPE_REQUIRED") }}
-        render={(props) => {
-          const filteredBreeds = selectedPetType ? mdmsPetData?.breedTypes?.filter((breed) => breed.petType == selectedPetType.code) : [];
-          return <Dropdown className="form-field" select={props.onChange} selected={props.value} option={filteredBreeds} optionKey="i18nKey" />;
-        }}
-      />
+      <CardSectionHeader className="card-section-header">{t("PTR_PET_DETAILS")}</CardSectionHeader>
 
+      {/* PET NAME */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("PTR_PET_NAME")} *</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="petName"
+            rules={{
+              required: t("PTR_PET_NAME_REQUIRED"),
+              pattern: { value: onlyAlphabets, message: t("PTR_PET_NAME_INVALID") },
+              maxLength: { value: 18, message: "Maximum 18 characters" },
+              minLength: { value: 2, message: "Minimum 2 characters" },
+            }}
+            render={(props) => (
+              <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("petName")} t={t} />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
+      {errors.petName && <CardLabelError style={errorStyle}>{getErrorMessage("petName")}</CardLabelError>}
+
+      {/* PET TYPE */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("PTR_SEARCH_PET_TYPE")} *</CardLabel>
+
+        <Controller
+          control={control}
+          name="petType"
+          rules={{ required: t("PTR_PET_TYPE_REQUIRED") }}
+          render={(props) => (
+            <Dropdown className="form-field" select={props.onChange} selected={props.value} option={mdmsPetData?.petTypes} optionKey="name" />
+          )}
+        />
+      </LabelFieldPair>
+      {errors.petType && <CardLabelError style={errorStyle}>{getErrorMessage("petType")}</CardLabelError>}
+
+      {/* BREED TYPE */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("PTR_SEARCH_BREED_TYPE")} *</CardLabel>
+
+        <Controller
+          control={control}
+          name="breedType"
+          rules={{ required: t("PTR_BREED_TYPE_REQUIRED") }}
+          render={(props) => {
+            const filteredBreeds = selectedPetType ? mdmsPetData?.breedTypes?.filter((b) => b.petType == selectedPetType.code) : [];
+            return <Dropdown className="form-field" select={props.onChange} selected={props.value} option={filteredBreeds} optionKey="name" />;
+          }}
+        />
+      </LabelFieldPair>
       {errors.breedType && <CardLabelError style={errorStyle}>{getErrorMessage("breedType")}</CardLabelError>}
+
       {/* PET GENDER */}
-      <CardLabel>{t("PTR_PET_GENDER")} *</CardLabel>
-      <Controller
-        control={control}
-        name="petGender"
-        rules={{ required: t("PTR_PET_GENDER_REQUIRED") }}
-        render={(props) => (
-          <Dropdown className="form-field" select={props.onChange} selected={props.value} option={mdmsPetData?.genderTypes} optionKey="i18nKey" />
-        )}
-      />
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("PTR_PET_GENDER")} *</CardLabel>
+
+        <Controller
+          control={control}
+          name="petGender"
+          rules={{ required: t("PTR_PET_GENDER_REQUIRED") }}
+          render={(props) => (
+            <Dropdown className="form-field" select={props.onChange} selected={props.value} option={mdmsPetData?.genderTypes} optionKey="name" />
+          )}
+        />
+      </LabelFieldPair>
       {errors.petGender && <CardLabelError style={errorStyle}>{getErrorMessage("petGender")}</CardLabelError>}
-      <CardLabel>{`${t("PTR_COLOR")}`} *</CardLabel>
-      <Controller
-        control={control}
-        name="petColor"
-        rules={{
-          required: t("PTR_PET_COLOR_REQUIRED"),
-          pattern: {
-            value: /^[A-Za-z\s]+$/,
-            message: t("PTR_PET_COLOR_INVALID"),
-          },
-        }}
-        render={(props) => (
-          <TextInput
-            value={props.value}
-            onChange={(e) => {
-              props.onChange(e.target.value);
+
+      {/* COLOR */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{`${t("PTR_COLOR")}`} *</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="petColor"
+            rules={{
+              required: t("PTR_PET_COLOR_REQUIRED"),
+              pattern: { value: /^[A-Za-z\s]+$/, message: t("PTR_PET_COLOR_INVALID") },
+              maxLength: { value: 18, message: "Maximum 18 characters" },
+              minLength: { value: 2, message: "Minimum 2 characters" },
             }}
-            onBlur={(e) => {
-              props.onBlur(e);
-            }}
-            t={t}
+            render={(props) => (
+              <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={(e) => props.onBlur(e)} t={t} />
+            )}
           />
-        )}
-      />
+        </div>
+      </LabelFieldPair>
       {errors.petColor && <CardLabelError style={errorStyle}>{getErrorMessage("petColor")}</CardLabelError>}
+
       {/* VACCINATED DATE */}
-      <CardLabel>{t("PTR_VACCINATED_DATE")} *</CardLabel>
-      <Controller
-        control={control}
-        name="lastVaccineDate"
-        rules={{ required: t("PTR_VACCINATION_DATE_REQUIRED") }}
-        render={(props) => (
-          <TextInput
-            type="date"
-            value={props.value}
-            max={new Date().toISOString().split("T")[0]} // ✅ disables future dates
-            onChange={(e) => props.onChange(e.target.value)}
-            onBlur={() => trigger("lastVaccineDate")}
-            t={t}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("PTR_VACCINATED_DATE")} *</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="lastVaccineDate"
+            rules={{ required: t("PTR_VACCINATION_DATE_REQUIRED") }}
+            render={(props) => (
+              <CustomDatePicker
+                value={props.value}
+                min={minVaccineDateStr}
+                max={todayStr}
+                onChange={(e) => props.onChange(e.target.value)}
+                onBlur={() => {
+                  trigger("lastVaccineDate");
+                  trigger("petAge");
+                }}
+                t={t}
+              />
+            )}
           />
-        )}
-      />
+        </div>
+      </LabelFieldPair>
       {errors.lastVaccineDate && <CardLabelError style={errorStyle}>{getErrorMessage("lastVaccineDate")}</CardLabelError>}
+
       {/* PET AGE */}
-      <CardLabel>{t("PTR_PET_AGE")} *</CardLabel>
-      <Controller
-        control={control}
-        name="petAge"
-        rules={{
-          required: t("PTR_PET_AGE_REQUIRED"),
-          pattern: { value: onlyNumbers, message: t("PTR_PET_AGE_INVALID") },
-        }}
-        render={(props) => (
-          <TextInput
-            value={props.value}
-            onChange={(e) => props.onChange(e.target.value.replace(/\D/g, ""))}
-            maxLength={3}
-            onBlur={() => trigger("petAge")}
-            t={t}
+      {/* PET AGE */}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("PTR_PET_AGE")} *</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="petAge"
+            rules={{
+              required: t("PTR_PET_AGE_REQUIRED"),
+              pattern: { value: decimalNumber, message: t("PTR_PET_AGE_INVALID") },
+              validate: (val) => {
+                const age = Number(val);
+                if (isNaN(age)) return t("PTR_PET_AGE_INVALID");
+                // allow any positive decimal (e.g. 0.1). change 0.01 to 0.1 if you want a floor of 0.1
+                if (age <= 0) return "Pet age must be greater than 0";
+                if (age > 23) return "Pet age cannot be greater than 23";
+                const vaccDate = watch("lastVaccineDate");
+                if (!vaccDate) return true;
+                const yearsFromVacc = yearsSince(vaccDate); // integer years
+                // Round pet age to nearest whole number for vaccine-date comparison (per tester request)
+                let roundedAge;
+
+                if (age > 0 && age < 1) {
+                  roundedAge = 1; // special case for anything between 0 and 1
+                } else {
+                  roundedAge = Math.floor(age); // always round down for 1 and above
+                }
+
+                return roundedAge >= yearsFromVacc || `Pet age must be at least ${yearsFromVacc} year(s)`;
+              },
+            }}
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                onChange={(e) => {
+                  // allow digits and one decimal point; strip other chars
+                  let v = e.target.value.replace(/[^0-9.]/g, "");
+                  // remove any additional dots (keep only the first)
+                  v = v.replace(/(\..*)\./g, "$1");
+                  props.onChange(v);
+                }}
+                maxLength={5} // allow for values like "23.99"
+                onBlur={() => trigger("petAge")}
+                t={t}
+              />
+            )}
           />
-        )}
-      />
+        </div>
+      </LabelFieldPair>
       {errors.petAge && <CardLabelError style={errorStyle}>{getErrorMessage("petAge")}</CardLabelError>}
+
       {/* VACCINATION NUMBER */}
-      <CardLabel>{t("PTR_VACCINATION_NUMBER")} *</CardLabel>
-      <Controller
-        control={control}
-        name="vaccinationNumber"
-        rules={{
-          required: t("PTR_VACCINATION_NUMBER_REQUIRED"),
-          pattern: { value: alphaNum, message: t("PTR_VACCINATION_NUMBER_INVALID") },
-        }}
-        render={(props) => (
-          <TextInput
-            value={props.value}
-            onChange={(e) => props.onChange(e.target.value)}
-            maxLength={20}
-            onBlur={() => trigger("vaccinationNumber")}
-            t={t}
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("PTR_VACCINATION_NUMBER")} *</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="vaccinationNumber"
+            rules={{
+              required: t("PTR_VACCINATION_NUMBER_REQUIRED"),
+              pattern: { value: alphaNum, message: t("PTR_VACCINATION_NUMBER_INVALID") },
+            }}
+            render={(props) => (
+              <TextInput
+                value={props.value}
+                onChange={(e) => props.onChange(e.target.value)}
+                maxLength={20}
+                onBlur={() => trigger("vaccinationNumber")}
+                t={t}
+              />
+            )}
           />
-        )}
-      />
+        </div>
+      </LabelFieldPair>
       {errors.vaccinationNumber && <CardLabelError style={errorStyle}>{getErrorMessage("vaccinationNumber")}</CardLabelError>}
+
       {/* DOCTOR NAME */}
-      <CardLabel>{t("PTR_DOCTOR_NAME")} *</CardLabel>
-      <Controller
-        control={control}
-        name="doctorName"
-        rules={{
-          required: t("PTR_DOCTOR_NAME_REQUIRED"),
-          pattern: { value: onlyAlphabets, message: t("PTR_DOCTOR_NAME_INVALID") },
-        }}
-        render={(props) => (
-          <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("doctorName")} t={t} />
-        )}
-      />
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("PTR_DOCTOR_NAME")} *</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="doctorName"
+            rules={{ required: t("PTR_DOCTOR_NAME_REQUIRED"), pattern: { value: onlyAlphabets, message: t("PTR_DOCTOR_NAME_INVALID") } }}
+            render={(props) => (
+              <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("doctorName")} t={t} />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
       {errors.doctorName && <CardLabelError style={errorStyle}>{getErrorMessage("doctorName")}</CardLabelError>}
+
       {/* CLINIC NAME */}
-      <CardLabel>{t("PTR_CLINIC_NAME")} *</CardLabel>
-      <Controller
-        control={control}
-        name="clinicName"
-        rules={{
-          required: t("PTR_CLINIC_NAME_REQUIRED"),
-          pattern: { value: onlyAlphabets, message: t("PTR_CLINIC_NAME_INVALID") },
-        }}
-        render={(props) => (
-          <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
-        )}
-      />
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t("PTR_CLINIC_NAME")} *</CardLabel>
+        <div className="field">
+          <Controller
+            control={control}
+            name="clinicName"
+            rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: alphaNum, message: t("PTR_CLINIC_NAME_INVALID") } }}
+            render={(props) => (
+              <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
+            )}
+          />
+        </div>
+      </LabelFieldPair>
       {errors.clinicName && <CardLabelError style={errorStyle}>{getErrorMessage("clinicName")}</CardLabelError>}
+
       <ActionBar>
         <SubmitBar
           label="Back"
-          style={{
-            border: "1px solid",
-            background: "transparent",
-            color: "#2947a3",
-            marginRight: "5px",
-          }}
+          style={{ border: "1px solid", background: "transparent", color: "#2947a3", marginRight: "5px" }}
           onSubmit={onGoBack}
         />
         <SubmitBar label={t("Next")} submit="submit" />

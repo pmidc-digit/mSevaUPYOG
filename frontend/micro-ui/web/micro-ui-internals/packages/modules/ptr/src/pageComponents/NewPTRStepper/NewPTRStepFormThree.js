@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
@@ -12,7 +11,7 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState("");
   const stateId = Digit.ULBService.getStateId();
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const { data:mdmsDocsData, isLoading } = Digit.Hooks.ptr.useDocumentsMDMS(tenantId);
+  const { data: mdmsDocsData, isLoading } = Digit.Hooks.ptr.useDocumentsMDMS(tenantId);
 
   const currentStepData = useSelector(function (state) {
     return state.ptr.PTRNewApplicationFormReducer.formData && state.ptr.PTRNewApplicationFormReducer.formData[config?.key]
@@ -21,30 +20,35 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   });
 
   const makeDocumentsValidator = (mdms) => {
-    const requiredCodes = (mdms || []).filter((d) => d?.required).map((d) => d.code);
+    const requiredDocs = (mdms || []).filter((d) => d?.required);
 
     return (documents = []) => {
       const errors = {};
-      if (!requiredCodes?.length) return errors;
-      for (const code of requiredCodes) {
-        const satisfied = documents?.some((doc) => doc?.documentType?.includes?.(code) && (doc?.filestoreId || doc?.fileStoreId));
+      const missingDocs = [];
+      const docsArray = Array.isArray(documents) ? documents : [];
+      if (!requiredDocs.length) return errors;
+      for (const doc of requiredDocs) {
+        const satisfied = docsArray.some((d) => d.documentType?.includes(doc.code) && (d.filestoreId || d.fileStoreId));
         if (!satisfied) {
-          errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
-          break;
+          missingDocs.push(doc.name || t(doc.code.replaceAll(".", "_")));
+          // or doc.name if available
         }
+      }
+      if (missingDocs.length > 0) {
+        errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
+        errors.missingDocs = missingDocs;
       }
       return errors;
     };
   };
 
-
   function goNext(data) {
-
     const validator = makeDocumentsValidator(mdmsDocsData);
     const docErrors = validator(data?.documents?.documents || []);
 
     if (docErrors?.missingRequired) {
-      setError("Please fill in all required fields");
+      const missingDocNames = docErrors.missingDocs?.join(", ") || "";
+      setError(`You haven't uploaded: ${missingDocNames}`);
       setShowToast(true);
       return;
     }

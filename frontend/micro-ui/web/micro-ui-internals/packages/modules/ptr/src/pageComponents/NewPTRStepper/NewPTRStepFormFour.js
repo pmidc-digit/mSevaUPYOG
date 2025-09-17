@@ -25,7 +25,6 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     history.push(`/digit-ui/citizen/ptr-home`);
   };
 
-
   function validateStepData(data) {
     const missingFields = [];
     const notFormattedFields = [];
@@ -78,17 +77,17 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const onSubmit = async (data, selectedAction) => {
     const { CreatedResponse, ownerDetails, petDetails: petDetailsFromData, documents: documentWrapper } = data;
     const {
-      applicant, // excluded
+      owner, // excluded
       petDetails, // excluded
       documents, // excluded
-      applicantName,
+      ownerName,
       mobileNumber,
       workflow: existingWorkflow,
       ...otherDetails
     } = CreatedResponse;
 
     const formData = {
-      applicant: ownerDetails,
+      owner: ownerDetails, //change applicant to owner
       documents: documentWrapper?.documents?.documents || [],
       petDetails: {
         ...petDetailsFromData,
@@ -103,7 +102,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         comments: selectedAction?.action || "",
         status: selectedAction?.action || "",
       },
-      applicantName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`,
+      ownerName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`, //change to ownerName
       mobileNumber: ownerDetails?.mobileNumber,
     };
 
@@ -141,7 +140,6 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     moduleCode: "PTR",
   });
 
-
   const userRoles = user?.info?.roles?.map((e) => e.code);
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -176,7 +174,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       <ActionBar>
         {actions ? (
           <Menu
-            localeKeyPrefix={`WF_CITIZEN_${"PTR"}`}
+            localeKeyPrefix={t(`WF_CITIZEN_${"PTR"}`)}
             options={actions}
             optionKey={"action"}
             t={t}

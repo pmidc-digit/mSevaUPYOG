@@ -46,6 +46,7 @@ const Inbox = ({
         ModuleCode: moduleCode,
         // filters: { ...searchParams, ...paginationParams, sortParams },
         filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
+        config: { staleTime: 0, refetchOnMount: "always" },
       })
     : Digit.Hooks.useInboxGeneral({
         tenantId,
@@ -60,6 +61,7 @@ const Inbox = ({
         searchConfig: { ...enableSarch, ...searchConfig },
         middlewaresWf,
         middlewareSearch,
+        config: { staleTime: 0, refetchOnMount: "always" },
       });
 
   useEffect(() => {

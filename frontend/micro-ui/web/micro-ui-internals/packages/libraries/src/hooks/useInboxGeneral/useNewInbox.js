@@ -9,8 +9,17 @@ import { SVService } from "../../services/elements/SV";
 import { CHBServices } from "../../services/elements/CHB";
 import { ASSETService } from "../../services/elements/ASSET";
 import { PTRService } from "../../services/elements/PTR";
+import { ADSServices } from "../../services/elements/ADS"; //edited this
 
 const inboxConfig = (tenantId, filters) => ({
+  ADV: {
+    services: ["ADV"],
+    searchResponseKey: "bookingApplication",
+    businessIdsParamForSearch: "bookingNo",
+    businessIdAliasForSearch: "bookingNo",
+    fetchFilters: filterFunctions.ADV,
+    _searchFn: () => ADSServices.search({ tenantId, filters }),
+  },
   PT: {
     services: ["PT.CREATE"],
     searchResponseKey: "Properties",

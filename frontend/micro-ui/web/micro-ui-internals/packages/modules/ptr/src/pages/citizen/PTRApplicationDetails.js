@@ -41,12 +41,12 @@ const PTRApplicationDetails = () => {
   const [billData, setBillData] = useState(null);
 
   const PetRegistrationApplications = get(data, "PetRegistrationApplications", []);
-
+  console.log("PetRegistrationApplications :>> ", PetRegistrationApplications);
   const petId = get(data, "PetRegistrationApplications[0].applicationNumber", []);
 
   let pet_details = (PetRegistrationApplications && PetRegistrationApplications.length > 0 && PetRegistrationApplications[0]) || {};
   const application = pet_details;
-
+  console.log("pet_details :>> ", pet_details);
   sessionStorage.setItem("ptr-pet", JSON.stringify(application));
 
   const [loading, setLoading] = useState(false);
@@ -104,6 +104,7 @@ const PTRApplicationDetails = () => {
 
   const getAcknowledgementData = async () => {
     const applications = application || {};
+    console.log("applications 6565:>> ", applications);
     const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId);
     const acknowldgementDataAPI = await getPetAcknowledgementData({ ...applications }, tenantInfo, t);
     Digit.Utils.pdf.generate(acknowldgementDataAPI);
@@ -166,7 +167,8 @@ const PTRApplicationDetails = () => {
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header>
-          {PetRegistrationApplications?.status == "approved" && dowloadOptions && dowloadOptions.length > 0 && (
+          {/* {PetRegistrationApplications?.status == "approved" && dowloadOptions && dowloadOptions.length > 0 && ( */}
+          {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
               onHeadClick={() => setShowOptions(!showOptions)}
@@ -191,14 +193,14 @@ const PTRApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
-            <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.applicantName || t("CS_NA")} />
+            <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
             <Row
               className="border-none"
               label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
-              text={pet_details?.fatherName || pet_details?.fatherOrHusbandName || t("CS_NA")}
+              text={pet_details?.fatherName || pet_details?.owner?.fatherOrHusbandName || t("CS_NA")}
             />
-            <Row className="border-none" label={t("MOBILE")} text={pet_details?.mobileNumber || t("CS_NA")} />
-            <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.emailId || t("CS_NA")} />
+            <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
+            <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PET_DETAILS")}</CardSubHeader>

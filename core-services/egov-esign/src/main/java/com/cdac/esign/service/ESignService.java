@@ -1,6 +1,7 @@
 package com.cdac.esign.service;
 
 import java.io.File;
+import java.security.PrivateKey;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.beans.factory.annotation.Value;
 
 import com.cdac.esign.encryptor.Encryption;
+import com.cdac.esign.encryptor.RSAKeyUtil;
 import com.cdac.esign.form.FormXmlDataAsp;
 import com.cdac.esign.form.RequestXmlForm;
 import com.cdac.esign.validator.FieldValidator;
@@ -104,11 +106,19 @@ public class ESignService {
         String xmlData = "";
 
         try {
-            Encryption encryption = new Encryption();
-            xmlData = new com.cdac.esign.xmlparser.XmlSigning().signXmlStringNew(
-                    strToEncrypt,
-                    encryption.getPrivateKey(env.getProperty("esign.private.key.filename")));
+			/*
+			 * Encryption encryption = new Encryption(); xmlData = new
+			 * com.cdac.esign.xmlparser.XmlSigning().signXmlStringNew( strToEncrypt,
+			 * encryption.getPrivateKey(env.getProperty("esign.private.key.filename")));
+			 */
+        	
+        	String pemKey = env.getProperty("esign.private.key");
+            PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey);
 
+            // Use in your eSign call
+             xmlData = new com.cdac.esign.xmlparser.XmlSigning()
+                    .signXmlStringNew(strToEncrypt, privateKey);
+             
             logger.info("XML signed and saved successfully ");
         } catch (Exception e) {
             logger.error("Error in Encryption/Signing", e);

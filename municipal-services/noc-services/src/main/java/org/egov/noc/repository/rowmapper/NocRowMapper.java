@@ -122,6 +122,7 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 				for (Document doc : documents) {
 					// Optional: set tenantId or other fields if needed
 					doc.setDocumentUid(doc.getUuid()); // if you need to copy uuid to documentUid
+					doc.setNocId(noc.getId());
 					noc.addDocumentsItem(doc);
 				}
 			} catch (JsonSyntaxException e) {

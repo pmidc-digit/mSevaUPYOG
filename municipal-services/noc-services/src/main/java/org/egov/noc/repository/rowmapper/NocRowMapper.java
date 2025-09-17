@@ -137,6 +137,8 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 				try {
 					NocDetails details = new Gson().fromJson(nocDetailsJson, NocDetails.class);
 					details.setAuditDetails(noc.getAuditDetails());
+					details.setNocId(noc.getId());
+					details.setTenantId(noc.getTenantId());
 					noc.nocDetails(details);
 
 

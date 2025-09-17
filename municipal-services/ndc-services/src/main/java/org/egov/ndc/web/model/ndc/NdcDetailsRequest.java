@@ -28,7 +28,7 @@ public class NdcDetailsRequest {
     private JsonNode additionalDetails;
 
     @JsonProperty("isDuePending")
-    private Boolean duePending;
+    private boolean duePending;
 
     @JsonProperty("status")
     private String status;

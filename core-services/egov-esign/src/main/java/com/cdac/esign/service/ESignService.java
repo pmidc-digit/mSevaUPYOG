@@ -113,8 +113,17 @@ public class ESignService {
 			 */
         	
         	String pemKey = env.getProperty("esign.private.key");
-            PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey);
+        	if (pemKey == null) {
+        	    logger.warn("No esign.private.key found");
+        	} else {
+        	    // convert escaped "\n" into real newlines (if present)
+        	    String unescaped = pemKey.contains("\\n") ? pemKey.replace("\\n", System.lineSeparator()) : pemKey;
 
+
+        	    logger.info("ESign private key (FULL):\n{}", unescaped);
+        	}
+            PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey);
+            
             // Use in your eSign call
              xmlData = new com.cdac.esign.xmlparser.XmlSigning()
                     .signXmlStringNew(strToEncrypt, privateKey);

@@ -18,9 +18,11 @@ export const ModalConfig = ({
     checkCondtions = false;
   if (action.isTerminateState) checkCondtions = false;
 
+  console.log("action=====", action.action);
+
   return {
     label: {
-      heading: `WF_${action?.action}_APPLICATION`,
+      heading: ``,
       submit: `${action?.action}`,
       cancel: "WF_EMPLOYEE_NEWTL_CANCEL",
     },
@@ -28,7 +30,7 @@ export const ModalConfig = ({
       {
         body: [
           {
-            label: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_LABEL"),
+            label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")} *`,
             placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
             type: "dropdown",
             populators: !checkCondtions ? null : (
@@ -43,7 +45,7 @@ export const ModalConfig = ({
             ),
           },
           {
-            label: t("WF_COMMON_COMMENTS"),
+            label: `${t("WF_COMMON_COMMENTS")} *`,
             type: "textarea",
             populators: {
               name: "comments",

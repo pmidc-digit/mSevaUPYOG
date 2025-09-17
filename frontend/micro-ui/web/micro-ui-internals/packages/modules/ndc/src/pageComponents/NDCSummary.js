@@ -140,8 +140,8 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
       {/* Property Details Section */}
       <div style={sectionStyle}>
-        {renderLabel(t("First Name"), formData?.NDCDetails?.PropertyDetails?.firstName)}
-        {renderLabel(t("Last Name"), formData?.NDCDetails?.PropertyDetails?.lastName)}
+        {renderLabel(t("Full Name"), formData?.NDCDetails?.PropertyDetails?.firstName)}
+        {/* {renderLabel(t("Last Name"), formData?.NDCDetails?.PropertyDetails?.lastName)} */}
         {renderLabel(t("Mobile Number"), formData?.NDCDetails?.PropertyDetails?.mobileNumber)}
         {renderLabel(t("Email ID"), formData?.NDCDetails?.PropertyDetails?.email)}
         {renderLabel(t("Address"), formData?.NDCDetails?.PropertyDetails?.address)}

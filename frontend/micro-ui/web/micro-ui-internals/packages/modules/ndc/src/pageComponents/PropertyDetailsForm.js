@@ -65,18 +65,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   useEffect(() => {
     const owner = formData?.cpt?.details?.owners?.[0];
     const fullName = owner?.name?.split(" ");
-    const firstName = fullName?.[0];
-    let lastName;
-    if (fullName?.length > 1) {
-      lastName = fullName?.[fullName.length - 1];
-    }
+    const firstName = owner?.name;
+    // let lastName;
+    // if (fullName?.length > 1) {
+    //   lastName = fullName?.[fullName.length - 1];
+    // }
     const email = owner?.email;
     const mobileNumber = owner?.mobileNumber;
     const address = owner?.permanentAddress;
 
     const combinedObject = {};
     if (firstName) combinedObject.firstName = firstName;
-    if (lastName) combinedObject.lastName = lastName;
+    // if (lastName) combinedObject.lastName = lastName;
     if (email) combinedObject.email = email;
     if (mobileNumber) combinedObject.mobileNumber = mobileNumber;
     if (address) combinedObject.address = address;
@@ -610,7 +610,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </button>
 
           <LabelFieldPair style={{ marginTop: "40px" }}>
-            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FIRST_NAME")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FULL_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -635,7 +635,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_LAST_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller
@@ -659,7 +659,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                 )}
               />
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_EMAIL")} * `}</CardLabel>

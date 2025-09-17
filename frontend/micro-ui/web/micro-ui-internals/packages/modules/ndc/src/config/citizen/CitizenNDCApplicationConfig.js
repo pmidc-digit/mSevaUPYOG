@@ -27,7 +27,7 @@ export const config = [
     ],
   },
   {
-    head: "NDC_COMMON_DOCUMENTS_REQUIRED",
+    head: "",
     stepNumber: 2,
     body: [
       {

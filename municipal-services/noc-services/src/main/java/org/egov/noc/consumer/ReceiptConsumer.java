@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
+
 public class ReceiptConsumer {
 
     private PaymentUpdateService paymentUpdateService;
@@ -27,7 +28,7 @@ public class ReceiptConsumer {
 //        paymentUpdateService.process(record);
 //    }
 
-    @KafkaListener(topics = {"${kafka.topics.receipt.create.name}"}, groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = {"${kafka.topics.receipt.create}"}, groupId = "${spring.kafka.consumer.group-id}")
     public void listenPayments(final String rawRecord) {
         log.info("Incoming raw message: {}", rawRecord);
         try {

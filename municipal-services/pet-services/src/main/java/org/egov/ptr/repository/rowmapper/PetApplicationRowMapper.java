@@ -124,8 +124,28 @@ public class PetApplicationRowMapper implements ResultSetExtractor<List<PetRegis
 					return;
 			}
 
-		Document doc = Document.builder().documentType(rs.getString("documentType"))
-				.filestoreId(rs.getString("dfilestoreId")).documentUid(rs.getString("ddocumentUid")).id(docId).build();
+		// Create audit details for document
+		Long docLastModifiedTime = rs.getLong("dlastmodifiedtime");
+		if (rs.wasNull()) {
+			docLastModifiedTime = null;
+		}
+		
+		AuditDetails docAuditDetails = AuditDetails.builder()
+				.createdBy(rs.getString("dcreatedby"))
+				.createdTime(rs.getLong("dcreatedtime"))
+				.lastModifiedBy(rs.getString("dlastmodifiedby"))
+				.lastModifiedTime(docLastModifiedTime)
+				.build();
+
+		Document doc = Document.builder()
+				.documentType(rs.getString("documentType"))
+				.filestoreId(rs.getString("dfilestoreId"))
+				.documentUid(rs.getString("ddocumentUid"))
+				.id(docId)
+				.tenantId(rs.getString("dtenantid"))
+				.active(rs.getBoolean("dactive"))
+				.auditDetails(docAuditDetails)
+				.build();
 
 		petApplication.addDocumentsItem(doc);
 	}

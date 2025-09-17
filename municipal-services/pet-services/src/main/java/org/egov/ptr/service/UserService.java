@@ -92,29 +92,45 @@ public class UserService {
 		// Keep locale minimal or null as per user-service expectations
 		// owner.setLocale("en_IN"); // uncomment if required by environment
 		
-		UserDetailResponse userDetailResponse = userExists(owner, requestInfo);
-		List<org.egov.ptr.models.user.User> existingUsersFromService = userDetailResponse.getUser();
-		Map<String, org.egov.ptr.models.user.User> ownerMapFromSearch = existingUsersFromService.stream()
-				.collect(Collectors.toMap(org.egov.ptr.models.user.User::getUuid, Function.identity()));
-
-		if (CollectionUtils.isEmpty(existingUsersFromService)) {
-
-			// Preserve the original username provided by the user, don't generate random UUID
-			// owner.setUserName(UUID.randomUUID().toString());
-			userDetailResponse = createUser(requestInfo, owner);
-
-		} else {
-
-			String uuid = owner.getUuid();
-			if (uuid != null && ownerMapFromSearch.containsKey(uuid)) {
-				userDetailResponse = updateExistingUser(petApplication, requestInfo, role, owner,
-						ownerMapFromSearch.get(uuid));
-			} else {
-
-				// Preserve the original username provided by the user, don't generate random UUID
-				// owner.setUserName(UUID.randomUUID().toString());
-				userDetailResponse = createUser(requestInfo, owner);
+		// Set userType before searching to ensure proper user search
+		owner.setType("CITIZEN");
+		
+		// Try to find existing user by multiple search methods
+		UserDetailResponse userDetailResponse = null;
+		org.egov.ptr.models.user.User existingUser = null;
+		
+		// Method 1: Search by mobile number
+		UserDetailResponse mobileSearch = userExists(owner, requestInfo);
+		if (mobileSearch != null && !CollectionUtils.isEmpty(mobileSearch.getUser())) {
+			existingUser = mobileSearch.getUser().get(0);
+			userDetailResponse = mobileSearch;
+		}
+		
+		// Method 2: Search by userName (mobile number)
+		if (existingUser == null) {
+			UserDetailResponse userNameSearch = searchByUserName(owner.getMobileNumber(), owner.getTenantId());
+			if (userNameSearch != null && !CollectionUtils.isEmpty(userNameSearch.getUser())) {
+				existingUser = userNameSearch.getUser().get(0);
+				userDetailResponse = userNameSearch;
 			}
+		}
+		
+		// Method 3: Search by UUID if provided
+		if (existingUser == null && owner.getUuid() != null) {
+			UserDetailResponse uuidSearch = searchByUuid(owner.getUuid(), owner.getTenantId());
+			if (uuidSearch != null && !CollectionUtils.isEmpty(uuidSearch.getUser())) {
+				existingUser = uuidSearch.getUser().get(0);
+				userDetailResponse = uuidSearch;
+			}
+		}
+		
+		if (existingUser != null) {
+			// User exists - update it
+			userDetailResponse = updateExistingUser(petApplication, requestInfo, role, owner, existingUser);
+		} else {
+			// User doesn't exist - create new user
+			setUserName(owner);
+			userDetailResponse = createUser(requestInfo, owner);
 		}
 		setOwnerFields(owner, userDetailResponse, requestInfo);
 		
@@ -200,11 +216,21 @@ public class UserService {
 
 		UserSearchRequest userSearchRequest = getBaseUserSearchRequest(owner.getTenantId(), requestInfo);
 		userSearchRequest.setMobileNumber(owner.getMobileNumber());
-		userSearchRequest.setUserType(owner.getType());
-		userSearchRequest.setName(owner.getName());
+		// Remove all other criteria - search by mobile number only to avoid search failures
+		// userSearchRequest.setUserType(owner.getType());
+		// userSearchRequest.setName(owner.getName());
 
 		StringBuilder uri = new StringBuilder(userHost).append(userSearchEndpoint);
-		return userCall(userSearchRequest, uri);
+		UserDetailResponse response = userCall(userSearchRequest, uri);
+		
+		// Debug: Log search results to understand what's happening
+		if (response != null && response.getUser() != null) {
+			System.out.println("Search found " + response.getUser().size() + " users for mobile: " + owner.getMobileNumber());
+		} else {
+			System.out.println("Search found no users for mobile: " + owner.getMobileNumber());
+		}
+		
+		return response;
 	}
 
 	/**
@@ -215,16 +241,14 @@ public class UserService {
 	 * @param listOfMobileNumber list of unique mobileNumbers in the
 	 *                           PetRegistrationRequest
 	 */
-	private void setUserName(Owner owner, Set<String> listOfMobileNumber) {
-
-		if (listOfMobileNumber.contains(owner.getMobileNumber())) {
-			owner.setUserName(owner.getMobileNumber());
-			// Once mobileNumber is set as userName it is removed from the list
-			listOfMobileNumber.remove(owner.getMobileNumber());
+	private void setUserName(Owner owner) {
+		String username;
+		if (owner.getMobileNumber() != null && !owner.getMobileNumber().isEmpty()) {
+			username = owner.getMobileNumber();
 		} else {
-			String username = UUID.randomUUID().toString();
-			owner.setUserName(username);
+			username = UUID.randomUUID().toString();
 		}
+		owner.setUserName(username);
 	}
 
 	/**
@@ -357,7 +381,9 @@ public class UserService {
 	 */
 	public UserSearchRequest getBaseUserSearchRequest(String tenantId, RequestInfo requestInfo) {
 
-		return UserSearchRequest.builder().requestInfo(requestInfo).userType("CITIZEN").tenantId(tenantId).active(true)
+		return UserSearchRequest.builder().requestInfo(requestInfo).userType("CITIZEN").tenantId(tenantId)
+				// Remove active criteria - it's causing search failures
+				// .active(true)
 				.build();
 	}
 
@@ -366,7 +392,35 @@ public class UserService {
 		userSearchRequest.setUserType("CITIZEN");
 		userSearchRequest.setUserName(userName);
 		userSearchRequest.setTenantId(tenantId);
-		return getUser(userSearchRequest);
+		
+		UserDetailResponse response = getUser(userSearchRequest);
+		
+		// Debug: Log alternative search results
+		if (response != null && response.getUser() != null) {
+			System.out.println("Alternative search found " + response.getUser().size() + " users for userName: " + userName);
+		} else {
+			System.out.println("Alternative search found no users for userName: " + userName);
+		}
+		
+		return response;
+	}
+	
+	private UserDetailResponse searchByUuid(String uuid, String tenantId) {
+		UserSearchRequest userSearchRequest = new UserSearchRequest();
+		userSearchRequest.setUserType("CITIZEN");
+		userSearchRequest.setUuid(Collections.singleton(uuid));
+		userSearchRequest.setTenantId(tenantId);
+		
+		UserDetailResponse response = getUser(userSearchRequest);
+		
+		// Debug: Log UUID search results
+		if (response != null && response.getUser() != null) {
+			System.out.println("UUID search found " + response.getUser().size() + " users for UUID: " + uuid);
+		} else {
+			System.out.println("UUID search found no users for UUID: " + uuid);
+		}
+		
+		return response;
 	}
 
 	private String getStateLevelTenant(String tenantId) {

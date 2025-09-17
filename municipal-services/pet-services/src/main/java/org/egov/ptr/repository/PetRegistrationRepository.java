@@ -40,4 +40,8 @@ public class PetRegistrationRepository {
 				new SingleColumnRowMapper<>(String.class));
 
 	}
+
+	public JdbcTemplate getJdbcTemplate() {
+		return jdbcTemplate;
+	}
 }

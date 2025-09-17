@@ -167,11 +167,18 @@ public class EnrichmentService {
 	private void enrichDocuments(PetRegistrationApplication application) {
 		application.getDocuments().forEach(doc -> {
 			if (doc.getId() == null) {
+				// New document - generate ID and set defaults
 				doc.setId(UUID.randomUUID().toString());
 				doc.setActive(true);
 				doc.setTenantId(application.getTenantId());
-				doc.setAuditDetails(application.getAuditDetails());
+			} else {
+				// Existing document - generate NEW ID to avoid duplicate key
+				doc.setId(UUID.randomUUID().toString());
+				doc.setActive(true);
+				doc.setTenantId(application.getTenantId());
 			}
+			// Always set audit details for all documents (both new and existing)
+			doc.setAuditDetails(application.getAuditDetails());
 		});
 	}
 
@@ -185,8 +192,7 @@ public class EnrichmentService {
 	}
 
 	public void enrichPetApplicationUponUpdate(PetRegistrationRequest petRegistrationRequest) {
-		// Enrich lastModifiedTime and lastModifiedBy in case of update
-		enrichDocuments(petRegistrationRequest.getPetRegistrationApplications().get(0));
+		// First update application audit details
 		for (PetRegistrationApplication application : petRegistrationRequest.getPetRegistrationApplications()) {
 			application.getAuditDetails().setLastModifiedTime(System.currentTimeMillis());
 			application.getAuditDetails()
@@ -203,6 +209,8 @@ public class EnrichmentService {
 				}
 			}
 		}
+		// Then enrich documents with updated audit details
+		enrichDocuments(petRegistrationRequest.getPetRegistrationApplications().get(0));
 	}
 
 	/**

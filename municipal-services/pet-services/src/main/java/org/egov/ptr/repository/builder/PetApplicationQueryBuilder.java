@@ -48,9 +48,10 @@ public class PetApplicationQueryBuilder {
 	        + "owner.createdby as ocreatedby, owner.createdtime as ocreatedtime, owner.lastmodifiedby as olastmodifiedby, "
 	        + "owner.lastmodifiedtime as olastmodifiedtime, owner.additionaldetails as oadditionaldetails ,";
 
-	// No changes needed for the DOCUMENTS_SELECT_QUERY
+	// Updated DOCUMENTS_SELECT_QUERY to include audit fields
 	private static final String DOCUMENTS_SELECT_QUERY = " doc.id as did, doc.tenantid as dtenantid, doc.documentType as documentType, "
-	        + "doc.filestoreId as dfilestoreId, doc.documentUid as ddocumentUid, doc.active as dactive, doc.petApplicationId as dpetApplicationId ";
+	        + "doc.filestoreId as dfilestoreId, doc.documentUid as ddocumentUid, doc.active as dactive, doc.petApplicationId as dpetApplicationId, "
+	        + "doc.createdby as dcreatedby, doc.lastmodifiedby as dlastmodifiedby, doc.createdtime as dcreatedtime, doc.lastmodifiedtime as dlastmodifiedtime ";
 
 	// Updated FROM_TABLES query to include owner table
 	private static final String FROM_TABLES = " FROM eg_ptr_registration ptr "

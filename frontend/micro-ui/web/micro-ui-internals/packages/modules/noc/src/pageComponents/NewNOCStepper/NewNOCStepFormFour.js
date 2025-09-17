@@ -5,6 +5,7 @@ import { UPDATE_NOCNewApplication_FORM, RESET_NOC_NEW_APPLICATION_FORM } from ".
 import { useState, useRef } from "react";
 import _ from "lodash";
 import { useHistory, useLocation } from "react-router-dom";
+import NOCSummary from "../NOCSummary";
 
 const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -12,8 +13,14 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
-    return state.noc.NOCNewApplicationFormReducer.formData || {};
+    return state?.noc?.NOCNewApplicationFormReducer?.formData || {};
   });
+
+  const coordinates = useSelector(function (state) {
+        return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
+  });
+
+  console.log("coordinates in summary page", coordinates);
 
   const menuRef = useRef();
   let user = Digit.UserService.getUser();
@@ -57,6 +64,8 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
            state: { data: res?.response }
         });
         }
+
+         onGoNext();
         
       } else {
         console.error("Submission failed, not moving to next step.", res?.response);
@@ -71,7 +80,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
    }
 
     
-   onGoNext();
+   
   }
 
   const onSubmit= async (data, selectedAction)=>{
@@ -99,7 +108,6 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
    const updatedApplication = {
     ...nocFormData?.apiData?.Noc?.[0],
     workflow:{
-      //need to discuss
       action: selectedAction?.action || "",
       // assignes:selectedAction?.action || "",
       // status:selectedAction?.action || "",
@@ -110,7 +118,8 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
      additionalDetails: {
       ...nocFormData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails,
       applicationDetails:{...nocFormData?.applicationDetails}, 
-      siteDetails:{...nocFormData?.siteDetails}
+      siteDetails:{...nocFormData?.siteDetails},
+      coordinates:{...coordinates}
     }
    
     },
@@ -137,12 +146,12 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     onBackClick(config.key, data);
   }
 
-  const onFormValueChange = (setValue = true, data) => {
-    //console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
-    if (!_.isEqual(data, currentStepData)) {
-      dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
-    }
-  };
+  // const onFormValueChange = (setValue = true, data) => {
+  //   //console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
+  //   if (!_.isEqual(data, currentStepData)) {
+  //     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
+  //   }
+  // };
 
   const closeToast = () => {
     setShowToast(false);
@@ -172,14 +181,14 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   function onActionSelect(action) {
     goNext(action);
-    console.log("selectedAction here", action);
+    //console.log("selectedAction here", action);
   }
 
   
 
   return (
     <React.Fragment>
-      <FormComposer
+      {/* <FormComposer
         defaultValues={currentStepData}
         config={config.currStepConfig}
         onSubmit={goNext}
@@ -187,24 +196,26 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
-      />
+      /> */}
+
+      <NOCSummary onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t}/>
+
+      {actions && (
       <ActionBar>
         <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
-        {/* {actions ? (
-          <Menu
-            localeKeyPrefix={`WF_${"NOC"}`}
-            options={actions}
-            optionKey={"action"}
-            t={t}
-            onSelect={onActionSelect}
-            // style={MenuStyle}
-          />
-        ) : null} */}
-        {(displayMenu &&  actions) ? (
-                  <Menu localeKeyPrefix={`WF_${"NOC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+
+        {displayMenu &&  (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+            <Menu 
+              localeKeyPrefix={`WF_EMPLOYEE_${"NOC"}`} 
+              options={actions} 
+              optionKey={"action"} 
+              t={t} 
+              onSelect={onActionSelect} 
+            />
           ) : null}
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>
+      )}
 
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>

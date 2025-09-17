@@ -10,9 +10,11 @@ import {
   BackButton,
   RadioOrSelect,
   MultiSelectDropdown,
-  Dropdown
+  Dropdown,
+  ActionBar,
+  SubmitBar
 } from "@mseva/digit-ui-react-components";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, } from "react";
 import Timeline from "../components/Timeline";
 
 const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) => {
@@ -27,19 +29,36 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const stateId = Digit.ULBService.getStateId();
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
-  const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode || "");
+  const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.pincode || formData?.formData?.LicneseDetails?.pincode || "");
   const [ulbType, setUlbType] = useState("");
   const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedState, setSelectedState] = useState(formData?.LicneseDetails?.SelectedState || formData?.formData?.LicneseDetails?.SelectedState || {})
   const [selectedDistrict, setSelectedDistrict] = useState(formData?.LicneseDetails?.SelectedDistrict || formData?.formData?.LicneseDetails?.SelectedDistrict || {})
 
-  const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(selectedState.code, "BPA", [{ name: "Districts" }]);
+  const { data: districtList, isLoading } = Digit.Hooks.useCustomMDMS(selectedState.code, "BPA", [{ name: "Ulb" }]);
+  const stateOptions = useMemo(() => {return [{code: "pb",name: "Punjab",i18Code: "Punjab"}]},[])
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
+  const uniqueDistricts = useMemo(() => {
+  if (isLoading || !districtList?.BPA?.Ulb?.length) return [];
+
+  return [
+    ...new Set(districtList.BPA.Ulb.map(item => item.Districts?.trim()))
+  ]
+    .filter(Boolean) // remove null/undefined/empty
+    .sort((a, b) => a.localeCompare(b))
+    .map(district => ({
+      name: district,
+      code: district
+    }));
+}, [isLoading, districtList]);
   // console.log("data: newConfig", newConfig);
 
   // const [ulbTypes, setUlbTypes] = useState(["Abohar", "Adampur", "Ahmedgarh", "Ajnala", "Alawalpur", "Amargarh", "Amloh"]);
   const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) => tenant.name);
+
+  
   // console.log("tenantName=+",tenantName);
   useEffect(() => {
     const role = formData?.LicneseType?.LicenseType?.role;
@@ -49,6 +68,21 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
       console.log("Initial ULBs for BPA_ARCHITECT:", allUlbs);
     }
   }, [formData?.LicneseType?.LicenseType?.role]);
+
+  useEffect(()=>{
+    if(typeof selectedState === "string"){
+      const state = stateOptions.find(state => state.name === selectedState)
+      setSelectedState(state)
+    }
+  },[selectedState])
+
+  useEffect(()=>{
+    if(typeof selectedDistrict === "string" && !isLoading && uniqueDistricts.length > 0){
+      const district = uniqueDistricts.find(district => district.code === selectedDistrict)
+      // console.log("districtx", district)
+      setSelectedDistrict(district)
+    }
+  },[selectedDistrict, isLoading, uniqueDistricts])
   // console.log("obpas tentants",Digit.SessionStorage.get("OBPS_TENANTS"))
   //const isEdit = window.location.href.includes("/edit-application/") || window.location.href.includes("renew-trade");
   //const { isLoading, data: fydata = {} } = Digit.Hooks.tl.useTradeLicenseMDMS(stateId, "egf-master", "FinancialYear");
@@ -138,13 +172,13 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
     <React.Fragment>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        <Timeline currentStep={2} flow="STAKEHOLDER" />
+        {isMobile && <Timeline currentStep={2} flow="STAKEHOLDER" />}
         <FormStep
           config={config}
-          onSelect={goNext}
-          onSkip={onSkip}
+          // onSelect={goNext}
+          // onSkip={onSkip}
           t={t}
-          isDisabled={!PermanentAddress || selectedUlbTypes.length === 0 || pinCode === "" || !selectedState?.code || !selectedDistrict?.code}
+          // isDisabled={!PermanentAddress || selectedUlbTypes.length === 0 || pinCode === "" || !selectedState?.code || !selectedDistrict?.code}
         >
           <CardLabel>{`${t("BPA_PERMANANT_ADDRESS_LABEL")}*`}</CardLabel>
           <TextArea
@@ -197,11 +231,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                     t={t}
                     optionKey="code"
                     // isMandatory={config.isMandatory}
-                    option={[{
-                      code: "pb",
-                      name: "Punjab",
-                      i18Code: "Punjab"
-                    }]}
+                    option={stateOptions}
                     selected={selectedState}
                     select={SelectState}
                     // disable={true}
@@ -214,7 +244,8 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
                     t={t}
                     optionKey="code"
                     // isMandatory={config.isMandatory}
-                    option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                    // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+                    option={uniqueDistricts}
                     selected={selectedDistrict}
                     select={SelectDistrict}
                     // disable={true}
@@ -232,6 +263,13 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
           />
         </FormStep>
       </div>
+      <ActionBar>
+        <SubmitBar 
+          label={t("CS_COMMON_NEXT")}
+          onSubmit={goNext}
+          disabled={!PermanentAddress || selectedUlbTypes.length === 0 || pinCode === "" || !selectedState?.code || !selectedDistrict?.code}
+        />
+      </ActionBar>
     </React.Fragment>
   );
 };

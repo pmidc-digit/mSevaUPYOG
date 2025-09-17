@@ -123,6 +123,10 @@ const OBPSLinks = ({ matchPath, userType }) => {
   );
 } 
 
+const dummy = () => {
+  return <div></div>
+}
+
 const componentsToRegister = {
   OBPSModule,
   OBPSLinks,
@@ -191,7 +195,8 @@ const componentsToRegister = {
   LayoutDocumentsRequired,
   LayoutSummary,
   LayoutLocalityInfo,
-  LayoutCLUDetails
+  LayoutCLUDetails,
+  dummy
 }
 
 export const initOBPSComponents = () => {

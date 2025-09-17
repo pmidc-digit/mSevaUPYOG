@@ -12,7 +12,7 @@ const Response = (props) => {
   const history = useHistory();
   const nocData = state?.data?.Noc?.[0];
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
-  //console.log("tenantId here in Response", tenantId);
+  console.log("nocData in Response", nocData);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
@@ -28,7 +28,7 @@ const Response = (props) => {
   };
 
    const handlePayment = () => {
-    history.push(`/digit-ui/employee/payment/collect/NOC/${nocCode}/${tenantId}`);
+    history.push(`/digit-ui/employee/payment/collect/obpas_noc/${nocCode}/${tenantId}?tenantId=${tenantId}`);
     // pathname: `/digit-ui/citizen/payment/collect/${application?.businessService}/${application?.applicationNumber}`,
   };
 
@@ -45,7 +45,8 @@ const Response = (props) => {
     <div>
       <Card>
         <Banner
-          message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
+         // message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
+          message={t("NOC_APPLICATION_SUCCESS_HEADER")}
           applicationNumber={nocCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}
@@ -64,7 +65,7 @@ const Response = (props) => {
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
-          <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />
+          {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>
       </Card>
     </div>

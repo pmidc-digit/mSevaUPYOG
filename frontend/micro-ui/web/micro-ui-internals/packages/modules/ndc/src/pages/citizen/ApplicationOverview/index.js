@@ -178,7 +178,8 @@ const CitizenApplicationOverview = () => {
 
     const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
 
-    Digit.Utils.pdf.generate(acknowledgementData);
+    console.log("acknowledgementData", acknowledgementData);
+    Digit.Utils.pdf.generateNDC(acknowledgementData);
   };
 
   if (isLoading || isDetailsLoading) {

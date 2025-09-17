@@ -1,4 +1,4 @@
-import React, { Fragment, useCallback, useMemo, useReducer } from "react";
+import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
 import { InboxComposer, ComplaintIcon, Header } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import SearchFormFieldsComponents from "./SearchFormFieldsComponent";
@@ -12,6 +12,7 @@ const Inbox = ({ parentRoute }) => {
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const [getFilter, setFilter] = useState();
 
   const searchFormDefaultValues = {
     // mobileNumber: "",
@@ -19,7 +20,7 @@ const Inbox = ({ parentRoute }) => {
   };
 
   const filterFormDefaultValues = {
-    moduleName: "noc-services",
+    moduleName: "noc-service",
     applicationStatus: [],
     businessService: null,
     locality: [],
@@ -112,14 +113,29 @@ const Inbox = ({ parentRoute }) => {
   );
  
   //Add handleFilter here
+  const handleFilter = (filterStatus) => {
+    setFilter(filterStatus);
+  };
 
-
-  const { isLoading: isInboxLoading, data: { statuses, totalCount } = {} } = Digit.Hooks.noc.useInbox({
+  const { isLoading: isInboxLoading, data} = Digit.Hooks.noc.useInbox({
     tenantId,
-    filters: { ...formState },//add filter here also
+    filters: { ...formState, getFilter },//add filter here also
   });
+  
+  //console.log("data in noc==>", data);
 
-  let table = [];
+  // let table = [];
+  const [table, setTable] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+
+  useEffect(() => {
+      if (data) {
+        setStatuses(data?.statuses || []);
+        setTable(data?.table || []);
+        setTotalCount(data?.totalCount || 0);
+      }
+  }, [data]);
 
   const PropsForInboxLinks = {
     logoIcon: <ComplaintIcon />,

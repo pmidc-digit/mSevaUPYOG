@@ -12,21 +12,48 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 function NOCDocument({ value = {}}) {
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.noc.useNOCDocumentSearch({value},{value});
+  
+ // console.log("data here", data);
 
   let documents=[];
   if(value?.workflowDocs) documents = value?.workflowDocs;
 
+  if (!data.pdfFiles || Object.keys(data.pdfFiles).length === 0) return <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>;
+
   return (
     <div style={{ marginTop: "19px" }}>
       <React.Fragment>
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
           {documents?.map((document, index) => {
-            let documentLink = pdfDownloadLink(data.pdfFiles, document?.documentAttachment);
+            console.log("data here", data);
+            console.log("document here", document);
+            let documentLink = pdfDownloadLink(data?.pdfFiles, document?.documentAttachment || document?.id);
             return (
-              <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
+              <a target="_" href={documentLink} 
+              style={{
+                  width: "120px", 
+                  textAlign: "center",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
+              key={index}>
                 <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                <p style={{ marginTop: "8px", textAlign: "center" }}>
-                  {t(document?.documentType.replace(".", "_").toUpperCase())}
+                <p 
+                 style={{
+                    marginTop: "8px",
+                    fontSize: "12px",
+                    wordWrap: "break-word",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 2, 
+                    WebkitBoxOrient: "vertical",
+                  }}
+                >
+                  {t(document?.documentType?.replace(".", "_")?.toUpperCase())}
                 </p>
               </a>
             );

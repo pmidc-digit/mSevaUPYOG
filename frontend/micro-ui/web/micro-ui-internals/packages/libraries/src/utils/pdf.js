@@ -201,6 +201,106 @@ const localGovLogo  =
   downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
 };
 
+const jsPdfGeneratorNDC = async ({
+  breakPageLimit = null,
+  tenantId,
+  logo,
+  name,
+  email,
+  phoneNumber,
+  heading,
+  details,
+  applicationNumber,
+  t = (text) => text,
+  imageURL,
+}) => {
+  const emailLeftMargin =
+    email?.length <= 15
+      ? 190
+      : email?.length <= 20
+      ? 150
+      : email?.length <= 25
+      ? 130
+      : email?.length <= 30
+      ? 90
+      : email?.length <= 35
+      ? 50
+      : email?.length <= 40
+      ? 10
+      : email?.length <= 45
+      ? 0
+      : email?.length <= 50
+      ? -20
+      : email?.length <= 55
+      ? -70
+      : email?.length <= 60
+      ? -100
+      : -60;
+
+
+  const dd = {
+    background: [
+      {
+        image: AcknowledgmentPage,
+        width: 595,
+        height: 842,
+      },
+    ],
+    margin: [20, 20, 20, 20],
+
+    header: {},
+
+    footer: function (currentPage, pageCount) {
+      return {
+        columns: [
+          {
+            text: `Page ${currentPage}`,
+            alignment: "right",
+            margin: [0, -17, 50, 0],
+            fontSize: 11,
+            color: "#6f777c",
+            font: "Hind",
+          },
+        ],
+      };
+    },
+
+    content: [
+      ...createHeaderDetailsBPAREG(
+        details,
+        name,
+        phoneNumber,
+        email,
+        logo,
+        tenantId,
+        heading,
+        applicationNumber
+      ),
+      ...createNDCContent(details, applicationNumber, phoneNumber, logo, tenantId, breakPageLimit),
+      {
+        text: t("PDF_SYSTEM_GENERATED_ACKNOWLEDGEMENT"),
+        font: "Hind",
+        fontSize: 11,
+        color: "#6f777c",
+        margin: [10, 10],
+      },
+    ],
+
+    defaultStyle: {
+      font: "Hind",
+      margin: [20, 10, 20, 10],
+    },
+  };
+
+  pdfMake.vfs = Fonts;
+  let locale = Digit.SessionStorage.get("locale") || "en_IN";
+  let Hind = pdfFonts[locale] || pdfFonts["Hind"];
+  pdfMake.fonts = { Hind: { ...Hind } };
+
+  const generatedPDF = pdfMake.createPdf(dd);
+  downloadPDFFileUsingBase64(generatedPDF, "ndc_certificate.pdf");
+};
+
   const jsPdfGeneratorBPAREG = async ({ breakPageLimit = null, tenantId, logo, name, email, phoneNumber, heading, details, applicationNumber, t = (text) => text,  imageURL}) => {
   const emailLeftMargin =
     email?.length <= 15
@@ -470,7 +570,7 @@ const generateBillAmendPDF = async ({ tenantId, bodyDetails, headerDetails, logo
   downloadPDFFileUsingBase64(generatedPDF, "acknowledgement.pdf");
 }
 
-export default { generate: jsPdfGenerator, generateBPAREG: jsPdfGeneratorBPAREG, generatev1: jsPdfGeneratorv1, generateModifyPdf: jsPdfGeneratorForModifyPDF, generateBillAmendPDF };
+export default { generate: jsPdfGenerator, generateNDC: jsPdfGeneratorNDC, generateBPAREG: jsPdfGeneratorBPAREG, generatev1: jsPdfGeneratorv1, generateModifyPdf: jsPdfGeneratorForModifyPDF, generateBillAmendPDF };
 
 const createBodyContentBillAmend = (table,t) => {
   let bodyData = []
@@ -1088,25 +1188,25 @@ function createHeaderDetailsBPAREG(details,name, phoneNumber, email, logo, tenan
       ]
     }
 })
-  headerData.push({
-    style : 'tableExample',
-    layout: "noBorders",
-    margin: [420, -135, 0, 20],
-    table:{
-      widths: ['40%', '*', '20%'],
-      body:[
-        [
-          {
-            image: logo|| getBase64Image(tenantId) || defaultLogo,
-            width: 65,
-            margin: [10, 10],
-            // fit:[50,50]
-          }, 
+//   headerData.push({
+//     style : 'tableExample',
+//     layout: "noBorders",
+//     margin: [420, -135, 0, 20],
+//     table:{
+//       widths: ['40%', '*', '20%'],
+//       body:[
+//         [
+//           {
+//             image: logo|| getBase64Image(tenantId) || defaultLogo,
+//             width: 65,
+//             margin: [10, 10],
+//             // fit:[50,50]
+//           }, 
           
-      ]
-      ]
-    }
-})
+//       ]
+//       ]
+//     }
+// })
 // headerData.push({
 //   style : 'tableExample',
 //   layout: "noBorders",
@@ -1357,6 +1457,58 @@ function createContent(details,applicationNumber, qrCodeDataUrl,logo, tenantId,p
  
 
   return detailsHeaders;
+}
+
+function createNDCContent(details, applicationNumber, logo, tenantId, phoneNumber, breakPageLimit = null) {
+  const detailsBlocks = [];
+
+  details.forEach((detail, index) => {
+    // Section heading
+    if (detail?.title) {
+      detailsBlocks.push({
+        style: "tableExample",
+        margin: [10, 20, 10, 10],
+        layout: "noBorders",
+        table: {
+          widths: ["100%"],
+          body: [
+            [
+              {
+                text: detail?.title,
+                border: [true, true, true, false],
+                color: "#454545",
+                fontSize: 14,
+                bold: true,
+              },
+            ],
+          ],
+        },
+      });
+    }
+
+    // The actual body content (single block of text, full width)
+    if (detail?.value) {
+      detailsBlocks.push({
+        style: "tableExample",
+        layout: "noBorders",
+        margin: [10, 10, 10, 0],
+        table: {
+          widths: ["100%"],
+          body: [
+            [
+              {
+                text: detail.value,
+                fontSize: 11,
+                alignment: "justify",
+              },
+            ],
+          ],
+        },
+      });
+    }
+  });
+
+  return detailsBlocks;
 }
 
 function createContentForDetailsWithLengthOfTwo(values, data, column1, column2, num = 0) {

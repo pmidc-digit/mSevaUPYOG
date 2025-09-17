@@ -6,7 +6,7 @@ const useNOCDocumentSearch = (data1 = {}, config = {}) => {
   const tenant = Digit.ULBService.getStateId();
   
   let filesArray = [];
-  if(data1?.value?.workflowDocs) filesArray = data1?.value?.workflowDocs?.map(ob => ob?.documentAttachment)
+  if(data1?.value?.workflowDocs) filesArray = data1?.value?.workflowDocs?.map(ob => ob?.documentAttachment || ob?.id);
   
   const { isLoading, error, data } = useQuery([`nocDocuments-${1}`, filesArray], () => Digit.UploadServices.Filefetch(filesArray, tenant));
   return { isLoading, error, data: { pdfFiles: data?.data }, revalidate: () => client.invalidateQueries([`nocDocuments-${1}`, filesArray]) };

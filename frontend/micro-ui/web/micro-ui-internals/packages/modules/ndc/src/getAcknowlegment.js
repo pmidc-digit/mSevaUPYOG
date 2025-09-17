@@ -41,95 +41,46 @@ const getMohallaLocale = (value = "", tenantId = "") => {
   };
   const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
   const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
-//   const getAcknowledgementData=async(application, tenantInfo, t)=>{
-//   console.log("application in getAcknowledgement", application);
-//     return {
-//         t: t,
-//         tenantId: tenantInfo?.code,
-//         name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
-//         email: tenantInfo?.emailId,
-//         phoneNumber: tenantInfo?.contactNumber,
-//         heading: t("NEW_STAKEHOLDER_REGISTRATION"),
-//         applicationNumber:application?.applicationData?.applicationNumber || "NA",
-//         details: [
-            
-//             {
-//                 title: t("CS_APPLICATION_DETAILS"),
-//                 values: [
-//                     {
-//                         title: t("REGISTRATION_FILED_DATE"),
-//                         value: Digit.DateUtils.ConvertTimestampToDate(application?.applicationData?.auditDetails?.createdTime, "dd/MM/yyyy") || "NA",
-//                     },
-//                 ],
-//             },
-//             {
-//                 title: t("BPA_LICENSE_DETAILS_LABEL"),
-//                 values: [
-//                     {
-//                         title : t("BPA_LICENSE_TYPE"),
-//                         value : t(`${application?.applicationDetails?.[1]?.values[0]?.value}`) || "NA",
-//                     },
-//                     {
-//                         title : t("BPA_COUNCIL_NUMBER"),
-//                         value : application?.applicationDetails?.[1]?.values[1]?.value || "NA",
-//                     },
-//                     {
-//                         title: t("BPA_LICENSE_TYPE"),
-//                         value: application?.applicationData?.tradeLicenseDetail?.tradeUnits?.tradeType|| "NA",
-                        
-//                     },
-//                     {/**Qualification Type missing here in payload */}
-//                 ]
-//             },
-
-//             {
-//                 title: t("BPA_LICENSEE_DETAILS_HEADER_OWNER_INFO"),
-//                 values: [
-//                     {
-//                         title: t("BPA_APPLICANT_NAME_LABEL"),
-//                         value: application?.applicationData?.tradeLicenseDetail?.owners?.[0]?.name || "NA",
-//                     },
-//                     {
-//                         title: t("BPA_OWNER_MOBILE_NO_LABEL"),
-//                         value: application?.applicationData?.tradeLicenseDetail?.owners?.[0]?.mobileNumber || "NA",
-//                     },
-//                     {
-//                         title : t("BPA_APPLICANT_GENDER_LABEL"),
-//                         value : application?.applicationDetails?.[2]?.values[1]?.value || "NA",
-//                     },
-//                     {
-//                         title : t("BPA_APPLICANT_EMAIL_LABEL"),
-//                         value : application?.applicationDetails?.[2]?.values[3]?.value || "NA",
-//                     },
-//                     {/**Date of Birth Missing here */}
-
-//                 ]
-//             },
-//             {
-//                 title: t("BPA_NEW_ADDRESS_HEADER_DETAILS"),
-//                 values: [
-//                     {
-//                         title : t("BPA_PERMANANT_ADDRESS_LABEL"),
-//                         value : application?.applicationDetails?.[3]?.values[0]?.value || "NA",
-//                     },
-//                     {
-//                         title : t("BPA_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL"),
-//                         value : application?.applicationDetails?.[4]?.values[0]?.value || "NA",
-//                     },
-//                     {/**Pincode, Selected Ulbs missing */}
-//                 ]
-//             },
-            
-//         ],
-//     };
-//   };
 
 const getAcknowledgementData = async (application, tenantInfo, t) => {
-  const appData = application?.Applications?.[0];
+  const appData = application?.Applications?.[0] || {};
   const owner = appData?.owners?.[0] || {};
-  
+  const ndc = appData?.NdcDetails?.[0] || {};
+  const add = ndc?.additionalDetails || {};
+
+  const applicationNumber = appData?.uuid || "NA";
+  const propertyId = ndc?.consumerCode || "NA";
+  const propertyType = add?.propertyType ? t(add.propertyType) : "NA";
+  const applicantName = owner?.name || "NA";
+  const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
+  const ulbName = tenantInfo?.name || appData?.tenantId || "NA";
+  const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
+
+  // Build single certificate body by concatenating translated fragments and dynamic values
+  const certificateBody = `${t("NDC_MSG_INTRO")}
+
+${t("NDC_MSG_APPLICATION_LABEL")}: ${applicationNumber}
+
+${t("NDC_MSG_PROPERTY_LABEL")}: ${propertyId}  ${t("NDC_MSG_PROPERTY_TYPE_LABEL")} ${propertyType}
+
+${t("NDC_MSG_APPLICANT_LABEL")}: ${applicantName} ${t("NDC_MSG_FOR_LAND")} ${address}
+
+${t("NDC_MSG_FALLING_CLAUSE_PART1")} ${t("NDC_MSG_FALLING_CLAUSE_PART2")} ${ulbName} ${t("NDC_MSG_AFTER_RECOVERY")} ${duesAmount} ${t("NDC_MSG_DUES_LIST")}
+
+${t("NDC_MSG_DECLARATION_TITLE")}
+${t("NDC_MSG_DECL_A")}
+${t("NDC_MSG_DECL_B")}
+${t("NDC_MSG_DECL_C")}
+${t("NDC_MSG_DECL_D")}
+${t("NDC_MSG_DECL_E")}
+
+${t("NDC_MSG_DISCLAIMER_TITLE")}
+${t("NDC_MSG_DISCLAIMER_BODY")}
+
+${t("NDC_MSG_NOTE")} ${t("NDC_MSG_VERIFICATION_LINK_LABEL")}`;
+
   return {
-    t: t,
+    t,
     tenantId: tenantInfo?.code,
     name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(
       t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`)
@@ -137,94 +88,14 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
     heading: t("NDC_CERTIFICATE"),
-    applicationNumber: appData?.uuid || "NA",
+    applicationNumber,
     details: [
       {
-        title: t("CS_APPLICATION_DETAILS"),
-        values: [
-          {
-            title: t("REGISTRATION_FILED_DATE"),
-            value: Digit.DateUtils.ConvertTimestampToDate(appData?.auditDetails?.createdTime, "dd/MM/yyyy") || "NA",
-          },
-          {
-            title: t("NDC_REASON"),
-            value: appData?.reason || "NA",
-          }
-        ],
-      },
-      {
-        title: t("NDC_LICENSE_DETAILS_LABEL"),
-        values: [
-          {
-            title: t("NDC_LICENSE_TYPE"),
-            value: t(appData?.NdcDetails?.[0]?.additionalDetails?.propertyType) || "NA",
-          },
-          {
-            title: t("NDC_COUNCIL_NUMBER"),
-            value: appData?.NdcDetails?.[0]?.consumerCode || "NA",
-          },
-          {
-            title: t("NDC_TRADE_TYPE_LABEL"),
-            value: appData?.NdcDetails?.[0]?.businessService || "NA",
-          },
-          {
-            title: t("NDC_QUALIFICATION_TYPE"),
-            value: appData?.additionalDetails?.qualificationType || "NA",
-          }
-        ]
-      },
-      {
-        title: t("NDC_LICENSEE_DETAILS_HEADER_OWNER_INFO"),
-        values: [
-          {
-            title: t("NDC_APPLICANT_NAME_LABEL"),
-            value: owner?.name || "NA",
-          },
-          {
-            title: t("NDC_OWNER_MOBILE_NO_LABEL"),
-            value: owner?.mobileNumber || "NA",
-          },
-          {
-            title: t("NDC_APPLICANT_GENDER_LABEL"),
-            value: owner?.gender ? t(owner.gender) : "NA",
-          },
-          {
-            title: t("NDC_APPLICANT_EMAIL_LABEL"),
-            value: owner?.emailId || "NA",
-          },
-          {
-            title: t("NDC_APPLICANT_DOB_LABEL"),
-            value: owner?.dob ? Digit.DateUtils.ConvertTimestampToDate(owner.dob, "dd/MM/yyyy") : "NA",
-          }
-        ]
-      },
-      {
-        title: t("NDC_NEW_ADDRESS_HEADER_DETAILS"),
-        values: [
-          {
-            title: t("NDC_PERMANANT_ADDRESS_LABEL"),
-            value: owner?.permanentAddress || "NA",
-          },
-          {
-            title: t("NDC_APPLICANT_CORRESPONDENCE_ADDRESS_LABEL"),
-            value: owner?.correspondenceAddress || "NA",
-          },
-          {
-            title: t("NDC_PINCODE_LABEL"),
-            value: owner?.permanentPinCode || owner?.correspondencePinCode || "NA",
-          },
-          {
-            title: t("NDC_SELECT_ULB"),
-            value: tenantInfo?.name || appData?.tenantId || "NA",
-          }
-        ]
+        // title: t("NDC_CERTIFICATE_BODY_TITLE"),
+        value: certificateBody
       }
-    ],
+    ]
   };
 };
-
-  
-   
-    
-   
+       
   export default getAcknowledgementData;

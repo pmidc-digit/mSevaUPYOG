@@ -13,7 +13,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
   const tableColumnConfig = useMemo(() => {
     return [
       {
-        Header: t("NOC_APP_NO_LABEL"),
+        Header: t("NOC_APPLICATION_NUMBER"),
         accessor: "applicationNo",
         disableSortBy: true,
         Cell: ({ row }) => {
@@ -37,25 +37,30 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
       // disableSortBy: true,
 
       // },
+      // {
+      //   Header: t("NOC_MODULE_SOURCE_LABEL"),
+      //   accessor: (row) => t(`MODULE_${row?.source}`),
+      //   disableSortBy: true,
+      // },
       {
-        Header: t("NOC_MODULE_SOURCE_LABEL"),
-        accessor: (row) => t(`MODULE_${row?.source}`),
-        disableSortBy: true,
-      },
-      {
-        Header: t("NOC_STATUS_LABEL"),
+        Header: t("PT_COMMON_TABLE_COL_STATUS_LABEL"),
         accessor: (row) => t(row?.status),
         disableSortBy: true,
       },
       {
-        Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
-        accessor: (row) => row?.owner,
+        Header: t("ES_INBOX_LOCALITY"),
+        accessor: (row) => t(row?.locality),
         disableSortBy: true,
       },
-      {
-        Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
-        accessor: (row) => GetStatusCell(row?.sla),
-      },
+      // {
+      //   Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
+      //   accessor: (row) => row?.owner,
+      //   disableSortBy: true,
+      // },
+      // {
+      //   Header: t("ES_INBOX_SLA_DAYS_REMAINING"),
+      //   accessor: (row) => GetStatusCell(row?.sla),
+      // },
     ];
   });
 

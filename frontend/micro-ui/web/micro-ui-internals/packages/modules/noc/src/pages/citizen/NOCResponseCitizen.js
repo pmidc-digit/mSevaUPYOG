@@ -29,7 +29,7 @@ const NOCResponseCitizen = (props) => {
   };
 
   const handlePayment = () => {
-    history.push(`/digit-ui/citizen/payment/collect/NOC/${nocCode}/${tenantId}`);
+    history.push(`/digit-ui/citizen/payment/collect/obpas_noc/${nocCode}/${tenantId}?tenantId=${tenantId}`);
   };
 
 
@@ -49,7 +49,8 @@ const NOCResponseCitizen = (props) => {
     <div>
       <Card>
         <Banner
-          message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
+          //message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
+          message={t("NOC_APPLICATION_SUCCESS_HEADER")}
           applicationNumber={nocCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}

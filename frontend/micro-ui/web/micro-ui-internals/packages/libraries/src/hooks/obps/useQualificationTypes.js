@@ -31,6 +31,7 @@ const useQualificationTypes = (tenantId) => {
           name: type.name,
           code: type.code,
           active: type.active,
+          role: type.role,
         }));
       },
     }

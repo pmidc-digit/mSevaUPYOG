@@ -14,6 +14,8 @@ import {
   SearchIcon,
   DeleteIcon,
   UploadFile,
+  ActionBar,
+  SubmitBar
 } from "@mseva/digit-ui-react-components";
 import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoch, getDocumentforBPA } from "../utils";
 import Timeline from "../components/Timeline";
@@ -1682,7 +1684,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
 
   return (
     <div>
-      <Timeline currentStep={3} />
+      {!Webview && <Timeline currentStep={3} />}
       <FormStep
         config={config}
         onSelect={goNext}
@@ -1983,6 +1985,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
           <Loader />
         )}
       </FormStep>
+      <ActionBar>
+          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext}  />}
+      </ActionBar>
       {showToast && (
         <Toast
           error={showToast?.error}

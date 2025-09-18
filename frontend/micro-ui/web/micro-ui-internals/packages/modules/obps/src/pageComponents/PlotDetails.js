@@ -10,6 +10,7 @@ import {
   SubmitBar,
   Loader,
   FormStep,
+  ActionBar
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -39,6 +40,7 @@ const PlotDetails = ({ formData, onSelect, config }) => {
   const checkingFlow = formData?.uiFlow?.flow;
   const state = Digit.ULBService.getStateId();
   const [errors, setErrors] = useState({});
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   
   useEffect(() => {
@@ -156,9 +158,9 @@ const configWithErrors = {
 
   return (
     <div>
-      <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
-      <div style={{ height: "80vh", overflow: "scroll" }}>
-        <FormStep config={configWithErrors} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
+      {isMobile && <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
+      <div style={{paddingBottom: isMobile ? "0px" : "8px"}}>
+        <FormStep config={configWithErrors}  childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
           <StatusTable>
             <Row
               className="border-none"
@@ -172,6 +174,9 @@ const configWithErrors = {
           </StatusTable>
         </FormStep>
       </div>
+      <ActionBar>
+          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  />}
+      </ActionBar>
     </div>
   );
 };

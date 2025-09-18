@@ -410,6 +410,8 @@ import {
   MultiUploadWrapper,
   CitizenInfoLabel,
   LabelFieldPair,
+  ActionBar,
+  SubmitBar
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview";
@@ -426,6 +428,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
   const checkingFlow = formData?.uiFlow?.flow;
 
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
+  const isMobile = Digit.Utils.browser.isMobile()
 
   const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
   // const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
@@ -494,7 +497,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
 
   return (
     <div>
-      <Timeline currentStep={checkingFlow === "OCBPA" ? 3 : 3} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
+      {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 3 : 3} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
       {!isLoading ? (
         <FormStep
           t={t}
@@ -555,6 +558,9 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
       ) : (
         ""
       )}
+      <ActionBar>
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  />}
+      </ActionBar>
     </div>
   );
 };

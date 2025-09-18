@@ -1469,6 +1469,7 @@ import {
   PDFSvg,
   Loader,
   TextArea,
+  ActionBar
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -1715,6 +1716,8 @@ const CheckPage = ({ onSubmit, value }) => {
   const [ownerOtpError, setOwnerOtpError] = useState("");
 
   const Architectvalidations = sessionStorage.getItem("ArchitectConsentdocFilestoreid") ? true : false;
+
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   // Persist states to sessionStorage whenever they change
   useEffect(() => {
@@ -2288,9 +2291,9 @@ const documentsColumns = [
 
   return (
     <React.Fragment>
-      <Timeline currentStep={4} />
+      {isMobile && <Timeline currentStep={4} />}
       <Header>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
-      <div style={{height:"75vh", overflow:"scroll", marginTop:"30px"}}>
+      <div style={{ marginTop:"30px", paddingBottom:"30px"}}>
        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
    
         <StatusTable>
@@ -3031,7 +3034,15 @@ const documentsColumns = [
           )}
         </div>
         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }}  />
-             <SubmitBar
+        
+      </Card>
+
+
+
+
+
+    <ActionBar>
+     <SubmitBar
           label={isSubmitting ? t("SUBMITTING...") : t("BPA_SEND_TO_CITIZEN_LABEL")}
           onSubmit={async () => {
             setIsSubmitting(true);
@@ -3046,14 +3057,7 @@ const documentsColumns = [
           }}
           disabled={!agree || !isOTPVerified || isSubmitting}
         />
-      </Card>
-
-
-
-
-
-
-
+      </ActionBar>
       </div>
     </React.Fragment>
   );

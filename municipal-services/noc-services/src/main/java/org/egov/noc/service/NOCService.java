@@ -272,7 +272,7 @@ public class NOCService {
 						: new HashMap<String, String>();
 
 
-
+					noc.setOwners(userDetailResponse.getUser());
 
 
 //				for (BPA bpa : bpas) {
@@ -326,7 +326,11 @@ public class NOCService {
 						? (Map<String, String>) noc.getNocDetails().getAdditionalDetails()
 						: new HashMap<String, String>();
 
-
+				List<String> accountid = new ArrayList<>();
+				accountid.add(noc.getAccountId());
+				criteria.setAccountId(accountid);
+				UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
+				noc.setOwners(userDetailResponse.getUser());
 
 				// BPA CALL
 				StringBuilder uri = new StringBuilder(config.getBpaHost()).append(config.getBpaContextPath())

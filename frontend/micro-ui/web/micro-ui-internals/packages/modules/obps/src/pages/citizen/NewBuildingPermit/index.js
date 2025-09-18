@@ -105,29 +105,22 @@ const NewBuildingPermit = () => {
 
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
-    console.log("KeyandDataforSession", key === "", data, skipStep, isFromCreateApi);
-    const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
-    // console.log("KeyandDataforSession 2", JSON.stringify({ ...sessionData, value: {...data}}))
-    const cleanedData = makeSerializable(data);
-    console.log("KeyandDataforSession 2", sessionData, cleanedData)
+    console.log("KeyandDataforSession", key, data, skipStep, isFromCreateApi);
     if (isFromCreateApi) {
       try{
-      setParams(cleanedData);
+      setParams(data);
       } catch(e){
         alert(e.message);
       }
     }
-    // else if (key === "") setParams({ ...data });
     else if (key === "") {
-      // sessionStorage.removeItem("Digit.BUILDING_PERMIT");
       try{
-        sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify({ value: {...cleanedData}}));
-        // setParams({ ...data });
+        setParams({ ...data });
       } catch(e){
         alert(e.message);
       }
     }
-    else setParams({ ...params, ...{ [key]: { ...params[key], ...cleanedData } } });
+    else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
     goNext(skipStep);
   };
   const handleSkip = () => {};
@@ -151,7 +144,7 @@ const NewBuildingPermit = () => {
   const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
   const currentStepOBJ = newConfig1.find((routeObj) => routeObj.route === pathname.split("/").pop());
   const currentStep = currentStepOBJ?.step ? parseInt(currentStepOBJ?.step) : window.location.href.includes("check") ? 4 : 0;
-console.log("currentStep", currentStep)
+console.log("currentStep", currentStep, currentStepOBJ)
     const stepperConfig = [
   {
     head: "Applicant Details",

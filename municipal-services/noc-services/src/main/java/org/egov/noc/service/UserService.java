@@ -78,6 +78,7 @@ public class UserService {
 		userSearchRequest.setRequestInfo(requestInfo);
 		userSearchRequest.setTenantId(criteria.getTenantId().split("\\.")[0]);
 		userSearchRequest.setMobileNumber(criteria.getMobileNumber());
+		userSearchRequest.setUuid(criteria.getAccountId());
 		userSearchRequest.setActive(true);
 		/* userSearchRequest.setUserType("CITIZEN"); */
 		if (!CollectionUtils.isEmpty(criteria.getOwnerIds()))

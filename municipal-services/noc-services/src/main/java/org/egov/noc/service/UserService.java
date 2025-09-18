@@ -120,7 +120,7 @@ public class UserService {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void parseResponse(LinkedHashMap responeMap, String dobFormat) {
 		List<LinkedHashMap> users = (List<LinkedHashMap>) responeMap.get("user");
-		String format1 = "yyyy-MM-dd HH:mm:ss";
+		String format1 = "dd-MM-yyyy HH:mm:ss";
 		if (users != null) {
 			users.forEach(map -> {
 				map.put("createdDate", dateTolong((String) map.get("createdDate"), format1));

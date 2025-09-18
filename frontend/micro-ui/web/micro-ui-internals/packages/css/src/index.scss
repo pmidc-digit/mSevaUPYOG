@@ -833,6 +833,14 @@ input[type="number"] {
   padding: 25px 25px;
 }
 
+.step-label {
+  font-size: 17px !important;
+}
+
+.modal-action .employeeCard {
+  margin-left: 0px !important;
+}
+
 @media screen and (max-width: 768px) {
   .citizen .inboxButton {
     font-size: 1rem;

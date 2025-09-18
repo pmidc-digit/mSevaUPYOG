@@ -10,8 +10,8 @@ import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
 const createEmployeeConfig = [
   {
-    head: "Applicant Details",
-    stepLabel: "Applicant Details",
+    head: "Application Details",
+    stepLabel: "Application Details",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",

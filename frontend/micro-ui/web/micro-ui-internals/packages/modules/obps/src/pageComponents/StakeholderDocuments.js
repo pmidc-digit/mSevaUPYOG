@@ -88,6 +88,13 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
         {isMobile && <Timeline currentStep={3} flow="STAKEHOLDER" />}
+         {!formData?.initiationFlow && (
+          <CitizenInfoLabel
+            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+            text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.result?.Licenses?.[0]?.applicationNumber} ${t("BPA_DOCS_INFORMATION")}`}
+            className={"info-banner-wrap-citizen-override"}
+          />
+        )}
         {!isLoading ? (
           <FormStep
             t={t}
@@ -118,13 +125,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
         ) : (
           <Loader />
         )}
-        {!formData?.initiationFlow && (
-          <CitizenInfoLabel
-            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-            text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.result?.Licenses?.[0]?.applicationNumber} ${t("BPA_DOCS_INFORMATION")}`}
-            className={"info-banner-wrap-citizen-override"}
-          />
-        )}
+       
       </div>
       <ActionBar>
         <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleSubmit} disabled={enableSubmit} />

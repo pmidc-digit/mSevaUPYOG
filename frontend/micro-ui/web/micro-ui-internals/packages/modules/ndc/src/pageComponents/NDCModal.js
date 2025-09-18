@@ -141,14 +141,10 @@ const NDCModal = ({
         : null,
     };
 
-    console.log("uploadedFile", uploadedFile, applicationData);
-
     submitAction({
       Licenses: [applicationData],
     });
   }
-
-  console.log("config.label.submit", config);
 
   useEffect(() => {
     if (action) {

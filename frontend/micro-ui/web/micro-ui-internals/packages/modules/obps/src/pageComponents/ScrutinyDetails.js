@@ -10,6 +10,8 @@ import {
   RemoveableTag,
   Toast,
   Loader,
+  ActionBar,
+  SubmitBar
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useMemo } from "react";
 import { render } from "react-dom";
@@ -35,6 +37,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
   const { data, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, formData?.data?.scrutinyNumber, {
     enabled: true,
   });
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   console.log(subOccupancy, "OCCUPANCY");
 
@@ -264,8 +267,8 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
   }
   return (
     <React.Fragment>
-      <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
-      <div style={{ height: "80vh", overflow: "scroll" }}>
+      {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
+      <div style={{ paddingBottom: isMobile ? "0px" : "8px" }}>
         <FormStep t={t} config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={goNext} onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */>
           <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
           <StatusTable style={{ border: "none" }}>
@@ -433,6 +436,9 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
         </FormStep>
         {showToast && <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
       </div>
+      <ActionBar>
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext}  />}
+      </ActionBar>
     </React.Fragment>
   );
 };

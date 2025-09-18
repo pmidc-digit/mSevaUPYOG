@@ -65,18 +65,18 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   useEffect(() => {
     const owner = formData?.cpt?.details?.owners?.[0];
     const fullName = owner?.name?.split(" ");
-    const firstName = fullName?.[0];
-    let lastName;
-    if (fullName?.length > 1) {
-      lastName = fullName?.[fullName.length - 1];
-    }
+    const firstName = owner?.name;
+    // let lastName;
+    // if (fullName?.length > 1) {
+    //   lastName = fullName?.[fullName.length - 1];
+    // }
     const email = owner?.email;
     const mobileNumber = owner?.mobileNumber;
     const address = owner?.permanentAddress;
 
     const combinedObject = {};
     if (firstName) combinedObject.firstName = firstName;
-    if (lastName) combinedObject.lastName = lastName;
+    // if (lastName) combinedObject.lastName = lastName;
     if (email) combinedObject.email = email;
     if (mobileNumber) combinedObject.mobileNumber = mobileNumber;
     if (address) combinedObject.address = address;
@@ -375,6 +375,16 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }, [apiDataCheck]);
 
+  useEffect(() => {
+    if (formData?.cpt?.details?.owners) {
+      const formDataEmail = formData?.cpt?.details?.owners?.[0]?.emailId;
+      setValue("email", formDataEmail);
+      setPropertyDetails((prev) => ({ ...prev, email: formDataEmail }));
+    }
+  }, [formData?.cpt?.details?.owners]);
+
+  console.log("propertyDetails====", propertyDetails, formData);
+
   return (
     <div style={{ marginBottom: "16px" }}>
       {(formData?.cpt?.details || apiDataCheck?.[0]?.NdcDetails) && (
@@ -600,7 +610,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </button>
 
           <LabelFieldPair style={{ marginTop: "40px" }}>
-            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FIRST_NAME")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FULL_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -625,7 +635,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_LAST_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller
@@ -649,7 +659,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                 )}
               />
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_EMAIL")} * `}</CardLabel>
@@ -657,19 +667,19 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
               <Controller
                 control={control}
                 name={"email"}
-                defaultValue=""
+                defaultValue={propertyDetails?.email}
                 render={(props) => (
                   <TextInput
                     value={props?.value}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
                       setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
                       // setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.email?.length > 0}
+                    disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
                   />
                 )}
               />

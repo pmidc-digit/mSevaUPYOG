@@ -202,6 +202,8 @@ const MyApplication = () => {
           <Link to="/digit-ui/citizen/obps/search/obps-application">{t("BPA_CLICK_HERE_TO_SEARCH_LINK")}</Link>
         </span>
       </div>
+
+
       {finalData?.map((application, index) => {
         if (application.type === "BPAREG") {
           return (
@@ -286,3 +288,5 @@ const MyApplication = () => {
 };
 
 export default MyApplication;
+
+

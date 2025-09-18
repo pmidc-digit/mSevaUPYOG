@@ -1,7 +1,7 @@
 
 
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon } from "@mseva/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
@@ -669,9 +669,9 @@ if (anyYes && !ecbcCertificateFile) {
 
   return (
     <React.Fragment>
-      <Timeline currentStep={2} />
+      {!Webview && <Timeline currentStep={2} />}
       <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
-        <div style={{height:"76vh", overflow:"scroll"}}>
+        <div style={{ paddingBottom: "80px" }}>
           <CardLabel>{`${t("BPA_ULB_NAME")} *`}</CardLabel>
           <TextInput
             t={t}
@@ -1068,6 +1068,9 @@ if (anyYes && !ecbcCertificateFile) {
 
         </div>
       </FormStep>
+      <ActionBar>
+          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext}  />}
+      </ActionBar>
     </React.Fragment>
   )
 }

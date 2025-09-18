@@ -250,14 +250,15 @@ const ApplicationOverview = () => {
     };
 
     if (!filtData?.assignee && filtData.action == "FORWARD") {
-      setShowToast({ key: "error" });
-      setError("Assignee is mandatory");
+      // setShowToast({ key: "error" });
+      setErrorOne("Assignee is Mandatory");
+      setShowErrorToastt(true);
 
       return;
     } else if (!filtData?.comment && (filtData?.action == "FORWARD" || filtData?.action == "REJECT")) {
       // setShowToast({ key: "error", message: "Comment is mandatory" });
       // setError("Comment is mandatory");
-      setErrorOne("Comment is mandatory");
+      setErrorOne("Comment is Mandatory");
       setShowErrorToastt(true);
 
       return;

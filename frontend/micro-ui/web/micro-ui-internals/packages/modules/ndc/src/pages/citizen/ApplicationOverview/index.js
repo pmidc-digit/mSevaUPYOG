@@ -22,7 +22,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
 import { businessServiceList, convertEpochToDate, stringReplaceAll } from "../../../utils";
 import { format } from "date-fns";
@@ -84,6 +84,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
+  const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const state = tenantId?.split(".")[0];
   const [appDetails, setAppDetails] = useState({});
@@ -163,7 +164,6 @@ const CitizenApplicationOverview = () => {
   }, [applicationDetails?.Applications]);
 
   useEffect(() => {
-    console.log("applicationDetails", applicationDetails);
     if (applicationDetails) {
       setIsDetailsLoading(true);
       const { Applicant: details } = applicationDetails?.Applications?.[0];
@@ -174,8 +174,6 @@ const CitizenApplicationOverview = () => {
 
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
-    console.log("applicationDetails in StakeholderAck", applicationDetails);
-    console.log("tenants", tenants);
     const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.tenantId);
 
     const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
@@ -196,12 +194,22 @@ const CitizenApplicationOverview = () => {
         {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
           <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
         )}
+        {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && (
+          <ActionBar>
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                const id = applicationDetails?.Applications?.[0]?.uuid;
+                history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
+              }}
+            />
+          </ActionBar>
+        )}
       </div>
 
       <Card className="ndc_card_main">
         <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
-          {console.log("displayData?.applicantData", displayData?.applicantData)}
           {displayData?.applicantData &&
             Object.entries(displayData?.applicantData)?.map(([key, value]) => (
               <Row

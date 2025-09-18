@@ -4,6 +4,7 @@ import { useQueryClient } from "react-query";
 import { useRouteMatch, useLocation, useHistory, Switch, Route, Redirect } from "react-router-dom";
 import { newConfig as newConfigBPA } from "../../../config/buildingPermitConfig";
 import { newConfig1 } from "./NewConfig";
+import Stepper  from "../../../../../../react-components/src/customComponents/Stepper";
 // import CheckPage from "./CheckPage";
 // import OBPSAcknowledgement from "./OBPSAcknowledgement";
 
@@ -25,6 +26,7 @@ const NewBuildingPermit = () => {
   const location = useLocation();
   Digit.SessionStorage.set("OBPS_PT", "true");
   sessionStorage.removeItem("BPA_SUBMIT_APP");
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage(
@@ -57,6 +59,7 @@ const NewBuildingPermit = () => {
   };
 
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
+    console.log("KeyandDataforSession", key, data);
     if (isFromCreateApi) setParams(data);
     else if (key === "") setParams({ ...data });
     else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
@@ -81,8 +84,50 @@ const NewBuildingPermit = () => {
 
   const CheckPage = Digit?.ComponentRegistryService?.getComponent("BPACheckPage");
   const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
+  const currentStepOBJ = newConfig1.find((routeObj) => routeObj.route === pathname.split("/").pop());
+  const currentStep = currentStepOBJ?.step ? parseInt(currentStepOBJ?.step) : window.location.href.includes("check") ? 4 : 0;
+console.log("currentStep", currentStep)
+    const stepperConfig = [
+  {
+    head: "Applicant Details",
+    stepLabel: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
+    stepNumber: 1,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+  },
+  {
+    head: "NDC_DOCUMENTS_REQUIRED",
+    stepLabel: "COLONY_DETAILS",
+    stepNumber: 2,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+  },
+  {
+    head: "NDC_DOCUMENTS_REQUIRED",
+    stepLabel: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+  },
+  {
+    head: "Summary",
+    stepLabel: "BPA_STEPPER_SUMMARY_HEADER",
+    stepNumber: 4,
+    isStepEnabled: true,
+    type: "component",
+    component: "dummy",
+  },
+];
 
   return (
+    <div style={{display: "flex", flexDirection: "row"}}>
+    {!(window.location.href.includes("docs-required") || window.location.href.includes("acknowledgement")) && !isMobile &&<div>
+    <Stepper stepsList={stepperConfig} step={currentStep} />
+    </div>}
+    <div style={{flexGrow: 1}}>
     <Switch>
       {newConfig1.map((routeObj, index) => {
         const { component, texts, inputs, key } = routeObj;
@@ -108,6 +153,8 @@ const NewBuildingPermit = () => {
         <Redirect to={`${getPath(match.path, match.params)}/${config.indexRoute}`} />
       </Route>
     </Switch>
+    </div>
+    </div>
   );
 };
 

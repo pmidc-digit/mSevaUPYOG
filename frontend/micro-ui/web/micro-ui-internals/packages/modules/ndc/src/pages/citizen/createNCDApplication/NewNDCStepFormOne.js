@@ -181,7 +181,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     if (!cpt?.id) missingFields.push(t("NDC_MESSAGE_PROPERTY_ID"));
     if (!cptDetails || Object.keys(cptDetails).length === 0) missingFields.push(t("NDC_MESSAGE_PLEASE_SEARCH_PROPERTY_ID"));
     if (!propertyDetails?.firstName) missingFields.push(t("NDC_MESSAGE_FIRST_NAME"));
-    if (!propertyDetails?.lastName) missingFields.push(t("NDC_MESSAGE_LAST_NAME"));
+    // if (!propertyDetails?.lastName) missingFields.push(t("NDC_MESSAGE_LAST_NAME"));
     if (!propertyDetails?.mobileNumber) missingFields.push(t("NDC_MESSAGE_MOBILE_NUMBER"));
     if (!propertyDetails?.address) missingFields.push(t("NDC_MESSAGE_ADDRESS"));
     if (!propertyDetails?.email) missingFields.push(t("NDC_MESSAGE_EMAIL"));
@@ -191,20 +191,21 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     // Format Validations
     const nameRegex = /^[A-Za-z\s]+$/;
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
     const mobileRegex = /^[6-9]\d{9}$/;
 
     if (propertyDetails?.firstName && !nameRegex.test(propertyDetails.firstName)) {
       invalidFields.push(t("NDC_MESSAGE_FIRST_NAME_ONLY_ALPHABETS_ALLOWED"));
     }
 
-    if (propertyDetails?.lastName) {
-      if (!nameRegex.test(propertyDetails.lastName)) {
-        invalidFields.push(t("NDC_MESSAGE_LAST_NAME_ONLY_ALPHABETS_ALLOWED"));
-      } else if (propertyDetails.lastName.length > 100) {
-        invalidFields.push(t("NDC_MESSAGE_LAST_NAME_MAX_100_CHARACTERS"));
-      }
-    }
+    // if (propertyDetails?.lastName) {
+    //   if (!nameRegex.test(propertyDetails.lastName)) {
+    //     invalidFields.push(t("NDC_MESSAGE_LAST_NAME_ONLY_ALPHABETS_ALLOWED"));
+    //   } else if (propertyDetails.lastName.length > 100) {
+    //     invalidFields.push(t("NDC_MESSAGE_LAST_NAME_MAX_100_CHARACTERS"));
+    //   }
+    // }
 
     if (propertyDetails?.email && !emailRegex.test(propertyDetails.email)) {
       invalidFields.push(t("NDC_MESSAGE_EMAIL_INVALID_FORMAT"));

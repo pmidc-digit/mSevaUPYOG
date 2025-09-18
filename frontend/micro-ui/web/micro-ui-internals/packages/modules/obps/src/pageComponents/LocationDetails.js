@@ -1,4 +1,4 @@
-import { CardLabel, FormStep, LinkButton, Loader, RadioOrSelect, TextInput, UploadFile } from "@mseva/digit-ui-react-components";
+import { CardLabel, FormStep, LinkButton, Loader, RadioOrSelect, TextInput, UploadFile, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import GIS from "./GIS";
@@ -301,7 +301,7 @@ async function selectfiles(e) {
 
   return (
     <div>
-      {!isOpen && <Timeline />}
+      {!isOpen && isMobile && <Timeline />}
       {isOpen && <GIS t={t} onSelect={onSelect} formData={formData} handleRemove={handleRemove} onSave={onSave} />}
       {!isOpen && (
         <FormStep
@@ -455,6 +455,9 @@ async function selectfiles(e) {
 
         </FormStep>
       )}
+      <ActionBar>
+          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  />}
+      </ActionBar>
     </div>
   );
 };

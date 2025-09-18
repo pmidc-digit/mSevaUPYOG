@@ -43,7 +43,7 @@ const MyApplications = ({ view }) => {
       <Header>{`${t("TL_MY_APPLICATIONS_HEADER")}`}</Header>
       {data?.data?.map((application, index) => {
         const filteredApplication = Object.fromEntries(Object.entries(application).filter(([key]) => key !== "Applications"));
-        console.log("application?.Applications?.applicationStatus", application?.Applications);
+        console.log("application?.Applications?.applicationStatus", filteredApplication);
         return (
           <div key={`card-${index}`}>
             <Card>
@@ -55,7 +55,7 @@ const MyApplications = ({ view }) => {
 
               {application?.Applications?.applicationStatus != "PENDINGPAYMENT" && (
                 <Link to={`/digit-ui/citizen/ndc/search/application-overview/${application?.Applications?.uuid}`}>
-                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
+                  <SubmitBar label={t("CS_VIEW_DETAILS")} />
                 </Link>
               )}
 
@@ -66,7 +66,7 @@ const MyApplications = ({ view }) => {
                   }}
                 >
                   <div style={{ marginTop: "10px" }}>
-                    <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
+                    <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} />
                   </div>
                 </Link>
               )}

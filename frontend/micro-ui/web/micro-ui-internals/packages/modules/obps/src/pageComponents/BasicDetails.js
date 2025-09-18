@@ -12,6 +12,7 @@ import {
   CardCaption,
   SubmitBar,
   Loader,
+  ActionBar,
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useTranslation } from "react-i18next";
@@ -107,7 +108,7 @@ const BasicDetails = ({ formData, onSelect, config }) => {
   return (
     <div>
       {showToast && <Toast error={true} label={t(`${showToast?.message}`)} onClose={closeToast} isDleteBtn={true} />}
-      <Timeline />
+      {isMobile && <Timeline />}
       <div className={isMobile ? "obps-search" : ""} style={!isMobile ? { margin: "8px" } : {}}>
         <Label>{t(`OBPS_SEARCH_EDCR_NUMBER`)}</Label>
         <TextInput
@@ -141,7 +142,9 @@ const BasicDetails = ({ formData, onSelect, config }) => {
               text={basicData?.planDetail?.planInformation?.applicantName}
             />
           </StatusTable>
+          <ActionBar>
           {riskType ? <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length} /> : <Loader />}
+          </ActionBar>
         </Card>
       )}
     </div>

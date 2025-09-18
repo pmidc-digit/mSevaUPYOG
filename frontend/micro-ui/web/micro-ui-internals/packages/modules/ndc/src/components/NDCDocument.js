@@ -12,14 +12,13 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
 function NDCDocument({ value = {}, Code, index }) {
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
-  console.log("dataInNDCDocument", data )
+  console.log("dataInNDCDocument", data);
 
   const documents = value?.documents
     ? value.documents.documents
         .filter((doc) => doc.documentType === Code)
         .map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }))
     : value.filter((doc) => doc.documentType === Code).map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }));
-  
 
   if (isLoading) {
     return <Loader />;
@@ -28,17 +27,19 @@ function NDCDocument({ value = {}, Code, index }) {
   return (
     <div style={{ marginTop: "19px" }}>
       <React.Fragment>
-        {data?.pdfFiles && <div style={{ display: "flex", flexWrap: "wrap" }}>
-          {documents?.map((document, index) => {
-            let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
-            return (
-              <a target="_" href={documentLink} style={{ minWidth: "100px",marginRight:"10px" }} key={index}>
-                <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                <p style={{ marginTop: "8px",textAlign:"center" }}>{value?.workflowDocs ? t(`${document?.documentType}`) : t(`NDC_${document?.documentType}_LABEL`)}</p>
-              </a>
-            );
-          })}
-        </div>}
+        {data?.pdfFiles && (
+          <div style={{ display: "flex", flexWrap: "wrap" }}>
+            {documents?.map((document, index) => {
+              let documentLink = pdfDownloadLink(data.pdfFiles, document?.fileStoreId);
+              return (
+                <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
+                  <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
+                  {/* <p style={{ marginTop: "8px",textAlign:"center" }}>{value?.workflowDocs ? t(`${document?.documentType}`) : t(`NDC_${document?.documentType}_LABEL`)}</p> */}
+                </a>
+              );
+            })}
+          </div>
+        )}
       </React.Fragment>
     </div>
   );

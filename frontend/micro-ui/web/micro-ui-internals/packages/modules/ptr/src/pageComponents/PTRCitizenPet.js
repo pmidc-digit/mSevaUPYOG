@@ -161,8 +161,8 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
             name="petName"
             rules={{
               required: t("PTR_PET_NAME_REQUIRED"),
-              pattern: { value: onlyAlphabets, message: t("PTR_PET_NAME_INVALID") },
-              maxLength: { value: 18, message: "Maximum 18 characters" },
+              pattern: { value: alphaNum, message: t("PTR_PET_NAME_INVALID") },
+              maxLength: { value: 100, message: "Maximum 100 characters" },
               minLength: { value: 2, message: "Minimum 2 characters" },
             }}
             render={(props) => (
@@ -229,7 +229,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
             rules={{
               required: t("PTR_PET_COLOR_REQUIRED"),
               pattern: { value: /^[A-Za-z\s]+$/, message: t("PTR_PET_COLOR_INVALID") },
-              maxLength: { value: 18, message: "Maximum 18 characters" },
+              maxLength: { value: 50, message: "Maximum 50 characters" },
               minLength: { value: 2, message: "Minimum 2 characters" },
             }}
             render={(props) => (
@@ -327,7 +327,8 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
             name="vaccinationNumber"
             rules={{
               required: t("PTR_VACCINATION_NUMBER_REQUIRED"),
-              pattern: { value: alphaNum, message: t("PTR_VACCINATION_NUMBER_INVALID") },
+              pattern: { value: onlyNumbers, message: t("PTR_VACCINATION_NUMBER_INVALID") },
+              maxLength: { value: 50, message: "Maximum 50 numbers" },
             }}
             render={(props) => (
               <TextInput

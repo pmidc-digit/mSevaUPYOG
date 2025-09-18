@@ -97,7 +97,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                   value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
                   message: t("PTR_FIRST_NAME_INVALID"),
                 },
-                maxLength: { value: 18, message: "Maximum 18 characters" },
+                maxLength: { value: 100, message: "Maximum 100 characters" },
                 minLength: { value: 2, message: "Minimum 2 characters" },
               }}
               render={({ value, onChange, onBlur }) => (
@@ -129,7 +129,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                   value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
                   message: t("PTR_FIRST_NAME_INVALID"),
                 },
-                maxLength: { value: 18, message: "Maximum 18 characters" },
+                maxLength: { value: 100, message: "Maximum 100 characters" },
                 minLength: { value: 2, message: "Minimum 2 characters" },
               }}
               render={({ value, onChange, onBlur }) => (
@@ -224,7 +224,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                   value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
                   message: t("PTR_FATHER_HUSBAND_NAME_INVALID"),
                 },
-                maxLength: { value: 18, message: "Maximum 18 characters" },
+                maxLength: { value: 100, message: "Maximum 100 characters" },
                 minLength: { value: 2, message: "Minimum 2 characters" },
               }}
               render={({ value, onChange, onBlur }) => (

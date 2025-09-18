@@ -1655,6 +1655,7 @@ console.log("payload OWNER FULL DETAIL", payload)
             result.BPA[0].uiFlow = formData?.uiFlow
             setIsDisable(false)
             onSelect("", result.BPA[0], "", true)
+            console.log(result.BPA[0], "RESULT+++++");
           }
         })
         .catch((e) => {

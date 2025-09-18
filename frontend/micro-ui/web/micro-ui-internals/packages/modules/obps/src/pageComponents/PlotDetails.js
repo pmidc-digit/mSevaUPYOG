@@ -99,6 +99,7 @@ const PlotDetails = ({ formData, onSelect, config }) => {
 
   const handleSubmit = (data) => {
     if (!validate()) return;
+    console.log("ErrorData",JSON.stringify(data));
     onSelect(editConfig?.key, { ...data });
   };
 
@@ -160,7 +161,7 @@ const configWithErrors = {
     <div>
       {isMobile && <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
       <div style={{paddingBottom: isMobile ? "0px" : "8px"}}>
-        <FormStep config={configWithErrors}  childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
+        <FormStep config={configWithErrors} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
           <StatusTable>
             <Row
               className="border-none"
@@ -174,9 +175,9 @@ const configWithErrors = {
           </StatusTable>
         </FormStep>
       </div>
-      <ActionBar>
+      {/* <ActionBar>
           {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  />}
-      </ActionBar>
+      </ActionBar> */}
     </div>
   );
 };

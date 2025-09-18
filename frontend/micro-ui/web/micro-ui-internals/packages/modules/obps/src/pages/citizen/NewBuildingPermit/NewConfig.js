@@ -33,7 +33,7 @@ export const newConfig1 = [
       headerCaption: "BPA_SCRUTINY_DETAILS",
       header: "BPA_PLOT_DETAILS_TITLE",
       cardText: "",
-      // submitBarLabel: "CS_COMMON_NEXT",
+      submitBarLabel: "CS_COMMON_NEXT",
       //"skipText": "CORE_COMMON_SKIP_CONTINUE"
     },
     // inputs: [

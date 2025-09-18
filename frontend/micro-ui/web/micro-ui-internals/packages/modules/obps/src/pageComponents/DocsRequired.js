@@ -2,6 +2,8 @@ import React, { Fragment, useEffect, useState } from "react";
 import { Card, CardHeader, CardLabel, CardText, CitizenInfoLabel, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../redux/actions/OBPSActions";
 
 const DocsRequired = ({ onSelect, onSkip, config }) => {
   const { t } = useTranslation();
@@ -19,14 +21,17 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
   const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, queryObject);
   const checkingUrl = window.location.href.includes("ocbpa");
   sessionStorage.removeItem("clickOnBPAApplyAfterEDCR");
+  const dispatch = useDispatch();
 
   const { data: homePageUrlLinks, isLoading: homePageUrlLinksLoading } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["homePageUrlLinks"]);
   console.log(docsList, "DOCS");
   const goNext = () => {
     if (JSON.parse(sessionStorage.getItem("BPAintermediateValue")) !== null) {
       let formData = JSON.parse(sessionStorage.getItem("BPAintermediateValue"));
+      console.log("formData in DocsRequired", formData);
       sessionStorage.setItem("BPAintermediateValue", null);
       onSelect("", formData);
+      // dispatch(UPDATE_OBPS_FORM("BUILDING_PERMIT", formData));
     } else onSelect("uiFlow", uiFlow);
   };
 

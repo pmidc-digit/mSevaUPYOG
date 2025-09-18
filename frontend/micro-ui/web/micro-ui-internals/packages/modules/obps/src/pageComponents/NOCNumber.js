@@ -7,6 +7,8 @@ const NOCNumber = ({ t, config, onSelect, userType, formData, setError: setFormE
     const tenantId = Digit.ULBService.getCurrentTenantId();
     let Webview = !Digit.Utils.browser.isMobile();
 
+    console.log("formData in NOCNumber", formData);
+
     function onChange(data) {
         setValueNoc(data.target.value);        
       }

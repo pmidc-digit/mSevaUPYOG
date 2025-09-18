@@ -16,6 +16,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Timeline from "../components/Timeline";
+import { useForm } from "react-hook-form";
 
 
 
@@ -265,6 +266,7 @@ const PlotDetails = ({ formData, onSelect, config, sessionId, onLoad }) => {
   const checkingFlow = formData?.uiFlow?.flow
   const state = Digit.ULBService.getStateId()
   const [errors, setErrors] = useState({})
+  const { setValue } = useForm();
 
   const getSessionStorageKey = () => {
     if (sessionId) {
@@ -275,7 +277,7 @@ const PlotDetails = ({ formData, onSelect, config, sessionId, onLoad }) => {
     return `BUILDING_PERMIT_${applicationNo || "NEW"}_PLOT_DETAILS`
   }
 
-  console.log("formData in plotDetail")
+  console.log("formData in plotDetail",formData)
 
   const [plotFormData, setPlotFormData] = useState(() => {
     const storageKey = getSessionStorageKey()
@@ -382,32 +384,66 @@ const PlotDetails = ({ formData, onSelect, config, sessionId, onLoad }) => {
 
     console.log("Plot details form data:", formData)
 
+    // const enhancedData = {
+    //   ...formData,
+    //   data: {
+    //     ...formData?.data,
+    //     ...data,
+    //     // Add plot-specific fields that should be included in additionalDetails
+    //     area: data?.planDetail?.planInformation?.plotArea?.toString() || formData?.data?.area || "",
+    //     height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString() || formData?.data?.height || "",
+    //     builtUpArea:
+    //       data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString() || formData?.data?.builtUpArea || "",
+    //     plotArea: data?.planDetail?.planInformation?.plotArea || formData?.data?.plotArea || "",
+    //     plotNo: data?.planDetail?.planInformation?.plotNo || formData?.data?.plotNo || "",
+    //     khataNo: data?.planDetail?.planInfoProperties?.KHATA_NO || formData?.data?.khataNo || "",
+    //   },
+    //   // Ensure additionalDetails are available for the create API call
+    //   additionalDetails: {
+    //     ...formData?.additionalDetails,
+    //     area: data?.planDetail?.planInformation?.plotArea?.toString() || formData?.data?.area || "",
+    //     height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString() || formData?.data?.height || "",
+    //     builtUpArea:
+    //       data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString() || formData?.data?.builtUpArea || "",
+    //     GISPlaceName: formData?.address?.placeName || "",
+    //     boundaryWallLength: formData?.data?.boundaryWallLength || "",
+    //     usage: formData?.data?.occupancyType || "",
+    //   },
+    // }
+
     const enhancedData = {
       ...formData,
       data: {
         ...formData?.data,
         ...data,
-        // Add plot-specific fields that should be included in additionalDetails
-        area: data?.planDetail?.planInformation?.plotArea?.toString() || formData?.data?.area || "",
-        height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString() || formData?.data?.height || "",
-        builtUpArea:
-          data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString() || formData?.data?.builtUpArea || "",
-        plotArea: data?.planDetail?.planInformation?.plotArea || formData?.data?.plotArea || "",
-        plotNo: data?.planDetail?.planInformation?.plotNo || formData?.data?.plotNo || "",
-        khataNo: data?.planDetail?.planInfoProperties?.KHATA_NO || formData?.data?.khataNo || "",
+        registrationDetails: formData?.data?.registrationDetails || "",
+        boundaryWallLength: data?.planDetail?.planInformation?.boundaryWallLength || formData?.data?.boundaryWallLength || "",
+        wardnumber: formData?.data?.wardnumber || "",
+        zonenumber: formData?.data?.zonenumber || "",
+        khasraNumber: formData?.data?.khasraNumber || "",
+        architectid: formData?.data?.architectid || "",
+        propertyuid: formData?.data?.propertyuid || "",
+        bathnumber: formData?.data?.bathnumber || "",
+        kitchenNumber: formData?.data?.kitchenNumber || "",
+        approxinhabitants: formData?.data?.approxinhabitants || "",
+        distancefromsewer: formData?.data?.distancefromsewer || "",
+        sourceofwater: formData?.data?.sourceofwater || "",
+        watercloset: formData?.data?.watercloset || "",
+        materialused: formData?.data?.materialused || "",
+        materialusedinfloor: formData?.data?.materialusedinfloor || "",
+        materialusedinroofs: formData?.data?.materialusedinroofs || "",
       },
-      // Ensure additionalDetails are available for the create API call
       additionalDetails: {
         ...formData?.additionalDetails,
+        // only if you need them in API call
         area: data?.planDetail?.planInformation?.plotArea?.toString() || formData?.data?.area || "",
         height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString() || formData?.data?.height || "",
-        builtUpArea:
-          data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString() || formData?.data?.builtUpArea || "",
+        builtUpArea: data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString() || formData?.data?.builtUpArea || "",
         GISPlaceName: formData?.address?.placeName || "",
         boundaryWallLength: formData?.data?.boundaryWallLength || "",
         usage: formData?.data?.occupancyType || "",
       },
-    }
+    };
 
     onSelect(editConfig?.key, enhancedData)
   }
@@ -427,6 +463,8 @@ const PlotDetails = ({ formData, onSelect, config, sessionId, onLoad }) => {
     architectid: formData?.data?.architectid,
     ...formData?.data,
   }
+
+  console.log("defaultValues",defaultValues)
 
   const handleChange = (name, value, validation) => {
     let error = ""

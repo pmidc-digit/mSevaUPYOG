@@ -7,7 +7,7 @@ import { stringReplaceAll } from "../utils";
 import EXIF from "exif-js";
 
 
-const LocationDetails = ({ t, config, onSelect, userType, formData,setFormData, ownerIndex = 0, addNewOwner, isShowToast }) => {
+const LocationDetails = ({ t, config, onSelect, userType, formData,setFormData, ownerIndex = 0, addNewOwner, isShowToast, onLoad }) => {
   let propertyData = JSON.parse(sessionStorage.getItem("Digit_OBPS_PT"));
   let currCity = JSON.parse(sessionStorage.getItem("currentCity")) || {};
   let currPincode = sessionStorage.getItem("currentPincode");
@@ -95,6 +95,10 @@ const [isUploading, setIsUploading] = useState(false);
     }
   }, [cities]);
 
+  useEffect(()=>{
+    onLoad();
+  },[])
+
 useEffect(() => {
   if (formData?.documents?.sitePhotoGraph) {
     setUploadedFile(formData.documents.sitePhotoGraph);
@@ -163,10 +167,11 @@ useEffect(() => {
     address.pincode = pincode;
     address.city = selectedCity;
     // address.locality = selectedLocality;
-    address.street = street;
+    // address.street = street;
     address.landmark = landmark;
-    address.geoLocation = geoLocation;
+    address.geoLocation = geoLocationFromImg;
     address.placeName = placeName;
+    address.images = uploadedFile;
     console.log("LocationAPI", config.key, address);
     
     onSelect(config.key, address);

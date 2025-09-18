@@ -98,6 +98,8 @@ public class UserService {
 	@SuppressWarnings("rawtypes")
 	UserResponse userCall(Object userRequest, StringBuilder uri) {
 		String dobFormat = null;
+		log.info(uri.toString());
+		log.info(config.getUserSearchEndpoint());
 		if (uri.toString().contains(config.getUserSearchEndpoint()))
 			dobFormat = "yyyy-MM-dd";
 		try {
@@ -202,6 +204,9 @@ public class UserService {
 			username = owner.getMobileNumber();
 		else
 			username = UUID.randomUUID().toString();
+
+
+
 		owner.setUserName(username);
 
 	}

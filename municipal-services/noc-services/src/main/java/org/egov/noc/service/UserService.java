@@ -154,7 +154,6 @@ public class UserService {
 
 		Date d = null;
 		try {
-			log.info(d.toString());
 			d = f.parse(date);
 			log.info(d.toString());
 		} catch (ParseException e) {

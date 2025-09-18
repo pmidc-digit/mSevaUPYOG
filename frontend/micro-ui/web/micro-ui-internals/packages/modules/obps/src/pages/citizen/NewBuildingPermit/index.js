@@ -58,11 +58,76 @@ const NewBuildingPermit = () => {
     history.push(`${getPath(match.path, match.params)}/acknowledgement`);
   };
 
+  function makeSerializable(obj) {
+  const seen = new WeakSet();
+
+  function helper(value) {
+    if (value === null || typeof value === "undefined") return null;
+
+    // primitives
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      return value;
+    }
+
+    // Dates
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    // Arrays
+    if (Array.isArray(value)) {
+      return value.map(helper);
+    }
+
+    // Objects
+    if (typeof value === "object") {
+      if (seen.has(value)) {
+        return undefined; // break circular refs
+      }
+      seen.add(value);
+
+      const plain = {};
+      for (const [k, v] of Object.entries(value)) {
+        // skip functions, DOM nodes, symbols
+        if (typeof v === "function" || typeof v === "symbol") continue;
+        if (v instanceof HTMLElement) continue;
+
+        plain[k] = helper(v);
+      }
+      return plain;
+    }
+
+    return undefined;
+  }
+
+  return helper(obj);
+}
+
+
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
-    console.log("KeyandDataforSession", key, data);
-    if (isFromCreateApi) setParams(data);
-    else if (key === "") setParams({ ...data });
-    else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
+    console.log("KeyandDataforSession", key === "", data, skipStep, isFromCreateApi);
+    const sessionData = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"));
+    // console.log("KeyandDataforSession 2", JSON.stringify({ ...sessionData, value: {...data}}))
+    const cleanedData = makeSerializable(data);
+    console.log("KeyandDataforSession 2", sessionData, cleanedData)
+    if (isFromCreateApi) {
+      try{
+      setParams(cleanedData);
+      } catch(e){
+        alert(e.message);
+      }
+    }
+    // else if (key === "") setParams({ ...data });
+    else if (key === "") {
+      // sessionStorage.removeItem("Digit.BUILDING_PERMIT");
+      try{
+        sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify({ value: {...cleanedData}}));
+        // setParams({ ...data });
+      } catch(e){
+        alert(e.message);
+      }
+    }
+    else setParams({ ...params, ...{ [key]: { ...params[key], ...cleanedData } } });
     goNext(skipStep);
   };
   const handleSkip = () => {};

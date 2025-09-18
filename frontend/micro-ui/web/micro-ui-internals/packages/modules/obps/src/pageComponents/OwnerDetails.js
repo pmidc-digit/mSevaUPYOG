@@ -1648,7 +1648,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
             result.BPA[0].subOccupancy = formData?.subOccupancy
             result.BPA[0].uiFlow = formData?.uiFlow
             setIsDisable(false)
-            onSelect("", result.BPA[0], "", true)
+            onSelect("", result.BPA[0], "", false)
+            console.log(result.BPA[0], "RESULT+++++");
           }
         })
         .catch((e) => {

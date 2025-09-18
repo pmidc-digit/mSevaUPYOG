@@ -327,7 +327,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
             name="vaccinationNumber"
             rules={{
               required: t("PTR_VACCINATION_NUMBER_REQUIRED"),
-              pattern: { value: onlyNumbers, message: t("PTR_VACCINATION_NUMBER_INVALID") },
+              pattern: { value: alphaNum, message: t("PTR_VACCINATION_NUMBER_INVALID") },
               maxLength: { value: 50, message: "Maximum 50 numbers" },
             }}
             render={(props) => (

@@ -172,16 +172,18 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         onBackClick={onGoBack}
       />
       <ActionBar>
-        {actions ? (
-          <Menu
-            localeKeyPrefix={t(`WF_CITIZEN_${"PTR"}`)}
-            options={actions}
-            optionKey={"action"}
-            t={t}
-            onSelect={onActionSelect}
-            // style={MenuStyle}
-          />
+        {/* Back button */}
+        <SubmitBar
+          label={t("CS_COMMON_BACK")}
+          onSubmit={() => onGoBack(currentStepData)}
+          style={{ backgroundColor: "white", color: "black", border: "1px solid", marginRight: "10px" }}
+        />
+
+        {/* Take Action menu */}
+        {displayMenu && actions ? (
+          <Menu localeKeyPrefix={t(`WF_CITIZEN_${"PTR"}`)} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
         ) : null}
+
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>
 

@@ -146,10 +146,16 @@ public class UserService {
 	 * @return Long value of date
 	 */
 	private Long dateTolong(String date, String format) {
+		log.info(format);
+		log.info(date);
 		SimpleDateFormat f = new SimpleDateFormat(format);
+		log.info(f.toString());
+
 		Date d = null;
 		try {
+			log.info(d.toString());
 			d = f.parse(date);
+			log.info(d.toString());
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}

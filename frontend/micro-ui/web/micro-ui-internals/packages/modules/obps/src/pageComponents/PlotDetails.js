@@ -42,6 +42,76 @@ const PlotDetails = ({ formData, onSelect, config }) => {
   const [errors, setErrors] = useState({});
   const isMobile = window.Digit.Utils.browser.isMobile();
 
+
+
+
+
+  // ---------------- UI Styles ----------------
+  const pageStyle = {
+    padding: "2rem",
+    backgroundColor: "#f1f1f1ff",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    color: "#333",
+    paddingBottom: "5rem",
+  };
+
+  const sectionStyle = {
+    backgroundColor: "#ffffff",
+    padding: "1rem 1.5rem",
+    borderRadius: "8px",
+    marginBottom: "2rem",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+  };
+
+  const headingStyle = {
+    fontSize: "1.5rem",
+    borderBottom: "2px solid #ccc",
+    paddingBottom: "0.3rem",
+    color: "#2e4a66",
+    marginTop: "2rem",
+    marginBottom: "1rem",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    borderBottom: "1px dashed #e0e0e0",
+    padding: "0.5rem 0",
+    color: "#333",
+  };
+
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+    
+  };
+
+  const documentCardStyle = {
+
+    minWidth: "200px",
+    maxWidth: "250px",
+    backgroundColor: "#fdfdfd",
+    padding: "0.75rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    justifyContent:"center",
+    display:"flex",
+    
+  };
+
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+
+  const renderLabel = (label, value) => (
+    <div style={labelFieldPairStyle}>
+      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div>{value || t("CS_NA")}</div>
+    </div>
+  );
+
+
+
   
   useEffect(() => {
     if (isEditApplication) {
@@ -161,8 +231,8 @@ const configWithErrors = {
     <div>
       {isMobile && <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
       <div style={{paddingBottom: isMobile ? "0px" : "8px"}}>
-        <FormStep config={configWithErrors} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
-          <StatusTable>
+        <FormStep style={pageStyle} config={configWithErrors} onSelect={handleSubmit} childrenAtTheBottom={false} t={t} _defaultValues={defaultValues} onSkip={onSkip}>
+          <StatusTable >
             <Row
               className="border-none"
               label={t(`BPA_BOUNDARY_PLOT_AREA_LABEL`)}

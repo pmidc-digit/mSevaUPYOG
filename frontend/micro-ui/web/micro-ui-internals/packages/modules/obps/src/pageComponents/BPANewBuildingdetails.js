@@ -667,411 +667,470 @@ if (anyYes && !ecbcCertificateFile) {
     return <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>{error}</div>
   }
 
+
+  
+    // ---------------- UI Styles ----------------
+    const pageStyle = {
+      padding: "2rem",
+      backgroundColor: "#f1f1f1ff",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      color: "#333",
+      paddingBottom: "5rem",
+    };
+  
+    const sectionStyle = {
+      backgroundColor: "#ffffff",
+  
+      borderRadius: "8px",
+   
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+    };
+  
+    const headingStyle = {
+      fontSize: "1.5rem",
+      borderBottom: "2px solid #ccc",
+      paddingBottom: "0.3rem",
+      color: "#2e4a66",
+      marginTop: "2rem",
+      marginBottom: "1rem",
+    };
+  
+    const labelFieldPairStyle = {
+      display: "flex",
+      justifyContent: "space-between",
+      borderBottom: "1px dashed #e0e0e0",
+      padding: "0.5rem 0",
+      color: "#333",
+    };
+  
+    const documentsContainerStyle = {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "1rem",
+      
+    };
+  
+    const documentCardStyle = {
+  
+      minWidth: "200px",
+      maxWidth: "250px",
+      backgroundColor: "#fdfdfd",
+      padding: "0.75rem",
+      border: "1px solid #e0e0e0",
+      borderRadius: "6px",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+      justifyContent:"center",
+      display:"flex",
+      
+    };
+  
+    const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+  
+    const renderLabel = (label, value) => (
+      <div style={labelFieldPairStyle}>
+        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+        <div>{value || t("CS_NA")}</div>
+      </div>
+    );
+
   return (
-    <React.Fragment>
-      {!Webview && <Timeline currentStep={2} />}
-      <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
-        <div style={{ paddingBottom: "80px" }}>
-          <CardLabel>{`${t("BPA_ULB_NAME")} *`}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="UlbName"
-            value={UlbName}
-            onChange={() => {}} // No-op since it's disabled
-            // style={{ width: "86%" }}
-            ValidationRequired={false}
-            disabled={true}
-            
-          />
-          <ErrorMessage error={errors.UlbName} />
+  <div style={pageStyle}>
+    {!Webview && <Timeline currentStep={2} />}
+    <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
+      <div style={sectionStyle}>
+        <h2 style={headingStyle}>{t("BPA_ULB_DETAILS")}</h2>
 
-          <CardLabel>{`${t("BPA_DISTRICT")} *`}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="District"
-            value={District}
-            onChange={() => {}} // No-op since it's disabled
-            // style={{ width: "86%" }}
-            ValidationRequired={false}
-            disabled={true}
-          />
-          <ErrorMessage error={errors.District} />
+        <CardLabel>{`${t("BPA_ULB_NAME")} *`}</CardLabel>
+        <TextInput
+          t={t}
+          type={"text"}
+          isMandatory={false}
+          optionKey="i18nKey"
+          name="UlbName"
+          value={UlbName}
+          onChange={() => {}}
+          ValidationRequired={false}
+          disabled={true}
+        />
+        <ErrorMessage error={errors.UlbName} />
 
-          <CardLabel>{`${t("BPA_ULB_TYPE")} *`}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="Ulblisttype"
-            value={Ulblisttype}
-            onChange={() => {}} // No-op since it's disabled
-            // style={{ width: "86%" }}
-            ValidationRequired={false}
-            disabled={true}
-          />
-          <ErrorMessage error={errors.Ulblisttype} />
+        <CardLabel>{`${t("BPA_DISTRICT")} *`}</CardLabel>
+        <TextInput
+          t={t}
+          type={"text"}
+          isMandatory={false}
+          optionKey="i18nKey"
+          name="District"
+          value={District}
+          onChange={() => {}}
+          ValidationRequired={false}
+          disabled={true}
+        />
+        <ErrorMessage error={errors.District} />
 
-          <CardLabel>{`${t("BPA_APPROVED_COLONY")} *`}</CardLabel>
-          <Controller
-            control={control}
-            name={"approvedColony"}
-            defaultValue={approvedColony}
-            render={(props) => (
-              <Dropdown
-                // className="form-field"
-                selected={approvedColony}
-                select={setApprovedColony}
-                option={approvedcolonyStatus}
-                placeholder="Select Colony"
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.approvedColony} />
+        <CardLabel>{`${t("BPA_ULB_TYPE")} *`}</CardLabel>
+        <TextInput
+          t={t}
+          type={"text"}
+          isMandatory={false}
+          optionKey="i18nKey"
+          name="Ulblisttype"
+          value={Ulblisttype}
+          onChange={() => {}}
+          ValidationRequired={false}
+          disabled={true}
+        />
+        <ErrorMessage error={errors.Ulblisttype} />
+      </div>
 
-          {approvedColony?.code === "YES" && (
-            <React.Fragment>
-              <CardLabel>{`${t("BPA_APPROVED_COLONY_NAME")} *`}</CardLabel>
+      <div style={sectionStyle}>
+        <h2 style={headingStyle}>{t("BPA_COLONY_DETAILS")}</h2>
+
+        <CardLabel>{`${t("BPA_APPROVED_COLONY")} *`}</CardLabel>
+        <Controller
+          control={control}
+          name={"approvedColony"}
+          defaultValue={approvedColony}
+          render={(props) => (
+            <Dropdown
+              selected={approvedColony}
+              select={setApprovedColony}
+              option={approvedcolonyStatus}
+              placeholder="Select Colony"
+              optionKey="i18nKey"
+              t={t}
+            />
+          )}
+        />
+        <ErrorMessage error={errors.approvedColony} />
+
+        {approvedColony?.code === "YES" && (
+          <React.Fragment>
+            <CardLabel>{`${t("BPA_APPROVED_COLONY_NAME")} *`}</CardLabel>
+            <TextInput
+              t={t}
+              type={"text"}
+              name="nameofApprovedcolony"
+              value={nameofApprovedcolony}
+              placeholder="Approved Colony Name"
+              onChange={setNameapprovedcolony}
+              ValidationRequired={false}
+              {...(validation = {
+                isRequired: true,
+                pattern: "^[a-zA-Z ]*$",
+                type: "text",
+                title: t("TL_NAME_ERROR_MESSAGE"),
+              })}
+            />
+            {errors.nameofApprovedcolony && <ErrorMessage error={errors.nameofApprovedcolony} />}
+          </React.Fragment>
+        )}
+
+        {approvedColony?.code === "NO" && (
+          <React.Fragment>
+            <CardLabel>{`${t("BPA_NOC_NUMBER")} *`}</CardLabel>
+            <div className="field-container">
               <TextInput
                 t={t}
                 type={"text"}
-                isMandatory={false}
-                optionKey="i18nKey"
-                name="nameofApprovedcolony"
-                value={nameofApprovedcolony}
-                placeholder="Approved Colony Name"
-                onChange={setNameapprovedcolony}
-                // style={{ width: "86%" }}
+                name="NocNumber"
+                placeholder="NOC Number"
+                value={NocNumber}
+                onChange={setnocNumber}
                 ValidationRequired={false}
                 {...(validation = {
-                  isRequired: true,
-                  pattern: "^[a-zA-Z ]*$",
+                  pattern: "^[a-zA-Z0-9]*$",
                   type: "text",
                   title: t("TL_NAME_ERROR_MESSAGE"),
                 })}
               />
-              {errors.nameofApprovedcolony && <ErrorMessage error={errors.nameofApprovedcolony} />}
-            </React.Fragment>
-          )}
-          {approvedColony?.code === "NO" && (
-            <React.Fragment>
-              <CardLabel>{`${t("BPA_NOC_NUMBER")} *`}</CardLabel>
-              <div className="field-container">
-                <TextInput
-                  t={t}
-                  type={"text"}
-                  isMandatory={false}
-                  optionKey="i18nKey"
-                  name="NocNumber"
-                  placeholder="NOC Number"
-                  value={NocNumber}
-                  onChange={setnocNumber}
-                  // style={{ width: "86%" }}
-                  ValidationRequired={false}
-                  {...(validation = {
-                    pattern: "^[a-zA-Z0-9]*$",
-                    type: "text",
-                    title: t("TL_NAME_ERROR_MESSAGE"),
-                  })}
-                />
-                <div
-                  style={{
-                    position: "relative",
-                    zIndex: "100",
-                    right: "95px",
-                    marginTop: "-24px",
-                    marginRight: Webview ? "-20px" : "-20px",
-                  }}
-                  onClick={(e) => onClick(e)}
-                >
-                  {" "}
-                  <SearchIcon />{" "}
-                </div>
+              <div
+                style={{
+                  position: "relative",
+                  zIndex: "100",
+                  right: "95px",
+                  marginTop: "-24px",
+                  marginRight: Webview ? "-20px" : "-20px",
+                }}
+                onClick={(e) => onClick(e)}
+              >
+                <SearchIcon />
               </div>
-              <div style={{ position: "relative", fontWeight: "bold", left: "20px" }}>OR</div>
-              <UploadFile
-                id={"noc-doc"}
-                // style={{ width: "86%" }}
-                onUpload={selectfile}
-                onDelete={() => {
-                  setUploadedFile(null)
-                  setFile("")
-                }}
-                message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                error={errors.file}
-                // uploadMessage={""}
-              />
-              {errors.NocNumber && <ErrorMessage error={errors.NocNumber} />}
-            </React.Fragment>
-          )}
-
-          <CardLabel style={{ marginTop: "15px" }}>{`${t("BPA_MASTER_PLAN")} *`}</CardLabel>
-          <Controller
-            control={control}
-            name={"masterPlan"}
-            defaultValue={masterPlan}
-            render={(props) => (
-              <Dropdown
-                placeholder="Have Master Plan?"
-               
-                selected={masterPlan}
-                select={setMasterPlan}
-                option={common}
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.masterPlan} />
-
-          {masterPlan?.code === "YES" && (
-            <React.Fragment>
-              <CardLabel>{`${t("BPA_USE")} *`}</CardLabel>
-              <Controller
-                control={control}
-                name={"use"}
-                defaultValue={use}
-                render={(props) => (
-                  <Dropdown
-                    placeholder="USE"
-                  
-                    selected={use}
-                    select={setUse}
-                    option={selectmasterDrop}
-                    optionKey="i18nKey"
-                    t={t}
-                  />
-                )}
-              />
-              {errors.use && <ErrorMessage error={errors.use} />}
-            </React.Fragment>
-          )}
-
-          <CardLabel>{`${t("BPA_BUILDING_STATUS")} *`}</CardLabel>
-          <Controller
-            control={control}
-            name={"buildingStatus"}
-            defaultValue={buildingStatus}
-            render={(props) => (
-              <Dropdown
-               
-                selected={buildingStatus}
-                select={setBuildingStatus}
-                option={building_status}
-                placeholder="Building Status"
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.buildingStatus} />
-
-          <CardLabel>{`${t("BPA_PURCHASED_FAR")} *`}</CardLabel>
-          <Controller
-            control={control}
-            name={"purchasedFAR"}
-            defaultValue={purchasedFAR}
-            render={(props) => (
-              <Dropdown
-                placeholder="Purchased FAR"
-              
-                selected={purchasedFAR}
-                select={setPurchasedFAR}
-                option={common}
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.purchasedFAR} />
-
-          <CardLabel>{`${t("BPA_GREEN_BUIDINGS")} *`}</CardLabel>
-          <Controller
-            control={control}
-            name={"greenbuilding"}
-            defaultValue={greenbuilding}
-            render={(props) => (
-              <Dropdown
-                placeholder="Is Green Building?"
-               
-                selected={greenbuilding}
-                select={setGreenbuilding}
-                option={common}
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.greenbuilding} />
-
-          {greenbuilding?.code === "YES" && (
-            <React.Fragment>
-              <UploadFile
-                id={"green-building-doc"}
-                onUpload={selectfiles}
-                onDelete={() => {
-                  setGreenUploadedFile(null)
-                  setFiles("")
-                }}
-                message={greenuploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-                error={errors.files}
-                // uploadMessage={""}
-              />
-              <br></br>
-
-              <CardLabel>{`${t("BPA_SELECT_RATINGS")} *`}</CardLabel>
-              <Controller
-                control={control}
-                name={"rating"}
-                defaultValue={rating}
-                render={(props) => (
-                  <Dropdown
-                    placeholder="Select Ratings"
-                   
-                    selected={rating}
-                    select={setrating}
-                    option={selectRating}
-                    optionKey="i18nKey"
-                    t={t}
-                  />
-                )}
-              />
-              {errors.rating && <ErrorMessage error={errors.rating} />}
-            </React.Fragment>
-          )}
-
-          <CardLabel>{`${t("BPA_RESTRICTED_AREA")}`}</CardLabel>
-          <Controller
-            control={control}
-            name={"restrictedArea"}
-            defaultValue={restrictedArea}
-            render={(props) => (
-              <Dropdown
-                placeholder="Is Restricted Area?"
-               
-                selected={restrictedArea}
-                select={setRestrictedArea}
-                option={common}
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.restrictedArea} />
-
-          <CardLabel>{`${t("BPA_PROPOSED_SITE_TYPE")} *`}</CardLabel>
-          <Controller
-            control={control}
-            name={"proposedSite"}
-            defaultValue={proposedSite}
-            render={(props) => (
-              <Dropdown
-               
-                selected={proposedSite}
-                select={setProposedSite}
-                option={Typeofproposedsite}
-                placeholder="Proposed Site Type"
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.proposedSite} />
-
-          <CardLabel>{`ECBC - Proposed Connected Electrical Load is above 100 Kw`}</CardLabel>
-          <Controller
-            control={control}
-            name={"ecbcElectricalLoad"}
-            defaultValue={ecbcElectricalLoad}
-            render={(props) => (
-              <Dropdown
-               
-                selected={ecbcElectricalLoad}
-                select={setEcbcElectricalLoadHandler}
-                option={yesNoOptions}
-                placeholder="Electrical Load > 100Kw?"
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.ecbcElectricalLoad} />
-
-          <CardLabel>{`ECBC - Proposed Demand of Electrical Load is above 120 Kw`}</CardLabel>
-          <Controller
-            control={control}
-            name={"ecbcDemandLoad"}
-            defaultValue={ecbcDemandLoad}
-            render={(props) => (
-              <Dropdown
-               
-                selected={ecbcDemandLoad}
-                select={setEcbcDemandLoadHandler}
-                option={yesNoOptions}
-                placeholder="Electrical Load > 120Kw?"
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.ecbcDemandLoad} />
-
-          <CardLabel>{`ECBC - Proposed Air Conditioned Area above 500 sq.mt`}</CardLabel>
-          <Controller
-            control={control}
-            name={"ecbcAirConditioned"}
-            defaultValue={ecbcAirConditioned}
-            render={(props) => (
-              <Dropdown
-                
-                selected={ecbcAirConditioned}
-                select={setEcbcAirConditionedHandler}
-                option={yesNoOptions}
-                placeholder="Conditioned Area > 500 sq.mt?"
-                optionKey="i18nKey"
-                t={t}
-              />
-            )}
-          />
-          <ErrorMessage error={errors.ecbcAirConditioned} />
-         {(ecbcElectricalLoad?.code === "YES" || 
-            ecbcDemandLoad?.code === "YES" || 
-            ecbcAirConditioned?.code === "YES") && (
-            <div className="field">
-              <CardLabel>{`${t("BPA_UPLOAD_ECBC_DOCUMENT")} *`}</CardLabel>
-              <UploadFile
-                id="ecbc-certificate"
-                accept=".pdf,.jpg,.png"
-                onUpload={selectEcbcCertificateFile}
-                onDelete={() => {
-                  setEcbcCertificateFile(null);
-                  setEcbcCertificateFileObj(null);
-                }}
-                message={ecbcCertificateFileObj?.name || "Choose a file"}
-              />
-              {errors.ecbcCertificateFile && (
-                <p className="error" style={{ color: "red" }}>
-                  {errors.ecbcCertificateFile}
-                </p>
-              )}
             </div>
+            <div style={{ position: "relative", fontWeight: "bold", left: "20px" }}>OR</div>
+            <UploadFile
+              id={"noc-doc"}
+              onUpload={selectfile}
+              onDelete={() => {
+                setUploadedFile(null);
+                setFile("");
+              }}
+              message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+              error={errors.file}
+            />
+            {errors.NocNumber && <ErrorMessage error={errors.NocNumber} />}
+          </React.Fragment>
+        )}
+      </div>
+
+      <div style={sectionStyle}>
+        <h2 style={headingStyle}>{t("BPA_OTHER_DETAILS")}</h2>
+
+        <CardLabel>{`${t("BPA_MASTER_PLAN")} *`}</CardLabel>
+        <Controller
+          control={control}
+          name={"masterPlan"}
+          defaultValue={masterPlan}
+          render={(props) => (
+            <Dropdown
+              placeholder="Have Master Plan?"
+              selected={masterPlan}
+              select={setMasterPlan}
+              option={common}
+              optionKey="i18nKey"
+              t={t}
+            />
           )}
+        />
+        <ErrorMessage error={errors.masterPlan} />
 
+        {masterPlan?.code === "YES" && (
+          <React.Fragment>
+            <CardLabel>{`${t("BPA_USE")} *`}</CardLabel>
+            <Controller
+              control={control}
+              name={"use"}
+              defaultValue={use}
+              render={(props) => (
+                <Dropdown
+                  placeholder="USE"
+                  selected={use}
+                  select={setUse}
+                  option={selectmasterDrop}
+                  optionKey="i18nKey"
+                  t={t}
+                />
+              )}
+            />
+            {errors.use && <ErrorMessage error={errors.use} />}
+          </React.Fragment>
+        )}
 
-        </div>
-      </FormStep>
-      <ActionBar>
-          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext}  />}
-      </ActionBar>
-    </React.Fragment>
+        <CardLabel>{`${t("BPA_BUILDING_STATUS")} *`}</CardLabel>
+        <Controller
+          control={control}
+          name={"buildingStatus"}
+          defaultValue={buildingStatus}
+          render={(props) => (
+            <Dropdown
+              selected={buildingStatus}
+              select={setBuildingStatus}
+              option={building_status}
+              placeholder="Building Status"
+              optionKey="i18nKey"
+              t={t}
+            />
+          )}
+        />
+        <ErrorMessage error={errors.buildingStatus} />
+
+        <CardLabel>{`${t("BPA_PURCHASED_FAR")} *`}</CardLabel>
+        <Controller
+          control={control}
+          name={"purchasedFAR"}
+          defaultValue={purchasedFAR}
+          render={(props) => (
+            <Dropdown
+              placeholder="Purchased FAR"
+              selected={purchasedFAR}
+              select={setPurchasedFAR}
+              option={common}
+              optionKey="i18nKey"
+              t={t}
+            />
+          )}
+        />
+        <ErrorMessage error={errors.purchasedFAR} />
+
+        <CardLabel>{`${t("BPA_GREEN_BUIDINGS")} *`}</CardLabel>
+        <Controller
+          control={control}
+          name={"greenbuilding"}
+          defaultValue={greenbuilding}
+          render={(props) => (
+            <Dropdown
+              placeholder="Is Green Building?"
+              selected={greenbuilding}
+              select={setGreenbuilding}
+              option={common}
+              optionKey="i18nKey"
+              t={t}
+            />
+          )}
+        />
+        <ErrorMessage error={errors.greenbuilding} />
+
+        {greenbuilding?.code === "YES" && (
+          <React.Fragment>
+            <UploadFile
+              id={"green-building-doc"}
+              onUpload={selectfiles}
+              onDelete={() => {
+                setGreenUploadedFile(null);
+                setFiles("");
+              }}
+              message={greenuploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
+              error={errors.files}
+            />
+            <br />
+
+            <CardLabel>{`${t("BPA_SELECT_RATINGS")} *`}</CardLabel>
+            <Controller
+              control={control}
+              name={"rating"}
+              defaultValue={rating}
+              render={(props) => (
+                <Dropdown
+                  placeholder="Select Ratings"
+                  selected={rating}
+                  select={setrating}
+                  option={selectRating}
+                  optionKey="i18nKey"
+                  t={t}
+                />
+              )}
+            />
+            {errors.rating && <ErrorMessage error={errors.rating} />}
+          </React.Fragment>
+        )}
+      </div>
+
+      <div style={sectionStyle}>
+        <h2 style={headingStyle}>{t("BPA_RESTRICTIONS")}</h2>
+
+        <CardLabel>{`${t("BPA_RESTRICTED_AREA")}`}</CardLabel>
+        <Controller
+          control={control}
+          name={"restrictedArea"}
+          defaultValue={restrictedArea}
+          render={(props) => (
+            <Dropdown
+              placeholder="Is Restricted Area?"
+              selected={restrictedArea}
+              select={setRestrictedArea}
+              option={common}
+              optionKey="i18nKey"
+              t={t}
+            />
+          )}
+        />
+        <ErrorMessage error={errors.restrictedArea} />
+
+        <CardLabel>{`${t("BPA_PROPOSED_SITE_TYPE")} *`}</CardLabel>
+        <Controller
+          control={control}
+          name={"proposedSite"}
+          defaultValue={proposedSite}
+          render={(props) => (
+            <Dropdown
+              selected={proposedSite}
+              select={setProposedSite}
+              option={Typeofproposedsite}
+              placeholder="Proposed Site Type"
+              optionKey="i18nKey"
+              t={t}
+            />
+          )}
+        />
+        <ErrorMessage error={errors.proposedSite} />
+      </div>
+
+      <div style={sectionStyle}>
+        <h2 style={headingStyle}>{t("BPA_ECBC_SECTION")}</h2>
+
+        <CardLabel>{`ECBC - Proposed Connected Electrical Load is above 100 Kw`}</CardLabel>
+        <Controller
+          control={control}
+          name={"ecbcElectricalLoad"}
+          defaultValue={ecbcElectricalLoad}
+          render={(props) => (
+            <Dropdown
+              selected={ecbcElectricalLoad}
+              select={setEcbcElectricalLoadHandler}
+              option={yesNoOptions}
+              placeholder="Electrical Load > 100Kw?"
+              optionKey="i18nKey"
+              t={t}
+            />
+          )}
+        />
+        <ErrorMessage error={errors.ecbcElectricalLoad} />
+
+        <CardLabel>{`ECBC - Proposed Demand of Electrical Load is above 120 Kw`}</CardLabel>
+        <Controller
+          control={control}
+          name={"ecbcDemandLoad"}
+          defaultValue={ecbcDemandLoad}
+          render={(props) => (
+            <Dropdown
+              selected={ecbcDemandLoad}
+              select={setEcbcDemandLoadHandler}
+              option={yesNoOptions}
+              placeholder="Electrical Load > 120Kw?"
+              optionKey="i18nKey"
+              t={t}
+            />
+          )}
+        />
+        <ErrorMessage error={errors.ecbcDemandLoad} />
+
+        <CardLabel>{`ECBC - Proposed Air Conditioned Area above 500 sq.mt`}</CardLabel>
+        <Controller
+          control={control}
+          name={"ecbcAirConditioned"}
+          defaultValue={ecbcAirConditioned}
+          render={(props) => (
+            <Dropdown
+              selected={ecbcAirConditioned}
+              select={setEcbcAirConditionedHandler}
+              option={yesNoOptions}
+              placeholder="Conditioned Area > 500 sq.mt?"
+              optionKey="i18nKey"
+              t={t}
+            />
+          )}
+        />
+        <ErrorMessage error={errors.ecbcAirConditioned} />
+
+        {(ecbcElectricalLoad?.code === "YES" ||
+          ecbcDemandLoad?.code === "YES" ||
+          ecbcAirConditioned?.code === "YES") && (
+          <div className="field">
+            <CardLabel>{`${t("BPA_UPLOAD_ECBC_DOCUMENT")} *`}</CardLabel>
+            <UploadFile
+              id="ecbc-certificate"
+              accept=".pdf,.jpg,.png"
+              onUpload={selectEcbcCertificateFile}
+              onDelete={() => {
+                setEcbcCertificateFile(null);
+                setEcbcCertificateFileObj(null);
+              }}
+              message={ecbcCertificateFileObj?.name || "Choose a file"}
+            />
+            {errors.ecbcCertificateFile && (
+              <p className="error" style={{ color: "red" }}>
+                {errors.ecbcCertificateFile}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </FormStep>
+
+    <ActionBar>
+      <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} />
+    </ActionBar>
+  </div>
   )
 }
 

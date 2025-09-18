@@ -154,6 +154,7 @@ const ApplicationOverview = () => {
   const closeMenu = () => {
     setDisplayMenu(false);
   };
+
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
   const closeToast = () => {
@@ -296,27 +297,60 @@ const ApplicationOverview = () => {
     setShowModal(false);
   };
 
-  if (isLoading || isDetailsLoading) {
+  const [getPropertyId, setPropertyId] = useState(null);
+
+  useEffect(() => {
+    if (displayData) {
+      console.log("here");
+      const checkProperty = displayData?.NdcDetails?.filter((item) => item?.businessService == "NDC_PROPERTY_TAX");
+      console.log("checkProperty", checkProperty);
+      setPropertyId(checkProperty?.[0]?.consumerCode);
+    }
+  }, [displayData]);
+
+  const { isLoading: checkLoading, isError, error: checkError, data: propertyDetailsFetch } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: getPropertyId }, tenantId: tenantId },
+    {
+      filters: { propertyIds: getPropertyId },
+      tenantId: tenantId,
+      enabled: getPropertyId ? true : false,
+      privacy: Digit.Utils.getPrivacyObject(),
+    }
+  );
+
+  // const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ws.useSearchWS({
+  //   tenantId,
+  //   filters: {
+  //     searchType: "CONNECTION",
+  //     propertyId: getPropertyId,
+  //   },
+  //   config: {
+  //     enabled: !!getPropertyId, // ✅ Only run if propertyId is defined
+  //   },
+  //   bussinessService: "WS",
+  //   t,
+  // });
+
+  // const { isLoading: sewerageConnectionLoading, data: sewerageConnectionData, error: sewerageConnectionError } = Digit.Hooks.ws.useSearchWS({
+  //   tenantId,
+  //   filters: {
+  //     searchType: "CONNECTION",
+  //     propertyId: getPropertyId,
+  //   },
+  //   config: {
+  //     enabled: !!getPropertyId, // ✅ Only run if propertyId is defined
+  //   },
+  //   bussinessService: "SW",
+  //   t,
+  // });
+
+  // console.log("propertyDetailsFetch", propertyDetailsFetch?.Properties);
+  // console.log("waterConnectionData", waterConnectionData);
+  // console.log("sewerageConnectionData", sewerageConnectionData);
+
+  if (isLoading || isDetailsLoading || checkLoading) {
     return <Loader />;
   }
-
-  // useEffect(() => {
-  //   if (showToast) {
-  //     const timer = setTimeout(() => {
-  //       setShowToast(null);
-  //     }, 3000);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [showToast]);
-
-  // useEffect(() => {
-  //   if (showErrorToast) {
-  //     const timer = setTimeout(() => {
-  //       setShowErrorToastt(null);
-  //     }, 3000);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [showErrorToast]);
 
   return (
     <div className={"employee-main-application-details"}>
@@ -352,6 +386,19 @@ const ApplicationOverview = () => {
               {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
               <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
               <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
+              {detail?.businessService == "NDC_PROPERTY_TAX" && propertyDetailsFetch?.Properties && (
+                <>
+                  <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
+                  <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
+                  <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
+                  <Row label={t("Street Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.street} />
+                  {/* <Row label={t("Mohalla")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                  <Row label={t("Pincode")} text={propertyDetailsFetch?.Properties?.[0]?.address?.pincode || "N/A"} />
+                  {/* <Row label={t("Existing Pid")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                  <Row label={t("Survey Id/UID")} text={propertyDetailsFetch?.Properties?.[0]?.surveyId} />
+                  <Row label={t("Year of creation of Property")} text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction} />
+                </>
+              )}
             </StatusTable>
           </div>
         ))}

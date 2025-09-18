@@ -83,7 +83,6 @@ export const NewNDCStepForm = () => {
   useEffect(() => {
     const unlisten = history.listen(() => {
       // route changed
-      console.log("route changes guys");
       dispatch(resetNDCForm());
       // dispatch(updateNDCForm("reset", {}));
       // dispatch(setNDCStep(1));

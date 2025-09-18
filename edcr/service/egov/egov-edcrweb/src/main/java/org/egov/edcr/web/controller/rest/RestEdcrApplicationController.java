@@ -277,8 +277,8 @@ public class RestEdcrApplicationController {
                     ErrorDetail validateEdcrRequest = edcrRestService.validateEdcrRequest(edcr, planFile);
                     if (validateEdcrRequest != null)
                         errorResponses = Arrays.asList(validateEdcrRequest);
-
-                    edcr.setAppliactionType(ApplicationType.BUILDING_PLAN_SCRUTINY.toString());
+                    edcr.setAppliactionType(ApplicationType.PERMIT.toString());
+                    //edcr.setAppliactionType(ApplicationType.BUILDING_PLAN_SCRUTINY.toString());
                 }
             }
 

@@ -91,12 +91,12 @@ public class PetApplicationQueryBuilder {
 			query.append(" ptr.applicationnumber = ? ");
 			preparedStmtList.add(criteria.getApplicationNumber());
 		}
-		// Mobile number search removed as it's now stored in user service
-		// if (!ObjectUtils.isEmpty(criteria.getMobileNumber())) {
-		//	addClauseIfRequired(query, preparedStmtList);
-		//	query.append(" owner.uuid IN (SELECT uuid FROM eg_user WHERE mobilenumber = ?) ");
-		//	preparedStmtList.add(criteria.getMobileNumber());
-		// }
+		if (!CollectionUtils.isEmpty(criteria.getOwnerUuids())) {
+			System.out.println("DEBUG: Filtering by owner UUIDs: " + criteria.getOwnerUuids());
+			addClauseIfRequired(query, preparedStmtList);
+			query.append(" owner.uuid IN ( ").append(createQuery(criteria.getOwnerUuids())).append(" ) ");
+			addToPreparedStatement(preparedStmtList, criteria.getOwnerUuids());
+		}
 		if (!ObjectUtils.isEmpty(criteria.getPetType())) {
 			addClauseIfRequired(query, preparedStmtList);
 			query.append(" LOWER(pet.pettype) = LOWER(?) ");

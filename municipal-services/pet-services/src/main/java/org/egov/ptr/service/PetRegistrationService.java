@@ -1,6 +1,7 @@
 package org.egov.ptr.service;
 
 import static org.egov.ptr.util.PTRConstants.*;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +73,31 @@ public class PetRegistrationService {
 	}
 
 	public List<PetRegistrationApplication> searchPtrApplications(RequestInfo requestInfo,
-			PetApplicationSearchCriteria petApplicationSearchCriteria) {
+																  PetApplicationSearchCriteria petApplicationSearchCriteria) {
+
+		// Handle mobile number search by converting to owner UUIDs
+		if (!ObjectUtils.isEmpty(petApplicationSearchCriteria.getMobileNumber())) {
+			System.out.println("DEBUG: Searching by mobile number: " + petApplicationSearchCriteria.getMobileNumber());
+
+			List<String> userUuids = userService.getUserUuidsByMobileNumber(
+					petApplicationSearchCriteria.getMobileNumber(),
+					petApplicationSearchCriteria.getTenantId(),
+					requestInfo
+			);
+
+			System.out.println("DEBUG: Found user UUIDs: " + userUuids);
+
+			if (CollectionUtils.isEmpty(userUuids)) {
+				// No users found for this mobile number, return empty list
+				System.out.println("DEBUG: No users found for mobile number, returning empty list");
+				return new ArrayList<>();
+			}
+
+			// Set owner UUIDs for search and clear mobile number
+			petApplicationSearchCriteria.setOwnerUuids(userUuids);
+			petApplicationSearchCriteria.setMobileNumber(null);
+			System.out.println("DEBUG: Set ownerUuids in criteria: " + petApplicationSearchCriteria.getOwnerUuids());
+		}
 
 		List<PetRegistrationApplication> applications = petRegistrationRepository
 				.getApplications(petApplicationSearchCriteria);

@@ -6,18 +6,14 @@ import java.time.LocalTime;
 import java.time.Month;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.ptr.config.PetConfiguration;
-import org.egov.ptr.models.Address;
-import org.egov.ptr.models.AuditDetails;
-import org.egov.ptr.models.Owner;
-import org.egov.ptr.models.PetDetails;
-import org.egov.ptr.models.PetRegistrationApplication;
-import org.egov.ptr.models.PetRegistrationRequest;
-import org.egov.ptr.models.PetRenewalAuditDetails;
+import org.egov.ptr.models.*;
 import org.egov.ptr.repository.OwnerRepository;
 import org.egov.ptr.util.PetUtil;
 import org.egov.tracer.model.CustomException;
@@ -164,22 +160,48 @@ public class EnrichmentService {
 
 	}
 
+	private boolean hasNewDocuments(PetRegistrationApplication application) {
+		if (application.getDocuments() == null || application.getDocuments().isEmpty()) {
+			return false;
+		}
+
+		// Check if any document has null ID (indicating new document)
+		boolean hasNew = application.getDocuments().stream()
+				.anyMatch(doc -> doc.getId() == null);
+
+		log.debug("Application {} has {} documents, {} new documents",
+				application.getApplicationNumber(),
+				application.getDocuments().size(),
+				hasNew ? "some" : "no");
+
+		return hasNew;
+	}
+
 	private void enrichDocuments(PetRegistrationApplication application) {
-		application.getDocuments().forEach(doc -> {
-			if (doc.getId() == null) {
-				// New document - generate ID and set defaults
-				doc.setId(UUID.randomUUID().toString());
-				doc.setActive(true);
-				doc.setTenantId(application.getTenantId());
-			} else {
-				// Existing document - generate NEW ID to avoid duplicate key
-				doc.setId(UUID.randomUUID().toString());
-				doc.setActive(true);
-				doc.setTenantId(application.getTenantId());
-			}
-			// Always set audit details for all documents (both new and existing)
+		if (application.getDocuments() == null) {
+			return;
+		}
+
+		// Filter and process only new documents (without ID)
+		List<Document> newDocuments = application.getDocuments().stream()
+				.filter(doc -> doc.getId() == null)
+				.collect(Collectors.toList());
+
+		// Enrich only new documents
+		newDocuments.forEach(doc -> {
+			doc.setId(UUID.randomUUID().toString());
+			doc.setActive(true);
+			doc.setTenantId(application.getTenantId());
 			doc.setAuditDetails(application.getAuditDetails());
+			log.info("Enriched new document with ID: {} for application: {}",
+					doc.getId(), application.getApplicationNumber());
 		});
+
+		// Set only new documents for persistence - this is crucial!
+		application.setDocuments(newDocuments);
+
+		log.info("Application {} will persist {} new documents",
+				application.getApplicationNumber(), newDocuments.size());
 	}
 
 	private LocalDateTime calculateNextMarch31At8PM() {
@@ -197,6 +219,7 @@ public class EnrichmentService {
 			application.getAuditDetails().setLastModifiedTime(System.currentTimeMillis());
 			application.getAuditDetails()
 					.setLastModifiedBy(petRegistrationRequest.getRequestInfo().getUserInfo().getUuid());
+
 			if (application.getWorkflow().getAction().equals(ACTION_VERIFY)) {
 				application.setStatus(STATUS_DOCVERIFIED);
 			} else if (application.getWorkflow().getAction().equals(ACTION_REJECT)) {
@@ -208,9 +231,17 @@ public class EnrichmentService {
 					log.info("Pet Token Generated : "+ application.getPetToken());
 				}
 			}
+
+			// Check if there are any new documents (without ID) before enriching
+			if (hasNewDocuments(application)) {
+				enrichDocuments(application);
+			} else {
+				// If no new documents, clear the documents list to avoid duplicate key errors
+				application.setDocuments(new ArrayList<>());
+				log.info("No new documents found for application: {}. Cleared documents list to avoid persistence.",
+						application.getApplicationNumber());
+			}
 		}
-		// Then enrich documents with updated audit details
-		enrichDocuments(petRegistrationRequest.getPetRegistrationApplications().get(0));
 	}
 
 	/**

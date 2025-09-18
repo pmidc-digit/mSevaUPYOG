@@ -3,6 +3,7 @@ package org.egov.ptr.service;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -32,6 +33,8 @@ import org.springframework.util.ObjectUtils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.extern.slf4j.Slf4j;
+@Slf4j
 @Service
 public class UserService {
 
@@ -180,6 +183,45 @@ public class UserService {
 	}
 
 	/**
+	 * Fetches user UUIDs by mobile number from user service
+	 *
+	 * @param mobileNumber Mobile number to search for
+	 * @param tenantId Tenant ID
+	 * @param requestInfo Request info
+	 * @return List of user UUIDs matching the mobile number
+	 */
+	public List<String> getUserUuidsByMobileNumber(String mobileNumber, String tenantId, RequestInfo requestInfo) {
+		List<String> userUuids = new ArrayList<>();
+
+		System.out.println("DEBUG: UserService - Searching for mobile number: " + mobileNumber + " in tenant: " + tenantId);
+
+		try {
+			UserSearchRequest userSearchRequest = getBaseUserSearchRequest(tenantId, requestInfo);
+			userSearchRequest.setMobileNumber(mobileNumber);
+
+			System.out.println("DEBUG: UserService - UserSearchRequest: " + userSearchRequest);
+
+			UserDetailResponse response = getUser(userSearchRequest);
+
+			System.out.println("DEBUG: UserService - Response: " + response);
+
+			if (response != null && !CollectionUtils.isEmpty(response.getUser())) {
+				userUuids = response.getUser().stream()
+						.map(org.egov.ptr.models.user.User::getUuid)
+						.collect(java.util.stream.Collectors.toList());
+				System.out.println("DEBUG: UserService - Found UUIDs: " + userUuids);
+			} else {
+				System.out.println("DEBUG: UserService - No users found or null response");
+			}
+		} catch (Exception e) {
+			System.out.println("DEBUG: UserService - Exception: " + e.getMessage());
+			log.error("Error fetching user UUIDs for mobile number: " + mobileNumber, e);
+		}
+
+		return userUuids;
+	}
+
+	/**
 	 * Sets the role,type,active and tenantId for a Citizen
 	 * 
 	 * @param tenantId TenantId of the pet application
@@ -238,8 +280,7 @@ public class UserService {
 	 * last 10 digits of currentTime is assigned as userName
 	 * 
 	 * @param owner              owner whose username has to be assigned
-	 * @param listOfMobileNumber list of unique mobileNumbers in the
-	 *                           PetRegistrationRequest
+	 *
 	 */
 	private void setUserName(Owner owner) {
 		String username;

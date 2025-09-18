@@ -50,4 +50,7 @@ public class PetApplicationSearchCriteria {
 	@JsonProperty("applicationType")
 	private String applicationType = null;
 
+	@JsonProperty("ownerUuids")
+	private List<String> ownerUuids;
+
 }

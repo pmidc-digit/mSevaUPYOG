@@ -77,6 +77,7 @@ public class UserService {
 		UserSearchRequest userSearchRequest = new UserSearchRequest();
 		userSearchRequest.setRequestInfo(requestInfo);
 		userSearchRequest.setTenantId(criteria.getTenantId().split("\\.")[0]);
+		userSearchRequest.setMobileNumber(criteria.getMobileNumber());
 		userSearchRequest.setActive(true);
 		/* userSearchRequest.setUserType("CITIZEN"); */
 		if (!CollectionUtils.isEmpty(criteria.getOwnerIds()))
@@ -97,6 +98,8 @@ public class UserService {
 	@SuppressWarnings("rawtypes")
 	UserResponse userCall(Object userRequest, StringBuilder uri) {
 		String dobFormat = null;
+		log.info(uri.toString());
+		log.info(config.getUserSearchEndpoint());
 		if (uri.toString().contains(config.getUserSearchEndpoint()))
 			dobFormat = "yyyy-MM-dd";
 		try {
@@ -201,6 +204,9 @@ public class UserService {
 			username = owner.getMobileNumber();
 		else
 			username = UUID.randomUUID().toString();
+
+
+
 		owner.setUserName(username);
 
 	}

@@ -64,6 +64,8 @@ const Inbox = ({
         config: { staleTime: 0, refetchOnMount: "always" },
       });
 
+  const totalCount = data?.[0]?.totalCount;
+
   useEffect(() => {
     setPageOffset(0);
   }, [searchParams]);
@@ -117,7 +119,12 @@ const Inbox = ({
     } else {
       return (
         <div>
-          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
+          {isInbox && (
+            <Header>
+              {t("ES_COMMON_INBOX")}
+              {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+            </Header>
+          )}
 
           <PTRDesktopInbox
             moduleCode={moduleCode}

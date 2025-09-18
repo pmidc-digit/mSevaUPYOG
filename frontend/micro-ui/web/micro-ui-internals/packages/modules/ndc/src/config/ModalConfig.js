@@ -45,7 +45,7 @@ export const ModalConfig = ({
             ),
           },
           {
-            label: `${t("WF_COMMON_COMMENTS")} *`,
+            label: `${t("CS_COMMON_COMMENTS")} *`,
             type: "textarea",
             populators: {
               name: "comments",

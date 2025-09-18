@@ -94,7 +94,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       }
       if (!formData?.cpt?.details) {
         setPropertyDetails({});
-        setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
+        setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
       }
     }
   }, [propertyDetailsFetch]);
@@ -106,7 +106,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
 
   useEffect(() => {
     if (isLoading == false && error && error == true && propertyDetails?.Properties?.length == 0) {
-      setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
+      setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
     }
   }, [error, propertyDetails]);
 
@@ -129,7 +129,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       setSearchPropertyId(propertyId);
       setIsSearchClicked(true);
 
-      // dispatch(resetNDCForm());
+      dispatch(resetNDCForm());
     }
   };
 
@@ -247,7 +247,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
               value={propertyId} //{propertyId}
               onChange={handlePropertyChange}
               disable={false}
-              maxlength={16}
+              // maxlength={16}
               defaultValue={undefined}
               {...propertyIdInput.validation}
             />

@@ -2,7 +2,9 @@ package org.egov.ndc.repository.builder;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -13,9 +15,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class NdcQueryBuilder {
 
-	private final String paginationWrapper = "SELECT * FROM "
-			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY ndc_lastModifiedTime DESC) offset_ FROM " + "({})"
-			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
+	@Autowired
+	NDCConfiguration ndcConfig;
+
+	private final String paginationWrapper = "SELECT * FROM (" +
+			"  SELECT *, ROW_NUMBER() OVER (ORDER BY a_lastmodifiedtime DESC) AS offset_ FROM ({}) result" +
+			") result_offset WHERE offset_ > ? AND offset_ <= ?";
+
 
 	private static final String NDC_QUERY = "SELECT " +
 			"a.uuid AS a_uuid, a.tenantid, a.applicationstatus, a.active,\n" +
@@ -28,6 +34,76 @@ public class NdcQueryBuilder {
 			"LEFT JOIN eg_ndc_owner owner ON a.uuid = owner.ndcapplicationuuid " +
 			"LEFT JOIN eg_ndc_details d ON a.uuid = d.applicationid " +
 			"LEFT JOIN eg_ndc_documents doc ON a.uuid = doc.applicationid";
+
+	public String getPaginatedApplicationUuids(NdcApplicationSearchCriteria criteria, List<Object> preparedStmtList) {
+		StringBuilder query = new StringBuilder("SELECT a.uuid FROM eg_ndc_application a");
+		boolean whereAdded = false;
+
+		if (StringUtils.isNotBlank(criteria.getTenantId())) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append("( a.tenantid = ? OR a.tenantid = 'pb.punjab' )");
+			preparedStmtList.add(criteria.getTenantId());
+		}
+
+		if (criteria.getUuid() != null && !criteria.getUuid().isEmpty()) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.uuid in (");
+			String placeholders = String.join(",", Collections.nCopies(criteria.getUuid().size(), "?"));
+			query.append(placeholders).append(")");
+			preparedStmtList.addAll(criteria.getUuid());
+		}
+
+		if (criteria.getStatus() != null) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.applicationstatus = ?");
+			preparedStmtList.add(criteria.getStatus());
+		}
+
+		if (criteria.getActive() != null) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.active = ?");
+			preparedStmtList.add(criteria.getActive());
+		}
+		if (criteria.getOwnerIds() != null && !criteria.getOwnerIds().isEmpty()) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.uuid IN (SELECT ndcapplicationuuid FROM eg_ndc_owner WHERE uuid IN (");
+			String placeholders = String.join(",", Collections.nCopies(criteria.getOwnerIds().size(), "?"));
+			query.append(placeholders).append("))");
+			preparedStmtList.addAll(criteria.getOwnerIds());
+		}
+
+
+		query.append(" ORDER BY a.lastmodifiedtime DESC");
+
+		int limit = criteria.getLimit() != null ? Math.min(criteria.getLimit(), ndcConfig.getMaxSearchLimit()) : ndcConfig.getDefaultLimit();
+		int offset = criteria.getOffset() != null ? criteria.getOffset() : ndcConfig.getDefaultOffset();
+
+		query.append(" LIMIT ? OFFSET ?");
+		preparedStmtList.add(limit);
+		preparedStmtList.add(offset);
+
+		return query.toString();
+
+	}
+
+	public String getNdcApplicationDetailsQuery(List<String> uuids, List<Object> preparedStmtList) {
+		if (uuids == null || uuids.isEmpty()) return null;
+
+		StringBuilder query = new StringBuilder(NDC_QUERY);
+		query.append(" WHERE a.uuid IN (");
+		String placeholders = String.join(",", Collections.nCopies(uuids.size(), "?"));
+		query.append(placeholders).append(")");
+		preparedStmtList.addAll(uuids);
+
+		query.append(" ORDER BY a.lastmodifiedtime DESC");
+		log.info("Details query: {}", query);
+		return query.toString();
+	}
 
 
 	public String getNdcApplicationSearchQuery(NdcApplicationSearchCriteria criteria, List<Object> preparedStmtList) {
@@ -73,7 +149,7 @@ public class NdcQueryBuilder {
 			preparedStmtList.addAll(criteria.getOwnerIds());
 		}
 
-		query.append(" ORDER BY a.createdtime DESC ");
+		query.append(" ORDER BY a.lastmodifiedtime DESC ");
 		return query.toString();
 	}
 
@@ -96,4 +172,6 @@ public class NdcQueryBuilder {
 	public String checkUniqueUserAndApplicationUUid(List<String> uuid, String ndcApplicationUuid) {
 		return ("SELECT 1 FROM eg_ndc_owner WHERE uuid in ("+"?"+") and ndcapplicationuuid = ? ");
 	}
+
+
 }

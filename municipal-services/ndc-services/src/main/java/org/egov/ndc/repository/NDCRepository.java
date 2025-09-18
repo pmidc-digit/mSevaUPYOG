@@ -53,11 +53,34 @@ public class NDCRepository {
 		return query != null;
 	}
 
+//	public List<Application> fetchNdcApplications(NdcApplicationSearchCriteria criteria) {
+//		List<Object> preparedStmtList = new ArrayList<>();
+//		String query = queryBuilder.getNdcApplicationSearchQuery(criteria, preparedStmtList);
+//		log.info(query);
+//		log.info(preparedStmtList.toString());
+//		return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+//	}
+
 	public List<Application> fetchNdcApplications(NdcApplicationSearchCriteria criteria) {
-		List<Object> preparedStmtList = new ArrayList<>();
-		String query = queryBuilder.getNdcApplicationSearchQuery(criteria, preparedStmtList);
-		log.info(query);
-		log.info(preparedStmtList.toString());
-		return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
+		// Step 1: Get paginated UUIDs
+		List<Object> uuidStmtList = new ArrayList<>();
+		String uuidQuery = queryBuilder.getPaginatedApplicationUuids(criteria, uuidStmtList);
+		log.info("UUID Query: {}", uuidQuery);
+		log.info("UUID Params: {}", uuidStmtList);
+
+		List<String> paginatedUuids = jdbcTemplate.query(uuidQuery, uuidStmtList.toArray(), (rs, rowNum) -> rs.getString("uuid"));
+
+		if (paginatedUuids.isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		// Step 2: Get full application details
+		List<Object> detailStmtList = new ArrayList<>();
+		String detailQuery = queryBuilder.getNdcApplicationDetailsQuery(paginatedUuids, detailStmtList);
+		log.info("Detail Query: {}", detailQuery);
+		log.info("Detail Params: {}", detailStmtList);
+
+		return jdbcTemplate.query(detailQuery, detailStmtList.toArray(), rowMapper);
 	}
+
 }

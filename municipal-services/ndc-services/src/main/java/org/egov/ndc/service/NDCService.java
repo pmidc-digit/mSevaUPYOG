@@ -239,8 +239,8 @@ public class NDCService {
 	public List<Application> searchNdcApplications(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {
 		List<Application> applications;
 		List<String> uuids = criteria.getUuid();
-				if (StringUtils.isBlank(criteria.getTenantId()) ) {
-			throw new CustomException("EG_NDC_TENANT_ID_NULL","Tenant ID must not be null or empty when UUID is not provided");
+				if (StringUtils.isBlank(criteria.getTenantId())) {
+			throw new CustomException("EG_NDC_TENANT_ID_NULL","Tenant ID must not be null");
 		}
 		if (criteria.getMobileNumber() != null || criteria.getName() != null) {
 			UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);

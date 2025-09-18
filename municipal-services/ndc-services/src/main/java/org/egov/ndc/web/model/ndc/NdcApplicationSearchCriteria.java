@@ -19,9 +19,11 @@ public class NdcApplicationSearchCriteria {
     private String status;
     private String mobileNumber;
     private String name;
-    private Boolean active;
+    private String active;
     @JsonProperty("ownerids")
     private Set<String> ownerIds;
     private String userName;
+    private Integer limit;
+    private Integer offset;
 
 }

@@ -301,7 +301,6 @@ const ApplicationOverview = () => {
     const finalPayload = {
       Applications: [updatedApplicant],
     };
-    return;
     try {
       const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
 

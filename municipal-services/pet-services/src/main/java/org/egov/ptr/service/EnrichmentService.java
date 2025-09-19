@@ -160,48 +160,31 @@ public class EnrichmentService {
 
 	}
 
-	private boolean hasNewDocuments(PetRegistrationApplication application) {
-		if (application.getDocuments() == null || application.getDocuments().isEmpty()) {
-			return false;
-		}
-
-		// Check if any document has null ID (indicating new document)
-		boolean hasNew = application.getDocuments().stream()
-				.anyMatch(doc -> doc.getId() == null);
-
-		log.debug("Application {} has {} documents, {} new documents",
-				application.getApplicationNumber(),
-				application.getDocuments().size(),
-				hasNew ? "some" : "no");
-
-		return hasNew;
-	}
 
 	private void enrichDocuments(PetRegistrationApplication application) {
-		if (application.getDocuments() == null) {
+		if (application.getDocuments() == null || application.getDocuments().isEmpty()) {
 			return;
 		}
 
-		// Filter and process only new documents (without ID)
-		List<Document> newDocuments = application.getDocuments().stream()
-				.filter(doc -> doc.getId() == null)
-				.collect(Collectors.toList());
+		application.getDocuments().forEach(doc -> {
+			// Generate ID for new documents (documents without ID)
+			if (doc.getId() == null) {
+				doc.setId(UUID.randomUUID().toString());
+				log.info("Generated new ID: {} for new document of type: {} for application: {}",
+						doc.getId(), doc.getDocumentType(), application.getApplicationNumber());
+			} else {
+				log.info("Processing existing document with ID: {} of type: {} for application: {}",
+						doc.getId(), doc.getDocumentType(), application.getApplicationNumber());
+			}
 
-		// Enrich only new documents
-		newDocuments.forEach(doc -> {
-			doc.setId(UUID.randomUUID().toString());
-			doc.setActive(true);
+			// Set common fields for all documents (new and existing)
 			doc.setTenantId(application.getTenantId());
+			doc.setActive(true);
 			doc.setAuditDetails(application.getAuditDetails());
-			log.info("Enriched new document with ID: {} for application: {}",
-					doc.getId(), application.getApplicationNumber());
 		});
 
-		// Set only new documents for persistence - this is crucial!
-		application.setDocuments(newDocuments);
-
-		log.info("Application {} will persist {} new documents",
-				application.getApplicationNumber(), newDocuments.size());
+		log.info("Application {} will upsert {} documents (new + existing)",
+				application.getApplicationNumber(), application.getDocuments().size());
 	}
 
 	private LocalDateTime calculateNextMarch31At8PM() {
@@ -228,18 +211,18 @@ public class EnrichmentService {
 				application.setStatus(STATUS_APPROVED);
 				if (isNewPetApplication(application)) {
 					enrichNewPetToken(application, petRegistrationRequest.getRequestInfo(), application.getTenantId());
-					log.info("Pet Token Generated : "+ application.getPetToken());
+					log.info("Pet Token Generated : " + application.getPetToken());
 				}
 			}
 
-			// Check if there are any new documents (without ID) before enriching
-			if (hasNewDocuments(application)) {
+			// Always enrich documents if they exist (handles both new and existing documents via upsert)
+			if (application.getDocuments() != null && !application.getDocuments().isEmpty()) {
 				enrichDocuments(application);
+				log.info("Enriched {} documents for application: {} (includes new and existing documents for upsert)",
+						application.getDocuments().size(), application.getApplicationNumber());
 			} else {
-				// If no new documents, clear the documents list to avoid duplicate key errors
-				application.setDocuments(new ArrayList<>());
-				log.info("No new documents found for application: {}. Cleared documents list to avoid persistence.",
-						application.getApplicationNumber());
+				// No documents to process
+				log.info("No documents found for application: {}", application.getApplicationNumber());
 			}
 		}
 	}

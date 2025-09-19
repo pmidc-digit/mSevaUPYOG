@@ -148,10 +148,10 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     const propertyDetails = data?.PropertyDetails || {};
     const NDCReason = data?.NDCReason || {};
 
-    if (data?.cpt?.dues?.totalAmount != 0) {
+    if (!data?.cpt?.dues) {
       missingFields.push(`${t("NDC_MESSAGE_PLEASE_CHECK_STATUS_OF_PROPERTY_TAX")} ${cpt?.id}`);
     }
-    if (data?.cpt?.dues?.id && data?.dues?.totalAmount > 0) {
+    if (data?.cpt?.dues?.totalAmount > 0) {
       missingFields.push(`${t("NDC_MESSAGE_PLEASE_PAY_DUES_OF_PROPERTY_TAX")} ${cpt?.id}`);
     }
 
@@ -192,7 +192,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     // Format Validations
     const nameRegex = /^[A-Za-z\s]+$/;
     // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/;
+
     const mobileRegex = /^[6-9]\d{9}$/;
 
     if (propertyDetails?.firstName && !nameRegex.test(propertyDetails.firstName)) {

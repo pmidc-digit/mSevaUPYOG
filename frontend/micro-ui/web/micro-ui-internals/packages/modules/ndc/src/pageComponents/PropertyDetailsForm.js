@@ -667,10 +667,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
               <Controller
                 control={control}
                 name={"email"}
-                defaultValue={propertyDetails?.email}
+                defaultValue={propertyDetails?.email || ""}
                 render={(props) => (
                   <TextInput
-                    value={props?.value}
+                    value={propertyDetails?.email}
                     onChange={(e) => {
                       setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
                       props.onChange(e.target.value);
@@ -679,7 +679,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                       // setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
+                    // disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
                   />
                 )}
               />

@@ -5,7 +5,7 @@ import { useParams, useHistory } from "react-router-dom";
 //
 import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import { config } from "../../../../config/citizen/CitizenNDCApplicationConfig";
-import { setNDCStep, updateNDCForm } from "../../../../redux/actions/NDCFormActions";
+import { setNDCStep, updateNDCForm, resetNDCForm } from "../../../../redux/actions/NDCFormActions";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
 const createEmployeeConfig = [
@@ -82,6 +82,17 @@ export const NewNDCStepForm = () => {
   };
 
   const handleSubmit = () => {};
+
+  useEffect(() => {
+    const unlisten = history.listen(() => {
+      // route changed
+      dispatch(resetNDCForm());
+      // dispatch(updateNDCForm("reset", {}));
+      // dispatch(setNDCStep(1));
+    });
+
+    return () => unlisten();
+  }, [history, dispatch]);
 
   return (
     <div className="pageCard">

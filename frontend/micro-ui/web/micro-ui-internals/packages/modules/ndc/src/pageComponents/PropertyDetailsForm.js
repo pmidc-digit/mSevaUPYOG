@@ -63,6 +63,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   });
 
   useEffect(() => {
+    console.log("coming here everytime", formData);
     const owner = formData?.cpt?.details?.owners?.[0];
     const fullName = owner?.name?.split(" ");
     const firstName = owner?.name;
@@ -70,14 +71,15 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     // if (fullName?.length > 1) {
     //   lastName = fullName?.[fullName.length - 1];
     // }
-    const email = owner?.email;
+    console.log("ikiki email", owner?.emailId);
+    const email = owner?.emailId || formData?.PropertyDetails?.email || "";
     const mobileNumber = owner?.mobileNumber;
     const address = owner?.permanentAddress;
 
     const combinedObject = {};
     if (firstName) combinedObject.firstName = firstName;
     // if (lastName) combinedObject.lastName = lastName;
-    if (email) combinedObject.email = email;
+    combinedObject.email = email;
     if (mobileNumber) combinedObject.mobileNumber = mobileNumber;
     if (address) combinedObject.address = address;
     combinedObject.propertyBillData = {
@@ -92,6 +94,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       };
     });
   }, [formData?.cpt?.details]);
+
+  useEffect(() => {
+    console.log("updated propertyDetails", propertyDetails);
+  }, [propertyDetails]);
 
   useEffect(() => {
     let waterConnection;
@@ -367,23 +373,21 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }, [showToast]);
 
-  useEffect(() => {
-    if (apiDataCheck) {
-      const apiEmail = apiDataCheck?.[0]?.owners?.[0]?.emailId || "";
-      setValue("email", apiEmail);
-      setPropertyDetails((prev) => ({ ...prev, email: apiEmail }));
-    }
-  }, [apiDataCheck]);
+  // useEffect(() => {
+  //   if (apiDataCheck) {
+  //     const apiEmail = apiDataCheck?.[0]?.owners?.[0]?.emailId || "";
+  //     setValue("email", apiEmail);
+  //     setPropertyDetails((prev) => ({ ...prev, email: apiEmail }));
+  //   }
+  // }, [apiDataCheck]);
 
-  useEffect(() => {
-    if (formData?.cpt?.details?.owners) {
-      const formDataEmail = formData?.cpt?.details?.owners?.[0]?.emailId;
-      setValue("email", formDataEmail);
-      setPropertyDetails((prev) => ({ ...prev, email: formDataEmail }));
-    }
-  }, [formData?.cpt?.details?.owners]);
-
-  console.log("propertyDetails====", propertyDetails, formData);
+  // useEffect(() => {
+  //   if (formData?.cpt?.details?.owners) {
+  //     const formDataEmail = formData?.cpt?.details?.owners?.[0]?.emailId;
+  //     setValue("email", formDataEmail);
+  //     setPropertyDetails((prev) => ({ ...prev, email: formDataEmail }));
+  //   }
+  // }, [formData?.cpt?.details?.owners]);
 
   return (
     <div style={{ marginBottom: "16px" }}>

@@ -313,7 +313,7 @@
 //     return (
 //       <div>
 //         {t("I_AGREE_TO_BELOW_UNDERTAKING")}
-//         <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />
+//         <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />
 //       </div>
 //     );
 //   };
@@ -410,7 +410,7 @@
 //     return (
 //       <div>
 //         {t("OWNER_AGREES_TO_BELOW_UNDERTAKING")}
-//         <LinkButton
+//         <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }}
 //           label={t("OWNER_DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")}
 //           onClick={handleOwnerTermsLinkClick}
 //           disabled={!isOwnerOTPVerified}
@@ -767,12 +767,12 @@
 //     <React.Fragment>
 //       <Timeline currentStep={4} />
 //       <Header styles={{ marginLeft: "10px" }}>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
-//       <Card style={{ paddingRight: "16px" }}>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //         <StatusTable>
 //           <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={plotDataFromStorage?.applicationNumber} />
 //         </StatusTable>
 //       </Card>
-//       <Card style={{ paddingRight: "16px" }}>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //         <CardHeader>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardHeader>
 //         <StatusTable>
 //           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APP_DATE_LABEL`)} text={convertEpochToDateDMY(Number(data?.applicationDate))} />
@@ -782,10 +782,10 @@
 //           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_RISK_TYPE_LABEL`)} text={t(`WF_BPA_${data?.riskType}`)} />
 //         </StatusTable>
 //       </Card>
-//       <Card style={{ paddingRight: "16px" }}>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //         <StatusTable>
 //           <CardHeader>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
-//           <LinkButton
+//           <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }}
 //             label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
 //             style={{ width: "100px", display: "inline" }}
 //             onClick={() => routeTo(`${routeLink}/plot-details`)}
@@ -846,13 +846,13 @@
 //           />
 //         </StatusTable>
 //       </Card>
-//       <Card style={{ paddingRight: "16px" }}>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //         <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
 //         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
 //         <StatusTable style={{ border: "none" }}>
 //           <Row className="border-none" label={t("BPA_EDCR_NO_LABEL")} text={data?.scrutinyNumber?.edcrNumber}></Row>
 //           <CardSubHeader>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</CardSubHeader>
-//           <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.updatedDxfFile)} />
+//           <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.updatedDxfFile)} />
 //           <p
 //             style={{
 //               marginTop: "8px",
@@ -867,7 +867,7 @@
 //             {t(`Uploaded Plan.pdf`)}
 //           </p>
 //           <CardSubHeader>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</CardSubHeader>
-//           <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.planReport)} />
+//           <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.planReport)} />
 //           <p
 //             style={{
 //               marginTop: "8px",
@@ -882,10 +882,10 @@
 //             {t(`BPA_SCRUTINY_REPORT_PDF`)}
 //           </p>
 //         </StatusTable>
-//         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+//         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
 //         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader>
 
-//         <Card style={{ paddingRight: "16px" }}>
+//          <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //           <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
 //           <StatusTable>
 //             <Row
@@ -958,7 +958,7 @@
 
 //           </StatusTable>
 //         </Card>
-//         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+//         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
 //         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
 //         {datafromAPI?.planDetail?.blocks.map((block, index) => (
 //           <div
@@ -1009,7 +1009,7 @@
 //             </div>
 //           </div>
 //         ))}
-//         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+//         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
 //         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
 //         <StatusTable style={{ border: "none" }}>
 //           <Row
@@ -1023,10 +1023,10 @@
 //           ></Row>
 //         </StatusTable>
 //       </Card>
-//       <Card style={{ paddingRight: "16px" }}>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //         <StatusTable>
 //           <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
-//           <LinkButton
+//           <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }}
 //             label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
 //             style={{ width: "100px", display: "inline" }}
 //             onClick={() => routeTo(`${routeLink}/location`)}
@@ -1038,10 +1038,10 @@
 //           <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} />
 //         </StatusTable>
 //       </Card>
-//       <Card style={{ paddingRight: "16px" }}>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //         <StatusTable>
 //           <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
-//           <LinkButton
+//           <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }}
 //             label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
 //             style={{ width: "100px", display: "inline" }}
 //             onClick={() => routeTo(`${routeLink}/owner-details`)}
@@ -1091,7 +1091,7 @@
 //             ))}
 //         </StatusTable>
 //       </Card>
-//       <Card style={{ paddingRight: "16px" }}>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //         <StatusTable>
 //           <CardHeader>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardHeader>
 //           <Row
@@ -1165,10 +1165,10 @@
 //           />
 //         </StatusTable>
 //       </Card>
-//       <Card style={{ paddingRight: "16px" }}>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //         <StatusTable>
 //           <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
-//           <LinkButton
+//           <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }}
 //             label={<EditIcon style={{ marginTop: "-10px", float: "right", position: "relative", bottom: "32px" }} />}
 //             style={{ width: "100px", display: "inline" }}
 //             onClick={() => routeTo(`${routeLink}/document-details`)}
@@ -1184,7 +1184,7 @@
 //           }
 //         </StatusTable>
 //       </Card>
-//       <Card style={{ paddingRight: "16px" }}>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
 //         <CardSubHeader>{t("BPA_SUMMARY_FEE_EST")}</CardSubHeader>
 //         <StatusTable>
 //           <CardSubHeader>{t("BPA_P1_SUMMARY_FEE_EST")}</CardSubHeader>
@@ -1305,7 +1305,7 @@
 //           {value?.status === "INITIATED" && (
 //             <div>
 //               <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
-//               <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} />
+//               <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={t("BPA_VERIFY")} onClick={handleVerifyClick} />
 //               <br></br>
 //               {showMobileInput && (
 //                 <React.Fragment>
@@ -1321,7 +1321,7 @@
 //                     onChange={handleMobileNumberChange}
 //                     {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
 //                   />
-//                   <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
+//                   <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
 //                 </React.Fragment>
 //               )}
 //               <br></br>
@@ -1345,9 +1345,9 @@
 //             <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} />
 //           )}
 //         </div>
-//         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+//         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
 //       </Card>
-//       <Card>
+//        <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
 //         <div style={{ marginBottom: "30px" }}>
 //           {isOTPVerified && isOwnerOTPVerified && (
 //             <div>
@@ -1369,7 +1369,7 @@
 //               onChange={handleMobileNumberChange}
 //               {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
 //             />
-//             <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
+//             <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
 //           </React.Fragment>
 //         )}
 //         {showOTPInput && !isOTPVerified && (
@@ -1381,7 +1381,7 @@
 //             {otpError && <CardLabel style={{ color: otpError === t("VERIFIED") ? "green" : "red" }}>{otpError}</CardLabel>}
 //           </React.Fragment>
 //         )}
-//         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "1px", marginTop: "20px", marginBottom: "20px" }} />
+//         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "1px", marginTop: "20px", marginBottom: "20px" }} />
 //         <div style={{ marginBottom: "30px" }}>
 //           <CheckBox
 //             label={ownerCheckLabels()}
@@ -1405,7 +1405,7 @@
 //               onChange={handleOwnerMobileNumberChange}
 //               {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
 //             />
-//             <LinkButton label={t("BPA_GET_OTP")} onClick={handleOwnerGetOTPClick} disabled={!isValidOwnerMobileNumber} />
+//             <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={t("BPA_GET_OTP")} onClick={handleOwnerGetOTPClick} disabled={!isValidOwnerMobileNumber} />
 //           </React.Fragment>
 //         )}
 //         {showOwnerOTPInput && !isOwnerOTPVerified && (
@@ -1424,7 +1424,7 @@
 //             otpVerifiedTimestamp={otpVerifiedTimestamp}
 //           />
 //         )}
-//         <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+//         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
 //         <SubmitBar
 //           label={isSubmitting ? t("SUBMITTING...") : t("BPA_SEND_TO_CITIZEN_LABEL")}
 //           onSubmit={async () => {
@@ -1469,6 +1469,7 @@ import {
   PDFSvg,
   Loader,
   TextArea,
+  ActionBar
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -1716,6 +1717,8 @@ const CheckPage = ({ onSubmit, value }) => {
 
   const Architectvalidations = sessionStorage.getItem("ArchitectConsentdocFilestoreid") ? true : false;
 
+  const isMobile = window.Digit.Utils.browser.isMobile();
+
   // Persist states to sessionStorage whenever they change
   useEffect(() => {
     sessionStorage.setItem("professionalAgree", agree.toString());
@@ -1794,7 +1797,7 @@ const CheckPage = ({ onSubmit, value }) => {
       <div>
         {t("I_AGREE_TO_BELOW_UNDERTAKING")}
         <br />
-        {!isArchitectDeclared && <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
+        {!isArchitectDeclared && <LinkButton style={{ marginLeft:"-55px", background:"#fff" }} label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
         {isArchitectDeclared && <div  onClick={handleTermsLinkClick} style={{color: "green"}} >{t("VIEW_DECLARATION")} </div>}
       </div>
     );
@@ -1893,7 +1896,7 @@ const CheckPage = ({ onSubmit, value }) => {
     return (
       <div>
         {t("OWNER_AGREES_TO_BELOW_UNDERTAKING")}
-        <LinkButton
+        <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px", background:"#fff" }}
           label={t("OWNER_DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")}
           onClick={handleOwnerTermsLinkClick}
           disabled={!isOwnerOTPVerified}
@@ -2274,7 +2277,7 @@ const documentsColumns = [
     accessor: "fileUrl",
     Cell: ({ value }) =>
       value ? (
-        <LinkButton
+        <LinkButton style={{ float:"right",display:"inline", background:"#fff" }}
           label={t("View")}
           onClick={() => routeTo(value)}
         />
@@ -2286,18 +2289,102 @@ const documentsColumns = [
 
 
 
+  
+    // ---------------- UI Styles ----------------
+    const pageStyle = {
+      padding: "2rem",
+      backgroundColor: "#f1f1f1ff",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      color: "#333",
+      paddingBottom: "5rem",
+    };
+  
+    const sectionStyle = {
+      backgroundColor: "#ffffff",
+  
+      borderRadius: "8px",
+   
+      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+    };
+  
+    const headingStyle = {
+      fontSize: "1.5rem",
+      borderBottom: "2px solid #ccc",
+      paddingBottom: "0.3rem",
+      color: "#2e4a66",
+      marginTop: "2rem",
+      marginBottom: "1rem",
+    };
+  
+    const labelFieldPairStyle = {
+      display: "flex",
+      justifyContent: "space-between",
+      borderBottom: "1px dashed #e0e0e0",
+      padding: "0.5rem 0",
+      color: "#333",
+    };
+  
+    const documentsContainerStyle = {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "1rem",
+      
+    };
+  
+    const documentCardStyle = {
+  
+      minWidth: "200px",
+      maxWidth: "250px",
+      backgroundColor: "#fdfdfd",
+      padding: "0.75rem",
+      border: "1px solid #e0e0e0",
+      borderRadius: "6px",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+      justifyContent:"center",
+      display:"flex",
+      
+    };
+  
+    const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+  
+    const renderLabel = (label, value) => (
+      <div style={labelFieldPairStyle}>
+        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+        <div>{value || t("CS_NA")}</div>
+      </div>
+    );
+
+
+
   return (
     <React.Fragment>
-      <Timeline currentStep={4} />
+      {isMobile && <Timeline currentStep={4} />}
       <Header>{t("BPA_STEPPER_SUMMARY_HEADER")}</Header>
-      <div style={{height:"75vh", overflow:"scroll", marginTop:"30px"}}>
-      <Card style={{ paddingRight: "16px" }}>
+      <div style={{ marginTop:"30px", paddingBottom:"30px"}}>
+       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+   
         <StatusTable>
           <Row className="border-none" label={t(`BPA_APPLICATION_NUMBER_LABEL`)} text={plotDataFromStorage?.applicationNumber} />
         </StatusTable>
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+      {/*  <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} style={{ paddingRight: "16px" }}>
         <CardHeader>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardHeader>
+        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+        <StatusTable>
+          <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APP_DATE_LABEL`)} text={convertEpochToDateDMY(Number(data?.applicationDate))} />
+          <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL`)} text={t(`WF_BPA_${data?.applicationType}`)} />
+          <Row className="border-none" label={t(`BPA_BASIC_DETAILS_SERVICE_TYPE_LABEL`)} text={t(data?.serviceType)} />
+          <Row className="border-none" label={t(`BPA_BASIC_DETAILS_OCCUPANCY_LABEL`)} text={data?.occupancyType} />
+          <Row className="border-none" label={t(`BPA_BASIC_DETAILS_RISK_TYPE_LABEL`)} text={t(`WF_BPA_${data?.riskType}`)} />
+        </StatusTable>
+      </Card> */}
+
+
+       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+        <CardHeader style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>
+          {t(`BPA_BASIC_DETAILS_TITLE`)}
+        </CardHeader>
+        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
         <StatusTable>
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APP_DATE_LABEL`)} text={convertEpochToDateDMY(Number(data?.applicationDate))} />
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_APPLICATION_TYPE_LABEL`)} text={t(`WF_BPA_${data?.applicationType}`)} />
@@ -2306,12 +2393,16 @@ const documentsColumns = [
           <Row className="border-none" label={t(`BPA_BASIC_DETAILS_RISK_TYPE_LABEL`)} text={t(`WF_BPA_${data?.riskType}`)} />
         </StatusTable>
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+
+
+       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
         <StatusTable>
-          <CardHeader>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
-          <LinkButton
+          <CardHeader style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
+          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+
+          <LinkButton style={{ float:"right",display:"inline", marginTop:"-80px", background:"#fff" }}
            label={<EditIcon color="white" style={{color:"white"}}  />}
-            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
+            
             onClick={() => routeTo(`${routeLink}/plot-details`)}
           />
 
@@ -2370,14 +2461,18 @@ const documentsColumns = [
           />
         </StatusTable>
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+
+
+       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
 
 
 
 
 
-        <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
+        {/* <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
+         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+        
 
         <div
           style={{
@@ -2405,7 +2500,7 @@ const documentsColumns = [
               className="border-none"
               text={
                 datafromAPI?.updatedDxfFile ? (
-                  <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.updatedDxfFile)} />
+                  <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px", background:"#fff" }} label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.updatedDxfFile)} />
                 ) : (
                   t("CS_NA")
                 )
@@ -2428,11 +2523,12 @@ const documentsColumns = [
             <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
               {t("BPA_SCRUNTINY_REPORT_OUTPUT")}
             </CardSubHeader>
+             <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
             <Row
               className="border-none"
               text={
                 datafromAPI?.planReport ? (
-                  <LinkButton label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.planReport)} />
+                  <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px", background:"#fff" }} label={<PDFSvg />} onClick={() => routeTo(datafromAPI?.planReport)} />
                 ) : (
                   t("CS_NA")
                 )
@@ -2452,7 +2548,59 @@ const documentsColumns = [
               {t(`BPA_SCRUTINY_REPORT_PDF`)}
             </p>
           </StatusTable>
-        </div>
+        </div> */}
+
+
+
+<Card>
+  <CardHeader>{t("BPA_STEPPER_SCRUTINY_DETAILS_HEADER")}</CardHeader>
+  <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+  <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+
+  <div style={{ marginTop: "19px", background: "#FAFAFA", border: "1px solid #D6D5D4", borderRadius: "4px", padding: "12px", maxWidth: "960px", minWidth: "280px" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "15px" }}>
+      <tbody>
+        {/* EDCR Number */}
+        <tr style={{ borderBottom: "1px solid #eaeaea" }}>
+          <td style={{ padding: "8px", fontWeight: "600", color: "#333" }}>{t("BPA_EDCR_NO_LABEL")}</td>
+          <td style={{ padding: "8px", textAlign: "right", color: "#555" }}>
+            {data?.scrutinyNumber?.edcrNumber || t("CS_NA")}
+          </td>
+        </tr>
+
+        {/* Uploaded Plan */}
+        <tr>
+          <td style={{ padding: "12px 8px", fontWeight: "600", color: "#333" }}>{t("BPA_UPLOADED_PLAN_DIAGRAM")}</td>
+          <td style={{ padding: "12px 8px", textAlign: "right" }}>
+            {datafromAPI?.updatedDxfFile ? (
+              <LinkButton
+                label={t("View")}
+                onClick={() => routeTo(datafromAPI?.updatedDxfFile)}
+              />
+            ) : (
+              t("CS_NA")
+            )}
+          </td>
+        </tr>
+
+        {/* Scrutiny Report */}
+        <tr>
+          <td style={{ padding: "12px 8px", fontWeight: "600", color: "#333" }}>{t("BPA_SCRUNTINY_REPORT_OUTPUT")}</td>
+          <td style={{ padding: "12px 8px", textAlign: "right" }}>
+            {datafromAPI?.planReport ? (
+              <LinkButton
+               label={t("View")}
+                onClick={() => routeTo(datafromAPI?.planReport)}
+              />
+            ) : (
+              t("CS_NA")
+            )}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</Card>
 
 
 
@@ -2463,10 +2611,12 @@ const documentsColumns = [
 
 
 
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+
+
+        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader>
 
-        <Card style={{ paddingRight: "16px" }}>
+         <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
           <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
           <StatusTable>
             <Row
@@ -2476,7 +2626,7 @@ const documentsColumns = [
             text={planInfoProps?.planDetail?.plot?.area || t("CS_NA")}
             />
             {console.log(planInfoProps, "PLAN")}
-            <Row
+            {/* <Row
               className="border-none"
               label={t("BPA_PLOT_NUMBER")}
               text={plotDataFromStorage?.planDetail?.planInfoProperties?.PLOT_NO || t("CS_NA")}
@@ -2490,7 +2640,7 @@ const documentsColumns = [
               className="border-none"
               label={t("BPA_KHATA_NUMBER")}
               text={plotDataFromStorage?.planDetail?.planInfoProperties?.KHATA_NO || t("CS_NA")}
-            />
+            /> */}
             <Row
               className="border-none"
               label={t("BPA_KHATUNI_NUMBER")}
@@ -2539,7 +2689,7 @@ const documentsColumns = [
             />
           </StatusTable>
         </Card>
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }}  />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
         {datafromAPI?.planDetail?.blocks.map((block, index) => (
           <div
@@ -2590,7 +2740,7 @@ const documentsColumns = [
             </div>
           </div>
         ))}
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
+        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
         <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
         <StatusTable style={{ border: "none" }}>
           <Row
@@ -2607,12 +2757,13 @@ const documentsColumns = [
 
 
 
-      <Card style={{ paddingRight: "16px" }}>
+       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
         <StatusTable>
           <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
-          <LinkButton
+           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+          <LinkButton style={{ float:"right", display:"inline", marginTop:"-80px", background:"#fff" }}
             label={<EditIcon color="white" style={{color:"white"}}  />}
-            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
+           
             onClick={() => routeTo(`${routeLink}/location`)}
           />
           <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={address?.pincode || t("CS_NA")} />
@@ -2622,12 +2773,13 @@ const documentsColumns = [
           {/* <Row className="border-none" label={t(`ES_NEW_APPLICATION_LOCATION_LANDMARK`)} text={address?.landmark || t("CS_NA")} /> */}
         </StatusTable>
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
         <StatusTable>
           <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
-          <LinkButton
+           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+          <LinkButton style={{ float:"right",  display:"inline", marginTop:"-80px", background:"#fff" }}
             label={<EditIcon color="white" style={{color:"white"}}  />}
-            style={{ float:"right",width: "100px", display: "inline", marginTop:"-50px", background:"white" }}
+           
             onClick={() => routeTo(`${routeLink}/owner-details`)}
           />
           {ownersData &&
@@ -2675,9 +2827,10 @@ const documentsColumns = [
             ))}
         </StatusTable>
       </Card>
-      <Card style={{ paddingRight: "16px" }}>
+       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
         <StatusTable>
           <CardHeader>{t("BPA_ADDITIONAL_BUILDING_DETAILS")}</CardHeader>
+           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
           <Row
             className="border-none"
             label={t(`BPA_APPROVED_COLONY_LABEL`)}
@@ -2754,9 +2907,10 @@ const documentsColumns = [
 
 
 
-      <Card style={{ paddingRight: "16px" }}>
+       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
         <StatusTable>
           <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
+           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
         <Table
           className="customTable table-border-style"
           t={t}
@@ -2773,20 +2927,12 @@ const documentsColumns = [
 
 
 
-
-
-
-
-
-
-
-
-
-
-      <Card style={{ paddingRight: "16px" }}>
+       <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
         <CardSubHeader>{t("BPA_SUMMARY_FEE_EST")}</CardSubHeader>
+         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
         <StatusTable>
-          <CardSubHeader>{t("BPA_P1_SUMMARY_FEE_EST")}</CardSubHeader>
+          <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P1_SUMMARY_FEE_EST")}</CardSubHeader>
+           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
           <Row
             className="border-none"
             label={t(`BPA_APPL_FEES`)}
@@ -2798,7 +2944,8 @@ const documentsColumns = [
             text={`₹ ${Math.round(datafromAPI?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea * 10.7639 * 2.5)}`}
           />
           <Row className="border-none" label={t(`BOUNDARY_WALL_FEES`)} text={`₹ ${data?.boundaryWallLength * 2.5}`} />
-          <CardSubHeader>{t("BPA_P2_SUMMARY_FEE_EST")}</CardSubHeader>
+          <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P2_SUMMARY_FEE_EST")}</CardSubHeader>
+           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
           <Row className="border-none" label={t(`BPA_COMMON_MALBA_AMT`)} text={`₹ ${malbafees}`} />
           <Row className="border-none" label={t(`BPA_COMMON_LABOUR_AMT`)} text={`₹ ${labourCess}`} />
           <Row className="border-none" label={t(`BPA_COMMON_WATER_CHARGE`)} text={`₹ ${waterCharges}`} />
@@ -2807,7 +2954,8 @@ const documentsColumns = [
           <Row className="border-none" label={t(`BPA_COMMON_SUB_DIV_CHARGE`)} text={`N/A`} />
           <Row className="border-none" label={t(`BPA_COMMON_COM_AMT`)} text={`N/A`} />
           {/* <Row className="border-none" label={t(`BPA_COMMON_GAUSHALA_AMT`)} text={`₹ ${gaushalaFees}`} /> */}
-          <CardSubHeader>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
+          <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
+           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
           <CardLabel>{t("BPA_COMMON_DEVELOPMENT_AMT")}</CardLabel>
           <TextInput
             t={t}
@@ -2892,7 +3040,7 @@ const documentsColumns = [
             </a>
           )}
           <Row className="border-none"></Row>
-          <Row
+          <Row 
             className="border-none"
             label={t(`BPA_P2_TOTAL_FEE`)}
             text={`₹ ${
@@ -2908,7 +3056,7 @@ const documentsColumns = [
           {value?.status === "INITIATED" && (
             <div>
               {/* <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel> */}
-              {/* <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} /> */}
+              {/* <LinkButton style={{ float:"right", width:"100px", display:"inline", marginTop:"-80px", background:"#fff" }} label={t("BPA_VERIFY")} onClick={handleVerifyClick} /> */}
               <br></br>
               {showMobileInput && (
                 <React.Fragment>
@@ -2925,7 +3073,7 @@ const documentsColumns = [
                     onChange={handleMobileNumberChange}
                     {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
                   />
-                  <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
+                  <LinkButton style={{ display:"inline", background:"#fff" }} label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
                 </React.Fragment>
               )}
               <br></br>
@@ -2949,92 +3097,19 @@ const documentsColumns = [
           <CheckBox label={checkLabels()} onChange={setdeclarationhandler} styles={{ height: "auto" }} checked={agree} />
           {showTermsPopup && (
             <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} />
+            
           )}
         </div>
-        <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-      {/* </Card>
-      <Card> */}
-        {/* <div style={{ marginBottom: "30px" }}>
-          {isOTPVerified && isOwnerOTPVerified && (
-            <div>
-              <CheckBox label={checkLabels()} onChange={setdeclarationhandler} styles={{ height: "auto" }} checked={agree} />
-            </div>
-          )}
-          {isOTPVerified && <CardLabel style={{ color: "green", marginTop: "10px" }}>✓ {t("PROFESSIONAL_VERIFICATION_COMPLETED")}</CardLabel>}
-        </div> */}
-        {/* {showMobileInput && !isOTPVerified && (
-          <React.Fragment>
-            <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
-            <TextInput
-              t={t}
-              type="tel"
-              isMandatory={true}
-              optionKey="i18nKey"
-              name="mobileNumber"
-              disable={true} 
-              value={mobileNumber}
-              onChange={handleMobileNumberChange}
-              {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
-            />
-            <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
-          </React.Fragment>
-        )} */}
+        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }}  />
+        
+      </Card>
 
-        {/* {showOTPInput && !isOTPVerified && (
-          <React.Fragment>
-            <br />
-            <CardLabel>{t("BPA_OTP")}</CardLabel>
-            <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
-            <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
-            {otpError && <CardLabel style={{ color: otpError === t("VERIFIED") ? "green" : "red" }}>{otpError}</CardLabel>}
-          </React.Fragment>
-        )} */}
-        {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "1px", marginTop: "20px", marginBottom: "20px" }} />
-        <div style={{ marginBottom: "30px" }}>
-          <CheckBox
-            label={ownerCheckLabels()}
-            onChange={setOwnerDeclarationHandler}
-            styles={{ height: "auto" }}
-            checked={ownerAgree}
-            disabled={!isOTPVerified}
-          />
-          {isOwnerOTPVerified && <CardLabel style={{ color: "green", marginTop: "10px" }}>✓ {t("OWNER_VERIFICATION_COMPLETED")}</CardLabel>}
-        </div> */}
-        {/* {showOwnerMobileInput && !isOwnerOTPVerified && (
-          <React.Fragment>
-            <CardLabel>{t("OWNER_MOBILE_NUMBER")}</CardLabel>
-            <TextInput
-              t={t}
-              type="tel"
-              isMandatory={true}
-              optionKey="i18nKey"
-              name="ownerMobileNumber"
-              disable={true} 
-              value={ownerMobileNumber}
-              onChange={handleOwnerMobileNumberChange}
-              {...{ required: true, pattern: "[0-9]{10}", type: "tel", title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID") }}
-            />
-            <LinkButton label={t("BPA_GET_OTP")} onClick={handleOwnerGetOTPClick} disabled={!isValidOwnerMobileNumber} />
-          </React.Fragment>
-        )}
-        {showOwnerOTPInput && !isOwnerOTPVerified && (
-          <React.Fragment>
-            <br />
-            <CardLabel>{t("ENTER_OTP_SENT_ON_OWNER_MOBILE")}</CardLabel>
-            <OTPInput length={6} onChange={(value) => setOwnerOTP(value)} value={ownerOtp} />
-            <SubmitBar label={t("VERIFY_OWNER_OTP")} onSubmit={handleOwnerVerifyOTPClick} />
-            {ownerOtpError && <CardLabel style={{ color: ownerOtpError === t("VERIFIED") ? "green" : "red" }}>{ownerOtpError}</CardLabel>}
-          </React.Fragment>
-        )}
-        {showTermsPopupOwner && (
-          <CitizenConsent
-            showTermsPopupOwner={showTermsPopupOwner}
-            setShowTermsPopupOwner={setShowTermsPopupOwner}
-            otpVerifiedTimestamp={otpVerifiedTimestamp}
-          />
-        )} */}
-        {/* <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} /> */}
-        <SubmitBar
+
+
+
+
+    <ActionBar>
+     <SubmitBar
           label={isSubmitting ? t("SUBMITTING...") : t("BPA_SEND_TO_CITIZEN_LABEL")}
           onSubmit={async () => {
             setIsSubmitting(true);
@@ -3049,7 +3124,7 @@ const documentsColumns = [
           }}
           disabled={!agree || !isOTPVerified || isSubmitting}
         />
-      </Card>
+      </ActionBar>
       </div>
     </React.Fragment>
   );

@@ -21,12 +21,14 @@ export const newConfig1 = [
     component: "BasicDetails",
     key: "data",
     nextStep: "plot-details",
+    step: "1"
   },
   {
     route: "plot-details",
     component: "PlotDetails",
     key: "data",
     nextStep: "scrutiny-details",
+    step: "1",
     texts: {
       headerCaption: "BPA_SCRUTINY_DETAILS",
       header: "BPA_PLOT_DETAILS_TITLE",
@@ -338,13 +340,14 @@ export const newConfig1 = [
     route: "scrutiny-details",
     component: "ScrutinyDetails",
     nextStep: "location",
+    step: "1",
     hideInEmployee: true,
     key: "subOccupancy",
     texts: {
       headerCaption: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
       header: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
       cardText: "",
-      submitBarLabel: "CS_COMMON_NEXT",
+      // submitBarLabel: "CS_COMMON_NEXT",
       skipText: "CORE_COMMON_SKIP_CONTINUE",
     },
   },
@@ -367,6 +370,7 @@ export const newConfig1 = [
     withoutLabel: true,
     nextStep: "location",
     hideInEmployee: true,
+    step: "1"
   },
   {
     type: "component",
@@ -398,9 +402,10 @@ export const newConfig1 = [
       headerCaption: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
       header: "BPA_NEW_TRADE_DETAILS_HEADER_DETAILS_NEW",
       cardText: "",
-      submitBarLabel: "CS_COMMON_NEXT",
+      // submitBarLabel: "CS_COMMON_NEXT",
       skipAndContinueText: "",
     },
+    step: "1"
   },
   {
     route: "additional-building-details",
@@ -409,8 +414,9 @@ export const newConfig1 = [
     key: "owners",
     texts: {
       header: "BPA_ADDITIONAL_BUILDING_DETAILS",
-      submitBarLabel: "CS_COMMON_NEXT",
+      // submitBarLabel: "CS_COMMON_NEXT",
     },
+    step: "2"
   },
   {
     route: "owner-details",
@@ -420,8 +426,9 @@ export const newConfig1 = [
     texts: {
       headerCaption: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
       header: "BPA_APPLICANT_DETAILS_HEADER",
-      submitBarLabel: "CS_COMMON_NEXT",
+      // submitBarLabel: "CS_COMMON_NEXT",
     },
+    step: "2"
   },
   {
     route: "document-details",
@@ -431,8 +438,9 @@ export const newConfig1 = [
     texts: {
       headerCaption: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
       header: "BPA_DOCUMENT_DETAILS_LABEL",
-      submitBarLabel: "CS_COMMON_NEXT",
+      // submitBarLabel: "CS_COMMON_NEXT",
     },
+    step: "3"
   },
   // {
   //     "route": "noc-details",

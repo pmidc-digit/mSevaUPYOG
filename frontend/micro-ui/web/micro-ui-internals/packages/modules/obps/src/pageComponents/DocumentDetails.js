@@ -410,6 +410,8 @@ import {
   MultiUploadWrapper,
   CitizenInfoLabel,
   LabelFieldPair,
+  ActionBar,
+  SubmitBar
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview";
@@ -426,6 +428,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
   const checkingFlow = formData?.uiFlow?.flow;
 
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
+  const isMobile = Digit.Utils.browser.isMobile()
 
   const beforeUploadDocuments = cloneDeep(formData?.PrevStateDocuments || []);
   // const {data: bpaTaxDocuments, isLoading} = Digit.Hooks.obps.useBPATaxDocuments(stateId, formData, beforeUploadDocuments || []);
@@ -494,7 +497,18 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
 
   return (
     <div>
-      <Timeline currentStep={checkingFlow === "OCBPA" ? 3 : 3} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
+       {(window.location.href.includes("/bpa/building_plan_scrutiny/new_construction") ||
+        window.location.href.includes("/ocbpa/building_oc_plan_scrutiny/new_construction")) &&
+      formData?.applicationNo ? (
+        <CitizenInfoLabel
+          info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+          text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.applicationNo} ${t("BPA_DOCS_INFORMATION")}`}
+          className={"info-banner-wrap-citizen-override"}
+        />
+      ) : (
+        ""
+      )}
+      {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 3 : 3} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
       {!isLoading ? (
         <FormStep
           t={t}
@@ -544,17 +558,10 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
       ) : (
         <Loader />
       )}
-      {(window.location.href.includes("/bpa/building_plan_scrutiny/new_construction") ||
-        window.location.href.includes("/ocbpa/building_oc_plan_scrutiny/new_construction")) &&
-      formData?.applicationNo ? (
-        <CitizenInfoLabel
-          info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-          text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.applicationNo} ${t("BPA_DOCS_INFORMATION")}`}
-          className={"info-banner-wrap-citizen-override"}
-        />
-      ) : (
-        ""
-      )}
+     
+      <ActionBar>
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  />}
+      </ActionBar>
     </div>
   );
 };

@@ -806,11 +806,31 @@ export const convertEpochToDate = (dateEpoch) => {
 // };
 
 
-export const getBusinessServices = (businessService, status) => {
-  // let billBusinessService = "BPA.NC_APP_FEE";
+// export const getBusinessServices = (businessService, status) => {
+//   // let billBusinessService = "BPA.NC_APP_FEE";
   
-  return "BPA.NC_APP_FEE";
+//   return "BPA.NC_APP_FEE";
+// };
+
+
+
+
+
+export const getBusinessServices = (businessService, status) => {
+  console.log("businessServiceIngetBusinessServices", businessService, status);
+  let billBusinessService = "BPA.NC_APP_FEE";
+  if (businessService === "BPA_LOW" && status === "PENDING_SANC_FEE_PAYMENT") {
+    billBusinessService = "BPA.NC_SAN_FEE";
+  } else if (businessService === "BPA") {
+    billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_APP_FEE" : "BPA.NC_SAN_FEE";
+  } else if (businessService === "BPA_OC") {
+    billBusinessService = status == "PENDING_APPL_FEE" ? "BPA.NC_OC_APP_FEE" : "BPA.NC_OC_SAN_FEE";
+  }
+  return billBusinessService;
 };
+
+
+
 
 export const downloadPdf = (blob, fileName) => {
   if (window.mSewaApp && window.mSewaApp.isMsewaApp() && window.mSewaApp.downloadBase64File) {

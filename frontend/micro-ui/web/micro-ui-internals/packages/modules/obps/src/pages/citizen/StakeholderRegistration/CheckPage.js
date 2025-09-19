@@ -33,6 +33,8 @@ const CheckPage = ({ onSubmit, value }) => {
     value && Object.keys(value).length > 0 ? value : storedData || {};
   const { result, formData, documents } = safeValue;
 
+  console.log(safeValue, "SAFE VAKLUE");
+
   let consumerCode = result?.Licenses[0].applicationNumber;
   const fetchBillParams = { consumerCode };
 
@@ -88,6 +90,7 @@ const CheckPage = ({ onSubmit, value }) => {
     display: "flex",
     flexWrap: "wrap",
     gap: "1rem",
+    
   };
 
   const documentCardStyle = {
@@ -99,6 +102,9 @@ const CheckPage = ({ onSubmit, value }) => {
     border: "1px solid #e0e0e0",
     borderRadius: "6px",
     boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    justifyContent:"center",
+    display:"flex",
+    
   };
 
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
@@ -167,7 +173,7 @@ const CheckPage = ({ onSubmit, value }) => {
       {/* Communication Address */}
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_COMMUNICATION_ADDRESS_HEADER_DETAILS")}</h2>
-        {renderLabel(t("Address"), safeValue?.Correspondenceaddress)}
+        {renderLabel(t("Address"), safeValue?.formData?.LicneseDetails?.correspondenceAddress)}
       </div>
 
       {/* Documents */}

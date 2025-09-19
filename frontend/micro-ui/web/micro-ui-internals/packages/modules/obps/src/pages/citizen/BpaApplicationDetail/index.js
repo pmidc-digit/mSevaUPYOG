@@ -1879,7 +1879,7 @@ const submitAction = (workflow) => {
         order: 3,
         label: t("BPA_OC_CERTIFICATE"),
         onClick: () =>
-          getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "occupancy-certificate"),
+          getPermitOccupancyOrderSearch({ tenantId: data?.applicationData?.tenantId }, "buildingpermit"),
       })
     }
   }

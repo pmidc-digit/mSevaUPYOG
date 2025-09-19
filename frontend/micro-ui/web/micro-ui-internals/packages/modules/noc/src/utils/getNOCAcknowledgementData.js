@@ -197,12 +197,12 @@ const getSpecificationDetails = (appData, t) => {
 const getDocuments = async (appData, t) => {
   const filesArray = appData?.documents?.map((value) => value?.uuid);
   const res = filesArray?.length>0 && await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId());
-  console.log("res here==>", res);
+  //console.log("res here==>", res);
 
   return {
     title: t("NOC_TITILE_DOCUMENT_UPLOADED"),
     values:
-      appData?.documents.length > 0
+      appData?.documents?.length > 0
         ? appData.documents.map((document, index) => {
             let documentLink = pdfDownloadLink(res?.data, document?.uuid);
             //   let documentName= pdfDocumentName(documentLink, index)
@@ -221,12 +221,8 @@ const getDocuments = async (appData, t) => {
 };
 
 export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
-  let appData;
 
-  if(window.location.href.includes("employee"))appData=applicationDetails;
-  else{
-    appData=applicationDetails?.Noc?.[0] || {};
-  }
+  const appData=applicationDetails || {};
   console.log("appData here in DownloadACK", appData);
 
   let detailsArr=[];

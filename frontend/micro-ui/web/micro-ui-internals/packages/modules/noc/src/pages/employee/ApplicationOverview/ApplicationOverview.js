@@ -187,12 +187,13 @@ const NOCEmployeeApplicationOverview = () => {
       Licenses: [action],
     };
 
-    if (action?.action == "EDIT") {
+    if (action?.action == "EDIT" || action?.action == "APPLY") {
       history.push(`/digit-ui/employee/noc/edit-application/${appNo}`);
     }
-    else if (action?.action == "APPLY") {
-      submitAction(payload);
-    } else if (action?.action == "PAY") {
+    // else if (action?.action == "APPLY") {
+    //   submitAction(payload);
+    // } 
+    else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
       setShowModal(true);
@@ -252,12 +253,6 @@ const NOCEmployeeApplicationOverview = () => {
       setError("Successfully updated the status");
 
       workflowDetails.revalidate();
-
-      // ✅ Delay navigation so toast shows
-      // setTimeout(() => {
-      //   history.push("/digit-ui/employee/noc/inbox");
-      //   window.location.reload();
-      // }, 2000);
 
       setSelectedAction(null);
       setShowModal(false);

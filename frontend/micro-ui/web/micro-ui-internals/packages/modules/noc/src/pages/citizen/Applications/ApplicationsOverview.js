@@ -14,6 +14,7 @@ import {
   SubmitBar,
   Menu,
   LinkButton,
+  Toast
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -44,18 +45,6 @@ const CitizenApplicationOverview = () => {
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
-  // const removeDuplicatesByUUID = (arr) => {
-  //   const seen = new Set();
-  //   return arr.filter((item) => {
-  //     if (seen.has(item.uuid)) {
-  //       return false;
-  //     } else {
-  //       seen.add(item.uuid);
-  //       return true;
-  //     }
-  //   });
-  // };
-
   useEffect(()=>{
     const nocObject = applicationDetails?.Noc?.[0];
 
@@ -80,18 +69,20 @@ const CitizenApplicationOverview = () => {
 
   },[applicationDetails?.Noc])
 
+  console.log("displayData here", displayData);
 
 
   const handleDownloadPdf = async () => {
-    const Property = applicationDetails;
-    console.log("applicationDetails in NOC", applicationDetails);
-    console.log("tenants", tenants);
+    const Property = applicationDetails?.Noc?.[0];
+    console.log("Property in NOC", applicationDetails);
+    //console.log("tenants", tenants);
     const tenantInfo = tenants.find((tenant) => tenant.code === Property.tenantId);
 
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, t);
 
     console.log("acknowledgementData", acknowledgementData);
     Digit.Utils.pdf.generate(acknowledgementData);
+
   };
 
   const getFloorLabel = (index) => {
@@ -104,8 +95,6 @@ const CitizenApplicationOverview = () => {
   if (isLoading) {
     return <Loader />;
   }
-
-  console.log("displayData here", displayData);
 
   return (
     <div className={"employee-main-application-details"}>

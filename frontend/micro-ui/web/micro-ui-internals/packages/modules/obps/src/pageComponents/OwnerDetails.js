@@ -1464,6 +1464,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
     }
 
     const owner = formData.owners
+    console.log(owner, "OWNER FULL DETAIL");
     const ownerStep = { ...owner, owners: fields, ownershipCategory: ownershipCategory }
 
     if (!formData?.id) {
@@ -1481,6 +1482,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
           isPrimaryOwner: owner.isPrimaryOwner,
           gender: owner.gender.code,
           fatherOrHusbandName: "NAME",
+          photo:null
         })
       })
 
@@ -1628,6 +1630,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
       }
       payload.additionalDetails.isSelfCertificationRequired = isSelfCertificationRequired.toString()
 
+
+console.log("payload OWNER FULL DETAIL", payload)
+
       Digit.OBPSService.create({ BPA: payload }, tenantId)
         .then((result) => {
           if (result?.BPA?.length > 0) {
@@ -1636,6 +1641,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
             })
             result.BPA[0].owners = {
               ...owner,
+              photo: null,
               owners: result?.BPA?.[0]?.landInfo?.owners,
               ownershipCategory: ownershipCategory,
             }
@@ -1649,6 +1655,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
             result.BPA[0].uiFlow = formData?.uiFlow
             setIsDisable(false)
             onSelect("", result.BPA[0], "", true)
+            console.log(result.BPA[0], "RESULT+++++");
           }
         })
         .catch((e) => {
@@ -1681,6 +1688,73 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
     if (flag == 0) return false
     else return true
   }
+
+
+
+      // ---------------- UI Styles ----------------
+      const pageStyle = {
+        padding: "2rem",
+        backgroundColor: "#f1f1f1ff",
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        color: "#333",
+        paddingBottom: "5rem",
+      };
+    
+      const sectionStyle = {
+        backgroundColor: "#ffffff",
+    
+        borderRadius: "8px",
+     
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+      };
+    
+      const headingStyle = {
+        fontSize: "1.5rem",
+        borderBottom: "2px solid #ccc",
+        paddingBottom: "0.3rem",
+        color: "#2e4a66",
+        marginTop: "2rem",
+        marginBottom: "1rem",
+      };
+    
+      const labelFieldPairStyle = {
+        display: "flex",
+        justifyContent: "space-between",
+        borderBottom: "1px dashed #e0e0e0",
+        padding: "0.5rem 0",
+        color: "#333",
+      };
+    
+      const documentsContainerStyle = {
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "1rem",
+        
+      };
+    
+      const documentCardStyle = {
+    
+        minWidth: "200px",
+        maxWidth: "250px",
+        backgroundColor: "#fdfdfd",
+        padding: "0.75rem",
+        border: "1px solid #e0e0e0",
+        borderRadius: "6px",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+        justifyContent:"center",
+        display:"flex",
+        
+      };
+    
+      const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+    
+      const renderLabel = (label, value) => (
+        <div style={labelFieldPairStyle}>
+          <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+          <div>{value || t("CS_NA")}</div>
+        </div>
+      );
+  
 
   return (
     <div>
@@ -1998,6 +2072,9 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData }) => {
         />
       )}
     </div>
+
+
+
   )
 }
 

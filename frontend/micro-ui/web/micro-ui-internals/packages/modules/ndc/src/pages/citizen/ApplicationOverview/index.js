@@ -182,6 +182,27 @@ const CitizenApplicationOverview = () => {
     Digit.Utils.pdf.generateNDC(acknowledgementData);
   };
 
+  const [getPropertyId, setPropertyId] = useState(null);
+
+  useEffect(() => {
+    if (displayData) {
+      console.log("here");
+      const checkProperty = displayData?.NdcDetails?.filter((item) => item?.businessService == "NDC_PROPERTY_TAX");
+      console.log("checkProperty", checkProperty);
+      setPropertyId(checkProperty?.[0]?.consumerCode);
+    }
+  }, [displayData]);
+
+  const { isLoading: checkLoading, isError, error: checkError, data: propertyDetailsFetch } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: getPropertyId }, tenantId: tenantId },
+    {
+      filters: { propertyIds: getPropertyId },
+      tenantId: tenantId,
+      enabled: getPropertyId ? true : false,
+      privacy: Digit.Utils.getPrivacyObject(),
+    }
+  );
+
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
@@ -237,6 +258,19 @@ const CitizenApplicationOverview = () => {
               {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
               <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
               <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
+              {detail?.businessService == "NDC_PROPERTY_TAX" && propertyDetailsFetch?.Properties && (
+                <>
+                  <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
+                  <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
+                  <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
+                  <Row label={t("Street Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.street} />
+                  {/* <Row label={t("Mohalla")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                  <Row label={t("Pincode")} text={propertyDetailsFetch?.Properties?.[0]?.address?.pincode || "N/A"} />
+                  {/* <Row label={t("Existing Pid")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                  <Row label={t("Survey Id/UID")} text={propertyDetailsFetch?.Properties?.[0]?.surveyId} />
+                  <Row label={t("Year of creation of Property")} text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction} />
+                </>
+              )}
             </StatusTable>
           </div>
         ))}

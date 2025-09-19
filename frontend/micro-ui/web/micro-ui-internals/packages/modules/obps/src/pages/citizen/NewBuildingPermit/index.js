@@ -58,10 +58,68 @@ const NewBuildingPermit = () => {
     history.push(`${getPath(match.path, match.params)}/acknowledgement`);
   };
 
+  function makeSerializable(obj) {
+  const seen = new WeakSet();
+
+  function helper(value) {
+    if (value === null || typeof value === "undefined") return null;
+
+    // primitives
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      return value;
+    }
+
+    // Dates
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    // Arrays
+    if (Array.isArray(value)) {
+      return value.map(helper);
+    }
+
+    // Objects
+    if (typeof value === "object") {
+      if (seen.has(value)) {
+        return undefined; // break circular refs
+      }
+      seen.add(value);
+
+      const plain = {};
+      for (const [k, v] of Object.entries(value)) {
+        // skip functions, DOM nodes, symbols
+        if (typeof v === "function" || typeof v === "symbol") continue;
+        if (v instanceof HTMLElement) continue;
+
+        plain[k] = helper(v);
+      }
+      return plain;
+    }
+
+    return undefined;
+  }
+
+  return helper(obj);
+}
+
+
   const handleSelect = (key, data, skipStep, isFromCreateApi) => {
-    console.log("KeyandDataforSession", key, data);
-    if (isFromCreateApi) setParams(data);
-    else if (key === "") setParams({ ...data });
+    console.log("KeyandDataforSession", key, data, skipStep, isFromCreateApi);
+    if (isFromCreateApi) {
+      try{
+      setParams(data);
+      } catch(e){
+        alert(e.message);
+      }
+    }
+    else if (key === "") {
+      try{
+        setParams({ ...data });
+      } catch(e){
+        alert(e.message);
+      }
+    }
     else setParams({ ...params, ...{ [key]: { ...params[key], ...data } } });
     goNext(skipStep);
   };
@@ -86,7 +144,7 @@ const NewBuildingPermit = () => {
   const OBPSAcknowledgement = Digit?.ComponentRegistryService?.getComponent("BPAAcknowledgement");
   const currentStepOBJ = newConfig1.find((routeObj) => routeObj.route === pathname.split("/").pop());
   const currentStep = currentStepOBJ?.step ? parseInt(currentStepOBJ?.step) : window.location.href.includes("check") ? 4 : 0;
-console.log("currentStep", currentStep)
+console.log("currentStep", currentStep, currentStepOBJ)
     const stepperConfig = [
   {
     head: "Applicant Details",

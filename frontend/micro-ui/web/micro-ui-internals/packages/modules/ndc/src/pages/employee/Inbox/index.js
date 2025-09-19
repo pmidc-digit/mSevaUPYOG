@@ -147,6 +147,7 @@ const Inbox = ({ parentRoute }) => {
       {
         text: "Create NDC Application",
         link: "/digit-ui/employee/ndc/create",
+        accessTo: [""],
       },
     ],
   };

@@ -79,6 +79,8 @@ public class PaymentNotificationService {
 				
 				log.info("Reciept no of payment : " + paymentRequest.getPayment().getPaymentDetails().get(0).getReceiptNumber());
 				log.info("Payment date of payment : " + paymentRequest.getPayment().getPaymentDetails().get(0).getReceiptDate());
+
+				//have to build the application then send to the topic for setting the payment details
 				CommunityHallBookingDetail bookingDetail = CommunityHallBookingDetail.builder().bookingNo(bookingNo)
 						.build();
 				CommunityHallBookingRequest bookingRequest = CommunityHallBookingRequest.builder()
@@ -186,7 +188,7 @@ public class PaymentNotificationService {
 			if(BookingStatusEnum.PAYMENT_FAILED.equals(status)) {
 				bookingService.updateBookingSynchronously(bookingRequest, null, status, true);
 			} else {
-				bookingService.updateBookingSynchronously(bookingRequest, null, BookingStatusEnum.PENDING_FOR_PAYMENT, false);
+				bookingService.updateBookingSynchronously(bookingRequest, null, BookingStatusEnum.PENDING_PAYMENT, false);
 				bookingRepository.updateBookingTimer(bookingDetail.getBookingId());
 			}
 			

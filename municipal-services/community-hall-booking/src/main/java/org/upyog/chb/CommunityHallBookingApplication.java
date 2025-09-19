@@ -23,7 +23,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Import({
 		TracerConfiguration.class , EncryptionConfiguration.class })
 @SpringBootApplication
-@ComponentScan(basePackages = { "org.upyog.chb"})
 //@EnableFeignClients
 @EnableTransactionManagement
 @EnableScheduling

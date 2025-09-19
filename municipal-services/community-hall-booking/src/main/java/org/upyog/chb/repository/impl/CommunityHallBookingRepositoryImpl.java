@@ -241,7 +241,7 @@ public class CommunityHallBookingRepositoryImpl implements CommunityHallBookingR
 		log.info("Insert Query Executed Successfully for Booking ID: {}", bookingId);
 
 		if (updateBookingStatus) {
-			updateBookingSynchronously(bookingId, createdBy, null, BookingStatusEnum.PENDING_FOR_PAYMENT.toString());
+			updateBookingSynchronously(bookingId, createdBy, null, BookingStatusEnum.PENDING_PAYMENT.toString());
 		}
 
 	}
@@ -326,7 +326,6 @@ public class CommunityHallBookingRepositoryImpl implements CommunityHallBookingR
 		}
 		
 		jdbcTemplate.update(CommunityHallBookingQueryBuilder.UPDATE_BOOKING_SLOT_QUERY, status, lastUpdateBy, lastUpdatedTime, bookingId);
-		
 		jdbcTemplate.update(CommunityHallBookingQueryBuilder.INSERT_BOOKING_DETAIL_AUDIT_QUERY, bookingId);
 		jdbcTemplate.update(CommunityHallBookingQueryBuilder.INSERT_SLOT_DETAIL_AUDIT_QUERY, bookingId);
 	}

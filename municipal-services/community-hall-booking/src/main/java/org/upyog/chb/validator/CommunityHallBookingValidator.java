@@ -49,7 +49,10 @@ public class CommunityHallBookingValidator {
 		}
 
 		mdmsValidator.validateMdmsData(bookingRequest, mdmsData);
-		validateDuplicateDocuments(bookingRequest);
+		// Documents are provided in update call, not mandatory on create. Validate only if provided.
+		if (bookingRequest.getHallsBookingApplication().getUploadedDocumentDetails() != null) {
+			validateDuplicateDocuments(bookingRequest);
+		}
 	}
 
 	public void validateUpdate(CommunityHallBookingDetail bookingDetailFromRequest, CommunityHallBookingDetail bookingDetailFromDB) {
@@ -77,8 +80,6 @@ public class CommunityHallBookingValidator {
 				else
 					documentFileStoreIds.add(document.getFileStoreId());
 			});
-		} else {
-			throw new CustomException(CommunityHallBookingConstants.EMPTY_DOCUMENT_ERROR, "Documents are mandatory for booking.");
 		}
 	}
 
@@ -124,7 +125,6 @@ public class CommunityHallBookingValidator {
 			validateSearchParams(criteria, allowedParams);
 		}
 	}
-
 	/**
 	 * Validates if the paramters coming in search are allowed
 	 * 

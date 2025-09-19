@@ -31,24 +31,24 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class CommunityHallBookingDetail {
-	
+
 	@JsonProperty("bookingId")
 	private String bookingId;
-	
+
 	private String bookingNo;
-	
+
 	private Long paymentDate;
-	
+
 	private Long applicationDate;
-	
+
 	@NotBlank
 	private String tenantId;
-	
+
 	@NotBlank
 	private String communityHallCode;
-	
+
 	private String communityHallName;
-	
+
 	@JsonProperty("bookingStatus")
 	private String bookingStatus;
 
@@ -59,36 +59,35 @@ public class CommunityHallBookingDetail {
 	@Valid
 	@NotNull
 	private BookingPurpose purpose;
-	
+
 	@NotBlank
 	private String purposeDescription;
-	
+
 	private String receiptNo;
-	
+
 	private String permissionLetterFilestoreId;
-	
+
 	private String paymentReceiptFilestoreId;
 
 	@NotNull
 	@Valid
 	private List<BookingSlotDetail> bookingSlotDetails;
-	
+
 	@JsonProperty("documents")
 	@Valid
 	private List<DocumentDetail> uploadedDocumentDetails;
-	
+
 	@Valid
 	private ApplicantDetail applicantDetail;
-	
-	@Valid 
+
+	@Valid
 	private Address address;
-	
+
 	private AuditDetails auditDetails;
-	
- 	private ProcessInstance workflow;
- 	
- 	private long timerValue;
-	
+
+	private ProcessInstance workflow;
+
+	private long timerValue;
 
 	public CommunityHallBookingDetail addUploadedDocumentDetailsItem(DocumentDetail uploadedDocumentDetailsItem) {
 		if (this.uploadedDocumentDetails == null) {
@@ -98,9 +97,8 @@ public class CommunityHallBookingDetail {
 		return this;
 	}
 
-
 	public CommunityHallBookingDetail addBookingSlots(BookingSlotDetail bookingSlotDetail) {
-		if(bookingSlotDetails == null){
+		if (bookingSlotDetails == null) {
 			bookingSlotDetails = new ArrayList<BookingSlotDetail>();
 		}
 		bookingSlotDetails.add(bookingSlotDetail);

@@ -82,7 +82,6 @@ public class CommunityHallBookingController {
 		 * 2. Update status when cancelled
 		 * 
 		 */
-		
 		CommunityHallBookingDetail bookingDetail = bookingService.updateBooking(communityHallsBookingRequest, null, 
 				 BookingStatusEnum.valueOf(communityHallsBookingRequest.getHallsBookingApplication().getBookingStatus()));
 		ResponseInfo info = CommunityHallBookingUtil.createReponseInfo(communityHallsBookingRequest.getRequestInfo(), CommunityHallBookingConstants.COMMUNITY_HALL_BOOKING_UPDATED,

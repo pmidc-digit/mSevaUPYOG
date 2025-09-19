@@ -1,6 +1,7 @@
 package org.upyog.chb.service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -50,12 +51,7 @@ public class EnrichmentService {
 			slot.setAuditDetails(auditDetails);
 		});
 		
-		//Updating id booking in documents
-		bookingDetail.getUploadedDocumentDetails().stream().forEach(document -> {
-			document.setBookingId(bookingId);
-			document.setDocumentDetailId(CommunityHallBookingUtil.getRandonUUID());
-			document.setAuditDetails(auditDetails);
-		});
+		// Do not enrich uploadedDocumentDetails on create; documents are added in update flow
 
 
 		bookingDetail.getApplicantDetail().setBookingId(bookingId);
@@ -104,25 +100,54 @@ public class EnrichmentService {
 		return idResponses.stream().map(IdResponse::getId).collect(Collectors.toList());
 	}
 
-	public void enrichUpdateBookingRequest(CommunityHallBookingRequest communityHallsBookingRequest, BookingStatusEnum statusEnum) {
-		AuditDetails auditDetails = CommunityHallBookingUtil.getAuditDetails(communityHallsBookingRequest.getRequestInfo().getUserInfo().getUuid(), false);
+	public void enrichUpdateBookingRequest(CommunityHallBookingRequest communityHallsBookingRequest,
+										   BookingStatusEnum statusEnum,
+										   Set<String> existingDocIds) {
+
+		String userUuid = communityHallsBookingRequest.getRequestInfo().getUserInfo().getUuid();
+		AuditDetails auditDetails = CommunityHallBookingUtil.getAuditDetails(userUuid, true);
 		CommunityHallBookingDetail bookingDetail = communityHallsBookingRequest.getHallsBookingApplication();
-		
-		// Remove manual status setting - workflow engine will handle all status transitions
-		// Only set payment date for payment-related updates
-		if (statusEnum != null && (statusEnum == BookingStatusEnum.BOOKED || statusEnum == BookingStatusEnum.PAYMENT_FAILED)) {
-			communityHallsBookingRequest.getHallsBookingApplication().setPaymentDate(auditDetails.getLastModifiedTime());
+
+		// Set payment date for payment-related updates
+		if (statusEnum != null &&
+				(statusEnum == BookingStatusEnum.BOOKED || statusEnum == BookingStatusEnum.PAYMENT_FAILED)) {
+			bookingDetail.setPaymentDate(auditDetails.getLastModifiedTime());
 		}
-		
-		communityHallsBookingRequest.getHallsBookingApplication().setAuditDetails(auditDetails);
-		
-		// Enrich workflow metadata if workflow object exists
+
+		// Update booking-level audit
+		bookingDetail.setAuditDetails(auditDetails);
+
+		// Enrich workflow metadata
 		if (bookingDetail.getWorkflow() != null) {
 			bookingDetail.getWorkflow().setBusinessService(config.getBusinessServiceName());
 			bookingDetail.getWorkflow().setModuleName(config.getModuleName());
 			bookingDetail.getWorkflow().setTenantId(bookingDetail.getTenantId());
 			bookingDetail.getWorkflow().setBusinessId(bookingDetail.getBookingNo());
 		}
+
+		// Enrich documents
+		if (bookingDetail.getUploadedDocumentDetails() != null) {
+			bookingDetail.getUploadedDocumentDetails().forEach(doc -> {
+				doc.setBookingId(bookingDetail.getBookingId());
+
+				if (doc.getDocumentDetailId() == null || !existingDocIds.contains(doc.getDocumentDetailId())) {
+					// New document → assign backend UUID + full audit
+					doc.setDocumentDetailId(CommunityHallBookingUtil.getRandonUUID());
+					AuditDetails newDocAudit = CommunityHallBookingUtil.getAuditDetails(userUuid, true);
+					doc.setAuditDetails(newDocAudit);
+				} else {
+					// Existing document → only update lastModified fields
+					AuditDetails oldAudit = doc.getAuditDetails();
+					if (oldAudit == null) {
+						oldAudit = new AuditDetails();
+					}
+					oldAudit.setLastModifiedBy(auditDetails.getLastModifiedBy());
+					oldAudit.setLastModifiedTime(auditDetails.getLastModifiedTime());
+					doc.setAuditDetails(oldAudit);
+				}
+			});
+		}
 	}
+
 
 }

@@ -77,6 +77,9 @@ import LayoutCLUDetails from "./pageComponents/LayoutCLUDetails";
 import LayoutSpecificationDetails from "./pageComponents/LayoutSpecificationDetails";
 import LayoutDocumentsRequired from "./pageComponents/LayoutDocumentsRequired";
 import LayoutSummary from "./pageComponents/LayoutSummary";
+import { NewSelfCertificationStepForm } from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepForm";
+import NewSelfCertificationStepFormOne from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormOne"
+import NewSelfCertificationStepFormTwo from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormTwo"
 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
@@ -196,6 +199,9 @@ const componentsToRegister = {
   LayoutSummary,
   LayoutLocalityInfo,
   LayoutCLUDetails,
+  NewSelfCertificationStepForm,
+  NewSelfCertificationStepFormOne,
+  NewSelfCertificationStepFormTwo,
   dummy
 }
 

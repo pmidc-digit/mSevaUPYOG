@@ -1,24 +1,60 @@
 import { useQuery, useQueryClient } from "react-query";
-/**
- * Custom hook to search and fetch specific documents for an application 
- * based on a document type code. It filters documents from the provided 
- * configuration, retrieves their fileStoreIds.
- */
 
-const useADSDocumentSearch = ({ application }, config = {}, Code, index) => {
+/**
+ * Robust ADS document search hook.
+ * Accepts many shapes for `config`:
+ *  - array of docs
+ *  - { value: [...] }
+ *  - { workflowDocs: [...] }
+ *  - { value: { documents: [...] } } (or nested .documents.documents)
+ * Falls back to application.documents if present.
+ */
+const useADSDocumentSearch = ({ application } = {}, config = {}, Code, index) => {
   const client = useQueryClient();
   const tenantId = application?.tenantId || Digit.ULBService.getCurrentTenantId();
-  const tenant = Digit.ULBService.getStateId();
+  const stateId = Digit.ULBService.getStateId();
   const bookingId = application?.bookingId;
-  let newDocs = [];
-  config?.value?.documents ? config?.value?.documents?.documents.filter(doc => doc?.documentType === Code /* || doc?.documentType?.includes(Code.split(".")[1]) */).map((ob)=>{
-    newDocs.push(ob);
-  }) : config?.value.filter(doc => doc?.documentType === Code/* || doc?.documentType?.includes(Code.split(".")[1]) */).map((ob)=>{
-    newDocs.push(ob);
-  })
-  const filesArray = newDocs.map((value) => value?.fileStoreId);
-  const { isLoading, error, data } = useQuery([`adsDocuments-${bookingId}`, filesArray], () => Digit.UploadServices.Filefetch(filesArray, tenant));
-  return { isLoading, error, data: { pdfFiles: data?.data }, revalidate: () => client.invalidateQueries([`chbDocuments-${bookingId}`, filesArray]) };
-  
+
+  // Normalize docs array from multiple possible shapes
+  let candidateDocs = [];
+
+  if (Array.isArray(config)) candidateDocs = config;
+  else if (Array.isArray(config?.value)) candidateDocs = config.value;
+  else if (Array.isArray(config?.workflowDocs)) candidateDocs = config.workflowDocs;
+  else if (Array.isArray(config?.value?.workflowDocs)) candidateDocs = config.value.workflowDocs;
+  else if (Array.isArray(config?.documents)) candidateDocs = config.documents;
+  else if (Array.isArray(config?.value?.documents)) candidateDocs = config.value.documents;
+  else if (Array.isArray(config?.value?.documents?.documents)) candidateDocs = config.value.documents.documents;
+  else if (Array.isArray(application?.documents)) candidateDocs = application.documents;
+  else candidateDocs = [];
+
+  // Filter docs by Code safely
+  const newDocs = Code ? candidateDocs.filter((doc) => doc && doc.documentType === Code) : candidateDocs;
+
+  // Extract fileStoreIds and drop falsy values
+  const filesArray = newDocs.map((v) => v?.fileStoreId).filter(Boolean);
+  console.log("useADSDocumentSearch candidateDocs:", candidateDocs, "Code:", Code);
+  console.log("useADSDocumentSearch newDocs:", newDocs);
+  console.log("useADSDocumentSearch filesArray:", filesArray);
+
+  const queryKey = [`adsDocuments-${bookingId}`, filesArray];
+
+  // Query function: don't call the file service if nothing to fetch
+  const queryFn = async () => {
+    if (!filesArray.length) return { data: {} }; // consistent fallback shape
+    return Digit.UploadServices.Filefetch(filesArray, stateId);
+  };
+
+  const { isLoading, error, data } = useQuery(queryKey, queryFn, {
+    staleTime: Infinity,
+  });
+
+  return {
+    isLoading,
+    error,
+    data: { pdfFiles: data?.data || {} },
+    revalidate: () => client.invalidateQueries(queryKey),
+  };
 };
+
 export default useADSDocumentSearch;

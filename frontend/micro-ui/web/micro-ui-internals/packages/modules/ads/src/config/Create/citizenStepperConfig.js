@@ -1,23 +1,7 @@
 export const citizenConfig = [
   {
-    head: "ES_TITILE_OWNER_DETAILS",
-    stepNumber: 1,
-    body: [
-      {
-        route: "owners",
-        component: "ADSCitizenDetailsNew",
-        withoutLabel: true,
-        key: "ownerss",
-        type: "component",
-        nextStep: "pet-details",
-        hideInEmployee: true,
-        isMandatory: true,
-      },
-    ],
-  },
-  {
     head: "ES_TITILE_PET_DETAILS",
-    stepNumber: 2,
+    stepNumber: 1,
     body: [
       {
         route: "pet-details",
@@ -28,6 +12,22 @@ export const citizenConfig = [
         isMandatory: true,
         hideInEmployee: true,
         nextStep: "documents",
+      },
+    ],
+  },
+  {
+    head: "ES_APPLICANT_DETAILA",
+    stepNumber: 2,
+    body: [
+      {
+        route: "owners",
+        component: "ADSCitizenDetailsNew",
+        withoutLabel: true,
+        key: "ownerss",
+        type: "component",
+        nextStep: "pet-details",
+        hideInEmployee: true,
+        isMandatory: true,
       },
     ],
   },

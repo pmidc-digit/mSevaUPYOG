@@ -8,7 +8,22 @@ import { EmployeeModuleCard } from "@mseva/digit-ui-react-components";
 
 const ADSCard = () => {
   const { t } = useTranslation();
-
+ const { data, isLoading, isFetching, isSuccess } = Digit.Hooks.useNewInboxGeneral({
+     tenantId: Digit.ULBService.getCurrentTenantId(),
+     ModuleCode: "ADS",
+     filters: { limit: 10, offset: 0, services: ["ads"] }, //edited this
+ 
+     config: {
+       select: (data) => {
+         return {tSotalCount:data?.totalCount,nearingSlaCount:data?.nearingSlaCount} || "-";
+       },
+       enabled: Digit.Utils.ptAccess(),
+     },
+   });
+ 
+   useEffect(() => {
+     if (!isFetching && isSuccess) setTotal(data);
+   }, [isFetching]);
   const [total, setTotal] = useState("-");
 
   if (!Digit.Utils.adsAccess()) {

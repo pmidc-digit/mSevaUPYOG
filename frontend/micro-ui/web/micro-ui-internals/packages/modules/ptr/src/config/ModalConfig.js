@@ -13,24 +13,33 @@ export const ModalConfig = ({
   assigneeLabel,
   businessService,
 }) => {
-  let checkCondtions = true;
-  if (action?.action == "SENDBACKTOCITIZEN" || action?.action == "REJECT" || action?.action == "SENDBACK" || action?.action === "APPROVE") checkCondtions = false;
-  if (action.isTerminateState) checkCondtions = false;
-
+  let checkAssigneeVisible = action?.action === "APPROVE" || action?.action === "VERIFY" || action?.action === "FORWARD";
+  let checkCommentsMandatory =
+    action?.action === "APPROVE" ||
+    action?.action === "VERIFY" ||
+    action?.action === "REJECT" ||
+    action?.action === "SENDBACKTOCITIZEN" ||
+    action?.action === "FORWARD";
+  if (action.isTerminateState) {
+    checkAssigneeVisible = false;
+    checkCommentsMandatory = true;
+  }
   return {
     label: {
-      heading: `WF_${action?.action}_APPLICATION`,
-      submit: `${action?.action}`,
-      cancel: "WF_EMPLOYEE_NEWTL_CANCEL",
+      heading: t(`WF_${action?.action}_APPLICATION`),
+      submit: t(`${action?.action}`),
+      cancel: t("WF_EMPLOYEE_NEWTL_CANCEL"),
     },
     form: [
       {
         body: [
           {
-            label: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_LABEL"),
-            placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
+            label: !checkAssigneeVisible ? null : t("WF_ASSIGNEE_NAME_LABEL"),
+            placeholder: !checkAssigneeVisible ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
             type: "dropdown",
-            populators: !checkCondtions ? null : (
+            isMandatory: checkAssigneeVisible,
+            validation: checkAssigneeVisible ? { required: true, message: t("CORE_COMMON_REQUIRED_ERRMSG") } : {},
+            populators: !checkAssigneeVisible ? null : (
               <Dropdown
                 option={approvers}
                 autoComplete="off"
@@ -44,6 +53,20 @@ export const ModalConfig = ({
           {
             label: t("WF_COMMON_COMMENTS"),
             type: "textarea",
+            isMandatory:
+              action?.action === "REJECT" ||
+              action?.action === "APPROVE" ||
+              action?.action === "VERIFY" ||
+              action?.action === "SENDBACKTOCITIZEN" ||
+              action?.action === "FORWARD",
+            validation:
+              action?.action === "REJECT" ||
+              action?.action === "APPROVE" ||
+              action?.action === "VERIFY" ||
+              action?.action === "SENDBACKTOCITIZEN" ||
+              action?.action === "FORWARD"
+                ? { required: true, message: t("CORE_COMMON_REQUIRED_ERRMSG") }
+                : {},
             populators: {
               name: "comments",
             },

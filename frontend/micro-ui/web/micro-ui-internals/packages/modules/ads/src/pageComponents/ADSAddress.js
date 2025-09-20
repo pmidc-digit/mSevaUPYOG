@@ -1,375 +1,426 @@
-import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, CardSubHeader, Dropdown, TextArea, Card } from "@mseva/digit-ui-react-components";
-import { useLocation } from "react-router-dom";
-import { useForm, Controller } from "react-hook-form";
-import Timeline from "../components/ADSTimeline";
-import ADSCartAndCancellationPolicyDetails from "../components/ADSCartAndCancellationPolicyDetails";
-import { TimerValues } from "../components/TimerValues";
+import React, { useEffect, useState, useRef } from "react";
+import { TextInput, CardLabel, TextArea } from "@mseva/digit-ui-react-components";
 
-/*
- * ADSAddress component for capturing address details.
- * Integrates with hooks for fetching cities and localities.
- */
+const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) => {
+  // const allCities = Digit.Hooks.ads.useTenants();
 
-const ADSAddress = ({ t, config, onSelect, userType, formData, value = formData.adslist }) => {
-  const { pathname: url } = useLocation();
-  let index = window.location.href.charAt(window.location.href.length - 1);
-  const allCities = Digit.Hooks.ads.useTenants();
-  const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
-  const { pathname } = useLocation();
-  let validation = {};
+  const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
 
-  const user = Digit.UserService.getUser().info;
-  const mutation = Digit.Hooks.ads.useADSCreateAPI();
-  const [pincode, setPincode] = useState(
-    (formData.address && formData.address[index] && formData.address[index].pincode) ||
-      formData?.address?.pincode ||
-      value?.existingDataSet?.address?.pincode ||
-      ""
-  );
-  const [city, setCity] = useState(
-    (formData.address && formData.address[index] && formData.address[index].city) ||
-      formData?.address?.city ||
-      value?.existingDataSet?.address?.city ||
-      ""
-  );
-  const [locality, setLocality] = useState(
-    (formData.address && formData.address[index] && formData.address[index].locality) ||
-      formData?.address?.locality ||
-      value?.existingDataSet?.address?.locality ||
-      ""
-  );
-  const [streetName, setStreetName] = useState(
-    (formData.address && formData.address[index] && formData.address[index].streetName) ||
-      formData?.address?.streetName ||
-      value?.existingDataSet?.address?.streetName ||
-      ""
-  );
-  const [houseNo, setHouseNo] = useState(
-    (formData.address && formData.address[index] && formData.address[index].houseNo) ||
-      formData?.address?.houseNo ||
-      value?.existingDataSet?.address?.houseNo ||
-      ""
-  );
-  const [landmark, setLandmark] = useState(
-    (formData.address && formData.address[index] && formData.address[index].landmark) ||
-      formData?.address?.landmark ||
-      value?.existingDataSet?.address?.landmark ||
-      ""
-  );
-  const [houseName, setHouseName] = useState(
-    (formData.address && formData.address[index] && formData.address[index].houseName) ||
-      formData?.address?.houseName ||
-      value?.existingDataSet?.address?.houseName ||
-      ""
-  );
-  const [addressline1, setAddressline1] = useState(
-    (formData.address && formData.address[index] && formData.address[index].addressline1) ||
-      formData?.address?.addressline1 ||
-      value?.existingDataSet?.address?.addressline1 ||
-      ""
-  );
-  const [addressline2, setAddressline2] = useState(
-    (formData.address && formData.address[index] && formData.address[index].addressline2) ||
-      formData?.address?.addressline2 ||
-      value?.existingDataSet?.address?.addressline2 ||
-      ""
-  );
+  let tenantId;
+  if (currentUserType === "CITIZEN") {
+    tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  } else {
+    tenantId = Digit.ULBService.getCurrentPermanentCity();
+  }
 
-  const { data: fetchedLocalities, isLoading: isLoadingLocalities } = Digit.Hooks.useBoundaryLocalities(
-    city?.code,
-    "revenue",
-    {
-      enabled: !!city,
-    },
-    t
-  );
+  // State for each field
+  const [addressId, setAddressId] = useState(value?.addressId || "");
+  const [doorNo, setDoorNo] = useState(value?.doorNo || "");
+  const [houseNo, setHouseNo] = useState(value?.houseNo || "");
+  const [houseName, setHouseName] = useState(value?.houseName || "");
+  const [streetName, setStreetName] = useState(value?.streetName || "");
+  const [addressline1, setAddressline1] = useState(value?.addressline1 || "");
+  const [addressline2, setAddressline2] = useState(value?.addressline2 || "");
+  const [landmark, setLandmark] = useState(value?.landmark || "");
+  const [pincode, setPincode] = useState(value?.pincode || "");
+  // const [selectedCity, setSelectedCity] = useState(value?.city || null);
+  // const [selectedLocality, setSelectedLocality] = useState(value?.locality || null);
+  // const [localities, setLocalities] = useState([]);
 
-  // Fixing the locality data coming from the useboundarylocalities hook
-  let structuredLocality = [];
-  fetchedLocalities &&
-    fetchedLocalities.map((local, index) => {
-      structuredLocality.push({ i18nKey: local.i18nkey, code: local.code, label: local.label, area: local.area, boundaryNum: local.boundaryNum });
-    });
+  const [city, setCity] = useState(value?.city || "");
+  const [locality, setLocality] = useState(value?.locality || "");
 
-  const setAddressPincode = (e) => {
-    // Get the input value and remove any non-digit characters using a regex
-    const newPincode = e.target.value.replace(/\D/g, "").slice(0, 6); // Remove non-digits and truncate to 6 characters
-    setPincode(newPincode);
-  };
+  // Error state
+  const [errors, setErrors] = useState({});
 
-  const setApplicantStreetName = (e) => {
-    setStreetName(e.target.value);
-  };
-
-  const setApplicantHouseNo = (e) => {
-    setHouseNo(e.target.value);
-  };
-
-  const setApplicantLandmark = (e) => {
-    setLandmark(e.target.value);
-  };
-
-  const sethouseName = (e) => {
-    setHouseName(e.target.value);
-  };
-
-  const setaddressline1 = (e) => {
-    setAddressline1(e.target.value);
-  };
-
-  const setaddressline2 = (e) => {
-    setAddressline2(e.target.value);
-  };
-
-  const goNext = () => {
-    let cartDetails = value?.cartDetails.map((slot) => {
-      return {
-        addType: slot.addTypeCode,
-        faceArea: slot.faceAreaCode,
-        location: slot.locationCode,
-        nightLight: slot.nightLight === "Yes" ? true : false,
-        bookingDate: slot.bookingDate,
-        bookingFromTime: "06:00",
-        bookingToTime: "05:59",
-        status: "BOOKING_CREATED",
-      };
-    });
-    // Create the formdata object
-    const formdata = {
-      bookingApplication: {
-        tenantId: tenantId,
-        draftId: formData?.applicant?.draftId,
-        applicantDetail: {
-          applicantName: formData?.applicant?.applicantName,
-          applicantMobileNo: formData?.applicant?.mobileNumber,
-          applicantAlternateMobileNo: formData?.applicant?.alternateNumber,
-          applicantEmailId: formData?.applicant?.emailId,
-        },
-        addressdetails: {
-          pincode: pincode,
-          city: city?.city?.name,
-          cityCode: city?.city?.code,
-          locality: locality?.i18nKey,
-          localityCode: locality?.code,
-          streetName: streetName,
-          addressLine1: addressline1,
-          addressLine2: addressline2,
-          houseNo: houseNo,
-          landmark: landmark,
-        },
-
-        cartDetails: cartDetails,
-        bookingStatus: "BOOKING_CREATED",
-      },
-      isDraftApplication: true,
-    };
-    // Trigger the mutation
-    mutation.mutate(formdata);
-    let applicantData = formData.address && formData.address[index];
-    let applicantStep = { ...applicantData, pincode, city, locality, streetName, houseNo, landmark, houseName, addressline1, addressline2 };
-    onSelect(config.key, { ...formData[config.key], ...applicantStep }, false, index);
-  };
-
-  const { control } = useForm();
-  const onSkip = () => onSelect();
-
+  // Sync incoming value
   useEffect(() => {
-    if (userType === "citizen") {
-      goNext();
+    setAddressId(value?.addressId || "");
+    setDoorNo(value?.doorNo || "");
+    setHouseNo(value?.houseNo || "");
+    setHouseName(value?.houseName || "");
+    setStreetName(value?.streetName || "");
+    setAddressline1(value?.addressline1 || "");
+    setAddressline2(value?.addressline2 || "");
+    setLandmark(value?.landmark || "");
+    setPincode(value?.pincode || "");
+    // setSelectedCity(value?.city || null);
+    // setSelectedLocality(value?.locality || null);
+    setCity(value?.city || "");
+    setLocality(value?.locality || "");
+  }, [value]);
+
+  // Keep latest onChange in a ref
+  useEffect(() => {
+    if (value?.city) setCity(value.city);
+  }, [value]);
+
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  const onBlurRef = useRef(onBlur);
+  useEffect(() => {
+    onBlurRef.current = onBlur;
+  }, [onBlur]);
+
+  // Update parent
+  // const updateParent = (updatedFields = {}) => {
+  //   const currentCity = updatedFields.city ?? selectedCity ?? (value?.city || "");
+  //   const currentLocality = updatedFields.locality ?? selectedLocality ?? (value?.locality || "");
+
+  //   const addr = {
+  //     addressId,
+  //     doorNo,
+  //     houseNo,
+  //     houseName,
+  //     streetName,
+  //     addressline1,
+  //     addressline2,
+  //     landmark,
+  //     pincode,
+  //     city: currentCity,
+  //     cityCode: (currentCity && (currentCity.code || (currentCity.city && currentCity.city.code))) || "",
+  //     locality: currentLocality,
+  //     localityCode: (currentLocality && (currentLocality.code || currentLocality)) || "",
+  //     ...updatedFields,
+  //   };
+  //   onChangeRef.current?.(addr);
+  // };
+
+  const updateParent = (updatedFields = {}) => {
+    const currentCity = updatedFields.city ?? city ?? (value?.city || "");
+    const currentLocality = updatedFields.locality ?? locality ?? (value?.locality || "");
+
+    const addr = {
+      addressId,
+      doorNo,
+      houseNo,
+      houseName,
+      streetName,
+      addressline1,
+      addressline2,
+      landmark,
+      pincode,
+      city: currentCity,
+      // if city is object keep code, else use the city string
+      cityCode: typeof currentCity === "object" ? currentCity.code || (currentCity.city && currentCity.city.code) || "" : currentCity || "",
+      locality: currentLocality,
+      // if locality is object keep code, else use the locality string
+      localityCode: typeof currentLocality === "object" ? currentLocality.code || currentLocality : currentLocality || "",
+      ...updatedFields,
+    };
+    onChangeRef.current?.(addr);
+  };
+
+  // Localities
+  // const { data: fetchedLocalities, isLoading: isLoadingLocalities } = Digit.Hooks.useBoundaryLocalities(
+  //   selectedCity?.code || "",
+  //   "revenue",
+  //   { enabled: !!selectedCity && !!selectedCity.code },
+  //   t
+  // );
+
+  // const structuredLocality = Array.isArray(fetchedLocalities)
+  //   ? fetchedLocalities.map((local) => ({
+  //       i18nKey: local.i18nkey || local.i18nKey || local.label,
+  //       code: local.code,
+  //       label: local.label || local.name || local.i18nKey,
+  //       area: local.area,
+  //       boundaryNum: local.boundaryNum,
+  //     }))
+  //   : [];
+
+  // Pincode restriction
+  const setAddressPincode = (e) => {
+    const newPincode = String(e.target.value || "")
+      .replace(/\D/g, "")
+      .slice(0, 6);
+    setPincode(newPincode);
+    updateParent({ pincode: newPincode });
+    if (!newPincode) {
+      setErrors((prev) => ({ ...prev, pincode: "Pincode is required" }));
+    } else {
+      setErrors((prev) => ({ ...prev, pincode: "" }));
     }
-  }, [goNext, userType]);
+  };
+
+  // useEffect(() => {
+  //   console.log("ADSAddress: useEffect for localities triggered");
+  //   console.log("ADSAddress: selectedCity:", selectedCity);
+  //   console.log("ADSAddress: fetchedLocalities:", fetchedLocalities);
+
+  //   if (!selectedCity || !fetchedLocalities) return;
+
+  //   const __localityList = Array.isArray(fetchedLocalities) ? fetchedLocalities : [];
+  //   const mapped = __localityList.map((local) => ({
+  //     i18nKey: local.i18nkey || local.i18nKey || local.label || local.name,
+  //     code: local.code,
+  //     label: local.label || local.name || local.i18nKey,
+  //     pincode: local.pincode,
+  //     area: local.area,
+  //     boundaryNum: local.boundaryNum,
+  //   }));
+
+  //   const filteredByPincode = pincode
+  //     ? mapped.filter((obj) => Array.isArray(obj.pincode) && obj.pincode.some((pin) => String(pin) === String(pincode)))
+  //     : [];
+
+  //   const finalList = filteredByPincode.length > 0 ? filteredByPincode : mapped;
+
+  //   setLocalities(finalList);
+
+  //   if (finalList.length === 1 && (!selectedLocality || selectedLocality.code !== finalList[0].code)) {
+  //     setSelectedLocality(finalList[0]);
+  //     updateParent({ locality: finalList[0] });
+  //   } else if (selectedLocality && !finalList.find((l) => l.code === (selectedLocality.code || selectedLocality))) {
+  //     setSelectedLocality(null);
+  //     updateParent({ locality: null });
+  //   }
+  // }, [fetchedLocalities, selectedCity, pincode, selectedLocality]);
+
+  // Validation rules
+  const validateField = (name, value) => {
+    const optionalFields = ["doorNo", "addressId", "addressline2"];
+    const trimmedValue = value?.trim() || "";
+
+    // Check for required fields
+    if (!optionalFields.includes(name) && (!value || trimmedValue === "")) {
+      setErrors((prev) => ({ ...prev, [name]: `${name.replace(/([A-Z])/g, " $1")} is required` }));
+    } else if (name === "city" || name === "locality") {
+      // Only allow letters and spaces, minimum 2 characters, not just spaces
+      const charOnlyRegex = /^[a-zA-Z\s]{2,}$/;
+      if (!charOnlyRegex.test(trimmedValue) || trimmedValue.length < 2) {
+        setErrors((prev) => ({
+          ...prev,
+          [name]: `${name.replace(/([A-Z])/g, " $1")} must contain at least 2 letters and can only contain letters and spaces`,
+        }));
+      } else {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    } else if (!optionalFields.includes(name)) {
+      // For other required fields: minimum 2 characters, allow chars/numbers/special chars
+      if (trimmedValue.length < 2) {
+        setErrors((prev) => ({ ...prev, [name]: `${name.replace(/([A-Z])/g, " $1")} must contain at least 2 characters` }));
+      } else {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    } else {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
 
   return (
-    <React.Fragment>
-      {window.location.href.includes("/citizen") ? <Timeline currentStep={2} /> : null}
-      <Card>
-        <div style={{ position: "relative" }}>
-          <CardSubHeader style={{ position: "absolute", right: 0 }}>
-            <TimerValues
-              timerValues={value?.existingDataSet?.timervalue?.timervalue}
-              SlotSearchData={value?.cartDetails}
-              draftId={value?.existingDataSet?.draftId}
-            />
-          </CardSubHeader>
-          <ADSCartAndCancellationPolicyDetails />
-        </div>
-      </Card>
-      <FormStep
-        config={config}
-        onSelect={goNext}
-        onSkip={onSkip}
-        t={t}
-        isDisabled={!pincode || !city || !streetName || !houseNo || !landmark || !locality || !addressline1}
-      >
-        <div>
-          <CardLabel>
-            {`${t("ADS_HOUSE_NO")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="houseNo"
-            value={houseNo}
-            placeholder={"Enter House No"}
-            onChange={setApplicantHouseNo}
-            style={{ width: user.type === "EMPLOYEE" ? "50%" : "86%" }}
-            ValidationRequired={true}
-            {...(validation = {
-              isRequired: true,
-              pattern: "^[a-zA-Z0-9 ,\\-]+$",
-              type: "text",
-              title: t("ADS_HOUSE_NO_ERROR_MESSAGE"),
-            })}
-          />
+    <div>
+      {/* Address ID - optional */}
+      <CardLabel>{t ? t("ADS_ADDRESS_ID") : "Address ID"}</CardLabel>
+      <TextInput
+        value={addressId}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-          <CardLabel>{`${t("ADS_HOUSE_NAME")}`}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="houseName"
-            value={houseName}
-            placeholder={"Enter House Name"}
-            onChange={sethouseName}
-            style={{ width: user.type === "EMPLOYEE" ? "50%" : "86%" }}
-            ValidationRequired={false}
-          />
+          setAddressId(trimmedValue);
+          updateParent({ addressId: trimmedValue });
+          validateField("addressId", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.addressId && <div style={{ color: "red" }}>{errors.addressId}</div>}
 
-          <CardLabel>
-            {`${t("ADS_STREET_NAME")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="streetName"
-            value={streetName}
-            placeholder={"Enter Street Name"}
-            onChange={setApplicantStreetName}
-            style={{ width: user.type === "EMPLOYEE" ? "50%" : "86%" }}
-            ValidationRequired={true}
-            {...(validation = {
-              pattern: "^[a-zA-Z0-9 ,\\-]+$",
-              type: "text",
-              title: t("ADS_STREET_NAME_ERROR_MESSAGE"),
-            })}
-          />
+      {/* Door No - optional */}
+      <CardLabel>{t ? t("ADS_DOOR_NO") : "Door No"}</CardLabel>
+      <TextInput
+        value={doorNo}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-          <CardLabel>
-            {`${t("ADS_ADDRESS_LINE1")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="addressline1"
-            value={addressline1}
-            placeholder={"Enter Address"}
-            onChange={setaddressline1}
-            style={{ width: user.type === "EMPLOYEE" ? "50%" : "86%" }}
-            ValidationRequired={false}
-          />
+          setDoorNo(trimmedValue);
+          updateParent({ doorNo: trimmedValue });
+          validateField("doorNo", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.doorNo && <div style={{ color: "red" }}>{errors.doorNo}</div>}
 
-          <CardLabel>{`${t("ADS_ADDRESS_LINE2")}`}</CardLabel>
-          <TextInput
-            t={t}
-            type={"text"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="addressline2"
-            value={addressline2}
-            placeholder={"Enter Address"}
-            onChange={setaddressline2}
-            style={{ width: user.type === "EMPLOYEE" ? "50%" : "86%" }}
-            ValidationRequired={false}
-          />
-          <CardLabel>
-            {`${t("ADS_LANDMARK")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <TextArea
-            t={t}
-            type={"textarea"}
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="landmark"
-            value={landmark}
-            placeholder={"Enter Landmark"}
-            onChange={setApplicantLandmark}
-            style={{ width: "50%" }}
-            ValidationRequired={true}
-            {...(validation = {
-              isRequired: true,
-              pattern: "^[a-zA-Z0-9 ,\\-]+$",
-              type: "textarea",
-              title: t("ADS_LANDMARK_ERROR_MESSAGE"),
-            })}
-          />
+      {/* House No */}
+      <CardLabel>
+        {t ? t("ADS_HOUSE_NO") : "House No"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={houseNo}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-          <CardLabel>
-            {`${t("ADS_CITY")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <Controller
-            control={control}
-            name={"city"}
-            defaultValue={city}
-            rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
-            render={(props) => (
-              <Dropdown className="form-field" selected={city} select={setCity} option={allCities} optionKey="i18nKey" t={t} placeholder={"Select"} />
-            )}
-          />
-          <CardLabel>
-            {`${t("ADS_LOCALITY")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <Controller
-            control={control}
-            name={"locality"}
-            defaultValue={locality}
-            rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
-            render={(props) => (
-              <Dropdown
-                className="form-field"
-                selected={locality}
-                select={setLocality}
-                option={structuredLocality}
-                optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
-                optionKey="i18nKey"
-                t={t}
-                placeholder={"Select"}
-              />
-            )}
-          />
+          setHouseNo(trimmedValue);
+          updateParent({ houseNo: trimmedValue });
+          validateField("houseNo", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.houseNo && <div style={{ color: "red" }}>{errors.houseNo}</div>}
 
-          <CardLabel>
-            {`${t("ADS_ADDRESS_PINCODE")}`} <span className="check-page-link-button">*</span>
-          </CardLabel>
-          <TextInput
-            t={t}
-            type="text"
-            isMandatory={false}
-            optionKey="i18nKey"
-            name="pincode"
-            value={pincode}
-            onChange={setAddressPincode}
-            placeholder="Enter Pincode"
-            style={{ width: user.type === "EMPLOYEE" ? "50%" : "86%" }}
-            ValidationRequired={true}
-            validation={{
-              pattern: "[0-9]{6}",
-              type: "text",
-              title: t("CHB_ADDRESS_PINCODE_INVALID"),
-            }}
-            minLength={6}
-            maxLength={6}
-          />
-        </div>
-      </FormStep>
-    </React.Fragment>
+      {/* House Name */}
+      <CardLabel>
+        {t ? t("ADS_HOUSE_NAME") : "House Name"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={houseName}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
+
+          setHouseName(trimmedValue);
+          updateParent({ houseName: trimmedValue });
+          validateField("houseName", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.houseName && <div style={{ color: "red" }}>{errors.houseName}</div>}
+
+      {/* Street Name */}
+      <CardLabel>
+        {t ? t("ADS_STREET_NAME") : "Street Name"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={streetName}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
+
+          setStreetName(trimmedValue);
+          updateParent({ streetName: trimmedValue });
+          validateField("streetName", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.streetName && <div style={{ color: "red" }}>{errors.streetName}</div>}
+
+      {/* Address Line 1 */}
+      <CardLabel>
+        {t ? t("ADS_ADDRESS_LINE1") : "Address Line 1"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={addressline1}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
+
+          setAddressline1(trimmedValue);
+          updateParent({ addressline1: trimmedValue });
+          validateField("addressline1", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.addressline1 && <div style={{ color: "red" }}>{errors.addressline1}</div>}
+
+      {/* Address Line 2 - optional */}
+      <CardLabel>{t ? t("ADS_ADDRESS_LINE2") : "Address Line 2"}</CardLabel>
+      <TextInput
+        value={addressline2}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
+
+          setAddressline2(trimmedValue);
+          updateParent({ addressline2: trimmedValue });
+          validateField("addressline2", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.addressline2 && <div style={{ color: "red" }}>{errors.addressline2}</div>}
+
+      {/* Landmark */}
+      <CardLabel>
+        {t ? t("ADS_LANDMARK") : "Landmark"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextArea
+        value={landmark}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
+
+          setLandmark(trimmedValue);
+          updateParent({ landmark: trimmedValue });
+          validateField("landmark", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+        style={{ width: "50%" }}
+      />
+      {errors.landmark && <div style={{ color: "red" }}>{errors.landmark}</div>}
+
+      {/* City */}
+      {/* <CardLabel>
+        {t ? t("ADS_CITY") : "City"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <Dropdown
+        selected={selectedCity}
+        select={(val) => {
+          // keep handler in case of programmatic changes (UI is disabled)
+          setSelectedCity(val);
+          updateParent({ city: val });
+          validateField("city", val);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+        option={allCities}
+        optionKey="i18nKey"
+        disable={true} // IMPORTANT: user cannot edit city
+      />
+
+      {errors.city && <div style={{ color: "red" }}>{errors.city}</div>} */}
+
+      {/* Locality */}
+      {/* <CardLabel>
+        {t ? t("ADS_LOCALITY") : "Locality"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <Dropdown
+        selected={selectedLocality}
+        select={(val) => {
+          setSelectedLocality(val);
+          updateParent({ locality: val });
+          validateField("locality", val);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+        option={localities}
+        optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
+        optionKey="i18nKey"
+        disabled={isLoadingLocalities}
+        placeholder={t ? t("ADS_SELECT_LOCALITY") : "Select Locality"}
+      />
+
+      {errors.locality && <div style={{ color: "red" }}>{errors.locality}</div>} */}
+      <CardLabel>
+        {t ? t("ADS_CITY") : "City"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={city}
+        onChange={(e) => {
+          const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "").trim(); // Remove non-letter characters and trim
+          setCity(filteredValue);
+          updateParent({ city: filteredValue });
+          validateField("city", filteredValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.city && <div style={{ color: "red" }}>{errors.city}</div>}
+
+      <CardLabel>
+        {t ? t("ADS_LOCALITY") : "Locality"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={locality}
+        onChange={(e) => {
+          const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "").trim(); // Remove non-letter characters and trim
+          setLocality(filteredValue);
+          updateParent({ locality: filteredValue });
+          validateField("locality", filteredValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.locality && <div style={{ color: "red" }}>{errors.locality}</div>}
+
+      {/* Pincode */}
+      <CardLabel>
+        {t ? t("ADS_ADDRESS_PINCODE") : "Pincode"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput value={pincode} onChange={setAddressPincode} maxLength={6} />
+      {errors.pincode && <div style={{ color: "red" }}>{errors.pincode}</div>}
+    </div>
   );
 };
 

@@ -14,7 +14,6 @@ function PTRDocument({ petdetail = {} }) {
   const documents = petdetail?.documents || [];
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePetDocumentSearch({ petdetail });
 
-
   if (isLoading) {
     return <Loader />;
   }

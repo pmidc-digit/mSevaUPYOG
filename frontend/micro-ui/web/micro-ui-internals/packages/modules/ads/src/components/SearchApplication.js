@@ -26,29 +26,36 @@ import ADSCancelBooking from "./ADSCancelBooking";
  * It provides search filters like booking number,status, mobile number, and date range.
  * The component also includes ability to view details or cancel bookings.
  */
-const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, setShowToast }) => {
+const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, setShowToast, userType }) => {
   const isMobile = window.Digit.Utils.browser.isMobile();
   const { register, control, handleSubmit, setValue, getValues, reset, formState } = useForm({
     defaultValues: {
       offset: 0,
       limit: !isMobile && 10,
-      sortBy: "commencementDate",
+      sortBy: "createdTime",
       sortOrder: "DESC",
       fromDate: new Date().toISOString().split("T")[0], // Default to today's date
       toDate: new Date().toISOString().split("T")[0], // Default to today's date
-      status: { i18nKey: "Booked", code: "BOOKED", value: t("CHB_BOOKED") },
+      // status: { i18nKey: "Booked", code: "BOOKED", value: t("CHB_BOOKED") },
+      status: "",
     },
   });
+
+  console.log("data :>> ", data);
   useEffect(() => {
     register("offset", 0);
     register("limit", 10);
-    register("sortBy", "commencementDate");
+    register("sortBy", "createdTime");
     register("sortOrder", "DESC");
     handleSubmit(onSubmit)();
   }, [register]);
   const [bookingDetails, setBookingDetails] = useState("");
   const [showModal, setShowModal] = useState(false);
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
+  const history = useHistory();
+  const pathname = history?.location?.pathname || "";
+  const advCode = pathname.split("/").pop(); // ✅ Extracts the last segment
+
   // to do
 
   const { data: Face } = Digit.Hooks.useCustomMDMS(Digit.ULBService.getStateId(), "Advertisement", [{ name: "FaceArea" }], {
@@ -84,12 +91,14 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
         accessor: "bookingNo",
         disableSortBy: true,
         Cell: ({ row }) => {
+          const detailsPath =
+            userType === "citizen"
+              ? `/digit-ui/citizen/ads/application/${row.original["bookingNo"]}/${tenantId}`
+              : `/digit-ui/employee/ads/applicationsearch/application-details/${row.original["bookingNo"]}`;
           return (
             <div>
               <span className="link">
-                <Link to={`/digit-ui/employee/ads/applicationsearch/application-details/${row.original["bookingNo"]}`}>
-                  {row.original["bookingNo"]}
-                </Link>
+                <Link to={detailsPath}>{row.original["bookingNo"]}</Link>
               </span>
             </div>
           );
@@ -123,135 +132,136 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
         disableSortBy: true,
       },
 
-      {
-        Header: t("ADS_ACTIONS"),
-        Cell: ({ row }) => {
-          const [isMenuOpen, setIsMenuOpen] = useState(false);
-          const menuRef = useRef();
-          const history = useHistory(); // Initialize history
+      // {
+      //   Header: t("ADS_ACTIONS"),
+      //   Cell: ({ row }) => {
+      //     const [isMenuOpen, setIsMenuOpen] = useState(false);
+      //     const menuRef = useRef();
+      //     const history = useHistory(); // Initialize history
 
-          const toggleMenu = () => {
-            setIsMenuOpen(!isMenuOpen);
-          };
+      //     const toggleMenu = () => {
+      //       setIsMenuOpen(!isMenuOpen);
+      //     };
 
-          const closeMenu = (e) => {
-            if (menuRef.current && !menuRef.current.contains(e.target)) {
-              setIsMenuOpen(false);
-            }
-          };
+      //     const closeMenu = (e) => {
+      //       if (menuRef.current && !menuRef.current.contains(e.target)) {
+      //         setIsMenuOpen(false);
+      //       }
+      //     };
 
-          React.useEffect(() => {
-            document.addEventListener("mousedown", closeMenu);
-            return () => {
-              document.removeEventListener("mousedown", closeMenu);
-            };
-          }, []);
+      //     React.useEffect(() => {
+      //       document.addEventListener("mousedown", closeMenu);
+      //       return () => {
+      //         document.removeEventListener("mousedown", closeMenu);
+      //       };
+      //     }, []);
 
-          let application = row?.original;
+      //     let application = row?.original;
 
-          const handleCancel = async () => {
-            setShowModal(true);
-            setBookingDetails(row?.original);
-          };
-          const slotSearchData = Digit.Hooks.ads.useADSSlotSearch();
-          let formdata = {
-            advertisementSlotSearchCriteria: application?.cartDetails.map((item) => ({
-              bookingId: application?.bookingId,
-              addType: item?.addType,
-              bookingStartDate: item?.bookingDate,
-              bookingEndDate: item?.bookingDate,
-              faceArea: item?.faceArea,
-              tenantId: tenantId,
-              location: item?.location,
-              nightLight: item?.nightLight,
-              isTimerRequired: true,
-            })),
-          };
-          const handleMakePayment = async () => {
-            try {
-              // Await the mutation and capture the result directly
-              const result = await slotSearchData.mutateAsync(formdata);
-              let SlotSearchData = {
-                bookingId: application?.bookingId,
-                tenantId: tenantId,
-                cartDetails: application?.cartDetails,
-              };
-              const isSlotBooked = result?.advertisementSlotAvailabiltityDetails?.some((slot) => slot.slotStaus === "BOOKED");
-              const timerValue = result?.advertisementSlotAvailabiltityDetails[0].timerValue;
-              if (isSlotBooked) {
-                setShowToast({ error: true, label: t("ADS_ADVERTISEMENT_ALREADY_BOOKED") });
-              } else {
-                history.push({
-                  pathname: `/digit-ui/employee/payment/collect/${"adv-services"}/${application?.bookingNo}`,
-                  state: {
-                    tenantId: application?.tenantId,
-                    bookingNo: application?.bookingNo,
-                    timerValue: timerValue,
-                    SlotSearchData: SlotSearchData,
-                  },
-                });
-              }
-            } catch (error) {
-              setShowToast({ error: true, label: t("CS_SOMETHING_WENT_WRONG") });
-            }
-          };
-          return (
-            <div ref={menuRef}>
-              <React.Fragment>
-                <SubmitBar
-                  label={t("WF_TAKE_ACTION")}
-                  onSubmit={toggleMenu}
-                  disabled={application?.bookingStatus === "CANCELLED" || application?.bookingStatus === "EXPIRED"} // Disable button
-                />
-                {isMenuOpen && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      backgroundColor: "white",
-                      border: "1px solid #ccc",
-                      borderRadius: "4px",
-                      padding: "8px",
-                      zIndex: 1000,
-                    }}
-                  >
-                    {/* Action for Cancel */}
-                    {application?.bookingStatus === "BOOKED" && (
-                      <div
-                        onClick={handleCancel}
-                        style={{
-                          display: "block",
-                          padding: "8px",
-                          textDecoration: "none",
-                          color: "black",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {t("ADS_CANCEL")}
-                      </div>
-                    )}
+      //     const handleCancel = async () => {
+      //       setShowModal(true);
+      //       setBookingDetails(row?.original);
+      //     };
+      //     const slotSearchData = Digit.Hooks.ads.useADSSlotSearch();
+      //     let formdata = {
+      //       advertisementSlotSearchCriteria: application?.cartDetails.map((item) => ({
+      //         bookingId: application?.bookingId,
+      //         addType: item?.addType,
+      //         bookingStartDate: item?.bookingDate,
+      //         bookingEndDate: item?.bookingDate,
+      //         faceArea: item?.faceArea,
+      //         tenantId: tenantId,
+      //         location: item?.location,
+      //         nightLight: item?.nightLight,
+      //         isTimerRequired: true,
+      //       })),
+      //     };
+      //     const handleMakePayment = async () => {
+      //       try {
+      //         // /digit-ui/employee/payment/collect/${"adv-services"}/${application?.bookingNo}
+      //         // Await the mutation and capture the result directly
+      //         const result = await slotSearchData.mutateAsync(formdata);
+      //         let SlotSearchData = {
+      //           bookingId: application?.bookingId,
+      //           tenantId: tenantId,
+      //           cartDetails: application?.cartDetails,
+      //         };
+      //         const isSlotBooked = result?.advertisementSlotAvailabiltityDetails?.some((slot) => slot.slotStaus === "BOOKED");
+      //         const timerValue = result?.advertisementSlotAvailabiltityDetails[0].timerValue;
+      //         if (isSlotBooked) {
+      //           setShowToast({ error: true, label: t("ADS_ADVERTISEMENT_ALREADY_BOOKED") });
+      //         } else {
+      //           history.push({
+      //             pathname: `/digit-ui/citizen/payment/collect/ADS/${advCode}/${tenantId}`,
+      //             state: {
+      //               tenantId: application?.tenantId,
+      //               bookingNo: application?.bookingNo,
+      //               timerValue: timerValue,
+      //               SlotSearchData: SlotSearchData,
+      //             },
+      //           });
+      //         }
+      //       } catch (error) {
+      //         setShowToast({ error: true, label: t("CS_SOMETHING_WENT_WRONG") });
+      //       }
+      //     };
+      //     return (
+      //       <div ref={menuRef}>
+      //         <React.Fragment>
+      //           <SubmitBar
+      //             label={t("WF_TAKE_ACTION")}
+      //             onSubmit={toggleMenu}
+      //             disabled={application?.bookingStatus === "CANCELLED" || application?.bookingStatus === "EXPIRED"} // Disable button
+      //           />
+      //           {isMenuOpen && (
+      //             <div
+      //               style={{
+      //                 position: "absolute",
+      //                 backgroundColor: "white",
+      //                 border: "1px solid #ccc",
+      //                 borderRadius: "4px",
+      //                 padding: "8px",
+      //                 zIndex: 1000,
+      //               }}
+      //             >
+      //               {/* Action for Cancel */}
+      //               {application?.bookingStatus === "BOOKED" && (
+      //                 <div
+      //                   onClick={handleCancel}
+      //                   style={{
+      //                     display: "block",
+      //                     padding: "8px",
+      //                     textDecoration: "none",
+      //                     color: "black",
+      //                     cursor: "pointer",
+      //                   }}
+      //                 >
+      //                   {t("ADS_CANCEL")}
+      //                 </div>
+      //               )}
 
-                    {/* Action for Collect Payment */}
-                    {application?.bookingStatus !== "BOOKED" && (
-                      <div
-                        onClick={() => handleMakePayment()}
-                        style={{
-                          display: "block",
-                          padding: "8px",
-                          textDecoration: "none",
-                          color: "black",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {t("ADS_COLLECT_PAYMENT")}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </React.Fragment>
-            </div>
-          );
-        },
-      },
+      //               {/* Action for Collect Payment */}
+      //               {application?.bookingStatus !== "BOOKED" && (
+      //                 <div
+      //                   onClick={() => handleMakePayment()}
+      //                   style={{
+      //                     display: "block",
+      //                     padding: "8px",
+      //                     textDecoration: "none",
+      //                     color: "black",
+      //                     cursor: "pointer",
+      //                   }}
+      //                 >
+      //                   {t("ADS_COLLECT_PAYMENT")}
+      //                 </div>
+      //               )}
+      //             </div>
+      //           )}
+      //         </React.Fragment>
+      //       </div>
+      //     );
+      //   },
+      // },
     ],
     []
   );
@@ -261,6 +271,7 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
     { i18nKey: "Pending For Payment", code: "PENDING_FOR_PAYMENT", value: t("PENDING_FOR_PAYMENT") },
     { i18nKey: "Booking Expired", code: "BOOKING_EXPIRED", value: t("BOOKING_EXPIRED") },
     { i18nKey: "Cancelled", code: "CANCELLED", value: t("ADS_CANCELLED") },
+    { i18nKey: "Available", code: "AVAILABLE", value: t("ADS_AVAILABLE") },
   ];
   const onSort = useCallback((args) => {
     if (args.length === 0) return;
@@ -299,7 +310,7 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
             <label>{t("ADS_APPLICANT_NAME")}</label>
             <TextInput name="applicantName" inputRef={register({})} />
           </SearchField>
-          <SearchField>
+          {/* <SearchField>
             <label>{t("ADS_FACE_AREA")}</label>
             <Controller
               control={control}
@@ -316,7 +327,7 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
                 />
               )}
             />
-          </SearchField>
+          </SearchField> */}
           <SearchField>
             <label>{t("PT_COMMON_TABLE_COL_STATUS_LABEL")}</label>
             <Controller

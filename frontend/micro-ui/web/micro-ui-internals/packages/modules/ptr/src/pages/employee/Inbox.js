@@ -46,6 +46,7 @@ const Inbox = ({
         ModuleCode: moduleCode,
         // filters: { ...searchParams, ...paginationParams, sortParams },
         filters: { ...searchParams, ...paginationParams, sortParams, ...(searchParams.wfFilters || {}) },
+        config: { staleTime: 0, refetchOnMount: "always" },
       })
     : Digit.Hooks.useInboxGeneral({
         tenantId,
@@ -60,7 +61,10 @@ const Inbox = ({
         searchConfig: { ...enableSarch, ...searchConfig },
         middlewaresWf,
         middlewareSearch,
+        config: { staleTime: 0, refetchOnMount: "always" },
       });
+
+  const totalCount = data?.[0]?.totalCount;
 
   useEffect(() => {
     setPageOffset(0);
@@ -115,7 +119,12 @@ const Inbox = ({
     } else {
       return (
         <div>
-          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
+          {isInbox && (
+            <Header>
+              {t("ES_COMMON_INBOX")}
+              {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+            </Header>
+          )}
 
           <PTRDesktopInbox
             moduleCode={moduleCode}

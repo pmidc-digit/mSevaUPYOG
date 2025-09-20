@@ -13,6 +13,7 @@ import PTRCitizenAddress from "./pageComponents/PTRCitizenAddress";
 import PTRSelectPincode from "./pageComponents/PTRSelectPincode";
 import PTRSelectAddress from "./pageComponents/PTRSelectAddress";
 import PTRSelectProofIdentity from "./pageComponents/PTRSelectProofIdentity";
+import PTRWFDocument from "./pageComponents/PTRWFDocument";
 import PTRServiceDoc from "./pageComponents/PTRServiceDoc";
 import PTRWFApplicationTimeline from "./pageComponents/PTRWFApplicationTimeline";
 import CitizenApp from "./pages/citizen";
@@ -46,6 +47,7 @@ import RenewPTRStepFormOne from "./pages/citizen/Renewal/ReNewApplicationStepFor
 import RenewPTRStepFormTwo from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
 import RenewPTRStepFormThree from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
 import RenewPTRStepFormFour from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
+import CustomDatePicker from "./pageComponents/CustomDatePicker";
 export const PTRReducers = getRootReducer;
 
 const componentsToRegister = {
@@ -63,6 +65,7 @@ const componentsToRegister = {
   CitizenFeedback,
   PTRPetdetails,
   PTROwnerDetails,
+  CustomDatePicker,
   PTRCreatePet: PTRCreate,
   PTRDocumentUpload,
   PTRSelectStreet,
@@ -82,6 +85,7 @@ const componentsToRegister = {
   PTRSummary,
   PTRResponseCitizen,
   PTRList,
+  PTRWFDocument,
   RenewPTRStepForm,
   RenewPTRStepFormOne,
   RenewPTRStepFormTwo,

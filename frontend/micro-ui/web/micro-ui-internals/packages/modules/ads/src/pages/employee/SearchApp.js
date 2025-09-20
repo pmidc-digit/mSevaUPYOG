@@ -24,10 +24,12 @@ import ADSSearchApplication from "../../components/SearchApplication";
  * including form inputs for date range, booking number, status, and other search filters.
  * .**/
 
-const SearchApp = ({ path }) => {
+const SearchApp = ({ path, userType }) => {
   const { variant } = useParams();
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
+  const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : Digit.ULBService.getCurrentTenantId();
+
   const [payload, setPayload] = useState({});
   const [showToast, setShowToast] = useState(null);
 
@@ -90,6 +92,7 @@ const SearchApp = ({ path }) => {
         onSubmit={onSubmit}
         data={isSuccess && !isLoading ? (searchReult.length > 0 ? searchReult : { display: "ES_COMMON_NO_DATA" }) : ""}
         count={count}
+        userType={userType}
       />
       {showToast && (
         <Toast

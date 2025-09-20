@@ -37,7 +37,7 @@ const EmployeeApp = ({ path, url, userType }) => {
       {
         path: "/digit-ui/employee/ptr/petservice/inbox",
         content: t("ES_TITLE_INBOX"),
-        show: location.pathname.includes("ptr/petservice/inbox") ? true : false,
+        show: true,
       },
 
       {

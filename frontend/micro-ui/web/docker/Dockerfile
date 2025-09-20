@@ -20,7 +20,7 @@ RUN yarn add @mseva/digit-ui-module-pt@1.0.34
 RUN yarn add @mseva/digit-ui-module-tl@1.0.14
 RUN yarn add @mseva/digit-ui-module-obps@1.0.40
 RUN yarn add @mseva/digit-ui-module-sv@1.0.54
-RUN yarn add @mseva/upyog-ui-module-ads@1.0.59
+RUN yarn add @mseva/upyog-ui-module-ads@1.0.60
 RUN yarn add @mseva/upyog-ui-module-chb@1.0.52
 RUN yarn add @mseva/upyog-ui-module-asset@1.0.47
 RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.39

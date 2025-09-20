@@ -1,9 +1,9 @@
 import { Card, Loader } from "@mseva/digit-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
-import ApplicationTable from "./inbox/ApplicationTable";
+import ApplicationTable from "./Inbox/ApplicationTable";
 import InboxLinks from "./Inbox/InboxLink";
-import SearchApplication from "./inbox/search";
+import SearchApplication from "./Inbox/search";
 
 const ADSDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   const { data, useNewInboxAPI } = props;

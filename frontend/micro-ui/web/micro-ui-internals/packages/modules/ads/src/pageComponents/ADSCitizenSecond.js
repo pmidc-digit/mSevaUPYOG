@@ -1072,7 +1072,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   return (
     <React.Fragment>
       {/* Added advertisements preview */}
-      {adsList.length > 0 && (
+      {/* {adsList.length > 0 && (
         <div style={{ margin: "12px 0", padding: 8, border: "1px dashed #ddd", borderRadius: 6 }}>
           <div style={{ fontWeight: 600, marginBottom: 8 }}>{t ? t("Added Advertisements") : "Added Advertisements"}</div>
           {adsList.map((ad, i) => (
@@ -1118,7 +1118,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             </div>
           ))}
         </div>
-      )}
+      )} */}
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>

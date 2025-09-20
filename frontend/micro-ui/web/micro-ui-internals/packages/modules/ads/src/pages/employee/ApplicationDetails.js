@@ -442,7 +442,7 @@ const ApplicationDetails = () => {
         businessService,
         action: filtData.action,
         comments: filtData.comment || filtData.action || "",
-        ...(normalizedAssignee ? { assignee: normalizedAssignee } : {}),
+        ...(normalizedAssignee ? { assignes: normalizedAssignee } : {}),
       },
     };
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ApplicationCard } from "./inbox/ApplicationCard";
-import ApplicationLinks from "./inbox/ApplicationLinks";
+import { ApplicationCard } from "./Inbox/ApplicationCard";
+import ApplicationLinks from "./Inbox/ApplicationLinks";
 
 const MobileInbox = ({
   data,

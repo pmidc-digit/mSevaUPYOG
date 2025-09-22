@@ -1,4 +1,4 @@
-package org.egov.bpa.calculator.web.models.demand;
+package org.egov.ndc.calculator.web.models.demand;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -11,12 +11,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import org.egov.bpa.calculator.web.models.AuditDetails;
 import org.egov.common.contract.request.User;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
+import org.egov.ndc.calculator.web.models.demand.DemandDetail;
+import org.egov.ndc.calculator.web.models.ndc.AuditDetails;
 
 
 @Data

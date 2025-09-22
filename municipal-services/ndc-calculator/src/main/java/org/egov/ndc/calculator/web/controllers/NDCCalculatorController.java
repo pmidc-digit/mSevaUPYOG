@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.egov.bpa.calculator.web.models.RequestInfoWrapper;
-import org.egov.bpa.calculator.web.models.demand.DemandResponse;
 import org.egov.ndc.calculator.services.CalculationService;
 
 import org.egov.ndc.calculator.services.DemandService;
@@ -14,6 +13,7 @@ import org.egov.ndc.calculator.web.models.Calculation;
 import org.egov.ndc.calculator.web.models.CalculationReq;
 import org.egov.ndc.calculator.web.models.CalculationRes;
 import org.egov.ndc.calculator.web.models.bill.GetBillCriteria;
+import org.egov.ndc.calculator.web.models.demand.DemandResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

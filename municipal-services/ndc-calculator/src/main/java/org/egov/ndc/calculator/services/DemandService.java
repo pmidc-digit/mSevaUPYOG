@@ -1,19 +1,19 @@
 package org.egov.ndc.calculator.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.minidev.json.JSONArray;
 import org.egov.bpa.calculator.web.models.RequestInfoWrapper;
-import org.egov.bpa.calculator.web.models.demand.Demand;
-import org.egov.bpa.calculator.web.models.demand.DemandDetail;
-import org.egov.bpa.calculator.web.models.demand.DemandRequest;
-import org.egov.bpa.calculator.web.models.demand.DemandResponse;
 import org.egov.common.contract.request.RequestInfo;
+import org.egov.common.contract.request.User;
 import org.egov.ndc.calculator.config.NDCCalculatorConfig;
 import org.egov.ndc.calculator.repository.ServiceRequestRepository;
 import org.egov.ndc.calculator.utils.CalculatorUtils;
 import org.egov.ndc.calculator.web.models.Calculation;
+import org.egov.ndc.calculator.web.models.CalculationReq;
 import org.egov.ndc.calculator.web.models.bill.GetBillCriteria;
-import org.egov.tracer.model.CustomException;
+import org.egov.ndc.calculator.web.models.demand.Demand;
+import org.egov.ndc.calculator.web.models.demand.DemandDetail;
+import org.egov.ndc.calculator.web.models.demand.DemandRequest;
+import org.egov.ndc.calculator.web.models.demand.DemandResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -39,7 +39,7 @@ public class DemandService {
     @Autowired
     private ServiceRequestRepository repository;
 
-    public List<Demand> generateDemands(RequestInfo requestInfo, List<Calculation> calculations) {
+    public List<Demand> generateDemands(RequestInfo requestInfo, List<Calculation> calculations, CalculationReq calculationReq) {
         List<Demand> demands = new ArrayList<>();
 
         for (Calculation calculation : calculations) {
@@ -48,10 +48,12 @@ public class DemandService {
                     .taxAmount(BigDecimal.valueOf(calculation.getTotalAmount()))
                     .taxHeadMasterCode(ndcConfiguration.getTaxHeadMasterCode()).build();
 
+            User owner = calculationReq.getCalculationCriteria().get(0).getNdcApplicationRequest().getApplications().get(0).getOwners().get(0).toCommonUser();
             Demand demand = Demand.builder()
                     .tenantId(calculation.getTenantId()).consumerCode(calculation.getApplicationNumber())
                     .consumerType("NDC_APPLICATION_FEE")
                     .businessService("NDC")
+                    .payer(owner)
                     .taxPeriodFrom(System.currentTimeMillis()).taxPeriodTo(System.currentTimeMillis())
                     .demandDetails(Collections.singletonList(demandDetail))
                     .build();

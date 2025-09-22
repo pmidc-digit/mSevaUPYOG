@@ -3,6 +3,7 @@ package org.egov.ndc.calculator.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import lombok.extern.slf4j.Slf4j;
+import org.egov.common.contract.request.User;
 import org.egov.ndc.calculator.utils.ResponseInfoFactory;
 import org.egov.ndc.calculator.web.models.Calculation;
 import org.egov.ndc.calculator.web.models.CalculationCriteria;
@@ -37,7 +38,7 @@ public class CalculationService {
 //        CalculationRes calculationRes = CalculationRes.builder().responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(calculationReq.getRequestInfo(),true)).calculation(calculations).build();
 
 		if(!getCalculationOnly) {
-			demandService.generateDemands(calculationReq.getRequestInfo(), calculations);
+			demandService.generateDemands(calculationReq.getRequestInfo(), calculations,calculationReq);
 		}
 		return calculations;
 	}

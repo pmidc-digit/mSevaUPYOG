@@ -1,11 +1,11 @@
 package org.egov.ndc.calculator.repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.egov.bpa.calculator.web.models.demand.Demand;
-import org.egov.bpa.calculator.web.models.demand.DemandRequest;
-import org.egov.bpa.calculator.web.models.demand.DemandResponse;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.ndc.calculator.config.NDCCalculatorConfig;
+import org.egov.ndc.calculator.web.models.demand.Demand;
+import org.egov.ndc.calculator.web.models.demand.DemandRequest;
+import org.egov.ndc.calculator.web.models.demand.DemandResponse;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;

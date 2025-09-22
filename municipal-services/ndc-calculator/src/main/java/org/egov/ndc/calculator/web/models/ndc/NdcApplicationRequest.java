@@ -9,32 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Data
-//@JsonInclude(JsonInclude.Include.NON_NULL)
 public class NdcApplicationRequest {
 
-//    @JsonProperty("RequestInfo")
-//    private RequestInfo requestInfo;
+    @JsonProperty("RequestInfo")
+    private RequestInfo requestInfo;
 
-    @JsonProperty("Applicant")
-    private ApplicantRequest applicant;
+    @JsonProperty("Applications")
+    private List<Application> applications;
 
-    @JsonProperty("NdcDetails")
-    private List<NdcDetailsRequest> ndcDetails;
-
-    @JsonProperty("Documents")
-    private List<DocumentRequest> documents;
-
-    public void addNdcDetailsItem(NdcDetailsRequest ndcDetailsItem) {
-        if (this.ndcDetails == null) {
-            this.ndcDetails = new ArrayList<>();
+    public NdcApplicationRequest addApplicationItem(Application applicationItem) {
+        if (this.applications == null) {
+            this.applications = new ArrayList<>();
         }
-        this.ndcDetails.add(ndcDetailsItem);
-    }
-
-    public void addDocumentsItem(DocumentRequest documentItem) {
-        if (this.documents == null) {
-            this.documents = new ArrayList<>();
-        }
-        this.documents.add(documentItem);
+        this.applications.add(applicationItem);
+        return this;
     }
 }

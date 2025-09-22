@@ -55,6 +55,7 @@ const Inbox = ({ parentRoute }) => {
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("sourceRefId", null);
     setSearchFormValue("uuid", null);
+    setSearchFormValue("phoneNumber", null);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
   };
 

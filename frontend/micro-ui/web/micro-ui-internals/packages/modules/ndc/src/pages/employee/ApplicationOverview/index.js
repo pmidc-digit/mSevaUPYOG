@@ -242,12 +242,13 @@ const ApplicationOverview = () => {
     const payload = {
       Licenses: [action],
     };
+    const appNo = displayData?.applicantData?.applicationNo;
     if (action?.action == "APPLY") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      const appNo = displayData?.applicantData?.applicationNo;
-
       history.push(`/digit-ui/employee/payment/collect/NDC/${appNo}/${tenantId}?tenantId=${tenantId}`);
+    } else if (action?.action == "EDIT") {
+      history.push(`/digit-ui/employee/ndc/create/${appNo}`);
     } else {
       setShowModal(true);
       setSelectedAction(action);

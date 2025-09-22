@@ -31,24 +31,28 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   function mapToNDCPayload(inputData, actionStatus) {
     const applicant = Digit.UserService.getUser()?.info || {};
 
-    // const owners = [
-    //   {
-    //     name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
-    //     mobileNumber: formData?.NDCDetails?.PropertyDetails?.mobileNumber,
-    //     gender: formData?.NDCDetails?.PropertyDetails?.gender,
-    //     emailId: formData?.NDCDetails?.PropertyDetails?.email,
-    //     type: "CITIZEN",
-    //   },
-    // ];
+    const owners = [
+      {
+        name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
+        mobileNumber: formData?.NDCDetails?.PropertyDetails?.mobileNumber,
+        gender: formData?.NDCDetails?.PropertyDetails?.gender,
+        emailId: formData?.NDCDetails?.PropertyDetails?.email,
+        type: "CITIZEN",
+      },
+    ];
+
+    // Pick the source of truth for the application
+    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
 
     // Clone and modify workflow action
     const updatedApplication = {
-      ...formData?.apiData?.Applications?.[0],
+      ...baseApplication,
       workflow: {
-        ...formData?.apiData?.Applications?.[0]?.workflow,
+        ...baseApplication?.workflow,
         action: actionStatus,
       },
-      NdcDetails: formData?.apiData?.Applications?.[0]?.NdcDetails,
+      owners: owners,
+      NdcDetails: baseApplication?.NdcDetails,
       Documents: [], // We'll populate below
     };
 

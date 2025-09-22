@@ -1,11 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { CardLabel, LabelFieldPair, Dropdown, UploadFile, Toast, Loader } from "@mseva/digit-ui-react-components";
+import { useSelector } from "react-redux";
 
 const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
   const stateId = Digit.ULBService.getStateId();
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (checkFormData?.responseData?.[0]?.Documents?.length) {
+      // Map API response into the structure your UploadFile expects
+      const apiDocs = checkFormData.responseData[0].Documents.map((doc) => ({
+        documentType: doc.documentType,
+        fileStoreId: doc.documentAttachment, // 👈 key mapping
+        documentUid: doc.documentAttachment, // 👈 key mapping
+      }));
+
+      setDocuments(apiDocs);
+    }
+  }, [checkFormData]);
 
   const { action = "create" } = Digit.Hooks.useQueryParams();
 
@@ -56,59 +71,22 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   );
 };
 
-function SelectDocument({
-  t,
-  document: doc,
-  setDocuments,
-  error,
-  setError,
-  documents,
-  action,
-  formData,
-  setFormError,
-  clearFormErrors,
-  config,
-  formState,
-}) {
+function SelectDocument({ t, document: doc, setDocuments, setError, documents, setFormError, config, formState }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.fileStoreId || null);
 
-  const handleSelectDocument = (value) => setSelectedDocument(value);
-
   function selectfile(e) {
     setFile(e.target.files[0]);
   }
-  const { dropdownData } = doc;
-  // const { dropdownFilter, enabledActions, filterCondition } = doc?.additionalDetails;
-  var dropDownData = dropdownData;
-  let hideInput = false;
 
-  const [isHidden, setHidden] = useState(hideInput);
-
-  const addError = () => {
-    let type = formState.errors?.[config.key]?.type;
-    if (!Array.isArray(type)) type = [];
-    if (!type.includes(doc.code)) {
-      type.push(doc.code);
-      setFormError(config.key, { type });
+  useEffect(() => {
+    if (filteredDocument?.fileStoreId) {
+      setUploadedFile(filteredDocument.fileStoreId);
     }
-  };
-
-  const removeError = () => {
-    let type = formState.errors?.[config.key]?.type;
-    if (!Array.isArray(type)) type = [];
-    if (type.includes(doc?.code)) {
-      type = type.filter((e) => e != doc?.code);
-      if (!type.length) {
-        clearFormErrors(config.key);
-      } else {
-        setFormError(config.key, { type });
-      }
-    }
-  };
+  }, [filteredDocument]);
 
   useEffect(() => {
     if (uploadedFile) {
@@ -132,16 +110,7 @@ function SelectDocument({
     } else if (uploadedFile === null) {
       setDocuments((prev) => prev.filter((item) => item?.documentType !== doc?.code));
     }
-    // if (!isHidden) {
-    //   if (!uploadedFile || !doc?.code) {
-    //     addError();
-    //   } else if (uploadedFile && doc?.code) {
-    //     removeError();
-    //   }
-    // } else if (isHidden) {
-    //   removeError();
-    // }
-  }, [uploadedFile, isHidden]);
+  }, [uploadedFile]);
 
   useEffect(() => {
     (async () => {
@@ -170,7 +139,6 @@ function SelectDocument({
   return (
     <div style={{ marginBottom: "24px" }}>
       <LabelFieldPair>
-        {/* {console.log("doc", doc)} */}
         <CardLabel className="card-label-smaller">
           {t(doc?.code)} {doc?.required && " *"}
         </CardLabel>

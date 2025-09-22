@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/PTRTimeline";
-
+import _ from "lodash";
 const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => {
   const stateId = Digit.ULBService.getStateId();
   const [formErrors, setFormErrors] = useState({});
@@ -11,29 +11,44 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
     allowedExtensions: [".pdf", ".jpeg", ".jpg", ".png"],
   };
 
-  const validateFile = (file) => {
+  const validateFile = (file, docCode) => {
     if (!file) return null;
-    const { maxBytes, allowedExtensions } = FILE_POLICY;
+
+    const maxBytes = 5 * 1024 * 1024; // 5 MB
+
+    // Default allowed extensions
+    let allowedExtensions = [".pdf", ".jpeg", ".jpg", ".png"];
+
+    // Restrict to images only for Owner's Photo and PET_PETPHOTO
+    if (docCode === "OWNER.OWNERPHOTO" || docCode === "PET.PETPHOTO") {
+      allowedExtensions = [".jpeg", ".jpg", ".png"];
+    }
+
     const nameLower = file?.name?.toLowerCase?.() || "";
-    const okType = allowedExtensions?.some((ext) => nameLower?.endsWith(ext));
+    const okType = allowedExtensions.some((ext) => nameLower.endsWith(ext));
     if (!okType) return "CS_FILE_INVALID_TYPE";
     if (file.size > maxBytes) return "CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED";
     return null;
   };
 
   const makeDocumentsValidator = (mdms) => {
-    const requiredCodes = (mdms || []).filter((d) => d?.required).map((d) => d.code);
+    const requiredDocs = (mdms || []).filter((d) => d?.required);
 
     return (documents = []) => {
       const errors = {};
+      const missingDocs = [];
       const docsArray = Array.isArray(documents) ? documents : [];
-      if (!requiredCodes?.length) return errors;
-      for (const code of requiredCodes) {
-        const satisfied = docsArray.some((doc) => doc?.documentType?.includes?.(code) && (doc?.filestoreId || doc?.fileStoreId));
+      if (!requiredDocs.length) return errors;
+      for (const doc of requiredDocs) {
+        const satisfied = docsArray.some((d) => d.documentType?.includes(doc.code) && (d.filestoreId || d.fileStoreId));
         if (!satisfied) {
-          errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
-          break;
+          missingDocs.push(doc.name || t(doc.code.replaceAll(".", "_")));
+          // or doc.name if available
         }
+      }
+      if (missingDocs.length > 0) {
+        errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
+        errors.missingDocs = missingDocs;
       }
       return errors;
     };
@@ -44,8 +59,6 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
 
   const [documents, setDocuments] = useState(formData?.documents?.documents || []);
 
-
-
   // Centralized required-doc validation
   useEffect(() => {
     if (mdmsDocsData) {
@@ -55,20 +68,28 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
     }
   }, [documents, mdmsDocsData]);
 
-
   useEffect(() => {
-    if (formData?.documents?.documents) {
-      setDocuments(formData.documents.documents);
+    const incomingDocs = formData?.documents?.documents || [];
+    if (!_.isEqual(incomingDocs, documents)) {
+      setDocuments(incomingDocs);
     }
-  }, [formData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData]); // remove `documents` from deps to avoid re-triggering unnecessarily
+
+  const lastSentRef = React.useRef();
 
   useEffect(() => {
-    onSelect(config.key, { documents });
-  }, [documents]);
+    if (!_.isEqual(lastSentRef.current, documents)) {
+      lastSentRef.current = documents;
+      onSelect(config.key, { documents });
+    }
+  }, [documents, config.key]);
 
   const handleSubmit = () => {
     if (Object.keys(formErrors).length > 0) {
       setToastError(t(formErrors.missingRequired || "PTR_VALIDATION_ERROR"));
+      // Pass missingDocs up to parent
+      onSelect(config.key, { missingDocs: formErrors.missingDocs || [] });
       return;
     }
     let documentStep = { ...mdmsDocsData, documents };
@@ -123,7 +144,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
     const selected = e.target.files && e.target.files[0];
     if (!selected) return;
 
-    const errKey = validateFile(selected);
+    const errKey = validateFile(selected, doc?.code);
     if (errKey) {
       setFieldError(t(errKey));
       updateParentDocs(null);
@@ -162,11 +183,14 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
       ...documents.filter((d) => d.documentType !== doc?.code),
       ...(fileId ? [{ documentType: doc?.code, filestoreId: fileId, documentUid: fileId }] : []),
     ];
-    setDocuments(updatedDocs);
 
-    const errors = makeDocumentsValidator(mdms)(updatedDocs);
-    setFormErrors(errors);
+    if (!_.isEqual(updatedDocs, documents)) {
+      setDocuments(updatedDocs);
+      const errors = makeDocumentsValidator(mdms)(updatedDocs);
+      setFormErrors(errors);
+    }
   };
+
   const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "-16px", marginBottom: "10px" };
 
   return (
@@ -212,12 +236,11 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png"
+            accept={doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "PET.PETPHOTO" ? ".jpeg, .jpg, .png" : ".pdf, .jpeg, .jpg, .png"}
             buttonType="button"
-            // Only show error when there's an actual file-related error.
-            // Required validation is enforced by disabling Next at the form level.
             error={Boolean(fieldError)}
           />
+
           {fieldError && <errorStyle style={errorStyle}>{fieldError}</errorStyle>}
         </div>
       </LabelFieldPair>

@@ -39,6 +39,7 @@ const PTRModal = ({
   showToast,
   closeToast,
   errors,
+  setShowToast,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -49,6 +50,7 @@ const PTRModal = ({
   const [error, setError] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
 
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
@@ -120,6 +122,33 @@ const PTRModal = ({
   }, [file]);
 
   function submit(data) {
+    setShowToast(null);
+    setError(null);
+
+    let checkCommentsMandatory =
+      action?.action === "APPROVE" ||
+      action?.action === "VERIFY" ||
+      action?.action === "REJECT" ||
+      action?.action === "SENDBACKTOCITIZEN" ||
+      action?.action === "FORWARD";
+
+    if (action?.isTerminateState) checkCommentsMandatory = true;
+
+    const commentsText = data?.comments;
+    if (checkCommentsMandatory && (!commentsText || !commentsText.toString().trim())) {
+      setError("Comments are required");
+      setShowToast({ key: "error" });
+      return;
+    }
+
+    let checkAssigneeMandatory = action?.action === "APPROVE" || action?.action === "VERIFY" || action?.action === "FORWARD";
+    if (action?.isTerminateState) checkAssigneeMandatory = false;
+
+    if (checkAssigneeMandatory && !selectedApprover?.uuid) {
+      setError("Assignee is required");
+      setShowToast({ key: "error" });
+      return;
+    }
     let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
     applicationData = {
       ...applicationData,
@@ -185,7 +214,7 @@ const PTRModal = ({
         // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
-      {showToast && <Toast error={showToast.key === "error" ? true : false} label={errors} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
     </Modal>
   ) : (
     <Loader />

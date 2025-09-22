@@ -64,13 +64,11 @@ const createEmployeeConfig = [
       submitBarLabel: "CS_COMMON_SUBMIT",
     },
   },
-
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
-
 
 const NewPTRStepperForm = () => {
   const history = useHistory();
@@ -81,7 +79,6 @@ const NewPTRStepperForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
-
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PTRNewApplication_STEP(updatedStepNumber));

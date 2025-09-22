@@ -13,8 +13,8 @@ import { useLocation } from "react-router-dom";
 const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const [showToast, setShowToast] = useState(null);
-  const [error, setError] = useState(null);
+  const [showToast, setShowToast] = useState(false);
+  const [error, setError] = useState("");
   const userInfo = Digit.UserService.getUser()?.info || {};
 
 
@@ -111,6 +111,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         }
 
         console.log("final Payload here==>", payload);
+
+        try{
         
         const response = await Digit.NOCService.NOCcreate({ tenantId, details: payload });
     
@@ -120,11 +122,18 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           onGoNext();
           return { isSuccess: true, response };
         } else {
-          console.log("error  : create api not executed successfully !!!");
-          setShowToast({ key: "error", message: "Something went wrong, try after sometime" });
-          setError("Something went wrong, try after sometime");
+
+          console.error("error  : create api not executed properly !!!");
+          setError("Some error occurred, please try after sometime");
+          setShowToast(true);
           return { isSuccess: false, response };
         }
+       }catch(error){
+          console.error("error occurred, create api failed !!!");
+          setError("Some error occurred, please try after sometime");
+          setShowToast(true);
+          return { isSuccess: false, response };
+      }
 
         // onGoNext();
   }
@@ -143,8 +152,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }
 
   const closeToast = () => {
-    setShowToast(null);
-    setError(null);
+    setShowToast("");
+    setError("");
   };
 
   return (
@@ -160,7 +169,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         </ActionBar>
       </form>
 
-      {showToast && <Toast isDleteBtn={true} error={showToast.key == "error" ? true: false} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

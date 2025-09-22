@@ -125,12 +125,20 @@ function NOCSummary({ currentStepData:formData, t }) {
         {renderLabel(t("NOC_ZONE_LABEL"), formData?.siteDetails?.zone?.name)}
         {renderLabel(t("NOC_SITE_WARD_NO_LABEL"), formData?.siteDetails?.wardNo)}
         {renderLabel(t("NOC_SITE_VILLAGE_NAME_LABEL"), formData?.siteDetails?.villageName)}
+
+        {renderLabel(t("NOC_SITE_COLONY_NAME_LABEL"), formData?.siteDetails?.colonyName)}
+        {renderLabel(t("NOC_SITE_VASIKA_NO_LABEL"), formData?.siteDetails?.vasikaNumber)}
+        {renderLabel(t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL"), formData?.siteDetails?.khewatAndKhatuniNo)}
       </div>
 
       <h2 style={headingStyle}>{t("NOC_SPECIFICATION_DETAILS")}</h2>
       <div style={sectionStyle}>
         {renderLabel(t("NOC_PLOT_AREA_JAMA_BANDI_LABEL"), formData?.siteDetails?.specificationPlotArea)}
         {renderLabel(t("NOC_BUILDING_CATEGORY_LABEL"), formData?.siteDetails?.specificationBuildingCategory?.name)}
+        
+        {renderLabel(t("NOC_NOC_TYPE_LABEL"), formData?.siteDetails?.specificationNocType?.name)}
+        {renderLabel(t("NOC_RESTRICTED_AREA_LABEL"), formData?.siteDetails?.specificationRestrictedArea?.code)}
+        {renderLabel(t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code)}
       </div>
 
       <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>

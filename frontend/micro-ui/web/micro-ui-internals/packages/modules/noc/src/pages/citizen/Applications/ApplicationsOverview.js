@@ -158,7 +158,6 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
               <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || "N/A"} />
 
-
               <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || "N/A"} />
 
               {detail?.buildingStatus?.code == "BUILTUP" && 
@@ -177,6 +176,10 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || "N/A"} />
               <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
               <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
+
+              <Row label={t("NOC_SITE_COLONY_NAME_LABEL")} text={detail?.colonyName || "N/A"} />
+              <Row label={t("NOC_SITE_VASIKA_NO_LABEL")} text={detail?.vasikaNumber || "N/A"} />
+              <Row label={t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")} text={detail?.khewatAndKhatuniNo || "N/A"} />
              
             </StatusTable>
           </div>
@@ -190,6 +193,10 @@ const CitizenApplicationOverview = () => {
             <StatusTable>
               <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
               <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={detail?.specificationBuildingCategory?.name || "N/A"} />
+
+              <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || "N/A"} />
+              <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={detail?.specificationRestrictedArea?.code || "N/A"} />
+              <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={detail?.specificationIsSiteUnderMasterPlan?.code || "N/A"} />
             </StatusTable>
           </div>
         ))}

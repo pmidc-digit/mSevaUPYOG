@@ -46,16 +46,12 @@ public class ESignController {
 
     @PostMapping("/upload")
     public ResponseEntity<RequestXmlForm> uploadAndSignDocument(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("authType") String authType,
-            @RequestParam("consent") String consent,
-            @RequestParam(value = "aadhar", required = false) String aadhar,
-            HttpServletRequest request) {
+            @RequestParam("file") String fileStoreId) {
 
-        logger.info("Received upload request for file: {}, authType: {}", file.getOriginalFilename(), authType);
+        logger.info("Received upload request for file: {}, authType: {}", fileStoreId);
 
         try {
-            RequestXmlForm responseForm = eSignService.processDocumentUpload(file, authType, consent, aadhar, request);
+            RequestXmlForm responseForm = eSignService.processDocumentUpload(fileStoreId,"pb");
             logger.info("Document upload processed successfully for transaction: {}", responseForm.getAspTxnID());
             return ResponseEntity.ok(responseForm);
         } catch (IllegalArgumentException e) {

@@ -120,6 +120,8 @@ public class XmlSigning {
     /*
      * Method used to store the signed XMl document
      */
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(XmlSigning.class);
+
     public void storeSignedDoc(Document doc, String destnSignedXmlFilePath) {
         TransformerFactory transFactory = TransformerFactory.newInstance();
         Transformer trans = null;
@@ -134,7 +136,7 @@ public class XmlSigning {
         } catch (TransformerException ex) {
             ex.printStackTrace();
         }
-        System.out.println("XML file with attached digital signature generated successfully ...");
+        logger.info("XML file with attached digital signature generated successfully ...");
     }
 
 

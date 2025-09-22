@@ -3,33 +3,66 @@ package com.cdac.esign.service;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.xml.datatype.XMLGregorianCalendar;
+import org.json.JSONObject;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.core.env.Environment;
 
 import com.cdac.esign.xmlparser.XmlSigning;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.kernel.pdf.extgstate.PdfExtGState;
+import com.itextpdf.layout.Canvas;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.properties.TextAlignment;
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
-import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfDate;
 import com.itextpdf.text.pdf.PdfDictionary;
 import com.itextpdf.text.pdf.PdfName;
-import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignature;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import com.itextpdf.text.pdf.PdfStamper;
 import com.itextpdf.text.pdf.PdfString;
 import com.itextpdf.text.pdf.PdfSignatureAppearance.RenderingMode;
+import com.itextpdf.kernel.geom.Rectangle;
+
+
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+
+import java.io.ByteArrayInputStream;
+import com.itextpdf.kernel.pdf.PdfWriter;
+
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.io.font.constants.StandardFonts;
+
+
+
 
 @Component
 //@Scope("session")
@@ -40,84 +73,132 @@ public class PdfEmbedder {
 
      PdfSignatureAppearance appearance;
 
-   public String pdfSigner(File file, HttpServletRequest request, HttpSession session) {
+     @Autowired
+     private Environment env;
 
 
-       String hashDocument =null;
-       PdfReader reader;
-       try {
-           String sourcefile=file.getAbsolutePath();
-           System.out.println("Path--->"+sourcefile);
-         destFile=sourcefile.replace(file.getName(), "Signed_Pdf.pdf");
-         request.getSession().setAttribute("fileName","Signed_Pdf.pdf");
-//     destFile=sourcefile.replace(file.getName(), "/Signed_Pdf.pdf");
-//     request.getSession().setAttribute("fileName","/Signed_Pdf.pdf");
-           reader =  new PdfReader(sourcefile);
+     public Map<String, String> pdfSigner(byte[] file) {
+    	    Map<String, String> responseMap = new HashMap<>();
+    	    try {
+    	        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    	        PdfDocument pdfDoc = new PdfDocument(new PdfReader(new ByteArrayInputStream(file)), new PdfWriter(baos));
+    	        PdfPage firstPage = pdfDoc.getPage(1);
+    	        Rectangle pageSize = firstPage.getPageSize();
 
-           Rectangle cropBox = reader.getCropBox(1);
-           Rectangle rectangle = null;
-           String user=null;
-           rectangle = new Rectangle(cropBox.getLeft(),cropBox.getBottom(), cropBox.getLeft(100),cropBox.getBottom(90));
-            fout = new FileOutputStream(destFile);
-           PdfStamper stamper = PdfStamper.createSignature(reader, fout, '\0', null, true);
+    	        float width = 200;
+    	        float height = 60;
+    	        float x = pageSize.getRight() - width - 20;
+    	        float y = pageSize.getBottom() + 20;
 
-           appearance= stamper.getSignatureAppearance();
-           appearance.setRenderingMode(RenderingMode.DESCRIPTION);
-           appearance.setAcro6Layers(false); ////////////////
-           Font font = new Font();
-           font.setSize(6);
-           font.setFamily("Helvetica");
-           font.setStyle("italic");
-           appearance.setLayer2Font(font);
-           Calendar currentDat = Calendar.getInstance();
-           System.out.println("remove 5 min");
-          currentDat.add(currentDat.MINUTE, 5); //Adding Delta Time of 5 Minutes....
+    	        // Invisible stamp content
+    	        String invisibleStamp =
+    	                "Digitally Signed\n" +
+    	                "Signed by: Temp User\n" +
+    	                "Organization: Temp Org\n" +
+    	                "Location: Temp Location\n" +
+    	                "Reason: Temp Reason\n" +
+    	                "Date: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-           appearance.setSignDate(currentDat);
+    	        // Use PdfCanvas to write invisible text
+    	        PdfCanvas pdfCanvas = new PdfCanvas(firstPage);
+    	        pdfCanvas.saveState();
+    	        PdfExtGState gState = new PdfExtGState().setFillOpacity(0f); // Invisible
+    	        pdfCanvas.setExtGState(gState);
 
-           if(user == null || user == "null" || user.equals(null) || user.equals("null") ){
-           appearance.setLayer2Text("Signed");
-           }else{
-               appearance.setLayer2Text("Signed by "+user);
-             }
-           appearance.setCertificationLevel(PdfSignatureAppearance.NOT_CERTIFIED);
+    	        PdfFont font = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+    	        pdfCanvas.beginText()
+    	                 .setFontAndSize(font, 10)
+    	                 .moveText(x, y)
+    	                 .showText(invisibleStamp)
+    	                 .endText();
 
-           appearance.setImage(null);
-     //      appearance.setSignDate(currentDat);
-           appearance.setVisibleSignature(rectangle,
-                   reader.getNumberOfPages(), null);
+    	        pdfCanvas.restoreState();
+    	        pdfCanvas.release();
 
-           int contentEstimated = 8192;
-           HashMap<PdfName, Integer> exc = new HashMap();
-           exc.put(PdfName.CONTENTS, contentEstimated * 2 + 2);
+    	        pdfDoc.close();
 
-           PdfSignature dic = new PdfSignature(PdfName.ADOBE_PPKLITE,
-                   PdfName.ADBE_PKCS7_DETACHED);
-           dic.setReason(appearance.getReason());
-           dic.setLocation(appearance.getLocation());
-           dic.setDate(new PdfDate(appearance.getSignDate()));
+    	        byte[] stampedPdfBytes = baos.toByteArray();
+
+    	        // Compute SHA-256 hash
+    	        String hashDocument = DigestUtils.sha256Hex(stampedPdfBytes);
+
+    	        // Upload and get fileStoreId
+    	        String fileStoreResponse = uploadPdfToFilestore(stampedPdfBytes, "pb", env);
+    	        String fileStoreId = "";
+    	        if (fileStoreResponse != null && fileStoreResponse.contains("fileStoreId")) {
+    	            int idx = fileStoreResponse.indexOf("fileStoreId");
+    	            int start = fileStoreResponse.indexOf(":", idx) + 2;
+    	            int end = fileStoreResponse.indexOf("\"", start);
+    	            if (start > 1 && end > start) {
+    	                fileStoreId = fileStoreResponse.substring(start, end);
+    	            }
+    	        }
+
+    	        responseMap.put("hash", hashDocument);
+    	        responseMap.put("fileStoreId", fileStoreId);
+
+    	    } catch (Exception e) {
+    	        e.printStackTrace();
+    	    }
+    	    return responseMap;
+    	}
 
 
-           appearance.setCryptoDictionary(dic);
-         //  request.getSession().setAttribute("pdfHash",appearance);
-           appearance.preClose(exc);
-          // fout.close();
-           request.getSession().setAttribute("appearance",appearance);
-         // System.gc();
-           // getting bytes of file
-           InputStream is = appearance.getRangeStream();
+    
 
-           hashDocument = DigestUtils.sha256Hex(is);
-           //session=request.getSession();
-           //session.setAttribute("appearance1",appearance);
-             System.out.println("hex:    " + is.toString());
-       } catch (Exception e) {
-           System.out.println("Error in signing doc.");
+     /**
+      * Uploads a PDF byte array directly to filestore
+      */
+     public static String uploadPdfToFilestore(byte[] pdfBytes, String tenantId, Environment env) throws Exception {
+         String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
+         String baseUrl = env.getProperty("filestore.base.url", "http://localhost:1001");
+         String uploadUrl = env.getProperty("filestore.upload.url", "/filestore/v1/files");
+         URL url = new URL(baseUrl + uploadUrl);
 
-       }
-       return hashDocument;
+         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+         conn.setDoOutput(true);
+         conn.setRequestMethod("POST");
+         conn.setRequestProperty("accept", "application/json, text/plain, */*");
+         conn.setRequestProperty("content-type", "multipart/form-data; boundary=" + boundary);
 
-   }
+         try (DataOutputStream out = new DataOutputStream(conn.getOutputStream())) {
+             // tenantId
+             out.writeBytes("--" + boundary + "\r\n");
+             out.writeBytes("Content-Disposition: form-data; name=\"tenantId\"\r\n\r\n");
+             out.writeBytes(tenantId + "\r\n");
+
+             // module
+             out.writeBytes("--" + boundary + "\r\n");
+             out.writeBytes("Content-Disposition: form-data; name=\"module\"\r\n\r\n");
+             out.writeBytes(env.getProperty("default.module", "undefined") + "\r\n");
+
+             // file
+             out.writeBytes("--" + boundary + "\r\n");
+             out.writeBytes("Content-Disposition: form-data; name=\"file\"; filename=\"" + env.getProperty("default.signed.filename", "signed.pdf") + "\"\r\n");
+             out.writeBytes("Content-Type: " + env.getProperty("default.content.type", "application/pdf") + "\r\n\r\n");
+             out.write(pdfBytes);
+             out.writeBytes("\r\n");
+
+             out.writeBytes("--" + boundary + "--\r\n");
+         }
+
+         int responseCode = conn.getResponseCode();
+         InputStream responseStream = (responseCode == 201) ? conn.getInputStream() : conn.getErrorStream();
+         String response = readStream(responseStream);
+         conn.disconnect();
+
+         return response; // parse JSON to get fileStoreId if needed
+     }
+
+     private static String readStream(InputStream inputStream) throws IOException {
+         ByteArrayOutputStream result = new ByteArrayOutputStream();
+         byte[] buffer = new byte[8192];
+         int length;
+         while ((length = inputStream.read(buffer)) != -1) {
+             result.write(buffer, 0, length);
+         }
+         return result.toString("UTF-8");
+     }
 
 public String signPdfwithDS(String response,HttpServletRequest request, HttpSession session) {
 	session = request.getSession(false);

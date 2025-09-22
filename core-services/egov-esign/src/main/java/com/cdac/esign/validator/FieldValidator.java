@@ -9,7 +9,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public class FieldValidator {
 
-	public boolean validateFields(String aadhar, String consent, String authType, MultipartFile[] fileData) {
+	public boolean validateFields(String file, String consent, String authType, MultipartFile[] fileData) {
 
 		boolean validateFlag = true;   
 		/*if(aadhar != null) {

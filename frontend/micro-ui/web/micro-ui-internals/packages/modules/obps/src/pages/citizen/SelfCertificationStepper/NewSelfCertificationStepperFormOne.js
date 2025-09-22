@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Toast } from "@mseva/digit-ui-react-components";
 import { SET_OBPS_STEP, UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../../../redux/actions/OBPSActions";
@@ -12,6 +12,23 @@ const NewSelfCertificationStepFormOne = ({ config, onGoNext, onBackClick }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const scrutinyDetails = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))?.value || {};
+  const [applicationNo, setApplicationNo] = useState(scrutinyDetails?.data?.applicationNo || "")
+  const tenantId = localStorage.getItem("CITIZEN.CITY")
+
+
+  useEffect(()=>{
+    if(scrutinyDetails?.data?.applicationNo){
+      setApplicationNo(scrutinyDetails?.data?.applicationNo)
+    }
+  },[scrutinyDetails?.data?.applicationNo])
+
+  useEffect(async () => {
+    if(applicationNo){
+      const response = await Digit.OBPSService.BPASearch(tenantId, {applicationNo})
+      console.log("responseOfSearch", response);
+    }
+  }, [applicationNo])
 
   const currentStepData = useSelector(function (state) {
     return state.obps.OBPSFormReducer.formData;
@@ -31,7 +48,6 @@ const NewSelfCertificationStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setError("");
   };
 
-  const scrutinyDetails = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))?.value || {};
   console.log("me rendering instead", JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")));
 
   return (

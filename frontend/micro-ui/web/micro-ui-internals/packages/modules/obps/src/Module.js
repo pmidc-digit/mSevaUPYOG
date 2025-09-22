@@ -80,6 +80,11 @@ import LayoutSummary from "./pageComponents/LayoutSummary";
 import { NewSelfCertificationStepForm } from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepForm";
 import NewSelfCertificationStepFormOne from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormOne"
 import NewSelfCertificationStepFormTwo from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormTwo"
+import NewSelfCertificationStepFormThree from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormThree"
+import NewSelfCertificationStepFormFour from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormFour"
+import NewSelfCertificationStepFormFive from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormFive"
+import NewSelfCertificationStepFormSix from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormSix"
+import NewSelfCertificationStepFormSeven from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormSeven"
 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
@@ -202,6 +207,11 @@ const componentsToRegister = {
   NewSelfCertificationStepForm,
   NewSelfCertificationStepFormOne,
   NewSelfCertificationStepFormTwo,
+  NewSelfCertificationStepFormThree,
+  NewSelfCertificationStepFormFour,
+  NewSelfCertificationStepFormFive,
+  NewSelfCertificationStepFormSix,
+  NewSelfCertificationStepFormSeven,
   dummy
 }
 

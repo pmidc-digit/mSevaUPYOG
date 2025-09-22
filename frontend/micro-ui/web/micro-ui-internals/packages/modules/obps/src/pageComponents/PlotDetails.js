@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import Timeline from "../components/Timeline";
 import { useForm, Controller } from "react-hook-form";
 
-const PlotDetails = ({ formData, onSelect, config, currentStepData}) => {
+const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) => {
   const isEditApplication = window.location.href.includes("editApplication");
   const [editConfig, setEditConfig] = useState(config);
   const { t } = useTranslation();
@@ -38,15 +38,18 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData}) => {
   const [materialusedinfloor, setMaterialUsedInFloor] = useState("");
   const [materialusedinroofs, setMaterialUsedInRoofs] = useState("");
   const [propertyuid, setPropertyUid] = useState("");
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
   const checkingFlow = formData?.uiFlow?.flow;
   const state = Digit.ULBService.getStateId();
   const [errors, setErrors] = useState({});
   const isMobile = window.Digit.Utils.browser.isMobile();
+  const [apiLoading, setApiLoading] = useState(false);
+  const tenantId = localStorage.getItem("CITIZEN.CITY")
 
-  const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
+  // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
+  const data = currentStepData?.BasicDetails?.edcrDetails;
 
-console.log("sessionStorageData",formData);
+console.log("sessionStorageData",formData, data, currentStepData);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -69,10 +72,10 @@ console.log("sessionStorageData",formData);
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
 
-  const renderField = (label, value, setValue, errorKey, placeholder) => (
+  const renderField = (label, value, setValue, errorKey, placeholder, isDisabled=false) => (
     <div style={{ marginBottom: "1rem" }}>
       <CardLabel>{label}</CardLabel>
-      <TextInput value={value} placeholder={t(placeholder)} onChange={(e) => setValue(e.target.value)} />
+      <TextInput value={value} placeholder={t(placeholder)} onChange={(e) => setValue(e.target.value)} disable={isDisabled}/>
       {errors[errorKey] && (
         <CardLabelError style={{ fontSize: "12px", color: "red" }}>{errors[errorKey]}</CardLabelError>
       )}
@@ -109,6 +112,36 @@ console.log("sessionStorageData",formData);
       }
     }
   }, []);
+
+  useEffect(()=>{
+    if(data && data?.planDetail?.planInfoProperties?.KHASRA_NO){
+      setKhasraNumber(data?.planDetail?.planInfoProperties?.KHASRA_NO);
+    }
+  },[currentStepData?.BasicDetails?.edcrDetails])
+
+  useEffect(() => {
+  if (currentStepData?.createdResponse?.additionalDetails) {
+    const details = currentStepData.createdResponse.additionalDetails;
+
+    setRegistrationDetails(details?.registrationDetails || "");
+    setBoundaryWallLength(details?.boundaryWallLength || "");
+    setWardNumber(details?.wardnumber || "");
+    setZoneNumber(details?.zonenumber || "");
+    setKhasraNumber(details?.khasraNumber || "");
+    setArchitectId(details?.architectid || "");
+    setBathNumber(details?.bathnumber || "");
+    setKitchenNumber(details?.kitchenNumber || "");
+    setApproxInhabitants(details?.approxinhabitants || "");
+    setDistanceFromSewer(details?.distancefromsewer || "");
+    setSourceOfWater(details?.sourceofwater || "");
+    setWaterCloset(details?.watercloset || "");
+    setMaterialUsed(details?.materialused || "");
+    setMaterialUsedInFloor(details?.materialusedinfloor || "");
+    setMaterialUsedInRoofs(details?.materialusedinroofs || "");
+    setPropertyUid(details?.propertyuid || "");
+  }
+}, [currentStepData?.createdResponse]);
+
 
 
   const validate = () => {
@@ -193,10 +226,30 @@ console.log("sessionStorageData",formData);
   };
 
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
     if (!validate()) return;
 
-    const payload = {
+    const userInfo = Digit.UserService.getUser()
+    const applicationType = data?.appliactionType || "";
+    const serviceType = data?.applicationSubType || "";
+    let architectName = sessionStorage.getItem("BPA_ARCHITECT_NAME")
+    const typeOfArchitect = architectName ? JSON.parse(architectName) : "ARCHITECT"
+    if(architectName){
+      architectName = JSON.parse(architectName)
+    }
+    let isSelfCertificationRequired = sessionStorage.getItem("isSelfCertificationRequired")
+      if (isSelfCertificationRequired === "undefined" || isSelfCertificationRequired === null) {
+        isSelfCertificationRequired = "false"
+      }
+    const stakeholderName =  JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_NAME")) || null;
+    const stakeholderRegistrationNumber= JSON.parse(
+        sessionStorage.getItem("BPA_STAKEHOLDER_REGISTRATION_NUMBER"),
+      ) || null;
+    const stakeholderAddress= JSON.parse(sessionStorage.getItem("BPA_STAKEHOLDER_ADDRESS")) || null;
+    const architectMobileNumber = userInfo?.info?.mobileNumber || ""
+
+    const additionalDetails = formData?.data?.applicationNo ? {
+      ...currentStepData?.createdResponse?.additionalDetails,
       registrationDetails,
       boundaryWallLength,
       wardnumber,
@@ -213,238 +266,147 @@ console.log("sessionStorageData",formData);
       materialused,
       materialusedinfloor,
       materialusedinroofs,
+      area: data?.planDetail?.planInformation?.plotArea?.toString(),
+      height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString(),
+      usage: data?.planDetail?.planInformation?.occupancy,
+      builtUpArea: data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString(),
+      applicationType,
+      serviceType,
+      architectName,
+      architectMobileNumber,
+      typeOfArchitect,
+      stakeholderName,
+      stakeholderRegistrationNumber,
+      stakeholderAddress,
+      isSelfCertificationRequired
+    } :{
+      registrationDetails,
+      boundaryWallLength,
+      wardnumber,
+      zonenumber,
+      khasraNumber,
+      architectid,
+      propertyuid,
+      bathnumber,
+      kitchenNumber,
+      approxinhabitants,
+      distancefromsewer,
+      sourceofwater,
+      watercloset,
+      materialused,
+      materialusedinfloor,
+      materialusedinroofs,
+      area: data?.planDetail?.planInformation?.plotArea?.toString(),
+      height: data?.planDetail?.blocks?.[0]?.building?.buildingHeight?.toString(),
+      usage: data?.planDetail?.planInformation?.occupancy,
+      builtUpArea: data?.planDetail?.blocks?.[0]?.building?.totalBuitUpArea?.toString(),
+      applicationType,
+      serviceType,
+      architectName,
+      architectMobileNumber,
+      typeOfArchitect,
+      stakeholderName,
+      stakeholderRegistrationNumber,
+      stakeholderAddress,
+      isSelfCertificationRequired
     };
+    const edcrNumber = data?.edcrNumber;
+    const riskType = data?.riskType || "LOW";
+    // const tenantId = data?.tenantId;
+    const accountId = userInfo?.info?.uuid
+    const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
 
-    console.log("Submitting form:", payload);
-    onSelect(config.key, payload);
+    console.log("Submitting form:", {BPA: {
+      edcrNumber,
+      riskType,
+      applicationType,
+      serviceType,
+      tenantId,
+      accountId,
+      documents: [],
+      additionalDetails,
+      landInfo: null,
+      workflow: {
+        action: workflowAction,
+        assignes: [accountId],
+      }
+    }});
+
+    if(formData?.data?.applicationNo){
+      console.log("UpdateAPIFlow") // Change to the update flow
+      try{
+        setApiLoading(true);
+        const result = await Digit.OBPSService.update({ BPA: {
+          ...currentStepData?.createdResponse,
+          additionalDetails,
+          workflow: {
+            action: workflowAction,
+            assignes: [accountId]
+          }
+        } }, tenantId)
+        if(result?.ResponseInfo?.status === "successful"){
+          setApiLoading(false);
+          onSelect("");
+        }else{
+          alert(t("BPA_CREATE_APPLICATION_FAILED"));
+          setApiLoading(false);
+        }
+      }catch(e){
+        console.log("error", e);
+        alert(t("BPA_CREATE_APPLICATION_FAILED"));
+        setApiLoading(false);
+      }
+    }else{
+      console.log("CreateFlow")
+      try{
+        setApiLoading(true);
+        const result = await Digit.OBPSService.create({BPA: {
+          edcrNumber,
+          riskType,
+          applicationType,
+          serviceType,
+          tenantId,
+          accountId,
+          documents: [],
+          additionalDetails,
+          landInfo: null,
+          workflow: {
+            action: workflowAction,
+            assignes: [accountId]
+          }
+        }}, tenantId);
+        if(result?.ResponseInfo?.status === "successful"){
+        const newAppNo = result?.BPA?.[0]?.applicationNo;
+        sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify({
+          value:{
+            ...formData,
+            data: {
+              ...formData?.data,
+              applicationNo: newAppNo
+            }
+          }
+        }));
+      setApiLoading(false);
+      onSelect("");
+      }else{
+        alert(t("BPA_CREATE_APPLICATION_FAILED"));
+        setApiLoading(false);
+      }
+    }catch(e){
+        console.log("error", e);
+        alert(t("BPA_CREATE_APPLICATION_FAILED"));
+        setApiLoading(false);
+      }
+    }
+    // onSelect(config.key, payload);
   }; 
 
   const onSkip = () => onSelect();
 
-  if (isLoading) {
+  if (apiLoading) {
     return <Loader />;
   }
 
-  const getDataDefaults = {
-    khasraNumber: data?.planDetail?.planInfoProperties?.KHASRA_NO,
-  };
-
-  // const defaultValues = {
-  //   ...getDataDefaults,
-  //   architectid,
-  //   ...formData?.data,
-  // };
-
-
-
-
-const handleChange = (name, value, validation) => {
-  let error = "";
-
-  if (validation?.required && !value.trim()) {
-    error = validation.errorMessage || `${name} is required`;
-  }
-
-  if (!error && validation?.pattern && value) {
-    const regex = new RegExp(validation.pattern);
-    if (!regex.test(value)) {
-      error = validation.errorMessage || validation.title;
-    }
-  }
-
-  setErrors((prev) => ({ ...prev, [name]: error }));
-};
-
-// const configWithErrors = [
-//       {
-//         label: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL",
-//         type: "text",
-//         placeholder: "Give Land Registration Detail...", 
-//         validation: {
-//           required: true,
-//           title: "Enter registration details",
-//           errorMessage: "Registration details are required",
-//         },
-//         name: "registrationDetails",
-//       },
-//       {
-//         label: "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
-//         type: "text",
-//         placeholder: "Enter boundary wall length (in meters)", 
-//         validation: {
-//           required: true,
-//           pattern: "^[0-9]*$",
-//           title: "Enter boundary wall length in numbers [0-9]",
-//           errorMessage: "Boundary wall length must be a number",
-//         },
-//         name: "boundaryWallLength",
-//       },
-//       {
-//         label: "BPA_WARD_NUMBER_LABEL",
-//         type: "text",
-//         placeholder:"Ward Number",
-//         validation: {
-//           required: true,
-//           pattern: "^[a-zA-Z0-9 -]+$",
-//           title: "Enter alphanumeric ward number",
-//           errorMessage: "Ward number must be alphanumeric",
-//         },
-//         name: "wardnumber",
-//       },
-//       {
-//         label: "BPA_ZONE_NUMBER_LABEL",
-//         type: "text",
-//         placeholder:"Zone Number",
-//         validation: {
-//           required: true,
-//           title: "Enter zone number",
-//           errorMessage: "Zone number is required",
-//         },
-//         name: "zonenumber",
-//       },
-//       {
-//         label: "BPA_KHASRA_NUMBER_LABEL",
-//         type: "text",
-//         validation: {
-//           required: true,
-//           title: "Enter khasra number",
-//           errorMessage: "Khasra number is required",
-//         },
-//         name: "khasraNumber",
-//         disable: true,
-//       },
-//       {
-//         label: "BPA_ARCHITECT_ID",
-//         type: "text",
-        
-//         validation: {
-//           required: true,
-//           title: "Enter architect ID",
-//           errorMessage: "Architect ID is required",
-//         },
-//         name: "architectid",
-//         disable: true,
-//       },
-//       {
-//         label: "BPA_PROPERTY_UID",
-//         type: "text",
-//         placeholder:"Property UID",
-//         validation: {
-//           required: true,
-//           title: "Enter property UID",
-//           pattern: "^(?=.*[A-Za-z])[A-Za-z0-9-]+$",
-//           errorMessage: "Property UID is required",
-//         },
-//         name: "propertyuid",
-//       },
-//       {
-//         label: "BPA_NUMBER_OF_BATHS",
-//         placeholder:"Number Of Bathrooms",
-//         type: "text",
-//         validation: {
-//           required: true,
-//           pattern: "^[0-9]+$",
-//           title: "Enter number of baths in digits",
-//           errorMessage: "Number of baths must be numeric",
-//         },
-//         name: "bathnumber",
-//       },
-//       {
-//         label: "BPA_NUMBER_OF_KITCHENS",
-//         placeholder:"Number Of Kitchens",
-//         type: "text",
-//         validation: {
-//           required: true,
-//           pattern: "^[0-9]+$",
-//           title: "Enter number of kitchens in digits",
-//           errorMessage: "Number of kitchens must be numeric",
-//         },
-//         name: "kitchenNumber",
-//       },
-//       {
-//         label: "BPA_APPROX_INHABITANTS_FOR_ACCOMODATION",
-//         type: "text",
-//         placeholder:"Approx Number Of Inhabitants For Accomodation",
-//         validation: {
-//           required: true,
-//           pattern: "^[0-9]+$",
-//           title: "Enter number of approximate inhabitants",
-//           errorMessage: "Approximate inhabitants must be numeric",
-//         },
-//         name: "approxinhabitants",
-//       },
-//       {
-//         label: "BPA_DISTANCE_FROM_SEWER",
-//         type: "text",
-//         placeholder:"Distance From Sewer",
-//         validation: {
-//           required: true,
-//           pattern: "^[0-9]+$",
-//           title: "Enter distance from sewer in meters",
-//           errorMessage: "Distance from sewer must be numeric",
-//         },
-//         name: "distancefromsewer",
-//       },
-//       {
-//         label: "BPA_SOURCE_OF_WATER",
-//         placeholder:"Source Of Water",
-//         type: "text",
-//         validation: {
-//           required: true,
-//           title: "Enter source of water",
-//           errorMessage: "Source of water is required",
-//         },
-//         name: "sourceofwater",
-//       },
-//       {
-//         label: "BPA_NUMBER_OF_WATER_CLOSETS",
-//         type: "text",
-//         placeholder:"Number Of Water Closets",
-//         validation: {
-//           required: true,
-//           pattern: "^[0-9]+$",
-//           title: "Enter number of water closets in digits",
-//           errorMessage: "Number of water closets must be numeric",
-//         },
-//         name: "watercloset",
-//       },
-//       {
-//         label: "BPA_MATERIAL_TO-BE_USED_IN_WALLS",
-//         placeholder:"e.g. Cement, Bricks, etc",
-//         type: "text",
-//         validation: {
-//           required: true,
-//           pattern: "^[A-Za-z\\s]+$",
-//           title: "Enter material used in walls (alphabets only)",
-//           errorMessage: "Material used in walls must contain only letters",
-//         },
-//         name: "materialused",
-//       },
-//       {
-//         label: "BPA_MATERIAL_TO-BE_USED_IN_FLOOR",
-//          placeholder:"e.g. Cement, Bricks, etc",
-//         type: "text",
-//         validation: {
-//           required: true,
-//           pattern: "^[A-Za-z\\s]+$",
-//           title: "Enter material used in floor (alphabets only)",
-//           errorMessage: "Material used in floor must contain only letters",
-//         },
-//         name: "materialusedinfloor",
-//       },
-//       {
-//         label: "BPA_MATERIAL_TO-BE_USED_IN_ROOFS",
-//          placeholder:"e.g. Cement, Bricks, etc",
-//         type: "text",
-//         validation: {
-//           required: true,
-//           pattern: "^[A-Za-z\\s]+$",
-//           title: "Enter material used in roofs (alphabets only)",
-//           errorMessage: "Material used in roofs must contain only letters",
-//         },
-//         name: "materialusedinroofs",
-//       },
-//     ]
 
 
 
@@ -469,8 +431,8 @@ const handleChange = (name, value, validation) => {
           {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT"), boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)")}
           {renderField(t("BPA_WARD_NUMBER_LABEL"), wardnumber, setWardNumber, "wardnumber", "Ward Number")}
           {renderField(t("BPA_ZONE_NUMBER_LABEL"), zonenumber, setZoneNumber, "zonenumber", "Zone Number")}
-          {renderField(t("BPA_KHASRA_NUMBER_LABEL"), khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number")}
-          {renderField(t("BPA_ARCHITECT_ID"), architectid, setArchitectId, "architectid", "Architect ID")}
+          {renderField(t("BPA_KHASRA_NUMBER_LABEL"), khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
+          {renderField(t("BPA_ARCHITECT_ID"), architectid, setArchitectId, "architectid", "Architect ID", true)}
           {renderField(t("BPA_PROPERTY_UID"), propertyuid, setPropertyUid, "propertyuid", "Property UID")}
           {renderField(t("BPA_NUMBER_OF_BATHS"), bathnumber, setBathNumber, "bathnumber", "Number of Bathrooms")}
           {renderField(t("BPA_NUMBER_OF_KITCHENS"), kitchenNumber, setKitchenNumber, "kitchenNumber", "Number of Kitchens")}
@@ -484,7 +446,17 @@ const handleChange = (name, value, validation) => {
 
           
           <ActionBar>
-            {<SubmitBar label={t(`CS_COMMON_NEXT`)} submit="submit" />}
+            <SubmitBar
+                      label="Back"
+                      style={{
+                        border: "1px solid",
+                        background: "transparent",
+                        color: "#2947a3",
+                        marginRight: "5px",
+                      }}
+                      onSubmit={onGoBack}
+            />
+            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disable={apiLoading} />}
           </ActionBar>
         </FormStep>
       </div>

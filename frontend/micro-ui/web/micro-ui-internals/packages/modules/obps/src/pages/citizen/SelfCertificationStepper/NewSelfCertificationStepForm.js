@@ -35,6 +35,71 @@ const createEmployeeConfig = [
       submitBarLabel: "Next",
     },
   },
+  {
+    head: "Scrutiny Details",
+    stepLabel: "Scrutiny Details",
+    stepNumber: 3,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewSelfCertificationStepFormThree",
+    key: "ScrutinyDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
+    head: "Location Details",
+    stepLabel: "Location Details",
+    stepNumber: 4,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewSelfCertificationStepFormFour",
+    key: "LocationDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
+    head: "Additional Details",
+    stepLabel: "Additional Details",
+    stepNumber: 5,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewSelfCertificationStepFormFive",
+    key: "AdditionalDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
+    head: "Owner Details",
+    stepLabel: "Owner Details",
+    stepNumber: 6,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewSelfCertificationStepFormSix",
+    key: "OwnerDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
+  {
+    head: "Documents Details",
+    stepLabel: "Documents Details",
+    stepNumber: 7,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewSelfCertificationStepFormSeven",
+    key: "DocumentsDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  },
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {

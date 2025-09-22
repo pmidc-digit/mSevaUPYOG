@@ -1,17 +1,18 @@
 
 
 import React, { useEffect, useState } from "react";
-import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import { FormStep, TextInput, CardLabel, Dropdown, UploadFile, SearchIcon, ActionBar, SubmitBar, Loader } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useLocation } from "react-router-dom";
 import { Controller, useForm } from "react-hook-form";
 
 
 
-const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
+const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData, onGoBack }) => {
   const { pathname: url } = useLocation()
   const index = window.location.href.charAt(window.location.href.length - 1)
   let validation = {}
+  const tenantId = localStorage.getItem("CITIZEN.CITY")
 
   const SESSION_STORAGE_KEY = "Digit.BUILDING_PERMIT"
 
@@ -35,47 +36,51 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
   const dataObj = sessionData.data || {}
   console.log(formData, "FORMDATA")
 
+  // console.log("formDataInNBDPage", currentStepData);
+
   const [UlbName, setUlbName] = useState(() => {
-    const cityName = formData?.address?.city?.name
+    const cityName = currentStepData?.LocationDetails?.selectedCity?.city?.name
     return cityName || ""
   })
 
   const [District, setDistrict] = useState(() => {
-    const districtName = formData?.address?.city?.city?.districtName
+    const districtName = currentStepData?.LocationDetails?.selectedCity?.city?.districtName
     return districtName || ""
   })
 
   const [Ulblisttype, setUlblisttype] = useState(() => {
-    const cityType = formData?.address?.city?.city?.ulbType
+    const cityType = currentStepData?.LocationDetails?.selectedCity?.city?.ulbType
     return cityType || ""
   })
 
+  //currentStepData?.createdResponse?.additionalDetails
+
   const [errors, setErrors] = useState({})
 
-  const [approvedColony, setapprovedColony] = useState(formData?.owners?.approvedColony || "")
-  const [masterPlan, setmasterPlan] = useState(formData?.owners?.masterPlan || "")
-  const [buildingStatus, setbuildingStatus] = useState(formData?.owners?.buildingStatus || "")
-  const [purchasedFAR, setpurchasedFAR] = useState(formData?.owners?.purchasedFAR || "")
-  const [greenbuilding, setgreenbuilding] = useState(formData?.owners?.greenbuilding || "")
-  const [restrictedArea, setrestrictedArea] = useState(formData?.owners?.restrictedArea || "")
-  const [proposedSite, setproposedSite] = useState(formData?.owners?.proposedSite || "")
-  const [nameofApprovedcolony, setnameofApprovedcolony] = useState(formData?.owners?.nameofApprovedcolony || "")
-  const [NocNumber, setNocNumber] = useState(formData?.owners?.NocNumber || "")
-  const [schemesselection, setschemesselection] = useState(formData?.owners?.schemesselection || "")
-  const [schemeName, setschemeName] = useState(formData?.owners?.schemeName || "")
+  const [approvedColony, setapprovedColony] = useState(currentStepData?.createdResponse?.additionalDetails?.approvedColony || "")
+  const [masterPlan, setmasterPlan] = useState(currentStepData?.createdResponse?.additionalDetails?.masterPlan || "")
+  const [buildingStatus, setbuildingStatus] = useState(currentStepData?.createdResponse?.additionalDetails?.buildingStatus || "")
+  const [purchasedFAR, setpurchasedFAR] = useState(currentStepData?.createdResponse?.additionalDetails?.purchasedFAR || "")
+  const [greenbuilding, setgreenbuilding] = useState(currentStepData?.createdResponse?.additionalDetails?.greenbuilding || "")
+  const [restrictedArea, setrestrictedArea] = useState(currentStepData?.createdResponse?.additionalDetails?.restrictedArea || "")
+  const [proposedSite, setproposedSite] = useState(currentStepData?.createdResponse?.additionalDetails?.proposedSite || "")
+  const [nameofApprovedcolony, setnameofApprovedcolony] = useState(currentStepData?.createdResponse?.additionalDetails?.nameofApprovedcolony || "")
+  const [NocNumber, setNocNumber] = useState(currentStepData?.createdResponse?.additionalDetails?.NocNumber || "")
+  const [schemesselection, setschemesselection] = useState(currentStepData?.createdResponse?.additionalDetails?.schemesselection || "")
+  const [schemeName, setschemeName] = useState(currentStepData?.createdResponse?.additionalDetails?.schemeName || "")
   const [transferredscheme, settransferredscheme] = useState("Pre-Approved Standard Designs" || "")
-  const [rating, setrating] = useState(formData?.owners?.rating || "")
-  const [use, setUse] = useState(formData?.owners?.use || "")
-  const [uploadedFile, setUploadedFile] = useState(formData?.owners?.uploadedFile)
-  const [greenuploadedFile, setGreenUploadedFile] = useState(formData?.owners?.greenuploadedFile)
+  const [rating, setrating] = useState(currentStepData?.createdResponse?.additionalDetails?.rating || "")
+  const [use, setUse] = useState(currentStepData?.createdResponse?.additionalDetails?.use || "")
+  const [uploadedFile, setUploadedFile] = useState(currentStepData?.createdResponse?.additionalDetails?.uploadedFile)
+  const [greenuploadedFile, setGreenUploadedFile] = useState(currentStepData?.createdResponse?.additionalDetails?.greenuploadedFile)
   const [uploadMessage, setUploadMessage] = useState("")
-  const [ecbcElectricalLoad, setEcbcElectricalLoad] = useState(formData?.owners?.ecbcElectricalLoad || "")
-  const [ecbcDemandLoad, setEcbcDemandLoad] = useState(formData?.owners?.ecbcDemandLoad || "")
-  const [ecbcAirConditioned, setEcbcAirConditioned] = useState(formData?.owners?.ecbcAirConditioned || "")
+  const [ecbcElectricalLoad, setEcbcElectricalLoad] = useState(currentStepData?.createdResponse?.additionalDetails?.ecbcElectricalLoad || "")
+  const [ecbcDemandLoad, setEcbcDemandLoad] = useState(currentStepData?.createdResponse?.additionalDetails?.ecbcDemandLoad || "")
+  const [ecbcAirConditioned, setEcbcAirConditioned] = useState(currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditioned || "")
 
-  const [ecbcElectricalLoadFile, setEcbcElectricalLoadFile] = useState(formData?.owners?.ecbcElectricalLoadFile)
-  const [ecbcDemandLoadFile, setEcbcDemandLoadFile] = useState(formData?.owners?.ecbcDemandLoadFile)
-  const [ecbcAirConditionedFile, setEcbcAirConditionedFile] = useState(formData?.owners?.ecbcAirConditionedFile)
+  const [ecbcElectricalLoadFile, setEcbcElectricalLoadFile] = useState(currentStepData?.createdResponse?.additionalDetails?.ecbcElectricalLoadFile)
+  const [ecbcDemandLoadFile, setEcbcDemandLoadFile] = useState(currentStepData?.createdResponse?.additionalDetails?.ecbcDemandLoadFile)
+  const [ecbcAirConditionedFile, setEcbcAirConditionedFile] = useState(currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditionedFile)
 
   const [ecbcElectricalLoadFileObj, setEcbcElectricalLoadFileObj] = useState()
   const [ecbcDemandLoadFileObj, setEcbcDemandLoadFileObj] = useState()
@@ -83,42 +88,55 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData }) => {
 
   const [ecbcCertificateFile, setEcbcCertificateFile] = useState(null);
 const [ecbcCertificateFileObj, setEcbcCertificateFileObj] = useState(null);
+const [apiLoading, setApiLoading] = useState(false);
+
+useEffect(()=>{
+  if(UlbName === "" && currentStepData?.LocationDetails?.selectedCity?.city?.name){
+    setUlbName(currentStepData?.LocationDetails?.selectedCity?.city?.name)
+  }
+  if(District === "" && currentStepData?.LocationDetails?.selectedCity?.city?.districtName){
+    setDistrict(currentStepData?.LocationDetails?.selectedCity?.city?.districtName)
+  }
+  if(Ulblisttype === "" && currentStepData?.LocationDetails?.selectedCity?.city?.ulbType){
+    setUlblisttype(currentStepData?.LocationDetails?.selectedCity?.city?.ulbType)
+  }
+},[currentStepData?.LocationDetails?.selectedCity?.city])
 
 
   const validateFields = () => {
     const newErrors = {}
 
-    if (!UlbName) newErrors.UlbName = "ULB Name is required"
-    if (!District) newErrors.District = "District is required"
-    if (!Ulblisttype) newErrors.Ulblisttype = "ULB Type is required"
-    if (!approvedColony) newErrors.approvedColony = "Approved Colony is required"
-    if (!masterPlan) newErrors.masterPlan = "Master Plan is required"
-    if (!buildingStatus) newErrors.buildingStatus = "Building Status is required"
-    if (!purchasedFAR) newErrors.purchasedFAR = "Purchased FAR is required"
-    if (!greenbuilding) newErrors.greenbuilding = "Green Building is required"
-    if (!restrictedArea) newErrors.restrictedArea = "Restricted Area is required"
-    if (!proposedSite) newErrors.proposedSite = "Proposed Site Type is required"
+    if (!UlbName) newErrors.UlbName = t("ULB Name is required")
+    if (!District) newErrors.District = t("District is required")
+    if (!Ulblisttype) newErrors.Ulblisttype = t("ULB Type is required")
+    if (!approvedColony) newErrors.approvedColony = t("Approved Colony is required")
+    if (!masterPlan) newErrors.masterPlan = t("Master Plan is required")
+    if (!buildingStatus) newErrors.buildingStatus = t("Building Status is required")
+    if (!purchasedFAR) newErrors.purchasedFAR = t("Purchased FAR is required")
+    if (!greenbuilding) newErrors.greenbuilding = t("Green Building is required")
+    if (!restrictedArea) newErrors.restrictedArea = t("Restricted Area is required")
+    if (!proposedSite) newErrors.proposedSite = t("Proposed Site Type is required")
 
-    if (!ecbcElectricalLoad) newErrors.ecbcElectricalLoad = "ECBC Electrical Load is required"
-    if (!ecbcDemandLoad) newErrors.ecbcDemandLoad = "ECBC Demand Load is required"
-    if (!ecbcAirConditioned) newErrors.ecbcAirConditioned = "ECBC Air Conditioned Area is required"
+    if (!ecbcElectricalLoad) newErrors.ecbcElectricalLoad = t("ECBC Electrical Load is required")
+    if (!ecbcDemandLoad) newErrors.ecbcDemandLoad = t("ECBC Demand Load is required")
+    if (!ecbcAirConditioned) newErrors.ecbcAirConditioned = t("ECBC Air Conditioned Area is required")
 
     // Conditional validations
     if (approvedColony?.code === "YES" && !nameofApprovedcolony) {
-      newErrors.nameofApprovedcolony = "Approved Colony Name is required"
+      newErrors.nameofApprovedcolony = t("Approved Colony Name is required")
     }
 
     if (approvedColony?.code === "NO" && !NocNumber && !uploadedFile) {
-      newErrors.NocNumber = "NOC Number or NOC Document is required"
+      newErrors.NocNumber = t("NOC Number or NOC Document is required")
     }
 
     if (greenbuilding?.code === "YES") {
-      if (!greenuploadedFile) newErrors.greenuploadedFile = "Green Building Document is required"
-      if (!rating) newErrors.rating = "Rating is required"
+      if (!greenuploadedFile) newErrors.greenuploadedFile = t("Green Building Document is required")
+      if (!rating) newErrors.rating = t("Rating is required")
     }
 
     if (masterPlan?.code === "YES" && !use) {
-      newErrors.use = "Use is required"
+      newErrors.use = t("Use is required")
     }
 const anyYes = 
   ecbcElectricalLoad?.code === "YES" || 
@@ -126,7 +144,7 @@ const anyYes =
   ecbcAirConditioned?.code === "YES";
 
 if (anyYes && !ecbcCertificateFile) {
-  newErrors.ecbcCertificateFile = "Please upload ECBC Certificate";
+  newErrors.ecbcCertificateFile = t("Please upload ECBC Certificate");
 }
 
 
@@ -154,82 +172,82 @@ if (anyYes && !ecbcCertificateFile) {
 };
 
 
-  const saveToSessionStorage = () => {
-    try {
-      const currentData = getSessionData()
-      const updatedData = {
-        ...currentData,
-        buildingDetails: {
-          approvedColony,
-          masterPlan,
-          UlbName,
-          buildingStatus,
-          purchasedFAR,
-          greenbuilding,
-          restrictedArea,
-          District,
-          proposedSite,
-          nameofApprovedcolony,
-          NocNumber,
-          schemesselection,
-          schemeName,
-          transferredscheme,
-          rating,
-          use,
-          Ulblisttype,
-          uploadedFile,
-          greenuploadedFile,
-          ecbcElectricalLoad,
-          ecbcDemandLoad,
-          ecbcAirConditioned,
-          ecbcElectricalLoadFile,
-          ecbcDemandLoadFile,
-          ecbcAirConditionedFile,
-          lastUpdated: Date.now(),
-        },
-      }
+  // const saveToSessionStorage = () => {
+  //   try {
+  //     const currentData = getSessionData()
+  //     const updatedData = {
+  //       ...currentData,
+  //       buildingDetails: {
+  //         approvedColony,
+  //         masterPlan,
+  //         UlbName,
+  //         buildingStatus,
+  //         purchasedFAR,
+  //         greenbuilding,
+  //         restrictedArea,
+  //         District,
+  //         proposedSite,
+  //         nameofApprovedcolony,
+  //         NocNumber,
+  //         schemesselection,
+  //         schemeName,
+  //         transferredscheme,
+  //         rating,
+  //         use,
+  //         Ulblisttype,
+  //         uploadedFile,
+  //         greenuploadedFile,
+  //         ecbcElectricalLoad,
+  //         ecbcDemandLoad,
+  //         ecbcAirConditioned,
+  //         ecbcElectricalLoadFile,
+  //         ecbcDemandLoadFile,
+  //         ecbcAirConditionedFile,
+  //         lastUpdated: Date.now(),
+  //       },
+  //     }
 
-      const sessionStorageData = {
-        value: updatedData,
-        ttl: 86400,
-        expiry: Date.now() + 86400 * 1000,
-      }
+  //     const sessionStorageData = {
+  //       value: updatedData,
+  //       ttl: 86400,
+  //       expiry: Date.now() + 86400 * 1000,
+  //     }
 
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionStorageData))
-    } catch (error) {
-      console.error("Error saving to session storage:", error)
-    }
-  }
+  //     sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionStorageData))
+  //   } catch (error) {
+  //     console.error("Error saving to session storage:", error)
+  //   }
+  // }
 
-  useEffect(() => {
-    saveToSessionStorage()
-  }, [
-    approvedColony,
-    masterPlan,
-    UlbName,
-    buildingStatus,
-    purchasedFAR,
-    greenbuilding,
-    restrictedArea,
-    District,
-    proposedSite,
-    nameofApprovedcolony,
-    NocNumber,
-    schemesselection,
-    schemeName,
-    transferredscheme,
-    rating,
-    use,
-    Ulblisttype,
-    uploadedFile,
-    greenuploadedFile,
-    ecbcElectricalLoad,
-    ecbcDemandLoad,
-    ecbcAirConditioned,
-    ecbcElectricalLoadFile,
-    ecbcDemandLoadFile,
-    ecbcAirConditionedFile,
-  ])
+  // useEffect(() => {
+  //   saveToSessionStorage()
+  // }, [
+  //   approvedColony,
+  //   masterPlan,
+  //   UlbName,
+  //   buildingStatus,
+  //   purchasedFAR,
+  //   greenbuilding,
+  //   restrictedArea,
+  //   District,
+  //   proposedSite,
+  //   nameofApprovedcolony,
+  //   NocNumber,
+  //   schemesselection,
+  //   schemeName,
+  //   transferredscheme,
+  //   rating,
+  //   use,
+  //   Ulblisttype,
+  //   uploadedFile,
+  //   greenuploadedFile,
+  //   ecbcElectricalLoad,
+  //   ecbcDemandLoad,
+  //   ecbcAirConditioned,
+  //   ecbcElectricalLoadFile,
+  //   ecbcDemandLoadFile,
+  //   ecbcAirConditionedFile,
+  // ])
 
   const [files, setFiles] = useState()
   const [file, setFile] = useState()
@@ -337,6 +355,125 @@ if (anyYes && !ecbcCertificateFile) {
     })()
   }, [ecbcAirConditionedFileObj])
 
+  // ✅ approvedColony
+    useEffect(() => {
+      if (typeof approvedColony === "string") {
+        const colony = approvedcolonyStatus.find((item) => item.code === approvedColony);
+        if (colony) setapprovedColony(colony);
+      } else if (approvedColony === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.approvedColony) {
+          setapprovedColony(currentStepData?.createdResponse?.additionalDetails?.approvedColony);
+        }
+      }
+    }, [approvedColony, currentStepData?.createdResponse?.additionalDetails?.approvedColony]);
+
+    // ✅ masterPlan
+    useEffect(() => {
+      if (typeof masterPlan === "string") {
+        const plan = common.find((item) => item.code === masterPlan);
+        if (plan) setmasterPlan(plan);
+      } else if (masterPlan === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.masterPlan) {
+          setmasterPlan(currentStepData?.createdResponse?.additionalDetails?.masterPlan);
+        }
+      }
+    }, [masterPlan, currentStepData?.createdResponse?.additionalDetails?.masterPlan]);
+
+
+    // ✅ purchasedFAR
+    useEffect(() => {
+      if (typeof purchasedFAR === "string") {
+        const far = common.find((item) => item.code === purchasedFAR);
+        if (far) setpurchasedFAR(far);
+      } else if (purchasedFAR === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.purchasedFAR) {
+          setpurchasedFAR(currentStepData?.createdResponse?.additionalDetails?.purchasedFAR);
+        }
+      }
+    }, [purchasedFAR, currentStepData?.createdResponse?.additionalDetails?.purchasedFAR]);
+
+    // ✅ greenbuilding
+    useEffect(() => {
+      if (typeof greenbuilding === "string") {
+        const green = common.find((item) => item.code === greenbuilding);
+        if (green) setgreenbuilding(green);
+      } else if (greenbuilding === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.greenbuilding) {
+          setgreenbuilding(currentStepData?.createdResponse?.additionalDetails?.greenbuilding);
+        }
+      }
+    }, [greenbuilding, currentStepData?.createdResponse?.additionalDetails?.greenbuilding]);
+
+    // ✅ restrictedArea
+    useEffect(() => {
+      if (typeof restrictedArea === "string") {
+        const area = common.find((item) => item.code === restrictedArea);
+        if (area) setrestrictedArea(area);
+      } else if (restrictedArea === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.restrictedArea) {
+          setrestrictedArea(currentStepData?.createdResponse?.additionalDetails?.restrictedArea);
+        }
+      }
+    }, [restrictedArea, currentStepData?.createdResponse?.additionalDetails?.restrictedArea]);
+
+    // ✅ proposedSite
+    useEffect(() => {
+      if (typeof proposedSite === "string") {
+        const site = Typeofproposedsite.find((item) => item.code === proposedSite);
+        if (site) setProposedSite(site);
+      } else if (proposedSite === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.proposedSite) {
+          setProposedSite(currentStepData?.createdResponse?.additionalDetails?.proposedSite);
+        }
+      }
+    }, [proposedSite, currentStepData?.createdResponse?.additionalDetails?.proposedSite]);
+
+    // ✅ use (dropdown)
+    useEffect(() => {
+      if (typeof use === "string") {
+        const usage = selectmasterDrop.find((item) => item.code === use);
+        if (usage) setUse(usage);
+      } else if (use === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.use) {
+          setUse(currentStepData?.createdResponse?.additionalDetails?.use);
+        }
+      }
+    }, [use, currentStepData?.createdResponse?.additionalDetails?.use]);
+
+    // ✅ rating
+    useEffect(() => {
+      if (typeof rating === "string") {
+        const rate = selectRating.find((item) => item.code === rating);
+        if (rate) setrating(rate);
+      } else if (rating === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.rating) {
+          setrating(currentStepData?.createdResponse?.additionalDetails?.rating);
+        }
+      }
+    }, [rating, currentStepData?.createdResponse?.additionalDetails?.rating]);
+
+    // ✅ ECBC fields
+    useEffect(() => {
+      if (typeof ecbcElectricalLoad === "string") {
+        const val = yesNoOptions.find((item) => item.code === ecbcElectricalLoad);
+        if (val) setEcbcElectricalLoad(val);
+      }
+    }, [ecbcElectricalLoad]);
+
+    useEffect(() => {
+      if (typeof ecbcDemandLoad === "string") {
+        const val = yesNoOptions.find((item) => item.code === ecbcDemandLoad);
+        if (val) setEcbcDemandLoad(val);
+      }
+    }, [ecbcDemandLoad]);
+
+    useEffect(() => {
+      if (typeof ecbcAirConditioned === "string") {
+        const val = yesNoOptions.find((item) => item.code === ecbcAirConditioned);
+        if (val) setEcbcAirConditioned(val);
+      }
+    }, [ecbcAirConditioned]);
+
   const approvedcolonyStatus = [
     {
       code: "YES",
@@ -441,6 +578,18 @@ if (anyYes && !ecbcCertificateFile) {
         value: `${selectBuilding.name}`,
       })
     })
+
+  // ✅ buildingStatus
+    useEffect(() => {
+      if (typeof buildingStatus === "string" && building_status?.length > 0) {
+        const status = building_status.find((item) => item.code === buildingStatus);
+        if (status) setbuildingStatus(status);
+      } else if (buildingStatus === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.buildingStatus) {
+          setbuildingStatus(currentStepData?.createdResponse?.additionalDetails?.buildingStatus);
+        }
+      }
+    }, [buildingStatus, commonBuilding, currentStepData?.createdResponse?.additionalDetails?.buildingStatus]);
 
   const { data: commonrating } = Digit.Hooks.useCustomMDMS(
     Digit.ULBService.getStateId(),
@@ -618,46 +767,100 @@ if (anyYes && !ecbcCertificateFile) {
     setErrors((prev) => ({ ...prev, ecbcAirConditionedFile: "" }))
   }
 
-  const goNext = () => {
+  const goNext = async () => {
     if (!validateFields()) {
       return
     }
 
-    const owners = formData.owners && formData.owners[index]
-    const ownerStep = {
-      ...owners,
-      approvedColony,
-      use,
-      UlbName,
-      Ulblisttype,
-      District,
-      rating,
-      masterPlan,
-      buildingStatus,
-      purchasedFAR,
-      greenbuilding,
-      restrictedArea,
-      proposedSite,
-      nameofApprovedcolony,
-      schemeName,
-      transferredscheme,
-      NocNumber,
-      uploadedFile,
-      greenuploadedFile,
-      ecbcElectricalLoad,
-      ecbcDemandLoad,
-      ecbcAirConditioned,
+    // const additionalDetails = {
+    //   ...currentStepData?.createdResponse?.additionalDetails,
+    //   approvedColony,
+    //   use,
+    //   UlbName,
+    //   Ulblisttype,
+    //   District,
+    //   rating,
+    //   masterPlan,
+    //   buildingStatus,
+    //   purchasedFAR,
+    //   greenbuilding,
+    //   restrictedArea,
+    //   proposedSite,
+    //   nameofApprovedcolony,
+    //   schemeName,
+    //   transferredscheme,
+    //   NocNumber,
+    //   uploadedFile,
+    //   greenuploadedFile,
+    //   ecbcElectricalLoad,
+    //   ecbcDemandLoad,
+    //   ecbcAirConditioned,
+    //   ecbcElectricalLoadFile,
+    //   ecbcDemandLoadFile,
+    //   ecbcAirConditionedFile,
+    // }
+
+    const additionalDetails = {
+      ...currentStepData?.createdResponse?.additionalDetails,
+      approvedColony: approvedColony?.code,
+      use: use?.code,
+      UlbName, // plain text
+      Ulblisttype, // plain text
+      District, // plain text
+      rating: rating?.code,
+      masterPlan: masterPlan?.code,
+      buildingStatus: buildingStatus?.code,
+      purchasedFAR: purchasedFAR?.code,
+      greenbuilding: greenbuilding?.code,
+      restrictedArea: restrictedArea?.code,
+      proposedSite: proposedSite?.code,
+      nameofApprovedcolony, // plain text
+      schemeName, // plain text
+      transferredscheme, // plain text
+      NocNumber, // plain text
+      uploadedFile, // file object
+      greenuploadedFile, // file object
+      ecbcElectricalLoad: ecbcElectricalLoad?.code,
+      ecbcDemandLoad: ecbcDemandLoad?.code,
+      ecbcAirConditioned: ecbcAirConditioned?.code,
       ecbcElectricalLoadFile,
       ecbcDemandLoadFile,
       ecbcAirConditionedFile,
-    }
-    const updatedFormData = { ...formData }
+    };
 
-    if (!updatedFormData.owners) {
-      updatedFormData.owners = []
-    }
 
-    onSelect(config.key, { ...formData[config.key], ...ownerStep }, updatedFormData, false, index)
+    const userInfo = Digit.UserService.getUser()
+    const accountId = userInfo?.info?.uuid
+    const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
+
+    try{
+        setApiLoading(true);
+        const result = await Digit.OBPSService.update({ BPA: {
+          ...currentStepData?.createdResponse,
+          additionalDetails,
+          // documents,
+          workflow: {
+            action: workflowAction,
+            assignes: [accountId]
+          }
+        } }, tenantId)
+        if(result?.ResponseInfo?.status === "successful"){
+          setApiLoading(false);
+          onSelect("");
+        }else{
+          alert(t("BPA_CREATE_APPLICATION_FAILED"));
+          setApiLoading(false);
+        }
+        console.log("APIResponse", result);
+      }catch(e){
+        console.log("error", e);
+        alert(t("BPA_CREATE_APPLICATION_FAILED"));
+        setApiLoading(false);
+      }
+
+    console.log("formDataInNBDPage", additionalDetails, currentStepData?.createdResponse?.additionalDetails)
+
+    // onSelect("")
   }
 
   const onSkip = () => onSelect()
@@ -733,8 +936,10 @@ if (anyYes && !ecbcCertificateFile) {
       </div>
     );
 
+    if(apiLoading) return <Loader/>
+
   return (
-  <div style={pageStyle}>
+  <div >
     {!Webview && <Timeline currentStep={2} />}
     <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
       <div style={sectionStyle}>
@@ -783,8 +988,7 @@ if (anyYes && !ecbcCertificateFile) {
         <ErrorMessage error={errors.Ulblisttype} />
       </div>
 
-      <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_COLONY_DETAILS")}</h2>
+      <div >
 
         <CardLabel>{`${t("BPA_APPROVED_COLONY")} *`}</CardLabel>
         <Controller
@@ -873,8 +1077,7 @@ if (anyYes && !ecbcCertificateFile) {
         )}
       </div>
 
-      <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_OTHER_DETAILS")}</h2>
+      <div>
 
         <CardLabel>{`${t("BPA_MASTER_PLAN")} *`}</CardLabel>
         <Controller
@@ -1005,8 +1208,7 @@ if (anyYes && !ecbcCertificateFile) {
         )}
       </div>
 
-      <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_RESTRICTIONS")}</h2>
+      <div>
 
         <CardLabel>{`${t("BPA_RESTRICTED_AREA")}`}</CardLabel>
         <Controller
@@ -1045,8 +1247,7 @@ if (anyYes && !ecbcCertificateFile) {
         <ErrorMessage error={errors.proposedSite} />
       </div>
 
-      <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_ECBC_SECTION")}</h2>
+      <div>
 
         <CardLabel>{`ECBC - Proposed Connected Electrical Load is above 100 Kw`}</CardLabel>
         <Controller
@@ -1128,6 +1329,16 @@ if (anyYes && !ecbcCertificateFile) {
     </FormStep>
 
     <ActionBar>
+              <SubmitBar
+                                            label="Back"
+                                            style={{
+                                              border: "1px solid",
+                                              background: "transparent",
+                                              color: "#2947a3",
+                                              marginRight: "5px",
+                                            }}
+                                            onSubmit={onGoBack}
+                                  />
       <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} />
     </ActionBar>
   </div>

@@ -15,23 +15,23 @@ const getProfessionalDetails = (appData, t) => {
   let values = [
     {
       title: t("NOC_PROFESSIONAL_NAME_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalName,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalName || "N/A",
     },
     {
       title: t("NOC_PROFESSIONAL_EMAIL_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalEmailId,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalEmailId || "N/A",
     },
     {
       title: t("NOC_PROFESSIONAL_REGISTRATION_ID_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalRegId,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalRegId || "N/A",
     },
     {
       title: t("NOC_PROFESSIONAL_MOBILE_NO_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalMobileNumber,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalMobileNumber || "N/A",
     },
     {
       title: t("NOC_PROFESSIONAL_ADDRESS_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalAddress,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalAddress || "N/A",
     },
   ];
 
@@ -45,31 +45,31 @@ const getApplicantDetails = (appData, t) => {
   let values = [
     {
       title: t("NOC_FIRM_OWNER_NAME_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantOwnerOrFirmName || "N/A",
     },
     {
       title: t("NOC_APPLICANT_EMAIL_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantEmailId,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantEmailId || "N/A", 
     },
     {
       title: t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantFatherHusbandName,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantFatherHusbandName || "N/A",
     },
     {
       title: t("NOC_APPLICANT_MOBILE_NO_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantMobileNumber,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantMobileNumber || "N/A",
     },
     {
       title: t("NOC_APPLICANT_DOB_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantDateOfBirth || "N/A",
     },
     {
       title: t("NOC_APPLICANT_GENDER_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantGender?.code,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantGender?.code || "N/A",
     },
     {
       title: t("NOC_APPLICANT_ADDRESS_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantAddress,
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantAddress || "N/A",
     },
   ];
 
@@ -83,74 +83,86 @@ const getSiteDetails = (appData, t) => {
   let values = [
     {
       title: t("NOC_PLOT_NO_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.plotNo,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.plotNo || "N/A",
     },
     {
       title: t("NOC_PROPOSED_SITE_ADDRESS"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.proposedSiteAddress,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.proposedSiteAddress || "N/A",
     },
     {
       title: t("NOC_ULB_NAME_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.ulbName?.name,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.ulbName?.name || "N/A",
     },
     {
       title: t("NOC_ULB_TYPE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.ulbType,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.ulbType || "N/A",
     },
     {
       title: t("NOC_KHASRA_NO_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.khasraNo,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.khasraNo || "N/A",
     },
     {
       title: t("NOC_HADBAST_NO_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.hadbastNo,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.hadbastNo || "N/A",
     },
     {
       title: t("NOC_ROAD_TYPE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.roadType?.name,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.roadType?.name || "N/A",
     },
     {
       title: t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.areaLeftForRoadWidening,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.areaLeftForRoadWidening || "N/A",
     },
     {
       title: t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.netPlotAreaAfterWidening,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.netPlotAreaAfterWidening || "N/A",
     },
     {
       title: t("NOC_ROAD_WIDTH_AT_SITE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.roadWidthAtSite,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.roadWidthAtSite || "N/A",
     },
     {
       title: t("NOC_DISTRICT_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.district?.name,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.district?.name || "N/A",
     },
     {
       title: t("NOC_ZONE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.zone?.name,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.zone?.name || "N/A",
     },
     {
       title: t("NOC_SITE_WARD_NO_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.wardNo,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.wardNo || "N/A",
     },
     {
       title: t("NOC_SITE_VILLAGE_NAME_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.villageName,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.villageName || "N/A",
+    },
+    {
+      title: t("NOC_SITE_COLONY_NAME_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.colonyName || "N/A",
+    },
+    {
+      title: t("NOC_SITE_VASIKA_NO_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.vasikaNumber || "N/A",
+    },
+    {
+      title: t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.khewatAndKhatuniNo || "N/A",
     },
     {
       title: t("NOC_BUILDING_STATUS_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.name,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.name || "N/A",
     },
     {
       title: t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable?.code,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable?.code || "N/A",
     },
   ];
 
   if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.code === "BUILTUP") {
     values.push({
       title: t("NOC_BASEMENT_AREA_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.basementArea,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.basementArea || "N/A",
     });
   }
 
@@ -166,7 +178,7 @@ const getSiteDetails = (appData, t) => {
   if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.code === "BUILTUP") {
     values.push({
       title: t("NOC_TOTAL_FLOOR_AREA_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.totalFloorArea,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.totalFloorArea || "N/A",
     });
   }
 
@@ -180,11 +192,23 @@ const getSpecificationDetails = (appData, t) => {
   let values = [
     {
       title: t("NOC_PLOT_AREA_JAMA_BANDI_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationPlotArea,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationPlotArea || "N/A",
     },
     {
       title: t("NOC_BUILDING_CATEGORY_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory?.name,
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory?.name || "N/A",
+    },
+    {
+      title: t("NOC_NOC_TYPE_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType?.name || "N/A",
+    },
+    {
+      title: t("NOC_RESTRICTED_AREA_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea?.code || "N/A",
+    },
+    {
+      title: t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "N/A",
     },
   ];
 
@@ -197,12 +221,12 @@ const getSpecificationDetails = (appData, t) => {
 const getDocuments = async (appData, t) => {
   const filesArray = appData?.documents?.map((value) => value?.uuid);
   const res = filesArray?.length>0 && await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId());
-  console.log("res here==>", res);
+  //console.log("res here==>", res);
 
   return {
     title: t("NOC_TITILE_DOCUMENT_UPLOADED"),
     values:
-      appData?.documents.length > 0
+      appData?.documents?.length > 0
         ? appData.documents.map((document, index) => {
             let documentLink = pdfDownloadLink(res?.data, document?.uuid);
             //   let documentName= pdfDocumentName(documentLink, index)
@@ -221,12 +245,8 @@ const getDocuments = async (appData, t) => {
 };
 
 export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
-  let appData;
 
-  if(window.location.href.includes("employee"))appData=applicationDetails;
-  else{
-    appData=applicationDetails?.Noc?.[0] || {};
-  }
+  const appData=applicationDetails || {};
   console.log("appData here in DownloadACK", appData);
 
   let detailsArr=[];

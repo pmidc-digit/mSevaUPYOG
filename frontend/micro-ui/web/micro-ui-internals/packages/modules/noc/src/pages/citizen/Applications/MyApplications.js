@@ -30,6 +30,7 @@ const MyApplications = ({ view }) => {
       {data?.data?.map((application, index) => {
         const filteredApplication = Object.fromEntries(Object.entries(application).filter(([key]) => key !== "Applications"));
         //console.log("filtered Applications here==>", filteredApplication);
+        console.log("application?.Applications?.applicationNo", application);
         return (
           <div key={`card-${index}`}>
             <Card>
@@ -39,23 +40,31 @@ const MyApplications = ({ view }) => {
                   <KeyNote keyValue={t(item)} note={t(filteredApplication[item])} />
                 ))}
 
-              {application?.Applications?.applicationStatus != "PENDINGPAYMENT" && (
-                <Link to={`/digit-ui/citizen/noc/search/application-overview/${application?.Applications?.applicationNo}`}>
-                  <SubmitBar label={t("TL_VIEW_DETAILS")} />
+              <Link to={`/digit-ui/citizen/noc/search/application-overview/${application?.Applications?.applicationNo}`}>
+                <SubmitBar label={t("TL_VIEW_DETAILS")} />
+              </Link>
+                
+               {
+               (application?.Applications?.applicationStatus === "INITIATED" || application?.Applications?.applicationStatus==="CITIZENACTIONREQUIRED") && 
+                  <div style={{marginTop:"10px"}}>
+                 <Link to={`/digit-ui/citizen/noc/edit-application/${application?.Applications?.applicationNo}`}>
+                  <SubmitBar label={t("COMMON_EDIT_AND_APPLY_LABEL")} />
                 </Link>
-              )}
-
-              {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
+                </div>
+               }
+              
+               {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
                 <Link
                   to={{
-                    pathname: `/digit-ui/citizen/payment/collect/obpas_noc/${application?.Applications?.uuid}/${tenantId}?tenantId=${tenantId}`,
+                    pathname: `/digit-ui/citizen/payment/collect/obpas_noc/${application?.Applications?.applicationNo}/${tenantId}?tenantId=${tenantId}`,
                   }}
                 >
                   <div style={{ marginTop: "10px" }}>
                     <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
                   </div>
                 </Link>
-              )}
+               )}
+             
             </Card>
           </div>
         );

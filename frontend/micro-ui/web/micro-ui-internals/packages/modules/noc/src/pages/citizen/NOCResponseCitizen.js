@@ -68,7 +68,7 @@ const NOCResponseCitizen = (props) => {
         <ActionBar style={{ display: "flex", justifyContent: "flex-end", alignItems: "baseline" }}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} onSubmit={onSubmit} />
           <SubmitBar label={t("CORE_COMMON_GO_TO_NOC")} onSubmit={onGoToNOC} />
-          <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} />
+          {/* <SubmitBar label={t("COMMON_MAKE_PAYMENT")} onSubmit={handlePayment} /> */}
         </ActionBar>
       </Card>
     </div>

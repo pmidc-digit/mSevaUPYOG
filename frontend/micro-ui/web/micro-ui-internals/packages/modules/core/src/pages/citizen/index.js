@@ -10,6 +10,8 @@ import CitizenHome from "./Home";
 import LanguageSelection from "./Home/LanguageSelection";
 import LocationSelection from "./Home/LocationSelection";
 import Login from "./Login";
+import NewLoginPage from "./NewLogin/NewLoginPage";
+import NewRegistration from "./NewRegistration/index"
 import UserProfile from "./Home/UserProfile";
 import ErrorComponent from "../../components/ErrorComponent";
 import FAQsSection from "./FAQs/FAQs";
@@ -35,6 +37,8 @@ const sidebarHiddenFor = [
   "/digit-ui/citizen/login",
   "/digit-ui/citizen/register/otp",
   "/digit-ui/citizen/sso/login",
+  "/digit-ui/citizen/login-page",
+  "/digit-ui/citizen/new-registration"
 ];
 
 const topSidebarHiddenFor=[
@@ -191,6 +195,14 @@ const Home = ({
           <PrivateRoute path={`${path}/feedback`} component={CitizenFeedback}></PrivateRoute>
           <PrivateRoute path={`${path}/feedback-acknowledgement`} component={AcknowledgementCF}></PrivateRoute>
 
+          <Route exact path={`${path}/login-page`}>
+            <NewLoginPage stateCode={stateCode}/>
+          </Route>
+
+          <Route path={`${path}/new-registration`}>
+            <NewRegistration stateCode={stateCode} />
+          </Route>
+
           <Route exact path={`${path}/select-language`}>
             <LanguageSelection />
           </Route>
@@ -270,13 +282,13 @@ const Home = ({
           <a style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
 
           <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px" }} >|</span>
-          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
+          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
 
           {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
 
         </div>
         <div className="upyog-copyright-footer-web">
-          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
+          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"12px":"14px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
         </div>
       </div>
     </div>

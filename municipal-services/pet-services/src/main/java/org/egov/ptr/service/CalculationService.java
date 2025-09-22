@@ -46,8 +46,8 @@ public class CalculationService {
 
 		List<DemandDetail> demandDetails = new ArrayList<>();
 		for (BreedType type : calculationTypes) {
-			if(applicationType.equalsIgnoreCase("NEWAPPLICATION") && petRegistrationRequest.getPetRegistrationApplications().get(0).getPetDetails().getBreedType().equals(type.getName())) {
-//			if (type.getNewapplication().equalsIgnoreCase(applicationType)) {
+			if (applicationType.equalsIgnoreCase("NEWAPPLICATION") &&
+					petRegistrationRequest.getPetRegistrationApplications().get(0).getPetDetails().getBreedType().equals(type.getName())) {
 				DemandDetail demandDetail = DemandDetail.builder()
 						.taxAmount(type.getNewapplication())
 						.taxHeadMasterCode(type.getFeeType())
@@ -55,8 +55,9 @@ public class CalculationService {
 						.build();
 				demandDetails.add(demandDetail);
 			}
-			if(applicationType.equalsIgnoreCase("RENEWAPPLICATION")){
-//			if (type.getNewapplication().equalsIgnoreCase(applicationType)) {
+
+			if (applicationType.equalsIgnoreCase("RENEWAPPLICATION") &&
+					petRegistrationRequest.getPetRegistrationApplications().get(0).getPetDetails().getBreedType().equals(type.getName())) {
 				DemandDetail demandDetail = DemandDetail.builder()
 						.taxAmount(type.getRenewapplication())
 						.taxHeadMasterCode(type.getFeeType())

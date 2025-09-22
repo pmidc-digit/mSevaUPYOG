@@ -3,6 +3,7 @@ package org.egov.ndc.calculator.web.models.workflow;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.egov.ndc.calculator.web.models.ndc.Document;
 import org.hibernate.validator.constraints.SafeHtml;
 import org.springframework.validation.annotation.Validated;
 

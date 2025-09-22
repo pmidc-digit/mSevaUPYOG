@@ -2,8 +2,9 @@ package org.egov.ndc.calculator.web.models.workflow;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import org.egov.bpa.calculator.web.models.AuditDetails;
 import org.egov.common.contract.request.User;
+import org.egov.ndc.calculator.web.models.ndc.AuditDetails;
+import org.egov.ndc.calculator.web.models.ndc.Document;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;

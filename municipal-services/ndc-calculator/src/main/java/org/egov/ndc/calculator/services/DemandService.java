@@ -1,7 +1,6 @@
 package org.egov.ndc.calculator.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.egov.bpa.calculator.web.models.RequestInfoWrapper;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.common.contract.request.User;
 import org.egov.ndc.calculator.config.NDCCalculatorConfig;
@@ -9,6 +8,7 @@ import org.egov.ndc.calculator.repository.ServiceRequestRepository;
 import org.egov.ndc.calculator.utils.CalculatorUtils;
 import org.egov.ndc.calculator.web.models.Calculation;
 import org.egov.ndc.calculator.web.models.CalculationReq;
+import org.egov.ndc.calculator.web.models.RequestInfoWrapper;
 import org.egov.ndc.calculator.web.models.bill.GetBillCriteria;
 import org.egov.ndc.calculator.web.models.demand.Demand;
 import org.egov.ndc.calculator.web.models.demand.DemandDetail;

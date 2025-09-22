@@ -1,4 +1,4 @@
-package org.egov.bpa.calculator.web.models;
+package org.egov.ndc.calculator.web.models;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

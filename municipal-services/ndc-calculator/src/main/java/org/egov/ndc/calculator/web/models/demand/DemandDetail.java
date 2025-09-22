@@ -2,8 +2,6 @@ package org.egov.ndc.calculator.web.models.demand;
 
 import java.math.BigDecimal;
 
-import org.egov.bpa.calculator.web.models.AuditDetails;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -11,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.egov.ndc.calculator.web.models.ndc.AuditDetails;
 
 @Data
 @AllArgsConstructor

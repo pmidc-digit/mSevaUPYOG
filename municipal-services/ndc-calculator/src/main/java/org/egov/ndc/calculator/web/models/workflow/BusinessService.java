@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import lombok.*;
-import org.egov.bpa.calculator.web.models.AuditDetails;
+import org.egov.ndc.calculator.web.models.ndc.AuditDetails;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;

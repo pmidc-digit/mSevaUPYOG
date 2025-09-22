@@ -1,4 +1,4 @@
-package org.egov.bpa.calculator.web.models.demand;
+package org.egov.ndc.calculator.web.models.demand;
 
 import java.math.BigDecimal;
 
@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.egov.ndc.calculator.web.models.bill.Category;
 
 @Data
 @NoArgsConstructor

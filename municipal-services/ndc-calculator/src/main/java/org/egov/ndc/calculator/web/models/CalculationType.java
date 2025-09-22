@@ -1,4 +1,4 @@
-package org.egov.bpa.calculator.web.models;
+
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

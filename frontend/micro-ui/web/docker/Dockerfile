@@ -1,32 +1,32 @@
 FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
-RUN yarn add @mseva/digit-ui-libraries@1.0.63
+RUN yarn add @mseva/digit-ui-libraries@1.0.66
 RUN yarn add @mseva/digit-ui-module-bills@1.0.6
 RUN yarn add @mseva/digit-ui-module-fsm@1.0.4
 RUN yarn add @mseva/digit-ui-module-dss@1.0.4
 RUN yarn add @mseva/digit-ui-module-mcollect@1.0.6
 RUN yarn add @mseva/digit-ui-module-pgr@1.0.8
-RUN yarn add @mseva/digit-ui-module-noc@1.0.10
+RUN yarn add @mseva/digit-ui-module-noc@1.0.11
 RUN yarn add @mseva/digit-ui-module-engagement@1.1.27
 RUN yarn add @mseva/digit-ui-module-hrms@1.0.4
-RUN yarn add @mseva/digit-ui-module-core@1.0.35
-RUN yarn add @mseva/digit-ui-module-common@1.0.70
+RUN yarn add @mseva/digit-ui-module-core@1.0.36
+RUN yarn add @mseva/digit-ui-module-common@1.0.73
 RUN yarn add @mseva/digit-ui-module-ws@1.0.5
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.4
-RUN yarn add @mseva/digit-ui-module-ptr@1.0.78
+RUN yarn add @mseva/digit-ui-module-ptr@1.0.81
 RUN yarn add @mseva/digit-ui-module-swach@1.0.42
 RUN yarn add @mseva/digit-ui-module-pt@1.0.34
 RUN yarn add @mseva/digit-ui-module-tl@1.0.14
-RUN yarn add @mseva/digit-ui-module-obps@1.0.36
-RUN yarn add @mseva/digit-ui-module-sv@1.0.51
-RUN yarn add @mseva/upyog-ui-module-ads@1.0.56
-RUN yarn add @mseva/upyog-ui-module-chb@1.0.49
-RUN yarn add @mseva/upyog-ui-module-asset@1.0.44
-RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.36
+RUN yarn add @mseva/digit-ui-module-obps@1.0.40
+RUN yarn add @mseva/digit-ui-module-sv@1.0.54
+RUN yarn add @mseva/upyog-ui-module-ads@1.0.61
+RUN yarn add @mseva/upyog-ui-module-chb@1.0.52
+RUN yarn add @mseva/upyog-ui-module-asset@1.0.47
+RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.39
 RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.2
 RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.2
-RUN yarn add @mseva/digit-ui-module-ndc@1.0.24
+RUN yarn add @mseva/digit-ui-module-ndc@1.0.29
 ARG WORK_DIR
 WORKDIR /app
 # ENV NODE_OPTIONS "--max-old-space-size=8192" 12288 4192

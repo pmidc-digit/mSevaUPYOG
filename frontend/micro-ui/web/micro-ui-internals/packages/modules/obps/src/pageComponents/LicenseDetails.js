@@ -12,8 +12,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   let isOpenLinkFlow = window.location.href.includes("openlink");
   const uuid = userInfo?.info?.uuid;
   const [disable, setDisable] = useState({
-    lastName: false,
-    middleName: false,
+
     gender: false,
     dateOfBirth: false,
   });
@@ -22,34 +21,11 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   const [name, setName] = useState(() => {
     // (!isOpenLinkFlow ? userInfo?.info?.name : "") || formData?.LicneseDetails?.name || formData?.formData?.LicneseDetails?.name || "";
     const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
-    const nameParts = fullName.trim().split(" ");
+    const nameParts = fullName
     //console.log("firstName here", nameParts[0]);
-    return nameParts.length ? nameParts[0] : "";
+    return nameParts.length ? nameParts : "";
   });
-  const [lastName, setLastName] = useState(() => {
-    const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
-    const nameParts = fullName.trim().split(" ");
-    // console.log("lastName here", nameParts[nameParts.length - 1]);
-    if(nameParts.length > 1 ){
-      setDisable((prev) => ({ ...prev, lastName: true }));
-    }
-    return nameParts.length > 1 ? nameParts[nameParts.length - 1] : ""; // Extract the last word if it exists
-  });
-  const [middleName, setMiddleName] = useState(() => {
-    const fullName = formData?.LicneseDetails?.name || (!isOpenLinkFlow ? userInfo?.info?.name : "") || "";
 
-    const nameParts = fullName.trim().split(" ");
-    console.log("Middle name parts:", nameParts.slice(1, -1));
-    if(nameParts.length === 3 && nameParts.slice(1, -1).length > 0 && nameParts.slice(1, -1)[0] !== ""){
-      setDisable((prev) => ({ ...prev, middleName: true }));
-    }
-    if(nameParts.length > 3 && nameParts.slice(1, -1).length > 0 && nameParts.slice(1, -1)[1] !== ""){
-      setDisable((prev) => ({ ...prev, middleName: true }));
-    }
-
-    // Join middle name parts if there are more than two words
-    return nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : "";
-  });
   console.log("disable state", disable);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
@@ -146,12 +122,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
   function SelectName(e) {
     setName(e.target.value);
   }
-  function SelectLastName(e) {
-    setLastName(e.target.value);
-  }
-  function SelectMiddleName(e) {
-    setMiddleName(e.target.value);
-  }
+
   function SelectUserName(e) {
     setUserName(e.target.value);
   }
@@ -223,10 +194,6 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
       let fullName = "";
       if(name?.length>0){
         fullName = name;
-      }if(middleName?.length>0){
-        fullName = fullName + " " + middleName;
-      }if(lastName?.length>0){
-        fullName = fullName + " " + lastName;
       }
       let licenseDet = { name: fullName, mobileNumber: mobileNumber, gender: gender, email: email, PanNumber: PanNumber, dateOfBirth: dateOfBirth };
       onSelect(config.key, licenseDet);
@@ -260,7 +227,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
             // isDisabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName || !email}
           >
             <div>
-              <CardLabel>{t("BPA_FIRST_NAME")}*</CardLabel>
+              <CardLabel>{t("BPA_FULL_NAME")}*</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -277,7 +244,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
               />
-              <CardLabel>{t("BPA_MIDDLE_NAME")}</CardLabel>
+              {/* <CardLabel>{t("BPA_MIDDLE_NAME")}</CardLabel>
               <TextInput
                 t={t}
                 type={"text"}
@@ -310,7 +277,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
                   type: "text",
                   title: t("PT_NAME_ERROR_MESSAGE"),
                 })}
-              />
+              /> */}
               <div>
               <CardLabel>{t("BPA_APPLICANT_DOB_LABEL")}*</CardLabel>
               <DatePicker
@@ -487,7 +454,7 @@ const LicenseDetails = ({ t, config, onSelect, userType, formData, ownerIndex })
         <SubmitBar
           label={t("CS_COMMON_NEXT")}
           onSubmit={goNext}
-          disabled={!name || !mobileNumber || !gender || !dateOfBirth || !lastName || !email }
+          disabled={!name || !mobileNumber || !gender || !dateOfBirth  || !email }
         />
       </ActionBar>
     </div>

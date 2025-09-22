@@ -22,7 +22,7 @@ import {
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import ApplicationDetailsTemplate from "../../../../../templates/ApplicationDetails";
 import { businessServiceList, convertEpochToDate, stringReplaceAll } from "../../../utils";
 import { format } from "date-fns";
@@ -84,6 +84,7 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
+  const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   const state = tenantId?.split(".")[0];
   const [appDetails, setAppDetails] = useState({});
@@ -163,7 +164,6 @@ const CitizenApplicationOverview = () => {
   }, [applicationDetails?.Applications]);
 
   useEffect(() => {
-    console.log("applicationDetails", applicationDetails);
     if (applicationDetails) {
       setIsDetailsLoading(true);
       const { Applicant: details } = applicationDetails?.Applications?.[0];
@@ -174,8 +174,6 @@ const CitizenApplicationOverview = () => {
 
   const handleDownloadPdf = async () => {
     const Property = applicationDetails;
-    console.log("applicationDetails in StakeholderAck", applicationDetails);
-    console.log("tenants", tenants);
     const tenantInfo = tenants?.find((tenant) => tenant?.code === Property?.tenantId);
 
     const acknowledgementData = await getAcknowledgementData(Property, tenantInfo, t);
@@ -183,6 +181,27 @@ const CitizenApplicationOverview = () => {
     console.log("acknowledgementData", acknowledgementData);
     Digit.Utils.pdf.generateNDC(acknowledgementData);
   };
+
+  const [getPropertyId, setPropertyId] = useState(null);
+
+  useEffect(() => {
+    if (displayData) {
+      console.log("here");
+      const checkProperty = displayData?.NdcDetails?.filter((item) => item?.businessService == "NDC_PROPERTY_TAX");
+      console.log("checkProperty", checkProperty);
+      setPropertyId(checkProperty?.[0]?.consumerCode);
+    }
+  }, [displayData]);
+
+  const { isLoading: checkLoading, isError, error: checkError, data: propertyDetailsFetch } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: getPropertyId }, tenantId: tenantId },
+    {
+      filters: { propertyIds: getPropertyId },
+      tenantId: tenantId,
+      enabled: getPropertyId ? true : false,
+      privacy: Digit.Utils.getPrivacyObject(),
+    }
+  );
 
   if (isLoading || isDetailsLoading) {
     return <Loader />;
@@ -196,12 +215,22 @@ const CitizenApplicationOverview = () => {
         {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
           <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
         )}
+        {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && (
+          <ActionBar>
+            <SubmitBar
+              label={t("COMMON_EDIT")}
+              onSubmit={() => {
+                const id = applicationDetails?.Applications?.[0]?.uuid;
+                history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
+              }}
+            />
+          </ActionBar>
+        )}
       </div>
 
       <Card className="ndc_card_main">
         <CardSubHeader className="ndc_label">{t("NDC_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
-          {console.log("displayData?.applicantData", displayData?.applicantData)}
           {displayData?.applicantData &&
             Object.entries(displayData?.applicantData)?.map(([key, value]) => (
               <Row
@@ -229,6 +258,19 @@ const CitizenApplicationOverview = () => {
               {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
               <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
               <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
+              {detail?.businessService == "NDC_PROPERTY_TAX" && propertyDetailsFetch?.Properties && (
+                <>
+                  <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
+                  <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
+                  <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
+                  <Row label={t("Street Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.street} />
+                  {/* <Row label={t("Mohalla")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                  <Row label={t("Pincode")} text={propertyDetailsFetch?.Properties?.[0]?.address?.pincode || "N/A"} />
+                  {/* <Row label={t("Existing Pid")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                  <Row label={t("Survey Id/UID")} text={propertyDetailsFetch?.Properties?.[0]?.surveyId} />
+                  <Row label={t("Year of creation of Property")} text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction} />
+                </>
+              )}
             </StatusTable>
           </div>
         ))}

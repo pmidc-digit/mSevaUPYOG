@@ -100,8 +100,12 @@
 .service-center-details-card{
     display: flex;
     overflow-wrap: break-word;
+
 }
 .service-center-details-text{
     float: left;
     width: 180px;
+}
+.service-center-details-text-width-fix{
+    float: left;
 }

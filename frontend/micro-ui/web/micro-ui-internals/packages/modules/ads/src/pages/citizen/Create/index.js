@@ -23,7 +23,7 @@ const ADSCreate = ({ parentRoute }) => {
   const stateId = Digit.ULBService.getStateId();
   let config = [];
   const [params, setParams, clearParams] = Digit.Hooks.useSessionStorage("ADS_CREATE", {});
-  let { data: commonFields, isLoading } = Digit.Hooks.pt.useMDMS(stateId, "PropertyTax", "CommonFieldsConfig"); // PROPERTY CONFIG HOOK , just for commkonfeild config
+  let { data: commonFields, isLoading } = Digit.Hooks.ads.useMDMS(stateId, "PropertyTax", "CommonFieldsConfig"); // PROPERTY CONFIG HOOK , just for commkonfeild config
   const goNext = (skipStep, index, isAddMultiple, key) => {
     let currentPath = pathname.split("/").pop(),
       lastchar = currentPath.charAt(currentPath.length - 1),

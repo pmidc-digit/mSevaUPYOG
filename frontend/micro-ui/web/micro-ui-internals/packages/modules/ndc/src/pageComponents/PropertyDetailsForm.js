@@ -63,21 +63,23 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   });
 
   useEffect(() => {
+    console.log("coming here everytime", formData);
     const owner = formData?.cpt?.details?.owners?.[0];
     const fullName = owner?.name?.split(" ");
-    const firstName = fullName?.[0];
-    let lastName;
-    if (fullName?.length > 1) {
-      lastName = fullName?.[fullName.length - 1];
-    }
-    const email = owner?.email;
+    const firstName = owner?.name;
+    // let lastName;
+    // if (fullName?.length > 1) {
+    //   lastName = fullName?.[fullName.length - 1];
+    // }
+    console.log("ikiki email", owner?.emailId);
+    const email = owner?.emailId || formData?.PropertyDetails?.email || "";
     const mobileNumber = owner?.mobileNumber;
     const address = owner?.permanentAddress;
 
     const combinedObject = {};
     if (firstName) combinedObject.firstName = firstName;
-    if (lastName) combinedObject.lastName = lastName;
-    if (email) combinedObject.email = email;
+    // if (lastName) combinedObject.lastName = lastName;
+    combinedObject.email = email;
     if (mobileNumber) combinedObject.mobileNumber = mobileNumber;
     if (address) combinedObject.address = address;
     combinedObject.propertyBillData = {
@@ -92,6 +94,10 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
       };
     });
   }, [formData?.cpt?.details]);
+
+  useEffect(() => {
+    console.log("updated propertyDetails", propertyDetails);
+  }, [propertyDetails]);
 
   useEffect(() => {
     let waterConnection;
@@ -367,13 +373,21 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
     }
   }, [showToast]);
 
-  useEffect(() => {
-    if (apiDataCheck) {
-      const apiEmail = apiDataCheck?.[0]?.owners?.[0]?.emailId || "";
-      setValue("email", apiEmail);
-      setPropertyDetails((prev) => ({ ...prev, email: apiEmail }));
-    }
-  }, [apiDataCheck]);
+  // useEffect(() => {
+  //   if (apiDataCheck) {
+  //     const apiEmail = apiDataCheck?.[0]?.owners?.[0]?.emailId || "";
+  //     setValue("email", apiEmail);
+  //     setPropertyDetails((prev) => ({ ...prev, email: apiEmail }));
+  //   }
+  // }, [apiDataCheck]);
+
+  // useEffect(() => {
+  //   if (formData?.cpt?.details?.owners) {
+  //     const formDataEmail = formData?.cpt?.details?.owners?.[0]?.emailId;
+  //     setValue("email", formDataEmail);
+  //     setPropertyDetails((prev) => ({ ...prev, email: formDataEmail }));
+  //   }
+  // }, [formData?.cpt?.details?.owners]);
 
   return (
     <div style={{ marginBottom: "16px" }}>
@@ -600,7 +614,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
           </button>
 
           <LabelFieldPair style={{ marginTop: "40px" }}>
-            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FIRST_NAME")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_FULL_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -625,7 +639,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
             </div>
           </LabelFieldPair>
 
-          <LabelFieldPair>
+          {/* <LabelFieldPair>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_LAST_NAME")} * `}</CardLabel>
             <div className="field">
               <Controller
@@ -649,7 +663,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
                 )}
               />
             </div>
-          </LabelFieldPair>
+          </LabelFieldPair> */}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller ndc_card_labels">{`${t("NDC_EMAIL")} * `}</CardLabel>
@@ -657,19 +671,19 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
               <Controller
                 control={control}
                 name={"email"}
-                defaultValue=""
+                defaultValue={propertyDetails?.email || ""}
                 render={(props) => (
                   <TextInput
-                    value={props?.value}
+                    value={propertyDetails?.email}
                     onChange={(e) => {
-                      props.onChange(e.target.value);
                       setPropertyDetails((prev) => ({ ...prev, email: e.target.value }));
+                      props.onChange(e.target.value);
                     }}
                     onBlur={(e) => {
                       // setFocusIndex({ index: -1 });
                       props.onBlur(e);
                     }}
-                    disabled={formData?.cpt?.details?.owners?.[0]?.email?.length > 0}
+                    // disabled={formData?.cpt?.details?.owners?.[0]?.emailId}
                   />
                 )}
               />

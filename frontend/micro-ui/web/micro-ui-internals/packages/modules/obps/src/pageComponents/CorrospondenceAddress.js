@@ -57,7 +57,13 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
                 {
                   gender: formData?.LicneseDetails?.gender?.code,
                   mobileNumber: formData?.LicneseDetails?.mobileNumber,
-                  name: [formData?.LicneseDetails?.name.trim(), formData?.LicneseDetails?.middleName.trim(), formData?.LicneseDetails?.lastName.trim()].filter(Boolean).join(" ").trim(),
+                  // name: [formData?.LicneseDetails?.name.trim(), formData?.LicneseDetails?.middleName.trim(), formData?.LicneseDetails?.lastName.trim()].filter(Boolean).join(" ").trim(),
+                  name: [
+                    formData?.LicneseDetails?.name ? formData.LicneseDetails.name.trim() : "",
+                    formData?.LicneseDetails?.middleName ? formData.LicneseDetails.middleName.trim() : "",
+                    formData?.LicneseDetails?.lastName ? formData.LicneseDetails.lastName.trim() : ""
+                  ].filter(Boolean).join(" ").trim(),
+
                   dob: formData?.LicneseDetails?.dateOfBirth ? convertDateToEpoch(formData?.LicneseDetails?.dateOfBirth) : null,
                   emailId: formData?.LicneseDetails?.email,
                   permanentAddress:
@@ -166,7 +172,7 @@ const CorrospondenceAddress = ({ t, config, onSelect, value, userType, formData 
       <SubmitBar
         label={t("CS_COMMON_NEXT")}
           onSubmit={goNext}
-          disabled={isDisableForNext || Correspondenceaddress.trim() === "" ? true : false}
+          disabled={isDisableForNext}
       />
     </ActionBar>
     </React.Fragment>

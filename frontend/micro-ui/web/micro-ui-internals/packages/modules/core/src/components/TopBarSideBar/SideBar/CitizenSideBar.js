@@ -31,44 +31,57 @@ const defaultImage =
   "XZOvia7VujatUwVTrIt+Q/Csc7Tuhe+BOakT10b4TuoiiJjvgU9emTO42PwEfBa+cuodKkuf42DXr1D3JpXz73Hnn0j10evHKe+nufgfUm+7B84sX9FfdEzXux2DBpWuKokkCqN/5pa/8pmvn" +
   "L+RGKCddCGmatiPyPB/+ekO/M/q/7uvbt22kTt3zEnXPzCV13T3Gel4/6NduDu66xRvlPNkM1RjjxUdv+4WhGx6TftD19Q/dfzpwcHO+rE3fAAAAAElFTkSuQmCC";
 const Profile = ({ info, stateName, t }) => {
-  const [profilePic, setProfilePic] = React.useState(null);
-  React.useEffect(async () => {
-    const tenant = Digit.ULBService.getCurrentTenantId();
-    const uuid = info?.uuid;
-    if (uuid) {
-      const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
+  const [profilePic, setProfilePic] = React.useState(info?.photo || null);
+  const [email, setEmail] = React.useState(info?.emailId || null);
 
-      if (usersResponse && usersResponse.user && usersResponse.user.length) {
-        const userDetails = usersResponse.user[0];
-        const thumbs = userDetails?.photo?.split(",");
-        setProfilePic(thumbs?.at(0));
+  React.useEffect(() => {
+    const fetchProfileDetails = async () => {
+      const tenant = Digit.ULBService.getCurrentTenantId();
+      const uuid = info?.uuid;
+      if (uuid) {
+        const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
+        console.log(usersResponse, "USER RESPONSE IMAGE");
+
+        if (usersResponse?.user?.length) {
+          const userDetails = usersResponse.user[0];
+          setProfilePic(userDetails?.photo || null);
+          setEmail(userDetails?.emailId || null);
+        }
       }
-    }
-  }, [profilePic !== null]);
+    };
+
+    fetchProfileDetails();
+  }, [info?.uuid]);
+
   return (
     <div className="profile-section">
       <div className="imageloader imageloader-loaded">
-        <img
+       <img
           className="img-responsive img-circle img-Profile"
-          src={profilePic ? profilePic : defaultImage}
-          style={{ objectFit: "cover", objectPosition: "center" }}
+          src={profilePic || defaultImage}
+          alt="Profile"
+          style={{ objectFit: "contain", objectPosition: "center" }}
+          onError={(e) => (e.currentTarget.src = defaultImage)}
         />
+
       </div>
       <div id="profile-name" className="label-container name-Profile">
-        <div className="label-text"> {info?.name} </div>
+        <div className="label-text">{info?.name}</div>
       </div>
       <div id="profile-location" className="label-container loc-Profile">
-        <div className="label-text"> {info?.mobileNumber} </div>
+        <div className="label-text">{info?.mobileNumber}</div>
       </div>
-      {info?.emailId && (
+      {email && (
         <div id="profile-emailid" className="label-container loc-Profile">
-          <div className="label-text"> {info.emailId} </div>
+          <div className="label-text">{email}</div>
         </div>
       )}
       <div className="profile-divider"></div>
       {window.location.href.includes("/employee") &&
         !window.location.href.includes("/employee/user/login") &&
-        !window.location.href.includes("employee/user/language-selection") && <ChangeCity t={t} mobileView={true} />}
+        !window.location.href.includes("employee/user/language-selection") && (
+          <ChangeCity t={t} mobileView={true} />
+        )}
     </div>
   );
 };

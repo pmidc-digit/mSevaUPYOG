@@ -10,6 +10,8 @@ import {
   RemoveableTag,
   Toast,
   Loader,
+  ActionBar,
+  SubmitBar
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState, useMemo } from "react";
 import { render } from "react-dom";
@@ -35,6 +37,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
   const { data, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, formData?.data?.scrutinyNumber, {
     enabled: true,
   });
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   console.log(subOccupancy, "OCCUPANCY");
 
@@ -58,30 +61,125 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     }
   }, [formData?.data?.occupancyType, mdmsData, isMdmsLoading]);
 
+
+
+
+
+  // ---------------- UI Styles ----------------
+  const pageStyle = {
+    padding: "2rem",
+    backgroundColor: "#f1f1f1ff",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    color: "#333",
+    paddingBottom: "5rem",
+  };
+
+  const sectionStyle = {
+    backgroundColor: "#ffffff",
+    padding: "1rem 1.5rem",
+    borderRadius: "8px",
+    marginBottom: "2rem",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+  };
+
+  const headingStyle = {
+    fontSize: "1.5rem",
+    borderBottom: "2px solid #ccc",
+    paddingBottom: "0.3rem",
+    color: "#2e4a66",
+    marginTop: "2rem",
+    marginBottom: "1rem",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    borderBottom: "1px dashed #e0e0e0",
+    padding: "0.5rem 0",
+    color: "#333",
+  };
+
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+    
+  };
+
+  const documentCardStyle = {
+
+    minWidth: "200px",
+    maxWidth: "250px",
+    backgroundColor: "#fdfdfd",
+    padding: "0.75rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    justifyContent:"center",
+    display:"flex",
+    
+  };
+
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+
+  const renderLabel = (label, value) => (
+    <div style={labelFieldPairStyle}>
+      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div>{value || t("CS_NA")}</div>
+    </div>
+  );
+
+
+
+
+
   function getFloorData(block) {
-    let floors = [];
-    block?.building?.floors?.map((ob) => {
+
+    const floors = []
+    let totalBuiltUpArea = 0
+    let totalFloorArea = 0
+
+    block?.building?.floors?.forEach((ob) => {
+      const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0
+      const floor = Number(ob.occupancies?.[0]?.floorArea) || 0
+
+      totalBuiltUpArea += builtUp
+      totalFloorArea += floor
+
       floors.push({
         Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
         Level: ob.number,
         Occupancy: t(`${ob.occupancies?.[0]?.type}`),
-        BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
-        FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
-        // CarpetArea: Number(ob.occupancies?.[0]?.CarpetArea).toFixed(2) || 0,
-        key: t(`BPA_FLOOR_NAME_${ob.number}`),
-      });
-    });
-    return floors;
+      
+        BuildupArea: Number(builtUp).toFixed(2),
+        FloorArea: Number(floor).toFixed(2),
+      })
+    })
+
+    // Add Totals Row
+    floors.push({
+      Floor: t("BPA_TOTAL"),
+      Level: "",
+      Occupancy: "",
+      BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+      FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+    })
+
+    return floors
   }
 
   function getsuboptions() {
-    let suboccoption = [];
+    const suboccoption = [];
     // data &&
     // data?.planDetail?.mdmsMasterData?.SubOccupancyType?.map((ob) => {
     mdmsData?.BPA?.SubOccupancyType?.map((ob) => {
-      suboccoption.push({ code: ob.code, name: ob.name, i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(ob?.code?.toUpperCase(), "-", "_")}` });
-    });
-    return Digit.Utils.locale.sortDropdownNames(suboccoption, "i18nKey", t);
+     suboccoption.push({
+        code: ob.code,
+        name: ob.name,
+        i18nKey: `BPA_SUBOCCUPANCYTYPE_${stringReplaceAll(ob?.code?.toUpperCase(), "-", "_")}`,
+      })
+    })
+    return Digit.Utils.locale.sortDropdownNames(suboccoption, "i18nKey", t)
   }
 
   //do not touch this action button
@@ -135,16 +233,19 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     // },
   ];
   const selectOccupancy = (e, data, num) => {
-    let blocks = subOccupancyObject;
-    let newSubOccupancy = [];
+
+    const newSubOccupancy = [];
     e &&
       e?.map((ob) => {
-        newSubOccupancy.push(ob?.[1]);
-      });
-    blocks[`Block_${num}`] = newSubOccupancy;
-    setsubOccupancy(newSubOccupancy);
-    setsubOccupancyObject(blocks);
-  };
+       newSubOccupancy.push(ob?.[1])
+      })
+
+    setsubOccupancyObject((prev) => ({
+      ...prev,
+      [`Block_${num}`]: newSubOccupancy,
+    }))
+    setsubOccupancy(newSubOccupancy)
+  }
 
   const onRemove = (index, key, num) => {
     let afterRemove = subOccupancyObject[`Block_${num}`].filter((value, i) => {
@@ -167,15 +268,47 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     setShowToast(null);
   };
 
-  const tableColumns = useMemo(() => {
-    return tableHeader?.map((ob) => ({
-      Header: t(`${ob.name}`),
-      accessor: accessData(ob.id),
-      id: ob.id,
-      //symbol: plot?.symbol,
-      //sortType: sortRows,
-    }));
-  });
+  // const tableColumns = useMemo(() => {
+  //   return tableHeader?.map((ob) => ({
+  //     Header: t(`${ob.name}`),
+  //     accessor: accessData(ob.id),
+  //     id: ob.id,
+  //     //symbol: plot?.symbol,
+  //     //sortType: sortRows,
+  //   }));
+  // });
+
+   const tableColumns = useMemo(() => {
+    return tableHeader?.map((ob) => {
+      if (ob.id === "BuildupArea") {
+        return {
+          Header: t(`${ob.name}`),
+          accessor: accessData(ob.id),
+          id: ob.id,
+          Footer: (info) => {
+            const total = info.rows.reduce((sum, row) => sum + (Number(row.values.BuildupArea) || 0), 0)
+            return `${t("BPA_TOTAL_BUILDUPAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
+          },
+        }
+      } else if (ob.id === "FloorArea") {
+        return {
+          Header: t(`${ob.name}`),
+          accessor: accessData(ob.id),
+          id: ob.id,
+          Footer: (info) => {
+            const total = info.rows.reduce((sum, row) => sum + (Number(row.values.FloorArea) || 0), 0)
+            return `${t("BPA_TOTAL_FLOORAREA")} : ${Number(total).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`
+          },
+        }
+      } else {
+        return {
+          Header: t(`${ob.name}`),
+          accessor: accessData(ob.id),
+          id: ob.id,
+        }
+      }
+    })
+  }, [t])
 
   const onSkip = () => onSelect();
   console.log(formData, "F++++++");
@@ -263,11 +396,11 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
     return returnValueArray?.length ? returnValueArray.join(", ") : "NA";
   }
   return (
-    <React.Fragment>
-      <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />
-      <div style={{ height: "80vh", overflow: "scroll" }}>
+    <React.Fragment style={pageStyle}>
+      {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
+      <div style={{ paddingBottom: isMobile ? "0px" : "8px" }}>
         <FormStep t={t} config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={goNext} onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */>
-          <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={headingStyle}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
           <StatusTable style={{ border: "none" }}>
             <Row
               className="border-none"
@@ -305,7 +438,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
             ></Row>
           </StatusTable>
           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-          <CardSubHeader style={{ fontSize: "20px" }}>
+          <CardSubHeader style={headingStyle}>
             {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_EXTRACT_HEADER") : t("BPA_BUILDING_EXTRACT_HEADER")}
           </CardSubHeader>
           <StatusTable style={{ border: "none" }}>
@@ -336,7 +469,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
           </StatusTable>
 
           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-          <CardSubHeader style={{ fontSize: "20px" }}>
+          <CardSubHeader style={headingStyle}>
             {checkingFlow === "OCBPA" ? t("BPA_ACTUAL_BUILDING_FAR_ECS") : t("BPA_ACTUAL_BUILDING_FAR_ECS")}
           </CardSubHeader>
           <StatusTable style={{ border: "none" }}>
@@ -371,7 +504,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
           </StatusTable>
 
           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-          <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
+          <CardSubHeader style={headingStyle}>{t("BPA_OCC_SUBOCC_HEADER")}</CardSubHeader>
           {data?.planDetail?.blocks?.map((block, index) => (
             <div key={index} style={{ marginTop: "20px" }}>
    
@@ -380,35 +513,37 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
 
 
 
-              <CardSubHeader style={{ marginTop: "15px", fontSize: "18px" }}>
+              <CardSubHeader style={headingStyle}>
               {t("BPA_BLOCK_SUBHEADER")} {index + 1}
             </CardSubHeader>
             <StatusTable>
-              <Row
-                className="border-none"
-                textStyle={{ wordBreak: "break-word" }}
-                label={t("BPA_SUB_OCCUPANCY_LABEL")}
-                text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
-              ></Row>
-            </StatusTable>
-            <div style={{ overflow: "scroll" }}>
-              <Table
-                className="customTable table-fixed-first-column table-border-style"
-                t={t}
-                disableSort={false}
-                autoSort={true}
-                manualPagination={false}
-                isPaginationRequired={false}
-                initSortId="S N "
-                data={getFloorData(block)}
-                columns={tableColumns}
-                getCellProps={(cellInfo) => {
-                  return {
-                    style: {},
-                  };
-                }}
-              />
-            </div>
+                    <Row
+                      className="border-none"
+                      textStyle={{ wordBreak: "break-word" }}
+                      label={t("BPA_SUB_OCCUPANCY_LABEL")}
+                      text={getBlockSubOccupancy(index) === "" ? t("CS_NA") : getBlockSubOccupancy(index)}
+                    />
+                  </StatusTable>
+
+                  <div style={{ overflow: "scroll" }}>
+                    <Table
+                      className="customTable table-fixed-first-column table-border-style"
+                      t={t}
+                      disableSort={true}
+                      autoSort={false}
+                      manualPagination={false}
+                      isPaginationRequired={false}
+                      initSortId="S N "
+                      data={getFloorData(block)}
+                      columns={tableColumns}
+                      showFooter={true}
+                      getCellProps={(cellInfo) => {
+                        return {
+                          style: {},
+                        }
+                      }}
+                    />
+                  </div>
 
 
 
@@ -419,7 +554,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
             </div>
           ))}
           <hr style={{ color: "#cccccc", backgroundColor: "#cccccc", height: "2px", marginTop: "20px", marginBottom: "20px" }} />
-          <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
+          <CardSubHeader style={headingStyle}>{t("BPA_APP_DETAILS_DEMOLITION_DETAILS_LABEL")}</CardSubHeader>
           <StatusTable style={{ border: "none" }}>
             <Row
               label={t("BPA_APPLICATION_DEMOLITION_AREA_LABEL")}
@@ -433,6 +568,9 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
         </FormStep>
         {showToast && <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
       </div>
+      <ActionBar>
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext}  />}
+      </ActionBar>
     </React.Fragment>
   );
 };

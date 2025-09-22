@@ -15,7 +15,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
 
   const assignedToOptions = useMemo(
     () => [
-      { code: "ASSIGNED_TO_ME", name: t("ASSIGNED_TO_ME") },
+      { code: "ASSIGNED_TO_ME", name: "Assigned To Me" },
       { code: "ASSIGNED_TO_ALL", name: t("ASSIGNED_TO_ALL") },
     ],
     [t]
@@ -90,7 +90,6 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
     });
   };
 
-
   return (
     <React.Fragment>
       <div className="filter">
@@ -131,7 +130,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
             <RadioButtons onSelect={onRadioChange} selectedOption={selectAssigned} t={t} optionsKey="name" options={assignedToOptions} />
           </div>
           <div>
-            <div>
+            {/* <div>
               <div className="filter-label" style={{ fontWeight: "normal" }}>
                 {t("ES_INBOX_LOCALITY")}:
               </div>
@@ -149,7 +148,7 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                   );
                 })}
               </div>
-            </div>
+            </div> */}
             {/* <div>
               <div className="filter-label" style={{ fontWeight: "normal" }}>
                 {t("ES_PTR_APP_TYPE")}

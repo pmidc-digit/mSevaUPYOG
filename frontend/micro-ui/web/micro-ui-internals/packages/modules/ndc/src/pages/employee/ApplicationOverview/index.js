@@ -83,6 +83,27 @@ const ApplicationOverview = () => {
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
+  const [markedPending, setMarkedPending] = useState({});
+
+  const handleMarkPending = (consumerCode) => {
+    setMarkedPending((prev) => {
+      const updated = { ...prev, [consumerCode]: !prev[consumerCode] };
+
+      if (updated[consumerCode]) {
+        console.log("✅ Marked dues pending for", consumerCode);
+        // TODO: Call API to mark as pending
+      } else {
+        console.log("↩️ Undo marking dues pending for", consumerCode);
+        // TODO: Call API to undo marking
+      }
+
+      return updated;
+    });
+  };
+
+  useEffect(() => {
+    console.log("markedPending", markedPending);
+  }, [markedPending]);
 
   const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
 
@@ -139,6 +160,7 @@ const ApplicationOverview = () => {
     user = userInfo?.value;
   }
   const userRoles = user?.info?.roles?.map((e) => e.code);
+
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
@@ -154,6 +176,7 @@ const ApplicationOverview = () => {
   const closeMenu = () => {
     setDisplayMenu(false);
   };
+
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
   const closeToast = () => {
@@ -238,8 +261,14 @@ const ApplicationOverview = () => {
 
     const updatedApplicant = {
       ...payloadData,
+      NdcDetails: payloadData.NdcDetails.map((detail) => ({
+        ...detail,
+        isDuePending: markedPending[detail.consumerCode] || false,
+      })),
       workflow: {},
     };
+
+    console.log("updatedApplicant", updatedApplicant);
 
     const filtData = data?.Licenses?.[0];
     updatedApplicant.workflow = {
@@ -249,15 +278,21 @@ const ApplicationOverview = () => {
       documents: filtData?.wfDocuments,
     };
 
-    if (!filtData?.assignee && filtData.action == "FORWARD") {
-      setShowToast({ key: "error" });
-      setError("Assignee is mandatory");
+    console.log("filtData action", filtData.action);
+
+    if (
+      !filtData?.assignee &&
+      filtData.action !== "SENDBACKTOCITIZEN" &&
+      filtData.action !== "APPROVE" &&
+      filtData.action !== "REJECT" &&
+      filtData.action !== "SENDBACK"
+    ) {
+      setErrorOne("Assignee is Mandatory");
+      setShowErrorToastt(true);
 
       return;
-    } else if (!filtData?.comment && (filtData?.action == "FORWARD" || filtData?.action == "REJECT")) {
-      // setShowToast({ key: "error", message: "Comment is mandatory" });
-      // setError("Comment is mandatory");
-      setErrorOne("Comment is mandatory");
+    } else if (!filtData?.comment) {
+      setErrorOne("Comment is Mandatory");
       setShowErrorToastt(true);
 
       return;
@@ -266,7 +301,6 @@ const ApplicationOverview = () => {
     const finalPayload = {
       Applications: [updatedApplicant],
     };
-
     try {
       const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
 
@@ -295,27 +329,54 @@ const ApplicationOverview = () => {
     setShowModal(false);
   };
 
-  if (isLoading || isDetailsLoading) {
+  const [getPropertyId, setPropertyId] = useState(null);
+
+  useEffect(() => {
+    if (displayData) {
+      const checkProperty = displayData?.NdcDetails?.filter((item) => item?.businessService == "NDC_PROPERTY_TAX");
+      setPropertyId(checkProperty?.[0]?.consumerCode);
+    }
+  }, [displayData]);
+
+  const { isLoading: checkLoading, isError, error: checkError, data: propertyDetailsFetch } = Digit.Hooks.pt.usePropertySearch(
+    { filters: { propertyIds: getPropertyId }, tenantId: tenantId },
+    {
+      filters: { propertyIds: getPropertyId },
+      tenantId: tenantId,
+      enabled: getPropertyId ? true : false,
+      privacy: Digit.Utils.getPrivacyObject(),
+    }
+  );
+
+  // const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ws.useSearchWS({
+  //   tenantId,
+  //   filters: {
+  //     searchType: "CONNECTION",
+  //     propertyId: getPropertyId,
+  //   },
+  //   config: {
+  //     enabled: !!getPropertyId, // ✅ Only run if propertyId is defined
+  //   },
+  //   bussinessService: "WS",
+  //   t,
+  // });
+
+  // const { isLoading: sewerageConnectionLoading, data: sewerageConnectionData, error: sewerageConnectionError } = Digit.Hooks.ws.useSearchWS({
+  //   tenantId,
+  //   filters: {
+  //     searchType: "CONNECTION",
+  //     propertyId: getPropertyId,
+  //   },
+  //   config: {
+  //     enabled: !!getPropertyId, // ✅ Only run if propertyId is defined
+  //   },
+  //   bussinessService: "SW",
+  //   t,
+  // });
+
+  if (isLoading || isDetailsLoading || checkLoading) {
     return <Loader />;
   }
-
-  // useEffect(() => {
-  //   if (showToast) {
-  //     const timer = setTimeout(() => {
-  //       setShowToast(null);
-  //     }, 3000);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [showToast]);
-
-  // useEffect(() => {
-  //   if (showErrorToast) {
-  //     const timer = setTimeout(() => {
-  //       setShowErrorToastt(null);
-  //     }, 3000);
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [showErrorToast]);
 
   return (
     <div className={"employee-main-application-details"}>
@@ -343,17 +404,58 @@ const ApplicationOverview = () => {
       </Card>
       <Card>
         <CardSubHeader>{t("NDC_APPLICATION_NDC_DETAILS_OVERVIEW")}</CardSubHeader>
-        {displayData?.NdcDetails?.map((detail, index) => (
-          <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
-            <StatusTable>
-              <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
-              <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
-              {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
-              <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
-              <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
-            </StatusTable>
-          </div>
-        ))}
+        {displayData?.NdcDetails?.map((detail, index) => {
+          const isPT = detail?.businessService === "NDC_PROPERTY_TAX";
+          const isSW = detail?.businessService === "NDC_SEWERAGE_SERVICE_CONNECTION";
+          const isWS = detail?.businessService === "NDC_WATER_SERVICE_CONNECTION";
+
+          const canRaiseFlag = (isPT && userRoles?.includes("NDC_PT_VERIFIER")) || ((isSW || isWS) && userRoles?.includes("NDC_WS_SW_VERIFIER"));
+
+          const isMarked = markedPending[detail.consumerCode];
+
+          return (
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+                <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
+                <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
+                {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
+                <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
+                <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
+                {isPT && propertyDetailsFetch?.Properties && (
+                  <>
+                    <Row label={t("City")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} />
+                    <Row label={t("House No")} text={propertyDetailsFetch?.Properties?.[0]?.address?.doorNo} />
+                    <Row label={t("Colony Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.buildingName} />
+                    <Row label={t("Street Name")} text={propertyDetailsFetch?.Properties?.[0]?.address?.street} />
+                    {/* <Row label={t("Mohalla")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                    <Row label={t("Pincode")} text={propertyDetailsFetch?.Properties?.[0]?.address?.pincode || "N/A"} />
+                    {/* <Row label={t("Existing Pid")} text={propertyDetailsFetch?.Properties?.[0]?.address?.city} /> */}
+                    <Row label={t("Survey Id/UID")} text={propertyDetailsFetch?.Properties?.[0]?.surveyId} />
+                    <Row
+                      label={t("Year of creation of Property")}
+                      text={propertyDetailsFetch?.Properties?.[0]?.additionalDetails?.yearConstruction}
+                    />
+                  </>
+                )}
+              </StatusTable>
+              {canRaiseFlag && (
+                <div
+                  style={{
+                    marginTop: "16px",
+                    display: "flex",
+                    justifyContent: "right",
+                  }}
+                >
+                  <SubmitBar
+                    label={isMarked ? "Undo Mark Pending" : "Mark Dues Pending"}
+                    onSubmit={() => handleMarkPending(detail?.consumerCode)}
+                    // disabled={markedPending[detail.consumerCode]}
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </Card>
 
       <Card>

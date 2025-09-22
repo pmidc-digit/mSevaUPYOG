@@ -29,13 +29,12 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
 
   const ptFromApi = apiDataCheck?.[0]?.NdcDetails?.find((item) => item.businessService == "PT");
 
-  console.log("ptFromApi", ptFromApi);
-
   const [propertyId, setPropertyId] = useState(formData?.cpt?.id || (urlPropertyId !== "null" ? urlPropertyId : "") || ptFromApi?.consumerCode || "");
   const [searchPropertyId, setSearchPropertyId] = useState(
     formData?.cpt?.id || (urlPropertyId !== "null" ? urlPropertyId : "") || ptFromApi?.consumerCode || ""
   );
   const [showToast, setShowToast] = useState(null);
+
   const [propertyDetails, setPropertyDetails] = useState(() => {
     if (formData?.cpt?.details && Object.keys(formData?.cpt?.details).length > 0) {
       return { Properties: [{ ...formData?.cpt?.details }] };
@@ -45,6 +44,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       };
     }
   });
+
   const [propertyDues, setPropertyDues] = useState(() => {
     if (formData?.cpt?.dues && Object.keys(formData?.cpt?.dues).length > 0) {
       return { dues: { ...formData?.cpt?.dues } };
@@ -58,6 +58,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
   const [isSearchClicked, setIsSearchClicked] = useState(false);
   const [getNoDue, setNoDue] = useState(false);
   const [getCheckStatus, setCheckStats] = useState(false);
+  const [getPayDuesButton, setPayDuesButton] = useState(false);
 
   const { isLoading, isError, error, data: propertyDetailsFetch } = Digit.Hooks.pt.usePropertySearch(
     { filters: { propertyIds: searchPropertyId }, tenantId: tenantId },
@@ -68,8 +69,6 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
-
-  console.log("apiDataCheck", apiDataCheck);
 
   useEffect(() => {
     if (ptFromApi?.consumerCode) {
@@ -93,7 +92,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       }
       if (!formData?.cpt?.details) {
         setPropertyDetails({});
-        setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
+        setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
       }
     }
   }, [propertyDetailsFetch]);
@@ -105,7 +104,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
 
   useEffect(() => {
     if (isLoading == false && error && error == true && propertyDetails?.Properties?.length == 0) {
-      setShowToast({ error: true, label: "PT_ENTER_VALID_PROPERTY_ID" });
+      setShowToast({ error: true, label: "CS_PT_NO_PROPERTIES_FOUND" });
     }
   }, [error, propertyDetails]);
 
@@ -127,8 +126,20 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       setPropertyDetails({ Properties: [] });
       setSearchPropertyId(propertyId);
       setIsSearchClicked(true);
+      setPropertyDues({ dues: null });
 
-      // dispatch(resetNDCForm());
+      // 🔑 Clear PropertyDetails from formData
+      onSelect("PropertyDetails", {
+        email: "",
+        propertyBillData: { isLoading: false, billData: {} },
+        waterConnection: [],
+        sewerageConnection: [],
+        firstName: "",
+        mobileNumber: "",
+        address: "",
+      });
+
+      dispatch(resetNDCForm());
     }
   };
 
@@ -138,6 +149,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
     setIsSearchClicked(false); // ✅ show button again when input changes
     setNoDue(false);
     setCheckStats(false);
+    setPayDuesButton(false);
   };
 
   if (isEditScreen) {
@@ -181,6 +193,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       if (result?.Bill?.length > 0) {
         if (result?.Bill[0]?.totalAmount > 0) {
           setShowToast({ error: true, label: t("NDC_MESSAGE_DUES_FOUND_PLEASE_PAY") });
+          setPayDuesButton(true);
         } else {
           setShowToast({ error: false, label: t("NDC_NO_BILLS_FOUND_PROPERTY") });
           setNoDue(true);
@@ -244,7 +257,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
               value={propertyId} //{propertyId}
               onChange={handlePropertyChange}
               disable={false}
-              maxlength={16}
+              // maxlength={16}
               defaultValue={undefined}
               {...propertyIdInput.validation}
             />
@@ -255,7 +268,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
               </button>
             )}
 
-            {!apiDataCheck?.[0]?.NdcDetails && getCheckStatus && (
+            {!apiDataCheck?.[0]?.NdcDetails && getCheckStatus && !getPayDuesButton && (
               <button
                 className="submit-bar"
                 type="button"
@@ -268,16 +281,19 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
                 {/* Check Status */}
               </button>
             )}
-            {formData?.cpt?.id && formData?.cpt?.dues?.totalAmount > 0 && !isSearchClicked && (
+            {getPayDuesButton && <div style={{ color: "red", width: "100%", maxWidth: "70px" }}>Rs. {formData?.cpt?.dues?.totalAmount} </div>}
+
+            {getPayDuesButton && (
               <button
                 className="submit-bar"
                 type="button"
-                style={{ color: "white", width: "100%", maxWidth: "100px" }}
+                style={{ color: "white", width: "100%", maxWidth: "115px" }}
                 onClick={() => {
                   redirectToPayBill(formData?.cpt?.dues?.totalAmount);
+                  setPayDuesButton(false);
                 }}
               >
-                {`${t("PAY_DUES")}`}
+                {`${t("PAY_DUES")} `}
               </button>
             )}
             {getNoDue && <div style={{ color: "green", width: "100%", maxWidth: "75px" }}>{t("NO_DUES_FOUND_FOR_PROPERTY")}</div>}

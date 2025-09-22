@@ -4,11 +4,10 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm, getFilter } = filters;
   let { assignee } = filterForm;
   const { uuid } = searchForm;
+  const { phoneNumber } = searchForm;
   const { limit, offset } = tableForm;
   const user = Digit.UserService.getUser();
   const status = filters?.filterForm?.applicationStatus;
-
-  console.log("filters==", searchForm);
 
   const selectedStatuses = getFilter?.applicationStatus?.map((s) => s?.code) || [];
 
@@ -26,10 +25,12 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
         ? {
             status: status,
             ...(uuid ? { uuid } : {}),
+            ...(phoneNumber ? { phoneNumber } : {}),
           }
         : {
             // status: status,
             ...(uuid ? { uuid } : {}),
+            ...(phoneNumber ? { phoneNumber } : {}),
           },
     limit,
     offset,

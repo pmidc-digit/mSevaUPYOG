@@ -63,16 +63,15 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   });
 
   useEffect(() => {
-    console.log("coming here everytime", formData);
     const owner = formData?.cpt?.details?.owners?.[0];
+    const emailApi = apiDataCheck?.[0]?.owners?.[0]?.emailId;
     const fullName = owner?.name?.split(" ");
     const firstName = owner?.name;
     // let lastName;
     // if (fullName?.length > 1) {
     //   lastName = fullName?.[fullName.length - 1];
     // }
-    console.log("ikiki email", owner?.emailId);
-    const email = owner?.emailId || formData?.PropertyDetails?.email || "";
+    const email = owner?.emailId || formData?.PropertyDetails?.email || emailApi || "";
     const mobileNumber = owner?.mobileNumber;
     const address = owner?.permanentAddress;
 
@@ -93,11 +92,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         ...combinedObject,
       };
     });
-  }, [formData?.cpt?.details]);
-
-  useEffect(() => {
-    console.log("updated propertyDetails", propertyDetails);
-  }, [propertyDetails]);
+  }, [formData?.cpt?.details, apiDataCheck]);
 
   useEffect(() => {
     let waterConnection;
@@ -302,7 +297,6 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
         // setError(t("Invalid Consumer Number"));
       }
     } catch (error) {
-      console.error("Error fetching bill:", error);
       setPropertyLoader(false);
       setShowToast({ error: true, label: t("NDC_MESSAGE_FETCH_FAILED") });
     }

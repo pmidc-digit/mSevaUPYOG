@@ -27,6 +27,7 @@ export const convertEpochToDate = (dateEpoch) => {
     return "NA";
   }
 };
+
 const WrapPaymentComponent = (props) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -793,7 +794,15 @@ const WrapPaymentComponent = (props) => {
             rowContainerStyle={rowContainerStyle}
             last
             label={t("CS_PAYMENT_TRANSANCTION_DATE")}
-            text={transactionDate && new Date(transactionDate).toLocaleDateString("in")}
+            // text={transactionDate && new Date(transactionDate).toLocaleDateString("in")}
+            text={
+              transactionDate &&
+              new Date(transactionDate).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            }
           />
         )}
       </StatusTable>
@@ -966,69 +975,41 @@ const WrapPaymentComponent = (props) => {
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
       ) : null} */}
-
       <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: "15px",
+        }}
+      >
+        <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
+        {/* <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
           onClick={printReciept}
         >
           {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
+        </div> */}
 
-      {/* {business_service?.includes("WS") ? (
-        <div
-          className="link"
-          style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
-          onClick={printReciept}
-        >
-          {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
-      ) : null} */}
-      {/* {business_service?.includes("SW") ? (
-        <div
-          className="link"
-          style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
-          onClick={printReciept}
-        >
-          {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
-      ) : null} */}
-      {/* {business_service?.includes("FSM") ? (
-        <div
-          className="link"
-          style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
-          onClick={printReciept}
-        >
-          {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
-      ) : null} */}
-      {/* {business_service?.includes("BPA") ? (
-        <div
-          className="link"
-          style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
-          onClick={printReciept}
-        >
-          {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
-      ) : null} */}
-      {!(business_service == "TL") ||
-         (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
-      {!(business_service == "TL") ||
-        (!business_service?.includes("PT") && (
-          <div className="link" style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}>
-            <Link to={`/digit-ui/citizen`}>{t("CORE_COMMON_GO_TO_HOME")}</Link>
-          </div>
-        ))}
-      {business_service == "TL" && (
+        {!(business_service == "TL") ||
+          (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
+        {!(business_service == "TL") ||
+          (!business_service?.includes("PT") && (
+            <div className="link" style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}>
+              <Link to={`/digit-ui/citizen`}>{t("CORE_COMMON_GO_TO_HOME")}</Link>
+            </div>
+          ))}
+        {business_service == "TL" && (
+          <Link to={`/digit-ui/citizen`}>
+            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+          </Link>
+        )}
+        {/* {business_service == "pet-services" && ( */}
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
-      )}
-      {business_service == "pet-services" && (
-        <Link to={`/digit-ui/citizen`}>
-          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-        </Link>
-      )}
+      </div>
+      {/* )} */}
     </Card>
   );
 };
@@ -1995,11 +1976,15 @@ const WrapPaymentZeroComponent = (props) => {
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
       )}
+      {console.log("business_service", business_service)}
       {business_service == "pet-services" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
       )}
+      <Link to={`/digit-ui/citizen`}>
+        <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+      </Link>
     </Card>
   );
 };

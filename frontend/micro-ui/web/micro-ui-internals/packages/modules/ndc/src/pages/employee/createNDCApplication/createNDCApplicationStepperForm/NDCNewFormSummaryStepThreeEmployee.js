@@ -9,6 +9,7 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
   const dispatch = useDispatch();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
 
   const formData = useSelector((state) => state.ndc.NDCForm.formData || {});
   // console.log("state.pt.PTNewApplicationForm Form data in Summary Step: ", useSelector((state) => state.pt.PTNewApplicationForm.formData));
@@ -34,7 +35,7 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
 
   function mapToNDCPayload(inputData, actionStatus) {
     const applicant = Digit.UserService.getUser()?.info || {};
-
+    console.log("checkFormData", formData);
     const owners = [
       {
         name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
@@ -45,15 +46,18 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
       },
     ];
 
+    // Pick the source of truth for the application
+    const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
+
     // Clone and modify workflow action
     const updatedApplication = {
-      ...formData?.apiData?.Applications?.[0],
+      ...baseApplication,
       workflow: {
-        ...formData?.apiData?.Applications?.[0]?.workflow,
+        ...baseApplication?.workflow,
         action: actionStatus,
       },
       owners: owners,
-      NdcDetails: formData?.apiData?.Applications?.[0]?.NdcDetails,
+      NdcDetails: baseApplication?.NdcDetails,
       Documents: [], // We'll populate below
     };
 

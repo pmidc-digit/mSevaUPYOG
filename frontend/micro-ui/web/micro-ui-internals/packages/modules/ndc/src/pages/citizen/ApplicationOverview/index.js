@@ -207,6 +207,8 @@ const CitizenApplicationOverview = () => {
     return <Loader />;
   }
 
+  console.log("applicationDetails", applicationDetails);
+
   return (
     <div className={"employee-main-application-details"}>
       <div style={{ display: "flex", justifyContent: "end", alignItems: "center", padding: "16px" }}>
@@ -215,7 +217,8 @@ const CitizenApplicationOverview = () => {
         {applicationDetails?.Applications?.[0]?.applicationStatus === "APPROVED" && (
           <LinkButton className="downLoadButton" label={t("DOWNLOAD_CERTIFICATE")} onClick={handleDownloadPdf}></LinkButton>
         )}
-        {applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" && (
+        {(applicationDetails?.Applications?.[0]?.applicationStatus == "INITIATED" ||
+          applicationDetails?.Applications?.[0]?.applicationStatus == "CITIZENACTIONREQUIRED") && (
           <ActionBar>
             <SubmitBar
               label={t("COMMON_EDIT")}

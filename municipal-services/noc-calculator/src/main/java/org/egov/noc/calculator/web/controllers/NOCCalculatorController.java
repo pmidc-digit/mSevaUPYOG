@@ -58,11 +58,11 @@ public class NOCCalculatorController {
 		 return new ResponseEntity<>(calculationRes,HttpStatus.OK);
 	}
 
-//	@PostMapping("/_updatedemand")
-//	public ResponseEntity<DemandResponse> updateDemand(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
-//													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
-//		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
-//	}
+	@PostMapping("/_updatedemand")
+	public ResponseEntity<DemandResponse> updateDemand(@RequestBody @Valid RequestInfoWrapper requestInfoWrapper,
+													   @ModelAttribute @Valid GetBillCriteria getBillCriteria) {
+		return new ResponseEntity<>(demandService.updateDemands(getBillCriteria, requestInfoWrapper), HttpStatus.OK);
+	}
 
 
 }

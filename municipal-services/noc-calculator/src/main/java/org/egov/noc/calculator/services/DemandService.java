@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.egov.noc.calculator.web.models.RequestInfoWrapper;
 import org.egov.noc.calculator.web.models.demand.Demand;
 import org.egov.noc.calculator.web.models.demand.DemandDetail;
+import org.egov.noc.calculator.web.models.demand.DemandRequest;
 import org.egov.noc.calculator.web.models.demand.DemandResponse;
 import org.egov.noc.calculator.web.models.demand.TaxHeadEstimate;
 import org.egov.tracer.model.CustomException;
@@ -20,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.egov.noc.calculator.web.models.bill.GetBillCriteria;
+
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -209,6 +212,62 @@ public class DemandService {
 
         }
         return demandRepository.saveDemand(requestInfo,demands);
+    }
+    
+    public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
+
+        if (getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);
+//        validator.validateGetBillCriteria(getBillCriteria);
+        RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
+//        Map<String, Map<String, List<Object>>> propertyBasedExemptionMasterMap = new HashMap<>();
+//        Map<String, JSONArray> timeBasedExmeptionMasterMap = new HashMap<>();
+//        mstrDataService.setPropertyMasterValues(requestInfo, getBillCriteria.getTenantId(),
+//                propertyBasedExemptionMasterMap, timeBasedExmeptionMasterMap);
+
+/*
+		if(CollectionUtils.isEmpty(getBillCriteria.getConsumerCodes()))
+			getBillCriteria.setConsumerCodes(Collections.singletonList(getBillCriteria.getPropertyId()+ CalculatorConstants.PT_CONSUMER_CODE_SEPARATOR +getBillCriteria.getAssessmentNumber()));
+*/
+
+        DemandResponse res = mapper.convertValue(
+                repository.fetchResult(utils.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
+                DemandResponse.class);
+        if (CollectionUtils.isEmpty(res.getDemands())) {
+            Map<String, String> map = new HashMap<>();
+            map.put(NOCConstants.EMPTY_DEMAND_ERROR_CODE, NOCConstants.EMPTY_DEMAND_ERROR_MESSAGE);
+            	throw new CustomException(map);
+        }
+
+
+        /**
+         * Loop through the consumerCodes and re-calculate the time based applicables
+         */
+
+
+        Map<String,List<Demand>> consumerCodeToDemandMap = new HashMap<>();
+        res.getDemands().forEach(demand -> {
+            if(consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
+                consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
+            else {
+                List<Demand> demands = new LinkedList<>();
+                demands.add(demand);
+                consumerCodeToDemandMap.put(demand.getConsumerCode(),demands);
+            }
+        });
+
+        if (!CollectionUtils.isEmpty(consumerCodeToDemandMap)) {
+            List<Demand> demandsToBeUpdated = new LinkedList<>();
+
+            String tenantId = getBillCriteria.getTenantId();
+
+            /**
+             * Call demand update in bulk to update the interest or penalty
+             */
+            DemandRequest request = DemandRequest.builder().demands(demandsToBeUpdated).requestInfo(requestInfo).build();
+            StringBuilder updateDemandUrl = utils.getUpdateDemandUrl();
+//            repository.fetchResult(updateDemandUrl, request);
+        }
+        return res;
     }
 
     /**

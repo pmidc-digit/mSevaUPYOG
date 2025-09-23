@@ -26,7 +26,8 @@ import org.upyog.chb.validator.CommunityHallBookingValidator;
 import org.upyog.chb.web.models.*;
 import org.upyog.chb.web.models.workflow.ProcessInstance;
 import org.upyog.chb.web.models.workflow.State;
-
+import org.upyog.chb.web.models.user.UserResponse;
+import org.upyog.chb.web.models.OwnerInfo;
 import digit.models.coremodels.PaymentDetail;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,10 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 
 	@Autowired
 	private BookingTimerService bookingTimerService;
+
+	@Autowired
+	private CHBUserService chbUserService;
+
 
 	@Override
 	public CommunityHallBookingDetail createBooking(@Valid CommunityHallBookingRequest communityHallsBookingRequest) {
@@ -118,11 +123,13 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 
 		log.info("loading data based on criteria" + bookingSearchCriteria);
 
-		if (bookingSearchCriteria.getMobileNumber() != null
-				&& bookingSearchCriteria.getMobileNumber().trim().length() > 9) {
+		// Keep search simple: first fetch from DB based on provided criteria; owner details hydrated after
+		String plainMobile = bookingSearchCriteria.getMobileNumber();
 
+		// Encrypt applicant mobile for DB side filter (applicant table)
+		if (plainMobile != null && plainMobile.trim().length() > 9) {
 			ApplicantDetail applicantDetail = ApplicantDetail.builder()
-					.applicantMobileNo(bookingSearchCriteria.getMobileNumber()).build();
+					.applicantMobileNo(plainMobile).build();
 			CommunityHallBookingDetail communityHallBookingDetail = CommunityHallBookingDetail.builder()
 					.applicantDetail(applicantDetail).build();
 			CommunityHallBookingRequest bookingRequest = CommunityHallBookingRequest.builder()
@@ -134,7 +141,6 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 					.setMobileNumber(communityHallBookingDetail.getApplicantDetail().getApplicantMobileNo());
 
 			log.info("loading data based on criteria after encrypting mobile no : " + bookingSearchCriteria);
-
 		}
 
 		bookingDetails = bookingRepository.getBookingDetails(bookingSearchCriteria);
@@ -142,6 +148,38 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 			return bookingDetails;
 		}
 		bookingDetails = encryptionService.decryptObject(bookingDetails, info);
+
+		// We will Populate owners using owner UUIDs from DB which will be fetched from the repository using the getUser and user-service user details
+		try {
+			java.util.List<String> bookingIds = bookingDetails.stream().map(CommunityHallBookingDetail::getBookingId).collect(java.util.stream.Collectors.toList());
+			java.util.Map<String, java.util.List<String>> bookingToOwnerUuids = bookingRepository.getOwnerUuidsByBookingIds(bookingIds);
+			java.util.Set<String> allOwnerUuids = bookingToOwnerUuids.values().stream().flatMap(java.util.Collection::stream).filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+			if (!allOwnerUuids.isEmpty()) {
+				org.upyog.chb.web.models.CommunityHallBookingSearchCriteria tmp = new org.upyog.chb.web.models.CommunityHallBookingSearchCriteria();
+				tmp.setTenantId(bookingSearchCriteria.getTenantId());
+				tmp.setOwnerIds(allOwnerUuids);
+				org.upyog.chb.web.models.user.UserResponse users = chbUserService.getUser(tmp, info);
+				java.util.Map<String, OwnerInfo> byUuid = new java.util.HashMap<>();
+				if (users != null && users.getUser() != null) {
+					for (OwnerInfo u : users.getUser()) {
+						if (u.getUuid() != null) byUuid.put(u.getUuid(), u);
+					}
+				}
+				for (CommunityHallBookingDetail bd : bookingDetails) {
+					java.util.List<String> uuids = bookingToOwnerUuids.get(bd.getBookingId());
+					if (uuids != null && !uuids.isEmpty()) {
+						java.util.List<OwnerInfo> owners = new java.util.ArrayList<>();
+						for (String uuid : uuids) {
+							OwnerInfo o = byUuid.get(uuid);
+							if (o != null) owners.add(o);
+						}
+						bd.setOwners(owners);
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.warn("Owner user hydration failed: {}", e.getMessage());
+		}
 
 		return bookingDetails;
 	}
@@ -151,6 +189,8 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 			@NonNull RequestInfo requestInfo) {
 		criteria.setCountCall(true);
 		Integer bookingCount = 0;
+
+		// Keep count simple as well; do not prefetch ownerIds
 
 		criteria = addCreatedByMeToCriteria(criteria, requestInfo);
 		bookingCount = bookingRepository.getBookingCount(criteria);
@@ -217,6 +257,9 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 				? Collections.emptyList()
 				: new ArrayList<>(dbBookingDetail.getUploadedDocumentDetails());
 
+		// Also preserve owners sent by frontend (if any)
+		List<OwnerInfo> ownersFromRequest = communityHallsBookingRequest.getHallsBookingApplication().getOwners();
+
 		// Preserve workflow & documents from request
 		List<DocumentDetail> uploadedDocumentDetailsFromRequest =
 				communityHallsBookingRequest.getHallsBookingApplication().getUploadedDocumentDetails();
@@ -231,6 +274,11 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		}
 		if (uploadedDocumentDetailsFromRequest != null) {
 			communityHallsBookingRequest.getHallsBookingApplication().setUploadedDocumentDetails(uploadedDocumentDetailsFromRequest);
+		}
+
+		// Restore owners from request if provided (owners are always sent in update requests)
+		if (ownersFromRequest != null && !ownersFromRequest.isEmpty()) {
+			communityHallsBookingRequest.getHallsBookingApplication().setOwners(ownersFromRequest);
 		}
 
 		// Extract existing document IDs from ORIGINAL DB documents (not the converted ones)

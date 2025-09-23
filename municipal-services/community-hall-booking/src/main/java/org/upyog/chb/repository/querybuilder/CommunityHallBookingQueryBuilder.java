@@ -16,17 +16,17 @@ public class CommunityHallBookingQueryBuilder {
 	@Autowired
 	private CommunityHallBookingConfiguration bookingConfiguration;
 
-	private static final StringBuilder bookingDetailsQuery = new StringBuilder(
-			"SELECT ecbd.booking_id, booking_no, payment_date, application_date, tenant_id, community_hall_code, \n"
-					+ "booking_status, special_category, purpose, purpose_description, receipt_no, ecbd.createdby, ecbd.createdtime, \n"
-					+ "ecbd.lastmodifiedby, ecbd.lastmodifiedtime,ecbd.permission_letter_filestore_id, ecbd.payment_receipt_filestore_id, \n" 
-					+ "appl.applicant_detail_id, applicant_name, applicant_email_id, applicant_mobile_no,\n"
-					+ "applicant_alternate_mobile_no, account_no, ifsc_code, bank_name, bank_branch_name, \n"
-					+ "account_holder_name, address_id, door_no, house_no, address_line_1, \n"
-					+ "landmark, city, city_code, pincode, street_name, locality, locality_code \n" 
-					+ "FROM public.eg_chb_booking_detail ecbd \n"
-					+ "join public.eg_chb_applicant_detail appl on ecbd.booking_id = appl.booking_id \n"
-					+ "join public.eg_chb_address_detail addr on appl.applicant_detail_id = addr.applicant_detail_id ");
+    private static final StringBuilder bookingDetailsQuery = new StringBuilder(
+	    "SELECT ecbd.booking_id, booking_no, payment_date, application_date, tenant_id, community_hall_code, \n"
+				+ "booking_status, special_category, purpose, purpose_description, receipt_no, ecbd.createdby, ecbd.createdtime, \n"
+				+ "ecbd.lastmodifiedby, ecbd.lastmodifiedtime,ecbd.permission_letter_filestore_id, ecbd.payment_receipt_filestore_id, \n" 
+				+ "appl.applicant_detail_id, applicant_name, applicant_email_id, applicant_mobile_no,\n"
+				+ "applicant_alternate_mobile_no, account_no, ifsc_code, bank_name, bank_branch_name, \n"
+				+ "account_holder_name, address_id, door_no, house_no, address_line_1, \n"
+				+ "landmark, city, city_code, pincode, street_name, locality, locality_code \n" 
+				+ "FROM public.eg_chb_booking_detail ecbd \n"
+				+ "join public.eg_chb_applicant_detail appl on ecbd.booking_id = appl.booking_id \n"
+				+ "join public.eg_chb_address_detail addr on appl.applicant_detail_id = addr.applicant_detail_id ");
 
 	private static final String slotDetailsQuery = "select * from public.eg_chb_slot_detail where booking_id in (";
 
@@ -48,7 +48,7 @@ public class CommunityHallBookingQueryBuilder {
 	
 	private static final String bookingDetailsCountCount = "SELECT count(ecbd.booking_id) \n" 
 			+ "FROM public.eg_chb_booking_detail ecbd \n"
-	+ "join public.eg_chb_applicant_detail appl on ecbd.booking_id = appl.booking_id \n";
+			+ "join public.eg_chb_applicant_detail appl on ecbd.booking_id = appl.booking_id \n";
 	
 	
 	//public static final String PAYMENT_TIMER_INSERT_QUERY = "INSERT INTO eg_chb_payment_timer(booking_id, createdby, createdtime, status) VALUES (?, ?, ?, ?);";
@@ -101,9 +101,13 @@ public class CommunityHallBookingQueryBuilder {
 			builder = new StringBuilder(bookingDetailsQuery);
 		}
 		
+	boolean hasOwnerIds = criteria.getOwnerIds() != null && !criteria.getOwnerIds().isEmpty();
+
 		if(criteria.getFromDate() != null || criteria.getToDate() != null) {
 			builder.append(" join public.eg_chb_slot_detail ecsd ON ecsd.booking_id = ecbd.booking_id ");
 		}
+
+		// Do not join owner table in main query; use EXISTS subquery for filtering
 		
 		if (criteria.getTenantId() != null) {
 			if (criteria.getTenantId().split("\\.").length == 1) {
@@ -146,12 +150,41 @@ public class CommunityHallBookingQueryBuilder {
 			preparedStmtList.add(criteria.getCommunityHallCode());
 		}
 		
-		String mobileNo = criteria.getMobileNumber();
+	String mobileNo = criteria.getMobileNumber();
+
 		if (mobileNo != null) {
 			List<String> mobileNos = Arrays.asList(mobileNo.split(","));
 			addClauseIfRequired(preparedStmtList, builder);
-			builder.append(" appl.applicant_mobile_no IN (").append(createQueryParams(mobileNos)).append(")");
-			addToPreparedStatement(preparedStmtList, mobileNos);
+			if (hasOwnerIds) {
+				// applicant mobile OR owners (from user-service) match via EXISTS
+				builder.append(" (appl.applicant_mobile_no IN (")
+						.append(createQueryParams(mobileNos)).append(") OR EXISTS (SELECT 1 FROM public.eg_chb_owner o WHERE o.booking_id = ecbd.booking_id AND o.uuid IN (");
+				List<String> ownerIds = Arrays.asList(criteria.getOwnerIds().toArray(new String[0]));
+				builder.append(createQueryParams(ownerIds)).append(") ))");
+				addToPreparedStatement(preparedStmtList, mobileNos);
+				addToPreparedStatement(preparedStmtList, ownerIds);
+			} else {
+				builder.append(" appl.applicant_mobile_no IN (").append(createQueryParams(mobileNos)).append(")");
+				addToPreparedStatement(preparedStmtList, mobileNos);
+			}
+		}
+
+		// name filter (apply only when ownerIds are not provided)
+		String name = criteria.getName();
+		if (name != null && !name.isEmpty() && !hasOwnerIds) {
+			addClauseIfRequired(preparedStmtList, builder);
+			builder.append(" appl.applicant_name ILIKE ? ");
+			String like = "%" + name + "%";
+			preparedStmtList.add(like);
+		}
+
+		// ownerIds filter -> EXISTS subquery on owner table using owner.uuid
+		if (hasOwnerIds) {
+			List<String> ownerIds = Arrays.asList(criteria.getOwnerIds().toArray(new String[0]));
+			addClauseIfRequired(preparedStmtList, builder);
+			builder.append(" EXISTS (SELECT 1 FROM public.eg_chb_owner o WHERE o.booking_id = ecbd.booking_id AND o.uuid IN (")
+					.append(createQueryParams(ownerIds)).append(") )");
+			addToPreparedStatement(preparedStmtList, ownerIds);
 		}
 
 		//createdby search criteria
@@ -304,6 +337,14 @@ public class CommunityHallBookingQueryBuilder {
 
 	public String getDocumentDetailsQuery(List<String> bookingIds) {
 		StringBuilder builder = new StringBuilder(documentDetailsQuery);
+		builder.append(createQueryParams(bookingIds)).append(")");
+		return builder.toString();
+	}
+
+
+	//making a simple search to get the booking ids and then it will be easy rather than making a join
+	public String getOwnerUuidsQuery(List<String> bookingIds) {
+		StringBuilder builder = new StringBuilder("select booking_id, uuid from public.eg_chb_owner where booking_id in (");
 		builder.append(createQueryParams(bookingIds)).append(")");
 		return builder.toString();
 	}

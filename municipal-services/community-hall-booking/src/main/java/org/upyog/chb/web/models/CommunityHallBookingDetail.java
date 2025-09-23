@@ -73,6 +73,9 @@ public class CommunityHallBookingDetail {
 	@Valid
 	private List<BookingSlotDetail> bookingSlotDetails;
 
+	@JsonProperty("owners")
+	List<OwnerInfo> owners;
+
 	@JsonProperty("documents")
 	@Valid
 	private List<DocumentDetail> uploadedDocumentDetails;

@@ -49,4 +49,9 @@ public interface CommunityHallBookingRepository {
 
 	List<BookingPaymentTimerDetails> getBookingTimerByCreatedBy(RequestInfo info, CommunityHallSlotSearchCriteria criteria);
 
+	/**
+	 * Fetch owner UUIDs per booking for given booking IDs.
+	 */
+	java.util.Map<String, java.util.List<String>> getOwnerUuidsByBookingIds(java.util.List<String> bookingIds);
+
 }

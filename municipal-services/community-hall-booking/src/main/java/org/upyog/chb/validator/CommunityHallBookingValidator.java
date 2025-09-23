@@ -31,7 +31,7 @@ public class CommunityHallBookingValidator {
 	private CommunityHallBookingConfiguration config;
 
 	/**
-	 * 
+	 *
 	 * @param bookingRequest
 	 * @param mdmsData
 	 */
@@ -42,7 +42,7 @@ public class CommunityHallBookingValidator {
 			throw new CustomException(CommunityHallBookingConstants.MULTIPLE_HALL_CODES_ERROR,
 					"Booking of multiple halls are not allowed.");
 		}
-		
+
 		if(!validateBookingDate(bookingRequest.getHallsBookingApplication().getBookingSlotDetails())) {
 			throw new CustomException(CommunityHallBookingConstants.INVALID_BOOKING_DATE,
 					"Booking date is not valid.");
@@ -57,18 +57,18 @@ public class CommunityHallBookingValidator {
 
 	public void validateUpdate(CommunityHallBookingDetail bookingDetailFromRequest, CommunityHallBookingDetail bookingDetailFromDB) {
 		log.info("validating master data for update  booking request for  booking no : " + bookingDetailFromRequest.getBookingNo());
-		//TODO: Add condition for status from to 
+		//TODO: Add condition for status from to
 	}
-	
+
 	private boolean validateBookingDate(List<BookingSlotDetail> bookingSlotDetails) {
 		LocalDate currentDate = CommunityHallBookingUtil.getCurrentDate();
 		boolean isBookingDateValid = bookingSlotDetails.stream().anyMatch(slotDetail ->
-		currentDate.isBefore(slotDetail.getBookingDate()));
+				currentDate.isBefore(slotDetail.getBookingDate()));
 		return isBookingDateValid;
 	}
 
 	/**
-	 * 
+	 *
 	 * @param bookingRequest
 	 */
 	private void validateDuplicateDocuments(CommunityHallBookingRequest bookingRequest) {
@@ -85,7 +85,7 @@ public class CommunityHallBookingValidator {
 
 	/**
 	 * Validates if the search parameters are valid
-	 * 
+	 *
 	 * @param requestInfo The requestInfo of the incoming request
 	 * @param criteria    The CommunityHallBookingSearchCriteria Criteria
 	 */
@@ -93,8 +93,8 @@ public class CommunityHallBookingValidator {
 	public void validateSearch(RequestInfo requestInfo, CommunityHallBookingSearchCriteria criteria) {
 		log.info("Validating search request for criteria " + criteria);
 		String userType = requestInfo.getUserInfo().getType();
-		
-		
+
+
 		if (!requestInfo.getUserInfo().getType().equalsIgnoreCase(CommunityHallBookingConstants.CITIZEN) && criteria.isEmpty())
 			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "Search without any paramters is not allowed");
 
@@ -105,7 +105,7 @@ public class CommunityHallBookingValidator {
 		if (requestInfo.getUserInfo().getType().equalsIgnoreCase(CommunityHallBookingConstants.CITIZEN) && !criteria.isEmpty()
 				&& !criteria.tenantIdOnly() && criteria.getTenantId() == null)
 			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "TenantId is mandatory in search");
-			
+
 
 		String allowedParamStr = null;
 
@@ -127,7 +127,7 @@ public class CommunityHallBookingValidator {
 	}
 	/**
 	 * Validates if the paramters coming in search are allowed
-	 * 
+	 *
 	 * @param criteria      CHB search criteria
 	 * @param allowedParams Allowed Params for search
 	 */
@@ -149,10 +149,10 @@ public class CommunityHallBookingValidator {
 
 		if (criteria.getLimit() != null && !allowedParams.contains("limit"))
 			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "Search on limit is not allowed");
-		
+
 		if (criteria.getMobileNumber() != null && !allowedParams.contains("mobileNumber"))
 			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "Search on mobile number is not allowed");
-		
+
 		if (criteria.getCommunityHallCode() != null && !allowedParams.contains("communityHallCode"))
 			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "Search on community hall name is not allowed");
 
@@ -163,13 +163,13 @@ public class CommunityHallBookingValidator {
 						"From date cannot be a future date");
 			}
 		}
-		
+
 		if(criteria.getFromDate() != null) {
 			LocalDate fromDate = CommunityHallBookingUtil.parseStringToLocalDate(criteria.getFromDate());
-			 if (fromDate.isBefore(CommunityHallBookingUtil.getMonthsAgo(6))) {
-				 throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH,
-							"From date cannot be prior 6 months");
-		     }
+			if (fromDate.isBefore(CommunityHallBookingUtil.getMonthsAgo(6))) {
+				throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH,
+						"From date cannot be prior 6 months");
+			}
 		}
 
 		if (criteria.getToDate() != null && criteria.getFromDate() != null) {
@@ -181,12 +181,11 @@ public class CommunityHallBookingValidator {
 			}
 		}
 	}
-	
+
 	public boolean isSameHallCode(List<BookingSlotDetail> bookingSlotDetails) {
 		String hallCode = bookingSlotDetails.get(0).getHallCode();
 		boolean allSameCode = bookingSlotDetails.stream().allMatch(x -> x.getHallCode().equals(hallCode));
 		return allSameCode;
 
 	}
-
 }

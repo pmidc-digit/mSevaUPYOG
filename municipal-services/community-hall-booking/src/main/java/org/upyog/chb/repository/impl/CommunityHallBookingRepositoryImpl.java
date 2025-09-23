@@ -15,7 +15,6 @@ import javax.validation.Valid;
 import org.apache.commons.lang.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.upyog.chb.config.CommunityHallBookingConfiguration;
@@ -130,6 +129,20 @@ public class CommunityHallBookingRepositoryImpl implements CommunityHallBookingR
 			bookingMap.get(documentDetail.getBookingId()).addUploadedDocumentDetailsItem(documentDetail);
 		});
 		return bookingDetails;
+	}
+
+	@Override
+	public java.util.Map<String, java.util.List<String>> getOwnerUuidsByBookingIds(java.util.List<String> bookingIds) {
+		if (bookingIds == null || bookingIds.isEmpty()) return java.util.Collections.emptyMap();
+		String sql = queryBuilder.getOwnerUuidsQuery(bookingIds);
+		List<java.util.Map<String, Object>> rows = jdbcTemplate.queryForList(sql, bookingIds.toArray());
+		java.util.Map<String, java.util.List<String>> map = new java.util.HashMap<>();
+		for (java.util.Map<String, Object> row : rows) {
+			String bookingId = (String) row.get("booking_id");
+			String uuid = (String) row.get("uuid");
+			map.computeIfAbsent(bookingId, k -> new java.util.ArrayList<>()).add(uuid);
+		}
+		return map;
 	}
 
 	@Override

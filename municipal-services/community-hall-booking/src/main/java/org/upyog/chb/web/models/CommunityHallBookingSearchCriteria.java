@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,6 +27,8 @@ public class CommunityHallBookingSearchCriteria {
 
 	@JsonProperty("bookingIds")
 	private List<String> bookingIds;
+
+	private String name;
 
 	@JsonProperty("status")
 	private String status;
@@ -47,6 +50,9 @@ public class CommunityHallBookingSearchCriteria {
 	@ValidDate
 	@JsonProperty("fromDate")
 	private String fromDate;
+
+	@JsonProperty("ownerids")
+	private Set<String> ownerIds;
 
 	@ValidDate
 	@JsonProperty("toDate")

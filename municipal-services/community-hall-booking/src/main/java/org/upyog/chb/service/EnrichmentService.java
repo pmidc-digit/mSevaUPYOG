@@ -30,46 +30,76 @@ public class EnrichmentService {
 	@Autowired
 	private IdGenRepository idGenRepository;
 
+	@Autowired
+	private CHBUserService chbUserService;
+
 	public void enrichCreateBookingRequest(CommunityHallBookingRequest bookingRequest) {
 		String bookingId = CommunityHallBookingUtil.getRandonUUID();
 		log.info("Enriching booking request for booking id :" + bookingId);
-		
+
 		CommunityHallBookingDetail bookingDetail = bookingRequest.getHallsBookingApplication();
 		RequestInfo requestInfo = bookingRequest.getRequestInfo();
 		AuditDetails auditDetails = CommunityHallBookingUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
-		
+
 		bookingDetail.setAuditDetails(auditDetails);
 		bookingDetail.setBookingId(bookingId);
 		bookingDetail.setApplicationDate(auditDetails.getCreatedTime());
 		// Remove manual status setting - let workflow engine handle status
-		
-		//Updating id for slot details (remove manual status setting)
+
+		// Updating id for slot details (remove manual status setting)
 		bookingDetail.getBookingSlotDetails().stream().forEach(slot -> {
 			slot.setBookingId(bookingId);
 			slot.setSlotId(CommunityHallBookingUtil.getRandonUUID());
 			// Remove manual slot status setting - workflow will handle this
 			slot.setAuditDetails(auditDetails);
 		});
-		
-		// Do not enrich uploadedDocumentDetails on create; documents are added in update flow
 
+		// Do not enrich uploadedDocumentDetails on create; documents are added in
+		// update flow
 
 		bookingDetail.getApplicantDetail().setBookingId(bookingId);
 		bookingDetail.getApplicantDetail().setApplicantDetailId(CommunityHallBookingUtil.getRandonUUID());
 		bookingDetail.getApplicantDetail().setAuditDetails(auditDetails);
-	
-		
+
 		bookingDetail.getAddress().setAddressId(CommunityHallBookingUtil.getRandonUUID());
 		bookingDetail.getAddress().setApplicantDetailId(bookingDetail.getApplicantDetail().getApplicantDetailId());
 
 		List<String> customIds = getIdList(requestInfo, bookingDetail.getTenantId(),
 				config.getCommunityHallBookingIdKey(), config.getCommunityHallBookingIdFromat(), 1);
-		
+
 		log.info("Enriched booking request for booking no :" + customIds.get(0));
 
 		bookingDetail.setBookingNo(customIds.get(0));
 
-		// Set business service and module name in workflow if workflow object is provided
+		// Ensure owners list exists; if absent, derive one from applicant ensures integrity
+		if (bookingDetail.getOwners() == null || bookingDetail.getOwners().isEmpty()) {
+			org.upyog.chb.web.models.OwnerInfo owner = new org.upyog.chb.web.models.OwnerInfo();
+			owner.setName(
+					bookingDetail.getApplicantDetail() != null ? bookingDetail.getApplicantDetail().getApplicantName() : null);
+			owner.setEmailId(
+					bookingDetail.getApplicantDetail() != null ? bookingDetail.getApplicantDetail().getApplicantEmailId() : null);
+			owner.setMobileNumber(
+					bookingDetail.getApplicantDetail() != null ? bookingDetail.getApplicantDetail().getApplicantMobileNo()
+							: null);
+			owner.setTenantId(bookingDetail.getTenantId() != null ? bookingDetail.getTenantId().split("\\.")[0] : null);
+			owner.setOwnerId(CommunityHallBookingUtil.getRandonUUID());
+			java.util.List<org.upyog.chb.web.models.OwnerInfo> owners = new java.util.ArrayList<>();
+			owners.add(owner);
+			bookingDetail.setOwners(owners);
+		}
+
+		// Assign backend ownerId for any owners missing it
+		bookingDetail.getOwners().forEach(o -> {
+			if (o.getOwnerId() == null) {
+				o.setOwnerId(CommunityHallBookingUtil.getRandonUUID());
+			}
+		});
+
+		// Ensure users exist/updated for owners (creates CITIZENs if needed)
+		chbUserService.createUser(requestInfo, bookingDetail);
+
+		// Set business service and module name in workflow if workflow object is
+		// provided
 		if (bookingDetail.getWorkflow() != null) {
 			bookingDetail.getWorkflow().setBusinessService(config.getBusinessServiceName());
 			bookingDetail.getWorkflow().setModuleName(config.getModuleName());
@@ -101,8 +131,8 @@ public class EnrichmentService {
 	}
 
 	public void enrichUpdateBookingRequest(CommunityHallBookingRequest communityHallsBookingRequest,
-										   BookingStatusEnum statusEnum,
-										   Set<String> existingDocIds) {
+			BookingStatusEnum statusEnum,
+			Set<String> existingDocIds) {
 
 		String userUuid = communityHallsBookingRequest.getRequestInfo().getUserInfo().getUuid();
 		AuditDetails auditDetails = CommunityHallBookingUtil.getAuditDetails(userUuid, true);
@@ -124,6 +154,31 @@ public class EnrichmentService {
 			bookingDetail.getWorkflow().setTenantId(bookingDetail.getTenantId());
 			bookingDetail.getWorkflow().setBusinessId(bookingDetail.getBookingNo());
 		}
+
+		// Ensure owners present; derive from applicant if none which will ensure integrity
+		if (bookingDetail.getOwners() == null || bookingDetail.getOwners().isEmpty()) {
+			org.upyog.chb.web.models.OwnerInfo owner = new org.upyog.chb.web.models.OwnerInfo();
+			owner.setName(
+					bookingDetail.getApplicantDetail() != null ? bookingDetail.getApplicantDetail().getApplicantName() : null);
+			owner.setEmailId(
+					bookingDetail.getApplicantDetail() != null ? bookingDetail.getApplicantDetail().getApplicantEmailId() : null);
+			owner.setMobileNumber(
+					bookingDetail.getApplicantDetail() != null ? bookingDetail.getApplicantDetail().getApplicantMobileNo()
+							: null);
+			owner.setTenantId(bookingDetail.getTenantId() != null ? bookingDetail.getTenantId().split("\\.")[0] : null);
+			owner.setOwnerId(
+					bookingDetail.getApplicantDetail() != null ? bookingDetail.getApplicantDetail().getApplicantDetailId()
+							: CommunityHallBookingUtil.getRandonUUID());
+			java.util.List<org.upyog.chb.web.models.OwnerInfo> owners = new java.util.ArrayList<>();
+			owners.add(owner);
+			bookingDetail.setOwners(owners);
+		}
+		bookingDetail.getOwners().forEach(o -> {
+			if (o.getOwnerId() == null) {
+				o.setOwnerId(CommunityHallBookingUtil.getRandonUUID());
+			}
+		});
+		chbUserService.createUser(communityHallsBookingRequest.getRequestInfo(), bookingDetail);
 
 		// Enrich documents
 		if (bookingDetail.getUploadedDocumentDetails() != null) {
@@ -148,6 +203,4 @@ public class EnrichmentService {
 			});
 		}
 	}
-
-
 }

@@ -23,6 +23,7 @@ const App = () => {
   const PTRResponse = Digit?.ComponentRegistryService?.getComponent("PTRResponseCitizen");
   const RenewPTR = Digit?.ComponentRegistryService?.getComponent("RenewPTRStepForm");
   const PTRList = Digit?.ComponentRegistryService?.getComponent("PTRList");
+  const NewPTREditApplication = Digit?.ComponentRegistryService?.getComponent("NewPTREditApplication");
 
   return (
     <span className={"pet-citizen"} style={{ width: "100%" }}>
@@ -35,6 +36,8 @@ const App = () => {
           <PrivateRoute path={`${path}/petservice/response/:applicationNumber`} component={PTRResponse} />
           <PrivateRoute path={`${path}/petservice/renewal-list`} component={PTRList} />
           <PrivateRoute path={`${path}/petservice/renew-ptr/:applicationNumber/:tenantId`} component={RenewPTR} />
+          <PrivateRoute path={`${path}/petservice/edit-application/:id`} component={NewPTREditApplication} />
+
           {/* <PrivateRoute path={`${path}/petservice/my-payments`} component={PTMyPayments}></PrivateRoute> */}
           <PrivateRoute path={`${path}/petservice/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
         </AppContainer>

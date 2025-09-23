@@ -210,10 +210,15 @@ const ApplicationDetails = () => {
           <StatusTable>
             <Row className="border-none" label={t("PTR_SEARCH_PET_TYPE")} text={t(pet_details?.petDetails?.petType) || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_SEARCH_BREED_TYPE")} text={t(pet_details?.petDetails?.breedType) || t("CS_NA")} />
+            <Row className="border-none" label={t("Pet Name")} text={pet_details?.petDetails?.petName || t("CS_NA")} />
+            <Row className="border-none" label={t("Pet Age")} text={pet_details?.petDetails?.petAge || t("CS_NA")} />
+
             <Row className="border-none" label={t("PTR_DOCTOR_NAME")} text={pet_details?.petDetails?.doctorName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_CLINIC_NAME")} text={pet_details?.petDetails?.clinicName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_VACCINATED_DATE")} text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
+            <Row className="border-none" label={t("Color")} text={pet_details?.petDetails?.petColor || t("CS_NA")} />
+            <Row className="border-none" label={t("Pet Gender")} text={pet_details?.petDetails?.petGender || t("CS_NA")} />
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_DOCS")}</CardSubHeader>

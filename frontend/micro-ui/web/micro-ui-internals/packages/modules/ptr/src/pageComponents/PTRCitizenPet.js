@@ -62,6 +62,8 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
 
     // ✅ If already created, skip API call
     if (currentStepData?.CreatedResponse?.applicationNumber || currentStepData?.applicationData?.applicationNumber) {
+      console.log("currentStepData?.CreatedResponse?.applicationNumber :>> ", currentStepData?.CreatedResponse?.applicationNumber);
+      console.log("currentStepData?.applicationData?.applicationNumber :>> ", currentStepData?.applicationData?.applicationNumbert);
       console.log("Skipping API call — already created");
       goNext(data);
       return;
@@ -118,6 +120,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
   };
 
   useEffect(() => {
+    console.log("currentStepData?.petDetails :>> ", currentStepData?.petDetails);
     if (currentStepData?.petDetails) {
       Object.entries(currentStepData.petDetails).forEach(([key, value]) => {
         if (key === "lastVaccineDate") {
@@ -139,7 +142,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
 
   const onlyAlphabets = /^[A-Za-z\s]+$/; // Allows any number of letters and spaces
   const onlyNumbers = /^[0-9]+$/; // Allows any number of digits
-  const alphaNum = /^[A-Za-z0-9]+$/; // Allows any number of letters and digits
+  const alphaNum = /^(?=(?:.*[A-Za-z0-9]){2,})[A-Za-z0-9 ]+$/; // Allows any number of letters and digits
   const decimalNumber = /^\d+(\.\d{1,2})?$/;
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;

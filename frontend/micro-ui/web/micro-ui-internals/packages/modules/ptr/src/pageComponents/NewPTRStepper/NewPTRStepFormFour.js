@@ -4,6 +4,7 @@ import { FormComposer, Toast, ActionBar, Menu, SubmitBar } from "@mseva/digit-ui
 import { useState } from "react";
 import _ from "lodash";
 import { useHistory, useRouteMatch } from "react-router-dom";
+import { UPDATE_PTRNewApplication_FORM, RESET_PTR_NEW_APPLICATION_FORM } from "../../redux/action/PTRNewApplicationActions";
 
 const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -20,11 +21,12 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const currentStepData = useSelector(function (state) {
     return state.ptr.PTRNewApplicationFormReducer.formData || {};
   });
-
-  const onGoToPTR = () => {
-    history.push(`/digit-ui/citizen/ptr-home`);
-  };
-
+  console.log("currentStepData to check :>> ", currentStepData);
+  // Pull updated fields from Redux state
+  const updatedOwnerDetails = currentStepData?.ownerDetails || {};
+  const updatedPetDetails = currentStepData?.petDetails || {};
+  const updatedDocuments = currentStepData?.documents?.documents?.documents || [];
+  console.log("updatedOwnerDetails :>> ", updatedOwnerDetails);
   function validateStepData(data) {
     const missingFields = [];
     const notFormattedFields = [];
@@ -33,7 +35,15 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   }
   const isCitizen = window.location.href.includes("citizen");
 
-  async function goNext(data) {
+  const onGoToPTR = () => {
+    if (isCitizen) {
+      history.push(`/digit-ui/citizen/ptr-home`);
+    } else {
+      history.push(`/digit-ui/employee/ptr/petservice/inbox`);
+    }
+  };
+
+  async function goNext(selectedAction) {
     const { missingFields, notFormattedFields } = validateStepData(currentStepData);
 
     if (missingFields.length > 0) {
@@ -49,14 +59,21 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     }
 
     try {
-      const res = await onSubmit(currentStepData, data);
+      const res = await onSubmit(currentStepData, selectedAction);
 
       if (res?.isSuccess) {
         const action = res?.response?.PetRegistrationApplications?.[0]?.workflow?.action;
-
+        console.log("action for this current :>> ", action);
         if (action == "CANCEL") {
           alert("Cancelled Application");
           onGoToPTR();
+        } else if (action == "SAVEASDRAFT") {
+          setShowToast({ key: "success", label: "Successfully saved as draft" });
+          setError("Successfully saved as draft");
+
+          setTimeout(() => {
+            onGoToPTR();
+          }, 1000);
         } else {
           history.replace(
             `/digit-ui/${isCitizen ? "citizen" : "employee"}/ptr/petservice/response/${currentStepData?.CreatedResponse?.applicationNumber}`,
@@ -86,24 +103,56 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       ...otherDetails
     } = CreatedResponse;
 
+    console.log("data is :>> ", data);
+    console.log("CreatedResponse :>> ", CreatedResponse);
     const formData = {
-      owner: ownerDetails, //change applicant to owner
-      documents: documentWrapper?.documents?.documents || [],
-      petDetails: {
-        ...petDetailsFromData,
-        breedType: petDetailsFromData?.breedType?.name || "",
-        petType: petDetailsFromData?.petType?.name || "",
-        petGender: petDetailsFromData?.petGender?.name || "",
+      ...CreatedResponse, // keep untouched fields like applicationNumber, tenantId, etc.
+
+      // Merge updated owner details
+      owner: {
+        ...CreatedResponse?.owner,
+        ...updatedOwnerDetails,
+        name: `${updatedOwnerDetails.firstName} ${updatedOwnerDetails.lastName}`,
       },
-      ...otherDetails,
+
+      address: {
+        ...CreatedResponse?.address,
+        tenantId: tenantId,
+      },
+
+      // Merge updated pet details
+      petDetails: {
+        ...CreatedResponse?.petDetails,
+        ...updatedPetDetails,
+        petType: updatedPetDetails?.petType?.name || CreatedResponse?.petDetails?.petType || "",
+        breedType: updatedPetDetails?.breedType?.name || CreatedResponse?.petDetails?.breedType || "",
+        petGender: updatedPetDetails?.petGender?.name || CreatedResponse?.petDetails?.petGender || "",
+      },
+
+      // Rebuild documents array from latest Redux state
+      documents: updatedDocuments.map((doc) => {
+        // Find the matching document from the original API response
+        const originalDoc =
+          (CreatedResponse?.documents || []).find((d) => d.documentUid === doc?.documentUid || d.filestoreId === doc?.filestoreId) || {};
+
+        return {
+          id: originalDoc?.id || doc?.id,
+          uuid: originalDoc?.uuid || doc?.uuid,
+          documentUid: doc?.documentUid || originalDoc?.documentUid || doc?.filestoreId || "",
+          documentType: doc?.documentType || originalDoc?.documentType || "",
+          documentAttachment: doc?.filestoreId || originalDoc?.documentAttachment || "",
+          filestoreId: doc?.filestoreId || originalDoc?.filestoreId || "",
+        };
+      }),
+
       workflow: {
         ...existingWorkflow,
         action: selectedAction?.action || "",
-        comments: selectedAction?.action || "",
         status: selectedAction?.action || "",
       },
-      ownerName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`, //change to ownerName
-      mobileNumber: ownerDetails?.mobileNumber,
+
+      ownerName: `${updatedOwnerDetails?.firstName} ${updatedOwnerDetails?.lastName}`,
+      mobileNumber: updatedOwnerDetails?.mobileNumber,
     };
 
     const response = await Digit.PTRService.update({ PetRegistrationApplications: [formData] }, tenantId);
@@ -159,18 +208,24 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   //     dispatch(UPDATE_PTRNewApplication_FORM(config.key, data));
   //   }
   // };
+  const onFormValueChange = (setValue = true, data) => {
+    const prevStepData = currentStepData[config.key] || {};
+    if (!_.isEqual(data, prevStepData)) {
+      dispatch(UPDATE_PTRNewApplication_FORM(config.key, data));
+    }
+  };
 
   return (
     <React.Fragment>
       <FormComposer
         defaultValues={currentStepData}
         config={config.currStepConfig}
-        onSubmit={goNext}
-        // onFormValueChange={onFormValueChange}
+        onFormValueChange={onFormValueChange}
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
+
       <ActionBar>
         {/* Back button */}
         <SubmitBar
@@ -187,7 +242,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
       </ActionBar>
 
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

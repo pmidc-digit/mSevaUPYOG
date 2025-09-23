@@ -100,6 +100,19 @@ const createEmployeeConfig = [
       submitBarLabel: "Next",
     },
   },
+  {
+    head: "Summary Details",
+    stepLabel: "Summary Details",
+    stepNumber: 8,
+    isStepEnabled: true,
+    type: "component",
+    component: "NewSelfCertificationStepFormEight",
+    key: "SummaryDetails",
+    withoutLabel: true,
+    texts: {
+      submitBarLabel: "Next",
+    },
+  }
 ];
 
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {

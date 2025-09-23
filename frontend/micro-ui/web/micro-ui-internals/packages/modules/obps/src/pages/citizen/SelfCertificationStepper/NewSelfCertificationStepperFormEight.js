@@ -1,18 +1,17 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast, Loader } from "@mseva/digit-ui-react-components";
+import { Toast } from "@mseva/digit-ui-react-components";
 import { SET_OBPS_STEP, UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../../../redux/actions/OBPSActions";
 import { useState, useEffect } from "react";
-import ScrutinyDetails from "../../../pageComponents/ScrutinyDetails";
+import SummaryDetails from "../../../pageComponents/SummaryDetails";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
-const NewSelfCertificationStepFormThree = ({ config, onGoNext, onBackClick }) => {
+const NewSelfCertificationStepFormEight = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
 
   const scrutinyDetails = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))?.value || {};
     const [applicationNo, setApplicationNo] = useState(scrutinyDetails?.data?.applicationNo || "")
@@ -26,31 +25,18 @@ const NewSelfCertificationStepFormThree = ({ config, onGoNext, onBackClick }) =>
     },[scrutinyDetails?.data?.applicationNo])
   
     useEffect(async () => {
-          if(applicationNo){
-            try{
-              setIsLoading(true)
-              const response = await Digit.OBPSService.BPASearch(tenantId, {applicationNo})
-              if(response?.ResponseInfo?.status === "successful"){
-                dispatch(UPDATE_OBPS_FORM("createdResponse", response?.BPA?.[0]));
-                setIsLoading(false)
-              }else{
-                setError(t("Some_Unknown_Error"))
-                setShowToast(true);
-                setIsLoading(false)
-              }
-            }catch(e){
-              setError(t(e.message))
-              setShowToast(true);
-              setIsLoading(false)
-            }
-          }
+      if(applicationNo){
+        const response = await Digit.OBPSService.BPASearch(tenantId, {applicationNo})
+        dispatch(UPDATE_OBPS_FORM("createdResponse", response?.BPA?.[0]));
+      }
     }, [applicationNo])
 
   const currentStepData = useSelector(function (state) {
     return state.obps.OBPSFormReducer.formData;
   });
 
-  function goNext(key, data) {
+  function goNext(data) {
+    console.log("NewSelfCertificationStepFormFour", data)
     dispatch(UPDATE_OBPS_FORM(config.key, data));
     onGoNext();
   }
@@ -64,17 +50,15 @@ const NewSelfCertificationStepFormThree = ({ config, onGoNext, onBackClick }) =>
     setError("");
   };
 
-  console.log("me rendering instead", JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")));
-
-  if(isLoading) return (<Loader />)
+  console.log("me rendering instead", JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")), currentStepData);
 
   return (
     <React.Fragment>
-      <ScrutinyDetails onGoBack={onGoBack} onSelect={goNext} formData={scrutinyDetails} t={t} currentStepData={currentStepData}/>
+      <SummaryDetails onGoBack={onGoBack} onSelect={goNext} formData={scrutinyDetails} t={t} currentStepData={currentStepData}/>
       <div></div>
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };
 
-export default NewSelfCertificationStepFormThree;
+export default NewSelfCertificationStepFormEight;

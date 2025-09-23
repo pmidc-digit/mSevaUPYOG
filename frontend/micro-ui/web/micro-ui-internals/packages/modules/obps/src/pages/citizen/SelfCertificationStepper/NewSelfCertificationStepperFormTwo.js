@@ -1,6 +1,6 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Toast } from "@mseva/digit-ui-react-components";
+import { Loader, Toast } from "@mseva/digit-ui-react-components";
 import { SET_OBPS_STEP, UPDATE_OBPS_FORM, RESET_OBPS_FORM } from "../../../redux/actions/OBPSActions";
 import { useState, useEffect } from "react";
 import PlotDetails from "../../../pageComponents/PlotDetails";
@@ -12,6 +12,7 @@ const NewSelfCertificationStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   const { t } = useTranslation();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const scrutinyDetails = JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT"))?.value || {};
     const [applicationNo, setApplicationNo] = useState(scrutinyDetails?.data?.applicationNo || "")
@@ -26,8 +27,22 @@ const NewSelfCertificationStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   
     useEffect(async () => {
       if(applicationNo){
-        const response = await Digit.OBPSService.BPASearch(tenantId, {applicationNo})
-        dispatch(UPDATE_OBPS_FORM("createdResponse", response?.BPA?.[0]));
+        try{
+          setIsLoading(true)
+          const response = await Digit.OBPSService.BPASearch(tenantId, {applicationNo})
+          if(response?.ResponseInfo?.status === "successful"){
+            dispatch(UPDATE_OBPS_FORM("createdResponse", response?.BPA?.[0]));
+            setIsLoading(false)
+          }else{
+            setError(t("Some_Unknown_Error"))
+            setShowToast(true);
+            setIsLoading(false)
+          }
+        }catch(e){
+          setError(t(e.message))
+          setShowToast(true);
+          setIsLoading(false)
+        }
       }
     }, [applicationNo])
 
@@ -51,6 +66,8 @@ const NewSelfCertificationStepFormTwo = ({ config, onGoNext, onBackClick }) => {
   };
 
   console.log("me rendering instead", JSON.parse(sessionStorage.getItem("Digit.BUILDING_PERMIT")));
+
+  if(isLoading) return (<Loader />)
 
   return (
     <React.Fragment>

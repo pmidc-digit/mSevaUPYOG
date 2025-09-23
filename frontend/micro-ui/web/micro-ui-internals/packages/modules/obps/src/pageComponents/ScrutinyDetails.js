@@ -365,7 +365,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
         } }, tenantId)
         if(result?.ResponseInfo?.status === "successful"){
           setApiLoading(false);
-          onSelect("");
+          onSelect({subOccupancy: subOccupancyObject});
         }else{
           alert(t("BPA_CREATE_APPLICATION_FAILED"));
           setApiLoading(false);

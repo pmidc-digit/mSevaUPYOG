@@ -28,10 +28,13 @@ const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepD
   const [placeName, setplaceName] = useState(formData?.address?.placeName || formData?.placeName || "");
   const [localities, setLocalities] = useState();
   const [selectedLocality, setSelectedLocality] = useState(currentStepData?.createdResponse?.landInfo?.address?.locality || null);
+  const [viewSiteImageURL, setViewSiteImageURL] = useState(null);
+  const state = localStorage.getItem("Citizen.tenant-id");
   //const { isLoading, data: citymodules } = Digit.Hooks.obps.useMDMS(stateId, "tenant", ["citymodule"]);
   let [cities, setcitiesopetions] = useState(allCities);
   let validation = {};
   let cityCode = formData?.data?.edcrDetails?.tenantId;
+  console.log("viewSiteImageURL",viewSiteImageURL)
 // const [sitePhotoGraph, setSitePhotoGraph] = useState()
 const [uploadedFile, setUploadedFile] = useState(() => {
   return currentStepData?.createdResponse?.documents?.find((item) => item?.documentType === "SITEPHOTOGRAPH_ONE")?.fileStoreId || null;
@@ -100,6 +103,17 @@ const [isUploading, setIsUploading] = useState(false);
     }
   }, [pincode]);
 
+  useEffect(async () => {
+    if(uploadedFile){
+      const result = await Digit.UploadServices.Filefetch([uploadedFile], state)
+      console.log("uploadedFile",result);
+      if(result?.data?.fileStoreIds?.length>0){
+        setViewSiteImageURL(result?.data?.fileStoreIds?.[0]?.url);
+      }
+    }
+  }, [uploadedFile])
+
+
   useEffect(() => {
     cities.map((city, index) => {
       if (city.code === cityCode) {
@@ -126,7 +140,7 @@ useEffect(() => {
 
 
 
-  const { data: fetchedLocalities } = Digit.Hooks.useBoundaryLocalities(
+  const { data: fetchedLocalities, isLoading } = Digit.Hooks.useBoundaryLocalities(
     selectedCity?.code,
     "revenue",
     {
@@ -508,7 +522,7 @@ if (response?.data?.files?.length > 0) {
     </div>
   );
 
-  if(apiLoading) return <Loader/>
+  if(apiLoading || isLoading) return <Loader/>
 
 return (
   <div style={pageStyle}>
@@ -662,16 +676,17 @@ return (
             accept=".jpg,.jpeg,.png"
           />
 
-          {uploadedFile && (
+          {uploadedFile && viewSiteImageURL && (
             <div style={{ marginTop: "16px" }}>
-              <CardLabel>{t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW")}</CardLabel>
-              <div>
-                <img
-                  className="preview-image"
-                  src={`${window.location.origin}/filestore/v1/files/id?tenantId=${tenantId}&fileStoreId=${uploadedFile}`}
-                  alt="Uploaded site"
-                />
-              </div>
+              {/* <CardLabel>{t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW")}</CardLabel> */}
+              <a 
+                href={viewSiteImageURL} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ color: "#007bff", textDecoration: "underline", cursor: "pointer", font:"14px" }}
+              >
+                {t("CS_COMMON_VIEW_SITE_PHOTOGRAPH")}
+              </a>
             </div>
           )}
 

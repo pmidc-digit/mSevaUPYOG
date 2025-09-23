@@ -44,6 +44,7 @@ const App = ({ path }) => {
   const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false
 
   const LayoutStepperForm = Digit?.ComponentRegistryService?.getComponent("LayoutStepperForm");
+  const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
 
   return (
     <React.Fragment>
@@ -71,6 +72,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`} component={BPASendBackToCitizen} />
         <PrivateRoute path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`} component={OCSendBackToCitizen} />
         <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
+        <PrivateRoute path={`${path}/response/:id`} component={SelfCertificationResponse} />
       </Switch>
       </div>
     </React.Fragment>

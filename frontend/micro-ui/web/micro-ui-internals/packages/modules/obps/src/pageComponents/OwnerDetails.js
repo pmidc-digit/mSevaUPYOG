@@ -17,7 +17,7 @@ import {
   ActionBar,
   SubmitBar
 } from "@mseva/digit-ui-react-components";
-import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoch, getDocumentforBPA } from "../utils";
+import { stringReplaceAll, getPattern, convertDateTimeToEpoch, convertDateToEpoch } from "../utils";
 import Timeline from "../components/Timeline";
 import cloneDeep from "lodash/cloneDeep";
 
@@ -51,31 +51,58 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const [ownerRoleCheck, setOwnerRoleCheck] = useState(null) // Declare ownerRoleCheck variable
 
   const setDocumentFile = (index, file) => {
+    console.log("OwnerDoc DocumentFile FileUploader", index, file)
     const updatedFields = [...fields]
     updatedFields[index].documentFile = file
     setFeilds(updatedFields)
   }
 
-  const selectDocumentFile = (index) => (e) => {
+  const selectDocumentFile = (index) => async (e) => {
     const file = e.target.files[0]
     if (file && file.size > 5 * 1024 * 1024) {
       setShowToast({ key: "true", error: true, message: "File size should be less than 5MB" })
       return
     }
-    setDocumentFile(index, file)
-    setDocumentUploadedFiles((prev) => ({ ...prev, [index]: file }))
-    setErrors((prev) => ({ ...prev, [`documentFile_${index}`]: "" }))
+    console.log("OwnerDoc DocumentFile", file)
+    try {
+        const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+        if (response?.data?.files?.length > 0) {
+          setDocumentFile(index, response?.data?.files[0]?.fileStoreId);
+          setDocumentUploadedFiles((prev) => ({ ...prev, [index]: response?.data?.files[0]?.fileStoreId }))
+          setErrors((prev) => ({ ...prev, [`documentFile_${index}`]: "" }))
+        } else {
+          setError(t("CS_FILE_UPLOAD_ERROR"));
+        }
+    } catch (err) {
+      setError(t("CS_FILE_UPLOAD_ERROR"));
+    }
+    // setDocumentFile(index, file)
+    // setDocumentUploadedFiles((prev) => ({ ...prev, [index]: file }))
+    // setErrors((prev) => ({ ...prev, [`documentFile_${index}`]: "" }))
   }
 
-  const selectPhotoFile = (index) => (e) => {
+  const selectPhotoFile = (index) => async (e) => {
     const file = e.target.files[0]
     if (file && file.size > 5 * 1024 * 1024) {
       setShowToast({ key: "true", error: true, message: "File size should be less than 5MB" })
       return
     }
-    setOwnerPhoto(index, file)
-    setPhotoUploadedFiles((prev) => ({ ...prev, [index]: file }))
-    setErrors((prev) => ({ ...prev, [`ownerPhoto_${index}`]: "" }))
+    console.log("OwnerDoc OwnerPhoto", file)
+    try {
+        const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+        if (response?.data?.files?.length > 0) {
+          setOwnerPhoto(index, response?.data?.files[0]?.fileStoreId);
+          setPhotoUploadedFiles((prev) => ({ ...prev, [index]: response?.data?.files[0]?.fileStoreId }))
+          setErrors((prev) => ({ ...prev, [`ownerPhoto_${index}`]: "" }))
+        } else {
+          setError(t("CS_FILE_UPLOAD_ERROR"));
+        }
+    } catch (err) {
+      setError(t("CS_FILE_UPLOAD_ERROR"));
+    }
+    // setOwnerPhoto(index, file)
+    // setPhotoUploadedFiles((prev) => ({ ...prev, [index]: file }))
+    // setErrors((prev) => ({ ...prev, [`ownerPhoto_${index}`]: "" }))
   }
 
   const selectAuthLetterFile = (index) => (e) => {
@@ -90,6 +117,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   }
 
   const setOwnerPhoto = (index, file) => {
+    console.log("OwnerDoc OwnerPhoto PhotoUploader", index, file);
     const updatedFields = [...fields]
     updatedFields[index].ownerPhoto = file
     setFeilds(updatedFields)
@@ -97,7 +125,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   const setDateOfBirth = (index, e) => {
     const updatedFields = [...fields]
-    updatedFields[index].dateOfBirth = e.target.value
+    updatedFields[index].dob = e.target.value
     setFeilds(updatedFields)
   }
 
@@ -115,7 +143,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   const setOwnerAddress = (index, e) => {
     const updatedFields = [...fields]
-    updatedFields[index].ownerAddress = e.target.value
+    updatedFields[index].permanentAddress = e.target.value
     setFeilds(updatedFields)
   }
 
@@ -168,23 +196,21 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   })
 
   const [fields, setFeilds] = useState(() => {
-    // const storedFields = sessionStorage.getItem("ownerFields")
-    // if (storedFields) {
-    //   return JSON.parse(storedFields)
-    // }
-
-    // return (
-    //   (formData?.owners && formData?.owners?.owners) || [
-    //     { name: "", gender: "", mobileNumber: null, isPrimaryOwner: true },
-    //   ]
-    // )
-    const owners = currentStepData?.createdResponse?.landInfo?.owners;
-    if(owners?.length > 0) return [...owners]
+    const owners = currentStepData?.createdResponse?.landInfo?.owners?.map((item) => {
+      // console.log("DateofBirth", item, Digit.Utils.date.getDate(item?.dateOfBirth))
+      return {
+        ...item,
+        dob: Digit.Utils.date.getDate(item?.dob)
+      }
+    });
+    if(owners?.length > 0){
+      return [...owners]
+    }
     return [{ name: "", gender: "", mobileNumber: null, isPrimaryOwner: true },]
   })
 
   const user = Digit.UserService.getUser()
-  console.log("userrrr", user)
+  console.log("userrrr", user, fields)
 
   useEffect(() => {
     if(typeof ownershipCategory === "string"){
@@ -196,6 +222,27 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       }
     }
   }, [ownershipCategory, ownershipCategoryList, currentStepData?.createdResponse?.landInfo?.ownershipCategory])
+
+  useEffect(() => {
+    if(fields?.length > 0 && genderList?.length > 0){
+      if(typeof fields?.[0]?.gender === "string"){
+        const updatedFields = fields?.map((item) => {
+          const foundGender = genderList?.find((g) => g?.code === item?.gender);
+          if(foundGender){
+            return({
+              ...item,
+              gender: foundGender
+            })
+          }else{
+            return {
+              ...item
+            }
+          }
+        });
+        setFeilds(updatedFields);
+      }
+    }
+  }, [genderList])
 
   useEffect(() => {
     try {
@@ -479,7 +526,13 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           values[indexValue] = userData
           values[indexValue].isPrimaryOwner = fields[indexValue]?.isPrimaryOwner || false
         }
-        setFeilds(values)
+        const updatedValues = values?.map((item) => {
+          return {
+            ...item,
+            dob: Digit.Utils.date.getDate(item?.dob)
+          }
+        });
+        setFeilds(updatedValues)
         if (values[indexValue]?.mobileNumber && values[indexValue]?.name && values[indexValue]?.gender?.code)
           setCanmovenext(true)
         else setCanmovenext(false)
@@ -590,11 +643,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         newErrors[`ownerPhoto_${index}`] = t("Owner photo is required");
         isValid = false;
       }
-      if (!owner?.dateOfBirth) {
+      if (!owner?.dob) {
         newErrors[`dob_${index}`] = t("Date of birth is required");
         isValid = false;
       }
-      if (!owner?.ownerAddress) {
+      if (!owner?.permanentAddress) {
         newErrors[`address_${index}`] = t("Owner address is required");
         isValid = false;
       }
@@ -608,6 +661,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   const goNext = async () => {
     setError(null)
+    setErrors(null)
     const isValid = validateOwners(fields, ownershipCategory, setErrors);
     if (!isValid) {
       // window.scrollTo(0, 0);
@@ -623,15 +677,12 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       return
     }
 
-    const owner = formData.owners
-    console.log(owner, "OWNER FULL DETAIL");
-    const ownerStep = { ...owner, owners: fields, ownershipCategory: ownershipCategory }
 
     if (!formData?.id) {
       setIsDisable(true)
 
       const conversionOwners = []
-      ownerStep?.owners?.map((owner) => {
+      fields?.map((owner) => {
         conversionOwners.push({
           ...owner,
           active: true,
@@ -641,7 +692,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           mobileNumber: owner?.mobileNumber,
           isPrimaryOwner: owner?.isPrimaryOwner,
           gender: owner?.gender?.code,
-          // fatherOrHusbandName: "NAME",
+          dob: owner?.dob ? Digit.Utils.pt.convertDateToEpoch(owner?.dob) : null,
+          fatherOrHusbandName: owner?.fatherOrHusbandName ||"NAME",
           photo:null
         })
       })
@@ -985,8 +1037,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                       t={t}
                       type={"date"}
                       isMandatory={false}
-                      name="dateOfBirth"
-                      value={field.dateOfBirth}
+                      name="dob"
+                      value={field.dob}
                       onChange={(e) => setDateOfBirth(index, e)}
                     />
                     <ErrorMessage message={errors[`dob_${index}`]} />
@@ -1046,7 +1098,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                         resize: "vertical",
                       }}
                       placeholder="Enter complete address"
-                      value={field.ownerAddress}
+                      value={field.permanentAddress}
                       onChange={(e) => setOwnerAddress(index, e)}
                     />
                     <ErrorMessage message={errors[`address_${index}`]} />

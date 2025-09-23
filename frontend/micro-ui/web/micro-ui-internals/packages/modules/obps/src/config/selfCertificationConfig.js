@@ -89,5 +89,18 @@ export const config = [
                 withoutLabel: true,
             }
         ]
+    },
+    {
+        head: "",
+        stepNumber: 8,
+        body: [
+            {
+                name: "BPA_SUMMARY_DETAILS",
+                type: "component",
+                component: "dummy",
+                key: "SummaryDetails",                
+                withoutLabel: true,
+            }
+        ]
     }
 ]

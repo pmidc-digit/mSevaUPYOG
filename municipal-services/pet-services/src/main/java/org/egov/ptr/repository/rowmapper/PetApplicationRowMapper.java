@@ -106,7 +106,7 @@ public class PetApplicationRowMapper implements ResultSetExtractor<List<PetRegis
 				.type(rs.getString("atype")).addressLine1(rs.getString("aaddressline1"))
 				.addressLine2(rs.getString("aaddressline2")).landmark(rs.getString("alandmark"))
 				.street(rs.getString("astreet")).city(rs.getString("acity")).pincode(rs.getString("apincode"))
-				.detail("adetail").registrationId("aregistrationid").build();
+				.detail(rs.getString("adetail")).registrationId(rs.getString("aregistrationid")).build();
 
 		petRegistrationApplication.setAddress(address);
 	}

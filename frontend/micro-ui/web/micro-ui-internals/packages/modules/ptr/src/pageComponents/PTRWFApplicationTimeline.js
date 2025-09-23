@@ -9,6 +9,7 @@ import {
   ActionBar,
   Menu,
   Toast,
+  LinkButton,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -24,6 +25,8 @@ const PTRWFApplicationTimeline = (props) => {
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
+  const [showAllTimeline, setShowAllTimeline] = useState(false);
+
   const [error, setError] = useState(null);
   const [latestComment, setLatestComment] = useState(null);
   const { isLoading, data } = Digit.Hooks.useWorkflowDetails({
@@ -38,6 +41,9 @@ const PTRWFApplicationTimeline = (props) => {
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
+  const toggleTimeline = () => {
+    setShowAllTimeline((prev) => !prev);
+  };
 
   const getTimelineCaptions = (checkpoint) => {
     console.log("checkpoint is :>> ", checkpoint);
@@ -271,7 +277,7 @@ const PTRWFApplicationTimeline = (props) => {
           ) : (
             <ConnectingCheckPoints>
               {data?.timeline &&
-                data?.timeline.map((checkpoint, index, arr) => {
+                data?.timeline.slice(0, showAllTimeline ? data.timeline.length : 2).map((checkpoint, index, arr) => {
                   let timelineStatusPostfix = "";
                   if (window.location.href.includes("/obps/")) {
                     if (data?.timeline[index - 1]?.state?.includes("BACK_FROM") || data?.timeline[index - 1]?.state?.includes("SEND_TO_CITIZEN"))
@@ -293,6 +299,9 @@ const PTRWFApplicationTimeline = (props) => {
                 })}
             </ConnectingCheckPoints>
           )}
+          {/* {data?.timeline?.length > 2 && (
+            <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
+          )} */}
 
           {actions?.length > 0 && actions[0]?.action != "PAY" && (
             <ActionBar>

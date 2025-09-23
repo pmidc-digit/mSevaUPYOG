@@ -18,11 +18,6 @@ public class NdcQueryBuilder {
 	@Autowired
 	NDCConfiguration ndcConfig;
 
-	private final String paginationWrapper = "SELECT * FROM (" +
-			"  SELECT *, ROW_NUMBER() OVER (ORDER BY a_lastmodifiedtime DESC) AS offset_ FROM ({}) result" +
-			") result_offset WHERE offset_ > ? AND offset_ <= ?";
-
-
 	private static final String NDC_QUERY = "SELECT " +
 			"a.uuid AS a_uuid, a.tenantid, a.applicationstatus, a.active,\n" +
             "  a.createdby AS a_createdby, a.lastmodifiedby AS a_lastmodifiedby,\n" +
@@ -103,55 +98,6 @@ public class NdcQueryBuilder {
 		log.info("Details query: {}", query);
 		return query.toString();
 	}
-
-
-	public String getNdcApplicationSearchQuery(NdcApplicationSearchCriteria criteria, List<Object> preparedStmtList) {
-		StringBuilder query = new StringBuilder(NDC_QUERY);
-		boolean whereAdded = false;
-
-		if (StringUtils.isNotBlank(criteria.getTenantId())) {
-			addClauseIfRequired(query, whereAdded);
-			whereAdded = true;
-			query.append("( a.tenantid = ? or a.tenantid = 'pb.punjab' )");
-			preparedStmtList.add(criteria.getTenantId());
-		}
-
-		if (criteria.getUuid() != null && !criteria.getUuid().isEmpty()) {
-			addClauseIfRequired(query, whereAdded);
-			whereAdded = true;
-			query.append(" a.uuid in (");
-			String placeholders = String.join(",", Collections.nCopies(criteria.getUuid().size(), "?"));
-			query.append(placeholders).append(")");
-			preparedStmtList.addAll(criteria.getUuid());
-		}
-
-		if (criteria.getStatus() != null) {
-			addClauseIfRequired(query, whereAdded);
-			whereAdded = true;
-			query.append(" a.applicationstatus = ?");
-			preparedStmtList.add(criteria.getStatus());
-		}
-
-		if (criteria.getActive() != null) {
-			addClauseIfRequired(query, whereAdded);
-			whereAdded = true;
-			query.append(" a.active = ?");
-			preparedStmtList.add(criteria.getActive());
-		}
-
-		if (criteria.getOwnerIds() != null) {
-			addClauseIfRequired(query, whereAdded);
-			whereAdded = true;
-			query.append(" owner.uuid in (");
-			String placeholders = String.join(",", Collections.nCopies(criteria.getOwnerIds().size(), "?"));
-			query.append(placeholders).append(")");
-			preparedStmtList.addAll(criteria.getOwnerIds());
-		}
-
-		query.append(" ORDER BY a.lastmodifiedtime DESC ");
-		return query.toString();
-	}
-
 
 	private void addClauseIfRequired(StringBuilder query, boolean whereAdded) {
 		if (whereAdded) {

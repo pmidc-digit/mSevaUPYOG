@@ -51,23 +51,6 @@ public class NDCUtil {
 		this.serviceRequestRepository = serviceRequestRepository;
 		this.workflowService = workflowService;
 	}
-
-	/**
-	 * Method to return auditDetails for create/update flows
-	 *
-	 * @param by
-	 * @param isCreate
-	 * @return AuditDetails
-	 */
-	public AuditDetails getAuditDetails(String by, Boolean isCreate) {
-		Long time = System.currentTimeMillis();
-		if (isCreate)
-			return AuditDetails.builder().createdBy(by).lastModifiedBy(by).createdTime(time).lastModifiedTime(time)
-					.build();
-		else
-			return AuditDetails.builder().lastModifiedBy(by).lastModifiedTime(time).build();
-	}
-
 	/**
 	 * Returns the URL for MDMS search end point
 	 *
@@ -117,18 +100,6 @@ public class NDCUtil {
 				.moduleName(NDCConstants.COMMON_MASTERS_MODULE).build();
 
 		return Arrays.asList(ndcModuleDtls, commonMasterMDtl);
-	}	
-
-	/**
-	 * prepares MDMS call 
-	 * @param requestInfo
-	 * @param tenantId
-	 * @return
-	 */
-	public Object mDMSCall(RequestInfo requestInfo, String tenantId) {
-		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequest(requestInfo, tenantId);
-		Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
-		return result;
 	}
 
 	public List<String> getIdList(RequestInfo requestInfo, String tenantId, String idName, String idformat, Integer count) {
@@ -148,15 +119,4 @@ public class NDCUtil {
 
 		return idResponses.stream().map(IdResponse::getId).collect(Collectors.toList());
 	}
-
-//	public Map<String, Boolean> getIdToIsStateUpdatableMap(BusinessService businessService, List<NdcApplicationRequest> searchresult) {
-//		Map<String, Boolean> idToIsStateUpdatableMap = new HashMap<>();
-//		searchresult.forEach(result -> {
-//			if (result.getApplicant().getApplicationStatus().equalsIgnoreCase(NDCConstants.STATE_INITIATED)) {
-//				idToIsStateUpdatableMap.put(result.getApplicant().getUuid(), true);
-//			} else
-//				idToIsStateUpdatableMap.put(result.getApplicant().getUuid(), workflowService.isStateUpdatable(result.getApplicant().getApplicationStatus(), businessService));
-//		});
-//		return idToIsStateUpdatableMap;
-//	}
 }

@@ -28,7 +28,6 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -165,7 +164,6 @@ public class NDCService {
                 }
             }
 
-            // Update documents
             List<DocumentRequest> documents = application.getDocuments();
             if (documents != null) {
                 Set<String> existingDocumentUuids = getExistingUuids("eg_ndc_documents", documents.stream().map(DocumentRequest::getUuid).collect(Collectors.toList()));
@@ -223,7 +221,7 @@ public class NDCService {
 		application.setAuditDetails(auditDetails);
 		application.setActive(ndcDeleteRequest.getActive());
 		ndcApplicationRequest.setApplications(Collections.singletonList(application));
-		// Push to
+
 		producer.push(config.getDeleteTopic(), application);
 		return ndcApplicationRequest;
 	}
@@ -237,32 +235,21 @@ public class NDCService {
 	}
 
 	public List<Application> searchNdcApplications(NdcApplicationSearchCriteria criteria, RequestInfo requestInfo) {
-		List<Application> applications;
-		List<String> uuids = criteria.getUuid();
-				if (StringUtils.isBlank(criteria.getTenantId())) {
-			throw new CustomException("EG_NDC_TENANT_ID_NULL","Tenant ID must not be null");
+		if (StringUtils.isBlank(criteria.getTenantId())) {
+			throw new CustomException("EG_NDC_TENANT_ID_NULL", "Tenant ID must not be null");
 		}
 		if (criteria.getMobileNumber() != null || criteria.getName() != null) {
 			UserResponse userDetailResponse = userService.getUser(criteria, requestInfo);
-			// If user not found with given user fields return empty list
 			if (userDetailResponse.getUser().isEmpty()) {
 				return Collections.emptyList();
-			} else {
-				criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
 			}
-
-			applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
-			Map<String, OwnerInfo> ownerInfoMap = userDetailResponse.getUser().stream()
-					.collect(Collectors.toMap(OwnerInfo::getUuid, Function.identity()));
-
-			enrichApplicationOwners(applications, ownerInfoMap);
-		} else {
-			applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
+			criteria.setOwnerIds(userDetailResponse.getUser().stream().map(OwnerInfo::getUuid).collect(Collectors.toSet()));
 
 		}
+		List<Application> applications = getApplicationsWithOwnerInfo(criteria, requestInfo);
 		SearchCriteria searchCriteria = new SearchCriteria();
 		searchCriteria.setTenantId(criteria.getTenantId());
-		enrichmentService.enrichProcessInstance(applications,searchCriteria,requestInfo);
+		enrichmentService.enrichProcessInstance(applications, searchCriteria, requestInfo);
 		return applications;
 	}
 
@@ -296,22 +283,6 @@ public class NDCService {
 		Object response = serviceRequestRepository.fetchResult(url, calculationReq);
 		CalculationRes calculationRes = mapper.convertValue(response, CalculationRes.class);
 		log.info("Calculation Response: " + calculationRes);
-	}
-
-	public void enrichApplicationOwners(List<Application> applications, Map<String, OwnerInfo> ownerInfoMap) {
-
-		for (Application app : applications) {
-			Set<String> seenUuids = new HashSet<>();
-
-			List<OwnerInfo> enrichedOwners = app.getOwners().stream()
-					.filter(owner -> owner.getUuid() != null) // skip null UUIDs
-					.filter(owner -> seenUuids.add(owner.getUuid())) // deduplicate by UUID
-					.map(owner -> ownerInfoMap.getOrDefault(owner.getUuid(), owner)) // enrich if available
-					.collect(Collectors.toList());
-
-			app.setOwners(enrichedOwners);
-		}
-
 	}
 
 }

@@ -47,20 +47,6 @@ public class NDCRepository {
 		return query != null;
 	}
 
-	public boolean checkUserUuidAndApplicationExists(List<String> uuid, String applicationUuid) {
-		String sql = queryBuilder.checkUniqueUserAndApplicationUUid(uuid , applicationUuid);
-		String query = jdbcTemplate.queryForObject(sql, new Object[]{uuid,applicationUuid},String.class);
-		return query != null;
-	}
-
-//	public List<Application> fetchNdcApplications(NdcApplicationSearchCriteria criteria) {
-//		List<Object> preparedStmtList = new ArrayList<>();
-//		String query = queryBuilder.getNdcApplicationSearchQuery(criteria, preparedStmtList);
-//		log.info(query);
-//		log.info(preparedStmtList.toString());
-//		return jdbcTemplate.query(query, preparedStmtList.toArray(), rowMapper);
-//	}
-
 	public List<Application> fetchNdcApplications(NdcApplicationSearchCriteria criteria) {
 		List<Object> uuidStmtList = new ArrayList<>();
 		String uuidQuery = queryBuilder.getPaginatedApplicationUuids(criteria, uuidStmtList);

@@ -33,8 +33,6 @@ public class CalculationService {
 
     public List<Calculation> calculate(CalculationReq calculationReq){
         List<Calculation> calculations = getCalculations(calculationReq);
-//        CalculationRes calculationRes = CalculationRes.builder().responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(calculationReq.getRequestInfo(),true)).calculation(calculations).build();
-
         demandService.generateDemands(calculationReq.getRequestInfo(),calculations);
         return calculations;
     }

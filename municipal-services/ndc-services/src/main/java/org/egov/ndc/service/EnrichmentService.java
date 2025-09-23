@@ -41,102 +41,6 @@ public class EnrichmentService {
 	@Autowired
 	private WorkflowService workflowService;
 
-	/**
-	 * Enriches the ndcReuqest object with puplating the id field with the uuids and
-	 * the auditDetails
-	 * 
-	 * @param ndcRequest
-	 * @param mdmsData
-	 */
-	public void enrichCreateRequest(NdcRequest ndcRequest, Object mdmsData) {
-		RequestInfo requestInfo = ndcRequest.getRequestInfo();
-		AuditDetails auditDetails = ndcUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), true);
-		ndcRequest.getNdc().setAuditDetails(auditDetails);
-		ndcRequest.getNdc().setId(UUID.randomUUID().toString());
-		ndcRequest.getNdc().setAccountId(ndcRequest.getNdc().getAuditDetails().getCreatedBy());
-		setIdgenIds(ndcRequest);
-		if (!CollectionUtils.isEmpty(ndcRequest.getNdc().getDocuments()))
-			ndcRequest.getNdc().getDocuments().forEach(document -> {
-				if (document.getId() == null) {
-					document.setId(UUID.randomUUID().toString());
-				}
-			});
-		if (!ObjectUtils.isEmpty(ndcRequest.getNdc().getWorkflow())
-				&& !StringUtils.isEmpty(ndcRequest.getNdc().getWorkflow().getAction())
-				&& ndcRequest.getNdc().getWorkflow().getAction().equals(NDCConstants.ACTION_INITIATE)) {
-
-		}
-	}
-
-	/**
-	 * sets the ids for all the child objects of NDCRequest
-	 * @param request
-	 */
-	private void setIdgenIds(NdcRequest request) {
-		RequestInfo requestInfo = request.getRequestInfo();
-		String tenantId = request.getNdc().getTenantId();
-		Ndc ndc = request.getNdc();
-
-		List<String> applicationNumbers = getIdList(requestInfo, tenantId, config.getApplicationNoIdgenName(), 1);
-		ListIterator<String> itr = applicationNumbers.listIterator();
-
-		Map<String, String> errorMap = new HashMap<>();
-
-		if (!errorMap.isEmpty())
-			throw new CustomException(errorMap);
-
-		ndc.setApplicationNo(itr.next());
-	}
-
-	/**
-	 * fetch the list of ids based on the params passed
-	 * @param requestInfo
-	 * @param tenantId
-	 * @param idKey
-	 * @param count
-	 * @return
-	 */
-	private List<String> getIdList(RequestInfo requestInfo, String tenantId, String idKey, int count) {
-		List<IdResponse> idResponses = idGenRepository.getId(requestInfo, tenantId, idKey, count).getIdResponses();
-
-		if (CollectionUtils.isEmpty(idResponses))
-			throw new CustomException("IDGEN ERROR", "No ids returned from idgen Service");
-
-		return idResponses.stream().map(IdResponse::getId).collect(Collectors.toList());
-	}
-
-	/**
-	 * encriches the udpateRequest request Object populating the ids for documents, auditDetails
-	 * @param ndcRequest
-	 * @param searchResult
-	 */
-	public void enrichNdcUpdateRequest(NdcRequest ndcRequest, Ndc searchResult) {
-
-		RequestInfo requestInfo = ndcRequest.getRequestInfo();
-		AuditDetails auditDetails = ndcUtil.getAuditDetails(requestInfo.getUserInfo().getUuid(), false);
-		ndcRequest.getNdc().setAuditDetails(auditDetails);
-		ndcRequest.getNdc().getAuditDetails().setLastModifiedTime(auditDetails.getLastModifiedTime());
-
-		// Ndc Documents
-		if (!CollectionUtils.isEmpty(ndcRequest.getNdc().getDocuments()))
-			ndcRequest.getNdc().getDocuments().forEach(document -> {
-				if (document.getId() == null) {
-					document.setId(UUID.randomUUID().toString());
-				}
-			});
-		if (!ObjectUtils.isEmpty(ndcRequest.getNdc().getWorkflow())
-				&& !CollectionUtils.isEmpty(ndcRequest.getNdc().getWorkflow().getDocuments())) {
-			ndcRequest.getNdc().getWorkflow().getDocuments().forEach(document -> {
-				if (document.getId() == null) {
-					document.setId(UUID.randomUUID().toString());
-				}
-			});
-		}
-		ndcRequest.getNdc().setApplicationNo(searchResult.getApplicationNo());
-		ndcRequest.getNdc().getAuditDetails().setCreatedBy(searchResult.getAuditDetails().getCreatedBy());
-		ndcRequest.getNdc().getAuditDetails().setCreatedTime(searchResult.getAuditDetails().getCreatedTime());
-
-	}
 
 	/**
 	 * called on success of the workflow action. setting the staus based on
@@ -160,14 +64,6 @@ public class EnrichmentService {
 						if (state.equalsIgnoreCase(NDCConstants.APPROVED_STATE)
 								|| state.equalsIgnoreCase(NDCConstants.AUTOAPPROVED_STATE)) {
 
-//				Map<String, Object> additionalDetail = null;
-//				if (ndc.get != null) {
-//					additionalDetail = (Map) ndc.getAdditionalDetails();
-//				} else {
-//					additionalDetail = new HashMap<String, Object>();
-//					ndc.setAdditionalDetails(additionalDetail);
-//				}
-
 							List<IdResponse> idResponses = idGenRepository
 									.getId(ndcRequest.getRequestInfo(), application.getTenantId(), config.getApplicationNoIdgenName(), 1)
 									.getIdResponses();
@@ -178,12 +74,7 @@ public class EnrichmentService {
 						}
 					}
 				});
-		
-//		if (ndc.getWorkflow() != null && ndc.getWorkflow().getAction().equals(NDCConstants.ACTION_INITIATE)) {
-//			Map<String, String> details = (Map<String, String>) ndc.getAdditionalDetails();
-//			details.put(NDCConstants.INITIATED_TIME, Long.toString(System.currentTimeMillis()));
-//			ndc.setAdditionalDetails(details);
-//		}
+
 	}
 
 
@@ -204,35 +95,15 @@ public class EnrichmentService {
 		Map<String,OwnerInfo> userIdToOwnerMap = new HashMap<>();
 		users.forEach(user -> userIdToOwnerMap.put(user.getUuid(),user));
 		applications.forEach(application -> {
-//				applications.getOwners().forEach(owner -> {
-//					if(userIdToOwnerMap.get(owner.getUuid())==null)
-//						throw new CustomException("OWNER SEARCH ERROR","The owner of the applications "+applications.getUuid()+" is not coming in user search");
-//					else
-//						owner.addUserDetail(userIdToOwnerMap.get(owner.getUuid()));
-//
-//
-//				if(userIdToOwnerMap.get(owner.getUuid())!=null)
-//					applications.addOwner(userIdToOwnerMap.get(owner.getUuid()));
-//				else
-//					throw new CustomException("CITIZENINFO ERROR","The citizenInfo with id: "+ owner.getUuid()+" cannot be found");
-//			});
-
-
-
 			List<OwnerInfo> enrichedOwners = new ArrayList<>();
 
 			if(application.getOwners()!=null) {
 				for (OwnerInfo owner : application.getOwners()) {
 					OwnerInfo userDetail = userIdToOwnerMap.get(owner.getUuid());
-
-//					if (userDetail == null) {
-//						throw new CustomException("OWNER SEARCH ERROR",
-//								"The owner of the applications " + applications.getUuid() + " is not coming in user search");
-//					}
 					if(userDetail!=null) {
 						owner.addUserDetail(userDetail);
 						enrichedOwners.add(userDetail);
-					}// or owner, depending on your logic
+					}
 				}
 			}
 
@@ -242,15 +113,6 @@ public class EnrichmentService {
 
 		});
 	}
-
-//	public void enrichSearchCriteriaForDefaultSearch(RequestInfo requestInfo, NdcApplicationSearchCriteria criteria){
-//		Set<String> set = new HashSet<>();
-//
-//		criteria.setMobileNumber(requestInfo.getUserInfo().getUserName());
-//		set.add(requestInfo.getUserInfo().getUuid());
-//		criteria.setOwnerIds(set);
-//		criteria.setTenantId(requestInfo.getUserInfo().getTenantId());
-//	}
 
 	public void enrichProcessInstance(List<Application> applications, SearchCriteria criteria,
 									  RequestInfo requestInfo) {

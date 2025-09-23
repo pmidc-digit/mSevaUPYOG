@@ -1,11 +1,8 @@
 package org.egov.ndc.consumer;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.egov.ndc.service.notification.NDCNotificationService;
-import org.egov.ndc.web.model.NdcRequest;
-import org.egov.ndc.web.model.bill.PaymentRequest;
 import org.egov.ndc.web.model.ndc.Application;
 import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
 import org.springframework.beans.factory.annotation.Autowired;

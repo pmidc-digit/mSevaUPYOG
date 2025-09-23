@@ -6,8 +6,6 @@ import org.egov.common.contract.request.RequestInfo;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.util.NDCConstants;
-import org.egov.ndc.web.model.RequestInfoWrapper;
-import org.egov.ndc.web.model.bill.BillResponse;
 import org.egov.ndc.web.model.calculator.Calculation;
 import org.egov.ndc.web.model.demand.Demand;
 import org.egov.ndc.web.model.demand.DemandDetail;
@@ -64,32 +62,4 @@ public class DemandService {
         DemandResponse demandResponse = mapper.convertValue(response,DemandResponse.class);
         return demandResponse.getDemands();
     }
-
-//    public BillResponse getBill(RequestInfoWrapper requestInfoWrapper, String tenantId, String applicationNumber) {
-//        String uri = getFetchBillURI();
-//        uri = uri.replace("{1}", tenantId);
-//        uri = uri.replace("{2}", applicationNumber);
-//        uri = uri.replace("{3}", ndcConfiguration.getModuleCode());
-//
-//        Object response = repository.fetchResult(new StringBuilder(uri), requestInfoWrapper);
-//        BillResponse billResponse = mapper.convertValue(response, BillResponse.class);
-//
-//        return billResponse;
-//    }
-//
-//    public String getFetchBillURI(){
-//        StringBuilder url = new StringBuilder(ndcConfiguration.getBillingServiceHost());
-//        url.append(ndcConfiguration.getFetchBillEndpoint());
-//        url.append("?");
-//        url.append("tenantId=");
-//        url.append("{1}");
-//        url.append("&");
-//        url.append("consumerCode=");
-//        url.append("{2}");
-//        url.append("&");
-//        url.append("businessService=");
-//        url.append("{3}");
-//
-//        return url.toString();
-//    }
 }

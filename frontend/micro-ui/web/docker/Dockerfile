@@ -2,30 +2,30 @@ FROM egovio/alpine-node-builder-14:yarn AS build
 RUN apk update && apk upgrade
 RUN apk add --no-cache git>2.30.0
 RUN yarn add @mseva/digit-ui-libraries@1.0.68
-RUN yarn add @mseva/digit-ui-module-bills@1.0.6
-RUN yarn add @mseva/digit-ui-module-fsm@1.0.4
-RUN yarn add @mseva/digit-ui-module-dss@1.0.4
-RUN yarn add @mseva/digit-ui-module-mcollect@1.0.6
-RUN yarn add @mseva/digit-ui-module-pgr@1.0.8
-RUN yarn add @mseva/digit-ui-module-noc@1.0.12
-RUN yarn add @mseva/digit-ui-module-engagement@1.1.27
-RUN yarn add @mseva/digit-ui-module-hrms@1.0.4
+RUN yarn add @mseva/digit-ui-module-bills@1.0.7
+RUN yarn add @mseva/digit-ui-module-fsm@1.0.5
+RUN yarn add @mseva/digit-ui-module-dss@1.0.5
+RUN yarn add @mseva/digit-ui-module-mcollect@1.0.7
+RUN yarn add @mseva/digit-ui-module-pgr@1.0.9
+RUN yarn add @mseva/digit-ui-module-noc@1.0.13
+RUN yarn add @mseva/digit-ui-module-engagement@1.1.28
+RUN yarn add @mseva/digit-ui-module-hrms@1.0.5
 RUN yarn add @mseva/digit-ui-module-core@1.0.36
-RUN yarn add @mseva/digit-ui-module-common@1.0.76
-RUN yarn add @mseva/digit-ui-module-ws@1.0.5
-RUN yarn add @mseva/digit-ui-module-commonpt@1.0.4
-RUN yarn add @mseva/digit-ui-module-ptr@1.0.83
-RUN yarn add @mseva/digit-ui-module-swach@1.0.42
-RUN yarn add @mseva/digit-ui-module-pt@1.0.34
-RUN yarn add @mseva/digit-ui-module-tl@1.0.14
-RUN yarn add @mseva/digit-ui-module-obps@1.0.40
-RUN yarn add @mseva/digit-ui-module-sv@1.0.56
-RUN yarn add @mseva/upyog-ui-module-ads@1.0.63
-RUN yarn add @mseva/upyog-ui-module-chb@1.0.54
-RUN yarn add @mseva/upyog-ui-module-asset@1.0.49
-RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.41
-RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.2
-RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.2
+RUN yarn add @mseva/digit-ui-module-common@1.0.77
+RUN yarn add @mseva/digit-ui-module-ws@1.0.7
+RUN yarn add @mseva/digit-ui-module-commonpt@1.0.5
+RUN yarn add @mseva/digit-ui-module-ptr@1.0.85
+RUN yarn add @mseva/digit-ui-module-swach@1.0.43
+RUN yarn add @mseva/digit-ui-module-pt@1.0.35
+RUN yarn add @mseva/digit-ui-module-tl@1.0.15
+RUN yarn add @mseva/digit-ui-module-obps@1.0.41
+RUN yarn add @mseva/digit-ui-module-sv@1.0.57
+RUN yarn add @mseva/upyog-ui-module-ads@1.0.64
+RUN yarn add @mseva/upyog-ui-module-chb@1.0.55
+RUN yarn add @mseva/upyog-ui-module-asset@1.0.50
+RUN yarn add @mseva/upyog-ui-module-pgrai@1.0.42
+RUN yarn add @mseva/digit-ui-module-challangeneration@1.0.3
+RUN yarn add @mseva/digit-ui-module-rentandlease@1.0.3
 RUN yarn add @mseva/digit-ui-module-ndc@1.0.32
 ARG WORK_DIR
 WORKDIR /app

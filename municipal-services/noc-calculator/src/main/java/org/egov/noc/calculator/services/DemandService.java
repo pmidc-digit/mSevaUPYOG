@@ -42,9 +42,6 @@ public class DemandService {
     
     @Autowired
     private DemandRepository demandRepository;
-    
-    @Autowired
-    private NOCService nocService;
 
     public List<Demand> generateDemands(RequestInfo requestInfo, List<Calculation> calculations) {
     	
@@ -179,13 +176,7 @@ public class DemandService {
 
             if(calculation.getNoc()!=null) {
             	noc = calculation.getNoc();
-            } else if(calculation.getApplicationNumber()!=null) {
-            		noc = nocService.getNOC(requestInfo, calculation.getTenantId(), calculation.getApplicationNumber());
             }
-            
-            if (noc == null)
-                throw new CustomException(NOCConstants.INVALID_APPLICATION_NUMBER, "Demand cannot be generated for applicationNumber " +
-                        calculation.getApplicationNumber() + "  NOC application with this number does not exist ");
 
             String tenantId = calculation.getTenantId();
             String consumerCode = calculation.getNoc().getApplicationNo();

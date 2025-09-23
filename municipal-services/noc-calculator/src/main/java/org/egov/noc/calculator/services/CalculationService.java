@@ -10,6 +10,7 @@ import org.egov.noc.calculator.utils.ResponseInfoFactory;
 import org.egov.noc.calculator.web.models.Calculation;
 import org.egov.noc.calculator.web.models.CalculationCriteria;
 import org.egov.noc.calculator.web.models.CalculationReq;
+import org.egov.noc.calculator.web.models.Noc;
 import org.egov.noc.calculator.web.models.demand.Category;
 import org.egov.noc.calculator.web.models.demand.TaxHeadEstimate;
 import org.egov.tracer.model.CustomException;
@@ -39,11 +40,15 @@ public class CalculationService {
 
 	@Autowired
 	private ObjectMapper mapper;
+	
+	@Autowired
+    private NOCService nocService;
 
 	@Autowired
 	private ResponseInfoFactory responseInfoFactory;
 
 	public List<Calculation> calculate(CalculationReq calculationReq, boolean getCalculationOnly){
+		
 		List<Calculation> calculations = getCalculations(calculationReq);
 
 		if(!getCalculationOnly) {
@@ -57,6 +62,16 @@ public class CalculationService {
 		List<Calculation> calculations = new LinkedList<>();
 		
 		for(CalculationCriteria criteria : calculationReq.getCalculationCriteria()) {
+			
+			 if(criteria.getApplicationNumber()!=null && criteria.getNoc() == null) {
+         		Noc noc = nocService.getNOC(calculationReq.getRequestInfo(), criteria.getTenantId(), criteria.getApplicationNumber());
+         		criteria.setNoc(noc);
+			 	}
+			 if (criteria.getNoc() == null)
+	                throw new CustomException(NOCConstants.INVALID_APPLICATION_NUMBER, "Demand cannot be generated for applicationNumber " +
+	                		criteria.getApplicationNumber() + "  NOC application with this number does not exist ");
+			 
+			
 			List<TaxHeadEstimate> estimates;
 			
 			String tenantId = criteria.getTenantId();

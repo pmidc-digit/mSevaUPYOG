@@ -44,7 +44,7 @@ public class NOCService {
 			throw new CustomException(NOCConstants.PARSING_ERROR, "Error while parsing response of TradeLicense Search");
 		}
 
-		return nocResponse.getNOC().get(0);
+		return nocResponse.getNOC().size() > 0 ? nocResponse.getNOC().get(0) : null ;
 	}
 
 	private StringBuilder getNOCSearchURL() {

@@ -76,6 +76,9 @@ const Profile = ({ info, stateName, t }) => {
           <div className="label-text">{email}</div>
         </div>
       )}
+      <div id="profile-links">
+          Edit
+      </div>
       <div className="profile-divider"></div>
       {window.location.href.includes("/employee") &&
         !window.location.href.includes("/employee/user/login") &&

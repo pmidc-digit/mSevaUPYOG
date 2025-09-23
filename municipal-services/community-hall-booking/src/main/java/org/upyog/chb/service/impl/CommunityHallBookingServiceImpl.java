@@ -26,7 +26,6 @@ import org.upyog.chb.validator.CommunityHallBookingValidator;
 import org.upyog.chb.web.models.*;
 import org.upyog.chb.web.models.workflow.ProcessInstance;
 import org.upyog.chb.web.models.workflow.State;
-import org.upyog.chb.web.models.user.UserResponse;
 import org.upyog.chb.web.models.OwnerInfo;
 import digit.models.coremodels.PaymentDetail;
 import lombok.NonNull;
@@ -126,7 +125,8 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		// Keep search simple: first fetch from DB based on provided criteria; owner details hydrated after
 		String plainMobile = bookingSearchCriteria.getMobileNumber();
 
-		// Encrypt applicant mobile for DB side filter (applicant table)
+		// Encrypt applicant mobile for DB side filter (applicant table) THIS IS DONE THAT IF WE WANT TO SEARCH BY THE MOBILE NUMBER IN THE APPLICANT DETAILS
+		//OR WE CAN GET THE OWNERS ASSOCIATED WITH THAT MOBILENUMBER
 		if (plainMobile != null && plainMobile.trim().length() > 9) {
 			ApplicantDetail applicantDetail = ApplicantDetail.builder()
 					.applicantMobileNo(plainMobile).build();
@@ -141,6 +141,29 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 					.setMobileNumber(communityHallBookingDetail.getApplicantDetail().getApplicantMobileNo());
 
 			log.info("loading data based on criteria after encrypting mobile no : " + bookingSearchCriteria);
+
+			// Additionally, use plain mobile to fetch owner UUIDs from user-service and include them in filter
+			try {
+				String digits = plainMobile.replaceAll("\\D", "");
+				if (digits.length() == 10) {
+					org.upyog.chb.web.models.CommunityHallBookingSearchCriteria userCriteria = new org.upyog.chb.web.models.CommunityHallBookingSearchCriteria();
+					userCriteria.setTenantId(bookingSearchCriteria.getTenantId());
+					userCriteria.setMobileNumber(digits);
+					org.upyog.chb.web.models.user.UserResponse userResp = chbUserService.getUser(userCriteria, info);
+					if (userResp != null && userResp.getUser() != null && !userResp.getUser().isEmpty()) {
+						java.util.Set<String> ownerUuids = userResp.getUser().stream()
+								.map(org.upyog.chb.web.models.OwnerInfo::getUuid)
+								.filter(java.util.Objects::nonNull)
+								.collect(java.util.stream.Collectors.toSet());
+						if (!ownerUuids.isEmpty()) {
+							bookingSearchCriteria.setOwnerIds(ownerUuids);
+							log.info("Owner UUIDs derived from user-service for mobile search: {}", ownerUuids);
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.warn("Failed to enrich search with owner UUIDs by mobile: {}", e.getMessage());
+			}
 		}
 
 		bookingDetails = bookingRepository.getBookingDetails(bookingSearchCriteria);
@@ -190,9 +213,40 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		criteria.setCountCall(true);
 		Integer bookingCount = 0;
 
-		// Keep count simple as well; do not prefetch ownerIds
-
+		// Apply same mobile-number behavior as details search: encrypt applicant mobile and include owner UUIDs
 		criteria = addCreatedByMeToCriteria(criteria, requestInfo);
+		String plainMobile = criteria.getMobileNumber();
+		if (plainMobile != null && plainMobile.trim().length() > 9) {
+			try {
+				// Encrypt applicant mobile for DB filter
+				ApplicantDetail applicantDetail = ApplicantDetail.builder().applicantMobileNo(plainMobile).build();
+				CommunityHallBookingDetail chb = CommunityHallBookingDetail.builder().applicantDetail(applicantDetail).build();
+				CommunityHallBookingRequest req = CommunityHallBookingRequest.builder().hallsBookingApplication(chb).requestInfo(requestInfo).build();
+				chb = encryptionService.encryptObject(req);
+				criteria.setMobileNumber(chb.getApplicantDetail().getApplicantMobileNo());
+
+				// Also fetch owner UUIDs from user-service using plain digits
+				String digits = plainMobile.replaceAll("\\D", "");
+				if (digits.length() == 10) {
+					org.upyog.chb.web.models.CommunityHallBookingSearchCriteria userCriteria = new org.upyog.chb.web.models.CommunityHallBookingSearchCriteria();
+					userCriteria.setTenantId(criteria.getTenantId());
+					userCriteria.setMobileNumber(digits);
+					org.upyog.chb.web.models.user.UserResponse userResp = chbUserService.getUser(userCriteria, requestInfo);
+					if (userResp != null && userResp.getUser() != null && !userResp.getUser().isEmpty()) {
+						java.util.Set<String> ownerUuids = userResp.getUser().stream()
+								.map(org.upyog.chb.web.models.OwnerInfo::getUuid)
+								.filter(java.util.Objects::nonNull)
+								.collect(java.util.stream.Collectors.toSet());
+						if (!ownerUuids.isEmpty()) {
+							criteria.setOwnerIds(ownerUuids);
+							log.info("[COUNT] Owner UUIDs derived from user-service for mobile search: {}", ownerUuids);
+						}
+					}
+				}
+			} catch (Exception e) {
+				log.warn("[COUNT] Failed to enrich search with owner UUIDs by mobile: {}", e.getMessage());
+			}
+		}
 		bookingCount = bookingRepository.getBookingCount(criteria);
 
 		return bookingCount;

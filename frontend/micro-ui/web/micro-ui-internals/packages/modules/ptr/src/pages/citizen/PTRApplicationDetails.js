@@ -167,7 +167,7 @@ const PTRApplicationDetails = () => {
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header>
-          {PetRegistrationApplications[0]?.status == "APPROVED" && dowloadOptions && dowloadOptions.length > 0 && (
+          {/* {PetRegistrationApplications[0]?.status == "APPROVED" && dowloadOptions && dowloadOptions.length > 0 && (
             // {dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
@@ -175,7 +175,7 @@ const PTRApplicationDetails = () => {
               displayOptions={showOptions}
               options={dowloadOptions}
             />
-          )}
+          )} */}
         </div>
         <Card>
           <StatusTable>

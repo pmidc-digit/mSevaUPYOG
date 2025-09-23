@@ -1,70 +1,58 @@
-//package org.egov.ndc.calculator.services;
-//
-//import java.util.ArrayList;
-//import java.util.LinkedHashMap;
-//
-//import org.egov.ndc.calculator.config.NDCCalculatorConfig;
-//import org.egov.ndc.calculator.repository.ServiceRequestRepository;
-//import org.egov.ndc.calculator.utils.BPACalculatorConstants;
-//import org.egov.ndc.calculator.web.models.RequestInfoWrapper;
-////import org.egov.ndc.calculator.web.models.ndc.BPA;
-////import org.egov.ndc.calculator.web.models.ndc.BPAResponse;
-//import org.egov.common.contract.request.RequestInfo;
-//import org.egov.tracer.model.CustomException;
-//import org.json.JSONObject;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Service;
-//import org.springframework.util.CollectionUtils;
-//
-//import com.fasterxml.jackson.databind.ObjectMapper;
-//import com.jayway.jsonpath.Configuration;
-//import com.jayway.jsonpath.DocumentContext;
-////import com.jayway.jsonpath.JsonPath;
-//
-//@Service
-//public class BPAService {
-//
-//	@Autowired
-//	private ServiceRequestRepository serviceRequestRepository;
-//
-//	@Autowired
-//	private ObjectMapper mapper;
-//
-//	@Autowired
-//	private BPACalculatorConfig config;
-//
-//	public BPA getBuildingPlan(RequestInfo requestInfo, String tenantId, String applicationNo, String approvalNo) {
-//		StringBuilder url = getBPASearchURL();
-//		url.append("tenantId=");
-//		url.append(tenantId);
-//		if (approvalNo != null) {
-//			url.append("&");
-//			url.append("approvalNo=");
-//		} else {
-//			url.append("&");
-//			url.append("applicationNo=");
-//		}
-//		url.append(approvalNo);
-//		LinkedHashMap responseMap = null;
-//		responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(url, new RequestInfoWrapper(requestInfo));
-//
-//		BPAResponse bpaResponse = null;
-//
-//		try {
-//			bpaResponse = mapper.convertValue(responseMap, BPAResponse.class);
-//		} catch (IllegalArgumentException e) {
-//			throw new CustomException(BPACalculatorConstants.PARSING_ERROR, "Error while parsing response of TradeLicense Search");
-//		}
-//
-//		return bpaResponse.getBPA().get(0);
-//	}
-//
-//	private StringBuilder getBPASearchURL() {
-//		// TODO Auto-generated method stub
-//		StringBuilder url = new StringBuilder(config.getBpaHost());
-//		url.append(config.getBpaContextPath());
-//		url.append(config.getBpaSearchEndpoint());
-//		url.append("?");
-//		return url;
-//	}
-//}
+package org.egov.noc.calculator.services;
+
+import java.util.LinkedHashMap;
+import org.egov.common.contract.request.RequestInfo;
+import org.egov.noc.calculator.config.NOCCalculatorConfig;
+import org.egov.noc.calculator.repository.ServiceRequestRepository;
+import org.egov.noc.calculator.utils.NOCConstants;
+import org.egov.noc.calculator.web.models.NOCResponse;
+import org.egov.noc.calculator.web.models.Noc;
+import org.egov.noc.calculator.web.models.RequestInfoWrapper;
+import org.egov.tracer.model.CustomException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@Service
+public class NOCService {
+
+	@Autowired
+	private ServiceRequestRepository serviceRequestRepository;
+
+	@Autowired
+	private ObjectMapper mapper;
+
+	@Autowired
+	private NOCCalculatorConfig config;
+
+	public Noc getNOC(RequestInfo requestInfo, String tenantId, String applicationNo) {
+		StringBuilder url = getNOCSearchURL();
+		url.append("tenantId=");
+		url.append(tenantId);
+		
+		url.append("&");
+		url.append("applicationNo=");
+		url.append(applicationNo);
+		LinkedHashMap responseMap = null;
+		responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(url, new RequestInfoWrapper(requestInfo));
+
+		NOCResponse nocResponse = null;
+
+		try {
+			nocResponse = mapper.convertValue(responseMap, NOCResponse.class);
+		} catch (IllegalArgumentException e) {
+			throw new CustomException(NOCConstants.PARSING_ERROR, "Error while parsing response of TradeLicense Search");
+		}
+
+		return nocResponse.getNOC().get(0);
+	}
+
+	private StringBuilder getNOCSearchURL() {
+		// TODO Auto-generated method stub
+		StringBuilder url = new StringBuilder(config.getNocHost());
+		url.append(config.getNocContextPath());
+		url.append(config.getNocSearchEndpoint());
+		url.append("?");
+		return url;
+	}
+}

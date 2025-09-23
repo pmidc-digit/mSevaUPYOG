@@ -2,7 +2,6 @@ package org.egov.noc.calculator.web.models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import org.egov.noc.calculator.web.models.noc.NocApplicationRequest;
 
 @Getter
 @Setter
@@ -10,8 +9,8 @@ import org.egov.noc.calculator.web.models.noc.NocApplicationRequest;
 @NoArgsConstructor
 @Builder
 public class CalculationCriteria {
-    @JsonProperty("nocapplication")
-    private NocApplicationRequest ndcApplicationRequest = null;
+	@JsonProperty("NOC")
+	private Noc noc = null;
 
     @JsonProperty("applicationNumber")
     private String applicationNumber = null;

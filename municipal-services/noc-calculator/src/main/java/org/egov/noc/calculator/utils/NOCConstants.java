@@ -1,5 +1,7 @@
 package org.egov.noc.calculator.utils;
 
+import java.math.BigDecimal;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -94,4 +96,51 @@ public class NOCConstants {
     public static final String PROPERTY_BUSINESS_SERVICE_CODE = "PT";
 	public static final String WATER_TAX_SERVICE_CODE = "WS";
 	public static final String SEWERAGE_TAX_SERVICE_CODE = "SW";
+	
+	public static final String MDMS_CHARGES_TYPE_PATH  = "$.MdmsRes.noc.ChargesType.*.Charges.*.[?( @.applicable==true )]";
+	
+	public static final String MDMS_CHARGES_TYPE_CODE  = "101";
+
+	public static final String NOC_PROCESSING_FEES = "NOC_PROCESSING_FEES";
+
+	public static final String NOC_CLU_CHARGES = "NOC_CLU_CHARGES";
+
+	public static final String NOC_EXTERNAL_DEVELOPMENT_CHARGES = "NOC_EXTERNAL_DEVELOPMENT_CHARGES";
+
+	public static final String NOC_URBAN_DEVELOPMENT_CESS = "NOC_URBAN_DEVELOPMENT_CESS";
+
+	public static final String NOC_MALBA_CHARGES = "NOC_MALBA_CHARGES";
+
+	public static final String NOC_WATER_CHARGES = "NOC_WATER_CHARGES";
+
+	public static final String NOC_MINING_CHARGES = "NOC_MINING_CHARGES";
+
+	public static final String NOC_GAUSHALA_CHARGES_CESS = "NOC_GAUSHALA_CHARGES_CESS";
+
+	public static final String NOC_LABOUR_CESS = "NOC_LABOUR_CESS";
+
+	public static final String NOC_RAIN_WATER_HARVESTING_CHARGES = "NOC_RAIN_WATER_HARVESTING_CHARGES";
+
+	public static final String NOC_CLUBBING_CHARGES = "NOC_CLUBBING_CHARGES";
+
+	public static final String NOC_SUB_DIVISION_CHARGES = "NOC_SUB-DIVISION_CHARGES";
+
+	public static final String NOC_OTHER_CHARGES = "NOC_OTHER_CHARGES";
+	
+	public static final BigDecimal SQYARD_TO_SQFEET = BigDecimal.valueOf(9.0);
+	
+	public static final BigDecimal SQMETER_TO_SQYARD = BigDecimal.valueOf(1.19599);
+	
+	public static final String MDMS_CHARGES_TYPE  = "ChargesType";
+	
+	public static final String MDMS_TAX_PERIOD_FROM_PATH  = "$.MdmsRes.noc.ChargesType.*.startingDate";
+	
+	public static final String MDMS_TAX_PERIOD_TO_PATH  = "$.MdmsRes.noc.ChargesType.*.endingDate";
+	
+	public static final String INVALID_UPDATE = "INVALID UPDATE";
+	
+	public static final String INVALID_APPLICATION_NUMBER = "INVALID APPLICATION NUMBER";
+
+	public static final String MDMS_ROUNDOFF_TAXHEAD = "TL_ROUNDOFF";
+		
 }

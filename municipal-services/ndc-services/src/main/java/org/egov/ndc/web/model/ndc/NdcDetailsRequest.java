@@ -1,5 +1,7 @@
 package org.egov.ndc.web.model.ndc;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
@@ -26,6 +28,9 @@ public class NdcDetailsRequest {
 
     @JsonProperty("additionalDetails")
     private JsonNode additionalDetails;
+    
+    @JsonProperty("dueAmount")
+    private BigDecimal dueAmount;
 
     @JsonProperty("isDuePending")
     private boolean duePending;

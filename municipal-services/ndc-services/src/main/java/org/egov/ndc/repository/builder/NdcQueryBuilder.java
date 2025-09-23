@@ -23,7 +23,7 @@ public class NdcQueryBuilder {
             "  a.createdby AS a_createdby, a.lastmodifiedby AS a_lastmodifiedby,\n" +
             "  a.createdtime AS a_createdtime, a.lastmodifiedtime AS a_lastmodifiedtime,\n" +
             "  a.action, a.reason,owner.uuid as owner_uuid,\n" +
-			"d.uuid AS d_uuid, d.applicationid AS d_applicationid, d.businessservice, d.consumercode, d.additionaldetails, d.isduepending, d.status, " +
+			"d.uuid AS d_uuid, d.applicationid AS d_applicationid, d.businessservice, d.consumercode, d.additionaldetails, d.isduepending, d.status,d.dueamount, " +
 			"doc.uuid AS doc_uuid, doc.applicationid AS doc_applicationid, doc.documenttype, doc.documentattachment, doc.createdby AS doc_createdby, doc.lastmodifiedby AS doc_lastmodifiedby, doc.createdtime AS doc_createdtime, doc.lastmodifiedtime AS doc_lastmodifiedtime " +
 			"FROM eg_ndc_application a " +
 			"LEFT JOIN eg_ndc_owner owner ON a.uuid = owner.ndcapplicationuuid " +

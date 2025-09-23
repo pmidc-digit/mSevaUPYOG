@@ -114,11 +114,11 @@ const ForgotPassword = ({ config: propsConfig, t }) => {
         description={propsConfig.texts.description}
         headingStyle={{ textAlign: "center" }}
         cardStyle={{ maxWidth: "408px", margin: "auto" }}
-        className="employeeForgotPassword"
+        className="loginFormStyleEmployeeNew"
       >
-        <Header />
+        {/* <Header /> */}
       </FormComposer>
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} />}
+      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
 
       <div style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"white",textAlign:"center" }}>
         <div style={{ display: 'flex', justifyContent: 'center', color:"black" }}>

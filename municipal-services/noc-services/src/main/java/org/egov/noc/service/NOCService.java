@@ -112,7 +112,7 @@ public class NOCService {
 
 		List<CalculationCriteria> calculationCriteriaList = new ArrayList<>();
 		CalculationCriteria calculationCriteria = CalculationCriteria.builder()
-				.nocRequest(request)
+				.noc(request.getNoc())
 				.tenantId(request.getNoc().getTenantId())
 				.applicationNumber(request.getNoc().getApplicationNo())
 				.build();
@@ -148,6 +148,10 @@ public class NOCService {
 			additionalDetails = nocValidator.getOrValidateBussinessService(nocRequest.getNoc(), mdmsData);
 		}
 		Noc searchResult= null;
+		List<OwnerInfo> owners = nocRequest.getNoc().getOwners();
+		if (owners != null) {
+			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
+		}
 		if(nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_INITIATE) || nocRequest.getNoc().getWorkflow().getAction().equals(NOCConstants.ACTION_APPLY)){
 			searchResult = new Noc();
 			searchResult.setAuditDetails(nocRequest.getNoc().getAuditDetails());
@@ -181,15 +185,15 @@ public class NOCService {
 			enrichmentService.enrichNocUpdateRequest(nocRequest, searchResult);
 			if(!ObjectUtils.isEmpty(nocRequest.getNoc().getWorkflow())
 					&& !StringUtils.isEmpty(nocRequest.getNoc().getWorkflow().getAction())) {
+				
+				if (nocRequest.getNoc().getWorkflow().getAction().equalsIgnoreCase(NOCConstants.ACTION_APPROVE)) {
+					getCalculation(nocRequest);
+				}
+				
 				wfIntegrator.callWorkFlow(nocRequest,NOCConstants.NOC_BUSINESS_SERVICE);
 				enrichmentService.postStatusEnrichment(nocRequest, NOCConstants.NOC_BUSINESS_SERVICE);
 				BusinessService businessService = workflowService.getBusinessService(nocRequest.getNoc(),
 						nocRequest.getRequestInfo(), NOCConstants.NOC_BUSINESS_SERVICE);
-
-
-				if (nocRequest.getNoc().getWorkflow().getAction().equalsIgnoreCase(NOCConstants.ACTION_APPROVE)) {
-					getCalculation(nocRequest);
-				}
 
 				if(businessService == null)
 					nocRepository.update(nocRequest, true);
@@ -198,11 +202,6 @@ public class NOCService {
 			}else {
 				nocRepository.update(nocRequest, Boolean.FALSE);
 			}
-		}
-
-		List<OwnerInfo> owners = nocRequest.getNoc().getOwners();
-		if (owners != null) {
-			userService.createUser(nocRequest.getRequestInfo(),nocRequest.getNoc());
 		}
 
 

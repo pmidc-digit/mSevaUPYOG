@@ -10,7 +10,7 @@ import org.egov.noc.calculator.web.models.noc.NocApplicationRequest;
 @NoArgsConstructor
 @Builder
 public class CalculationCriteria {
-    @JsonProperty("ndcapplication")
+    @JsonProperty("nocapplication")
     private NocApplicationRequest ndcApplicationRequest = null;
 
     @JsonProperty("applicationNumber")

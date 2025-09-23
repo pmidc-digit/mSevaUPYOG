@@ -101,8 +101,7 @@ public class UserService {
 		String dobFormat = null;
 		log.info(uri.toString());
 		log.info(config.getUserSearchEndpoint());
-		if (uri.toString().contains(config.getUserSearchEndpoint()))
-			dobFormat = "yyyy-MM-dd";
+		dobFormat = "yyyy-MM-dd";
 		try {
 			LinkedHashMap responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(uri, userRequest);
 			parseResponse(responseMap, dobFormat);
@@ -129,7 +128,7 @@ public class UserService {
 				map.put("createdDate", dateTolong((String) map.get("createdDate"), format1));
 				if ((String) map.get("lastModifiedDate") != null)
 					map.put("lastModifiedDate", dateTolong((String) map.get("lastModifiedDate"), format1));
-				if ((String) map.get("dob") != null)
+				if ((String) map.get("dob") != null && dobFormat != null)
 					map.put("dob", dateTolong((String) map.get("dob"), dobFormat));
 				if ((String) map.get("pwdExpiryDate") != null)
 					map.put("pwdExpiryDate", dateTolong((String) map.get("pwdExpiryDate"), format1));

@@ -77,7 +77,6 @@ public class NdcQueryBuilder {
 			preparedStmtList.addAll(criteria.getOwnerIds());
 		}
 
-
 		query.append(" ORDER BY a.lastmodifiedtime DESC");
 
 		int limit = criteria.getLimit() != null ? Math.min(criteria.getLimit(), ndcConfig.getMaxSearchLimit()) : ndcConfig.getDefaultLimit();

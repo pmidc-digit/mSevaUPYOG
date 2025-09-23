@@ -62,7 +62,6 @@ public class NDCRepository {
 //	}
 
 	public List<Application> fetchNdcApplications(NdcApplicationSearchCriteria criteria) {
-		// Step 1: Get paginated UUIDs
 		List<Object> uuidStmtList = new ArrayList<>();
 		String uuidQuery = queryBuilder.getPaginatedApplicationUuids(criteria, uuidStmtList);
 		log.info("UUID Query: {}", uuidQuery);
@@ -74,7 +73,6 @@ public class NDCRepository {
 			return new ArrayList<>();
 		}
 
-		// Step 2: Get full application details
 		List<Object> detailStmtList = new ArrayList<>();
 		String detailQuery = queryBuilder.getNdcApplicationDetailsQuery(paginatedUuids, detailStmtList);
 		log.info("Detail Query: {}", detailQuery);

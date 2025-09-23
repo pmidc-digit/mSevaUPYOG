@@ -9,7 +9,6 @@ import {
   ActionBar,
   Menu,
   Toast,
-  LinkButton,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
@@ -277,7 +276,7 @@ const PTRWFApplicationTimeline = (props) => {
           ) : (
             <ConnectingCheckPoints>
               {data?.timeline &&
-                data?.timeline.slice(0, showAllTimeline ? data.timeline.length : 2).map((checkpoint, index, arr) => {
+                data?.timeline.map((checkpoint, index, arr) => {
                   let timelineStatusPostfix = "";
                   if (window.location.href.includes("/obps/")) {
                     if (data?.timeline[index - 1]?.state?.includes("BACK_FROM") || data?.timeline[index - 1]?.state?.includes("SEND_TO_CITIZEN"))
@@ -299,9 +298,6 @@ const PTRWFApplicationTimeline = (props) => {
                 })}
             </ConnectingCheckPoints>
           )}
-          {/* {data?.timeline?.length > 2 && (
-            <LinkButton label={showAllTimeline ? t("COLLAPSE") : t("VIEW_TIMELINE")} onClick={toggleTimeline}></LinkButton>
-          )} */}
 
           {actions?.length > 0 && actions[0]?.action != "PAY" && (
             <ActionBar>

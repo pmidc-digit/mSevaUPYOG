@@ -40,7 +40,7 @@ const App = () => {
             path={`${path}/reopen`}
             component={() => <ReopenComplaint match={{ ...match, url, path: `${path}/reopen` }} parentRoute={path} />}
           /> */}
-          {/* <PrivateRoute path={`${path}/rate/:id*`} component={() => <SelectRating parentRoute={path} />} /> */}
+          <PrivateRoute path={`${path}/rate/:id*`} component={() => <SelectRating parentRoute={path} />} />
           <PrivateRoute path={`${path}/response`} component={() => <Response match={{ ...match, url, path }} />} />
           {/* <Route path={`${path}/response`}>
           <Response/>

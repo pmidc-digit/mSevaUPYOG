@@ -161,6 +161,7 @@ import useTradeLicenseBillingslab from "./tl/useTradeLicenseBillingslab";
 import useTLMDMS from "./tl/useMDMS";
 import useTLSearch from "./tl/useSearch";
 import useTLWorkflowData from "./tl/useTLWorkflowData";
+import useESign from "./tl/useESign";
 
 import useHRMSSearch from "./hrms/useHRMSsearch";
 import useHrmsMDMS from "./hrms/useHRMSMDMS";
@@ -518,6 +519,7 @@ const tl = {
   useFetchBill: useTLFetchBill,
   useTLApplicationDetails,
   useTLWorkflowData,
+  useESign,
 };
 
 const receipts = {

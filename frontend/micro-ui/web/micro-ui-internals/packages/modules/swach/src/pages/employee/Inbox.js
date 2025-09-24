@@ -18,8 +18,8 @@ const Inbox = ({ initialStates = {} }) => {
   let isMobile = Digit.Utils.browser.isMobile();
 
   const ttID = localStorage.getItem("punjab-tenantId");
-
-  const tenantIdCheck = ttID || tenantId;
+  const sessionEmpTenant = Digit.SessionStorage.get("Employee.tenantId");
+  const tenantIdCheck = sessionEmpTenant || ttID || tenantId;
 
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantIdCheck, "admin", {}, t);
 
@@ -56,7 +56,7 @@ const Inbox = ({ initialStates = {} }) => {
       // }
       // }
     })();
-  }, [searchParams, pageOffset, pageSize]);
+  }, [searchParams, pageOffset, pageSize,tenantIdCheck, sessionEmpTenant]);
 
   const fetchNextPage = () => {
   setPageOffset((prevState) => prevState + pageSize);

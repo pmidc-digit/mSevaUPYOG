@@ -27,7 +27,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       }, 3000);
       return;
     }
-    console.log("checkFormData", checkFormData);
     if (checkFormData?.apiData?.Applications?.[0]?.uuid || checkFormData?.responseData?.[0]?.uuid) {
       onGoNext();
     } else createApplication(data);
@@ -140,8 +139,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   };
 
   function validateStepData(data) {
-    console.log("data", data);
-
     const missingFields = [];
     const invalidFields = [];
 

@@ -1,5 +1,3 @@
-DROP TABLE IF EXISTS eg_chb_owner;
-
 CREATE TABLE eg_chb_owner (
                               uuid         VARCHAR(256) NOT NULL,
                               tenantid              VARCHAR(256),

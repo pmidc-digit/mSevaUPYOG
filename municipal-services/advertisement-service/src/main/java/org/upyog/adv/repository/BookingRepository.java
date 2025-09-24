@@ -6,12 +6,7 @@ import java.util.Map;
 import javax.validation.Valid;
 
 import org.egov.common.contract.request.RequestInfo;
-import org.upyog.adv.web.models.AdvertisementDraftDetail;
-import org.upyog.adv.web.models.AdvertisementSearchCriteria;
-import org.upyog.adv.web.models.AdvertisementSlotAvailabilityDetail;
-import org.upyog.adv.web.models.AdvertisementSlotSearchCriteria;
-import org.upyog.adv.web.models.BookingDetail;
-import org.upyog.adv.web.models.BookingRequest;
+import org.upyog.adv.web.models.*;
 
 import digit.models.coremodels.PaymentDetail;
 import lombok.NonNull;
@@ -23,6 +18,7 @@ public interface BookingRepository {
 	Integer getBookingCount (@Valid AdvertisementSearchCriteria criteria);
 
 	List<BookingDetail> getBookingDetails(AdvertisementSearchCriteria bookingSearchCriteria);
+	List<OwnerInfo> getOwnerByBookingId(String bookingId);
 	List<AdvertisementSlotAvailabilityDetail> getAdvertisementSlotAvailability(
 			AdvertisementSlotSearchCriteria criteria);
 	

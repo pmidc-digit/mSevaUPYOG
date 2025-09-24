@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -21,23 +22,13 @@ import org.springframework.util.CollectionUtils;
 import org.upyog.adv.constants.BookingConstants;
 import org.upyog.adv.enums.BookingStatusEnum;
 import org.upyog.adv.repository.BookingRepository;
-import org.upyog.adv.service.ADVEncryptionService;
-import org.upyog.adv.service.BookingService;
-import org.upyog.adv.service.DemandService;
-import org.upyog.adv.service.EnrichmentService;
-import org.upyog.adv.service.PaymentTimerService;
+import org.upyog.adv.service.*;
 import org.upyog.adv.util.BookingUtil;
 import org.upyog.adv.util.MdmsUtil;
 import org.upyog.adv.validator.BookingValidator;
+import org.upyog.adv.web.models.*;
 import org.upyog.adv.web.models.billing.PaymentDetail;
 import org.upyog.adv.workflow.WorkflowIntegrator;
-import org.upyog.adv.web.models.AdvertisementDraftDetail;
-import org.upyog.adv.web.models.AdvertisementSearchCriteria;
-import org.upyog.adv.web.models.AdvertisementSlotAvailabilityDetail;
-import org.upyog.adv.web.models.AdvertisementSlotSearchCriteria;
-import org.upyog.adv.web.models.ApplicantDetail;
-import org.upyog.adv.web.models.BookingDetail;
-import org.upyog.adv.web.models.BookingRequest;
 import org.upyog.adv.web.models.workflow.Workflow;
 
 import lombok.NonNull;
@@ -63,6 +54,9 @@ public class BookingServiceImpl implements BookingService {
 	private DemandService demandService;
 
 	@Autowired
+	UserService userService;
+
+	@Autowired
 	private PaymentTimerService paymentTimerService;
 
 	@Autowired
@@ -84,6 +78,7 @@ public class BookingServiceImpl implements BookingService {
 
 		Object mdmsData = mdmsUtil.mDMSCall(bookingRequest.getRequestInfo(), tenantId);
 
+
 		// 1. Validate request master data to confirm it has only valid data in records
 		bookingValidator.validateCreate(bookingRequest, mdmsData);
 
@@ -92,6 +87,7 @@ public class BookingServiceImpl implements BookingService {
 
 		// ENcrypt PII data of applicant
 		encryptionService.encryptObject(bookingRequest);
+		userService.createUser(bookingRequest.getRequestInfo(),bookingRequest.getBookingApplication());
 
 		try {
 			if (workflowIntegrator != null && bookingRequest.getBookingApplication().getWorkflow() != null
@@ -105,6 +101,11 @@ public class BookingServiceImpl implements BookingService {
 		} catch (Exception ex) {
 			log.error("Workflow initiation failed for booking {}", bookingRequest.getBookingApplication().getBookingNo(), ex);
 		}
+
+
+
+
+
 		// 4.Persist the request using persister service
 		bookingRepository.saveBooking(bookingRequest);
 
@@ -131,6 +132,8 @@ public class BookingServiceImpl implements BookingService {
 			bookingRepository.deleteDraftApplication(draftId);
 		}
 
+
+
 		// Initiate workflow if action provided
 
 
@@ -146,7 +149,6 @@ public class BookingServiceImpl implements BookingService {
 		// addCreatedByMeToCriteria(advertisementSearchCriteria, info);
 
 		log.info("loading data based on criteria" + advertisementSearchCriteria);
-
 		if (advertisementSearchCriteria.getMobileNumber() != null
 				|| advertisementSearchCriteria.getApplicantName() != null) {
 
@@ -167,6 +169,26 @@ public class BookingServiceImpl implements BookingService {
 		}
 
 		bookingDetails = bookingRepository.getBookingDetails(advertisementSearchCriteria);
+
+		for (BookingDetail bookingDetail : bookingDetails) {
+			AdvertisementSearchCriteria criteria = new AdvertisementSearchCriteria();
+			criteria.setTenantId(bookingDetail.getTenantId());
+
+			String bookingId = bookingDetail.getBookingId();
+			List<OwnerInfo> owners = bookingRepository.getOwnerByBookingId(bookingId);
+
+			if (owners != null && !owners.isEmpty()) {
+				List<String> ownerIds = owners.stream()
+						.map(OwnerInfo::getUuid) // Make sure getUuid() returns the correct value
+						.filter(Objects::nonNull)
+						.collect(Collectors.toList());
+				criteria.setOwnerIds(ownerIds);
+			}
+
+			UserResponse userDetailResponse = userService.getUser(criteria, info);
+			bookingDetail.setOwners(userDetailResponse.getUser());
+		}
+
 		// Fetch remaining timer values for the booking details
 		// paymentTimerService.getRemainingTimerValue(bookingDetails);
 
@@ -375,6 +397,10 @@ public class BookingServiceImpl implements BookingService {
 					"Booking no not valid. Failed to update booking status for : " + bookingNo);
 		}
 
+		List<OwnerInfo> owners = bookingDetails.get(0).getOwners();
+		if (owners != null) {
+			userService.createUser(advertisementBookingRequest.getRequestInfo(),advertisementBookingRequest.getBookingApplication());
+		}
 		// String tenantId = bookingDetails.get(0).getTenantId();
 		// Object mdmsData =
 		// mdmsUtil.mDMSCall(advertisementBookingRequest.getRequestInfo(), tenantId);
@@ -424,6 +450,8 @@ public class BookingServiceImpl implements BookingService {
 			log.error("Workflow transition on update failed for booking {}", bookingNo, ex);
 		}
 
+
+
 		// Enrich (audit/payment date), and conditionally avoid overriding WF status
 		enrichmentService.enrichUpdateBookingRequest(advertisementBookingRequest, usedWorkflow ? null : status);
 
@@ -433,6 +461,9 @@ public class BookingServiceImpl implements BookingService {
 			advertisementBookingRequest.getBookingApplication().setReceiptNo(paymentDetail.getReceiptNumber());
 			advertisementBookingRequest.getBookingApplication().setPaymentDate(paymentDetail.getReceiptDate());
 		}
+
+
+
 		bookingRepository.updateBooking(advertisementBookingRequest);
 		log.info("fetched booking detail and updated status "
 				+ advertisementBookingRequest.getBookingApplication().getBookingStatus());
@@ -535,6 +566,7 @@ public class BookingServiceImpl implements BookingService {
 	public BookingDetail createAdvertisementDraftApplication(BookingRequest bookingRequest) {
 
 		String draftId = bookingRequest.getBookingApplication().getDraftId();
+		userService.createUser(bookingRequest.getRequestInfo(),bookingRequest.getBookingApplication());
 
 		if (StringUtils.isNotBlank(draftId)) {
 
@@ -556,6 +588,7 @@ public class BookingServiceImpl implements BookingService {
 			}
 
 		}
+
 
 		// Return the enriched booking application object
 		return bookingRequest.getBookingApplication();

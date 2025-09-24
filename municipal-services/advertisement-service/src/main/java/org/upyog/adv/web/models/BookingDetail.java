@@ -53,11 +53,16 @@ public class BookingDetail {
 	@JsonProperty("bookingStatus")
 	private String bookingStatus;
 
+	@JsonProperty("owners")
+	private List<OwnerInfo> owners;
+
 	private String receiptNo;
 
 	private String permissionLetterFilestoreId;
 
 	private String paymentReceiptFilestoreId;
+
+
 
 	@NotNull
 	@Valid

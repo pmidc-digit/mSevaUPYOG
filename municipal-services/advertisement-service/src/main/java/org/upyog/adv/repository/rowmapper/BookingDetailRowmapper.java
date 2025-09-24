@@ -32,11 +32,15 @@ public class BookingDetailRowmapper implements ResultSetExtractor<List<BookingDe
 			String bookingId = rs.getString("booking_id");
 			String bookingNo = rs.getString("booking_no");
 			String tenantId = rs.getString("tenant_id");
+
+
 			BookingDetail currentBooking = bookingDetailMap.get(bookingId);
 			if (currentBooking == null) {
 				currentBooking = BookingDetail.builder().bookingId(bookingId).bookingNo(bookingNo)
 						.applicationDate(rs.getLong("application_date"))
 						.tenantId(tenantId)
+
+
 						//TODO : check payment_date
 						.bookingStatus(rs.getString("booking_status"))
 						.paymentDate(rs.getLong("payment_date"))

@@ -1,6 +1,7 @@
 package org.upyog.adv.service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
@@ -14,10 +15,7 @@ import org.upyog.adv.enums.BookingStatusEnum;
 import org.upyog.adv.repository.BookingRepository;
 import org.upyog.adv.repository.IdGenRepository;
 import org.upyog.adv.util.BookingUtil;
-import org.upyog.adv.web.models.AdvertisementDraftDetail;
-import org.upyog.adv.web.models.AuditDetails;
-import org.upyog.adv.web.models.BookingDetail;
-import org.upyog.adv.web.models.BookingRequest;
+import org.upyog.adv.web.models.*;
 import org.upyog.adv.web.models.idgen.IdResponse;
 
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +29,9 @@ public class EnrichmentService {
 
 	@Autowired
 	private IdGenRepository idGenRepository;
+
+	@Autowired
+	UserService userService;
 	
 	@Autowired
 	@Lazy
@@ -122,12 +123,35 @@ public class EnrichmentService {
 			);
 
 		BookingDetail bookingDetail = bookingRequest.getBookingApplication();
+
+
+
+		AdvertisementSearchCriteria criteria = new AdvertisementSearchCriteria();
+		criteria.setTenantId(bookingDetail.getTenantId());
+		String bookingId = bookingDetail.getBookingId();
+		List<OwnerInfo> owners = bookingRepository.getOwnerByBookingId(bookingId);
+
+
+		if (owners != null && !owners.isEmpty()) {
+			List<String> ownerIds = owners.stream()
+					.map(OwnerInfo::getUuid) // Ensure getUuid() returns non-null values
+					.filter(Objects::nonNull) // Optional: avoid nulls
+					.collect(Collectors.toList());
+
+			System.out.println("Owner UUIDs: " + ownerIds); // Debug log
+
+			criteria.setOwnerIds(ownerIds);
+		}
+		UserResponse userDetailResponse = userService.getUser(criteria,bookingRequest.getRequestInfo());
+		bookingDetail.setOwners(userDetailResponse.getUser());
+
 		if(statusEnum != null) {
 			bookingDetail.setBookingStatus(statusEnum.toString());
 			bookingDetail.getCartDetails().stream().forEach(cart -> {
 				cart.setStatus(statusEnum.toString());
 			});
 		}
+
 		bookingRequest.getBookingApplication().setPaymentDate(auditDetails.getLastModifiedTime());
 		bookingRequest.getBookingApplication().setAuditDetails(auditDetails);
 		

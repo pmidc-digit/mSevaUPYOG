@@ -301,6 +301,12 @@ public class AdvertisementBookingQueryBuilder {
 		return query;
 	}
 
+	public String getOwnerUuidsQuery(List<String> bookingIds) {
+		StringBuilder builder = new StringBuilder("select * from public.eg_adv_owner where booking_id in (");
+		builder.append(createQueryParams(bookingIds)).append(")");
+		return builder.toString();
+	}
+
 
 	private void appendDateFilters(AdvertisementSearchCriteria criteria, List<Object> preparedStmtList, StringBuilder builder) {
 	    if (criteria.getFromDate() != null && criteria.getToDate() != null) {
@@ -335,6 +341,7 @@ public class AdvertisementBookingQueryBuilder {
 			queryString.append(" AND");
 		}
 	}
+
 
 	/**
 	 * add values to the preparedStatment List

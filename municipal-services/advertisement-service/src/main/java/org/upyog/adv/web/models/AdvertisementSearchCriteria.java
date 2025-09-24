@@ -52,6 +52,9 @@ public class AdvertisementSearchCriteria {
     @JsonProperty("limit")
     private Integer limit;
 
+    @JsonIgnore
+    private List<String> ownerIds;
+
     @ValidDate
     @JsonProperty("fromDate")
     private String fromDate;

@@ -1,11 +1,8 @@
 package org.upyog.adv.repository.impl;
 
+import java.security.acl.Owner;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -15,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,17 +30,9 @@ import org.upyog.adv.repository.rowmapper.BookingCartDetailRowmapper;
 import org.upyog.adv.repository.rowmapper.BookingDetailIdRowmapper;
 import org.upyog.adv.repository.rowmapper.BookingDetailRowmapper;
 import org.upyog.adv.repository.rowmapper.DocumentDetailsRowMapper;
+import org.upyog.adv.service.UserService;
 import org.upyog.adv.util.BookingUtil;
-import org.upyog.adv.web.models.AdvertisementDraftDetail;
-import org.upyog.adv.web.models.AdvertisementSearchCriteria;
-import org.upyog.adv.web.models.AdvertisementSlotAvailabilityDetail;
-import org.upyog.adv.web.models.AdvertisementSlotSearchCriteria;
-import org.upyog.adv.web.models.AuditDetails;
-import org.upyog.adv.web.models.BookingDetail;
-import org.upyog.adv.web.models.BookingRequest;
-import org.upyog.adv.web.models.CartDetail;
-import org.upyog.adv.web.models.DocumentDetail;
-import org.upyog.adv.web.models.PersisterWrapper;
+import org.upyog.adv.web.models.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -79,6 +69,9 @@ public class BookingRepositoryImpl implements BookingRepository {
 	@Autowired
 	private ObjectMapper objectMapper;
 
+	@Autowired
+	UserService userService;
+
 	@Override
 	public void saveBooking(BookingRequest bookingRequest) {
 		log.info("Saving Advertisement booking request data for booking no : "
@@ -86,6 +79,17 @@ public class BookingRepositoryImpl implements BookingRepository {
 		producer.push(bookingConfiguration.getAdvertisementBookingSaveTopic(), bookingRequest);
 
 	}
+
+
+	public List<OwnerInfo> getOwnerByBookingId(String bookingId) {
+//		String sql = "SELECT * FROM eg_adv_owner WHERE booking_id = ?";
+		List<String> bookingIds = new ArrayList<>();
+		bookingIds.add(bookingId);
+		String query = queryBuilder.getOwnerUuidsQuery(bookingIds);
+		return jdbcTemplate.query(query, new Object[]{bookingId}, new BeanPropertyRowMapper<>(OwnerInfo.class));
+	}
+
+
 
 	@Override
 	public List<BookingDetail> getBookingDetails(AdvertisementSearchCriteria bookingSearchCriteria) {
@@ -96,13 +100,18 @@ public class BookingRepositoryImpl implements BookingRepository {
 		log.info("preparedStmtList :  " + preparedStmtList);
 		List<BookingDetail> bookingDetails = jdbcTemplate.query(query, preparedStmtList.toArray(), bookingRowmapper);
 
+
+
 	log.info("Fetched booking details size : " + (bookingDetails != null ? bookingDetails.size() : null));
 
 	if (bookingDetails == null || bookingDetails.isEmpty()) {
 	    return bookingDetails;
 	}
 
-	Map<String, BookingDetail> bookingMap = bookingDetails.stream()
+
+
+
+		Map<String, BookingDetail> bookingMap = bookingDetails.stream()
 		.collect(Collectors.toMap(BookingDetail::getBookingId, Function.identity(), (left, right) -> left, HashMap::new));
 	log.info("Fetched booking details bookingMap : " + bookingMap);
 		List<String> bookingIds = new ArrayList<String>();
@@ -546,7 +555,6 @@ public class BookingRepositoryImpl implements BookingRepository {
 		PersisterWrapper<AdvertisementDraftDetail> persisterWrapper = new PersisterWrapper<AdvertisementDraftDetail>(
 				advertisementDraftDetail);
 		producer.push(bookingConfiguration.getAdvertisementDraftApplicationUpdateTopic(), persisterWrapper);
-
 	}
 
 	public void deleteDraftApplication(String draftId) {

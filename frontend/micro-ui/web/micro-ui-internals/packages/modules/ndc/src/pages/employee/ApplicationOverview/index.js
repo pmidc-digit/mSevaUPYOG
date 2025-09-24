@@ -14,7 +14,13 @@ import {
   TLTimeLine,
   DisplayPhotos,
   StarRated,
+  FilterFormField,
+  RadioButtons,
+  CardLabel,
+  TextInput,
+  LabelFieldPair,
 } from "@mseva/digit-ui-react-components";
+import { Controller, useForm } from "react-hook-form";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
@@ -70,6 +76,11 @@ const getTimelineCaptions = (checkpoint, index, arr, t) => {
   );
 };
 
+const availableOptions = [
+  { code: "yes", name: "Yes" },
+  { code: "no", name: "No" },
+];
+
 const ApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
@@ -78,32 +89,33 @@ const ApplicationOverview = () => {
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
-
+  const { control, handleSubmit, setValue } = useForm();
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
   const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
-  const [markedPending, setMarkedPending] = useState({});
+  const [markedPending, setMarkedPending] = useState(false);
+  const [amounts, setAmounts] = useState({});
 
-  const handleMarkPending = (consumerCode) => {
+  const handleMarkPending = (consumerCode, value, index) => {
     setMarkedPending((prev) => {
-      const updated = { ...prev, [consumerCode]: !prev[consumerCode] };
+      const updated = { ...prev, [consumerCode]: value === "yes" };
 
       if (updated[consumerCode]) {
         console.log("✅ Marked dues pending for", consumerCode);
         // TODO: Call API to mark as pending
       } else {
-        console.log("↩️ Undo marking dues pending for", consumerCode);
+        setAmounts((prevAmounts) => ({
+          ...prevAmounts,
+          [consumerCode]: 0, // ✅ Reset dues to zero when "No" is selected
+        }));
+        setValue(`amount[${index}]`, 0);
         // TODO: Call API to undo marking
       }
 
       return updated;
     });
   };
-
-  useEffect(() => {
-    console.log("markedPending", markedPending);
-  }, [markedPending]);
 
   const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
 
@@ -224,6 +236,7 @@ const ApplicationOverview = () => {
         status: item?.status || "",
         dueAmount: item?.dueAmount || 0,
         propertyType: item?.additionalDetails?.propertyType || "",
+        isDuePending: item?.isDuePending,
       }));
 
       setDisplayData({ applicantData, Documents, NdcDetails });
@@ -242,12 +255,13 @@ const ApplicationOverview = () => {
     const payload = {
       Licenses: [action],
     };
+    const appNo = displayData?.applicantData?.applicationNo;
     if (action?.action == "APPLY") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      const appNo = displayData?.applicantData?.applicationNo;
-
       history.push(`/digit-ui/employee/payment/collect/NDC/${appNo}/${tenantId}?tenantId=${tenantId}`);
+    } else if (action?.action == "EDIT") {
+      history.push(`/digit-ui/employee/ndc/create/${appNo}`);
     } else {
       setShowModal(true);
       setSelectedAction(action);
@@ -257,18 +271,27 @@ const ApplicationOverview = () => {
   const submitAction = async (data) => {
     // setShowModal(false);
     // setSelectedAction(null);
+
     const payloadData = applicationDetails?.Applications[0];
 
     const updatedApplicant = {
       ...payloadData,
-      NdcDetails: payloadData.NdcDetails.map((detail) => ({
-        ...detail,
-        isDuePending: markedPending[detail.consumerCode] || false,
-      })),
+      NdcDetails: payloadData.NdcDetails.map((detail) => {
+        const isPending = markedPending[detail.consumerCode]; // ✅ define inside map
+
+        return {
+          ...detail,
+          isDuePending: isPending ?? detail.isDuePending ?? false,
+          dueAmount:
+            isPending === false
+              ? 0 // ✅ Force 0 when "No"
+              : amounts?.[detail.consumerCode] !== undefined
+              ? Number(amounts[detail.consumerCode]) // from input box
+              : detail?.dueAmount || 0, // fallback to API value
+        };
+      }),
       workflow: {},
     };
-
-    console.log("updatedApplicant", updatedApplicant);
 
     const filtData = data?.Licenses?.[0];
     updatedApplicant.workflow = {
@@ -277,8 +300,6 @@ const ApplicationOverview = () => {
       comment: filtData?.comment,
       documents: filtData?.wfDocuments,
     };
-
-    console.log("filtData action", filtData.action);
 
     if (
       !filtData?.assignee &&
@@ -301,7 +322,9 @@ const ApplicationOverview = () => {
     const finalPayload = {
       Applications: [updatedApplicant],
     };
-    return;
+
+    // return;
+
     try {
       const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
 
@@ -409,10 +432,11 @@ const ApplicationOverview = () => {
           const isPT = detail?.businessService === "NDC_PROPERTY_TAX";
           const isSW = detail?.businessService === "NDC_SEWERAGE_SERVICE_CONNECTION";
           const isWS = detail?.businessService === "NDC_WATER_SERVICE_CONNECTION";
-
           const canRaiseFlag = (isPT && userRoles?.includes("NDC_PT_VERIFIER")) || ((isSW || isWS) && userRoles?.includes("NDC_WS_SW_VERIFIER"));
 
-          const isMarked = markedPending[detail.consumerCode];
+          const isMarked = markedPending[detail.consumerCode] || detail?.isDuePending;
+          const dueAmount = amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0;
+          const isRed = detail.dueAmount > 0;
 
           return (
             <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
@@ -420,7 +444,87 @@ const ApplicationOverview = () => {
                 <Row label={t("NDC_BUSINESS_SERVICE")} text={t(`${detail.businessService}`) || detail.businessService} />
                 <Row label={t("NDC_CONSUMER_CODE")} text={detail.consumerCode || "N/A"} />
                 {/* <Row label={t("NDC_STATUS")} text={t(detail.status) || detail.status} /> */}
-                <Row label={t("NDC_DUE_AMOUNT")} text={detail.dueAmount?.toString() || "0"} />
+
+                {(!canRaiseFlag || !isMarked) && (
+                  <div
+                    style={{
+                      background: isRed ? "red" : "none",
+                      color: isRed ? "white" : "black",
+                      paddingTop: isRed ? "8px" : "0",
+                      paddingLeft: isRed ? "10px" : "0",
+                    }}
+                  >
+                    <Row
+                      label={t("NDC_DUE_AMOUNT")}
+                      // text={detail.dueAmount?.toString() || "0"}
+                      text={(markedPending[detail.consumerCode] === false
+                        ? "0"
+                        : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0
+                      ).toString()}
+                    />
+                  </div>
+                )}
+
+                {canRaiseFlag && isMarked && (
+                  <div>
+                    <Row
+                      label="Due Amount"
+                      text={
+                        <Controller
+                          key={index}
+                          control={control}
+                          name={`amount[${index}]`}
+                          defaultValue={markedPending[detail.consumerCode] === false ? 0 : amounts?.[detail.consumerCode] ?? detail?.dueAmount ?? 0}
+                          render={(props) => (
+                            <TextInput
+                              type="number"
+                              value={props.value}
+                              onChange={(e) => {
+                                props.onChange(e.target.value);
+                                const newValue = e.target.value;
+                                setAmounts((prev) => ({
+                                  ...prev,
+                                  [detail.consumerCode]: newValue,
+                                }));
+                              }}
+                              style={{ maxWidth: "200px" }}
+                              onBlur={props.onBlur}
+                              disabled={markedPending[detail.consumerCode] === false}
+                            />
+                          )}
+                        />
+                      }
+                    />
+                    {/* <LabelFieldPair>
+                      <CardLabel style={{ width: "100%", maxWidth: "360px" }} className="card-label-smaller ndc_card_labels">
+                        <b>Due Amount</b>
+                      </CardLabel>
+                      <Controller
+                        key={index}
+                        control={control}
+                        name={`amount[${index}]`}
+                        defaultValue={detail?.dueAmount || ""}
+                        render={(props) => (
+                          <TextInput
+                            type="number"
+                            value={props.value}
+                            onChange={(e) => {
+                              props.onChange(e.target.value);
+                              const newValue = e.target.value;
+                              setAmounts((prev) => ({
+                                ...prev,
+                                [detail.consumerCode]: newValue,
+                              }));
+                            }}
+                            style={{ maxWidth: "200px" }}
+                            onBlur={props.onBlur}
+                          />
+                        )}
+                      />
+                    </LabelFieldPair> */}
+                  </div>
+                )}
+
                 <Row label={t("NDC_PROPERTY_TYPE")} text={t(detail.propertyType) || detail.propertyType} />
                 {isPT && propertyDetailsFetch?.Properties && (
                   <>
@@ -443,15 +547,34 @@ const ApplicationOverview = () => {
                 <div
                   style={{
                     marginTop: "16px",
-                    display: "flex",
-                    justifyContent: "right",
                   }}
                 >
-                  <SubmitBar
+                  <CardLabel className="card-label-smaller ndc_card_labels">
+                    <b> Pending Dues</b>
+                  </CardLabel>
+                  <FilterFormField className="radioButtonSection">
+                    <Controller
+                      name={`assignee${index}`}
+                      control={control}
+                      defaultValue={detail?.isDuePending ? "yes" : "no"}
+                      render={(props) => (
+                        <RadioButtons
+                          onSelect={(e) => {
+                            props.onChange(e.code);
+                            handleMarkPending(detail.consumerCode, e.code, index);
+                          }}
+                          selectedOption={availableOptions.filter((option) => option.code === props.value)[0]}
+                          optionsKey="name"
+                          options={availableOptions}
+                        />
+                      )}
+                    />
+                  </FilterFormField>
+                  {/* <SubmitBar
                     label={isMarked ? "Undo Mark Pending" : "Mark Dues Pending"}
                     onSubmit={() => handleMarkPending(detail?.consumerCode)}
                     // disabled={markedPending[detail.consumerCode]}
-                  />
+                  /> */}
                 </div>
               )}
             </div>

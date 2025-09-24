@@ -12,7 +12,7 @@ import {
   CardSectionHeader,
   Loader,
   CardLabelError,
-  UploadFile
+  UploadFile,
 } from "@mseva/digit-ui-react-components";
 
 const NOCSpecificationDetails = (_props) => {
@@ -23,6 +23,20 @@ const NOCSpecificationDetails = (_props) => {
   const [selectedBuildingCategory, setSelectedBuildingCategory] = useState(currentStepData?.siteDetails?.specificationBuildingCategory || null);
 
   const { data: buildingCategory, isLoading: isLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
+  const { data: nocType, isLoading: isNocTypeLoading,  } = Digit.Hooks.noc.useNocType(stateId);
+
+ // console.log("nocType here", nocType);
+
+  const options = [
+    {
+      code: "YES",
+      i18nKey: "YES",
+    },
+    {
+      code: "NO",
+      i18nKey: "NO",
+    },
+  ];
 
   useEffect(() => {
     console.log("currentStepData4", currentStepData);
@@ -34,7 +48,6 @@ const NOCSpecificationDetails = (_props) => {
       });
     }
   }, [currentStepData, setValue]);
-
 
   return (
     <React.Fragment>
@@ -85,14 +98,16 @@ const NOCSpecificationDetails = (_props) => {
               name={"specificationBuildingCategory"}
               rules={{ required: t("REQUIRED_FIELD") }}
               render={(props) => (
-                <Dropdown className="form-field" 
-                select={(e)=>{
-                  setSelectedBuildingCategory(e);
-                  props.onChange(e)
-                }} 
-                selected={props.value} 
-                option={buildingCategory} 
-                optionKey="name" />
+                <Dropdown
+                  className="form-field"
+                  select={(e) => {
+                    setSelectedBuildingCategory(e);
+                    props.onChange(e);
+                  }}
+                  selected={props.value}
+                  option={buildingCategory}
+                  optionKey="name"
+                />
               )}
             />
           )}
@@ -101,6 +116,65 @@ const NOCSpecificationDetails = (_props) => {
         <CardLabelError style={errorStyle}>
           {errors?.specificationBuildingCategory ? errors.specificationBuildingCategory.message : ""}
         </CardLabelError>
+
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_NOC_TYPE_LABEL")}`}*</CardLabel>
+            {!isNocTypeLoading && (
+                <Controller
+                  control={control}
+                  name={"specificationNocType"}
+                  rules={{
+                    required: t("REQUIRED_FIELD"),
+                  }}
+                  render={(props) => (
+                  <Dropdown className="form-field" select={props.onChange} selected={props.value} option={nocType} optionKey="name" />
+              )}
+              />
+            )}
+        </LabelFieldPair>
+        <CardLabelError style={errorStyle}>{errors?.specificationNocType?.message || ""}</CardLabelError>
+
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_RESTRICTEED_AREA_LABEL")}`} *</CardLabel>
+          <Controller
+            control={control}
+            name={"specificationRestrictedArea"}
+            rules={{
+              required: t("REQUIRED_FIELD"),
+            }}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                select={props.onChange}
+                selected={props.value}
+                option={options}
+                optionKey="i18nKey"
+              />
+            )}
+          />
+        </LabelFieldPair>
+        <CardLabelError style={errorStyle}>{errors?.specificationRestrictedArea?.message || ""}</CardLabelError>
+
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")}`} *</CardLabel>
+          <Controller
+            control={control}
+            name={"specificationIsSiteUnderMasterPlan"}
+            rules={{
+              required: t("REQUIRED_FIELD"),
+            }}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                select={props.onChange}
+                selected={props.value}
+                option={options}
+                optionKey="i18nKey"
+              />
+            )}
+          />
+        </LabelFieldPair>
+        <CardLabelError style={errorStyle}>{errors?.specificationIsSiteUnderMasterPlan?.message || ""}</CardLabelError>
       </div>
     </React.Fragment>
   );

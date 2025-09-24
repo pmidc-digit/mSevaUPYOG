@@ -69,18 +69,18 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         
       } else {
         console.error("Submission failed, not moving to next step.", res?.response);
-        setError(res?.Errors?.[0]?.message || "Update failed, Please try again");
+        setError("Update failed due to some error occurred, plz try after some time");
         setShowToast(true);
         
       }
-   }catch(e){
+   }catch(error){
       //  alert(`Error: ${error?.message}`);
-     setError(res?.Errors?.[0]?.message || "Update failed due to some error occurred");
+     console.log("errors here in goNext - catch block", error);
+     setError("Update failed due to some error occurred, plz try again");
      setShowToast(true);
    }
 
-    
-   
+
   }
 
   const onSubmit= async (data, selectedAction)=>{
@@ -89,16 +89,20 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     const finalPayload = mapToNOCPayload(data, selectedAction);
     console.log("finalPayload here==>", finalPayload);
     
+    try{
     const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
     //dispatch(RESET_NOC_NEW_APPLICATION_FORM());
     if (response?.ResponseInfo?.status === "successful") {
           console.log("success: Update API ")
           dispatch(RESET_NOC_NEW_APPLICATION_FORM());
           return { isSuccess: true, response };
-
-    } else {
-          console.log("Error: Update API");
+     } else {
           return { isSuccess: false, response };
+     }
+
+    }catch(error){
+      console.log("Error: Update API in onSubmit-catch block");
+      return { isSuccess: false, error };
     }
   }
 
@@ -188,16 +192,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
 
   return (
     <React.Fragment>
-      {/* <FormComposer
-        defaultValues={currentStepData}
-        config={config.currStepConfig}
-        onSubmit={goNext}
-        onFormValueChange={onFormValueChange}
-        label={t(`${config.texts.submitBarLabel}`)}
-        currentStep={config.currStepNumber}
-        onBackClick={onGoBack}
-      /> */}
-
+ 
       <NOCSummary onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t}/>
 
       {actions && (

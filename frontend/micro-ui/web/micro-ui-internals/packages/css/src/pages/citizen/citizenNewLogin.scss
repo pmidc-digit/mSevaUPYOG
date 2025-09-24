@@ -1,0 +1,139 @@
+.login-container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .login-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    --bg-opacity: 1;
+    background-color: #fff;
+    background-color: rgba(255, 255, 255, var(--bg-opacity));
+    margin: 8px;
+    padding: 16px 16px 24px;
+    -webkit-box-shadow: 0 0 5px 0 rgba(34, 34, 34, 0.43922);
+    box-shadow: 0 0 5px 0 rgba(34, 34, 34, 0.43922);
+    border-radius: 4px;
+    width: 100%;
+    max-width: 50vw;
+
+    .login-title {
+      width: 100%;
+      max-width: 525px;
+      font-size: 24px;
+      color: #0b0c0c;
+      font-weight: 600;
+      text-align: start;
+    }
+
+    .lag-loc-wrapper {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      max-width: 540px;
+      gap: 30px;
+
+      .location-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        max-width: 260px;
+
+        .select {
+          display: flex;
+          align-items: center;
+          border: 1px solid #b4b4b4 !important;
+          background-color: rgba(255, 255, 255, var(--bg-opacity));
+          border-radius: 8px;
+        }
+
+        .select-active {
+          border-radius: 8px !important;
+        }
+      }
+
+      .language-wrapper {
+        width: 100%;
+        max-width: 260px;
+      }
+    }
+
+    .label {
+      font-weight: 500;
+      font-size: 16px;
+      line-height: 25px;
+      color: #686677;
+
+      span {
+        color: #ff1515;
+      }
+    }
+
+    .input-wrapper {
+      width: 100%;
+      max-width: 540px;
+
+      .submit-bar,
+      .submit-bar-disabled {
+        width: 100%;
+        max-width: 540px;
+      }
+
+      .card-label {
+        font-weight: 500 !important;
+        font-size: 16px !important;
+        line-height: 25px !important;
+        color: #686677 !important;
+      }
+
+      &.hide-submit-buttons + .submit-bar,
+      &.hide-submit-buttons + .submit-bar-disabled {
+        display: none !important;
+      }
+    }
+
+    .account-link {
+      font-size: 16px;
+      font-weight: 400;
+      line-height: 25px;
+      text-align: center;
+    }
+
+    .link {
+      color: #1778ff;
+      text-decoration: underline;
+    }
+
+    .resendIn {
+      font-size: 16px;
+      font-weight: 500;
+      color: #686677;
+      text-align: right;
+
+      span {
+        color: #1778ff;
+      }
+    }
+
+    .resend {
+      text-align: right;
+      cursor: pointer;
+      font-weight: 700;
+    }
+  }
+}
+
+@media (max-width: 700px) {
+  .login-container {
+    .login-wrapper {
+      .lag-loc-wrapper {
+        flex-direction: column;
+        gap: 0px;
+      }
+    }
+  }
+}

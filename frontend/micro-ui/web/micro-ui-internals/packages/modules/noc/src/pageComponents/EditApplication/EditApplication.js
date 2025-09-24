@@ -81,8 +81,12 @@ const EditApplication = () => {
   const step = formState.step;
 
   //Makesure to pass tenantId correctly
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  //const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  let tenantId;
+  if(window.location.pathname.includes("employee")){
+   tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }else{
+   tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  }
   console.log("tenantId here", tenantId);
 
   const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);

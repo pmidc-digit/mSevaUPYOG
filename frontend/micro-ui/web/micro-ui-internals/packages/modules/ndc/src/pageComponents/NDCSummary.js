@@ -19,6 +19,8 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
   let docs = formData?.DocummentDetails?.documents?.documents;
 
+  const appId = formData?.apiData?.Applications?.[0]?.uuid || formData?.responseData?.[0]?.uuid;
+
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
@@ -38,7 +40,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
     const payload = {
       CalculationCriteria: [
         {
-          applicationNumber: formData?.apiData?.Applications?.[0]?.uuid,
+          applicationNumber: appId,
           tenantId: tenantId,
         },
       ],
@@ -54,7 +56,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
-    id: formData?.apiData?.Applications?.[0]?.uuid,
+    id: appId,
     moduleCode: "ndc-services",
   });
 
@@ -74,6 +76,8 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
   }
 
   console.log("workflowDetails", workflowDetails?.data?.nextActions);
+
+  console.log("actions", actions);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -163,7 +167,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
         {renderLabel(t("Property ID"), formData?.NDCDetails?.cpt?.id)}
         {renderLabel(
-          t("Amount"),
+          t("Application Fees"),
           getData?.totalAmount ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(getData?.totalAmount) : "NA"
         )}
       </div>

@@ -709,6 +709,105 @@ const basementAreaValues= watch("basementArea");
             </div>
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{errors?.villageName?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("NOC_SITE_COLONY_NAME_LABEL")}`}*</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="colonyName"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.colonyName?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("NOC_SITE_VASIKA_NO_LABEL")}`}*</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="vasikaNumber"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.vasikaNumber?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("NOC_SITE_KHEWAT_AND_KHATUNI_NO_LABEL")}`}*</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="khewatAndKhatuniNo"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  // minLength: {
+                  //   value: 4,
+                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
+                  // },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.khewatAndKhatuniNo?.message || ""}</CardLabelError>
         </div>
         <BreakLine />
       </div>

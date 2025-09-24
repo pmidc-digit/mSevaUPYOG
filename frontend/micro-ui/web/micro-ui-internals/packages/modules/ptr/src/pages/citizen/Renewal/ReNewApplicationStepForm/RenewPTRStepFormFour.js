@@ -97,7 +97,7 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     } = CreatedResponse;
 
     const formData = {
-      applicant: ownerDetails,
+      owner: ownerDetails,
       documents: documentWrapper?.documents?.documents || [],
       petDetails: {
         ...petDetailsFromData,
@@ -112,7 +112,7 @@ const RenewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         comments: selectedAction?.action || "",
         status: selectedAction?.action || "",
       },
-      applicantName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`,
+      ownerName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`,
       mobileNumber: ownerDetails?.mobileNumber,
     };
 

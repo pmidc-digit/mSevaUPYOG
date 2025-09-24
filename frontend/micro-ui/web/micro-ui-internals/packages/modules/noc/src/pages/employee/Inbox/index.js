@@ -12,17 +12,16 @@ const Inbox = ({ parentRoute }) => {
 
   // const tenantId = Digit.ULBService.getCurrentTenantId();
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
-  const [getFilter, setFilter] = useState();
 
   const searchFormDefaultValues = {
-    // mobileNumber: "",
-    // applicationNumber
+    mobileNumber: "",
+    applicationNo: ""
   };
 
   const filterFormDefaultValues = {
     moduleName: "noc-service",
     applicationStatus: [],
-    businessService: null,
+    businessService: "obpas_noc",
     locality: [],
     assignee: "ASSIGNED_TO_ALL",
     businessServiceArray: businessServiceList(true) || [],
@@ -52,13 +51,13 @@ const Inbox = ({ parentRoute }) => {
   const InboxObjectInSessionStorage = Digit.SessionStorage.get("NOC.INBOX");
 
   const onSearchFormReset = (setSearchFormValue) => {
-    setSearchFormValue("sourceRefId", null);
+    setSearchFormValue("mobileNumber", null);
     setSearchFormValue("applicationNo", null);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
   };
 
   const onFilterFormReset = (setFilterFormValue) => {
-    setFilterFormValue("moduleName", "bpa-services");
+    setFilterFormValue("moduleName", "noc-service");
     setFilterFormValue("applicationStatus", "");
     setFilterFormValue("locality", []);
     setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
@@ -111,18 +110,13 @@ const Inbox = ({ parentRoute }) => {
     {},
     t
   );
- 
-  //Add handleFilter here
-  const handleFilter = (filterStatus) => {
-    setFilter(filterStatus);
-  };
 
   const { isLoading: isInboxLoading, data} = Digit.Hooks.noc.useInbox({
     tenantId,
-    filters: { ...formState, getFilter },//add filter here also
+    filters: { ...formState }
   });
   
-  //console.log("data in noc==>", data);
+  console.log("data in noc==>", data);
 
   // let table = [];
   const [table, setTable] = useState([]);
@@ -179,12 +173,14 @@ const Inbox = ({ parentRoute }) => {
   );
 
   const onSearchFormSubmit = (data) => {
-    data.hasOwnProperty("") && delete data?.[""];
+    console.log("data in OnSearchFormSubmit", data);
+    data.hasOwnProperty("") && delete data?.[""]; 
     dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
     dispatch({ action: "mutateSearchForm", data });
   };
 
   const onFilterFormSubmit = (data) => {
+    console.log("data in OnFilterFormSubmit", data);
     data.hasOwnProperty("") && delete data?.[""];
     dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
     dispatch({ action: "mutateFilterForm", data });

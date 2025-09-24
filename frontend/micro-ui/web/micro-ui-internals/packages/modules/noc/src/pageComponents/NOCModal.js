@@ -122,6 +122,16 @@ const NOCModal = ({
     })();
   }, [file]);
 
+  useEffect(()=>{
+    if(action?.action === "SENDBACKTOCITIZEN"){
+      const uuid= applicationDetails?.Noc?.[0]?.auditDetails?.createdBy || null;
+      console.log("uuid here", uuid);
+      setSelectedApprover({uuid});
+    }
+  },[action]);
+
+  console.log("selectedApprover", selectedApprover);
+
   function submit(data) {
     let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
     applicationData = {

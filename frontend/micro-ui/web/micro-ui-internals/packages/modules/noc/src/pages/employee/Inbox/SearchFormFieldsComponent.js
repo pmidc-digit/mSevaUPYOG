@@ -17,7 +17,7 @@ const SearchFormFieldsComponents = ({registerRef, searchFormState, searchFieldCo
                         </SearchField>
                         <SearchField>
                             <label>{t("NOC_APPLICANT_MOBILE_NO_LABEL")}</label>
-                            <TextInput name="sourceRefId" inputRef={registerRef({})} />
+                            <TextInput name="mobileNumber" inputRef={registerRef({})} />
                         </SearchField>
                         <div className="search-action-wrapper" style={{ width: "100%" }}>
                             {searchFieldComponents}
@@ -30,12 +30,12 @@ const SearchFormFieldsComponents = ({registerRef, searchFormState, searchFieldCo
 
     return <>
         <SearchField>
-            <label>{t("NOC_APPLICATION_NUMBER_LABEL")}</label>
+            <label>{t("NOC_APPLICATION_NUMBER")}</label>
             <TextInput name="applicationNo" inputRef={registerRef({})} />
         </SearchField>
         <SearchField>
             <label>{t("NOC_APPLICANT_MOBILE_NO_LABEL")}</label>
-            <TextInput name="sourceRefId" inputRef={registerRef({})} />
+            <TextInput name="mobileNumber" inputRef={registerRef({})} />
         </SearchField>
     </>
 }

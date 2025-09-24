@@ -1,41 +1,45 @@
 import useInbox from "../useInbox";
 
 const useNOCInbox = ({ tenantId, filters, config = {} }) => {
-  const { filterForm, searchForm, tableForm } = filters;
+  console.log("filters in useInbox hook", filters);
+  
+  const { filterForm, searchForm, tableForm, getFilter } = filters;
   let { moduleName, businessService, applicationStatus, locality, assignee, businessServiceArray } = filterForm;
-  const { sourceRefId, applicationNo } = searchForm;
+  const { mobileNumber, applicationNo } = searchForm;
   const { sortBy, limit, offset, sortOrder } = tableForm;
   const user = Digit.UserService.getUser();
-  const businessServiceList = () => {
-    const availableBusinessServices = [
-      {
-        code: "FIRE_NOC_SRV",
-        active: true,
-        roles: ["FIRE_NOC_APPROVER"],
-        i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
-      },
-      {
-        code: "AIRPORT_NOC_SRV",
-        active: true,
-        roles: ["AIRPORT_AUTHORITY_APPROVER"],
-        i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV",
-      },
-    ];
-    const newAvailableBusinessServices = [],
-      loggedInUserRoles = user?.info?.roles || [];
-    availableBusinessServices.map(({ roles }, index) => {
-      roles.map((role) => {
-        loggedInUserRoles.map((el) => {
-          if (el.code === role) newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code);
-        });
-      });
-    });
-    return newAvailableBusinessServices;
-  };
+  
+  console.log("user here in useInbox", user);
+  // const businessServiceList = () => {
+  //   const availableBusinessServices = [
+  //     {
+  //       code: "FIRE_NOC_SRV",
+  //       active: true,
+  //       roles: ["FIRE_NOC_APPROVER"],
+  //       i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
+  //     },
+  //     {
+  //       code: "AIRPORT_NOC_SRV",
+  //       active: true,
+  //       roles: ["AIRPORT_AUTHORITY_APPROVER"],
+  //       i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV",
+  //     },
+  //   ];
+  //   const newAvailableBusinessServices = [],
+  //     loggedInUserRoles = user?.info?.roles || [];
+  //   availableBusinessServices.map(({ roles }, index) => {
+  //     roles.map((role) => {
+  //       loggedInUserRoles.map((el) => {
+  //         if (el.code === role) newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code);
+  //       });
+  //     });
+  //   });
+  //   return newAvailableBusinessServices;
+  // };
 
-  if (!businessServiceArray?.length && !businessService) {
-    businessServiceArray = businessServiceList(true);
-  }
+  // if (!businessServiceArray?.length && !businessService) {
+  //   businessServiceArray = businessServiceList(true);
+  // }
 
   const _filters = {
     tenantId,
@@ -43,12 +47,12 @@ const useNOCInbox = ({ tenantId, filters, config = {} }) => {
       assignee: assignee === "ASSIGNED_TO_ME" ? user?.info?.uuid : "",
       moduleName: "noc-service",
     //   businessService: businessService?.code ? [businessService?.code] : businessServiceArray,
-    //   ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
+      ...(applicationStatus?.length > 0 ? { status: applicationStatus } : {}),
       businessService:["obpas_noc"],
     },
     
     moduleSearchCriteria: {
-      ...(sourceRefId ? { sourceRefId } : {}),
+      ...(mobileNumber ? { mobileNumber } : {}),
       ...(applicationNo ? { applicationNo } : {}),
       ...(sortOrder ? { sortOrder } : {}),
       ...(sortBy ? { sortBy } : {}),

@@ -47,7 +47,7 @@ const useInboxMobileCardsData = ({parentRoute, table }) => {
     }
 
 
-    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/inbox/application-overview/`, serviceRequestIdKey:t("NOC_APP_NO_LABEL"), MobileSortFormValues})
+    return ({ data:dataForMobileInboxCards, linkPrefix:`${parentRoute}/inbox/application-overview/`, serviceRequestIdKey:t("NOC_APPLICATION_NUMBER"), MobileSortFormValues})
 
 }
 

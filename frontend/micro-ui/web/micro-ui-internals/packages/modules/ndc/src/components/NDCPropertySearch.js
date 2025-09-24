@@ -76,6 +76,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       setPropertyId(ptFromApi.consumerCode);
       setSearchPropertyId(ptFromApi.consumerCode);
       setNoDue(true);
+      setPropertyDues({ dues: { totalAmount: 0 } });
       onSelect(config.key, { ...formData[config.key], id: ptFromApi.consumerCode });
     }
   }, [ptFromApi]);

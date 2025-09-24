@@ -29,7 +29,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    if (checkFormData?.apiData?.Applications?.[0]?.uuid) {
+    if (checkFormData?.apiData?.Applications?.[0]?.uuid || checkFormData?.responseData?.[0]?.uuid) {
       onGoNext();
     } else createApplication(data);
 

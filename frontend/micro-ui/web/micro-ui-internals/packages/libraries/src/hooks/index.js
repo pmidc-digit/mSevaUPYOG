@@ -251,6 +251,7 @@ import useBuildingType from "./noc/useBuildingType";
 import useRoadType from "./noc/useRoadType";
 import useNOCTenants from "./noc/useTenants";
 import useNOCDocumentSearch from "./noc/useNOCDocumentsSearch";
+import useNocType from "./noc/useNocType";
 
 import WSSearchMdmsTypes from "./ws/WSSearchMdmsTypes";
 import usewsTenants from "./ws/useTenants";
@@ -335,6 +336,14 @@ import useTenantsADS from "./ads/useTenants";
 import useADSDocumentsMDMS from "./ads/useADSDocumentsMDMS";
 import useADSDocumentSearch from "./ads/useADSDocumentSearch";
 import useADSDemandEstimation from "./ads/useADSDemandEstimation";
+import useADSAdTypeMDMS from "./ads/useADSAdTypeMDMS";
+import useADSTaxAmountMDMS from "./ads/useADSTaxAmountMDMS";
+import useADSLocationMDMS from "./ads/useADSLocationMDMS";
+import useADSFaceAreaMDMS from "./ads/useADSFaceAreaMDMS";
+import useADSCalculationTypeMDMS from "./ads/useADSCalculationTypeMDMS";
+import useADSAdvServicesMDMS from "./ads/useADSAdvServicesMDMS";
+import { useADSSearchApplication, useADSSearchApplicationEmployee } from "./ads/useADSSearchApplication";
+import useADSAllMDMS from "./ads/useADSAllMDMS";
 
 // ndc
 import useNDCInbox from "./ndc/useInbox";
@@ -627,6 +636,15 @@ const ads = {
   useADSSearch,
   useADSDemandEstimation,
   useADSApplicationDetail,
+  useADSAllMDMS,
+  useADSAdvServicesMDMS,
+  useADSCalculationTypeMDMS,
+useADSFaceAreaMDMS,
+  useADSLocationMDMS,
+  useADSTaxAmountMDMS,
+  useADSAdTypeMDMS,
+  useADSSearchApplication,
+  useADSSearchApplicationEmployee,
 };
 
 const chb = {
@@ -687,7 +705,8 @@ const noc = {
   useBuildingType,
   useRoadType,
   useTenants:useNOCTenants,
-  useNOCDocumentSearch
+  useNOCDocumentSearch,
+  useNocType
 };
 
 const ndc = {

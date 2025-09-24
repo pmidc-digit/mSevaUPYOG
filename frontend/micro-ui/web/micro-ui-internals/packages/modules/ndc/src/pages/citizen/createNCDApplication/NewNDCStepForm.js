@@ -62,7 +62,8 @@ export const NewNDCStepForm = () => {
   const formState = useSelector((state) => state.ndc.NDCForm);
   const formData = formState.formData;
   const step = formState.step;
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   const id = window.location.pathname.split("/").pop();
 

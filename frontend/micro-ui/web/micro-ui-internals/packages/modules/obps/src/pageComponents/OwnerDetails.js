@@ -667,12 +667,17 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
       // window.scrollTo(0, 0);
       return;
     }
+    setApiLoading(true);
     const moveforward = await getUserData()
 
-    if (!moveforward) return
+    if (!moveforward) {
+      setApiLoading(false);
+      return
+    }
 
     if (ismultiple === true && fields.length === 1) {
       window.scrollTo(0, 0)
+      setApiLoading(false);
       setError("BPA_ERROR_MULTIPLE_OWNER")
       return
     }
@@ -1141,7 +1146,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                                               }}
                                               onSubmit={onGoBack}
                                     />
-          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext}  />}
+          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading || canmovenext || getCanMoveNextMultiple() || !ownershipCategory || isDisable}/>}
       </ActionBar>
       {showToast && (
         <Toast

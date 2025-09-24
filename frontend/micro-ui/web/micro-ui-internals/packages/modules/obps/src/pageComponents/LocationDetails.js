@@ -718,7 +718,7 @@ return (
                                       }}
                                       onSubmit={onGoBack}
                             />
-           {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  />}
+           {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  disabled={!selectedCity || Pinerror || apiLoading}/>}
        </ActionBar>
   </div>
 );

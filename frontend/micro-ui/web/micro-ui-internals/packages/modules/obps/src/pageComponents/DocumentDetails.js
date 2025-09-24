@@ -233,7 +233,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
           }}
           onSubmit={onGoBack}
         />
-        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} />}
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading}/>}
       </ActionBar>
     </div>
   );

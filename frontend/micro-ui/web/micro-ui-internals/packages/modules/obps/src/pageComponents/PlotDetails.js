@@ -456,7 +456,7 @@ console.log("sessionStorageData",formData, data, currentStepData);
                       }}
                       onSubmit={onGoBack}
             />
-            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disable={apiLoading} />}
+            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading} />}
           </ActionBar>
         </FormStep>
       </div>

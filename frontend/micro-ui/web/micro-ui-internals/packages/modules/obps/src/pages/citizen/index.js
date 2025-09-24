@@ -72,7 +72,7 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`} component={BPASendBackToCitizen} />
         <PrivateRoute path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`} component={OCSendBackToCitizen} />
         <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
-        <PrivateRoute path={`${path}/response/:id`} component={SelfCertificationResponse} />
+        <PrivateRoute path={`${path}/self-certification/response/:id`} component={SelfCertificationResponse} />
       </Switch>
       </div>
     </React.Fragment>

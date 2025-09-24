@@ -1339,7 +1339,7 @@ if (anyYes && !ecbcCertificateFile) {
                                             }}
                                             onSubmit={onGoBack}
                                   />
-      <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} />
+      <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading}/>
     </ActionBar>
   </div>
   )

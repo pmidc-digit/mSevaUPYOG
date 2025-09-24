@@ -626,7 +626,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
                               }}
                               onSubmit={onGoBack}
                     />
-        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext}  />}
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading} />}
       </ActionBar>
     </React.Fragment>
   );

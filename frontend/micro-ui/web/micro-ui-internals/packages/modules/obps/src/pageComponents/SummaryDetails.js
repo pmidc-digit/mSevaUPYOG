@@ -265,6 +265,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             if (response.ResponseInfo.status === "Access Token generated successfully") {
                 setIsOTPVerified(true);
                 setOTPSuccess(t("VERIFIED"));
+                setOTPError(false);
                 const currentTimestamp = new Date();
                 setOTPVerifiedTimestamp(currentTimestamp);
                 sessionStorage.setItem("otpVerifiedTimestamp", currentTimestamp.toISOString());
@@ -345,7 +346,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         } }, tenantId)
         if(result?.ResponseInfo?.status === "successful"){
           setApiLoading(false);
-          history.push(`/digit-ui/citizen/obps/reponse/${currentStepData?.createdResponse?.applicationNo}`);
+          history.push(`/digit-ui/citizen/obps/self-certification/response/${currentStepData?.createdResponse?.applicationNo}`);
         }else{
           alert(t("BPA_CREATE_APPLICATION_FAILED"));
           setApiLoading(false);

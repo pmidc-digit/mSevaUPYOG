@@ -149,7 +149,7 @@ const BasicDetails = ({ formData, onSelect, config }) => {
             />
           </StatusTable>
           <ActionBar>
-          {riskType ? <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length} /> : <Loader />}
+          {riskType ? <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length || isLoading} /> : <Loader />}
           </ActionBar>
         </Card>
       )}

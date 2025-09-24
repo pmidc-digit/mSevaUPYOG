@@ -588,13 +588,6 @@ const PTRApplicationDetails = () => {
     }
   }
 
-  const getAcknowledgementData = async () => {
-    const applications = application || {}
-    const tenantInfo = tenants.find((tenant) => tenant.code === applications.tenantId)
-    const acknowldgementDataAPI = await getPetAcknowledgementData({ ...applications }, tenantInfo, t)
-    Digit.Utils.pdf.generate(acknowldgementDataAPI)
-    //setAcknowldgementData(acknowldgementDataAPI);
-  }
 
   let documentDate = t("CS_NA")
   if (pet_details?.additionalDetails?.documentDate) {
@@ -610,12 +603,6 @@ const PTRApplicationDetails = () => {
     window.open(fileStore[response?.filestoreIds[0]], "_blank")
   }
 
-  const handleDownload = async (document, tenantid) => {
-    const effectiveTenantId = tenantid ? tenantid : tenantId
-    const res = await Digit.UploadServices.Filefetch([document?.fileStoreId], effectiveTenantId)
-    const documentLink = pdfDownloadLink(res.data, document?.fileStoreId)
-    window.open(documentLink, "_blank")
-  }
 
   const dowloadOptions = []
 
@@ -623,6 +610,7 @@ const PTRApplicationDetails = () => {
     label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
     onClick: () => downloadAcknowledgement(),
   })
+
 
   if (reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED") {
 

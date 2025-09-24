@@ -32,6 +32,7 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
 
   // Error state
   const [errors, setErrors] = useState({});
+  console.log('errors', errors)
 
   // Sync incoming value
   useEffect(() => {

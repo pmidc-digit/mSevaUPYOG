@@ -17,6 +17,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [placeNameState, setPlaceNameState] = useState("");
   const [adsList, setAdsList] = useState([]);
   const [adsScheduleErrors, setAdsScheduleErrors] = useState({});
+  const [showToast, setShowToast] = useState(null);
 
   const [editingIndex, setEditingIndex] = useState(null);
 
@@ -336,6 +337,8 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     formState: { errors },
     getValues,
     trigger,
+    setError,
+    clearErrors,
   } = useForm({
     defaultValues: initialFormDefaults,
   });
@@ -926,7 +929,35 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const onSubmit = handleSubmit((data) => {
     if (Object.keys(adsScheduleErrors).length > 0) {
-      alert("Please fix all schedule errors before proceeding.");
+      setShowToast({
+        key: true, // or whatever truthy value your Toast expects for `error`
+        label: "Please fix all schedule errors before proceeding.",
+      });
+      // setError("siteSelection", {
+      //   type: "manual",
+      //   message: "Please fix all schedule errors before proceeding.",
+      // });
+      return;
+    }
+
+    // NEW VALIDATION: Require at least one selected site
+    // if ((mdmsCards?.length || 0) === 0 && (adsList?.length || 0) === 0) {
+    //   // setShowToast({
+    //   //   key: true,
+    //   //   label: "Please select at least one site before proceeding.",
+    //   // });
+    //   setError("siteSelection", {
+    //     type: "manual",
+    //     message: "Please select at least one site before proceeding.",
+    //   });
+    //   return;
+    // }
+
+    if ((mdmsCards?.length || 0) === 0 && (adsList?.length || 0) === 0) {
+      setError("siteSelection", {
+        type: "manual",
+        message: "Please select at least one site before proceeding.",
+      });
       return;
     }
 
@@ -1068,6 +1099,15 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       })
     );
   }, [adsScheduleMap]);
+
+  console.log("errors", errors);
+
+  useEffect(() => {
+    if ((mdmsCards?.length || 0) > 0 || (adsList?.length || 0) > 0) {
+      clearErrors("siteSelection");
+    }
+  }, [mdmsCards, adsList, clearErrors]);
+
 
   return (
     <React.Fragment>
@@ -1218,7 +1258,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               );
             }}
           />
-          {errors.siteId && <p style={{ color: "red" }}>{errors.siteId.message}</p>}
+          {errors.siteSelection && <p style={{ color: "red", marginTop: "4px" }}>{errors.siteSelection.message}</p>}
 
           <div style={{ margin: "12px 0", padding: 8, border: "1px solid #eee", borderRadius: 6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
@@ -1343,11 +1383,12 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 />
               )}
             />
-            {errors.bookingToTime && <p style={{ color: "red" }}>{errors.bookingToTime.message}</p>}
           </div>
 
           {adsForLocation.length > 0 && (
             <div style={{ margin: "12px 0" }}>
+              {errors.bookingToTime && <p style={{ color: "red" }}>{errors.bookingToTime.message}</p>}
+              {errors.scheduleValidation && <p style={{ color: "red", marginTop: "4px" }}>{errors.scheduleValidation.message}</p>}
               <div style={{ fontWeight: 600, marginBottom: 8 }}>{t ? t("ADS_IN_SELECTED_LOCATION") : "Advertisements in selected location"}</div>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -1438,6 +1479,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       </div>
 
                       <div style={{ height: 8 }} />
+                      {/* {errors.siteSelection && <p style={{ color: "red", marginTop: "0.5rem" }}>{errors.siteSelection.message}</p>} */}
 
                       <div style={{ fontSize: 11, color: "#666" }}>End</div>
                       <div style={{ display: "flex", gap: 6 }}>
@@ -1508,25 +1550,59 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                               const start = effective.startDate && effective.startTime ? `${effective.startDate}T${effective.startTime}` : "";
                               const end = effective.endDate && effective.endTime ? `${effective.endDate}T${effective.endTime}` : "";
 
+                              // if (!start || !end) {
+                              //   // alert("Please fill both start and end date & time before adding.");
+                              //   setShowToast({
+                              //     key: true,
+                              //     label: "Please fill both start and end date & time before adding.",
+                              //   });
+                              //   return;
+                              // }
+                              // if (typeof tomorrowStr !== "undefined" && (effective.startDate < tomorrowStr || effective.endDate < tomorrowStr)) {
+                              //   // alert(`Dates must be from ${tomorrowStr} or later.`);
+                              //   setShowToast({
+                              //     key: true,
+                              //     label: `Dates must be from ${tomorrowStr} or later.`,
+                              //   });
+                              //   return;
+                              // }
+
                               if (!start || !end) {
-                                alert("Please fill both start and end date & time before adding.");
-                                return;
+                                setError("scheduleValidation", {
+                                  type: "manual",
+                                  message: "Please fill both start and end date & time before adding.",
+                                });
+                                return false;
                               }
+
                               if (typeof tomorrowStr !== "undefined" && (effective.startDate < tomorrowStr || effective.endDate < tomorrowStr)) {
-                                alert(`Dates must be from ${tomorrowStr} or later.`);
-                                return;
+                                setError("scheduleValidation", {
+                                  type: "manual",
+                                  message: `Dates must be from ${tomorrowStr} or later.`,
+                                });
+                                return false;
                               }
                               const startDt = new Date(start);
                               const endDt = new Date(end);
                               if (endDt <= startDt) {
-                                alert("End date/time must be after start date/time.");
+                                // alert("End date/time must be after start date/time.");
+                                setShowToast({
+                                  key: true,
+                                  label: "End date/time must be after start date/time.",
+                                });
                                 return;
                               }
 
                               if (adsScheduleErrors[ad.id]) {
-                                alert(adsScheduleErrors[ad.id]);
+                                // alert(adsScheduleErrors[ad.id]);
+                                setShowToast({
+                                  key: true,
+                                  label: adsScheduleErrors[ad.id],
+                                });
                                 return;
                               }
+
+                              clearErrors("scheduleValidation");
 
                               const locForAd = findLocationByCode ? findLocationByCode(ad.locationCode) : null;
                               const normalizedGeoForAd =
@@ -1630,6 +1706,17 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
         {/* <button type="submit">submit</button> */}
+        {showToast && (
+          <Toast
+            error={showToast.key}
+            label={t(showToast.label)}
+            style={{ bottom: "0px" }}
+            onClose={() => {
+              setShowToast(null);
+            }}
+            isDleteBtn={true}
+          />
+        )}
       </form>
     </React.Fragment>
   );

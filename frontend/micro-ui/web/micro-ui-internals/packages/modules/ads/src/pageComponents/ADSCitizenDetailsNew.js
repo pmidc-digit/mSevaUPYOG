@@ -9,7 +9,10 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   const isEmployee = typeof window !== "undefined" && window.location?.pathname?.includes("/employee");
   const formStorageKey = `ads_form_${isEmployee ? "employee" : "citizen"}`;
   const dispatch = useDispatch();
-
+    const userInfo = Digit.UserService.getUser();
+  const { mobileNumber, emailId, name } = userInfo?.info;
+    const isCitizen = window.location.href.includes("citizen");
+      const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
   const {
     control,
     handleSubmit,
@@ -20,10 +23,10 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   } = useForm({
     mode: "onChange",
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      emailId: "",
-      mobileNumber: "",
+     firstName: isCitizen ? (firstName || "") : "",
+    lastName: isCitizen ? (lastName || "") : "",
+    emailId: isCitizen ? (emailId || "") : "",
+    mobileNumber: isCitizen ? (mobileNumber || "") : "",
       SGST: "",
       selfDeclaration: false,
       clientName: "",
@@ -42,6 +45,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       },
     },
   });
+
+  console.log('errors2', errors)
 
   // Prefill from Redux state
   // Prefill from Redux state
@@ -372,6 +377,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
             </div>
           )}
         />
+        
 
         <div style={{ marginTop: "20px" }}>
           <Controller

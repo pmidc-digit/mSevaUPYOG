@@ -190,6 +190,20 @@ const MyApplication = () => {
     else return "";
   };
 
+  const editApplication = (application, history) => {
+    sessionStorage.setItem("Digit.BUILDING_PERMIT", JSON.stringify({
+      value: {
+        data: {
+          scrutinyNumber:{
+            edcrNumber: application?.edcrNumber
+          },
+          applicationNo: application?.applicationNo
+        }
+      }
+    }))
+    history.push('/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/docs-required');
+  }
+
   console.log(finalData, "FINAL DATA");
 
   return (
@@ -252,7 +266,7 @@ const MyApplication = () => {
                 keyValue={t("BPA_COMMON_SLA")}
                 note={typeof application?.sla == "string" && application?.sla?.includes("NA") ? t(`${`CS_NA`}`) : application?.sla}
               />
-              {application.action === "SEND_TO_ARCHITECT" || application.status !== "INITIATED" ? (
+              {(application.action === "SEND_TO_ARCHITECT" || application.status !== "INITIATED") ? (
                 <Link to={{ pathname: `/digit-ui/citizen/obps/bpa/${application?.applicationNo}`, state: { tenantId: "" } }}>
                   <SubmitBar label={t("TL_VIEW_DETAILS")} />
                 </Link>
@@ -263,7 +277,8 @@ const MyApplication = () => {
                       <SubmitBar label={t("TL_VIEW_DETAILS")} />
                     </Link>
                   ) : (
-                    <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => getBPAFormData(application, mdmsData, history, t)} />
+                    // <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => getBPAFormData(application, mdmsData, history, t)} />
+                    <SubmitBar label={t("BPA_COMP_WORKFLOW")} onSubmit={() => {console.log("EDIT_APPLICATIOn",application, mdmsData, history, t); editApplication(application, history)}} />
                   )}
                 </div>
               )}

@@ -70,6 +70,7 @@ export const NewNDCStepForm = () => {
   const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
 
   useEffect(() => {
+    console.log("applicationDetails", applicationDetails);
     if (applicationDetails?.Applications.length) {
       dispatch(updateNDCForm("responseData", applicationDetails?.Applications));
     }

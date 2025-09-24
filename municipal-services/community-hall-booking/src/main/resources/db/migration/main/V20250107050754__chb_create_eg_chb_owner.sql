@@ -24,4 +24,4 @@ CREATE TABLE eg_chb_owner (
 );
 
 CREATE INDEX idx_eg_chb_owner_booking_id ON eg_chb_owner (booking_id);
-CREATE INDEX idx_eg_ndc_owner_tenantid ON eg_chb_owner (tenantid);
+CREATE INDEX idx_eg_chb_owner_tenantid ON eg_chb_owner (tenantid);

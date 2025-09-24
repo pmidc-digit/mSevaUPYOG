@@ -1,6 +1,6 @@
 {
   "name": "@mseva/digit-ui-module-ws",
-  "version": "1.0.5",
+  "version": "1.0.7",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/Module.js",
@@ -17,7 +17,7 @@
     "react-router-dom": "5.3.0"
   },
   "dependencies": {
-    "@mseva/digit-ui-react-components": "1.0.5",
+    "@mseva/digit-ui-react-components": "1.0.6",
     "microbundle-crl": "^0.13.11",
     "react": "17.0.2",
     "react-dom": "17.0.2",

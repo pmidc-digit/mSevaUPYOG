@@ -166,56 +166,60 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     ];
 
     // Prepare NdcDetails
-    const ndcDetails = [];
+    let ndcDetails = [];
 
-    // Add each water connection to NdcDetails
-    (data?.PropertyDetails?.waterConnection || []).forEach((wc) => {
-      ndcDetails.push({
-        uuid: wc?.billData?.id,
-        applicantId: applicantId,
-        businessService: "WS",
-        consumerCode: wc?.connectionNo,
-        additionalDetails: {
-          propertyAddress: data?.PropertyDetails?.address,
-          propertyType: data?.cpt?.details?.usageCategory,
-          // connectionType: wc?.billData,
-          // meterNumber: "NOT_AVAILABLE"
-        },
-        dueAmount: wc?.billData?.totalAmount || 0,
-        status: wc?.billData?.status,
+    if (checkFormData?.responseData?.[0]?.NdcDetails?.length > 0) {
+      ndcDetails = checkFormData.responseData[0].NdcDetails;
+    } else {
+      // Add each water connection to NdcDetails
+      (data?.PropertyDetails?.waterConnection || [])?.forEach((wc) => {
+        ndcDetails.push({
+          uuid: wc?.billData?.id,
+          applicantId: applicantId,
+          businessService: "WS",
+          consumerCode: wc?.connectionNo,
+          additionalDetails: {
+            propertyAddress: data?.PropertyDetails?.address,
+            propertyType: data?.cpt?.details?.usageCategory,
+            // connectionType: wc?.billData,
+            // meterNumber: "NOT_AVAILABLE"
+          },
+          dueAmount: wc?.billData?.totalAmount || 0,
+          status: wc?.billData?.status,
+        });
       });
-    });
 
-    // Add each sewerage connection to NdcDetails
-    (data?.PropertyDetails?.sewerageConnection || []).forEach((sc) => {
-      ndcDetails.push({
-        uuid: sc?.billData?.id,
-        applicantId: applicantId,
-        businessService: "SW",
-        consumerCode: sc?.connectionNo,
-        additionalDetails: {
-          propertyAddress: data?.PropertyDetails?.address,
-          propertyType: data?.cpt?.details?.usageCategory,
-        },
-        dueAmount: sc?.billData?.totalAmount || 0,
-        status: sc?.billData?.status,
+      // Add each sewerage connection to NdcDetails
+      (data?.PropertyDetails?.sewerageConnection || [])?.forEach((sc) => {
+        ndcDetails.push({
+          uuid: sc?.billData?.id,
+          applicantId: applicantId,
+          businessService: "SW",
+          consumerCode: sc?.connectionNo,
+          additionalDetails: {
+            propertyAddress: data?.PropertyDetails?.address,
+            propertyType: data?.cpt?.details?.usageCategory,
+          },
+          dueAmount: sc?.billData?.totalAmount || 0,
+          status: sc?.billData?.status,
+        });
       });
-    });
 
-    if (data?.PropertyDetails?.propertyBillData?.billData) {
-      const billData = data?.PropertyDetails?.propertyBillData?.billData;
-      ndcDetails.push({
-        uuid: billData?.id,
-        applicantId: applicantId,
-        businessService: "PT",
-        consumerCode: data?.cpt?.id,
-        additionalDetails: {
-          propertyAddress: data?.PropertyDetails?.address,
-          propertyType: data?.cpt?.details?.usageCategory,
-        },
-        dueAmount: billData?.totalAmount || 0,
-        status: billData?.status,
-      });
+      if (data?.PropertyDetails?.propertyBillData?.billData) {
+        const billData = data?.PropertyDetails?.propertyBillData?.billData;
+        ndcDetails.push({
+          uuid: billData?.id,
+          applicantId: applicantId,
+          businessService: "PT",
+          consumerCode: data?.cpt?.id,
+          additionalDetails: {
+            propertyAddress: data?.PropertyDetails?.address,
+            propertyType: data?.cpt?.details?.usageCategory,
+          },
+          dueAmount: billData?.totalAmount || 0,
+          status: billData?.status,
+        });
+      }
     }
 
     // Final payload
@@ -238,8 +242,6 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     console.log("payload", payload);
-
-    // return;
 
     const response = await Digit.NDCService.NDCUpdate({ tenantId, details: payload });
 

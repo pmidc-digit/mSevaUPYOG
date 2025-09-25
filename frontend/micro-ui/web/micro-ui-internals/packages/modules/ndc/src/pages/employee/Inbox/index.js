@@ -146,8 +146,8 @@ const Inbox = ({ parentRoute }) => {
     headerText: `${t("MODULE_NKS_NO_DUE_CERTIFICATE_FEES")}`,
     links: [
       {
-        text: "",
-        link: "",
+        text: "Create NDC Application",
+        link: "/digit-ui/employee/ndc/create",
         accessTo: [""],
       },
     ],
@@ -223,20 +223,19 @@ const Inbox = ({ parentRoute }) => {
       {/* <section>
         <CreateNDCApplicationStep />
       </section> */}
-      <div className="NDCSection">
-        <InboxComposer
-          {...{
-            isInboxLoading,
-            PropsForInboxLinks,
-            ...propsForSearchForm,
-            ...propsForFilterForm,
-            ...propsForMobileSortForm,
-            propsForInboxTable,
-            propsForInboxMobileCards,
-            formState,
-          }}
-        />
-      </div>
+
+      <InboxComposer
+        {...{
+          isInboxLoading,
+          PropsForInboxLinks,
+          ...propsForSearchForm,
+          ...propsForFilterForm,
+          ...propsForMobileSortForm,
+          propsForInboxTable,
+          propsForInboxMobileCards,
+          formState,
+        }}
+      ></InboxComposer>
     </>
   );
 };

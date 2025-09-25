@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 // - avoids embedding TimeStamp directly inside a static comparison string
 // - safer upload with params+TimeStamp merged
 
-const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimestamp, currentStepData }) => {
+const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimestamp }) => {
   const { state } = useLocation();
   const { t } = useTranslation();
 
@@ -259,14 +259,11 @@ const selfdeclarationform = `
     try {
       setIsUploading(true);
       const paramsWithTimestamp = {
-        ...currentStepData?.createdResponse,
+        ...params,
         additionalDetails: {
-          ...currentStepData?.createdResponse?.additionalDetails,
-          TimeStamp
+          ...params?.additionalDetails,
+          TimeStamp,
         },
-        edcrDetail: {
-          ...currentStepData?.BasicDetails?.edcrDetail,
-        }
       };
 
       const result = await Digit.PaymentService.generatePdf(Digit.ULBService.getStateId(), { Bpa: [paramsWithTimestamp] }, "architectconsent");

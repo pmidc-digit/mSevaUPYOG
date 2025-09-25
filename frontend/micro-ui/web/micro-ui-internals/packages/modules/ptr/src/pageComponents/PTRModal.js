@@ -47,6 +47,7 @@ const PTRModal = ({
   const [selectedApprover, setSelectedApprover] = useState({});
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState(null);
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
@@ -105,16 +106,24 @@ const PTRModal = ({
       if (file) {
         if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+          setShowToast({ key: "error" });
+          setIsUploading(false);
         } else {
+          setUploadedFile(null);
+          setIsUploading(true);
           try {
             const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+            setIsUploading(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
               setError(t("CS_FILE_UPLOAD_ERROR"));
+              setShowToast({ key: "error" });
             }
           } catch (err) {
+            setIsUploading(false);
             setError(t("CS_FILE_UPLOAD_ERROR"));
+            setShowToast({ key: "error" });
           }
         }
       }
@@ -127,10 +136,12 @@ const PTRModal = ({
 
     let checkCommentsMandatory =
       action?.action === "APPROVE" ||
+      action?.action === "RESUBMIT" ||
       action?.action === "VERIFY" ||
       action?.action === "REJECT" ||
       action?.action === "SENDBACKTOCITIZEN" ||
-      action?.action === "FORWARD";
+      action?.action === "FORWARD" ||
+      action?.action === "SENDBACKTOVERIFIER";
 
     if (action?.isTerminateState) checkCommentsMandatory = true;
 
@@ -141,7 +152,7 @@ const PTRModal = ({
       return;
     }
 
-    let checkAssigneeMandatory = action?.action === "APPROVE" || action?.action === "VERIFY" || action?.action === "FORWARD";
+    let checkAssigneeMandatory = action?.action === "VERIFY" || action?.action === "FORWARD" || action?.action === "SENDBACKTOVERIFIER";
     if (action?.isTerminateState) checkAssigneeMandatory = false;
 
     if (checkAssigneeMandatory && !selectedApprover?.uuid) {
@@ -214,7 +225,7 @@ const PTRModal = ({
         // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
-      {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
     </Modal>
   ) : (
     <Loader />

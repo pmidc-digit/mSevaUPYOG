@@ -169,7 +169,7 @@ const Login = ({ config: propsConfig, t, isDisabled }) => {
       >
         {/* <Header /> */}
       </FormComposer>
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
+      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} />}
     
     
      

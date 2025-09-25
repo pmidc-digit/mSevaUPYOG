@@ -63,6 +63,7 @@ const EmployeeApp = ({ path, url, userType }) => {
   const PTRResponse = Digit?.ComponentRegistryService?.getComponent("PTRResponseCitizen");
   const DocsRequired = Digit?.ComponentRegistryService?.getComponent("PTRDocsRequired");
   const isRes = window.location.href.includes("ptr/response");
+  const NewPTREditApplication = Digit?.ComponentRegistryService?.getComponent("NewPTREditApplication");
   const isNewRegistration =
     window.location.href.includes("new-application") ||
     window.location.href.includes("modify-application") ||
@@ -97,6 +98,8 @@ const EmployeeApp = ({ path, url, userType }) => {
           />
           <PrivateRoute path={`${path}/petservice/new-application`} component={PTRCreate} />
           <PrivateRoute path={`${path}/petservice/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
+          <PrivateRoute path={`${path}/petservice/edit-application/:id`} component={NewPTREditApplication} />
+
           <PrivateRoute
             path={`${path}/petservice/applicationsearch/application-details/:id`}
             component={() => <ApplicationDetails parentRoute={path} />}

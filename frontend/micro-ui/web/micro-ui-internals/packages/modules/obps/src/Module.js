@@ -77,16 +77,6 @@ import LayoutCLUDetails from "./pageComponents/LayoutCLUDetails";
 import LayoutSpecificationDetails from "./pageComponents/LayoutSpecificationDetails";
 import LayoutDocumentsRequired from "./pageComponents/LayoutDocumentsRequired";
 import LayoutSummary from "./pageComponents/LayoutSummary";
-import { NewSelfCertificationStepForm } from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepForm";
-import NewSelfCertificationStepFormOne from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormOne"
-import NewSelfCertificationStepFormTwo from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormTwo"
-import NewSelfCertificationStepFormThree from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormThree"
-import NewSelfCertificationStepFormFour from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormFour"
-import NewSelfCertificationStepFormFive from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormFive"
-import NewSelfCertificationStepFormSix from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormSix"
-import NewSelfCertificationStepFormSeven from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormSeven"
-import NewSelfCertificationStepFormEight from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormEight"
-import SelfCertificationResponse from "./pages/citizen/SelfCertificationStepper/SelfCertificationResponse"
 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
@@ -206,16 +196,6 @@ const componentsToRegister = {
   LayoutSummary,
   LayoutLocalityInfo,
   LayoutCLUDetails,
-  NewSelfCertificationStepForm,
-  NewSelfCertificationStepFormOne,
-  NewSelfCertificationStepFormTwo,
-  NewSelfCertificationStepFormThree,
-  NewSelfCertificationStepFormFour,
-  NewSelfCertificationStepFormFive,
-  NewSelfCertificationStepFormSix,
-  NewSelfCertificationStepFormSeven,
-  NewSelfCertificationStepFormEight,
-  SelfCertificationResponse,
   dummy
 }
 

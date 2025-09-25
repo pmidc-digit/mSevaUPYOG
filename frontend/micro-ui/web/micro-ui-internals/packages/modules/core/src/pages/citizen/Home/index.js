@@ -10,36 +10,16 @@ import {
   HomeIcon,
   Calender,
   DocumentIcon,
-  NDCIcon,
   HelpIcon,
   WhatsNewCard,
   OBPSIcon,
   WSICon,
   PTRIcon,
-  GenericFileIcon,
-  NOCIcon,
-  ADSIcone,
-  MCollectIcon,
-  CHBIcon
 } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 import { CitizenSideBar } from "../../../components/TopBarSideBar/SideBar/CitizenSideBar";
 import StaticCitizenSideBar from "../../../components/TopBarSideBar/SideBar/StaticCitizenSideBar";
-
-const titleBanner = {
-  backgroundImage: `linear-gradient(90deg, rgb(24, 63, 148) 26.61%, rgba(234, 88, 12, 0) 80%), url("https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg")`,
-    backgroundPosition: 'right center, center center',
-    backgroundSize: 'cover, cover',
-    backgroundRepeat: 'no-repeat, no-repeat',
-    height : '160px',
-    margin : '40px 20px',
-    borderRadius : '20px',
-    padding : '2rem',
-    fontSize : '30px',
-    fontWeight : '700',
-    color:'#FFF'
-}
 
 const Home = () => {
   const { t } = useTranslation();
@@ -131,75 +111,29 @@ const Home = () => {
             },
             {
               name: t(citizenServicesObj?.props?.[1]?.label),
-              Icon: <PTIcon className="" />,
+              Icon: <PTIcon className="fill-path-primary-main" />,
               onClick: () => history.push(citizenServicesObj?.props?.[1]?.navigationUrl),
             },
             {
               name: t(citizenServicesObj?.props?.[2]?.label),
-              Icon: <CaseIcon className="" />,
+              Icon: <CaseIcon className="fill-path-primary-main" />,
               onClick: () => history.push(citizenServicesObj?.props?.[2]?.navigationUrl),
             },
-            {
-              name: t(citizenServicesObj?.props?.[3]?.label),
-              Icon: <WSICon />,
-              onClick: () => history.push(citizenServicesObj?.props?.[3]?.navigationUrl),
-            },
-             {
-               name: t(citizenServicesObj?.props?.[4]?.label),
-               Icon: <PTRIcon className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[4]?.navigationUrl),
-             },
-             {
-               name: t(citizenServicesObj?.props?.[5]?.label),
-               Icon: <ComplaintIcon className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[5]?.navigationUrl),
-             },
-             {
-               name: t(citizenServicesObj?.props?.[6]?.label),
-               Icon: <OBPSIcon className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[6]?.navigationUrl),
-             },
-              {
-               name: t(citizenServicesObj?.props?.[7]?.label),
-               Icon: <NDCIcon className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[7]?.navigationUrl),
-             },
-              {
-               name: t(citizenServicesObj?.props?.[8]?.label),
-               Icon: <NOCIcon className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[8]?.navigationUrl),
-             },
-             {
-               name: t(citizenServicesObj?.props?.[9]?.label),
-               Icon: <NDCIcon className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[9]?.navigationUrl),
-             },
-              {
-               name: t(citizenServicesObj?.props?.[10]?.label),
-               Icon: <ADSIcone className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[10]?.navigationUrl),
-             },
-              {
-               name: t(citizenServicesObj?.props?.[11]?.label),
-               Icon: <CHBIcon className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[11]?.navigationUrl),
-             },
-             {
-               name: t(citizenServicesObj?.props?.[12]?.label),
-               Icon: <NDCIcon className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[12]?.navigationUrl),
-             },
-              {
-               name: t(citizenServicesObj?.props?.[13]?.label),
-               Icon: <MCollectIcon className="" />,
-               onClick: () => history.push(citizenServicesObj?.props?.[13]?.navigationUrl),
-             },
+            // {
+            //   name: t(citizenServicesObj?.props?.[1]?.label),
+            //   Icon: <PTRIcon className="fill-path-primary-main" />,
+            //   onClick: () => history.push(citizenServicesObj?.props?.[1]?.navigationUrl),
+            // },
             // {
             //     name: t("ACTION_TEST_WATER_AND_SEWERAGE"),
             //     Icon: <DropIcon/>,
             //     onClick: () => history.push("/digit-ui/citizen")
             // },
-            
+            {
+              name: t(citizenServicesObj?.props?.[3]?.label),
+              Icon: <WSICon />,
+              onClick: () => history.push(citizenServicesObj?.props?.[3]?.navigationUrl),
+            },
           ],
     styles: { display: "flex", flexWrap: "wrap", justifyContent: "flex-start", width: "100%" },
   };
@@ -254,28 +188,22 @@ const Home = () => {
       <div className="HomePageWrapper">
         {
           <div className="BannerWithSearch">
-            
-
-            <div className="titleBanner" style={titleBanner}>
-              mSeva Punjab
-             {/* {isMobile ? (
+            {isMobile ? (
               <img src={"https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"} />
             ) : (
               <img src={"https://raw.githubusercontent.com/anujkit/msevaImages/refs/heads/main/1cace0150346b2e2f5989aaaf63b8e26.jpeg"} />
-            )}  */}
-            </div>
-             {/* <div className="Search">
-              <StandaloneSearchBar placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER")} />
-            </div>  */}
-            { <div className="ServicesSection">
-              
-               <CardBasedOptions style={{ marginTop: "-30px" }} {...allCitizenServicesProps} /> 
+            )}
+            {/* <div className="Search">
+            <StandaloneSearchBar placeholder={t("CS_COMMON_SEARCH_PLACEHOLDER")} />
+          </div> */}
+            <div className="ServicesSection">
+              <CardBasedOptions style={{ marginTop: "-30px" }} {...allCitizenServicesProps} />
               {/* <CardBasedOptions style={isMobile ? { marginTop: "-30px" } : { marginTop: "-30px" }} {...allInfoAndUpdatesProps} /> */}
-            </div> }
+            </div>
           </div>
         }
 
-        {/* {(whatsAppBannerMobObj || whatsAppBannerWebObj) && (
+        {(whatsAppBannerMobObj || whatsAppBannerWebObj) && (
           <div className="WhatsAppBanner">
             {isMobile ? (
               <img
@@ -291,9 +219,9 @@ const Home = () => {
               />
             )}
           </div>
-        )} */}
+        )}
 
-        {/* {conditionsToDisableNotificationCountTrigger() ? (
+        {conditionsToDisableNotificationCountTrigger() ? (
           EventsDataLoading ? (
             <Loader />
           ) : (
@@ -305,7 +233,7 @@ const Home = () => {
               <WhatsNewCard {...EventsData?.[0]} />
             </div>
           )
-        ) : null} */}
+        ) : null}
       </div>
     </div>
   );

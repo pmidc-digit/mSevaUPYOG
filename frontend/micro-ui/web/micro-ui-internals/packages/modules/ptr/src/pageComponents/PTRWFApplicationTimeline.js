@@ -24,6 +24,8 @@ const PTRWFApplicationTimeline = (props) => {
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
+  const [showAllTimeline, setShowAllTimeline] = useState(false);
+
   const [error, setError] = useState(null);
   const [latestComment, setLatestComment] = useState(null);
   const { isLoading, data } = Digit.Hooks.useWorkflowDetails({
@@ -38,6 +40,9 @@ const PTRWFApplicationTimeline = (props) => {
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
+  const toggleTimeline = () => {
+    setShowAllTimeline((prev) => !prev);
+  };
 
   const getTimelineCaptions = (checkpoint) => {
     console.log("checkpoint is :>> ", checkpoint);
@@ -137,7 +142,7 @@ const PTRWFApplicationTimeline = (props) => {
     data?.nextActions?.filter((e) => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
-
+  console.log("actions here", actions);
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -158,12 +163,26 @@ const PTRWFApplicationTimeline = (props) => {
   };
 
   function onActionSelect(action) {
-    const payload = {
-      action: [action],
-    };
-    if (action?.action == "APPLY") {
-      submitAction(payload);
-    } else if (action?.action == "PAY") {
+    const appNo = props.application?.applicationNumber;
+    // route to edit for employee/citizen context
+    if (action?.action === "SAVEASDRAFT" || action?.action == "APPLY") {
+      const isCitizen = window.location.href.includes("citizen");
+      // push to employee or citizen edit route (EditApplication reads useParams().id)
+      if (isCitizen) {
+        history.push(`/digit-ui/citizen/ptr/petservice/edit-application/${appNo}`);
+      } else {
+        history.push(`/digit-ui/employee/ptr/petservice/edit-application/${appNo}`);
+      }
+      return;
+    }
+
+    // const payload = {
+    //   action: [action],
+    // };
+    // if (action?.action == "APPLY") {
+    //   submitAction(payload);
+    // }
+    if (action?.action == "PAY") {
       const appNo = props.application?.applicationNumber;
       history.push(`/digit-ui/employee/payment/collect/PTR/${appNo}/${tenantId}`);
     } else {
@@ -190,7 +209,7 @@ const PTRWFApplicationTimeline = (props) => {
     setLatestComment(filtData?.comment);
     updatedApplicant.workflow = {
       action: filtData.action,
-      assignes: filtData?.assignee,
+      assignes: filtData.action === "SENDBACKTOCITIZEN" ? [props.application?.auditDetails?.createdBy] : filtData?.assignee,
       comments: filtData?.comment,
       documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
     };
@@ -212,14 +231,18 @@ const PTRWFApplicationTimeline = (props) => {
       });
 
       if (response?.ResponseInfo?.status == "successful") {
-        // ✅ Show success first
         setShowToast({ key: "success", message: "Successfully updated the status" });
         setError("Successfully updated the status");
         // data.revalidate();
 
         // ✅ Delay navigation so toast shows
         setTimeout(() => {
-          history.push("/digit-ui/employee/ptr/petservice/inbox");
+          const isCitizen = window.location.href.includes("citizen");
+          if (isCitizen) {
+            history.push("/digit-ui/citizen/ptr-home");
+          } else {
+            history.push("/digit-ui/employee/ptr/petservice/inbox");
+          }
         }, 2000);
 
         setSelectedAction(null);
@@ -313,7 +336,7 @@ const PTRWFApplicationTimeline = (props) => {
         </Fragment>
       )}
       {data && showNextActions(data?.actionState?.nextActions)}
-      {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

@@ -20,7 +20,7 @@ import { Link, useHistory, useParams } from "react-router-dom";
 import Timeline from "../components/Timeline";
 import { stringReplaceAll } from "../utils";
 
-const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData, onGoBack }) => {
+const ScrutinyDetails = ({ onSelect, userType, formData, config }) => {
   const { t } = useTranslation();
   const history = useHistory();
   const [subOccupancy, setsubOccupancy] = useState([]);
@@ -29,26 +29,23 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const [floorData, setfloorData] = useState([]);
   let scrutinyNumber = `DCR82021WY7QW`;
   let user = Digit.UserService.getUser();
-  const tenantId = localStorage.getItem("CITIZEN.CITY") || Digit.ULBService.getCurrentTenantId();
+  const tenantId = user?.info?.permanentCity || Digit.ULBService.getCurrentTenantId();
   const checkingFlow = formData?.uiFlow?.flow;
   const [showToast, setShowToast] = useState(null);
   const stateCode = Digit.ULBService.getStateId();
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(stateCode, "BPA", ["SubOccupancyType"]);
-  console.log("formDataInScrutiniy ",formData, currentStepData, mdmsData)
-  // const { data, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, formData?.data?.scrutinyNumbe?.edcrNumber, {
-  //   enabled: true,
-  // });
-  const data = currentStepData?.BasicDetails?.edcrDetails;
+  const { data, isLoading, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, formData?.data?.scrutinyNumber, {
+    enabled: true,
+  });
   const isMobile = window.Digit.Utils.browser.isMobile();
-  const [apiLoading, setApiLoading] = useState(false);
 
   console.log(subOccupancy, "OCCUPANCY");
 
   useEffect(() => {
-    if (!isMdmsLoading && currentStepData?.BasicDetails?.occupancyType) {
+    if (!isMdmsLoading && formData?.data?.occupancyType) {
       const subOccupancyMaster = mdmsData?.BPA?.SubOccupancyType || [];
 
-      const matched = subOccupancyMaster.find((item) => item.name?.toLowerCase() === currentStepData?.BasicDetails?.occupancyType.toLowerCase());
+      const matched = subOccupancyMaster.find((item) => item.name?.toLowerCase() === formData.data.occupancyType.toLowerCase());
 
       if (matched) {
         const formatted = {
@@ -77,6 +74,14 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
     paddingBottom: "5rem",
   };
 
+  const sectionStyle = {
+    backgroundColor: "#ffffff",
+    padding: "1rem 1.5rem",
+    borderRadius: "8px",
+    marginBottom: "2rem",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+  };
+
   const headingStyle = {
     fontSize: "1.5rem",
     borderBottom: "2px solid #ccc",
@@ -94,6 +99,26 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
     color: "#333",
   };
 
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+    
+  };
+
+  const documentCardStyle = {
+
+    minWidth: "200px",
+    maxWidth: "250px",
+    backgroundColor: "#fdfdfd",
+    padding: "0.75rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+    justifyContent:"center",
+    display:"flex",
+    
+  };
 
   const boldLabelStyle = { fontWeight: "bold", color: "#555" };
 
@@ -287,10 +312,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
 
   const onSkip = () => onSelect();
   console.log(formData, "F++++++");
-  const goNext = async () => {
-    const userInfo = Digit.UserService.getUser()
-    const accountId = userInfo?.info?.uuid
-    const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";
+  const goNext = () => {
     if (checkingFlow === "OCBPA") {
       if (!formData?.id) {
         let payload = {};
@@ -335,78 +357,9 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
         onSelect("", formData, "", true);
       }
     } else {
-      const unit = getUnitsForAPI(subOccupancyObject)
-      const landInfo = currentStepData?.createdResponse?.landInfo === null ? {
-        owners:[],
-        ownershipCategory: "INDIVIDUAL.SINGLEOWNER",
-        address: {
-          city: tenantId,
-          locality: {
-            code: "ALOC1"
-          }
-        },
-        tenantId,
-        unit
-      } : {
-        ...currentStepData?.createdResponse?.landInfo,
-        unit
-      }
-      console.log("OnSelectScrutiniy", subOccupancyObject, unit)
-
-      try{
-        setApiLoading(true);
-        const result = await Digit.OBPSService.update({ BPA: {
-          ...currentStepData?.createdResponse,
-          landInfo,
-          workflow: {
-            action: workflowAction,
-            assignes: [accountId]
-          }
-        } }, tenantId)
-        if(result?.ResponseInfo?.status === "successful"){
-          setApiLoading(false);
-          onSelect({subOccupancy: subOccupancyObject});
-        }else{
-          alert(t("BPA_CREATE_APPLICATION_FAILED"));
-          setApiLoading(false);
-        }
-        console.log("APIResponse", result);
-      }catch(e){
-        console.log("error", e);
-        alert(t("BPA_CREATE_APPLICATION_FAILED"));
-        setApiLoading(false);
-      }
-
-      // onSelect(config.key, subOccupancyObject);
+      onSelect(config.key, subOccupancyObject);
     }
   };
-
-  function getusageCategoryAPI(arr) {
-    let usageCat = ""
-    arr.map((ob, i) => {
-      usageCat = usageCat + (i !== 0 ? "," : "") + ob.code
-    })
-    return usageCat
-  }
-
-  function getUnitsForAPI(subOccupancy) {
-    const ob = subOccupancy
-    const blocksDetails = currentStepData?.BasicDetails?.edcrDetails?.planDetail?.blocks || []
-    const units = []
-    if (ob) {
-      const result = Object.entries(ob)
-      result.map((unit, index) => {
-        units.push({
-          blockIndex: index,
-          floorNo: unit[0].split("_")[1],
-          unitType: "Block",
-          occupancyType: blocksDetails?.[index]?.building?.occupancies?.[0]?.typeHelper?.type?.code || "A",
-          usageCategory: getusageCategoryAPI(unit[1]),
-        })
-      })
-    }
-    return units
-  }
 
   const clearall = (num) => {
     let res = [];
@@ -431,7 +384,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
     return returnValue ? returnValue : "NA";
   }
 
-  if (isMdmsLoading || apiLoading) return <Loader />;
+  if (isMdmsLoading) return <Loader />;
   function getBlockSubOccupancy(index) {
     let subOccupancyString = "";
     let returnValueArray = [];
@@ -446,7 +399,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
     <React.Fragment style={pageStyle}>
       {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
       <div style={{ paddingBottom: isMobile ? "0px" : "8px" }}>
-        <FormStep t={t} config={{ ...config, texts: {headerCaption: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",header: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",cardText: "",skipText: null,} }} onSelect={goNext} onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */>
+        <FormStep t={t} config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={goNext} onSkip={onSkip} /* isDisabled={Object.keys(subOccupancyObject).length === 0} */>
           <CardSubHeader style={headingStyle}>{t("BPA_EDCR_DETAILS")}</CardSubHeader>
           <StatusTable style={{ border: "none" }}>
             <Row
@@ -616,17 +569,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
         {showToast && <Toast error={true} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
       </div>
       <ActionBar>
-        <SubmitBar
-                              label="Back"
-                              style={{
-                                border: "1px solid",
-                                background: "transparent",
-                                color: "#2947a3",
-                                marginRight: "5px",
-                              }}
-                              onSubmit={onGoBack}
-                    />
-        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext} disabled={apiLoading} />}
+        {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={goNext}  />}
       </ActionBar>
     </React.Fragment>
   );

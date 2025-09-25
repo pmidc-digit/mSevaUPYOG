@@ -40,11 +40,9 @@ const App = ({ path }) => {
   const OCSendToArchitect = Digit?.ComponentRegistryService?.getComponent("ObpsOCSendToArchitect");
   const BPASendBackToCitizen = Digit?.ComponentRegistryService?.getComponent("ObpsBPASendBackToCitizen");
   const OCSendBackToCitizen = Digit?.ComponentRegistryService?.getComponent("ObpsOCSendBackToCitizen");
-  const SelfCertificationStepper = Digit?.ComponentRegistryService?.getComponent("NewSelfCertificationStepForm");
   const isDocScreenAfterEdcr = sessionStorage.getItem("clickOnBPAApplyAfterEDCR") === "true" ? true : false
 
   const LayoutStepperForm = Digit?.ComponentRegistryService?.getComponent("LayoutStepperForm");
-  const SelfCertificationResponse = Digit?.ComponentRegistryService?.getComponent("SelfCertificationResponse")
 
   return (
     <React.Fragment>
@@ -58,7 +56,6 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/edcrscrutiny/apply`} component={CreateEDCR} />
         <PrivateRoute path={`${path}/edcrscrutiny/oc-apply`} component={CreateOCEDCR} />
         <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType`} component={NewBuildingPermit} />
-        <PrivateRoute path={`${path}/bpa/:applicationType/:serviceType/stepper`} component={SelfCertificationStepper} />
         <PrivateRoute path={`${path}/ocbpa/:applicationType/:serviceType`} component={OCBuildingPermit}/>
         <PrivateRoute path={`${path}/stakeholder/apply`} component={StakeholderRegistration} />
         <Route path={`${path}/openlink/stakeholder/apply`} component={StakeholderRegistration} />
@@ -72,7 +69,6 @@ const App = ({ path }) => {
         <PrivateRoute path={`${path}/sendbacktocitizen/bpa/:tenantId/:applicationNo`} component={BPASendBackToCitizen} />
         <PrivateRoute path={`${path}/sendbacktocitizen/ocbpa/:tenantId/:applicationNo`} component={OCSendBackToCitizen} />
         <PrivateRoute path={`${path}/response`} component={OBPSResponse} />
-        <PrivateRoute path={`${path}/self-certification/response/:id`} component={SelfCertificationResponse} />
       </Switch>
       </div>
     </React.Fragment>

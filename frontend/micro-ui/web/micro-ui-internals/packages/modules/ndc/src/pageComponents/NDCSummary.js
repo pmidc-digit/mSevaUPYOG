@@ -167,7 +167,7 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
 
         {renderLabel(t("Property ID"), formData?.NDCDetails?.cpt?.id)}
         {renderLabel(
-          t("Application Fees"),
+          t("Amount"),
           getData?.totalAmount ? new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(getData?.totalAmount) : "NA"
         )}
       </div>

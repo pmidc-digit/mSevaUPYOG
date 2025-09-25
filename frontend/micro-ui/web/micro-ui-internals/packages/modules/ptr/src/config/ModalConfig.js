@@ -13,13 +13,14 @@ export const ModalConfig = ({
   assigneeLabel,
   businessService,
 }) => {
-  let checkAssigneeVisible = action?.action === "APPROVE" || action?.action === "VERIFY" || action?.action === "FORWARD";
+  let checkAssigneeVisible = action?.action === "VERIFY" || action?.action === "FORWARD" || action?.action === "SENDBACKTOVERIFIER";
   let checkCommentsMandatory =
     action?.action === "APPROVE" ||
     action?.action === "VERIFY" ||
     action?.action === "REJECT" ||
     action?.action === "SENDBACKTOCITIZEN" ||
-    action?.action === "FORWARD";
+    action?.action === "FORWARD" ||
+    action?.action === "SENDBACKTOVERIFIER";
   if (action.isTerminateState) {
     checkAssigneeVisible = false;
     checkCommentsMandatory = true;

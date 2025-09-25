@@ -2,10 +2,8 @@ package org.egov.noc.repository.rowmapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -69,7 +67,27 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 			addChildrenToProperty(rs, noc);
 
 		}
-		return new ArrayList<>(nocListMap.values());
+
+
+
+
+		Map<String, Noc> sortedMap = nocListMap.entrySet()
+				.stream()
+				.sorted((e1, e2) -> {
+					Long time1 = e1.getValue().getAuditDetails() != null ? e1.getValue().getAuditDetails().getCreatedTime() : null;
+					Long time2 = e2.getValue().getAuditDetails() != null ? e2.getValue().getAuditDetails().getCreatedTime() : null;
+					return Comparator.nullsLast(Long::compareTo).reversed().compare(time1, time2);
+				})
+				.collect(Collectors.toMap(
+						Map.Entry::getKey,
+						Map.Entry::getValue,
+						(e1, e2) -> e1,
+						LinkedHashMap::new
+				));
+
+
+
+		return new ArrayList<>(sortedMap.values());
 	}
 	/**
 	 * add the child objects like document to the NOC object from the result set.

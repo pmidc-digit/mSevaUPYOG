@@ -209,7 +209,6 @@ public class NocQueryBuilder {
 				.append("noc.lastModifiedBy, noc.createdTime, noc.applicationNo, noc.nocNo, noc.nocType,details.id, details.nocid, details.additionalDetails ");
 
 
-
 		log.info(criteria.toString());
 		log.info("Final Query");
 
@@ -253,6 +252,14 @@ public class NocQueryBuilder {
 //			preparedStmtList.add(offset);
 //			preparedStmtList.add(limit + offset);
 //		}
+
+
+		if (limit != -1) {
+			finalQuery += " ORDER BY createdtime DESC limit  ? offset ?";
+			preparedStmtList.add(limit);
+			preparedStmtList.add(offset);
+		}
+
 
 		log.info(finalQuery.toString());
 		return finalQuery;

@@ -78,14 +78,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
        // console.log("nocFormData ==>", nocFormData)
 
-      const ownerObj = window.location.href.includes("citizen")
-       ? {
-       mobileNumber: userInfo?.mobileNumber || "",
-       name: userInfo?.name || "",
-       emailId: userInfo?.emailId || "",
-       userName: userInfo?.userName || ""
-      }
-     : {
+      const ownerObj = {
        mobileNumber: nocFormData?.applicationDetails?.applicantMobileNumber || "",
        name: nocFormData?.applicationDetails?.applicantOwnerOrFirmName || "",
        emailId: nocFormData?.applicationDetails?.applicantEmailId || "",

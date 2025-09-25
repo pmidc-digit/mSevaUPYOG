@@ -55,22 +55,18 @@ const NOCSpecificationDetails = (_props) => {
 
       <div>
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")}`}</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
               name="specificationPlotArea"
-              // rules={{
-              //   required: t("REQUIRED_FIELD"),
-              //   minLength: {
-              //     value: 4,
-              //     message: t("MIN_4_CHARACTERS_REQUIRED"),
-              //   },
-              //   maxLength: {
-              //     value: 100,
-              //     message: t("MAX_100_CHARACTERS_ALLOWED"),
-              //   },
-              // }}
+              rules={{
+                required: t("REQUIRED_FIELD"),
+                maxLength: {
+                  value: 100,
+                  message: t("MAX_100_CHARACTERS_ALLOWED"),
+                },
+              }}
               render={(props) => (
                 <TextInput
                   className="form-field"
@@ -135,7 +131,7 @@ const NOCSpecificationDetails = (_props) => {
         <CardLabelError style={errorStyle}>{errors?.specificationNocType?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_RESTRICTEED_AREA_LABEL")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("NOC_RESTRICTED_AREA_LABEL")}`} *</CardLabel>
           <Controller
             control={control}
             name={"specificationRestrictedArea"}

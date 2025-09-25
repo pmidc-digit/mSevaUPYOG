@@ -1,10 +1,20 @@
 import React, { Fragment, useEffect, useState, useRef, useCallback } from "react";
-import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
+import {
+  TextInput,
+  CardLabel,
+  Dropdown,
+  TextArea,
+  ActionBar,
+  SubmitBar,
+  Toast,
+  CardSectionHeader,
+  LabelFieldPair,
+  CardLabelError,
+} from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { UPDATE_ADSNewApplication_FORM, RESET_ADS_NEW_APPLICATION_FORM } from "../redux/action/ADSNewApplicationActions";
 import ADSAddressField from "./ADSAddressField";
-
 const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const stateId = Digit.ULBService.getStateId();
   const { data: location, isLocationLoading } = Digit.Hooks.ads.useADSLocationMDMS(stateId);
@@ -14,6 +24,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [visibleCount, setVisibleCount] = useState(6);
   const [adsScheduleMap, setAdsScheduleMap] = useState({});
   const dispatch = useDispatch();
+
   const [placeNameState, setPlaceNameState] = useState("");
   const [adsList, setAdsList] = useState([]);
   const [adsScheduleErrors, setAdsScheduleErrors] = useState({});
@@ -249,6 +260,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           status: "BOOKING_CREATED",
           availabilityStatus: c.available === false ? "UNAVAILABLE" : "AVAILABLE",
           amount: c.amount || "",
+          nightLight: c.nightLight || "",
         };
       })
     );
@@ -268,6 +280,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       status: "BOOKING_CREATED",
       availabilityStatus: d.availabilityStatus || (d.available === false ? "UNAVAILABLE" : "AVAILABLE") || "",
       rate: d.amount || "",
+      nightLight: d.nightLight || "",
     }));
 
     return [...manualConverted, ...mdmsConverted];
@@ -321,6 +334,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     bookingFromTime: nowHM,
     bookingToTime: nowHM,
     availabilityStatus: "",
+    nightLight: "",
     // gstApplicable: false, // boolean
     // cowCessApplicable: false, // boolean
     amount: "",
@@ -1004,6 +1018,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       status: "BOOKING_CREATED",
       availabilityStatus: d.availabilityStatus || (d.available === false ? "UNAVAILABLE" : "AVAILABLE") || "",
       rate: d.amount || "",
+      light: d.nightLight || "",
     }));
 
     // --- NEW: collect other saved sites (excluding current site) ---
@@ -1100,6 +1115,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     );
   }, [adsScheduleMap]);
 
+<<<<<<< Updated upstream
   console.log("errors", errors);
 
   useEffect(() => {
@@ -1108,135 +1124,99 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   }, [mdmsCards, adsList, clearErrors]);
 
+=======
+  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
+>>>>>>> Stashed changes
 
   return (
     <React.Fragment>
-      {/* Added advertisements preview */}
-      {/* {adsList.length > 0 && (
-        <div style={{ margin: "12px 0", padding: 8, border: "1px dashed #ddd", borderRadius: 6 }}>
-          <div style={{ fontWeight: 600, marginBottom: 8 }}>{t ? t("Added Advertisements") : "Added Advertisements"}</div>
-          {adsList.map((ad, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 8,
-                alignItems: "center",
-                padding: "6px 0",
-                borderBottom: i < adsList.length - 1 ? "1px solid #eee" : "none",
-                cursor: "pointer",
-                background: editingIndex === i ? "#fafafa" : "transparent",
-                paddingRight: 12,
-              }}
-            >
-              <div onClick={() => editAdvertisement(i)} style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{ad.siteName?.name || ad.siteId || `Ad ${i + 1}`}</div>
-                <div style={{ fontSize: 12, color: "#666" }}>
-                  {ad.cartAddress ||
-                    ad.geoLocation?.formattedAddress ||
-                    (ad.geoLocation?.latitude ? `${ad.geoLocation.latitude}, ${ad.geoLocation.longitude}` : "")}
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => editAdvertisement(i)}
-                  style={{ background: "#fff", border: "1px solid #ccc", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}
-                >
-                  {t ? t("Edit") : "Edit"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeAdvertisement(i)}
-                  style={{ background: "transparent", border: "1px solid #ccc", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}
-                >
-                  {t ? t("Remove") : "Remove"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )} */}
-
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
-          <CardLabel>
-            Search By site id <span style={{ color: "red" }}>*</span>
-          </CardLabel>
-          <Controller
-            control={control}
-            name="siteId"
-            rules={{
-              validate: (val) => {
-                if ((mdmsCards?.length || 0) === 0 && (adsList?.length || 0) === 0) {
-                  if (!val || String(val).trim() === "") return "This field is required";
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              Search By site id <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <Controller
+              control={control}
+              name="siteId"
+              rules={{
+                validate: (val) => {
+                  if ((mdmsCards?.length || 0) === 0 && (adsList?.length || 0) === 0) {
+                    if (!val || String(val).trim() === "") return "This field is required";
+                  }
+                  if (val && String(val).length > 100) return "Maximum 100 characters";
+                  return true;
+                },
+              }}
+              render={(props) => {
+                if (isMdmsLoading) {
+                  return <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />;
                 }
-                if (val && String(val).length > 100) return "Maximum 100 characters";
-                return true;
-              },
-            }}
-            render={(props) => {
-              if (isMdmsLoading) {
-                return <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} />;
-              }
 
-              const options = locationOptions.map((o) => ({ ...o, label: o.label }));
+                const options = locationOptions.map((o) => ({ ...o, label: o.label }));
 
-              const selectedOption = options.find((o) => String(o.code) === String(props.value)) || null;
+                const selectedOption = options.find((o) => String(o.code) === String(props.value)) || null;
 
-              return (
-                <Dropdown
-                  key={siteIdKey}
-                  className="form-field"
-                  option={options}
-                  optionKey="label"
-                  selected={selectedOption}
-                  select={(val) => {
-                    if (!val) return;
-                    // store locationCode string in siteId
-                    // props.onChange(String(val.code || ""));
-                    const chosenSite = String(val.code || "");
-                    props.onChange(chosenSite);
+                return (
+                  <Dropdown
+                    key={siteIdKey}
+                    className="form-field"
+                    option={options.map((opt) => ({
+                      ...opt,
+                      label: t(opt.label),
+                    }))}
+                    optionKey="label"
+                    selected={selectedOption}
+                    select={(val) => {
+                      if (!val) return;
+                      // store locationCode string in siteId
+                      // props.onChange(String(val.code || ""));
+                      const chosenSite = String(val.code || "");
+                      props.onChange(chosenSite);
 
-                    // show ads for that location
-                    const filtered = mdmsAds.filter((a) => String(a.locationCode) === String(val.code));
-                    setAdsForLocation(filtered || []);
+                      // show ads for that location
+                      const filtered = mdmsAds.filter((a) => String(a.locationCode) === String(val.code));
+                      setAdsForLocation(filtered || []);
 
-                    // load persisted data for this site if present
-                    const saved = loadForSite(chosenSite);
-                    const global = loadGlobal();
-                    const isGlobalActive = global && global.globalScheduleEnabled;
+                      // load persisted data for this site if present
+                      const saved = loadForSite(chosenSite);
+                      const global = loadGlobal();
+                      const isGlobalActive = global && global.globalScheduleEnabled;
 
-                    if (saved) {
-                      // restore arrays/objects
-                      setMdmsCards(Array.isArray(saved.mdmsCards) ? saved.mdmsCards : []);
-                      setAdsList(Array.isArray(saved.adsList) ? saved.adsList : []);
-                      setAdsScheduleMap(saved.adsScheduleMap || {});
-                      if (saved && typeof saved.globalScheduleEnabled !== "undefined") {
-                        // Do NOT let per-site saved global flag override a globally-persisted schedule.
-                        if (!isGlobalActive) {
-                          setGlobalScheduleEnabled(!!saved.globalScheduleEnabled);
+                      if (saved) {
+                        // restore arrays/objects
+                        setMdmsCards(Array.isArray(saved.mdmsCards) ? saved.mdmsCards : []);
+                        setAdsList(Array.isArray(saved.adsList) ? saved.adsList : []);
+                        setAdsScheduleMap(saved.adsScheduleMap || {});
+                        if (saved && typeof saved.globalScheduleEnabled !== "undefined") {
+                          // Do NOT let per-site saved global flag override a globally-persisted schedule.
+                          if (!isGlobalActive) {
+                            setGlobalScheduleEnabled(!!saved.globalScheduleEnabled);
 
-                          if (saved.startDate) setValue("startDate", saved.startDate, { shouldValidate: false });
-                          if (saved.endDate) setValue("endDate", saved.endDate, { shouldValidate: false });
-                          if (saved.bookingFromTime) setValue("bookingFromTime", saved.bookingFromTime, { shouldValidate: false });
-                          if (saved.bookingToTime) setValue("bookingToTime", saved.bookingToTime, { shouldValidate: false });
+                            if (saved.startDate) setValue("startDate", saved.startDate, { shouldValidate: false });
+                            if (saved.endDate) setValue("endDate", saved.endDate, { shouldValidate: false });
+                            if (saved.bookingFromTime) setValue("bookingFromTime", saved.bookingFromTime, { shouldValidate: false });
+                            if (saved.bookingToTime) setValue("bookingToTime", saved.bookingToTime, { shouldValidate: false });
 
-                          if (saved.globalScheduleEnabled) {
+                            if (saved.globalScheduleEnabled) {
+                              applyGlobalToAll();
+                            }
+                          } else {
+                            // A global persisted schedule exists: apply global values instead of per-site ones.
+                            if (global.startDate) setValue("startDate", global.startDate, { shouldValidate: false });
+                            if (global.endDate) setValue("endDate", global.endDate, { shouldValidate: false });
+                            if (global.bookingFromTime) setValue("bookingFromTime", global.bookingFromTime, { shouldValidate: false });
+                            if (global.bookingToTime) setValue("bookingToTime", global.bookingToTime, { shouldValidate: false });
+                            setGlobalScheduleEnabled(true);
                             applyGlobalToAll();
                           }
-                        } else {
-                          // A global persisted schedule exists: apply global values instead of per-site ones.
-                          if (global.startDate) setValue("startDate", global.startDate, { shouldValidate: false });
-                          if (global.endDate) setValue("endDate", global.endDate, { shouldValidate: false });
-                          if (global.bookingFromTime) setValue("bookingFromTime", global.bookingFromTime, { shouldValidate: false });
-                          if (global.bookingToTime) setValue("bookingToTime", global.bookingToTime, { shouldValidate: false });
-                          setGlobalScheduleEnabled(true);
-                          applyGlobalToAll();
                         }
+                      } else {
+                        setMdmsCards([]);
+                        setAdsList([]);
+                        setAdsScheduleMap({});
                       }
+<<<<<<< Updated upstream
                     } else {
                       setMdmsCards([]);
                       setAdsList([]);
@@ -1259,8 +1239,28 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             }}
           />
           {errors.siteSelection && <p style={{ color: "red", marginTop: "4px" }}>{errors.siteSelection.message}</p>}
+=======
+                      const locObj = findLocationByCode(val.code);
+                      const normalized = normalizeLocationToGeo(locObj);
+                      if (normalized) {
+                        setValue("geoLocation", normalized, { shouldValidate: true, shouldDirty: true });
+                        setPlaceNameState(normalized.formattedAddress);
+                        if (!watch("cartAddress")) setValue("cartAddress", normalized.formattedAddress);
+                      } else {
+                        // if location record has no geo_tag, clear geoLocation so user must pick it manually
+                        setValue("geoLocation", null, { shouldValidate: false });
+                        setPlaceNameState("");
+                      }
+                    }}
+                  />
+                );
+              }}
+            />
+          </LabelFieldPair>
+          {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
+>>>>>>> Stashed changes
 
-          <div style={{ margin: "12px 0", padding: 8, border: "1px solid #eee", borderRadius: 6 }}>
+          <div className="field" style={{ margin: "12px 0", padding: 8, border: "1px solid #eee", borderRadius: 6, width: "80%" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
               <label style={{ fontWeight: 600, marginRight: 8 }}>
                 <input type="checkbox" checked={globalScheduleEnabled} onChange={(e) => setGlobalSchedule(e.target.checked)} />{" "}
@@ -1270,78 +1270,87 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             </div>
 
             {/* GLOBAL Start */}
-            <CardLabel>Global Start Date & Time</CardLabel>
-            <Controller
-              control={control}
-              name="startDate"
-              rules={{ required: globalScheduleEnabled ? "This field is required" : false }}
-              render={(props) => {
-                const timeVal = watch("bookingFromTime") || nowHM;
-                const datetimeVal = props.value ? `${props.value}T${timeVal}` : ""; // leave empty so placeholder shows
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">Global Start Date & Time</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="startDate"
+                  rules={{ required: globalScheduleEnabled ? "This field is required" : false }}
+                  render={(props) => {
+                    const timeVal = watch("bookingFromTime") || nowHM;
+                    const datetimeVal = props.value ? `${props.value}T${timeVal}` : ""; // leave empty so placeholder shows
 
-                const placeholderVal = formatDisplay("", "");
-                return (
-                  <input
-                    type="datetime-local"
-                    min={`${tomorrowStr}T00:00`}
-                    value={datetimeVal}
-                    placeholder={placeholderVal}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (!v) {
-                        props.onChange("");
-                        setValue("bookingFromTime", "");
-                        return;
-                      }
-                      const [datePart, timePart] = v.split("T");
-                      props.onChange(datePart);
-                      setValue("bookingFromTime", timePart);
-                      // when global is enabled, propagate to all ads immediately
-                      if (globalScheduleEnabled) applyGlobalToAll();
-                    }}
-                    onBlur={(e) => props.onBlur(e)}
-                  />
-                );
-              }}
-            />
-            {errors.startDate && <p style={{ color: "red" }}>{errors.startDate.message}</p>}
+                    const placeholderVal = formatDisplay("", "");
+                    return (
+                      <input
+                        type="datetime-local"
+                        min={`${tomorrowStr}T00:00`}
+                        value={datetimeVal}
+                        placeholder={placeholderVal}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (!v) {
+                            props.onChange("");
+                            setValue("bookingFromTime", "");
+                            return;
+                          }
+                          const [datePart, timePart] = v.split("T");
+                          props.onChange(datePart);
+                          setValue("bookingFromTime", timePart);
+                          // when global is enabled, propagate to all ads immediately
+                          if (globalScheduleEnabled) applyGlobalToAll();
+                        }}
+                        onBlur={(e) => props.onBlur(e)}
+                      />
+                    );
+                  }}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors.startDate && <CardLabelError style={errorStyle}>{errors.startDate.message}</CardLabelError>}
 
             {/* GLOBAL End */}
-            <CardLabel>Global End Date & Time</CardLabel>
-            <Controller
-              control={control}
-              name="endDate"
-              rules={{ required: globalScheduleEnabled ? "This field is required" : false }}
-              render={(props) => {
-                const timeVal = watch("bookingToTime") || nowHM;
-                const minDate = watch("startDate") || tomorrowStr;
-                const datetimeVal = props.value ? `${props.value}T${timeVal}` : "";
+            <LabelFieldPair>
+              <CardLabel className="card-label-smaller">Global End Date & Time</CardLabel>
+              <div className="field">
+                <Controller
+                  control={control}
+                  name="endDate"
+                  rules={{ required: globalScheduleEnabled ? "This field is required" : false }}
+                  render={(props) => {
+                    const timeVal = watch("bookingToTime") || nowHM;
+                    const minDate = watch("startDate") || tomorrowStr;
+                    const datetimeVal = props.value ? `${props.value}T${timeVal}` : "";
 
-                const placeholderVal = formatDisplay("", "");
-                return (
-                  <input
-                    type="datetime-local"
-                    min={`${minDate}T00:00`}
-                    value={datetimeVal}
-                    placeholder={placeholderVal}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      if (!v) {
-                        props.onChange("");
-                        setValue("bookingToTime", "");
-                        return;
-                      }
-                      const [datePart, timePart] = v.split("T");
-                      props.onChange(datePart);
-                      setValue("bookingToTime", timePart);
-                      if (globalScheduleEnabled) applyGlobalToAll();
-                    }}
-                    onBlur={(e) => props.onBlur(e)}
-                  />
-                );
-              }}
-            />
-            {errors.endDate && <p style={{ color: "red" }}>{errors.endDate.message}</p>}
+                    const placeholderVal = formatDisplay("", "");
+                    return (
+                      <input
+                        type="datetime-local"
+                        min={`${minDate}T00:00`}
+                        value={datetimeVal}
+                        placeholder={placeholderVal}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (!v) {
+                            props.onChange("");
+                            setValue("bookingToTime", "");
+                            return;
+                          }
+                          const [datePart, timePart] = v.split("T");
+                          props.onChange(datePart);
+                          setValue("bookingToTime", timePart);
+                          if (globalScheduleEnabled) applyGlobalToAll();
+                        }}
+                        onBlur={(e) => props.onBlur(e)}
+                      />
+                    );
+                  }}
+                />
+              </div>
+            </LabelFieldPair>
+            {errors.endDate && <CardLabelError style={errorStyle}>{errors.endDate.message}</CardLabelError>}
+
             <Controller
               control={control}
               name="bookingFromTime"
@@ -1383,6 +1392,10 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 />
               )}
             />
+<<<<<<< Updated upstream
+=======
+            {errors.bookingToTime && <p style={errorStyle}>{errors.bookingToTime.message}</p>}
+>>>>>>> Stashed changes
           </div>
 
           {adsForLocation.length > 0 && (
@@ -1435,6 +1448,8 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         <div>
                           {ad.width} x {ad.height}
                         </div>
+                        <div style={{ fontWeight: 600 }}>NightLight:</div>
+                        <div>{ad.light}</div>
                         <div style={{ fontWeight: 600 }}>Amount:</div>
                         <div>₹{ad.amount}</div>
                         <div style={{ fontWeight: 600 }}>Available:</div>
@@ -1616,6 +1631,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                                 height: ad.height,
                                 amount: ad.amount,
                                 available: ad.available,
+                                nightLight: ad.light,
                                 locationCode: ad.locationCode,
                                 geoLocation: normalizedGeoForAd,
                                 schedules: [{ startDatetime: start, endDatetime: end }],
@@ -1628,7 +1644,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                               padding: "6px 10px",
                               borderRadius: 6,
                               border: "none",
-                              background: !!adsScheduleErrors[ad.id] ? "#ccc" : "#0b74de",
+                              background: !!adsScheduleErrors[ad.id] ? "#ccc" : "#2947a3",
                               color: "#fff",
                               cursor: !!adsScheduleErrors[ad.id] ? "not-allowed" : "pointer",
                             }}
@@ -1675,30 +1691,33 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               )}
             </div>
           )}
-
-          <CardLabel>
-            Geo Location <span style={{ color: "red" }}>*</span>
-          </CardLabel>
-          <Controller
-            control={control}
-            name="geoLocation"
-            rules={{
-              required: "This field is required",
-              validate: (val) => (val && (val.latitude || val.lat) && (val.longitude || val.lng)) || "Please pick a location",
-            }}
-            render={(props) => (
-              <ADSAddressField
-                value={props.value}
-                onChange={(normalized) => {
-                  props.onChange(normalized);
-                  setPlaceNameState(normalized?.formattedAddress || "");
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              Geo Location <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="geoLocation"
+                rules={{
+                  required: "This field is required",
+                  validate: (val) => (val && (val.latitude || val.lat) && (val.longitude || val.lng)) || "Please pick a location",
                 }}
-                onBlur={props.onBlur}
-                t={t}
+                render={(props) => (
+                  <ADSAddressField
+                    value={props.value}
+                    onChange={(normalized) => {
+                      props.onChange(normalized);
+                      setPlaceNameState(normalized?.formattedAddress || "");
+                    }}
+                    onBlur={props.onBlur}
+                    t={t}
+                  />
+                )}
               />
-            )}
-          />
-          {errors.geoLocation && <p style={{ color: "red" }}>{errors.geoLocation.message}</p>}
+            </div>
+          </LabelFieldPair>
+          {errors.geoLocation && <CardLabelError style={errorStyle}>{errors.geoLocation.message}</CardLabelError>}
         </div>
 
         <ActionBar>

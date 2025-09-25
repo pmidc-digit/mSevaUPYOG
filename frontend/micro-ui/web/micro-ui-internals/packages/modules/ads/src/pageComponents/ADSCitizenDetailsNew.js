@@ -1,14 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import {
-  TextInput,
-  CardLabel,
-  MobileNumber,
-  ActionBar,
-  SubmitBar,
-  CardLabelError,
-  LabelFieldPair,
-  CardSectionHeader,
-} from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, MobileNumber, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import ADSAddress from "./ADSAddress";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
@@ -253,227 +244,193 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
     return () => clearTimeout(id);
   }, [watchedAll, formStorageKey]);
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
 
   return (
-    <React.Fragment>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t("NDC_FIRST_NAME")}
-              <span style={{ color: "red" }}>*</span>{" "}
-            </CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="firstName"
-                rules={{
-                  required: "This field is required",
-                  pattern: {
-                    value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
-                    message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
-                  },
-                  minLength: { value: 2, message: "Minimum 2 characters" },
-                  maxLength: { value: 100, message: "Maximum 100 characters" },
-                }}
-                render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <div>
+        <CardLabel>
+          {t("NDC_FIRST_NAME")}
+          <span style={{ color: "red" }}>*</span>{" "}
+        </CardLabel>
+        <Controller
+          control={control}
+          name="firstName"
+          rules={{
+            required: "This field is required",
+            pattern: {
+              value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
+              message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
+            },
+            minLength: { value: 2, message: "Minimum 2 characters" },
+            maxLength: { value: 100, message: "Maximum 100 characters" },
+          }}
+          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
+        />
+        {errors.firstName && <p style={{ color: "red" }}>{errors.firstName.message}</p>}
+
+        <CardLabel>
+          {t("NDC_LAST_NAME")}
+          <span style={{ color: "red" }}>*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="lastName"
+          rules={{
+            required: "This field is required",
+            pattern: {
+              value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
+              message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
+            },
+            minLength: { value: 2, message: "Minimum 2 characters" },
+            maxLength: { value: 100, message: "Maximum 100 characters" },
+          }}
+          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
+        />
+        {errors.lastName && <p style={{ color: "red" }}>{errors.lastName.message}</p>}
+
+        <CardLabel>
+          {t("NOC_APPLICANT_EMAIL_LABEL")}
+          <span style={{ color: "red" }}>*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="emailId"
+          rules={{
+            required: "This field is required",
+            pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" },
+          }}
+          render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
+        />
+        {errors.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
+
+        <CardLabel>
+          {t("NOC_APPLICANT_MOBILE_NO_LABEL")}
+          <span style={{ color: "red" }}>*</span>
+        </CardLabel>
+        <Controller
+          control={control}
+          name="mobileNumber"
+          rules={{
+            required: "This field is required",
+            minLength: { value: 10, message: "Enter at least 10 digits" },
+            pattern: { value: /^[6-9]\d{9}$/, message: "Must start with 9, 8, 7, or 6 and be 10 digits long" },
+          }}
+          render={({ value, onChange, onBlur }) => <MobileNumber value={value} onChange={onChange} onBlur={onBlur} t={t} />}
+        />
+        {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+
+        <CardLabel>{t("ADVT_CHALLAN_UNDER_SECTION_122_123_SGST")}</CardLabel>
+        <Controller
+          control={control}
+          name="SGST"
+          rules={{
+            validate: (value) => !value.trim() || /^\d{2}[A-Z]{5}\d{4}[A-Z]\dZ[A-Z\d]$/.test(value.trim()) || "Enter a valid SGST",
+          }}
+          render={({ value, onChange, onBlur }) => (
+            <TextInput
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onBlur={(e) => {
+                const trimmed = e.target.value.trim();
+                onChange(trimmed);
+                onBlur(e);
+              }}
+              t={t}
+            />
+          )}
+        />
+        {errors.SGST && <p style={{ color: "red" }}>{errors.SGST.message}</p>}
+
+        {/* <CardLabel>{t("PT_COMMON_COL_ADDRESS")}</CardLabel> */}
+        <Controller
+          control={control}
+          name="address"
+          rules={{
+            validate: (addr) => {
+              const requiredFields = ["houseNo", "houseName", "streetName", "addressline1", "landmark", "city", "locality", "pincode"];
+
+              const missing = requiredFields.filter((f) => {
+                const v = addr?.[f];
+                if (f === "pincode") return !(v && String(v).trim().length === 6); // require 6-digit pincode
+                if (f === "city" || f === "locality") return !v; // objects expected
+                return !(v && String(v).trim());
+              });
+
+              if (missing.length) {
+                // create readable list (you can tweak labels)
+                return `Address missing: ${missing.join(", ")}`;
+              }
+              return true;
+            },
+          }}
+          render={({ value, onChange, onBlur }) => (
+            <div>
+              <ADSAddress
+                t={t}
+                value={value || {}}
+                onChange={onChange}
+                onSelect={(_, addr = {}) => safeOnChange(addr)}
+                onBlur={onBlur} // pass through if ADSAddress later supports blur
               />
+              {/* show a single combined address error under the address component */}
+              {errors.address && <p style={{ color: "red", marginTop: "6px" }}>{errors.address.message}</p>}
             </div>
-<<<<<<< Updated upstream
           )}
         />
         
-=======
-          </LabelFieldPair>
-          {errors.firstName && <CardLabelError style={errorStyle}>{errors.firstName.message}</CardLabelError>}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t("NDC_LAST_NAME")}
-              <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="lastName"
-                rules={{
-                  required: "This field is required",
-                  pattern: {
-                    value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
-                    message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
-                  },
-                  minLength: { value: 2, message: "Minimum 2 characters" },
-                  maxLength: { value: 100, message: "Maximum 100 characters" },
-                }}
-                render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.lastName && <CardLabelError style={errorStyle}>{errors.lastName.message}</CardLabelError>}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t("NOC_APPLICANT_EMAIL_LABEL")}
-              <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="emailId"
-                rules={{
-                  required: "This field is required",
-                  pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" },
-                }}
-                render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.emailId && <CardLabelError style={errorStyle}>{errors.emailId.message}</CardLabelError>}
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              {t("NOC_APPLICANT_MOBILE_NO_LABEL")}
-              <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="mobileNumber"
-                rules={{
-                  required: "This field is required",
-                  minLength: { value: 10, message: "Enter at least 10 digits" },
-                  pattern: { value: /^[6-9]\d{9}$/, message: "Must start with 9, 8, 7, or 6 and be 10 digits long" },
-                }}
-                render={({ value, onChange, onBlur }) => <MobileNumber value={value} onChange={onChange} onBlur={onBlur} t={t} />}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.mobileNumber && <CardLabelError style={errorStyle}>{errors.mobileNumber.message}</CardLabelError>}
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{t("ADVT_CHALLAN_UNDER_SECTION_122_123_SGST")}</CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="SGST"
-                rules={{
-                  validate: (value) => !value.trim() || /^\d{2}[A-Z]{5}\d{4}[A-Z]\dZ[A-Z\d]$/.test(value.trim()) || "Enter a valid SGST",
-                }}
-                render={({ value, onChange, onBlur }) => (
-                  <TextInput
-                    value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    onBlur={(e) => {
-                      const trimmed = e.target.value.trim();
-                      onChange(trimmed);
-                      onBlur(e);
-                    }}
-                    t={t}
-                  />
-                )}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.SGST && <CardLabelError style={errorStyle}>{errors.SGST.message}</CardLabelError>}
-
-          {/* <CardLabel>{t("PT_COMMON_COL_ADDRESS")}</CardLabel> */}
->>>>>>> Stashed changes
-
+        <div style={{ marginTop: "20px" }}>
           <Controller
             control={control}
-            name="address"
-            rules={{
-              validate: (addr) => {
-                const requiredFields = ["houseNo", "houseName", "streetName", "addressline1", "landmark", "city", "locality", "pincode"];
-
-                const missing = requiredFields.filter((f) => {
-                  const v = addr?.[f];
-                  if (f === "pincode") return !(v && String(v).trim().length === 6); // require 6-digit pincode
-                  if (f === "city" || f === "locality") return !v; // objects expected
-                  return !(v && String(v).trim());
-                });
-
-                if (missing.length) {
-                  // create readable list (you can tweak labels)
-                  return `Address missing: ${missing.join(", ")}`;
-                }
-                return true;
-              },
-            }}
+            name="selfDeclaration"
+            rules={{ required: "This field is required" }}
             render={({ value, onChange, onBlur }) => (
-              <div>
-                <ADSAddress
-                  t={t}
-                  value={value || {}}
-                  onChange={onChange}
-                  onSelect={(_, addr = {}) => safeOnChange(addr)}
-                  onBlur={onBlur} // pass through if ADSAddress later supports blur
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+                <input
+                  type="checkbox"
+                  id="selfDeclaration"
+                  checked={value || false}
+                  onChange={(e) => onChange(e.target.checked)}
+                  onBlur={onBlur}
+                  style={{ width: "18px", height: "18px", cursor: "pointer" }}
                 />
-                {/* show a single combined address error under the address component */}
-                {errors.address && <CardLabelError style={errorStyle}>{errors.address.message}</CardLabelError>}
+                <label htmlFor="selfDeclaration" style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}>
+                  {t("BILLAMENDMENT_SELFDECLARATION_LABEL")}
+                </label>
+                <span style={{ color: "red" }}>*</span>
               </div>
             )}
           />
+          {errors.selfDeclaration && <p style={{ color: "red" }}>{errors.selfDeclaration.message}</p>}
 
-          <LabelFieldPair>
-            <CardLabel className="card-label-smaller">
-              Client Name <span style={{ color: "red" }}>*</span>
-            </CardLabel>
-            <div className="field">
-              <Controller
-                control={control}
-                name="clientName"
-                rules={{
-                  required: "This field is required",
-                  pattern: {
-                    value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
-                    message: "Only letters, spaces, apostrophes and hyphens allowed , atleast include one letter",
-                  },
-                  minLength: { value: 2, message: "Minimum 2 characters" },
-                  maxLength: { value: 100, message: "Maximum 100 characters" },
-                }}
-                render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} t={t} />}
-              />
-            </div>
-          </LabelFieldPair>
-          {errors.clientName && <CardLabelError style={errorStyle}>{errors.clientName.message}</CardLabelError>}
+          <CardLabel>
+            Client Name <span style={{ color: "red" }}>*</span>
+          </CardLabel>
 
-          <div style={{ marginTop: "20px" }}>
-            <LabelFieldPair>
-              <CardLabel className="card-label-smaller">
-                {t("BILLAMENDMENT_SELFDECLARATION_LABEL")}
-                <span style={{ color: "red" }}>*</span>
-              </CardLabel>
-              <div className="field">
-                <Controller
-                  control={control}
-                  name="selfDeclaration"
-                  rules={{ required: "This field is required" }}
-                  render={({ value, onChange, onBlur }) => (
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-                      <input
-                        type="checkbox"
-                        id="selfDeclaration"
-                        checked={value || false}
-                        onChange={(e) => onChange(e.target.checked)}
-                        onBlur={onBlur}
-                        style={{ width: "18px", height: "18px", cursor: "pointer" }}
-                      />
-                    </div>
-                  )}
-                />
-              </div>
-            </LabelFieldPair>
-          </div>
-
-          {errors.selfDeclaration && <CardLabelError style={errorStyle}>{errors.selfDeclaration.message}</CardLabelError>}
+          <Controller
+            control={control}
+            name="clientName"
+            rules={{
+              required: "This field is required",
+              pattern: {
+                value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
+                message: "Only letters, spaces, apostrophes and hyphens allowed , atleast include one letter",
+              },
+              minLength: { value: 2, message: "Minimum 2 characters" },
+              maxLength: { value: 100, message: "Maximum 100 characters" },
+            }}
+            render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} t={t} />}
+          />
+          {errors.clientName && <p style={{ color: "red" }}>{errors.clientName.message}</p>}
         </div>
+      </div>
 
-        <ActionBar>
-          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+      <ActionBar>
+        <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
 
-          <SubmitBar label="Next" submit="submit" />
-        </ActionBar>
-      </form>
-    </React.Fragment>
+        <SubmitBar label="Next" submit="submit" />
+      </ActionBar>
+    </form>
   );
 };
 

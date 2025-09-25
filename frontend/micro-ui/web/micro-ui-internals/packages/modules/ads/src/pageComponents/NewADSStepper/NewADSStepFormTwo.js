@@ -36,11 +36,9 @@ const NewADSStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   return (
     <React.Fragment>
-      <div className="employeeCard">
-        <ADSCitizenSecond onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+      <ADSCitizenSecond onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
 
-        {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
-      </div>
+      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

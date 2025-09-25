@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { TextInput, CardLabel, CardLabelError, TextArea, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, TextArea } from "@mseva/digit-ui-react-components";
 
 const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) => {
   // const allCities = Digit.Hooks.ads.useTenants();
@@ -211,171 +211,139 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
-  const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
 
   return (
     <div>
       {/* Address ID - optional */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t ? t("ADS_ADDRESS_ID") : "Address ID"}</CardLabel>
+      <CardLabel>{t ? t("ADS_ADDRESS_ID") : "Address ID"}</CardLabel>
+      <TextInput
+        value={addressId}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-        <div className="field">
-          <TextInput
-            value={addressId}
-            onChange={(e) => {
-              const trimmedValue = e.target.value.trim();
+          setAddressId(trimmedValue);
+          updateParent({ addressId: trimmedValue });
+          validateField("addressId", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.addressId && <div style={{ color: "red" }}>{errors.addressId}</div>}
 
-              setAddressId(trimmedValue);
-              updateParent({ addressId: trimmedValue });
-              validateField("addressId", trimmedValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.addressId && <CardLabelError style={errorStyle}>{errors.addressId.message}</CardLabelError>}
-      <LabelFieldPair>
-        {/* Door No - optional */}
-        <CardLabel className="card-label-smaller">{t ? t("ADS_DOOR_NO") : "Door No"}</CardLabel>
-        <div className="field">
-          <TextInput
-            value={doorNo}
-            onChange={(e) => {
-              const trimmedValue = e.target.value.trim();
+      {/* Door No - optional */}
+      <CardLabel>{t ? t("ADS_DOOR_NO") : "Door No"}</CardLabel>
+      <TextInput
+        value={doorNo}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-              setDoorNo(trimmedValue);
-              updateParent({ doorNo: trimmedValue });
-              validateField("doorNo", trimmedValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.doorNo && <CardLabelError style={errorStyle}>{errors.doorNo.message}</CardLabelError>}
+          setDoorNo(trimmedValue);
+          updateParent({ doorNo: trimmedValue });
+          validateField("doorNo", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.doorNo && <div style={{ color: "red" }}>{errors.doorNo}</div>}
 
       {/* House No */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t ? t("ADS_HOUSE_NO") : "House No"} <span style={{ color: "red" }}>*</span>
-        </CardLabel>
-        <div className="field">
-          <TextInput
-            value={houseNo}
-            onChange={(e) => {
-              const trimmedValue = e.target.value.trim();
+      <CardLabel>
+        {t ? t("ADS_HOUSE_NO") : "House No"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={houseNo}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-              setHouseNo(trimmedValue);
-              updateParent({ houseNo: trimmedValue });
-              validateField("houseNo", trimmedValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.houseNo && <CardLabelError style={errorStyle}>{errors.houseNo.message}</CardLabelError>}
+          setHouseNo(trimmedValue);
+          updateParent({ houseNo: trimmedValue });
+          validateField("houseNo", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.houseNo && <div style={{ color: "red" }}>{errors.houseNo}</div>}
 
       {/* House Name */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t ? t("ADS_HOUSE_NAME") : "House Name"} <span style={{ color: "red" }}>*</span>
-        </CardLabel>
-        <div className="field">
-          <TextInput
-            value={houseName}
-            onChange={(e) => {
-              const trimmedValue = e.target.value.trim();
+      <CardLabel>
+        {t ? t("ADS_HOUSE_NAME") : "House Name"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={houseName}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-              setHouseName(trimmedValue);
-              updateParent({ houseName: trimmedValue });
-              validateField("houseName", trimmedValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.houseName && <CardLabelError style={errorStyle}>{errors.houseName.message}</CardLabelError>}
+          setHouseName(trimmedValue);
+          updateParent({ houseName: trimmedValue });
+          validateField("houseName", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.houseName && <div style={{ color: "red" }}>{errors.houseName}</div>}
 
       {/* Street Name */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t ? t("ADS_STREET_NAME") : "Street Name"} <span style={{ color: "red" }}>*</span>
-        </CardLabel>
-        <div className="field">
-          <TextInput
-            value={streetName}
-            onChange={(e) => {
-              const trimmedValue = e.target.value.trim();
+      <CardLabel>
+        {t ? t("ADS_STREET_NAME") : "Street Name"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={streetName}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-              setStreetName(trimmedValue);
-              updateParent({ streetName: trimmedValue });
-              validateField("streetName", trimmedValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.streetName && <CardLabelError style={errorStyle}>{errors.streetName.message}</CardLabelError>}
+          setStreetName(trimmedValue);
+          updateParent({ streetName: trimmedValue });
+          validateField("streetName", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.streetName && <div style={{ color: "red" }}>{errors.streetName}</div>}
 
       {/* Address Line 1 */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t ? t("ADS_ADDRESS_LINE1") : "Address Line 1"} <span style={{ color: "red" }}>*</span>
-        </CardLabel>
-        <div className="field">
-          <TextInput
-            value={addressline1}
-            onChange={(e) => {
-              const trimmedValue = e.target.value.trim();
+      <CardLabel>
+        {t ? t("ADS_ADDRESS_LINE1") : "Address Line 1"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={addressline1}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-              setAddressline1(trimmedValue);
-              updateParent({ addressline1: trimmedValue });
-              validateField("addressline1", trimmedValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.addressline1 && <CardLabelError style={errorStyle}>{errors.addressline1.message}</CardLabelError>}
+          setAddressline1(trimmedValue);
+          updateParent({ addressline1: trimmedValue });
+          validateField("addressline1", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.addressline1 && <div style={{ color: "red" }}>{errors.addressline1}</div>}
 
       {/* Address Line 2 - optional */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">{t ? t("ADS_ADDRESS_LINE2") : "Address Line 2"}</CardLabel>
-        <div className="field">
-          <TextInput
-            value={addressline2}
-            onChange={(e) => {
-              const trimmedValue = e.target.value.trim();
+      <CardLabel>{t ? t("ADS_ADDRESS_LINE2") : "Address Line 2"}</CardLabel>
+      <TextInput
+        value={addressline2}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-              setAddressline2(trimmedValue);
-              updateParent({ addressline2: trimmedValue });
-              validateField("addressline2", trimmedValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.addressline2 && <CardLabelError style={errorStyle}>{errors.addressline2.message}</CardLabelError>}
+          setAddressline2(trimmedValue);
+          updateParent({ addressline2: trimmedValue });
+          validateField("addressline2", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.addressline2 && <div style={{ color: "red" }}>{errors.addressline2}</div>}
 
-      <LabelFieldPair>
-        {/* Landmark */}
-        <CardLabel className="card-label-smaller">
-          {t ? t("ADS_LANDMARK") : "Landmark"} <span style={{ color: "red" }}>*</span>
-        </CardLabel>
-        <div className="field">
-          <TextArea
-            value={landmark}
-            onChange={(e) => {
-              const trimmedValue = e.target.value.trim();
+      {/* Landmark */}
+      <CardLabel>
+        {t ? t("ADS_LANDMARK") : "Landmark"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextArea
+        value={landmark}
+        onChange={(e) => {
+          const trimmedValue = e.target.value.trim();
 
-              setLandmark(trimmedValue);
-              updateParent({ landmark: trimmedValue });
-              validateField("landmark", trimmedValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.landmark && <CardLabelError style={errorStyle}>{errors.landmark.message}</CardLabelError>}
+          setLandmark(trimmedValue);
+          updateParent({ landmark: trimmedValue });
+          validateField("landmark", trimmedValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+        style={{ width: "50%" }}
+      />
+      {errors.landmark && <div style={{ color: "red" }}>{errors.landmark}</div>}
 
       {/* City */}
       {/* <CardLabel>
@@ -417,54 +385,42 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       />
 
       {errors.locality && <div style={{ color: "red" }}>{errors.locality}</div>} */}
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t ? t("ADS_CITY") : "City"} <span style={{ color: "red" }}>*</span>
-        </CardLabel>
-        <div className="field">
-          <TextInput
-            value={city}
-            onChange={(e) => {
-              const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "").trim(); // Remove non-letter characters and trim
-              setCity(filteredValue);
-              updateParent({ city: filteredValue });
-              validateField("city", filteredValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.city && <CardLabelError style={errorStyle}>{errors.city.message}</CardLabelError>}
+      <CardLabel>
+        {t ? t("ADS_CITY") : "City"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={city}
+        onChange={(e) => {
+          const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "").trim(); // Remove non-letter characters and trim
+          setCity(filteredValue);
+          updateParent({ city: filteredValue });
+          validateField("city", filteredValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.city && <div style={{ color: "red" }}>{errors.city}</div>}
 
-      <LabelFieldPair>
-        <CardLabel className="card-label-smaller">
-          {t ? t("ADS_LOCALITY") : "Locality"} <span style={{ color: "red" }}>*</span>
-        </CardLabel>
-        <div className="field">
-          <TextInput
-            value={locality}
-            onChange={(e) => {
-              const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "").trim(); // Remove non-letter characters and trim
-              setLocality(filteredValue);
-              updateParent({ locality: filteredValue });
-              validateField("locality", filteredValue);
-            }}
-            onBlur={() => onBlurRef.current && onBlurRef.current()}
-          />
-        </div>
-      </LabelFieldPair>
-      {errors.locality && <CardLabelError style={errorStyle}>{errors.locality.message}</CardLabelError>}
+      <CardLabel>
+        {t ? t("ADS_LOCALITY") : "Locality"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput
+        value={locality}
+        onChange={(e) => {
+          const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "").trim(); // Remove non-letter characters and trim
+          setLocality(filteredValue);
+          updateParent({ locality: filteredValue });
+          validateField("locality", filteredValue);
+        }}
+        onBlur={() => onBlurRef.current && onBlurRef.current()}
+      />
+      {errors.locality && <div style={{ color: "red" }}>{errors.locality}</div>}
 
-      <LabelFieldPair>
-        {/* Pincode */}
-        <CardLabel className="card-label-smaller">
-          {t ? t("ADS_ADDRESS_PINCODE") : "Pincode"} <span style={{ color: "red" }}>*</span>
-        </CardLabel>
-        <div className="field">
-          <TextInput value={pincode} onChange={setAddressPincode} maxLength={6} />
-        </div>
-      </LabelFieldPair>
-      {errors.pincode && <CardLabelError style={errorStyle}>{errors.pincode.message}</CardLabelError>}
+      {/* Pincode */}
+      <CardLabel>
+        {t ? t("ADS_ADDRESS_PINCODE") : "Pincode"} <span style={{ color: "red" }}>*</span>
+      </CardLabel>
+      <TextInput value={pincode} onChange={setAddressPincode} maxLength={6} />
+      {errors.pincode && <div style={{ color: "red" }}>{errors.pincode}</div>}
     </div>
   );
 };

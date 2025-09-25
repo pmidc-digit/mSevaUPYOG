@@ -122,9 +122,6 @@ function PTRSummary({ t }) {
           {renderRow(t("Color"), pet?.petColor)}
           {renderRow(t("Vaccination Number"), pet?.vaccinationNumber)}
           {renderRow(t("Last Vaccine Date"), pet?.lastVaccineDate)}
-          {renderRow(t("Age"), pet?.petAge)}
-          {renderRow(t("Doctor Name"), pet?.doctorName)}
-          {renderRow(t("Clinic Name"), pet?.clinicName)}
         </div>
       </Card>
 

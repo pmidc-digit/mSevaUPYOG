@@ -113,6 +113,7 @@ const RegistrationForm = ({ onRegisterSubmit, onAgeError, selectedLanguage, sele
           WebkitBoxShadow: "none",
           padding: "0",
           margin: "0",
+          maxWidth:"550px",
         }}
       />
     </div>

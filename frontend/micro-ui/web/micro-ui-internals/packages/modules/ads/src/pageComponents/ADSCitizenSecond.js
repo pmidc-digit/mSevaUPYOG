@@ -1115,18 +1115,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     );
   }, [adsScheduleMap]);
 
-<<<<<<< Updated upstream
-  console.log("errors", errors);
-
-  useEffect(() => {
-    if ((mdmsCards?.length || 0) > 0 || (adsList?.length || 0) > 0) {
-      clearErrors("siteSelection");
-    }
-  }, [mdmsCards, adsList, clearErrors]);
-
-=======
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
->>>>>>> Stashed changes
 
   return (
     <React.Fragment>
@@ -1216,30 +1205,6 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                         setAdsList([]);
                         setAdsScheduleMap({});
                       }
-<<<<<<< Updated upstream
-                    } else {
-                      setMdmsCards([]);
-                      setAdsList([]);
-                      setAdsScheduleMap({});
-                    }
-                    const locObj = findLocationByCode(val.code);
-                    const normalized = normalizeLocationToGeo(locObj);
-                    if (normalized) {
-                      setValue("geoLocation", normalized, { shouldValidate: true, shouldDirty: true });
-                      setPlaceNameState(normalized.formattedAddress);
-                      if (!watch("cartAddress")) setValue("cartAddress", normalized.formattedAddress);
-                    } else {
-                      // if location record has no geo_tag, clear geoLocation so user must pick it manually
-                      setValue("geoLocation", null, { shouldValidate: false });
-                      setPlaceNameState("");
-                    }
-                  }}
-                />
-              );
-            }}
-          />
-          {errors.siteSelection && <p style={{ color: "red", marginTop: "4px" }}>{errors.siteSelection.message}</p>}
-=======
                       const locObj = findLocationByCode(val.code);
                       const normalized = normalizeLocationToGeo(locObj);
                       if (normalized) {
@@ -1258,7 +1223,6 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             />
           </LabelFieldPair>
           {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
->>>>>>> Stashed changes
 
           <div className="field" style={{ margin: "12px 0", padding: 8, border: "1px solid #eee", borderRadius: 6, width: "80%" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
@@ -1392,10 +1356,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 />
               )}
             />
-<<<<<<< Updated upstream
-=======
             {errors.bookingToTime && <p style={errorStyle}>{errors.bookingToTime.message}</p>}
->>>>>>> Stashed changes
           </div>
 
           {adsForLocation.length > 0 && (

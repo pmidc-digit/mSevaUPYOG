@@ -59,19 +59,20 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
             type="button"
             onClick={() => setIsOpen(true)}
             style={{
-              padding: "8px 10px",
-              background: "#0b74de",
+              padding: "6px 8px",
+              background: "#2947a3",
               color: "#fff",
               border: "none",
               borderRadius: 6,
               cursor: "pointer",
-              fontWeight: 700,
+              fontWeight: 500,
               fontSize: 13,
               lineHeight: "18px",
               textAlign: "center",
               appearance: "none",
               WebkitAppearance: "none",
               backgroundImage: "none",
+              marginTop: "-40px",
             }}
           >
             <span style={{ display: "inline-block", color: "#fff", textTransform: "none" }}>

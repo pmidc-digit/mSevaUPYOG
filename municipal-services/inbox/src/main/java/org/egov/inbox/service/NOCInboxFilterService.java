@@ -1,17 +1,5 @@
 package org.egov.inbox.service;
 
-import static org.egov.inbox.util.NdcConstants.ASSIGNEE_PARAM;
-import static org.egov.inbox.util.NdcConstants.BUSINESS_SERVICE_PARAM;
-import static org.egov.inbox.util.NdcConstants.DESC_PARAM;
-import static org.egov.inbox.util.NdcConstants.LIMIT_PARAM;
-import static org.egov.inbox.util.NdcConstants.LOCALITY_PARAM;
-import static org.egov.inbox.util.NdcConstants.NO_OF_RECORDS_PARAM;
-import static org.egov.inbox.util.NdcConstants.OFFSET_PARAM;
-import static org.egov.inbox.util.NdcConstants.REQUESTINFO_PARAM;
-import static org.egov.inbox.util.NdcConstants.SEARCH_CRITERIA_PARAM;
-import static org.egov.inbox.util.NdcConstants.SORT_ORDER_PARAM;
-import static org.egov.inbox.util.NdcConstants.TENANT_ID_PARAM;
-
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +13,8 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.jayway.jsonpath.JsonPath;
+
+import static org.egov.inbox.util.NdcConstants.*;
 
 @Service
 public class NOCInboxFilterService {
@@ -54,7 +44,10 @@ public class NOCInboxFilterService {
         Map<String, Object> searchCriteria = getSearchCriteria(criteria, StatusIdNameMap, moduleSearchCriteria, processCriteria);
         // Paginating searcher results
         searchCriteria.put(OFFSET_PARAM, criteria.getOffset());
-        searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
+        if(!moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM))
+        {
+            searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
+        }
         moduleSearchCriteria.put(LIMIT_PARAM, criteria.getLimit());
 
         searcherRequest.put(REQUESTINFO_PARAM, requestInfo);

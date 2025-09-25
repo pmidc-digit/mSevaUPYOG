@@ -733,9 +733,9 @@ public class InboxService {
                 businessObjects = fetchModuleObjects(moduleSearchCriteria, businessServiceName, criteria.getTenantId(),
                         requestInfo, srvMap);
                 //Specifically handle for swach/pgr mobileNumber,locality,servCode filters if given
-                if(processCriteria.getModuleName().equalsIgnoreCase(NDC_MODULE)){
-                    businessObjects = filterObjectsBasedOnMobileNumber(moduleSearchCriteria, businessObjects);
-                }
+//                if(processCriteria.getModuleName().equalsIgnoreCase(NDC_MODULE)){
+//                    businessObjects = filterObjectsBasedOnMobileNumber(moduleSearchCriteria, businessObjects);
+//                }
                 if (processCriteria.getModuleName().equals(SWACH) || processCriteria.getModuleName().equals(PGR)) {
                 	if(moduleSearchCriteria.containsKey(PGR_MOBILE_NUMBER_PARAM) || moduleSearchCriteria.containsKey(PGR_SERVICECODE_PARAM) || moduleSearchCriteria.containsKey(PGR_LOCALITY_PARAM)) {
                 		JSONArray filtered = new JSONArray();
@@ -1181,7 +1181,11 @@ public class InboxService {
 
 		}
 		log.info("statusCountMap size :::: " + statusCountMap.size());
-		
+        //This is to get consistent count after filteration of the objects according to the business keys
+        if(moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM) && (isAdvFlag || isNdcFlag || isNocFlag || isPetFlag))
+        {
+            totalCount = inboxes.size();
+        }
         response.setTotalCount(totalCount);
         response.setNearingSlaCount(nearingSlaProcessCount);
         response.setStatusMap(statusCountMap);

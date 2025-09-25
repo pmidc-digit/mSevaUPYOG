@@ -72,21 +72,21 @@ public class NDCInboxFilterService {
         HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
         ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
         Boolean isSearchResultEmpty = false;
-        Boolean isMobileNumberPresent = false;
+//        Boolean isMobileNumberPresent = false;
         List<String> userUUIDs = new ArrayList<>();
-        if (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
-            isMobileNumberPresent = true;
-        }
-        if (isMobileNumberPresent) {
-            String tenantId = criteria.getTenantId();
-            String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
-            userUUIDs = fetchUserUUID(mobileNumber, requestInfo, tenantId);
-            Boolean isUserPresentForGivenMobileNumber = CollectionUtils.isEmpty(userUUIDs) ? false : true;
-            isSearchResultEmpty = !isMobileNumberPresent || !isUserPresentForGivenMobileNumber;
-            if (isSearchResultEmpty) {
-                return new ArrayList<>();
-            }
-        }
+//        if (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
+//            isMobileNumberPresent = true;
+//        }
+//        if (isMobileNumberPresent) {
+//            String tenantId = criteria.getTenantId();
+//            String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
+//            userUUIDs = fetchUserUUID(mobileNumber, requestInfo, tenantId);
+//            Boolean isUserPresentForGivenMobileNumber = CollectionUtils.isEmpty(userUUIDs) ? false : true;
+//            isSearchResultEmpty = !isMobileNumberPresent || !isUserPresentForGivenMobileNumber;
+//            if (isSearchResultEmpty) {
+//                return new ArrayList<>();
+//            }
+//        }
 
         if (!isSearchResultEmpty) {
             Object result = null;
@@ -96,7 +96,11 @@ public class NDCInboxFilterService {
                     moduleSearchCriteria, processCriteria, userUUIDs);
             // Paginating searcher results
             searchCriteria.put(OFFSET_PARAM, criteria.getOffset());
-            searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
+            //Do not put limit in this case cause all the application numbers goes to the explicit search which is then and with mobile number to give the applications with the limit given by frontend it is added in module search criteria
+            if(!moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM))
+            {
+                searchCriteria.put(NO_OF_RECORDS_PARAM, criteria.getLimit());
+            }
             moduleSearchCriteria.put(LIMIT_PARAM, criteria.getLimit());
 
             searcherRequest.put(REQUESTINFO_PARAM, requestInfo);
@@ -129,10 +133,10 @@ public class NDCInboxFilterService {
         searchCriteria.put(BUSINESS_SERVICE_PARAM, processCriteria.getBusinessService());
 
         // Accommodating module search criteria in searcher request
-        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)
-                && !CollectionUtils.isEmpty(userUUIDs)) {
-            searchCriteria.put(USERID_PARAM, userUUIDs);
-        }
+//        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)
+//                && !CollectionUtils.isEmpty(userUUIDs)) {
+//            searchCriteria.put(USERID_PARAM, userUUIDs);
+//        }
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(LOCALITY_PARAM)) {
             searchCriteria.put(LOCALITY_PARAM, moduleSearchCriteria.get(LOCALITY_PARAM));
         }
@@ -144,7 +148,6 @@ public class NDCInboxFilterService {
         }
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NdcConstants.WF_STATUS)) {
             searchCriteria.put(NdcConstants.WF_STATUS, moduleSearchCriteria.get(NdcConstants.WF_STATUS));
-
         }
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(STATUS_PARAM)) {
             searchCriteria.put(STATUS_PARAM, StatusIdNameMap.values());
@@ -172,21 +175,21 @@ public class NDCInboxFilterService {
         HashMap<String, Object> moduleSearchCriteria = criteria.getModuleSearchCriteria();
         ProcessInstanceSearchCriteria processCriteria = criteria.getProcessSearchCriteria();
         Boolean isSearchResultEmpty = false;
-        Boolean isMobileNumberPresent = false;
+//        Boolean isMobileNumberPresent = false;
         List<String> userUUIDs = new ArrayList<>();
-        if (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
-            isMobileNumberPresent = true;
-        }
-        if (isMobileNumberPresent) {
-            String tenantId = criteria.getTenantId();
-            String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
-            userUUIDs = fetchUserUUID(mobileNumber, requestInfo, tenantId);
-            Boolean isUserPresentForGivenMobileNumber = CollectionUtils.isEmpty(userUUIDs) ? false : true;
-            isSearchResultEmpty = !isMobileNumberPresent || !isUserPresentForGivenMobileNumber;
-            if (isSearchResultEmpty) {
-                return 0;
-            }
-        }
+//        if (moduleSearchCriteria.containsKey(MOBILE_NUMBER_PARAM)) {
+//            isMobileNumberPresent = true;
+//        }
+//        if (isMobileNumberPresent) {
+//            String tenantId = criteria.getTenantId();
+//            String mobileNumber = String.valueOf(moduleSearchCriteria.get(MOBILE_NUMBER_PARAM));
+//            userUUIDs = fetchUserUUID(mobileNumber, requestInfo, tenantId);
+//            Boolean isUserPresentForGivenMobileNumber = CollectionUtils.isEmpty(userUUIDs) ? false : true;
+//            isSearchResultEmpty = !isMobileNumberPresent || !isUserPresentForGivenMobileNumber;
+//            if (isSearchResultEmpty) {
+//                return 0;
+//            }
+//        }
 
         if (!isSearchResultEmpty) {
             Map<String, Object> searcherRequest = new HashMap<>();

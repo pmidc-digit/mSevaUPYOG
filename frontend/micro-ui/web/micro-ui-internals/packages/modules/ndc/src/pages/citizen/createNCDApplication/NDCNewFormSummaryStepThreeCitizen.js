@@ -9,6 +9,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   const dispatch = useDispatch();
   const history = useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  const user = Digit.UserService.getUser();
 
   const formData = useSelector((state) => state.ndc.NDCForm.formData || {});
   // Function to handle the "Next" button click
@@ -30,14 +31,25 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
   function mapToNDCPayload(inputData, actionStatus) {
     const applicant = Digit.UserService.getUser()?.info || {};
+    console.log("formData mobile number", formData);
+    // const owners = [
+    //   {
+    //     name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
+    //     mobileNumber: formData?.NDCDetails?.PropertyDetails?.mobileNumber,
+    //     gender: formData?.NDCDetails?.PropertyDetails?.gender,
+    //     emailId: formData?.NDCDetails?.PropertyDetails?.email,
+    //     type: "CITIZEN",
+    //   },
+    // ];
 
     const owners = [
       {
-        name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
-        mobileNumber: formData?.NDCDetails?.PropertyDetails?.mobileNumber,
+        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
+        name: user?.info?.name,
+        mobileNumber: user?.info?.mobileNumber,
         gender: formData?.NDCDetails?.PropertyDetails?.gender,
-        emailId: formData?.NDCDetails?.PropertyDetails?.email,
-        type: "CITIZEN",
+        emailId: user?.info?.emailId,
+        type: user?.info?.type,
       },
     ];
 
@@ -91,7 +103,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
   return (
     <React.Fragment>
-      <NDCSummary formData={formData} goNext={goNext} />
+      <NDCSummary formData={formData} goNext={goNext} onGoBack={onGoBack} />
     </React.Fragment>
   );
 };

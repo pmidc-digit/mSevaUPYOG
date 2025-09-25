@@ -8,8 +8,6 @@ import PTRCitizenPet from "./pageComponents/PTRCitizenPet";
 import PTRDocumentUpload from "./pageComponents/PTRDocumentUpload";
 import PTRSelectStreet from "./pageComponents/PTRSelectStreet";
 import PTRCreate from "./pages/citizen/Create";
-import EditApplication from "./pageComponents/EditApplication/EditApplication";
-
 import PTRCitizenDetails from "./pageComponents/PTRCitizenDetails";
 import PTRCitizenAddress from "./pageComponents/PTRCitizenAddress";
 import PTRSelectPincode from "./pageComponents/PTRSelectPincode";
@@ -93,7 +91,6 @@ const componentsToRegister = {
   RenewPTRStepFormTwo,
   RenewPTRStepFormThree,
   RenewPTRStepFormFour,
-  NewPTREditApplication: EditApplication,
 };
 
 const addComponentsToRegistry = () => {

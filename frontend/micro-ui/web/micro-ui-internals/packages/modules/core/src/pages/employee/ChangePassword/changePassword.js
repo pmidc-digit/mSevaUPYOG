@@ -121,9 +121,9 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
         config={config}
         label={propsConfig.texts.submitButtonLabel}
         cardStyle={{ maxWidth: "408px", margin: "auto" }}
-        className="employeeChangePassword"
+        className="loginFormStyleEmployeeNew"
       >
-        <Header />
+        {/* <Header /> */}
         <CardSubHeader style={{ textAlign: "center" }}> {propsConfig.texts.header} </CardSubHeader>
         <CardText>
           {`${t(`CS_LOGIN_OTP_TEXT`)} `}
@@ -146,7 +146,7 @@ const ChangePasswordComponent = ({ config: propsConfig, t }) => {
           </div>
         </div> */}
       </FormComposer>
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} />}
+      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
 
       <div style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"white",textAlign:"center" }}>
         <div style={{ display: 'flex', justifyContent: 'center', color:"black" }}>

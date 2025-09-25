@@ -181,6 +181,7 @@ const PTRApplicationDetails = () => {
           <StatusTable>
             <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
           </StatusTable>
+
           <CardSubHeader style={{ fontSize: "24px" }}>{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressId || t("CS_NA")} />
@@ -189,6 +190,7 @@ const PTRApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_STREET_NAME")} text={pet_details?.address?.street || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_HOUSE_NO")} text={pet_details?.address?.doorNo || t("CS_NA")} /> */}
           </StatusTable>
+
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
@@ -200,20 +202,17 @@ const PTRApplicationDetails = () => {
             <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
           </StatusTable>
+
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PET_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("PTR_SEARCH_PET_TYPE")} text={pet_details?.petDetails?.petType || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_SEARCH_BREED_TYPE")} text={pet_details?.petDetails?.breedType || t("CS_NA")} />
-            <Row className="border-none" label={t("Pet Name")} text={pet_details?.petDetails?.petName || t("CS_NA")} />
-            <Row className="border-none" label={t("Pet Age")} text={pet_details?.petDetails?.petAge || t("CS_NA")} />
-
             <Row className="border-none" label={t("PTR_DOCTOR_NAME")} text={pet_details?.petDetails?.doctorName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_CLINIC_NAME")} text={pet_details?.petDetails?.clinicName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_VACCINATED_DATE")} text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
-            <Row className="border-none" label={t("Color")} text={pet_details?.petDetails?.petColor || t("CS_NA")} />
-            <Row className="border-none" label={t("Pet Gender")} text={pet_details?.petDetails?.petGender || t("CS_NA")} />
-          </StatusTable>{" "}
+          </StatusTable>
+
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_DOCS")}</CardSubHeader>
           <div>
             {Array.isArray(application?.documents) && application.documents.length > 0 ? (
@@ -229,6 +228,7 @@ const PTRApplicationDetails = () => {
               </StatusTable>
             )}
           </div>
+
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (
             <Toast

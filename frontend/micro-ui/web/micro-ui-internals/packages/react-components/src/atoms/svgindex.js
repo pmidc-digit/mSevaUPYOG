@@ -353,8 +353,8 @@ const GetApp = ({ className }) => (
   </svg>
 );
 
-const HamburgerIcon = ({ className, styles, color = "#FFF" }) => (
-  <svg style={{ ...styles }} width="30" height="30" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
+const HamburgerIcon = ({ className, styles, color = "#fdfdfd" }) => (
+  <svg style={{ ...styles }} width="24" height="24" focusable="false" viewBox="0 0 24 24" aria-hidden="true">
     <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" fill={color}></path>
   </svg>
 );
@@ -483,14 +483,6 @@ const GenericFileIcon = () => (
     />
   </svg>
 );
-const NDCIcon = ({className, style}) => (
-  <svg width="30" height="30" viewBox="0 0 80 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M50 0H10C4.5 0 0.0500011 4.5 0.0500011 10L0 90C0 95.5 4.45 100 9.95 100H70C75.5 100 80 95.5 80 90V30L50 0ZM60 80H20V70H60V80ZM60 60H20V50H60V60ZM45 35V7.5L72.5 35H45Z"
-      fill="#ffffffff"
-    />
-  </svg>
-);
 
 const ExternalLinkIcon = () => (
   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -578,15 +570,7 @@ function PropertyHouse({ className, styles }) {
     </svg>
   );
 }
-const CHBIcon =({ className, styles }) =>(
-  
-     <svg className={className} style={{ ...styles }} width="30" height="30" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M18 0H2V2H18V0ZM2 24H18V22H2V24ZM18 4H2C0.9 4 0 4.9 0 6V18C0 19.1 0.9 20 2 20H18C19.1 20 20 19.1 20 18V6C20 4.9 19.1 4 18 4ZM10 6.75C11.24 6.75 12.25 7.76 12.25 9C12.25 10.24 11.24 11.25 10 11.25C8.76 11.25 7.75 10.24 7.75 9C7.75 7.76 8.76 6.75 10 6.75ZM15 17H5V15.5C5 13.83 8.33 13 10 13C11.67 13 15 13.83 15 15.5V17Z"
-      fill="#ffffffff"
-    />
-  </svg>
-)
+
 const InfoBannerIcon = ({ fill = "#3498DB" }) => {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -623,7 +607,7 @@ const RupeeIcon = ({ className }) => (
 );
 
 const ComplaintIcon = ({ className, styles }) => (
-  <svg width="28" height="34" style={{ ...styles }} className={className} viewBox="0 0 48 48" fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg">
+  <svg style={{ ...styles }} className={className} viewBox="0 0 48 48" fill="#1359C8" xmlns="http://www.w3.org/2000/svg">
     <path d="M42.6667 0.666748H5.33335C2.76669 0.666748 0.69002 2.76675 0.69002 5.33342L0.666687 47.3334L10 38.0001H42.6667C45.2334 38.0001 47.3334 35.9001 47.3334 33.3334V5.33342C47.3334 2.76675 45.2334 0.666748 42.6667 0.666748ZM26.3334 21.6667H21.6667V7.66675H26.3334V21.6667ZM26.3334 31.0001H21.6667V26.3334H26.3334V31.0001Z" />
   </svg>
 );
@@ -647,22 +631,6 @@ const Person = (style) => (
     <path
       d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
       fill="white"
-    />
-  </svg>
-);
-const SVIcon = ({style, className}) => (
-  <svg
-    style={style}
-    width="30"
-    height="30"
-    viewBox="0 0 40 40"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M13.6167 9.5L1.66667 17.4667V35H10V21.6667H16.6667V35H25V17.0833L13.6167 9.5Z" fill="#FFF" />
-    <path
-      d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"
-      fill="#FFF"
     />
   </svg>
 );
@@ -735,7 +703,6 @@ const OBPSIcon = ({ className, styles }) => (
     />
   </svg>
 );
-
 
 const OBPSIconSolidBg = () => (
   <svg width="34" height="30" viewBox="0 0 34 30" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -817,16 +784,7 @@ const EventCalendar = () => {
     </svg>
   );
 };
-const ADSIcone = () => {
-  return (
-    <svg width="30" height="30" viewBox="0 0 24 27" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M18.6667 15.0002H12V21.6668H18.6667V15.0002ZM17.3333 0.333496V3.00016H6.66667V0.333496H4V3.00016H2.66667C1.18667 3.00016 0.0133333 4.20016 0.0133333 5.66683L0 24.3335C0 25.8002 1.18667 27.0002 2.66667 27.0002H21.3333C22.8 27.0002 24 25.8002 24 24.3335V5.66683C24 4.20016 22.8 3.00016 21.3333 3.00016H20V0.333496H17.3333ZM21.3333 24.3335H2.66667V9.66683H21.3333V24.3335Z"
-        fill="#ffffffff"
-      />
-    </svg>
-  );
-};
+
 const NotificationBell = () => (
   <svg width="16" height="20" viewBox="0 0 16 20" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
@@ -1130,16 +1088,8 @@ const InboxIcon = () => (
     />
   </svg>
 );
-const NOCIcon = () => (
-  <svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M26.6667 0H3.33333C1.5 0 0 1.5 0 3.33333V15C0 16.8333 1.5 18.3333 3.33333 18.3333H26.6667C28.5 18.3333 30 16.8333 30 15V3.33333C30 1.5 28.5 0 26.6667 0ZM26.6667 10H20C20 12.7 17.7 15 15 15C12.3 15 10 12.7 10 10H3.33333V3.33333H26.6667V10ZM20 21.6667H30V26.6667C30 28.5 28.5 30 26.6667 30H3.33333C1.5 30 0 28.5 0 26.6667V21.6667H10C10 24.4333 12.2333 26.6667 15 26.6667C17.7667 26.6667 20 24.4333 20 21.6667Z"
-      fill="#ffffffff"
-    />
-  </svg>
-);
 const PTRIcon = ({ className, styles }) => (
-  <svg width="30" height="30" style={{ ...styles }} viewBox="0 0 512 512" fill="#ffffff" className={className} xmlns="http://www.w3.org/2000/svg">
+  <svg width="512" height="512" style={{ ...styles }} viewBox="0 0 512 512" fill="#ffffff" className={className} xmlns="http://www.w3.org/2000/svg">
 <path d="M256 224c-79.41 0-192 122.76-192 200.25 0 34.9 26.81 55.75 71.74 55.75 48.84 0 81.09-25.08 120.26-25.08 39.51 0 71.85 25.08 120.26 25.08 44.93 0 71.74-20.85 71.74-55.75C448 346.76 335.41 224 256 224zm-147.28-12.61c-10.4-34.65-42.44-57.09-71.56-50.13-29.12 6.96-44.29 40.69-33.89
 75.34 10.4 34.65 42.44 57.09 71.56 50.13 29.12-6.96 44.29-40.69 33.89-75.34zm84.72-20.78c30.94-8.14 46.42-49.94 34.58-93.36s-46.52-72.01-77.46-63.87-46.42 49.94-34.58 93.36c11.84 43.42 46.53 72.02 77.46 63.87zm281.39-29.34c-29.12-6.96-61.15 15.48-71.56
 50.13-10.4 34.65 4.77 68.38 33.89 75.34 29.12 6.96 61.15-15.48 71.56-50.13 10.4-34.65-4.77-68.38-33.89-75.34zm-156.27 29.34c30.94 8.14 65.62-20.45 77.46-63.87 11.84-43.42-3.64-85.21-34.58-93.36s-65.62 20.45-77.46 63.87c-11.84 43.42 3.64 85.22 34.58 93.36z"/>
@@ -1270,9 +1220,4 @@ export {
   DeathIcon,
   InfoIcon,
   PTRIcon,
-  NDCIcon,
-  NOCIcon,
-  ADSIcone,
-  SVIcon,
-  CHBIcon
 };

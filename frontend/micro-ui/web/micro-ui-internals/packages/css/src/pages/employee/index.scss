@@ -433,7 +433,7 @@
 }
 
 .RightMostTopBarOptions {
-  @apply flex ;
+  @apply flex float-right;
   display: flex;
   .EventNotificationWrapper {
     @apply relative cursor-pointer;
@@ -449,7 +449,7 @@
   .select-wrap {
     margin-bottom: unset;
     svg {
-      fill: #a82227;
+      fill: #ffffff;
     }
   }
 }

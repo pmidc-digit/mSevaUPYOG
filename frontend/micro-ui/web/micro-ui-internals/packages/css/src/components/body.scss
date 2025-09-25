@@ -10,9 +10,8 @@ body {
 }
 
 .navbar {
-  @apply text-white bg-secondary w-full mb-md;
-  background: #FFF !important;
-  box-shadow: 0 1px 4px #b1b4b6;
+  @apply text-white bg-secondary p-md w-full mb-md;
+  background: #294a97 !important;
   img {
     height: 24px;
   }

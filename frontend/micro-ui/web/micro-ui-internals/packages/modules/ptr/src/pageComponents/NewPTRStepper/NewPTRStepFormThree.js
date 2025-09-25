@@ -21,6 +21,7 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
 
   const makeDocumentsValidator = (mdms) => {
     const requiredDocs = (mdms || []).filter((d) => d?.required);
+    console.log("requiredDocs are:>> ", requiredDocs);
 
     return (documents = []) => {
       const errors = {};
@@ -30,7 +31,7 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       for (const doc of requiredDocs) {
         const satisfied = docsArray.some((d) => d.documentType?.includes(doc.code) && (d.filestoreId || d.fileStoreId));
         if (!satisfied) {
-          missingDocs.push(doc.name || t(doc.code.replaceAll(".", "_")));
+          missingDocs.push(t(doc?.code.replaceAll(".", "_")));
           // or doc.name if available
         }
       }

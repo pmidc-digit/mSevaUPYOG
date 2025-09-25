@@ -97,7 +97,7 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
   useEffect(() => {
     let waterConnection;
     if (apiDataCheck?.[0]?.NdcDetails) {
-      const resData = apiDataCheck?.[0]?.NdcDetails.filter((item) => {
+      const resData = apiDataCheck?.[0]?.NdcDetails?.filter((item) => {
         return item.businessService == "WS";
       });
 
@@ -124,8 +124,9 @@ export const PropertyDetailsForm = ({ config, onSelect, userType, formData, form
 
   useEffect(() => {
     let sewerageConnection;
+    console.log("apiDataCheck", apiDataCheck);
     if (apiDataCheck?.[0]?.NdcDetails) {
-      const resData = apiDataCheck?.[0]?.NdcDetails.filter((item) => {
+      const resData = apiDataCheck?.[0]?.NdcDetails?.filter((item) => {
         return item.businessService == "SW";
       });
       sewerageConnection =

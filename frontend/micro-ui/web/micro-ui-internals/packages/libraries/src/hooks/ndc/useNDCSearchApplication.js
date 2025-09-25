@@ -46,5 +46,5 @@ export const useNDCSearchApplicationEmployee = (params, tenantId, config = {}, t
     },
   });
 
-  return { ...result, revalidate: () => client.invalidateQueries(["NDC_APPLICATIONS_LIST", params]) };
+  return { ...result, revalidate: () => client.invalidateQueries(["NDC_APPLICATIONS_LIST", params]), refetch: result.refetch };
 };

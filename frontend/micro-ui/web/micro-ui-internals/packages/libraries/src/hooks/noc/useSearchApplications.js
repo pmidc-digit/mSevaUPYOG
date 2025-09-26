@@ -10,6 +10,7 @@ const useNOCSearch = (params, tenantId, config) => {
 
 export const useNOCCitizenSearchApplication = (params, tenantId, config = {}, t) => {
   const client = useQueryClient();
+
   const result = useQuery(["NOC_APPLICATIONS_LIST", params], useNOCSearch(params, tenantId, config), {
     staleTime: Infinity,
     select: (data) => {
@@ -31,6 +32,7 @@ export const useNOCCitizenSearchApplication = (params, tenantId, config = {}, t)
       return {
         data: mappedData,
         count,
+        revalidate: () => client.invalidateQueries(["NOC_APPLICATIONS_LIST", params])
       };
     },
   });
@@ -44,8 +46,12 @@ export const useNOCSearchApplication = (params, tenantId, config = {}, t) => {
   const result = useQuery(["NOC_SEARCH_APPLICATION", params], useNOCSearch(params, tenantId, config), {
     staleTime: Infinity,
     select: (data) => {
-      const objData = data?.data;
-      return objData;
+      // const objData = data?.data;
+      // return objData;
+      return{
+        resData: data?.data,
+        revalidate: () => client.invalidateQueries(["NOC_SEARCH_APPLICATION", params])
+      }
     },
   });
 

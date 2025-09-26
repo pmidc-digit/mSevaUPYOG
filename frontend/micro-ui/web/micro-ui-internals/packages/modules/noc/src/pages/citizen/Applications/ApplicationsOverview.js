@@ -14,22 +14,80 @@ import {
   SubmitBar,
   Menu,
   LinkButton,
-  Toast
+  Toast,
+  ConnectingCheckPoints,
+  CheckPoint,
 } from "@mseva/digit-ui-react-components";
 import React, { Fragment, useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { useParams } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
+import NOCModal from "../../../pageComponents/NOCModal";
+
+const getTimelineCaptions = (checkpoint, index, arr, t) => {
+  console.log("checkpoint here", checkpoint);
+  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
+  console.log("wfDocuments", wfDocuments);
+  const caption = {
+    date: checkpoint?.auditDetails?.lastModified,
+    name: checkpoint?.assigner?.name,
+    mobileNumber: checkpoint?.assigner?.mobileNumber,
+    source: checkpoint?.assigner?.source,
+  };
+
+  return (
+    <div>
+      {comment?.length > 0 && (
+        <div className="TLComments">
+          <h3>{t("WF_COMMON_COMMENTS")}</h3>
+          <p style={{ overflowX: "scroll" }}>{comment}</p>
+        </div>
+      )}
+
+      {thumbnailsToShow?.thumbs?.length > 0 && (
+        <DisplayPhotos
+          srcs={thumbnailsToShow.thumbs}
+          onClick={(src, idx) => {
+            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+            Digit.Utils.zoomImage(fullImage);
+          }}
+        />
+      )}
+
+      {wfDocuments?.length > 0 && (
+        <div>
+          {/* {wfDocuments?.map((doc, index) => (
+            <div key={index}>
+              <NOCDocument value={doc?.id || ""} index={index} />
+            </div>
+          ))} */}
+          <div>
+            <NOCDocument value={{ workflowDocs: wfDocuments}} index={index}/>
+          </div>
+        </div>
+      )}
+
+      <div style={{ marginTop: "8px" }}>
+        {caption.date && <p>{caption.date}</p>}
+        {caption.name && <p>{caption.name}</p>}
+        {caption.mobileNumber && <p>{caption.mobileNumber}</p>}
+        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
+      </div>
+    </div>
+  );
+};
 
 const CitizenApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
+  const history=useHistory();
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   const [displayData, setDisplayData] = useState({});
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
@@ -91,6 +149,135 @@ const CitizenApplicationOverview = () => {
   const suffix = suffixes[(index - 1) % 10 - 1] || "th";
   return `${index}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`; // e.g., "1st Floor"
   };
+
+  //here workflow details
+  const [showToast, setShowToast] = useState(null);
+  const [displayMenu, setDisplayMenu] = useState(false);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const menuRef = useRef();
+
+  const closeToast = () => {
+     setShowToast(null);
+  };
+
+  const closeMenu = () => {
+    setDisplayMenu(false);
+  };
+    
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
+
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: id,
+    moduleCode: "obpas_noc",
+    // role: "EMPLOYEE",
+  });
+
+  console.log("workflowDetails here=>", workflowDetails);
+
+  if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
+    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
+
+  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+    workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
+    workflowDetails.data.actionState = { ...workflowDetails.data };
+  }
+
+  useEffect(()=>{
+      if(workflowDetails){
+        workflowDetails.revalidate();
+      }
+
+      if(data){
+        data.revalidate();
+      }
+  },[])
+
+    let actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
+
+
+
+  console.log("actions here", actions);
+
+  function onActionSelect(action) {
+    console.log("selected action", action);
+    const appNo= applicationDetails?.Noc?.[0]?.applicationNo;
+
+    const payload = {
+      Licenses: [action],
+    };
+
+    if (action?.action == "EDIT") {
+      history.push(`/digit-ui/citizen/noc/edit-application/${appNo}`);
+    }
+    else if (action?.action == "DRAFT") {
+      setShowToast({ key: "true", warning:true, message: "Please edit your application before saving or resubmitting"});
+    }
+    else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+      submitAction(payload);
+    } 
+    else if (action?.action == "PAY") {
+      history.push(`/digit-ui/citizen/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
+    } else {
+      setSelectedAction(action);
+    }
+  }
+
+  const submitAction = async (data) => {
+    // setSelectedAction(null);
+    const payloadData = applicationDetails?.Noc?.[0]|| {};
+
+   // console.log("data ==>", data);
+
+    const updatedApplicant = {
+      ...payloadData,
+      workflow: {},
+    };
+
+    const filtData = data?.Licenses?.[0];
+    //console.log("filtData", filtData);
+
+    updatedApplicant.workflow = {
+      action: filtData.action,
+      assignes: filtData?.assignee,
+      comment: filtData?.comment,
+      documents: filtData?.wfDocuments,
+    };
+
+    console.log("updatedApplicant", updatedApplicant);
+
+    const finalPayload = {
+      Noc: {...updatedApplicant},
+    };
+
+    console.log("final Payload ", finalPayload);
+
+    try {
+      const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
+      
+      if(response?.ResponseInfo?.status === "successful"){
+
+       setShowToast({ key: "true", success:true, message: filtData?.action === "CANCEL" ? "Cancelled Successfully": "Successfully submitted the application" });
+       workflowDetails.revalidate();
+       setSelectedAction(null);
+      
+      }
+      else{
+        setShowToast({ key: "true", warning:true, message: "Something went wrong, please try after sometime" });
+        setSelectedAction(null);
+        
+      }
+    } catch (err) {
+      setShowToast({ key: "true",error:true, message: "Some error occurred, plz try later" });
+    }
+  };
+
 
   if (isLoading) {
     return <Loader />;
@@ -212,6 +399,47 @@ const CitizenApplicationOverview = () => {
           )}
         </div>
       </Card>
+
+      {workflowDetails?.data?.timeline && (
+              <Card>
+                <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+                {workflowDetails?.data?.timeline.length === 1 ? (
+                  <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
+                ) : (
+                  <ConnectingCheckPoints>
+                    {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
+                      <CheckPoint
+                        keyValue={index}
+                        isCompleted={index === 0}
+                        label={t("NOC_STATUS_" + checkpoint.status)}
+                        customChild={getTimelineCaptions(checkpoint, index, arr, t)}
+                      />
+                    ))}
+                  </ConnectingCheckPoints>
+                )}
+              </Card>
+      )}
+
+      {actions && actions.length>0 && (
+              <ActionBar>
+                {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+                  <Menu
+                    localeKeyPrefix={`WF_EMPLOYEE_${"NOC"}`}
+                    options={actions}
+                    optionKey={"action"}
+                    t={t}
+                    onSelect={onActionSelect}
+                    // style={MenuStyle}
+                  />
+                ) : null}
+                <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+              </ActionBar>
+      )}
+
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} isDleteBtn={true} onClose={closeToast} />}
+
+
+
     </div>
   );
 };

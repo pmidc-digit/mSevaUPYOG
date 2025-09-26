@@ -202,7 +202,7 @@ const NOCModal = ({
         // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
-      {showToast && <Toast error={showToast.key === "error" ? true : false} label={errors} onClose={closeToast} isDleteBtn={true}/>}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} isDleteBtn={true}/>}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
     </Modal>
   ) : (

@@ -74,8 +74,6 @@ public class NocRowMapper implements ResultSetExtractor<List<Noc>> {
 		Map<String, Noc> sortedMap = nocListMap.entrySet()
 				.stream()
 				.sorted((e1, e2) -> {
-					Long time1 = e1.getValue().getAuditDetails() != null ? e1.getValue().getAuditDetails().getCreatedTime() : null;
-					Long time2 = e2.getValue().getAuditDetails() != null ? e2.getValue().getAuditDetails().getCreatedTime() : null;
 					Long time1 = e1.getValue().getAuditDetails() != null ? e1.getValue().getAuditDetails().getLastModifiedTime() : null;
 					Long time2 = e2.getValue().getAuditDetails() != null ? e2.getValue().getAuditDetails().getLastModifiedTime() : null;
 					return Comparator.nullsLast(Long::compareTo).reversed().compare(time1, time2);

@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from "react";
 
+
+
+import React, { useState, useEffect } from "react";
 import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_ADSNewApplication_STEP } from "../redux/action/ADSNewApplicationActions";
@@ -9,69 +11,12 @@ function ADSSummary({ t }) {
   const dispatch = useDispatch();
   const TT = (key) => (t ? t(key) : key);
 
-  const displayValue = (val) => {
-    if (val === null || val === undefined || val === "") return "NA";
-    if (typeof val === "string" || typeof val === "number" || typeof val === "boolean") return String(val);
-    // if it's an object, try common shape keys, otherwise JSON.stringify as fallback
-    if (typeof val === "object") {
-      // common patterns for address / city objects
-      if (val.formattedAddress) return val.formattedAddress;
-      if (val.addressLine1) return val.addressLine1;
-      if (val.label) return val.label;
-      if (val.name) return val.name;
-      if (val.latitude && val.longitude) return `${val.latitude}, ${val.longitude}`;
-      if (val.lat && val.lng) return `${val.lat}, ${val.lng}`;
-      // safe fallback (shorten long JSON to avoid huge dumps)
-      try {
-        const s = JSON.stringify(val);
-        return s.length > 120 ? s.slice(0, 117) + "..." : s;
-      } catch (e) {
-        return "NA";
-      }
-    }
-    return String(val);
-  };
-  const displayGeo = (geo) => {
-    if (!geo) return "NA";
-    if (typeof geo === "string") return geo;
-    return displayValue(geo);
-  };
-
   const rawFormData = useSelector((state) => state.ads.ADSNewApplicationFormReducer.formData);
-
   const formData = React.useMemo(() => rawFormData || {}, [rawFormData]);
-  console.log("formData :>> ", formData);
 
   const applicant = formData.CreatedResponse?.applicantDetail || {};
-  const address = formData.address || formData.CreatedResponse?.address || {};
+  const address = formData?.ownerDetails?.address || formData.CreatedResponse?.address || {};
   const cartArray = Array.isArray(formData.CreatedResponse?.cartDetails) ? formData.CreatedResponse?.cartDetails : [];
-  console.log("cartArray isss:>> ", cartArray);
-  // const sgst = formData.applicantDetail.sgst || {};
-  // const geolocation = formData.cartArray[0].geolocation || {};
-  // const siteName = formData.cartArray[0].siteName || {};
-  useEffect(() => {
-    const isCitizen = window.location.href.includes("citizen");
-
-    const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
-
-    // const tenantId = window.localStorage.getItem("Citizen.tenant-id");
-    // const tenantId = "pb.testing";
-    const bookingNo = formData?.CreatedResponse?.bookingNo || formData?.apiData?.Applications?.[0]?.bookingNo || formData?.bookingNo || "";
-
-    if (!tenantId || !bookingNo) return;
-
-    const payload = {
-      CalculationCriteria: [{ bookingNo, tenantId }],
-    };
-
-    // Digit.ADSServices.estimateCreate(payload, tenantId)
-    //   .then((resp) => {
-    //     setCalcData(resp?.Calculation?.[0] || {});
-    //   })
-    //   .catch((err) => {
-    //     console.error("ADS estimateCreate error:", err);
-    //   });
-  }, [formData]);
 
   const docs = Array.isArray(formData.documents?.documents?.documents)
     ? formData.documents.documents.documents
@@ -81,193 +26,170 @@ function ADSSummary({ t }) {
     ? formData.documents
     : [];
 
+ 
+
+  const sectionStyle = {
+    backgroundColor: "#ffffff",
+    padding: "1rem 0",
+    borderRadius: "8px",
+    marginBottom: "1.5rem",
+    boxShadow: "0 2px 6px rgba(18,38,63,0.04)",
+  };
+
+  const headerRow = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "0.75rem",
+    padding: "0 1.5rem",
+  };
+
+  const headingStyle = {
+    fontSize: "1.25rem",
+    color: "#0d43a7",
+    fontWeight: "600",
+    margin: 0,
+  };
+
+  const editLabelStyle = {
+    cursor: "pointer",
+    color: "#2e86de",
+    fontWeight: 600,
+    fontSize: "0.9rem",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    borderBottom: "1px dashed #e9eef2",
+    padding: "0.6rem 1.5rem",
+    alignItems: "center",
+  };
+
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+    marginTop: "0.5rem",
+  };
+
+  const documentCardStyle = {
+    flex: "1 1 220px",
+    minWidth: "180px",
+    maxWidth: "260px",
+    backgroundColor: "#fbfcfe",
+    padding: "0.6rem",
+    border: "1px solid #eef3f7",
+    borderRadius: "6px",
+  };
+
+  const boldLabelStyle = { fontWeight: "500", color: "#333" };
+
+  const displayGeo = (geo) => {
+    if (!geo) return "NA";
+    if (typeof geo === "string") return geo;
+    try {
+      const s = JSON.stringify(geo);
+      return s.length > 120 ? s.slice(0, 117) + "..." : s;
+    } catch (e) {
+      return "NA";
+    }
+  };
+
+  const renderRow = (label, value) => (
+    <div style={labelFieldPairStyle}>
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      </div>
+      <div style={{ textAlign: "right", minWidth: "120px" }}>{value || "NA"}</div>
+    </div>
+  );
+
   return (
     <div className="application-summary">
-      <h2 style={{ fontSize: 20, fontWeight: "bold" }}>{TT("Application Summary")}</h2>
-
-      {/* Applicant Details */}
-      <Card className="summary-section" style={{ padding: 2 }}>
-        <div className="section-header">
-          <h3>{TT("Applicant Details")}</h3>
-          <button
-            onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}
-            style={{ marginLeft: "10px", padding: "5px 10px", background: "none", border: "1px solid #ccc", cursor: "pointer" }}
-          >
-            Edit
-          </button>
-        </div>
-        <div className="section-content">
-          <LabelFieldPair>
-            <CardLabel>{TT("Applicant Name")}</CardLabel>
-            <div>{applicant.applicantName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Mobile Number")}</CardLabel>
-            <div>{applicant.applicantMobileNo || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Email ID")}</CardLabel>
-            <div>{applicant.applicantEmailId || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("SGST")}</CardLabel>
-            <div>{applicant.SGST || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Self Declaration")}</CardLabel>
-            <div>{applicant.selfDeclaration ? TT("True") : TT("False")}</div>
-            {/* <div>{TT("True")}</div> */}
-          </LabelFieldPair>
-        </div>
-      </Card>
-
-      {/* Address */}
-      <Card className="summary-section" style={{ padding: 2 }}>
-        <div className="section-header">
-          <h3>{TT("Address")}</h3>
-          <button
-            onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}
-            style={{ marginLeft: "10px", padding: "5px 10px", background: "none", border: "1px solid #ccc", cursor: "pointer" }}
-          >
-            Edit
-          </button>
-        </div>
-        <div className="section-content">
-          <LabelFieldPair>
-            <CardLabel>{TT("Address ID")}</CardLabel>
-            <div>{address.addressId || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Door No")}</CardLabel>
-            <div>{address.doorNo || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("House No")}</CardLabel>
-            <div>{address.houseNo || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("House Name")}</CardLabel>
-            <div>{address.houseName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Street Name")}</CardLabel>
-            <div>{address.streetName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Address Line 1")}</CardLabel>
-            <div>{address.addressLine1 || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Address Line 2")}</CardLabel>
-            <div>{address.addressLine2 || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Landmark")}</CardLabel>
-            <div>{address.landmark || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("City")}</CardLabel>
-            <div>{address.city?.label || address.city || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Locality")}</CardLabel>
-            <div>{address.locality?.label || address.locality || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{TT("Pincode")}</CardLabel>
-            <div>{address.pincode || "NA"}</div>
-          </LabelFieldPair>
-        </div>
-      </Card>
-
-      {/* Advertisement Details */}
       <Card className="summary-section">
-        <div className="section-header">
-          <h3>{TT("Advertisement Details")}</h3>
-          <button
-            onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}
-            style={{ marginLeft: "10px", padding: "5px 10px", background: "none", border: "1px solid #ccc", cursor: "pointer" }}
-          >
-            Edit
-          </button>
+        <div style={sectionStyle}>
+          <div style={headerRow}>
+            <h3 style={headingStyle}>{TT("Applicant Details")}</h3>
+            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
+              {TT("EDIT")}
+            </span>
+          </div>
+          {renderRow(TT("Applicant Name"), applicant.applicantName)}
+          {renderRow(TT("Mobile Number"), applicant.applicantMobileNo)}
+          {renderRow(TT("Email ID"), applicant.applicantEmailId)}
+          {renderRow(TT("SGST"), applicant.SGST)}
+          {renderRow(TT("Self Declaration"), formData?.ownerDetails?.applicantDetail?.selfDeclaration ? "Yes" : "NO")}
         </div>
-        <div className="section-content">
+      </Card>
+
+      <Card className="summary-section">
+        <div style={sectionStyle}>
+          <div style={headerRow}>
+            <h3 style={headingStyle}>{TT("Address")}</h3>
+            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
+              {TT("EDIT")}
+            </span>
+          </div>
+          {renderRow(TT("Door No"), address.doorNo)}
+          {renderRow(TT("House No"), address.houseNo)}
+          {renderRow(TT("House Name"), address.houseName)}
+          {renderRow(TT("Street Name"), address.streetName)}
+          {renderRow(TT("Address Line 1"), address.addressLine1)}
+          {renderRow(TT("Address Line 2"), address.addressLine2)}
+          {renderRow(TT("Landmark"), address.landmark)}
+          {renderRow(TT("City"), address.city?.label || address.city)}
+          {renderRow(TT("Locality"), address.locality?.label || address.locality)}
+          {renderRow(TT("Pincode"), address.pincode)}
+        </div>
+      </Card>
+
+      <Card className="summary-section">
+        <div style={sectionStyle}>
+          <div style={headerRow}>
+            <h3 style={headingStyle}>{TT("Advertisement Details")}</h3>
+            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
+              {TT("EDIT")}
+            </span>
+          </div>
           {cartArray.length ? (
             cartArray.map((sd, idx) => (
               <React.Fragment key={idx}>
-                <LabelFieldPair>
-                  <CardLabel>{TT("Site ID")}</CardLabel>
-                  <div>{sd.advertisementId || "NA"}</div>
-                </LabelFieldPair>
-                <LabelFieldPair>
-                  <CardLabel>{TT("Site Name")}</CardLabel>
-                  <div>{sd.location || "NA"}</div>
-                </LabelFieldPair>
-                <LabelFieldPair>
-                  <CardLabel>{TT("geolocation")}</CardLabel>
-                  <div>{displayGeo(sd.geoLocation)}</div>
-                </LabelFieldPair>
-
-                <LabelFieldPair>
-                  <CardLabel>{TT("Advertisement Type")}</CardLabel>
-                  <div>{sd.addType || "NA"}</div>
-                </LabelFieldPair>
-                <LabelFieldPair>
-                  <CardLabel>{TT("Booking Date")}</CardLabel>
-                  <div>{sd.bookingDate || "NA"}</div>
-                </LabelFieldPair>
-                <LabelFieldPair>
-                  <CardLabel>{TT("End Date")}</CardLabel>
-                  <div>{sd.endDate || "NA"}</div>
-                </LabelFieldPair>
-                <LabelFieldPair>
-                  <CardLabel>{TT("Address")}</CardLabel>
-                  <div>{sd.location || "NA"}</div>
-                </LabelFieldPair>
-                {/* <LabelFieldPair>
-                  <CardLabel>{TT("Cart ID")}</CardLabel>
-                  <div>{sd.cartId || "NA"}</div>
-                </LabelFieldPair> */}
-                <LabelFieldPair>
-                  <CardLabel>{TT("Face Area")}</CardLabel>
-                  <div>{sd.faceArea || "NA"}</div>
-                </LabelFieldPair>
+                {renderRow(TT("Site ID"), sd.advertisementId)}
+                {renderRow(TT("Site Name"), sd.location)}
+                {renderRow(TT("Geolocation"), displayGeo(sd.geoLocation))}
+                {renderRow(TT("Advertisement Type"), sd.addType)}
+                {renderRow(TT("Booking Date"), sd.bookingDate)}
+                {renderRow(TT("End Date"), sd.endDate)}
+                {renderRow(TT("Address"), sd.location)}
+                {renderRow(TT("Face Area"), sd.faceArea)}
               </React.Fragment>
             ))
           ) : (
-            <div>NA</div>
+            renderRow(TT("Advertisement Details"), "NA")
           )}
         </div>
       </Card>
 
-      {/* Documents */}
       <Card className="summary-section">
-        <div className="section-header">
-          <h3>{TT("Documents")}</h3>
-          <button
-            onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}
-            style={{ marginLeft: "10px", padding: "5px 10px", background: "none", border: "1px solid #ccc", cursor: "pointer" }}
-          >
-            Edit
-          </button>
-        </div>
-        <div className="section-content">
+        <div style={sectionStyle}>
+          <div style={headerRow}>
+            <h3 style={headingStyle}>{TT("Documents")}</h3>
+            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
+              {TT("EDIT")}
+            </span>
+          </div>
           {docs.length > 0 ? (
-            docs.map((doc, idx) => (
-              <React.Fragment key={idx}>
-                <LabelFieldPair>
-                  <CardLabel>{TT("Document Type")}</CardLabel>
-                  <div>{doc.documentType ? TT(doc.documentType).replace(/\./g, "_") : "NA"}</div>
-                </LabelFieldPair>
-                {/* <LabelFieldPair>
-                  <CardLabel>{TT("Document UID")}</CardLabel>
-                  <div>{doc.documentDetailId || doc.fileStoreId || doc.filestoreId || "NA"}</div>
-                </LabelFieldPair> */}
-                <ADSDocument value={docs} Code={doc?.documentType} index={idx} />{" "}
-              </React.Fragment>
-            ))
+            <div style={documentsContainerStyle}>
+              {docs.map((doc, idx) => (
+                <div key={idx} style={documentCardStyle}>
+                  {/* {renderRow(TT("Document Type"), doc.documentType?.replace(/\./g, "_"))} */}
+                  <ADSDocument value={docs} Code={doc?.documentType} index={idx} />
+                </div>
+              ))}
+            </div>
           ) : (
-            <div>{TT("No documents uploaded")}</div>
+            <div style={{ padding: "0 1.5rem" }}>{TT("No documents uploaded")}</div>
           )}
         </div>
       </Card>
@@ -276,3 +198,4 @@ function ADSSummary({ t }) {
 }
 
 export default ADSSummary;
+

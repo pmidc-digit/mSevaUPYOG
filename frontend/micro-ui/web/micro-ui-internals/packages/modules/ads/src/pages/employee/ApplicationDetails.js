@@ -442,6 +442,7 @@ const ApplicationDetails = () => {
         businessService,
         action: filtData.action,
         comments: filtData.comment || filtData.action || "",
+          documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
         ...(normalizedAssignee ? { assignes: normalizedAssignee } : {}),
       },
     };
@@ -621,7 +622,7 @@ const ApplicationDetails = () => {
               <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} />
               <Row label={t("ADS_BOOKING_START_DATE")} text={detail.bookingDate || "N/A"} />
               <Row label={t("ADS_BOOKING_TIME")} text={detail.bookingTime || "N/A"} />
-              <Row label={t("ADS_NIGHT_LIGHT")} text={detail.nightLight} />
+              {/* <Row label={t("ADS_NIGHT_LIGHT")} text={detail.nightLight} /> */}
               <Row label={t("ADS_STATUS")} text={t(detail.status) || detail.status} />
             </StatusTable>
           </div>

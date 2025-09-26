@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
-import { TextInput, CardLabel, TextArea } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, TextArea, CardLabelError } from "@mseva/digit-ui-react-components";
 
-const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) => {
+const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {}, errorsP }) => {
   // const allCities = Digit.Hooks.ads.useTenants();
 
   const currentUserType = JSON.parse(window.localStorage.getItem("user-info"))?.type;
@@ -32,7 +32,6 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
 
   // Error state
   const [errors, setErrors] = useState({});
-  console.log('errors', errors)
 
   // Sync incoming value
   useEffect(() => {
@@ -147,39 +146,6 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
     }
   };
 
-  // useEffect(() => {
-  //   console.log("ADSAddress: useEffect for localities triggered");
-  //   console.log("ADSAddress: selectedCity:", selectedCity);
-  //   console.log("ADSAddress: fetchedLocalities:", fetchedLocalities);
-
-  //   if (!selectedCity || !fetchedLocalities) return;
-
-  //   const __localityList = Array.isArray(fetchedLocalities) ? fetchedLocalities : [];
-  //   const mapped = __localityList.map((local) => ({
-  //     i18nKey: local.i18nkey || local.i18nKey || local.label || local.name,
-  //     code: local.code,
-  //     label: local.label || local.name || local.i18nKey,
-  //     pincode: local.pincode,
-  //     area: local.area,
-  //     boundaryNum: local.boundaryNum,
-  //   }));
-
-  //   const filteredByPincode = pincode
-  //     ? mapped.filter((obj) => Array.isArray(obj.pincode) && obj.pincode.some((pin) => String(pin) === String(pincode)))
-  //     : [];
-
-  //   const finalList = filteredByPincode.length > 0 ? filteredByPincode : mapped;
-
-  //   setLocalities(finalList);
-
-  //   if (finalList.length === 1 && (!selectedLocality || selectedLocality.code !== finalList[0].code)) {
-  //     setSelectedLocality(finalList[0]);
-  //     updateParent({ locality: finalList[0] });
-  //   } else if (selectedLocality && !finalList.find((l) => l.code === (selectedLocality.code || selectedLocality))) {
-  //     setSelectedLocality(null);
-  //     updateParent({ locality: null });
-  //   }
-  // }, [fetchedLocalities, selectedCity, pincode, selectedLocality]);
 
   // Validation rules
   const validateField = (name, value) => {
@@ -212,6 +178,26 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
     }
   };
 
+  useEffect(() => {
+    if (errorsP?.address?.message) {
+      // Extract missing fields from the message
+      const missingFields = errorsP.address.message
+        .replace("Address missing:", "")
+        .split(",")
+        .map((f) => f.trim());
+
+      // Build an object like { houseNo: "This field is required", ... }
+      const mappedErrors = {};
+      missingFields.forEach((field) => {
+        mappedErrors[field] = "This field is required";
+      });
+
+      setErrors((prev) => ({ ...prev, ...mappedErrors }));
+    }
+  }, [errorsP]);
+
+  const errorStyle = { marginTop: "-18px" ,color:"red"};
+
   return (
     <div>
       {/* Address ID - optional */}
@@ -219,7 +205,7 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       <TextInput
         value={addressId}
         onChange={(e) => {
-          const trimmedValue = e.target.value.trim();
+          const trimmedValue = e.target.value;
 
           setAddressId(trimmedValue);
           updateParent({ addressId: trimmedValue });
@@ -227,14 +213,15 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
         }}
         onBlur={() => onBlurRef.current && onBlurRef.current()}
       />
-      {errors.addressId && <div style={{ color: "red" }}>{errors.addressId}</div>}
+      {/* {(errors.addressId || errorsP) && <div style={{ color: "red" }}>{errors.addressId}</div>} */}
+      {(errors.addressId || errorsP) && <CardLabelError style={errorStyle}>{errors.addressId}</CardLabelError>}
 
       {/* Door No - optional */}
       <CardLabel>{t ? t("ADS_DOOR_NO") : "Door No"}</CardLabel>
       <TextInput
         value={doorNo}
         onChange={(e) => {
-          const trimmedValue = e.target.value.trim();
+          const trimmedValue = e.target.value;
 
           setDoorNo(trimmedValue);
           updateParent({ doorNo: trimmedValue });
@@ -242,7 +229,8 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
         }}
         onBlur={() => onBlurRef.current && onBlurRef.current()}
       />
-      {errors.doorNo && <div style={{ color: "red" }}>{errors.doorNo}</div>}
+      {/* {errors.doorNo && <div style={{ color: "red" }}>{errors.doorNo}</div>} */}
+      {errors?.doorNo && <CardLabelError style={errorStyle}>{errors?.doorNo}</CardLabelError>}
 
       {/* House No */}
       <CardLabel>
@@ -251,7 +239,7 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       <TextInput
         value={houseNo}
         onChange={(e) => {
-          const trimmedValue = e.target.value.trim();
+          const trimmedValue = e.target.value;
 
           setHouseNo(trimmedValue);
           updateParent({ houseNo: trimmedValue });
@@ -259,8 +247,8 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
         }}
         onBlur={() => onBlurRef.current && onBlurRef.current()}
       />
-      {errors.houseNo && <div style={{ color: "red" }}>{errors.houseNo}</div>}
-
+      {/* {errors.houseNo && <div style={{ color: "red" }}>{errors.houseNo}</div>} */}
+      {errors?.houseNo && <CardLabelError style={errorStyle}>{errors?.houseNo}</CardLabelError>}
       {/* House Name */}
       <CardLabel>
         {t ? t("ADS_HOUSE_NAME") : "House Name"} <span style={{ color: "red" }}>*</span>
@@ -268,7 +256,7 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       <TextInput
         value={houseName}
         onChange={(e) => {
-          const trimmedValue = e.target.value.trim();
+          const trimmedValue = e.target.value;
 
           setHouseName(trimmedValue);
           updateParent({ houseName: trimmedValue });
@@ -276,8 +264,8 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
         }}
         onBlur={() => onBlurRef.current && onBlurRef.current()}
       />
-      {errors.houseName && <div style={{ color: "red" }}>{errors.houseName}</div>}
-
+      {/* {errors.houseName && <div style={{ color: "red" }}>{errors.houseName}</div>} */}
+{errors?.houseName && <CardLabelError style={errorStyle}>{errors?.houseName}</CardLabelError>}
       {/* Street Name */}
       <CardLabel>
         {t ? t("ADS_STREET_NAME") : "Street Name"} <span style={{ color: "red" }}>*</span>
@@ -285,7 +273,7 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       <TextInput
         value={streetName}
         onChange={(e) => {
-          const trimmedValue = e.target.value.trim();
+          const trimmedValue = e.target.value;
 
           setStreetName(trimmedValue);
           updateParent({ streetName: trimmedValue });
@@ -293,7 +281,8 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
         }}
         onBlur={() => onBlurRef.current && onBlurRef.current()}
       />
-      {errors.streetName && <div style={{ color: "red" }}>{errors.streetName}</div>}
+      {/* {errors.streetName && <div style={{ color: "red" }}>{errors.streetName}</div>} */}
+{errors?.streetName && <CardLabelError style={errorStyle}>{errors?.streetName}</CardLabelError>}
 
       {/* Address Line 1 */}
       <CardLabel>
@@ -302,7 +291,7 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       <TextInput
         value={addressline1}
         onChange={(e) => {
-          const trimmedValue = e.target.value.trim();
+          const trimmedValue = e.target.value;
 
           setAddressline1(trimmedValue);
           updateParent({ addressline1: trimmedValue });
@@ -310,14 +299,15 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
         }}
         onBlur={() => onBlurRef.current && onBlurRef.current()}
       />
-      {errors.addressline1 && <div style={{ color: "red" }}>{errors.addressline1}</div>}
+      {/* {errors.addressline1 && <div style={{ color: "red" }}>{errors.addressline1}</div>} */}
+{errors?.addressline1 && <CardLabelError style={errorStyle}>{errors?.addressline1}</CardLabelError>}
 
       {/* Address Line 2 - optional */}
       <CardLabel>{t ? t("ADS_ADDRESS_LINE2") : "Address Line 2"}</CardLabel>
       <TextInput
         value={addressline2}
         onChange={(e) => {
-          const trimmedValue = e.target.value.trim();
+          const trimmedValue = e.target.value;
 
           setAddressline2(trimmedValue);
           updateParent({ addressline2: trimmedValue });
@@ -325,7 +315,8 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
         }}
         onBlur={() => onBlurRef.current && onBlurRef.current()}
       />
-      {errors.addressline2 && <div style={{ color: "red" }}>{errors.addressline2}</div>}
+      {/* {errors.addressline2 && <div style={{ color: "red" }}>{errors.addressline2}</div>} */}
+{errors?.addressline2 && <CardLabelError style={errorStyle}>{errors?.addressline2}</CardLabelError>}
 
       {/* Landmark */}
       <CardLabel>
@@ -334,7 +325,7 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       <TextArea
         value={landmark}
         onChange={(e) => {
-          const trimmedValue = e.target.value.trim();
+          const trimmedValue = e.target.value;
 
           setLandmark(trimmedValue);
           updateParent({ landmark: trimmedValue });
@@ -343,46 +334,10 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
         onBlur={() => onBlurRef.current && onBlurRef.current()}
         style={{ width: "50%" }}
       />
-      {errors.landmark && <div style={{ color: "red" }}>{errors.landmark}</div>}
+      {/* {errors.landmark && <div style={{ color: "red" }}>{errors.landmark}</div>} */}
+{errors?.landmark && <CardLabelError style={errorStyle}>{errors?.landmark}</CardLabelError>}
 
-      {/* City */}
-      {/* <CardLabel>
-        {t ? t("ADS_CITY") : "City"} <span style={{ color: "red" }}>*</span>
-      </CardLabel>
-      <Dropdown
-        selected={selectedCity}
-        select={(val) => {
-          // keep handler in case of programmatic changes (UI is disabled)
-          setSelectedCity(val);
-          updateParent({ city: val });
-          validateField("city", val);
-        }}
-        onBlur={() => onBlurRef.current && onBlurRef.current()}
-        option={allCities}
-        optionKey="i18nKey"
-        disable={true} // IMPORTANT: user cannot edit city
-      />
-
-      {errors.city && <div style={{ color: "red" }}>{errors.city}</div>} */}
-
-      {/* Locality */}
-      {/* <CardLabel>
-        {t ? t("ADS_LOCALITY") : "Locality"} <span style={{ color: "red" }}>*</span>
-      </CardLabel>
-      <Dropdown
-        selected={selectedLocality}
-        select={(val) => {
-          setSelectedLocality(val);
-          updateParent({ locality: val });
-          validateField("locality", val);
-        }}
-        onBlur={() => onBlurRef.current && onBlurRef.current()}
-        option={localities}
-        optionCardStyles={{ overflowY: "auto", maxHeight: "300px" }}
-        optionKey="i18nKey"
-        disabled={isLoadingLocalities}
-        placeholder={t ? t("ADS_SELECT_LOCALITY") : "Select Locality"}
-      />
+      
 
       {errors.locality && <div style={{ color: "red" }}>{errors.locality}</div>} */}
       <CardLabel>
@@ -391,14 +346,15 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       <TextInput
         value={city}
         onChange={(e) => {
-          const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "").trim(); // Remove non-letter characters and trim
+          const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Remove non-letter characters and trim
           setCity(filteredValue);
           updateParent({ city: filteredValue });
           validateField("city", filteredValue);
         }}
         onBlur={() => onBlurRef.current && onBlurRef.current()}
       />
-      {errors.city && <div style={{ color: "red" }}>{errors.city}</div>}
+      {/* {errors.city && <div style={{ color: "red" }}>{errors.city}</div>} */}
+{errors?.city && <CardLabelError style={errorStyle}>{errors?.city}</CardLabelError>}
 
       <CardLabel>
         {t ? t("ADS_LOCALITY") : "Locality"} <span style={{ color: "red" }}>*</span>
@@ -406,21 +362,24 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {} }) =
       <TextInput
         value={locality}
         onChange={(e) => {
-          const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, "").trim(); // Remove non-letter characters and trim
+          const filteredValue = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Remove non-letter characters and trim
           setLocality(filteredValue);
           updateParent({ locality: filteredValue });
           validateField("locality", filteredValue);
         }}
         onBlur={() => onBlurRef.current && onBlurRef.current()}
       />
-      {errors.locality && <div style={{ color: "red" }}>{errors.locality}</div>}
+      {/* {errors.locality && <div style={{ color: "red" }}>{errors.locality}</div>} */}
+{errors?.locality && <CardLabelError style={errorStyle}>{errors?.locality}</CardLabelError>}
 
       {/* Pincode */}
       <CardLabel>
         {t ? t("ADS_ADDRESS_PINCODE") : "Pincode"} <span style={{ color: "red" }}>*</span>
       </CardLabel>
       <TextInput value={pincode} onChange={setAddressPincode} maxLength={6} />
-      {errors.pincode && <div style={{ color: "red" }}>{errors.pincode}</div>}
+      {/* {errors.pincode && <div style={{ color: "red" }}>{errors.pincode}</div>} */}
+{errors?.pincode && <CardLabelError style={errorStyle}>{errors?.pincode}</CardLabelError>}
+
     </div>
   );
 };

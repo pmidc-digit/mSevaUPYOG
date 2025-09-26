@@ -1,6 +1,7 @@
 import React, { Fragment, useEffect, useState, useRef, useCallback } from "react";
 import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, Toast } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
+import { useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { UPDATE_ADSNewApplication_FORM, RESET_ADS_NEW_APPLICATION_FORM } from "../redux/action/ADSNewApplicationActions";
 import ADSAddressField from "./ADSAddressField";
@@ -342,7 +343,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   } = useForm({
     defaultValues: initialFormDefaults,
   });
-
+  console.log("errors", errors);
   const setGlobalSchedule = useCallback(
     (enable) => {
       // grab current form/global times
@@ -1108,6 +1109,26 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   }, [mdmsCards, adsList, clearErrors]);
 
+  // const booked = window.location.href.includes("bookad");
+  const { pathname } = useLocation();
+  const booked = pathname.includes("bookad");
+  console.log("booked", pathname, booked);
+
+  useEffect(() => {
+    if (booked) {
+      // Clear ADS-related persistence when starting a new application
+      localStorage.removeItem("ADS:global");
+      for (let i = localStorage.length - 1; i >= 0; i--) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith("ADS:site:")) {
+          localStorage.removeItem(key);
+        }
+      }
+      sessionStorage.removeItem("ADS:session:last");
+      dispatch(RESET_ADS_NEW_APPLICATION_FORM());
+    }
+  }, [booked, dispatch, setValue]);
+
 
   return (
     <React.Fragment>
@@ -1258,7 +1279,9 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               );
             }}
           />
-          {errors.siteSelection && <p style={{ color: "red", marginTop: "4px" }}>{errors.siteSelection.message}</p>}
+          {errors?.siteId && <p style={{ color: "red", marginTop: "-18px" }}>{errors?.siteId.message}</p>}
+
+          {errors?.siteSelection && <p style={{ color: "red", marginTop: "-18px" }}>{errors?.siteSelection?.message}</p>}
 
           <div style={{ margin: "12px 0", padding: 8, border: "1px solid #eee", borderRadius: 6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
@@ -1698,7 +1721,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               />
             )}
           />
-          {errors.geoLocation && <p style={{ color: "red" }}>{errors.geoLocation.message}</p>}
+          {errors.geoLocation && <p style={{ color: "red", marginTop: "-18px" }}>{errors.geoLocation.message}</p>}
         </div>
 
         <ActionBar>

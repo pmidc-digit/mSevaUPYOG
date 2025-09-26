@@ -9,10 +9,10 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   const isEmployee = typeof window !== "undefined" && window.location?.pathname?.includes("/employee");
   const formStorageKey = `ads_form_${isEmployee ? "employee" : "citizen"}`;
   const dispatch = useDispatch();
-    const userInfo = Digit.UserService.getUser();
+  const userInfo = Digit.UserService.getUser();
   const { mobileNumber, emailId, name } = userInfo?.info;
-    const isCitizen = window.location.href.includes("citizen");
-      const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
+  const isCitizen = window.location.href.includes("citizen");
+  const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
   const {
     control,
     handleSubmit,
@@ -23,10 +23,10 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   } = useForm({
     mode: "onChange",
     defaultValues: {
-     firstName: isCitizen ? (firstName || "") : "",
-    lastName: isCitizen ? (lastName || "") : "",
-    emailId: isCitizen ? (emailId || "") : "",
-    mobileNumber: isCitizen ? (mobileNumber || "") : "",
+      firstName: isCitizen ? firstName || "" : "",
+      lastName: isCitizen ? lastName || "" : "",
+      emailId: isCitizen ? emailId || "" : "",
+      mobileNumber: isCitizen ? mobileNumber || "" : "",
       SGST: "",
       selfDeclaration: false,
       clientName: "",
@@ -46,7 +46,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     },
   });
 
-  console.log('errors2', errors)
 
   // Prefill from Redux state
   // Prefill from Redux state
@@ -148,6 +147,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     const rawAddress = data.address || {};
     const pickedAddress = {
       addressLine1: rawAddress.addressline1 || rawAddress.addressLine1 || "",
+      addressLine2: rawAddress.addressline2 || "",
       city: rawAddress.city?.name || rawAddress.city || "",
       cityCode: rawAddress.cityCode || rawAddress.city?.code || "",
       houseNo: rawAddress.houseNo || "",
@@ -157,6 +157,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       localityCode: rawAddress.localityCode || rawAddress.locality?.code || "",
       pincode: rawAddress.pincode || "",
       streetName: rawAddress.streetName || "",
+      doorNo: rawAddress?.doorNo || "",
     };
 
     const formData = {
@@ -200,23 +201,38 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         // if API returns bookingApplication array, prefer the first item (same as ADSCitizenSecond)
         const appData = Array.isArray(response?.bookingApplication) ? response.bookingApplication[0] : response?.bookingApplication;
 
-        console.log("ADSCitizenDetailsNew: onSubmit called");
-        console.log("ADSCitizenDetailsNew: formData:", formData);
-        console.log("ADSCitizenDetailsNew: payload:", payload);
-
+        
         // save created response into Redux under the same key ADSCitizenSecond used
-        dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
+        // dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
+        // dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", { ...(appData || response), address: { ...(appData?.address || response?.address), houseName: payload?.houseName || "", doorNo: payload?.doorNo ||"" }, applicantDetail: { ...(appData?.applicantDetail || response?.applicantDetail), selfDeclaration: payload?.selfDeclaration?"Yes":"NO" } }));
+        const base = appData || response || {};
+        dispatch(
+          UPDATE_ADSNewApplication_FORM("CreatedResponse", {
+            ...base,
+            address: {
+              ...(base.address || {}),
+              houseName: payload?.houseName ?? "",
+              doorNo: payload?.doorNo ?? "",
+            },
+            applicantDetail: {
+              ...(base.applicantDetail || {}),
+              selfDeclaration: payload?.selfDeclaration ? "Yes" : "NO",
+            },
+          })
+        );
 
         // forward the full response to parent (so parent can also store/navigate)
-        goNext(response);
+        goNext(formData);
       } else {
         console.error("ADS create failed (ADSCitizenDetailsNew) - saving draft", response);
+        console.log("formDataNotResponse", formData);
         // store draft under same CreatedResponse key so later update uses it
         dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", { draft: true, bookingApplication: formData }));
         goNext({ draft: true, bookingApplication: formData });
       }
     } catch (err) {
       console.error("ADS create error (ADSCitizenDetailsNew) - saving draft", err);
+      console.log("formDataInCatch", formData);
       dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", { draft: true, bookingApplication: formData }));
       goNext({ draft: true, bookingApplication: formData });
     }
@@ -266,7 +282,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           }}
           render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
         />
-        {errors.firstName && <p style={{ color: "red" }}>{errors.firstName.message}</p>}
+        {errors.firstName && <p style={{ color: "red", marginTop: "-18px" }}>{errors.firstName.message}</p>}
 
         <CardLabel>
           {t("NDC_LAST_NAME")}
@@ -286,7 +302,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           }}
           render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
         />
-        {errors.lastName && <p style={{ color: "red" }}>{errors.lastName.message}</p>}
+        {errors.lastName && <p style={{ color: "red", marginTop: "-18px" }}>{errors.lastName.message}</p>}
 
         <CardLabel>
           {t("NOC_APPLICANT_EMAIL_LABEL")}
@@ -301,7 +317,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           }}
           render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
         />
-        {errors.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
+        {errors.emailId && <p style={{ color: "red", marginTop: "-18px" }}>{errors.emailId.message}</p>}
 
         <CardLabel>
           {t("NOC_APPLICANT_MOBILE_NO_LABEL")}
@@ -317,21 +333,21 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           }}
           render={({ value, onChange, onBlur }) => <MobileNumber value={value} onChange={onChange} onBlur={onBlur} t={t} />}
         />
-        {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+        {errors.mobileNumber && <p style={{ color: "red", marginTop: "-18px" }}>{errors.mobileNumber.message}</p>}
 
         <CardLabel>{t("ADVT_CHALLAN_UNDER_SECTION_122_123_SGST")}</CardLabel>
         <Controller
           control={control}
           name="SGST"
           rules={{
-            validate: (value) => !value.trim() || /^\d{2}[A-Z]{5}\d{4}[A-Z]\dZ[A-Z\d]$/.test(value.trim()) || "Enter a valid SGST",
+            validate: (value) => !value || /^\d{2}[A-Z]{5}\d{4}[A-Z]\dZ[A-Z\d]$/.test(value) || "Enter a valid SGST",
           }}
           render={({ value, onChange, onBlur }) => (
             <TextInput
               value={value}
               onChange={(e) => onChange(e.target.value)}
               onBlur={(e) => {
-                const trimmed = e.target.value.trim();
+                const trimmed = e.target.value;
                 onChange(trimmed);
                 onBlur(e);
               }}
@@ -339,7 +355,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
             />
           )}
         />
-        {errors.SGST && <p style={{ color: "red" }}>{errors.SGST.message}</p>}
+        {errors.SGST && <p style={{ color: "red", marginTop: "-18px" }}>{errors.SGST.message}</p>}
 
         {/* <CardLabel>{t("PT_COMMON_COL_ADDRESS")}</CardLabel> */}
         <Controller
@@ -351,9 +367,9 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
               const missing = requiredFields.filter((f) => {
                 const v = addr?.[f];
-                if (f === "pincode") return !(v && String(v).trim().length === 6); // require 6-digit pincode
+                if (f === "pincode") return !(v && String(v).length === 6); // require 6-digit pincode
                 if (f === "city" || f === "locality") return !v; // objects expected
-                return !(v && String(v).trim());
+                return !(v && String(v));
               });
 
               if (missing.length) {
@@ -371,13 +387,13 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
                 onChange={onChange}
                 onSelect={(_, addr = {}) => safeOnChange(addr)}
                 onBlur={onBlur} // pass through if ADSAddress later supports blur
+                errorsP={errors}
               />
               {/* show a single combined address error under the address component */}
-              {errors.address && <p style={{ color: "red", marginTop: "6px" }}>{errors.address.message}</p>}
+              {/* {errors.address && <p style={{ color: "red", marginTop: "6px" }}>{errors.address.message}</p>} */}
             </div>
           )}
         />
-        
 
         <div style={{ marginTop: "20px" }}>
           <Controller
@@ -397,7 +413,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
                 <label htmlFor="selfDeclaration" style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}>
                   {t("BILLAMENDMENT_SELFDECLARATION_LABEL")}
                 </label>
-                <span style={{ color: "red" }}>*</span>
+                <span style={{ color: "red", marginTop: "-18px" }}>*</span>
               </div>
             )}
           />
@@ -421,7 +437,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
             }}
             render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} t={t} />}
           />
-          {errors.clientName && <p style={{ color: "red" }}>{errors.clientName.message}</p>}
+          {errors.clientName && <p style={{ color: "red", marginTop: "-18px" }}>{errors.clientName.message}</p>}
         </div>
       </div>
 

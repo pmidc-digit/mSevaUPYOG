@@ -399,7 +399,7 @@ const ADSApplicationDetails = () => {
           <ADSWFApplicationTimeline application={application} id={ads_details?.bookingNo} userType={"citizen"} />
         </Card>
 
-        {showToast && <Toast error={showToast.key === "error"} label={actionError || error} onClose={() => setShowToast(null)} />}
+        {showToast && <Toast error={showToast.key === "error"} label={actionError || error} onClose={() => setShowToast(null)} isDleteBtn={true}/>}
       </div>
     </React.Fragment>
   );

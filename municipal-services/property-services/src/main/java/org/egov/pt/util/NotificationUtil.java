@@ -88,8 +88,7 @@ public class NotificationUtil {
      * @return message for the specific code
      */
     public String getMessageTemplate(String notificationCode, String localizationMessage) {
-
-        String path = "$..messages[?(@.code==\"{}\")].message";
+       String path = "$..messages[?(@.code==\"{}\")].message";
         path = path.replace("{}", notificationCode);
         String message = "";
         try {
@@ -117,7 +116,6 @@ public class NotificationUtil {
      * @return Localization messages for the module
      */
     public String getLocalizationMessages(String tenantId, RequestInfo requestInfo) {
-    	
         String locale = NOTIFICATION_LOCALE;
         Boolean isRetryNeeded = false;
         String jsonString = null;
@@ -125,21 +123,22 @@ public class NotificationUtil {
 
         if (!StringUtils.isEmpty(requestInfo.getMsgId()) && requestInfo.getMsgId().split("\\|").length >= 2) {
             locale = requestInfo.getMsgId().split("\\|")[1];
-			isRetryNeeded = true;
-		}
+            isRetryNeeded = true;
+        }
 
-		responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(getUri(tenantId, requestInfo, locale), requestInfo).get();
-		jsonString = new JSONObject(responseMap).toString();
+        responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(getUri(tenantId, requestInfo, locale), requestInfo).get();
+        jsonString = new JSONObject(responseMap).toString();
 
-		if (StringUtils.isEmpty(jsonString) && isRetryNeeded) {
+        if (StringUtils.isEmpty(jsonString) && isRetryNeeded) {
 
-			responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(getUri(tenantId, requestInfo, NOTIFICATION_LOCALE), requestInfo).get();
-			jsonString = new JSONObject(responseMap).toString();
-			if(StringUtils.isEmpty(jsonString))
-				throw new CustomException("EG_PT_LOCALE_ERROR","Localisation values not found for Property notifications");
-		}
-		return jsonString;
-	}
+            responseMap = (LinkedHashMap) serviceRequestRepository.fetchResult(getUri(tenantId, requestInfo, NOTIFICATION_LOCALE), requestInfo).get();
+            jsonString = new JSONObject(responseMap).toString();
+            if(StringUtils.isEmpty(jsonString))
+                throw new CustomException("EG_PT_LOCALE_ERROR","Localisation values not found for Property notifications");
+        }
+        return jsonString;
+    }
+
 
 
     /**
@@ -176,7 +175,13 @@ public class NotificationUtil {
     	
         List<SMSRequest> smsRequest = new LinkedList<>();
         for (Map.Entry<String, String> entryset : mobileNumberToOwnerName.entrySet()) {
-            String customizedMsg = message.replace(NOTIFICATION_OWNERNAME, entryset.getValue());
+            String customizedMsg;
+            if(message.contains(TEMP_PROPERTYID)){
+                customizedMsg = message.replace(TEMP_PROPERTYID, entryset.getValue());
+            }else {
+                customizedMsg = message.replace(NOTIFICATION_OWNERNAME, entryset.getValue());
+               // String customizedMsg = message.replace(NOTIFICATION_OWNERNAME, entryset.getValue());
+            }
             smsRequest.add(new SMSRequest(entryset.getKey(), customizedMsg));
         }
         return smsRequest;
@@ -196,8 +201,7 @@ public class NotificationUtil {
                 log.info("Messages from localization couldn't be fetched!");
             for (SMSRequest smsRequest : smsRequestList) {
                 producer.push(config.getSmsNotifTopic(), smsRequest);
-                log.info("Sending SMS notification: ");
-                if(log.isDebugEnabled())
+                 if(log.isDebugEnabled())
                 	log.debug("MobileNumber: " + smsRequest.getMobileNumber() + " Messages: " + smsRequest.getMessage());
             }
         }
@@ -393,12 +397,20 @@ public class NotificationUtil {
 
         HashMap<String,String> body = new HashMap<>();
         body.put("url",url);
-        StringBuilder builder = new StringBuilder(config.getUrlShortnerHost());
+       /* StringBuilder builder = new StringBuilder(config.getUrlShortnerHost());
         builder.append(config.getUrlShortnerEndpoint());
-        String res = restTemplate.postForObject(builder.toString(), body, String.class);
+        String res = restTemplate.postForObject(builder.toString(), body, String.class);*/
+        // Safely join host and endpoint to avoid duplication
+        String host = config.getUrlShortnerHost();
+        String endpoint = config.getUrlShortnerEndpoint();
+        if (host.endsWith("/") && endpoint.startsWith("/")) {
+            endpoint = endpoint.substring(1);
+        }
+        String finalUrl = host.endsWith("/") || endpoint.startsWith("/") ? host + endpoint : host + "/" + endpoint;
+        String res = restTemplate.postForObject(finalUrl, body, String.class);
 
         if(StringUtils.isEmpty(res)){
-            log.error("URL_SHORTENING_ERROR","Unable to shorten url: "+url); ;
+            log.error("URL_SHORTENING_ERROR","Unable to shorten url: "+finalUrl); ;
             return url;
         }
         else return res;
@@ -595,7 +607,7 @@ public class NotificationUtil {
 
         Filter masterDataFilter = filter(
                 where(MODULE).is(moduleName).and(ACTION).is(action)
-                
+
         		);
         try {
             Object response = restTemplate.postForObject(uri.toString(), mdmsCriteriaReq, Map.class);

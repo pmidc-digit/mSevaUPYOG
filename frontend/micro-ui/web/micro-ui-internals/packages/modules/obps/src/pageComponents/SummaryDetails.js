@@ -27,7 +27,7 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Timeline from "../components/Timeline"
-import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments } from "../utils"
+import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls } from "../utils"
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview"
 import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcent"
 import { OTPInput, CardLabelError } from "@mseva/digit-ui-react-components";
@@ -184,6 +184,18 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
         fileUrl: doc.values?.[0]?.fileURL || null,
     }));
+
+    const ecbcDocumentsData = useMemo(() => {
+        return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
+            id: index,
+            title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+            fileUrl: doc.fileURL || null, // adjusted since `doc` already has fileURL
+        }));
+    }, [fileUrls, t]);
+
+    useEffect(() => {
+        console.log("ecbcDocumentsData", ecbcDocumentsData, fileUrls)
+    },[ecbcDocumentsData])
 
 
     const handleTermsLinkClick = (e) => {
@@ -418,13 +430,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
                 // Call Digit service
                 const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
-
                 if (result?.data?.fileStoreIds) {
                     const urls = {};
                     fileKeys.forEach((key) => {
                         const fileId = currentStepData?.createdResponse?.additionalDetails?.[key];
-                        if (fileId && result.data.fileStoreIds[fileId]) {
-                            urls[key] = result.data.fileStoreIds[fileId].url;
+                        if (fileId && result.data?.[fileId]) {
+                            urls[key] = result.data?.[fileId];
                         }
                     });
 
@@ -445,7 +456,6 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         console.log("ECBCDocs", fileUrls);
     }, [fileUrls])
 
-    console.log("ArchitectConsentForm", currentStepData?.createdResponse?.status, isArchitectDeclared, actions)
 
     if (apiLoading || isFileLoading) return (<Loader />);
 
@@ -477,11 +487,11 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         <CardHeader style={{ fontSize: "16px", fontWeight: "600", marginBottom: "12px", color: "#333" }}>{t("BPA_PLOT_DETAILS_TITLE")}</CardHeader>
                         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
 
-                        <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
+                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
                             label={<EditIcon color="white" style={{ color: "white" }} />}
 
                             onClick={() => { }}
-                        />
+                        /> */}
 
                         <Row
                             className="border-none"
@@ -716,13 +726,31 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
                     <StatusTable>
+                        <CardHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardHeader>
+                        <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                        {pdfLoading ? <Loader /> : <Table
+                            className="customTable table-border-style"
+                            t={t}
+                            data={ecbcDocumentsData}
+                            columns={documentsColumns}
+                            getCellProps={() => ({ style: {} })}
+                            disableSort={false}
+                            autoSort={true}
+                            manualPagination={false}
+                            isPaginationRequired={false}
+                        />}
+                    </StatusTable>
+                </Card>
+
+                <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+                    <StatusTable>
                         <CardHeader>{t("BPA_NEW_TRADE_DETAILS_HEADER_DETAILS")}</CardHeader>
                         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                        <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
+                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
                             label={<EditIcon color="white" style={{ color: "white" }} />}
 
                             onClick={() => { }}
-                        />
+                        /> */}
                         <Row className="border-none" label={t(`BPA_DETAILS_PIN_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.pincode || t("CS_NA")} />
                         <Row className="border-none" label={t(`BPA_CITY_LABEL`)} text={currentStepData?.LocationDetails?.selectedCity?.name || t("CS_NA")} />
                         <Row className="border-none" label={t(`BPA_LOC_MOHALLA_LABEL`)} text={currentStepData?.createdResponse?.landInfo?.address?.locality?.name || t("CS_NA")} />
@@ -735,11 +763,11 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     <StatusTable>
                         <CardHeader>{t("BPA_APPLICANT_DETAILS_HEADER")}</CardHeader>
                         <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                        <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
+                        {/* <LinkButton style={{ float: "right", display: "inline", marginTop: "-80px", background: "#fff" }}
                             label={<EditIcon color="white" style={{ color: "white" }} />}
 
                             onClick={() => { }}
-                        />
+                        /> */}
                         {currentStepData?.createdResponse?.landInfo?.owners &&
                             currentStepData?.createdResponse?.landInfo?.owners?.length > 0 &&
                             currentStepData?.createdResponse?.landInfo?.owners?.map((ob, index) => (
@@ -880,7 +908,6 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </StatusTable>
                 </Card>
 
-                {/*  */}
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
                     {currentStepData?.createdResponse?.status === "INITIATED" && (

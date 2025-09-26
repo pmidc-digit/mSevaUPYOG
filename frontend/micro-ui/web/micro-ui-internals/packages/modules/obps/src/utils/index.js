@@ -1012,3 +1012,23 @@ export const getOrderDocuments = (appUploadedDocumnets, isNoc = false) => {
   console.log("DOCUMENTS===",finalDocs)
   return finalDocs;
 };
+
+export const getDocsFromFileUrls = (fileUrls = {}) => {
+  if (!fileUrls || typeof fileUrls !== "object") return [];
+
+  return Object.entries(fileUrls)
+    .filter(([_, url]) => url && url !== "NA") // skip null/undefined/empty/NA
+    .map(([key, url]) => ({
+      id: key,                        // use key as id
+      documentType: key.toUpperCase(),// e.g. ECBCCERTIFICATEFILE
+      fileStoreId: null,              // not available here
+      documentUid: null,              // not available
+      additionalDetails: null,
+      auditDetails: null,
+      module: "OBPS",                 // or make this dynamic
+      fileURL: url,
+      url: url,
+      fileResponse: url,
+      title: key.toUpperCase()
+    }));
+};

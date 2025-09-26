@@ -543,7 +543,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
             ></Row>
             <Row
               className="border-none"
-              label={t("BPA_ECS_PROVIDED")}
+              label={t("BPA_FAR_PROVIDED")}
               text={
                 data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
                  

@@ -52,8 +52,15 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   const setDocumentFile = (index, file) => {
     console.log("OwnerDoc DocumentFile FileUploader", index, file)
-    const updatedFields = [...fields]
-    updatedFields[index].documentFile = file
+    let updatedFields = [...fields]
+    console.log("OwnerDoc DocumentFile FileUploader 2", updatedFields)
+    updatedFields[index] = {
+      ...updatedFields[index],
+      additionalDetails: {
+        ...(updatedFields[index].additionalDetails || {}),
+        documentFile: file,
+      },
+    };
     setFeilds(updatedFields)
   }
 
@@ -119,7 +126,14 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const setOwnerPhoto = (index, file) => {
     console.log("OwnerDoc OwnerPhoto PhotoUploader", index, file);
     const updatedFields = [...fields]
-    updatedFields[index].ownerPhoto = file
+    // updatedFields[index].additionalDetails.ownerPhoto = file
+    updatedFields[index] = {
+      ...updatedFields[index],
+      additionalDetails: {
+        ...(updatedFields[index].additionalDetails || {}),
+        ownerPhoto: file,
+      },
+    };
     setFeilds(updatedFields)
   }
 
@@ -635,11 +649,11 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           isValid = false;
         }
       }
-      if (!owner?.documentFile) {
+      if (!owner?.additionalDetails?.documentFile) {
         newErrors[`documentFile_${index}`] = t("Document file is required");
         isValid = false;
       }
-      if (!owner?.ownerPhoto) {
+      if (!owner?.additionalDetails?.ownerPhoto) {
         newErrors[`ownerPhoto_${index}`] = t("Owner photo is required");
         isValid = false;
       }
@@ -1013,7 +1027,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                         setDocumentUploadedFiles((prev) => ({ ...prev, [index]: null }))
                         setErrors((prev) => ({ ...prev, [`documentFile_${index}`]: "Document upload is required" }))
                       }}
-                      message={documentUploadedFiles[index] ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                      message={fields?.[index]?.additionalDetails?.documentFile || documentUploadedFiles[index] ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                       error={errors[`documentFile_${index}`]}
                       uploadMessage=""
                       accept=".pdf"
@@ -1029,7 +1043,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
                         setPhotoUploadedFiles((prev) => ({ ...prev, [index]: null }))
                         setErrors((prev) => ({ ...prev, [`ownerPhoto_${index}`]: "Owner photo is required" }))
                       }}
-                      message={photoUploadedFiles[index] ? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
+                      message={fields?.[index]?.additionalDetails?.ownerPhoto || photoUploadedFiles[index]? `1 ${t("FILEUPLOADED")}` : t("ES_NO_FILE_SELECTED_LABEL")}
                       error={errors[`ownerPhoto_${index}`]}
                       uploadMessage=""
                       accept="image/*"

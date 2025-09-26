@@ -55,7 +55,7 @@ const Inbox = ({ parentRoute }) => {
   const onSearchFormReset = (setSearchFormValue) => {
     setSearchFormValue("sourceRefId", null);
     setSearchFormValue("uuid", null);
-    setSearchFormValue("phoneNumber", null);
+    setSearchFormValue("mobileNumber", null);
     dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
   };
 
@@ -146,8 +146,8 @@ const Inbox = ({ parentRoute }) => {
     headerText: `${t("MODULE_NKS_NO_DUE_CERTIFICATE_FEES")}`,
     links: [
       {
-        text: "Create NDC Application",
-        link: "/digit-ui/employee/ndc/create",
+        text: "",
+        link: "",
         accessTo: [""],
       },
     ],
@@ -223,19 +223,20 @@ const Inbox = ({ parentRoute }) => {
       {/* <section>
         <CreateNDCApplicationStep />
       </section> */}
-
-      <InboxComposer
-        {...{
-          isInboxLoading,
-          PropsForInboxLinks,
-          ...propsForSearchForm,
-          ...propsForFilterForm,
-          ...propsForMobileSortForm,
-          propsForInboxTable,
-          propsForInboxMobileCards,
-          formState,
-        }}
-      ></InboxComposer>
+      <div className="NDCSection">
+        <InboxComposer
+          {...{
+            isInboxLoading,
+            PropsForInboxLinks,
+            ...propsForSearchForm,
+            ...propsForFilterForm,
+            ...propsForMobileSortForm,
+            propsForInboxTable,
+            propsForInboxMobileCards,
+            formState,
+          }}
+        />
+      </div>
     </>
   );
 };

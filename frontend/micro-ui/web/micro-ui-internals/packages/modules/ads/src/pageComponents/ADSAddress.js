@@ -339,7 +339,7 @@ const ADSAddress = ({ t, value = {}, onChange = () => {}, onBlur = () => {}, err
 
       
 
-      {errors.locality && <div style={{ color: "red" }}>{errors.locality}</div>} */}
+      {errors.locality && <div style={{ color: "red" }}>{errors.locality}</div>} 
       <CardLabel>
         {t ? t("ADS_CITY") : "City"} <span style={{ color: "red" }}>*</span>
       </CardLabel>

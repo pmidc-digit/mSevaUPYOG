@@ -182,9 +182,9 @@ console.log("currentStep", currentStep, currentStepOBJ)
 
   return (
     <div style={{display: "flex", flexDirection: "row"}}>
-    {!(window.location.href.includes("docs-required") || window.location.href.includes("acknowledgement")) && !isMobile &&<div>
+    {/* {!(window.location.href.includes("docs-required") || window.location.href.includes("acknowledgement")) && !isMobile &&<div>
     <Stepper stepsList={stepperConfig} step={currentStep} />
-    </div>}
+    </div>} */}
     <div style={{flexGrow: 1}}>
     <Switch>
       {newConfig1.map((routeObj, index) => {

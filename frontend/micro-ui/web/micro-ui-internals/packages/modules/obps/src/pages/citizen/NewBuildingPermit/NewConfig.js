@@ -3,7 +3,7 @@ export const newConfig1 = [
     route: "docs-required",
     component: "DocsRequired",
     key: "data",
-    nextStep: "basic-details",
+    nextStep: "stepper",
   },
   // {
   //     "route": "noc-number",
@@ -16,6 +16,13 @@ export const newConfig1 = [
   //         "submitBarLabel": "CS_COMMON_NEXT"
   //     }
   // },
+  {
+    route: "stepper",
+    component: "NewSelfCertificationStepForm",
+    key: "data",
+    // nextStep: "plot-details",
+    step: "1"
+  },
   {
     route: "basic-details",
     component: "BasicDetails",

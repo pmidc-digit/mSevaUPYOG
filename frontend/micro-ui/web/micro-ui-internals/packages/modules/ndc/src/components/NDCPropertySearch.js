@@ -3,7 +3,7 @@ import { CardLabel, LabelFieldPair, TextInput, Loader, Toast } from "@mseva/digi
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import _ from "lodash";
-import { resetNDCForm } from "../redux/actions/NDCFormActions";
+import { resetNDCForm, updateNDCForm } from "../redux/actions/NDCFormActions";
 import { useLocation } from "react-router-dom";
 
 const getAddress = (address, t) => {
@@ -141,6 +141,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
       });
 
       dispatch(resetNDCForm());
+      // refetch();
     }
   };
 

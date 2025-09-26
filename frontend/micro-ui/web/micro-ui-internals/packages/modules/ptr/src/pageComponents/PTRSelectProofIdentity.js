@@ -42,7 +42,7 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
       for (const doc of requiredDocs) {
         const satisfied = docsArray.some((d) => d.documentType?.includes(doc.code) && (d.filestoreId || d.fileStoreId));
         if (!satisfied) {
-          missingDocs.push(t(doc?.code.replaceAll(".", "_")));
+          missingDocs.push(doc.name || t(doc.code.replaceAll(".", "_")));
           // or doc.name if available
         }
       }
@@ -120,7 +120,7 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
               );
             })}
 
-          {toastError && <Toast isDleteBtn={true} label={toastError} onClose={() => setToastError(null)} error />}
+          {toastError && <Toast label={toastError} onClose={() => setToastError(null)} error />}
         </FormStep>
       ) : (
         <Loader />

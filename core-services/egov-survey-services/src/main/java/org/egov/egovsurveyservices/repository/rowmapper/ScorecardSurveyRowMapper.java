@@ -96,7 +96,6 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
                                         .createdTime(rs.getLong("question_createdtime"))
                                         .lastModifiedTime(rs.getLong("question_lastmodifiedtime"))
                                         .build())
-                                .qorder(rs.getLong("question_order"))
                                 .categoryId(rs.getString("question_categoryid"))
                                 .tenantId(rs.getString("question_tenantid"))
                                 .build();
@@ -104,7 +103,9 @@ public class ScorecardSurveyRowMapper implements ResultSetExtractor<List<Scoreca
                         QuestionWeightage questionWeightage = QuestionWeightage.builder()
                                 .questionUuid(questionUuid)
                                 .sectionUuid(sectionUuid)
+                                .qorder(rs.getLong("question_weightage_qorder"))
                                 .weightage(rs.getBigDecimal("question_weightage"))
+                                .required(rs.getBoolean("question_weightage_required"))
                                 .question(question)
                                 .build();
 

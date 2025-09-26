@@ -22,6 +22,9 @@ public class QuestionWeightage {
     
     @JsonProperty("qorder")
     private Long qorder;
+
+    @JsonProperty("required")
+    private Boolean required;
     
     @JsonProperty("question")
     private Question question;

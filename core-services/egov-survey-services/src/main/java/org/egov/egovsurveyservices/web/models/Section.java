@@ -17,7 +17,7 @@ import java.util.List;
 @Builder
 @ToString
 public class Section {
-    @Size(max = 128)
+
     @JsonProperty("uuid")
     private String uuid;
 

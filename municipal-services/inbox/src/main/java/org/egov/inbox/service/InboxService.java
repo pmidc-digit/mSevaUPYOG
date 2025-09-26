@@ -23,6 +23,7 @@ import static org.egov.inbox.util.FSMConstants.WAITING_FOR_DISPOSAL_STATE;
 import static org.egov.inbox.util.NdcConstants.*;
 import static org.egov.inbox.util.PTConstants.ACKNOWLEDGEMENT_IDS_PARAM;
 import static org.egov.inbox.util.PTConstants.PT;
+import static org.egov.inbox.util.PTRConstants.PTR;
 import static org.egov.inbox.util.TLConstants.APPLICATION_NUMBER_PARAM;
 import static org.egov.inbox.util.TLConstants.BUSINESS_SERVICE_PARAM;
 import static org.egov.inbox.util.TLConstants.REQUESTINFO_PARAM;
@@ -32,6 +33,8 @@ import static org.egov.inbox.util.TLConstants.TL;
 import static org.egov.inbox.util.SWConstants.SW;
 import static org.egov.inbox.util.BSConstants.*;
 import static org.egov.inbox.util.WSConstants.WS;
+import static org.egov.inbox.util.AssetConstants.ASSET;
+import static org.egov.inbox.util.StreetVendingConstants.*;
 import static org.egov.inbox.util.PGRConstants.PGR;
 import static org.egov.inbox.util.PGRConstants.SWACH;
 import static org.egov.inbox.util.PGRConstants.PGRANDSWACH_APPLICATION_PARAM;
@@ -145,6 +148,18 @@ public class InboxService {
 
     @Autowired
     ElasticSearchRepository elasticSearchRepository;
+
+    @Autowired
+    private AssetInboxFilterService assetInboxFilterService;
+
+    @Autowired
+    private StreetVendingInboxFilterService StreetVendingInboxFilterService;
+
+    @Autowired
+    private PtrInboxFilterService ptrInboxFilterService;
+
+    @Autowired
+    private PGRAiInboxFilterService pgrAiInboxFilterService;
 
     @Autowired
     public InboxService(InboxConfiguration config, ServiceRequestRepository serviceRequestRepository,
@@ -647,7 +662,69 @@ public class InboxService {
                     throw new CustomException("ELASTICSEARCH_ERROR", "client error while searching ES : \" + e.getMessage()");
                 }
             }
-                     
+
+            //for street vending
+            if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
+                    && processCriteria.getModuleName().equals(SV_SERVICES)) {
+
+                List<String> applicationNumbers = StreetVendingInboxFilterService.fetchApplicationIdsFromSearcher(criteria,
+                        StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    moduleSearchCriteria.put(SV_APPLICATION_NUMBER_PARAM, applicationNumbers);
+                    businessKeys.addAll(applicationNumbers);
+                    moduleSearchCriteria.remove(LOCALITY_PARAM);
+                    moduleSearchCriteria.remove(OFFSET_PARAM);
+                    moduleSearchCriteria.remove(STATUS_PARAM);
+                    if(moduleSearchCriteria.containsKey(APPLICATION_STATUS)) {
+                        moduleSearchCriteria.put(STATUS_PARAM, moduleSearchCriteria.get(APPLICATION_STATUS));
+                    }
+                } else {
+                    isSearchResultEmpty = true;
+                }
+            }
+
+            // for pet service
+            if (!ObjectUtils.isEmpty(processCriteria.getModuleName()) && processCriteria.getModuleName().equals(PTR)) {
+
+                List<String> applicationNumbers = ptrInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
+                        StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    moduleSearchCriteria.put(ACKNOWLEDGEMENT_IDS_PARAM, applicationNumbers);
+                    businessKeys.addAll(applicationNumbers);
+                    moduleSearchCriteria.remove(LOCALITY_PARAM);
+                    moduleSearchCriteria.remove(OFFSET_PARAM);
+                } else {
+                    isSearchResultEmpty = true;
+                }
+            }
+
+            // for asset service
+            if (!ObjectUtils.isEmpty(processCriteria.getModuleName())
+                    && processCriteria.getModuleName().equals(ASSET)) {
+
+                List<String> applicationNumbers = assetInboxFilterService.fetchApplicationNumbersFromSearcher(criteria,
+                        StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    moduleSearchCriteria.put(ACKNOWLEDGEMENT_IDS_PARAM, applicationNumbers);
+                    businessKeys.addAll(applicationNumbers);
+                    // moduleSearchCriteria.remove(LOCALITY_PARAM);
+                    // moduleSearchCriteria.remove(OFFSET_PARAM);
+                } else {
+                    isSearchResultEmpty = true;
+                }
+            }
+            // fetching total count and application numbers from searcher for pgr ai service
+            if (!ObjectUtils.isEmpty(processCriteria.getModuleName()) && processCriteria.getModuleName().equals(PGRAiConstants.PGR_MODULE)) {
+
+                totalCount = pgrAiInboxFilterService.fetchApplicationIdsCountFromSearcher(criteria, StatusIdNameMap,
+                        requestInfo);
+                List<String> applicationNumbers = pgrAiInboxFilterService.fetchApplicationIdsFromSearcher(criteria,
+                        StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    businessKeys.addAll(applicationNumbers);
+                }
+            }
+
             // Redirect request to searcher in case of WS to fetch acknowledgement IDS
             if (!ObjectUtils.isEmpty(processCriteria.getModuleName()) && processCriteria.getModuleName().equals(BS_WS_MODULENAME)
             		&& flag==1) {

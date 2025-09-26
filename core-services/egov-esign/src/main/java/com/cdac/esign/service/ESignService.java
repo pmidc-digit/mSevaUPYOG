@@ -130,7 +130,7 @@ public class ESignService {
     	    String unescaped = pemKey.contains("\\n") ? pemKey.replace("\\n", System.lineSeparator()) : pemKey;
 
 
-    	    logger.info("ESign private key (FULL):\n{}", unescaped);
+    	//    logger.info("ESign private key (FULL):\n{}", unescaped);
     	}
         PrivateKey privateKey = RSAKeyUtil.loadPrivateKey(pemKey);
         // Step 3: Download PDF from URL as byte array (in-memory processing)
@@ -369,7 +369,7 @@ public class ESignService {
             String baseUrl = env.getProperty("filestore.base.url", "http://localhost:1001");
             String filesUrl = env.getProperty("filestore.files.url", "/filestore/v1/files/url");
             String url = baseUrl + filesUrl + "?tenantId=" + tenantId + "&fileStoreIds=" + fileStoreId;
-
+            logger.info("Filestore URL: {}", url);
             // Set headers
             HttpHeaders headers = new HttpHeaders();
             headers.set("accept", env.getProperty("http.header.accept", "application/json, text/plain, */*"));
@@ -379,6 +379,7 @@ public class ESignService {
             // Make the GET request
             ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
 
+            logger.info("Filestore API response status: {}", response.getStatusCode());
             if (response.getStatusCode().is2xxSuccessful()) {
                 // Parse JSON response to extract PDF URL
                 ObjectMapper objectMapper = new ObjectMapper();

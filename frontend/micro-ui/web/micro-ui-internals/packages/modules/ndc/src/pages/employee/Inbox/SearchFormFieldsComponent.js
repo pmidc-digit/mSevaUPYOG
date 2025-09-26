@@ -20,7 +20,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
               </SearchField>
               <SearchField>
                 <label>{t("CORE_COMMON_PHONE_NUMBER")}</label>
-                <TextInput name="phoneNumber" inputRef={registerRef({})} />
+                <TextInput name="mobileNumber" inputRef={registerRef({})} />
               </SearchField>
               {/* <SearchField>
                 <label>{t("NDC_MSG_PROPERTY_LABEL")}</label>

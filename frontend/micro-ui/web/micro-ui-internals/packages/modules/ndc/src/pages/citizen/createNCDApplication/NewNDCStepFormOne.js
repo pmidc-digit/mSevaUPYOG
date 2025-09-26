@@ -9,11 +9,14 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
   const user = Digit.UserService.getUser();
+  const id = window.location.pathname.split("/").pop();
   const currentStepData = useSelector((state) =>
     state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {}
   );
 
   const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
+
+  const checkFormDatass = useSelector((state) => state.ndc.NDCForm || {});
 
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
@@ -29,8 +32,16 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
 
-    if (checkFormData?.apiData?.Applications?.[0]?.uuid || checkFormData?.responseData?.[0]?.uuid) {
-      onGoNext();
+    console.log("checkFormData", checkFormData);
+
+    const isRealId = id && id.startsWith("NDC-");
+
+    console.log("isRealId", isRealId);
+
+    if (checkFormData?.apiData?.Applications?.[0]?.uuid || checkFormData?.responseData?.[0]?.uuid || isRealId) {
+      // onGoNext();
+      updateApplication(data);
+      console.log("here bab");
     } else createApplication(data);
 
     // onGoNext();
@@ -124,6 +135,115 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     };
 
     const response = await Digit.NDCService.NDCcreate({ tenantId, details: payload });
+
+    if (response?.ResponseInfo?.status === "successful") {
+      dispatch(updateNDCForm("apiData", response));
+      onGoNext();
+      return { isSuccess: true, response };
+    } else {
+      return { isSuccess: false, response };
+    }
+  };
+
+  const updateApplication = async (data) => {
+    const applicant = Digit.UserService.getUser()?.info || {};
+    const auditDetails = data?.cpt?.details?.auditDetails;
+    const applicantId = applicant?.uuid;
+
+    console.log("data===?????", data);
+    console.log("checkFormData???====", checkFormData);
+
+    // Build owners array
+    const owners = [
+      {
+        // name: `${data?.PropertyDetails?.firstName} ${data?.PropertyDetails?.lastName}`.trim(),
+        name: user?.info?.name,
+        mobileNumber: user?.info?.mobileNumber,
+        gender: data?.PropertyDetails?.gender,
+        emailId: user?.info?.emailId,
+        type: user?.info?.type,
+      },
+    ];
+
+    // Prepare NdcDetails
+    let ndcDetails = [];
+
+    if (checkFormData?.responseData?.[0]?.NdcDetails?.length > 0) {
+      ndcDetails = checkFormData.responseData[0].NdcDetails;
+    } else {
+      // Add each water connection to NdcDetails
+      (data?.PropertyDetails?.waterConnection || [])?.forEach((wc) => {
+        ndcDetails.push({
+          uuid: wc?.billData?.id,
+          applicantId: applicantId,
+          businessService: "WS",
+          consumerCode: wc?.connectionNo,
+          additionalDetails: {
+            propertyAddress: data?.PropertyDetails?.address,
+            propertyType: data?.cpt?.details?.usageCategory,
+            // connectionType: wc?.billData,
+            // meterNumber: "NOT_AVAILABLE"
+          },
+          dueAmount: wc?.billData?.totalAmount || 0,
+          status: wc?.billData?.status,
+        });
+      });
+
+      // Add each sewerage connection to NdcDetails
+      (data?.PropertyDetails?.sewerageConnection || [])?.forEach((sc) => {
+        ndcDetails.push({
+          uuid: sc?.billData?.id,
+          applicantId: applicantId,
+          businessService: "SW",
+          consumerCode: sc?.connectionNo,
+          additionalDetails: {
+            propertyAddress: data?.PropertyDetails?.address,
+            propertyType: data?.cpt?.details?.usageCategory,
+          },
+          dueAmount: sc?.billData?.totalAmount || 0,
+          status: sc?.billData?.status,
+        });
+      });
+
+      if (data?.PropertyDetails?.propertyBillData?.billData) {
+        const billData = data?.PropertyDetails?.propertyBillData?.billData;
+        ndcDetails.push({
+          uuid: billData?.id,
+          applicantId: applicantId,
+          businessService: "PT",
+          consumerCode: data?.cpt?.id,
+          additionalDetails: {
+            propertyAddress: data?.PropertyDetails?.address,
+            propertyType: data?.cpt?.details?.usageCategory,
+          },
+          dueAmount: billData?.totalAmount || 0,
+          status: billData?.status,
+        });
+      }
+    }
+
+    // Final payload
+    const payload = {
+      Applications: [
+        {
+          tenantId,
+          owners,
+          NdcDetails: ndcDetails,
+          Documents: [],
+          active: true,
+          reason: data?.NDCReason?.code,
+          auditDetails: data?.cpt?.details?.auditDetails,
+          uuid: id,
+          workflow: {
+            action: "DRAFT",
+          },
+        },
+      ],
+    };
+
+    console.log("payload", payload);
+
+    const response = await Digit.NDCService.NDCUpdate({ tenantId, details: payload });
 
     if (response?.ResponseInfo?.status === "successful") {
       dispatch(updateNDCForm("apiData", response));

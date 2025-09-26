@@ -49,12 +49,17 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
   const add = ndc?.additionalDetails || {};
 
   const applicationNumber = appData?.uuid || "NA";
-  const propertyId = ndc?.consumerCode || "NA";
+  // const propertyId = ndc?.consumerCode || "NA";
+  const propertyId = appData?.NdcDetails?.[3]?.consumerCode;
   const propertyType = add?.propertyType ? t(add.propertyType) : "NA";
   const applicantName = owner?.name || "NA";
-  const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
+  // const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
+    const address = appData?.NdcDetails?.[0]?.additionalDetails?.propertyAddress || owner?.permanentAddress || owner?.correspondenceAddress || "NA"
   const ulbName = tenantInfo?.name || appData?.tenantId || "NA";
   const duesAmount = add?.duesAmount || appData?.additionalDetails?.duesAmount || "0";
+
+
+
 
   // Build single certificate body by concatenating translated fragments and dynamic values
   const certificateBody = `${t("NDC_MSG_INTRO")}
@@ -63,9 +68,7 @@ ${t("NDC_MSG_APPLICATION_LABEL")}: ${applicationNumber}
 
 ${t("NDC_MSG_PROPERTY_LABEL")}: ${propertyId}  ${t("NDC_MSG_PROPERTY_TYPE_LABEL")} ${propertyType}
 
-${t("NDC_MSG_APPLICANT_LABEL")}: ${applicantName} ${t("NDC_MSG_FOR_LAND")} ${address}
-
-${t("NDC_MSG_FALLING_CLAUSE_PART1")} ${t("NDC_MSG_FALLING_CLAUSE_PART2")} ${ulbName} ${t("NDC_MSG_AFTER_RECOVERY")} ${duesAmount} ${t("NDC_MSG_DUES_LIST")}
+${t("NDC_MSG_APPLICANT_LABEL")}: ${applicantName} ${t("NDC_MSG_FOR_LAND")} ${address} ${t("NDC_MSG_FALLING_CLAUSE_PART1")} ${t("NDC_MSG_FALLING_CLAUSE_PART2")} Municipal Council/ Corporation ${t("NDC_MSG_AFTER_RECOVERY")} ${duesAmount} ${t("NDC_MSG_DUES_LIST")}
 
 ${t("NDC_MSG_DECLARATION_TITLE")}
 ${t("NDC_MSG_DECL_A")}

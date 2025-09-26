@@ -195,12 +195,10 @@ const NewLogin = ({ stateCode }) => {
         {step !== "OTP" && (
           <div className="account-link">
             <span>
-              {/* {t("CS_COMMON_DONT_HAVE_ACCOUNT")} */}
-              Don’t have an account?
+              {t("CS_COMMON_DONT_HAVE_ACCOUNT")}
             </span>
             <span className="link" onClick={handleRegisterClick}>
-              {/* {t("CS_COMMON_REGISTER")} */}
-              Register
+              {t("CS_COMMON_REGISTER")}
             </span>
           </div>
         )}

@@ -10,12 +10,13 @@ const SelectNDCDocuments = ({ t, config, onSelect, userType, formData, setError:
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (checkFormData?.responseData?.[0]?.Documents?.length) {
+    console.log("coming here again");
+    if (checkFormData?.responseData?.[0]?.Documents?.length && documents.length === 0) {
       // Map API response into the structure your UploadFile expects
-      const apiDocs = checkFormData.responseData[0].Documents.map((doc) => ({
-        documentType: doc.documentType,
-        fileStoreId: doc.documentAttachment, // 👈 key mapping
-        documentUid: doc.documentAttachment, // 👈 key mapping
+      const apiDocs = checkFormData?.responseData?.[0]?.Documents?.map((doc) => ({
+        documentType: doc?.documentType,
+        fileStoreId: doc?.documentAttachment, // 👈 key mapping
+        documentUid: doc?.documentAttachment, // 👈 key mapping
       }));
 
       setDocuments(apiDocs);
@@ -83,7 +84,7 @@ function SelectDocument({ t, document: doc, setDocuments, setError, documents, s
   }
 
   useEffect(() => {
-    if (filteredDocument?.fileStoreId) {
+    if (filteredDocument?.fileStoreId && !file) {
       setUploadedFile(filteredDocument.fileStoreId);
     }
   }, [filteredDocument]);

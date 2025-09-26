@@ -294,9 +294,15 @@ const ApplicationOverview = () => {
     };
 
     const filtData = data?.Licenses?.[0];
+
+    let checkAssigne;
+    if (filtData.action == "SENDBACKTOCITIZEN") {
+      checkAssigne = [payloadData?.owners?.[0]?.uuid];
+    }
+
     updatedApplicant.workflow = {
       action: filtData.action,
-      assignes: filtData?.assignee,
+      assignes: filtData?.assignee || checkAssigne,
       comment: filtData?.comment,
       documents: filtData?.wfDocuments,
     };

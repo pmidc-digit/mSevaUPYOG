@@ -941,19 +941,6 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       return;
     }
 
-    // NEW VALIDATION: Require at least one selected site
-    // if ((mdmsCards?.length || 0) === 0 && (adsList?.length || 0) === 0) {
-    //   // setShowToast({
-    //   //   key: true,
-    //   //   label: "Please select at least one site before proceeding.",
-    //   // });
-    //   setError("siteSelection", {
-    //     type: "manual",
-    //     message: "Please select at least one site before proceeding.",
-    //   });
-    //   return;
-    // }
-
     if ((mdmsCards?.length || 0) === 0 && (adsList?.length || 0) === 0) {
       setError("siteSelection", {
         type: "manual",
@@ -982,6 +969,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           status: "BOOKING_CREATED",
           availabilityStatus: c.available === false ? "UNAVAILABLE" : "AVAILABLE",
           amount: c.amount || "",
+          light: c.light,
         };
       })
     );
@@ -989,6 +977,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     // current manual ads
     const adsToSubmit = [...adsList, ...mdmsCartDetails];
 
+    console.log('adsToSubmit', adsToSubmit)
     // current normalized cartDetails
     const cartDetails = adsToSubmit.map((d) => ({
       addType: d.advertisementType?.code || d.advertisementType || d.addType || "",
@@ -1005,6 +994,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       status: "BOOKING_CREATED",
       availabilityStatus: d.availabilityStatus || (d.available === false ? "UNAVAILABLE" : "AVAILABLE") || "",
       rate: d.amount || "",
+      light: d.light,
     }));
 
     // --- NEW: collect other saved sites (excluding current site) ---
@@ -1128,7 +1118,6 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       dispatch(RESET_ADS_NEW_APPLICATION_FORM());
     }
   }, [booked, dispatch, setValue]);
-
 
   return (
     <React.Fragment>
@@ -1573,23 +1562,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                               const start = effective.startDate && effective.startTime ? `${effective.startDate}T${effective.startTime}` : "";
                               const end = effective.endDate && effective.endTime ? `${effective.endDate}T${effective.endTime}` : "";
 
-                              // if (!start || !end) {
-                              //   // alert("Please fill both start and end date & time before adding.");
-                              //   setShowToast({
-                              //     key: true,
-                              //     label: "Please fill both start and end date & time before adding.",
-                              //   });
-                              //   return;
-                              // }
-                              // if (typeof tomorrowStr !== "undefined" && (effective.startDate < tomorrowStr || effective.endDate < tomorrowStr)) {
-                              //   // alert(`Dates must be from ${tomorrowStr} or later.`);
-                              //   setShowToast({
-                              //     key: true,
-                              //     label: `Dates must be from ${tomorrowStr} or later.`,
-                              //   });
-                              //   return;
-                              // }
-
+                      
                               if (!start || !end) {
                                 setError("scheduleValidation", {
                                   type: "manual",
@@ -1638,6 +1611,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                                 width: ad.width,
                                 height: ad.height,
                                 amount: ad.amount,
+                                light: ad?.light,
                                 available: ad.available,
                                 locationCode: ad.locationCode,
                                 geoLocation: normalizedGeoForAd,

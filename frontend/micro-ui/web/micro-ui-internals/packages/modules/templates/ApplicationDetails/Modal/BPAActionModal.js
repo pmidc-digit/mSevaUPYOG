@@ -214,10 +214,10 @@ const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction,
       alert(t("Enterd Less Adjustment amount is invalid"));
     }
     else{
-    applicationData.additionalDetails.selfCertificationCharges.BPA_DEVELOPMENT_CHARGES=sessionStorage.getItem("development") || "0";
-    applicationData.additionalDetails.selfCertificationCharges.BPA_OTHER_CHARGES=sessionStorage.getItem("otherCharges")|| "0";
-    applicationData.additionalDetails.selfCertificationCharges.BPA_LESS_ADJUSMENT_PLOT=sessionStorage.getItem("lessAdjusment" )|| "0";
-    applicationData.additionalDetails.otherFeesDiscription=sessionStorage.getItem("otherChargesDisc" || "NA");
+    // applicationData.additionalDetails.selfCertificationCharges.BPA_DEVELOPMENT_CHARGES=sessionStorage.getItem("development") || "0";
+    // applicationData.additionalDetails.selfCertificationCharges.BPA_OTHER_CHARGES=sessionStorage.getItem("otherCharges")|| "0";
+    // applicationData.additionalDetails.selfCertificationCharges.BPA_LESS_ADJUSMENT_PLOT=sessionStorage.getItem("lessAdjusment" )|| "0";
+    // applicationData.additionalDetails.otherFeesDiscription=sessionStorage.getItem("otherChargesDisc" || "NA");
     // applicationData.additionalDetails.lessAdjustmentFeeFiles=JSON.parse(sessionStorage.getItem("uploadedFileLess"));
 
     const nocDetails = applicationDetails?.nocData?.map(noc => {

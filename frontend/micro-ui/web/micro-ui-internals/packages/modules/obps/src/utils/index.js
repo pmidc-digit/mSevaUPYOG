@@ -1009,5 +1009,6 @@ export const getOrderDocuments = (appUploadedDocumnets, isNoc = false) => {
       });
     });
   }
+  console.log("DOCUMENTS===",finalDocs)
   return finalDocs;
 };

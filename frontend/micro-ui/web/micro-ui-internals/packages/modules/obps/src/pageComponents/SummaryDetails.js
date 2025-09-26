@@ -47,10 +47,12 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const tenantId = localStorage.getItem("CITIZEN.CITY");
     const menuRef = useRef();
     const [displayMenu, setDisplayMenu] = useState(false);
-    
-      const closeMenu = () => {
+    const [isFileLoading, setIsFileLoading] = useState(false)
+    const [fileUrls, setFileUrls] = useState({});
+
+    const closeMenu = () => {
         setDisplayMenu(false);
-      };
+    };
 
     Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
 
@@ -83,7 +85,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const [getOtpLoading, setGetOtpLoading] = useState(false);
     const [setOtpLoading, setSetOtpLoading] = useState(false);
     function routeTo(jumpTo) {
-        location.href = jumpTo;
+        window.open(jumpTo, "_blank");
     }
 
     let improvedDoc = [];
@@ -119,19 +121,38 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     }
 
     function getFloorData(block) {
-        let floors = [];
-        block?.building?.floors.map((ob) => {
+
+        const floors = []
+        let totalBuiltUpArea = 0
+        let totalFloorArea = 0
+
+        block?.building?.floors?.forEach((ob) => {
+            const builtUp = Number(ob.occupancies?.[0]?.builtUpArea) || 0
+            const floor = Number(ob.occupancies?.[0]?.floorArea) || 0
+
+            totalBuiltUpArea += builtUp
+            totalFloorArea += floor
+
             floors.push({
                 Floor: t(`BPA_FLOOR_NAME_${ob.number}`),
                 Level: ob.number,
                 Occupancy: t(`${ob.occupancies?.[0]?.type}`),
-                BuildupArea: Number(ob.occupancies?.[0]?.builtUpArea).toFixed(2),
-                FloorArea: Number(ob.occupancies?.[0]?.floorArea).toFixed(2) || 0,
-                // CarpetArea: ob.occupancies?.[0]?.CarpetArea || 0,
-                key: t(`BPA_FLOOR_NAME_${ob.number}`),
-            });
-        });
-        return floors;
+
+                BuildupArea: Number(builtUp).toFixed(2),
+                FloorArea: Number(floor).toFixed(2),
+            })
+        })
+
+        // Add Totals Row
+        floors.push({
+            Floor: t("BPA_TOTAL"),
+            Level: "",
+            Occupancy: "",
+            BuildupArea: `${Number(totalBuiltUpArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+            FloorArea: `${Number(totalFloorArea).toFixed(2)} ${t("BPA_SQ_MTRS_LABEL")}`,
+        })
+
+        return floors
     }
 
     const tableHeader = [
@@ -294,77 +315,79 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     const userRoles = user?.info?.roles?.map((e) => e.code);
     let actions =
-    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    }) ||
-    workflowDetails?.data?.nextActions?.filter((e) => {
-      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
-    });
+        workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+            return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+        }) ||
+        workflowDetails?.data?.nextActions?.filter((e) => {
+            return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+        });
 
     async function onSubmitCheck(action) {
-        if(!isArchitectDeclared){
+        if (!isArchitectDeclared) {
             alert(t("Please_declare_and_upload_architect_consent"));
             return;
         }
-        if(!action){
+        if (!action) {
             alert(t("Something_went_wrong"));
             return;
         }
-        
-    const userInfo = Digit.UserService.getUser()
-      const accountId = userInfo?.info?.uuid
-      const workflowAction = action;
-      let consentDocument = currentStepData?.createdResponse?.documents?.find((item) => item.documentType === "ARCHITECT.UNDERTAKING")
-      if(consentDocument){
-        consentDocument.fileStoreId = isArchitectDeclared
-        consentDocument.documentUid = isArchitectDeclared;
-      }else{
-        consentDocument = {
-            documentType: "ARCHITECT.UNDERTAKING",
-            fileStoreId: isArchitectDeclared,
-            documentUid: isArchitectDeclared,
-            additionalDetails: null,
-            auditDetails: null
+
+        const userInfo = Digit.UserService.getUser()
+        const accountId = userInfo?.info?.uuid
+        const workflowAction = action;
+        let consentDocument = currentStepData?.createdResponse?.documents?.find((item) => item.documentType === "ARCHITECT.UNDERTAKING")
+        if (consentDocument) {
+            consentDocument.fileStoreId = isArchitectDeclared
+            consentDocument.documentUid = isArchitectDeclared;
+        } else {
+            consentDocument = {
+                documentType: "ARCHITECT.UNDERTAKING",
+                fileStoreId: isArchitectDeclared,
+                documentUid: isArchitectDeclared,
+                additionalDetails: null,
+                auditDetails: null
+            }
         }
-      }
-    const documents = currentStepData?.createdResponse?.documents?.filter((item) => item.documentType !== "ARCHITECT.UNDERTAKING")
+        const documents = currentStepData?.createdResponse?.documents?.filter((item) => item.documentType !== "ARCHITECT.UNDERTAKING")
         documents.push(consentDocument);
 
-            try{
-        setApiLoading(true);
-        const result = await Digit.OBPSService.update({ BPA: {
-          ...currentStepData?.createdResponse,
-          additionalDetails: {
-            ...currentStepData?.createdResponse?.additionalDetails,
-            isArchitectDeclared
-          },
-          documents,
-          workflow: {
-            action: workflowAction,
-            assignes: [accountId]
-          }
-        } }, tenantId)
-        if(result?.ResponseInfo?.status === "successful"){
-          setApiLoading(false);
-          history.push(`/digit-ui/citizen/obps/self-certification/response/${currentStepData?.createdResponse?.applicationNo}`);
-        }else{
-          alert(t("BPA_CREATE_APPLICATION_FAILED"));
-          setApiLoading(false);
+        try {
+            setApiLoading(true);
+            const result = await Digit.OBPSService.update({
+                BPA: {
+                    ...currentStepData?.createdResponse,
+                    additionalDetails: {
+                        ...currentStepData?.createdResponse?.additionalDetails,
+                        isArchitectDeclared
+                    },
+                    documents,
+                    workflow: {
+                        action: workflowAction,
+                        assignes: [accountId]
+                    }
+                }
+            }, tenantId)
+            if (result?.ResponseInfo?.status === "successful") {
+                setApiLoading(false);
+                history.push(`/digit-ui/citizen/obps/self-certification/response/${currentStepData?.createdResponse?.applicationNo}`);
+            } else {
+                alert(t("BPA_CREATE_APPLICATION_FAILED"));
+                setApiLoading(false);
+            }
+            console.log("APIResponse", result);
+        } catch (e) {
+            console.log("error", e);
+            alert(t("BPA_CREATE_APPLICATION_FAILED"));
+            setApiLoading(false);
         }
-        console.log("APIResponse", result);
-      }catch(e){
-        console.log("error", e);
-        alert(t("BPA_CREATE_APPLICATION_FAILED"));
-        setApiLoading(false);
-      }
     }
 
     async function onActionSelect(action) {
         // onSubmitCheck(action);
-    // setShowModal(true);
-    // setSelectedAction(action);
-    console.log("Selected Action",action?.action)
-    setIsSubmitting(true);
+        // setShowModal(true);
+        // setSelectedAction(action);
+        console.log("Selected Action", action?.action)
+        setIsSubmitting(true);
         try {
             await onSubmitCheck(action?.action);
         } catch (error) {
@@ -374,9 +397,57 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             setIsSubmitting(false);
         }
     }
+
+    useEffect(() => {
+        const fetchFileUrls = async () => {
+            if (!currentStepData?.createdResponse?.additionalDetails) return;
+
+            const fileKeys = ["ecbcCertificateFile", "greenuploadedFile", "uploadedFile"];
+
+            // Collect valid fileStoreIds
+            const validFileStoreIds = fileKeys
+                .map((key) => currentStepData?.createdResponse?.additionalDetails?.[key])
+                .filter(
+                    (id) => id && id !== "NA" && id !== "" && id !== null && id !== undefined
+                );
+
+            if (validFileStoreIds.length === 0) return;
+
+            try {
+                setIsFileLoading(true);
+
+                // Call Digit service
+                const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
+
+                if (result?.data?.fileStoreIds) {
+                    const urls = {};
+                    fileKeys.forEach((key) => {
+                        const fileId = currentStepData?.createdResponse?.additionalDetails?.[key];
+                        if (fileId && result.data.fileStoreIds[fileId]) {
+                            urls[key] = result.data.fileStoreIds[fileId].url;
+                        }
+                    });
+
+                    // Store URLs in state (example: object with keys)
+                    setFileUrls(urls);
+                }
+            } catch (error) {
+                console.error("Error fetching file URLs", error);
+            } finally {
+                setIsFileLoading(false);
+            }
+        };
+
+        fetchFileUrls();
+    }, [currentStepData?.createdResponse?.additionalDetails]);
+
+    useEffect(() => {
+        console.log("ECBCDocs", fileUrls);
+    }, [fileUrls])
+
     console.log("ArchitectConsentForm", currentStepData?.createdResponse?.status, isArchitectDeclared, actions)
 
-    if(apiLoading) return (<Loader />);
+    if (apiLoading || isFileLoading) return (<Loader />);
 
     return (
         <React.Fragment>
@@ -509,8 +580,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     </div>
                 </Card>
 
-                <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
-                <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader>
+                {/* <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} /> */}
+                {/* <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_BUILDING_EXTRACT_HEADER")}</CardSubHeader> */}
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }}>
                     <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_PLAN_INFORMATION_PROPERTIES")}</CardSubHeader>
@@ -519,7 +590,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             className="border-none"
                             label={t("BPA_PLOT_AREA_M2")}
                             // text=`{${planInfoProps?.planDetail?.plotArea?.area ? t("BPA_SQ_MTRS_LABEL") : ""}`
-                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.plot?.area || t("CS_NA")}
+                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.plot?.area ? `${currentStepData?.BasicDetails?.edcrDetails?.planDetail?.plot?.area} ${t(`BPA_SQ_MTRS_LABEL`)}` : t("CS_NA")}
                         />
                         <Row
                             className="border-none"
@@ -603,17 +674,18 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 <Table
                                     className="customTable table-fixed-first-column table-border-style"
                                     t={t}
-                                    disableSort={false}
-                                    autoSort={true}
+                                    disableSort={true}
+                                    autoSort={false}
                                     manualPagination={false}
                                     isPaginationRequired={false}
                                     initSortId="S N "
                                     data={getFloorData(block)}
                                     columns={tableColumns}
+                                    showFooter={true}
                                     getCellProps={(cellInfo) => {
                                         return {
                                             style: {},
-                                        };
+                                        }
                                     }}
                                 />
                             </div>
@@ -632,6 +704,13 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                     : t("CS_NA")
                             }
                         ></Row>
+                    </StatusTable>
+
+                    <CardSubHeader style={{ fontSize: "20px" }}>{t("BPA_APP_DETAILS_ECBC_DETAILS_LABEL")}</CardSubHeader>
+                    <StatusTable>
+                        <Row className="border-none" label={t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcElectricalLoad} />
+                        <Row className="border-none" label={t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcDemandLoad} />
+                        <Row className="border-none" label={t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt`)} text={currentStepData?.createdResponse?.additionalDetails?.ecbcAirConditioned} />
                     </StatusTable>
                 </Card>
 

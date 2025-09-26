@@ -175,7 +175,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
       {!isLoading ? (
         <FormStep
           t={t}
-          config={config}
+          config={{...config, texts:{header: "BPA_DOCUMENT_DETAILS_LABEL"},}}
           onSelect={handleSubmit}
           onSkip={onSkip}
           // isDisabled={window.location.href.includes("editApplication")||window.location.href.includes("sendbacktocitizen")?false:enableSubmit}

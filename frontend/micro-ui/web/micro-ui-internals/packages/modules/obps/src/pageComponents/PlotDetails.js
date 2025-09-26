@@ -414,7 +414,9 @@ console.log("sessionStorageData",formData, data, currentStepData);
     <div>
       {isMobile && <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
       <div style={{paddingBottom: isMobile ? "0px" : "8px"}}>
-        <FormStep style={pageStyle}  onSelect={handleSubmit} childrenAtTheBottom={false} t={t}  onSkip={onSkip}>
+        <FormStep style={pageStyle} config={{ ...config, texts: {
+          // headerCaption: "BPA_PLOT_DETAILS_TITLE",
+          header: "BPA_PLOT_DETAILS_TITLE",cardText: "",skipText: null,} }}  onSelect={handleSubmit} childrenAtTheBottom={false} t={t}  onSkip={onSkip}>
           <StatusTable >
             <Row
               className="border-none"
@@ -427,22 +429,22 @@ console.log("sessionStorageData",formData, data, currentStepData);
             
           </StatusTable>
 
-          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL"), registrationDetails, setRegistrationDetails, "registrationDetails", "Give Land Registration Detail...")}
-          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT"), boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)")}
-          {renderField(t("BPA_WARD_NUMBER_LABEL"), wardnumber, setWardNumber, "wardnumber", "Ward Number")}
-          {renderField(t("BPA_ZONE_NUMBER_LABEL"), zonenumber, setZoneNumber, "zonenumber", "Zone Number")}
-          {renderField(t("BPA_KHASRA_NUMBER_LABEL"), khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
-          {renderField(t("BPA_ARCHITECT_ID"), architectid, setArchitectId, "architectid", "Architect ID", true)}
-          {renderField(t("BPA_PROPERTY_UID"), propertyuid, setPropertyUid, "propertyuid", "Property UID")}
-          {renderField(t("BPA_NUMBER_OF_BATHS"), bathnumber, setBathNumber, "bathnumber", "Number of Bathrooms")}
-          {renderField(t("BPA_NUMBER_OF_KITCHENS"), kitchenNumber, setKitchenNumber, "kitchenNumber", "Number of Kitchens")}
-          {renderField(t("BPA_APPROX_INHABITANTS_FOR_ACCOMODATION"), approxinhabitants, setApproxInhabitants, "approxinhabitants", "Approximate inhabitants")}
-          {renderField(t("BPA_DISTANCE_FROM_SEWER"), distancefromsewer, setDistanceFromSewer, "distancefromsewer", "Distance from sewer (in meters)")}
-          {renderField(t("BPA_SOURCE_OF_WATER"), sourceofwater, setSourceOfWater, "sourceofwater", "Source of Water")}
-          {renderField(t("BPA_NUMBER_OF_WATER_CLOSETS"), watercloset, setWaterCloset, "watercloset", "Water Closet")}
-          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_WALLS"), materialused, setMaterialUsed, "materialused", "e.g. Cement, Bricks, etc")}
-          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_FLOOR"), materialusedinfloor, setMaterialUsedInFloor, "materialusedinfloor", "e.g. Cement, Bricks, etc")}
-          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS"), materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc")}
+          {renderField(t("BPA_BOUNDARY_LAND_REG_DETAIL_LABEL")+"*", registrationDetails, setRegistrationDetails, "registrationDetails", "Give Land Registration Detail...")}
+          {renderField(t("BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT")+"*", boundaryWallLength, setBoundaryWallLength, "boundaryWallLength", "Enter boundary wall length (in meters)")}
+          {renderField(t("BPA_WARD_NUMBER_LABEL")+"*", wardnumber, setWardNumber, "wardnumber", "Ward Number")}
+          {renderField(t("BPA_ZONE_NUMBER_LABEL")+"*", zonenumber, setZoneNumber, "zonenumber", "Zone Number")}
+          {renderField(t("BPA_KHASRA_NUMBER_LABEL")+"*", khasraNumber, setKhasraNumber, "khasraNumber", "Khasra Number", true)}
+          {renderField(t("BPA_ARCHITECT_ID")+"*", architectid, setArchitectId, "architectid", "Architect ID", true)}
+          {renderField(t("BPA_PROPERTY_UID")+"*", propertyuid, setPropertyUid, "propertyuid", "Property UID")}
+          {renderField(t("BPA_NUMBER_OF_BATHS")+"*", bathnumber, setBathNumber, "bathnumber", "Number of Bathrooms")}
+          {renderField(t("BPA_NUMBER_OF_KITCHENS")+"*", kitchenNumber, setKitchenNumber, "kitchenNumber", "Number of Kitchens")}
+          {renderField(t("BPA_APPROX_INHABITANTS_FOR_ACCOMODATION")+"*", approxinhabitants, setApproxInhabitants, "approxinhabitants", "Approximate inhabitants")}
+          {renderField(t("BPA_DISTANCE_FROM_SEWER")+"*", distancefromsewer, setDistanceFromSewer, "distancefromsewer", "Distance from sewer (in meters)")}
+          {renderField(t("BPA_SOURCE_OF_WATER")+"*", sourceofwater, setSourceOfWater, "sourceofwater", "Source of Water")}
+          {renderField(t("BPA_NUMBER_OF_WATER_CLOSETS")+"*", watercloset, setWaterCloset, "watercloset", "Water Closet")}
+          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_WALLS")+"*", materialused, setMaterialUsed, "materialused", "e.g. Cement, Bricks, etc")}
+          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_FLOOR")+"*", materialusedinfloor, setMaterialUsedInFloor, "materialusedinfloor", "e.g. Cement, Bricks, etc")}
+          {renderField(t("BPA_MATERIAL_TO-BE_USED_IN_ROOFS")+"*", materialusedinroofs, setMaterialUsedInRoofs, "materialusedinroofs", "e.g. Cement, Bricks, etc")}
 
           
           <ActionBar>

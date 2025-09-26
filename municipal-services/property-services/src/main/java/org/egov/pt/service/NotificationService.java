@@ -120,8 +120,7 @@ public class NotificationService {
         String state = getStateFromWf(wf, configs.getIsWorkflowEnabled());
         String completeMsgs=null;
         String msgCode=null;
-
-        if (propertySource.equalsIgnoreCase("WATER_CHARGES") || propertySource.equalsIgnoreCase("SEWERAGE_CHARGES") ) {
+		if (propertySource.equalsIgnoreCase("WATER_CHARGES") || propertySource.equalsIgnoreCase("SEWERAGE_CHARGES") ) {
             completeMsgs = notifUtil.getLocalizationMessages(property.getTenantId(), propertyRequest.getRequestInfo());
 			if(propertySource.equals("WATER_CHARGES")) {
 				msgCode = "PT_WS_MIG_PT";

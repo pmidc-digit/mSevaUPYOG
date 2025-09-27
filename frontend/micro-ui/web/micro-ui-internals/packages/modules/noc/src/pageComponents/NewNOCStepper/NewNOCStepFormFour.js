@@ -144,8 +144,24 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
      //update data with redux as we can not use old data for update api 
      additionalDetails: {
       ...nocFormData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails,
-      applicationDetails:{...nocFormData?.applicationDetails}, 
-      siteDetails:{...nocFormData?.siteDetails},
+      applicationDetails:{
+        ...nocFormData?.applicationDetails,
+          applicantGender : nocFormData?.applicationDetails?.applicantGender?.code || "",
+      }, 
+      siteDetails:{
+        ...nocFormData?.siteDetails,
+         ulbName: nocFormData?.siteDetails?.ulbName?.name || "",
+         roadType: nocFormData?.siteDetails?.roadType?.name || "",
+         buildingStatus:nocFormData?.siteDetails?.buildingStatus?.name || "",
+         isBasementAreaAvailable: nocFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
+         district: nocFormData?.siteDetails?.district?.name || "",
+         zone: nocFormData?.siteDetails?.zone?.name || "",
+
+         specificationBuildingCategory: nocFormData?.siteDetails?.specificationBuildingCategory?.name || "",
+         specificationNocType: nocFormData?.siteDetails?.specificationNocType?.name || "",
+         specificationRestrictedArea: nocFormData?.siteDetails?.specificationRestrictedArea?.code || "",
+         specificationIsSiteUnderMasterPlan:nocFormData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || ""
+      },
       coordinates:{...coordinates}
     }
    

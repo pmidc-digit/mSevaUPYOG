@@ -89,7 +89,8 @@ const EditApplication = () => {
   }
   console.log("tenantId here", tenantId);
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data} = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
   
   const nocObject = applicationDetails?.Noc?.[0] || {};
@@ -101,6 +102,19 @@ const EditApplication = () => {
   const setStep = (updatedStepNumber) => {
     dispatch(SET_NOCNewApplication_STEP(updatedStepNumber));
   };
+
+  // new changes here
+  const stateId = Digit.ULBService.getStateId();
+  const { data: buildingType, isLoading: isBuildingTypeLoading } = Digit.Hooks.noc.useBuildingType(stateId);
+  const { data: roadType, isLoading: isRoadTypeLoading } = Digit.Hooks.noc.useRoadType(stateId);
+  const { data: buildingCategory, isLoading: isBuildingCategoryLoading, error: buildingCategoryError } = Digit.Hooks.noc.useBuildingCategory(stateId);
+  const { data: nocType, isLoading: isNocTypeLoading,  } = Digit.Hooks.noc.useNocType(stateId);
+  const { data: ulbList, isLoading: isUlbListLoading } = Digit.Hooks.useTenants();
+
+  const ulbListOptions = ulbList?.map((city) => ({
+    ...city,
+    displayName: t(city.i18nKey),
+  }));
 
   useEffect(() => {
    // dispatch(RESET_NOC_NEW_APPLICATION_FORM());

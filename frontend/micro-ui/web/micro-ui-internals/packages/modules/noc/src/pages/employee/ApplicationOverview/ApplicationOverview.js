@@ -461,6 +461,7 @@ const NOCEmployeeApplicationOverview = () => {
           actionData={workflowDetails?.data?.timeline}
           workflowDetails={workflowDetails}
           showToast={showToast}
+          setShowToast={setShowToast}
           closeToast={closeToast}
           errors={error}
           showErrorToast={showErrorToast}

@@ -106,48 +106,49 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
     return subOcc;
   };
 
-  data.BlockIds = getBlockIds(data?.landInfo?.unit);
-  data.address = data?.landInfo?.address;
-  data.address.locality["i18nkey"] = `${t(
-    `${stringReplaceAll(data?.landInfo?.address?.tenantId, ".", "_").toUpperCase()}_REVENUE_${data?.landInfo?.address?.locality?.code}`
-  )}`;
-  data.placeName = data?.additionalDetails?.GISPlaceName || "";
+  // data.BlockIds = getBlockIds(data?.landInfo?.unit);
+  // data.address = data?.landInfo?.address;
+  // data.address.locality["i18nkey"] = `${t(
+  //   `${stringReplaceAll(data?.landInfo?.address?.tenantId, ".", "_").toUpperCase()}_REVENUE_${data?.landInfo?.address?.locality?.code}`
+  // )}`;
+  // data.placeName = data?.additionalDetails?.GISPlaceName || "";
   data.data = {
     scrutinyNumber: { edcrNumber: APIScrutinyDetails?.edcrNumber },
-    applicantName: APIScrutinyDetails?.planDetail?.planInformation?.applicantName,
-    applicationDate: data?.auditDetails?.createdTime,
-    applicationType: APIScrutinyDetails?.appliactionType,
-    holdingNumber: data?.additionalDetails?.holdingNo,
-    boundaryWallLength: data?.additionalDetails?.boundaryWallLength,
-    occupancyType: APIScrutinyDetails?.planDetail?.planInformation?.occupancy,
-    registrationDetails: data?.additionalDetails?.registrationDetails,
-    riskType: Digit.Utils.obps.calculateRiskType(
-      mdmsData?.BPA?.RiskTypeComputation,
-      APIScrutinyDetails?.planDetail?.plot?.area,
-      APIScrutinyDetails?.planDetail?.blocks
-    ),
-    serviceType: data?.additionalDetails?.serviceType || APIScrutinyDetails?.applicationSubType,
+    applicationNo: data?.applicationNo,
+    // applicantName: APIScrutinyDetails?.planDetail?.planInformation?.applicantName,
+    // applicationDate: data?.auditDetails?.createdTime,
+    // applicationType: APIScrutinyDetails?.appliactionType,
+    // holdingNumber: data?.additionalDetails?.holdingNo,
+    // boundaryWallLength: data?.additionalDetails?.boundaryWallLength,
+    // occupancyType: APIScrutinyDetails?.planDetail?.planInformation?.occupancy,
+    // registrationDetails: data?.additionalDetails?.registrationDetails,
+    // riskType: Digit.Utils.obps.calculateRiskType(
+    //   mdmsData?.BPA?.RiskTypeComputation,
+    //   APIScrutinyDetails?.planDetail?.plot?.area,
+    //   APIScrutinyDetails?.planDetail?.blocks
+    // ),
+    // serviceType: data?.additionalDetails?.serviceType || APIScrutinyDetails?.applicationSubType,
   };
 
-  data?.landInfo.owners.map((owner, ind) => {
-    owner.gender = {
-      active: true,
-      code: owner.gender,
-      i18nKey: `COMMON_GENDER_${owner.gender}`,
-    };
-  });
+  // data?.landInfo.owners.map((owner, ind) => {
+  //   owner.gender = {
+  //     active: true,
+  //     code: owner.gender,
+  //     i18nKey: `COMMON_GENDER_${owner.gender}`,
+  //   };
+  // });
 
-  data.owners = {
-    owners: data?.landInfo?.owners,
-    ownershipCategory: data?.ownershipCategory?.code,
-  };
+  // data.owners = {
+  //   owners: data?.landInfo?.owners,
+  //   ownershipCategory: data?.ownershipCategory?.code,
+  // };
 
-  data.riskType = Digit.Utils.obps.calculateRiskType(
-    mdmsData?.BPA?.RiskTypeComputation,
-    APIScrutinyDetails?.planDetail?.plot?.area,
-    APIScrutinyDetails?.planDetail?.blocks
-  );
-  data.subOccupancy = getBlocksforFlow(data?.landInfo?.unit);
+  // data.riskType = Digit.Utils.obps.calculateRiskType(
+  //   mdmsData?.BPA?.RiskTypeComputation,
+  //   APIScrutinyDetails?.planDetail?.plot?.area,
+  //   APIScrutinyDetails?.planDetail?.blocks
+  // );
+  // data.subOccupancy = getBlocksforFlow(data?.landInfo?.unit);
   data.uiFlow = {
     flow: data?.businessService.includes("OC") ? "OCBPA" : data?.businessService?.split(".")[0],
     applicationType: data?.additionalDetails?.applicationType || APIScrutinyDetails?.appliactionType,
@@ -162,10 +163,10 @@ export const getBPAFormData = async (data, mdmsData, history, t) => {
   } else {
     sessionStorage.setItem("BPAintermediateValue", JSON.stringify({ ...data }));
     history.push(
-      `/digit-ui/citizen/obps/bpa/${data?.additionalDetails?.applicationType.toLowerCase()}/${data?.additionalDetails?.serviceType.toLowerCase()}`
+      `/digit-ui/citizen/obps/bpa/building_plan_scrutiny/new_construction/docs-required`
     );
   }
-};
+};  
 
 // export const getDocumentforBPA = (docs, PrevStateDocs) => {
 //   let document = [];

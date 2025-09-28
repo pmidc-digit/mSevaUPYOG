@@ -311,7 +311,7 @@ console.log("sessionStorageData",formData, data, currentStepData);
       isSelfCertificationRequired
     };
     const edcrNumber = data?.edcrNumber;
-    const riskType = data?.riskType || "LOW";
+    const riskType = currentStepData?.BasicDetails?.riskType;
     // const tenantId = data?.tenantId;
     const accountId = userInfo?.info?.uuid
     const workflowAction = formData?.data?.applicationNo ? "SAVE_AS_DRAFT" : "INITIATE";

@@ -697,7 +697,6 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     }
 
 
-    if (!formData?.id) {
       setIsDisable(true)
 
       const conversionOwners = []
@@ -750,12 +749,6 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
       }
-
-      
-    } else {
-      // Editing case
-      // onSelect(config.key, ownerStep)
-    }
   }
 
   const onSkip = () => onSelect()

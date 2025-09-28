@@ -18,9 +18,11 @@ import {
   CardLabel,
   OTPInput,
   TextArea,
-  UploadFile
+  UploadFile,
+  CardHeader,
+  Table
 } from "@mseva/digit-ui-react-components"
-import React, { Fragment, useEffect, useState } from "react"
+import React, { Fragment, useEffect, useState, useMemo } from "react"
 import { useParams, useHistory } from "react-router-dom"
 import { useQueryClient } from "react-query"
 import { useTranslation } from "react-i18next"
@@ -35,13 +37,15 @@ import {
   printPdf,
   downloadPdf,
   getOrderDocuments,
+  getDocsFromFileUrls,
+  scrutinyDetailsData,
 } from "../../../utils"
 import cloneDeep from "lodash/cloneDeep"
 import DocumentsPreview from "../../../../../templates/ApplicationDetails/components/DocumentsPreview"
 import ScruntinyDetails from "../../../../../templates/ApplicationDetails/components/ScruntinyDetails"
 import { Link } from "react-router-dom"
 import CitizenConsent from "./CitizenConsent"
-import { scrutinyDetailsData } from "../../../utils";
+import FeeEstimation from "../../../pageComponents/FeeEstimation"
 
 
 const BpaApplicationDetail = () => {
@@ -53,7 +57,7 @@ const BpaApplicationDetail = () => {
   const stateCode = Digit.ULBService.getStateId()
   const isMobile = window.Digit.Utils.browser.isMobile()
   const queryClient = useQueryClient()
-  const [showToast, setShowToast] = useState({})
+  const [showToast, setShowToast] = useState(null)
   const [isTocAccepted, setIsTocAccepted] = useState(false)
   const [displayMenu, setDisplayMenu] = useState(false)
   const [showModal, setShowModal] = useState(false)
@@ -68,6 +72,9 @@ const BpaApplicationDetail = () => {
   sessionStorage.removeItem("BPA_SUBMIT_APP")
   sessionStorage.setItem("isEDCRDisable", JSON.stringify(true))
   sessionStorage.setItem("BPA_IS_ALREADY_WENT_OFF_DETAILS", JSON.stringify(false))
+  const [fileUrls, setFileUrls] = useState({});
+  const [ownerFileUrls, setOwnerFileUrls] = useState({});
+  const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
 
   const user = Digit.UserService.getUser()
 
@@ -90,29 +97,49 @@ const BpaApplicationDetail = () => {
   // const { data: datafromAPI, isLoadingScrutiny, refetch } = Digit.Hooks.obps.useScrutinyDetails(tenantId, data?.applicationData?.edcrNumber, {
   //   enabled: data?.applicationData?.edcrNumber && tenantId ? true : false,
   // });
-  
-  const [development, setDevelopment] = useState(() => {
-      return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "";
-  });
-  
-  
-    const [otherCharges, setOtherCharges] = useState(() => {
-      return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "";
-    });
-  
-    const [lessAdjusment, setLessAdjusment] = useState(() => {
-      return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT || "";
-    });
-  
-    const [otherChargesDisc, setOtherChargesDisc] = useState(() => {
-      return data?.applicationData?.additionalDetails?.otherFeesDiscription || "";
-    });
 
-    const [uploadedFile, setUploadedFile] = useState();
-    const [uploadedFileLess, setUploadedFileLess] = useState(() => {
-      return data?.applicationData?.additionalDetails?.uploadedFileLess || [];
+  let improvedDoc = [];
+  data?.applicationData?.documents?.map((appDoc) => {
+    improvedDoc.push({ ...appDoc, module: "OBPS" });
+  });
+  data?.applicationData?.nocDocuments?.map((nocDoc) => {
+    improvedDoc.push({ ...nocDoc, module: "NOC" });
+  });
+
+  const { data: pdfDetails, isLoading: pdfLoading, error } = Digit.Hooks.useDocumentSearch(improvedDoc, {
+    enabled: improvedDoc?.length > 0 ? true : false,
+  });
+
+  let applicationDocs = [],
+    nocAppDocs = [];
+  if (pdfDetails?.pdfFiles?.length > 0) {
+    pdfDetails?.pdfFiles?.map((pdfAppDoc) => {
+      if (pdfAppDoc?.module == "OBPS") applicationDocs.push(pdfAppDoc);
+      if (pdfAppDoc?.module == "NOC") nocAppDocs.push(pdfAppDoc);
     });
-    const [file, setFile] = useState();
+  }
+  const [development, setDevelopment] = useState(() => {
+    return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "0";
+  });
+
+
+  const [otherCharges, setOtherCharges] = useState(() => {
+    return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "0";
+  });
+
+  const [lessAdjusment, setLessAdjusment] = useState(() => {
+    return data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT || "0";
+  });
+
+  const [otherChargesDisc, setOtherChargesDisc] = useState(() => {
+    return data?.applicationData?.additionalDetails?.otherFeesDiscription || "";
+  });
+
+  const [uploadedFile, setUploadedFile] = useState();
+  const [uploadedFileLess, setUploadedFileLess] = useState(() => {
+    return data?.applicationData?.additionalDetails?.uploadedFileLess || [];
+  });
+  const [file, setFile] = useState();
   // const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(tenantId.split(".")[0], "BPA", ["RiskTypeComputation"]);
   const applicationTenantId = data?.applicationData?.tenantId
   const safeTenantId = applicationTenantId ? applicationTenantId.split(".")[0] : null
@@ -124,6 +151,52 @@ const BpaApplicationDetail = () => {
   const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(safeTenantId, "BPA", ["RiskTypeComputation"], {
     enabled: !!safeTenantId,
   })
+
+  const ecbcDocumentsData = useMemo(() => {
+          return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
+              id: index,
+              title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+              fileUrl: doc.fileURL || null, // adjusted since `doc` already has fileURL
+          }));
+  }, [fileUrls, t]);
+
+  const ownerDocumentsData = useMemo(() => {
+  // ownerFileUrls: { 0: { documentFile: 'url', ownerPhoto: 'url' }, 1: { ... } }
+  if (!ownerFileUrls || typeof ownerFileUrls !== "object") return [];
+
+  const ownersCount = Object.keys(ownerFileUrls).length;
+
+  // Flatten into { "0_documentFile": "url", "1_ownerPhoto": "url", ... }
+  const flatFileUrls = Object.entries(ownerFileUrls).reduce((acc, [ownerIdx, files]) => {
+    if (files && typeof files === "object") {
+      Object.entries(files).forEach(([prop, url]) => {
+        if (url && url !== "NA" && url !== "" && url !== null && url !== undefined) {
+          acc[`${ownerIdx}_${prop}`] = url;
+        }
+      });
+    }
+    return acc;
+  }, {});
+
+  const docs = getDocsFromFileUrls(flatFileUrls) || [];
+
+  return docs.map((doc, index) => {
+    // doc.id will be like "0_documentFile"
+    const [ownerIdx, ...propParts] = String(doc.id).split("_");
+    const prop = propParts.join("_"); // "documentFile" or "ownerPhoto"
+    const baseTitle = (prop ? prop.toUpperCase() : (doc.title || "").toUpperCase());
+
+    // Append index if more than 1 owner (ownerIdx is 0-based so +1)
+    const title = ownersCount > 1 ? `${t(baseTitle)}_${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
+
+    return {
+      id: index,
+      title,
+      fileUrl: doc.fileURL || null,
+    };
+  });
+}, [ownerFileUrls, t]);
+
 
   const mutation = Digit.Hooks.obps.useObpsAPI(data?.applicationData?.tenantId, false)
   let workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -154,6 +227,7 @@ const BpaApplicationDetail = () => {
   const [otpVerifiedTimestamp, setOTPVerifiedTimestamp] = useState(null)
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
   const [errorFile, setError] = useState(null);
+  const [isFileLoading, setIsFileLoading] = useState(false)
 
   const handleTermsLinkClick = (e) => {
     e.preventDefault()
@@ -172,7 +246,7 @@ const BpaApplicationDetail = () => {
         {t("I_AGREE_TO_BELOW_UNDERTAKING")}
         <br />
         {!isCitizenDeclared && <LinkButton label={t("DECLARATION_UNDER_SELF_CERTIFICATION_SCHEME")} onClick={handleTermsLinkClick} />}
-        {isCitizenDeclared && <div  onClick={handleTermsLinkClick} style={{color: "green"}} >{t("VIEW_DECLARATION")} </div>}
+        {isCitizenDeclared && <div onClick={handleTermsLinkClick} style={{ color: "green" }} >{t("VIEW_DECLARATION")} </div>}
       </div>
     )
   }
@@ -233,8 +307,37 @@ const BpaApplicationDetail = () => {
       setOTPError(t("Error verifying OTP"))
     }
   }
+  function routeTo(jumpTo) {
+    window.open(jumpTo, "_blank");
+  }
 
-  const isValidMobileNumber = mobileNumber.length === 10 && /^[0-9]+$/.test(mobileNumber)
+  const documentsData = (getOrderDocuments(applicationDocs) || []).map((doc, index) => ({
+    id: index,
+    title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+    fileUrl: doc.values?.[0]?.fileURL || null,
+  }));
+  const documentsColumns = [
+    {
+      Header: t("BPA_DOCUMENT_NAME"),
+      accessor: "title",
+      Cell: ({ value }) => value || t("CS_NA"),
+    },
+    {
+      Header: t("BPA_DOCUMENT_FILE"),
+      accessor: "fileUrl",
+      Cell: ({ value }) =>
+        value ? (
+          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            label={t("View")}
+            onClick={() => routeTo(value)}
+          />
+        ) : (
+          t("CS_NA")
+        ),
+    },
+  ];
+
+  const isValidMobileNumber = mobileNumber?.length === 10 && /^[0-9]+$/.test(mobileNumber)
   const citizenvalidations = sessionStorage.getItem("CitizenConsentdocFilestoreid") ? true : false
 
   let businessService = []
@@ -248,55 +351,76 @@ const BpaApplicationDetail = () => {
     businessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"]
   }
 
-  useEffect(() => {
-    if (!bpaDocsLoading && !isLoading) {
-      let filtredBpaDocs = []
-      if (bpaDocs?.BPA?.DocTypeMapping) {
-        filtredBpaDocs = bpaDocs?.BPA?.DocTypeMapping?.filter(
-          (ob) =>
-            ob.WFState == "INPROGRESS" &&
-            ob.RiskType == data?.applicationData?.riskType &&
-            ob.ServiceType == data?.applicationData?.additionalDetails?.serviceType &&
-            ob.applicationType == data?.applicationData?.additionalDetails?.applicationType,
-        )
-        const documents = data?.applicationDetails?.filter((ob) => ob.title === "BPA_DOCUMENT_DETAILS_LABEL")[0]
-          ?.additionalDetails?.obpsDocuments?.[0]?.values
-        const RealignedDocument = []
-        filtredBpaDocs &&
-          filtredBpaDocs?.[0]?.docTypes &&
-          filtredBpaDocs?.[0]?.docTypes.map((ob) => {
-            documents &&
-              documents
-                .filter((x) => ob.code === x.documentType.slice(0, x.documentType.lastIndexOf(".")))
-                .map((doc) => {
-                  RealignedDocument.push(doc)
-                })
-          })
-        // const newApplicationDetails = data?.applicationDetails.map((obj) => {
-        //   if (obj.title === "BPA_DOCUMENT_DETAILS_LABEL") {
-        //     return { ...obj, additionalDetails: { obpsDocuments: [{ title: "", values: RealignedDocument }] } };
-        //   }
-        //   return obj;
-        // });
+  // useEffect(() => {
+  //   if (!bpaDocsLoading && !isLoading) {
+  //     let filtredBpaDocs = []
+  //     if (bpaDocs?.BPA?.DocTypeMapping) {
+  //       filtredBpaDocs = bpaDocs?.BPA?.DocTypeMapping?.filter(
+  //         (ob) =>
+  //           ob.WFState == "INPROGRESS" &&
+  //           ob.RiskType == data?.applicationData?.riskType &&
+  //           ob.ServiceType == data?.applicationData?.additionalDetails?.serviceType &&
+  //           ob.applicationType == data?.applicationData?.additionalDetails?.applicationType,
+  //       )
+  //       const documents = data?.applicationDetails?.filter((ob) => ob.title === "BPA_DOCUMENT_DETAILS_LABEL")[0]
+  //         ?.additionalDetails?.obpsDocuments?.[0]?.values
+  //       const RealignedDocument = []
+  //       filtredBpaDocs &&
+  //         filtredBpaDocs?.[0]?.docTypes &&
+  //         filtredBpaDocs?.[0]?.docTypes.map((ob) => {
+  //           documents &&
+  //             documents
+  //               .filter((x) => ob.code === x.documentType.slice(0, x.documentType.lastIndexOf(".")))
+  //               .map((doc) => {
+  //                 RealignedDocument.push(doc)
+  //               })
+  //         })
+  //       // const newApplicationDetails = data?.applicationDetails.map((obj) => {
+  //       //   if (obj.title === "BPA_DOCUMENT_DETAILS_LABEL") {
+  //       //     return { ...obj, additionalDetails: { obpsDocuments: [{ title: "", values: RealignedDocument }] } };
+  //       //   }
+  //       //   return obj;
+  //       // });
 
-        // data.applicationDetails = [...newApplicationDetails];
+  //       // data.applicationDetails = [...newApplicationDetails];
 
-        const newApplicationDetails = (data?.applicationDetails || []).map((obj) => {
-          if (obj.title === "BPA_DOCUMENT_DETAILS_LABEL") {
-            return {
-              ...obj,
-              additionalDetails: { obpsDocuments: [{ title: "", values: RealignedDocument }] },
-            }
-          }
-          return obj
-        })
+  //       const newApplicationDetails = (data?.applicationDetails || []).map((obj) => {
+  //         if (obj.title === "BPA_DOCUMENT_DETAILS_LABEL") {
+  //           return {
+  //             ...obj,
+  //             additionalDetails: { obpsDocuments: [{ title: "", values: RealignedDocument }] },
+  //           }
+  //         }
+  //         return obj
+  //       })
 
-        if (newApplicationDetails.length > 0) {
-          data.applicationDetails = [...newApplicationDetails]
-        }
-      }
-    }
-  }, [bpaDocs, data])
+  //       if (newApplicationDetails?.length > 0) {
+  //         data.applicationDetails = [...newApplicationDetails]
+  //       }
+  //     }
+  //   }
+  // }, [bpaDocs, data])
+
+  // When data is loaded, update all states
+useEffect(() => {
+  if (data?.applicationData?.additionalDetails) {
+    const selfCert = data.applicationData.additionalDetails.selfCertificationCharges || {};
+    const otherDetails = data.applicationData.additionalDetails || {};
+
+    setLabourCess(selfCert.BPA_LABOUR_CESS || "0");
+    setGaushalaFees(selfCert.BPA_GAUSHALA_CHARGES_CESS || "0");
+    setMalbafees(selfCert.BPA_MALBA_CHARGES || "0");
+    setWaterCharges(selfCert.BPA_WATER_CHARGES || "0");
+
+    setDevelopment(selfCert.BPA_DEVELOPMENT_CHARGES || "0");
+    setOtherCharges(selfCert.BPA_OTHER_CHARGES || "0");
+    setLessAdjusment(selfCert.BPA_LESS_ADJUSMENT_PLOT || "0");
+
+    setOtherChargesDisc(otherDetails.otherFeesDiscription || "");
+    setUploadedFileLess(otherDetails.uploadedFileLess || []);
+  }
+}, [data]);
+
 
   useEffect(() => {
     if (data?.applicationData?.status == "CITIZEN_APPROVAL_INPROCESS" || data?.applicationData?.status == "INPROGRESS")
@@ -305,61 +429,60 @@ const BpaApplicationDetail = () => {
   }, [data])
 
   useEffect(() => {
-      (async () => {
-        setError(null);
-        if (file && file?.type) {
-          if (!acceptFormat?.split(",")?.includes(`.${file?.type?.split("/")?.pop()}`)) {
-            setError(t("PT_UPLOAD_FORMAT_NOT_SUPPORTED"));
-          } else if (file.size >= 2000000) {
-            setError(t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
-          } else {
-            try {
-              const response = await Digit.UploadServices.Filestorage("property-upload", file, Digit.ULBService.getStateId());
-              if (response?.data?.files?.length > 0) {
-                setUploadedFileLess([...uploadedFileLess, { fileStoreId: response?.data?.files[0]?.fileStoreId, time: new Date() }]);
-              } else {
-                setError(t("PT_FILE_UPLOAD_ERROR"));
-              }
-            } catch (err) {}
-          }
+    (async () => {
+      setError(null);
+      if (file && file?.type) {
+        if (!acceptFormat?.split(",")?.includes(`.${file?.type?.split("/")?.pop()}`)) {
+          setError(t("PT_UPLOAD_FORMAT_NOT_SUPPORTED"));
+        } else if (file.size >= 2000000) {
+          setError(t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+        } else {
+          try {
+            const response = await Digit.UploadServices.Filestorage("property-upload", file, Digit.ULBService.getStateId());
+            if (response?.data?.files?.length > 0) {
+              setUploadedFileLess([...uploadedFileLess, { fileStoreId: response?.data?.files[0]?.fileStoreId, time: new Date() }]);
+            } else {
+              setError(t("PT_FILE_UPLOAD_ERROR"));
+            }
+          } catch (err) { }
         }
-      })();
-    }, [file]);
+      }
+    })();
+  }, [file]);
 
-    useEffect(() => {
-        let plotArea = datafromAPI?.planDetail?.planInformation?.plotArea || data?.applicationData?.additionalDetails?.area;
-        const LabourCess = Math.round(plotArea * 10.7639 > 909 ? mdmsDataFees?.BPA?.LabourCess[1].rate * (plotArea * 10.7639) : 0);
-        const GaushalaFees = Math.round(mdmsDataFees?.BPA?.GaushalaFees[0].rate);
-        const Malbafees = Math.round(
-          plotArea * 10.7639 <= 500
-            ? mdmsDataFees?.BPA?.MalbaCharges[0].rate
-            : plotArea * 10.7639 > 500 && plotArea * 10.7639 <= 1000
-            ? mdmsDataFees?.BPA?.MalbaCharges?.[1].rate
-            : mdmsDataFees?.BPA?.MalbaCharges[2].rate || 500
-        );
-        console.log("Charges ",typeof LabourCess, GaushalaFees, Malbafees)
-        setGaushalaFees(GaushalaFees?.toString() || "");
-        setLabourCess(LabourCess?.toString() || "");
-        setMalbafees(Malbafees?.toString() || "");
-        setWaterCharges((Malbafees / 2)?.toString() || "");
-      }, [mdmsData, data?.applicationData?.additionalDetails]);
+  useEffect(() => {
+    let plotArea = datafromAPI?.planDetail?.planInformation?.plotArea || data?.applicationData?.additionalDetails?.area;
+    const LabourCess = Math.round(plotArea * 10.7639 > 909 ? mdmsDataFees?.BPA?.LabourCess[1].rate * (plotArea * 10.7639) : 0);
+    const GaushalaFees = Math.round(mdmsDataFees?.BPA?.GaushalaFees[0].rate);
+    const Malbafees = Math.round(
+      plotArea * 10.7639 <= 500
+        ? mdmsDataFees?.BPA?.MalbaCharges[0].rate
+        : plotArea * 10.7639 > 500 && plotArea * 10.7639 <= 1000
+          ? mdmsDataFees?.BPA?.MalbaCharges?.[1].rate
+          : mdmsDataFees?.BPA?.MalbaCharges[2].rate || 500
+    );
+    console.log("Charges ", typeof LabourCess, GaushalaFees, Malbafees)
+    setGaushalaFees(GaushalaFees?.toString() || "");
+    setLabourCess(LabourCess?.toString() || "");
+    setMalbafees(Malbafees?.toString() || "");
+    setWaterCharges((Malbafees / 2)?.toString() || "");
+  }, [mdmsData, data?.applicationData?.additionalDetails]);
 
   useEffect(async () => {
-    if(data?.applicationData?.edcrNumber)
-    {
-    setIsLoadingScrutiny(true)
-    const details = await scrutinyDetailsData(data?.applicationData?.edcrNumber, stateCode);
-    if (details?.type == "ERROR") {
-          setShowToast({ message: details?.message });
-          setDatafromAPI(null);
-          setIsLoadingScrutiny(false)
+    if (data?.applicationData?.edcrNumber) {
+      setIsLoadingScrutiny(true)
+      const details = await scrutinyDetailsData(data?.applicationData?.edcrNumber, stateCode);
+      if (details?.type == "ERROR") {
+        // setShowToast({ message: details?.message });
+        setDatafromAPI(null);
+        setIsLoadingScrutiny(false)
+      }
+      if (details?.edcrNumber) {
+        setDatafromAPI(details);
+        setIsLoadingScrutiny(false)
+      }
     }
-    if (details?.edcrNumber) {
-          setDatafromAPI(details);
-          setIsLoadingScrutiny(false)
-    }
-  }
-  },[data?.applicationData?.edcrNumber])
+  }, [data?.applicationData?.edcrNumber])
 
   const getTranslatedValues = (dataValue, isNotTranslated) => {
     if (dataValue) {
@@ -448,6 +571,108 @@ const BpaApplicationDetail = () => {
     }
   }, [selectedAction])
 
+  useEffect(() => {
+          const fetchFileUrls = async () => {
+              if (!data?.applicationData?.additionalDetails) return;
+  
+              const fileKeys = ["ecbcCertificateFile", "greenuploadedFile", "uploadedFile", "lessAdjustmentFeeFiles"];
+  
+              // Collect valid fileStoreIds
+              const validFileStoreIds = fileKeys
+                  .map((key) => {
+                    if(key === "lessAdjustmentFeeFiles") return data?.applicationData?.additionalDetails?.[key]?.[0] || null;
+                    return data?.applicationData?.additionalDetails?.[key]
+                  })
+                  .filter(
+                      (id) => id && id !== "NA" && id !== "" && id !== null && id !== undefined
+                  );
+  
+              if (validFileStoreIds.length === 0) return;
+  
+              try {
+                  setIsFileLoading(true);
+  
+                  // Call Digit service
+                  const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
+                  if (result?.data?.fileStoreIds) {
+                      const urls = {};
+                      fileKeys.forEach((key) => {
+                          const fileId = data?.applicationData?.additionalDetails?.[key];
+                          if (fileId && result.data?.[fileId]) {
+                              urls[key] = result.data?.[fileId];
+                          }
+                      });
+  
+                      // Store URLs in state (example: object with keys)
+                      setFileUrls(urls);
+                  }
+              } catch (error) {
+                  console.error("Error fetching file URLs", error);
+              } finally {
+                  setIsFileLoading(false);
+              }
+          };
+  
+          fetchFileUrls();
+  }, [data?.applicationData?.additionalDetails]);
+
+  useEffect(() => {
+  const fetchOwnerFileUrls = async () => {
+    const owners = data?.applicationData?.landInfo?.owners || [];
+    if (owners.length === 0) return;
+
+    // Collect valid fileStoreIds from each owner
+    const fileIdsMap = []; // keeps mapping of ownerIndex + propertyName to fileStoreId
+    const validFileStoreIds = [];
+
+    owners.forEach((owner, index) => {
+      const docFile = owner?.additionalDetails?.documentFile;
+      const photoFile = owner?.additionalDetails?.ownerPhoto;
+
+      if (docFile && docFile !== "NA") {
+        validFileStoreIds.push(docFile);
+        fileIdsMap.push({ index, key: "documentFile", fileId: docFile });
+      }
+      if (photoFile && photoFile !== "NA") {
+        validFileStoreIds.push(photoFile);
+        fileIdsMap.push({ index, key: "ownerPhoto", fileId: photoFile });
+      }
+    });
+
+    if (validFileStoreIds.length === 0) return;
+
+    try {
+      setIsOwnerFileLoading(true);
+
+      // Fetch URLs
+      const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
+      if (result?.data) {
+        const urls = {};
+
+        fileIdsMap.forEach(({ index, key, fileId }) => {
+          if (result.data[fileId]) {
+            if (!urls[index]) urls[index] = {};
+            urls[index][key] = result.data[fileId];
+          }
+        });
+
+        // Example final structure:
+        // {
+        //   0: { documentFile: "url1", ownerPhoto: "url2" },
+        //   1: { documentFile: "url3" }
+        // }
+        setOwnerFileUrls(urls);
+      }
+    } catch (error) {
+      console.error("Error fetching owner file URLs", error);
+    } finally {
+      setIsOwnerFileLoading(false);
+    }
+  };
+
+  fetchOwnerFileUrls();
+}, [data?.applicationData?.landInfo?.owners]);
+
   const closeToast = () => {
     setShowToast(null)
   }
@@ -456,7 +681,7 @@ const BpaApplicationDetail = () => {
     location.href = val
   }
 
-  const handleChange = () => {}
+  const handleChange = () => { }
 
   const closeModal = () => {
     setSelectedAction(null)
@@ -473,6 +698,7 @@ const BpaApplicationDetail = () => {
     //   alert("Please Accept Terms, Upload and Accept Decleration");
     //   return 
     // }
+    console.log("SelectedAction", action)
     if (action === "FORWARD") {
       history.replace(
         `/digit-ui/citizen/obps/sendbacktocitizen/ocbpa/${data?.applicationData?.tenantId}/${data?.applicationData?.applicationNo}/check`,
@@ -481,19 +707,12 @@ const BpaApplicationDetail = () => {
     }
     if (action === "PAY") {
       window.location.assign(
-        `${window.location.origin}/digit-ui/citizen/payment/collect/${`${getBusinessServices(data?.businessService, data?.applicationStatus)}/${id}/${
-          data?.tenantId
+        `${window.location.origin}/digit-ui/citizen/payment/collect/${`${getBusinessServices(data?.businessService, data?.applicationStatus)}/${id}/${data?.tenantId
         }?tenantId=${data?.tenantId}`}`,
       )
     }
     if (action === "SEND_TO_CITIZEN") {
-      if (workflowDetails?.data?.processInstances?.length > 2) {
-        window.location.replace(
-          `/digit-ui/citizen/obps/editApplication/${path}/${data?.applicationData?.tenantId}/${data?.applicationData?.applicationNo}`,
-        )
-      } else {
-        getBPAFormData(data?.applicationData, mdmsData, history, t)
-      }
+      getBPAFormData(data?.applicationData, mdmsData, history, t)
     }
     setSelectedAction(action)
     setDisplayMenu(false)
@@ -534,23 +753,23 @@ const BpaApplicationDetail = () => {
   //   setIsEnableLoader(true)
 
   //   // Check if "CITIZEN.UNDERTAKING" document already exists
-    // const citizenUndertakingExists = data?.applicationData?.documents?.some(
-    //   (doc) => doc.documentType === "CITIZEN.UNDERTAKING",
-    // )
+  // const citizenUndertakingExists = data?.applicationData?.documents?.some(
+  //   (doc) => doc.documentType === "CITIZEN.UNDERTAKING",
+  // )
 
   //   // Create a new array with the existing documents and the new Citizenconsentform (if it doesn't exist)
-    // const updatedDocuments = [
-    //   ...data?.applicationData?.documents.filter((doc) => doc.documentType !== "CITIZEN.UNDERTAKING"),
-    //   ...(citizenUndertakingExists
-    //     ? data?.applicationData?.documents.filter((doc) => doc.documentType === "CITIZEN.UNDERTAKING")
-    //     : [
-    //         {
-    //           documentType: "CITIZEN.UNDERTAKING",
-    //           fileStoreId: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
-    //           fileStore: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
-    //         },
-    //       ]),
-    // ]
+  // const updatedDocuments = [
+  //   ...data?.applicationData?.documents.filter((doc) => doc.documentType !== "CITIZEN.UNDERTAKING"),
+  //   ...(citizenUndertakingExists
+  //     ? data?.applicationData?.documents.filter((doc) => doc.documentType === "CITIZEN.UNDERTAKING")
+  //     : [
+  //         {
+  //           documentType: "CITIZEN.UNDERTAKING",
+  //           fileStoreId: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
+  //           fileStore: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
+  //         },
+  //       ]),
+  // ]
 
   //   // Update the applicationData object with the new documents array
   //   const updatedApplicationData = {
@@ -587,129 +806,159 @@ const BpaApplicationDetail = () => {
   //   )
   // }
 
-function validateAmount(value) {
-  if (value === null || value === undefined) return ""; // optional → allowed
-  const str = String(value).trim(); // safely convert to string
-  if (str === "") return ""; // treat empty as optional
-  return /^[0-9]+(\.[0-9]{1,2})?$/.test(str) ? str : null;
-}
-
-const validateCharges = () => {
-  const fields = [
-    { name: t("Malba_Charges"), value: malbafees },
-    { name: t("Labour_Cess"), value: labourCess },
-    { name: t("Water_Charges"), value: waterCharges },
-    { name: t("Gaushala_Fees"), value: gaushalaFees },
-    { name: t("Less_Adjustment"), value: lessAdjusment },
-    { name: t("Development_Charges"), value: development },
-    { name: t("Other_Charges"), value: otherCharges },
-  ];
-
-  for (const field of fields) {
-    if (validateAmount(field.value) === null) {
-      setShowToast({
-        key: "error",
-        action: t(`Invalid value in ${field.name}. Please enter a valid number (up to 2 decimals).`)
-      });
-      return false;
-    }
+  function validateAmount(value) {
+    if (value === null || value === undefined) return ""; // optional → allowed
+    const str = String(value).trim(); // safely convert to string
+    if (str === "") return ""; // treat empty as optional
+    return /^[0-9]+(\.[0-9]{1,2})?$/.test(str) ? str : null;
   }
-  return true;
-};
 
+  const validateCharges = () => {
+    const fields = [
+      { name: t("Malba_Charges"), value: malbafees },
+      { name: t("Labour_Cess"), value: labourCess },
+      { name: t("Water_Charges"), value: waterCharges },
+      { name: t("Gaushala_Fees"), value: gaushalaFees },
+      { name: t("Less_Adjustment"), value: lessAdjusment },
+      { name: t("Development_Charges"), value: development },
+      { name: t("Other_Charges"), value: otherCharges },
+    ];
 
-const submitAction = (workflow) => {
-  setIsEnableLoader(true);
-
-  const app = data?.applicationData || {};
-  app.riskType = app?.additionalDetails?.riskType
-  const docs = Array.isArray(app.documents) ? app.documents : [];
-  const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen
-  const isArchitectSubmissionPending = workflowDetails?.data?.actionState?.state === "INPROGRESS" && !isUserCitizen;
-
-  // Keep one per documentType; prefer entries that have fileStoreId
-  const dedupedDocs = Array.from(
-    docs.reduce((map, doc) => {
-      const key = doc?.documentType;
-      if (!key) return map;
-      const existing = map.get(key);
-      if (!existing) {
-        map.set(key, doc);
-      } else if (!existing.fileStoreId && doc.fileStoreId) {
-        map.set(key, doc);
+    for (const field of fields) {
+      if (validateAmount(field.value) === null) {
+        setShowToast({
+          key: "error",
+          action: t(`Invalid value in ${field.name}. Please enter a valid number (up to 2 decimals).`)
+        });
+        return false;
       }
-      return map;
-    }, new Map()).values()
-  );
-
-  let updatedDocuments
-  let additionalDetails
-  if(isCitizenConsentIncluded){
-    if(!sessionStorage.getItem("CitizenConsentdocFilestoreid")){
-      alert(t("Citizen_Consent_was_not_completed"));
     }
-    const citizenUndertakingExists = dedupedDocs?.some(
-      (doc) => doc.documentType === "CITIZEN.UNDERTAKING",
-    )
-   updatedDocuments = [
-      ...dedupedDocs.filter((doc) => doc.documentType !== "CITIZEN.UNDERTAKING"),
-      ...(citizenUndertakingExists
-        ? dedupedDocs.filter((doc) => doc.documentType === "CITIZEN.UNDERTAKING")
-        : [
+    return true;
+  };
+
+
+  const submitAction = (workflow) => {
+    setIsEnableLoader(true);
+
+    const app = data?.applicationData || {};
+    app.riskType = app?.additionalDetails?.riskType
+    const docs = Array.isArray(app.documents) ? app.documents : [];
+    const isCitizenConsentIncluded = workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen
+    const isArchitectSubmissionPending = workflowDetails?.data?.actionState?.state === "INPROGRESS" && !isUserCitizen;
+
+    // Keep one per documentType; prefer entries that have fileStoreId
+    const dedupedDocs = Array.from(
+      docs.reduce((map, doc) => {
+        const key = doc?.documentType;
+        if (!key) return map;
+        const existing = map.get(key);
+        if (!existing) {
+          map.set(key, doc);
+        } else if (!existing.fileStoreId && doc.fileStoreId) {
+          map.set(key, doc);
+        }
+        return map;
+      }, new Map()).values()
+    );
+    if (!isTocAccepted) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Terms_And_Condition_Not_Accepted")
+        });
+        return;
+    }
+
+    let updatedDocuments
+    let additionalDetails
+    if (isCitizenConsentIncluded) {
+
+      if (!isOTPVerified) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Not_OTP_VERIFIED")
+        });
+        return;
+      }
+      if (!agree) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_accepted")
+        });
+        return;
+      }
+      if (!sessionStorage.getItem("CitizenConsentdocFilestoreid")) {
+        setIsEnableLoader(false);
+        setShowToast({
+          key: "error",
+          action: t("Citizen_Consent_was_not_uploaded")
+        });
+        return;
+      }
+      const citizenUndertakingExists = dedupedDocs?.some(
+        (doc) => doc.documentType === "CITIZEN.UNDERTAKING",
+      )
+      updatedDocuments = [
+        ...dedupedDocs.filter((doc) => doc.documentType !== "CITIZEN.UNDERTAKING"),
+        ...(citizenUndertakingExists
+          ? dedupedDocs.filter((doc) => doc.documentType === "CITIZEN.UNDERTAKING")
+          : [
             {
               documentType: "CITIZEN.UNDERTAKING",
               fileStoreId: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
               fileStore: sessionStorage.getItem("CitizenConsentdocFilestoreid"),
             },
           ]),
-    ]
-  }
-  if(isArchitectSubmissionPending){
-    if (!validateCharges()) return;
-     additionalDetails = {
-      ...app?.additionalDetails,
-      otherFeesDiscription: otherChargesDisc || "",
-      lessAdjustmentFeeFiles: uploadedFileLess || [],
-      selfCertificationCharges: {
-        BPA_MALBA_CHARGES: malbafees?.length>0 ? malbafees : "0",
-        BPA_LABOUR_CESS: labourCess?.length>0 ? labourCess : "0",
-        BPA_WATER_CHARGES: waterCharges?.length>0 ? waterCharges : "0",
-        BPA_GAUSHALA_CHARGES_CESS: gaushalaFees?.length > 0 ? gaushalaFees : "0",
-        BPA_LESS_ADJUSMENT_PLOT: lessAdjusment?.length > 0 ? lessAdjusment : "0",
-        BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
-        BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0"
+      ]
+    }
+    if (isArchitectSubmissionPending) {
+      if (!validateCharges()) return;
+      additionalDetails = {
+        ...app?.additionalDetails,
+        otherFeesDiscription: otherChargesDisc || "",
+        lessAdjustmentFeeFiles: uploadedFileLess || [],
+        selfCertificationCharges: {
+          BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
+          BPA_LABOUR_CESS: labourCess?.length > 0 ? labourCess : "0",
+          BPA_WATER_CHARGES: waterCharges?.length > 0 ? waterCharges : "0",
+          BPA_GAUSHALA_CHARGES_CESS: gaushalaFees?.length > 0 ? gaushalaFees : "0",
+          BPA_LESS_ADJUSMENT_PLOT: lessAdjusment?.length > 0 ? lessAdjusment : "0",
+          BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
+          BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0"
+        }
       }
     }
+
+    let payload = { ...app, documents: isCitizenConsentIncluded ? updatedDocuments : dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails : app?.additionalDetails, workflow };
+
+    mutation.mutate(
+      { BPA: payload },
+      {
+        onError: (error, variables) => {
+          setIsEnableLoader(false);
+          setShowModal(false);
+          setShowToast({
+            key: "error",
+            action: error?.response?.data?.Errors?.[0]?.message
+              ? error?.response?.data?.Errors?.[0]?.message
+              : error,
+          });
+          setTimeout(closeToast, 5000);
+        },
+        onSuccess: (data, variables) => {
+          setIsEnableLoader(false);
+          history.replace(`/digit-ui/citizen/obps/response`, { data: data });
+          setShowModal(false);
+          setShowToast({ key: "success", action: selectedAction });
+          setTimeout(closeToast, 5000);
+          queryClient.invalidateQueries("BPA_DETAILS_PAGE");
+          queryClient.invalidateQueries("workFlowDetails");
+        },
+      }
+    );
   }
-
-  let payload = { ...app, documents:isCitizenConsentIncluded? updatedDocuments: dedupedDocs, additionalDetails: isArchitectSubmissionPending ? additionalDetails :  app?.additionalDetails ,workflow };
-
-  mutation.mutate(
-    { BPA: payload },
-    {
-      onError: (error, variables) => {
-        setIsEnableLoader(false);
-        setShowModal(false);
-        setShowToast({
-          key: "error",
-          action: error?.response?.data?.Errors?.[0]?.message
-            ? error?.response?.data?.Errors?.[0]?.message
-            : error,
-        });
-        setTimeout(closeToast, 5000);
-      },
-      onSuccess: (data, variables) => {
-        setIsEnableLoader(false);
-        history.replace(`/digit-ui/citizen/obps/response`, { data: data });
-        setShowModal(false);
-        setShowToast({ key: "success", action: selectedAction });
-        setTimeout(closeToast, 5000);
-        queryClient.invalidateQueries("BPA_DETAILS_PAGE");
-        queryClient.invalidateQueries("workFlowDetails");
-      },
-    }
-  );
-}
 
   if (workflowDetails?.data?.nextActions?.length > 0 && data?.applicationData?.status == "CITIZEN_APPROVAL_INPROCESS") {
     const userInfo = Digit.UserService.getUser()
@@ -896,7 +1145,7 @@ const submitAction = (workflow) => {
   if (data?.applicationDetails?.length > 0) {
     data.applicationDetails =
       data?.applicationDetails?.length > 0 &&
-      data?.applicationDetails?.filter((bpaData) => Object.keys(bpaData).length !== 0)
+      data?.applicationDetails?.filter((bpaData) => Object.keys(bpaData)?.length !== 0)
   }
 
   const getCheckBoxLable = () => {
@@ -940,11 +1189,11 @@ const submitAction = (workflow) => {
       if (
         parseInt(value) >
         (parseInt(development) ? parseInt(development) : 0) +
-          (parseInt(otherCharges) ? parseInt(otherCharges) : 0) +
-          parseInt(malbafees) +
-          parseInt(labourCess) +
-          parseInt(waterCharges) +
-          parseInt(gaushalaFees)
+        (parseInt(otherCharges) ? parseInt(otherCharges) : 0) +
+        parseInt(malbafees) +
+        parseInt(labourCess) +
+        parseInt(waterCharges) +
+        parseInt(gaushalaFees)
       ) {
         alert(t("Less adjustment fees cannot be grater than Total of other P2 fees"));
       } else {
@@ -967,7 +1216,7 @@ const submitAction = (workflow) => {
   }
 
   const results = data?.applicationDetails?.filter((element) => {
-    if (Object.keys(element).length !== 0) {
+    if (Object.keys(element)?.length !== 0) {
       return true
     }
     return false
@@ -979,41 +1228,41 @@ const submitAction = (workflow) => {
 
   return (
     <Fragment>
-      <div style={{paddingBottom: "50px"}}>
-      <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-        <Header styles={{ fontSize: "32px", marginLeft: "10px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-        <div>
-          {dowloadOptions && dowloadOptions.length > 0 && (
-            <MultiLink
-              className="multilinkWrapper"
-              onHeadClick={() => setShowOptions(!showOptions)}
-              displayOptions={showOptions}
-              options={dowloadOptions}
-            />
-          )}
-          <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+      <div style={{ paddingBottom: "50px" }}>
+        <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
+          <Header styles={{ fontSize: "32px", marginLeft: "10px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
+          <div>
+            {dowloadOptions && dowloadOptions?.length > 0 && (
+              <MultiLink
+                className="multilinkWrapper"
+                onHeadClick={() => setShowOptions(!showOptions)}
+                displayOptions={showOptions}
+                options={dowloadOptions}
+              />
+            )}
+            <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
+          </div>
         </div>
-      </div>
 
-      {data?.applicationDetails
-        ?.filter((ob) => Object.keys(ob).length > 0)
-        .map((detail, index, arr) => {
-          console.log("detailforme",detail)
-          return (
-            <div key={index}>
-              {!detail?.isNotAllowed ? (
-                <Card
-                  key={index}
-                  style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
-                >
-                  {!detail?.isTitleVisible ? (
-                    <CardSubHeader style={{ fontSize: "24px" }}>{t(detail?.title)}</CardSubHeader>
-                  ) : null}
+        {data?.applicationDetails
+          ?.filter((ob) => Object.keys(ob)?.length > 0)
+          .map((detail, index, arr) => {
+            console.log("detailforme", detail)
+            return (
+              <div key={index}>
+                {!detail?.isNotAllowed ? (
+                  <Card
+                    key={index}
+                    style={!detail?.additionalDetails?.fiReport && detail?.title === "" ? { marginTop: "-30px" } : {}}
+                  >
+                    {!detail?.isTitleVisible ? (
+                      <CardSubHeader style={{ fontSize: "24px" }}>{t(detail?.title)}</CardSubHeader>
+                    ) : null}
 
-                  <div
-                    style={
-                      detail?.isBackGroundColor
-                        ? {
+                    <div
+                      style={
+                        detail?.isBackGroundColor
+                          ? {
                             marginTop: "19px",
                             background: "#FAFAFA",
                             border: "1px solid #D6D5D4",
@@ -1023,13 +1272,13 @@ const submitAction = (workflow) => {
                             maxWidth: "950px",
                             minWidth: "280px",
                           }
-                        : {}
-                    }
-                  >
-                    <StatusTable>
-                      {/* to get common values */}
-                      {detail?.isCommon && detail?.values?.length > 0
-                        ? detail?.values?.map((value) => {
+                          : {}
+                      }
+                    >
+                      <StatusTable>
+                        {/* to get common values */}
+                        {detail?.isCommon && detail?.values?.length > 0
+                          ? detail?.values?.map((value) => {
                             if (value?.isUnit)
                               return (
                                 <Row
@@ -1067,10 +1316,10 @@ const submitAction = (workflow) => {
                                 />
                               )
                           })
-                        : null}
-                      {/* to get additional common values */}
-                      {!detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
-                        ? detail?.additionalDetails?.values?.map((value) => (
+                          : null}
+                        {/* to get additional common values */}
+                        {!detail?.isFeeDetails && detail?.additionalDetails?.values?.length > 0
+                          ? detail?.additionalDetails?.values?.map((value) => (
                             <div key={value?.title}>
                               {!detail?.isTitleRepeat && !value?.isHeader && !value?.isUnit ? (
                                 <Row
@@ -1106,19 +1355,19 @@ const submitAction = (workflow) => {
                               ) : null}
                             </div>
                           ))
-                        : null}
+                          : null}
 
-                      {/* to get subOccupancyValues values */}
-                      {detail?.isSubOccupancyTable && detail?.additionalDetails?.subOccupancyTableDetails ? (
-                        <SubOccupancyTable
-                          edcrDetails={detail?.additionalDetails}
-                          applicationData={data?.applicationData}
-                        />
-                      ) : null}
+                        {/* to get subOccupancyValues values */}
+                        {detail?.isSubOccupancyTable && detail?.additionalDetails?.subOccupancyTableDetails ? (
+                          <SubOccupancyTable
+                            edcrDetails={detail?.additionalDetails}
+                            applicationData={data?.applicationData}
+                          />
+                        ) : null}
 
-                      {/* to get Scrutiny values */}
-                      {detail?.isScrutinyDetails && detail?.additionalDetails?.scruntinyDetails?.length > 0
-                        ? detail?.additionalDetails?.scruntinyDetails.map((scrutiny) => (
+                        {/* to get Scrutiny values */}
+                        {detail?.isScrutinyDetails && detail?.additionalDetails?.scruntinyDetails?.length > 0
+                          ? detail?.additionalDetails?.scruntinyDetails.map((scrutiny) => (
                             <Fragment key={scrutiny?.title}>
                               <Row className="border-none" label={t(scrutiny?.title)} />
                               <LinkButton
@@ -1140,25 +1389,25 @@ const submitAction = (workflow) => {
                               </p>
                             </Fragment>
                           ))
-                        : null}
+                          : null}
 
-                      {/* to get Owner values */}
-                      {detail?.isOwnerDetails && detail?.additionalDetails?.owners?.length > 0
-                        ? detail?.additionalDetails?.owners.map((owner, index) => (
+                        {/* to get Owner values */}
+                        {detail?.isOwnerDetails && detail?.additionalDetails?.owners?.length > 0
+                          ? detail?.additionalDetails?.owners.map((owner, index) => (
                             <div
                               key={index}
                               style={
                                 detail?.additionalDetails?.owners?.length > 1
                                   ? {
-                                      marginTop: "19px",
-                                      background: "#FAFAFA",
-                                      border: "1px solid #D6D5D4",
-                                      borderRadius: "4px",
-                                      padding: "8px",
-                                      lineHeight: "19px",
-                                      maxWidth: "950px",
-                                      minWidth: "280px",
-                                    }
+                                    marginTop: "19px",
+                                    background: "#FAFAFA",
+                                    border: "1px solid #D6D5D4",
+                                    borderRadius: "4px",
+                                    padding: "8px",
+                                    lineHeight: "19px",
+                                    maxWidth: "950px",
+                                    minWidth: "280px",
+                                  }
                                   : {}
                               }
                             >
@@ -1175,10 +1424,10 @@ const submitAction = (workflow) => {
                               ))}
                             </div>
                           ))
-                        : null}
+                          : null}
 
-                      {/* to get Document values */}
-                      {detail?.isDocumentDetails && (detail?.additionalDetails?.obpsDocuments?.[0]?.values.length>0 ? (
+                        {/* to get Document values */}
+                        {/* {detail?.isDocumentDetails && (detail?.additionalDetails?.obpsDocuments?.[0]?.values?.length>0 ? (
                         <div style={{ marginTop: "-8px" }}>
                           {
                             <DocumentsPreview
@@ -1213,21 +1462,67 @@ const submitAction = (workflow) => {
                             />
                           }
                         </div>
-                      ))}
-                      {/* {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && <>Hello</>} */}
+                      ))} */}
+                        {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
+                          <StatusTable>
+                            <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
+                            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                            {pdfLoading ? <Loader /> : <Table
+                              className="customTable table-border-style"
+                              t={t}
+                              data={documentsData}
+                              columns={documentsColumns}
+                              getCellProps={() => ({ style: {} })}
+                              disableSort={false}
+                              autoSort={true}
+                              manualPagination={false}
+                              isPaginationRequired={false}
+                            />}
+                          </StatusTable>
+                          <StatusTable>
+                            <CardHeader>{t("BPA_ECBC_DETAILS_LABEL")}</CardHeader>
+                            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                            {(pdfLoading || isFileLoading) ? <Loader /> : <Table
+                              className="customTable table-border-style"
+                              t={t}
+                              data={ecbcDocumentsData}
+                              columns={documentsColumns}
+                              getCellProps={() => ({ style: {} })}
+                              disableSort={false}
+                              autoSort={true}
+                              manualPagination={false}
+                              isPaginationRequired={false}
+                            />}
+                          </StatusTable>
+                          <StatusTable>
+                            <CardHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardHeader>
+                            <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                            {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
+                              className="customTable table-border-style"
+                              t={t}
+                              data={ownerDocumentsData}
+                              columns={documentsColumns}
+                              getCellProps={() => ({ style: {} })}
+                              disableSort={false}
+                              autoSort={true}
+                              manualPagination={false}
+                              isPaginationRequired={false}
+                            />}
+                          </StatusTable>
+                          </>)}
 
-                      {/* to get FieldInspection values */}
-                      {detail?.isFieldInspection &&
-                      data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 ? (
-                        <InspectionReport
-                          isCitizen={true}
-                          fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
-                        />
-                      ) : null}
+                        {/* to get FieldInspection values */}
+                        {detail?.isFieldInspection &&
+                          data?.applicationData?.additionalDetails?.fieldinspection_pending?.length > 0 ? (
+                          <InspectionReport
+                            isCitizen={true}
+                            fiReport={data?.applicationData?.additionalDetails?.fieldinspection_pending}
+                          />
+                        ) : null}
 
-                      {/* to get NOC values */}
-                      {detail?.additionalDetails?.noc?.length > 0
-                        ? detail?.additionalDetails?.noc.map((nocob, ind) => (
+                        {/* to get NOC values */}
+                        {detail?.additionalDetails?.noc?.length > 0
+                          ? detail?.additionalDetails?.noc.map((nocob, ind) => (
                             <div
                               key={ind}
                               style={{
@@ -1261,7 +1556,7 @@ const submitAction = (workflow) => {
                                   label={t(`${detail?.values?.[1]?.title}`)}
                                   textStyle={
                                     detail?.values?.[1]?.value == "APPROVED" ||
-                                    detail?.values?.[1]?.value == "AUTO_APPROVED"
+                                      detail?.values?.[1]?.value == "AUTO_APPROVED"
                                       ? { marginLeft: "10px", color: "#00703C" }
                                       : { marginLeft: "10px", color: "#D4351C" }
                                   }
@@ -1327,134 +1622,136 @@ const submitAction = (workflow) => {
                               </StatusTable>
                             </div>
                           ))
-                        : null}
+                          : null}
 
-                      {/* to get permit values */}
-                      {!detail?.isTitleVisible && detail?.additionalDetails?.permit?.length > 0
-                        ? detail?.additionalDetails?.permit?.map((value) => (
+                        {/* to get permit values */}
+                        {!detail?.isTitleVisible && detail?.additionalDetails?.permit?.length > 0
+                          ? detail?.additionalDetails?.permit?.map((value) => (
                             <CardText key={value?.title}>{value?.title}</CardText>
                           ))
-                        : null}
+                          : null}
 
-                      {/* to get Fee values */}
-                      {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
-                        <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]} />
-                      )}
-                      {/*blocking reason*/}
-                      {detail?.additionalDetails?.inspectionReport &&
-                        detail?.isFeeDetails &&
-                        (workflowDetails?.data?.actionState?.nextActions?.[0]?.state ==
-                          "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
-                          workflowDetails?.data?.actionState?.state == "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
-                          workflowDetails?.data?.actionState?.state == "POST_PAYMENT_INPROGRESS") && (
-                          <div
-                            style={{
-                              marginTop: "19px",
-                              background: "#FAFAFA",
-                              border: "1px solid #D6D5D4",
-                              borderRadius: "4px",
-                              padding: "8px",
-                              lineHeight: "19px",
-                              maxWidth: "950px",
-                              minWidth: "280px",
-                            }}
-                          >
-                            <Row
-                              className="border-none"
-                              label={t(`BLOCKING_REASON`)}
-                              labelStyle={{ fontSize: "15px" }}
-                              text={data?.applicationData.additionalDetails.blockingReason || "NA"}
+                        {/* to get Fee values */}
+                        {detail?.additionalDetails?.inspectionReport && detail?.isFeeDetails && (
+                          <ScruntinyDetails scrutinyDetails={detail?.additionalDetails} paymentsList={[]} />
+                        )}
+                        {/*blocking reason*/}
+                        {detail?.additionalDetails?.inspectionReport &&
+                          detail?.isFeeDetails &&
+                          (workflowDetails?.data?.actionState?.nextActions?.[0]?.state ==
+                            "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
+                            workflowDetails?.data?.actionState?.state == "POST_PAYMENT_CITIZEN_APPROVAL_PENDING" ||
+                            workflowDetails?.data?.actionState?.state == "POST_PAYMENT_INPROGRESS") && (
+                            <div
+                              style={{
+                                marginTop: "19px",
+                                background: "#FAFAFA",
+                                border: "1px solid #D6D5D4",
+                                borderRadius: "4px",
+                                padding: "8px",
+                                lineHeight: "19px",
+                                maxWidth: "950px",
+                                minWidth: "280px",
+                              }}
                             >
-                              {" "}
-                            </Row>
-                          </div>
-                        )}
-                    </StatusTable>
-                  </div>
-                </Card>
-              ) : null}
-
-              {/* to get Timeline values */}
-              {index === arr.length - 1 && (
-                <Card>
-                  <Fragment>
-                    <div id="timeline">
-                      <BPAApplicationTimeline application={data?.applicationData} id={id} />
-                      {!workflowDetails?.isLoading &&
-                        workflowDetails?.data?.nextActions?.length > 0 &&
-                        !isFromSendBack &&
-                        checkBoxVisible && (
-                          <CheckBox
-                            styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
-                            checked={isTocAccepted}
-                            label={getCheckBoxLable()}
-                            // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
-                            onChange={() => {
-                              setIsTocAccepted(!isTocAccepted)
-                              isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
-                            }}
-                          />
-                        )}
+                              <Row
+                                className="border-none"
+                                label={t(`BLOCKING_REASON`)}
+                                labelStyle={{ fontSize: "15px" }}
+                                text={data?.applicationData.additionalDetails.blockingReason || "NA"}
+                              >
+                                {" "}
+                              </Row>
+                            </div>
+                          )}
+                      </StatusTable>
                     </div>
-                    {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 1 && (
-                      //removed this styles to fix the action button in application details UM-5347
-                      <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
-                      >
-                        <div style={{ width: "100%" }}>
-                          {displayMenu && workflowDetails?.data?.nextActions ? (
-                            <Menu
-                              //style={{ bottom: "37px", minWidth: "240px", maxWidth: "310px", width: "100%", right: "0px" }}
-                              localeKeyPrefix={"WF_BPA"}
-                              options={workflowDetails?.data?.nextActions.map((action) => action.action)}
-                              t={t}
-                              onSelect={onActionSelect}
+                  </Card>
+                ) : null}
+
+                {/* to get Timeline values */}
+                {index === arr?.length - 1 && (
+                  <Card>
+                    <Fragment>
+                      <div id="timeline">
+                        <BPAApplicationTimeline application={data?.applicationData} id={id} />
+                        {!workflowDetails?.isLoading &&
+                          workflowDetails?.data?.nextActions?.length > 0 &&
+                          !isFromSendBack &&
+                          checkBoxVisible && (
+                            <CheckBox
+                              styles={{ margin: "20px 0 40px", paddingTop: "10px" }}
+                              checked={isTocAccepted}
+                              label={getCheckBoxLable()}
+                              // label={getCheckBoxLabelData(t, data?.applicationData, workflowDetails?.data?.nextActions)}
+                              onChange={() => {
+                                setIsTocAccepted(!isTocAccepted)
+                                isTocAccepted ? setDisplayMenu(!isTocAccepted) : ""
+                              }}
                             />
-                          ) : null}
-                          <SubmitBar
+                          )}
+                      </div>
+                      {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 1 && (
+                        //removed this styles to fix the action button in application details UM-5347
+                        <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
+                        >
+                          <div style={{ width: "100%" }}>
+                            {displayMenu && workflowDetails?.data?.nextActions ? (
+                              <Menu
+                                //style={{ bottom: "37px", minWidth: "240px", maxWidth: "310px", width: "100%", right: "0px" }}
+                                localeKeyPrefix={"WF_BPA"}
+                                options={workflowDetails?.data?.nextActions.map((action) => action.action)}
+                                t={t}
+                                onSelect={onActionSelect}
+                              />
+                            ) : null}
+                            <SubmitBar
                             /*style={{ width: "100%" }}*/ disabled={
-                              false
-                              // Original condition commented out:
-                              // checkForSubmitDisable(isFromSendBack, isTocAccepted) ||
-                              // (workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING"
-                              //   ? !agree || !isOTPVerified || !citizenvalidations
-                              //   : false)
-                            }
-                            label={t("ES_COMMON_TAKE_ACTION")}
-                            onSubmit={() => setDisplayMenu(!displayMenu)}
-                          />
-                        </div>
-                      </ActionBar>
-                    )}
-                    {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length == 1 && (
-                      //removed this style to fix the action button in application details UM-5347
-                      <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
-                      >
-                        <div style={{ width: "100%" }}>
-                          <button
-                            style={{ color: "#FFFFFF", fontSize: isMobile ? "19px" : "initial" }}
-                            className="submit-bar"
-                            disabled={false}
-                            name={workflowDetails?.data?.nextActions?.[0]?.action}
-                            value={workflowDetails?.data?.nextActions?.[0]?.action}
-                            onClick={(e) => {
-                              onActionSelect(e.target.value)
-                            }}
-                          >
-                            {t(`WF_BPA_${workflowDetails?.data?.nextActions?.[0]?.action}`)}
-                          </button>
-                        </div>
-                      </ActionBar>
-                    )}
-                  </Fragment>
-                </Card>
-              )}
-            </div>
-          )
-        })}
-      
-      {workflowDetails?.data?.actionState?.state === "INPROGRESS" && !isUserCitizen && <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
-        <CardSubHeader style={{fontSize:"20px", color:"#3f4351"}}>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
-           <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                                false
+                                // Original condition commented out:
+                                // checkForSubmitDisable(isFromSendBack, isTocAccepted) ||
+                                // (workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING"
+                                //   ? !agree || !isOTPVerified || !citizenvalidations
+                                //   : false)
+                              }
+                              label={t("ES_COMMON_TAKE_ACTION")}
+                              onSubmit={() => setDisplayMenu(!displayMenu)}
+                            />
+                          </div>
+                        </ActionBar>
+                      )}
+                      {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length == 1 && (
+                        //removed this style to fix the action button in application details UM-5347
+                        <ActionBar /*style={{ position: "relative", boxShadow: "none", minWidth: "240px", maxWidth: "310px", padding: "0px" }}*/
+                        >
+                          <div style={{ width: "100%" }}>
+                            <button
+                              style={{ color: "#FFFFFF", fontSize: isMobile ? "19px" : "initial" }}
+                              className="submit-bar"
+                              disabled={false}
+                              name={workflowDetails?.data?.nextActions?.[0]?.action}
+                              value={workflowDetails?.data?.nextActions?.[0]?.action}
+                              onClick={(e) => {
+                                onActionSelect(e.target.value)
+                              }}
+                            >
+                              {t(`WF_BPA_${workflowDetails?.data?.nextActions?.[0]?.action}`)}
+                            </button>
+                          </div>
+                        </ActionBar>
+                      )}
+                    </Fragment>
+                  </Card>
+                )}
+              </div>
+            )
+          })}
+
+        {
+        // workflowDetails?.data?.actionState?.state === "INPROGRESS" && !isUserCitizen &&
+         <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >
+          {/* <CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
+          <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
           <CardLabel>{t("BPA_COMMON_DEVELOPMENT_AMT")}</CardLabel>
           <TextInput
             t={t}
@@ -1526,49 +1823,74 @@ const submitAction = (workflow) => {
                 }}
                 message={uploadedFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
                 error={errorFile}
-                // uploadMessage={uploadMessage}
+              // uploadMessage={uploadMessage}
               />
             </div>
-          ) : null}
-          </Card>}
+          ) : null} */}
+          <FeeEstimation                    
+            currentStepData={{
+              createdResponse: {
+                ...(data?.applicationData || {})
+              }
+            }}
+            disable = {isUserCitizen}
+            development={development}
+            otherCharges={otherCharges}
+            lessAdjusment={lessAdjusment}
+            otherChargesDisc={otherChargesDisc}
+            labourCess={labourCess}                  
+            gaushalaFees={gaushalaFees}                 
+            malbafees={malbafees}                    
+            waterCharges={waterCharges}                 
+            setDevelopmentVal={setDevelopmentVal}
+            setOtherChargesVal={setOtherChargesVal}
+            setLessAdjusmentVal={setLessAdjusmentVal}
+            setOtherChargesDis={setOtherChargesDis}
+            selectfile={selectfile}
+            uploadedFile={uploadedFile}
+            setUploadedFile={setUploadedFile}
+            errorFile={errorFile}
+            setError={setError}
+          />
+        </Card>}
 
-      {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && (
-        <div>
-          <Card>
-            <React.Fragment>
-              <div>
-                <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
-                <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} />
-                <br></br>
-                {showMobileInput && (
-                  <React.Fragment>
-                    <br></br>
-                    <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
-                    <TextInput
-                      t={t}
-                      type="tel"
-                      isMandatory={true}
-                      optionKey="i18nKey"
-                      name="mobileNumber"
-                      value={mobileNumber}
-                      disable={true} 
-                      onChange={handleMobileNumberChange}
-                      {...{
-                        required: true,
-                        pattern: "[0-9]{10}",
-                        type: "tel",
-                        title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
-                      }}
-                    />
+        {workflowDetails?.data?.actionState?.state === "CITIZEN_APPROVAL_PENDING" && isUserCitizen && (
+          <div>
+            <Card>
+              <React.Fragment>
+                <div>
+                  <CardLabel>{t("ARCHITECT_SHOULD_VERIFY_HIMSELF_BY_CLICKING_BELOW_BUTTON")}</CardLabel>
+                  <LinkButton label={t("BPA_VERIFY")} onClick={handleVerifyClick} />
+                  <br></br>
+                  {showMobileInput && (
+                    <React.Fragment>
+                      <br></br>
+                      <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
+                      <TextInput
+                        t={t}
+                        type="tel"
+                        isMandatory={true}
+                        optionKey="i18nKey"
+                        name="mobileNumber"
+                        value={mobileNumber}
+                        disable={true}
+                        onChange={handleMobileNumberChange}
+                        {...{
+                          required: true,
+                          pattern: "[0-9]{10}",
+                          type: "tel",
+                          title: t("CORE_COMMON_APPLICANT_MOBILE_NUMBER_INVALID"),
+                        }}
+                      />
 
-                    <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
-                  </React.Fragment>
-                )}
-                {showOTPInput && (
-                  <React.Fragment>
-                    <br></br>
-                    <CardLabel>{t("BPA_OTP")}</CardLabel>
-                    {/* <TextInput
+                      <LinkButton label={t("BPA_GET_OTP")} onClick={handleGetOTPClick} disabled={!isValidMobileNumber} />
+                    </React.Fragment>
+                  )}
+                  {showOTPInput && (
+                    <React.Fragment>
+                      <br></br>
+                      <CardLabel>{t("BPA_OTP")}</CardLabel>
+                      {/* <TextInput
                       t={t}
                       type="text"
                       isMandatory={true}
@@ -1578,72 +1900,73 @@ const submitAction = (workflow) => {
                       onChange={handleOTPChange}
                       {...{ required: true, pattern: "[0-9]{6}", type: "tel", title: t("BPA_INVALID_OTP") }}
                     /> */}
-                    <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
+                      <OTPInput length={6} onChange={(value) => setOTP(value)} value={otp} />
 
-                    <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
-                    {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
-                    {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
-                  </React.Fragment>
-                )}
-              </div>
-              <br></br>
+                      <SubmitBar label={t("VERIFY_OTP")} onSubmit={handleVerifyOTPClick} />
+                      {otpError && <CardLabel style={{ color: "red" }}>{t(otpError)}</CardLabel>}
+                      {otpSuccess && <CardLabel style={{ color: "green" }}>{t(otpSuccess)}</CardLabel>}
+                    </React.Fragment>
+                  )}
+                </div>
+                <br></br>
 
-              <div>
-                <CheckBox
-                  label={checkLabels()}
-                  onChange={setdeclarationhandler}
-                  styles={{ height: "auto" }}
-                  //disabled={!agree}
-                  checked={agree}
-                />
-
-                {showTermsPopup && (
-                  <CitizenConsent
-                    showTermsPopupOwner={showTermsPopup}
-                    setShowTermsPopupOwner={setShowTermsPopup}
-                    otpVerifiedTimestamp={otpVerifiedTimestamp} // Pass timestamp as a prop
-                    bpaData={data?.applicationData} // Pass the complete BPA application data
-                    tenantId={tenantId} // Pass tenant ID for API calls
+                <div>
+                  <CheckBox
+                    label={checkLabels()}
+                    onChange={setdeclarationhandler}
+                    styles={{ height: "auto" }}
+                    //disabled={!agree}
+                    checked={agree}
                   />
-                )}
-              </div>
-            </React.Fragment>
-          </Card>
-        </div>
-      )}
 
-      {showTermsModal ? (
-        <ActionModal
-          t={t}
-          action={"TERMS_AND_CONDITIONS"}
-          tenantId={tenantId}
-          id={id}
-          closeModal={closeTermsModal}
-          submitAction={submitAction}
-          applicationData={data?.applicationData || {}}
-        />
-      ) : null}
-      {showModal ? (
-        <ActionModal
-          t={t}
-          action={selectedAction}
-          tenantId={tenantId}
-          // state={state}
-          id={id}
-          closeModal={closeModal}
-          submitAction={submitAction}
-          actionData={workflowDetails?.data?.timeline}
-        />
-      ) : null}
-      {showToast && (
-        <Toast
-          error={showToast.key === "error" ? true : false}
-          label={t(showToast.key === "success" ? `ES_OBPS_${showToast.action}_UPDATE_SUCCESS` : showToast.action)}
-          onClose={closeToast}
-          style={{ zIndex: "1000" }}
-        />
-      )}
-    </div>
+                  {showTermsPopup && (
+                    <CitizenConsent
+                      showTermsPopupOwner={showTermsPopup}
+                      setShowTermsPopupOwner={setShowTermsPopup}
+                      otpVerifiedTimestamp={otpVerifiedTimestamp} // Pass timestamp as a prop
+                      bpaData={data?.applicationData} // Pass the complete BPA application data
+                      tenantId={tenantId} // Pass tenant ID for API calls
+                    />
+                  )}
+                </div>
+              </React.Fragment>
+            </Card>
+          </div>
+        )}
+
+        {showTermsModal ? (
+          <ActionModal
+            t={t}
+            action={"TERMS_AND_CONDITIONS"}
+            tenantId={tenantId}
+            id={id}
+            closeModal={closeTermsModal}
+            submitAction={submitAction}
+            applicationData={data?.applicationData || {}}
+          />
+        ) : null}
+        {showModal ? (
+          <ActionModal
+            t={t}
+            action={selectedAction}
+            tenantId={tenantId}
+            // state={state}
+            id={id}
+            closeModal={closeModal}
+            submitAction={submitAction}
+            actionData={workflowDetails?.data?.timeline}
+          />
+        ) : null}
+        {showToast && (
+          <Toast
+            error={showToast.key === "error" ? true : false}
+            label={t(showToast.key === "success" ? `ES_OBPS_${showToast.action}_UPDATE_SUCCESS` : showToast.action)}
+            onClose={closeToast}
+            style={{ zIndex: "1000" }}
+            isDleteBtn={"true"}
+          />
+        )}
+      </div>
     </Fragment>
   )
 }

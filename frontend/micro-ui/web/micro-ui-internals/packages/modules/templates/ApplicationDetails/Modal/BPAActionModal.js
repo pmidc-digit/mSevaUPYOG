@@ -24,8 +24,8 @@ const CloseBtn = (props) => {
 };
 
 const ActionModal = ({ t, action, tenantId, state, id, closeModal, submitAction, actionData, applicationDetails, applicationData, businessService, moduleCode,workflowDetails,blockReason }) => {
-  console.log("applicationData",applicationData)
-  console.log("workflowDetails",workflowDetails)
+  console.log("applicationData_BPAACTIONMODAL",applicationData)
+  console.log("workflowDetails_BPAACTIONMODAL",workflowDetails)
   const mutation1 = Digit.Hooks.obps.useObpsAPI(
       applicationData?.landInfo?.address?.city ? applicationData?.landInfo?.address?.city : tenantId,
       false

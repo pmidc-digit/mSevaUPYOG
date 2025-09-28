@@ -29,17 +29,17 @@ const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimest
   const [isFileUploaded, setIsFileUploaded] = useState(false);
 
   // Map fields safely from params (these may be undefined)
-  const architectid = params?.additionalDetails?.architectid || user?.info?.id || "";
-  const ownername = params?.owners?.owners?.[0]?.name || "";
-  const mobile = params?.owners?.owners?.[0]?.mobileNumber || "";
-  const architecttype = params?.additionalDetails?.typeOfArchitect || user?.info?.roles?.find((r) => r.code === "BPA_ARCHITECT")?.name || "";
-  const khasranumber = params?.additionalDetails?.khasraNumber || "";
-  const ulbname = params?.additionalDetails?.District || "";
-  const district = params?.additionalDetails?.UlbName || "";
-  const ward = params?.additionalDetails?.wardnumber || "";
-  const area = params?.additionalDetails?.area || "";
-  const zone = params?.additionalDetails?.zonenumber || "";
-  const ulbgrade = params?.additionalDetails?.Ulblisttype || "";
+  const architectid = currentStepData?.createdResponse?.additionalDetails?.architectid || "";
+  const ownername = currentStepData?.createdResponse?.landInfo?.owners?.[0]?.name || "";
+  const mobile = currentStepData?.createdResponse?.landInfo?.owners?.[0]?.mobileNumber || "";
+  const architecttype = currentStepData?.createdResponse?.additionalDetails?.typeOfArchitect || user?.info?.roles?.find((r) => r.code === "BPA_ARCHITECT")?.name || "";
+  const khasranumber = currentStepData?.createdResponse?.additionalDetails?.khasraNumber || "";
+  const ulbname = currentStepData?.createdResponse?.additionalDetails?.District || "";
+  const district = currentStepData?.createdResponse?.additionalDetails?.UlbName || "";
+  const ward = currentStepData?.createdResponse?.additionalDetails?.wardnumber || "";
+  const area = currentStepData?.createdResponse?.additionalDetails?.area || "";
+  const zone = currentStepData?.createdResponse?.additionalDetails?.zonenumber || "";
+  const ulbgrade = currentStepData?.createdResponse?.additionalDetails?.Ulblisttype || "";
 
   // safe TimeStamp - prefer the one passed in props, fallback to stored value, fallback to empty string
   // const TimeStamp = otpVerifiedTimestamp ?? params?.additionalDetails?.TimeStamp ?? "";
@@ -139,21 +139,21 @@ const selfdeclarationform = `
       DECLARATION UNDER SELF-CERTIFICATION SCHEME
     </h2>
     <div style="text-align:center; margin-top:-78px;">
-      <div style="font-size:16px; margin:0;">(For ${params?.additionalDetails?.usage || '<Type of Construction>'} Construction)</div>
+      <div style="font-size:16px; margin:0;">(For ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} Construction)</div>
       <div style="font-size:16px; margin:2px 0 0 0;">(By Architect/ Civil Engineer/ Building Designer and Supervisor)</div>
     </div>
 
     <div style="margin-top:-52px;">
       <p style="margin-bottom:-32px;"><strong>To:</strong></p>
-      <p style="margin-bottom:-32px;"><strong>${params?.owners?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"}</strong></p>
-      <p style="margin-bottom:-32px;">${params?.landInfo?.address?.city?.city?.ulbType}</p>
-      <p style="margin-bottom:-32px;">${params?.landInfo?.address?.city?.city?.districtName}</p>
+      <p style="margin-bottom:-32px;"><strong>${currentStepData?.createdResponse?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "The Executive officer"}</strong></p>
+      <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</p>
+      <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.districtName}</p>
     </div>
 
     <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir or Madam,</strong></p>
 
     <p style="margin-top:-30px;margin-bottom:-32px;">
-      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype }</b> is appointed by the owner <b>${ownername}</b> (Mobile: <b>${mobile}</b>) for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${params?.additionalDetails?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${params?.additionalDetails?.proposedSiteAddress}</b>.
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype }</b> is appointed by the owner <b>${ownername}</b> (Mobile: <b>${mobile}</b>) for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${params?.additionalDetails?.proposedSiteAddress}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
@@ -205,7 +205,7 @@ const selfdeclarationform = `
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Address:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${params?.additionalDetails?.professionalAddress}</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${params?.additionalDetails?.professionalAddress || "NA"}</td>
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>

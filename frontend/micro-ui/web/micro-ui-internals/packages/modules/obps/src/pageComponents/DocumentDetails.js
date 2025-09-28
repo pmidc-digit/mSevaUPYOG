@@ -44,6 +44,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
   const [enableSubmit, setEnableSubmit] = useState(true);
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const checkingFlow = formData?.uiFlow?.flow;
+  const [showToast, setShowToast] = useState(null);
 
   const [isNextButtonDisabled, setIsNextButtonDisabled] = useState(false);
   const isMobile = Digit.Utils.browser.isMobile()
@@ -66,9 +67,9 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
   console.log(formData, "FDFDFDF");
   console.log(bpaTaxDocuments, "bpabpa");
 
-  useEffect(() => {
-    console.log("documentInScrutiny", formData, documents);
-  }, [documents]);
+  // useEffect(() => {
+  //   console.log("documentInScrutiny", formData, documents);
+  // }, [documents]);
 
 
   // const handleSubmit = () => {
@@ -97,7 +98,8 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
   // };
 
   const handleSubmit = async () => {
-    console.log("documentInScrutiny", formData, documents);
+    // console.log("documentInScrutiny", formData, documents);
+    const mandatoryList = bpaTaxDocuments?.filter((document) => ((document.code !== "ARCHITECT.UNDERTAKING" && document.code !== "CITIZEN.UNDERTAKING" && document.code !== "SITEPHOTOGRAPH_ONE") && document?.required))
     const updatedDocuments = documents?.map((item) => {
       const id = currentStepData?.createdResponse?.documents?.find((doc) => doc?.documentType === item?.documentType)?.id || null;
       return {
@@ -105,6 +107,24 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
         id
       }
     })
+
+    const missingDocuments = mandatoryList?.filter(
+      (mandatoryDoc) =>
+        !updatedDocuments?.some(
+          (doc) =>
+            doc?.documentType === mandatoryDoc?.code // must exist with id
+        )
+    );
+    // console.log("documentInScrutiny", mandatoryList, missingDocuments, updatedDocuments);
+
+
+    if(missingDocuments?.length > 0){
+      setShowToast({
+        key: "error",
+        label: `${t("Missing Fields")}: ${t(missingDocuments?.[0]?.code)}`
+      })
+      return;
+    }
     
       const userInfo = Digit.UserService.getUser()
       const accountId = userInfo?.info?.uuid
@@ -235,6 +255,16 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
         />
         {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading}/>}
       </ActionBar>
+      {showToast && (
+              <Toast
+                error={showToast.key}
+                label={t(showToast.label)}
+                onClose={() => {
+                  setShowToast(null);
+                }}
+                isDleteBtn={"true"}
+              />
+      )}
     </div>
   );
 };

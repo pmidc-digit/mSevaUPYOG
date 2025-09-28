@@ -49,6 +49,8 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const [displayMenu, setDisplayMenu] = useState(false);
     const [isFileLoading, setIsFileLoading] = useState(false)
     const [fileUrls, setFileUrls] = useState({});
+    const [ownerFileUrls, setOwnerFileUrls] = useState({});
+    const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
 
     const closeMenu = () => {
         setDisplayMenu(false);
@@ -193,9 +195,9 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         }));
     }, [fileUrls, t]);
 
-    useEffect(() => {
-        console.log("ecbcDocumentsData", ecbcDocumentsData, fileUrls)
-    },[ecbcDocumentsData])
+    // useEffect(() => {
+    //     console.log("ecbcDocumentsData", ecbcDocumentsData, fileUrls)
+    // },[ecbcDocumentsData])
 
 
     const handleTermsLinkClick = (e) => {
@@ -227,6 +229,43 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
             </div>
         );
     };
+
+      const ownerDocumentsData = useMemo(() => {
+      // ownerFileUrls: { 0: { documentFile: 'url', ownerPhoto: 'url' }, 1: { ... } }
+      if (!ownerFileUrls || typeof ownerFileUrls !== "object") return [];
+    
+      const ownersCount = Object.keys(ownerFileUrls).length;
+    
+      // Flatten into { "0_documentFile": "url", "1_ownerPhoto": "url", ... }
+      const flatFileUrls = Object.entries(ownerFileUrls).reduce((acc, [ownerIdx, files]) => {
+        if (files && typeof files === "object") {
+          Object.entries(files).forEach(([prop, url]) => {
+            if (url && url !== "NA" && url !== "" && url !== null && url !== undefined) {
+              acc[`${ownerIdx}_${prop}`] = url;
+            }
+          });
+        }
+        return acc;
+      }, {});
+    
+      const docs = getDocsFromFileUrls(flatFileUrls) || [];
+    
+      return docs.map((doc, index) => {
+        // doc.id will be like "0_documentFile"
+        const [ownerIdx, ...propParts] = String(doc.id).split("_");
+        const prop = propParts.join("_"); // "documentFile" or "ownerPhoto"
+        const baseTitle = (prop ? prop.toUpperCase() : (doc.title || "").toUpperCase());
+    
+        // Append index if more than 1 owner (ownerIdx is 0-based so +1)
+        const title = ownersCount > 1 ? `${t(baseTitle)}_${parseInt(ownerIdx, 10) + 1}` : t(baseTitle);
+    
+        return {
+          id: index,
+          title,
+          fileUrl: doc.fileURL || null,
+        };
+      });
+    }, [ownerFileUrls, t]);
 
 
     const documentsColumns = [
@@ -451,6 +490,63 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
         fetchFileUrls();
     }, [currentStepData?.createdResponse?.additionalDetails]);
+
+      useEffect(() => {
+      const fetchOwnerFileUrls = async () => {
+        const owners = currentStepData?.createdResponse?.landInfo?.owners || [];
+        if (owners.length === 0) return;
+    
+        // Collect valid fileStoreIds from each owner
+        const fileIdsMap = []; // keeps mapping of ownerIndex + propertyName to fileStoreId
+        const validFileStoreIds = [];
+    
+        owners.forEach((owner, index) => {
+          const docFile = owner?.additionalDetails?.documentFile;
+          const photoFile = owner?.additionalDetails?.ownerPhoto;
+    
+          if (docFile && docFile !== "NA") {
+            validFileStoreIds.push(docFile);
+            fileIdsMap.push({ index, key: "documentFile", fileId: docFile });
+          }
+          if (photoFile && photoFile !== "NA") {
+            validFileStoreIds.push(photoFile);
+            fileIdsMap.push({ index, key: "ownerPhoto", fileId: photoFile });
+          }
+        });
+    
+        if (validFileStoreIds.length === 0) return;
+    
+        try {
+          setIsOwnerFileLoading(true);
+    
+          // Fetch URLs
+          const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
+          if (result?.data) {
+            const urls = {};
+    
+            fileIdsMap.forEach(({ index, key, fileId }) => {
+              if (result.data[fileId]) {
+                if (!urls[index]) urls[index] = {};
+                urls[index][key] = result.data[fileId];
+              }
+            });
+    
+            // Example final structure:
+            // {
+            //   0: { documentFile: "url1", ownerPhoto: "url2" },
+            //   1: { documentFile: "url3" }
+            // }
+            setOwnerFileUrls(urls);
+          }
+        } catch (error) {
+          console.error("Error fetching owner file URLs", error);
+        } finally {
+          setIsOwnerFileLoading(false);
+        }
+      };
+    
+      fetchOwnerFileUrls();
+    }, [currentStepData?.createdResponse?.landInfo?.owners]);
 
     useEffect(() => {
         console.log("ECBCDocs", fileUrls);
@@ -812,6 +908,21 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                                 </div>
                             ))}
                     </StatusTable>
+                    <StatusTable>
+                                                <CardHeader>{t("BPA_OWNER_DETAILS_LABEL")}</CardHeader>
+                                                <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
+                                                {(pdfLoading || isOwnerFileLoading) ? <Loader /> : <Table
+                                                  className="customTable table-border-style"
+                                                  t={t}
+                                                  data={ownerDocumentsData}
+                                                  columns={documentsColumns}
+                                                  getCellProps={() => ({ style: {} })}
+                                                  disableSort={false}
+                                                  autoSort={true}
+                                                  manualPagination={false}
+                                                  isPaginationRequired={false}
+                                                />}
+                                              </StatusTable>
                 </Card>
 
                 <Card style={{ padding: "20px", marginBottom: "30px", borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)", border: "1px solid #f0f0f0", background: "#fff" }} >

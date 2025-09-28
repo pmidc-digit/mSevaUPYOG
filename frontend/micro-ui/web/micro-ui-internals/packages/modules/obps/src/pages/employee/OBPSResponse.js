@@ -68,6 +68,7 @@ const OBPSResponse = (props) => {
 
   const onSubmit = () => {
     history.push(`/digit-ui/employee`);
+    window.location.reload();
   };
 
   const getApplicationNoLabel = () => {

@@ -249,14 +249,29 @@ const NOCEmployeeApplicationOverview = () => {
       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
       
       if(response?.ResponseInfo?.status === "successful"){
-       setShowToast({ key: "true", success:true, message: filtData?.action === "CANCEL" ? "Cancelled Successfully": "Successfully submitted the application" });
-       workflowDetails.revalidate();
-       setSelectedAction(null);
+        if(filtData?.action === "CANCEL"){
+          setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully" });
+          workflowDetails.revalidate();
+          setSelectedAction(null);
+        }
+        else if(filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT"){
+          //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
+          console.log("We are calling employee response page");
+          history.replace({
+           pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+           state: { data: response }
+          });
+        }
+        else{
+           //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
+          setShowToast({ key: "true", success:true, message: "Successfully updated the status of application" });
+          workflowDetails.revalidate();
+          setSelectedAction(null);
+        }
       }
       else{
         setShowToast({ key: "true", warning:true, message: "Something went wrong, please try after sometime" });
-        setSelectedAction(null);
-        
+        setSelectedAction(null); 
       }
     } catch (err) {
       setShowToast({ key: "true", error:true, message: "Some error occurred, please try later" });

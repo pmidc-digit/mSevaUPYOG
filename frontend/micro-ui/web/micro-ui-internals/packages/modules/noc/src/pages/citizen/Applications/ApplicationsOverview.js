@@ -263,15 +263,23 @@ const CitizenApplicationOverview = () => {
       
       if(response?.ResponseInfo?.status === "successful"){
 
-       setShowToast({ key: "true", success:true, message: filtData?.action === "CANCEL" ? "Cancelled Successfully": "Successfully submitted the application" });
-       workflowDetails.revalidate();
-       setSelectedAction(null);
-      
+        if(filtData?.action === "CANCEL"){
+          setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully" });
+          workflowDetails.revalidate();
+          setSelectedAction(null);
+        }
+        else{
+          //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
+          console.log("We are calling citizen response page");
+          history.replace({
+            pathname:`/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+            state: { data: response }
+          });
+        }
       }
       else{
         setShowToast({ key: "true", warning:true, message: "Something went wrong, please try after sometime" });
         setSelectedAction(null);
-        
       }
     } catch (err) {
       setShowToast({ key: "true",error:true, message: "Some error occurred, plz try later" });

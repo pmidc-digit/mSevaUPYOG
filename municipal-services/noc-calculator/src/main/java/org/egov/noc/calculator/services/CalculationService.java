@@ -90,7 +90,7 @@ public class CalculationService {
 				if(siteDetails.get("basementArea") != null)
 					basementArea = new BigDecimal(siteDetails.getOrDefault("basementArea", "0").toString());
 				if(siteDetails.get("specificationBuildingCategory") != null)
-					category = ((Map<String, Object>)siteDetails.get("specificationBuildingCategory")).get("code").toString();
+					category = siteDetails.get("specificationBuildingCategory").toString();
 				
 				LocalDate today = LocalDate.now();
 				if(today.getMonthValue() > 3)

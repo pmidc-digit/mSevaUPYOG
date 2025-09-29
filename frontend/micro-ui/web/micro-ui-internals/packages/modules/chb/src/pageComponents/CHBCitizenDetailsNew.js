@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { TextInput, CardLabel, Dropdown, MobileNumber, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 
-const CHBCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
+const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
 
@@ -26,28 +26,10 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
     <React.Fragment>
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
-          <CardLabel>{`${t("NDC_FIRST_NAME")}`}</CardLabel>
+          <CardLabel>{`${t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL")}`}</CardLabel>
           <Controller
             control={control}
-            name="firstName"
-            render={(props) => (
-              <TextInput
-                value={props.value}
-                onChange={(e) => {
-                  props.onChange(e.target.value);
-                }}
-                onBlur={(e) => {
-                  props.onBlur(e);
-                }}
-                t={t}
-              />
-            )}
-          />
-
-          <CardLabel>{`${t("NDC_LAST_NAME")}`}</CardLabel>
-          <Controller
-            control={control}
-            name="lastName"
+            name="name"
             render={(props) => (
               <TextInput
                 value={props.value}
@@ -114,6 +96,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData }) => {
           />
         </div>
         <ActionBar>
+          <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
         {/* <button type="submit">submit</button> */}

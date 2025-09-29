@@ -1,5 +1,5 @@
 import { Card, Header, KeyNote, Loader, SubmitBar } from "@mseva/digit-ui-react-components";
-import React from "react";
+import React,{useEffect,useState} from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, Link } from "react-router-dom";
 
@@ -10,9 +10,30 @@ const MyApplications = ({ view }) => {
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
   //console.log("userInfo========", userInfo);
 
-  const { isLoading, data, isError, error } = Digit.Hooks.noc.useNOCCitizenSearchApplication({ mobileNumber: userInfo.mobileNumber }, tenantId);
+  const searchListDefaultValues = {
+    sortBy: "createdTime",
+    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    offset: 0,
+    sortOrder: "DESC",
+    mobileNumber:""
+  };
+
+  const { isLoading, data, isError, error } = Digit.Hooks.noc.useNOCCitizenSearchApplication(
+    {...searchListDefaultValues,
+     mobileNumber:userInfo?.mobileNumber || ""
+    },
+    // { mobileNumber: userInfo.mobileNumber }
+    tenantId);
 
   console.log("data herein NOC==>", data);
+
+  const labels=["CS_CF_VIEW", "CS_CF_TRACK", "TL_VIEW_DETAILS"];
+
+  useEffect(()=>{
+    if(data){
+      data.revalidate();
+    }
+  },[])
 
   if (isLoading) {
     return <Loader />;
@@ -30,7 +51,8 @@ const MyApplications = ({ view }) => {
       {data?.data?.map((application, index) => {
         const filteredApplication = Object.fromEntries(Object.entries(application).filter(([key]) => key !== "Applications"));
         //console.log("filtered Applications here==>", filteredApplication);
-        console.log("application?.Applications?.applicationNo", application);
+        //console.log("application?.Applications?.applicationNo", application);
+        const applicationStatus=application?.Applications?.applicationStatus || "";
         return (
           <div key={`card-${index}`}>
             <Card>
@@ -41,19 +63,12 @@ const MyApplications = ({ view }) => {
                 ))}
 
               <Link to={`/digit-ui/citizen/noc/search/application-overview/${application?.Applications?.applicationNo}`}>
-                <SubmitBar label={t("TL_VIEW_DETAILS")} />
+                <SubmitBar 
+                   label={applicationStatus === "APPROVED" ? t(labels[2]) : applicationStatus === "REJECTED" || applicationStatus === "CITIZENACTIONREQUIRED" ? t(labels[0]) : t(labels[1])} />
               </Link>
                 
-               {
-               (application?.Applications?.applicationStatus === "INITIATED" || application?.Applications?.applicationStatus==="CITIZENACTIONREQUIRED") && 
-                  <div style={{marginTop:"10px"}}>
-                 <Link to={`/digit-ui/citizen/noc/edit-application/${application?.Applications?.applicationNo}`}>
-                  <SubmitBar label={t("COMMON_EDIT_AND_APPLY_LABEL")} />
-                </Link>
-                </div>
-               }
               
-               {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
+               {/* {application?.Applications?.applicationStatus === "PENDINGPAYMENT" && (
                 <Link
                   to={{
                     pathname: `/digit-ui/citizen/payment/collect/obpas_noc/${application?.Applications?.applicationNo}/${tenantId}?tenantId=${tenantId}`,
@@ -63,7 +78,7 @@ const MyApplications = ({ view }) => {
                     <SubmitBar label={t("COMMON_MAKE_PAYMENT")} />
                   </div>
                 </Link>
-               )}
+               )} */}
              
             </Card>
           </div>

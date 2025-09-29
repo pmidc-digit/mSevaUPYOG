@@ -93,14 +93,16 @@ const NOCEmployeeApplicationOverview = () => {
   const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "noc-service",
-    role: "EMPLOYEE",
+    //moduleCode: "noc-service",
+    moduleCode: "obpas_noc",
+    //role: "EMPLOYEE",
   });
 
   console.log("workflowDetails here=>", workflowDetails);
@@ -144,6 +146,16 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
+
+  useEffect(()=>{
+        if(workflowDetails){
+          workflowDetails.revalidate();
+        }
+  
+        if(data){
+          data.revalidate();
+        }
+  },[])
   
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -178,6 +190,7 @@ const NOCEmployeeApplicationOverview = () => {
     }
 
   },[applicationDetails?.Noc])
+  
    
   function onActionSelect(action) {
     console.log("selected action", action);
@@ -187,12 +200,15 @@ const NOCEmployeeApplicationOverview = () => {
       Licenses: [action],
     };
 
-    if (action?.action == "EDIT" || action?.action == "APPLY") {
+    if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/noc/edit-application/${appNo}`);
     }
-    // else if (action?.action == "APPLY") {
-    //   submitAction(payload);
-    // } 
+    else if (action?.action == "DRAFT") {
+      setShowToast({ key: "true", warning:true, message: "Please edit your application before saving or resubmitting"});
+    }
+    else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+      submitAction(payload);
+    } 
     else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
@@ -202,8 +218,6 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const submitAction = async (data) => {
-    // setShowModal(false);
-    // setSelectedAction(null);
     const payloadData = applicationDetails?.Noc?.[0]|| {};
 
    // console.log("data ==>", data);
@@ -214,7 +228,7 @@ const NOCEmployeeApplicationOverview = () => {
     };
 
     const filtData = data?.Licenses?.[0];
-    console.log("filtData", filtData);
+    //console.log("filtData", filtData);
 
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -223,21 +237,7 @@ const NOCEmployeeApplicationOverview = () => {
       documents: filtData?.wfDocuments,
     };
 
-    console.log("updatedApplicant", updatedApplicant);
-
-    if (!filtData?.assignee && filtData.action == "FORWARD") {
-      setShowToast({ key: "error" });
-      setError("Assignee is mandatory");
-
-      return;
-    } else if (!filtData?.comment && (filtData?.action == "FORWARD" || filtData?.action == "REJECT")) {
-      // setShowToast({ key: "error", message: "Comment is mandatory" });
-      // setError("Comment is mandatory");
-      setErrorOne("Comment is mandatory");
-      setShowErrorToastt(true);
-
-      return;
-    }
+   // console.log("updatedApplicant", updatedApplicant);
 
     const finalPayload = {
       Noc: {...updatedApplicant},
@@ -247,18 +247,19 @@ const NOCEmployeeApplicationOverview = () => {
 
     try {
       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
-
-      // ✅ Show success first
-      setShowToast({ key: "success", message: "Successfully updated the status" });
-      setError("Successfully updated the status");
-
-      workflowDetails.revalidate();
-
-      setSelectedAction(null);
-      setShowModal(false);
+      
+      if(response?.ResponseInfo?.status === "successful"){
+       setShowToast({ key: "true", success:true, message: filtData?.action === "CANCEL" ? "Cancelled Successfully": "Successfully submitted the application" });
+       workflowDetails.revalidate();
+       setSelectedAction(null);
+      }
+      else{
+        setShowToast({ key: "true", warning:true, message: "Something went wrong, please try after sometime" });
+        setSelectedAction(null);
+        
+      }
     } catch (err) {
-      setShowToast({ key: "error", message: "Something went wrong" });
-      setError("Something went wrong");
+      setShowToast({ key: "true", error:true, message: "Some error occurred, please try later" });
     }
   };
 
@@ -415,7 +416,7 @@ const NOCEmployeeApplicationOverview = () => {
         </Card>
       )}
 
-      {actions && (
+      {actions?.length >0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
@@ -453,7 +454,7 @@ const NOCEmployeeApplicationOverview = () => {
         />
       ) : null}
 
-      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} isDleteBtn={true} onClose={closeToast} />}
 
 
     </div>

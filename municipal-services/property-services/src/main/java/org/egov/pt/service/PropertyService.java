@@ -3,6 +3,7 @@ package org.egov.pt.service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,12 +13,14 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
+import java.util.Objects;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.pt.config.PropertyConfiguration;
 import org.egov.pt.models.OwnerInfo;
 import org.egov.pt.models.Property;
 import org.egov.pt.models.PropertyCriteria;
+import org.egov.pt.models.Unit;
 import org.egov.pt.models.collection.BillDetail;
 import org.egov.pt.models.collection.BillResponse;
 import org.egov.pt.models.enums.CreationReason;
@@ -159,12 +162,18 @@ public class PropertyService {
 	 * @param request PropertyRequest containing list of properties to be update
 	 * @return List of updated properties
 	 */
+	
+	/* This change for surveyId edit PI-PI-18601 */
+	
+	
 	public Property updateProperty(PropertyRequest request) {
 
 		Property propertyFromSearch = unmaskingUtil.getPropertyUnmasked(request);
 
 		boolean isNumberDifferent = checkIsRequestForMobileNumberUpdate(request, propertyFromSearch);
-		if (!isNumberDifferent) {
+	    boolean surveyIdChanged = isSurveyIdUpdate(request, propertyFromSearch);
+
+		if (!isNumberDifferent && !surveyIdChanged) {
 			propertyValidator.validateCommonUpdateInformation(request, propertyFromSearch);
 		}
 
@@ -174,6 +183,9 @@ public class PropertyService {
 
 		if (isNumberDifferent) {
 			processMobileNumberUpdate(request, propertyFromSearch);
+			return request.getProperty();
+		}else if (surveyIdChanged) {
+			processSurveyIdUpdate(request, propertyFromSearch);
 			return request.getProperty();
 		} else if (isRequestForOwnerMutation) {
 			processOwnerMutation(request, propertyFromSearch);
@@ -231,6 +243,39 @@ public class PropertyService {
 		// return encryptionDecryptionUtil.decryptObject(request.getProperty(),
 		// PTConstants.PROPERTY_MODEL, Property.class, request.getRequestInfo());
 	}
+	
+	
+	
+	/* This change for surveyId edit PI-PI-18601 */
+	private void processSurveyIdUpdate(PropertyRequest request,
+	                                   Property propertyFromSearch) {
+
+	    // 1.  Copy the incoming value onto the entity that will be persisted
+	    propertyFromSearch.setSurveyId(request.getProperty().getSurveyId());
+
+	    // 2.  Enrich + merge common fields
+	    enrichmentService.enrichUpdateRequests(request, propertyFromSearch, true);
+	    util.mergeAdditionalDetails(request, propertyFromSearch);
+
+	    // 3.  Push to the same topic you already use
+	    producer.push(config.getUpdatePropertyTopic(), request);
+	}
+	
+	
+	
+	/* This change for surveyId edit PI-PI-18601 */
+	
+	private boolean isSurveyIdUpdate(PropertyRequest request, Property propertyFromSearch) {
+	    String oldSurveyId = propertyFromSearch.getSurveyId();         
+	    String newSurveyId = request.getProperty().getSurveyId();       
+
+	    if (newSurveyId == null) return false;                          
+	    return !newSurveyId.equals(oldSurveyId);            
+	}
+
+	
+	
+
 
 	/*
 	 * Method to check if the update request is for updating owner mobile numbers
@@ -550,12 +595,65 @@ public class PropertyService {
 			} else {
 				properties = repository.getPropertiesWithOwnerInfo(criteria, requestInfo, false);
 			}
+			
+			 // --- Changes for occupancy name enrichment (PI-19300) ---
+			// --- Changes for occupancy name enrichment (PI-19300) ---
+			// Execute only if at least one property has non-null units
+			boolean hasUnits = properties.stream().anyMatch(p -> p.getUnits() != null);
 
-			properties.forEach(property -> {
-				enrichmentService.enrichBoundary(property, requestInfo);
-			});
-		}
+			if (hasUnits) {
+			    List<Unit> activeUnits = properties.stream()
+			            .filter(p -> p.getUnits() != null)
+			            .flatMap(p -> p.getUnits().stream())
+			            .filter(u -> Boolean.TRUE.equals(u.getActive()))
+			            .collect(Collectors.toList());
 
+			    List<Unit> finalUnits;
+			    if (!activeUnits.isEmpty()) {
+			        finalUnits = activeUnits;
+			    } else {
+			        Property latestProperty = properties.stream()
+			                .max(Comparator.comparing(prop -> prop.getAuditDetails().getCreatedTime()))
+			                .orElse(null);
+
+			        finalUnits = (latestProperty != null && latestProperty.getUnits() != null)
+			                ? latestProperty.getUnits()
+			                : Collections.emptyList();
+			    }
+
+			    List<String> occupancyTypeCodes = finalUnits.stream()
+			            .map(Unit::getOccupancyType)
+			            .filter(Objects::nonNull)
+			            .map(Object::toString)
+			            .distinct()
+			            .collect(Collectors.toList());
+
+			    if (!occupancyTypeCodes.isEmpty()) {
+			    	Map<String, String> occupancyTypesMap = repository.fetchOccupancyTypes(
+			    	        requestInfo, criteria.getTenantId(), occupancyTypeCodes);
+
+			    	if (occupancyTypesMap != null && !occupancyTypesMap.isEmpty()) {
+			    	    for (Property property : properties) {
+			    	        if (property.getUnits() != null) {
+			    	            for (Unit unit : property.getUnits()) {
+			    	                String occType = unit.getOccupancyType();
+			    	                if (occType != null && occupancyTypesMap.containsKey(occType)) {
+			    	                    unit.setOccupancyName(occupancyTypesMap.get(occType));
+			    	                }
+			    	            }
+			    	        }
+			    	    }
+			    	}
+			    }
+			    	} else {
+			    log.info("No units found in properties, skipping occupancy enrichment.");
+			}
+		    // --- end of occupancy enrichment ---
+
+
+	        // enrich boundary
+	        properties.forEach(property -> enrichmentService.enrichBoundary(property, requestInfo));
+	    }
 		/* Decrypt here */
 		/*
 		 * if(criteria.getIsSearchInternal()) return

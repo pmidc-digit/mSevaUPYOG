@@ -958,3 +958,11 @@ config:
         dockerfile: "build/maven/Dockerfile"
      # - work-dir: "core-services/egov-esign/src/main/resources/db"
       #  image-name: "egov-esign-db"
+
+  - name: "builds/upyog/core-services/egov-gisintegration"
+    build:
+      - work-dir: "core-services/egov-gisintegration"
+        image-name: "egov-gisintegration"
+        dockerfile: "build/maven/Dockerfile"
+      - work-dir: "core-services/egov-gisintegration/src/main/resources/db"
+        image-name: "egov-gisintegration-db"

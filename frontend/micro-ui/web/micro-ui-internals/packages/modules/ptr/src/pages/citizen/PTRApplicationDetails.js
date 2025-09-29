@@ -10,6 +10,7 @@ import {
   PopUp,
   Toast,
   SubmitBar,
+  ActionBar,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -27,6 +28,7 @@ const PTRApplicationDetails = () => {
   const { acknowledgementIds, tenantId } = useParams();
   const [acknowldgementData, setAcknowldgementData] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
+  const isCitizen = window.location.href.includes("citizen");
   const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
   // const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -682,6 +684,17 @@ const PTRApplicationDetails = () => {
               </StatusTable>
             )}
           </div>
+
+          {(pet_details?.status == "CITIZENACTIONREQUIRED" || pet_details?.status == "INITIATED") && isCitizen && (
+            <ActionBar>
+              <SubmitBar
+                label={t("COMMON_EDIT")}
+                onSubmit={() => {
+                  history.push(`/digit-ui/citizen/ptr/petservice/new-application/${acknowledgementIds}`);
+                }}
+              />
+            </ActionBar>
+          )}
 
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (

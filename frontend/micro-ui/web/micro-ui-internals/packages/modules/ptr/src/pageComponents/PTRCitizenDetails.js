@@ -294,13 +294,13 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
               render={({ value, onChange, onBlur }) => (
                 <TextInput
                   value={value}
+                  maxLength={6}
                   onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
                   onBlur={(e) => {
                     onBlur(e);
                     trigger("pincode");
                   }}
                   t={t}
-                  maxLength={6}
                 />
               )}
             />

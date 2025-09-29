@@ -286,20 +286,6 @@ const PTRWFApplicationTimeline = (props) => {
             </ActionBar>
           )}
 
-          {console.log("actions[0]?.action", actions[0]?.action)}
-
-          {(props.application?.status == "CITIZENACTIONREQUIRED" || props.application?.status == "INITIATED") && isCitizen && (
-            <ActionBar>
-              <SubmitBar
-                label={t("COMMON_EDIT")}
-                onSubmit={() => {
-                  const id = props.application?.applicationNumber;
-                  history.push(`/digit-ui/citizen/ptr/petservice/new-application/${id}`);
-                }}
-              />
-            </ActionBar>
-          )}
-
           {showModal ? (
             <PTRModal
               t={t}

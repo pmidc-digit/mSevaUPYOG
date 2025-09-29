@@ -367,7 +367,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
           <Controller
             control={control}
             name="clinicName"
-            rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: alphaNum, message: t("PTR_CLINIC_NAME_INVALID") } }}
+            rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: /^[a-zA-Z0-9\s&-]+$/, message: t("PTR_CLINIC_NAME_INVALID") } }}
             render={(props) => (
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
             )}

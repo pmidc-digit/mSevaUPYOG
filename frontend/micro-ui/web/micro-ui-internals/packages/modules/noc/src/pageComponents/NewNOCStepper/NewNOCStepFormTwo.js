@@ -74,7 +74,27 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const callCreateAPI= async (formData)=>{ 
         
         // Prepare nocFormData
-      const nocFormData = {...formData};
+      const nocFormData = 
+      {
+        applicationDetails:{
+          ...formData?.applicationDetails,
+          applicantGender : formData?.applicationDetails?.applicantGender?.code || "",
+        },
+        siteDetails:{
+         ...formData?.siteDetails,
+         ulbName: formData?.siteDetails?.ulbName?.name || "",
+         roadType: formData?.siteDetails?.roadType?.name || "",
+         buildingStatus:formData?.siteDetails?.buildingStatus?.name || "",
+         isBasementAreaAvailable: formData?.siteDetails?.isBasementAreaAvailable?.code || "",
+         district: formData?.siteDetails?.district?.name || "",
+         zone: formData?.siteDetails?.zone?.name || "",
+
+         specificationBuildingCategory: formData?.siteDetails?.specificationBuildingCategory?.name || "",
+         specificationNocType: formData?.siteDetails?.specificationNocType?.name || "",
+         specificationRestrictedArea: formData?.siteDetails?.specificationRestrictedArea?.code || "",
+         specificationIsSiteUnderMasterPlan:formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || ""
+        }
+      };
 
        // console.log("nocFormData ==>", nocFormData)
 

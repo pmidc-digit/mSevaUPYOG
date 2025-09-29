@@ -385,6 +385,7 @@ export const CollectPayment = (props) => {
           label={t(toast.key === "success" ? `ES_${businessService.split(".")[0].toLowerCase()}_${toast.action}_UPDATE_SUCCESS` : toast.action)}
           onClose={() => setToast(null)}
           style={{ maxWidth: "670px" }}
+          isDleteBtn={true}
         />
       )}
     </React.Fragment>

@@ -252,7 +252,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
         } else {
           try {
             setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage("NOC", file, Digit.ULBService.getStateId());
             setLoading(false);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);

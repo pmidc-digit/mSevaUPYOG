@@ -1,6 +1,6 @@
 export const citizenConfig = [
   {
-    head: "ES_TITILE_OWNER_DETAILS",
+    head: "ES_TITILE_PET_DETAILS",
     stepNumber: 1,
     body: [
       {
@@ -16,7 +16,7 @@ export const citizenConfig = [
     ],
   },
   {
-    head: "ES_TITILE_PET_DETAILS",
+    head: "ES_TITILE_OWNER_DETAILS",
     stepNumber: 2,
     body: [
       {

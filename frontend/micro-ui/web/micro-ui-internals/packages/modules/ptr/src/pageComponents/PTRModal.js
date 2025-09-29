@@ -101,7 +101,6 @@ const PTRModal = ({
 
   useEffect(() => {
     (async () => {
-      setError(null);
       if (file) {
         if (file.size >= 5242880) {
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
@@ -122,9 +121,6 @@ const PTRModal = ({
   }, [file]);
 
   function submit(data) {
-    setShowToast(null);
-    setError(null);
-
     let checkCommentsMandatory =
       action?.action === "APPROVE" ||
       action?.action === "VERIFY" ||
@@ -134,14 +130,7 @@ const PTRModal = ({
 
     if (action?.isTerminateState) checkCommentsMandatory = true;
 
-    const commentsText = data?.comments;
-    if (checkCommentsMandatory && (!commentsText || !commentsText.toString().trim())) {
-      setError("Comments are required");
-      setShowToast({ key: "error" });
-      return;
-    }
-
-    let checkAssigneeMandatory = action?.action === "APPROVE" || action?.action === "VERIFY" || action?.action === "FORWARD";
+    let checkAssigneeMandatory = action?.action === "SENDBACKTOVERIFIER" || action?.action === "VERIFY" || action?.action === "FORWARD";
     if (action?.isTerminateState) checkAssigneeMandatory = false;
 
     if (checkAssigneeMandatory && !selectedApprover?.uuid) {
@@ -149,6 +138,16 @@ const PTRModal = ({
       setShowToast({ key: "error" });
       return;
     }
+
+    const commentsText = data?.comments;
+
+    if (!commentsText) {
+      setError("Comments are required");
+      setShowToast({ key: "error" });
+
+      return;
+    }
+
     let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
     applicationData = {
       ...applicationData,
@@ -214,7 +213,7 @@ const PTRModal = ({
         // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
-      {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
     </Modal>
   ) : (
     <Loader />

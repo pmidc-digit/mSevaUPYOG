@@ -14,7 +14,7 @@ import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 const createEmployeeConfig = [
   {
     head: "OWNER DETAILS",
-    stepLabel: "ES_TITILE_OWNER_DETAILS",
+    stepLabel: "CHB_Venue_Details",
     stepNumber: 1,
     isStepEnabled: true,
     type: "component",
@@ -27,7 +27,7 @@ const createEmployeeConfig = [
   },
   {
     head: "Venue Details",
-    stepLabel: "CHB_Venue_Details",
+    stepLabel: "ES_TITILE_OWNER_DETAILS",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",

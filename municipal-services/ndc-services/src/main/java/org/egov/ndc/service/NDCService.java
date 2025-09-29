@@ -83,8 +83,9 @@ public class NDCService {
 
 			List<String> idList = ndcUtil.getIdList(ndcApplicationRequest.getRequestInfo(), application.getTenantId(), "ndc.applicationid", "NDC-[cy:yyyy-MM-dd]-[SEQ_EGOV_COMMON]", 1);
 			log.info(idList.toString());
-			String applicantionId = idList.get(0);
-			application.setUuid(applicantionId);
+			application.setUuid(UUID.randomUUID().toString());
+			application.setApplicationNo(idList.get(0));
+			String applicationId = application.getUuid();
 			application.setAuditDetails(AuditDetails.builder().createdBy(userUuidFromRequestInfo)
 					.createdTime(System.currentTimeMillis())
 					.lastModifiedBy(userUuidFromRequestInfo)
@@ -96,7 +97,7 @@ public class NDCService {
 			if (ndcDetails != null) {
 				for (NdcDetailsRequest details : ndcDetails) {
 					details.setUuid(UUID.randomUUID().toString());
-					details.setApplicationId(applicantionId);
+					details.setApplicationId(applicationId);
 				}
 			}
 
@@ -107,7 +108,7 @@ public class NDCService {
 						throw new CustomException("DOCUMENT_ATTACHMENT_NULL", "Document attachment is null");
 					if (document.getUuid() == null)
 						throw new CustomException("DOCUMENT_UUID_NULL", "Document uuid is null");
-					document.setApplicationId(applicantionId);
+					document.setApplicationId(applicationId);
 					document.setCreatedby(userUuidFromRequestInfo);
 					document.setLastmodifiedby(userUuidFromRequestInfo);
 					document.setCreatedtime(System.currentTimeMillis());
@@ -132,7 +133,6 @@ public class NDCService {
 	}
 
 	public NdcApplicationRequest updateNdcApplication(boolean skipWorkFlow,NdcApplicationRequest ndcApplicationRequest) {
-		log.info("ndc request :", ndcApplicationRequest);
 		RequestInfo requestInfo = ndcApplicationRequest.getRequestInfo();
 		String userUuidFromRequestInfo = requestInfo.getUserInfo().getUuid();
 		List<Application> applications = ndcApplicationRequest.getApplications();
@@ -269,7 +269,7 @@ public class NDCService {
 			CalculationCriteria calculationCriteria = CalculationCriteria.builder()
 					.ndcApplicationRequest(request)
 					.tenantId(request.getApplications().get(0).getTenantId())
-					.applicationNumber(request.getApplications().get(0).getUuid())
+					.applicationNumber(request.getApplications().get(0).getApplicationNo())
 					.build();
 			calculationCriteriaList.add(calculationCriteria);
 

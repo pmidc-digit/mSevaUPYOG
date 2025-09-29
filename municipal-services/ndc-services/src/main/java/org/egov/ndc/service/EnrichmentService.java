@@ -122,7 +122,7 @@ public class EnrichmentService {
 		PlainAccessRequest apiPlainAccessRequest = requestInfo.getPlainAccessRequest();
 
 		Map<String, ProcessInstance> processInstances = null;
-		Set<String> applicationNumbers = applications.stream().map(Application::getUuid).collect(Collectors.toSet());
+		Set<String> applicationNumbers = applications.stream().map(Application::getApplicationNo).collect(Collectors.toSet());
 
 		if (criteria.getTenantId() != null)
 			processInstances = workflowService.getProcessInstances(requestInfo, applicationNumbers,
@@ -131,8 +131,8 @@ public class EnrichmentService {
 			processInstances = workflowService.getProcessInstances(requestInfo, applicationNumbers,
 					requestInfo.getUserInfo().getTenantId(), null);
 		for (Application application : applications) {
-			if (!org.apache.commons.lang3.ObjectUtils.isEmpty(processInstances.get(application.getUuid()))) {
-				ProcessInstance processInstance = processInstances.get(application.getUuid());
+			if (!org.apache.commons.lang3.ObjectUtils.isEmpty(processInstances.get(application.getApplicationNo()))) {
+				ProcessInstance processInstance = processInstances.get(application.getApplicationNo());
 				application.setProcessInstance(new ProcessInstance());
 				application.getProcessInstance().setBusinessService(processInstance.getBusinessService());
 				application.getProcessInstance().setModuleName(processInstance.getModuleName());

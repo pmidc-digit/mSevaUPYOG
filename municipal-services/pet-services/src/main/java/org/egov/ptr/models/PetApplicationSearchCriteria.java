@@ -36,21 +36,32 @@ public class PetApplicationSearchCriteria {
 	private String toDate;
 
 	@JsonProperty("petType")
+	@Builder.Default
 	private String petType = null;
 
 	@JsonProperty("breedType")
+	@Builder.Default
 	private String breedType = null;
 
 	@JsonProperty("validityDate")
+	@Builder.Default
 	private Long validityDate = null;
 
 	@JsonProperty("expireFlag")
+	@Builder.Default
 	private Boolean expireFlag = null;
 
 	@JsonProperty("applicationType")
+	@Builder.Default
 	private String applicationType = null;
 
 	@JsonProperty("ownerUuids")
 	private List<String> ownerUuids;
+
+	@JsonProperty("limit")
+	private Integer limit;
+
+	@JsonProperty("offset")
+	private Integer offset;
 
 }

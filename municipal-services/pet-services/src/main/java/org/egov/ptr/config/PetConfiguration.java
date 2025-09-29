@@ -13,7 +13,6 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.math.BigDecimal;
 import java.util.TimeZone;
 
 @Import({TracerConfiguration.class})
@@ -180,6 +179,16 @@ public class PetConfiguration {
 
 	@Value("${egov.bill.gen.endpoint}")
 	private String billGenerateEndpoint;
+
+	// Pagination Configuration
+	@Value("${ptr.search.pagination.default.limit}")
+	private Integer defaultLimit;
+
+	@Value("${ptr.search.pagination.default.offset}")
+	private Integer defaultOffset;
+
+	@Value("${ptr.search.pagination.max.search.limit}")
+	private Integer maxSearchLimit;
 
 	/*@Value("${egov.ptr.newapplication.fee}")
 	private BigDecimal newApplicationFee;

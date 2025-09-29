@@ -1,6 +1,8 @@
 package org.egov.ptr.repository.builder;
 
+import org.egov.ptr.config.PetConfiguration;
 import org.egov.ptr.models.PetApplicationSearchCriteria;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
@@ -9,6 +11,9 @@ import java.util.List;
 
 @Component
 public class PetApplicationQueryBuilder {
+
+	@Autowired
+	private PetConfiguration petConfig;
 
 	public static final String TENANTIDQUERY = "select distinct(tenantid) from eg_tl_tradelicense";
 
@@ -122,6 +127,14 @@ public class PetApplicationQueryBuilder {
 		// order pet registration applications based on their createdtime in latest
 		// first manner
 		query.append(ORDERBY_CREATEDTIME);
+
+		// Add pagination
+		int limit = criteria.getLimit() != null ? Math.min(criteria.getLimit(), petConfig.getMaxSearchLimit()) : petConfig.getDefaultLimit();
+		int offset = criteria.getOffset() != null ? criteria.getOffset() : petConfig.getDefaultOffset();
+
+		query.append(" LIMIT ? OFFSET ?");
+		preparedStmtList.add(limit);
+		preparedStmtList.add(offset);
 
 		return query.toString();
 	}

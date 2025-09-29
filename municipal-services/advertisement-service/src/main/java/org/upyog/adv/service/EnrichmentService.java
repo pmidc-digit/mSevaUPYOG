@@ -146,14 +146,16 @@ public class EnrichmentService {
 		bookingDetail.setOwners(userDetailResponse.getUser());
 
 
-		bookingDetail.getUploadedDocumentDetails().stream().forEach(document -> {
-			if(document.getDocumentDetailId()==null) {
-				document.setBookingId(bookingId);
-				document.setDocumentDetailId(BookingUtil.getRandonUUID());
-				document.setAuditDetails(auditDetails);
-			}
+		if(bookingDetail.getUploadedDocumentDetails()!=null) {
+			bookingDetail.getUploadedDocumentDetails().stream().forEach(document -> {
+				if (document.getDocumentDetailId() == null) {
+					document.setBookingId(bookingId);
+					document.setDocumentDetailId(BookingUtil.getRandonUUID());
+					document.setAuditDetails(auditDetails);
+				}
 
-		});
+			});
+		}
 
 		if(statusEnum != null) {
 			bookingDetail.setBookingStatus(statusEnum.toString());

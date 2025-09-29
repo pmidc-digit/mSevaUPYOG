@@ -8,6 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.upyog.adv.web.models.DocumentDetail;
+
+import javax.validation.Valid;
 
 /**
  * Minimal workflow payload used to pass action/comment/assignees from API to
@@ -28,4 +31,9 @@ public class Workflow {
 
   @JsonProperty("comment")
   private String comment;
+
+
+  @JsonProperty("documents")
+
+  private List<DocumentDetail> documents = null;
 }

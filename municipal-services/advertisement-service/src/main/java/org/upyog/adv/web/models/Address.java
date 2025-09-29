@@ -32,30 +32,30 @@ public class Address {
 	private String applicantDetailId;
 
 	private String doorNo;
-	@NotBlank(groups = CreateApplicationGroup.class)
+//	@NotBlank(groups = CreateApplicationGroup.class)
 	private String houseNo;
 	
-	@NotBlank(groups = CreateApplicationGroup.class)
+//	@NotBlank(groups = CreateApplicationGroup.class)
 	private String streetName;
 	
-	@NotBlank(groups = CreateApplicationGroup.class)
+//	@NotBlank(groups = CreateApplicationGroup.class)
 	private String addressLine1;
 
 	private String addressLine2;
 	
-	@NotBlank(groups = CreateApplicationGroup.class)
+//	@NotBlank(groups = CreateApplicationGroup.class)
 	private String landmark;
 
-	@NotBlank(groups = CreateApplicationGroup.class)
+//	@NotBlank(groups = CreateApplicationGroup.class)
 	private String city;
 
-	@NotBlank(groups = CreateApplicationGroup.class)
+//	@NotBlank(groups = CreateApplicationGroup.class)
 	private String cityCode;
 
-	@NotBlank(groups = CreateApplicationGroup.class)
+//	@NotBlank(groups = CreateApplicationGroup.class)
 	private String locality;
 
-	@NotBlank(groups = CreateApplicationGroup.class)
+//	@NotBlank(groups = CreateApplicationGroup.class)
 	private String localityCode;
 
 	@NotBlank(groups = CreateApplicationGroup.class)

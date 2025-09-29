@@ -1,0 +1,5 @@
+ALTER TABLE public.eg_adv_address_detail
+ALTER COLUMN city DROP NOT NULL,
+ALTER COLUMN city_code DROP NOT NULL,
+ALTER COLUMN locality DROP NOT NULL,
+ALTER COLUMN locality_code DROP NOT NULL;

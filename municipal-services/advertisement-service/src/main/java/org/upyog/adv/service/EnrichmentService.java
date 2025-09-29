@@ -67,12 +67,12 @@ public class EnrichmentService {
 		});
 		
 		//Updating id booking in documents
-		bookingDetail.getUploadedDocumentDetails().stream().forEach(document -> {
-			document.setBookingId(bookingId);
-			document.setDocumentDetailId(BookingUtil.getRandonUUID());
-			document.setAuditDetails(auditDetails);
-			
-		});
+//		bookingDetail.getUploadedDocumentDetails().stream().forEach(document -> {
+//			document.setBookingId(bookingId);
+//			document.setDocumentDetailId(BookingUtil.getRandonUUID());
+//			document.setAuditDetails(auditDetails);
+//
+//		});
 
 
 		bookingDetail.getApplicantDetail().setBookingId(bookingId);
@@ -145,12 +145,23 @@ public class EnrichmentService {
 		UserResponse userDetailResponse = userService.getUser(criteria,bookingRequest.getRequestInfo());
 		bookingDetail.setOwners(userDetailResponse.getUser());
 
+
+		bookingDetail.getUploadedDocumentDetails().stream().forEach(document -> {
+			if(document.getDocumentDetailId()==null) {
+				document.setBookingId(bookingId);
+				document.setDocumentDetailId(BookingUtil.getRandonUUID());
+				document.setAuditDetails(auditDetails);
+			}
+
+		});
+
 		if(statusEnum != null) {
 			bookingDetail.setBookingStatus(statusEnum.toString());
 			bookingDetail.getCartDetails().stream().forEach(cart -> {
 				cart.setStatus(statusEnum.toString());
 			});
 		}
+
 
 		bookingRequest.getBookingApplication().setPaymentDate(auditDetails.getLastModifiedTime());
 		bookingRequest.getBookingApplication().setAuditDetails(auditDetails);

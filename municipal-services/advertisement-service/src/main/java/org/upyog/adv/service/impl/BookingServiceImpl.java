@@ -550,6 +550,7 @@ public class BookingServiceImpl implements BookingService {
 	// id
 	private void convertBookingRequest(BookingRequest advertisementbookingRequest, BookingDetail bookingDetailDB) {
 		BookingDetail bookingDetailRequest = advertisementbookingRequest.getBookingApplication();
+		List<DocumentDetail> documents = bookingDetailRequest.getUploadedDocumentDetails();
 		if (bookingDetailDB.getPermissionLetterFilestoreId() == null
 				&& bookingDetailRequest.getPermissionLetterFilestoreId() != null) {
 			bookingDetailDB.setPermissionLetterFilestoreId(bookingDetailRequest.getPermissionLetterFilestoreId());
@@ -560,6 +561,7 @@ public class BookingServiceImpl implements BookingService {
 			bookingDetailDB.setPaymentReceiptFilestoreId(bookingDetailRequest.getPaymentReceiptFilestoreId());
 		}
 		advertisementbookingRequest.setBookingApplication(bookingDetailDB);
+		advertisementbookingRequest.getBookingApplication().setUploadedDocumentDetails(documents);
 	}
 
 	@Override

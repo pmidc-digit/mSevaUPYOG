@@ -111,6 +111,14 @@ public class Coverage extends FeatureProcess {
 	public static final String RULE = "4.4.4";
 	private static final BigDecimal ROAD_WIDTH_TWELVE_POINTTWO = BigDecimal.valueOf(12.2);
 	private static final BigDecimal ROAD_WIDTH_THIRTY_POINTFIVE = BigDecimal.valueOf(30.5);
+	
+	// -------------------- Industrial coverage constants --------------------
+	private static final BigDecimal COVERAGE_65 = BigDecimal.valueOf(65);
+	private static final BigDecimal COVERAGE_40 = BigDecimal.valueOf(40);
+
+	private static final BigDecimal LIMIT_300   = BigDecimal.valueOf(300);
+	private static final BigDecimal LIMIT_2000  = BigDecimal.valueOf(2000);
+	private static final BigDecimal LIMIT_10000 = BigDecimal.valueOf(10000);
 
 	@Override
 	public Plan validate(Plan pl) {
@@ -125,9 +133,10 @@ public class Coverage extends FeatureProcess {
 
 	@Override
 	public Plan process(Plan pl) {
+		HashMap<String, String> errorMsgs = new HashMap<>();
 		LOG.info("inside Coverage process()");
 		validate(pl);
-		LOG.info("coverage corearea" + pl.getCoreArea());
+		LOG.info("coverage corearea : " + pl.getCoreArea());
 		BigDecimal totalCoverage = BigDecimal.ZERO;
 		BigDecimal totalCoverageArea = BigDecimal.ZERO;
 //		BigDecimal area = pl.getPlot().getArea(); // add for get total plot area
@@ -222,7 +231,7 @@ public class Coverage extends FeatureProcess {
 			//permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, developmentZone, noOfFloors);
 			permissibleCoverageValue = getPermissibleCoverageForCommercial(plotArea, noOfFloors,coreArea);
 		}else if (G.equals(mostRestrictiveOccupancy.getType().getCode())) { // if
-			permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea);
+			permissibleCoverageValue = getPermissibleCoverageForIndustrial(plotArea,mostRestrictiveOccupancy, errorMsgs, pl);
 		} 
 		
 		 // if
@@ -349,17 +358,92 @@ public class Coverage extends FeatureProcess {
 		return permissibleCoverage;
 	}
 
-	private BigDecimal getPermissibleCoverageForIndustrial(BigDecimal plotArea) {
-	    LOG.info("inside getPermissibleCoverageForIndustrial()");
+	private BigDecimal getPermissibleCoverageForIndustrial(BigDecimal plotArea, OccupancyTypeHelper mostRestrictiveOccupancy, HashMap<String, String> errors, Plan pl) {
+    OccupancyHelperDetail subtype = mostRestrictiveOccupancy.getSubtype();
+    String subType = subtype.getCode();
 
-	    BigDecimal permissibleCoverage = BigDecimal.ZERO;
+    LOG.info("inside getPermissibleCoverageForIndustrial(), subType: {}, plotArea: {}", subType, plotArea);
 
-	    if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
-	        permissibleCoverage = plotArea.multiply(BigDecimal.valueOf(0.65));
-	    }
+    if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0 || subType == null) {
+        errors.put("Plot Area Error:", "Plot area must be greater than 0.");
+        pl.addErrors(errors);
+        return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+    }
 
-	    return permissibleCoverage.setScale(2, RoundingMode.HALF_UP);
-	}
+    BigDecimal coveragePercent = BigDecimal.ZERO;
+
+    switch (subType) {
+        // ---------------- 65% coverage, minPlotArea = 300 ----------------
+        case "G-SP": // Sports Industry
+        case "G-RS": // Retail Service Industry
+        case "G-H":  // Hazard Industries
+        case "G-S":  // Storage
+        case "G-F":  // Factory
+        case "G-I":  // Industrial
+            if (plotArea.compareTo(LIMIT_300) >= 0) {
+                coveragePercent = COVERAGE_65;
+            } else {
+                errors.put("Plot Area Error:", "Minimum plot area required is 300 sqm for " + subType);
+                pl.addErrors(errors);
+            }
+            break;
+
+        // ---------------- Knitwear / Textile Industry, minPlotArea = 2000 ----------------
+        case "G-K": // Knitwear Industry
+        case "G-T": // Textile Industry
+            if (plotArea.compareTo(LIMIT_2000) >= 0) {
+                coveragePercent = COVERAGE_65;
+            } else {
+                errors.put("Plot Area Error:", "Minimum plot area required is 2000 sqm for " + subType);
+                pl.addErrors(errors);
+            }
+            break;
+
+        // ---------------- Information Technology, minPlotArea = 2000 ----------------
+        case "G-IT":
+            if (plotArea.compareTo(LIMIT_2000) >= 0) {
+                coveragePercent = COVERAGE_40;
+            } else {
+                errors.put("Plot Area Error:", "Minimum plot area required is 2000 sqm for " + subType);
+                pl.addErrors(errors);
+            }
+            break;
+
+        // ---------------- General Industry, minPlotArea = 2000 ----------------
+        case "G-GI":
+            if (plotArea.compareTo(LIMIT_2000) >= 0) {
+                coveragePercent = COVERAGE_40;
+            } else {
+                errors.put("Plot Area Error:", "Minimum plot area required is 2000 sqm for " + subType);
+                pl.addErrors(errors);
+            }
+            break;
+
+        // ---------------- Warehouse, minPlotArea = 300 ----------------
+        case "G-W":
+            if (plotArea.compareTo(LIMIT_10000) >= 0) {
+                coveragePercent = COVERAGE_40;
+            } else {
+                errors.put("Plot Area Error:", "Minimum plot area required is 300 sqm for " + subType);
+                pl.addErrors(errors);
+            }
+            break;
+
+        default:
+            LOG.warn("No industrial coverage rule for subType: {}", subType);
+    }
+
+    // If no valid rule matched, return 0
+    if (coveragePercent.compareTo(BigDecimal.ZERO) == 0) {
+        LOG.info("No permissible coverage found for subType {} with plotArea {}", subType, plotArea);
+        return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    //BigDecimal permissibleCoverage = plotArea.multiply(coveragePercent);
+    //return coveragePercent.setScale(2, RoundingMode.HALF_UP);
+    return coveragePercent;
+}
+
 
 	private BigDecimal getPermissibleCoverageForGovernment(BigDecimal area, String developmentZone, int noOfFloors) {
 		LOG.info("inside getPermissibleCoverageForGovernment()");
@@ -386,30 +470,35 @@ public class Coverage extends FeatureProcess {
 		scrutinyDetail.addColumnHeading(3, PERMISSIBLE);
 		scrutinyDetail.addColumnHeading(4, PROVIDED);
 		scrutinyDetail.addColumnHeading(5, STATUS);
-		if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial"))) {
+		if (!(occupancy.equalsIgnoreCase("Residential") || occupancy.equalsIgnoreCase("Mercantile / Commercial")
+				|| (occupancy.equalsIgnoreCase("Industrial")))) {
 			scrutinyDetail.addColumnHeading(6, DESCRIPTION);
 			//scrutinyDetail.addColumnHeading(5, PERMISSIBLE);
 		}
 
 		String desc = getLocaleMessage(RULE_DESCRIPTION_KEY, upperLimit.toString());
 		String actualResult = getLocaleMessage(RULE_ACTUAL_KEY, coverage.setScale(2, RoundingMode.HALF_UP).toString() +" %");
-		String expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +" %");
+//		BigDecimal totalExpectedPlotArea = plotArea.setScale(2, RoundingMode.HALF_UP)
+//		        .multiply(upperLimit.divide(BigDecimal.valueOf(100)))
+//		        .setScale(2, RoundingMode.HALF_UP);
+		String expectedResult = getLocaleMessage(RULE_EXPECTED_KEY, upperLimit.toString() +"%");
 		
 		Boolean validateCoverage = false;
 		
 		if(Far.shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_COVERAGE)) {
 			validateCoverage = true;
 		}else {
-			if(coverage.doubleValue() <= upperLimit.doubleValue()) {
-				validateCoverage = true;
-			}else {
-				validateCoverage = false;
+			if (coverage.compareTo(upperLimit) <= 0) {
+			    validateCoverage = true;
+			} else {
+			    validateCoverage = false;
 			}
 		}
 		
 		if (validateCoverage 
 				&& (occupancy.equalsIgnoreCase("Residential")
-				|| occupancy.equalsIgnoreCase("Mercantile / Commercial"))) {
+				|| occupancy.equalsIgnoreCase("Mercantile / Commercial"))
+				|| (occupancy.equalsIgnoreCase("Industrial"))) {
 			Map<String, String> details = new HashMap<>();
 			details.put(RULE_NO, RULE);
 			//details.put(DEVELOPMENT_ZONE, developmentZone);

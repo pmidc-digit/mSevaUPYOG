@@ -59,6 +59,7 @@ import java.util.Map;
 
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Plan;
+import org.egov.common.entity.edcr.ScrutinyDetail;
 import org.egov.common.entity.edcr.SetBack;
 import org.egov.edcr.utility.DcrConstants;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -98,18 +99,19 @@ public class SetBackService extends FeatureProcess {
                             errors.put("frontyardNodeDefined",
                                     getLocaleMessage(OBJECTNOTDEFINED, " Front SetBack of " + block.getName() + "  at level zero "));
                         if( pl.getPlot().getArea().compareTo(TWO_HUNDRED) > 0) {
-                        if (setback.getRearYard() == null
-                                && !pl.getPlanInformation().getNocToAbutRearDesc().equalsIgnoreCase(DcrConstants.YES))
-                            errors.put("rearyardNodeDefined",
-                                    getLocaleMessage(OBJECTNOTDEFINED, " Rear Setback of  " + block.getName() + "  at level zero "));
-                        if (setback.getSideYard1() == null)
-                            errors.put("side1yardNodeDefined", getLocaleMessage(OBJECTNOTDEFINED,
-                                    " Side Setback 1 of block " + block.getName() + " at level zero"));
-                        if (setback.getSideYard2() == null
-                                && !pl.getPlanInformation().getNocToAbutSideDesc().equalsIgnoreCase(DcrConstants.YES))
-                            errors.put("side2yardNodeDefined", getLocaleMessage(OBJECTNOTDEFINED,
-                                    " Side Setback 2 of block " + block.getName() + " at level zero "));
-                        } } else if (setback.getLevel() > 0) {
+	                        if (setback.getRearYard() == null
+	                                && !pl.getPlanInformation().getNocToAbutRearDesc().equalsIgnoreCase(DcrConstants.YES))
+	                            errors.put("rearyardNodeDefined",
+	                                    getLocaleMessage(OBJECTNOTDEFINED, " Rear Setback of  " + block.getName() + "  at level zero "));
+	                        //if (setback.getSideYard1() == null)
+	                            //errors.put("side1yardNodeDefined", getLocaleMessage(OBJECTNOTDEFINED,
+	                                    //" Side Setback 1 of block " + block.getName() + " at level zero"));
+	                        //if (setback.getSideYard2() == null
+	                          //      && !pl.getPlanInformation().getNocToAbutSideDesc().equalsIgnoreCase(DcrConstants.YES))
+	                            //errors.put("side2yardNodeDefined", getLocaleMessage(OBJECTNOTDEFINED,
+	                              //      " Side Setback 2 of block " + block.getName() + " at level zero "));
+	                        } 
+                    } else if (setback.getLevel() > 0) {
                         // height defined in level other than zero must contain height
                         if (setback.getFrontYard() != null && setback.getFrontYard().getHeight() == null)
                             errors.put("frontyardnotDefinedHeight", getLocaleMessage(HEIGHTNOTDEFINED, "Front Setback ",
@@ -162,6 +164,7 @@ public class SetBackService extends FeatureProcess {
 
     @Override
     public Plan process(Plan pl) {
+    	ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
         validate(pl);
         HashMap<String, String> errors = new HashMap<>();
 		BigDecimal depthOfPlot = pl.getPlanInformation().getDepthOfPlot();

@@ -515,9 +515,8 @@ public class FarExtract extends FeatureExtract {
 
     // Load feature and their sub features color code
     Map<String, Map<String, Integer>> featureAndsubFeatureCC = new ConcurrentHashMap<>();
-    List<SubFeatureColorCode> featureColorCodes = subFeatureColorCodeService.findAll();for(
-    SubFeatureColorCode efcc:featureColorCodes)
-    {
+    List<SubFeatureColorCode> featureColorCodes = subFeatureColorCodeService.findAll();
+    for(SubFeatureColorCode efcc:featureColorCodes){
         if (featureAndsubFeatureCC.containsKey(efcc.getFeature())) {
             Map<String, Integer> subFeature = featureAndsubFeatureCC.get(efcc.getFeature());
             subFeature.put(efcc.getSubFeature(), efcc.getColorCode());

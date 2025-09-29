@@ -78,9 +78,11 @@ import java.util.Map;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.entity.dcr.helper.OccupancyHelperDetail;
+import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.edcr.constants.DxfFileConstants;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -93,6 +95,11 @@ public class RoadWidth extends FeatureProcess {
     public static final BigDecimal THREE = BigDecimal.valueOf(3);
     public static final String NEW = "NEW";
     public static final String ROADWIDTH = "Road Width";
+    
+ // Road Width Required (in meters)
+    private static final BigDecimal ROAD_WIDTH_12  = BigDecimal.valueOf(12);
+    private static final BigDecimal ROAD_WIDTH_18  = BigDecimal.valueOf(18);
+    private static final BigDecimal ROAD_WIDTH_24  = BigDecimal.valueOf(24);
 
     @Override
     public Map<String, Date> getAmendments() {
@@ -100,13 +107,13 @@ public class RoadWidth extends FeatureProcess {
     }
 
     @Override
-    public Plan validate(Plan pl) {
+    public Plan validate(Plan pl) {  
         return pl;
     }
 
     @Override
     public Plan process(Plan pl) {
-       
+    	
         if (pl.getPlanInformation() != null && pl.getPlanInformation().getRoadWidth() != null) {
             BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
             if (roadWidth == null || roadWidth.compareTo(BigDecimal.ZERO) == 0) {
@@ -143,6 +150,8 @@ public class RoadWidth extends FeatureProcess {
                 details.put(DESCRIPTION, ROADWIDTH_DESCRIPTION);
 
                 Map<String, BigDecimal> occupancyValuesMap = getOccupancyValues();
+                
+               
 
                 if (pl.getVirtualBuilding() != null && pl.getVirtualBuilding().getMostRestrictiveFarHelper() != null) {
                     OccupancyHelperDetail occupancyType = pl.getVirtualBuilding().getMostRestrictiveFarHelper()
@@ -152,6 +161,11 @@ public class RoadWidth extends FeatureProcess {
 
                     if (occupancyType != null) {
                         details.put(OCCUPANCY +" - "+ ROADTYPE, occupancyType.getName() +" - "+ "("+ roadType +")");
+                        // get occupancy for industrial
+                        OccupancyHelperDetail occupancyType1 = pl.getVirtualBuilding().getMostRestrictiveFarHelper().getType();
+                        if (G.equals(occupancyType1.getCode())) {
+                        	validateRoadWidthForIndustrial(pl,roadWidth);
+                        }
                         BigDecimal roadWidthRequired = occupancyValuesMap.get(occupancyType.getCode());
                         if (roadWidthRequired != null) {
 //                            if (roadWidth.compareTo(roadWidthRequired) >= 0) {
@@ -197,4 +211,49 @@ public class RoadWidth extends FeatureProcess {
         return roadWidthValues;
 
     }
+    
+    public void validateRoadWidthForIndustrial(Plan pl, BigDecimal roadWidth) {       
+        OccupancyTypeHelper mostRestrictiveOccupancy = pl.getVirtualBuilding().getMostRestrictiveFarHelper();
+        OccupancyHelperDetail subtype = mostRestrictiveOccupancy.getSubtype();
+        String subType = subtype.getCode();        
+        if (subType == null) {
+            return; // Cannot validate without subtype
+        }       
+
+        BigDecimal requiredRoadWidth = null;
+
+        switch (subType) {
+            case DxfFileConstants.G_SP:  // Sports Industry
+            case DxfFileConstants.G_RS:  // Retail Service Industry
+            case DxfFileConstants.G_H:   // Hazard Industries
+            case DxfFileConstants.G_S:   // Storage
+            case DxfFileConstants.G_F:   // Factory
+            case DxfFileConstants.G_I:   // Industrial
+            case DxfFileConstants.G_IT:  // Information Technology
+            case DxfFileConstants.G_T:   // Textile Industry
+            case DxfFileConstants.G_K:   // Knitwear Industry
+                requiredRoadWidth = ROAD_WIDTH_12;
+                break;
+
+            case DxfFileConstants.G_W:   // Warehouse
+                requiredRoadWidth = ROAD_WIDTH_24;
+                break;
+
+            case DxfFileConstants.G_GI:  // General Industry
+                requiredRoadWidth = ROAD_WIDTH_18;
+                break;
+
+            default:
+                // Not applicable for other types
+                break;
+        }
+
+        if (requiredRoadWidth != null && roadWidth.compareTo(requiredRoadWidth) < 0) {
+            HashMap<String, String> errors = new HashMap<>();
+            errors.put("Road width Error:", "Minimum Required Road width is " + requiredRoadWidth + " m");
+            pl.addErrors(errors);
+        }
+    }
+
+    
 }

@@ -64,6 +64,20 @@ public class DxfFileConstants {
     public static final String G_SI = "G-SI";// Small Industrial
     public static final String G_PHI = "G-PHI";// Polluting and hazardous industries
     public static final String G_NPHI = "G-NPHI";// Non-polluting and household industries
+ // Industrial Occupancy SubTypes
+    public static final String G_SP  = "G-SP";   // Sports Industry
+    public static final String G_RS  = "G-RS";   // Retail Service Industry
+    public static final String G_H   = "G-H";    // Hazard Industries
+    public static final String G_S   = "G-S";    // Storage
+    public static final String G_F   = "G-F";    // Factory
+    public static final String G_I   = "G-I";    // Industrial
+    public static final String G_K   = "G-K";    // Knitwear Industry
+    public static final String G_T   = "G-T";    // Textile Industry
+    public static final String G_IT  = "G-IT";   // Information Technology
+    public static final String G_GI  = "G-GI";   // General Industry
+    public static final String G_W   = "G-W";    // Warehouse
+
+    
     
     
     public static final String H_PP = "H-PP"; // Petrol Pump

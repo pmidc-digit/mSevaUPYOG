@@ -5,6 +5,7 @@ import static org.egov.edcr.constants.DxfFileConstants.OPENING_ABOVE_2_1_ON_SIDE
 import static org.egov.edcr.utility.DcrConstants.OBJECTNOTDEFINED;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +79,8 @@ public class PlanInfoFeatureExtract extends FeatureExtract {
 			if (area == null) {
 			    pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));
 			} else {
-			    pl.getPlot().setPlotBndryArea(area);
+			    pl.getPlot().setPlotBndryArea(area);			   
+			    pl.getPlot().setArea(area.setScale(2, RoundingMode.HALF_UP));
 			}
 		} else {
 			pl.getPlot().setPlotBndryArea(BigDecimal.valueOf(0.0));

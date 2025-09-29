@@ -199,6 +199,16 @@ public class Far extends FeatureProcess {
 	private static final BigDecimal COMMERCIAL_FAR_2_50 = BigDecimal.valueOf(2.50);
 	private static final BigDecimal COMMERCIAL_FAR_3_00 = BigDecimal.valueOf(3.00);
 	
+	// Constants for Industrial FAR
+	private static final BigDecimal INDUSTRIAL_FAR_1_50 = BigDecimal.valueOf(1.50);
+	private static final BigDecimal INDUSTRIAL_FAR_3_00 = BigDecimal.valueOf(3.00);
+	private static final BigDecimal INDUSTRIAL_FAR_2_50 = BigDecimal.valueOf(2.50);
+
+	// Industrial Plot Area Limits
+	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_300 = BigDecimal.valueOf(300);
+	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_2000 = BigDecimal.valueOf(2000);
+	private static final BigDecimal INDUSTRIAL_PLOTAREA_LIMIT_10000 = BigDecimal.valueOf(10000);
+	
 	@Override
 	public Plan validate(Plan pl) {
 		if (pl.getPlot() == null || (pl.getPlot() != null
@@ -565,7 +575,8 @@ public class Far extends FeatureProcess {
 		}
 
 		pl.setOccupancies(occupanciesForPlan);
-		pl.getVirtualBuilding().setTotalFloorArea(totalFloorArea);
+		pl.getVirtualBuilding().setTotalFloorArea(totalFloorArea); //pl.getPlot().getArea()
+		pl.getVirtualBuilding().setTotalFloorArea(pl.getPlot().getArea());
 		pl.getVirtualBuilding().setTotalCarpetArea(totalCarpetArea);
 		pl.getVirtualBuilding().setTotalExistingBuiltUpArea(totalExistingBuiltUpArea);
 		pl.getVirtualBuilding().setTotalExistingFloorArea(totalExistingFloorArea);
@@ -677,7 +688,7 @@ public class Far extends FeatureProcess {
 							|| DxfFileConstants.B.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())
 							|| DxfFileConstants.D.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode()))) {
 				processFarForGBDOccupancy(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth,
-						errorMsgs);
+						errorMsgs, plotArea);
 			}
 			if (mostRestrictiveOccupancyType.getType() != null
 					&& DxfFileConstants.I.equalsIgnoreCase(mostRestrictiveOccupancyType.getType().getCode())) {
@@ -1264,55 +1275,154 @@ public class Far extends FeatureProcess {
 	}
 
 	private void processFarForGBDOccupancy(Plan pl, OccupancyTypeHelper occupancyType, BigDecimal far,
-			String typeOfArea, BigDecimal roadWidth, HashMap<String, String> errors) {
+			String typeOfArea, BigDecimal roadWidth, HashMap<String, String> errors, BigDecimal plotArea) {
 
 		String expectedResult = StringUtils.EMPTY;
 		boolean isAccepted = false;
-
-		if (typeOfArea.equalsIgnoreCase(OLD)) {
-			if (roadWidth.compareTo(ROAD_WIDTH_TWO_POINTFOUR) < 0) {
-				errors.put(OLD_AREA_ERROR, OLD_AREA_ERROR_MSG);
-				pl.addErrors(errors);
-				return;
-			} else {
-				isAccepted = far.compareTo(ONE_POINTFIVE) <= 0;
-				pl.getFarDetails().setPermissableFar(ONE_POINTFIVE.doubleValue());
-				expectedResult = "<=" + ONE_POINTFIVE;
-			}
-
-		}
-
-		if (typeOfArea.equalsIgnoreCase(NEW)) {
-			if (roadWidth.compareTo(ROAD_WIDTH_SIX_POINTONE) < 0) {
-				errors.put(NEW_AREA_ERROR, NEW_AREA_ERROR_MSG);
-				pl.addErrors(errors);
-				return;
-			} else {
-				isAccepted = far.compareTo(ONE_POINTFIVE) <= 0;
-				pl.getFarDetails().setPermissableFar(ONE_POINTFIVE.doubleValue());
-				expectedResult = "<=" + ONE_POINTFIVE;
-			}
-
-		}
-
 		String occupancyName = occupancyType.getType().getName();
 
-		if (occupancyType.getSubtype() != null) {
+//		if (typeOfArea.equalsIgnoreCase(OLD)) {
+//			if (roadWidth.compareTo(ROAD_WIDTH_TWO_POINTFOUR) < 0) {
+//				errors.put(OLD_AREA_ERROR, OLD_AREA_ERROR_MSG);
+//				pl.addErrors(errors);
+//				return;
+//			} else {
+//				isAccepted = far.compareTo(ONE_POINTFIVE) <= 0;
+//				pl.getFarDetails().setPermissableFar(ONE_POINTFIVE.doubleValue());
+//				expectedResult = "<=" + ONE_POINTFIVE;
+//			}
+//
+//		}
+
+//		if (typeOfArea.equalsIgnoreCase(NEW)) {
+//			if (roadWidth.compareTo(ROAD_WIDTH_SIX_POINTONE) < 0) {
+//				errors.put(NEW_AREA_ERROR, NEW_AREA_ERROR_MSG);
+//				pl.addErrors(errors);
+//				//return;
+//			} else {
+//				isAccepted = far.compareTo(ONE_POINTFIVE) <= 0;
+//				pl.getFarDetails().setPermissableFar(ONE_POINTFIVE.doubleValue());
+//				expectedResult = "<=" + ONE_POINTFIVE;
+//			}
+//
+//		}
+
+//		String occupancyName1 = occupancyType.getType().getName();
+//
+//		if (occupancyType.getSubtype() != null) {
+//			OccupancyHelperDetail subtype = occupancyType.getSubtype();
+//			occupancyName = subtype.getName();
+//			String code = subtype.getCode();
+//
+//			if (G_PHI.equalsIgnoreCase(code)) {
+//				isAccepted = far.compareTo(POINTFIVE) <= 0;
+//				pl.getFarDetails().setPermissableFar(POINTFIVE.doubleValue());
+//				expectedResult = "<=" + POINTFIVE;
+//			} else if (G_NPHI.equalsIgnoreCase(code)) {
+//				isAccepted = far.compareTo(ONE_POINTFIVE) <= 0;
+//				pl.getFarDetails().setPermissableFar(ONE_POINTFIVE.doubleValue());
+//				expectedResult = "<=" + ONE_POINTFIVE;
+//			}
+//		}
+
+		if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {				
+		    if (!shouldSkipValidation(pl.getEdcrRequest(), DcrConstants.EDCR_SKIP_PLOT_AREA)) {
+		        errors.put("Plot Area Error:", "Plot area must be greater than 0.");
+		        pl.addErrors(errors);
+		    }
+		} else if (occupancyType != null 
+		        && occupancyType.getType() != null 
+		        && occupancyType.getType().getCode() != null) {
 			OccupancyHelperDetail subtype = occupancyType.getSubtype();
 			occupancyName = subtype.getName();
-			String code = subtype.getCode();
+			String subType = subtype.getCode();
+		    
+		    //String subType = occupancyType.getSubtype().get().getCode();
 
-			if (G_PHI.equalsIgnoreCase(code)) {
-				isAccepted = far.compareTo(POINTFIVE) <= 0;
-				pl.getFarDetails().setPermissableFar(POINTFIVE.doubleValue());
-				expectedResult = "<=" + POINTFIVE;
-			} else if (G_NPHI.equalsIgnoreCase(code)) {
-				isAccepted = far.compareTo(ONE_POINTFIVE) <= 0;
-				pl.getFarDetails().setPermissableFar(ONE_POINTFIVE.doubleValue());
-				expectedResult = "<=" + ONE_POINTFIVE;
-			}
+		    switch (subType) {
+		        // *********** INDUSTRIAL PLOTTED ***********
+		        case "G-I": // Industrial
+		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) <= 0) {
+		                isAccepted = far.compareTo(INDUSTRIAL_FAR_1_50) <= 0;
+		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_1_50.doubleValue());
+		                expectedResult = "<= " + INDUSTRIAL_FAR_1_50;
+		            } else {
+		                isAccepted = far.compareTo(INDUSTRIAL_FAR_3_00) <= 0;
+		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_3_00.doubleValue());
+		                expectedResult = "<= " + INDUSTRIAL_FAR_3_00;
+		            }
+		            break;
+
+		        // *********** INFORMATION TECHNOLOGY PLOTTED ***********
+		        case "G-IT": // Information Technology
+		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_300) > 0) {
+		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+		            }
+		            break;
+
+		        // *********** TEXTILE PLOTTED ***********
+		        case "G-T": // Textile Industry
+		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+		            }
+		            break;
+
+		        // *********** KNITWEAR PLOTTED ***********
+		        case "G-K": // Knitwear Industry
+		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+		            }
+		            break;
+
+		        // *********** GENERAL INDUSTRY FLATTED ***********
+		        case "G-GI": // General Industry
+		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+		                isAccepted = far.compareTo(INDUSTRIAL_FAR_3_00) <= 0;
+		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_3_00.doubleValue());
+		                expectedResult = "<= " + INDUSTRIAL_FAR_3_00;
+		            }
+		            break;
+
+		        // *********** TEXTILE FLATTED ***********
+		        // Same rule as Textile PLOTTED
+		        case "G-TF": // Textile Flatted (custom code if needed)
+		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+		            }
+		            break;
+
+		        // *********** KNITWEAR FLATTED ***********
+		        // Same rule as Knitwear PLOTTED
+		        case "G-KF": // Knitwear Flatted (custom code if needed)
+		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_2000) > 0) {
+		                isAccepted = far.compareTo(INDUSTRIAL_FAR_2_50) <= 0;
+		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_2_50.doubleValue());
+		                expectedResult = "<= " + INDUSTRIAL_FAR_2_50;
+		            }
+		            break;
+
+		        // *********** WHOLESALE TRADE / WAREHOUSE / FREIGHT COMPLEX ***********
+		        case "G-W": // Warehouse
+		            if (plotArea.compareTo(INDUSTRIAL_PLOTAREA_LIMIT_10000) > 0) {
+		                isAccepted = far.compareTo(INDUSTRIAL_FAR_1_50) <= 0;
+		                pl.getFarDetails().setPermissableFar(INDUSTRIAL_FAR_1_50.doubleValue());
+		                expectedResult = "<= " + INDUSTRIAL_FAR_1_50;
+		            }
+		            break;
+
+		        default:
+		            LOG.info("No Industrial FAR rule matched for subType: " + subType);
+		    }
 		}
-
+		
 		if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
 			buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
 		}

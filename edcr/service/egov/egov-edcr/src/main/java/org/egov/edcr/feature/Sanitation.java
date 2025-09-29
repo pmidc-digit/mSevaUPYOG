@@ -199,6 +199,17 @@ public class Sanitation extends FeatureProcess {
                     case DxfFileConstants.H:
                     case DxfFileConstants.I1:
                     case DxfFileConstants.I2:
+                    case DxfFileConstants.G_SP:  // Sports Industry
+                    case DxfFileConstants.G_RS:  // Retail Service Industry
+                    case DxfFileConstants.G_H:   // Hazard Industries
+                    case DxfFileConstants.G_S:   // Storage
+                    case DxfFileConstants.G_F:   // Factory
+                    case DxfFileConstants.G_I:   // Industrial
+                    case DxfFileConstants.G_W:   // Warehouse
+                    case DxfFileConstants.G_K:   // Knitwear Industry
+                    case DxfFileConstants.G_T:   // Textile Industry
+                    case DxfFileConstants.G_IT:  // Information Technology
+                    case DxfFileConstants.G_GI:  // General Industry
                         if (sanityDetails.getMaleWaterClosets().isEmpty()
                                 && sanityDetails.getFemaleWaterClosets().isEmpty()) {
                             pl.addError(BLDG_PART_WATER_CLOSET, getLocaleMessage(MSG_ERROR_MANDATORY, FEATURE_NAME,
@@ -569,6 +580,17 @@ public class Sanitation extends FeatureProcess {
                         break;
                     case DxfFileConstants.G:
                     case DxfFileConstants.G_SI:
+                    case DxfFileConstants.G_SP:  // Sports Industry
+                    case DxfFileConstants.G_RS:  // Retail Service Industry
+                    case DxfFileConstants.G_H:   // Hazard Industries
+                    case DxfFileConstants.G_S:   // Storage
+                    case DxfFileConstants.G_F:   // Factory
+                    case DxfFileConstants.G_I:   // Industrial
+                    case DxfFileConstants.G_W:   // Warehouse
+                    case DxfFileConstants.G_K:   // Knitwear Industry
+                    case DxfFileConstants.G_T:   // Textile Industry
+                    case DxfFileConstants.G_IT:  // Information Technology
+                    case DxfFileConstants.G_GI:  // General Industry
                         helper.maleWc += carpetArea * 2 / (4.75 * 3 * 25);
                         helper.femaleWc += carpetArea / (4.75 * 3 * 15);
                         helper.urinal += carpetArea * 2 / (4.75 * 3 * 25);

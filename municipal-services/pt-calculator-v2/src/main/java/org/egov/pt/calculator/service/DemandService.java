@@ -253,6 +253,9 @@ public class DemandService {
 	 */
 	public DemandResponse updateDemands(GetBillCriteria getBillCriteria, RequestInfoWrapper requestInfoWrapper) {
 		
+		log.info("=== TRACE: updateDemands method called ===");
+		log.info("TRACE: Consumer codes: {}", getBillCriteria.getConsumerCodes());
+		
 		if (getBillCriteria.getAmountExpected() == null) getBillCriteria.setAmountExpected(BigDecimal.ZERO);
 		validator.validateGetBillCriteria(getBillCriteria);
 		RequestInfo requestInfo = requestInfoWrapper.getRequestInfo();
@@ -269,6 +272,14 @@ public class DemandService {
 		DemandResponse res = mapper.convertValue(
 				repository.fetchResult(utils.getDemandSearchUrl(getBillCriteria), requestInfoWrapper),
 				DemandResponse.class);
+		
+		log.info("TRACE: Fetched {} demands from database", res.getDemands() != null ? res.getDemands().size() : 0);
+		if (res.getDemands() != null) {
+			for (Demand d : res.getDemands()) {
+				log.info("TRACE: Found demand ID: {} with {} details", d.getId(), d.getDemandDetails().size());
+			}
+		}
+		
 		if (CollectionUtils.isEmpty(res.getDemands())) {
 		Map<String, String> map = new HashMap<>();
 			map.put(CalculatorConstants.EMPTY_DEMAND_ERROR_CODE, CalculatorConstants.EMPTY_DEMAND_ERROR_MESSAGE);
@@ -280,9 +291,10 @@ public class DemandService {
 		 * Loop through the consumerCodes and re-calculate the time based applicables
 		 */
 
-
+		log.info("=== TRACE: Building consumerCodeToDemandMap from {} demands ===", res.getDemands().size());
 		Map<String,List<Demand>> consumerCodeToDemandMap = new HashMap<>();
 		res.getDemands().forEach(demand -> {
+			log.info("=== TRACE: Processing demand {} for consumerCode {} ===", demand.getId(), demand.getConsumerCode());
 			if(consumerCodeToDemandMap.containsKey(demand.getConsumerCode()))
 				consumerCodeToDemandMap.get(demand.getConsumerCode()).add(demand);
 			else {
@@ -300,19 +312,28 @@ public class DemandService {
 		List<TaxPeriod> taxPeriods = mstrDataService.getTaxPeriodList(requestInfoWrapper.getRequestInfo(), tenantId);
 
 		for (String consumerCode : getBillCriteria.getConsumerCodes()) {
+			log.info("=== TRACE: Processing consumerCode {} ===", consumerCode);
 			List<Demand> demands = consumerCodeToDemandMap.get(consumerCode);
-			if (CollectionUtils.isEmpty(demands))
+			if (CollectionUtils.isEmpty(demands)) {
+				log.info("=== TRACE: No demands found for consumerCode {} ===", consumerCode);
 				continue;
+			}
 
+			log.info("=== TRACE: Found {} demands for consumerCode {} ===", demands.size(), consumerCode);
 			for(Demand demand : demands){
+				log.info("=== TRACE: Processing individual demand {} with status {} ===", demand.getId(), demand.getStatus());
 				if (demand.getStatus() != null
 						&& CalculatorConstants.DEMAND_CANCELLED_STATUS.equalsIgnoreCase(demand.getStatus().toString()))
 					throw new CustomException(CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR,
 							CalculatorConstants.EG_PT_INVALID_DEMAND_ERROR_MSG);
 
+				log.info("=== TRACE: BEFORE applytimeBasedApplicables for demand {} ===", demand.getId());
 				applytimeBasedApplicables(demand, requestInfoWrapper, timeBasedExmeptionMasterMap,taxPeriods);
+				log.info("=== TRACE: AFTER applytimeBasedApplicables for demand {} ===", demand.getId());
 
+				log.info("=== TRACE: BEFORE roundOffDecimalForDemand for demand {} ===", demand.getId());
 				roundOffDecimalForDemand(demand, requestInfoWrapper);
+				log.info("=== TRACE: AFTER roundOffDecimalForDemand for demand {} ===", demand.getId());
 
 				demandsToBeUpdated.add(demand);
 			}
@@ -717,9 +738,17 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 	 */
 	public void roundOffDecimalForDemand(Demand demand, RequestInfoWrapper requestInfoWrapper) {
 		
+		log.info("=== TRACE: roundOffDecimalForDemand STARTED for demand {} ===", demand.getId());
 		List<DemandDetail> details = demand.getDemandDetails();
 		String tenantId = demand.getTenantId();
 		String demandId = demand.getId();
+		
+		log.info("=== TRACE: Initial demand details count: {} ===", details.size());
+		// Count existing roundOff entries before processing
+		long existingRoundOffCount = details.stream()
+			.filter(detail -> PT_ROUNDOFF.equalsIgnoreCase(detail.getTaxHeadMasterCode()))
+			.count();
+		log.info("=== TRACE: Existing roundOff entries count: {} ===", existingRoundOffCount);
 
 		BigDecimal taxAmount = BigDecimal.ZERO;
 
@@ -732,15 +761,22 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 		 */
 
 		BigDecimal totalRoundOffAmount = BigDecimal.ZERO;
+		log.info("=== TRACE: Starting calculation loop through {} demand details ===", demand.getDemandDetails().size());
 		for (DemandDetail detail : demand.getDemandDetails()) {
+			log.info("=== TRACE: Processing detail {} with taxHead {} and amount {} ===", 
+				detail.getId(), detail.getTaxHeadMasterCode(), detail.getTaxAmount());
 
 			if(!detail.getTaxHeadMasterCode().equalsIgnoreCase(PT_ROUNDOFF)){
 				taxAmount = taxAmount.add(detail.getTaxAmount());
+				log.info("=== TRACE: Added to taxAmount, current total: {} ===", taxAmount);
 			}
 			else{
 				totalRoundOffAmount = totalRoundOffAmount.add(detail.getTaxAmount());
+				log.info("=== TRACE: Added to totalRoundOffAmount, current total: {} ===", totalRoundOffAmount);
 			}
 		}
+		
+		log.info("=== TRACE: Final calculations - taxAmount: {}, totalRoundOffAmount: {} ===", taxAmount, totalRoundOffAmount);
 
 		/*
 		 *  An estimate object will be returned incase if there is a decimal value
@@ -755,6 +791,7 @@ public DemandResponse updateDemandsForAssessmentCancel(GetBillCriteria getBillCr
 				? roundOffEstimate.getEstimateAmount() : BigDecimal.ZERO;
 
 		if(decimalRoundOff.compareTo(BigDecimal.ZERO)!=0){
+                log.info("=== TRACE: CRITICAL adding roundOff for demand: {} with amount: {}", demandId, roundOffEstimate.getEstimateAmount());
 				details.add(DemandDetail.builder().taxAmount(roundOffEstimate.getEstimateAmount())
 						.taxHeadMasterCode(roundOffEstimate.getTaxHeadCode()).demandId(demandId).tenantId(tenantId).build());
 		}

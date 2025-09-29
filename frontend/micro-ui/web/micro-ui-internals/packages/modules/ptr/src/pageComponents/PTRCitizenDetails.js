@@ -158,7 +158,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
               rules={{
                 required: t("PTR_EMAIL_REQUIRED"),
                 pattern: {
-                  value: /^[A-Za-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/,
+                  value: /^(?!\.)(?!.*\.\.)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z]{2,})+$/,
                   message: t("PTR_EMAIL_INVALID"),
                 },
                 maxLength: { value: 100, message: t("PTR_EMAIL_MAX_LENGTH") },
@@ -288,13 +288,11 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                   value: /^[1-9][0-9]{5}$/,
                   message: t("PTR_PINCODE_INVALID"),
                 },
-                minLength: { value: 6, message: t("PTR_PINCODE_MIN_LENGTH") },
-                maxLength: { value: 6, message: t("PTR_PINCODE_MAX_LENGTH") },
               }}
               render={({ value, onChange, onBlur }) => (
                 <TextInput
                   value={value}
-                  maxLength={6}
+                  maxlength={6}
                   onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
                   onBlur={(e) => {
                     onBlur(e);

@@ -55,6 +55,10 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
   }, [LicenseData]);
 
   useEffect(() => {
+    sessionStorage.setItem("ArchitectConsentdocFilestoreid", null);
+  },[])
+
+  useEffect(() => {
     if (!homePageUrlLinksLoading) {
       const windowUrl = window.location.href.split("/");
       const serviceType = windowUrl[windowUrl.length - 2];

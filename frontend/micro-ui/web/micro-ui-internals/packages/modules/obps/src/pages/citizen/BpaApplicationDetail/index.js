@@ -75,6 +75,7 @@ const BpaApplicationDetail = () => {
   const [fileUrls, setFileUrls] = useState({});
   const [ownerFileUrls, setOwnerFileUrls] = useState({});
   const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
+  const [apiLoading, setApiLoading] = useState(false);
 
   const user = Digit.UserService.getUser()
 
@@ -152,13 +153,33 @@ const BpaApplicationDetail = () => {
     enabled: !!safeTenantId,
   })
 
+  // const ecbcDocumentsData = useMemo(() => {
+  //         return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
+  //             id: index,
+  //             title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+  //             fileUrl: doc.fileURL || null, // adjusted since `doc` already has fileURL
+  //         }));
+  // }, [fileUrls, t]);
+
   const ecbcDocumentsData = useMemo(() => {
-          return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
-              id: index,
-              title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
-              fileUrl: doc.fileURL || null, // adjusted since `doc` already has fileURL
-          }));
-  }, [fileUrls, t]);
+  const docs = getDocsFromFileUrls(fileUrls) || [];
+
+  if (docs.length === 0) {
+    return [
+      {
+        id: 0,
+        title: t("CS_NA"),
+        fileUrl: null,
+      },
+    ];
+  }
+
+  return docs.map((doc, index) => ({
+    id: index,
+    title: doc.title ? t(doc.title) : t("CS_NA"),
+    fileUrl: doc.fileURL || null,
+  }));
+}, [fileUrls, t]);
 
   const ownerDocumentsData = useMemo(() => {
   // ownerFileUrls: { 0: { documentFile: 'url', ownerPhoto: 'url' }, 1: { ... } }
@@ -711,11 +732,52 @@ useEffect(() => {
         }?tenantId=${data?.tenantId}`}`,
       )
     }
-    if (action === "SEND_TO_CITIZEN") {
+    if (action === "SAVE_AS_DRAFT") {
       getBPAFormData(data?.applicationData, mdmsData, history, t)
+    }
+    if(action === "SEND_TO_CITIZEN"){
+      saveAsDraft(data?.applicationData, action)
     }
     setSelectedAction(action)
     setDisplayMenu(false)
+  }
+
+  const saveAsDraft = async (data,action ) => {
+    if(!data?.additionalDetails?.selfCertificationCharges){
+      setShowToast({
+        key: "error",
+        action: "Please_Complete_Application_First"
+      })
+      return;
+    }
+    const userInfo = Digit.UserService.getUser()
+    const accountId = userInfo?.info?.uuid
+    const workflowAction = action;
+    try {
+            setApiLoading(true);
+            const result = await Digit.OBPSService.update({
+                BPA: {
+                  ...data,
+                  riskType: data?.additionalDetails?.riskType,
+                  workflow: {
+                        action: workflowAction,
+                        assignes: [accountId]
+                  }
+                }
+            }, tenantId)
+            if (result?.ResponseInfo?.status === "successful") {
+                setApiLoading(false);
+                history.push(`/digit-ui/citizen/obps/self-certification/response/${data?.applicationNo}`);
+            } else {
+                alert(t("BPA_CREATE_APPLICATION_FAILED"));
+                setApiLoading(false);
+            }
+            console.log("APIResponse", result);
+        } catch (e) {
+            console.log("error", e);
+            alert(t("BPA_CREATE_APPLICATION_FAILED"));
+            setApiLoading(false);
+        }
   }
 
   function checkForSubmitDisable() {
@@ -1015,7 +1077,7 @@ useEffect(() => {
     }
   }
 
-  if (isLoading || isEnableLoader || isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees) {
+  if (isLoading || isEnableLoader || isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees || apiLoading) {
     return <Loader />
   }
 
@@ -1231,15 +1293,17 @@ useEffect(() => {
       <div style={{ paddingBottom: "50px" }}>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
           <Header styles={{ fontSize: "32px", marginLeft: "10px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-          <div>
-            {dowloadOptions && dowloadOptions?.length > 0 && (
-              <MultiLink
-                className="multilinkWrapper"
-                onHeadClick={() => setShowOptions(!showOptions)}
-                displayOptions={showOptions}
-                options={dowloadOptions}
-              />
-            )}
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap" }}>
+            <div>
+              {dowloadOptions && dowloadOptions?.length > 0 && (
+                <MultiLink
+                  className="multilinkWrapper"
+                  onHeadClick={() => setShowOptions(!showOptions)}
+                  displayOptions={showOptions}
+                  options={dowloadOptions}
+                />
+              )}
+            </div>
             <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
           </div>
         </div>
@@ -1833,7 +1897,7 @@ useEffect(() => {
                 ...(data?.applicationData || {})
               }
             }}
-            disable = {isUserCitizen}
+            disable = {true}
             development={development}
             otherCharges={otherCharges}
             lessAdjusment={lessAdjusment}

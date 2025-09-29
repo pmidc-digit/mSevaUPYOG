@@ -27,10 +27,11 @@ import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory, useRouteMatch } from "react-router-dom";
 import Timeline from "../components/Timeline"
-import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls } from "../utils"
+import { convertEpochToDateDMY, stringReplaceAll, getOrderDocuments, getDocsFromFileUrls, scrutinyDetailsData } from "../utils"
 import DocumentsPreview from "../../../templates/ApplicationDetails/components/DocumentsPreview"
 import Architectconcent from "../pages/citizen/NewBuildingPermit/Architectconcent"
 import { OTPInput, CardLabelError } from "@mseva/digit-ui-react-components";
+import FeeEstimation from "./FeeEstimation"
 
 const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const { t } = useTranslation();
@@ -51,12 +52,124 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const [fileUrls, setFileUrls] = useState({});
     const [ownerFileUrls, setOwnerFileUrls] = useState({});
     const [isOwnerFileLoading, setIsOwnerFileLoading] = useState(false);
+    const [datafromAPI, setDatafromAPI] = useState(null);
+    const [isLoadingScrutiny, setIsLoadingScrutiny] = useState(false);
+    const [errorFile, setError] = useState(null);
+    const [development, setDevelopment] = useState(() => {
+        return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_DEVELOPMENT_CHARGES || "0";
+      });
+    
+    
+      const [otherCharges, setOtherCharges] = useState(() => {
+        return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_OTHER_CHARGES || "0";
+      });
+    
+      const [lessAdjusment, setLessAdjusment] = useState(() => {
+        return currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_LESS_ADJUSMENT_PLOT || "0";
+      });
+    
+      const [otherChargesDisc, setOtherChargesDisc] = useState(() => {
+        return currentStepData?.createdResponse?.additionalDetails?.otherFeesDiscription || "";
+      });
+    
+      const [uploadedFile, setUploadedFile] = useState();
+      const [uploadedFileLess, setUploadedFileLess] = useState(() => {
+        return currentStepData?.createdResponse?.additionalDetails?.uploadedFileLess || [];
+      });
+      const [file, setFile] = useState();
+      // const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(tenantId.split(".")[0], "BPA", ["RiskTypeComputation"]);
+      const applicationTenantId = currentStepData?.createdResponse?.tenantId
+      const safeTenantId = applicationTenantId ? applicationTenantId.split(".")[0] : null
+      const [labourCess, setLabourCess] = useState(() => currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_LABOUR_CESS || "");
+      const [gaushalaFees, setGaushalaFees] = useState(() => currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_GAUSHALA_CHARGES_CESS || "");
+      const [malbafees, setMalbafees] = useState(() => currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES || "");
+      const [waterCharges, setWaterCharges] = useState(() => currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES || "");
+      const { isMdmsLoadingFees, data: mdmsDataFees } = Digit.Hooks.obps.useMDMS(state, "BPA", ["GaushalaFees", "MalbaCharges", "LabourCess"]);
+      const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(safeTenantId, "BPA", ["RiskTypeComputation"], {
+            enabled: !!safeTenantId,
+        })
 
     const closeMenu = () => {
         setDisplayMenu(false);
     };
 
     Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
+    let acceptFormat = ".pdf";
+
+    useEffect(() => {
+      if (currentStepData?.createdResponse?.additionalDetails) {
+        const selfCert = currentStepData?.createdResponse?.additionalDetails?.selfCertificationCharges || {};
+        const otherDetails = currentStepData?.createdResponse?.additionalDetails || {};
+    
+        setLabourCess(selfCert.BPA_LABOUR_CESS || "0");
+        setGaushalaFees(selfCert.BPA_GAUSHALA_CHARGES_CESS || "0");
+        setMalbafees(selfCert.BPA_MALBA_CHARGES || "0");
+        setWaterCharges(selfCert.BPA_WATER_CHARGES || "0");
+    
+        setDevelopment(selfCert.BPA_DEVELOPMENT_CHARGES || "0");
+        setOtherCharges(selfCert.BPA_OTHER_CHARGES || "0");
+        setLessAdjusment(selfCert.BPA_LESS_ADJUSMENT_PLOT || "0");
+    
+        setOtherChargesDisc(otherDetails.otherFeesDiscription || "");
+        setUploadedFileLess(otherDetails.uploadedFileLess || []);
+      }
+    }, [currentStepData]);
+
+    useEffect(async () => {
+        if (currentStepData?.createdResponse?.edcrNumber) {
+          setIsLoadingScrutiny(true)
+          const details = await scrutinyDetailsData(currentStepData?.createdResponse?.edcrNumber, state);
+          if (details?.type == "ERROR") {
+            // setShowToast({ message: details?.message });
+            setDatafromAPI(null);
+            setIsLoadingScrutiny(false)
+          }
+          if (details?.edcrNumber) {
+            setDatafromAPI(details);
+            setIsLoadingScrutiny(false)
+          }
+        }
+    }, [currentStepData?.createdResponse?.edcrNumber])
+
+    useEffect(() => {
+        let plotArea = datafromAPI?.planDetail?.planInformation?.plotArea || currentStepData?.createdResponse?.additionalDetails?.area;
+        const LabourCess = Math.round(plotArea * 10.7639 > 909 ? mdmsDataFees?.BPA?.LabourCess[1].rate * (plotArea * 10.7639) : 0);
+        const GaushalaFees = Math.round(mdmsDataFees?.BPA?.GaushalaFees[0].rate);
+        const Malbafees = Math.round(
+          plotArea * 10.7639 <= 500
+            ? mdmsDataFees?.BPA?.MalbaCharges[0].rate
+            : plotArea * 10.7639 > 500 && plotArea * 10.7639 <= 1000
+              ? mdmsDataFees?.BPA?.MalbaCharges?.[1].rate
+              : mdmsDataFees?.BPA?.MalbaCharges[2].rate || 500
+        );
+        console.log("Charges ", typeof LabourCess, GaushalaFees, Malbafees)
+        setGaushalaFees(GaushalaFees?.toString() || "");
+        setLabourCess(LabourCess?.toString() || "");
+        setMalbafees(Malbafees?.toString() || "");
+        setWaterCharges((Malbafees / 2)?.toString() || "");
+    }, [mdmsData, isMdmsLoading, currentStepData?.createdResponse?.additionalDetails, mdmsDataFees, isMdmsLoadingFees]);
+
+    useEffect(() => {
+        (async () => {
+          setError(null);
+          if (file && file?.type) {
+            if (!acceptFormat?.split(",")?.includes(`.${file?.type?.split("/")?.pop()}`)) {
+              setError(t("PT_UPLOAD_FORMAT_NOT_SUPPORTED"));
+            } else if (file.size >= 2000000) {
+              setError(t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
+            } else {
+              try {
+                const response = await Digit.UploadServices.Filestorage("property-upload", file, Digit.ULBService.getStateId());
+                if (response?.data?.files?.length > 0) {
+                  setUploadedFileLess([...uploadedFileLess, { fileStoreId: response?.data?.files[0]?.fileStoreId, time: new Date() }]);
+                } else {
+                  setError(t("PT_FILE_UPLOAD_ERROR"));
+                }
+              } catch (err) { }
+            }
+          }
+        })();
+      }, [file]);
 
     const [showOTPInput, setShowOTPInput] = useState(() => {
         const stored = sessionStorage.getItem("showOTPInput");
@@ -187,17 +300,36 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         fileUrl: doc.values?.[0]?.fileURL || null,
     }));
 
-    const ecbcDocumentsData = useMemo(() => {
-        return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
-            id: index,
-            title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
-            fileUrl: doc.fileURL || null, // adjusted since `doc` already has fileURL
-        }));
-    }, [fileUrls, t]);
+    // const ecbcDocumentsData = useMemo(() => {
+    //     return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
+    //         id: index,
+    //         title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+    //         fileUrl: doc.fileURL || null, // adjusted since `doc` already has fileURL
+    //     }));
+    // }, [fileUrls, t]);
 
     // useEffect(() => {
     //     console.log("ecbcDocumentsData", ecbcDocumentsData, fileUrls)
     // },[ecbcDocumentsData])
+      const ecbcDocumentsData = useMemo(() => {
+      const docs = getDocsFromFileUrls(fileUrls) || [];
+    
+      if (docs.length === 0) {
+        return [
+          {
+            id: 0,
+            title: t("CS_NA"),
+            fileUrl: null,
+          },
+        ];
+      }
+    
+      return docs.map((doc, index) => ({
+        id: index,
+        title: doc.title ? t(doc.title) : t("CS_NA"),
+        fileUrl: doc.fileURL || null,
+      }));
+    }, [fileUrls, t]);
 
 
     const handleTermsLinkClick = (e) => {
@@ -409,7 +541,18 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                     ...currentStepData?.createdResponse,
                     additionalDetails: {
                         ...currentStepData?.createdResponse?.additionalDetails,
-                        isArchitectDeclared
+                        isArchitectDeclared,
+                        otherFeesDiscription: otherChargesDisc || "",
+                        lessAdjustmentFeeFiles: uploadedFileLess || [],
+                        selfCertificationCharges: {
+                            BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
+                            BPA_LABOUR_CESS: labourCess?.length > 0 ? labourCess : "0",
+                            BPA_WATER_CHARGES: waterCharges?.length > 0 ? waterCharges : "0",
+                            BPA_GAUSHALA_CHARGES_CESS: gaushalaFees?.length > 0 ? gaushalaFees : "0",
+                            BPA_LESS_ADJUSMENT_PLOT: lessAdjusment?.length > 0 ? lessAdjusment : "0",
+                            BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
+                            BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0"
+                        }
                     },
                     documents,
                     workflow: {
@@ -551,6 +694,55 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     useEffect(() => {
         console.log("ECBCDocs", fileUrls);
     }, [fileUrls])
+
+    function setOtherChargesVal(value) {
+    if (/^[0-9]*$/.test(value)) {
+      setOtherCharges(value);
+      sessionStorage.setItem("otherCharges", value);
+    } else {
+      alert(t("Please enter numbers"));
+    }
+  }
+
+  function setDevelopmentVal(value) {
+    if (/^\d{0,10}$/.test(value)) {
+      setDevelopment(value);
+      sessionStorage.setItem("development", value);
+    } else {
+      alert(t("Please enter numbers"));
+    }
+  }
+
+  function setLessAdjusmentVal(value) {
+    if (/^[0-9]*$/.test(value)) {
+      if (
+        parseInt(value) >
+        (parseInt(development) ? parseInt(development) : 0) +
+        (parseInt(otherCharges) ? parseInt(otherCharges) : 0) +
+        parseInt(malbafees) +
+        parseInt(labourCess) +
+        parseInt(waterCharges) +
+        parseInt(gaushalaFees)
+      ) {
+        alert(t("Less adjustment fees cannot be grater than Total of other P2 fees"));
+      } else {
+        setLessAdjusment(value);
+        sessionStorage.setItem("lessAdjusment", value);
+      }
+    } else {
+      alert(t("Please enter numbers"));
+    }
+  }
+
+  function setOtherChargesDis(value) {
+    setOtherChargesDisc(value);
+    // sessionStorage.setItem("otherChargesDisc", value);
+  }
+
+  function selectfile(e) {
+    setUploadedFile(e.target.files[0]);
+    setFile(e.target.files[0]);
+  }
 
 
     if (apiLoading || isFileLoading) return (<Loader />);
@@ -1017,6 +1209,29 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             isPaginationRequired={false}
                         />}
                     </StatusTable>
+                </Card>
+
+                <Card>
+                    {(isMdmsLoading || isLoadingScrutiny || isMdmsLoadingFees) ? <Loader/> : <FeeEstimation                    
+                        currentStepData={currentStepData}                        
+                        development={development}
+                        otherCharges={otherCharges}
+                        lessAdjusment={lessAdjusment}
+                        otherChargesDisc={otherChargesDisc}
+                        labourCess={labourCess}                  
+                        gaushalaFees={gaushalaFees}                 
+                        malbafees={malbafees}                    
+                        waterCharges={waterCharges}                 
+                        setDevelopmentVal={setDevelopmentVal}
+                        setOtherChargesVal={setOtherChargesVal}
+                        setLessAdjusmentVal={setLessAdjusmentVal}
+                        setOtherChargesDis={setOtherChargesDis}
+                        selectfile={selectfile}
+                        uploadedFile={uploadedFile}
+                        setUploadedFile={setUploadedFile}
+                        errorFile={errorFile}
+                        setError={setError}
+                    />}
                 </Card>
 
 

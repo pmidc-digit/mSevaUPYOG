@@ -368,11 +368,30 @@ const BpaApplicationDetail = () => {
         ),
     },
   ];
-  const ecbcDocumentsData = useMemo(() => {
-    return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
+  // const ecbcDocumentsData = useMemo(() => {
+  //   return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
+  //     id: index,
+  //     title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
+  //     fileUrl: doc.fileURL || null, // adjusted since `doc` already has fileURL
+  //   }));
+  // }, [fileUrls, t]);
+    const ecbcDocumentsData = useMemo(() => {
+    const docs = getDocsFromFileUrls(fileUrls) || [];
+  
+    if (docs.length === 0) {
+      return [
+        {
+          id: 0,
+          title: t("CS_NA"),
+          fileUrl: null,
+        },
+      ];
+    }
+  
+    return docs.map((doc, index) => ({
       id: index,
-      title: doc.title ? t(doc.title) : t("CS_NA"), // ✅ no extra BPA_
-      fileUrl: doc.fileURL || null, // adjusted since `doc` already has fileURL
+      title: doc.title ? t(doc.title) : t("CS_NA"),
+      fileUrl: doc.fileURL || null,
     }));
   }, [fileUrls, t]);
   const ownerDocumentsData = useMemo(() => {
@@ -926,8 +945,8 @@ const BpaApplicationDetail = () => {
       <div className={"employee-main-application-details"}>
         <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
           <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
-          <div >
-            <div style={{ zIndex: "10", position: "relative" }}>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap" }}>
+            <div style={{}}>
               {dowloadOptions && dowloadOptions.length > 0 && <MultiLink
                 className="multilinkWrapper"
                 onHeadClick={() => setShowOptions(!showOptions)}

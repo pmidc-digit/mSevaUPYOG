@@ -65,6 +65,13 @@ const FeeEstimation = ({
         setShowToast(null);
     };
 
+    const isCitizen = window.location.href.includes("citizen");
+    const isEmployee = window.location.href.includes("employee");
+    const isNewConstructionPage = window.location.href.includes("bpa/building_plan_scrutiny/new_construction/");
+
+    const isEditable =
+    (isCitizen && isNewConstructionPage) || isEmployee;
+
 
     // const { isLoading: bpaCalculatorLoading, error, data, isSuccess } = Digit.Hooks.obps.useBPACalculation({ paayload: {CalulationCriteria:[{
     //     applicationNo: currentStepData?.createdResponse?.applicationNo,
@@ -225,9 +232,24 @@ console.log("ApplicationFeesAndSanctionFee", sanctionFeeDataWithTotal)
 
     return (
         <div>
-            <div>
+            {/* Application Fee Table */}
+            {bpaCalculatorLoading ? <Loader /> : <div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
+                {t("BPA_APPLICATION_FEE")}
+            </CardSubHeader>
+                <Table
+                    className="customTable table-border-style"
+                    t={t}
+                    data={applicationFeeDataWithTotal}
+                    columns={applicationFeeColumns}
+                    getCellProps={() => ({ style: {} })}
+                    disableSort={true}
+                    // autoSort={true}
+                    manualPagination={false}
+                    isPaginationRequired={false}
+                />
+            </div>}
+            {disable? null: <div>
                 {showToast && <Toast error={true} label={t(`${showToast?.message}`)} onClose={closeToast} isDleteBtn={true} />}
-                <CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>{t("BPA_P2_SUMMARY_FEE_EST_MANUAL")}</CardSubHeader>
                 <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />
                 <CardLabel>{t("BPA_COMMON_DEVELOPMENT_AMT")}</CardLabel>
                 <TextInput
@@ -242,7 +264,7 @@ console.log("ApplicationFeesAndSanctionFee", sanctionFeeDataWithTotal)
                         setDevelopmentVal(e.target.value);
                     }}
                     {...{ required: true, pattern: "^[0-9]*$" }}
-                    disable={disable}
+                    disable={!isEditable}
                 />
                 <CardLabel>{t("BPA_COMMON_OTHER_AMT")}</CardLabel>
                 <TextInput
@@ -257,7 +279,7 @@ console.log("ApplicationFeesAndSanctionFee", sanctionFeeDataWithTotal)
                         setOtherChargesVal(e.target.value);
                     }}
                     {...{ required: true, pattern: /^[0-9]*$/ }}
-                    disable={disable}
+                    disable={!isEditable}
                 />
                 {parseInt(otherCharges) > 0 ? (
                     <div>
@@ -272,7 +294,7 @@ console.log("ApplicationFeesAndSanctionFee", sanctionFeeDataWithTotal)
                                 setOtherChargesDis(e.target.value);
                             }}
                             {...{ required: true }}
-                            disable={disable}
+                            disable={!isEditable}
                         />
                     </div>
                 ) : null}
@@ -289,7 +311,7 @@ console.log("ApplicationFeesAndSanctionFee", sanctionFeeDataWithTotal)
                         setLessAdjusmentVal(e.target.value);
                     }}
                     {...{ required: true, pattern: "^[0-9]*$" }}
-                    disable={disable}
+                    disable={!isEditable}
                 />
                 {(parseInt(lessAdjusment) > 0 && window.location.href.includes("citizen")) ? (
                     <div>
@@ -308,23 +330,7 @@ console.log("ApplicationFeesAndSanctionFee", sanctionFeeDataWithTotal)
                         />
                     </div>
                 ) : null}
-                <SubmitBar onSubmit={() => {setRecalculate(true)}} label={t("Recalculate")} />
-            </div>
-            {/* Application Fee Table */}
-            {bpaCalculatorLoading ? <Loader /> : <div><CardSubHeader style={{ fontSize: "20px", color: "#3f4351" }}>
-                {t("BPA_APPLICATION_FEE")}
-            </CardSubHeader>
-                <Table
-                    className="customTable table-border-style"
-                    t={t}
-                    data={applicationFeeDataWithTotal}
-                    columns={applicationFeeColumns}
-                    getCellProps={() => ({ style: {} })}
-                    disableSort={true}
-                    // autoSort={true}
-                    manualPagination={false}
-                    isPaginationRequired={false}
-                />
+                <SubmitBar onSubmit={() => {setRecalculate(true)}} label={t("Recalculate")} disabled={!isEditable}/>
             </div>}
 
             {/* Sanction Fee Table */}

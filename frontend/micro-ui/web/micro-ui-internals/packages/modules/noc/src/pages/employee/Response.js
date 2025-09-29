@@ -46,7 +46,8 @@ const Response = (props) => {
       <Card>
         <Banner
          // message={t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_${stringReplaceAll(nocData?.applicationStatus, ".", "_")}_HEADER`)}
-          message={t("NOC_APPLICATION_SUCCESS_HEADER")}
+         // message={t("NOC_APPLICATION_SUCCESS_HEADER")}
+          message={t(`NOC_APPLICATION_${nocData?.workflow?.action}_SUCCESS_HEADER`)}
           applicationNumber={nocCode}
           info={nocData?.applicationStatus == "REJECTED" ? "" : t(`${stringReplaceAll(nocData?.nocType, ".", "_")}_APPLICATION_NUMBER`)}
           successful={nocData?.applicationStatus == "REJECTED" ? false : true}

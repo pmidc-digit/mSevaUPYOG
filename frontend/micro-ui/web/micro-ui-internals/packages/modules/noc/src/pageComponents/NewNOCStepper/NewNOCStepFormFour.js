@@ -68,24 +68,16 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           // dispatch(RESET_NOC_NEW_APPLICATION_FORM());
 
           if(window.location.href.includes("citizen")){
-           
-           if(selectedAction?.action == "DRAFT"){
-            console.log("wr are saving as draft here");
-            setShowToast({ key: "true", success:true, message: "Saved As Draft Successfully"});
-            setTimeout(()=>{
-               history.push(`/digit-ui/citizen/noc/my-application`);
-            },3000);
-           }
 
-           else if(selectedAction.action == "CANCEL"){
-            setShowToast({ key: "true", success:true, message: "Cancelled Successfully"});
+           if(selectedAction.action == "CANCEL"){
+            setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully"});
             setTimeout(()=>{
                history.push(`/digit-ui/citizen/noc/my-application`);
             },3000);
            }
 
            else{
-            //Else case for "APPLY" or "RESUBMIT"
+            //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
             console.log("We are calling citizen response page");
             history.replace({
             pathname:`/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
@@ -96,22 +88,15 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           else{
            console.log("we are calling employee response page");
 
-           if(selectedAction.action === "DRAFT"){
-            setShowToast({ key: "true", success:true, message: "Saved As Draft Successfully"});
-            setTimeout(()=>{
-               history.push(`/digit-ui/employee/noc/inbox`);
-            },3000);
-           }
-
-           else if(selectedAction.action === "CANCEL"){
-            setShowToast({ key: "true", success:true, message: "Cancelled Successfully"});
+           if(selectedAction.action === "CANCEL"){
+            setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully"});
             setTimeout(()=>{
                history.push(`/digit-ui/employee/noc/inbox`);
             },3000);
            }
            
            else{
-             //Else case for "APPLY" or "RESUBMIT"
+             //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
            history.replace({
            pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
            state: { data: response }
@@ -144,8 +129,24 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
      //update data with redux as we can not use old data for update api 
      additionalDetails: {
       ...nocFormData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails,
-      applicationDetails:{...nocFormData?.applicationDetails}, 
-      siteDetails:{...nocFormData?.siteDetails},
+      applicationDetails:{
+        ...nocFormData?.applicationDetails,
+          applicantGender : nocFormData?.applicationDetails?.applicantGender?.code || "",
+      }, 
+      siteDetails:{
+        ...nocFormData?.siteDetails,
+         ulbName: nocFormData?.siteDetails?.ulbName?.name || "",
+         roadType: nocFormData?.siteDetails?.roadType?.name || "",
+         buildingStatus:nocFormData?.siteDetails?.buildingStatus?.name || "",
+         isBasementAreaAvailable: nocFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
+         district: nocFormData?.siteDetails?.district?.name || "",
+         zone: nocFormData?.siteDetails?.zone?.name || "",
+
+         specificationBuildingCategory: nocFormData?.siteDetails?.specificationBuildingCategory?.name || "",
+         specificationNocType: nocFormData?.siteDetails?.specificationNocType?.name || "",
+         specificationRestrictedArea: nocFormData?.siteDetails?.specificationRestrictedArea?.code || "",
+         specificationIsSiteUnderMasterPlan:nocFormData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || ""
+      },
       coordinates:{...coordinates}
     }
    

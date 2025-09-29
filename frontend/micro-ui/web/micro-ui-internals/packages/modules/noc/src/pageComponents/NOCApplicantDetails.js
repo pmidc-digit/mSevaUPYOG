@@ -13,7 +13,8 @@ import {
   CardSectionHeader,
   RadioButtons,
   SearchIcon,
-  Toast
+  Toast,
+  CardSectionSubText
 } from "@mseva/digit-ui-react-components";
 import { getPattern } from "../utils";
 
@@ -96,13 +97,19 @@ const NOCApplicantDetails = (_props) => {
     }
    },[userInfo])
 
+   const isEdit= window.location.pathname.includes("edit")
+
   //  console.log("userInfo", userInfo);
 
   return (
     <React.Fragment>
       <CardSectionHeader className="card-section-header">{t("NOC_APPLICANT_DETAILS")}</CardSectionHeader>
       <div>
-
+        { isEdit && (
+          <CardSectionSubText style={{color:"red", margin:"10px 0px"}}> To update your Mobile No, Name, Email, Date of Birth, or Gender, please go the Citizen's Edit Profile section
+          </CardSectionSubText>
+        )}
+        
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
           <div className="field">
@@ -127,12 +134,13 @@ const NOCApplicantDetails = (_props) => {
                     props.onBlur(e);
                   }}
                   t={t}
+                  disabled={isEdit}
               />
             }
             />
           </div>
-          <div style={{ position: "relative", zIndex: "100", right: "35px", marginTop: "-24px", marginRight: Webview ? "-20px" : "-20px" }}
-              onClick={getOwnerDetails}>
+          <div className="search-icon"
+              onClick={isEdit ? null : getOwnerDetails}>
                 {" "}<SearchIcon />{" "}
           </div>
         </LabelFieldPair>
@@ -162,6 +170,7 @@ const NOCApplicantDetails = (_props) => {
                     props.onBlur(e);
                   }}
                   t={t}
+                  disabled={isEdit}
                 />
               )}
             />
@@ -192,6 +201,7 @@ const NOCApplicantDetails = (_props) => {
                     props.onBlur(e);
                   }}
                   t={t}
+                  disabled={isEdit}
                 />
               )}
             />
@@ -215,6 +225,7 @@ const NOCApplicantDetails = (_props) => {
                     props.onBlur(e);
                   }}
                   t={t}
+                  // disabled={isEdit}
                 />
               )}
             />
@@ -306,6 +317,7 @@ const NOCApplicantDetails = (_props) => {
                   }}
                   min="1900-01-01"
                   max={new Date().toISOString().split("T")[0]}
+                  disabled={isEdit}
                 />
               )}
             />
@@ -331,6 +343,7 @@ const NOCApplicantDetails = (_props) => {
                     props.onChange(e);
                   }}
                   isDependent={true}
+                  disabled={isEdit}
                 />
               )}
             />

@@ -84,13 +84,13 @@ public class CalculationService {
 			if(criteria.getNoc().getNocDetails().getAdditionalDetails() != null) {
 				Map<String, Object> siteDetails = (Map<String, Object>)((Map<String, Object>)criteria.getNoc().getNocDetails().getAdditionalDetails()).get("siteDetails");
 				if(siteDetails.get("specificationPlotArea") != null)
-					plotArea = new BigDecimal(siteDetails.getOrDefault("specificationPlotArea", "0").toString());
+					plotArea = new BigDecimal(siteDetails.getOrDefault("specificationPlotArea", "0").toString().trim());
 				if(siteDetails.get("totalFloorArea") != null)
-					builtUpArea = new BigDecimal(siteDetails.getOrDefault("totalFloorArea", "0").toString());
+					builtUpArea = new BigDecimal(siteDetails.getOrDefault("totalFloorArea", "0").toString().trim());
 				if(siteDetails.get("basementArea") != null)
-					basementArea = new BigDecimal(siteDetails.getOrDefault("basementArea", "0").toString());
+					basementArea = new BigDecimal(siteDetails.getOrDefault("basementArea", "0").toString().trim());
 				if(siteDetails.get("specificationBuildingCategory") != null)
-					category = siteDetails.get("specificationBuildingCategory").toString();
+					category = siteDetails.get("specificationBuildingCategory").toString().trim();
 				
 				LocalDate today = LocalDate.now();
 				if(today.getMonthValue() > 3)

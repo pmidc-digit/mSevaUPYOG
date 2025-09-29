@@ -263,15 +263,23 @@ const CitizenApplicationOverview = () => {
       
       if(response?.ResponseInfo?.status === "successful"){
 
-       setShowToast({ key: "true", success:true, message: filtData?.action === "CANCEL" ? "Cancelled Successfully": "Successfully submitted the application" });
-       workflowDetails.revalidate();
-       setSelectedAction(null);
-      
+        if(filtData?.action === "CANCEL"){
+          setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully" });
+          workflowDetails.revalidate();
+          setSelectedAction(null);
+        }
+        else{
+          //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
+          console.log("We are calling citizen response page");
+          history.replace({
+            pathname:`/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+            state: { data: response }
+          });
+        }
       }
       else{
         setShowToast({ key: "true", warning:true, message: "Something went wrong, please try after sometime" });
         setSelectedAction(null);
-        
       }
     } catch (err) {
       setShowToast({ key: "true",error:true, message: "Some error occurred, plz try later" });
@@ -303,7 +311,7 @@ const CitizenApplicationOverview = () => {
               <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.applicantFatherHusbandName || "N/A"} />
               <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
               <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
-              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || "N/A"} />
+              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"} />
               <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
             </StatusTable>
           </div>
@@ -335,17 +343,17 @@ const CitizenApplicationOverview = () => {
             <StatusTable>
               <Row label={t("NOC_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
               <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
-              <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || "N/A"} />
+              <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("NOC_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
               <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
-              <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || "N/A"} />
+              <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
               <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={detail?.areaLeftForRoadWidening || "N/A"} />
               <Row label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={detail?.netPlotAreaAfterWidening || "N/A"} />
               <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
-              <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || "N/A"} />
+              <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"} />
 
-              <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || "N/A"} />
+              <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"} />
 
               {detail?.buildingStatus?.code == "BUILTUP" && 
                <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"}/>
@@ -359,8 +367,8 @@ const CitizenApplicationOverview = () => {
                <Row label={t("NOC_TOTAL_FLOOR_AREA_LABEL")} text={detail.totalFloorArea || "N/A"}/>
               }
 
-              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || "N/A"} />
-              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || "N/A"} />
+              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
               <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
               <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
@@ -379,11 +387,11 @@ const CitizenApplicationOverview = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
-              <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={detail?.specificationBuildingCategory?.name || "N/A"} />
+              <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"} />
 
-              <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || "N/A"} />
-              <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={detail?.specificationRestrictedArea?.code || "N/A"} />
-              <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={detail?.specificationIsSiteUnderMasterPlan?.code || "N/A"} />
+              <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
+              <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"} />
+              <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan || "N/A"} />
             </StatusTable>
           </div>
         ))}

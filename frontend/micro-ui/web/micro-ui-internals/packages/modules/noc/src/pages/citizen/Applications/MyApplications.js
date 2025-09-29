@@ -64,7 +64,9 @@ const MyApplications = ({ view }) => {
 
               <Link to={`/digit-ui/citizen/noc/search/application-overview/${application?.Applications?.applicationNo}`}>
                 <SubmitBar 
-                   label={applicationStatus === "APPROVED" ? t(labels[2]) : applicationStatus === "REJECTED" || applicationStatus === "CITIZENACTIONREQUIRED" ? t(labels[0]) : t(labels[1])} />
+                  //  label={applicationStatus === "APPROVED" ? t(labels[2]) : applicationStatus === "REJECTED" || applicationStatus === "CITIZENACTIONREQUIRED" ? t(labels[0]) : t(labels[1])} 
+                  label ={t(labels[2])}
+                />
               </Link>
                 
               

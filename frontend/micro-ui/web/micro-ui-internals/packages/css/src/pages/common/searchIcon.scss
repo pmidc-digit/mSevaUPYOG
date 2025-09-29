@@ -1,0 +1,12 @@
+.search-icon{
+    position: relative;
+    z-index: 100;
+    left: 160px;
+    margin-top: -55px;
+
+    @media (min-width:780px) {
+      right: 35px;
+      margin-top: -24px;
+      left:auto;
+    }
+}

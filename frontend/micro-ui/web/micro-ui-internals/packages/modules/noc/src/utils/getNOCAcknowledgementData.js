@@ -65,7 +65,8 @@ const getApplicantDetails = (appData, t) => {
     },
     {
       title: t("NOC_APPLICANT_GENDER_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantGender?.code || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantGender?.code || 
+      appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantGender || "N/A",
     },
     {
       title: t("NOC_APPLICANT_ADDRESS_LABEL"),
@@ -91,7 +92,8 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_ULB_NAME_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.ulbName?.name || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.ulbName?.name ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.ulbName || "N/A",
     },
     {
       title: t("NOC_ULB_TYPE_LABEL"),
@@ -107,7 +109,8 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_ROAD_TYPE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.roadType?.name || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.roadType?.name ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.roadType || "N/A",
     },
     {
       title: t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"),
@@ -123,11 +126,13 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_DISTRICT_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.district?.name || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.district?.name ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.district || "N/A",
     },
     {
       title: t("NOC_ZONE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.zone?.name || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.zone?.name ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.zone || "N/A",
     },
     {
       title: t("NOC_SITE_WARD_NO_LABEL"),
@@ -151,11 +156,13 @@ const getSiteDetails = (appData, t) => {
     },
     {
       title: t("NOC_BUILDING_STATUS_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.name || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.name ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus || "N/A",
     },
     {
       title: t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable?.code || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable?.code ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.isBasementAreaAvailable || "N/A",
     },
   ];
 
@@ -196,19 +203,23 @@ const getSpecificationDetails = (appData, t) => {
     },
     {
       title: t("NOC_BUILDING_CATEGORY_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory?.name || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory?.name ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.specificationBuildingCategory  || "N/A",
     },
     {
       title: t("NOC_NOC_TYPE_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType?.name || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType?.name ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.specificationNocType ||  "N/A",
     },
     {
       title: t("NOC_RESTRICTED_AREA_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea?.code || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea?.code ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.specificationRestrictedArea || "N/A",
     },
     {
       title: t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL"),
-      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || "N/A",
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan?.code ||
+      appData?.nocDetails?.additionalDetails?.siteDetails?.specificationIsSiteUnderMasterPlan || "N/A",
     },
   ];
 

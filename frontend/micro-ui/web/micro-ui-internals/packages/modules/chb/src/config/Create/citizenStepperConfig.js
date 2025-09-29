@@ -32,7 +32,7 @@ export const citizenConfig = [
     ],
   },
   {
-    head: "ES_TITILE_DOCUMENT_DETAILS",
+    head: "",
     stepNumber: 3,
     body: [
       {
@@ -46,7 +46,7 @@ export const citizenConfig = [
     ],
   },
   {
-    head: "ES_TITILE_AUMMARY_DETAILS",
+    head: "",
     stepNumber: 4,
     body: [
       {

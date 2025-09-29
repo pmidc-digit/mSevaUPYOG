@@ -22,14 +22,13 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     console.log("data?????....=====", docData?.CHB?.Documents);
 
     const missingFields = validation(finalData);
-
+    onGoNext();
     if (missingFields.length > 0) {
       setError(`${t("CHB_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       return;
     }
-    // onGoNext();
   }
 
   function validation(formData) {
@@ -37,14 +36,20 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       const chbDocumentsType = docData?.CHB?.Documents || [];
       const uploadedDocs = formData?.documents?.documents || [];
 
+      console.log("chbDocumentsType", chbDocumentsType);
+      console.log("uploadedDocs", uploadedDocs);
+
       // Extract required docs
       const requiredDocs = chbDocumentsType?.filter((doc) => doc.required).map((doc) => doc.code);
 
       // Extract uploaded document codes
       const uploadedDocCodes = uploadedDocs?.map((doc) => doc.documentType);
 
-      // Missing required docs
-      const missingDocs = requiredDocs?.filter((reqDoc) => !uploadedDocCodes.includes(reqDoc));
+      // // Missing required docs
+      // const missingDocs = requiredDocs?.filter((reqDoc) => !uploadedDocCodes.includes(reqDoc));
+
+      // For dropdowns: match if uploadedDoc starts with requiredDoc (prefix check)
+      const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocCodes.some((uploaded) => uploaded.startsWith(reqDoc)));
 
       return missingDocs;
     }

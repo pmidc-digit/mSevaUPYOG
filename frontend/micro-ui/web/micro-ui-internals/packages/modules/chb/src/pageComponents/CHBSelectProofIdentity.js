@@ -185,7 +185,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       {getLoading && <Loader />}
       {doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))}</CardLabel>
+          <CardLabel className="card-label-smaller">
+            {t(doc?.code)} {doc?.required && " *"}
+          </CardLabel>
           <Dropdown
             className="form-field"
             selected={selectedDocument}

@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from "react";
-import { TextInput, CardLabel, MobileNumber, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+
+import React, { useEffect, useState  } from "react";
+import { TextInput, CardLabel, MobileNumber, ActionBar, SubmitBar, LabelFieldPair, TextArea, CardLabelError,Toast } from "@mseva/digit-ui-react-components";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import ADSAddress from "./ADSAddress";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
@@ -9,7 +10,11 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   const isEmployee = typeof window !== "undefined" && window.location?.pathname?.includes("/employee");
   const formStorageKey = `ads_form_${isEmployee ? "employee" : "citizen"}`;
   const dispatch = useDispatch();
-
+  const userInfo = Digit.UserService.getUser();
+  const { mobileNumber, emailId, name } = userInfo?.info;
+  const isCitizen = window.location.href.includes("citizen");
+  const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
+  const [showToast, setShowToast] = useState(null);
   const {
     control,
     handleSubmit,
@@ -17,45 +22,31 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     reset,
     getValues,
     formState: { errors },
+    trigger
   } = useForm({
     mode: "onChange",
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      emailId: "",
-      mobileNumber: "",
-      SGST: "",
-      selfDeclaration: false,
-      clientName: "",
-      address: {
-        pincode: "",
-        streetName: "",
-        houseNo: "",
-        landmark: "",
-        addressline1: "",
-        addressline2: "",
-        houseName: "",
-        doorNo: "",
-        addressId: "",
-        city: null,
-        locality: null,
-      },
+      firstName: isCitizen ? firstName || "" : "",
+      lastName: isCitizen ? lastName || "" : "",
+      emailId: isCitizen ? emailId || "" : "",
+      mobileNumber: isCitizen ? mobileNumber || "" : "",
+      // SGST: "",
+      // selfDeclaration: false,
+      // clientName: "",
+      address: "",
+      pincode: "",
     },
   });
 
-  // Prefill from Redux state
-  // Prefill from Redux state
+
+
   // Prefill from Redux state
   if (typeof window !== "undefined") window.__ADS_FORM_DRAFT = window.__ADS_FORM_DRAFT || {};
 
   useEffect(() => {
-    console.log("ADSCitizenDetailsNew: useEffect for currentStepData triggered");
-    console.log("ADSCitizenDetailsNew: currentStepData:", currentStepData);
 
-    console.log("currentStepData:", currentStepData);
     const base = currentStepData?.ownerDetails;
     if (!base) return;
-    console.log("ADSCitizenDetailsNew: base.address:", base?.address);
 
     // Only reset if data has actually changed to avoid unnecessary resets
     const currentAddress = getValues("address");
@@ -84,35 +75,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     } catch (e) {
       console.warn("[ADS] failed to rehydrate from in-memory", e);
     }
-    // 2) OPTIONAL: sessionStorage fallback to survive a hard reload.
-    // Uncomment if you *want* reload persistence.
-    /*
-  try {
-    const raw = sessionStorage.getItem(formStorageKey);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (parsed && typeof parsed === "object") {
-        reset(parsed);
-        console.info("[ADS] rehydrated form from sessionStorage:", formStorageKey);
-      }
-    }
-  } catch (e) {
-    console.warn("[ADS] failed to rehydrate form (corrupt JSON?)", e);
-  }
-  */
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // run once on mount
 
-  // Watch address field for live Redux updates
-
-  const safeOnChange = (addr) => {
-    try {
-      onChange(addr);
-    } catch (error) {
-      console.error("Error on address change:", error);
-    }
-  };
 
   const onSubmit = async (data) => {
     // clear in-memory draft
@@ -140,34 +104,30 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
     const applicationDate = Date.now();
 
-    const rawAddress = data.address || {};
-    const pickedAddress = {
-      addressLine1: rawAddress.addressline1 || rawAddress.addressLine1 || "",
-      city: rawAddress.city?.name || rawAddress.city || "",
-      cityCode: rawAddress.cityCode || rawAddress.city?.code || "",
-      houseNo: rawAddress.houseNo || "",
-      houseName: rawAddress.houseName || "",
-      landmark: rawAddress.landmark || "",
-      locality: rawAddress.locality?.code || rawAddress.locality || "",
-      localityCode: rawAddress.localityCode || rawAddress.locality?.code || "",
-      pincode: rawAddress.pincode || "",
-      streetName: rawAddress.streetName || "",
-    };
+   
 
     const formData = {
       tenantId,
       applicationDate,
       bookingStatus: "BOOKING_CREATED",
       businessService: "ADV",
-      address: pickedAddress,
+      address: {
+        pincode: data.pincode || "",
+        addressId: data.address || "",
+      },
       applicantDetail: {
         applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
         applicantEmailId: data.emailId || "",
         applicantMobileNo: data.mobileNumber || "",
-        selfDeclaration: typeof data.selfDeclaration !== "undefined" ? data.selfDeclaration : true,
+        // selfDeclaration: typeof data.selfDeclaration !== "undefined" ? data.selfDeclaration : true,
         applicantDetailId: "",
-        SGST: data.SGST || "",
       },
+       owners: [{
+        name: `${firstName} ${lastName}`,
+        mobileNumber: data.mobileNumber || "",
+        tenantId,
+        type: "CITIZEN",
+      }],
       additional_details: "sgst, endDate, selfDeclaration",
       // attach cartDetails we received earlier from the other step
       cartDetails: Array.isArray(cartDetailsFromState) ? cartDetailsFromState : [],
@@ -195,25 +155,28 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         // if API returns bookingApplication array, prefer the first item (same as ADSCitizenSecond)
         const appData = Array.isArray(response?.bookingApplication) ? response.bookingApplication[0] : response?.bookingApplication;
 
-        console.log("ADSCitizenDetailsNew: onSubmit called");
-        console.log("ADSCitizenDetailsNew: formData:", formData);
-        console.log("ADSCitizenDetailsNew: payload:", payload);
-
         // save created response into Redux under the same key ADSCitizenSecond used
         dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
-
+      
         // forward the full response to parent (so parent can also store/navigate)
-        goNext(response);
+        goNext(formData);
       } else {
         console.error("ADS create failed (ADSCitizenDetailsNew) - saving draft", response);
         // store draft under same CreatedResponse key so later update uses it
         dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", { draft: true, bookingApplication: formData }));
-        goNext({ draft: true, bookingApplication: formData });
+        // goNext({ draft: true, bookingApplication: formData });
+        setShowToast({
+          key: true, // or whatever truthy value your Toast expects for `error`
+          label: "Something Went Wrong!",
+        });
       }
     } catch (err) {
-      console.error("ADS create error (ADSCitizenDetailsNew) - saving draft", err);
       dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", { draft: true, bookingApplication: formData }));
-      goNext({ draft: true, bookingApplication: formData });
+      setShowToast({
+        key: true, // or whatever truthy value your Toast expects for `error`
+        label: "Something Went Wrong!",
+      });
+      // goNext({ draft: true, bookingApplication: formData });
     }
   };
 
@@ -240,6 +203,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     return () => clearTimeout(id);
   }, [watchedAll, formStorageKey]);
 
+  const errorStyle = { marginTop: "-18px", color: "red" };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <div>
@@ -251,7 +216,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           control={control}
           name="firstName"
           rules={{
-            required: "This field is required",
+            required: t("PTR_FIRST_NAME_REQUIRED"),
             pattern: {
               value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
               message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
@@ -261,7 +226,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           }}
           render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
         />
-        {errors.firstName && <p style={{ color: "red" }}>{errors.firstName.message}</p>}
+        {errors.firstName && <CardLabelError style={errorStyle}>{errors.firstName.message}</CardLabelError>}
 
         <CardLabel>
           {t("NDC_LAST_NAME")}
@@ -271,7 +236,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           control={control}
           name="lastName"
           rules={{
-            required: "This field is required",
+          required: t("PTR_LAST_NAME_REQUIRED"),
             pattern: {
               value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
               message: "Only letters, spaces, apostrophes and hyphens allowed, must include at least one letter",
@@ -281,7 +246,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           }}
           render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
         />
-        {errors.lastName && <p style={{ color: "red" }}>{errors.lastName.message}</p>}
+        {errors.lastName && <CardLabelError style={errorStyle}>{errors.lastName.message}</CardLabelError>}
 
         <CardLabel>
           {t("NOC_APPLICANT_EMAIL_LABEL")}
@@ -291,12 +256,12 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           control={control}
           name="emailId"
           rules={{
-            required: "This field is required",
+            required: t("PTR_EMAIL_REQUIRED"),
             pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" },
           }}
           render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
         />
-        {errors.emailId && <p style={{ color: "red" }}>{errors.emailId.message}</p>}
+        {errors.emailId && <CardLabelError style={errorStyle}>{errors.emailId.message}</CardLabelError>}
 
         <CardLabel>
           {t("NOC_APPLICANT_MOBILE_NO_LABEL")}
@@ -306,117 +271,78 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           control={control}
           name="mobileNumber"
           rules={{
-            required: "This field is required",
+           required: t("PTR_MOBILE_REQUIRED"),
             minLength: { value: 10, message: "Enter at least 10 digits" },
             pattern: { value: /^[6-9]\d{9}$/, message: "Must start with 9, 8, 7, or 6 and be 10 digits long" },
           }}
           render={({ value, onChange, onBlur }) => <MobileNumber value={value} onChange={onChange} onBlur={onBlur} t={t} />}
         />
-        {errors.mobileNumber && <p style={{ color: "red" }}>{errors.mobileNumber.message}</p>}
+        {errors.mobileNumber && <CardLabelError style={errorStyle}>{errors.mobileNumber.message}</CardLabelError>}
 
-        <CardLabel>{t("ADVT_CHALLAN_UNDER_SECTION_122_123_SGST")}</CardLabel>
-        <Controller
-          control={control}
-          name="SGST"
-          rules={{
-            validate: (value) => !value.trim() || /^\d{2}[A-Z]{5}\d{4}[A-Z]\dZ[A-Z\d]$/.test(value.trim()) || "Enter a valid SGST",
-          }}
-          render={({ value, onChange, onBlur }) => (
-            <TextInput
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              onBlur={(e) => {
-                const trimmed = e.target.value.trim();
-                onChange(trimmed);
-                onBlur(e);
+        {/* Address */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("PT_COMMON_COL_ADDRESS")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="address"
+              rules={{
+                required: t("NDC_MESSAGE_ADDRESS"),
+                pattern: {
+                  value: /^[A-Za-z0-9\s.,'/-]+$/,
+                  message: t("PTR_ADDRESS_INVALID"),
+                },
+                maxLength: { value: 500, message: "Maximum 500 characters" },
+                minLength: { value: 5, message: "Minimum 5 characters" },
               }}
-              t={t}
-            />
-          )}
-        />
-        {errors.SGST && <p style={{ color: "red" }}>{errors.SGST.message}</p>}
-
-        {/* <CardLabel>{t("PT_COMMON_COL_ADDRESS")}</CardLabel> */}
-        <Controller
-          control={control}
-          name="address"
-          rules={{
-            validate: (addr) => {
-              const requiredFields = ["houseNo", "houseName", "streetName", "addressline1", "landmark", "city", "locality", "pincode"];
-
-              const missing = requiredFields.filter((f) => {
-                const v = addr?.[f];
-                if (f === "pincode") return !(v && String(v).trim().length === 6); // require 6-digit pincode
-                if (f === "city" || f === "locality") return !v; // objects expected
-                return !(v && String(v).trim());
-              });
-
-              if (missing.length) {
-                // create readable list (you can tweak labels)
-                return `Address missing: ${missing.join(", ")}`;
-              }
-              return true;
-            },
-          }}
-          render={({ value, onChange, onBlur }) => (
-            <div>
-              <ADSAddress
-                t={t}
-                value={value || {}}
-                onChange={onChange}
-                onSelect={(_, addr = {}) => safeOnChange(addr)}
-                onBlur={onBlur} // pass through if ADSAddress later supports blur
-              />
-              {/* show a single combined address error under the address component */}
-              {errors.address && <p style={{ color: "red", marginTop: "6px" }}>{errors.address.message}</p>}
-            </div>
-          )}
-        />
-
-        <div style={{ marginTop: "20px" }}>
-          <Controller
-            control={control}
-            name="selfDeclaration"
-            rules={{ required: "This field is required" }}
-            render={({ value, onChange, onBlur }) => (
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-                <input
-                  type="checkbox"
-                  id="selfDeclaration"
-                  checked={value || false}
-                  onChange={(e) => onChange(e.target.checked)}
-                  onBlur={onBlur}
-                  style={{ width: "18px", height: "18px", cursor: "pointer" }}
+              render={({ value, onChange, onBlur }) => (
+                <TextArea
+                  value={value}
+                  onChange={(e) => onChange(e.target.value)}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("address");
+                  }}
+                  t={t}
                 />
-                <label htmlFor="selfDeclaration" style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}>
-                  {t("BILLAMENDMENT_SELFDECLARATION_LABEL")}
-                </label>
-                <span style={{ color: "red" }}>*</span>
-              </div>
-            )}
-          />
-          {errors.selfDeclaration && <p style={{ color: "red" }}>{errors.selfDeclaration.message}</p>}
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors?.address && <CardLabelError style={errorStyle}>{errors?.address?.message}</CardLabelError>}
 
-          <CardLabel>
-            Client Name <span style={{ color: "red" }}>*</span>
-          </CardLabel>
-
-          <Controller
-            control={control}
-            name="clientName"
-            rules={{
-              required: "This field is required",
-              pattern: {
-                value: /^(?=.*[A-Za-z])[A-Za-z\s'-]+$/,
-                message: "Only letters, spaces, apostrophes and hyphens allowed , atleast include one letter",
-              },
-              minLength: { value: 2, message: "Minimum 2 characters" },
-              maxLength: { value: 100, message: "Maximum 100 characters" },
-            }}
-            render={(props) => <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={props.onBlur} t={t} />}
-          />
-          {errors.clientName && <p style={{ color: "red" }}>{errors.clientName.message}</p>}
-        </div>
+        {/* Pincode */}
+        <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("CORE_COMMON_PINCODE")}`} *</CardLabel>
+          <div className="field">
+            <Controller
+              control={control}
+              name="pincode"
+              rules={{
+                required: t("PTR_PINCODE_REQUIRED"),
+                pattern: {
+                  value: /^[1-9][0-9]{5}$/,
+                  message: t("PTR_PINCODE_INVALID"),
+                },
+                minLength: { value: 6, message: t("PTR_PINCODE_MIN_LENGTH") },
+                maxLength: { value: 6, message: t("PTR_PINCODE_MAX_LENGTH") },
+              }}
+              render={({ value, onChange, onBlur }) => (
+                <TextInput
+                  value={value}
+                  onChange={(e) => onChange(e.target.value.replace(/\D/g, ""))}
+                  onBlur={(e) => {
+                    onBlur(e);
+                    trigger("pincode");
+                  }}
+                  t={t}
+                  maxLength={6}
+                />
+              )}
+            />
+          </div>
+        </LabelFieldPair>
+        {errors.pincode && <CardLabelError style={errorStyle}>{errors?.pincode?.message}</CardLabelError>}
       </div>
 
       <ActionBar>
@@ -424,6 +350,17 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
         <SubmitBar label="Next" submit="submit" />
       </ActionBar>
+
+      {showToast && (
+        <Toast
+          error={showToast.key}
+          label={t(showToast.label)}
+          onClose={() => {
+            setShowToast(null);
+          }}
+          isDleteBtn={true}
+        />
+      )}
     </form>
   );
 };

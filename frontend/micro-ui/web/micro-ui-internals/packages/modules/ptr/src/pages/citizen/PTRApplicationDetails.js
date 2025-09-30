@@ -711,6 +711,7 @@ const PTRApplicationDetails = () => {
               error={showToast.key}
               label={t(showToast.label)}
               style={{ bottom: "0px" }}
+              isDleteBtn={true}
               onClose={() => {
                 setShowToast(null);
               }}

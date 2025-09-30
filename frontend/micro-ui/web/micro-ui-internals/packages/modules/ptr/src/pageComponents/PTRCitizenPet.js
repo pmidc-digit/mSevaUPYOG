@@ -67,13 +67,15 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
       return;
     }
 
-    const { address, lastName, firstName, pincode, ...filteredOwnerDetails } = currentStepData.ownerDetails;
+    console.log("data", data);
+
+    const { address, name, pincode, ...filteredOwnerDetails } = currentStepData.ownerDetails;
     const formData = {
       tenantId, //change applicant to owner
 
       owner: {
         ...filteredOwnerDetails,
-        name: `${firstName} ${lastName}`,
+        name: name,
         // userName: `${firstName} ${lastName}`,
         userName: filteredOwnerDetails?.mobileNumber,
         tenantId,
@@ -81,9 +83,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
       },
       petDetails: {
         petName: data.petName,
-        petType: data.petType?.code,
+        petType: data.petType?.name,
         breedType: data.breedType?.code,
-        petGender: data.petGender?.code,
+        petGender: data.petGender?.name,
         petColor: data.petColor,
         lastVaccineDate: toEpochMilliseconds(data.lastVaccineDate),
         petAge: data.petAge,
@@ -96,12 +98,12 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
         addressId: currentStepData.ownerDetails.address,
       },
       applicationType: "NEWAPPLICATION",
-      ownerName: `${firstName} ${lastName}`, //change to ownerName
+      ownerName: name, //change to ownerName
       fatherName: filteredOwnerDetails?.fatherOrHusbandName,
       mobileNumber: filteredOwnerDetails?.mobileNumber,
       workflow: {
         action: "INITIATE",
-        comments: "Initial application submitted",
+        comments: "",
         status: "INITIATED",
       },
     };

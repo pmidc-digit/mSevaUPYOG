@@ -99,7 +99,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       workflow: {
         ...existingWorkflow,
         action: selectedAction?.action || "",
-        comments: selectedAction?.action || "",
+        comments: "",
         status: selectedAction?.action || "",
       },
       ownerName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`, //change to ownerName

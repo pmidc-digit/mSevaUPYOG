@@ -26,15 +26,25 @@ function PTRDocument({ petdetail = {} }) {
             documents?.map((document, index) => {
               let documentLink = pdfDownloadLink(data.pdfFiles, document?.filestoreId);
               return (
-                <a target="_" href={documentLink} style={{ minWidth: "160px" }} key={index}>
+                <a
+                  target="_"
+                  href={documentLink}
+                  style={{
+                    minWidth: "160px",
+                    margin: "12px", // spacing between cards
+                    display: "flex",
+                    flexDirection: "column", // stack icon & text
+                    alignItems: "center", // center text & icon
+                    textAlign: "center", // keep text centered
+                  }}
+                  key={index}
+                >
                   <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
                   <p
                     style={{
                       marginTop: "8px",
-                      maxWidth: "150px", // restrict width
-                      whiteSpace: "nowrap", // keep text in one line
-                      overflow: "hidden", // hide overflow
-                      textOverflow: "ellipsis", // add ...
+                      maxWidth: "140px",
+                      wordBreak: "break-word",
                     }}
                     title={t(`PT_${document?.documentType.replace(".", "_")}`)}
                   >

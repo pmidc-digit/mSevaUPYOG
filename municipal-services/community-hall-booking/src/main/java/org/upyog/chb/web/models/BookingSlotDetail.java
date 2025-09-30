@@ -23,38 +23,42 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 /**
- * Keeping slot details separately because it will be treated as booking item in booking
+ * Keeping slot details separately because it will be treated as booking item in
+ * booking
  */
 public class BookingSlotDetail {
-	
+
 	@JsonProperty("slotId")
 	private String slotId = null;
-	
+
 	@JsonProperty("bookingId")
 	private String bookingId = null;
-	
+
 	@NotBlank
 	@JsonProperty("hallCode")
 	private String hallCode;
-	
+
 	@NotBlank
 	private String capacity;
-	
+
 	@NonNull
 	@JsonFormat(pattern = CommunityHallBookingUtil.DATE_FORMAT)
 	private LocalDate bookingDate;
-	
+
+	@JsonFormat(pattern = CommunityHallBookingUtil.DATE_FORMAT)
+	private LocalDate bookingEndDate;
+
 	@NonNull
 	@JsonFormat(pattern = "HH:mm")
 	private LocalTime bookingFromTime;
-	
+
 	@NonNull
 	@JsonFormat(pattern = "HH:mm")
 	private LocalTime bookingToTime;
-	
+
 	@JsonProperty("status")
 	private String status = null;
-	
+
 	private AuditDetails auditDetails;
-	
+
 }

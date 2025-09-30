@@ -60,7 +60,6 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 	@Autowired
 	private CHBUserService chbUserService;
 
-
 	@Override
 	public CommunityHallBookingDetail createBooking(@Valid CommunityHallBookingRequest communityHallsBookingRequest) {
 		log.info("Create community hall booking for user : "
@@ -122,11 +121,13 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 
 		log.info("loading data based on criteria" + bookingSearchCriteria);
 
-		// Keep search simple: first fetch from DB based on provided criteria; owner details hydrated after
+		// Keep search simple: first fetch from DB based on provided criteria; owner
+		// details hydrated after
 		String plainMobile = bookingSearchCriteria.getMobileNumber();
 
-		// Encrypt applicant mobile for DB side filter (applicant table) THIS IS DONE THAT IF WE WANT TO SEARCH BY THE MOBILE NUMBER IN THE APPLICANT DETAILS
-		//OR WE CAN GET THE OWNERS ASSOCIATED WITH THAT MOBILENUMBER
+		// Encrypt applicant mobile for DB side filter (applicant table) THIS IS DONE
+		// THAT IF WE WANT TO SEARCH BY THE MOBILE NUMBER IN THE APPLICANT DETAILS
+		// OR WE CAN GET THE OWNERS ASSOCIATED WITH THAT MOBILENUMBER
 		if (plainMobile != null && plainMobile.trim().length() > 9) {
 			ApplicantDetail applicantDetail = ApplicantDetail.builder()
 					.applicantMobileNo(plainMobile).build();
@@ -142,7 +143,8 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 
 			log.info("loading data based on criteria after encrypting mobile no : " + bookingSearchCriteria);
 
-			// Additionally, use plain mobile to fetch owner UUIDs from user-service and include them in filter
+			// Additionally, use plain mobile to fetch owner UUIDs from user-service and
+			// include them in filter
 			try {
 				String digits = plainMobile.replaceAll("\\D", "");
 				if (digits.length() == 10) {
@@ -172,11 +174,15 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		}
 		bookingDetails = encryptionService.decryptObject(bookingDetails, info);
 
-		// We will Populate owners using owner UUIDs from DB which will be fetched from the repository using the getUser and user-service user details
+		// We will Populate owners using owner UUIDs from DB which will be fetched from
+		// the repository using the getUser and user-service user details
 		try {
-			java.util.List<String> bookingIds = bookingDetails.stream().map(CommunityHallBookingDetail::getBookingId).collect(java.util.stream.Collectors.toList());
-			java.util.Map<String, java.util.List<String>> bookingToOwnerUuids = bookingRepository.getOwnerUuidsByBookingIds(bookingIds);
-			java.util.Set<String> allOwnerUuids = bookingToOwnerUuids.values().stream().flatMap(java.util.Collection::stream).filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+			java.util.List<String> bookingIds = bookingDetails.stream().map(CommunityHallBookingDetail::getBookingId)
+					.collect(java.util.stream.Collectors.toList());
+			java.util.Map<String, java.util.List<String>> bookingToOwnerUuids = bookingRepository
+					.getOwnerUuidsByBookingIds(bookingIds);
+			java.util.Set<String> allOwnerUuids = bookingToOwnerUuids.values().stream().flatMap(java.util.Collection::stream)
+					.filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toSet());
 			if (!allOwnerUuids.isEmpty()) {
 				org.upyog.chb.web.models.CommunityHallBookingSearchCriteria tmp = new org.upyog.chb.web.models.CommunityHallBookingSearchCriteria();
 				tmp.setTenantId(bookingSearchCriteria.getTenantId());
@@ -185,7 +191,8 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 				java.util.Map<String, OwnerInfo> byUuid = new java.util.HashMap<>();
 				if (users != null && users.getUser() != null) {
 					for (OwnerInfo u : users.getUser()) {
-						if (u.getUuid() != null) byUuid.put(u.getUuid(), u);
+						if (u.getUuid() != null)
+							byUuid.put(u.getUuid(), u);
 					}
 				}
 				for (CommunityHallBookingDetail bd : bookingDetails) {
@@ -194,7 +201,8 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 						java.util.List<OwnerInfo> owners = new java.util.ArrayList<>();
 						for (String uuid : uuids) {
 							OwnerInfo o = byUuid.get(uuid);
-							if (o != null) owners.add(o);
+							if (o != null)
+								owners.add(o);
 						}
 						bd.setOwners(owners);
 					}
@@ -277,7 +285,7 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 	}
 
 	public CommunityHallBookingDetail updateBooking(CommunityHallBookingRequest communityHallsBookingRequest,
-													PaymentDetail paymentDetail, BookingStatusEnum status) {
+			PaymentDetail paymentDetail, BookingStatusEnum status) {
 
 		if (communityHallsBookingRequest == null || communityHallsBookingRequest.getHallsBookingApplication() == null) {
 			throw new CustomException("INVALID_REQUEST", "Booking request or booking application cannot be null");
@@ -327,29 +335,33 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 			communityHallsBookingRequest.getHallsBookingApplication().setWorkflow(workflowFromRequest);
 		}
 		if (uploadedDocumentDetailsFromRequest != null) {
-			communityHallsBookingRequest.getHallsBookingApplication().setUploadedDocumentDetails(uploadedDocumentDetailsFromRequest);
+			communityHallsBookingRequest.getHallsBookingApplication()
+					.setUploadedDocumentDetails(uploadedDocumentDetailsFromRequest);
 		}
 
-		// Restore owners from request if provided (owners are always sent in update requests)
+		// Restore owners from request if provided (owners are always sent in update
+		// requests)
 		if (ownersFromRequest != null && !ownersFromRequest.isEmpty()) {
 			communityHallsBookingRequest.getHallsBookingApplication().setOwners(ownersFromRequest);
 		}
 
-		// Extract existing document IDs from ORIGINAL DB documents (not the converted ones)
+		// Extract existing document IDs from ORIGINAL DB documents (not the converted
+		// ones)
 		Set<String> existingDocIds = originalDbDocuments.stream()
 				.map(DocumentDetail::getDocumentDetailId)
 				.collect(Collectors.toSet());
 
 		log.info("Existing document IDs from DB: {}", existingDocIds);
 		if (uploadedDocumentDetailsFromRequest != null) {
-			uploadedDocumentDetailsFromRequest.forEach(doc ->
-					log.info("Frontend document ID: {} for type: {}", doc.getDocumentDetailId(), doc.getDocumentType()));
+			uploadedDocumentDetailsFromRequest.forEach(
+					doc -> log.info("Frontend document ID: {} for type: {}", doc.getDocumentDetailId(), doc.getDocumentType()));
 		}
 
 		enrichmentService.enrichUpdateBookingRequest(communityHallsBookingRequest, null, existingDocIds);
 
 		if (communityHallsBookingRequest.getHallsBookingApplication().getWorkflow() != null
-				&& "VERIFIED".equalsIgnoreCase(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction())) {
+				&& "VERIFIED"
+						.equalsIgnoreCase(communityHallsBookingRequest.getHallsBookingApplication().getWorkflow().getAction())) {
 			demandService.createDemand(communityHallsBookingRequest, mdmsData, true);
 		}
 
@@ -362,7 +374,7 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 			}
 		}
 
-		//set the payment details
+		// set the payment details
 		if (paymentDetail != null) {
 			communityHallsBookingRequest.getHallsBookingApplication().setReceiptNo(paymentDetail.getReceiptNumber());
 			communityHallsBookingRequest.getHallsBookingApplication().setPaymentDate(paymentDetail.getReceiptDate());
@@ -376,7 +388,6 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 				communityHallsBookingRequest.getHallsBookingApplication(),
 				communityHallsBookingRequest.getRequestInfo());
 	}
-
 
 	/**
 	 * We are updating booking status synchronously for updating booking status on
@@ -529,7 +540,6 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 
 		List<CommunityHallSlotAvailabilityDetail> availabiltityDetailsList = new ArrayList<CommunityHallSlotAvailabilityDetail>();
 		LocalDate startDate = CommunityHallBookingUtil.parseStringToLocalDate(criteria.getBookingStartDate());
-
 		LocalDate endDate = CommunityHallBookingUtil.parseStringToLocalDate(criteria.getBookingEndDate());
 
 		List<LocalDate> totalDates = new ArrayList<>();
@@ -545,6 +555,7 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 					"Booking is not allowed for this no of days.");
 		}
 
+		// Generate slots based on MDMS time slot configuration or hall codes
 		totalDates.stream().forEach(date -> {
 			List<String> hallCodes = new ArrayList<>();
 			if (StringUtils.isNotBlank(criteria.getHallCode())) {
@@ -560,9 +571,16 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		// Setting hall status to booked if it is already booked by checking in the
 		// database entry
 		availabiltityDetailsList.stream().forEach(detail -> {
-			if (availabiltityDetails.contains(detail)) {
-				detail.setSlotStaus(BookingStatusEnum.BOOKED.toString());
-			}
+			// Find matching database record for this slot
+			availabiltityDetails.stream()
+				.filter(dbDetail -> dbDetail.equals(detail))
+				.findFirst()
+				.ifPresent(dbDetail -> {
+					// Update status and copy time information from database
+					detail.setSlotStaus(BookingStatusEnum.BOOKED.toString());
+					detail.setFromTime(dbDetail.getFromTime());
+					detail.setToTime(dbDetail.getToTime());
+				});
 		});
 
 		return availabiltityDetailsList;

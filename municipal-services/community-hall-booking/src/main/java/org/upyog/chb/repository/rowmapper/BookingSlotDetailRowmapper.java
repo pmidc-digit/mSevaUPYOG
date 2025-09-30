@@ -19,11 +19,13 @@ public class BookingSlotDetailRowmapper implements ResultSetExtractor<List<Booki
 	public List<BookingSlotDetail> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		List<BookingSlotDetail> bookingSlotDetails = new ArrayList<>();
 		while (rs.next()) {
-			
 
 			BookingSlotDetail slotDetail = BookingSlotDetail.builder().slotId(rs.getString("slot_id"))
 					.bookingId(rs.getString("booking_id")).hallCode(rs.getString("hall_code"))
 					.bookingDate(CommunityHallBookingUtil.parseStringToLocalDate(rs.getString("booking_date")))
+					.bookingEndDate(rs.getString("booking_end_date") != null
+							? CommunityHallBookingUtil.parseStringToLocalDate(rs.getString("booking_end_date"))
+							: null)
 					.bookingFromTime(LocalTime.parse(rs.getString("booking_from_time")))
 					.bookingToTime(LocalTime.parse(rs.getString("booking_to_time")))
 					.status(rs.getString("status"))

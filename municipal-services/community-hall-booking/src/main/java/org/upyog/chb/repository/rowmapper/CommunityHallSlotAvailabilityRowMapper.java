@@ -13,19 +13,24 @@ import org.upyog.chb.util.CommunityHallBookingUtil;
 import org.upyog.chb.web.models.CommunityHallSlotAvailabilityDetail;
 
 @Component
-public class CommunityHallSlotAvailabilityRowMapper implements ResultSetExtractor<List<CommunityHallSlotAvailabilityDetail>> {
+public class CommunityHallSlotAvailabilityRowMapper
+		implements ResultSetExtractor<List<CommunityHallSlotAvailabilityDetail>> {
 
 	@Override
 	public List<CommunityHallSlotAvailabilityDetail> extractData(ResultSet rs) throws SQLException, DataAccessException {
 		List<CommunityHallSlotAvailabilityDetail> availabiltityDetails = new ArrayList<>();
 		while (rs.next()) {
 			/**
-			 * chbd.tenant_id, chbd.community_hall_code, bsd.hall_code, bsd.status,bsd.booking_date
+			 * chbd.tenant_id, chbd.community_hall_code, bsd.hall_code,
+			 * bsd.status,bsd.booking_date
 			 */
 			CommunityHallSlotAvailabilityDetail availabiltityDetail = CommunityHallSlotAvailabilityDetail.builder()
-					.bookingDate(CommunityHallBookingUtil.convertDateFormat(rs.getString("booking_date"), CommunityHallBookingConstants.DATE_FORMAT))
+					.bookingDate(CommunityHallBookingUtil.convertDateFormat(rs.getString("booking_date"),
+							CommunityHallBookingConstants.DATE_FORMAT))
 					.communityHallCode(rs.getString("community_hall_code"))
 					.hallCode(rs.getString("hall_code"))
+					.fromTime(rs.getString("booking_from_time"))
+					.toTime(rs.getString("booking_to_time"))
 					.slotStaus(rs.getString("status"))
 					.tenantId(rs.getString("tenant_id"))
 					.build();

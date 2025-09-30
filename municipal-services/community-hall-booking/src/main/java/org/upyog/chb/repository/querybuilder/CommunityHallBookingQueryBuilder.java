@@ -16,67 +16,69 @@ public class CommunityHallBookingQueryBuilder {
 	@Autowired
 	private CommunityHallBookingConfiguration bookingConfiguration;
 
-    private static final StringBuilder bookingDetailsQuery = new StringBuilder(
-	    "SELECT ecbd.booking_id, booking_no, payment_date, application_date, tenant_id, community_hall_code, \n"
-				+ "booking_status, special_category, purpose, purpose_description, receipt_no, ecbd.createdby, ecbd.createdtime, \n"
-				+ "ecbd.lastmodifiedby, ecbd.lastmodifiedtime,ecbd.permission_letter_filestore_id, ecbd.payment_receipt_filestore_id, \n" 
-				+ "appl.applicant_detail_id, applicant_name, applicant_email_id, applicant_mobile_no,\n"
-				+ "applicant_alternate_mobile_no, account_no, ifsc_code, bank_name, bank_branch_name, \n"
-				+ "account_holder_name, address_id, door_no, house_no, address_line_1, \n"
-				+ "landmark, city, city_code, pincode, street_name, locality, locality_code \n" 
-				+ "FROM public.eg_chb_booking_detail ecbd \n"
-				+ "join public.eg_chb_applicant_detail appl on ecbd.booking_id = appl.booking_id \n"
-				+ "join public.eg_chb_address_detail addr on appl.applicant_detail_id = addr.applicant_detail_id ");
+	private static final StringBuilder bookingDetailsQuery = new StringBuilder(
+			"SELECT ecbd.booking_id, booking_no, payment_date, application_date, tenant_id, community_hall_code, \n"
+					+ "booking_status, special_category, purpose, purpose_description, receipt_no, ecbd.createdby, ecbd.createdtime, \n"
+					+ "ecbd.lastmodifiedby, ecbd.lastmodifiedtime,ecbd.permission_letter_filestore_id, ecbd.payment_receipt_filestore_id, \n"
+					+ "appl.applicant_detail_id, applicant_name, applicant_email_id, applicant_mobile_no,\n"
+					+ "applicant_alternate_mobile_no, account_no, ifsc_code, bank_name, bank_branch_name, \n"
+					+ "account_holder_name, address_id, door_no, house_no, address_line_1, \n"
+					+ "landmark, city, city_code, pincode, street_name, locality, locality_code \n"
+					+ "FROM public.eg_chb_booking_detail ecbd \n"
+					+ "join public.eg_chb_applicant_detail appl on ecbd.booking_id = appl.booking_id \n"
+					+ "join public.eg_chb_address_detail addr on appl.applicant_detail_id = addr.applicant_detail_id ");
 
 	private static final String slotDetailsQuery = "select * from public.eg_chb_slot_detail where booking_id in (";
 
 	private static final String documentDetailsQuery = "select * from public.eg_chb_document_detail  where booking_id in (";
 
-	private final String paginationWrapper = "SELECT * FROM " + "(SELECT *, DENSE_RANK() OVER (ORDER BY application_date DESC) offset_ FROM " + "({})"
+	private final String paginationWrapper = "SELECT * FROM "
+			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY application_date DESC) offset_ FROM " + "({})"
 			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
 
-	private static final String COMMUNITY_HALL_SLOTS_AVAIALABILITY_QUERY = "SELECT ecbd.tenant_id, ecbd.community_hall_code, ecsd.capacity, ecsd.hall_code, ecsd.status,ecsd.booking_date \n"
+	private static final String COMMUNITY_HALL_SLOTS_AVAIALABILITY_QUERY = "SELECT ecbd.tenant_id, ecbd.community_hall_code, ecsd.capacity, ecsd.hall_code, ecsd.status, ecsd.booking_date, ecsd.booking_from_time, ecsd.booking_to_time \n"
 			+ "	FROM eg_chb_booking_detail ecbd\n"
 			+ "	join eg_chb_slot_detail ecsd on ecbd.booking_id = ecsd.booking_id"
 			+ "	LEFT JOIN eg_chb_payment_timer ecpt ON ecbd.booking_id = ecpt.booking_id\n"
 			+ " where  ecbd.tenant_id= ? and ecbd.community_hall_code = ?\n"
-			+ " and ecsd.status in ('BOOKED', 'PENDING_FOR_PAYMENT') and \n"
+			+ " and ecsd.status in ('BOOKED', 'PENDING_FOR_PAYMENT', 'INITIATE') and \n"
 			+ "	ecsd.booking_date >= ?::DATE and ecsd.booking_date <=  ?::DATE ";
-		//	+ "	AND ecsd.hall_code in (?)";
-	
-	//private static final String COUNT_WRAPPER = " SELECT COUNT(*) FROM ({INTERNAL_QUERY}) AS count ";
-	
-	private static final String bookingDetailsCountCount = "SELECT count(ecbd.booking_id) \n" 
+	// + " AND ecsd.hall_code in (?)";
+
+	// private static final String COUNT_WRAPPER = " SELECT COUNT(*) FROM
+	// ({INTERNAL_QUERY}) AS count ";
+
+	private static final String bookingDetailsCountCount = "SELECT count(ecbd.booking_id) \n"
 			+ "FROM public.eg_chb_booking_detail ecbd \n"
 			+ "join public.eg_chb_applicant_detail appl on ecbd.booking_id = appl.booking_id \n";
-	
-	
-	//public static final String PAYMENT_TIMER_INSERT_QUERY = "INSERT INTO eg_chb_payment_timer(booking_id, createdby, createdtime, status) VALUES (?, ?, ?, ?);";
+
+	// public static final String PAYMENT_TIMER_INSERT_QUERY = "INSERT INTO
+	// eg_chb_payment_timer(booking_id, createdby, createdtime, status) VALUES (?,
+	// ?, ?, ?);";
 	public static final String PAYMENT_TIMER_INSERT_QUERY = "INSERT INTO eg_chb_payment_timer(booking_id, createdby, createdtime, status, booking_no, community_hall_code, hall_code, booking_date, tenant_id, lastmodifiedby, lastmodifiedtime) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 
 	public static final String PAYMENT_TIMER_DELETE_FOR_BOOKING_ID_QUERY = "DELETE FROM eg_chb_payment_timer WHERE booking_id IN (%s)";
-	
+
 	public static final String PAYMENT_TIMER_SELECT_EXPIRED_QUERY = "SELECT * FROM eg_chb_payment_timer WHERE ? - createdtime > ? and status = ?";
-	
+
 	public static final String UPDATE_BOOKING_DETAIL_QUERY = "update eg_chb_booking_detail set booking_status = ?, lastmodifiedby = ?, lastmodifiedtime = ? "
 			+ ", receipt_no = ?, payment_date = ? where booking_id in (?) ";
-	
+
 	public static final String UPDATE_BOOKING_SLOT_QUERY = "update eg_chb_slot_detail set status = ?, lastmodifiedby = ?, lastmodifiedtime = ? "
 			+ " where booking_id in (?)  ";
-	
+
 	public static final String INSERT_BOOKING_DETAIL_AUDIT_QUERY = "INSERT INTO public.eg_chb_booking_detail_audit SELECT * FROM public.eg_chb_booking_detail WHERE booking_id in (?) ";
-	
+
 	public static final String INSERT_SLOT_DETAIL_AUDIT_QUERY = "INSERT INTO public.eg_chb_slot_detail_audit SELECT * FROM public.eg_chb_slot_detail WHERE booking_id in (?) ";
-	
+
 	public static final String GET_BOOKING_PAYMENT_TIMER_VALUE_QUERY = "SELECT * from eg_chb_payment_timer where  booking_id in (?)";
-	
-	
+
 	public static final String UPADTE_BOOKING_PAYMENT_TIMER_VALUE_QUERY = "UPDATE eg_chb_payment_timer " +
-            " SET status = ? WHERE booking_id = ?";
-	
-	public static final String UPDATE_BOOKING_STATUS =  "update eg_chb_booking_detail set booking_status = ?, lastmodifiedby = ?, lastmodifiedtime = ? "
+			" SET status = ? WHERE booking_id = ?";
+
+	public static final String UPDATE_BOOKING_STATUS = "update eg_chb_booking_detail set booking_status = ?, lastmodifiedby = ?, lastmodifiedtime = ? "
 			+ " where booking_id in (?) ";
-	
+
 	public static final String SELECT_TIMER_QUERY = " SELECT * "
 			+ "		    FROM eg_chb_payment_timer "
 			+ "		    WHERE tenant_id = ? "
@@ -94,21 +96,21 @@ public class CommunityHallBookingQueryBuilder {
 	public String getCommunityHallBookingSearchQuery(CommunityHallBookingSearchCriteria criteria,
 			List<Object> preparedStmtList) {
 		StringBuilder builder;
-		
-		if(criteria.isCountCall()) {
+
+		if (criteria.isCountCall()) {
 			builder = new StringBuilder(bookingDetailsCountCount);
-		}else {
+		} else {
 			builder = new StringBuilder(bookingDetailsQuery);
 		}
-		
-	boolean hasOwnerIds = criteria.getOwnerIds() != null && !criteria.getOwnerIds().isEmpty();
 
-		if(criteria.getFromDate() != null || criteria.getToDate() != null) {
+		boolean hasOwnerIds = criteria.getOwnerIds() != null && !criteria.getOwnerIds().isEmpty();
+
+		if (criteria.getFromDate() != null || criteria.getToDate() != null) {
 			builder.append(" join public.eg_chb_slot_detail ecsd ON ecsd.booking_id = ecbd.booking_id ");
 		}
 
 		// Do not join owner table in main query; use EXISTS subquery for filtering
-		
+
 		if (criteria.getTenantId() != null) {
 			if (criteria.getTenantId().split("\\.").length == 1) {
 
@@ -136,21 +138,21 @@ public class CommunityHallBookingQueryBuilder {
 			builder.append(" ecbd.booking_no IN (").append(createQueryParams(applicationNos)).append(")");
 			addToPreparedStatement(preparedStmtList, applicationNos);
 		}
-		
+
 		String status = criteria.getStatus();
 		if (status != null) {
 			addClauseIfRequired(preparedStmtList, builder);
 			builder.append(" ecbd.booking_status =  ? ");
 			preparedStmtList.add(status);
 		}
-		
+
 		if (criteria.getCommunityHallCode() != null) {
 			addClauseIfRequired(preparedStmtList, builder);
 			builder.append(" ecbd.community_hall_code =  ? ");
 			preparedStmtList.add(criteria.getCommunityHallCode());
 		}
-		
-	String mobileNo = criteria.getMobileNumber();
+
+		String mobileNo = criteria.getMobileNumber();
 
 		if (mobileNo != null) {
 			List<String> mobileNos = Arrays.asList(mobileNo.split(","));
@@ -158,7 +160,8 @@ public class CommunityHallBookingQueryBuilder {
 			if (hasOwnerIds) {
 				// applicant mobile OR owners (from user-service) match via EXISTS
 				builder.append(" (appl.applicant_mobile_no IN (")
-						.append(createQueryParams(mobileNos)).append(") OR EXISTS (SELECT 1 FROM public.eg_chb_owner o WHERE o.booking_id = ecbd.booking_id AND o.uuid IN (");
+						.append(createQueryParams(mobileNos)).append(
+								") OR EXISTS (SELECT 1 FROM public.eg_chb_owner o WHERE o.booking_id = ecbd.booking_id AND o.uuid IN (");
 				List<String> ownerIds = Arrays.asList(criteria.getOwnerIds().toArray(new String[0]));
 				builder.append(createQueryParams(ownerIds)).append(") ))");
 				addToPreparedStatement(preparedStmtList, mobileNos);
@@ -182,12 +185,13 @@ public class CommunityHallBookingQueryBuilder {
 		if (hasOwnerIds) {
 			List<String> ownerIds = Arrays.asList(criteria.getOwnerIds().toArray(new String[0]));
 			addClauseIfRequired(preparedStmtList, builder);
-			builder.append(" EXISTS (SELECT 1 FROM public.eg_chb_owner o WHERE o.booking_id = ecbd.booking_id AND o.uuid IN (")
+			builder
+					.append(" EXISTS (SELECT 1 FROM public.eg_chb_owner o WHERE o.booking_id = ecbd.booking_id AND o.uuid IN (")
 					.append(createQueryParams(ownerIds)).append(") )");
 			addToPreparedStatement(preparedStmtList, ownerIds);
 		}
 
-		//createdby search criteria
+		// createdby search criteria
 		List<String> createdBy = criteria.getCreatedBy();
 		if (!CollectionUtils.isEmpty(createdBy)) {
 
@@ -196,7 +200,7 @@ public class CommunityHallBookingQueryBuilder {
 			addToPreparedStatement(preparedStmtList, createdBy);
 		}
 
-		//From booking date to booking date search criteria
+		// From booking date to booking date search criteria
 		final String DATE_CAST = " ?::DATE ";
 		if (criteria.getFromDate() != null && criteria.getToDate() != null) {
 			addClauseIfRequired(preparedStmtList, builder);
@@ -213,20 +217,19 @@ public class CommunityHallBookingQueryBuilder {
 			builder.append(" ecsd.booking_date <= ").append(DATE_CAST);
 			preparedStmtList.add(criteria.getToDate());
 		}
-		
+
 		String query = null;
-		
-		if(criteria.isCountCall()) {
-			//pagination attributes not required for count query
+
+		if (criteria.isCountCall()) {
+			// pagination attributes not required for count query
 			query = builder.toString();
 		} else {
-			//Add pagination attributes for booking details query
+			// Add pagination attributes for booking details query
 			query = addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
 		}
-		
+
 		return query;
 	}
-	
 
 	/**
 	 * add if clause to the Statement if required or else AND
@@ -341,8 +344,8 @@ public class CommunityHallBookingQueryBuilder {
 		return builder.toString();
 	}
 
-
-	//making a simple search to get the booking ids and then it will be easy rather than making a join
+	// making a simple search to get the booking ids and then it will be easy rather
+	// than making a join
 	public String getOwnerUuidsQuery(List<String> bookingIds) {
 		StringBuilder builder = new StringBuilder("select booking_id, uuid from public.eg_chb_owner where booking_id in (");
 		builder.append(createQueryParams(bookingIds)).append(")");
@@ -355,7 +358,7 @@ public class CommunityHallBookingQueryBuilder {
 
 		paramsList.add(searchCriteria.getTenantId());
 		paramsList.add(searchCriteria.getCommunityHallCode());
-//		paramsList.add(SlotStatusEnum.BOOKED.toString());
+		// paramsList.add(SlotStatusEnum.BOOKED.toString());
 		paramsList.add(searchCriteria.getBookingStartDate());
 		paramsList.add(searchCriteria.getBookingEndDate());
 

@@ -43,27 +43,46 @@ public class CommunityHallBookingValidator {
 					"Booking of multiple halls are not allowed.");
 		}
 
-		if(!validateBookingDate(bookingRequest.getHallsBookingApplication().getBookingSlotDetails())) {
+		if (!validateBookingDate(bookingRequest.getHallsBookingApplication().getBookingSlotDetails())) {
 			throw new CustomException(CommunityHallBookingConstants.INVALID_BOOKING_DATE,
 					"Booking date is not valid.");
 		}
 
 		mdmsValidator.validateMdmsData(bookingRequest, mdmsData);
-		// Documents are provided in update call, not mandatory on create. Validate only if provided.
+		// Documents are provided in update call, not mandatory on create. Validate only
+		// if provided.
 		if (bookingRequest.getHallsBookingApplication().getUploadedDocumentDetails() != null) {
 			validateDuplicateDocuments(bookingRequest);
 		}
 	}
 
-	public void validateUpdate(CommunityHallBookingDetail bookingDetailFromRequest, CommunityHallBookingDetail bookingDetailFromDB) {
-		log.info("validating master data for update  booking request for  booking no : " + bookingDetailFromRequest.getBookingNo());
-		//TODO: Add condition for status from to
+	public void validateUpdate(CommunityHallBookingDetail bookingDetailFromRequest,
+			CommunityHallBookingDetail bookingDetailFromDB) {
+		log.info("validating master data for update  booking request for  booking no : "
+				+ bookingDetailFromRequest.getBookingNo());
+		// TODO: Add condition for status from to
 	}
 
 	private boolean validateBookingDate(List<BookingSlotDetail> bookingSlotDetails) {
 		LocalDate currentDate = CommunityHallBookingUtil.getCurrentDate();
-		boolean isBookingDateValid = bookingSlotDetails.stream().anyMatch(slotDetail ->
-				currentDate.isBefore(slotDetail.getBookingDate()));
+
+		// Validate that booking date is in the future
+		boolean isBookingDateValid = bookingSlotDetails.stream()
+				.anyMatch(slotDetail -> currentDate.isBefore(slotDetail.getBookingDate()));
+
+		// Validate that bookingEndDate is not before bookingDate (if provided)
+		boolean isEndDateValid = bookingSlotDetails.stream().allMatch(slotDetail -> {
+			if (slotDetail.getBookingEndDate() != null) {
+				return !slotDetail.getBookingEndDate().isBefore(slotDetail.getBookingDate());
+			}
+			return true; // If bookingEndDate is null, validation passes
+		});
+
+		if (!isEndDateValid) {
+			throw new CustomException(CommunityHallBookingConstants.INVALID_BOOKING_DATE,
+					"Booking end date cannot be before booking start date.");
+		}
+
 		return isBookingDateValid;
 	}
 
@@ -76,7 +95,8 @@ public class CommunityHallBookingValidator {
 			List<String> documentFileStoreIds = new LinkedList<String>();
 			bookingRequest.getHallsBookingApplication().getUploadedDocumentDetails().forEach(document -> {
 				if (documentFileStoreIds.contains(document.getFileStoreId()))
-					throw new CustomException(CommunityHallBookingConstants.DUPLICATE_DOCUMENT_UPLOADED, "Same document cannot be used multiple times");
+					throw new CustomException(CommunityHallBookingConstants.DUPLICATE_DOCUMENT_UPLOADED,
+							"Same document cannot be used multiple times");
 				else
 					documentFileStoreIds.add(document.getFileStoreId());
 			});
@@ -94,18 +114,20 @@ public class CommunityHallBookingValidator {
 		log.info("Validating search request for criteria " + criteria);
 		String userType = requestInfo.getUserInfo().getType();
 
+		if (!requestInfo.getUserInfo().getType().equalsIgnoreCase(CommunityHallBookingConstants.CITIZEN)
+				&& criteria.isEmpty())
+			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH,
+					"Search without any paramters is not allowed");
 
-		if (!requestInfo.getUserInfo().getType().equalsIgnoreCase(CommunityHallBookingConstants.CITIZEN) && criteria.isEmpty())
-			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "Search without any paramters is not allowed");
-
-		if (!requestInfo.getUserInfo().getType().equalsIgnoreCase(CommunityHallBookingConstants.CITIZEN) && !criteria.tenantIdOnly()
+		if (!requestInfo.getUserInfo().getType().equalsIgnoreCase(CommunityHallBookingConstants.CITIZEN)
+				&& !criteria.tenantIdOnly()
 				&& criteria.getTenantId() == null)
 			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "TenantId is mandatory in search");
 
-		if (requestInfo.getUserInfo().getType().equalsIgnoreCase(CommunityHallBookingConstants.CITIZEN) && !criteria.isEmpty()
+		if (requestInfo.getUserInfo().getType().equalsIgnoreCase(CommunityHallBookingConstants.CITIZEN)
+				&& !criteria.isEmpty()
 				&& !criteria.tenantIdOnly() && criteria.getTenantId() == null)
 			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "TenantId is mandatory in search");
-
 
 		String allowedParamStr = null;
 
@@ -125,6 +147,7 @@ public class CommunityHallBookingValidator {
 			validateSearchParams(criteria, allowedParams);
 		}
 	}
+
 	/**
 	 * Validates if the paramters coming in search are allowed
 	 *
@@ -154,7 +177,8 @@ public class CommunityHallBookingValidator {
 			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "Search on mobile number is not allowed");
 
 		if (criteria.getCommunityHallCode() != null && !allowedParams.contains("communityHallCode"))
-			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH, "Search on community hall name is not allowed");
+			throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH,
+					"Search on community hall name is not allowed");
 
 		if (criteria.getFromDate() != null) {
 			LocalDate fromDate = CommunityHallBookingUtil.parseStringToLocalDate(criteria.getFromDate());
@@ -164,7 +188,7 @@ public class CommunityHallBookingValidator {
 			}
 		}
 
-		if(criteria.getFromDate() != null) {
+		if (criteria.getFromDate() != null) {
 			LocalDate fromDate = CommunityHallBookingUtil.parseStringToLocalDate(criteria.getFromDate());
 			if (fromDate.isBefore(CommunityHallBookingUtil.getMonthsAgo(6))) {
 				throw new CustomException(CommunityHallBookingConstants.INVALID_SEARCH,

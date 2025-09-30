@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * Representation of a address. Indiavidual APIs may choose to extend from this using allOf if more details needed to be added in their case. 
+ * Representation of a address. Indiavidual APIs may choose to extend from this
+ * using allOf if more details needed to be added in their case.
  */
 @ApiModel(description = "Representation of a address. Indiavidual APIs may choose to extend from this using allOf if more details needed to be added in their case. ")
 @Validated
@@ -23,36 +24,30 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Address   {
-	
-		private String addressId;
-		
-		private String applicantDetailId;
+public class Address {
 
-        private String doorNo;
+    private String addressId;
 
-        private String houseNo;
-        
-        private String streetName;
+    private String applicantDetailId;
 
-        private String addressLine1;
+    private String doorNo;
 
-        private String landmark;
+    private String houseNo;
 
-        @NotBlank
-        private String city;
-        
-        @NotBlank
-        private String cityCode;
+    private String streetName;
 
-        @NotBlank
-        private String locality;
+    private String addressLine1;
 
-        @NotBlank
-        private String localityCode;
-        
-        @NotBlank
-        private String pincode;
-        
+    private String landmark;
+
+    private String city;
+
+    private String cityCode;
+
+    private String locality;
+
+    private String localityCode;
+
+    private String pincode;
+
 }
-

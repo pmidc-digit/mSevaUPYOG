@@ -186,7 +186,7 @@ console.log(filteredAssessment);
           },
         },
       };
-      const previousCheckpoint = timeline[index - 1];
+      const previousCheckpoint = timeline?.[index - 1];
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
         name: checkpoint?.assignes?.[0]?.name,
@@ -194,7 +194,7 @@ console.log(filteredAssessment);
         //     ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
         //     : checkpoint?.assignes?.[0]?.mobileNumber,
         comment: t(checkpoint?.comment),
-        wfComment: previousCheckpoint ? previousCheckpoint.wfComment : [],
+        wfComment: previousCheckpoint ? previousCheckpoint?.wfComment : [],
         thumbnailsToShow: checkpoint?.thumbnailsToShow,
       };
 
@@ -744,108 +744,7 @@ console.log(filteredAssessment);
           )}
         </React.Fragment>
       )}
-      {/* table for DCB Details */}
-      {/* <CardSectionHeader style={{ marginBottom: "16px", marginTop: "16px", fontSize: "24px" }}>DCB Details</CardSectionHeader>
-      <table border="1px" style={tableStyles.table}>
-        <thead>
-          <tr>
-            <th style={tableStyles.th}>Installments</th>
-            <th colSpan="3" style={tableStyles.th}>
-              Demand
-            </th>
-            <th colSpan="3" style={tableStyles.th}>
-              Collection
-            </th>
-            <th colSpan="3" style={tableStyles.th}>
-              Balance
-            </th>
-            <th style={tableStyles.th}>Advance</th>
-          </tr>
-          <tr>
-            <th style={tableStyles.th}></th>
-            <th style={tableStyles.th}>Tax</th>
-            <th style={tableStyles.th}>Interest</th>
-            <th style={tableStyles.th}>Penalty</th>
-            <th style={tableStyles.th}>Tax</th>
-            <th style={tableStyles.th}>Interest</th>
-            <th style={tableStyles.th}>Penalty</th>
-            <th style={tableStyles.th}>Tax</th>
-            <th style={tableStyles.th}>Interest</th>
-            <th style={tableStyles.th}>Penalty</th>
-            <th style={tableStyles.th}>Advance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {demandData?.map((item) => {
-            return (
-              <tr>
-                <td style={tableStyles.td}>
-                  {item.taxPeriodFrom}-{item.taxPeriodTo}
-                </td>
-                <td style={tableStyles.td}>{item.demandTax}</td>
-                <td style={tableStyles.td}>{item.demandInterest}</td>
-                <td style={tableStyles.td}>{item.demandPenality}</td>
-                <td style={tableStyles.td}>{item.collectionTax}</td>
-                <td style={tableStyles.td}>{item.collectionInterest}</td>
-                <td style={tableStyles.td}>{item.collectionPenality}</td>
-                <td style={tableStyles.td}>{item.balanceTax}</td>
-                <td style={tableStyles.td}>{item.balanceInterest}</td>
-                <td style={tableStyles.td}>{item.balancePenality}</td>
-                <td style={tableStyles.td}>{item.advance}</td>
-              </tr>
-            );
-          })}
-          {/* <tr>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-      <td style={tableStyles.td}>0.0</td>
-    </tr> */}
-          {/* <tr>
-            <th style={tableStyles.th}>Total</th>
-            <td style={tableStyles.td}>{totalDemandTax}</td>
-            <td style={tableStyles.td}>{totalDemandInterest}</td>
-            <td style={tableStyles.td}>{totalDemandPenality}</td>
-            <td style={tableStyles.td}>{totalCollectionTax}</td>
-            <td style={tableStyles.td}>{totalCollectionInterest}</td>
-            <td style={tableStyles.td}>{totalCollectionPenality}</td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-          </tr>
-          <tr>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <th style={tableStyles.th}>Total</th>
-            <td style={tableStyles.td}>{totalBalanceTax}</td>
-            <td style={tableStyles.td}>0</td>
-            <td style={tableStyles.td}>0</td>
-            <td style={tableStyles.td}>0</td>
-          </tr>
-          <tr>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <td style={tableStyles.td}></td>
-            <th style={tableStyles.th}>Total Balance</th>
-            <td style={tableStyles.td}>{totalBalanceTax}</td>
-          </tr>
-        </tbody> */}
-      {/* </table> */}
+      
 
 
       {window.location.href.includes("/pt/")?<ActionBar className="clear-search-container" style={{ display: "block" }}>

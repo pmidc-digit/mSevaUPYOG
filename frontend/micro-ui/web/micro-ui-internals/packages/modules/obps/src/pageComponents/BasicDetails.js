@@ -34,6 +34,10 @@ const BasicDetails = ({ formData, onSelect, config }) => {
   );
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    sessionStorage.removeItem("ArchitectConsentdocFilestoreid");
+  },[])
+
   const handleKeyPress = async (event) => {
     if (event.key === "Enter") {
       if (!scrutinyNumber?.edcrNumber) return;
@@ -89,17 +93,21 @@ const BasicDetails = ({ formData, onSelect, config }) => {
   disableVlaue = JSON.parse(disableVlaue);
 
   const getDetails = async () => {
+    setIsLoading(true)
     const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, stateCode);
     if (details?.type == "ERROR") {
       setShowToast({ message: details?.message });
       setBasicData(null);
+      setIsLoading(false);
     }
     if (details?.edcrNumber) {
       setBasicData(details);
       setShowToast(null);
+      setIsLoading(false);
     }
   };
 
+  useEffect(()=>{
   if (disableVlaue) {
     let edcrApi = sessionStorage.getItem("isEDCRAPIType");
     edcrApi = edcrApi ? JSON.parse(edcrApi) : false;
@@ -108,8 +116,9 @@ const BasicDetails = ({ formData, onSelect, config }) => {
       getDetails();
     }
   }
+  },[])
 
-  if(isLoading) return (<Loader />);
+  if(isLoading || isMdmsLoading) return (<Loader />);
 
   return (
     <div>
@@ -130,7 +139,7 @@ const BasicDetails = ({ formData, onSelect, config }) => {
       </div>
       {basicData && (
         <Card>
-          <CardCaption>{t(`BPA_SCRUTINY_DETAILS`)}</CardCaption>
+          {/* <CardCaption>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardCaption> */}
           <CardHeader>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardHeader>
           <StatusTable>
             <Row
@@ -149,7 +158,7 @@ const BasicDetails = ({ formData, onSelect, config }) => {
             />
           </StatusTable>
           <ActionBar>
-          {riskType ? <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length || isLoading} /> : <Loader />}
+          {riskType ? <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length || isLoading || isMdmsLoading} /> : <Loader />}
           </ActionBar>
         </Card>
       )}

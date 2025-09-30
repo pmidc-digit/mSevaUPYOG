@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
+import { TextInput, CardLabel, Dropdown, TextArea, ActionBar, SubmitBar, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
 
 const Breed_Type = [{ i18nKey: `PTR_GENDER`, code: `123`, name: `test` }];
@@ -15,6 +15,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const { data: CHBDetails = [], isLoading: CHBLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "CommunityHalls" }]);
   const { data: CHBPurpose = [], isLoading: CHBPurposeLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Purpose" }]);
+  const { data: SpecialCategory = [], isLoading: CHBSpecialCategoryLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "SpecialCategory" }]);
 
   const onSubmit = async (data) => {
     console.log("data===", data);
@@ -31,14 +32,19 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       status: "INITIATE",
     }));
 
+    console.log("getHallDetails", getHallDetails);
+
     const payload = {
       hallsBookingApplication: {
         tenantId,
         bookingStatus: "INITIATED",
         applicationDate: now,
+        communityHallCode: getHallDetails?.[0]?.communityHallId || "",
         purpose: {
           purpose: data?.purpose?.code,
         },
+        specialCategory: data?.specialCategory?.code,
+        purposeDescription: data?.purposeDescription,
         bookingSlotDetails,
         owners: [
           {
@@ -55,7 +61,7 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         },
       },
     };
-    goNext(data);
+    // goNext(data);
     return;
     const response = await Digit.CHBServices.create(payload);
     console.log("response===", response);
@@ -64,7 +70,8 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   useEffect(() => {
     console.log("getHallDetails", getHallDetails);
-  }, [getHallDetails]);
+    console.log("SpecialCategory", SpecialCategory);
+  }, [getHallDetails, SpecialCategory]);
 
   useEffect(() => {
     const formattedData = currentStepData?.venueDetails;
@@ -132,9 +139,6 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 <div style={{ paddingTop: 4 }}>
                   <div style={{ fontSize: 14, fontWeight: 700, lineHeight: "1.1" }}>{ad.name}</div>
                   <div style={{ marginTop: 6, fontSize: 12, color: "#666", display: "grid", gridTemplateColumns: "auto 1fr", gap: "4px 8px" }}>
-                    <div style={{ fontWeight: 600 }}>ID:</div>
-                    <div>{ad.communityHallId}</div>
-
                     <div style={{ fontWeight: 600 }}>Type:</div>
                     <div>{ad.type}</div>
 
@@ -219,7 +223,9 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
             ))}
           </div>
 
-          <CardLabel>Purpose</CardLabel>
+          <CardLabel>
+            {t("Purpose")} <span style={{ color: "red" }}>*</span>
+          </CardLabel>
           <Controller
             control={control}
             name={"purpose"}
@@ -227,6 +233,47 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               <Dropdown className="form-field" select={props.onChange} selected={props.value} option={CHBPurpose?.CHB?.Purpose} optionKey="name" />
             )}
           />
+
+          <CardLabel>
+            {t("Special Category")} <span style={{ color: "red" }}>*</span>
+          </CardLabel>
+          <Controller
+            control={control}
+            name={"specialCategory"}
+            render={(props) => (
+              <Dropdown
+                className="form-field"
+                select={props.onChange}
+                selected={props.value}
+                option={SpecialCategory?.CHB?.SpecialCategory}
+                optionKey="name"
+              />
+            )}
+          />
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">
+              {t("Purpose Description")} <span style={{ color: "red" }}>*</span>
+            </CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name={"purposeDescription"}
+                render={(props) => (
+                  <TextArea
+                    type={"textarea"}
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
         </div>
         <ActionBar>
           <SubmitBar label="Next" submit="submit" />

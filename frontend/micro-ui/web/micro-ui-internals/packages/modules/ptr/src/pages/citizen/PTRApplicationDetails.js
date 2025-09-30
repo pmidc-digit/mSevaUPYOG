@@ -665,7 +665,16 @@ const PTRApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_SEARCH_BREED_TYPE")} text={pet_details?.petDetails?.breedType || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_DOCTOR_NAME")} text={pet_details?.petDetails?.doctorName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_CLINIC_NAME")} text={pet_details?.petDetails?.clinicName || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_VACCINATED_DATE")} text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("PTR_VACCINATED_DATE")}
+              // text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")}
+              text={
+                pet_details?.petDetails?.lastVaccineDate
+                  ? new Date(Number(pet_details.petDetails.lastVaccineDate)).toLocaleDateString("en-GB")
+                  : t("CS_NA")
+              }
+            />
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
           </StatusTable>
 

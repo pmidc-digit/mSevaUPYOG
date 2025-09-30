@@ -12,13 +12,14 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
   const stateId = Digit.ULBService.getStateId();
 
   // const { isLoading, data } = Digit.Hooks.ptr.usePetMDMS(stateId, "PetService", "Documents");
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", ["Documents"]);
-  console.log("formDataINPTRDOCUMENT", documents, formData);
+  // const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS("pb", "CHB", ["Documents"]);
+  const { data, isLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Documents" }]);
 
   const handleSubmit = () => {
     let document = formData.documents;
     let documentStep;
     documentStep = { ...document, documents: documents };
+    console.log("documentStep config.key", documentStep);
     onSelect(config.key, documentStep);
   };
   const onSkip = () => onSelect();
@@ -26,7 +27,7 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
 
   useEffect(() => {
     let count = 0;
-    data?.PetService?.Documents?.map((doc) => {
+    data?.CHB?.Documents?.map((doc) => {
       doc.hasDropdown = true;
 
       let isRequired = false;
@@ -44,7 +45,7 @@ const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {data?.NDC?.Documents?.map((document, index) => {
+          {data?.CHB?.Documents?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}
@@ -184,7 +185,9 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
       {getLoading && <Loader />}
       {doc?.hasDropdown ? (
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))}</CardLabel>
+          <CardLabel className="card-label-smaller">
+            {t(doc?.code)} {doc?.required && " *"}
+          </CardLabel>
           <Dropdown
             className="form-field"
             selected={selectedDocument}

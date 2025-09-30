@@ -10,12 +10,16 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
   const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Documents" }]);
+  const checkFormData = useSelector((state) => state.chb.CHBApplicationFormReducer.formData || {});
 
   const currentStepData = useSelector(function (state) {
     return state.chb.CHBApplicationFormReducer.formData && state.chb.CHBApplicationFormReducer.formData[config?.key]
       ? state.chb.CHBApplicationFormReducer.formData[config?.key]
       : {};
   });
+
+  console.log("currentStepData===", currentStepData);
+  console.log("checkFormData===", checkFormData);
 
   function goNext(finalData) {
     console.log("Current Data", finalData);

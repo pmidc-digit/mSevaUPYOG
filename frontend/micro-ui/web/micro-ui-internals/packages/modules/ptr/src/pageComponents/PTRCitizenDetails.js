@@ -11,6 +11,7 @@ import {
   CardSectionHeader,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 
 const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -20,7 +21,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const { mobileNumber, emailId, name } = userInfo?.info;
   // Split full name into firstName (all but last word) and lastName (last word)
   const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
-
+  const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
+  console.log("apiDataCheck for here :>> ", apiDataCheck);
   const isCitizen = window.location.href.includes("citizen");
   const {
     control,
@@ -50,13 +52,15 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   };
 
   useEffect(() => {
-    const formattedData = currentStepData?.ownerDetails;
+    const formattedData = apiDataCheck?.[0]?.owner || currentStepData?.ownerDetails;
     if (formattedData) {
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });
+      setValue("address", apiDataCheck?.[0]?.address?.addressId || currentStepData?.ownerDetails?.address || "");
+      setValue("pincode", apiDataCheck?.[0]?.address?.pincode || currentStepData?.ownerDetails?.pincode || "");
     }
-  }, [currentStepData, setValue]);
+  }, [apiDataCheck, currentStepData, setValue]);
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;

@@ -186,7 +186,7 @@ const PTRWFApplicationTimeline = (props) => {
     setLatestComment(filtData?.comment);
     updatedApplicant.workflow = {
       action: filtData.action,
-      assignes: filtData?.assignee,
+      assignes: filtData.action === "SENDBACKTOCITIZEN" ? [props.application?.auditDetails?.createdBy] : filtData?.assignee,
       comments: filtData?.comment,
       documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
     };

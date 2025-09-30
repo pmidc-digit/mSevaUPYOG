@@ -47,7 +47,7 @@ public class AdvertisementBookingQueryBuilder {
 		    + "AND eacd.booking_date <= ?::DATE\n";
 
 	public static final String BOOKING_UPDATE_QUERY = "UPDATE public.eg_adv_booking_detail "
-	        + "SET booking_status= ?, payment_date = ?, lastmodifiedby = ?, lastmodifiedtime = ?, "
+	        + "SET booking_status= ?, receipt_no = ?,payment_date = ?, lastmodifiedby = ?, lastmodifiedtime = ?, "
 	        + "permission_letter_filestore_id = ?, payment_receipt_filestore_id = ? WHERE booking_id = ?";
 
 	public static final String CART_UPDATE_QUERY = "UPDATE public.eg_adv_cart_detail "

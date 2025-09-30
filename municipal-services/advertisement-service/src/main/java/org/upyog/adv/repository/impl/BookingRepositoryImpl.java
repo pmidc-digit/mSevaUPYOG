@@ -719,7 +719,9 @@ public class BookingRepositoryImpl implements BookingRepository {
 		String bookingAuditQuery = queryBuilder.createBookingDetailAudit();
 		String cartAuditQuery = queryBuilder.createCartDetailAudit();
 
-		jdbcTemplate.update(bookingQuery, bookingapplication.getBookingStatus(), bookingapplication.getPaymentDate(),
+
+
+		jdbcTemplate.update(bookingQuery, bookingapplication.getBookingStatus(),bookingapplication.getReceiptNo(), bookingapplication.getPaymentDate(),
 				auditDetails.getLastModifiedBy(), auditDetails.getLastModifiedTime(),
 				bookingapplication.getPermissionLetterFilestoreId(), bookingapplication.getPaymentReceiptFilestoreId(),
 				bookingapplication.getBookingId());

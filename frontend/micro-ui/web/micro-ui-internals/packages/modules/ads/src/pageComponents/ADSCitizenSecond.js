@@ -17,6 +17,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [placeNameState, setPlaceNameState] = useState("");
   const [adsList, setAdsList] = useState([]);
   const [adsScheduleErrors, setAdsScheduleErrors] = useState({});
+  const [showToast, setShowToast] = useState(null);
 
   const [editingIndex, setEditingIndex] = useState(null);
 
@@ -336,10 +337,11 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     formState: { errors },
     getValues,
     trigger,
+    setError,
+    clearErrors,
   } = useForm({
     defaultValues: initialFormDefaults,
   });
-
   const setGlobalSchedule = useCallback(
     (enable) => {
       // grab current form/global times
@@ -926,7 +928,22 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const onSubmit = handleSubmit((data) => {
     if (Object.keys(adsScheduleErrors).length > 0) {
-      alert("Please fix all schedule errors before proceeding.");
+      setShowToast({
+        key: true, // or whatever truthy value your Toast expects for `error`
+        label: "Please fix all schedule errors before proceeding.",
+      });
+      // setError("siteSelection", {
+      //   type: "manual",
+      //   message: "Please fix all schedule errors before proceeding.",
+      // });
+      return;
+    }
+
+    if ((mdmsCards?.length || 0) === 0 && (adsList?.length || 0) === 0) {
+      setError("siteSelection", {
+        type: "manual",
+        message: "Please select at least one site before proceeding.",
+      });
       return;
     }
 
@@ -950,6 +967,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           status: "BOOKING_CREATED",
           availabilityStatus: c.available === false ? "UNAVAILABLE" : "AVAILABLE",
           amount: c.amount || "",
+          nightLight: c.light,
         };
       })
     );
@@ -957,6 +975,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     // current manual ads
     const adsToSubmit = [...adsList, ...mdmsCartDetails];
 
+    console.log("adsToSubmit", adsToSubmit);
     // current normalized cartDetails
     const cartDetails = adsToSubmit.map((d) => ({
       addType: d.advertisementType?.code || d.advertisementType || d.addType || "",
@@ -973,6 +992,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       status: "BOOKING_CREATED",
       availabilityStatus: d.availabilityStatus || (d.available === false ? "UNAVAILABLE" : "AVAILABLE") || "",
       rate: d.amount || "",
+      light: d.light,
     }));
 
     // --- NEW: collect other saved sites (excluding current site) ---
@@ -1069,57 +1089,37 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     );
   }, [adsScheduleMap]);
 
+  console.log("errors", errors);
+
+  useEffect(() => {
+    if ((mdmsCards?.length || 0) > 0 || (adsList?.length || 0) > 0) {
+      clearErrors("siteSelection");
+    }
+  }, [mdmsCards, adsList, clearErrors]);
+
+  useEffect(() => {
+    // Clear ADS-related persistence when starting a new application
+    reset(initialFormDefaults);
+    setMdmsCards([]);
+    setAdsList([]);
+    setAdsScheduleMap({});
+    setPlaceNameState("");
+    setGlobalScheduleEnabled(false);
+    setAdsForLocation([])
+    dispatch(RESET_ADS_NEW_APPLICATION_FORM());
+    localStorage.removeItem("ADS:global");
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("ADS:site:")) {
+        localStorage.removeItem(key);
+      }
+    }
+    sessionStorage.removeItem("ADS:session:last");
+    dispatch(RESET_ADS_NEW_APPLICATION_FORM());
+  }, []);
+
   return (
     <React.Fragment>
-      {/* Added advertisements preview */}
-      {/* {adsList.length > 0 && (
-        <div style={{ margin: "12px 0", padding: 8, border: "1px dashed #ddd", borderRadius: 6 }}>
-          <div style={{ fontWeight: 600, marginBottom: 8 }}>{t ? t("Added Advertisements") : "Added Advertisements"}</div>
-          {adsList.map((ad, i) => (
-            <div
-              key={i}
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: 8,
-                alignItems: "center",
-                padding: "6px 0",
-                borderBottom: i < adsList.length - 1 ? "1px solid #eee" : "none",
-                cursor: "pointer",
-                background: editingIndex === i ? "#fafafa" : "transparent",
-                paddingRight: 12,
-              }}
-            >
-              <div onClick={() => editAdvertisement(i)} style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 500 }}>{ad.siteName?.name || ad.siteId || `Ad ${i + 1}`}</div>
-                <div style={{ fontSize: 12, color: "#666" }}>
-                  {ad.cartAddress ||
-                    ad.geoLocation?.formattedAddress ||
-                    (ad.geoLocation?.latitude ? `${ad.geoLocation.latitude}, ${ad.geoLocation.longitude}` : "")}
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => editAdvertisement(i)}
-                  style={{ background: "#fff", border: "1px solid #ccc", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}
-                >
-                  {t ? t("Edit") : "Edit"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeAdvertisement(i)}
-                  style={{ background: "transparent", border: "1px solid #ccc", padding: "6px 8px", borderRadius: 4, cursor: "pointer" }}
-                >
-                  {t ? t("Remove") : "Remove"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )} */}
-
       <form onSubmit={handleSubmit(onSubmit)}>
         <div>
           <CardLabel>
@@ -1218,7 +1218,9 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               );
             }}
           />
-          {errors.siteId && <p style={{ color: "red" }}>{errors.siteId.message}</p>}
+          {errors?.siteId && <p style={{ color: "red", marginTop: "-18px" }}>{errors?.siteId.message}</p>}
+
+          {errors?.siteSelection && <p style={{ color: "red", marginTop: "-18px" }}>{errors?.siteSelection?.message}</p>}
 
           <div style={{ margin: "12px 0", padding: 8, border: "1px solid #eee", borderRadius: 6 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
@@ -1343,11 +1345,12 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                 />
               )}
             />
-            {errors.bookingToTime && <p style={{ color: "red" }}>{errors.bookingToTime.message}</p>}
           </div>
 
           {adsForLocation.length > 0 && (
             <div style={{ margin: "12px 0" }}>
+              {errors.bookingToTime && <p style={{ color: "red" }}>{errors.bookingToTime.message}</p>}
+              {errors.scheduleValidation && <p style={{ color: "red", marginTop: "4px" }}>{errors.scheduleValidation.message}</p>}
               <div style={{ fontWeight: 600, marginBottom: 8 }}>{t ? t("ADS_IN_SELECTED_LOCATION") : "Advertisements in selected location"}</div>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -1438,6 +1441,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                       </div>
 
                       <div style={{ height: 8 }} />
+                      {/* {errors.siteSelection && <p style={{ color: "red", marginTop: "0.5rem" }}>{errors.siteSelection.message}</p>} */}
 
                       <div style={{ fontSize: 11, color: "#666" }}>End</div>
                       <div style={{ display: "flex", gap: 6 }}>
@@ -1509,24 +1513,41 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                               const end = effective.endDate && effective.endTime ? `${effective.endDate}T${effective.endTime}` : "";
 
                               if (!start || !end) {
-                                alert("Please fill both start and end date & time before adding.");
-                                return;
+                                setError("scheduleValidation", {
+                                  type: "manual",
+                                  message: "Please fill both start and end date & time before adding.",
+                                });
+                                return false;
                               }
+
                               if (typeof tomorrowStr !== "undefined" && (effective.startDate < tomorrowStr || effective.endDate < tomorrowStr)) {
-                                alert(`Dates must be from ${tomorrowStr} or later.`);
-                                return;
+                                setError("scheduleValidation", {
+                                  type: "manual",
+                                  message: `Dates must be from ${tomorrowStr} or later.`,
+                                });
+                                return false;
                               }
                               const startDt = new Date(start);
                               const endDt = new Date(end);
                               if (endDt <= startDt) {
-                                alert("End date/time must be after start date/time.");
+                                // alert("End date/time must be after start date/time.");
+                                setShowToast({
+                                  key: true,
+                                  label: "End date/time must be after start date/time.",
+                                });
                                 return;
                               }
 
                               if (adsScheduleErrors[ad.id]) {
-                                alert(adsScheduleErrors[ad.id]);
+                                // alert(adsScheduleErrors[ad.id]);
+                                setShowToast({
+                                  key: true,
+                                  label: adsScheduleErrors[ad.id],
+                                });
                                 return;
                               }
+
+                              clearErrors("scheduleValidation");
 
                               const locForAd = findLocationByCode ? findLocationByCode(ad.locationCode) : null;
                               const normalizedGeoForAd =
@@ -1539,6 +1560,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                                 width: ad.width,
                                 height: ad.height,
                                 amount: ad.amount,
+                                light: ad?.light,
                                 available: ad.available,
                                 locationCode: ad.locationCode,
                                 geoLocation: normalizedGeoForAd,
@@ -1622,7 +1644,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               />
             )}
           />
-          {errors.geoLocation && <p style={{ color: "red" }}>{errors.geoLocation.message}</p>}
+          {errors.geoLocation && <p style={{ color: "red", marginTop: "-18px" }}>{errors.geoLocation.message}</p>}
         </div>
 
         <ActionBar>
@@ -1630,6 +1652,17 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           <SubmitBar label="Next" submit="submit" />
         </ActionBar>
         {/* <button type="submit">submit</button> */}
+        {showToast && (
+          <Toast
+            error={showToast.key}
+            label={t(showToast.label)}
+            style={{ bottom: "0px" }}
+            onClose={() => {
+              setShowToast(null);
+            }}
+            isDleteBtn={true}
+          />
+        )}
       </form>
     </React.Fragment>
   );

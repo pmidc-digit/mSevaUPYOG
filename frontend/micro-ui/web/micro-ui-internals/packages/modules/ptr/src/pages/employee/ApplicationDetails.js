@@ -42,7 +42,6 @@ const ApplicationDetails = () => {
     config: { staleTime: 0, refetchOnMount: "always" },
   });
 
-  console.log("data :>> ", data);
   const [billData, setBillData] = useState(null);
 
   const PetRegistrationApplications = get(data, "PetRegistrationApplications", []);
@@ -170,30 +169,17 @@ const ApplicationDetails = () => {
     <React.Fragment>
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header>
-          {PetRegistrationApplications?.status == "approved" && dowloadOptions && dowloadOptions.length > 0 && (
+          {/* <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header> */}
+          {/* {PetRegistrationApplications?.status == "approved" && dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
               onHeadClick={() => setShowOptions(!showOptions)}
               displayOptions={showOptions}
               options={dowloadOptions}
             />
-          )}
+          )} */}
         </div>
         <Card>
-          <StatusTable>
-            <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
-          </StatusTable>
-
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>
-          <StatusTable>
-            <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressId || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_PINCODE")} text={pet_details?.address?.pincode || t("CS_NA")} />
-            {/* <Row className="border-none" label={t("PTR_CITY")} text={pet_details?.address?.city || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_STREET_NAME")} text={pet_details?.address?.street || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_HOUSE_NO")} text={pet_details?.address?.doorNo || t("CS_NA")} /> */}
-          </StatusTable>
-
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
@@ -204,6 +190,16 @@ const ApplicationDetails = () => {
             />
             <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
             <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
+            <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
+          </StatusTable>
+
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("WS_COMMON_TABLE_COL_ADDRESS")}</CardSubHeader>
+          <StatusTable>
+            <Row className="border-none" label={t("PTR_ADDRESS")} text={pet_details?.address?.addressId || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_PINCODE")} text={pet_details?.address?.pincode || t("CS_NA")} />
+            {/* <Row className="border-none" label={t("PTR_CITY")} text={pet_details?.address?.city || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_STREET_NAME")} text={pet_details?.address?.street || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_HOUSE_NO")} text={pet_details?.address?.doorNo || t("CS_NA")} /> */}
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PET_DETAILS")}</CardSubHeader>
@@ -244,7 +240,7 @@ const ApplicationDetails = () => {
           )}
         </Card>
 
-        {popup && <PTCitizenFeedbackPopUp setpopup={setpopup} setShowToast={setShowToast} data={data} />}
+        {/* {popup && <PTCitizenFeedbackPopUp setpopup={setpopup} setShowToast={setShowToast} data={data} />} */}
       </div>
     </React.Fragment>
   );

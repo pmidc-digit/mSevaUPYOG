@@ -78,6 +78,7 @@ const ADSApplicationDetails = () => {
 
   const BookingApplication = get(adsData, "bookingApplication", []);
   const adsId = get(adsData, "bookingApplication[0].bookingNo", []);
+  console.log("adsData", adsData);
 
   let ads_details = (BookingApplication && BookingApplication.length > 0 && BookingApplication[0]) || {};
   const application = ads_details;
@@ -354,15 +355,12 @@ const ADSApplicationDetails = () => {
           <StatusTable>
             <Row className="border-none" label={t("ADS_APPLICANT_NAME")} text={ads_details?.applicantDetail?.applicantName || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_MOBILE_NUMBER")} text={ads_details?.applicantDetail?.applicantMobileNo || t("CS_NA")} />
-            {/* <Row
-              className="border-none"
-              label={t("ADS_ALT_MOBILE_NUMBER")}
-              text={ads_details?.applicantDetail?.applicantAlternateMobileNo || t("CS_NA")}
-            /> */}
             <Row className="border-none" label={t("ADS_EMAIL_ID")} text={ads_details?.applicantDetail?.applicantEmailId || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_ADDRESS")} text={ads_details?.address?.addressId || t("CS_NA")} />
+            <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_ADDRESS_DETAILS")}</CardSubHeader>
+          {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_ADDRESS_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("ADS_HOUSE_NO")} text={ads_details?.address?.houseNo || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_HOUSE_NAME")} text={ads_details?.address?.houseName || t("CS_NA")} />
@@ -373,7 +371,7 @@ const ADSApplicationDetails = () => {
             <Row className="border-none" label={t("ADS_CITY")} text={ads_details?.address?.city || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_LOCALITY")} text={ads_details?.address?.locality || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
-          </StatusTable>
+          </StatusTable> */}
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_CART_DETAILS")}</CardSubHeader>
           <ApplicationTable
             t={t}
@@ -392,14 +390,23 @@ const ADSApplicationDetails = () => {
           />
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ADS_DOCUMENTS_DETAILS")}</CardSubHeader>
           <StatusTable>
-            {docs.map((doc, index) => (
-              <ADSDocument value={docs} Code={doc?.documentType} index={index} />
-            ))}
+            {docs?.length > 0 ? (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
+                {docs.map((doc, index) => (
+                  <div key={index}>
+                    {t(doc?.documentType)}
+                    <ADSDocument value={docs} Code={doc?.documentType} index={index} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
+            )}
           </StatusTable>
           <ADSWFApplicationTimeline application={application} id={ads_details?.bookingNo} userType={"citizen"} />
         </Card>
 
-        {showToast && <Toast error={showToast.key === "error"} label={actionError || error} onClose={() => setShowToast(null)} />}
+        {showToast && <Toast error={showToast.key === "error"} label={actionError || error} onClose={() => setShowToast(null)} isDleteBtn={true} />}
       </div>
     </React.Fragment>
   );

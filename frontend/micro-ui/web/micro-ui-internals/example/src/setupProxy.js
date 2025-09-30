@@ -107,6 +107,7 @@ module.exports = function (app) {
     "/pgr-ai-services/v1/request/_update",
     "/ndc-services",
     "/ndc-calculator",
+    '/bpa-calculator'
   ].forEach((location) => app.use(location, createProxy));
   ["/pb-egov-assets"].forEach((location) => app.use(location, assetsProxy));
 };

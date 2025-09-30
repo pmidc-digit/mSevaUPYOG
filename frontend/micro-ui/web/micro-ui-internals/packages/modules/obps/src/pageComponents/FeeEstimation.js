@@ -133,8 +133,8 @@ const FeeEstimation = ({
     const applicationFeeData = useMemo(() => {
         if (!data || !data?.Calculations?.[0]?.taxHeadEstimates || data?.Calculations?.[0].taxHeadEstimates.length === 0) return [];
         return data?.Calculations?.[0].taxHeadEstimates.map((tax, index) => ({
-            id: `app-${index}`,
-            title: tax.taxHeadCode || t("CS_NA"),
+            id: t(`app-${index}`),
+            title: t(tax.taxHeadCode) || t("CS_NA"),
             amount: tax.estimateAmount !== undefined && tax.estimateAmount !== null ? tax.estimateAmount : t("CS_NA"),
             category: tax.category || t("CS_NA"),
         }));
@@ -144,8 +144,8 @@ const FeeEstimation = ({
     const sanctionFeeData = useMemo(() => {
         if (!dataSan || !dataSan?.Calculations?.[0]?.taxHeadEstimates || dataSan?.Calculations?.[0].taxHeadEstimates.length === 0) return [];
         return dataSan?.Calculations?.[0].taxHeadEstimates.map((tax, index) => ({
-            id: `san-${index}`,
-            title: tax.taxHeadCode || t("CS_NA"),
+            id: t(`san-${index}`),
+            title: t(tax.taxHeadCode) || t("CS_NA"),
             amount: tax.estimateAmount !== undefined && tax.estimateAmount !== null ? tax.estimateAmount : t("CS_NA"),
             category: tax.category || t("CS_NA"),
         }));

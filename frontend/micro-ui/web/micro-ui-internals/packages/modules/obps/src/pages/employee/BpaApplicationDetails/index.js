@@ -187,7 +187,7 @@ const BpaApplicationDetail = () => {
       // Collect valid fileStoreIds
       const validFileStoreIds = fileKeys
         .map((key) => {
-          if (key === "lessAdjustmentFeeFiles") return data?.applicationData?.additionalDetails?.[key]?.[0] || null;
+          if (key === "lessAdjustmentFeeFiles") return data?.applicationData?.additionalDetails?.[key]?.[0]?.fileStoreId || null;
           return data?.applicationData?.additionalDetails?.[key]
         })
         .filter(

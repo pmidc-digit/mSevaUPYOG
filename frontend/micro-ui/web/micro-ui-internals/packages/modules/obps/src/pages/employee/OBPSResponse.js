@@ -136,7 +136,7 @@ const OBPSResponse = (props) => {
                 applicationData?.status == "PENDING_SANC_FEE_PAYMENT") &&
               billData?.length > 0 &&
               isPayButtonEnable ? (
-                <div>
+                <div style={{gap: "5px"}}>
                   <Link to={{ pathname: getPaymentURL(true) }}>
                     <SubmitBar label={t("WF_BPA_PAY")} style={{ margin: "10px 0px 0px 0px" }} />
                   </Link>

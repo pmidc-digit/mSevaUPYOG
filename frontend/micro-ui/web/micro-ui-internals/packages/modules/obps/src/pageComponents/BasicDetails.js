@@ -34,6 +34,10 @@ const BasicDetails = ({ formData, onSelect, config }) => {
   );
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    sessionStorage.removeItem("ArchitectConsentdocFilestoreid");
+  },[])
+
   const handleKeyPress = async (event) => {
     if (event.key === "Enter") {
       if (!scrutinyNumber?.edcrNumber) return;

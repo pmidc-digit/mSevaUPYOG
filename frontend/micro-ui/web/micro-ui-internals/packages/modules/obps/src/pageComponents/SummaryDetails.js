@@ -42,7 +42,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     const [showMobileInput, setShowMobileInput] = useState(false)
     const architectmobilenumber = user?.info?.mobileNumber;
     const [mobileNumber, setMobileNumber] = useState(() => architectmobilenumber || "");
-    const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid") || currentStepData?.currentStepData?.additionalDetails?.isArchitectDeclared;
+    const isArchitectDeclared = sessionStorage.getItem("ArchitectConsentdocFilestoreid");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [apiLoading, setApiLoading] = useState(false);
     const tenantId = localStorage.getItem("CITIZEN.CITY");
@@ -74,7 +74,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     
       const [uploadedFile, setUploadedFile] = useState();
       const [uploadedFileLess, setUploadedFileLess] = useState(() => {
-        return currentStepData?.createdResponse?.additionalDetails?.uploadedFileLess || [];
+        return currentStepData?.createdResponse?.additionalDetails?.lessAdjustmentFeeFiles || [];
       });
       const [file, setFile] = useState();
       // const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(tenantId.split(".")[0], "BPA", ["RiskTypeComputation"]);
@@ -111,9 +111,17 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
         setLessAdjusment(selfCert.BPA_LESS_ADJUSMENT_PLOT || "0");
     
         setOtherChargesDisc(otherDetails.otherFeesDiscription || "");
-        setUploadedFileLess(otherDetails.uploadedFileLess || []);
+        setUploadedFileLess(otherDetails.lessAdjustmentFeeFiles || []);
       }
     }, [currentStepData]);
+
+    useEffect(()=>{
+        if(!uploadedFile && uploadedFileLess?.length >0){
+            console.log("ApplicationFeesAndSanctionFee 1", uploadedFileLess);
+            
+            setUploadedFile(uploadedFileLess[0]?.fileStoreId)
+        }
+    },[uploadedFileLess])
 
     useEffect(async () => {
         if (currentStepData?.createdResponse?.edcrNumber) {
@@ -594,45 +602,48 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
 
     useEffect(() => {
         const fetchFileUrls = async () => {
-            if (!currentStepData?.createdResponse?.additionalDetails) return;
-
-            const fileKeys = ["ecbcCertificateFile", "greenuploadedFile", "uploadedFile"];
-
-            // Collect valid fileStoreIds
-            const validFileStoreIds = fileKeys
-                .map((key) => currentStepData?.createdResponse?.additionalDetails?.[key])
-                .filter(
-                    (id) => id && id !== "NA" && id !== "" && id !== null && id !== undefined
-                );
-
-            if (validFileStoreIds.length === 0) return;
-
-            try {
-                setIsFileLoading(true);
-
-                // Call Digit service
-                const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
-                if (result?.data?.fileStoreIds) {
-                    const urls = {};
-                    fileKeys.forEach((key) => {
-                        const fileId = currentStepData?.createdResponse?.additionalDetails?.[key];
-                        if (fileId && result.data?.[fileId]) {
-                            urls[key] = result.data?.[fileId];
-                        }
-                    });
-
-                    // Store URLs in state (example: object with keys)
-                    setFileUrls(urls);
+          if (!currentStepData?.createdResponse?.additionalDetails) return;
+    
+          const fileKeys = ["ecbcCertificateFile", "greenuploadedFile", "uploadedFile", "lessAdjustmentFeeFiles"];
+    
+          // Collect valid fileStoreIds
+          const validFileStoreIds = fileKeys
+            .map((key) => {
+              if (key === "lessAdjustmentFeeFiles") return currentStepData?.createdResponse?.additionalDetails?.[key]?.[0]?.fileStoreId || null;
+              return currentStepData?.createdResponse?.additionalDetails?.[key]
+            })
+            .filter(
+              (id) => id && id !== "NA" && id !== "" && id !== null && id !== undefined
+            );
+    
+          if (validFileStoreIds.length === 0) return;
+    
+          try {
+            setIsFileLoading(true);
+    
+            // Call Digit service
+            const result = await Digit.UploadServices.Filefetch(validFileStoreIds, state);
+            if (result?.data?.fileStoreIds) {
+              const urls = {};
+              fileKeys.forEach((key) => {
+                const fileId = currentStepData?.createdResponse?.additionalDetails?.[key];
+                if (fileId && result.data?.[fileId]) {
+                  urls[key] = result.data?.[fileId];
                 }
-            } catch (error) {
-                console.error("Error fetching file URLs", error);
-            } finally {
-                setIsFileLoading(false);
+              });
+    
+              // Store URLs in state (example: object with keys)
+              setFileUrls(urls);
             }
+          } catch (error) {
+            console.error("Error fetching file URLs", error);
+          } finally {
+            setIsFileLoading(false);
+          }
         };
-
+    
         fetchFileUrls();
-    }, [currentStepData?.createdResponse?.additionalDetails]);
+      }, [currentStepData?.createdResponse?.additionalDetails]);
 
       useEffect(() => {
       const fetchOwnerFileUrls = async () => {

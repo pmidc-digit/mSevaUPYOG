@@ -253,6 +253,17 @@ if (anyYes && !ecbcCertificateFile) {
   const [file, setFile] = useState()
   const Webview = !Digit.Utils.browser.isMobile()
   const acceptFormat = ".pdf"
+    const { data: commonmasterFields, isLoading: commonmasterFieldsLoading } = Digit.Hooks.useCustomMDMS(
+    Digit.ULBService.getStateId(),
+    "BPA",
+    [{ name: "MasterFields" }],
+    {
+      select: (data) => {
+        const formattedData = data?.["BPA"]?.["MasterFields"]
+        return formattedData
+      },
+    },
+  )
 
  
   useEffect(() => {
@@ -463,7 +474,7 @@ if (anyYes && !ecbcCertificateFile) {
           setUse(currentStepData?.createdResponse?.additionalDetails?.use);
         }
       }
-    }, [use, currentStepData?.createdResponse?.additionalDetails?.use]);
+    }, [use, currentStepData?.createdResponse?.additionalDetails?.use, commonmasterFieldsLoading, commonmasterFields]);
 
     // ✅ rating
     
@@ -641,17 +652,7 @@ if (anyYes && !ecbcCertificateFile) {
       }
     }, [rating, currentStepData?.createdResponse?.additionalDetails?.rating, commonrating]);
 
-  const { data: commonmasterFields } = Digit.Hooks.useCustomMDMS(
-    Digit.ULBService.getStateId(),
-    "BPA",
-    [{ name: "MasterFields" }],
-    {
-      select: (data) => {
-        const formattedData = data?.["BPA"]?.["MasterFields"]
-        return formattedData
-      },
-    },
-  )
+
 
   const selectmasterDrop = []
 

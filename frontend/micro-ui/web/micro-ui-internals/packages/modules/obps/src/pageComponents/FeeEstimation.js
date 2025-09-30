@@ -170,7 +170,6 @@ const sanctionFeeDataWithTotal = useMemo(() => {
     ];
 }, [sanctionFeeData, t]);
 
-console.log("ApplicationFeesAndSanctionFee", sanctionFeeDataWithTotal)
 
     useEffect(()=>{
         if(recalculate){

@@ -267,7 +267,7 @@ const PTRApplicationDetails = () => {
             <body>
               <div class="certificate-container">
                 <div class="header">
-                  <div class="title">MUNICIPAL CORPORATION, SAS NAGAR</div>
+                  <div class="title">MUNICIPAL CORPORATION</div>
                   <div class="subtitle">Pet Registration Certificate</div>
                 </div>
                 
@@ -336,7 +336,7 @@ const PTRApplicationDetails = () => {
                 <div class="owner-section">
                   <div class="detail-row">
                     <span class="detail-label">Owner Name</span>
-                    <span class="detail-value">${petData?.applicantName || "Not Specified"}</span>
+                    <span class="detail-value">${petData?.fatherName || "Not Specified"}</span>
                   </div>
                   <div class="detail-row">
                     <span class="detail-label">Father/Spouse Name</span>
@@ -358,7 +358,7 @@ const PTRApplicationDetails = () => {
                     <div class="signature-line"></div>
                     <div>Licensing Authority(CSI)</div>
                     <div>Municipal Corporation</div>
-                    <div>SAS Nagar</div>
+                 
                   </div>
                 </div>
 
@@ -497,7 +497,7 @@ const PTRApplicationDetails = () => {
               <div class="acknowledgement-container">
                 <div class="header">
                   <div class="title">Pet Registration Acknowledgement</div>
-                  <div class="subtitle">Municipal Corporation, SAS Nagar</div>
+                  <div class="subtitle">Municipal Corporation</div>
                 </div>
                 
                 <div class="acknowledgement-text">
@@ -528,15 +528,15 @@ const PTRApplicationDetails = () => {
                   </tr>
                   <tr>
                     <th>Owner Name</th>
-                    <td>${petData?.applicantName || "Not Specified"}</td>
+                    <td>${petData?.owner?.name || "Not Specified"}</td>
                   </tr>
                   <tr>
                     <th>Contact Number</th>
-                    <td>${petData?.mobileNumber || "Not Specified"}</td>
+                    <td>${petData?.owner?.mobileNumber || "Not Specified"}</td>
                   </tr>
                   <tr>
                     <th>Email</th>
-                    <td>${petData?.emailId || "Not Specified"}</td>
+                    <td>${petData?.owner?.emailId || "Not Specified"}</td>
                   </tr>
                   <tr>
                     <th>Application Status</th>
@@ -552,7 +552,7 @@ const PTRApplicationDetails = () => {
                 
                 <div class="footer">
                   <p>Generated on: ${currentDate}</p>
-                  <p>Municipal Corporation, SAS Nagar</p>
+                  <p>Municipal Corporation</p>
                   <p>This is a computer-generated document and does not require a signature.</p>
                 </div>
               </div>

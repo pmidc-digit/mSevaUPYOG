@@ -4,22 +4,22 @@ const useESign = () => {
   const eSignMutation = useMutation({
     mutationFn: async (eSignPayload) => {
 
-      const user = window.Digit.UserService.getUser();
-      const authToken = user?.access_token;
-      
-      if (!authToken) {
-        throw new Error('Authentication token not found. Please login again.');
+
+      // eSignPayload should be: { fileStoreId, tenantId }
+      const { fileStoreId, tenantId } = eSignPayload;
+      if (!fileStoreId || !tenantId) {
+        throw new Error('fileStoreId and tenantId are required for eSign.');
       }
+
+      const formData = new FormData();
+      formData.append('file', fileStoreId); // If backend expects actual file, pass File object instead
+      formData.append('tenantid', tenantId);
 
       const response = await fetch('/egov-esign/upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        },
-        body: JSON.stringify(eSignPayload)
+        body: formData,
+        credentials: 'include' // Send cookies (JSESSIONID)
       });
-
 
       if (!response.ok) {
         const errorText = await response.text();

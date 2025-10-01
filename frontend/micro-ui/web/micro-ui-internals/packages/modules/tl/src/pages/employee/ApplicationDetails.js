@@ -380,7 +380,7 @@ const ApplicationDetails = () => {
       const { fileStoreId } = await generateCertificateData();
 
       // Use custom hook for eSign
-      eSignCertificate(fileStoreId, {
+      eSignCertificate({ fileStoreId, tenantId }, {
         onSuccess: () => {
           console.log('✅ eSign process initiated successfully');
           setIsDisplayDownloadMenu(false);

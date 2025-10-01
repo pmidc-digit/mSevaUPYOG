@@ -475,6 +475,7 @@ export const SelectPaymentType = (props) => {
           onClose={() => {
             setShowToast(null);
           }}
+          isDleteBtn={true}
         />
       )}
       {showOwnerToast && (

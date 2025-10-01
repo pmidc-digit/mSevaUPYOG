@@ -54,7 +54,7 @@ export const PTRMyApplications = () => {
     let foundValue = servicedata?.Service?.find((ob) => ob?.referenceId?.includes(curservice?.applicationNumber));
 
     if (foundValue) return t("CS_CF_VIEW");
-    else return t("CS_CF_TRACK");
+    else return t("CS_VIEW_DETAILS");
   }
 
   if (isLoading || serviceloading) {

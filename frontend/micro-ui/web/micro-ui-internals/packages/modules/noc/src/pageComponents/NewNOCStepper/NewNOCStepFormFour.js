@@ -9,7 +9,7 @@ import NOCSummary from "../NOCSummary";
 
 const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
-  const [showToast, setShowToast] = useState(false);
+  const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
 
   const currentStepData = useSelector(function (state) {
@@ -42,67 +42,75 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   else {tenantId=window.localStorage.getItem("Employee.tenant-id");}
   
 
-  const goNext = async(action)=> {
+  const goNext = (action)=> {
     console.log("formData in parent SummaryPage", currentStepData);
 
-   try{
-      const res = await onSubmit(currentStepData,action);
-      
-      if (res?.isSuccess) {
-        if(window.location.href.includes("citizen")){
-           console.log("we are calling citizen response page")
-           history.replace({
-           pathname:`/digit-ui/citizen/noc/response/${res?.response?.Noc?.[0]?.applicationNo}`,
-           state: { data: res?.response }
-        });
-        }
-
-        else{
-           console.log("we are calling employee response page")
-           history.replace({
-           pathname: `/digit-ui/employee/noc/response/${res?.response?.Noc?.[0]?.applicationNo}`,
-           state: { data: res?.response }
-        });
-        }
-
-         onGoNext();
-        
-      } else {
-        console.error("Submission failed, not moving to next step.", res?.response);
-        setError("Update failed due to some error occurred, plz try after some time");
-        setShowToast(true);
-        
-      }
-   }catch(error){
-      //  alert(`Error: ${error?.message}`);
-     console.log("errors here in goNext - catch block", error);
-     setError("Update failed due to some error occurred, plz try again");
-     setShowToast(true);
-   }
-
+    onSubmit(currentStepData,action);
 
   }
 
   const onSubmit= async (data, selectedAction)=>{
     console.log("formData inside onSubmit", data);
 
+    if(window.location.pathname.includes("edit") && selectedAction.action === "EDIT"){
+        setShowToast({ key: "true", warning:true, message: "You may either Save or Resubmit your application here"});
+        return;
+    }
+
     const finalPayload = mapToNOCPayload(data, selectedAction);
     console.log("finalPayload here==>", finalPayload);
     
     try{
-    const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
-    //dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-    if (response?.ResponseInfo?.status === "successful") {
+       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
+   
+       if (response?.ResponseInfo?.status === "successful") {
           console.log("success: Update API ")
-          dispatch(RESET_NOC_NEW_APPLICATION_FORM());
-          return { isSuccess: true, response };
-     } else {
-          return { isSuccess: false, response };
-     }
+          // dispatch(RESET_NOC_NEW_APPLICATION_FORM());
 
+          if(window.location.href.includes("citizen")){
+
+           if(selectedAction.action == "CANCEL"){
+            setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully"});
+            setTimeout(()=>{
+               history.push(`/digit-ui/citizen/noc/my-application`);
+            },3000);
+           }
+
+           else{
+            //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
+            console.log("We are calling citizen response page");
+            history.replace({
+            pathname:`/digit-ui/citizen/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+            state: { data: response }
+           });
+          }
+          }
+          else{
+           console.log("we are calling employee response page");
+
+           if(selectedAction.action === "CANCEL"){
+            setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully"});
+            setTimeout(()=>{
+               history.push(`/digit-ui/employee/noc/inbox`);
+            },3000);
+           }
+           
+           else{
+             //Else case for "APPLY" or "RESUBMIT" or "DRAFT"
+           history.replace({
+           pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+           state: { data: response }
+           });
+          }
+        }
+          
+      } else {
+        console.error("Submission failed, not moving to next step.", res?.response);
+        setShowToast({ key: "true", error:true, message: "Something went wrong, please try after sometime"});
+      }
     }catch(error){
-      console.log("Error: Update API in onSubmit-catch block");
-      return { isSuccess: false, error };
+       console.log("errors here in goNext - catch block", error);
+       setShowToast({ key: "true", error:true, message: "Some error occurred, plz try later"});
     }
   }
 
@@ -121,8 +129,24 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
      //update data with redux as we can not use old data for update api 
      additionalDetails: {
       ...nocFormData?.apiData?.Noc?.[0]?.nocDetails.additionalDetails,
-      applicationDetails:{...nocFormData?.applicationDetails}, 
-      siteDetails:{...nocFormData?.siteDetails},
+      applicationDetails:{
+        ...nocFormData?.applicationDetails,
+          applicantGender : nocFormData?.applicationDetails?.applicantGender?.code || "",
+      }, 
+      siteDetails:{
+        ...nocFormData?.siteDetails,
+         ulbName: nocFormData?.siteDetails?.ulbName?.name || "",
+         roadType: nocFormData?.siteDetails?.roadType?.name || "",
+         buildingStatus:nocFormData?.siteDetails?.buildingStatus?.name || "",
+         isBasementAreaAvailable: nocFormData?.siteDetails?.isBasementAreaAvailable?.code || "",
+         district: nocFormData?.siteDetails?.district?.name || "",
+         zone: nocFormData?.siteDetails?.zone?.name || "",
+
+         specificationBuildingCategory: nocFormData?.siteDetails?.specificationBuildingCategory?.name || "",
+         specificationNocType: nocFormData?.siteDetails?.specificationNocType?.name || "",
+         specificationRestrictedArea: nocFormData?.siteDetails?.specificationRestrictedArea?.code || "",
+         specificationIsSiteUnderMasterPlan:nocFormData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code || ""
+      },
       coordinates:{...coordinates}
     }
    
@@ -150,16 +174,10 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     onBackClick(config.key, data);
   }
 
-  // const onFormValueChange = (setValue = true, data) => {
-  //   //console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
-  //   if (!_.isEqual(data, currentStepData)) {
-  //     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
-  //   }
-  // };
-
   const closeToast = () => {
-    setShowToast(false);
-    setError("");
+    // setShowToast(false);
+    // setError("");
+    setShowToast(null);
   };
    
   console.log("currentStepData in StepFour", currentStepData);
@@ -168,7 +186,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: applicationNo,
-    moduleCode: "NOC",
+    moduleCode: "obpas_noc",
   });
 
   console.log("workflow Details here==>", workflowDetails);
@@ -212,7 +230,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       </ActionBar>
       )}
 
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} />}
     </React.Fragment>
   );
 };

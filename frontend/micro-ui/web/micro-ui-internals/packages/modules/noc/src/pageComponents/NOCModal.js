@@ -37,6 +37,7 @@ const NOCModal = ({
   moduleCode,
   workflowDetails,
   showToast,
+  setShowToast,
   closeToast,
   errors,
   showErrorToast,
@@ -108,7 +109,7 @@ const NOCModal = ({
           setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
         } else {
           try {
-            const response = await Digit.UploadServices.Filestorage("PT", file, Digit.ULBService.getStateId());
+            const response = await Digit.UploadServices.Filestorage("NOC", file, Digit.ULBService.getStateId());
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
@@ -125,7 +126,7 @@ const NOCModal = ({
   useEffect(()=>{
     if(action?.action === "SENDBACKTOCITIZEN"){
       const uuid= applicationDetails?.Noc?.[0]?.auditDetails?.createdBy || null;
-      console.log("uuid here", uuid);
+     // console.log("uuid here", uuid);
       setSelectedApprover({uuid});
     }
   },[action]);
@@ -133,6 +134,23 @@ const NOCModal = ({
   console.log("selectedApprover", selectedApprover);
 
   function submit(data) {
+    console.log("data here in Modal", data);
+    
+    const mandatoryActions = [ "APPROVE","VERIFY","REJECT","SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER"];
+
+    let checkCommentsMandatory = mandatoryActions.includes(action?.action);
+
+    if (action?.isTerminateState) {
+      checkCommentsMandatory = true;
+    }
+
+    const commentsText = data?.comments?.toString().trim();
+
+    if (checkCommentsMandatory && !commentsText) {
+      setShowToast({ key: "true", warning:true, message: "Comments are required to update the application status" });
+     return;
+    }
+
     let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
     applicationData = {
       ...applicationData,
@@ -144,15 +162,17 @@ const NOCModal = ({
         ? [
             {
               documentType: file?.type,
-              documentUid: file?.name,
-              fileStoreId: uploadedFile,
+              // documentType: action?.action + "_DOC",
+              fileName: file?.name,
+              documentUid: uploadedFile,
+              filestoreId: uploadedFile,
               documentAttachment: uploadedFile
             },
           ]
         : null,
     };
 
-    //console.log("uploadedFile", uploadedFile, applicationData);
+    console.log("uploadedFile here in NOCModal", uploadedFile);
 
     submitAction({
       Licenses: [applicationData],
@@ -202,7 +222,7 @@ const NOCModal = ({
         // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
       {/* )} */}
-      {showToast && <Toast error={showToast.key === "error" ? true : false} label={errors} onClose={closeToast} isDleteBtn={true}/>}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} isDleteBtn={true}/>}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
     </Modal>
   ) : (

@@ -75,8 +75,6 @@ const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
 
-console.log("updatedCreateEmployeeconfig1", updatedCreateEmployeeconfig);
-
 const RenewPTRStepForm = () => {
   const history = useHistory();
   const formData = formState.formData;
@@ -86,7 +84,7 @@ const RenewPTRStepForm = () => {
   const formState = useSelector((state) => state.ptr.PTRNewApplicationFormReducer);
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
-   const [defaultValues, setDefaultValues] = useState(null);
+  const [defaultValues, setDefaultValues] = useState(null);
   console.log("defaultValues", defaultValues);
   console.log("formStatePTR: ", formState);
 
@@ -97,7 +95,6 @@ const RenewPTRStepForm = () => {
   useEffect(() => {
     dispatch(RESET_PTR_NEW_APPLICATION_FORM());
   }, []);
-
 
   const handleSubmit = () => {
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
@@ -129,8 +126,6 @@ const RenewPTRStepForm = () => {
   console.log("Data", data);
   const applicationData = data?.applicationData?.applicationData;
   console.log("applicationData", applicationData);
-
- 
 
   useEffect(() => {
     if (applicationData) {

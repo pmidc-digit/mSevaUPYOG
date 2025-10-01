@@ -33,14 +33,13 @@ const PTRWFApplicationTimeline = (props) => {
     config: { staleTime: 0, refetchOnMount: "always" },
   });
 
-  console.log(" majordata :>> ", data);
+  console.log("props.application", props.application);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
 
   const getTimelineCaptions = (checkpoint) => {
-    console.log("checkpoint is :>> ", checkpoint);
     if (checkpoint.state === "OPEN") {
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
@@ -155,6 +154,7 @@ const PTRWFApplicationTimeline = (props) => {
   const closeModal = () => {
     setSelectedAction(null);
     setShowModal(false);
+    setShowToast(false);
   };
 
   function onActionSelect(action) {
@@ -173,12 +173,9 @@ const PTRWFApplicationTimeline = (props) => {
   }
 
   const submitAction = async (data) => {
-    console.log("data  HUHHHH:>> ", data);
     // setShowModal(false);
     // setSelectedAction(null);
     const payloadData = props.application;
-
-    console.log("payloadData :>> ", payloadData);
 
     const updatedApplicant = {
       ...payloadData,
@@ -186,7 +183,6 @@ const PTRWFApplicationTimeline = (props) => {
     };
 
     const filtData = data?.Licenses?.[0];
-    console.log("filtData whyy :>> ", filtData);
     setLatestComment(filtData?.comment);
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -194,17 +190,15 @@ const PTRWFApplicationTimeline = (props) => {
       comments: filtData?.comment,
       documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
     };
-    if (!filtData?.assignee && filtData.action == "FORWARD") {
-      // setShowToast(true);
-      setShowToast({ key: "error", message: "Assignee is mandatory" });
-      setError("Assignee is mandatory");
-      return;
-    }
-    console.log("updatedApplicant :>> ", updatedApplicant);
+    // if (!filtData?.assignee && filtData.action == "FORWARD") {
+    //   // setShowToast(true);
+    //   setShowToast({ key: "error", message: "Assignee is mandatory" });
+    //   setError("Assignee is mandatory");
+    //   return;
+    // }
     const finalPayload = {
       PetRegistrationApplications: [updatedApplicant],
     };
-    console.log("finalPayload :>> ", finalPayload);
     try {
       const response = await Digit.PTRService.update({
         // tenantId,
@@ -276,7 +270,7 @@ const PTRWFApplicationTimeline = (props) => {
             </ConnectingCheckPoints>
           )}
 
-          {actions?.length > 0 && actions[0]?.action != "PAY" && (
+          {actions?.length > 0 && actions[0]?.action != "PAY" && !isCitizen && (
             <ActionBar>
               {displayMenu ? (
                 <Menu
@@ -313,7 +307,7 @@ const PTRWFApplicationTimeline = (props) => {
         </Fragment>
       )}
       {data && showNextActions(data?.actionState?.nextActions)}
-      {showToast && <Toast error={showToast.key === "error" ? true : false} label={error} onClose={closeToast} />}
+      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
     </React.Fragment>
   );
 };

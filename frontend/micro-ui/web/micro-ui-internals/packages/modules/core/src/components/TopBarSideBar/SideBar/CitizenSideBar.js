@@ -1,6 +1,4 @@
-import {
-  Loader, NavBar
-} from "@mseva/digit-ui-react-components";
+import { Loader, NavBar } from "@mseva/digit-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -40,7 +38,6 @@ const Profile = ({ info, stateName, t }) => {
       const uuid = info?.uuid;
       if (uuid) {
         const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
-        console.log(usersResponse, "USER RESPONSE IMAGE");
 
         if (usersResponse?.user?.length) {
           const userDetails = usersResponse.user[0];
@@ -56,14 +53,13 @@ const Profile = ({ info, stateName, t }) => {
   return (
     <div className="profile-section">
       <div className="imageloader imageloader-loaded">
-       <img
+        <img
           className="img-responsive img-circle img-Profile"
           src={profilePic || defaultImage}
           alt="Profile"
           style={{ objectFit: "contain", objectPosition: "center" }}
           onError={(e) => (e.currentTarget.src = defaultImage)}
         />
-
       </div>
       <div id="profile-name" className="label-container name-Profile">
         <div className="label-text">{info?.name}</div>
@@ -76,27 +72,29 @@ const Profile = ({ info, stateName, t }) => {
           <div className="label-text">{email}</div>
         </div>
       )}
-      <div id="profile-links">
-          Edit
-      </div>
+      <div id="profile-links">Edit</div>
       <div className="profile-divider"></div>
       {window.location.href.includes("/employee") &&
         !window.location.href.includes("/employee/user/login") &&
-        !window.location.href.includes("employee/user/language-selection") && (
-          <ChangeCity t={t} mobileView={true} />
-        )}
+        !window.location.href.includes("employee/user/language-selection") && <ChangeCity t={t} mobileView={true} />}
     </div>
   );
 };
-const PoweredBy = () => (
-  <div className="digit-footer" style={{ marginBottom: 0 }}>
-  </div>
-);
+const PoweredBy = () => <div className="digit-footer" style={{ marginBottom: 0 }}></div>;
 
 /* 
 Feature :: Citizen Webview sidebar
 */
-export const CitizenSideBar = ({ isOpen, isMobile = false, toggleSidebar, onLogout, isEmployee = false, linkData, islinkDataLoading, isSideBarScroll }) => {
+export const CitizenSideBar = ({
+  isOpen,
+  isMobile = false,
+  toggleSidebar,
+  onLogout,
+  isEmployee = false,
+  linkData,
+  islinkDataLoading,
+  isSideBarScroll,
+}) => {
   const { data: storeData, isFetched } = Digit.Hooks.useStore.getInitData();
   const { stateInfo } = storeData || {};
   const user = Digit.UserService.getUser();
@@ -176,11 +174,11 @@ export const CitizenSideBar = ({ isOpen, isMobile = false, toggleSidebar, onLogo
   let configEmployeeSideBar = {};
 
   if (!isEmployee) {
-    if(linkData && linkData.FSM){
+    if (linkData && linkData.FSM) {
       let FSM = [];
-      linkData.FSM.map((ele)=>{
-        ele.id && ele.link && FSM.push(ele)
-      })
+      linkData.FSM.map((ele) => {
+        ele.id && ele.link && FSM.push(ele);
+      });
       linkData.FSM = FSM;
     }
     Object.keys(linkData)
@@ -239,22 +237,24 @@ export const CitizenSideBar = ({ isOpen, isMobile = false, toggleSidebar, onLogo
         menuItems.splice(1, 0, {
           type: "dynamic",
           moduleName: t(`ACTION_TEST_${getParentDisplayName}`),
-          links: configEmployeeSideBar[keys[i]]?.map((ob) => {return {...ob, displayName: t(`ACTION_TEST_${ob?.displayName?.toUpperCase()?.replace(/[ -]/g, "_")}`)}}),
+          links: configEmployeeSideBar[keys[i]]?.map((ob) => {
+            return { ...ob, displayName: t(`ACTION_TEST_${ob?.displayName?.toUpperCase()?.replace(/[ -]/g, "_")}`) };
+          }),
           icon: configEmployeeSideBar[keys[i]][1]?.leftIcon,
         });
       }
     }
-     const indx = menuItems.findIndex(a => a.element === "HOME");
-     const home = menuItems.splice(indx,1);
-     const comp = menuItems.findIndex(a => a.element === "LANGUAGE");
-     const part = menuItems.splice(comp,menuItems?.length-comp);
-     menuItems.sort((a,b) => {
+    const indx = menuItems.findIndex((a) => a.element === "HOME");
+    const home = menuItems.splice(indx, 1);
+    const comp = menuItems.findIndex((a) => a.element === "LANGUAGE");
+    const part = menuItems.splice(comp, menuItems?.length - comp);
+    menuItems.sort((a, b) => {
       let c1 = a?.type === "dynamic" ? a?.moduleName : a?.text;
       let c2 = b?.type === "dynamic" ? b?.moduleName : b?.text;
-      return c1.localeCompare(c2)
-     } );
-     home?.[0] && menuItems.splice(0,0,home[0]);
-     menuItems =  part?.length > 0 ? menuItems.concat(part) : menuItems;
+      return c1.localeCompare(c2);
+    });
+    home?.[0] && menuItems.splice(0, 0, home[0]);
+    menuItems = part?.length > 0 ? menuItems.concat(part) : menuItems;
   }
 
   /*  URL with openlink wont have sidebar and actions    */

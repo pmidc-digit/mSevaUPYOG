@@ -93,14 +93,16 @@ const NOCEmployeeApplicationOverview = () => {
   const [displayData, setDisplayData] = useState({});
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const { isLoading, data } = Digit.Hooks.noc.useNOCSearchApplication({ applicationNo: id }, tenantId);
+  const applicationDetails= data?.resData;
   console.log("applicationDetails here==>", applicationDetails);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
     id: id,
-    moduleCode: "noc-service",
-    role: "EMPLOYEE",
+    //moduleCode: "noc-service",
+    moduleCode: "obpas_noc",
+    //role: "EMPLOYEE",
   });
 
   console.log("workflowDetails here=>", workflowDetails);
@@ -144,6 +146,16 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const userRoles = user?.info?.roles?.map((e) => e.code);
+
+  useEffect(()=>{
+        if(workflowDetails){
+          workflowDetails.revalidate();
+        }
+  
+        if(data){
+          data.revalidate();
+        }
+  },[])
   
   let actions =
     workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
@@ -178,6 +190,7 @@ const NOCEmployeeApplicationOverview = () => {
     }
 
   },[applicationDetails?.Noc])
+  
    
   function onActionSelect(action) {
     console.log("selected action", action);
@@ -187,12 +200,15 @@ const NOCEmployeeApplicationOverview = () => {
       Licenses: [action],
     };
 
-    if (action?.action == "EDIT" || action?.action == "APPLY") {
+    if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/noc/edit-application/${appNo}`);
     }
-    // else if (action?.action == "APPLY") {
-    //   submitAction(payload);
-    // } 
+    else if (action?.action == "DRAFT") {
+      setShowToast({ key: "true", warning:true, message: "Please edit your application before saving or resubmitting"});
+    }
+    else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
+      submitAction(payload);
+    } 
     else if (action?.action == "PAY") {
       history.push(`/digit-ui/employee/payment/collect/obpas_noc/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else {
@@ -202,8 +218,6 @@ const NOCEmployeeApplicationOverview = () => {
   }
 
   const submitAction = async (data) => {
-    // setShowModal(false);
-    // setSelectedAction(null);
     const payloadData = applicationDetails?.Noc?.[0]|| {};
 
    // console.log("data ==>", data);
@@ -214,7 +228,7 @@ const NOCEmployeeApplicationOverview = () => {
     };
 
     const filtData = data?.Licenses?.[0];
-    console.log("filtData", filtData);
+    //console.log("filtData", filtData);
 
     updatedApplicant.workflow = {
       action: filtData.action,
@@ -223,21 +237,7 @@ const NOCEmployeeApplicationOverview = () => {
       documents: filtData?.wfDocuments,
     };
 
-    console.log("updatedApplicant", updatedApplicant);
-
-    if (!filtData?.assignee && filtData.action == "FORWARD") {
-      setShowToast({ key: "error" });
-      setError("Assignee is mandatory");
-
-      return;
-    } else if (!filtData?.comment && (filtData?.action == "FORWARD" || filtData?.action == "REJECT")) {
-      // setShowToast({ key: "error", message: "Comment is mandatory" });
-      // setError("Comment is mandatory");
-      setErrorOne("Comment is mandatory");
-      setShowErrorToastt(true);
-
-      return;
-    }
+   // console.log("updatedApplicant", updatedApplicant);
 
     const finalPayload = {
       Noc: {...updatedApplicant},
@@ -247,18 +247,34 @@ const NOCEmployeeApplicationOverview = () => {
 
     try {
       const response = await Digit.NOCService.NOCUpdate({ tenantId, details: finalPayload });
-
-      // ✅ Show success first
-      setShowToast({ key: "success", message: "Successfully updated the status" });
-      setError("Successfully updated the status");
-
-      workflowDetails.revalidate();
-
-      setSelectedAction(null);
-      setShowModal(false);
+      
+      if(response?.ResponseInfo?.status === "successful"){
+        if(filtData?.action === "CANCEL"){
+          setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully" });
+          workflowDetails.revalidate();
+          setSelectedAction(null);
+        }
+        else if(filtData?.action === "APPLY" || filtData?.action === "RESUBMIT" || filtData?.action === "DRAFT"){
+          //Else If case for "APPLY" or "RESUBMIT" or "DRAFT"
+          console.log("We are calling employee response page");
+          history.replace({
+           pathname: `/digit-ui/employee/noc/response/${response?.Noc?.[0]?.applicationNo}`,
+           state: { data: response }
+          });
+        }
+        else{
+           //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
+          setShowToast({ key: "true", success:true, message: "Successfully updated the status of application" });
+          workflowDetails.revalidate();
+          setSelectedAction(null);
+        }
+      }
+      else{
+        setShowToast({ key: "true", warning:true, message: "Something went wrong, please try after sometime" });
+        setSelectedAction(null); 
+      }
     } catch (err) {
-      setShowToast({ key: "error", message: "Something went wrong" });
-      setError("Something went wrong");
+      setShowToast({ key: "true", error:true, message: "Some error occurred, please try later" });
     }
   };
 
@@ -296,7 +312,7 @@ const NOCEmployeeApplicationOverview = () => {
               <Row label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")} text={detail?.applicantFatherHusbandName || "N/A"} />
               <Row label={t("NOC_APPLICANT_MOBILE_NO_LABEL")} text={detail?.applicantMobileNumber || "N/A"} />
               <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
-              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || "N/A"} />
+              <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"} />
               <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
             </StatusTable>
           </div>
@@ -328,18 +344,18 @@ const NOCEmployeeApplicationOverview = () => {
             <StatusTable>
               <Row label={t("NOC_PLOT_NO_LABEL")} text={detail?.plotNo || "N/A"} />
               <Row label={t("NOC_PROPOSED_SITE_ADDRESS")} text={detail?.proposedSiteAddress || "N/A"} />
-              <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || "N/A"} />
+              <Row label={t("NOC_ULB_NAME_LABEL")} text={detail?.ulbName?.name || detail?.ulbName || "N/A"} />
               <Row label={t("NOC_ULB_TYPE_LABEL")} text={detail?.ulbType || "N/A"} />
               <Row label={t("NOC_KHASRA_NO_LABEL")} text={detail?.khasraNo || "N/A"} />
               <Row label={t("NOC_HADBAST_NO_LABEL")} text={detail?.hadbastNo || "N/A"} />
-              <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || "N/A"} />
+              <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
               <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={detail?.areaLeftForRoadWidening || "N/A"} />
               <Row label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={detail?.netPlotAreaAfterWidening || "N/A"} />
               <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
-              <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || "N/A"} />
+              <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"} />
 
 
-              <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || "N/A"} />
+              <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"} />
 
               {detail?.buildingStatus?.code == "BUILTUP" && 
                <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"}/>
@@ -353,8 +369,8 @@ const NOCEmployeeApplicationOverview = () => {
                <Row label={t("NOC_TOTAL_FLOOR_AREA_LABEL")} text={detail.totalFloorArea || "N/A"}/>
               }
 
-              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || "N/A"} />
-              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || "N/A"} />
+              <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
+              <Row label={t("NOC_ZONE_LABEL")} text={detail?.zone?.name || detail?.zone || "N/A"} />
               <Row label={t("NOC_SITE_WARD_NO_LABEL")} text={detail?.wardNo || "N/A"} />
               <Row label={t("NOC_SITE_VILLAGE_NAME_LABEL")} text={detail?.villageName || "N/A"} />
 
@@ -374,11 +390,11 @@ const NOCEmployeeApplicationOverview = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("NOC_PLOT_AREA_JAMA_BANDI_LABEL")} text={detail?.specificationPlotArea || "N/A"} />
-              <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={detail?.specificationBuildingCategory?.name || "N/A"} />
+              <Row label={t("NOC_BUILDING_CATEGORY_LABEL")} text={detail?.specificationBuildingCategory?.name || detail?.specificationBuildingCategory || "N/A"} />
 
-              <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || "N/A"} />
-              <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={detail?.specificationRestrictedArea?.code || "N/A"} />
-              <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={detail?.specificationIsSiteUnderMasterPlan?.code || "N/A"} />
+              <Row label={t("NOC_NOC_TYPE_LABEL")} text={detail?.specificationNocType?.name || detail?.specificationNocType || "N/A"} />
+              <Row label={t("NOC_RESTRICTED_AREA_LABEL")} text={detail?.specificationRestrictedArea?.code || detail?.specificationRestrictedArea || "N/A"} />
+              <Row label={t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL")} text={detail?.specificationIsSiteUnderMasterPlan?.code || detail?.specificationIsSiteUnderMasterPlan || "N/A"} />
             </StatusTable>
           </div>
         ))}
@@ -415,7 +431,7 @@ const NOCEmployeeApplicationOverview = () => {
         </Card>
       )}
 
-      {actions && (
+      {actions?.length >0 && (
         <ActionBar>
           {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
             <Menu
@@ -445,6 +461,7 @@ const NOCEmployeeApplicationOverview = () => {
           actionData={workflowDetails?.data?.timeline}
           workflowDetails={workflowDetails}
           showToast={showToast}
+          setShowToast={setShowToast}
           closeToast={closeToast}
           errors={error}
           showErrorToast={showErrorToast}
@@ -453,7 +470,7 @@ const NOCEmployeeApplicationOverview = () => {
         />
       ) : null}
 
-      {showToast && <Toast error={showToast.key == "error" ? true : false} label={error} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} isDleteBtn={true} onClose={closeToast} />}
 
 
     </div>

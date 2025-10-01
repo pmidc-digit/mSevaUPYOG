@@ -40,10 +40,15 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
 
     const isRealId = id && id.startsWith("NDC-");
 
+    console.log("here", isRealId);
+
     if (isRealId) {
       // onGoNext();
-      updateApplication(finaldata);
       console.log("here bab");
+      updateApplication(finaldata);
+    } else {
+      console.log("go next");
+      onGoNext();
     }
     // onGoNext();
     //}

@@ -102,7 +102,7 @@ const EDCRAcknowledgement = (props) => {
             </svg>
             {t("EDCR_DOWNLOAD_SCRUTINY_REPORT_LABEL")}
           </div>
-          <div style={{ padding: "0px 10px" }}>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap", paddingLeft: "8px" }}>
             <Link
               to={{
                 pathname: `/digit-ui/citizen/obps/${bpaLinks?.linkData?.flow?.toLowerCase()}/${edcrData?.appliactionType?.toLowerCase()}/${edcrData?.applicationSubType?.toLowerCase()}/docs-required`,
@@ -111,7 +111,7 @@ const EDCRAcknowledgement = (props) => {
               replace
             >
               <SubmitBar label={t("BPA_APPLY_FOR_BPA_LABEL")} onSubmit={() => sessionStorage.setItem("clickOnBPAApplyAfterEDCR", true)} />
-              <CardText
+              {/* <CardText
                 className="button-sub-text"
                 style={{
                   fontSize: "14px",
@@ -124,9 +124,9 @@ const EDCRAcknowledgement = (props) => {
                 }}
               >
                 {t("BPA_FOR_NEW_CONSTRUCTION_LABEL")}
-              </CardText>
+              </CardText> */}
             </Link>
-            <div style={{ marginTop: "12px", paddingBottom: "10px" }}>
+            <div style={{ paddingBottom: "15px" }}>
               <Link to={`/digit-ui/citizen`}>
                 <LinkButton label={t("CORE_COMMON_GO_TO_HOME")} />
               </Link>

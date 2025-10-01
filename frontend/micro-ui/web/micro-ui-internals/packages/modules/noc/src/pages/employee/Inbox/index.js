@@ -115,6 +115,12 @@ const Inbox = ({ parentRoute }) => {
     tenantId,
     filters: { ...formState }
   });
+
+  useEffect(()=>{
+    if(data){
+      data.revalidate();
+    }
+  },[])
   
   console.log("data in noc==>", data);
 

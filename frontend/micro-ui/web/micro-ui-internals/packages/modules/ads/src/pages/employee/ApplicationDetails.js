@@ -113,7 +113,6 @@ const ApplicationDetails = () => {
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
   useEffect(() => {
-    console.log("Docs (from displayData):", docs);
 
     const filesArray = (docs || [])
       .map((d) => {
@@ -129,7 +128,6 @@ const ApplicationDetails = () => {
       })
       .filter(Boolean);
 
-    console.log("Computed filesArray:", filesArray);
 
     if (!filesArray.length) {
       setPdfFiles({});
@@ -143,11 +141,9 @@ const ApplicationDetails = () => {
     const stateId = Digit?.ULBService?.getStateId?.() || null;
     const argForFilefetch = stateId || tenantId;
 
-    console.log("Calling Digit.UploadServices.Filefetch with state/tenant:", argForFilefetch);
 
     Digit.UploadServices.Filefetch(filesArray, argForFilefetch)
       .then((res) => {
-        console.log("Filefetch raw response:", res);
 
         // robustly find where the mapping lives:
         let data = res?.data ?? res?.files ?? res;
@@ -167,7 +163,6 @@ const ApplicationDetails = () => {
           data = asMap;
         }
 
-        console.log("Normalized pdfFiles map:", data);
         setPdfFiles(data || {});
       })
       .catch((err) => {
@@ -178,107 +173,14 @@ const ApplicationDetails = () => {
   }, [JSON.stringify(docs)]);
 
   const { isLoading, data: applicationDetails } = Digit.Hooks.ads.useADSSearchApplication({ bookingNo }, tenantId);
-  console.log("applicationDetails 5454 :>> ", applicationDetails);
   const normalizedAppObject = applicationDetails?.data?.[0] ?? applicationDetails?.[0] ?? null;
   const bookingObj = normalizedAppObject;
   const application = bookingObj || normalizedAppObject || appDetails || null;
 
-  // const [businessServiceData, setBusinessServiceData] = useState(null);
-  // const [businessLoading, setBusinessLoading] = useState(true);
-
-  // const refreshBusinessService = async () => {
-  //   try {
-  //     setBusinessLoading(true);
-  //     const res = await Digit.WorkflowService?.init?.(tenantId, "ADV");
-  //     console.log("res is :>> ", res);
-  //     setBusinessServiceData(res?.BusinessServices?.[0] ? res : null);
-
-  //     // Build wfActions from res, resolving action.nextState -> target state code
-  //     const states = res?.BusinessServices?.[0]?.states || res?.states || [];
-
-  //     const rawActs = states.flatMap((s) =>
-  //       (s.actions || []).map((a) => {
-  //         const targetStateObj = states.find((st) => st?.uuid === a?.nextState || st?.state === a?.nextState || st?.code === a?.nextState) || null;
-
-  //         // explicit fields describing both sides of the transition
-  //         const fromStateCode = s?.state ?? null; // e.g. "PENDING_FOR_VERIFICATION"
-  //         const toStateCode = targetStateObj?.state ?? null; // e.g. "REFUND" (if nextState points to refund state)
-
-  //         return {
-  //           ...a,
-  //           // keep both codes so UI can decide which to show
-  //           fromStateCode,
-  //           toStateCode,
-  //           // keep the previous ones too
-  //           status: fromStateCode, // keep old field for backward compat (current state by default)
-  //           nextStateUuid: a?.nextState || null,
-  //           fromStateUuid: s?.uuid || null,
-  //           businessService: res?.BusinessServices?.[0]?.businessService || "ADV",
-  //           buttonLabel: (a.action || "").replace(/_/g, " ").toUpperCase(),
-  //           _rawStateObj: s,
-  //         };
-  //       })
-  //     );
-
-  //     // de-dupe by action + nextState
-  //     const unique = [];
-  //     const seen = new Set();
-  //     for (const x of rawActs) {
-  //       const key = `${x.action}::${x.nextState}`;
-  //       if (!seen.has(key)) {
-  //         unique.push(x);
-  //         seen.add(key);
-  //       }
-  //     }
-
-  //     // filter by user roles
-  //     const logged = Digit.UserService.getUser();
-  //     let userRolesNow = logged?.info?.roles?.map((r) => r.code) || [];
-  //     if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
-  //       const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
-  //       const userInfo = userInfos ? JSON.parse(userInfos) : {};
-  //       userRolesNow = userInfo?.value?.info?.roles?.map((r) => r.code) || userRolesNow;
-  //     }
-
-  //     const filteredByRole = unique.filter((a) => {
-  //       if (!a.roles || a.roles.length === 0) return true;
-  //       return userRolesNow.some((ur) => a.roles.includes(ur));
-  //     });
-
-  //     setWfActions(filteredByRole);
-
-  //     // helpful debug (remove later)
-  //     console.log(
-  //       "wfActions built:",
-  //       filteredByRole.map((f) => ({ action: f.action, status: f.status, nextStateUuid: f.nextStateUuid }))
-  //     );
-  //   } catch (e) {
-  //     console.error("Workflow init refresh error:", e);
-  //     setBusinessServiceData(null);
-  //     setWfActions([]);
-  //   } finally {
-  //     setBusinessLoading(false);
-  //   }
-  // };
-
-  // fetch the Workflow / BusinessService config (ADV)
-  // useEffect(() => {
-  //   let mounted = true;
-  //   (async () => {
-  //     if (!mounted) return;
-  //     await refreshBusinessService();
-  //   })();
-  //   return () => {
-  //     mounted = false;
-  //   };
-  // }, [tenantId]);
-
   // derive normalized actions from businessServiceData
-
   const menuRef = useRef();
 
   // final filtered actions to display
-
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -325,7 +227,6 @@ const ApplicationDetails = () => {
     moduleCode: businessServicMINE,
   });
 
-  console.log("workflowDetails :>> ", workflowDetails);
 
   // ADD (derived actions)
   const wfActions =
@@ -338,14 +239,13 @@ const ApplicationDetails = () => {
     const adsObject = bookingObj;
     if (adsObject) {
       const applicantData = {
-        address: `${adsObject?.address?.addressLine1 || ""}, ${adsObject?.address?.locality || ""}, ${adsObject?.address?.city || ""} - ${
-          adsObject?.address?.pincode || ""
-        }`,
+        address: adsObject?.address?.addressId,
         email: adsObject?.applicantDetail?.applicantEmailId,
         mobile: adsObject?.applicantDetail?.applicantMobileNo,
         name: adsObject?.applicantDetail?.applicantName,
         applicationNo: adsObject?.bookingNo,
         bookingStatus: adsObject?.bookingStatus,
+        pincode: adsObject?.address?.pincode,
         paymentDate: adsObject?.paymentDate ? new Date(adsObject.paymentDate).toLocaleDateString() : "",
         receiptNo: adsObject?.receiptNo,
       };
@@ -442,6 +342,7 @@ const ApplicationDetails = () => {
         businessService,
         action: filtData.action,
         comments: filtData.comment || filtData.action || "",
+        documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
         ...(normalizedAssignee ? { assignes: normalizedAssignee } : {}),
       },
     };
@@ -630,43 +531,20 @@ const ApplicationDetails = () => {
 
       <Card>
         <CardSubHeader>{t("ADS_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
-        <div style={{ display: "flex", gap: "16px" }}>
-          {docs.length ? (
-            <>
-              <ADSDocument
-                value={docs}
-                workflowDocs={docs}
-                config={{ value: docs, workflowDocs: docs, documents: docs }}
-                application={bookingObj}
-                pdfFiles={pdfFiles}
-                files={pdfFiles}
-                filesMap={pdfFiles}
-              />
-
-              {/* fallback / debug rendering — shows clickable tiles using fetched URLs */}
-              {docs.length > 0 && (
-                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "12px" }}>
-                  {docs.map((d) => {
-                    const url = getFileUrl(d.fileStoreId || d.fileId || d.documentDetailId, pdfFiles);
-                    return (
-                      <div key={d.documentDetailId || d.fileStoreId || d.fileId} style={{ minWidth: 100, textAlign: "center" }}>
-                        <a href={url || "#"} target="_blank" rel="noreferrer" style={{ textDecoration: "none", color: "#000" }}>
-                          <div style={{ display: "flex", justifyContent: "center" }}>
-                            <PDFSvg />
-                          </div>
-                          <div style={{ marginTop: 8, fontSize: 13 }}>{t(d.documentType) || d.documentType}</div>
-                          <div style={{ fontSize: 11, color: "#666" }}>{url ? "Open" : "No file URL"}</div>
-                        </a>
-                      </div>
-                    );
-                  })}
+        <>
+          {application?.documents.length > 0 ? (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
+              {application?.documents.map((doc, idx) => (
+                <div key={idx}>
+                  {t(doc?.documentType)}
+                  <ADSDocument value={application?.documents} Code={doc?.documentType} index={idx} />
                 </div>
-              )}
-            </>
+              ))}
+            </div>
           ) : (
-            <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
+            <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
           )}
-        </div>
+        </>
 
         <ADSWFApplicationTimeline application={application} id={displayData?.applicantData?.applicationNo || bookingNo} userType={"employee"} />
         {showToast && (

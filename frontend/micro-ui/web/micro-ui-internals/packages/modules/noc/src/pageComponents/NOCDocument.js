@@ -13,7 +13,6 @@ function NOCDocument({ value = {}}) {
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.noc.useNOCDocumentSearch({value},{value});
   
- // console.log("data here", data);
 
   let documents=[];
   if(value?.workflowDocs) documents = value?.workflowDocs;
@@ -25,9 +24,7 @@ function NOCDocument({ value = {}}) {
       <React.Fragment>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
           {documents?.map((document, index) => {
-            console.log("data here", data);
-            console.log("document here", document);
-            let documentLink = pdfDownloadLink(data?.pdfFiles, document?.documentAttachment || document?.id);
+            let documentLink = pdfDownloadLink(data?.pdfFiles, document?.documentAttachment || document?.documentUid);
             return (
               <a target="_" href={documentLink} 
               style={{

@@ -54,6 +54,7 @@ const DocsRequired = ({ onSelect, onSkip, config }) => {
     }
   }, [LicenseData]);
 
+
   useEffect(() => {
     if (!homePageUrlLinksLoading) {
       const windowUrl = window.location.href.split("/");

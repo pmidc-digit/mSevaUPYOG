@@ -618,7 +618,8 @@ public Object fetchThirdPartyIntegration(RequestInfo requestInfo, String tenantI
                             List<Integer> res = JsonPath.read(mdmsDataMap.get(license.getTenantId()), jsonPath);
                             Calendar calendar = Calendar.getInstance();
                             calendar.add(Calendar.YEAR, res.get(0));
-                            license.setValidTo(calendar.getTimeInMillis());
+                            if(license.getValidTo() !=  null)
+                            	license.setValidTo(calendar.getTimeInMillis());
                             license.setValidFrom(time);
                         }
 

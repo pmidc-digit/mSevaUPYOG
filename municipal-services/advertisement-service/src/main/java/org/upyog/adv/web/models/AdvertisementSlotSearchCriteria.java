@@ -24,7 +24,8 @@ public class AdvertisementSlotSearchCriteria {
 	private String tenantId;
 
     private String addType;
-   
+
+	private String advertisementId;
 	private String location;
 	
 	private String faceArea;

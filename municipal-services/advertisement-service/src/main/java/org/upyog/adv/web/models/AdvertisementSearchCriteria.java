@@ -64,6 +64,7 @@ public class AdvertisementSearchCriteria {
     private String toDate;
 
     private boolean isCountCall;
+    private String advertisementId;
     
     /**
 	 * true : send draft application details for the user and tenantId

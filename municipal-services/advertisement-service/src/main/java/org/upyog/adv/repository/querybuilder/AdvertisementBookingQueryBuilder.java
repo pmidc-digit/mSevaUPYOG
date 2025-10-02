@@ -21,7 +21,7 @@ public class AdvertisementBookingQueryBuilder {
 
 	private static final StringBuilder bookingDetailsQuery = new StringBuilder(
 			"SELECT ecbd.booking_id, booking_no, payment_date, application_date, tenant_id,\n"
-					+ "booking_status,receipt_no, ecbd.createdby, ecbd.createdtime, \n"
+					+ "ecbd.advertisementId ,booking_status,receipt_no, ecbd.createdby, ecbd.createdtime, \n"
 					+ "ecbd.lastmodifiedby, ecbd.lastmodifiedtime,ecbd.permission_letter_filestore_id, ecbd.payment_receipt_filestore_id, \n"
 					+ "appl.applicant_detail_id, applicant_name, applicant_email_id, applicant_mobile_no,\n"
 					+ "applicant_alternate_mobile_no, \n"
@@ -56,7 +56,7 @@ public class AdvertisementBookingQueryBuilder {
 	public static final String UPDATE_BOOKING_STATUS =  "update eg_adv_booking_detail set booking_status = ?, lastmodifiedby=?, lastmodifiedtime=? "
 			+ " where booking_id = ?";
 
-	public static final String PAYMENT_TIMER_QUERY = "INSERT INTO eg_adv_payment_timer(booking_id, createdby, createdtime, status, booking_no, lastmodifiedby, lastmodifiedtime, add_type, location, face_area, night_light, booking_start_date, booking_end_date, booking_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::DATE, ?::DATE, ?::DATE);\n";
+	public static final String PAYMENT_TIMER_QUERY = "INSERT INTO eg_adv_payment_timer(booking_id, createdby, createdtime, status, booking_no, lastmodifiedby, lastmodifiedtime, add_type, location, face_area, night_light,advertisementId, booking_start_date, booking_end_date, booking_date) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?::DATE, ?::DATE, ?::DATE);\n";
 
 	public static final String DRAFT_QUERY = "INSERT INTO eg_adv_draft_detail(draft_id, tenant_id, user_uuid, draft_application_data, createdby, lastmodifiedby, createdtime, lastmodifiedtime) VALUES (?, ?, ?,CAST(? AS jsonb), ?, ?, ?, ?);\n";
 
@@ -261,6 +261,14 @@ public class AdvertisementBookingQueryBuilder {
 			builder.append(" ecbd.booking_status = ? ");
 			preparedStmtList.add(criteria.getStatus());
 		}
+
+		if (criteria.getAdvertisementId() != null) {
+			addClauseIfRequired(preparedStmtList, builder);
+			builder.append(" ecbd.advertisementId = ? ");
+			preparedStmtList.add(criteria.getAdvertisementId());
+		}
+
+
 
 		// Applicant Name
 		if (criteria.getApplicantName() != null) {

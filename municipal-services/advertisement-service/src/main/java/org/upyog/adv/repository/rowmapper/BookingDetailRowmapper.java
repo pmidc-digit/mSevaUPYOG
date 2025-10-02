@@ -38,7 +38,7 @@ public class BookingDetailRowmapper implements ResultSetExtractor<List<BookingDe
 			if (currentBooking == null) {
 				currentBooking = BookingDetail.builder().bookingId(bookingId).bookingNo(bookingNo)
 						.applicationDate(rs.getLong("application_date"))
-						.tenantId(tenantId)
+						.tenantId(tenantId).advertisementId(rs.getString("advertisementId"))
 
 
 						//TODO : check payment_date

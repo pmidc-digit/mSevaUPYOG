@@ -110,7 +110,7 @@ public class WorkflowIntegrator {
     if (act != null) {
       switch (act) {
         case "INITIATE":
-          return BookingStatusEnum.BOOKED.toString();
+          return BookingStatusEnum.BOOKING_CREATED.toString();
         case "SUBMIT":
           return BookingStatusEnum.PENDING_FOR_PAYMENT.toString();
         case "PAY":

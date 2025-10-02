@@ -224,7 +224,7 @@ public class BookingRepositoryImpl implements BookingRepository {
 
 			while (!startDate.isAfter(endDate)) {
 				batchArgs.add(new Object[] { draftId, uuid, createdTime, status, "", uuid, createdTime,
-						criteria.getAddType(), criteria.getLocation(), criteria.getFaceArea(), criteria.getNightLight(),
+						criteria.getAddType(), criteria.getLocation(), criteria.getFaceArea(), criteria.getNightLight(),criteria.getAdvertisementId(),
 						criteria.getBookingStartDate(), criteria.getBookingEndDate(), startDate.toString() });
 				startDate = startDate.plusDays(1);
 			}
@@ -477,6 +477,11 @@ public class BookingRepositoryImpl implements BookingRepository {
 			query.append(nightLight).append(" = ? ");
 			paramsList.add(criteria.getNightLight());
 		}
+		if(StringUtils.isNotBlank((criteria.getAdvertisementId()))){
+			query.append(" AND eabd.advertisementId = ? ");
+			paramsList.add(criteria.getAdvertisementId());
+		}
+
 
 		log.info("getBookingDetails : Final query: " + query);
 		log.info("paramsList : " + paramsList);
@@ -508,6 +513,10 @@ public class BookingRepositoryImpl implements BookingRepository {
 		if (criteria.getNightLight() != null) {
 			query.append(" AND night_light = ?");
 			paramsList.add(criteria.getNightLight());
+		}
+		if (criteria.getAdvertisementId() != null) {
+			query.append(" AND advertisementId = ?");
+			paramsList.add(criteria.getAdvertisementId());
 		}
 
 //		if (criteria.getBookingStartDate() != null && criteria.getBookingEndDate() != null) {

@@ -372,7 +372,7 @@ public class BookingServiceImpl implements BookingService {
 			AdvertisementSlotSearchCriteria criteria, LocalDate date) {
 		AdvertisementSlotAvailabilityDetail availabiltityDetail = AdvertisementSlotAvailabilityDetail.builder()
 				.addType(criteria.getAddType()).faceArea(criteria.getFaceArea()).location(criteria.getLocation())
-				.nightLight(criteria.getNightLight()).slotStaus(BookingStatusEnum.AVAILABLE.toString())
+				.nightLight(criteria.getNightLight()).slotStaus(BookingStatusEnum.AVAILABLE.toString()).advertisementId(criteria.getAdvertisementId())
 				.tenantId(criteria.getTenantId()).bookingDate(BookingUtil.parseLocalDateToString(date, "yyyy-MM-dd"))
 				.build();
 		return availabiltityDetail;

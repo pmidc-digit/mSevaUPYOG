@@ -49,6 +49,7 @@ public class AdvertisementSlotAvailabilityDetail {
 	private String bookingStartDate;
 	
 	private String bookingEndDate;
+	private String advertisementId;
 
 //	private String fromTime;
 //

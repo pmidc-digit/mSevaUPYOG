@@ -61,6 +61,7 @@ public class BookingDetail {
 	private String permissionLetterFilestoreId;
 
 	private String paymentReceiptFilestoreId;
+	private String advertisementId;
 
 
 

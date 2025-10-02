@@ -26,7 +26,9 @@ const CreateEDCR = ({ parentRoute }) => {
     const loggedInuserInfo = Digit.UserService.getUser();
     const formTenantId = data?.tenantId || data?.ulb;
     console.log(formTenantId, "I(((((((((");
-    const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
+    // const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
+    const userInfo = JSON.parse(localStorage.getItem("user-info"));
+
     let edcrRequest = {
       transactionNumber: "",
       edcrNumber: "",
@@ -60,6 +62,7 @@ const CreateEDCR = ({ parentRoute }) => {
     const siteReserved = data?.siteReserved?.code === "YES" ? true : false;
     const approvedCS = data?.approvedCS?.code === "YES" ? true : false;
     const cluApprove = data?.cluApprove?.code === "YES" ? true : false;
+    const purchasableFar = data?.purchasableFar?.code === "YES" ? true : false;
     const schemeArea = data?.schemeArea?.code;
     const transactionNumber = uuidv4();
     const appliactionType = "BUILDING_PLAN_SCRUTINY";
@@ -83,6 +86,7 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, approvedCS };
     edcrRequest = { ...edcrRequest, schemeArea };
     edcrRequest = { ...edcrRequest, cluApprove };
+    edcrRequest = {...edcrRequest, purchasableFar};
 
     console.log("tenantIdInEDCR-Request", edcrRequest);
 

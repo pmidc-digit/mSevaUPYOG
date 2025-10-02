@@ -26,13 +26,14 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     console.log("data?????....=====", docData?.CHB?.Documents);
 
     const missingFields = validation(finalData);
-    onGoNext();
+
     if (missingFields.length > 0) {
       setError(`${t("CHB_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       return;
     }
+    onGoNext();
   }
 
   function validation(formData) {

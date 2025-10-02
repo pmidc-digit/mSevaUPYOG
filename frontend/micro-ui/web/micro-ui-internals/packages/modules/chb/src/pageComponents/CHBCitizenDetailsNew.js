@@ -25,48 +25,56 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
     console.log("data", data);
     console.log("user", user);
     console.log("currentStepData", currentStepData);
+    if (currentStepData?.venueDetails?.[0]?.bookingNo) {
+      goNext(currentStepData?.venueDetails);
+    } else {
+      const baseApplication = currentStepData?.ownerDetails?.hallsBookingApplication || {};
 
-    const baseApplication = currentStepData?.ownerDetails?.hallsBookingApplication || {};
+      // Construct owners array using "data"
+      const applicantDetail = {
+        tenantId: tenantId,
+        applicantName: data?.name,
+        applicantMobileNo: data?.mobileNumber,
+        applicantEmailId: data?.emailId,
+        // address: data?.address,
+        type: user?.info?.type,
+      };
 
-    // Construct owners array using "data"
-    const applicantDetail = {
-      tenantId: tenantId,
-      applicantName: data?.name,
-      applicantMobileNo: data?.mobileNumber,
-      applicantEmailId: data?.emailId,
-      address: data?.address,
-      type: user?.info?.type,
-    };
+      const address = {
+        addressLine1: data?.address,
+        // cityCode: "SPF",
+        // doorNo: "12B",
+      };
 
-    const address = {
-      cityCode: "SPF",
-      doorNo: "12B",
-    };
+      const payload = {
+        hallsBookingApplication: {
+          ...baseApplication,
+          applicantDetail,
+          address,
+        },
+      };
 
-    const payload = {
-      hallsBookingApplication: {
-        ...baseApplication,
-        applicantDetail,
-        address,
-      },
-    };
-
-    console.log("final payload", payload);
-    // return;
-
-    const response = await Digit.CHBServices.create(payload);
-    console.log("response", response);
-    goNext(response?.hallsBookingApplication);
+      console.log("final payload", payload);
+      // return;
+      // goNext(payload);
+      // return;
+      const response = await Digit.CHBServices.create(payload);
+      console.log("response", response);
+      goNext(response?.hallsBookingApplication);
+    }
   };
 
   useEffect(() => {
     console.log("currentStepData", currentStepData);
-    const formattedData = currentStepData?.ownerDetails;
+    const formattedData = currentStepData?.venueDetails?.[0];
     if (formattedData) {
-      Object.entries(formattedData).forEach(([key, value]) => {
-        setValue(key, value);
-      });
+      setValue("address", formattedData?.address?.addressLine1);
     }
+    // if (formattedData) {
+    //   Object.entries(formattedData).forEach(([key, value]) => {
+    //     setValue(key, value);
+    //   });
+    // }
   }, [currentStepData, setValue]);
 
   return (

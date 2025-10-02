@@ -205,7 +205,9 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
     const payload = {
       Licenses: [
+        
         {
+          validTo: formData?.LicneseType?.validTo ? convertDateToEpoch(formData?.LicneseType?.validTo) : null,
           tradeLicenseDetail: {
             owners: [
               {
@@ -235,6 +237,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               qualificationType: formData?.LicneseType?.qualificationType?.name,
               counsilForArchNo: formData?.LicneseType?.ArchitectNo,
               isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
+            
               Ulb: selectedUlbTypes,
             },
             address: {

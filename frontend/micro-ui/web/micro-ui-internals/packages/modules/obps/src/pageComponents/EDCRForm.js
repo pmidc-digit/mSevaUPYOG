@@ -23,6 +23,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     cluApprove,
     cluApproveOptions,
     coreArea,
+    purchasableFar,
     coreAreaOptions,
     dxfFile,
     error,
@@ -58,10 +59,11 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     setUploadMessage,
     setUploadedFile,
     setcoreArea,
+    setPurchasableFar,
     setSelectLayout,
     siteReserved,
     siteReservedOptions,
-
+    purchasableFarOptions,
     showSkip,
 
     tenantIdData,
@@ -164,6 +166,7 @@ useEffect(() => {
     data.siteReserved = siteReserved;
     data.approvedCS = approvedCS;
     data.cluApprove = cluApprove;
+    data.purchasableFar = purchasableFar;
     data.layoutFile = layoutFile;
 
     if (areaType?.code === "SCHEME_AREA") {
@@ -276,6 +279,12 @@ useEffect(() => {
           </React.Fragment>
         )}
 
+
+         <React.Fragment>
+                <CardLabel>{t("EDCR_IS_PURCHASABLEFAR")}</CardLabel>
+                <Dropdown t={t} isMandatory={true} option={purchasableFarOptions} selected={purchasableFar} optionKey="value" select={setPurchasableFar} />
+              </React.Fragment>
+
         {approvedCS?.code !== "YES" && (
           <React.Fragment>
             <CardLabel>{t("EDCR_UPLOAD_DXF_FILE")}</CardLabel>
@@ -295,6 +304,7 @@ useEffect(() => {
             <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p>
           </React.Fragment>
         )}
+        
       </FormStep>
       </div>
     </React.Fragment>

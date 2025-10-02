@@ -96,7 +96,7 @@ const EditApplication = () => {
   const nocObject = applicationDetails?.Noc?.[0] || {};
   const applicantDetails = nocObject?.nocDetails?.additionalDetails?.applicationDetails || {};
   const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails || {};
-  const documents = nocObject?.documents || [];
+  const documents = nocObject?.documents?.filter((doc)=> (doc?.documentUid) || (doc?.documentType)) || [];
   const coordinates= nocObject?.nocDetails?.additionalDetails?.coordinates || {};
   
   const setStep = (updatedStepNumber) => {

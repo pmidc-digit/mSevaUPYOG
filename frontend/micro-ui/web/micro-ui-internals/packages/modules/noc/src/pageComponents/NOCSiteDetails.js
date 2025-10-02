@@ -348,10 +348,10 @@ const basementAreaValues= watch("basementArea");
                 name="areaLeftForRoadWidening"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -374,11 +374,22 @@ const basementAreaValues= watch("basementArea");
           <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}*</CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name="netPlotAreaAfterWidening"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
                 render={(props) => (
                   <TextInput
                     value={props.value}
@@ -393,6 +404,7 @@ const basementAreaValues= watch("basementArea");
               />
             </div>
           </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_ROAD_WIDTH_AT_SITE_LABEL")}`}*</CardLabel>
@@ -402,10 +414,10 @@ const basementAreaValues= watch("basementArea");
                 name="roadWidthAtSite"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -521,7 +533,7 @@ const basementAreaValues= watch("basementArea");
           
           {buildingStatus?.code === "BUILTUP" && areaFields.map((field, index) => (
             <div style={{ display: "flex", gap: "10px", flexDirection:"column" }}>
-            <CardLabel className="card-label-smaller">{ index === 0 ? "Ground":`${index}`} Floor Area*</CardLabel>
+            <CardLabel className="card-label-smaller">{ index === 0 ? "Ground":`${index}`} Floor Area(sq mt)*</CardLabel>
             <div key={field.id} className="field" style={{ display: "flex", gap: "10px" }}>
              <Controller
               control={control}

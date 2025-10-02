@@ -204,7 +204,7 @@ const NOCEmployeeApplicationOverview = () => {
       history.push(`/digit-ui/employee/noc/edit-application/${appNo}`);
     }
     else if (action?.action == "DRAFT") {
-      setShowToast({ key: "true", warning:true, message: "Please edit your application before saving or resubmitting"});
+      setShowToast({ key: "true", warning:true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL"});
     }
     else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
@@ -250,7 +250,7 @@ const NOCEmployeeApplicationOverview = () => {
       
       if(response?.ResponseInfo?.status === "successful"){
         if(filtData?.action === "CANCEL"){
-          setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully" });
+          setShowToast({ key: "true", success:true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
         }
@@ -264,17 +264,17 @@ const NOCEmployeeApplicationOverview = () => {
         }
         else{
            //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
-          setShowToast({ key: "true", success:true, message: "Successfully updated the status of application" });
+          setShowToast({ key: "true", success:true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
         }
       }
       else{
-        setShowToast({ key: "true", warning:true, message: "Something went wrong, please try after sometime" });
+        setShowToast({ key: "true", warning:true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
         setSelectedAction(null); 
       }
     } catch (err) {
-      setShowToast({ key: "true", error:true, message: "Some error occurred, please try later" });
+      setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     }
   };
 
@@ -470,7 +470,7 @@ const NOCEmployeeApplicationOverview = () => {
         />
       ) : null}
 
-      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
 
 
     </div>

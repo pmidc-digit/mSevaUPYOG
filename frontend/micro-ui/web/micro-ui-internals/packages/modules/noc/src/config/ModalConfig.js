@@ -21,14 +21,14 @@ export const ModalConfig = ({
   return {
     label: {
       heading: `WF_${action?.action}_APPLICATION`,
-      submit: `${action?.action}`,
-      cancel: "WF_EMPLOYEE_NEWTL_CANCEL",
+      submit: `WF_EMPLOYEE_NOC_${action?.action}`,
+      cancel: "WF_EMPLOYEE_NOC_CANCEL",
     },
     form: [
       {
         body: [
           {
-            label: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_LABEL"),
+            label: !checkCondtions ? null : `${t("WF_ASSIGNEE_NAME_LABEL")}*`,
             placeholder: !checkCondtions ? null : t("WF_ASSIGNEE_NAME_PLACEHOLDER"),
             type: "dropdown",
             populators: !checkCondtions ? null : (
@@ -43,7 +43,7 @@ export const ModalConfig = ({
             ),
           },
           {
-            label: t("WF_COMMON_COMMENTS"),
+            label: `${t("WF_COMMON_COMMENTS_LABEL")}*`,
             type: "textarea",
             populators: {
               name: "comments",

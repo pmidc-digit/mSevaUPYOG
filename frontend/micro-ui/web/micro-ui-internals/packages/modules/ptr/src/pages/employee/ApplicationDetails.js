@@ -10,6 +10,7 @@ import {
   PopUp,
   Toast,
   SubmitBar,
+  ActionBar,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -236,6 +237,16 @@ const ApplicationDetails = () => {
               </StatusTable>
             )}
           </div>
+          {(pet_details?.status == "CITIZENACTIONREQUIRED" || pet_details?.status == "INITIATED") && (
+            <ActionBar>
+              <SubmitBar
+                label={t("COMMON_EDIT")}
+                onSubmit={() => {
+                  history.push(`/digit-ui/employee/ptr/petservice/new-application/${id}`);
+                }}
+              />
+            </ActionBar>
+          )}
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (
             <Toast

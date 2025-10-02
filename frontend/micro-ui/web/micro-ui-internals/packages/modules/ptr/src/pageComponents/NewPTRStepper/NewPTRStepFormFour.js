@@ -102,6 +102,7 @@ const NewPTRStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         comments: "",
         status: selectedAction?.action || "",
       },
+      // test
       ownerName: `${ownerDetails?.firstName} ${ownerDetails?.lastName}`, //change to ownerName
       mobileNumber: ownerDetails?.mobileNumber,
     };

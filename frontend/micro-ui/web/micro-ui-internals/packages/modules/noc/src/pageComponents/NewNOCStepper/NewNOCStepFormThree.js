@@ -33,17 +33,6 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
     
-    // if(window.location.href.includes("new-application") && (!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()))){
-    //   setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
-    //   setShowToast(true);
-    //   return;
-    // }
-
-    //  if(window.location.href.includes("edit-application") && (!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()))){
-    //   setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
-    //   setShowToast(true);
-    //   return;
-    // }
 
      if(!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()) ||  !(coordinates?.Longitude1?.trim()) || !(coordinates?.Longitude2?.trim())){
       setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);

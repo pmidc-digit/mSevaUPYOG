@@ -11,6 +11,7 @@ import {
   CardSectionHeader,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
+import { useSelector } from "react-redux";
 
 const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
@@ -18,8 +19,10 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const userInfo = Digit.UserService.getUser();
   console.log("userInfo?.info", userInfo?.info);
   const { mobileNumber, emailId, name } = userInfo?.info;
+  const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
+
   // Split full name into firstName (all but last word) and lastName (last word)
-  const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
+  // const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
 
   const isCitizen = window.location.href.includes("citizen");
   const {
@@ -33,8 +36,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
       ? {
           mobileNumber: mobileNumber || "",
           emailId: emailId || "",
-          firstName: firstName || "",
-          lastName: lastName || "",
+          name: name || "",
+          // lastName: lastName || "",
         }
       : {},
   });
@@ -50,13 +53,15 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   };
 
   useEffect(() => {
-    const formattedData = currentStepData?.ownerDetails;
+    const formattedData = apiDataCheck?.[0]?.owner || currentStepData?.ownerDetails;
     if (formattedData) {
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });
+      setValue("address", apiDataCheck?.[0]?.address?.addressId || currentStepData?.ownerDetails?.address || "");
+      setValue("pincode", apiDataCheck?.[0]?.address?.pincode || currentStepData?.ownerDetails?.pincode || "");
     }
-  }, [currentStepData, setValue]);
+  }, [apiDataCheck, currentStepData, setValue]);
 
   const getErrorMessage = (fieldName) => {
     if (!errors[fieldName]) return null;
@@ -65,8 +70,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
     if (error.message) return t(error.message);
 
     const fallbackMessages = {
-      firstName: t("PTR_FIRST_NAME_REQUIRED"),
-      lastName: t("PTR_LAST_NAME_REQUIRED"),
+      name: t("PTR_FIRST_NAME_REQUIRED"),
+      // lastName: t("PTR_LAST_NAME_REQUIRED"),
       emailId: t("PTR_EMAIL_REQUIRED"),
       mobileNumber: t("PTR_MOBILE_REQUIRED"),
       fatherOrHusbandName: t("PTR_FATHER_HUSBAND_NAME_REQUIRED"),
@@ -86,16 +91,16 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
 
         {/* First Name */}
         <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NDC_FIRST_NAME")}`} *</CardLabel>
+          <CardLabel className="card-label-smaller">{`${t("ES_NEW_APPLICATION_APPLICANT_NAME")}`} *</CardLabel>
           <div className="field">
             <Controller
               control={control}
-              name="firstName"
+              name="name"
               rules={{
-                required: t("PTR_FIRST_NAME_REQUIRED"),
+                required: t("Applicant Name is Required"),
                 pattern: {
                   value: /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/,
-                  message: t("PTR_FIRST_NAME_INVALID"),
+                  message: t("Applicant Name is Invalid"),
                 },
                 maxLength: { value: 100, message: "Maximum 100 characters" },
                 minLength: { value: 2, message: "Minimum 2 characters" },
@@ -106,7 +111,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
                   onChange={(e) => onChange(e.target.value)}
                   onBlur={(e) => {
                     onBlur(e);
-                    trigger("firstName");
+                    trigger("name");
                   }}
                   t={t}
                 />
@@ -114,10 +119,10 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.firstName && <CardLabelError style={errorStyle}>{getErrorMessage("firstName")}</CardLabelError>}
+        {errors.name && <CardLabelError style={errorStyle}>{getErrorMessage("name")}</CardLabelError>}
 
         {/* Last Name */}
-        <LabelFieldPair>
+        {/* <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NDC_LAST_NAME")}`} *</CardLabel>
           <div className="field">
             <Controller
@@ -146,7 +151,7 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
             />
           </div>
         </LabelFieldPair>
-        {errors.lastName && <CardLabelError style={errorStyle}>{getErrorMessage("lastName")}</CardLabelError>}
+        {errors.lastName && <CardLabelError style={errorStyle}>{getErrorMessage("lastName")}</CardLabelError>} */}
 
         {/* Email */}
         <LabelFieldPair>

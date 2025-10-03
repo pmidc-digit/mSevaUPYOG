@@ -72,7 +72,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
       updatedApplication.Documents.push({
         uuid: doc?.documentUid,
         documentType: doc?.documentType,
-        documentAttachment: doc?.fileStoreId,
+        documentAttachment: doc?.filestoreId,
       });
     });
 
@@ -87,7 +87,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   const onSubmit = async (data, actionStatus) => {
     const finalPayload = mapToNDCPayload(data, actionStatus);
 
-    const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
+    const response = await Digit.NDCService.NDCUpdate({ tenantId, finalPayload });
     dispatch(resetNDCForm());
     if (response?.ResponseInfo?.status === "successful") {
       return { isSuccess: true, response };

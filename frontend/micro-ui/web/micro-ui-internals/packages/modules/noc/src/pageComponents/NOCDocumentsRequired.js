@@ -50,6 +50,14 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
 
   console.log("geocoordinates", geocoordinates);
 
+  const currentStepData= useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData)|| {};
+
+  const isVacant=currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
+  //console.log("isVacant", isVacant);
+
+  const filteredDocuments= isVacant ? data?.NOC?.Documents?.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
+  //console.log("filteredDocuments", filteredDocuments);
+
   const handleSubmit = () => {
     let document = formData.documents;
     let documentStep;
@@ -74,6 +82,18 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
     if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
+
+  //logic for buildingStatus
+  useEffect(() => {
+  const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code;
+
+  if (currentStatus === "VACANT") {
+    // Remove OWNER.BUILDINGDRAWING from documents state so that it can be updated in redux accoordingly
+    setDocuments((prevDocs) =>
+      prevDocs?.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING")
+    );
+  }
+}, [currentStepData?.siteDetails?.buildingStatus?.code]);
 
   //logic for preview image feature
   const documentObj = {
@@ -100,7 +120,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {data?.NOC?.Documents?.map((document, index) => {
+          {filteredDocuments?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}

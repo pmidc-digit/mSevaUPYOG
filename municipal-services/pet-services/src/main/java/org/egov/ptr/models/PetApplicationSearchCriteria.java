@@ -24,7 +24,7 @@ public class PetApplicationSearchCriteria {
 	private List<String> ids;
 
 	@JsonProperty("applicationNumber")
-	private String applicationNumber;
+	private List<String> applicationNumber;
 
 	@JsonProperty("mobileNumber")
 	private String mobileNumber;

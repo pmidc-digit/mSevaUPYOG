@@ -19,7 +19,7 @@ public class PetApplicationQueryBuilder {
 	public static final String TENANTIDQUERY = "select distinct(tenantid) from eg_ptr_registration";
 
 	// Updated BASE_PTR_QUERY with new columns from eg_ptr_registration
-	private static final String BASE_PTR_QUERY = " SELECT ptr.id as pid, ptr.tenantid as ptenantid, ptr.applicationnumber as papplicationnumber, "
+	private static final String BASE_PTR_QUERY = " SELECT ptr.id as pid, ptr.tenantid as ptenantid, ptr.applicationNumber as papplicationnumber, "
 			+ "ptr.applicationType as papplicationtype, ptr.validityDate as pvaliditydate, "
 			+ "ptr.status as pstatus, ptr.expireFlag as pexpireflag, ptr.petToken as ppettoken, ptr.previousApplicationNumber as ppreviousapplicationnumber, ptr.propertyId as ppropertyId, "
 			+ "ptr.createdby as pcreatedby, ptr.lastmodifiedby as plastmodifiedby, ptr.createdtime as pcreatedtime, ptr.lastmodifiedtime as plastmodifiedtime ,";
@@ -94,10 +94,12 @@ public class PetApplicationQueryBuilder {
 			subQuery.append(" ptr.id IN ( ").append(createQuery(criteria.getIds())).append(" ) ");
 			addToPreparedStatement(subQueryParams, criteria.getIds());
 		}
-		if (!ObjectUtils.isEmpty(criteria.getApplicationNumber())) {
+		if (!CollectionUtils.isEmpty(criteria.getApplicationNumber())) {
 			addClauseIfRequired(subQuery, subQueryParams);
-			subQuery.append(" ptr.applicationnumber = ? ");
-			subQueryParams.add(criteria.getApplicationNumber());
+			subQuery.append(" ptr.applicationnumber IN ( ")
+					.append(createQuery(criteria.getApplicationNumber()))
+					.append(" ) ");
+			addToPreparedStatement(subQueryParams, criteria.getApplicationNumber());
 		}
 		if (!CollectionUtils.isEmpty(criteria.getOwnerUuids())) {
 			addClauseIfRequired(subQuery, subQueryParams);

@@ -215,7 +215,7 @@ public class PaymentNotificationService {
 			}
 
 			PetApplicationSearchCriteria criteria = PetApplicationSearchCriteria.builder()
-					.applicationNumber(applicationNumber)
+					.applicationNumber(Collections.singletonList(applicationNumber))
 					.build();
 
 			List<PetRegistrationApplication> applications = petRegistrationRepository.getApplications(criteria);

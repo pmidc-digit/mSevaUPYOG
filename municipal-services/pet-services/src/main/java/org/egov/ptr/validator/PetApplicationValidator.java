@@ -1,5 +1,6 @@
 package org.egov.ptr.validator;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class PetApplicationValidator {
 	/**
 	 * Validate the masterData and ctizenInfo of the given petRequest
 	 * 
-	 * @param request PetRequest for create
+	 * @param petRegistrationRequest PetRequest for create
 	 */
 
 	public void validatePetApplication(PetRegistrationRequest petRegistrationRequest) {
@@ -60,7 +61,7 @@ public class PetApplicationValidator {
 	public PetRegistrationApplication validateApplicationExistence(
 			PetRegistrationApplication petRegistrationApplication) {
 		PetRegistrationApplication petRegistrationApplication1 = repository.getApplications(PetApplicationSearchCriteria.builder()
-				.applicationNumber(petRegistrationApplication.getApplicationNumber()).build()).get(0);
+				.applicationNumber(Collections.singletonList(petRegistrationApplication.getApplicationNumber())).build()).get(0);
 		if (petRegistrationApplication1 == null)
 			throw new CustomException("EG_PTR_ERR", "No pet registration application found for the given application number");
 

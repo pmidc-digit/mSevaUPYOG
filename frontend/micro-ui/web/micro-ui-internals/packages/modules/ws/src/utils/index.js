@@ -656,7 +656,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       status: storeData?.applicationData?.status,
       connectionNo: storeData?.applicationData?.connectionNo,
       connectionHolders: storeData?.applicationData?.connectionHolders,
-      applicationType: "NEW_WATER_CONNECTION",
+      applicationType: "DISCONNECT_WATER_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(data?.date),
       isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" || data?.type?.value?.code === "TEMPORARY" ? true : false,
@@ -703,7 +703,7 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       status: storeData?.applicationData?.status,
       connectionNo: storeData?.applicationData?.connectionNo,
       connectionHolders: storeData?.applicationData?.connectionHolders,
-      applicationType: "NEW_WATER_CONNECTION",
+      applicationType: "DISCONNECT_SEWERAGE_CONNECTION",
       dateEffectiveFrom: convertDateToEpoch(data?.date),
       isdisconnection: true,
       isDisconnectionTemporary: data?.type?.value?.code === "Temporary" ? true : false,
@@ -938,7 +938,7 @@ export const createPayloadOfWSReSubmitDisconnection = async (data, storeData, se
 export const updatePayloadOfWSDisconnection = async (data, type) => {
   let payload = {
     ...data,
-    plumberInfo : data?.plumberInfo?.[0] ? [{...data?.plumberInfo?.[0], id:null}] : data?.plumberInfo,
+    plumberInfo: data?.plumberInfo?.[0] ? [{...data?.plumberInfo?.[0], id:null}] : data?.plumberInfo,  
     applicationType: type === "WATER" ? "DISCONNECT_WATER_CONNECTION" : "DISCONNECT_SEWERAGE_CONNECTION",
     processInstance: {
       ...data?.processInstance,
@@ -1768,5 +1768,5 @@ export const ifUserRoleExists = (role) => {
   const roleCodes = userInfo?.info?.roles ? userInfo?.info?.roles.map((role) => role.code) : [];
   if (roleCodes.indexOf(role) > -1) {
     return true;
-  } else return false;
+   } else return false;
 };

@@ -2,20 +2,24 @@ import React, { useEffect, useState } from "react";
 import { CardLabel, Dropdown, UploadFile, Toast, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/PTRTimeline";
 import _ from "lodash";
+import { useDispatch, useSelector } from "react-redux";
+
 const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => {
   const stateId = Digit.ULBService.getStateId();
   const [formErrors, setFormErrors] = useState({});
   const [toastError, setToastError] = useState(null);
+
   const FILE_POLICY = {
     maxBytes: 5 * 1024 * 1024, // 5 MB
     allowedExtensions: [".pdf", ".jpeg", ".jpg", ".png"],
   };
 
+  const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
+  console.log("apiDataCheck for here docs:>> ", apiDataCheck);
   const validateFile = (file, docCode) => {
     if (!file) return null;
 
     const maxBytes = 5 * 1024 * 1024; // 5 MB
-
     // Default allowed extensions
     let allowedExtensions = [".pdf", ".jpeg", ".jpg", ".png"];
 
@@ -69,12 +73,32 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   }, [documents, mdmsDocsData]);
 
   useEffect(() => {
-    const incomingDocs = formData?.documents?.documents || [];
-    if (!_.isEqual(incomingDocs, documents)) {
-      setDocuments(incomingDocs);
+    if (!apiDataCheck) {
+      const incomingDocs = formData?.documents?.documents || [];
+      if (!_.isEqual(incomingDocs, documents)) {
+        setDocuments(incomingDocs);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formData]); // remove `documents` from deps to avoid re-triggering unnecessarily
+  }, [formData, apiDataCheck]); // remove `documents` from deps to avoid re-triggering unnecessarily
+
+  useEffect(() => {
+    // Defensive checks + normalise different shapes from backend
+    if (Array.isArray(apiDataCheck) && apiDataCheck.length > 0 && Array.isArray(apiDataCheck[0].documents)) {
+      const docs = apiDataCheck[0].documents.map((d) => {
+        const fileId = d?.fileStoreId ?? d?.filestoreId ?? d?.filestoreId ?? d?.documentUid ?? null;
+        // documentType may sometimes be 'documentType' or 'type' or 'code' depending on backend
+        const documentType = d?.documentType ?? d?.type ?? d?.code ?? null;
+        return {
+          documentType,
+          filestoreId: fileId,
+          documentUid: fileId,
+        };
+      });
+      console.log("setting documents to", docs);
+      setDocuments(docs);
+    }
+  }, [apiDataCheck]);
 
   const lastSentRef = React.useRef();
 
@@ -105,6 +129,9 @@ const PTRSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
           {Array.isArray(mdmsDocsData) &&
             mdmsDocsData.map((mdmsDoc, index) => {
               const existing = documents.find((d) => d.documentType === mdmsDoc.code);
+              console.log("existing for", mdmsDoc.code, existing);
+              console.log("document prop", { ...mdmsDoc, ...existing });
+
               return (
                 <PTRSelectDocument
                   key={index}
@@ -134,6 +161,13 @@ function PTRSelectDocument({ t, document: doc, setDocuments, documents, validate
   const [file, setFile] = useState(null);
   // const [uploadedFile, setUploadedFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(doc?.filestoreId || null);
+
+  useEffect(() => {
+    const fileId = doc?.filestoreId;
+    setUploadedFile(fileId);
+  }, [doc?.filestoreId]);
+
+  console.log("uploadedFile for", doc?.documentType, uploadedFile, "doc prop:", doc);
 
   const [fieldError, setFieldError] = useState(null);
   const [loading, setLoading] = useState(false);

@@ -10,6 +10,7 @@ import {
   PopUp,
   Toast,
   SubmitBar,
+  ActionBar,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -42,7 +43,6 @@ const ApplicationDetails = () => {
     config: { staleTime: 0, refetchOnMount: "always" },
   });
 
-  console.log("data :>> ", data);
   const [billData, setBillData] = useState(null);
 
   const PetRegistrationApplications = get(data, "PetRegistrationApplications", []);
@@ -170,18 +170,27 @@ const ApplicationDetails = () => {
     <React.Fragment>
       <div>
         <div className="cardHeaderWithOptions" style={{ marginRight: "auto", maxWidth: "960px" }}>
-          <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header>
-          {PetRegistrationApplications?.status == "approved" && dowloadOptions && dowloadOptions.length > 0 && (
+          {/* <Header styles={{ fontSize: "32px" }}>{t("CS_APPLICATION_DETAILS")}</Header> */}
+          {/* {PetRegistrationApplications?.status == "approved" && dowloadOptions && dowloadOptions.length > 0 && (
             <MultiLink
               className="multilinkWrapper"
               onHeadClick={() => setShowOptions(!showOptions)}
               displayOptions={showOptions}
               options={dowloadOptions}
             />
-          )}
+          )} */}
         </div>
         <Card>
+          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
+            <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
+              text={pet_details?.fatherName || pet_details?.owner?.fatherOrHusbandName || t("CS_NA")}
+            />
+            <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
+            <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
             <Row className="border-none" label={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} text={pet_details?.applicationNumber} />
           </StatusTable>
 
@@ -194,25 +203,22 @@ const ApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_HOUSE_NO")} text={pet_details?.address?.doorNo || t("CS_NA")} /> */}
           </StatusTable>
 
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITLE_APPLICANT_DETAILS")}</CardSubHeader>
-          <StatusTable>
-            <Row className="border-none" label={t("REPORT_FSM_RESULT_APPLICANTNAME")} text={pet_details?.owner?.name || t("CS_NA")} />
-            <Row
-              className="border-none"
-              label={t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL")}
-              text={pet_details?.fatherName || pet_details?.owner?.fatherOrHusbandName || t("CS_NA")}
-            />
-            <Row className="border-none" label={t("MOBILE")} text={pet_details?.owner?.mobileNumber || t("CS_NA")} />
-            <Row className="border-none" label={t("CORE_COMMON_PROFILE_EMAIL")} text={pet_details?.owner?.emailId || t("CS_NA")} />
-          </StatusTable>
-
           <CardSubHeader style={{ fontSize: "24px" }}>{t("ES_TITILE_PET_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("PTR_SEARCH_PET_TYPE")} text={t(pet_details?.petDetails?.petType) || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_SEARCH_BREED_TYPE")} text={t(pet_details?.petDetails?.breedType) || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_DOCTOR_NAME")} text={pet_details?.petDetails?.doctorName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_CLINIC_NAME")} text={pet_details?.petDetails?.clinicName || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_VACCINATED_DATE")} text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("PTR_VACCINATED_DATE")}
+              // text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")}
+              text={
+                pet_details?.petDetails?.lastVaccineDate
+                  ? new Date(Number(pet_details.petDetails.lastVaccineDate)).toLocaleDateString("en-GB")
+                  : t("CS_NA")
+              }
+            />
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
           </StatusTable>
 
@@ -231,6 +237,16 @@ const ApplicationDetails = () => {
               </StatusTable>
             )}
           </div>
+          {(pet_details?.status == "CITIZENACTIONREQUIRED" || pet_details?.status == "INITIATED") && (
+            <ActionBar>
+              <SubmitBar
+                label={t("COMMON_EDIT")}
+                onSubmit={() => {
+                  history.push(`/digit-ui/employee/ptr/petservice/new-application/${id}`);
+                }}
+              />
+            </ActionBar>
+          )}
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (
             <Toast
@@ -244,7 +260,7 @@ const ApplicationDetails = () => {
           )}
         </Card>
 
-        {popup && <PTCitizenFeedbackPopUp setpopup={setpopup} setShowToast={setShowToast} data={data} />}
+        {/* {popup && <PTCitizenFeedbackPopUp setpopup={setpopup} setShowToast={setShowToast} data={data} />} */}
       </div>
     </React.Fragment>
   );

@@ -342,7 +342,7 @@ export const OBPSService = {
       totalAmount = 0,
       collectionBillRes = [];
 
-    if (BPA?.businessService === "BPA_LOW") appBusinessService = ["BPA.LOW_RISK_PERMIT_FEE"];
+    if (BPA?.businessService === "BPA_LOW") appBusinessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
     else if (BPA?.businessService === "BPA") appBusinessService = ["BPA.NC_APP_FEE", "BPA.NC_SAN_FEE"];
     else if (BPA?.businessService === "BPA_OC") appBusinessService = ["BPA.NC_OC_APP_FEE", "BPA.NC_OC_SAN_FEE"];
 
@@ -926,4 +926,13 @@ export const OBPSService = {
       userService: auth === false ? auth : true,
       params: { tenantId, ...filters },
     }),
+  bpaCalculate: async (data) => 
+    Request({
+      url: Urls.obps.bpaCalculator,
+      useCache: false,
+      method: "POST",
+      auth: false,
+      userService: false,
+      data: data,
+    })
 };

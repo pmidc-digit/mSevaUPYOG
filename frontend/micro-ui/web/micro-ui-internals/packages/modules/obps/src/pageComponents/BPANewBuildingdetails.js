@@ -86,7 +86,7 @@ const BPANewBuildingdetails = ({ t, config, onSelect, formData, currentStepData,
   const [ecbcDemandLoadFileObj, setEcbcDemandLoadFileObj] = useState()
   const [ecbcAirConditionedFileObj, setEcbcAirConditionedFileObj] = useState()
 
-  const [ecbcCertificateFile, setEcbcCertificateFile] = useState(null);
+  const [ecbcCertificateFile, setEcbcCertificateFile] = useState(currentStepData?.createdResponse?.additionalDetails?.ecbcCertificateFile ||null);
 const [ecbcCertificateFileObj, setEcbcCertificateFileObj] = useState(null);
 const [apiLoading, setApiLoading] = useState(false);
 
@@ -253,8 +253,44 @@ if (anyYes && !ecbcCertificateFile) {
   const [file, setFile] = useState()
   const Webview = !Digit.Utils.browser.isMobile()
   const acceptFormat = ".pdf"
+    const { data: commonmasterFields, isLoading: commonmasterFieldsLoading } = Digit.Hooks.useCustomMDMS(
+    Digit.ULBService.getStateId(),
+    "BPA",
+    [{ name: "MasterFields" }],
+    {
+      select: (data) => {
+        const formattedData = data?.["BPA"]?.["MasterFields"]
+        return formattedData
+      },
+    },
+  )
 
  
+  useEffect(() => {
+    ;(async () => {
+      if (file && file?.type) {
+        if (!acceptFormat?.split(",")?.includes(`.${file?.type?.split("/")?.pop()}`)) {
+          setErrors((prev) => ({ ...prev, file: t("PT_UPLOAD_FORMAT_NOT_SUPPORTED") }))
+        } else if (file.size >= 2000000) {
+          setErrors((prev) => ({ ...prev, file: t("PT_MAXIMUM_UPLOAD_SIZE_EXCEEDED") }))
+        } else {
+          try {
+            const response = await Digit.UploadServices.Filestorage(
+              "property-upload",
+              file,
+              Digit.ULBService.getStateId(),
+            )
+            if (response?.data?.files?.length > 0) {
+              setUploadedFile(response?.data?.files[0]?.fileStoreId)
+            } else {
+              setErrors((prev) => ({ ...prev, file: t("PT_FILE_UPLOAD_ERROR") }))
+            }
+          } catch (err) {}
+        }
+      }
+    })()
+  }, [file])
+
   useEffect(() => {
     ;(async () => {
       if (files && files?.type) {
@@ -438,19 +474,10 @@ if (anyYes && !ecbcCertificateFile) {
           setUse(currentStepData?.createdResponse?.additionalDetails?.use);
         }
       }
-    }, [use, currentStepData?.createdResponse?.additionalDetails?.use]);
+    }, [use, currentStepData?.createdResponse?.additionalDetails?.use, commonmasterFieldsLoading, commonmasterFields]);
 
     // ✅ rating
-    useEffect(() => {
-      if (typeof rating === "string") {
-        const rate = selectRating.find((item) => item.code === rating);
-        if (rate) setrating(rate);
-      } else if (rating === null) {
-        if (currentStepData?.createdResponse?.additionalDetails?.rating) {
-          setrating(currentStepData?.createdResponse?.additionalDetails?.rating);
-        }
-      }
-    }, [rating, currentStepData?.createdResponse?.additionalDetails?.rating]);
+    
 
     // ✅ ECBC fields
     useEffect(() => {
@@ -614,17 +641,18 @@ if (anyYes && !ecbcCertificateFile) {
       })
     })
 
-  const { data: commonmasterFields } = Digit.Hooks.useCustomMDMS(
-    Digit.ULBService.getStateId(),
-    "BPA",
-    [{ name: "MasterFields" }],
-    {
-      select: (data) => {
-        const formattedData = data?.["BPA"]?.["MasterFields"]
-        return formattedData
-      },
-    },
-  )
+    useEffect(() => {
+      if (typeof rating === "string" && selectRating.length>0) {
+        const rate = selectRating.find((item) => item.code === rating);
+        if (rate) setrating(rate);
+      } else if (rating === null) {
+        if (currentStepData?.createdResponse?.additionalDetails?.rating) {
+          setrating(currentStepData?.createdResponse?.additionalDetails?.rating);
+        }
+      }
+    }, [rating, currentStepData?.createdResponse?.additionalDetails?.rating, commonrating]);
+
+
 
   const selectmasterDrop = []
 
@@ -734,7 +762,7 @@ if (anyYes && !ecbcCertificateFile) {
   }
 
   function selectfile(e) {
-    setUploadedFile(e.target.files[0])
+    // setUploadedFile(e.target.files[0])
     setFile(e.target.files[0])
     setErrors((prev) => ({ ...prev, file: "" }))
   }
@@ -807,7 +835,7 @@ if (anyYes && !ecbcCertificateFile) {
       UlbName, // plain text
       Ulblisttype, // plain text
       District, // plain text
-      rating: rating?.code,
+      rating: typeof rating === "string" ? rating : rating?.code,
       masterPlan: masterPlan?.code,
       buildingStatus: buildingStatus?.code,
       purchasedFAR: purchasedFAR?.code,
@@ -826,6 +854,7 @@ if (anyYes && !ecbcCertificateFile) {
       ecbcElectricalLoadFile,
       ecbcDemandLoadFile,
       ecbcAirConditionedFile,
+      ecbcCertificateFile
     };
 
 
@@ -941,7 +970,7 @@ if (anyYes && !ecbcCertificateFile) {
   return (
   <div >
     {!Webview && <Timeline currentStep={2} />}
-    <FormStep config={config} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
+    <FormStep config={{...config, texts:{header: "BPA_ADDITIONAL_BUILDING_DETAILS"}}} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_ULB_DETAILS")}</h2>
 
@@ -1249,7 +1278,7 @@ if (anyYes && !ecbcCertificateFile) {
 
       <div>
 
-        <CardLabel>{`ECBC - Proposed Connected Electrical Load is above 100 Kw`}</CardLabel>
+        <CardLabel>{t(`ECBC - Proposed Connected Electrical Load is above 100 Kw`)}</CardLabel>
         <Controller
           control={control}
           name={"ecbcElectricalLoad"}
@@ -1267,7 +1296,7 @@ if (anyYes && !ecbcCertificateFile) {
         />
         <ErrorMessage error={errors.ecbcElectricalLoad} />
 
-        <CardLabel>{`ECBC - Proposed Demand of Electrical Load is above 120 Kw`}</CardLabel>
+        <CardLabel>{t(`ECBC - Proposed Demand of Electrical Load is above 120 Kw`)}</CardLabel>
         <Controller
           control={control}
           name={"ecbcDemandLoad"}
@@ -1285,7 +1314,7 @@ if (anyYes && !ecbcCertificateFile) {
         />
         <ErrorMessage error={errors.ecbcDemandLoad} />
 
-        <CardLabel>{`ECBC - Proposed Air Conditioned Area above 500 sq.mt`}</CardLabel>
+        <CardLabel>{t(`ECBC - Proposed Air Conditioned Area above 500 sq.mt`)}</CardLabel>
         <Controller
           control={control}
           name={"ecbcAirConditioned"}
@@ -1316,7 +1345,8 @@ if (anyYes && !ecbcCertificateFile) {
                 setEcbcCertificateFile(null);
                 setEcbcCertificateFileObj(null);
               }}
-              message={ecbcCertificateFileObj?.name || "Choose a file"}
+              // message={ecbcCertificateFileObj?.name || "Choose a file"}
+              message={ecbcCertificateFile ? `1 ${t(`FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
             />
             {errors.ecbcCertificateFile && (
               <p className="error" style={{ color: "red" }}>

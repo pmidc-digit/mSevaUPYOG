@@ -140,7 +140,7 @@ function selectfile(e) {
               return <CardLabel style={{fontWeight:"400"}}>{value?.title}</CardLabel>
             })}
           </div>
-          {window.location.href.includes("employee") && scrutinyDetails?.values[0]?.title=="BPA_APPL_FEES_DETAILS" && 
+          {/* {window.location.href.includes("employee") && scrutinyDetails?.values[0]?.title=="BPA_APPL_FEES_DETAILS" && 
           <div>
           {!showApplicationFee && (
          <div style={styles.buttonStyle}>
@@ -174,8 +174,8 @@ function selectfile(e) {
           <Row className="border-none"></Row>
             </div>}
           </div>
-          } 
-          {window.location.href.includes("employee") && scrutinyDetails?.values[0]?.title=="BPA_APPL_FEES_DETAILS" && 
+          }  */}
+          {/* {window.location.href.includes("employee") && scrutinyDetails?.values[0]?.title=="BPA_APPL_FEES_DETAILS" && 
           <div>
           {!showSanctionFee && (
          <div style={styles.buttonStyle}>
@@ -292,8 +292,8 @@ function selectfile(e) {
        <Row  className="border-none" label={t(`BPA_P2_TOTAL_FEE`)} text={`₹ ${((parseFloat(development)?parseFloat(development):0)+(parseFloat(otherCharges?parseFloat(otherCharges):0))+parseFloat(additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES)+parseFloat(additionalDetails?.selfCertificationCharges?.BPA_LABOUR_CESS)+parseFloat(additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES)+parseFloat(additionalDetails?.selfCertificationCharges?.BPA_GAUSHALA_CHARGES_CESS))-(parseFloat(lessAdjusment)?parseFloat(lessAdjusment):0)}`} />
             </div>}
           </div>
-          }          
-          <div>
+          }           */}
+          {/* <div>
             {scrutinyDetails?.scruntinyDetails?.map((report, index) => {
               return (
                 <Fragment>
@@ -303,7 +303,7 @@ function selectfile(e) {
                 </Fragment>
               )
             })}
-          </div>
+          </div> */}
         </StatusTable>
       </div>}
     </Fragment>

@@ -10,19 +10,34 @@ import {
   CardSectionHeader,
 } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { UPDATE_PTRNewApplication_FORM } from "../redux/action/PTRNewApplicationActions";
 import { convertEpochToDateInput } from "../utils/index";
 import CustomDatePicker from "./CustomDatePicker";
 
-const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) => {
+const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isEdit }) => {
+  console.log("currentStepData here:>> ", currentStepData);
   const stateId = Digit.ULBService.getStateId();
   let user = Digit.UserService.getUser();
   const dispatch = useDispatch();
+  const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
+
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
-  const { data: mdmsPetData } = Digit.Hooks.ptr.usePTRPetMDMS(tenantId);
+  const { data: mdmsPetData, isLoading } = Digit.Hooks.ptr.usePTRPetMDMS(tenantId);
+
+  const petTypeObj = mdmsPetData?.petTypes?.find((pt) => pt.name === apiDataCheck?.[0]?.petDetails?.petType) || null;
+
+  const breedTypeObj = mdmsPetData?.breedTypes?.find((bt) => bt.name === apiDataCheck?.[0]?.petDetails?.breedType) || null;
+
+  const genderTypeObj = mdmsPetData?.genderTypes?.find((gt) => gt.name === apiDataCheck?.[0]?.petDetails?.petGender) || null;
+
+  console.log("petTypeObj :>> ", petTypeObj);
+  console.log("breedTypeObj :>> ", breedTypeObj);
+
+  console.log("genderTypeObj :>> ", genderTypeObj);
+
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0]; // yyyy-mm-dd for max
   const minVaccineDate = new Date();
@@ -60,20 +75,20 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
       if (Object.keys(validationErrors).length > 0) return;
     }
 
-    // ✅ If already created, skip API call
     if (currentStepData?.CreatedResponse?.applicationNumber || currentStepData?.applicationData?.applicationNumber) {
       console.log("Skipping API call — already created");
       goNext(data);
       return;
     }
 
-    const { address, lastName, firstName, pincode, ...filteredOwnerDetails } = currentStepData.ownerDetails;
-    const formData = {
-      tenantId, //change applicant to owner
+    console.log("data", data);
 
+    const { address, name, pincode, ...filteredOwnerDetails } = currentStepData.ownerDetails;
+    const formData = {
+      tenantId,
       owner: {
         ...filteredOwnerDetails,
-        name: `${firstName} ${lastName}`,
+        name: name,
         // userName: `${firstName} ${lastName}`,
         userName: filteredOwnerDetails?.mobileNumber,
         tenantId,
@@ -81,9 +96,9 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
       },
       petDetails: {
         petName: data.petName,
-        petType: data.petType?.code,
+        petType: data.petType?.name,
         breedType: data.breedType?.code,
-        petGender: data.petGender?.code,
+        petGender: data.petGender?.name,
         petColor: data.petColor,
         lastVaccineDate: toEpochMilliseconds(data.lastVaccineDate),
         petAge: data.petAge,
@@ -96,32 +111,115 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
         addressId: currentStepData.ownerDetails.address,
       },
       applicationType: "NEWAPPLICATION",
-      ownerName: `${firstName} ${lastName}`, //change to ownerName
+      ownerName: name, //change to ownerName
       fatherName: filteredOwnerDetails?.fatherOrHusbandName,
       mobileNumber: filteredOwnerDetails?.mobileNumber,
       workflow: {
         action: "INITIATE",
-        comments: "Initial application submitted",
+        comments: "",
         status: "INITIATED",
       },
     };
 
-    try {
+    const pick = (newV, oldV) => (newV !== undefined && newV !== null && newV !== "" ? newV : oldV);
+    const existing = apiDataCheck?.[0] || currentStepData?.responseData?.[0] || {};
+
+    if (existing?.applicationNumber) {
+      const existingDocuments =
+        existing?.documents && Array.isArray(existing.documents) && existing.documents.length
+          ? existing.documents
+          : currentStepData?.documents?.documents?.documents || currentStepData?.documents || [];
+
+      const updateFormData = {
+        ...existing, // preserve id, applicationNumber, auditDetails, etc.
+
+        owner: {
+          ...existing.owner,
+          ...filteredOwnerDetails,
+          name: `${pick(filteredOwnerDetails.firstName, (existing.owner?.name || "").split(" ")[0] || "")} ${pick(
+            filteredOwnerDetails.lastName,
+            (existing.owner?.name || "").split(" ")[1] || ""
+          )}`.trim(),
+          userName: pick(filteredOwnerDetails.mobileNumber, existing.owner?.userName),
+        },
+
+        address: {
+          ...existing.address,
+          pincode: pick(pincode, existing.address?.pincode),
+          addressId: pick(currentStepData.ownerDetails.address, existing.address?.addressId),
+          tenantId,
+        },
+
+        petDetails: {
+          ...existing.petDetails,
+          petName: pick(data.petName, existing.petDetails?.petName),
+          // prefer .name (UI) -> fallback to .code, then existing
+          petType: pick(data.petType?.name ?? data.petType?.code, existing.petDetails?.petType),
+          breedType: pick(data.breedType?.name ?? data.breedType?.code, existing.petDetails?.breedType),
+          petGender: pick(data.petGender?.name ?? data.petGender?.code, existing.petDetails?.petGender),
+          petColor: pick(data.petColor, existing.petDetails?.petColor),
+          lastVaccineDate: pick(toEpochMilliseconds(data.lastVaccineDate), existing.petDetails?.lastVaccineDate),
+          petAge: pick(data.petAge, existing.petDetails?.petAge),
+          vaccinationNumber: pick(data.vaccinationNumber, existing.petDetails?.vaccinationNumber),
+          doctorName: pick(data.doctorName, existing.petDetails?.doctorName),
+          clinicName: pick(data.clinicName, existing.petDetails?.clinicName),
+        },
+
+        // preserve documents unless other steps changed them
+        documents: existingDocuments,
+        // keep workflow unchanged here
+        workflow: {
+          ...existing.workflow,
+          action: "SAVEASDRAFT",
+          status: "SAVEASDRAFT",
+          comments: "SAVEASDRAFT",
+        },
+
+        ownerName:
+          `${pick(filteredOwnerDetails.firstName, existing.ownerName || "")} ${pick(filteredOwnerDetails.lastName, "")}`.trim() || existing.ownerName,
+        mobileNumber: pick(filteredOwnerDetails.mobileNumber, existing.mobileNumber),
+      };
+
+      const response = await Digit.PTRService.update({ PetRegistrationApplications: [updateFormData] }, tenantId);
+      if (response?.ResponseInfo?.status === "successful") {
+        dispatch(UPDATE_PTRNewApplication_FORM("CreatedResponse", response.PetRegistrationApplications[0]));
+        goNext(data);
+      }
+    } else {
+      // No existing application -> create (unchanged)
       const response = await Digit.PTRService.create({ petRegistrationApplications: [formData] }, formData.tenantId);
       if (response?.ResponseInfo?.status === "successful") {
         dispatch(UPDATE_PTRNewApplication_FORM("CreatedResponse", response.PetRegistrationApplications[0]));
         goNext(data);
       }
-    } catch (err) {
-      console.error("API call failed:", err);
     }
   };
+  useEffect(() => {
+    if (apiDataCheck?.[0]?.petDetails) {
+      Object.entries(apiDataCheck[0].petDetails).forEach(([key, value]) => {
+        if (key === "lastVaccineDate") {
+          const epoch = value !== null && value !== undefined && value !== "" ? (!Number.isNaN(Number(value)) ? Number(value) : value) : value;
 
+          const v = convertEpochToDateInput(epoch);
+          console.log("setting lastVaccineDate from apiCheckData ->", value, "coerced ->", epoch, "converted ->", v);
+          setValue(key, v);
+        } else if (key === "petType") {
+          setValue(key, petTypeObj);
+        } else if (key === "breedType") {
+          setValue(key, breedTypeObj);
+        } else if (key === "petGender") {
+          setValue(key, genderTypeObj);
+        } else {
+          setValue(key, value);
+        }
+      });
+    }
+  }, [isLoading, mdmsPetData, apiDataCheck, setValue]);
   useEffect(() => {
     if (currentStepData?.petDetails) {
       Object.entries(currentStepData.petDetails).forEach(([key, value]) => {
         if (key === "lastVaccineDate") {
-          setValue(key, convertEpochToDateInput(value)); // ✅ formatted for date input
+          setValue(key, convertEpochToDateInput(value));
         } else {
           setValue(key, value);
         }
@@ -132,12 +230,14 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
   const selectedVaccineDate = watch("lastVaccineDate");
   useEffect(() => {
     // re-trigger petAge validation whenever vaccine date changes
+    console.log("watch lastVaccineDate ->", selectedVaccineDate, "type:", typeof selectedVaccineDate, "asJSON:", JSON.stringify(selectedVaccineDate));
+
     if (selectedVaccineDate) {
       trigger("petAge");
     }
   }, [selectedVaccineDate, trigger]);
 
-  const onlyAlphabets = /^[A-Za-z\s]+$/; // Allows any number of letters and spaces
+  const onlyAlphabets = /^[A-Za-z]+(?:[ '-][A-Za-z]+)*\s*$/; // Allows any number of letters and spaces
   const onlyNumbers = /^[0-9]+$/; // Allows any number of digits
   const alphaNum = /^[A-Za-z0-9]+$/; // Allows any number of letters and digits
   const decimalNumber = /^\d+(\.\d{1,2})?$/;
@@ -351,7 +451,12 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
           <Controller
             control={control}
             name="doctorName"
-            rules={{ required: t("PTR_DOCTOR_NAME_REQUIRED"), pattern: { value: onlyAlphabets, message: t("PTR_DOCTOR_NAME_INVALID") } }}
+            rules={{
+              required: t("PTR_DOCTOR_NAME_REQUIRED"),
+              pattern: { value: onlyAlphabets, message: t("PTR_DOCTOR_NAME_INVALID") },
+              maxLength: { value: 100, message: "Maximum 100 characters" },
+              minLength: { value: 2, message: "Minimum 2 characters" },
+            }}
             render={(props) => (
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("doctorName")} t={t} />
             )}
@@ -367,7 +472,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep }) =
           <Controller
             control={control}
             name="clinicName"
-            rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: alphaNum, message: t("PTR_CLINIC_NAME_INVALID") } }}
+            rules={{ required: t("PTR_CLINIC_NAME_REQUIRED"), pattern: { value: /^[a-zA-Z0-9\s&-]+$/, message: t("PTR_CLINIC_NAME_INVALID") } }}
             render={(props) => (
               <TextInput value={props.value} onChange={(e) => props.onChange(e.target.value)} onBlur={() => trigger("clinicName")} t={t} />
             )}

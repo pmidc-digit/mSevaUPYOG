@@ -1,111 +1,180 @@
-import React from "react";
-import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useState, useRef } from "react";
+import { Card, CardSubHeader, CardLabel, LabelFieldPair, StatusTable, ActionBar, SubmitBar, Menu } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { SET_CHBApplication_STEP } from "../redux/action/CHBApplicationActions";
+import { useTranslation } from "react-i18next";
+import CHBDocument from "../components/CHBDocument";
 
-function CHBSummary({ formData, t }) {
+function CHBSummary({ formData, goNext, onGoBack }) {
   const { pathname: url } = useLocation();
+  const { t } = useTranslation();
   const history = useHistory();
+  const menuRef = useRef();
   const dispatch = useDispatch();
+  const mutateScreen = url.includes("/property-mutate/");
+  let user = Digit.UserService.getUser();
+
+  console.log("formData", formData);
+
+  let docs = formData?.documents?.documents?.documents;
+
+  const appId = formData?.apiData?.Applications?.[0]?.uuid || formData?.venueDetails?.[0]?.bookingNo;
+
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
+
+  const isCitizen = window.location.href.includes("citizen");
+
+  const [getData, setData] = useState();
+  const [displayMenu, setDisplayMenu] = useState(false);
+
+  const closeMenu = () => {
+    setDisplayMenu(false);
+  };
+
+  Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
+
+  // const fetchCalculations = async () => {
+  //   const payload = {
+  //     CalculationCriteria: [
+  //       {
+  //         applicationNumber: appId,
+  //         tenantId: tenantId,
+  //       },
+  //     ],
+  //   };
+  //   const response = await Digit.NDCService.NDCCalculator({ tenantId, filters: { getCalculationOnly: true }, details: payload });
+  //   console.log("response", response?.Calculation?.[0]?.totalAmount);
+  //   setData(response?.Calculation?.[0]);
+  // };
+
+  // useEffect(() => {
+  //   fetchCalculations();
+  // }, []);
+
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: appId,
+    moduleCode: "chb-services",
+  });
+
+  const userRoles = user?.info?.roles?.map((e) => e.code);
+  let actions =
+    workflowDetails?.data?.actionState?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    }) ||
+    workflowDetails?.data?.nextActions?.filter((e) => {
+      return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
+    });
+
+  function onActionSelect(action) {
+    goNext(action);
+    // setShowModal(true);
+    // setSelectedAction(action);
+  }
+
+  console.log("workflowDetails", workflowDetails?.data?.nextActions);
+
+  console.log("actions", actions);
+
+  // ---------------- UI Styles ----------------
+  const pageStyle = {
+    padding: "2rem",
+    backgroundColor: "#f9f9f9",
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    color: "#333",
+  };
+
+  const sectionStyle = {
+    backgroundColor: "#ffffff",
+    padding: "1rem 1.5rem",
+    borderRadius: "8px",
+    marginBottom: "2rem",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.05)",
+  };
+
+  const headingStyle = {
+    fontSize: "1.5rem",
+    borderBottom: "2px solid #ccc",
+    paddingBottom: "0.3rem",
+    color: "#2e4a66",
+    marginTop: "2rem",
+    marginBottom: "1rem",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    borderBottom: "1px dashed #e0e0e0",
+    padding: "0.5rem 0",
+    color: "#333",
+  };
+
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+  };
+
+  const documentCardStyle = {
+    flex: isCitizen ? "1 1 18%" : "1 1 22%", // around 4 per row
+    minWidth: "200px", // keeps it from shrinking too small
+    maxWidth: "250px", // prevents oversized stretching on big screens
+    backgroundColor: "#fdfdfd",
+    padding: "0.75rem",
+    border: "1px solid #e0e0e0",
+    borderRadius: "6px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
+  };
+
+  const boldLabelStyle = { fontWeight: "bold", color: "#555" };
+
+  const renderLabel = (label, value) => (
+    <div style={labelFieldPairStyle}>
+      <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      <div>{value || "NA"}</div>
+    </div>
+  );
 
   return (
-    <div className="application-summary">
-      <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{t("Application Summary")}</h2>
+    <div style={pageStyle}>
+      <h2 style={headingStyle}>{t("Application Summary")}</h2>
 
-      {/* Step 1: Owner Details */}
-      <Card className="summary-section" style={{ padding: "2px" }}>
-        <div className="section-header">
-          <h3>{t("Owner Details")}</h3>
-          <label onClick={() => dispatch(SET_CHBApplication_STEP(1))}>{t("EDIT")}</label>
-        </div>
-        <div className="section-content">
-          <LabelFieldPair>
-            <CardLabel>{t("First Name")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.firstName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Last Name")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.lastName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Father's Name")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.fatherName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Mobile Number")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.mobileNumber || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Email ID")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.emailId || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Address")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.address || "NA"}</div>
-          </LabelFieldPair>
-        </div>
-      </Card>
+      {/* Property Details Section */}
+      <div style={sectionStyle}>
+        {renderLabel(t("Full Name"), formData?.venueDetails?.[0]?.applicantDetail?.applicantName)}
+        {renderLabel(t("Mobile Number"), formData?.venueDetails?.[0]?.applicantDetail?.applicantMobileNo)}
+        {renderLabel(t("Email ID"), formData?.venueDetails?.[0]?.applicantDetail?.applicantEmailId)}
+        {renderLabel(t("Address"), formData?.venueDetails?.[0]?.address?.addressLine1)}
+      </div>
 
-      {/* Step 2: Pet Details */}
-      <Card className="summary-section">
-        <div className="section-header">
-          <h3>{t("Pet Details")}</h3>
-          <label onClick={() => dispatch(SET_CHBApplication_STEP(2))}>{t("EDIT")}</label>
-        </div>
-        <div className="section-content">
-          <LabelFieldPair>
-            <CardLabel>{t("Pet Name")}</CardLabel>
-            <div>{formData?.pets?.pets?.petName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Pet Type")}</CardLabel>
-            <div>{formData?.pets?.pets?.petType?.i18nKey || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Breed Type")}</CardLabel>
-            <div>{formData?.pets?.pets?.breedType?.i18nKey || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Pet Gender")}</CardLabel>
-            <div>{formData?.pets?.pets?.petGender?.i18nKey || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Color")}</CardLabel>
-            <div>{formData?.pets?.pets?.color || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Vaccination Number")}</CardLabel>
-            <div>{formData?.pets?.pets?.vaccinationNumber || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Last Vaccine Date")}</CardLabel>
-            <div>{formData?.pets?.pets?.lastVaccineDate || "NA"}</div>
-          </LabelFieldPair>
-        </div>
-      </Card>
+      {/* Documents Section */}
+      {/* Documents Section */}
+      <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
+      <div style={sectionStyle}>
+        {docs?.length > 0 ? (
+          <div style={documentsContainerStyle}>
+            {docs?.map((doc, index) => (
+              <div key={index} style={documentCardStyle}>
+                <CHBDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
+        )}
+      </div>
 
-      {/* Step 3: Document Details */}
-      <Card className="summary-section">
-        <div className="section-header">
-          <h3>{t("Documents")}</h3>
-          <label onClick={() => dispatch(SET_CHBApplication_STEP(3))}>{t("EDIT")}</label>
-        </div>
-        <div className="section-content">
-          {formData?.documents?.documents?.documents?.map((doc, index) => (
-            <div key={index}>
-              <LabelFieldPair>
-                <CardLabel>{t("Document Type")}</CardLabel>
-                <div>{t(doc?.documentType) || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair>
-                <CardLabel>{t("Document UID")}</CardLabel>
-                <div>{doc?.documentUid || "NA"}</div>
-              </LabelFieldPair>
-            </div>
-          ))}
-        </div>
-      </Card>
+      {/* Action Section */}
+      <ActionBar>
+        <SubmitBar style={{ background: " white", color: "black", border: "1px solid", marginRight: "10px" }} label="Back" onSubmit={onGoBack} />
+        {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
+          <Menu localeKeyPrefix={`WF_EMPLOYEE_${"NDC"}`} options={actions} optionKey={"action"} t={t} onSelect={onActionSelect} />
+        ) : null}
+        <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+      </ActionBar>
     </div>
   );
 }

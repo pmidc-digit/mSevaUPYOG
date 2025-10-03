@@ -9,6 +9,8 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Documents" }]);
+  const checkFormData = useSelector((state) => state.chb.CHBApplicationFormReducer.formData || {});
 
   const currentStepData = useSelector(function (state) {
     return state.chb.CHBApplicationFormReducer.formData && state.chb.CHBApplicationFormReducer.formData[config?.key]
@@ -16,26 +18,47 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
-  function goNext(data) {
-    console.log("goNext data in NewPTRStepFormThree: ", data);
+  console.log("currentStepData===", currentStepData);
+  console.log("checkFormData===", checkFormData);
 
-    const { missingFields, notFormattedFields } = validateStepData(currentStepData);
+  function goNext(finalData) {
+    console.log("Current Data", finalData);
+    console.log("data?????....=====", docData?.CHB?.Documents);
+
+    const missingFields = validation(finalData);
 
     if (missingFields.length > 0) {
-      setError(`Please fill the following field: ${missingFields[0]}`);
+      setError(`${t("CHB_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
+      setTimeout(() => setShowToast(false), 3000);
       return;
     }
     onGoNext();
   }
 
-  function validateStepData(data) {
-    // const pets = data?.pets || [];
+  function validation(formData) {
+    if (!isLoading) {
+      const chbDocumentsType = docData?.CHB?.Documents || [];
+      const uploadedDocs = formData?.documents?.documents || [];
 
-    const missingFields = [];
-    const notFormattedFields = [];
+      console.log("chbDocumentsType", chbDocumentsType);
+      console.log("uploadedDocs", uploadedDocs);
 
-    return { missingFields, notFormattedFields };
+      // Extract required docs
+      const requiredDocs = chbDocumentsType?.filter((doc) => doc.required).map((doc) => doc.code);
+
+      // Extract uploaded document codes
+      const uploadedDocCodes = uploadedDocs?.map((doc) => doc.documentType);
+
+      // // Missing required docs
+      // const missingDocs = requiredDocs?.filter((reqDoc) => !uploadedDocCodes.includes(reqDoc));
+
+      // For dropdowns: match if uploadedDoc starts with requiredDoc (prefix check)
+      const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocCodes.some((uploaded) => uploaded.startsWith(reqDoc)));
+
+      return missingDocs;
+    }
+    return [];
   }
 
   function onGoBack(data) {

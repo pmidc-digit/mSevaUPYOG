@@ -29,7 +29,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const stateId = Digit.ULBService.getStateId();
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
-  const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.pincode || formData?.formData?.LicneseDetails?.pincode || "");
+  const [pinCode, setPinCode] = useState(formData?.LicneseDetails?.Pincode || formData?.formData?.LicneseDetails?.Pincode || "");
   const [ulbType, setUlbType] = useState("");
   const [selectedUlbTypes, setSelectedUlbTypes] = useState(formData?.LicneseDetails?.Ulb || formData?.formData?.LicneseDetails?.Ulb || []);
   const [errorMessage, setErrorMessage] = useState("");
@@ -205,7 +205,9 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
     const payload = {
       Licenses: [
+        
         {
+          validTo: formData?.LicneseType?.validTo ? convertDateToEpoch(formData?.LicneseType?.validTo) : null,
           tradeLicenseDetail: {
             owners: [
               {
@@ -235,6 +237,7 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               qualificationType: formData?.LicneseType?.qualificationType?.name,
               counsilForArchNo: formData?.LicneseType?.ArchitectNo,
               isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
+            
               Ulb: selectedUlbTypes,
             },
             address: {

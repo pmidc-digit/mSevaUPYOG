@@ -9,10 +9,10 @@ const PDFSvg = ({ width = 20, height = 20, style }) => (
   </svg>
 );
 
-function PTRWFDocument({ value = {}, Code, index }) {
+function CHBDocument({ value = {}, Code, index }) {
   const { t } = useTranslation();
   const { isLoading, isError, error, data } = Digit.Hooks.ads.useADSDocumentSearch({ value }, { value }, Code, index);
-  console.log("dataInPTRWFDocument", data);
+  console.log("dataInNDCDocument", data);
 
   const documents = value?.documents
     ? value.documents.documents
@@ -34,9 +34,7 @@ function PTRWFDocument({ value = {}, Code, index }) {
               return (
                 <a target="_" href={documentLink} style={{ minWidth: "100px", marginRight: "10px" }} key={index}>
                   <PDFSvg width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }} />
-                  {/* <p style={{ marginTop: "8px", textAlign: "center" }}>
-                    {value?.workflowDocs ? t(`${document?.documentType}`) : t(`PT_${document?.documentType}_LABEL`)}
-                  </p> */}
+                  {/* <p style={{ marginTop: "8px",textAlign:"center" }}>{value?.workflowDocs ? t(`${document?.documentType}`) : t(`NDC_${document?.documentType}_LABEL`)}</p> */}
                 </a>
               );
             })}
@@ -47,4 +45,4 @@ function PTRWFDocument({ value = {}, Code, index }) {
   );
 }
 
-export default PTRWFDocument;
+export default CHBDocument;

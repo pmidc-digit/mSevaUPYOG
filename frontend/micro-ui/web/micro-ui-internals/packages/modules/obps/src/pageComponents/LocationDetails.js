@@ -1,4 +1,4 @@
-import { CardLabel, FormStep, LinkButton, Loader, RadioOrSelect, TextInput,ActionBar,SubmitBar, UploadFile } from "@mseva/digit-ui-react-components";
+import { CardLabel, FormStep, LinkButton, Loader, RadioOrSelect, TextInput,ActionBar,SubmitBar, UploadFile, Toast } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import GIS from "./GIS";
@@ -44,6 +44,7 @@ const [errors, setError] = useState(null);
 const [apiLoading, setApiLoading] = useState(false);
 
 const [isUploading, setIsUploading] = useState(false);
+const [isFileLoading, setIsFileLoading] = useState(false);
 
 
   if (!formData.address) {
@@ -105,10 +106,14 @@ const [isUploading, setIsUploading] = useState(false);
 
   useEffect(async () => {
     if(uploadedFile){
+      setIsFileLoading(true);
       const result = await Digit.UploadServices.Filefetch([uploadedFile], state)
       console.log("uploadedFile",result);
       if(result?.data?.fileStoreIds?.length>0){
         setViewSiteImageURL(result?.data?.fileStoreIds?.[0]?.url);
+        setIsFileLoading(false);
+      }else{
+        setIsFileLoading(false);
       }
     }
   }, [uploadedFile])
@@ -164,7 +169,7 @@ useEffect(() => {
 
         if ((formData?.address?.pincode || pincode) && !Pinerror) {
           filteredLocalityList = __localityList.filter((obj) => obj.pincode?.find((item) => item == pincode));
-          if (!formData?.address?.locality && filteredLocalityList.length <= 0) setSelectedLocality();
+          // if (!formData?.address?.locality && filteredLocalityList.length <= 0) setSelectedLocality();
         }
         if (
           !localities ||
@@ -195,6 +200,10 @@ useEffect(() => {
     setIsOpen(!isOpen);
   };
 
+  const closeToast = () =>{
+    setError(null);
+  }
+
   // const handleSubmit = () => {
   //   // const address = {...currentStepData?.createdResponse?.landInfo?.address};
   //   const address = {};
@@ -223,23 +232,23 @@ useEffect(() => {
 
   const validateForm = (city, locality, siteImage) => {
     if (!city || city.trim() === "") {
-      alert(t("Please select a City"));
+      setError(t("Please select a City"));
       return false;
     }
 
     if (!locality || (Array.isArray(locality) && locality.length === 0) || locality === "") {
-      alert(t("Please select a Locality"));
+      setError(t("Please select a Locality"));
       return false;
     }
 
     if (!siteImage || (Array.isArray(siteImage) && siteImage.length === 0) || siteImage === "") {
-      alert(t("Please upload Site Image"));
+      setError(t("Please upload Site Image"));
       return false;
     }
 
     if(pincode?.length > 0){
-      if(Digit.Utils.getPattern("Pincode").test(pincode)){
-        alert(t("Please fill Correct Pincode"));
+      if(!Digit.Utils.getPattern("Pincode").test(pincode)){
+        setError(t("Please fill Correct Pincode"));
         return false;
       }
     }
@@ -331,7 +340,7 @@ useEffect(() => {
     const val = typeof e === "object" && e !== null ? e.target.value : e;
     setPinerror(null);
 
-    if (val !== "" && !/^[1-9][0-9]{5}$/.test(val)) {
+    if(!Digit.Utils.getPattern("Pincode").test(val)){
       setPinerror("BPA_PIN_NOT_VALID_ERROR");
     }
 
@@ -375,6 +384,7 @@ useEffect(() => {
 
 
   function selectLocality(locality) {
+    console.log("Locality", locality)
     setSelectedLocality(locality);
     formData.address["locality"] = locality;
     sessionStorage.setItem("currLocality", JSON.stringify(locality));
@@ -419,7 +429,7 @@ async function selectfiles(e) {
 
   const geo = await extractGeoLocation(file);
   if (!geo.latitude || !geo.longitude) {
-    alert(t("This image does not contain GPS location data"));
+    setError(t("This image does not contain GPS location data"));
     setUploadedFile(null);
     setGeoLocationFromImg({ latitude: null, longitude: null });
     return;
@@ -540,7 +550,7 @@ return (
     {!isOpen && (
       <FormStep
         t={t}
-        config={config}
+        config={{...config, texts:{header: "BPA_NEW_TRADE_DETAILS_HEADER_DETAILS_NEW"}}}
         onSelect={handleSubmit}
         isDisabled={!selectedCity || Pinerror}
         isMultipleAllow={true}
@@ -676,7 +686,13 @@ return (
             accept=".jpg,.jpeg,.png"
           />
 
-          {uploadedFile && viewSiteImageURL && (
+          {isFileLoading && (
+            <div style={{ marginTop: "12px" }}>
+              <Loader />
+            </div>
+          )}
+
+          {uploadedFile && viewSiteImageURL && !isFileLoading &&(
             <div style={{ marginTop: "16px" }}>
               {/* <CardLabel>{t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW")}</CardLabel> */}
               <a 
@@ -720,6 +736,7 @@ return (
                             />
            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit}  disabled={!selectedCity || Pinerror || apiLoading}/>}
        </ActionBar>
+       {errors && <Toast isDleteBtn={true} error={true} label={errors} onClose={closeToast} />}
   </div>
 );
 }

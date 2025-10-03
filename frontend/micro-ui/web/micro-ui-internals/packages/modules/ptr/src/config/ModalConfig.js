@@ -13,20 +13,15 @@ export const ModalConfig = ({
   assigneeLabel,
   businessService,
 }) => {
-  let checkAssigneeVisible = action?.action === "APPROVE" || action?.action === "VERIFY" || action?.action === "FORWARD";
-  let checkCommentsMandatory =
-    action?.action === "APPROVE" ||
-    action?.action === "VERIFY" ||
-    action?.action === "REJECT" ||
-    action?.action === "SENDBACKTOCITIZEN" ||
-    action?.action === "FORWARD";
+  let checkAssigneeVisible = action?.action == "SENDBACKTOVERIFIER" || action?.action == "VERIFY" || action?.action == "FORWARD";
+
   if (action.isTerminateState) {
     checkAssigneeVisible = false;
-    checkCommentsMandatory = true;
   }
   return {
     label: {
-      heading: t(`WF_${action?.action}_APPLICATION`),
+      // heading: t(`WF_${action?.action}_APPLICATION`),
+      heading: "",
       submit: t(`${action?.action}`),
       cancel: t("WF_EMPLOYEE_NEWTL_CANCEL"),
     },
@@ -51,22 +46,8 @@ export const ModalConfig = ({
             ),
           },
           {
-            label: t("WF_COMMON_COMMENTS"),
+            label: `${t("CS_COMMON_COMMENTS")} *`,
             type: "textarea",
-            isMandatory:
-              action?.action === "REJECT" ||
-              action?.action === "APPROVE" ||
-              action?.action === "VERIFY" ||
-              action?.action === "SENDBACKTOCITIZEN" ||
-              action?.action === "FORWARD",
-            validation:
-              action?.action === "REJECT" ||
-              action?.action === "APPROVE" ||
-              action?.action === "VERIFY" ||
-              action?.action === "SENDBACKTOCITIZEN" ||
-              action?.action === "FORWARD"
-                ? { required: true, message: t("CORE_COMMON_REQUIRED_ERRMSG") }
-                : {},
             populators: {
               name: "comments",
             },

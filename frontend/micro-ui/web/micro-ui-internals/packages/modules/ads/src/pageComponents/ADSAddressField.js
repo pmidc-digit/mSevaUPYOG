@@ -3,13 +3,6 @@ import React, { Fragment, useState, useEffect } from "react";
 import { TextInput, LinkButton } from "@mseva/digit-ui-react-components";
 import GIS from "./GIS";
 
-/**
- * Props:
- *  - value: the current value (object or string)
- *  - onChange: (normalizedObj) => void
- *  - onBlur: () => void
- *  - t: translation func (optional)
- */
 const ADSAddressField = ({ value, onChange, onBlur, t }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [placeName, setPlaceName] = useState("");
@@ -46,7 +39,7 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
 
   return (
     <>
-      <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+      <div style={{ display: "flex", gap: 8 }}>
         <TextInput
           value={placeName}
           onChange={() => {}}
@@ -66,12 +59,7 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
               borderRadius: 6,
               cursor: "pointer",
               fontWeight: 700,
-              fontSize: 13,
-              lineHeight: "18px",
-              textAlign: "center",
-              appearance: "none",
-              WebkitAppearance: "none",
-              backgroundImage: "none",
+              fontSize: 10,
             }}
           >
             <span style={{ display: "inline-block", color: "#fff", textTransform: "none" }}>

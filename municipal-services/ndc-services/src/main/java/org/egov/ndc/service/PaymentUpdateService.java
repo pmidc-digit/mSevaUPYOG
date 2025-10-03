@@ -81,7 +81,7 @@ public class PaymentUpdateService {
 				if (paymentDetail.getBusinessService().equalsIgnoreCase(NDCConstants.NDC_BUSINESS_SERVICE )|| paymentDetail.getBusinessService().equalsIgnoreCase(NDCConstants.NDC_MODULE )) {
 					NdcApplicationSearchCriteria searchCriteria = new NdcApplicationSearchCriteria();
 					searchCriteria.setTenantId(tenantIdFromPaymentDetails);
-					searchCriteria.setUuid(Collections.singletonList(paymentDetail.getBill().getConsumerCode()));
+					searchCriteria.setApplicationNo(Collections.singletonList(paymentDetail.getBill().getConsumerCode()));
 					List<Application> applications = ndcService.searchNdcApplications(searchCriteria, requestInfo);
 
 					String tenantIdFromSearch = applications.get(0).getTenantId();
@@ -105,7 +105,7 @@ public class PaymentUpdateService {
 					 * calling workflow to update status
 					 */
 					wfIntegrator.callWorkFlow(updateRequest,NDCConstants.NDC_BUSINESS_SERVICE);
-                    log.info(" applications uuid is : {}", updateRequest.getApplications().get(0).getUuid());
+                    log.info(" applications uuid is : {}", updateRequest.getApplications().get(0).getApplicationNo());
                     log.info(" the status of the applications is : {}", updateRequest.getApplications().get(0).getApplicationStatus());
 					enrichmentService.postStatusEnrichment(updateRequest,NDCConstants.NDC_BUSINESS_SERVICE);
 

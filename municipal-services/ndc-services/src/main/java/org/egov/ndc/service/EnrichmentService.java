@@ -67,7 +67,7 @@ public class EnrichmentService {
 							List<IdResponse> idResponses = idGenRepository
 									.getId(ndcRequest.getRequestInfo(), application.getTenantId(), config.getApplicationNoIdgenName(), 1)
 									.getIdResponses();
-							application.setUuid(idResponses.get(0).getId());
+							application.setApplicationNo(idResponses.get(0).getId());
 						}
 						if (state.equalsIgnoreCase("CANCEL")) {
 							application.setActive(false);

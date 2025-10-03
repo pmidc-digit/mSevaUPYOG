@@ -19,6 +19,8 @@ const PTRCitizenDetails = ({ t, goNext, currentStepData, validateStep }) => {
   const userInfo = Digit.UserService.getUser();
   console.log("userInfo?.info", userInfo?.info);
   const { mobileNumber, emailId, name } = userInfo?.info;
+  const apiDataCheck = useSelector((state) => state.ptr.PTRNewApplicationFormReducer.formData?.responseData);
+
   // Split full name into firstName (all but last word) and lastName (last word)
   // const [firstName, lastName] = [(name || "").trim().split(" ").slice(0, -1).join(" "), (name || "").trim().split(" ").slice(-1).join(" ")];
 

@@ -162,11 +162,16 @@ public class InboxService {
     private PGRAiInboxFilterService pgrAiInboxFilterService;
 
     @Autowired
+    private CHBInboxFilterService chbInboxFilterService;
+
+
+    @Autowired
     public InboxService(InboxConfiguration config, ServiceRequestRepository serviceRequestRepository,
-            ObjectMapper mapper, WorkflowService workflowService) {
+                        ObjectMapper mapper, WorkflowService workflowService, CHBInboxFilterService chbInboxFilterService) {
         this.config = config;
         this.serviceRequestRepository = serviceRequestRepository;
         this.mapper = mapper;
+
         this.mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
         this.workflowService = workflowService;
@@ -252,8 +257,9 @@ public class InboxService {
     boolean isPetFlag = "pet-service".equalsIgnoreCase(moduleNm);
     boolean isAdvFlag = "advandhoarding-services".equalsIgnoreCase(moduleNm);
     boolean isNocFlag = "noc-service".equalsIgnoreCase(moduleNm);
+    boolean isChbFlag = "CHB".equalsIgnoreCase(moduleNm);
 
-    if(isNdcFlag || isPetFlag || isAdvFlag || isNocFlag){
+    if(isNdcFlag || isPetFlag || isAdvFlag || isNocFlag || isChbFlag){
             moduleSearchCriteria.put("tenantId", criteria.getTenantId());
             moduleSearchCriteria.put("offset", criteria.getOffset());
             moduleSearchCriteria.put("limit", criteria.getLimit());
@@ -355,6 +361,14 @@ public class InboxService {
                     List<String> statuses = new ArrayList<>();
                     processCriteria.getStatus().forEach(status -> {
                         // For PET, we directly use the status values as-is (instead of looking them up in StatusIdNameMap)
+                        statuses.add(status);
+                    });
+                    moduleSearchCriteria.put(applicationStatusParam, StringUtils.arrayToDelimitedString(statuses.toArray(), ","));
+                }
+                else if (processCriteria.getModuleName().equals("CHB") && !CollectionUtils.isEmpty(processCriteria.getStatus())) {
+                    List<String> statuses = new ArrayList<>();
+                    processCriteria.getStatus().forEach(status -> {
+                        // For CHB, we directly use the status values as-is (instead of looking them up in StatusIdNameMap)
                         statuses.add(status);
                     });
                     moduleSearchCriteria.put(applicationStatusParam, StringUtils.arrayToDelimitedString(statuses.toArray(), ","));
@@ -619,6 +633,22 @@ public class InboxService {
                 if (!CollectionUtils.isEmpty(applicationNumbers)) {
                     String applNosParam = srvMap.get("applNosParam");
                     if (StringUtils.isEmpty(applNosParam)) applNosParam = "applicationNo"; // fallback for NOC
+                    moduleSearchCriteria.put(applNosParam, applicationNumbers);
+                    businessKeys.addAll(applicationNumbers);
+                    moduleSearchCriteria.remove(STATUS_PARAM);
+                    moduleSearchCriteria.remove(LOCALITY_PARAM);
+                    moduleSearchCriteria.remove(OFFSET_PARAM);
+                } else {
+                    isSearchResultEmpty = true;
+                }
+            }
+
+            if (processCriteria != null && !ObjectUtils.isEmpty(processCriteria.getModuleName())
+                    && isChbFlag) {
+                totalCount = chbInboxFilterService.fetchApplicationCountFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                List<String> applicationNumbers = chbInboxFilterService.fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
+                if (!CollectionUtils.isEmpty(applicationNumbers)) {
+                    String applNosParam = srvMap.get("applNosParam");
                     moduleSearchCriteria.put(applNosParam, applicationNumbers);
                     businessKeys.addAll(applicationNumbers);
                     moduleSearchCriteria.remove(STATUS_PARAM);
@@ -1012,8 +1042,14 @@ public class InboxService {
                                 .collect(Collectors.toList());
                         processCriteria.setStatus(matchingIdsNoc);
                     }
-
-            		processInstanceResponse = workflowService.getProcessInstance(processCriteria, requestInfo);
+                    if(isChbFlag) {
+                        List<String> matchingIdsChb = StatusIdNameMap.entrySet().stream()
+                                .filter(entry -> processCriteria.getStatus().contains(entry.getValue()))
+                                .map(Map.Entry::getKey)
+                                .collect(Collectors.toList());
+                        processCriteria.setStatus(matchingIdsChb);
+                    }
+                    processInstanceResponse = workflowService.getProcessInstance(processCriteria, requestInfo);
             	}
             }
             

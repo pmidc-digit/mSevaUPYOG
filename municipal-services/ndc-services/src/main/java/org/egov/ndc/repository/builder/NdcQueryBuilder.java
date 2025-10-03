@@ -19,7 +19,7 @@ public class NdcQueryBuilder {
 	NDCConfiguration ndcConfig;
 
 	private static final String NDC_QUERY = "SELECT " +
-			"a.uuid AS a_uuid, a.tenantid, a.applicationstatus, a.active,\n" +
+			"a.uuid AS a_uuid,a.applicationno, a.tenantid, a.applicationstatus, a.active,\n" +
             "  a.createdby AS a_createdby, a.lastmodifiedby AS a_lastmodifiedby,\n" +
             "  a.createdtime AS a_createdtime, a.lastmodifiedtime AS a_lastmodifiedtime,\n" +
             "  a.action, a.reason,owner.uuid as owner_uuid,\n" +
@@ -48,6 +48,15 @@ public class NdcQueryBuilder {
 			String placeholders = String.join(",", Collections.nCopies(criteria.getUuid().size(), "?"));
 			query.append(placeholders).append(")");
 			preparedStmtList.addAll(criteria.getUuid());
+		}
+
+		if (criteria.getApplicationNo() != null && !criteria.getApplicationNo().isEmpty()) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.applicationno in (");
+			String placeholders = String.join(",", Collections.nCopies(criteria.getApplicationNo().size(), "?"));
+			query.append(placeholders).append(")");
+			preparedStmtList.addAll(criteria.getApplicationNo());
 		}
 
 		if (criteria.getStatus() != null) {

@@ -35,6 +35,7 @@ public class NdcRowMapper implements ResultSetExtractor<List<Application>> {
 			if (application == null) {
 				application = Application.builder()
 						.uuid(applicationId)
+						.applicationNo(rs.getString("applicationno"))
 						.tenantId(rs.getString("tenantid"))
 						.reason(rs.getString("reason"))
 						.applicationStatus(rs.getString("applicationstatus"))

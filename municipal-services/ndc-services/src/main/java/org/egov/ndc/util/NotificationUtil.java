@@ -191,7 +191,7 @@ public class NotificationUtil {
 	private String getInitiatedMsg(Application ndc, String message) {
 		String type = NDC_MODULE;
 		message = message.replace("{1}", type);
-		message = message.replace("{2}", ndc.getUuid());
+		message = message.replace("{2}", ndc.getApplicationNo());
 		return message;
 	}
 

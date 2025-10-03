@@ -15,6 +15,7 @@ import java.util.Set;
 @Builder
 public class NdcApplicationSearchCriteria {
     private List<String> uuid;
+    private List<String> applicationNo;
     private String tenantId;
     private String status;
     private String mobileNumber;

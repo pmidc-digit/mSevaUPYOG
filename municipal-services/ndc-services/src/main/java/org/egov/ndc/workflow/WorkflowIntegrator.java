@@ -83,7 +83,7 @@ public class WorkflowIntegrator {
 		JSONArray array = new JSONArray();
 		Application ndc = ndcRequest.getApplications().get(0);
 		JSONObject obj = new JSONObject();
-		obj.put(BUSINESSIDKEY, ndc.getUuid());
+		obj.put(BUSINESSIDKEY, ndc.getApplicationNo());
 		obj.put(TENANTIDKEY, wfTenantId);
 		obj.put(BUSINESSSERVICEKEY, bussinessServiceValue);
 		obj.put(MODULENAMEKEY, NDCConstants.NDC_MODULE);
@@ -149,6 +149,6 @@ public class WorkflowIntegrator {
 			idStatusMap.put(instanceContext.read(BUSINESSIDJOSNKEY), instanceContext.read(STATUSJSONKEY));
 		});
 		// setting the status back to NDC object from wf response
-		ndc.setApplicationStatus(idStatusMap.get(ndc.getUuid()));
+		ndc.setApplicationStatus(idStatusMap.get(ndc.getApplicationNo()));
 	}
 }

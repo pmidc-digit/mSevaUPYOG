@@ -11,6 +11,7 @@ import org.egov.ndc.web.model.AuditDetails;
 import org.egov.ndc.web.model.OwnerInfo;
 import org.egov.ndc.web.model.Workflow;
 import org.egov.ndc.web.model.workflow.ProcessInstance;
+import org.hibernate.validator.constraints.SafeHtml;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +25,9 @@ public class Application {
 
     @JsonProperty("uuid")
     private String uuid;
+
+    @JsonProperty("applicationNo")
+    private String applicationNo = null;
 
     @JsonProperty("tenantId")
     private String tenantId;

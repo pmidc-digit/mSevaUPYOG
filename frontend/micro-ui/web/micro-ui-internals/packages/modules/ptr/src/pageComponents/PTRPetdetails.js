@@ -16,7 +16,6 @@ import { useLocation } from "react-router-dom";
 import { stringReplaceAll, CompareTwoObjects } from "../utils";
 
 const createPtrDetails = () => ({
-
   doctorName: "",
   vaccinationNumber: "",
   lastVaccineDate: "",
@@ -40,58 +39,43 @@ const PTRPetdetails = ({ config, onSelect, userType, formData, setError, formSta
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
 
-
-
-
   const { data: Menu } = Digit.Hooks.ptr.usePTRPetMDMS(stateId, "PetService", "PetType");
 
-  const { data: Breed_Type } = Digit.Hooks.ptr.useBreedTypeMDMS(stateId, "PetService", "BreedType");  // hooks for breed type
-  
-  let menu = [];   //variable name for pettype
+  const { data: Breed_Type } = Digit.Hooks.ptr.useBreedTypeMDMS(stateId, "PetService", "BreedType"); // hooks for breed type
+
+  let menu = []; //variable name for pettype
   let breed_type = [];
   // variable name for breedtype
 
   Menu &&
     Menu.map((petone) => {
-      menu.push({ i18nKey: `PTR_PET_${petone.code}`, code: `${petone.code}`, value: `${petone.name}` });
+      menu.push({ i18nKey: t(`PTR_PET_${petone.code}`), code: t(`${petone.code}`), value: t(`PTR_PET_${petone.code}`) });
     });
-
-  
-
-
 
   Breed_Type &&
     Breed_Type.map((breedss) => {
       if (breedss.PetType == pets[0]?.petType?.code) {
         breed_type.push({
-          i18nKey: `PTR_BREED_TYPE_${breedss.code}`,
-          code: `${breedss.code}`,
-          value: `${breedss.name}`
+          i18nKey: t(`PTR_BREED_TYPE_${breedss.code}`),
+          code: t(`${breedss.code}`),
+          value: t(`PTR_BREED_TYPE_${breedss.code}`),
         });
       }
-
     });
 
+  const { data: Pet_Sex } = Digit.Hooks.ptr.usePTRGenderMDMS(stateId, "common-masters", "GenderType"); // this hook is for Pet gender type { male, female}
 
-
-
-  const { data: Pet_Sex } = Digit.Hooks.ptr.usePTRGenderMDMS(stateId, "common-masters", "GenderType");       // this hook is for Pet gender type { male, female}
-
-  let pet_sex = [];    //for pet gender 
+  let pet_sex = []; //for pet gender
 
   Pet_Sex &&
     Pet_Sex.map((ptrgenders) => {
       if (ptrgenders.code !== "TRANSGENDER")
-        pet_sex.push({ i18nKey: `PTR_GENDER_${ptrgenders.code}`, code: `${ptrgenders.code}`, name: `${ptrgenders.code}` });
+        pet_sex.push({ i18nKey: t(`PTR_GENDER_${ptrgenders.code}`), code: t(`${ptrgenders.code}`), name: t(`${ptrgenders.code}`) });
     });
-
 
   useEffect(() => {
     onSelect(config?.key, pets);
   }, [pets]);
-
-
-
 
   const commonProps = {
     focusIndex,
@@ -106,7 +90,7 @@ const PTRPetdetails = ({ config, onSelect, userType, formData, setError, formSta
     config,
     menu,
     breed_type,
-    pet_sex
+    pet_sex,
   };
 
   return (
@@ -114,9 +98,8 @@ const PTRPetdetails = ({ config, onSelect, userType, formData, setError, formSta
       {pets.map((pets, index) => (
         <OwnerForm key={pets.key} index={index} pets={pets} {...commonProps} />
       ))}
-
     </React.Fragment>
-  )
+  );
 };
 
 const OwnerForm = (_props) => {
@@ -135,26 +118,28 @@ const OwnerForm = (_props) => {
     formState,
     menu,
     breed_type,
-    pet_sex
-
+    pet_sex,
   } = _props;
 
   const [showToast, setShowToast] = useState(null);
-  const {
-    control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger, } = useForm();
+  const { control, formState: localFormState, watch, setError: setLocalError, clearErrors: clearLocalErrors, setValue, trigger } = useForm();
+  const today = new Date();
+  const maxDate = today.toISOString().split("T")[0];
+
+  const minDateObj = new Date(today);
+  minDateObj.setFullYear(minDateObj.getFullYear() - 20); // 20 years earlier
+  const minDate = minDateObj.toISOString().split("T")[0];
+
   const formValue = watch();
   const { errors } = localFormState;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  const isIndividualTypeOwner = useMemo(
-    () => formData?.ownershipCategory?.code.includes("INDIVIDUAL"),
-    [formData?.ownershipCategory?.code],
-  );
+  const isIndividualTypeOwner = useMemo(() => formData?.ownershipCategory?.code.includes("INDIVIDUAL"), [formData?.ownershipCategory?.code]);
 
   const [part, setPart] = React.useState({});
 
   useEffect(() => {
-    let _ownerType = isIndividualTypeOwner
+    let _ownerType = isIndividualTypeOwner;
 
     if (!_.isEqual(part, formValue)) {
       setPart({ ...formValue });
@@ -164,8 +149,7 @@ const OwnerForm = (_props) => {
   }, [formValue]);
 
   useEffect(() => {
-    if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors))
-      setError(config.key, { type: errors });
+    if (Object.keys(errors).length && !_.isEqual(formState.errors[config.key]?.type || {}, errors)) setError(config.key, { type: errors });
     else if (!Object.keys(errors).length && formState.errors[config.key]) clearErrors(config.key);
   }, [errors]);
 
@@ -175,11 +159,7 @@ const OwnerForm = (_props) => {
     <React.Fragment>
       <div style={{ marginBottom: "16px" }}>
         <div style={{ border: "1px solid #E3E3E3", padding: "16px", marginTop: "8px" }}>
-          {allOwners?.length > 2 ? (
-            <div style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>
-              X
-            </div>
-          ) : null}
+          {allOwners?.length > 2 ? <div style={{ marginBottom: "16px", padding: "5px", cursor: "pointer", textAlign: "right" }}>X</div> : null}
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_SEARCH_PET_TYPE") + " *"}</CardLabel>
@@ -190,7 +170,6 @@ const OwnerForm = (_props) => {
               rules={{ required: t("CORE_COMMON_REQUIRED_ERRMSG") }}
               render={(props) => (
                 <Dropdown
-
                   className="form-field"
                   selected={props.value}
                   select={props.onChange}
@@ -199,11 +178,8 @@ const OwnerForm = (_props) => {
                   optionKey="i18nKey"
                   t={t}
                 />
-
               )}
-
             />
-
           </LabelFieldPair>
           <CardLabelError style={errorStyle}>{localFormState.touched.petType ? errors?.petType?.message : ""}</CardLabelError>
           <LabelFieldPair>
@@ -269,7 +245,6 @@ const OwnerForm = (_props) => {
                 rules={{
                   required: t("CORE_COMMON_REQUIRED_ERRMSG"),
                   validate: (v) => (/^\d{1,4}$/.test(v) && parseInt(v, 10) >= 0 && parseInt(v, 10) <= 1440 ? true : t("ERR_DEFAULT_INPUT_FIELD_MSG")),
-
                 }}
                 render={(props) => (
                   <TextInput
@@ -284,25 +259,19 @@ const OwnerForm = (_props) => {
                     onBlur={props.onBlur}
                     placeholder="in months"
                   />
-
                 )}
               />
-
             </div>
-
           </LabelFieldPair>
-          <div style={{textAlign: 'center'}}>
-
-        {Math.floor(watch('petAge') / 12)}&nbsp;
-        {Math.floor(watch('petAge') / 12) === 1 ? "YEAR" : "YEARS"}
-        &nbsp;&nbsp;
-        {watch('petAge') % 12}&nbsp;
-        {watch('petAge') % 12 === 1 ? "MONTH" : "MONTHS"}
-
-      </div>
+          <div style={{ textAlign: "center" }}>
+            {Math.floor(watch("petAge") / 12)}&nbsp;
+            {Math.floor(watch("petAge") / 12) === 1 ? "YEAR" : "YEARS"}
+            &nbsp;&nbsp;
+            {watch("petAge") % 12}&nbsp;
+            {watch("petAge") % 12 === 1 ? "MONTH" : "MONTHS"}
+          </div>
           <br></br>
           <CardLabelError style={errorStyle}>{localFormState.touched.petAge ? errors?.petAge?.message : ""}</CardLabelError>
-
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_PET_SEX") + " *"}</CardLabel>
@@ -353,9 +322,7 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>
-            {localFormState.touched.doctorName ? errors?.doctorName?.message : ""}
-          </CardLabelError>
+          <CardLabelError style={errorStyle}>{localFormState.touched.doctorName ? errors?.doctorName?.message : ""}</CardLabelError>
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_CLINIC_NAME") + " *"}</CardLabel>
             <div className="field">
@@ -382,9 +349,7 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>
-            {localFormState.touched.clinicName ? errors?.clinicName?.message : ""}
-          </CardLabelError>
+          <CardLabelError style={errorStyle}>{localFormState.touched.clinicName ? errors?.clinicName?.message : ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{t("PTR_VACCINATED_DATE") + " *"}</CardLabel>
@@ -404,7 +369,7 @@ const OwnerForm = (_props) => {
                     onChange={(e) => {
                       props.onChange(e.target.value);
                     }}
-                    max={new Date().toISOString().split('T')[0]}
+                    max={new Date().toISOString().split("T")[0]}
                   />
                 )}
               />
@@ -438,12 +403,7 @@ const OwnerForm = (_props) => {
               />
             </div>
           </LabelFieldPair>
-          <CardLabelError style={errorStyle}>
-            {localFormState.touched.vaccinationNumber ? errors?.vaccinationNumber?.message : ""}
-          </CardLabelError>
-
-
-
+          <CardLabelError style={errorStyle}>{localFormState.touched.vaccinationNumber ? errors?.vaccinationNumber?.message : ""}</CardLabelError>
         </div>
       </div>
       {showToast?.label && (

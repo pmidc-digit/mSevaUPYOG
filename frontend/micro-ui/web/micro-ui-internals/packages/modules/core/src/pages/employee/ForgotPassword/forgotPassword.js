@@ -114,11 +114,11 @@ const ForgotPassword = ({ config: propsConfig, t }) => {
         description={propsConfig.texts.description}
         headingStyle={{ textAlign: "center" }}
         cardStyle={{ maxWidth: "408px", margin: "auto" }}
-        className="employeeForgotPassword"
+        className="loginFormStyleEmployeeNew"
       >
-        <Header />
+        {/* <Header /> */}
       </FormComposer>
-      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} />}
+      {showToast && <Toast error={true} label={t(showToast)} onClose={closeToast} isDleteBtn={true}/>}
 
       <div style={{ width: '100%', position: 'fixed', bottom: 0,backgroundColor:"white",textAlign:"center" }}>
         <div style={{ display: 'flex', justifyContent: 'center', color:"black" }}>
@@ -127,13 +127,13 @@ const ForgotPassword = ({ config: propsConfig, t }) => {
           <a style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a>
 
           <span  className="upyog-copyright-footer" style={{ margin: "0 10px",fontSize:"12px" }} >|</span>
-          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
+          <span  className="upyog-copyright-footer" style={{ cursor: "pointer", fontSize: window.Digit.Utils.browser.isMobile()?"12px":"12px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
           
           {/* <a style={{ cursor: "pointer", fontSize: "16px", fontWeight: "400"}} href="#" target='_blank'>UPYOG License</a> */}
 
         </div>
         <div className="upyog-copyright-footer-web">
-          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"14px":"16px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()} -</span>
+          <span className="" style={{ cursor: "pointer", fontSize:  window.Digit.Utils.browser.isMobile()?"14px":"16px", fontWeight: "400"}} onClick={() => { window.open('', '_blank').focus();}} >Copyright © {new Date().getFullYear()}</span>
           </div>
       </div>
     </Background>

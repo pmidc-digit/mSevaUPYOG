@@ -183,6 +183,18 @@ const BPACitizenHomeScreen = ({ parentRoute }) => {
       links: bpaLinks,
       styles: { minWidth: "90%", minHeight: "90%" },
     },
+    {
+      title: t("ACTION_TEST_LAYOUT_HOME"),
+      Icon: <EDCRIcon className="fill-path-primary-main" />,
+      links: [
+        {
+          link: `layout/apply`,
+          i18nKey: t("BPA_LAYOUT_LABEL"),
+        },
+        
+      ],
+      styles: { minWidth: "90%", minHeight: "90%" },
+    },
   ];
 
   const homeScreen = (

@@ -3,7 +3,7 @@ import { Card, CardHeader, CardLabel, CardSubHeader, CardText, CitizenInfoLabel,
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
 
-const StakeholderDocsRequired = ({ onSelect, onSkip, config }) => {
+const StakeholderDocsRequired = ({ onSelect, onSkip, config, formData }) => {
   const { t } = useTranslation();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
@@ -11,6 +11,11 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config }) => {
   const { data, isLoading } = Digit.Hooks.obps.useMDMS(stateId, "StakeholderRegistraition", "TradeTypetoRoleMapping");
   let isopenlink = window.location.href.includes("/openlink/");
   const isCitizenUrl = Digit.Utils.browser.isMobile()?true:false;
+  if (JSON.parse(sessionStorage.getItem("BPAREGintermediateValue")) !== null) {
+    formData = JSON.parse(sessionStorage.getItem("BPAREGintermediateValue"));
+    console.log("formData in DocRequired", formData);
+    // sessionStorage.setItem("BPAREGintermediateValue", null);
+  } else formData = formData;
 
   useEffect(()=>{
     if(tenantId)
@@ -24,13 +29,24 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config }) => {
     )
   }
 
+  function goNext() {
+    if ((formData?.result && formData?.result?.Licenses[0]?.id)){
+      console.log("onSelect going", formData);
+      onSelect("", formData);
+    }else{
+      console.log("onSelect going 2", formData);
+      onSelect();
+    }
+  }
+
   return (
     <Fragment>
       <div className={isopenlink? "OpenlinkContainer":""}>
       {/* {isopenlink &&<OpenLinkContainer />} */}
       {/* <div style={isopenlink?{marginTop:"60px", width:isCitizenUrl?"100%":"70%", marginLeft:"auto",marginRight:"auto"}:{}}> */}
+      <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t(`OBPS_DOCS_FILE_SIZE`)} className={"info-banner-wrap-citizen-override"} />
       <Card>
-        <CardHeader>{t(`BPA_NEW_BUILDING_HEADER`)}</CardHeader>
+        {/* <CardHeader>{t(`BPA_NEW_BUILDING_HEADER`)}</CardHeader> */}
         {/* <CitizenInfoLabel style={{margin:"0px",textAlign:"center"}} textStyle={{color:"#0B0C0C"}} text={t(`BPA_DOCS_REQUIRED_TIME`)} showInfo={false} /> */}
         <CardText style={{ color: "#0B0C0C", marginTop: "12px", fontSize: "16px", fontWeight: "400", lineHeight: "24px" }}>{t(`BPA_NEW_BUILDING_PERMIT_DESCRIPTION`)}</CardText>
         {isLoading ?
@@ -54,9 +70,8 @@ const StakeholderDocsRequired = ({ onSelect, onSkip, config }) => {
             ))}
           </Fragment>
         }
-        <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={onSelect} />
+        <SubmitBar label={t(`CS_COMMON_PROCEED`)} onSubmit={goNext} />
       </Card>
-      <CitizenInfoLabel info={t("CS_FILE_APPLICATION_INFO_LABEL")} text={t(`OBPS_DOCS_FILE_SIZE`)} className={"info-banner-wrap-citizen-override"} />
       </div>
       {/* </div> */}
     </Fragment>

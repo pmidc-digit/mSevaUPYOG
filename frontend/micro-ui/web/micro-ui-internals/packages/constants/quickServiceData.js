@@ -12,7 +12,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles : []
+      roles: [],
     },
     {
       moduleCode: "Swach",
@@ -24,7 +24,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "PT",
@@ -36,7 +36,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "OBPS",
@@ -48,7 +48,19 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
+    },
+    {
+      moduleCode: "BPAStakeholder",
+      moduleName: "BPA Stakeholder",
+      bgColor: "#00cccd",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/obps/stakeholder-inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles: [],
     },
     {
       moduleCode: "TL",
@@ -60,7 +72,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "Payment",
@@ -72,7 +84,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "HRMS",
@@ -84,7 +96,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "SW",
@@ -96,7 +108,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "WS",
@@ -108,7 +120,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "MCollect",
@@ -120,7 +132,31 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
+    },
+    {
+      moduleCode: "ChallanGeneration",
+      moduleName: "Challan Generation",
+      bgColor: "#3e4b5b  ",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/challangeneration/inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles: [],
+    },
+    {
+      moduleCode: "RentAndLease",
+      moduleName: "Rent And Lease",
+      bgColor: "#3e4b5b  ",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/rentandlease/inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles: [],
     },
     {
       moduleCode: "Engagement",
@@ -132,11 +168,11 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "PTR",
-      moduleName: "PTR",
+      moduleName: "Pet Registration",
       bgColor: "#00cccd",
       labelKey: "",
       icon: "",
@@ -144,7 +180,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "NDC",
@@ -156,7 +192,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "SV",
@@ -168,7 +204,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "ADS",
@@ -176,11 +212,11 @@ export const quickServiceModules = {
       bgColor: "#3e4b5b  ",
       labelKey: "",
       icon: "",
-      routes: "/digit-ui/employee/ads/my-applications",
+      routes: "/digit-ui/employee/ads/inbox",
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
     },
     {
       moduleCode: "CHB",
@@ -192,7 +228,7 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[] 
+      roles: [],
     },
     {
       moduleCode: "ASSET",
@@ -204,7 +240,19 @@ export const quickServiceModules = {
       isCitizen: false,
       description: "",
       subHeading: "",
-      roles :[]
+      roles: [],
+    },
+    {
+      moduleCode: "NOC",
+      moduleName: "No Objection Certificate",
+      bgColor: "#3e4b5b",
+      labelKey: "",
+      icon: "",
+      routes: "/digit-ui/employee/noc/inbox",
+      isCitizen: false,
+      description: "",
+      subHeading: "",
+      roles: [],
     },
   ],
 };

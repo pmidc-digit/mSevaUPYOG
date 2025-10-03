@@ -9,6 +9,11 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const stateId = Digit.ULBService.getStateId();
+  const tenantId = Digit.ULBService.getCurrentTenantId();
+
+  // Fetch MDMS docs
+  const { data: mdmsDocsData, isLoading } = Digit.Hooks.ptr.useDocumentsMDMS(tenantId);
 
   const currentStepData = useSelector(function (state) {
     return state.ptr.PTRNewApplicationFormReducer.formData && state.ptr.PTRNewApplicationFormReducer.formData[config?.key]
@@ -16,26 +21,53 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
-  function goNext(data) {
-    console.log("goNext data in NewPTRStepFormThree: ", data);
+  function validation(documents) {
+    if (!isLoading) {
+      const ptrDocumentsType = mdmsDocsData || [];
+      const documentsData = documents?.documents?.documents || [];
 
-    const { missingFields, notFormattedFields } = validateStepData(currentStepData);
+      console.log("ptrDocumentsType", ptrDocumentsType);
+      console.log("documentsData", documentsData);
+      console.log("mdmsDocsData", mdmsDocsData);
+      console.log("documentsData===", documents);
 
-    if (missingFields.length > 0) {
-      setError(`Please fill the following field: ${missingFields[0]}`);
-      setShowToast(true);
-      return;
+      // Step 1: Extract required doc codes
+      const requiredDocs = ptrDocumentsType?.filter((doc) => doc.required)?.map((doc) => doc.code);
+
+      // Step 2: Extract uploaded doc types
+      const uploadedDocs = documentsData?.map((doc) => doc.documentType);
+
+      // Step 3: Identify missing docs
+      const missingDocs = requiredDocs.filter((reqDoc) => !uploadedDocs?.includes(reqDoc));
+
+      return missingDocs;
     }
-    onGoNext();
+    return [];
   }
 
-  function validateStepData(data) {
-    // const pets = data?.pets || [];
+  function goNext(data) {
+    // const validator = makeDocumentsValidator(mdmsDocsData);
+    // const docErrors = validator(data?.documents?.documents || []);
 
-    const missingFields = [];
-    const notFormattedFields = [];
+    // if (docErrors?.missingRequired) {
+    //   const missingDocNames = docErrors.missingDocs?.join(", ") || "";
+    //   setError(`You haven't uploaded: ${missingDocNames}`);
+    //   setShowToast(true);
+    //   return;
+    // }
+    // onGoNext();
+    const missingFields = validation(data);
 
-    return { missingFields, notFormattedFields };
+    if (missingFields.length > 0) {
+      setError(`${t(missingFields[0].replace(".", "_").toUpperCase())} is required`);
+      setShowToast(true);
+      setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+      return;
+    }
+
+    onGoNext();
   }
 
   function onGoBack(data) {
@@ -43,7 +75,6 @@ const NewPTRStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_PTRNewApplication_FORM(config.key, data));
     }

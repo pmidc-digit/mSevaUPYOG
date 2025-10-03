@@ -14,6 +14,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                 Header: t("BPA_APPLICATION_NUMBER_LABEL"),
                 accessor: "applicationNo",
                 Cell: ({ row }) => {
+                    // console.log("row.original", row);
                     return (
                         <div>
                             <Link to={`${parentRoute}/stakeholder-inbox/stakeholder/${row.original["applicationId"]}`}>
@@ -22,6 +23,10 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
                         </div>
                     );
                 },
+            },
+            {
+                Header: t("BPA_APPLICATION_MOBILE_NUMBER_LABEL"),
+                accessor: row => row?.mobileNumber || "NA",
             },
             {
                 Header: t("CS_APPLICATION_DETAILS_APPLICATION_DATE"),
@@ -34,7 +39,7 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
             },
             {
                 Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
-                accessor: (row) => row?.owner,
+                accessor: (row) => row?.assignedOwner,
             },
             {
                 Header: t("ES_INBOX_SLA_DAYS_REMAINING"),

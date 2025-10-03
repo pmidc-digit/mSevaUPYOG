@@ -5,7 +5,8 @@ import { useTranslation } from "react-i18next";
 
 const FilterFormFieldsComponent = ({ controlFilterForm }) => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+    const tenantId = localStorage.getItem("Citizen.tenant-id");
   const { data: applicationTypesOfBPA, isLoading: loadingApplicationTypesOfBPA } = Digit.Hooks.obps.SearchMdmsTypes.useApplicationTypes(tenantId);
 
   const availableOptions = [

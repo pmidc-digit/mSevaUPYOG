@@ -10,12 +10,13 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, statusMap,
 
   const { data: statusData, isLoading } = Digit.Hooks.useApplicationStatusGeneral({ businessServices }, {});
 
+  console.log('statusData', statusData)
   const { userRoleStates } = statusData || {};
 
  
 
   const translateState = (state, t) => {
-    return `${t(map[state.stateBusinessService])}` + " - " + t(`ES_PTR_COMMON_STATUS_${state.state || "CREATED"}`);
+    return `${t([state.stateBusinessService])}` + " - " + t(`ES_PTR_COMMON_STATUS_${state.state || "CREATED"}`);
     // return t(`ES_PT_COMMON_STATUS_${state.state || "CREATED"}`);
   };
 
@@ -24,7 +25,9 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, statusMap,
     return <Loader />;
   }
 
-  return userRoleStates?.filter((e) => !e.isTerminateState).length ? (
+  console.log('userRoleStates', userRoleStates)
+
+  return userRoleStates?.filter((e) => !e.isTerminateState).length || true ? (
     <div className="status-container">
       <div className="filter-label" style={{ fontWeight: "normal" }}>
         {t("ES_INBOX_STATUS")}

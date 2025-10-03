@@ -6,6 +6,8 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
   const { t } = useTranslation();
   const isMobile = window.Digit.Utils.browser.isMobile();
 
+  console.log("searchFieldComponents", searchFieldComponents);
+
   if (!isMobile) {
     return (
       <React.Fragment>
@@ -13,12 +15,16 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
           <div className="search-complaint-container">
             <div className="complaint-input-container" style={{ textAlign: "start" }}>
               <SearchField>
-                <label>NDC Application Number</label>
-                <TextInput name="applicationNo" inputRef={registerRef({})} />
+                <label>{t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL")}</label>
+                <TextInput name="uuid" inputRef={registerRef({})} />
+              </SearchField>
+              <SearchField>
+                <label>{t("CORE_COMMON_PHONE_NUMBER")}</label>
+                <TextInput name="mobileNumber" inputRef={registerRef({})} />
               </SearchField>
               {/* <SearchField>
-                <label>{t("NOC_BPA_APPLICATION_NUMBER_LABEL")}</label>
-                <TextInput name="sourceRefId" inputRef={registerRef({})} />
+                <label>{t("NDC_MSG_PROPERTY_LABEL")}</label>
+                <TextInput name="propertyId" inputRef={registerRef({})} />
               </SearchField> */}
               <div className="search-action-wrapper" style={{ width: "100%" }}>
                 {searchFieldComponents}
@@ -34,7 +40,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
     <>
       <SearchField>
         <label>{t("NOC_APPLICATION_NUMBER_LABEL")}</label>
-        <TextInput name="applicationNo" inputRef={registerRef({})} />
+        <TextInput name="uuid" inputRef={registerRef({})} />
       </SearchField>
       <SearchField>
         <label>{t("NOC_BPA_APPLICATION_NUMBER_LABEL")}</label>

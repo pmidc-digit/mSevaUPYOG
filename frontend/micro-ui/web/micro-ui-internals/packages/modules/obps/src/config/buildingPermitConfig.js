@@ -6,7 +6,7 @@ export const newConfig = [
         route: "docs-required",
         component: "DocsRequired",
         key: "data",
-        nextStep: "noc-number"
+        nextStep: "noc-number",
       },
       {
         route: "noc-number",
@@ -14,11 +14,11 @@ export const newConfig = [
         nextStep: "basic-details",
         key: "nocnumber",
         texts: {
-            "headerCaption": "BPA_NOC_NUMBER_DETAILS",
-            "header": "",
-            "submitBarLabel": "CS_COMMON_NEXT"
-        }
-    },
+          headerCaption: "BPA_NOC_NUMBER_DETAILS",
+          header: "",
+          submitBarLabel: "CS_COMMON_NEXT",
+        },
+      },
       {
         route: "basic-details",
         component: "BasicDetails",
@@ -44,7 +44,7 @@ export const newConfig = [
             validation: {
               // required: true,
             },
-            name: "holdingNumber"
+            name: "holdingNumber",
           },
           {
             label: "BPA_BOUNDARY_LAND_REG_DETAIL_LABEL",
@@ -52,19 +52,19 @@ export const newConfig = [
             validation: {
               // required: true
             },
-            name: "registrationDetails"
+            name: "registrationDetails",
           },
           {
             label: "BPA_BOUNDARY_WALL_LENGTH_LABEL_INPUT",
             type: "text",
             validation: {
-              pattern:/^[0-9]*$/,
+              pattern: /^[0-9]*$/,
               title: "Enter in Numbers[0-9]",
-              required: true
+              required: true,
             },
-            name: "boundaryWallLength"
-        }
-        ]
+            name: "boundaryWallLength",
+          },
+        ],
       },
       {
         route: "scrutiny-details",
@@ -77,7 +77,7 @@ export const newConfig = [
           header: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
           cardText: "",
           submitBarLabel: "CS_COMMON_NEXT",
-          skipText:"CORE_COMMON_SKIP_CONTINUE",
+          skipText: "CORE_COMMON_SKIP_CONTINUE",
         },
       },
       {
@@ -88,7 +88,7 @@ export const newConfig = [
         key: "address",
         texts: {
           headerCaption: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",
-          header: "BPA_NEW_TRADE_DETAILS_HEADER_DETAILS",
+          header: "BPA_NEW_TRADE_DETAILS_H",
           cardText: "",
           submitBarLabel: "CS_COMMON_NEXT",
           skipAndContinueText: "",
@@ -102,8 +102,8 @@ export const newConfig = [
         texts: {
           headerCaption: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
           header: "BPA_APPLICANT_DETAILS_HEADER",
-          submitBarLabel: "CS_COMMON_NEXT"
-        }
+          submitBarLabel: "CS_COMMON_NEXT",
+        },
       },
       {
         route: "document-details",
@@ -114,7 +114,7 @@ export const newConfig = [
           headerCaption: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL",
           header: "BPA_DOCUMENT_DETAILS_LABEL",
           submitBarLabel: "CS_COMMON_NEXT",
-        }
+        },
       },
       // {
       //   route: "noc-details",
@@ -128,6 +128,6 @@ export const newConfig = [
       //     skipText: "CORE_COMMON_SKIP_CONTINUE",
       //   }
       // }
-    ]
-  }
-]
+    ],
+  },
+];

@@ -1,85 +1,81 @@
-  import React from "react";
-  import { Link } from "react-router-dom";
+import React from "react";
+import { Link } from "react-router-dom";
 
-  const GetCell = (value) => <span className="cell-text">{value}</span>;
-  
+const GetCell = (value) => <span className="cell-text">{value}</span>;
 
-  const GetSlaCell = (value) => {
-    if (isNaN(value)) return <span className="sla-cell-success">0</span>;
-    return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
-  };
+const GetSlaCell = (value) => {
+  if (isNaN(value)) return <span className="sla-cell-success">0</span>;
+  return value < 0 ? <span className="sla-cell-error">{value}</span> : <span className="sla-cell-success">{value}</span>;
+};
 
-  const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
+const GetMobCell = (value) => <span className="sla-cell">{value}</span>;
 
-  export const TableConfig = (t) => ({
-    PTR: {
-      
-      
-      inboxColumns: (props) => [
-      
-        {
-          Header: t("PTR_APPLICATION_NUMBER"),
-          Cell: ({ row }) => {
-            return (
-              <div>
-                <span className="link">
-                  
-                  <Link to={`${props.parentRoute}/petservice/application-details/` + `${row?.original?.searchData?.["applicationNumber"]}`}>
-
-                    {row.original?.searchData?.["applicationNumber"]}
-                  </Link>
-                </span>
-              </div>
-            );
-          },
-          mobileCell: (original) => GetMobCell(original?.searchData?.["applicationNumber"]),
+export const TableConfig = (t) => ({
+  ADS: {
+    inboxColumns: (props) => [
+      {
+        Header: t("ADS_BOOKING_NO"),
+        Cell: ({ row }) => {
+          console.log("row is :>> ", row);
+          return (
+            <div>
+              <span className="link">
+                <Link to={`${props.parentRoute}/applicationsearch/application-details/` + `${row?.original?.searchData?.["bookingNo"]}`}>
+                  {row.original?.searchData?.["bookingNo"]}
+                </Link>
+              </span>
+            </div>
+          );
         },
-        
-        {
-          Header: t("PTR_APPLICANT_NAME"),
-          Cell: ( row ) => {
-          
-            return GetCell(`${row?.cell?.row?.original?.searchData?.["applicantName"]}`)
-            
-          },
-          mobileCell: (original) => GetMobCell(original?.searchData?.["applicantName"]),
-          
+        mobileCell: (original) => GetMobCell(original?.searchData?.["bookingNo"]),
+      },
+
+      {
+        Header: t("ADS_APPLICANT_NAME"),
+        Cell: (row) => {
+          return GetCell(`${row?.cell?.row?.original?.searchData?.applicantDetail?.["applicantName"]}`);
         },
-        {
-          Header: t("PTR_PET_TYPE"),
-          Cell: ({ row }) => {
-            return GetCell(`${row.original?.searchData?.petDetails?.["petType"]}`);
-           
-          },
-          mobileCell: (original) => GetMobCell(original?.searchData?.petDetails?.["petType"]),
+        mobileCell: (original) => GetMobCell(original?.searchData?.applicantDetail?.["applicantName"]),
+      },
+      {
+        Header: t("AD _TYPE"),
+        Cell: ({ row }) => {
+          return GetCell(`${row.original?.searchData?.cartDetails?.[0]?.["addType"]}`);
         },
+        mobileCell: (original) => GetMobCell(original?.searchData?.cartDetails?.[0]?.["addType"]),
+      },
 
-        {
-          Header: t("PTR_BREED_TYPE"),
-          Cell: ({ row }) => {
-            return GetCell(`${row.original?.searchData?.petDetails?.["breedType"]}`);
-          },
-          mobileCell: (original) => GetMobCell(original?.searchData?.petDetails?.["breedType"]),
+      // {
+      //   Header: t("PTR_BREED_TYPE"),
+      //   Cell: ({ row }) => {
+      //     return GetCell(`${row.original?.searchData?.applicantDetails?.["breedType"]}`);
+      //   },
+      //   mobileCell: (original) => GetMobCell(original?.searchData?.petDetails?.["breedType"]),
+      // },
+
+      {
+        Header: t("BOOKING_STATUS"),
+        Cell: ({ row }) => {
+          const wf = row.original?.workflowData;
+          return GetCell(t(`${row?.original?.workflowData?.state?.["applicationStatus"]}`));
         },
+        mobileCell: (original) => GetMobCell(t(`ES_ADS_COMMON_STATUS_${original?.workflowData?.state?.["applicationStatus"]}`)),
+      },
 
-        
-        {
-          Header: t("PTR_STATUS"),
-          Cell: ({ row }) => {
-            
-            const wf = row.original?.workflowData;
-            return GetCell(t(`${row?.original?.workflowData?.state?.["applicationStatus"]}`));
-
-
-          },
-          mobileCell: (original) => GetMobCell(t(`ES_PTR_COMMON_STATUS_${original?.workflowData?.state?.["applicationStatus"]}`)),
-        
-
+      {
+        Header: t("ADS_DATE"),
+        Cell: ({ row }) => {
+          const createdTime = row.original?.searchData?.["applicationDate"];
+          const dateStr = createdTime ? new Date(createdTime).toLocaleDateString("en-GB") : "";
+          return GetCell(dateStr);
         },
-        
-      ],
-      serviceRequestIdKey: (original) => original?.[t("PTR_INBOX_UNIQUE_APPLICATION_NUMBER")]?.props?.children,
-
-      
-    },
-  });
+        mobileCell: (original) => {
+          const createdTime = original?.searchData?.["applicationDate"];
+          const dateStr = createdTime ? new Date(createdTime).toLocaleDateString("en-GB") : "";
+          return GetMobCell(dateStr);
+        },
+      },
+    ],
+    serviceRequestIdKey: (original) => original?.[t("ADS_INBOX_UNIQUE_BOOKING_NUMBER")]?.props?.children,
+  },
+});

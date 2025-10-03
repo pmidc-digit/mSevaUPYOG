@@ -26,6 +26,8 @@ import { WSService } from "./services/elements/WS";
 import { TLService } from "./services/elements/TL";
 import { Surveys } from "./services/elements/Surveys";
 import { MCollectService } from "./services/elements/MCollect";
+import { ChallanGenerationService } from "./services/elements/ChallanGeneration";
+import { RentAndLeaseService } from "./services/elements/RentAndLease";
 import { ReportsService } from "./services/elements/Reports";
 import HrmsService from "./services/elements/HRMS";
 import { InboxGeneral } from "./services/elements/InboxService";
@@ -62,6 +64,8 @@ import { ASSETService } from "./services/elements/ASSET";
 import { PGRAIService } from "./services/elements/PGRAI";
 import { PGRAIUpdate } from "./services/elements/PGRAIUpdate";
 
+import { NDCService } from "./services/elements/NDC";
+
 const setupLibraries = (Library, props) => {
   window.Digit = window.Digit || {};
   window.Digit[Library] = window.Digit[Library] || {};
@@ -93,6 +97,8 @@ const initLibraries = () => {
   setupLibraries("HRMSService", HrmsService);
   setupLibraries("ReceiptsService", ReceiptsService);
   setupLibraries("MCollectService", MCollectService);
+  setupLibraries("ChallanGenerationService", ChallanGenerationService);
+  setupLibraries("RentAndLeaseService", RentAndLeaseService);
   setupLibraries("ReportsService", ReportsService);
   setupLibraries("PaymentService", PaymentService);
   setupLibraries("EDCRService", EDCRService);
@@ -129,6 +135,7 @@ const initLibraries = () => {
   setupLibraries("AuditService", AuditService);
   setupLibraries("PGRAIService", PGRAIService);
   setupLibraries("PGRAIUpdate", PGRAIUpdate);
+  setupLibraries("NDCService", NDCService);
   return new Promise((resolve) => {
     initI18n(resolve);
   });

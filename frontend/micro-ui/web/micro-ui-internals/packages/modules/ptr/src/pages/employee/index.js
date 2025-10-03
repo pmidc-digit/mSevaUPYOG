@@ -37,7 +37,7 @@ const EmployeeApp = ({ path, url, userType }) => {
       {
         path: "/digit-ui/employee/ptr/petservice/inbox",
         content: t("ES_TITLE_INBOX"),
-        show: location.pathname.includes("ptr/petservice/inbox") ? true : false,
+        show: true,
       },
 
       {
@@ -56,9 +56,11 @@ const EmployeeApp = ({ path, url, userType }) => {
   const PTRCreate = Digit?.ComponentRegistryService?.getComponent("NewPTRStepperForm");
   const NewApplication = Digit?.ComponentRegistryService?.getComponent("PTRNewApplication");
   const ApplicationDetails = Digit?.ComponentRegistryService?.getComponent("ApplicationDetails");
-
+  // const ApplicationOverview = Digit?.ComponentRegistryService?.getComponent("ApplicationOverview");
+  const PTRMyApplications = Digit?.ComponentRegistryService?.getComponent("PTRMyApplications");
   // const EditApplication = Digit?.ComponentRegistryService?.getComponent("PTEditApplication");
-  const Response = Digit?.ComponentRegistryService?.getComponent("PTRResponse");
+  // const Response = Digit?.ComponentRegistryService?.getComponent("PTRResponse");
+  const PTRResponse = Digit?.ComponentRegistryService?.getComponent("PTRResponseCitizen");
   const DocsRequired = Digit?.ComponentRegistryService?.getComponent("PTRDocsRequired");
   const isRes = window.location.href.includes("ptr/response");
   const isNewRegistration =
@@ -78,6 +80,8 @@ const EmployeeApp = ({ path, url, userType }) => {
             </div>
           ) : null}
           <PrivateRoute exact path={`${path}/`} component={() => <PTRLinks matchPath={path} userType={userType} />} />
+          {/* <PrivateRoute exact path={`${path}/ptrservice/application-overview/:id`} component={ApplicationOverview} /> */}
+          {/* <PrivateRoute path={`${path}/petservice/application-details/:id`} component={() => <ApplicationOverview parentRoute={path} />} /> */}
           <PrivateRoute
             path={`${path}/petservice/inbox`}
             component={() => (
@@ -91,13 +95,14 @@ const EmployeeApp = ({ path, url, userType }) => {
               />
             )}
           />
-          <PrivateRoute path={`${path}/petservice/new-application`} component={PTRCreate} />
+          <PrivateRoute path={`${path}/petservice/new-application/:id?`} component={PTRCreate} />
           <PrivateRoute path={`${path}/petservice/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute
             path={`${path}/petservice/applicationsearch/application-details/:id`}
             component={() => <ApplicationDetails parentRoute={path} />}
           />
-          <PrivateRoute path={`${path}/petservice/response`} component={(props) => <Response {...props} parentRoute={path} />} />
+          <PrivateRoute path={`${path}/petservice/response/:applicationNumber`} component={PTRResponse} />
+          {/* <PrivateRoute path={`${path}/petservice/response`} component={(props) => <Response {...props} parentRoute={path} />} /> */}
           <PrivateRoute path={`${path}/petservice/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
           <PrivateRoute
             path={`${path}/searchold`}

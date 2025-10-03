@@ -16,6 +16,16 @@ import {
   MCollectLinks,
   initMCollectComponents,
 } from "@mseva/digit-ui-module-mcollect";
+import {
+  ChallanGenerationModule,
+  ChallanGenerationLinks,
+  initChallanGenerationComponents,
+} from "@mseva/digit-ui-module-challangeneration";
+import {
+  RentAndLeaseModule,
+  RentAndLeaseLinks,
+  initRentAndLeaseComponents,
+} from "@mseva/digit-ui-module-rentandlease";
 import { initDSSComponents } from "@mseva/digit-ui-module-dss";
 import {
   PaymentModule,
@@ -46,8 +56,8 @@ import {
   initReceiptsComponents,
   ReceiptsModule,
 } from "@mseva/digit-ui-module-receipts";
-import { initOBPSComponents } from "@mseva/digit-ui-module-obps";
-import { initNOCComponents } from "@mseva/digit-ui-module-noc";
+import { initOBPSComponents, OBPSReducers } from "@mseva/digit-ui-module-obps";
+import { initNOCComponents, NOCReducers } from "@mseva/digit-ui-module-noc";
 import {
   initEngagementComponents,
   SurveyReducers,
@@ -60,6 +70,7 @@ import {
 } from "@mseva/digit-ui-module-commonpt";
 import { initBillsComponents } from "@mseva/digit-ui-module-bills";
 import { SVComponents, SVLinks, SVModule } from "@mseva/digit-ui-module-sv";
+import { initNDCComponents, NDCReducers } from "@mseva/digit-ui-module-ndc";
 import {
   ADSModule,
   ADSLinks,
@@ -118,6 +129,10 @@ const enabledModules = [
   "PTR",
   "ASSET",
   "PGRAI",
+  "ChallanGeneration",
+  "RentAndLease",
+  "NDC",
+  "BPAStakeholder"
 ];
 window.Digit.ComponentRegistryService.setupRegistry({
   ...paymentConfigs,
@@ -128,6 +143,10 @@ window.Digit.ComponentRegistryService.setupRegistry({
   ...PTComponents,
   MCollectLinks,
   MCollectModule,
+  ChallanGenerationModule,
+  ChallanGenerationLinks,
+  RentAndLeaseModule,
+  RentAndLeaseLinks,
   HRMSModule,
   TLModule,
   TLLinks,
@@ -157,6 +176,8 @@ initSWACHComponents();
 initFSMComponents();
 initDSSComponents();
 initMCollectComponents();
+initChallanGenerationComponents();
+initRentAndLeaseComponents();
 initHRMSComponents();
 initTLComponents();
 initReceiptsComponents();
@@ -166,6 +187,7 @@ initEngagementComponents();
 initWSComponents();
 initCommonPTComponents();
 initBillsComponents();
+initNDCComponents();
 // initReportsComponents();
 initCustomisationComponents();
 
@@ -177,9 +199,12 @@ const moduleReducers = (initData) => ({
   engagement: SurveyReducers(initData),
   tl: TLReducers(initData),
   swach: SWACHReducers(initData),
+  ndc: NDCReducers(initData),
   ptr: PTRReducers(initData),
   ads: ADSReducers(initData),
   chb: CHBReducers(initData),
+  noc: NOCReducers(initData),
+  obps: OBPSReducers(initData)
 });
 
 function App() {

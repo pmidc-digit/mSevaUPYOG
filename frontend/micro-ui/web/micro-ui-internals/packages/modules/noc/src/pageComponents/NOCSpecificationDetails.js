@@ -61,11 +61,15 @@ const NOCSpecificationDetails = (_props) => {
               control={control}
               name="specificationPlotArea"
               rules={{
-                required: t("REQUIRED_FIELD"),
-                maxLength: {
-                  value: 100,
-                  message: t("MAX_100_CHARACTERS_ALLOWED"),
-                },
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
               }}
               render={(props) => (
                 <TextInput

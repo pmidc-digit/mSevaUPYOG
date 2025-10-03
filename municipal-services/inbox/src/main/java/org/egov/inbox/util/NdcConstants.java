@@ -16,7 +16,8 @@ public class NdcConstants {
 	public static final String REQUESTINFO_PARAM = "RequestInfo";
 	public static final String SEARCH_CRITERIA_PARAM = "searchCriteria";
 	public static final String USERID_PARAM = "userid";
-	public static final String NDC_APPLICATION_NUMBER_PARAM = "uuid";
+	public static final String NDC_UUID_PARAM = "uuid";
+	public static final String NDC_APPLICATION_NO_PARAM = "applicationNo";
 	public static final String NDC_SOURCE_APPLICATION_NUMBER_PARAM = "sourceApplicationNumber";
 	public static final String NDC_SOURCE_REF_ID_PARAM = "sourceRefId";
 	public static final String SORT_ORDER_PARAM = "sortOrder";

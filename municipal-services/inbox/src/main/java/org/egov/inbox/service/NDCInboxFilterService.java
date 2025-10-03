@@ -1,26 +1,6 @@
 package org.egov.inbox.service;
 
-import static org.egov.inbox.util.NdcConstants.ASSIGNEE_PARAM;
-import static org.egov.inbox.util.NdcConstants.BUSINESS_SERVICE_PARAM;
-import static org.egov.inbox.util.NdcConstants.CITIZEN;
-import static org.egov.inbox.util.NdcConstants.DESC_PARAM;
-import static org.egov.inbox.util.NdcConstants.LIMIT_PARAM;
-import static org.egov.inbox.util.NdcConstants.LOCALITY_PARAM;
-import static org.egov.inbox.util.NdcConstants.MOBILE_NUMBER_PARAM;
-import static org.egov.inbox.util.NdcConstants.NDC_APPLICATION_NUMBER_PARAM;
-import static org.egov.inbox.util.NdcConstants.NDC_SOURCE_APPLICATION_NUMBER_PARAM;
-import static org.egov.inbox.util.NdcConstants.NDC_SOURCE_REF_ID_PARAM;
-import static org.egov.inbox.util.NdcConstants.NO_OF_RECORDS_PARAM;
-import static org.egov.inbox.util.NdcConstants.OFFSET_PARAM;
-import static org.egov.inbox.util.NdcConstants.REQUESTINFO_PARAM;
-import static org.egov.inbox.util.NdcConstants.SEARCH_CRITERIA_PARAM;
-import static org.egov.inbox.util.NdcConstants.SORT_ORDER_PARAM;
-import static org.egov.inbox.util.NdcConstants.STATUS_PARAM;
-import static org.egov.inbox.util.NdcConstants.TENANT_ID_PARAM;
-import static org.egov.inbox.util.NdcConstants.USERID_PARAM;
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.inbox.repository.ServiceRequestRepository;
@@ -30,13 +10,14 @@ import org.egov.inbox.web.model.workflow.ProcessInstanceSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.client.RestTemplate;
 
 import com.jayway.jsonpath.JsonPath;
 
 import lombok.extern.slf4j.Slf4j;
+
+import static org.egov.inbox.util.NdcConstants.*;
 
 @Slf4j
 @Service
@@ -116,7 +97,7 @@ public class NDCInboxFilterService {
 
             result = restTemplate.postForObject(uri.toString(), searcherRequest, Map.class);
 
-            List<String> citizenApplicationsNumbers = JsonPath.read(result, "$.Applications.*.uuid");
+            List<String> citizenApplicationsNumbers = JsonPath.read(result, "$.Applications.*.applicationno");
 
             applicationNumbers.addAll(citizenApplicationsNumbers);
 
@@ -140,8 +121,11 @@ public class NDCInboxFilterService {
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(LOCALITY_PARAM)) {
             searchCriteria.put(LOCALITY_PARAM, moduleSearchCriteria.get(LOCALITY_PARAM));
         }
-        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NDC_APPLICATION_NUMBER_PARAM)) {
-            searchCriteria.put(NDC_APPLICATION_NUMBER_PARAM, moduleSearchCriteria.get(NDC_APPLICATION_NUMBER_PARAM));
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NDC_UUID_PARAM)) {
+            searchCriteria.put(NDC_UUID_PARAM, moduleSearchCriteria.get(NDC_UUID_PARAM));
+        }
+        if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NDC_APPLICATION_NO_PARAM)) {
+            searchCriteria.put(NDC_APPLICATION_NO_PARAM, moduleSearchCriteria.get(NDC_APPLICATION_NO_PARAM));
         }
         if (moduleSearchCriteria != null && moduleSearchCriteria.containsKey(NDC_SOURCE_REF_ID_PARAM)) {
             searchCriteria.put(NDC_SOURCE_APPLICATION_NUMBER_PARAM, moduleSearchCriteria.get(NDC_SOURCE_REF_ID_PARAM));

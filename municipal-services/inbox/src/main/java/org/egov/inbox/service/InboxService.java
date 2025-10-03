@@ -566,7 +566,7 @@ public class InboxService {
                 totalCount = ndcInboxFilterService.fetchApplicationCountFromSearcher(criteria, StatusIdNameMap, requestInfo);
                 List<String> applicationNumbers = ndcInboxFilterService.fetchApplicationNumbersFromSearcher(criteria, StatusIdNameMap, requestInfo);
                 if (!CollectionUtils.isEmpty(applicationNumbers)) {
-                    moduleSearchCriteria.put(NDC_APPLICATION_NUMBER_PARAM, applicationNumbers);
+                    moduleSearchCriteria.put(NDC_APPLICATION_NO_PARAM, applicationNumbers);
                     businessKeys.addAll(applicationNumbers);
                     moduleSearchCriteria.remove(STATUS_PARAM);
 //                    moduleSearchCriteria.remove(MOBILE_NUMBER_PARAM);

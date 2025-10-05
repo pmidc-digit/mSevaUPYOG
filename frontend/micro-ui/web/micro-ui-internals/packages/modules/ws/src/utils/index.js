@@ -676,7 +676,10 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       roadType: null,
       connectionExecutionDate: storeData?.applicationData?.connectionExecutionDate,
       noOfTaps: storeData?.applicationData?.noOfTaps,
-      additionalDetails: storeData?.applicationData?.additionalDetails,
+      additionalDetails: {
+        ...storeData?.applicationData?.additionalDetails,
+        ...(storeData?.applicationData?.additionalDetails?.isMigrated === true ? { isMigrated: false } : {})
+      },
       tenantId: storeData?.applicationData?.tenantId,
       connectionType: storeData.applicationData.connectionType || null,
       waterSource: storeData.applicationData.waterSource || null,
@@ -724,7 +727,10 @@ export const createPayloadOfWSDisconnection = async (data, storeData, service) =
       connectionExecutionDate: storeData?.applicationData?.connectionExecutionDate,
       noOfWaterClosets: storeData?.applicationData?.noOfWaterClosets,
       noOfToilets: storeData?.applicationData?.noOfToilets,
-      additionalDetails: storeData?.applicationData?.additionalDetails,
+      additionalDetails: {
+        ...storeData?.applicationData?.additionalDetails,
+        ...(storeData?.applicationData?.additionalDetails?.isMigrated === true ? { isMigrated: false } : {})
+      },
       tenantId: storeData?.applicationData?.tenantId,
       // connectionType: storeData.applicationData.connectionType || null,
       connectionType: "Non Metered",

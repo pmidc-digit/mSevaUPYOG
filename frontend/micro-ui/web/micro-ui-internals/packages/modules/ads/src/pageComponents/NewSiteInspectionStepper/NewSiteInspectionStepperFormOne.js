@@ -37,7 +37,6 @@ const NewSiteInspectionStepperFormOne = ({ config, onGoNext, onBackClick, t }) =
   };
 
   function goNext(data) {
-    console.log("goNext data in NewADSStepFormThree: ", data);
 
     const validator = makeDocumentsValidator(mdmsData);
     const docsArray = currentStepData?.documents?.documents || [];
@@ -64,7 +63,6 @@ const NewSiteInspectionStepperFormOne = ({ config, onGoNext, onBackClick, t }) =
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_ADSNewApplication_FORM(config.key, data));
     }

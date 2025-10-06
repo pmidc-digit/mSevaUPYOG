@@ -6,7 +6,6 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   const stateId = Digit.ULBService.getStateId();
   const [formErrors, setFormErrors] = useState({});
   const [toastError, setToastError] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
 
   const FILE_POLICY = {
     maxBytes: 5 * 1024 * 1024, // 5 MB
@@ -84,7 +83,6 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   }, [documents, config.key]);
 
   const handleSubmit = () => {
-    setSubmitted(true);
     if (Object.keys(formErrors).length > 0) {
       setToastError(t(formErrors.missingRequired || "PTR_VALIDATION_ERROR"));
       onSelect(config.key, { missingDocs: formErrors.missingDocs || [] });
@@ -93,6 +91,8 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
     let documentStep = { ...mdmsDocsData, documents };
     onSelect(config.key, documentStep);
   };
+
+  
 
   const onSkip = () => onSelect();
 
@@ -104,7 +104,7 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
             mdmsDocsData.map((mdmsDoc, index) => {
               const existing = documents.find((d) => d.documentType === mdmsDoc.code);
               return (
-                <PTRSelectDocument
+                <ADSSelectDocument
                   key={index}
                   document={{ ...mdmsDoc, ...existing }}
                   t={t}
@@ -128,7 +128,7 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   );
 };
 
-function PTRSelectDocument({
+function ADSSelectDocument({
   t,
   document: doc,
   setDocuments,
@@ -196,8 +196,10 @@ function PTRSelectDocument({
     }
   };
 
-  const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
 
+
+  const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
+  console.log("doc", doc);
   return (
     <div style={{ marginBottom: "24px" }}>
       {loading && <Loader />}

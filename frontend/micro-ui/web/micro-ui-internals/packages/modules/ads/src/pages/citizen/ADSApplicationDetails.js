@@ -74,18 +74,15 @@ const ADSApplicationDetails = () => {
   });
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
-  const [billData, setBillData] = useState(null);
 
   const BookingApplication = get(adsData, "bookingApplication", []);
   const adsId = get(adsData, "bookingApplication[0].bookingNo", []);
-  console.log("adsData", adsData);
 
   let ads_details = (BookingApplication && BookingApplication.length > 0 && BookingApplication[0]) || {};
   const application = ads_details;
 
   sessionStorage.setItem("ads", JSON.stringify(application));
 
-  const [loading, setLoading] = useState(false);
 
   const businessServicMINE = "advandhoarding";
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -94,7 +91,6 @@ const ADSApplicationDetails = () => {
     moduleCode: businessServicMINE,
   });
 
-  console.log("workflowDetails :>> ", workflowDetails);
 
   const wfActions =
     workflowDetails?.data?.nextActions?.map((a) => ({
@@ -179,7 +175,6 @@ const ADSApplicationDetails = () => {
   }
 
   function onActionSelect(wfAction) {
-    console.log("selected wfAction:", wfAction);
     if (!wfAction) return;
 
     if (wfAction.action === "PAY") {
@@ -217,12 +212,10 @@ const ADSApplicationDetails = () => {
       setActionError("Application data not loaded");
       return;
     }
-    console.log("dataPayLoad is :>> ", dataPayload);
     // Support both shapes: old { Licenses: [...] } or raw object (from wfActions)
     const filtData = dataPayload?.Licenses?.[0] || dataPayload;
     const normalizedAssignee = normalizeAssignees(filtData?.assignee || filtData?.assignees || filtData?.assigneeUuid);
 
-    console.log("filtData :>> ", filtData);
 
     if (!filtData || !filtData.action) {
       setShowToast({ key: "error", message: "No workflow action provided" });
@@ -321,14 +314,14 @@ const ADSApplicationDetails = () => {
     { Header: `${t("ADS_TYPE")}`, accessor: "addType" },
     { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
     { Header: `${t("ADS_NIGHT_LIGHT")}`, accessor: "nightLight" },
-    { Header: `${t("ADS_BOOKING_START_DATE")}`, accessor: "bookingDate" },
+    { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
   ];
   const adslistRows =
     ads_details?.cartDetails?.map((slot) => ({
       addType: `${t(slot.addType)}`,
       faceArea: `${t(slot.faceArea)}`,
-      nightLight: `${t(slot.nightLight === true ? "Yes" : "No")}`,
+      nightLight: `${t(slot.nightLight ? "Yes" : "No")}`,
       bookingDate: `${t(slot.bookingDate)}`,
       bookingStatus: `${t(slot.status)}`,
     })) || [];
@@ -356,7 +349,7 @@ const ADSApplicationDetails = () => {
             <Row className="border-none" label={t("ADS_APPLICANT_NAME")} text={ads_details?.applicantDetail?.applicantName || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_MOBILE_NUMBER")} text={ads_details?.applicantDetail?.applicantMobileNo || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_EMAIL_ID")} text={ads_details?.applicantDetail?.applicantEmailId || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_ADDRESS")} text={ads_details?.address?.addressId || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_ADDRESS")} text={ads_details?.address?.addressLine1 || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
           </StatusTable>
 

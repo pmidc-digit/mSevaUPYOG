@@ -81,6 +81,7 @@ const ADSApplicationDetails = () => {
   console.log("adsData", adsData);
 
   let ads_details = (BookingApplication && BookingApplication.length > 0 && BookingApplication[0]) || {};
+  console.log('ads_details', ads_details)
   const application = ads_details;
 
   sessionStorage.setItem("ads", JSON.stringify(application));
@@ -321,14 +322,14 @@ const ADSApplicationDetails = () => {
     { Header: `${t("ADS_TYPE")}`, accessor: "addType" },
     { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
     { Header: `${t("ADS_NIGHT_LIGHT")}`, accessor: "nightLight" },
-    { Header: `${t("ADS_BOOKING_START_DATE")}`, accessor: "bookingDate" },
+    { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
   ];
   const adslistRows =
     ads_details?.cartDetails?.map((slot) => ({
       addType: `${t(slot.addType)}`,
       faceArea: `${t(slot.faceArea)}`,
-      nightLight: `${t(slot.nightLight === true ? "Yes" : "No")}`,
+      nightLight: `${t(slot.nightLight ? "Yes" : "No")}`,
       bookingDate: `${t(slot.bookingDate)}`,
       bookingStatus: `${t(slot.status)}`,
     })) || [];
@@ -356,7 +357,7 @@ const ADSApplicationDetails = () => {
             <Row className="border-none" label={t("ADS_APPLICANT_NAME")} text={ads_details?.applicantDetail?.applicantName || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_MOBILE_NUMBER")} text={ads_details?.applicantDetail?.applicantMobileNo || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_EMAIL_ID")} text={ads_details?.applicantDetail?.applicantEmailId || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_ADDRESS")} text={ads_details?.address?.addressId || t("CS_NA")} />
+            <Row className="border-none" label={t("PTR_ADDRESS")} text={ads_details?.address?.addressLine1 || t("CS_NA")} />
             <Row className="border-none" label={t("ADS_ADDRESS_PINCODE")} text={ads_details?.address?.pincode || t("CS_NA")} />
           </StatusTable>
 

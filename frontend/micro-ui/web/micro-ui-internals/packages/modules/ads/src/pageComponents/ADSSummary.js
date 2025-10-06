@@ -3,20 +3,20 @@ import { Card, CardLabel } from "@mseva/digit-ui-react-components";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_ADSNewApplication_STEP } from "../redux/action/ADSNewApplicationActions";
 import ADSDocument from "./ADSDocument";
+import ADSCartDetails from "./ADSCartDetails";
 
 function ADSSummary({ t }) {
   const dispatch = useDispatch();
   const TT = (key) => (t ? t(key) : key);
 
-  const rawFormData = useSelector((state) => state.ads.ADSNewApplicationFormReducer.formData);
+  const rawFormData = useSelector((state) => state?.ads?.ADSNewApplicationFormReducer?.formData);
   const formData = React.useMemo(() => rawFormData || {}, [rawFormData]);
-
   console.log("formData", formData);
-  const applicant = formData.CreatedResponse?.applicantDetail || {};
-  const address = formData?.ownerDetails?.address || formData.CreatedResponse?.address || {};
-  const cartArray = Array.isArray(formData.CreatedResponse?.cartDetails) ? formData.CreatedResponse?.cartDetails : [];
+  const applicant = formData?.CreatedResponse?.applicantDetail || {};
+  const address = formData?.ownerDetails?.address || formData?.CreatedResponse?.address || {};
+  // const cartArray = Array.isArray(formData.ads?.selectedCards) ? formData.ads?.selectedCards : [];
 
-  const docs = Array.isArray(formData.documents?.documents?.documents)
+  const docs = Array.isArray(formData?.documents?.documents?.documents)
     ? formData.documents.documents.documents
     : Array.isArray(formData.documents?.documents)
     ? formData.documents.documents
@@ -38,6 +38,12 @@ function ADSSummary({ t }) {
     alignItems: "center",
     marginBottom: "0.75rem",
     padding: "0 1.5rem",
+  };
+   const headerRow1 = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "0.75rem",
   };
 
   const headingStyle = {
@@ -81,16 +87,19 @@ function ADSSummary({ t }) {
 
   const boldLabelStyle = { fontWeight: "500", color: "#333" };
 
-  const displayGeo = (geo) => {
-    if (!geo) return "NA";
-    if (typeof geo === "string") return geo;
-    try {
-      const s = JSON.stringify(geo);
-      return s.length > 120 ? s.slice(0, 117) + "..." : s;
-    } catch (e) {
-      return "NA";
-    }
-  };
+  const cartDetails = formData?.ads
+  console.log('cartDetailshere', cartDetails)
+
+  // const displayGeo = (geo) => {
+  //   if (!geo) return "NA";
+  //   if (typeof geo === "string") return geo;
+  //   try {
+  //     const s = JSON.stringify(geo);
+  //     return s.length > 120 ? s.slice(0, 117) + "..." : s;
+  //   } catch (e) {
+  //     return "NA";
+  //   }
+  // };
 
   const renderRow = (label, value) => (
     <div style={labelFieldPairStyle}>
@@ -106,62 +115,30 @@ function ADSSummary({ t }) {
       <Card className="summary-section">
         <div style={sectionStyle}>
           <div style={headerRow}>
-            <h3 style={headingStyle}>{TT("Applicant Details")}</h3>
+            <h3 style={headingStyle}>{TT("ADS_APPLICANT_DETAILS")}</h3>
             <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
-              {TT("EDIT")}
+              {TT("TL_SUMMARY_EDIT")}
             </span>
           </div>
-          {renderRow(TT("Applicant Name"), applicant.applicantName)}
-          {renderRow(TT("Mobile Number"), applicant.applicantMobileNo)}
-          {renderRow(TT("Email ID"), applicant.applicantEmailId)}
-          {renderRow(TT("Pincode"), address.pincode)}
-          {renderRow(TT("Address"), address.addressId)}
+          {renderRow(TT("ES_NEW_APPLICATION_APPLICANT_NAME"), applicant?.applicantName)}
+          {renderRow(TT("MOBILE"), applicant?.applicantMobileNo)}
+          {renderRow(TT("ADS_EMAIL_ID"), applicant?.applicantEmailId)}
+          {renderRow(TT("CORE_COMMON_PINCODE"), address?.pincode)}
+          {renderRow(TT("ES_CREATECOMPLAINT_ADDRESS"), address?.addressLine1)}
         </div>
       </Card>
 
-      {/* <Card className="summary-section">
-        <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{TT("Address")}</h3>
-            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
-              {TT("EDIT")}
-            </span>
-          </div>
-          {renderRow(TT("Door No"), address.doorNo)}
-          {renderRow(TT("House No"), address.houseNo)}
-          {renderRow(TT("House Name"), address.houseName)}
-          {renderRow(TT("Street Name"), address.streetName)}
-          {renderRow(TT("Address Line 1"), address.addressLine1)}
-          {renderRow(TT("Address Line 2"), address.addressLine2)}
-          {renderRow(TT("Landmark"), address.landmark)}
-          {renderRow(TT("City"), address.city?.label || address.city)}
-          {renderRow(TT("Locality"), address.locality?.label || address.locality)}
-          {renderRow(TT("Pincode"), address.pincode)}
-        </div>
-      </Card> */}
-
       <Card className="summary-section">
         <div style={sectionStyle}>
-          <div style={headerRow}>
-            <h3 style={headingStyle}>{TT("Advertisement Details")}</h3>
+          <div style={headerRow1}>
+            <h3 style={headingStyle}>{TT("ADS_DETAILS")}</h3>
             <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
-              {TT("EDIT")}
+              {TT("TL_SUMMARY_EDIT")}
             </span>
           </div>
-          {cartArray.length
-            ? cartArray.map((sd, idx) => (
-                <React.Fragment key={idx}>
-                  {renderRow(TT("Site ID"), sd.advertisementId)}
-                  {renderRow(TT("Site Name"), sd.location)}
-                  {renderRow(TT("Geolocation"), displayGeo(sd.geoLocation))}
-                  {renderRow(TT("Advertisement Type"), sd.addType)}
-                  {renderRow(TT("Booking Date"), sd.bookingDate)}
-                  {renderRow(TT("End Date"), sd.endDate)}
-                  {renderRow(TT("Address"), sd.location)}
-                  {renderRow(TT("Face Area"), sd.faceArea)}
-                </React.Fragment>
-              ))
-            : renderRow(TT("Advertisement Details"), "NA")}
+
+
+            <ADSCartDetails cartDetails={cartDetails} t={t}/>
         </div>
       </Card>
 
@@ -170,7 +147,7 @@ function ADSSummary({ t }) {
           <div style={headerRow}>
             <h3 style={headingStyle}>{TT("ADS_DOCUMENTS_DETAILS")}</h3>
             <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
-              {TT("EDIT")}
+              {TT("TL_SUMMARY_EDIT")}
             </span>
           </div>
           {docs.length > 0 ? (

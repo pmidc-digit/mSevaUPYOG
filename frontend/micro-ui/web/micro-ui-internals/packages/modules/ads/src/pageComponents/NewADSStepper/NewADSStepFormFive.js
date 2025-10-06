@@ -134,7 +134,7 @@ function NewADSStepFormFive(props) {
   //   return { missingFields: [], notFormattedFields: [] };
   // }
 
-  var goNext = useCallback(
+  const goNext = useCallback(
     async function onSubmit(data = undefined) {
       const wd = workflowDetails?.data;
       // data can be:

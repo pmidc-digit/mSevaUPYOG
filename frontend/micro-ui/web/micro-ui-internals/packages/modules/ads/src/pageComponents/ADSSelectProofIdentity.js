@@ -6,7 +6,6 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   const stateId = Digit.ULBService.getStateId();
   const [formErrors, setFormErrors] = useState({});
   const [toastError, setToastError] = useState(null);
-  const [submitted, setSubmitted] = useState(false);
 
   const FILE_POLICY = {
     maxBytes: 5 * 1024 * 1024, // 5 MB
@@ -84,7 +83,6 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   }, [documents, config.key]);
 
   const handleSubmit = () => {
-    setSubmitted(true);
     if (Object.keys(formErrors).length > 0) {
       setToastError(t(formErrors.missingRequired || "PTR_VALIDATION_ERROR"));
       onSelect(config.key, { missingDocs: formErrors.missingDocs || [] });

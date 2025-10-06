@@ -68,7 +68,7 @@ const ADSCitizenDetails = ({ t, config, onSelect, userType, formData, value = fo
         addType: slot.addTypeCode,
         faceArea: slot.faceAreaCode,
         location: slot.locationCode,
-        nightLight: slot.nightLight === "Yes" ? true : false,
+        nightLight: slot.light,
         bookingDate: slot.bookingDate,
         bookingFromTime: "06:00",
         bookingToTime: "05:59",

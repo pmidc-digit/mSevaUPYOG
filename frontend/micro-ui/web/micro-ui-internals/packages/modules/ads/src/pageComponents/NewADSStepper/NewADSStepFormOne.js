@@ -16,8 +16,6 @@ const NewADSStepFormOne = ({ config, onGoNext, onBackClick }) => {
   });
   function goNext(data) {
     dispatch(UPDATE_ADSNewApplication_FORM(config.key, data));
-    console.log("conifg keyeeee", config.key);
-    console.log("dataaaaa", data);
 
     onGoNext();
   }

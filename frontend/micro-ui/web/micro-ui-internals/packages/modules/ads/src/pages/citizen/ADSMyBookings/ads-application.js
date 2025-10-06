@@ -9,33 +9,33 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
   const history = useHistory();
   const [showToast, setShowToast] = useState(null);
 
-  const slotSearchData = Digit.Hooks.ads.useADSSlotSearch();
-  let formdata = {
-    advertisementSlotSearchCriteria: application?.cartDetails.map((item) => ({
-      bookingId: application?.bookingId,
-      addType: item?.addType,
-      bookingStartDate: item?.bookingDate,
-      bookingEndDate: item?.bookingDate,
-      faceArea: item?.faceArea,
-      tenantId: tenantId,
-      location: item?.location,
-      nightLight: item?.nightLight,
-      isTimerRequired: true,
-    })),
-  };
+  // const slotSearchData = Digit.Hooks.ads.useADSSlotSearch();
+  // let formdata = {
+  //   advertisementSlotSearchCriteria: application?.cartDetails.map((item) => ({
+  //     bookingId: application?.bookingId,
+  //     addType: item?.addType,
+  //     bookingStartDate: item?.bookingDate,
+  //     bookingEndDate: item?.bookingDate,
+  //     faceArea: item?.faceArea,
+  //     tenantId: tenantId,
+  //     location: item?.location,
+  //     nightLight: item?.nightLight,
+  //     isTimerRequired: true,
+  //   })),
+  // };
 
-  const getBookingDateRange = (bookingSlotDetails) => {
-    if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
-      return t("CS_NA");
-    }
-    const startDate = bookingSlotDetails[0]?.bookingDate;
-    const endDate = bookingSlotDetails[bookingSlotDetails.length - 1]?.bookingDate;
-    if (startDate === endDate) {
-      return startDate;
-    } else {
-      return startDate && endDate ? `${startDate}  -  ${endDate}` : t("CS_NA");
-    }
-  };
+  // const getBookingDateRange = (bookingSlotDetails) => {
+  //   if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
+  //     return t("CS_NA");
+  //   }
+  //   const startDate = bookingSlotDetails[0]?.bookingDate;
+  //   const endDate = bookingSlotDetails[bookingSlotDetails.length - 1]?.bookingDate;
+  //   if (startDate === endDate) {
+  //     return startDate;
+  //   } else {
+  //     return startDate && endDate ? `${startDate}  -  ${endDate}` : t("CS_NA");
+  //   }
+  // };
 
   // const handleMakePayment = async () => {
   //   try {
@@ -75,12 +75,15 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
   }, [showToast]);
   //so the earlier made ads application page path is this : /digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}
   console.log("56565application :>> ", application);
+  console.log('application.bookingStatus', application.bookingStatus)
   //mine citizenapplicationoverview is this : /digit-ui/citizen/ads/adsservice/application-overview/${application?.bookingNo}
+  const appDate = new Date(application?.applicationDate).toLocaleDateString()
   return (
     <Card>
       <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
       <KeyNote keyValue={t("ADS_APPLICANT_NAME")} note={application?.applicantDetail?.applicantName} />
-      <KeyNote keyValue={t("ADS_BOOKING_START_DATE")} note={getBookingDateRange(application?.cartDetails)} />
+      {/* <KeyNote keyValue={t("ADS_BOOKING_START_DATE")} note={getBookingDateRange(application?.cartDetails)} /> */}
+      <KeyNote keyValue={t("CS_APPLICATION_DETAILS_APPLICATION_DATE")} note={appDate} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
 
       <div>

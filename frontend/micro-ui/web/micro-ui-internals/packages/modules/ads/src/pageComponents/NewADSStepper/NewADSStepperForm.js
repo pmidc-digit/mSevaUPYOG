@@ -21,7 +21,7 @@ const createEmployeeConfig = [
     isStepEnabled: true,
     type: "component",
     component: "NewADSStepFormTwo",
-    key: "pets",
+    key: "ads",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
@@ -91,7 +91,7 @@ const createCitizenConfig = [
     isStepEnabled: true,
     type: "component",
     component: "NewADSStepFormTwo",
-    key: "pets",
+    key: "ads",
     withoutLabel: true,
     texts: {
       submitBarLabel: "CS_COMMON_NEXT",
@@ -186,7 +186,7 @@ const NewADSStepperForm = ({ userType }) => {
   // console.log("formState: ",formState);
   return (
     <div className="pageCard">
-      <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
+      <CardHeader styles={{ fontSize: "28px", fontWeight: "500", color: "#1C1D1F" }} divider={true}>
         {t("ADS_REGISTRATION_APPLICATION")}
       </CardHeader>
       <Stepper stepsList={updatedConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />

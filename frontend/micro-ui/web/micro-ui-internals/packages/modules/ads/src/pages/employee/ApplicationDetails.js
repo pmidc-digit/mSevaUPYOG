@@ -24,7 +24,8 @@ import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimel
 import { pdfDownloadLink } from "../../utils";
 
 const ApplicationDetails = () => {
-  const { bookingNo } = useParams();
+  const { id } = useParams();
+  console.log("id", id);
   // const [wfActions, setWfActions] = useState([]);
 
   const { t } = useTranslation();
@@ -113,7 +114,6 @@ const ApplicationDetails = () => {
   const [isDetailsLoading, setIsDetailsLoading] = useState(false);
 
   useEffect(() => {
-
     const filesArray = (docs || [])
       .map((d) => {
         // try common keys and shapes
@@ -128,8 +128,7 @@ const ApplicationDetails = () => {
       })
       .filter(Boolean);
 
-
-    if (!filesArray.length) {
+    if (!filesArray?.length) {
       setPdfFiles({});
       setFilesLoading(false);
       return;
@@ -141,10 +140,8 @@ const ApplicationDetails = () => {
     const stateId = Digit?.ULBService?.getStateId?.() || null;
     const argForFilefetch = stateId || tenantId;
 
-
     Digit.UploadServices.Filefetch(filesArray, argForFilefetch)
       .then((res) => {
-
         // robustly find where the mapping lives:
         let data = res?.data ?? res?.files ?? res;
         // if the API returned an array of {fileStoreId, url}, convert to map:
@@ -172,8 +169,13 @@ const ApplicationDetails = () => {
       .finally(() => setFilesLoading(false));
   }, [JSON.stringify(docs)]);
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.ads.useADSSearchApplication({ bookingNo }, tenantId);
-  const normalizedAppObject = applicationDetails?.data?.[0] ?? applicationDetails?.[0] ?? null;
+  const { isLoading, data: applicationDetails, refetch } = Digit.Hooks.ads.useADSSearch({
+    tenantId,
+    filters: { bookingNo: id },
+  });
+
+  console.log("applicationDetails", applicationDetails);
+  const normalizedAppObject = applicationDetails?.bookingApplication?.[0] ?? [];
   const bookingObj = normalizedAppObject;
   const application = bookingObj || normalizedAppObject || appDetails || null;
 
@@ -193,10 +195,10 @@ const ApplicationDetails = () => {
     {
       tenantId: tenantId,
       businessService: "ADV",
-      consumerCodes: displayData?.applicantData?.applicationNo || bookingNo,
+      consumerCodes: displayData?.applicantData?.applicationNo || id,
       isEmployee: false,
     },
-    { enabled: !!(displayData?.applicantData?.applicationNo || bookingNo) }
+    { enabled: !!(displayData?.applicantData?.applicationNo || id) }
   );
 
   const closeMenu = () => {
@@ -227,7 +229,6 @@ const ApplicationDetails = () => {
     moduleCode: businessServicMINE,
   });
 
-
   // ADD (derived actions)
   const wfActions =
     workflowDetails?.data?.nextActions?.map((a) => ({
@@ -239,13 +240,13 @@ const ApplicationDetails = () => {
     const adsObject = bookingObj;
     if (adsObject) {
       const applicantData = {
-        address: adsObject?.address?.addressId,
+        applicationNo: adsObject?.bookingNo,
+        name: adsObject?.applicantDetail?.applicantName,
         email: adsObject?.applicantDetail?.applicantEmailId,
         mobile: adsObject?.applicantDetail?.applicantMobileNo,
-        name: adsObject?.applicantDetail?.applicantName,
-        applicationNo: adsObject?.bookingNo,
-        bookingStatus: adsObject?.bookingStatus,
+        address: adsObject?.address?.addressLine1,
         pincode: adsObject?.address?.pincode,
+        bookingStatus: adsObject?.bookingStatus,
         paymentDate: adsObject?.paymentDate ? new Date(adsObject.paymentDate).toLocaleDateString() : "",
         receiptNo: adsObject?.receiptNo,
       };
@@ -290,7 +291,7 @@ const ApplicationDetails = () => {
 
     // Quick route for payment
     if (wfAction.action === "PAY") {
-      const appNo = displayData?.applicantData?.applicationNo || bookingNo;
+      const appNo = displayData?.applicantData?.applicationNo || id;
       return history.push(`/digit-ui/employee/payment/collect/adv-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
     }
 
@@ -475,7 +476,7 @@ const ApplicationDetails = () => {
           <Header styles={{ fontSize: "32px" }}>{t("ADS_APP_OVER_VIEW_HEADER")}</Header>
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {downloadOptions && downloadOptions.length > 0 && (
+            {downloadOptions && downloadOptions?.length > 0 && (
               <div style={{ position: "relative", zIndex: 10 }}>
                 <MultiLink
                   className="multilinkWrapper"
@@ -496,19 +497,28 @@ const ApplicationDetails = () => {
         <CardSubHeader>{t("ADS_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
           {displayData?.applicantData &&
-            Object.entries(displayData?.applicantData)?.map(([key, value]) => (
-              <Row
-                key={key}
-                label={t(`${key?.toUpperCase()}`)}
-                text={
-                  Array.isArray(value)
-                    ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
-                    : typeof value === "object"
-                    ? t(value?.code || "N/A")
-                    : t(value || "N/A")
-                }
-              />
-            ))}
+            Object.entries(displayData.applicantData)
+              // filter out empty, null, undefined, or empty arrays/objects
+              .filter(([_, value]) => {
+                if (value === null || value === undefined) return false;
+                if (typeof value === "string" && value.trim() === "") return false;
+                if (Array.isArray(value) && value.length === 0) return false;
+                if (typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0) return false;
+                return true;
+              })
+              .map(([key, value]) => (
+                <Row
+                  key={key}
+                  label={t(key?.toUpperCase())}
+                  text={
+                    Array.isArray(value)
+                      ? value.map((item) => (typeof item === "object" ? t(item?.code || "N/A") : t(item || "N/A"))).join(", ")
+                      : typeof value === "object"
+                      ? t(value?.code || "N/A")
+                      : t(value || "N/A")
+                  }
+                />
+              ))}
         </StatusTable>
       </Card>
 
@@ -520,9 +530,9 @@ const ApplicationDetails = () => {
               <Row label={t("ADS_AD_TYPE")} text={t(detail.adType) || detail.adType} />
               <Row label={t("ADS_LOCATION")} text={detail.location || "N/A"} />
               <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} />
-              <Row label={t("ADS_BOOKING_START_DATE")} text={detail.bookingDate || "N/A"} />
-              <Row label={t("ADS_BOOKING_TIME")} text={detail.bookingTime || "N/A"} />
-              <Row label={t("ADS_NIGHT_LIGHT")} text={detail.nightLight} />
+              <Row label={t("CHB_BOOKING_DATE")} text={detail.bookingDate || "N/A"} />
+              {/* <Row label={t("ADS_BOOKING_TIME")} text={detail.bookingTime || "N/A"} /> */}
+              <Row label={t("ADS_NIGHT_LIGHT")} text={detail.nightLight ? "Yes" : "No"} />
               <Row label={t("ADS_STATUS")} text={t(detail.status) || detail.status} />
             </StatusTable>
           </div>
@@ -532,7 +542,7 @@ const ApplicationDetails = () => {
       <Card>
         <CardSubHeader>{t("ADS_APPLICATION_DOCUMENTS_OVERVIEW")}</CardSubHeader>
         <>
-          {application?.documents.length > 0 ? (
+          {application?.documents?.length > 0 ? (
             <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
               {application?.documents.map((doc, idx) => (
                 <div key={idx}>
@@ -546,7 +556,7 @@ const ApplicationDetails = () => {
           )}
         </>
 
-        <ADSWFApplicationTimeline application={application} id={displayData?.applicantData?.applicationNo || bookingNo} userType={"employee"} />
+        <ADSWFApplicationTimeline application={application} id={displayData?.applicantData?.applicationNo || id} userType={"employee"} />
         {showToast && (
           <Toast
             error={showToast.key === "error"}
@@ -560,7 +570,7 @@ const ApplicationDetails = () => {
       </Card>
 
       {/* BEFORE: !businessLoading && Array.isArray(wfActions) && wfActions.length > 0 */}
-      {!workflowDetails?.isLoading && Array.isArray(wfActions) && wfActions.length > 0 && (
+      {!workflowDetails?.isLoading && Array.isArray(wfActions) && wfActions?.length > 0 && (
         <ActionBar>
           {displayMenu && (
             <Menu
@@ -584,7 +594,7 @@ const ApplicationDetails = () => {
           action={selectedAction}
           tenantId={tenantId}
           state={state}
-          bookingNo={bookingNo}
+          bookingNo={id}
           applicationDetails={applicationDetails}
           applicationData={applicationDetails?.applicationData}
           closeModal={closeModal}

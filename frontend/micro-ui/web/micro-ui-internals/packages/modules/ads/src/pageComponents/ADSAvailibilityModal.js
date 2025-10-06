@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 
 const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, cartSlots }) => {
   const [selectedSlots, setSelectedSlots] = useState([]);
-  const [slots, setSlots] = useState([]);
-  const [isLoading,setIsLoading] = useState(false)
+
   // Build payload for API
   const slotPayload = useMemo(
     () => ({
@@ -27,33 +26,12 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   );
 
   // Fetch slots
-  // const { data: slotResults = {}, isLoading } = Digit.Hooks.ads.useADSSlotSearch({
-  //   tenantId,
-  //   type: true,
-  //   data: slotPayload,
-  // });
-  // const slots = slotResults?.advertisementSlotAvailabiltityDetails || [];
- const fetchSlots = async () => {
-  setIsLoading(true);
-  try {
-    const response = await Digit.ADSServices.slot_search(slotPayload, tenantId);
-    if (response?.advertisementSlotAvailabiltityDetails) {
-      setIsLoading(false)
-      setSlots(response.advertisementSlotAvailabiltityDetails);
-    } else {
-      setIsLoading(false)
-      setSlots([]);
-    }
-  } catch (error) {
-    setIsLoading(false)
-    setSlots([]);
-  }
-};
-
-
-  useEffect(() => {
-    fetchSlots();
-  }, [ad]);
+  const { data: slotResults = {}, isLoading } = Digit.Hooks.ads.useADSSlotSearch({
+    tenantId,
+    type: true,
+    data: slotPayload,
+  });
+  const slots = slotResults?.advertisementSlotAvailabiltityDetails || [];
 
   // Already in cart for this ad
   const existingForAd = cartSlots.find((item) => item.ad.id === ad.id)?.slots || [];
@@ -118,7 +96,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         );
       },
     },
-   { Header: t("ADS_DATE"), accessor: "bookingDate" },
+    { Header: t("ADS_DATE"), accessor: "bookingDate" },
     { Header: t("ADS_LOCATION"), accessor: "location" },
     { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
     { Header: t("ADS_TYPE"), accessor: "addType" },
@@ -127,7 +105,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       accessor: (row) => (row.nightLight ? t("ADS_YES") : t("ADS_NO")),
     },
     {
-      Header:  t("ADS_STATUS"),
+      Header: t("ADS_STATUS"),
       accessor: "slotStaus",
       Cell: ({ row }) => {
         const status = row.original.slotStaus;
@@ -197,11 +175,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         >
           <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#333" }}>
             {t("ADS_AVAILIBILITY_FOR")} {ad?.name}{" "}
-            {allBooked && (
-              <span style={{ color: "#c62828", fontSize: "14px", marginLeft: "8px" }}>
-                {t("ADS_ALL_SLOTS_BOOKED")}
-              </span>
-            )}
+            {allBooked && <span style={{ color: "#c62828", fontSize: "14px", marginLeft: "8px" }}>{t("ADS_ALL_SLOTS_BOOKED")}</span>}
           </h2>
           <button
             onClick={onClose}

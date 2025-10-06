@@ -1,43 +1,17 @@
-// import { useQuery, useMutation } from "react-query";
-
-// import { ADSServices } from "../../services/elements/ADS"
-
-// // Custom hook for creating ADS resources using react-query
-// const useADSSlotSearch =  (tenantId, type = true) => {
-//    // Return mutation for create based on the 'type' parameter
-//   if (type) {
-   
-//     return useMutation((data) => 
-//       ADSServices.slot_search(data, tenantId));
-    
-//   } 
-//   else {
-//     return useMutation((data) => ADSServices.update(data, tenantId));
-//   }
-// };
-// export default useADSSlotSearch;
-
-
-
 import { useEffect } from "react";
 import { useMutation } from "react-query";
 import { ADSServices } from "../../services/elements/ADS";
 
 // Auto-triggering hook for slot_search or update
 const useADSSlotSearch = ({ tenantId, type = true, data }) => {
-  console.log('data2222', data)
-  const mutation = useMutation((payload) =>
-    type
-      ? ADSServices.slot_search(payload, tenantId)
-      : ADSServices.update(payload, tenantId)
-  );
+  console.log("data2222", data);
+  const mutation = useMutation((payload) => (type ? ADSServices.slot_search(payload, tenantId) : ADSServices.update(payload, tenantId)));
 
   useEffect(() => {
     if (data) {
       mutation.mutate(data);
     }
   }, [data]);
-
 
   return {
     ...mutation,

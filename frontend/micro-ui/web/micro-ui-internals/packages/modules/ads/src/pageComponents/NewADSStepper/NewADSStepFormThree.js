@@ -1,4 +1,4 @@
-import React from "react";
+import React ,{useEffect}from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_ADSNewApplication_FORM } from "../../redux/action/ADSNewApplicationActions";
@@ -34,7 +34,6 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   function validation(documents) {
-    console.log("documents", documents);
     if (!isLoading) {
       const ndcDocumentsType = mdmsData || [];
       const documentsData = documents?.documents?.documents || [];
@@ -57,7 +56,6 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
     if (!_.isEqual(data, currentStepData)) {
       dispatch(UPDATE_ADSNewApplication_FORM(config?.key, data));
     }
@@ -67,6 +65,13 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
     setShowToast(false);
     setError("");
   };
+
+    useEffect(() => {
+    if (showToast) {
+      const timer = setTimeout(() => setShowToast(null), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showToast]);
 
   return (
     <React.Fragment>

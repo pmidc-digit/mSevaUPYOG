@@ -60,7 +60,6 @@ function NewADSStepFormFive(props) {
     [currentStepData]
   );
   const globalBookingNo = currentStepData?.bookingNo || currentStepData?.CreatedResponse?.bookingNo || "";
-  console.log("globalBookingNo", globalBookingNo);
 
   const businessServicMINE = "advandhoarding-services";
 
@@ -69,12 +68,57 @@ function NewADSStepFormFive(props) {
     id: globalBookingNo,
     moduleCode: businessServicMINE,
   });
-  console.log("live workflowDetails:", workflowDetails);
+
+  console.log("workflowDetails", workflowDetails);
+
+  // useEffect(() => {
+  //   // defensive: grab stable slice of the hook's data
+  //   const wd = workflowDetails?.data;
+  //   // if no data, clear wfActions only if something is present (avoid unnecessary setState)
+  //   if (!wd) {
+  //     setWfActions((prev) => (prev && prev.length ? [] : prev));
+  //     return;
+  //   }
+
+  //   const proc = wd.processInstances && wd.processInstances.length ? wd.processInstances[0] : null;
+  //   const nextActions = (proc && proc.nextActions) || wd.nextActions || [];
+
+  //   // map raw actions -> our normalized actions
+  //   const mapped = (nextActions || []).map((a) => ({
+  //     action: a.action,
+  //     roles: a.roles || [],
+  //     assignee: a.assignee || a.assignees || a.assigner || null,
+  //     nextStateUuid: a.nextState || a.nextStateUuid || null,
+  //     nextState: a.nextState || a.nextStateUuid || null,
+  //     buttonLabel: (a.action || "").replace(/_/g, " ").toUpperCase(),
+  //     comment: a.comment || a.action || "",
+  //     _rawAction: a,
+  //   }));
+
+  //   // role filter (current user)
+  //   const logged = Digit.UserService.getUser();
+  //   let userRolesNow = logged?.info?.roles?.map((r) => r.code) || [];
+  //   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
+  //     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
+  //     const userInfo = userInfos ? JSON.parse(userInfos) : {};
+  //     userRolesNow = userInfo?.value?.info?.roles?.map((r) => r.code) || userRolesNow;
+  //   }
+
+  //   const filteredByRole = mapped.filter((a) => {
+  //     if (!a.roles || a.roles.length === 0) return true;
+  //     return userRolesNow.some((ur) => a.roles.includes(ur));
+  //   });
+
+  //   // only update state if content actually changed (prevents infinite re-render loop)
+  //   setWfActions((prev) => {
+  //     if (_.isEqual(prev, filteredByRole)) return prev; // no-op, preserves same ref -> no rerender
+  //     return filteredByRole;
+  //   });
+  // }, [workflowDetails?.data?.applicationBusinessService, workflowDetails?.data?.processInstances?.length]);
 
   useEffect(() => {
     // defensive: grab stable slice of the hook's data
     const wd = workflowDetails?.data;
-    console.log("wd :>> ", wd);
     // if no data, clear wfActions only if something is present (avoid unnecessary setState)
     if (!wd) {
       setWfActions((prev) => (prev && prev.length ? [] : prev));
@@ -110,21 +154,16 @@ function NewADSStepFormFive(props) {
       return userRolesNow.some((ur) => a.roles.includes(ur));
     });
 
+    // ✅ filter only SUBMIT actions
+    const submitOnly = filteredByRole.filter((a) => a.action === "SUBMIT");
+
     // only update state if content actually changed (prevents infinite re-render loop)
     setWfActions((prev) => {
-      if (_.isEqual(prev, filteredByRole)) return prev; // no-op, preserves same ref -> no rerender
-      console.log("wfActions from workflowDetails:", filteredByRole);
-      return filteredByRole;
+      if (_.isEqual(prev, submitOnly)) return prev; // no-op, preserves same ref -> no rerender
+      return submitOnly;
     });
   }, [workflowDetails?.data?.applicationBusinessService, workflowDetails?.data?.processInstances?.length]);
 
-  // const workflowDetails = Digit.Hooks.useWorkflowDetails({
-  //   tenantId: tenantId,
-  //   id: globalBookingNo,
-  //   moduleCode: "ADV",
-  // });
-
-  // console.log("mere eee 444 workflowDetails :>> ", workflowDetails);
   var ignoredInitialChangeRef = useRef(true);
   var lastDispatchedRef = useRef(null);
   var debounceTimerRef = useRef(null);
@@ -140,16 +179,13 @@ function NewADSStepFormFive(props) {
       // data can be:
       //  - a workflow payload { action, nextState, status, comment, assignee, _rawAction }
       //  - or a form submit object from FormComposer (no .action)
-      console.log("goNext called with:", data);
 
       // merge form state (existing behavior)
       const payloadState = _.merge(_.cloneDeep(currentStepDataRef.current), data || {});
-      console.log("payloadState issss6666 :>> ", payloadState);
 
       // If caller passed a workflow payload, pick it. Otherwise try to find a workflow action inside data
       const filtData = data?.action ? data : data?.Licenses?.[0] || null;
       const matchingState = filtData.nextState || filtData.nextStateUuid || filtData.status || "";
-      console.log("filtData :>> ", filtData);
       const normalizedAssignee = normalizeAssignees(filtData?.assignee || filtData?.assignees || filtData?.assigneeUuid);
 
       // If no workflow action is provided (pure form submit) fall back to previous finalSubmission behavior
@@ -200,7 +236,6 @@ function NewADSStepFormFive(props) {
 
       try {
         const response = await Digit.ADSServices.update(requestBody, tenantId);
-        console.log("ADS Update response:", response);
         if (response?.ResponseInfo?.status === "SUCCESSFUL" || response?.status === "SUCCESSFUL") {
           // merge and update redux store (preserve earlier behavior)
           const prev = Digit?.Store?.getState?.()?.ads?.ADSNewApplicationFormReducer?.formData || currentStepDataRef.current || {};
@@ -245,7 +280,6 @@ function NewADSStepFormFive(props) {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = setTimeout(function () {
         const cleanStep = _.omitBy(_.cloneDeep(data), (v) => v === undefined);
-        console.log("cleanStep keys", Object.keys(cleanStep));
 
         if (config?.key === "summary" && Object.keys(cleanStep).length === 1 && cleanStep.summary === "") {
           return;
@@ -268,7 +302,6 @@ function NewADSStepFormFive(props) {
     setShowToast(false);
     setError("");
   };
-  console.log("defaultValues keys:", Object.keys(currentStepData || {}));
   const safeDefaults = React.useMemo(() => {
     const dv = currentStepData || {};
 
@@ -281,8 +314,6 @@ function NewADSStepFormFive(props) {
   // const applicationUuid =
   // currentStepData?.CreatedResponse
   //   ?.AdvertisementApplications?.[0]?.uuid;
-
-  // console.log();
 
   // const workflowDetails = Digit.Hooks.useWorkflowDetails({
   //   tenantId,

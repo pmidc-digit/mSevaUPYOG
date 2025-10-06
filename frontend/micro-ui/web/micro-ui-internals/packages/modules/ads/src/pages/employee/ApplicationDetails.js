@@ -25,7 +25,6 @@ import { pdfDownloadLink } from "../../utils";
 
 const ApplicationDetails = () => {
   const { id } = useParams();
-  console.log("id", id);
   // const [wfActions, setWfActions] = useState([]);
 
   const { t } = useTranslation();
@@ -174,7 +173,6 @@ const ApplicationDetails = () => {
     filters: { bookingNo: id },
   });
 
-  console.log("applicationDetails", applicationDetails);
   const normalizedAppObject = applicationDetails?.bookingApplication?.[0] ?? [];
   const bookingObj = normalizedAppObject;
   const application = bookingObj || normalizedAppObject || appDetails || null;

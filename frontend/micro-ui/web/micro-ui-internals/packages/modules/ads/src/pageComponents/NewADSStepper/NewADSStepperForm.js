@@ -10,6 +10,7 @@ import { citizenConfig } from "../../config/Create/citizenStepperConfig";
 import { SET_ADSNewApplication_STEP, RESET_ADS_NEW_APPLICATION_FORM } from "../../redux/action/ADSNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
+import ReservationTimer from "../ADSReservationsTimer";
 const isEmployee = window.location.href.includes("employee");
 
 //Config for steps
@@ -29,7 +30,7 @@ const createEmployeeConfig = [
   },
   {
     head: "OWNER DETAILS",
-    stepLabel: "ES_TITILE_APPLICANT_DETAILS",
+    stepLabel: "ES_APPLICANT_DETAILA",
     stepNumber: 2,
     isStepEnabled: true,
     type: "component",
@@ -138,7 +139,6 @@ const createCitizenConfig = [
   },
 ];
 
-// console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
 
 const NewADSStepperForm = ({ userType }) => {
   const config = userType === "employee" ? createEmployeeConfig : createCitizenConfig;
@@ -159,7 +159,6 @@ const NewADSStepperForm = ({ userType }) => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  // console.log("formStatePTR: ", formState);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_ADSNewApplication_STEP(updatedStepNumber));
@@ -169,10 +168,8 @@ const NewADSStepperForm = ({ userType }) => {
     dispatch(RESET_ADS_NEW_APPLICATION_FORM());
   }, []);
 
-  // console.log("formData",formData);
 
   const handleSubmit = (dataGet) => {
-    console.log("dataGet===", dataGet);
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
     // let data = {};
     // createEmployeeConfig.forEach((config) => {
@@ -183,11 +180,11 @@ const NewADSStepperForm = ({ userType }) => {
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
-  // console.log("formState: ",formState);
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "500", color: "#1C1D1F" }} divider={true}>
         {t("ADS_REGISTRATION_APPLICATION")}
+        <ReservationTimer t={t} />
       </CardHeader>
       <Stepper stepsList={updatedConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (

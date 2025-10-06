@@ -74,19 +74,15 @@ const ADSApplicationDetails = () => {
   });
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
-  const [billData, setBillData] = useState(null);
 
   const BookingApplication = get(adsData, "bookingApplication", []);
   const adsId = get(adsData, "bookingApplication[0].bookingNo", []);
-  console.log("adsData", adsData);
 
   let ads_details = (BookingApplication && BookingApplication.length > 0 && BookingApplication[0]) || {};
-  console.log('ads_details', ads_details)
   const application = ads_details;
 
   sessionStorage.setItem("ads", JSON.stringify(application));
 
-  const [loading, setLoading] = useState(false);
 
   const businessServicMINE = "advandhoarding";
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
@@ -95,7 +91,6 @@ const ADSApplicationDetails = () => {
     moduleCode: businessServicMINE,
   });
 
-  console.log("workflowDetails :>> ", workflowDetails);
 
   const wfActions =
     workflowDetails?.data?.nextActions?.map((a) => ({
@@ -180,7 +175,6 @@ const ADSApplicationDetails = () => {
   }
 
   function onActionSelect(wfAction) {
-    console.log("selected wfAction:", wfAction);
     if (!wfAction) return;
 
     if (wfAction.action === "PAY") {
@@ -218,12 +212,10 @@ const ADSApplicationDetails = () => {
       setActionError("Application data not loaded");
       return;
     }
-    console.log("dataPayLoad is :>> ", dataPayload);
     // Support both shapes: old { Licenses: [...] } or raw object (from wfActions)
     const filtData = dataPayload?.Licenses?.[0] || dataPayload;
     const normalizedAssignee = normalizeAssignees(filtData?.assignee || filtData?.assignees || filtData?.assigneeUuid);
 
-    console.log("filtData :>> ", filtData);
 
     if (!filtData || !filtData.action) {
       setShowToast({ key: "error", message: "No workflow action provided" });

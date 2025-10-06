@@ -11,7 +11,6 @@ function ADSSummary({ t }) {
 
   const rawFormData = useSelector((state) => state?.ads?.ADSNewApplicationFormReducer?.formData);
   const formData = React.useMemo(() => rawFormData || {}, [rawFormData]);
-  console.log("formData", formData);
   const applicant = formData?.CreatedResponse?.applicantDetail || {};
   const address = formData?.ownerDetails?.address || formData?.CreatedResponse?.address || {};
   // const cartArray = Array.isArray(formData.ads?.selectedCards) ? formData.ads?.selectedCards : [];
@@ -88,18 +87,6 @@ function ADSSummary({ t }) {
   const boldLabelStyle = { fontWeight: "500", color: "#333" };
 
   const cartDetails = formData?.ads
-  console.log('cartDetailshere', cartDetails)
-
-  // const displayGeo = (geo) => {
-  //   if (!geo) return "NA";
-  //   if (typeof geo === "string") return geo;
-  //   try {
-  //     const s = JSON.stringify(geo);
-  //     return s.length > 120 ? s.slice(0, 117) + "..." : s;
-  //   } catch (e) {
-  //     return "NA";
-  //   }
-  // };
 
   const renderRow = (label, value) => (
     <div style={labelFieldPairStyle}>

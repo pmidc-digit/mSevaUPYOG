@@ -92,6 +92,8 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
     onSelect(config.key, documentStep);
   };
 
+  
+
   const onSkip = () => onSelect();
 
   return (
@@ -102,7 +104,7 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
             mdmsDocsData.map((mdmsDoc, index) => {
               const existing = documents.find((d) => d.documentType === mdmsDoc.code);
               return (
-                <PTRSelectDocument
+                <ADSSelectDocument
                   key={index}
                   document={{ ...mdmsDoc, ...existing }}
                   t={t}
@@ -126,7 +128,7 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   );
 };
 
-function PTRSelectDocument({
+function ADSSelectDocument({
   t,
   document: doc,
   setDocuments,
@@ -194,8 +196,10 @@ function PTRSelectDocument({
     }
   };
 
-  const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
 
+
+  const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
+  console.log("doc", doc);
   return (
     <div style={{ marginBottom: "24px" }}>
       {loading && <Loader />}

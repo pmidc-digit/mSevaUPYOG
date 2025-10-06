@@ -5,7 +5,6 @@ const ADSCartDetails = ({ cartDetails, t }) => {
   const [expanded, setExpanded] = useState(
     () => cartDetails.map((item) => item.ad.id)
   );
-console.log('cartDetails', cartDetails)
   const toggleExpand = (adId) => {
     setExpanded((prev) =>
       prev.includes(adId) ? prev.filter((id) => id !== adId) : [...prev, adId]

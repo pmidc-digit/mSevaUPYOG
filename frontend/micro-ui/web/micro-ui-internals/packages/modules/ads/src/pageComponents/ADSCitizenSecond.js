@@ -5,13 +5,14 @@ import ADSAddressField from "./ADSAddressField";
 import AvailabilityModal from "./ADSAvailibilityModal";
 import CartModal from "./ADSCartModal";
 import AdCard from "./ADSAdCard";
+import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
+import { useDispatch } from "react-redux";
 
 const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const stateId = Digit.ULBService.getStateId();
   const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
   const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
   const [adsForLocation, setAdsForLocation] = useState([]);
-  const [selectedCards, setSelectedCards] = useState([]);
   const [showToast, setShowToast] = useState(null);
   const [visibleCount, setVisibleCount] = useState(6);
   const [showModal, setShowModal] = useState(false);
@@ -21,14 +22,13 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const { data: mdmsAds = [] } = Digit.Hooks.ads.useADSAllMDMS(stateId);
   const { data: location = [] } = Digit.Hooks.ads.useADSLocationMDMS(stateId);
   const [cartSlots, setCartSlots] = useState([]);
-  console.log("cartSlots", cartSlots);
+  const dispatch = useDispatch();
 
   const {
     control,
     handleSubmit,
     setValue,
     watch,
-    getValues,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -78,17 +78,6 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   };
 
-  // schedule validation
-  // const validateSchedule = ({ startDate, startTime, endDate, endTime }) => {
-  //   if (!startDate || !startTime || !endDate || !endTime) return "Please fill start and end date & time.";
-  //   const todayISO = new Date().toISOString().split("T")[0];
-  //   if (startDate < todayISO || endDate < todayISO) return "Dates cannot be in the past.";
-  //   const s = new Date(`${startDate}T${startTime}`);
-  //   const e = new Date(`${endDate}T${endTime}`);
-  //   if (e <= s) return "End must be strictly after start.";
-  //   return null;
-  // };
-
   const validateSchedule = ({ startDate, startTime, endDate, endTime }) => {
     if (!startDate || !startTime || !endDate || !endTime) {
       return "Start and end date/time are required.";
@@ -109,87 +98,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     return null;
   };
 
-  const onAddCard = (ad, idx) => {
-    console.log("ad", ad);
-    const schedule = {
-      startDate: getValues(`ads.${idx}.startDate`) || "",
-      endDate: getValues(`ads.${idx}.endDate`) || "",
-      startTime: getValues(`ads.${idx}.startTime`) || "",
-      endTime: getValues(`ads.${idx}.endTime`) || "",
-    };
-    const geoLocation = getValues("geoLocation");
-    const siteId = getValues("siteId");
-    const err = validateSchedule(schedule);
-    if (err) {
-      setShowToast({ label: err });
-      return;
-    }
-    // prevent duplicates
-    if (selectedCards.some((c) => String(c.id) === String(ad.id))) {
-      setShowToast({ label: "This ad is already added." });
-      return;
-    }
-    // include full card data for Redux (as requested)
-    const fullCard = {
-      id: ad.id,
-      poleNo: ad.poleNo,
-      name: ad.name,
-      adType: ad.adType,
-      width: ad.width,
-      height: ad.height,
-      amount: ad.amount,
-      available: ad.available,
-      locationCode: ad.locationCode,
-      imageSrc: ad.imageSrc || ad.photoURL || null,
-      light: ad.light,
-      schedule,
-      geoLocation,
-      siteId,
-    };
-    setSelectedCards((prev) => [...prev, fullCard]);
-  };
-
   const showMore = () => setVisibleCount((v) => v + 6);
-
-  // submit builds payload and passes to goNext (Redux update happens there, per your architecture)
-  // const onSubmit = async (data) => {
-  //   // const siteObj = data?.siteId;
-  //   // if (!siteObj || !siteObj.code) {
-  //   //   setShowToast({ label: "Please select a site.", error: true });
-  //   //   return;
-  //   // }
-  //   if (cartSlots.length === 0) {
-  //     setShowToast({ label: "Please add at least one advertisement.", error: true });
-  //     return;
-  //   }
-
-  //   const enrichedSlots =
-  //     cartSlots?.flatMap((item) =>
-  //       item.slots.map((slot) => ({
-  //         ...slot,
-  //         isTimerRequired: true,
-  //       }))
-  //     ) ?? [];
-
-  //   // 👇 This object becomes the POST body
-  //   const payload = {
-  //     advertisementSlotSearchCriteria: enrichedSlots,
-  //   };
-  //   try {
-  //     const response = await Digit.ADSServices.slot_search(payload, tenantId);
-  //     if (response) {
-  //       console.log("API success:", response);
-  //       goNext(cartSlots);
-  //     } else {
-  //       setShowToast({ label: "Something went wrong while submitting", error: true });
-  //     }
-  //   } catch (error) {
-  //     console.error("API error:", error);
-  //     setShowToast({ label: "Something went wrong while submitting", error: true });
-  //   }
-  //   // const response = await Digit.ADSServices.slot_search(payload, tenantId);
-  //   // response && goNext(cartSlots);
-  // };
 
   const areCartSlotsEqual = (a = [], b = []) => {
     if (a.length !== b.length) return false;
@@ -241,6 +150,9 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     try {
       const response = await Digit.ADSServices.slot_search(payload, tenantId);
       if (response) {
+        // set 30‑minute expiry timestamp in Redux using existing action
+        const expiry = Date.now() + 30 * 60 * 1000;
+        dispatch(UPDATE_ADSNewApplication_FORM("reservationExpiry", expiry));
         goNext(cartSlots);
       } else {
         setShowToast({ label: t("COMMON_SOMETHING_WENT_WRONG_LABEL"), error: true });
@@ -347,7 +259,6 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     setShowToast({ label: `Removed slot ${slotToRemove.bookingDate} from ${ad.name}`, error: true });
   };
 
-  console.log("currentStepData?.ads", currentStepData?.ads);
   useEffect(() => {
     if (currentStepData?.ads?.length > 0) {
       setCartSlots(currentStepData.ads);

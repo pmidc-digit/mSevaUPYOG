@@ -10,7 +10,7 @@ import {
   CardLabelError,
   Toast,
 } from "@mseva/digit-ui-react-components";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
 import { useDispatch } from "react-redux";
 
@@ -30,7 +30,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     handleSubmit,
     setValue,
     reset,
-    getValues,
     formState: { errors },
     trigger,
   } = useForm({
@@ -51,8 +50,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   // Prefill from Redux state
   if (typeof window !== "undefined") window.__ADS_FORM_DRAFT = window.__ADS_FORM_DRAFT || {};
 
-  console.log("currentStepData", currentStepData);
 
+  console.log('currentStepData', currentStepData)
   useEffect(() => {
     if (currentStepData?.CreatedResponse) {
       const created = currentStepData.CreatedResponse;
@@ -87,88 +86,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     }
   }, []); // run once on mount
 
-  console.log("currentStepData", currentStepData);
-
-  // const onSubmit = async (data) => {
-  //   // clear in-memory draft
-  //   try {
-  //     if (window.__ADS_FORM_DRAFT) delete window.__ADS_FORM_DRAFT[formStorageKey];
-  //   } catch (e) {
-  //     /* ignore */
-  //   }
-
-  //   const applicationDate = Date.now();
-  //   const cartDetails = currentStepData?.ads?.flatMap((item) =>
-  //     item.slots.map((slot) => ({
-  //       ...slot, // slot-level fields
-  //       advertisementId: item.ad.id, // normalize id
-  //       status: "BOOKED", // fixed status
-  //     }))
-  //   );
-
-  //   const formData = {
-  //     tenantId,
-  //     applicationDate,
-  //     bookingStatus: "BOOKING_CREATED",
-  //     businessService: "ADV",
-  //     address: {
-  //       pincode: data.pincode || "",
-  //       addressLine1: data.address || "",
-  //     },
-  //     applicantDetail: {
-  //       applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
-  //       applicantEmailId: data.emailId || "",
-  //       applicantMobileNo: data.mobileNumber || "",
-  //       applicantDetailId: "",
-  //     },
-  //     owners: [
-  //       {
-  //         name: `${firstName} ${lastName}`,
-  //         mobileNumber: data.mobileNumber || "",
-  //         tenantId,
-  //         type: "CITIZEN",
-  //       },
-  //     ],
-  //     cartDetails,
-  //     documents: [],
-  //     workflow: {
-  //       action: "INITIATE",
-  //       comments: "Initial application submitted",
-  //       status: "INITIATED",
-  //       nextState: "",
-  //     },
-  //   };
-
-  //   try {
-  //     const payload = { bookingApplication: formData };
-  //     const response = await Digit.ADSServices.create(payload, tenantId);
-
-  //     const status = response?.ResponseInfo?.status;
-  //     const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
-
-  //     if (isSuccess) {
-  //       // if API returns bookingApplication array, prefer the first item (same as ADSCitizenSecond)
-  //       const appData = Array.isArray(response?.bookingApplication) ? response.bookingApplication[0] : response?.bookingApplication;
-  //       // save created response into Redux under the same key ADSCitizenSecond used
-  //       dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
-  //       // forward the full response to parent (so parent can also store/navigate)
-  //       goNext(formData);
-  //     } else {
-  //       // store draft under same CreatedResponse key so later update uses it
-  //       dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", { draft: true, bookingApplication: formData }));
-  //       // goNext({ draft: true, bookingApplication: formData });
-  //       setShowToast({
-  //         key: true, // or whatever truthy value your Toast expects for `error`
-  //         label: "Something Went Wrong!",
-  //       });
-  //     }
-  //   } catch (err) {
-  //     setShowToast({
-  //       key: true, // or whatever truthy value your Toast expects for `error`
-  //       label: "Something Went Wrong!",
-  //     });
-  //   }
-  // };
 
   // Auto close toast after 2 seconds
 
@@ -298,6 +215,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      
       <div>
         <CardLabel>
           {t("NDC_FIRST_NAME")}

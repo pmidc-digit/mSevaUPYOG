@@ -4,7 +4,6 @@ import { useTranslation } from "react-i18next";
 import { Link, useHistory } from "react-router-dom";
 
 const AdsApplication = ({ application, tenantId, buttonLabel }) => {
-  console.log("application :>> ", application);
   const { t } = useTranslation();
   const history = useHistory();
   const [showToast, setShowToast] = useState(null);
@@ -74,10 +73,8 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
     }
   }, [showToast]);
   //so the earlier made ads application page path is this : /digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}
-  console.log("56565application :>> ", application);
-  console.log('application.bookingStatus', application.bookingStatus)
   //mine citizenapplicationoverview is this : /digit-ui/citizen/ads/adsservice/application-overview/${application?.bookingNo}
-  const appDate = new Date(application?.applicationDate).toLocaleDateString()
+  const appDate = new Date(application?.applicationDate).toLocaleDateString();
   return (
     <Card>
       <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
@@ -90,10 +87,7 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
         <Link to={`/digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}`}>
           <SubmitBar label={buttonLabel} />
         </Link>
-
-        {(application.bookingStatus === "BOOKING_CREATED" ||
-          application.bookingStatus === "/mybookingsPAYMENT_FAILED" ||
-          application.bookingStatus === "PENDING_FOR_PAYMENT") && (
+        {( application.bookingStatus === "BOOKING_CREATED" || application.bookingStatus === "/mybookingsPAYMENT_FAILED" || application.bookingStatus === "PENDING_FOR_PAYMENT") && (
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} />
         )}
       </div>

@@ -41,7 +41,6 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
     },
   });
 
-  console.log("data :>> ", data);
   useEffect(() => {
     register("offset", 0);
     register("limit", 10);

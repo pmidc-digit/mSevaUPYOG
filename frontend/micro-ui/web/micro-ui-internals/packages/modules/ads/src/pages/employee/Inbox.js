@@ -23,7 +23,6 @@ const Inbox = ({
 }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  console.log("here");
 
   const { t } = useTranslation();
   const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));

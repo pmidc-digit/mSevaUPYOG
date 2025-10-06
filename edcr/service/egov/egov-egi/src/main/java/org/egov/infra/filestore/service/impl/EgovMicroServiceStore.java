@@ -120,45 +120,123 @@ public class EgovMicroServiceStore implements FileStoreService {
         return store(fileStream, fileName, mimeType, moduleName, tenantId, true);
     }
 
+//    @Override
+//    public FileStoreMapper store(File file, String fileName, String mimeType, String moduleName, boolean deleteFile) {
+//        try {
+//            fileName = normalizeString(fileName);
+//            mimeType = normalizeString(mimeType);
+//            moduleName = normalizeString(moduleName);
+//            HttpHeaders headers = new HttpHeaders();
+//            if (LOG.isDebugEnabled())
+//                LOG.debug(String.format("Uploaded file   %s   with size  %s ", file.getName(), file.length()));
+//
+//            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+//            MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
+//            map.add("file", new FileSystemResource(file.getName()));
+//            map.add("tenantId", ApplicationThreadLocals.getFilestoreTenantID());
+//            map.add("module", moduleName);
+//            HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<MultiValueMap<String, Object>>(map,
+//                    headers);
+//            ResponseEntity<StorageResponse> result = restTemplate.postForEntity(url, request, StorageResponse.class);
+//            FileStoreMapper fileMapper = new FileStoreMapper(result.getBody().getFiles().get(0).getFileStoreId(),
+//                    fileName);
+//            fileMapper.setTenantId(ApplicationThreadLocals.getFilestoreTenantID());
+//            if (LOG.isDebugEnabled())
+//                LOG.debug(
+//                        String.format("Uploaded file   %s   with filestoreid  %s ", file.getName(), fileMapper.getFileStoreId()));
+//
+//            fileMapper.setContentType(mimeType);
+//
+//            Files.deleteIfExists(Paths.get(fileName));
+//
+//            return fileMapper;
+//        } catch (RestClientException e) {
+//            LOG.error("Error while Saving to FileStore", e);
+//
+//        } catch (IOException e) {
+//            LOG.error("Error while Deleting temp file", e);
+//        }
+//        return null;
+//    }
+
     @Override
     public FileStoreMapper store(File file, String fileName, String mimeType, String moduleName, boolean deleteFile) {
-        try {
-            fileName = normalizeString(fileName);
-            mimeType = normalizeString(mimeType);
-            moduleName = normalizeString(moduleName);
-            HttpHeaders headers = new HttpHeaders();
-            if (LOG.isDebugEnabled())
-                LOG.debug(String.format("Uploaded file   %s   with size  %s ", file.getName(), file.length()));
+        final int MAX_RETRIES = 3;       // Number of retries
+        final long BACKOFF_MS = 1000L;   // Initial backoff in milliseconds
 
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-            MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>();
-            map.add("file", new FileSystemResource(file.getName()));
-            map.add("tenantId", ApplicationThreadLocals.getFilestoreTenantID());
-            map.add("module", moduleName);
-            HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<MultiValueMap<String, Object>>(map,
-                    headers);
-            ResponseEntity<StorageResponse> result = restTemplate.postForEntity(url, request, StorageResponse.class);
-            FileStoreMapper fileMapper = new FileStoreMapper(result.getBody().getFiles().get(0).getFileStoreId(),
-                    fileName);
-            fileMapper.setTenantId(ApplicationThreadLocals.getFilestoreTenantID());
-            if (LOG.isDebugEnabled())
-                LOG.debug(
-                        String.format("Uploaded file   %s   with filestoreid  %s ", file.getName(), fileMapper.getFileStoreId()));
+        fileName = normalizeString(fileName);
+        mimeType = normalizeString(mimeType);
+        moduleName = normalizeString(moduleName);
 
-            fileMapper.setContentType(mimeType);
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Attempt {}: Uploading file '{}' (size={} bytes)", attempt, file.getAbsolutePath(), file.length());
+                }
 
-            Files.deleteIfExists(Paths.get(fileName));
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-            return fileMapper;
-        } catch (RestClientException e) {
-            LOG.error("Error while Saving to FileStore", e);
+                MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+                map.add("file", new FileSystemResource(file));
+                map.add("tenantId", ApplicationThreadLocals.getFilestoreTenantID());
+                map.add("module", moduleName);
 
-        } catch (IOException e) {
-            LOG.error("Error while Deleting temp file", e);
+                HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<>(map, headers);
+
+                ResponseEntity<StorageResponse> result = restTemplate.postForEntity(url, request, StorageResponse.class);
+
+                if (result.getBody() == null || result.getBody().getFiles() == null || result.getBody().getFiles().isEmpty()) {
+                    throw new IllegalStateException("No file returned from FileStore service for file: " + fileName);
+                }
+
+                FileStoreMapper fileMapper = new FileStoreMapper(
+                        result.getBody().getFiles().get(0).getFileStoreId(),
+                        fileName
+                );
+                fileMapper.setTenantId(ApplicationThreadLocals.getFilestoreTenantID());
+                fileMapper.setContentType(mimeType);
+
+                LOG.info("File '{}' uploaded successfully with filestoreId '{}'", file.getAbsolutePath(), fileMapper.getFileStoreId());
+
+                // Delete local file if requested
+                if (deleteFile && file.exists()) {
+                    try {
+                        if (file.delete()) {
+                            LOG.debug("Local file '{}' deleted successfully after upload.", file.getAbsolutePath());
+                        } else {
+                            LOG.warn("Local file '{}' could not be deleted after upload.", file.getAbsolutePath());
+                        }
+                    } catch (Exception ex) {
+                        LOG.warn("Exception while deleting local file '{}': {}", file.getAbsolutePath(), ex.getMessage(), ex);
+                    }
+                }
+
+                return fileMapper;
+
+            } catch (RestClientException e) {
+                LOG.warn("Attempt {} failed: Network/FileStore error for file '{}': {}", attempt, fileName, e.getMessage(), e);
+            } catch (Exception ex) {
+                LOG.warn("Attempt {} failed: Unexpected error for file '{}': {}", attempt, fileName, ex.getMessage(), ex);
+            }
+
+            // Exponential backoff before retry
+            try {
+                long sleepTime = BACKOFF_MS * (long) Math.pow(2, attempt - 1);
+                LOG.debug("Sleeping {} ms before retrying...", sleepTime);
+                Thread.sleep(sleepTime);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                LOG.error("Retry interrupted for file '{}'", fileName, ie);
+                break;
+            }
         }
+
+        LOG.error("Failed to store file '{}' to filestore after {} attempts", fileName, MAX_RETRIES);
         return null;
     }
 
+    
     @Override
     public FileStoreMapper store(InputStream fileStream, String fileName, String mimeType, String moduleName,
             boolean closeStream) {

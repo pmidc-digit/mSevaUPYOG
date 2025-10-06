@@ -57,9 +57,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -99,26 +103,104 @@ public class LocalDiskFileStoreService implements FileStoreService {
         return store(sourceFileStream, fileName, mimeType, moduleName, true);
     }
 
+//    @Override
+//    public FileStoreMapper store(File file, String fileName, String mimeType, String moduleName, boolean deleteFile) {
+//        try {
+//            fileName = normalizeString(fileName);
+//            moduleName = normalizeString(moduleName);
+//            FileStoreMapper fileMapper = new FileStoreMapper(randomUUID().toString(),
+//                    defaultString(fileName, file.getName()));
+//            Path newFilePath = this.createNewFilePath(fileMapper, moduleName);
+//            Files.copy(file.toPath(), newFilePath);
+//            fileMapper.setContentType(mimeType);
+//            fileMapper.setTenantId(ApplicationThreadLocals.getFilestoreTenantID());
+//            if (deleteFile && file.delete())
+//                LOG.info("File store source file deleted");
+//            return fileMapper;
+//        } catch (IOException e) {
+//            LOG.error(String.format("Error occurred while storing files at %s/%s/%s", this.fileStoreBaseDir, getCityCode(),
+//                    moduleName), e);
+//        }
+//        return null;
+//    }
     @Override
     public FileStoreMapper store(File file, String fileName, String mimeType, String moduleName, boolean deleteFile) {
+        long startTime = System.currentTimeMillis();
+        fileName = normalizeString(fileName);
+        moduleName = normalizeString(moduleName);
+
+        FileStoreMapper fileMapper = new FileStoreMapper(randomUUID().toString(),
+                defaultString(fileName, file.getName()));
+        Path newFilePath = null;
+
         try {
-            fileName = normalizeString(fileName);
-            moduleName = normalizeString(moduleName);
-            FileStoreMapper fileMapper = new FileStoreMapper(randomUUID().toString(),
-                    defaultString(fileName, file.getName()));
-            Path newFilePath = this.createNewFilePath(fileMapper, moduleName);
-            Files.copy(file.toPath(), newFilePath);
+            newFilePath = this.createNewFilePath(fileMapper, moduleName);
+
+            try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()), 8192);
+                 OutputStream out = new BufferedOutputStream(Files.newOutputStream(newFilePath), 8192)) {
+
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = in.read(buffer)) != -1) {
+                    out.write(buffer, 0, bytesRead);
+                }
+            }
+
             fileMapper.setContentType(mimeType);
             fileMapper.setTenantId(ApplicationThreadLocals.getFilestoreTenantID());
-            if (deleteFile && file.delete())
-                LOG.info("File store source file deleted");
+
+            if (deleteFile) {
+                boolean deleted = safeDeleteWithRetry(file.toPath(), 3, 200);
+                if (deleted)
+                    LOG.debug("✅ Deleted source file '{}' after storing.", file.getAbsolutePath());
+                else
+                    LOG.warn("⚠️ Could not delete source file '{}' after retries.", file.getAbsolutePath());
+            }
+
+            long elapsed = System.currentTimeMillis() - startTime;
+            LOG.info("✅ Stored file '{}' in '{}' ({} bytes, {} ms)", fileName, newFilePath, file.length(), elapsed);
+
             return fileMapper;
+
         } catch (IOException e) {
-            LOG.error(String.format("Error occurred while storing files at %s/%s/%s", this.fileStoreBaseDir, getCityCode(),
-                    moduleName), e);
+            LOG.error("I/O error storing file '{}': {}", fileName, e.getMessage(), e);
+            return null;
+        } catch (Exception e) {
+            LOG.error("Unexpected error storing file '{}': {}", fileName, e.getMessage(), e);
+            return null;
         }
-        return null;
     }
+
+
+    /**
+     * Attempts to delete a file with retries (for transient file locks, e.g. on Windows).
+     */
+    private boolean safeDeleteWithRetry(Path path, int maxRetries, long sleepMillis) {
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                if (Files.deleteIfExists(path)) {
+                    return true;
+                }
+            } catch (FileSystemException fse) {
+                // Windows-specific: file in use
+                LOG.debug("Attempt {} to delete '{}' failed - file may be in use: {}", attempt, path, fse.getMessage());
+            } catch (Exception e) {
+                LOG.debug("Attempt {} to delete '{}' failed: {}", attempt, path, e.getMessage());
+            }
+
+            // Wait before retrying (to allow OS to release handle)
+            try {
+                Thread.sleep(sleepMillis);
+            } catch (InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
+        return false;
+    }
+
+
+
 
     @Override
     public FileStoreMapper store(InputStream fileStream, String fileName, String mimeType, String moduleName,

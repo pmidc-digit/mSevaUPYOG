@@ -72,6 +72,10 @@ const getApplicantDetails = (appData, t) => {
       title: t("NOC_APPLICANT_ADDRESS_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantAddress || "N/A",
     },
+    {
+      title: t("NOC_APPLICANT_PROPERTY_ID_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.applicationDetails?.applicantPropertyId || "N/A",
+    },
   ];
 
   return {
@@ -119,6 +123,10 @@ const getSiteDetails = (appData, t) => {
     {
       title: t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.netPlotAreaAfterWidening || "N/A",
+    },
+    {
+      title: t("NOC_NET_TOTAL_AREA_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.siteDetails?.netTotalArea || "N/A",
     },
     {
       title: t("NOC_ROAD_WIDTH_AT_SITE_LABEL"),
@@ -184,7 +192,7 @@ const getSiteDetails = (appData, t) => {
 
   if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.code === "BUILTUP") {
     values.push({
-      title: t("NOC_TOTAL_FLOOR_AREA_LABEL"),
+      title: t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.totalFloorArea || "N/A",
     });
   }
@@ -225,6 +233,32 @@ const getSpecificationDetails = (appData, t) => {
 
   return {
     title: t("NOC_SPECIFICATION_DETAILS"),
+    values: values,
+  };
+};
+
+const getCoordinateDetails = (appData, t) => {
+  let values = [
+    {
+      title: t("COMMON_LATITUDE1_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.coordinates?.Latitude1 || "N/A",
+    },
+    {
+      title: t("COMMON_LONGITUDE1_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.coordinates?.Longitude1  || "N/A",
+    },
+    {
+      title: t("COMMON_LATITUDE2_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.coordinates?.Latitude2 ||  "N/A",
+    },
+    {
+      title: t("COMMON_LONGITUDE2_LABEL"),
+      value: appData?.nocDetails?.additionalDetails?.coordinates?.Longitude2 || "N/A",
+    },
+  ];
+
+  return {
+    title: t("NOC_SITE_COORDINATES_LABEL"),
     values: values,
   };
 };
@@ -277,6 +311,7 @@ export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, 
         getApplicantDetails(appData, t),
         getSiteDetails(appData, t), 
         getSpecificationDetails(appData, t),
+        getCoordinateDetails(appData,t),
         getDocuments(appData,t)
     ]
 

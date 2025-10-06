@@ -53,7 +53,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     console.log("formData inside onSubmit", data);
 
     if(window.location.pathname.includes("edit") && selectedAction.action === "EDIT"){
-        setShowToast({ key: "true", warning:true, message: "You may either Save or Resubmit your application here"});
+        setShowToast({ key: "true", warning:true, message: "COMMON_SAVE_OR_RESUBMIT_LABEL"});
         return;
     }
 
@@ -70,7 +70,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           if(window.location.href.includes("citizen")){
 
            if(selectedAction.action == "CANCEL"){
-            setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully"});
+            setShowToast({ key: "true", success:true, message: "COMMON_APPLICATION_CANCELLED_LABEL"});
             setTimeout(()=>{
                history.push(`/digit-ui/citizen/noc/my-application`);
             },3000);
@@ -89,7 +89,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
            console.log("we are calling employee response page");
 
            if(selectedAction.action === "CANCEL"){
-            setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully"});
+            setShowToast({ key: "true", success:true, message: "COMMON_APPLICATION_CANCELLED_LABEL"});
             setTimeout(()=>{
                history.push(`/digit-ui/employee/noc/inbox`);
             },3000);
@@ -106,11 +106,11 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
           
       } else {
         console.error("Submission failed, not moving to next step.", res?.response);
-        setShowToast({ key: "true", error:true, message: "Something went wrong, please try after sometime"});
+        setShowToast({ key: "true", error:true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL"});
       }
     }catch(error){
        console.log("errors here in goNext - catch block", error);
-       setShowToast({ key: "true", error:true, message: "Some error occurred, plz try later"});
+       setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL"});
     }
   }
 
@@ -230,7 +230,7 @@ const NewNOCStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       </ActionBar>
       )}
 
-      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={showToast?.message} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
     </React.Fragment>
   );
 };

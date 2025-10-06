@@ -33,31 +33,26 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       return;
     }
     
-    // if(window.location.href.includes("new-application") && (!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()))){
-    //   setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
-    //   setShowToast(true);
-    //   return;
-    // }
-
-    //  if(window.location.href.includes("edit-application") && (!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()))){
-    //   setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
-    //   setShowToast(true);
-    //   return;
-    // }
 
      if(!(coordinates?.Latitude1?.trim()) || !(coordinates?.Latitude2?.trim()) ||  !(coordinates?.Longitude1?.trim()) || !(coordinates?.Longitude2?.trim())){
       setError(`${t("NOC_PLEASE_ATTACH_GEO_TAGGED_PHOTOS_LABEL")}`);
       setShowToast(true);
       return;
     }
-
+  
     onGoNext();
-    //}
+   
   }
+
+  const completeData=useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData) || {};
 
   function validation(documents) {
     if (!isLoading) {
-      const nocDocumentsType = data?.NOC?.Documents || [];
+      const isVacant= completeData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
+      //console.log("isVacant Here==>", isVacant);
+
+      const nocDocumentsType = isVacant ? data?.NOC?.Documents.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
+
       const documentsData = documents?.documents?.documents || [];
 
       // Step 1: Extract required document codes from nocDocumentsType

@@ -14,6 +14,7 @@ const useEDCRForm = ({ formData }) => {
   const [schemeArea, setSchemeArea] = useState(formData?.Scrutiny?.[0]?.schemeType || null);
   const [cluApprove, setCluApproved] = useState(formData?.Scrutiny?.[0]?.isCluApproved || null);
   const [coreArea, setcoreArea] = useState(formData?.Scrutiny?.[0]?.coreArea);
+  const [purchasableFar, setPurchasableFar] = useState(formData?.Scrutiny?.[0]?.purchasableFar || "");
   const [siteReserved, setSiteReserved] = useState(formData?.Scrutiny?.[0]?.siteReserved || null);
   const [approvedCS, setApprovedCS] = useState(formData?.Scrutiny?.[0]?.approvedControlSheet || null);
   const [tenantIdData, setTenantIdData] = useState(formData?.Scrutiny?.[0]?.tenantIdData || "pb.amritsar");
@@ -45,6 +46,7 @@ const useEDCRForm = ({ formData }) => {
   const schemeAreaOptions = edcrMaster?.schemeArea?.filter((o) => o.active) || [];
   const cluApproveOptions = edcrMaster?.cluApprove?.filter((o) => o.active) || [];
   const coreAreaOptions = edcrMaster?.coreArea?.filter((o) => o.active) || [];
+  // const purchasableFarOptions = edcrMaster?.purchasableFar?.filter((o) => o.active) || [];
 
   const siteReservedOptions = [
     { code: "YES", value: "Yes" },
@@ -52,6 +54,10 @@ const useEDCRForm = ({ formData }) => {
   ];
 
   const approvedControlSheetOptions = [
+    { code: "YES", value: "Yes" },
+    { code: "NO", value: "No" },
+  ];
+  const purchasableFarOptions = [
     { code: "YES", value: "Yes" },
     { code: "NO", value: "No" },
   ];
@@ -233,6 +239,7 @@ useEffect(() => {
     cluApprove,
     cluApproveOptions,
     coreArea,
+    purchasableFar,
     coreAreaOptions,
     dxfFile,
     error,
@@ -269,8 +276,10 @@ useEffect(() => {
     setUploadedFile,
     setcoreArea,
     setSelectLayout,
+    setPurchasableFar,
     siteReserved,
     siteReservedOptions,
+    purchasableFarOptions,
     stateId,
     tenantId, // This should now be pb.amritsar
     tenantIdData,

@@ -10,6 +10,7 @@ import {
   PopUp,
   Toast,
   SubmitBar,
+  ActionBar,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -208,7 +209,16 @@ const ApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_SEARCH_BREED_TYPE")} text={t(pet_details?.petDetails?.breedType) || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_DOCTOR_NAME")} text={pet_details?.petDetails?.doctorName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_CLINIC_NAME")} text={pet_details?.petDetails?.clinicName || t("CS_NA")} />
-            <Row className="border-none" label={t("PTR_VACCINATED_DATE")} text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("PTR_VACCINATED_DATE")}
+              // text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")}
+              text={
+                pet_details?.petDetails?.lastVaccineDate
+                  ? new Date(Number(pet_details.petDetails.lastVaccineDate)).toLocaleDateString("en-GB")
+                  : t("CS_NA")
+              }
+            />
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
           </StatusTable>
 
@@ -227,6 +237,16 @@ const ApplicationDetails = () => {
               </StatusTable>
             )}
           </div>
+          {(pet_details?.status == "CITIZENACTIONREQUIRED" || pet_details?.status == "INITIATED") && (
+            <ActionBar>
+              <SubmitBar
+                label={t("COMMON_EDIT")}
+                onSubmit={() => {
+                  history.push(`/digit-ui/employee/ptr/petservice/new-application/${id}`);
+                }}
+              />
+            </ActionBar>
+          )}
           <PTRWFApplicationTimeline application={application} id={application?.applicationNumber} userType={"citizen"} />
           {showToast && (
             <Toast

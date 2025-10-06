@@ -47,7 +47,6 @@ const NOCApplicantDetails = (_props) => {
    const [mobileNo,setMobileNo]=useState("");
    const [showToast, setShowToast]=useState(null);
    const[userInfo, setUserInfo]=useState(null);
-   let Webview = !Digit.Utils.browser.isMobile();
 
    const closeToast = () => {
     setShowToast(null);
@@ -70,6 +69,7 @@ const NOCApplicantDetails = (_props) => {
     }
     
    }
+    
 
    useEffect(()=>{
     if(userInfo){
@@ -82,7 +82,8 @@ const NOCApplicantDetails = (_props) => {
           setValue("applicantEmailId", value, { shouldValidate: true, shouldDirty: true });
       }
       else if(key ==="gender"){
-          setValue("applicantGender", value, { shouldValidate: true, shouldDirty: true });
+          const genderObj=menu.find((obj)=> obj.code === value);
+          setValue("applicantGender", genderObj, { shouldValidate: true, shouldDirty: true });
       }
       else if(key ==="dob"){
           setValue("applicantDateOfBirth", value, { shouldValidate: true, shouldDirty: true });
@@ -99,7 +100,8 @@ const NOCApplicantDetails = (_props) => {
 
    const isEdit= window.location.pathname.includes("edit")
 
-  //  console.log("userInfo", userInfo);
+   //console.log("selectedGender", selectedGender);
+  
 
   return (
     <React.Fragment>
@@ -337,7 +339,7 @@ const NOCApplicantDetails = (_props) => {
                   t={t}
                   options={menu}
                   optionsKey="code"
-                  value={props.value || userInfo?.gender}
+                  value={props.value}
                   selectedOption={props.value}
                   onSelect={(e) => {
                     props.onChange(e);

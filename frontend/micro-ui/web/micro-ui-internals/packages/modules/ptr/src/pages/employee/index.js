@@ -95,7 +95,7 @@ const EmployeeApp = ({ path, url, userType }) => {
               />
             )}
           />
-          <PrivateRoute path={`${path}/petservice/new-application`} component={PTRCreate} />
+          <PrivateRoute path={`${path}/petservice/new-application/:id?`} component={PTRCreate} />
           <PrivateRoute path={`${path}/petservice/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
           <PrivateRoute
             path={`${path}/petservice/applicationsearch/application-details/:id`}

@@ -9,10 +9,16 @@ import {
   LabelFieldPair,
   MultiUploadWrapper,
   CitizenInfoLabel,
+  ViewsIcon,
+  CardSectionSubText,
+  CardSectionHeader,
+  CardSubHeader
 } from "@mseva/digit-ui-react-components";
 import EXIF from "exif-js";
 import { useDispatch, useSelector } from "react-redux";
+import { pdfDownloadLink } from "../utils";
 import { UPDATE_NOCNewApplication_FORM, UPDATE_NOCNewApplication_CoOrdinates} from "../redux/action/NOCNewApplicationActions";
+
 
 const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
@@ -44,6 +50,14 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
 
   console.log("geocoordinates", geocoordinates);
 
+  const currentStepData= useSelector((state)=>state?.noc?.NOCNewApplicationFormReducer?.formData)|| {};
+
+  const isVacant=currentStepData?.siteDetails?.buildingStatus?.code === "VACANT" || false;
+  //console.log("isVacant", isVacant);
+
+  const filteredDocuments= isVacant ? data?.NOC?.Documents?.filter((doc)=> doc.code !== "OWNER.BUILDINGDRAWING") : data?.NOC?.Documents;
+  //console.log("filteredDocuments", filteredDocuments);
+
   const handleSubmit = () => {
     let document = formData.documents;
     let documentStep;
@@ -69,12 +83,44 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
     else setEnableSubmit(true);
   }, [documents, checkRequiredFields]);
 
+  //logic for buildingStatus
+  useEffect(() => {
+  const currentStatus = currentStepData?.siteDetails?.buildingStatus?.code;
+
+  if (currentStatus === "VACANT") {
+    // Remove OWNER.BUILDINGDRAWING from documents state so that it can be updated in redux accoordingly
+    setDocuments((prevDocs) =>
+      prevDocs?.filter((doc) => doc.documentType !== "OWNER.BUILDINGDRAWING")
+    );
+  }
+}, [currentStepData?.siteDetails?.buildingStatus?.code]);
+
+  //logic for preview image feature
+  const documentObj = {
+  value: {
+    workflowDocs: documents?.map(doc => ({
+      documentType: doc.documentType,
+      filestoreId: doc.filestoreId,
+      documentUid: doc.documentUid,
+      documentAttachment: doc.documentAttachment
+    }))
+   }
+ };
+
+ const { isLoading: isDocLoading, data: docPreviewData } = Digit.Hooks.noc.useNOCDocumentSearch(documentObj);
+
+ const documentLinks = documents?.map(doc => ({
+  code: doc.documentType,
+  link: pdfDownloadLink(docPreviewData?.pdfFiles, doc.filestoreId)
+ }));
+
+
   return (
     <div>
       {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {data?.NOC?.Documents?.map((document, index) => {
+          {filteredDocuments?.map((document, index) => {
             return (
               <PTRSelectDocument
                 key={index}
@@ -90,6 +136,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
                 setGeoCoordinates={setGeoCoordinates}
                 // coordinates={coordinates}
                 dispatch={dispatch}
+                previewLink={documentLinks?.find(link => link.code === document.code)?.link}
               />
             );
           })}
@@ -102,7 +149,7 @@ const NOCDocumentsRequired = ({ t, config, onSelect, userType, formData, setErro
   );
 };
 
-function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id, geocoordinates, setGeoCoordinates,dispatch }) {
+function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id, geocoordinates, setGeoCoordinates,dispatch, previewLink }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
   // console.log("filetetetetet",filteredDocument, documents, doc);
 
@@ -294,8 +341,8 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             console.log("lat====", lat);
             if (lat && lon) {
               // Convert GPS coordinates to decimal format
-              const latDecimal = convertToDecimal(lat).toFixed(2);
-              const lonDecimal = convertToDecimal(lon).toFixed(2);
+              const latDecimal = convertToDecimal(lat).toFixed(6);
+              const lonDecimal = convertToDecimal(lon).toFixed(6);
               resolve({ latitude: latDecimal, longitude: lonDecimal });
             } else {
               resolve({ latitude: null, longitude: null });
@@ -341,7 +388,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
         </LabelFieldPair>
       ) : null}
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller"></CardLabel>
+
         {(doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "OWNER.SITEPHOTOGRAPHONE" || doc?.code === "OWNER.SITEPHOTOGRAPHTWO") ? (
           <UploadFile
             onUpload={selectfile}
@@ -372,38 +419,39 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           />
         )}
 
-       {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  window.location.href.includes("new-application") &&
+      {previewLink && (
+        <div
+            style={{ cursor: "pointer", padding:"10px", marginLeft:"25px"}}
+            onClick={(e) => {
+             e.preventDefault(); // Prevent any default behavior
+             window.open(previewLink, "_blank"); // Open in new tab
+            }}
+        >
+         <ViewsIcon/>
+        </div> 
+       )}
+      
+     
+       {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&
         (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&
-           <div>
+            <CardLabel>
+              <div style={{paddingLeft:"30px"}}>
                <p>Latitude: {geocoordinates.Latitude1}</p>
                <p>Longitude: {geocoordinates.Longitude1}</p>
-           </div> 
+               </div>
+            </CardLabel>
         }
 
-       {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  window.location.href.includes("new-application") &&
+       {doc?.code === "OWNER.SITEPHOTOGRAPHTWO"  &&
         (geocoordinates?.Latitude2 && geocoordinates?.Longitude2 ) &&
-           <div>
+           <CardLabel>
+              <div style={{paddingLeft:"30px"}}>
                <p>Latitude: {geocoordinates.Latitude2}</p>
                <p>Longitude: {geocoordinates.Longitude2}</p>
-           </div>  
-       }
-
-      
-       {doc?.code === "OWNER.SITEPHOTOGRAPHONE" &&  window.location.href.includes("edit-application") &&
-        (geocoordinates?.Latitude1 && geocoordinates?.Longitude1) &&
-           <div>
-               <p>Latitude: {geocoordinates.Latitude1}</p>
-               <p>Longitude: {geocoordinates.Longitude1}</p>
-           </div> 
-       }
-
-       {doc?.code === "OWNER.SITEPHOTOGRAPHTWO" &&  window.location.href.includes("edit-application") &&
-        (geocoordinates?.Latitude2 && geocoordinates?.Longitude2 ) &&
-           <div>
-               <p>Latitude: {geocoordinates.Latitude2}</p>
-               <p>Longitude: {geocoordinates.Longitude2}</p>
-           </div>  
-       }
+               </div>
+           </CardLabel>  
+        }
+     
 
       </LabelFieldPair>
     </div>

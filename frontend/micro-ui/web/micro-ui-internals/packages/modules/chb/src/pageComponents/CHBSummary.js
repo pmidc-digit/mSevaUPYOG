@@ -27,8 +27,6 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   const mutateScreen = url.includes("/property-mutate/");
   let user = Digit.UserService.getUser();
 
-  console.log("formData", formData);
-
   const columns = [
     { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
     { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
@@ -75,10 +73,6 @@ function CHBSummary({ formData, goNext, onGoBack }) {
     // setShowModal(true);
     // setSelectedAction(action);
   }
-
-  console.log("workflowDetails", workflowDetails?.data?.nextActions);
-
-  console.log("actions", actions);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {

@@ -267,14 +267,34 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                   },
                 }}
                 render={(field) => (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                      gap: "16px",
+                      marginTop: "20px",
+                      width: "50%",
+                    }}
+                  >
                     {getSlots?.map((slot, idx) => {
                       const isChecked = field.value?.some((s) => s.hallCode === slot.hallCode);
-                      console.log("isChecked", isChecked);
-                      console.log("field.value", field);
-                      console.log("slot", slot);
+                      const isAvailable = slot.slotStaus?.toLowerCase() === "available";
+
                       return (
-                        <label key={idx} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+                        <label
+                          key={idx}
+                          style={{
+                            border: "1px solid #ccc",
+                            borderRadius: "8px",
+                            padding: "12px",
+                            backgroundColor: isAvailable ? "#e6ffed" : "#ffe6e6",
+                            cursor: isAvailable ? "pointer" : "not-allowed",
+                            opacity: isAvailable ? 1 : 0.6,
+                            // display: "flex",
+                            flexDirection: "column",
+                            gap: "6px",
+                          }}
+                        >
                           <input
                             type="checkbox"
                             checked={isChecked}
@@ -286,8 +306,16 @@ const CHBCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
                               }
                             }}
                           />
-                          <span>
-                            {slot.bookingDate} ({slot.hallCode}) – {slot.slotStaus}
+                          <span style={{ marginLeft: "10px" }}>
+                            {slot.bookingDate} ({slot.hallCode}) –{" "}
+                            <span
+                              style={{
+                                color: slot.slotStaus === "AVAILABLE" ? "green" : "red",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {slot.slotStaus ? slot.slotStaus.charAt(0).toUpperCase() + slot.slotStaus.slice(1).toLowerCase() : ""}
+                            </span>
                           </span>
                         </label>
                       );

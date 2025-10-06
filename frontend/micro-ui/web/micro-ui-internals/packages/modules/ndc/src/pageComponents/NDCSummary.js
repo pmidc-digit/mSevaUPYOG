@@ -1,5 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Card, CardSubHeader, CardLabel, LabelFieldPair, StatusTable, ActionBar, SubmitBar, Menu } from "@mseva/digit-ui-react-components";
+import {
+  Card,
+  CardSubHeader,
+  CardLabel,
+  LabelFieldPair,
+  StatusTable,
+  ActionBar,
+  SubmitBar,
+  Menu,
+  CardSectionHeader,
+} from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setNDCStep } from "../redux/actions/NDCFormActions";
@@ -15,11 +25,9 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
   const mutateScreen = url.includes("/property-mutate/");
   let user = Digit.UserService.getUser();
 
-  console.log("formData", formData);
-
   let docs = formData?.DocummentDetails?.documents?.documents;
 
-  const appId = formData?.apiData?.Applications?.[0]?.uuid || formData?.responseData?.[0]?.uuid;
+  const appId = formData?.apiData?.Applications?.[0]?.applicationNo || formData?.responseData?.[0]?.applicationNo;
 
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
@@ -46,7 +54,6 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
       ],
     };
     const response = await Digit.NDCService.NDCCalculator({ tenantId, filters: { getCalculationOnly: true }, details: payload });
-    console.log("response", response?.Calculation?.[0]?.totalAmount);
     setData(response?.Calculation?.[0]);
   };
 
@@ -74,10 +81,6 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
     // setShowModal(true);
     // setSelectedAction(action);
   }
-
-  console.log("workflowDetails", workflowDetails?.data?.nextActions);
-
-  console.log("actions", actions);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -181,6 +184,10 @@ const NDCSummary = ({ formData, goNext, onGoBack }) => {
             {docs?.map((doc, index) => (
               <div key={index} style={documentCardStyle}>
                 <NDCDocument value={docs} Code={doc?.documentType} index={index} formData={formData} />
+                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
+                  {/* {t(doc?.documentType?.split(".").slice(0, 2).join("_"))} */}
+                  {t(`NDC_${doc?.documentType?.replace(/\./g, "_")}_LABEL`)}
+                </CardSectionHeader>
               </div>
             ))}
           </div>

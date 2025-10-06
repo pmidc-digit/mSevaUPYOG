@@ -53,15 +53,10 @@ const NDCModal = ({
   const [financialYears, setFinancialYears] = useState([]);
   const [selectedFinancialYear, setSelectedFinancialYear] = useState(null);
 
-  const checkRole = action?.state?.actions;
-
-  const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))];
-
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-      roles: allRoles?.map((role) => ({ code: role })),
-      // roles: allRolesString,
+      roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
       isActive: true,
     },
     { enabled: !action?.isTerminateState }

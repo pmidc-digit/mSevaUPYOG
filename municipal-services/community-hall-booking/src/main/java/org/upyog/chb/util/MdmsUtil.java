@@ -19,6 +19,7 @@ import org.upyog.chb.constants.CommunityHallBookingConstants;
 import org.upyog.chb.repository.ServiceRequestRepository;
 import org.upyog.chb.web.models.CalculationType;
 import org.upyog.chb.web.models.CommunityHallBookingDetail;
+import org.upyog.chb.web.models.AdditionalFeeRate;
 import org.upyog.chb.web.models.billing.TaxHeadMaster;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -234,6 +235,73 @@ public class MdmsUtil {
 		mdmsCriteriaReq.setRequestInfo(requestInfo);
 
 		return mdmsCriteriaReq;
+	}
+
+	/**
+	 * Fetch ServiceCharge configuration from MDMS
+	 */
+	public List<AdditionalFeeRate> getServiceCharges(RequestInfo requestInfo, String tenantId, String moduleName) {
+		return getAdditionalFeeRates(requestInfo, tenantId, moduleName, "ServiceCharge");
+	}
+
+	/**
+	 * Fetch PenaltyFee configuration from MDMS
+	 */
+	public List<AdditionalFeeRate> getPenaltyFees(RequestInfo requestInfo, String tenantId, String moduleName) {
+		return getAdditionalFeeRates(requestInfo, tenantId, moduleName, "PenaltyFee");
+	}
+
+	/**
+	 * Fetch InterestAmount configuration from MDMS
+	 */
+	public List<AdditionalFeeRate> getInterestAmounts(RequestInfo requestInfo, String tenantId, String moduleName) {
+		return getAdditionalFeeRates(requestInfo, tenantId, moduleName, "InterestAmount");
+	}
+
+	/**
+	 * Fetch SecurityDeposit configuration from MDMS
+	 */
+	public List<AdditionalFeeRate> getSecurityDeposits(RequestInfo requestInfo, String tenantId, String moduleName) {
+		return getAdditionalFeeRates(requestInfo, tenantId, moduleName, "SecurityDeposit");
+	}
+
+	/**
+	 * Generic method to fetch additional fee rates from MDMS
+	 */
+	private List<AdditionalFeeRate> getAdditionalFeeRates(RequestInfo requestInfo, String tenantId,
+			String moduleName, String masterName) {
+		List<AdditionalFeeRate> additionalFeeRates = null;
+
+		StringBuilder uri = new StringBuilder();
+		uri.append(config.getMdmsHost()).append(config.getMdmsPath());
+
+		MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestTaxHeadMaster(requestInfo, tenantId, moduleName, masterName, null);
+
+		try {
+			MdmsResponse mdmsResponse = mapper.convertValue(serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq),
+					MdmsResponse.class);
+
+			if (mdmsResponse.getMdmsRes().get(moduleName) == null) {
+				log.warn("{} configuration not available in MDMS for tenant: {}", masterName, tenantId);
+				return new ArrayList<>();
+			}
+
+			JSONArray jsonArray = mdmsResponse.getMdmsRes().get(moduleName).get(masterName);
+
+			additionalFeeRates = mapper.readValue(jsonArray.toJSONString(),
+					mapper.getTypeFactory().constructCollectionType(List.class, AdditionalFeeRate.class));
+
+			log.info("Retrieved {} configurations: {}", masterName, additionalFeeRates);
+
+		} catch (JsonProcessingException e) {
+			log.error("Exception occurred while converting {} list: {}", masterName, e.getMessage());
+			return new ArrayList<>();
+		} catch (Exception e) {
+			log.error("Exception occurred while fetching {} from MDMS: {}", masterName, e.getMessage());
+			return new ArrayList<>();
+		}
+
+		return additionalFeeRates != null ? additionalFeeRates : new ArrayList<>();
 	}
 
 }

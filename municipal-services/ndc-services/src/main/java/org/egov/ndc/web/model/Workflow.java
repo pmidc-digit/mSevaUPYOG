@@ -13,9 +13,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 
 /**
- * BPA application object to capture the details of land, land owners, and address of the land.
+ * BPA applications object to capture the details of land, land owners, and address of the land.
  */
-@ApiModel(description = "BPA application object to capture the details of land, land owners, and address of the land.")
+@ApiModel(description = "BPA applications object to capture the details of land, land owners, and address of the land.")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 public class Workflow   {
@@ -41,10 +41,10 @@ public class Workflow   {
   }
 
   /**
-   * Action on the application in certain
+   * Action on the applications in certain
    * @return action
   **/
-  @ApiModelProperty(value = "Action on the application in certain")
+  @ApiModelProperty(value = "Action on the applications in certain")
   
   @Size(min=1,max=64)   public String getAction() {
     return action;
@@ -129,7 +129,7 @@ public class Workflow   {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -165,7 +165,7 @@ public class Workflow   {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

@@ -3,6 +3,7 @@ package org.egov.ndc.config;
 import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,24 +30,12 @@ public class NDCConfiguration {
 		TimeZone.setDefault(TimeZone.getTimeZone(timeZone));
 	}
 
-	// User Config
-	@Value("${egov.user.host}")
-	private String userHost;
-
-	@Value("${egov.user.context.path}")
-	private String userContextPath;
-
-	@Value("${egov.user.search.path}")
-	private String userSearchEndpoint;
-
-	// SMS
 	@Value("${kafka.topics.notification.sms}")
 	private String smsNotifTopic;
 
 	@Value("${notification.sms.enabled}")
 	private Boolean isSMSEnabled;
 
-	// Localization
 	@Value("${egov.localization.host}")
 	private String localizationHost;
 
@@ -88,12 +77,12 @@ public class NDCConfiguration {
 	
 	@Value("${persister.save.ndc.topic}")
 	private String saveTopic;
-	
+
 	@Value("${persister.update.ndc.topic}")
 	private String updateTopic;
-	
-	@Value("${persister.update.ndc.workflow.topic}")
-	private String updateWorkflowTopic;
+
+	@Value("${persister.delete.ndc.topic}")
+	private String deleteTopic;
 	
 	@Value("${egov.ndc.pagination.default.limit}")
 	private Integer defaultLimit;
@@ -107,14 +96,30 @@ public class NDCConfiguration {
 	@Value("${ndc.offline.doc.required}")
 	private Boolean ndcOfflineDocRequired;
 
-	//bpa configuration
-    @Value("${egov.bpa.host}")
-    private String bpaHost;
+	@Value("${ndc.module.code}")
+	private String moduleCode;
 
-    @Value("${egov.bpa.context.path}")
-    private String bpaContextPath;
+	@Value("${ndc.taxhead.master.code}")
+	private String taxHeadMasterCode;
 
-    @Value("${egov.bpa.search.endpoint}")
-    private String bpaSearchEndpoint;
+	@Value("${egov.billingservice.host}")
+	private String billingServiceHost;
 
+	@Value("${egov.demand.create.endpoint}")
+	private String demandCreateEndpoint;
+
+	@Value("${egov.billingservice.fetch.bill}")
+	private String fetchBillEndpoint;
+
+	@Value("${egov.ndccalculator.host}")
+	private String ndcCalculatorHost;
+
+	@Value("${egov.ndccalculator.endpoint}")
+	private String ndcCalculatorEndpoint;
+
+	@Value("${spring.kafka.consumer.group-id}")
+	private String kafkaGroupId;
+
+	@Value("${workflow.process.path}")
+	private String wfProcessSearchPath;
 }

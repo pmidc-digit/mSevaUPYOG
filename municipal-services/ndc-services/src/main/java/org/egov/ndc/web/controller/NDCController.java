@@ -39,25 +39,20 @@
  */
 package org.egov.ndc.web.controller;
 
-import java.util.List;
-
-import javax.validation.Valid;
-
+import org.egov.common.contract.response.ResponseInfo;
 import org.egov.ndc.config.ResponseInfoFactory;
-import org.egov.ndc.web.model.*;
 import org.egov.ndc.service.NDCService;
-import org.egov.ndc.web.model.Ndc;
+import org.egov.ndc.web.model.RequestInfoWrapper;
+import org.egov.ndc.web.model.ndc.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-	
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
 @RestController
-@RequestMapping("v1/ndc")
+@RequestMapping("/ndc")
 public class NDCController {
 	
 	@Autowired
@@ -66,33 +61,60 @@ public class NDCController {
 	@Autowired
 	private NDCService ndcService;
 
-	@PostMapping(value = "/_create")
-	public ResponseEntity<NdcResponse> create(@Valid @RequestBody NdcRequest ndcRequest) {
-		List<Ndc> ndcList = ndcService.create(ndcRequest);
-		NdcResponse response = NdcResponse.builder().ndc(ndcList)
-				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(ndcRequest.getRequestInfo(), true))
-				.build();
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-	
-	@PostMapping(value = "/_update")
-	public ResponseEntity<NdcResponse> update(@Valid @RequestBody NdcRequest ndcRequest) {
-		List<Ndc> ndcList = ndcService.update(ndcRequest);
-		NdcResponse response = NdcResponse.builder().ndc(ndcList)
-				.responseInfo(responseInfoFactory.createResponseInfoFromRequestInfo(ndcRequest.getRequestInfo(), true))
-				.build();
-		return new ResponseEntity<>(response, HttpStatus.OK);
-	}
-	
-	@PostMapping(value = "/_search")
-	public ResponseEntity<NdcResponse> search(@Valid @RequestBody RequestInfoWrapper requestInfoWrapper,
-											  @Valid @ModelAttribute NdcSearchCriteria criteria) {
+	@PostMapping("/_create")
+	public ResponseEntity<NdcApplicationResponse> createNdcApplication(@RequestParam(required = false) boolean skipWorkFlow,@RequestBody NdcApplicationRequest ndcApplicationRequest) {
+		NdcApplicationRequest request = ndcService.createNdcApplication(skipWorkFlow,ndcApplicationRequest);
+		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
 
-		List<Ndc> ndcList = ndcService.search(criteria, requestInfoWrapper.getRequestInfo());
-		Integer count = ndcService.getNdcCount(criteria, requestInfoWrapper.getRequestInfo());
-		NdcResponse response = NdcResponse.builder().ndc(ndcList).responseInfo(
-				responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true)).count(count)
+		NdcApplicationResponse response = NdcApplicationResponse.builder()
+				.responseInfo(responseInfo)
+				.applications(request.getApplications())
 				.build();
+
+
+		return new ResponseEntity<>(response, HttpStatus.CREATED);
+	}
+
+	@PutMapping("/_update")
+	public ResponseEntity<NdcApplicationResponse> updateNdcApplication(@RequestParam(required = false) boolean skipWorkFlow,@RequestBody NdcApplicationRequest ndcApplicationRequest) {
+		NdcApplicationRequest request = ndcService.updateNdcApplication(skipWorkFlow, ndcApplicationRequest);
+		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
+
+		NdcApplicationResponse response = NdcApplicationResponse.builder()
+				.responseInfo(responseInfo)
+				.applications(request.getApplications())
+				.build();
+
 		return new ResponseEntity<>(response, HttpStatus.OK);
 	}
+
+	@PutMapping("/_delete")
+	public ResponseEntity<NdcApplicationResponse> deleteNdcApplication(@RequestBody NdcDeleteRequest ndcDeleteRequest) {
+		NdcApplicationRequest request = ndcService.deleteNdcApplication(ndcDeleteRequest);
+		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(request.getRequestInfo(), true);
+
+		NdcApplicationResponse response = NdcApplicationResponse.builder()
+				.responseInfo(responseInfo)
+				.applications(request.getApplications())
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@PostMapping("/_search")
+	public ResponseEntity<NdcApplicationSearchResponse> searchNdcApplications(
+			@RequestBody RequestInfoWrapper requestInfoWrapper,
+			@ModelAttribute NdcApplicationSearchCriteria criteria) {
+		List<Application> applications = ndcService.searchNdcApplications(criteria,requestInfoWrapper.getRequestInfo() );
+		ResponseInfo responseInfo = responseInfoFactory.createResponseInfoFromRequestInfo(requestInfoWrapper.getRequestInfo(), true);
+
+		NdcApplicationSearchResponse response = NdcApplicationSearchResponse.builder()
+				.responseInfo(responseInfo)
+				.applications(applications)
+				.totalCount(applications.size())
+				.build();
+
+		return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
 }

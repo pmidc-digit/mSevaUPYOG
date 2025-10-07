@@ -18,9 +18,9 @@ import lombok.Builder;
 import lombok.NoArgsConstructor;
 
 /**
- * Contains the ResponseMetadate and the main application contract
+ * Contains the ResponseMetadate and the main applications contract
  */
-@ApiModel(description = "Contains the ResponseMetadate and the main application contract")
+@ApiModel(description = "Contains the ResponseMetadate and the main applications contract")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:43:01.798Z[GMT]")
 @AllArgsConstructor
@@ -86,7 +86,7 @@ public class NdcResponse {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -118,7 +118,7 @@ public class NdcResponse {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

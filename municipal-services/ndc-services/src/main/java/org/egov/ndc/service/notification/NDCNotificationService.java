@@ -1,19 +1,19 @@
 package org.egov.ndc.service.notification;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import org.egov.common.contract.request.RequestInfo;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.service.UserService;
 import org.egov.ndc.util.NotificationUtil;
-import org.egov.ndc.web.model.NdcRequest;
-import org.egov.ndc.web.model.NdcSearchCriteria;
+import org.egov.ndc.web.model.OwnerInfo;
 import org.egov.ndc.web.model.SMSRequest;
 import org.egov.ndc.web.model.UserResponse;
+import org.egov.ndc.web.model.ndc.Application;
+import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
+import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -47,7 +47,7 @@ public class NDCNotificationService {
 	 * @param request
 	 *            The NDCRequest listenend on the kafka topic
 	 */
-	public void process(NdcRequest ndcRequest) {
+	public void process(NdcApplicationRequest ndcRequest) {
 		List<SMSRequest> smsRequests = new LinkedList<>();
 		if (null != config.getIsSMSEnabled()) {
 			if (config.getIsSMSEnabled()) {
@@ -66,13 +66,16 @@ public class NDCNotificationService {
 	 * @param smsRequests
 	 *            List of SMSRequets
 	 */
-	private void enrichSMSRequest(NdcRequest ndcRequest, List<SMSRequest> smsRequests) {
-		String tenantId = ndcRequest.getNdc().getTenantId();
-		String localizationMessages = util.getLocalizationMessages(tenantId, ndcRequest.getRequestInfo());
-		String message = util.getCustomizedMsg(ndcRequest.getRequestInfo(), ndcRequest.getNdc(), localizationMessages);
-		if(message != null){
-			Map<String, String> mobileNumberToOwner = getUserList(ndcRequest);
-			smsRequests.addAll(util.createSMSRequest(message, mobileNumberToOwner));
+	private void enrichSMSRequest(NdcApplicationRequest ndcRequest, List<SMSRequest> smsRequests) {
+		List<Application> applications = ndcRequest.getApplications();
+		for(Application application : applications) {
+			String tenantId = application.getTenantId();
+			String localizationMessages = util.getLocalizationMessages(tenantId, ndcRequest.getRequestInfo());
+			String message = util.getCustomizedMsg(ndcRequest.getRequestInfo(), application, localizationMessages);
+			if (message != null) {
+				Map<String, String> mobileNumberToOwner = getUserList(application,ndcRequest.getRequestInfo());
+				smsRequests.addAll(util.createSMSRequest(message, mobileNumberToOwner));
+			}
 		}
 		
 	}
@@ -80,20 +83,22 @@ public class NDCNotificationService {
 	/**
 	 * To get the Users to whom we need to send the sms notifications or event
 	 * notifications.
-	 * 
+	 *
 	 * @param ndcRequest
+	 * @param requestInfo
 	 * @return
 	 */
-	private Map<String, String> getUserList(NdcRequest ndcRequest) {
+	private Map<String, String> getUserList(Application ndcRequest, RequestInfo requestInfo) {
 		Map<String, String> mobileNumberToOwner = new HashMap<>();
-		String tenantId = ndcRequest.getNdc().getTenantId();
-		String stakeUUID = ndcRequest.getNdc().getAccountId();
-		List<String> ownerId = new ArrayList<String>();
-		ownerId.add(stakeUUID);
-		NdcSearchCriteria ndcSearchCriteria = new NdcSearchCriteria();
+		String tenantId = ndcRequest.getTenantId();
+//		List<String> mobileNumbers = ndcRequest.getOwners().stream().map(OwnerInfo::getMobileNumber).collect(Collectors.toList());
+		List<String> uuid = ndcRequest.getOwners().stream().map(OwnerInfo::getUuid).collect(Collectors.toList());
+		Set<String> ownerId = new HashSet<>();
+		ownerId.addAll(uuid);
+		NdcApplicationSearchCriteria ndcSearchCriteria = new NdcApplicationSearchCriteria();
 		ndcSearchCriteria.setOwnerIds(ownerId);
 		ndcSearchCriteria.setTenantId(tenantId);
-		UserResponse userDetailResponse = userService.getUser(ndcSearchCriteria, ndcRequest.getRequestInfo());
+		UserResponse userDetailResponse = userService.getUser(ndcSearchCriteria, requestInfo);
 		mobileNumberToOwner.put(userDetailResponse.getUser().get(0).getMobileNumber(),
 				userDetailResponse.getUser().get(0).getName());
 		return mobileNumberToOwner;

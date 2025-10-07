@@ -13,9 +13,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * A object to bind the metadata contract and main application contract
+ * A object to bind the metadata contract and main applications contract
  */
-@ApiModel(description = "A object to bind the metadata contract and main application contract")
+@ApiModel(description = "A object to bind the metadata contract and main applications contract")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 public class NdcRequest {
@@ -67,7 +67,7 @@ public class NdcRequest {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -99,7 +99,7 @@ public class NdcRequest {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

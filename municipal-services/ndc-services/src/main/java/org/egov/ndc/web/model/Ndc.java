@@ -19,9 +19,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.*;
 
 /**
- * NDC application object to capture the details of ndc related information, landid and related documents.
+ * NDC applications object to capture the details of ndc related information, landid and related documents.
  */
-@ApiModel(description = "NDC application object to capture the details of ndc related information, landid and related documents.")
+@ApiModel(description = "NDC applications object to capture the details of ndc related information, landid and related documents.")
 @Validated
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.SpringCodegen", date = "2020-07-30T05:26:25.138Z[GMT]")
 @AllArgsConstructor
@@ -95,10 +95,10 @@ public class Ndc {
   }
 
   /**
-   * Unique Identifier(UUID) of the bpa application for internal reference.
+   * Unique Identifier(UUID) of the bpa applications for internal reference.
    * @return id
   **/
-  @ApiModelProperty(readOnly = true, value = "Unique Identifier(UUID) of the bpa application for internal reference.")
+  @ApiModelProperty(readOnly = true, value = "Unique Identifier(UUID) of the bpa applications for internal reference.")
   
   @Size(min=1,max=64)   public String getId() {
     return id;
@@ -152,10 +152,10 @@ public class Ndc {
   }
 
   /**
-   * Generate Ndc number based on wf status. When to generate Ndcno will be depends on wf state so make it configurable at application level
+   * Generate Ndc number based on wf status. When to generate Ndcno will be depends on wf state so make it configurable at applications level
    * @return ndcNo
   **/
-  @ApiModelProperty(readOnly = true, value = "Generate Ndc number based on wf status. When to generate Ndcno will be depends on wf state so make it configurable at application level")
+  @ApiModelProperty(readOnly = true, value = "Generate Ndc number based on wf status. When to generate Ndcno will be depends on wf state so make it configurable at applications level")
   
   @Size(min=1,max=64)   public String getNdcNo() {
     return ndcNo;
@@ -171,10 +171,10 @@ public class Ndc {
   }
 
   /**
-   * ndc application type.
+   * ndc applications type.
    * @return applicationType
   **/
-  @ApiModelProperty(value = "ndc application type.")
+  @ApiModelProperty(value = "ndc applications type.")
   
     public ApplicationType getApplicationType() {
     return applicationType;
@@ -247,10 +247,10 @@ public class Ndc {
   }
 
   /**
-   * Unique Identifier of integrator(Source system) to link the ndc application.
+   * Unique Identifier of integrator(Source system) to link the ndc applications.
    * @return sourceRefId
   **/
-  @ApiModelProperty(value = "Unique Identifier of integrator(Source system) to link the ndc application.")
+  @ApiModelProperty(value = "Unique Identifier of integrator(Source system) to link the ndc applications.")
   
   @Size(min=1,max=64)   public String getSourceRefId() {
     return sourceRefId;
@@ -405,7 +405,7 @@ public class Ndc {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -465,7 +465,7 @@ public class Ndc {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

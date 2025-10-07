@@ -9,6 +9,9 @@ import org.egov.ndc.web.model.Ndc;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.util.NDCConstants;
 import org.egov.ndc.web.model.NdcRequest;
+import org.egov.ndc.web.model.ndc.ApplicantRequest;
+import org.egov.ndc.web.model.ndc.Application;
+import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -75,16 +78,17 @@ public class WorkflowIntegrator {
 	 *
 	 * @param ndcRequest
 	 */
-	public void callWorkFlow(NdcRequest ndcRequest, String bussinessServiceValue) {
-		String wfTenantId = ndcRequest.getNdc().getTenantId();
+	public void callWorkFlow(NdcApplicationRequest ndcRequest, String bussinessServiceValue) {
+		String wfTenantId = ndcRequest.getApplications().get(0).getTenantId();
 		JSONArray array = new JSONArray();
-		Ndc ndc = ndcRequest.getNdc();
+		Application ndc = ndcRequest.getApplications().get(0);
 		JSONObject obj = new JSONObject();
 		obj.put(BUSINESSIDKEY, ndc.getApplicationNo());
 		obj.put(TENANTIDKEY, wfTenantId);
 		obj.put(BUSINESSSERVICEKEY, bussinessServiceValue);
 		obj.put(MODULENAMEKEY, NDCConstants.NDC_MODULE);
 		obj.put(ACTIONKEY, ndc.getWorkflow().getAction());
+		ndc.setAction(ndc.getWorkflow().getAction());
 		
 		if(ndc.getWorkflow().getComment() != null)
 		  obj.put(COMMENTKEY, ndc.getWorkflow().getComment());
@@ -104,6 +108,9 @@ public class WorkflowIntegrator {
 		JSONObject workFlowRequest = new JSONObject();
 		workFlowRequest.put(REQUESTINFOKEY, ndcRequest.getRequestInfo());
 		workFlowRequest.put(WORKFLOWREQUESTARRAYKEY, array);
+		System.out.println("===========================");
+		System.out.println(workFlowRequest);
+		System.out.println("==============================");
 		String response = null;
 		try {
 			response = rest.postForObject(config.getWfHost().concat(config.getWfTransitionPath()), workFlowRequest,

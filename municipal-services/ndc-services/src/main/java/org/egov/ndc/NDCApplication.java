@@ -46,7 +46,7 @@ import org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration;
 import org.springframework.context.annotation.Import;
 /*remove this exclude FlywayAutoConfiguration if you add flywayscripts
 it has been disabled temporarily*/
-@SpringBootApplication(exclude = {FlywayAutoConfiguration.class})
+@SpringBootApplication
 @Import({ TracerConfiguration.class })
 public class NDCApplication {
 

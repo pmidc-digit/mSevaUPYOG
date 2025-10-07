@@ -1,209 +1,131 @@
 package org.egov.ndc.repository.builder;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.egov.ndc.config.NDCConfiguration;
-import org.egov.ndc.web.model.NdcSearchCriteria;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.egov.ndc.config.NDCConfiguration;
+import org.egov.ndc.web.model.ndc.NdcApplicationSearchCriteria;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
 public class NdcQueryBuilder {
 
 	@Autowired
-	private NDCConfiguration ndcConfig;
-	
-	@Value("${egov.ndc.fuzzysearch.isFuzzyEnabled}")
-	private boolean isFuzzyEnabled;
+	NDCConfiguration ndcConfig;
 
-	private static final String QUERY = "SELECT ndc.*,ndcdoc.*,ndc.id as ndc_id,ndc.tenantid as ndc_tenantId,ndc.lastModifiedTime as "
-			+ "ndc_lastModifiedTime,ndc.createdBy as ndc_createdBy,ndc.lastModifiedBy as ndc_lastModifiedBy,ndc.createdTime as "
-			+ "ndc_createdTime,ndc.additionalDetails,ndc.landId as ndc_landId, ndcdoc.id as ndc_doc_id, ndcdoc.additionalDetails as doc_details, "
-			+ "ndcdoc.documenttype as ndc_doc_documenttype,ndcdoc.filestoreid as ndc_doc_filestore"
-			+ " FROM eg_ndc ndc  LEFT OUTER JOIN "
-			+ "eg_ndc_document ndcdoc ON ndcdoc.ndcid = ndc.id WHERE 1=1 ";
+	private static final String NDC_QUERY = "SELECT " +
+			"a.uuid AS a_uuid,a.applicationno, a.tenantid, a.applicationstatus, a.active,\n" +
+            "  a.createdby AS a_createdby, a.lastmodifiedby AS a_lastmodifiedby,\n" +
+            "  a.createdtime AS a_createdtime, a.lastmodifiedtime AS a_lastmodifiedtime,\n" +
+            "  a.action, a.reason,owner.uuid as owner_uuid,\n" +
+			"d.uuid AS d_uuid, d.applicationid AS d_applicationid, d.businessservice, d.consumercode, d.additionaldetails, d.isduepending, d.status,d.dueamount, " +
+			"doc.uuid AS doc_uuid, doc.applicationid AS doc_applicationid, doc.documenttype, doc.documentattachment, doc.createdby AS doc_createdby, doc.lastmodifiedby AS doc_lastmodifiedby, doc.createdtime AS doc_createdtime, doc.lastmodifiedtime AS doc_lastmodifiedtime " +
+			"FROM eg_ndc_application a " +
+			"LEFT JOIN eg_ndc_owner owner ON a.uuid = owner.ndcapplicationuuid " +
+			"LEFT JOIN eg_ndc_details d ON a.uuid = d.applicationid " +
+			"LEFT JOIN eg_ndc_documents doc ON a.uuid = doc.applicationid";
 
-	private final String paginationWrapper = "SELECT * FROM "
-			+ "(SELECT *, DENSE_RANK() OVER (ORDER BY ndc_lastModifiedTime DESC) offset_ FROM " + "({})"
-			+ " result) result_offset " + "WHERE offset_ > ? AND offset_ <= ?";
-	
-	private final String countWrapper = "SELECT COUNT(DISTINCT(ndc_id)) FROM ({INTERNAL_QUERY}) as ndc_count";
+	public String getPaginatedApplicationUuids(NdcApplicationSearchCriteria criteria, List<Object> preparedStmtList) {
+		StringBuilder query = new StringBuilder("SELECT a.uuid FROM eg_ndc_application a");
+		boolean whereAdded = false;
 
-	/**
-	 * To give the Search query based on the requirements.
-	 * 
-	 * @param criteria
-	 *            NDC search criteria
-	 * @param preparedStmtList
-	 *            values to be replased on the query
-	 * @return Final Search Query
-	 */
-	public String getNdcSearchQuery(NdcSearchCriteria criteria, List<Object> preparedStmtList, boolean isCount) {
-
-		StringBuilder builder = new StringBuilder(QUERY);
-
-		if (criteria.getTenantId() != null) {
-	        addClauseIfRequired(builder);
-	        builder.append(" ndc.tenantid=? ");
-	        preparedStmtList.add(criteria.getTenantId());
-			log.info(criteria.getTenantId());
+		if (StringUtils.isNotBlank(criteria.getTenantId())) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append("( a.tenantid = ? OR a.tenantid = 'pb.punjab' )");
+			preparedStmtList.add(criteria.getTenantId());
 		}
 
-		List<String> ids = criteria.getIds();
-		if (!CollectionUtils.isEmpty(ids)) {
-			addClauseIfRequired(builder);
-			builder.append(" ndc.id IN (").append(createQuery(ids)).append(")");
-			addToPreparedStatement(preparedStmtList, ids);
-		}		
-
-		String applicationNo = criteria.getApplicationNo();
-                if (applicationNo != null) {
-                    List<String> applicationNos = Arrays.asList(applicationNo.split(","));
-                    addClauseIfRequired(builder);
-                    if (isFuzzyEnabled) {
-                        builder.append(" ndc.applicationNo LIKE ANY(ARRAY[ ").append(createQuery(applicationNos)).append("])");
-                        addToPreparedStatementForFuzzySearch(preparedStmtList, applicationNos);
-                    } else {
-                        builder.append(" ndc.applicationNo IN (").append(createQuery(applicationNos)).append(")");
-                        addToPreparedStatement(preparedStmtList, applicationNos);
-                    }
-                }
-
-		
-		String approvalNo = criteria.getNdcNo();
-                if (approvalNo != null) {
-                    List<String> approvalNos = Arrays.asList(approvalNo.split(","));
-                    addClauseIfRequired(builder);
-                    if (isFuzzyEnabled) {
-                        builder.append(" ndc.ndcNo LIKE ANY(ARRAY[ ").append(createQuery(approvalNos)).append("])");
-                        addToPreparedStatementForFuzzySearch(preparedStmtList, approvalNos);
-                    } else {
-                        builder.append(" ndc.ndcNo IN (").append(createQuery(approvalNos)).append(")");
-                        addToPreparedStatement(preparedStmtList, approvalNos);
-                    }
-                }
-
-		
-		String source = criteria.getSource();
-		if (source!=null) {
-			addClauseIfRequired(builder);
-			builder.append(" ndc.source = ?");
-			preparedStmtList.add(criteria.getSource());
-			log.info(criteria.getSource());
+		if (criteria.getUuid() != null && !criteria.getUuid().isEmpty()) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.uuid in (");
+			String placeholders = String.join(",", Collections.nCopies(criteria.getUuid().size(), "?"));
+			query.append(placeholders).append(")");
+			preparedStmtList.addAll(criteria.getUuid());
 		}
 
-		String sourceRefId = criteria.getSourceRefId();
-                if (sourceRefId != null) {
-					sourceRefId = sourceRefId.replace("[","");
-					sourceRefId = sourceRefId.replace("]","");
-					List<String> sourceRefIds = Arrays.asList(sourceRefId.split(","));
-					addClauseIfRequired(builder);
-                    if (isFuzzyEnabled) {
-                        builder.append(" ndc.sourceRefId LIKE ANY(ARRAY[ ").append(createQuery(sourceRefIds)).append("])");
-                        addToPreparedStatementForFuzzySearch(preparedStmtList, sourceRefIds);
-                    } else {
-                        builder.append(" ndc.sourceRefId IN (").append(createQuery(sourceRefIds)).append(")");
-                        addToPreparedStatement(preparedStmtList, sourceRefIds);
-                    }
-                }
+		if (criteria.getApplicationNo() != null && !criteria.getApplicationNo().isEmpty()) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.applicationno in (");
+			String placeholders = String.join(",", Collections.nCopies(criteria.getApplicationNo().size(), "?"));
+			query.append(placeholders).append(")");
+			preparedStmtList.addAll(criteria.getApplicationNo());
+		}
 
-		
-		String ndcType = criteria.getNdcType();
-		if (ndcType!=null) {
-		        List<String> ndcTypes = Arrays.asList(ndcType.split(","));
-			addClauseIfRequired(builder);
-			builder.append(" ndc.ndcType IN (").append(createQuery(ndcTypes)).append(")");
-                        addToPreparedStatement(preparedStmtList, ndcTypes);
-                        log.info(ndcType);
-                }
-                
-                List<String> status = criteria.getStatus();
-                if (status!=null) {
-                        addClauseIfRequired(builder);
-                        builder.append(" ndc.status IN (").append(createQuery(status)).append(")");
-                        addToPreparedStatement(preparedStmtList, status);
-                }
+		if (criteria.getStatus() != null) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.applicationstatus = ?");
+			preparedStmtList.add(criteria.getStatus());
+		}
 
-		
-		log.info(criteria.toString());
-		log.info("Final Query");
-		log.info(builder.toString());
-		if(isCount)
-	            return addCountWrapper(builder.toString());
-		
-		return addPaginationWrapper(builder.toString(), preparedStmtList, criteria);
+		if (criteria.getActive() != null) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.active = ?");
+			preparedStmtList.add(criteria.getActive());
+		}
+		if (criteria.getOwnerIds() != null && !criteria.getOwnerIds().isEmpty()) {
+			addClauseIfRequired(query, whereAdded);
+			whereAdded = true;
+			query.append(" a.uuid IN (SELECT ndcapplicationuuid FROM eg_ndc_owner WHERE uuid IN (");
+			String placeholders = String.join(",", Collections.nCopies(criteria.getOwnerIds().size(), "?"));
+			query.append(placeholders).append("))");
+			preparedStmtList.addAll(criteria.getOwnerIds());
+		}
+
+		query.append(" ORDER BY a.lastmodifiedtime DESC");
+
+		int limit = criteria.getLimit() != null ? Math.min(criteria.getLimit(), ndcConfig.getMaxSearchLimit()) : ndcConfig.getDefaultLimit();
+		int offset = criteria.getOffset() != null ? criteria.getOffset() : ndcConfig.getDefaultOffset();
+
+		query.append(" LIMIT ? OFFSET ?");
+		preparedStmtList.add(limit);
+		preparedStmtList.add(offset);
+
+		return query.toString();
 
 	}
 
-	/**
-	 * 
-	 * @param query
-	 *            prepared Query
-	 * @param preparedStmtList
-	 *            values to be replased on the query
-	 * @param criteria
-	 *            bpa search criteria
-	 * @return the query by replacing the placeholders with preparedStmtList
-	 */
-	private String addPaginationWrapper(String query, List<Object> preparedStmtList, NdcSearchCriteria criteria) {
+	public String getNdcApplicationDetailsQuery(List<String> uuids, List<Object> preparedStmtList) {
+		if (uuids == null || uuids.isEmpty()) return null;
 
-		int limit = ndcConfig.getDefaultLimit();
-		int offset = ndcConfig.getDefaultOffset();
-		String finalQuery = paginationWrapper.replace("{}", query);
+		StringBuilder query = new StringBuilder(NDC_QUERY);
+		query.append(" WHERE a.uuid IN (");
+		String placeholders = String.join(",", Collections.nCopies(uuids.size(), "?"));
+		query.append(placeholders).append(")");
+		preparedStmtList.addAll(uuids);
 
-		if (criteria.getLimit() != null && criteria.getLimit() <= ndcConfig.getMaxSearchLimit())
-			limit = criteria.getLimit();
+		query.append(" ORDER BY a.lastmodifiedtime DESC");
+		log.info("Details query: {}", query);
+		return query.toString();
+	}
 
-		if (criteria.getLimit() != null && criteria.getLimit() > ndcConfig.getMaxSearchLimit()) {
-			limit = ndcConfig.getMaxSearchLimit();
-		}
-
-		if (criteria.getOffset() != null)
-			offset = criteria.getOffset();
-
-		if (limit == -1) {
-			finalQuery = finalQuery.replace("WHERE offset_ > ? AND offset_ <= ?", "");
+	private void addClauseIfRequired(StringBuilder query, boolean whereAdded) {
+		if (whereAdded) {
+			query.append(" AND");
 		} else {
-			preparedStmtList.add(offset);
-			preparedStmtList.add(limit + offset);
+			query.append(" WHERE");
 		}
-
-		log.info(finalQuery.toString());
-		return finalQuery;
-
+	}
+	public String getExistingUuids(String tableName, List<String> uuids) {
+		return "SELECT uuid FROM " + tableName + " WHERE uuid IN (" + uuids.stream().map(uuid -> "'" + uuid + "'").collect(Collectors.joining(",")) + ")";
 	}
 
-	private void addClauseIfRequired(StringBuilder queryString) {
-			queryString.append(" AND");
+	public String checkApplicationExists(String uuid) {
+		return "SELECT uuid FROM eg_ndc_application WHERE uuid =?";
 	}
 
-	private void addToPreparedStatement(List<Object> preparedStmtList, List<String> ids) {
-		ids.forEach(preparedStmtList::add);
-
-	}
-	
-	private void addToPreparedStatementForFuzzySearch(List<Object> preparedStmtList, List<String> ids) {
-	    ids.forEach(id -> preparedStmtList.add("%"+id.trim()+"%"));
+	public String checkUniqueUserAndApplicationUUid(List<String> uuid, String ndcApplicationUuid) {
+		return ("SELECT 1 FROM eg_ndc_owner WHERE uuid in ("+"?"+") and ndcapplicationuuid = ? ");
 	}
 
-	private Object createQuery(List<String> ids) {
-		StringBuilder builder = new StringBuilder();
-		int length = ids.size();
-		for (int i = 0; i < length; i++) {
-			builder.append(" ?");
-			if (i != length - 1)
-				builder.append(",");
-		}
-		return builder.toString();
-	}
-	
-	private String addCountWrapper(String query) {
-	    return countWrapper.replace("{INTERNAL_QUERY}", query);
-	}
+
 }

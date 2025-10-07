@@ -5,17 +5,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class NDCConstants {
 
-	public static final String SEARCH_MODULE = "rainmaker-ndcsrv";
+	public static final String SEARCH_MODULE = "rainmaker-ndc";
 	
 	public static final String NDC_MODULE = "NDC";
-	
+	public static final String NDC_FEE_MODULE = "NdcFee";
+	public static final String NDC_BUSINESS_SERVICE = "ndc-services";
+
 	public static final String NDC_TYPE = "NdcType";
-	
-	// mdms path codes
 
     public static final String NDC_JSONPATH_CODE = "$.MdmsRes.NDC";
-
-    // error constants
 
 	public static final String INVALID_TENANT_ID_MDMS_KEY = "INVALID TENANTID";
 
@@ -52,31 +50,21 @@ public class NDCConstants {
 	public static final String COMMON_MASTERS_MODULE = "common-masters";
 	    
 	public static final String COMMON_MASTER_JSONPATH_CODE = "$.MdmsRes.common-masters";
-	
-    public static final String CREATED_STATUS = "CREATED";	
     
-	public static final String ACTION_VOID = "VOID";	
-	
-	public static final String VOIDED_STATUS = "VOIDED";	
+	public static final String ACTION_VOID = "VOID";
 	
 	public static final String ACTION_INITIATE = "INITIATE";	
 
-	public static final String INITIATED_TIME = "SubmittedOn";	
-	
-	//sms notification
+	public static final String INITIATED_TIME = "SubmittedOn";
 
-	public static final String ACTION_STATUS_CREATED = "null_CREATED";
+	public static final String ACTION_STATUS_CREATED = "null_INITIATED";
 	
-	public static final String ACTION_STATUS_INITIATED = "INITIATE_INPROGRESS";
+	public static final String ACTION_STATUS_INITIATED = "INITIATE_INITIATED";
 	
 	public static final String ACTION_STATUS_REJECTED = "REJECT_REJECTED";
 	
 	public static final String ACTION_STATUS_APPROVED = "APPROVE_APPROVED";
-	
-	public static final String FIRE_NDC_TYPE = "FIRE_NDC";
-	
-	public static final String AIRPORT_NDC_TYPE = "AIRPORT_AUTHORITY";
 
-	public static final String PARSING_ERROR = "PARSING_ERROR";
+	public static final String ACTION_PAY = "PAY";
 
 }

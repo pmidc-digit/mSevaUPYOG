@@ -1,9 +1,10 @@
 package org.egov.ndc.consumer;
 
-import java.util.HashMap;
+import java.util.List;
 
 import org.egov.ndc.service.notification.NDCNotificationService;
-import org.egov.ndc.web.model.NdcRequest;
+import org.egov.ndc.web.model.ndc.Application;
+import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.KafkaHeaders;
@@ -20,18 +21,19 @@ public class NDCConsumer {
 	@Autowired
 	private NDCNotificationService notificationService;
 	
-	@KafkaListener(topics = { "${persister.save.ndc.topic}", "${persister.update.ndc.topic}",
-			"${persister.update.ndc.workflow.topic}" })
-	public void listen(final HashMap<String, Object> record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+	@KafkaListener(topics = { "${persister.save.ndc.topic}", "${persister.update.ndc.topic}" })
+	public void listen(final String record, @Header(KafkaHeaders.RECEIVED_TOPIC) String topic) {
+		log.info("Incoming raw message: {}", record);
 		ObjectMapper mapper = new ObjectMapper();
-		NdcRequest ndcRequest = new NdcRequest();
+		NdcApplicationRequest ndcRequest = new NdcApplicationRequest();
 		try {
 			log.debug("Consuming record: " + record);
-			ndcRequest = mapper.convertValue(record, NdcRequest.class);
+			ndcRequest = mapper.readValue(record, NdcApplicationRequest.class);
 		} catch (final Exception e) {
 			log.error("Error while listening to value: " + record + " on topic: " + topic + ": " + e);
 		}
-		log.debug("BPA Received: " + ndcRequest.getNdc().getApplicationNo());
+		List<Application> applications = ndcRequest.getApplications();
+		log.debug("BPA Received: " + applications);
 		notificationService.process(ndcRequest);
 	}
 }

@@ -1,10 +1,10 @@
 package org.egov.ndc.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.egov.common.contract.request.RequestInfo;
 import org.egov.mdms.model.MasterDetail;
 import org.egov.mdms.model.MdmsCriteria;
@@ -13,39 +13,44 @@ import org.egov.mdms.model.ModuleDetail;
 import org.egov.ndc.config.NDCConfiguration;
 import org.egov.ndc.repository.ServiceRequestRepository;
 import org.egov.ndc.web.model.AuditDetails;
+import org.egov.ndc.web.model.idgen.IdGenerationRequest;
+import org.egov.ndc.web.model.idgen.IdGenerationResponse;
+import org.egov.ndc.web.model.idgen.IdRequest;
+import org.egov.ndc.web.model.idgen.IdResponse;
+import org.egov.ndc.web.model.ndc.NdcApplicationRequest;
+import org.egov.ndc.web.model.workflow.BusinessService;
+import org.egov.ndc.workflow.WorkflowService;
+import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 @Component
 public class NDCUtil {
 
 	private NDCConfiguration config;
 
+	@Value("${egov.idgen.host}")
+	private String idGenHost;
+
+	@Value("${egov.idgen.path}")
+	private String idGenPath;
+
+	@Autowired
+	private ObjectMapper mapper;
+
 	@Autowired
 	private ServiceRequestRepository serviceRequestRepository;
 
+	private WorkflowService workflowService;
+
 	@Autowired
-	public NDCUtil(NDCConfiguration config, ServiceRequestRepository serviceRequestRepository) {
+	public NDCUtil(NDCConfiguration config, ServiceRequestRepository serviceRequestRepository, WorkflowService workflowService) {
 		this.config = config;
 		this.serviceRequestRepository = serviceRequestRepository;
+		this.workflowService = workflowService;
 	}
-
-	/**
-	 * Method to return auditDetails for create/update flows
-	 *
-	 * @param by
-	 * @param isCreate
-	 * @return AuditDetails
-	 */
-	public AuditDetails getAuditDetails(String by, Boolean isCreate) {
-		Long time = System.currentTimeMillis();
-		if (isCreate)
-			return AuditDetails.builder().createdBy(by).lastModifiedBy(by).createdTime(time).lastModifiedTime(time)
-					.build();
-		else
-			return AuditDetails.builder().lastModifiedBy(by).lastModifiedTime(time).build();
-	}
-
 	/**
 	 * Returns the URL for MDMS search end point
 	 *
@@ -95,18 +100,23 @@ public class NDCUtil {
 				.moduleName(NDCConstants.COMMON_MASTERS_MODULE).build();
 
 		return Arrays.asList(ndcModuleDtls, commonMasterMDtl);
-	}	
-
-	/**
-	 * prepares MDMS call 
-	 * @param requestInfo
-	 * @param tenantId
-	 * @return
-	 */
-	public Object mDMSCall(RequestInfo requestInfo, String tenantId) {
-		MdmsCriteriaReq mdmsCriteriaReq = getMDMSRequest(requestInfo, tenantId);
-		Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
-		return result;
 	}
-	
+
+	public List<String> getIdList(RequestInfo requestInfo, String tenantId, String idName, String idformat, Integer count) {
+		List<IdRequest> reqList = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			reqList.add(IdRequest.builder().idName(idName).format(idformat).tenantId(tenantId).build());
+		}
+
+		IdGenerationRequest request = IdGenerationRequest.builder().idRequests(reqList).requestInfo(requestInfo).build();
+		StringBuilder uri = new StringBuilder(idGenHost).append(idGenPath);
+		IdGenerationResponse response = mapper.convertValue(serviceRequestRepository.fetchResult(uri, request), IdGenerationResponse.class);
+
+		List<IdResponse> idResponses = response.getIdResponses();
+
+		if (CollectionUtils.isEmpty(idResponses))
+			throw new CustomException("IDGEN ERROR", "No ids returned from idgen Service");
+
+		return idResponses.stream().map(IdResponse::getId).collect(Collectors.toList());
+	}
 }

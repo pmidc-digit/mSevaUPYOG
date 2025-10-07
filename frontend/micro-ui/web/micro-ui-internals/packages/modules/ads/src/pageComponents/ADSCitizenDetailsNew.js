@@ -54,7 +54,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   console.log('currentStepData', currentStepData)
   useEffect(() => {
     if (currentStepData?.CreatedResponse) {
-      const created = currentStepData.CreatedResponse;
+      const created = currentStepData?.CreatedResponse;
 
       // If address info is stored in CreatedResponse
       if (created?.address) {
@@ -186,29 +186,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       return () => clearTimeout(timer);
     }
   }, [showToast]);
-
-  // const watchedAll = useWatch({ control }); // watches entire form
-  // useEffect(() => {
-  //   const id = setTimeout(() => {
-  //     try {
-  //       // Light guard: avoid writing enormous drafts
-  //       const str = JSON.stringify(watchedAll);
-  //       if (str.length < 300 * 1024) {
-  //         // ~300KB threshold, tweak if needed
-  //         window.__ADS_FORM_DRAFT[formStorageKey] = watchedAll;
-  //       } else {
-  //         console.warn("[ADS] draft too large, skipping in-memory persist");
-  //       }
-
-  //       // OPTIONAL: if you want to survive hard reloads, uncomment:
-  //       // sessionStorage.setItem(formStorageKey, str);
-  //     } catch (e) {
-  //       console.warn("[ADS] failed to persist form to in-memory", e);
-  //     }
-  //   }, 250);
-
-  //   return () => clearTimeout(id);
-  // }, [watchedAll, formStorageKey]);
 
   const errorStyle = { marginTop: "-18px", color: "red" };
   const mandatoryStyle = { color: "red" };

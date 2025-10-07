@@ -4,11 +4,11 @@ import { Table } from "@mseva/digit-ui-react-components";
 const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
   // Track which ads are expanded
   const [expanded, setExpanded] = useState(
-    () => cartSlots.map((item) => item.ad.id) // default: all open
+    () => cartSlots?.map((item) => item?.ad?.id) // default: all open
   );
 
   const toggleExpand = (adId) => {
-    setExpanded((prev) => (prev.includes(adId) ? prev.filter((id) => id !== adId) : [...prev, adId]));
+    setExpanded((prev) => (prev?.includes(adId) ? prev?.filter((id) => id !== adId) : [...prev, adId]));
   };
 
   const makeColumns = (ad) => [
@@ -18,13 +18,13 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
     { Header: t("ADS_TYPE"), accessor: "addType" },
     {
       Header: t("ADS_NIGHT_LIGHT"),
-      accessor: (row) => (row.nightLight ? t("ADS_YES") : t("ADS_NO")),
+      accessor: (row) => (row?.nightLight ? t("ADS_YES") : t("ADS_NO")),
     },
     {
       Header: t("ADS_STATUS"),
       accessor: "slotStaus",
       Cell: ({ row }) => {
-        const status = row.original.slotStaus;
+        const status = row?.original?.slotStaus;
         const isAvailable = status === "AVAILABLE";
         return (
           <span
@@ -49,7 +49,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
       Header: t("ADS_REMOVE"),
       accessor: "remove",
       Cell: ({ row }) => {
-        const slot = row.original;
+        const slot = row?.original;
         return (
           <button
             onClick={() => onRemoveSlot(ad, slot)}
@@ -126,11 +126,11 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
 
         {/* Cart grouped by Ad */}
         <div style={{ flex: 1, overflowY: "auto" }}>
-          {cartSlots.length === 0 ? (
+          {cartSlots?.length === 0 ? (
             <p style={{ padding: "12px", color: "#666" }}>{t("ADS_NO_ITEMS_IN_CART")}</p>
           ) : (
             cartSlots.map((item, idx) => {
-              const isOpen = expanded.includes(item.ad.id);
+              const isOpen = expanded?.includes(item.ad.id);
               return (
                 <div
                   key={idx}
@@ -143,7 +143,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                 >
                   {/* Ad Header (clickable) */}
                   <div
-                    onClick={() => toggleExpand(item.ad.id)}
+                    onClick={() => toggleExpand(item?.ad?.id)}
                     style={{
                       background: "#f9f9f9",
                       padding: "10px 14px",
@@ -157,7 +157,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                     }}
                   >
                     <span>
-                      {item.ad.name} — ₹{item.ad.amount * item?.slots?.length}
+                      {item?.ad?.name} — ₹{item?.ad?.amount * item?.slots?.length}
                     </span>
                     <span style={{ fontSize: "18px" }}>{isOpen ? "▾" : "▸"}</span>
                   </div>
@@ -168,7 +168,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                       <Table
                         t={t}
                         data={item.slots}
-                        columns={makeColumns(item.ad)}
+                        columns={makeColumns(item?.ad)}
                         disableSort={true}
                         isPaginationRequired={false}
                         getCellProps={(cell) => ({

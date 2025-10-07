@@ -11,12 +11,12 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         {
           advertisementId: ad?.id,
           bookingId: "",
-          addType: ad.adType,
+          addType: ad?.adType,
           bookingStartDate: dateRange?.startDate,
           bookingEndDate: dateRange?.endDate,
           faceArea: `${ad?.adType}_${ad?.width}_X_${ad?.height}`,
           tenantId,
-          location: ad.locationCode,
+          location: ad?.locationCode,
           nightLight: ad?.light === "With Light" ? "true" : "false",
           isTimerRequired: false,
         },
@@ -34,7 +34,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   const slots = slotResults?.advertisementSlotAvailabiltityDetails || [];
 
   // Already in cart for this ad
-  const existingForAd = cartSlots.find((item) => item.ad.id === ad.id)?.slots || [];
+  const existingForAd = cartSlots?.find((item) => item.ad.id === ad.id)?.slots || [];
 
   // Handle checkbox toggle
   const handleCheckboxChange = (slot, checked) => {
@@ -52,7 +52,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
 
   // Commit changes to parent
   const handleAddToCart = () => {
-    if (selectedSlots.length > 0) {
+    if (selectedSlots?.length > 0) {
       onSelectSlot(selectedSlots, {
         ...ad,
         faceArea: `${ad?.adType}_${ad?.width}_X_${ad?.height}`,
@@ -75,19 +75,19 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       accessor: "select",
       Cell: ({ row }) => {
         const slot = row.original;
-        const isInCart = existingForAd.some((s) => s.bookingDate === slot.bookingDate);
+        const isInCart = existingForAd?.some((s) => s?.bookingDate === slot?.bookingDate);
         const isChecked =
-          (isInCart && !selectedSlots.some((s) => s.bookingDate === slot.bookingDate && s._remove)) ||
-          selectedSlots.some((s) => s.bookingDate === slot.bookingDate && !s._remove);
+          (isInCart && !selectedSlots?.some((s) => s.bookingDate === slot?.bookingDate && s?._remove)) ||
+          selectedSlots.some((s) => s?.bookingDate === slot?.bookingDate && !s?._remove);
 
         return (
           <input
             type="checkbox"
             checked={isChecked}
-            disabled={slot.slotStaus !== "AVAILABLE"}
+            disabled={slot?.slotStaus !== "AVAILABLE"}
             onChange={(e) => handleCheckboxChange(slot, e.target.checked)}
             style={{
-              cursor: slot.slotStaus === "AVAILABLE" ? "pointer" : "not-allowed",
+              cursor: slot?.slotStaus === "AVAILABLE" ? "pointer" : "not-allowed",
               width: "18px",
               height: "18px",
               accentColor: "#0b74de",
@@ -108,7 +108,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       Header: t("ADS_STATUS"),
       accessor: "slotStaus",
       Cell: ({ row }) => {
-        const status = row.original.slotStaus;
+        const status = row?.original?.slotStaus;
         const isAvailable = status === "AVAILABLE";
         return (
           <span
@@ -132,7 +132,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   ];
 
   // Header note: all booked
-  const allBooked = slots.length > 0 && slots.every((s) => s.slotStaus !== "AVAILABLE");
+  const allBooked = slots?.length > 0 && slots?.every((s) => s?.slotStaus !== "AVAILABLE");
 
   return (
     <div
@@ -202,7 +202,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         >
           {isLoading ? (
             <div style={{ fontSize: "24px", color: "#555", textAlign: "center" }}>{t("ADS_LOADING_SLOTS")}</div>
-          ) : slots.length === 0 ? (
+          ) : slots?.length === 0 ? (
             <div style={{ fontSize: "24px", color: "#555", textAlign: "center" }}>{t("ADS_NO_SLOTS_AVAILABLE")}</div>
           ) : (
             <Table
@@ -247,15 +247,15 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
           </button>
           <button
             onClick={handleAddToCart}
-            disabled={selectedSlots.length === 0}
+            disabled={selectedSlots?.length === 0}
             style={{
               padding: "10px 18px",
               borderRadius: "6px",
               border: "none",
-              background: selectedSlots.length > 0 ? "#2947a3" : "#ccc",
+              background: selectedSlots?.length > 0 ? "#2947a3" : "#ccc",
               color: "#fff",
               fontWeight: 600,
-              cursor: selectedSlots.length > 0 ? "pointer" : "not-allowed",
+              cursor: selectedSlots?.length > 0 ? "pointer" : "not-allowed",
               transition: "background 0.2s",
             }}
           >

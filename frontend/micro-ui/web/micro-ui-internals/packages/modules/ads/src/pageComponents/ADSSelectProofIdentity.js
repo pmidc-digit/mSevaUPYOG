@@ -24,31 +24,31 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
     }
 
     const nameLower = file?.name?.toLowerCase?.() || "";
-    const okType = allowedExtensions.some((ext) => nameLower.endsWith(ext));
+    const okType = allowedExtensions?.some((ext) => nameLower?.endsWith(ext));
     if (!okType) return "CS_FILE_INVALID_TYPE";
-    if (file.size > maxBytes) return "CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED";
+    if (file?.size > maxBytes) return "CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED";
     return null;
   };
 
   const makeDocumentsValidator = (mdms) => {
-    const requiredDocs = (mdms || []).filter((d) => d?.required);
+    const requiredDocs = (mdms || [])?.filter((d) => d?.required);
 
     return (documents = []) => {
       const errors = {};
       const missingDocs = [];
       const docsArray = Array.isArray(documents) ? documents : [];
-      if (!requiredDocs.length) return errors;
+      if (!requiredDocs?.length) return errors;
 
       for (const doc of requiredDocs) {
-        const satisfied = docsArray.some((d) => d.documentType?.includes(doc.code) && (d.filestoreId || d.fileStoreId));
+        const satisfied = docsArray?.some((d) => d.documentType?.includes(doc?.code) && (d?.filestoreId || d.fileStoreId));
         if (!satisfied) {
-          missingDocs.push(t(doc?.code.replaceAll(".", "_")));
+          missingDocs?.push(t(doc?.code.replaceAll(".", "_")));
         }
       }
 
       if (missingDocs.length > 0) {
-        errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
-        errors.missingDocs = missingDocs;
+        errors?.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
+        errors?.missingDocs = missingDocs;
       }
       return errors;
     };
@@ -76,16 +76,16 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   const lastSentRef = React.useRef();
 
   useEffect(() => {
-    if (!_.isEqual(lastSentRef.current, documents)) {
-      lastSentRef.current = documents;
+    if (!_.isEqual(lastSentRef?.current, documents)) {
+      lastSentRef?.current = documents;
       onSelect(config.key, { documents });
     }
   }, [documents, config.key]);
 
   const handleSubmit = () => {
-    if (Object.keys(formErrors).length > 0) {
-      setToastError(t(formErrors.missingRequired || "PTR_VALIDATION_ERROR"));
-      onSelect(config.key, { missingDocs: formErrors.missingDocs || [] });
+    if (Object.keys(formErrors)?.length > 0) {
+      setToastError(t(formErrors?.missingRequired || "PTR_VALIDATION_ERROR"));
+      onSelect(config.key, { missingDocs: formErrors?.missingDocs || [] });
       return;
     }
     let documentStep = { ...mdmsDocsData, documents };
@@ -101,8 +101,8 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
       {!isLoading ? (
         <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={Object.keys(formErrors).length > 0}>
           {Array.isArray(mdmsDocsData) &&
-            mdmsDocsData.map((mdmsDoc, index) => {
-              const existing = documents.find((d) => d.documentType === mdmsDoc.code);
+            mdmsDocsData?.map((mdmsDoc, index) => {
+              const existing = documents?.find((d) => d?.documentType === mdmsDoc?.code);
               return (
                 <ADSSelectDocument
                   key={index}
@@ -185,7 +185,7 @@ function ADSSelectDocument({
 
   const updateParentDocs = (fileId) => {
     const updatedDocs = [
-      ...documents.filter((d) => d.documentType !== doc?.code),
+      ...documents?.filter((d) => d?.documentType !== doc?.code),
       ...(fileId ? [{ documentType: doc?.code, fileStoreId: fileId, documentUid: fileId }] : []),
     ];
 

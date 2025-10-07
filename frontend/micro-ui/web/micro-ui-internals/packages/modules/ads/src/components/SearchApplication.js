@@ -115,6 +115,7 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
         Header: t("ADS_LOCALITY"),
         Cell: ({ row }) => {
           const cartDetails = row?.original?.cartDetails;
+          console.log('cartDetails', cartDetails)
           // Map over cartDetails to extract all locations
           const locations = cartDetails?.map((detail) => detail?.location).join(", ");
 

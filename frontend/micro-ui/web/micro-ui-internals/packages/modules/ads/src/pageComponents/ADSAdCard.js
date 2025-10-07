@@ -15,7 +15,7 @@ const AdCard = ({
   const startDateVal = watch(`ads.${idx}.startDate`) || "";
 
   // check if this ad is already in cart
-  const isAdded = cartSlots.some((item) => item.ad.id === ad.id && item.slots.length > 0);
+  const isAdded = cartSlots?.some((item) => item?.ad?.id === ad?.id && item?.slots?.length > 0);
 
   return (
     <div
@@ -42,8 +42,8 @@ const AdCard = ({
       >
         {ad.imageSrc || ad.photoURL ? (
           <img
-            src={ad.imageSrc || ad.photoURL}
-            alt={ad.name || `Ad ${ad.id}`}
+            src={ad?.imageSrc || ad?.photoURL}
+            alt={ad?.name || `Ad ${ad?.id}`}
             loading="lazy"
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
@@ -67,15 +67,15 @@ const AdCard = ({
       <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, color: "#444" }}>
         <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600 }}>
           <span>{ad.name}</span>
-          <span style={{ color: "#222" }}>₹{ad.amount}</span>
+          <span style={{ color: "#222" }}>₹{ad?.amount}</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span>{ad.locationCode}</span>
+          <span>{ad?.locationCode}</span>
           <span>Pole {ad.poleNo}</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span>{ad.adType}</span>
-          <span style={{ color: "red", fontWeight: 500 }}>{ad.light}</span>
+          <span>{ad?.adType}</span>
+          <span style={{ color: "red", fontWeight: 500 }}>{ad?.light}</span>
         </div>
       </div>
 

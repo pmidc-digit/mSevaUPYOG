@@ -123,14 +123,14 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   };
 
   const onSubmit = async (data) => {
-    if (cartSlots.length === 0) {
+    if (cartSlots?.length === 0) {
       setShowToast({ label: t("ADS_ONE_AD_ATLEAST"), error: true });
       return;
     }
 
     // Only check if Redux has ads
     if (currentStepData?.ads?.length > 0) {
-      const unchanged = areCartSlotsEqual(cartSlots, currentStepData.ads);
+      const unchanged = areCartSlotsEqual(cartSlots, currentStepData?.ads);
       if (unchanged) {
         goNext(cartSlots);
         return;
@@ -264,7 +264,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setCartSlots(currentStepData.ads);
 
       const locationCode = currentStepData.ads[0]?.ad?.locationCode;
-      const matchedOption = locationOptions.find((opt) => opt.code === locationCode);
+      const matchedOption = locationOptions?.find((opt) => opt.code === locationCode);
 
       if (matchedOption) {
         setValue("siteId", matchedOption); // 👈 set full object, not just name

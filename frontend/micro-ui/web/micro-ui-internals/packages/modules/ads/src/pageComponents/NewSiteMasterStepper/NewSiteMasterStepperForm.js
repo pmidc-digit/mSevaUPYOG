@@ -30,7 +30,6 @@ const createEmployeeConfig = [
   },
 ];
 
-// console.log("updatedCreateEmployeeconfig: ", updatedCreateEmployeeconfig);
 
 const NewSiteMasterStepperForm = ({ userType }) => {
   const config = createEmployeeConfig;
@@ -49,7 +48,6 @@ const NewSiteMasterStepperForm = ({ userType }) => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  // console.log("formStatePTR: ", formState);
 
   const setStep = (updatedStepNumber) => {
     dispatch(SET_ADSNewApplication_STEP(updatedStepNumber));
@@ -59,10 +57,8 @@ const NewSiteMasterStepperForm = ({ userType }) => {
     dispatch(RESET_ADS_NEW_APPLICATION_FORM());
   }, []);
 
-  // console.log("formData",formData);
 
   const handleSubmit = (dataGet) => {
-    console.log("dataGet===", dataGet);
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
     // let data = {};
     // createEmployeeConfig.forEach((config) => {
@@ -73,7 +69,6 @@ const NewSiteMasterStepperForm = ({ userType }) => {
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
-  // console.log("formState: ",formState);
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>

@@ -12,7 +12,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick }) => {
   const [error, setError] = useState("");
 
   const { currentStepData, isLoading } = useSelector((state) => ({
-    currentStepData: state.ads.ADSNewApplicationFormReducer?.formData,
+    currentStepData: state?.ads?.ADSNewApplicationFormReducer?.formData,
     isLoading:
       state.ads.ADSNewApplicationFormReducer?.isLoading ||
       !state.ads.ADSNewApplicationFormReducer?.formData,
@@ -24,7 +24,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick }) => {
       ...currentStepData,
       penalty: penaltyData,
     };
-    dispatch(UPDATE_ADSNewApplication_FORM(config.key, updatedData));
+    dispatch(UPDATE_ADSNewApplication_FORM(config?.key, updatedData));
     onGoNext();
   };
 

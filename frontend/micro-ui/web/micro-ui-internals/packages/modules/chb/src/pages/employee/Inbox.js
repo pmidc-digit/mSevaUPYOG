@@ -1,154 +1,239 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { Fragment, useCallback, useMemo, useReducer, useState, useEffect } from "react";
+import { InboxComposer, ComplaintIcon, Header } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
-import { Header } from "@mseva/digit-ui-react-components";
+import SearchFormFieldsComponents from "./SearchFormFieldsComponents";
+import FilterFormFieldsComponent from "./FilterFormFieldsComponent";
+import useInboxTableConfig from "./useInboxTableConfig";
+import useInboxMobileCardsData from "./useInboxMobileCardsData";
+import { businessServiceList } from "../../utils";
 
-import CHBDesktopInbox from "../../components/CHBDesktopInbox";
-import MobileInbox from "../../components/MobileInbox";
-
-const Inbox = ({
-  useNewInboxAPI,
-  parentRoute,
-  moduleCode = "CHB",
-  initialStates = {},
-  filterComponent,
-  isInbox,
-  rawWfHandler,
-  rawSearchHandler,
-  combineResponse,
-  wfConfig,
-  searchConfig,
-  middlewaresWf,
-  middlewareSearch,
-  EmptyResultInboxComp,
-}) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-
+const Inbox = ({ parentRoute }) => {
   const { t } = useTranslation();
-  const [enableSarch, setEnableSearch] = useState(() => (isInbox ? {} : { enabled: false }));
-  const [TableConfig, setTableConfig] = useState(() => Digit.ComponentRegistryService?.getComponent("CHBInboxTableConfig"));
-  const [pageOffset, setPageOffset] = useState(initialStates.pageOffset || 0);
-  const [pageSize, setPageSize] = useState(initialStates.pageSize || 10);
-  const [sortParams, setSortParams] = useState(initialStates.sortParams || [{ id: "createdTime", desc: true }]);
-  const [searchParams, setSearchParams] = useState(initialStates.searchParams || {});
 
-  let isMobile = window.Digit.Utils.browser.isMobile();
-  let paginationParams = isMobile
-    ? { limit: 100, offset: 0, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" }
-    : { limit: pageSize, offset: pageOffset, sortBy: sortParams?.[0]?.id, sortOrder: sortParams?.[0]?.desc ? "DESC" : "ASC" };
+  // Read tenant id from localStorage like the NDC sample
+  const tenantId = window.localStorage.getItem("Employee.tenant-id");
+  const [getFilter, setFilter] = useState();
 
-  const { isFetching, isLoading: hookLoading, searchResponseKey, data, searchFields, ...rest } = useNewInboxAPI
-    ? Digit.Hooks.useNewInboxGeneral({
-        tenantId,
-        ModuleCode: moduleCode,
-        filters: { ...searchParams, ...paginationParams, sortParams },
-      })
-    : Digit.Hooks.useInboxGeneral({
-        tenantId,
-        businessService: moduleCode,
-        isInbox,
-        filters: { ...searchParams, ...paginationParams, sortParams },
-        rawWfHandler,
-        rawSearchHandler,
-        combineResponse,
-        wfConfig,
-        searchConfig: { ...enableSarch, ...searchConfig },
-        middlewaresWf,
-        middlewareSearch,
-      });
-
-
-     
-
-
-
-  useEffect(() => {
-    setPageOffset(0);
-  }, [searchParams]);
-
-  const fetchNextPage = () => {
-    setPageOffset((prevState) => prevState + pageSize);
+  const searchFormDefaultValues = {
+    // add defaults if needed
   };
 
-  const fetchPrevPage = () => {
-    setPageOffset((prevState) => prevState - pageSize);
+  const filterFormDefaultValues = {
+    moduleName: "chb-services", // <--- default moduleName for CHB inbox
+    applicationStatus: [],
+    businessService: null,
+    locality: [],
+    assignee: "ASSIGNED_TO_ALL",
+    businessServiceArray: businessServiceList(true) || [],
   };
 
-  const handleFilterChange = (filterParam) => {
-    let keys_to_delete = filterParam.delete;
-    let _new = { ...searchParams, ...filterParam };
-    if (keys_to_delete) keys_to_delete.forEach((key) => delete _new[key]);
-    delete filterParam.delete;
-    setSearchParams({ ..._new });
-    setEnableSearch({ enabled: true });
+  const tableOrderFormDefaultValues = {
+    sortBy: "",
+    limit: window.Digit.Utils.browser.isMobile() ? 50 : 10,
+    offset: 0,
+    sortOrder: "DESC",
   };
 
-  const handleSort = useCallback((args) => {
-    if (args.length === 0) return;
-    setSortParams(args);
-  }, []);
-
-  const handlePageSizeChange = (e) => {
-    setPageSize(Number(e.target.value));
-  };
-
-  if (rest?.data?.length !== null) {
-    if (isMobile) {
-      return (
-        <MobileInbox
-          data={data}
-          isLoading={hookLoading}
-          isSearch={!isInbox}
-          searchFields={searchFields}
-          onFilterChange={handleFilterChange}
-          onSearch={handleFilterChange}
-          onSort={handleSort}
-          parentRoute={parentRoute}
-          searchParams={searchParams}
-          sortParams={sortParams}
-          linkPrefix={`${parentRoute}/application-details/`}
-          tableConfig={rest?.tableConfig ? res?.tableConfig:TableConfig(t)["CHB"]}
-          filterComponent={filterComponent}
-          EmptyResultInboxComp={EmptyResultInboxComp}
-          useNewInboxAPI={useNewInboxAPI}
-        />
-      );
-    } else {
-      return (
-        <div>
-          {isInbox && <Header>{t("ES_COMMON_INBOX")}</Header>}
-         
-          
-          <CHBDesktopInbox
-            moduleCode={moduleCode}
-            data={data}
-            
-            tableConfig={TableConfig(t)["CHB"]}
-            isLoading={hookLoading}
-            defaultSearchParams={initialStates.searchParams}
-            isSearch={!isInbox}
-            onFilterChange={handleFilterChange}
-            searchFields={searchFields}
-            onSearch={handleFilterChange}
-            onSort={handleSort}
-            onNextPage={fetchNextPage}
-            onPrevPage={fetchPrevPage}
-            currentPage={Math.floor(pageOffset / pageSize)}
-            pageSizeLimit={pageSize}
-            disableSort={false}
-            onPageSizeChange={handlePageSizeChange}
-            parentRoute={parentRoute}
-            searchParams={searchParams}
-            sortParams={sortParams}
-            totalRecords={Number(data?.[0]?.totalCount)}
-            filterComponent={filterComponent}
-            EmptyResultInboxComp={EmptyResultInboxComp}
-            useNewInboxAPI={useNewInboxAPI}
-          />
-        </div>
-      );
+  function formReducer(state, payload) {
+    switch (payload.action) {
+      case "mutateSearchForm":
+        Digit.SessionStorage.set("CHB.INBOX", { ...state, searchForm: payload.data });
+        return { ...state, searchForm: payload.data };
+      case "mutateFilterForm":
+        Digit.SessionStorage.set("CHB.INBOX", { ...state, filterForm: payload.data });
+        return { ...state, filterForm: payload.data };
+      case "mutateTableForm":
+        Digit.SessionStorage.set("CHB.INBOX", { ...state, tableForm: payload.data });
+        return { ...state, tableForm: payload.data };
+      default:
+        return state;
     }
   }
+
+  const InboxObjectInSessionStorage = Digit.SessionStorage.get("CHB.INBOX");
+
+  const onSearchFormReset = (setSearchFormValue) => {
+    setSearchFormValue("sourceRefId", null);
+    setSearchFormValue("applicationNumber", null);
+    setSearchFormValue("mobileNumber", null);
+    dispatch({ action: "mutateSearchForm", data: searchFormDefaultValues });
+  };
+
+  const onFilterFormReset = (setFilterFormValue) => {
+    setFilterFormValue("moduleName", "chb-services");
+    setFilterFormValue("applicationStatus", "");
+    setFilterFormValue("locality", []);
+    setFilterFormValue("assignee", "ASSIGNED_TO_ALL");
+    dispatch({ action: "mutateFilterForm", data: filterFormDefaultValues });
+  };
+
+  const onSortFormReset = (setSortFormValue) => {
+    setSortFormValue("sortOrder", "DESC");
+    dispatch({ action: "mutateTableForm", data: tableOrderFormDefaultValues });
+  };
+
+  const formInitValue = useMemo(() => {
+    return (
+      InboxObjectInSessionStorage || {
+        filterForm: filterFormDefaultValues,
+        searchForm: searchFormDefaultValues,
+        tableForm: tableOrderFormDefaultValues,
+      }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    Object.values(InboxObjectInSessionStorage?.filterForm || {}),
+    Object.values(InboxObjectInSessionStorage?.searchForm || {}),
+    Object.values(InboxObjectInSessionStorage?.tableForm || {}),
+  ]);
+
+  const [formState, dispatch] = useReducer(formReducer, formInitValue);
+
+  const onPageSizeChange = (e) => {
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, limit: e.target.value } });
+  };
+
+  const onSortingByData = (e) => {
+    if (e.length > 0) {
+      const [{ id, desc }] = e;
+      const sortOrder = desc ? "DESC" : "ASC";
+      const sortBy = id;
+      if (!(formState.tableForm.sortBy === sortBy && formState.tableForm.sortOrder === sortOrder)) {
+        dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortBy: id, sortOrder: desc ? "DESC" : "ASC" } });
+      }
+    }
+  };
+
+  const onMobileSortOrderData = (data) => {
+    const { sortOrder } = data;
+    dispatch({ action: "mutateTableForm", data: { ...formState.tableForm, sortOrder } });
+  };
+
+  const { data: localitiesForEmployeesCurrentTenant, isLoading: loadingLocalitiesForEmployeesCurrentTenant } = Digit.Hooks.useBoundaryLocalities(
+    tenantId,
+    "revenue",
+    {},
+    t
+  );
+
+  const handleFilter = (filterStatus) => {
+    setFilter(filterStatus);
+  };
+
+  // Use CHB hook to fetch inbox (keeps parity with your original)
+  const { isLoading: isInboxLoading, data } = Digit.Hooks.chb.useInbox({
+    tenantId,
+    filters: { ...formState, getFilter },
+  });
+
+  const [table, setTable] = useState([]);
+  const [statuses, setStatuses] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+
+  useEffect(() => {
+    if (data) {
+      setStatuses(data?.statuses || []);
+      setTable(data?.table || []);
+      setTotalCount(data?.totalCount || 0);
+    }
+  }, [data]);
+
+  const PropsForInboxLinks = {
+    logoIcon: <ComplaintIcon />,
+    headerText: `${t("COMMON_PROPUSGTYPE_NONRESIDENTIAL_INSTITUTIONAL_PUBLICFACILITY_COMMUNITYHALL")}`,
+    links: [
+      {
+        text: "",
+        link: "",
+        accessTo: [""],
+      },
+    ],
+  };
+
+  const SearchFormFields = useCallback(
+    ({ registerRef, searchFormState, searchFieldComponents }) => (
+      <SearchFormFieldsComponents {...{ registerRef, searchFormState, searchFieldComponents }} />
+    ),
+    []
+  );
+
+  const FilterFormFields = useCallback(
+    ({ registerRef, controlFilterForm, setFilterFormValue, getFilterFormValue }) => (
+      <FilterFormFieldsComponent
+        {...{
+          statuses,
+          isInboxLoading,
+          registerRef,
+          controlFilterForm,
+          setFilterFormValue,
+          filterFormState: formState?.filterForm,
+          getFilterFormValue,
+          localitiesForEmployeesCurrentTenant,
+          loadingLocalitiesForEmployeesCurrentTenant,
+        }}
+        handleFilter={handleFilter}
+      />
+    ),
+    [statuses, isInboxLoading, localitiesForEmployeesCurrentTenant, loadingLocalitiesForEmployeesCurrentTenant]
+  );
+
+  const onSearchFormSubmit = (data) => {
+    if (data?.hasOwnProperty("")) delete data[""];
+    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
+    dispatch({ action: "mutateSearchForm", data });
+  };
+
+  const onFilterFormSubmit = (data) => {
+    if (data?.hasOwnProperty("")) delete data[""];
+    dispatch({ action: "mutateTableForm", data: { ...tableOrderFormDefaultValues } });
+    dispatch({ action: "mutateFilterForm", data });
+  };
+
+  const propsForSearchForm = {
+    SearchFormFields,
+    onSearchFormSubmit,
+    searchFormDefaultValues: formState?.searchForm,
+    resetSearchFormDefaultValues: searchFormDefaultValues,
+    onSearchFormReset,
+  };
+
+  const propsForFilterForm = {
+    FilterFormFields,
+    onFilterFormSubmit,
+    filterFormDefaultValues: formState?.filterForm,
+    resetFilterFormDefaultValues: filterFormDefaultValues,
+    onFilterFormReset,
+  };
+
+  const propsForInboxTable = useInboxTableConfig({ parentRoute, onPageSizeChange, formState, totalCount, table, dispatch, onSortingByData });
+
+  const propsForInboxMobileCards = useInboxMobileCardsData({ parentRoute, table });
+
+  const propsForMobileSortForm = { onMobileSortOrderData, sortFormDefaultValues: formState?.tableForm, onSortFormReset };
+
+  return (
+    <>
+      <Header>
+        {t("ES_COMMON_INBOX")}
+        {totalCount ? <p className="inbox-count">{totalCount}</p> : null}
+      </Header>
+
+      <div className="NDCSection">
+        <InboxComposer
+          {...{
+            isInboxLoading,
+            PropsForInboxLinks,
+            ...propsForSearchForm,
+            ...propsForFilterForm,
+            ...propsForMobileSortForm,
+            propsForInboxTable,
+            propsForInboxMobileCards,
+            formState,
+          }}
+        />
+      </div>
+    </>
+  );
 };
 
 export default Inbox;
-

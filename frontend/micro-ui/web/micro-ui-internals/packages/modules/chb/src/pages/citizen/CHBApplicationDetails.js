@@ -238,7 +238,7 @@ const CHBApplicationDetails = () => {
       communityHallCode: `${t(chb_details?.communityHallCode)}`,
       hallCode: slot.hallCode + " - " + slot.capacity,
       bookingDate: slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
-      bookingStatus: `${t(slot.status)}`,
+      bookingStatus: t(`WF_NEWTL_${slot?.status}`),
     })) || [];
   return (
     <React.Fragment>
@@ -255,22 +255,22 @@ const CHBApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <StatusTable>
-            <Row className="border-none" label={t("CHB_BOOKING_NO")} text={chb_details?.bookingNo} />
-          </StatusTable>
+          {/* <StatusTable>
+            
+          </StatusTable> */}
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CHB_APPLICANT_NAME")} text={chb_details?.applicantDetail?.applicantName || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_MOBILE_NUMBER")} text={chb_details?.applicantDetail?.applicantMobileNo || t("CS_NA")} />
-
             <Row className="border-none" label={t("CHB_EMAIL_ID")} text={chb_details?.applicantDetail?.applicantEmailId || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_BOOKING_NO")} text={chb_details?.bookingNo} />
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
           <StatusTable>
-            <Row className="border-none" label={t("CHB_SPECIAL_CATEGORY")} text={chb_details?.specialCategory?.category || t("CS_NA")} />
-            <Row className="border-none" label={t("CHB_PURPOSE")} text={chb_details?.purpose?.purpose || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_SPECIAL_CATEGORY")} text={t(chb_details?.specialCategory?.category) || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_PURPOSE")} text={t(chb_details?.purpose?.purpose) || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_PURPOSE_DESCRIPTION")} text={chb_details?.purposeDescription || t("CS_NA")} />
           </StatusTable>
 
@@ -291,7 +291,7 @@ const CHBApplicationDetails = () => {
             <Row className="border-none" label={t("CHB_BANK_BRANCH_NAME")} text={chb_details?.applicantDetail?.bankBranchName || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_ACCOUNT_HOLDER_NAME")} text={chb_details?.applicantDetail?.accountHolderName || t("CS_NA")} />
           </StatusTable> */}
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("SLOT_DETAILS")}</CardSubHeader>
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("SLOT_DETAILS")}</CardSubHeader>
           <ApplicationTable
             t={t}
             data={slotlistRows}
@@ -307,21 +307,22 @@ const CHBApplicationDetails = () => {
             isPaginationRequired={false}
             totalRecords={slotlistRows.length}
           />
-          {docs?.map((doc, index) => (
-            <React.Fragment>
-              <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_DOCUMENTS_DETAILS")}</CardSubHeader>
-              <StatusTable>
-                <Card style={{ display: "flex", flexDirection: "row" }}>
-                  <div key={`doc-${index}`} style={{ marginRight: "25px" }}>
-                    <div>
-                      <CardSectionHeader>{t("CHB_" + doc?.documentType?.split(".").slice(0, 2).join("_"))}</CardSectionHeader>
-                      <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                    </div>
+
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <StatusTable>
+            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+              {docs?.map((doc, index) => (
+                <React.Fragment>
+                  <div>
+                    <CHBDocument value={docs} Code={doc?.documentType} index={index} />
+                    <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
+                      {t("CHB_MESSAGE_" + doc?.documentType?.split(".").slice(0, 2).join("_"))}
+                    </CardSectionHeader>
                   </div>
-                </Card>
-              </StatusTable>
-            </React.Fragment>
-          ))}
+                </React.Fragment>
+              ))}
+            </Card>
+          </StatusTable>
         </Card>
       </div>
     </React.Fragment>

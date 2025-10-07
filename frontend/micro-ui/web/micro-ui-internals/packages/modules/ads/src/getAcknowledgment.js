@@ -42,7 +42,6 @@ const convertToLocale = (value = "", key = "") => {
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
 //   const getAcknowledgementData=async(application, tenantInfo, t)=>{
-//   console.log("application in getAcknowledgement", application);
 //     return {
 //         t: t,
 //         tenantId: tenantInfo?.code,

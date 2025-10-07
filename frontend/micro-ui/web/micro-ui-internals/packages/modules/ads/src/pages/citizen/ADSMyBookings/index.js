@@ -34,7 +34,6 @@ export const ADSMyApplications = () => {
 
   // Use the search hook with stable filters (no UI for searching)
   const { isLoading, data } = Digit.Hooks.ads.useADSSearch({ filters });
-  console.log("data being returned:>> ", data);
 
   if (isLoading) return <Loader />;
 

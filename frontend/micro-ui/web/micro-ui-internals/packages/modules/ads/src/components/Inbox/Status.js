@@ -9,7 +9,6 @@ const Status = ({ onAssignmentChange, searchParams, businessServices, statusMap,
   const [moreStatus, showMoreStatus] = useState(false);
 
   const { data: statusData, isLoading } = Digit.Hooks.useApplicationStatusGeneral({ businessServices }, {});
-  console.log("statusData :>> ", statusData);
   const { userRoleStates } = statusData || {};
 
   const map = {

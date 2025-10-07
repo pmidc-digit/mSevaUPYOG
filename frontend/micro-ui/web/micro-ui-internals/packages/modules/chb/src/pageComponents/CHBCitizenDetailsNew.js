@@ -1,11 +1,13 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { TextInput, CardLabel, Dropdown, MobileNumber, TextArea, ActionBar, SubmitBar } from "@mseva/digit-ui-react-components";
 import { Controller, useForm } from "react-hook-form";
+import { Loader } from "../components/Loader";
 
 const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const stateId = Digit.ULBService.getStateId();
   const user = Digit.UserService.getUser();
+  const [loader, setLoader] = useState(false);
 
   const {
     control,
@@ -22,6 +24,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
   });
 
   const onSubmit = async (data) => {
+    setLoader(true);
     console.log("data", data);
     console.log("user", user);
     console.log("currentStepData", currentStepData);
@@ -57,10 +60,15 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
       console.log("final payload", payload);
       // return;
       // goNext(payload);
-      // return;
-      const response = await Digit.CHBServices.create(payload);
-      console.log("response", response);
-      goNext(response?.hallsBookingApplication);
+      // return;\
+      try {
+        const response = await Digit.CHBServices.create(payload);
+        console.log("response", response);
+        setLoader(false);
+        goNext(response?.hallsBookingApplication);
+      } catch (error) {
+        setLoader(false);
+      }
     }
   };
 
@@ -204,6 +212,7 @@ const CHBCitizenDetailsNew = ({ t, goNext, currentStepData, onGoBack }) => {
         </ActionBar>
         {/* <button type="submit">submit</button> */}
       </form>
+      {loader && <Loader page={true} />}
     </React.Fragment>
   );
 };

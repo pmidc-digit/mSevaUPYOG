@@ -13,9 +13,8 @@ const Availability_Options = [
 const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
   // const tenantId = window.localStorage.getItem("Citizen.tenant-id");
   const stateId = Digit.ULBService.getStateId();
-  const { data: mdmsdata = [], isLoading: isMdmsLoading } = Digit.Hooks.ads.useADSAllMDMS(stateId);
+  const { data: mdmsdata = [] } = Digit.Hooks.ads.useADSAllMDMS(stateId);
 
-  console.log("mdmsdata is :>> ", mdmsdata);
   // const { data: locationData, isLoading: locationLoading } = Digit.hooks.ads.useADSLocationMDMS(stateId, "Advertisement", "Location");
   // const { data: faceAreaData, isLoading: faceAreaLoading } = Digit.hooks.ads.useADSFaceAreaMDMS(stateId, "Advertisement", "FaceArea");
 
@@ -26,7 +25,6 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   const nowHM = now.toISOString().slice(11, 16);
   const isCitizen = window.location.href.includes("citizen");
-  console.log("isCitizen", isCitizen);
 
   const initialFormDefaults = {
     siteId: "",
@@ -204,7 +202,6 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
       },
     };
 
-    console.log("formData", formData);
 
     // build a flat siteDetails object that matches your form field names
 
@@ -225,24 +222,20 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
       bookingApplication: formData,
     };
 
-    console.log("ADS Create payload:", { bookingApplication: formData });
 
     try {
       const payload = {
         bookingApplication: formData,
       };
 
-      console.log("Sending payload:", JSON.stringify(payload, null, 2));
 
       const response = await Digit.ADSServices.create(payload, tenantId);
 
-      console.log("Received response:", JSON.stringify(response, null, 2));
 
       const status = response?.ResponseInfo?.status;
       const isSuccess = typeof status === "string" && status.toLowerCase() === "successful";
 
       if (isSuccess) {
-        console.log("ADS create successfull");
         const appData = Array.isArray(response?.bookingApplication) ? response.bookingApplication[0] : response?.bookingApplication;
 
         dispatch(UPDATE_ADSNewApplication_FORM("CreatedResponse", appData || response));
@@ -264,11 +257,9 @@ const ADSSiteMaster = ({ onGoBack, goNext, currentStepData, t }) => {
   };
 
   useEffect(() => {
-    console.log("currentStepData", currentStepData);
 
     const formattedData = currentStepData?.siteDetails || currentStepData;
     if (formattedData) {
-      console.log("coming here", formattedData);
       Object.entries(formattedData).forEach(([key, value]) => {
         setValue(key, value);
       });

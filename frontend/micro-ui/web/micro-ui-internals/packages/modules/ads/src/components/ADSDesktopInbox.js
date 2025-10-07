@@ -19,12 +19,10 @@ const ADSDesktopInbox = ({ tableConfig, filterComponent, ...props }) => {
   //   { name: "mobileNumber", label: "ADS_MOBILE_NUMBER", type: "mobileNumber" },
   // ];
 
-  console.log("props :>> ", props);
   const [clearSearchCalled, setClearSearchCalled] = useState(false);
 
   const columns = React.useMemo(() => (props.isSearch ? tableConfig.searchColumns(props) : tableConfig.inboxColumns(props) || []), []);
 
-  console.log("data is :>> ", data);
   let result;
   if (props.isLoading) {
     result = <Loader />;

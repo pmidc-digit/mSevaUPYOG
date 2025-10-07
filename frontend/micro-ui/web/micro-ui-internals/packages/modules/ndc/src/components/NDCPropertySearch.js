@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from "react";
-import { CardLabel, LabelFieldPair, TextInput, Loader, Toast } from "@mseva/digit-ui-react-components";
+import { CardLabel, LabelFieldPair, TextInput, Toast } from "@mseva/digit-ui-react-components";
 import { useTranslation } from "react-i18next";
 import { useDispatch, useSelector } from "react-redux";
 import _ from "lodash";
 import { resetNDCForm, updateNDCForm } from "../redux/actions/NDCFormActions";
 import { useLocation } from "react-router-dom";
+import { Loader } from "../components/Loader";
 
 const getAddress = (address, t) => {
   return `${address?.doorNo ? `${address?.doorNo}, ` : ""} ${address?.street ? `${address?.street}, ` : ""}${
@@ -26,6 +27,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
   const search = useLocation().search;
   const urlPropertyId = new URLSearchParams(search).get("propertyId");
   const isfirstRender = useRef(true);
+  const [getLoader, setLoader] = useState(false);
 
   const ptFromApi = apiDataCheck?.[0]?.NdcDetails?.find((item) => item.businessService == "PT");
 
@@ -187,6 +189,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
   }
 
   async function fetchBill() {
+    setLoader(true);
     try {
       const result = await Digit.PaymentService.fetchBill(tenantId, {
         businessService: "PT",
@@ -213,7 +216,9 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
         setNoDue(true);
         setCheckStats(false);
       }
+      setLoader(false);
     } catch (error) {
+      setLoader(false);
       setShowToast({ error: true, label: t("NDC_MESSAGE_FETCH_FAILED") });
     }
   }
@@ -241,7 +246,6 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
 
   return (
     <React.Fragment>
-      {isLoading && <Loader />}
       <div style={{ marginBottom: "16px" }}>
         <LabelFieldPair>
           <CardLabel className="card-label-smaller ndc_card_labels" style={getInputStyles()}>
@@ -315,6 +319,7 @@ export const PropertySearchNSummary = ({ config, onSelect, formData }) => {
           />
         )}
       </div>
+      {(isLoading || getLoader) && <Loader page={true} />}
     </React.Fragment>
   );
 };

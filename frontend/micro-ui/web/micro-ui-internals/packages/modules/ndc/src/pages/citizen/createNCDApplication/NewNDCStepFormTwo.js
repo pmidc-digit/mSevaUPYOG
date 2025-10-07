@@ -18,7 +18,10 @@ const NewNDCStepFormTwo = ({ config, onGoNext, onBackClick, t }) => {
   const id = window.location.pathname.split("/").pop();
   const user = Digit.UserService.getUser();
 
-  const { isLoading: propertyLoading, data: applicationDetails, refetch } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
+  const { isLoading: propertyLoading, data: applicationDetails, refetch } = Digit.Hooks.ndc.useSearchEmployeeApplication(
+    { applicationNo: id },
+    tenantId
+  );
 
   useEffect(() => {
     if (applicationDetails?.Applications.length) {

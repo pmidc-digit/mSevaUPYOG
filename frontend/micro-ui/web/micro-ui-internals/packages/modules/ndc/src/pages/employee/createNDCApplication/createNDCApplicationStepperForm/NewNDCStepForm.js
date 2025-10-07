@@ -69,7 +69,7 @@ export const NewNDCStepForm = () => {
 
   const id = window.location.pathname.split("/").pop();
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
+  const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ applicationNo: id }, tenantId);
 
   useEffect(() => {
     if (applicationDetails?.Applications.length) {

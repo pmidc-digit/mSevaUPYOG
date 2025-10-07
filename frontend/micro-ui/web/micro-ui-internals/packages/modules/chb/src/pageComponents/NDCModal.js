@@ -60,8 +60,8 @@ const NDCModal = ({
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
+      // roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
       roles: allRoles?.map((role) => ({ code: role })),
-      // roles: allRolesString,
       isActive: true,
     },
     { enabled: !action?.isTerminateState }

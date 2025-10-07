@@ -21,7 +21,7 @@ export const PTRMyApplications = () => {
 
   let filter1 = !isNaN(parseInt(filter))
     ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
-    : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0", mobileNumber: user?.mobileNumber, tenantId };
+    : { limit: "20", sortOrder: "ASC", sortBy: "createdTime", offset: "0", mobileNumber: user?.mobileNumber, tenantId };
 
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({ tenantId, filters: filter1 }, {});
 

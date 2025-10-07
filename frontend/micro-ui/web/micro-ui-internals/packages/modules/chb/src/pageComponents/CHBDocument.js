@@ -1,4 +1,4 @@
-import { Loader,PDFSvg } from "@mseva/digit-ui-react-components";
+import { Loader, PDFSvg } from "@mseva/digit-ui-react-components";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { pdfDownloadLink } from "../utils";
@@ -9,21 +9,20 @@ import { pdfDownloadLink } from "../utils";
 //   </svg>
 // );
 
-function CHBDocument({ value = {}, Code, index,showFileName= false }) {
+function CHBDocument({ value = {}, Code, index, showFileName = false }) {
   const { t } = useTranslation();
-  const { isLoading, isError, error, data } = Digit.Hooks.chb.useChbDocumentSearch(
-    { value, },
-    { value },
-    Code,
-    index
-  );
+  const { isLoading, isError, error, data } = Digit.Hooks.chb.useChbDocumentSearch({ value }, { value }, Code, index);
 
   const documents = value?.documents
-    ? value.documents.documents.filter(doc => doc.documentType === Code).map(doc => ({ ...doc, documentType: doc.documentType.replace(/\./g, '_') }))
-    : value.filter(doc => doc.documentType === Code).map(doc => ({ ...doc, documentType: doc.documentType.replace(/\./g, '_') }));
+    ? value.documents.documents
+        .filter((doc) => doc.documentType === Code)
+        .map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }))
+    : value.filter((doc) => doc.documentType === Code).map((doc) => ({ ...doc, documentType: doc.documentType.replace(/\./g, "_") }));
   if (isLoading) {
     return <Loader />;
   }
+
+  console.log("Code", Code);
 
   return (
     <div>
@@ -33,9 +32,9 @@ function CHBDocument({ value = {}, Code, index,showFileName= false }) {
             let documentLink = pdfDownloadLink(data.pdfFiles, document.fileStoreId);
             return (
               <a target="_" href={documentLink} style={{ minWidth: "160px" }} key={index}>
-                 <PDFSvg /* width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }}  *//>
-               {/*  <p style={{ marginTop: "8px" }}>{pdfDocumentName(documentLink, index)}</p> */}
-               { showFileName ? <p style={{ marginTop: "8px" }}>{t(Code?.split('.').slice(0,3).join('_'))}</p> : null}
+                <PDFSvg /* width={85} height={100} style={{ background: "#f6f6f6", padding: "8px" }}  */ />
+                {/*  <p style={{ marginTop: "8px" }}>{pdfDocumentName(documentLink, index)}</p> */}
+                {showFileName ? <p style={{ marginTop: "8px" }}>{t(Code)}</p> : null}
               </a>
             );
           })}

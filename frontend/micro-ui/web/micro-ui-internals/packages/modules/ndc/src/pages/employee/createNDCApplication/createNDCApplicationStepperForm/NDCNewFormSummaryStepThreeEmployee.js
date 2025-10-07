@@ -24,7 +24,7 @@ const NDCNewFormSummaryStepThreeEmployee = ({ config, onGoNext, onBackClick, t }
 
       // Check if the API call was successful
       if (res?.isSuccess) {
-        history.push("/digit-ui/employee/ndc/response/" + res?.response?.Applications?.[0]?.uuid);
+        history.push("/digit-ui/employee/ndc/response/" + res?.response?.Applications?.[0]?.applicationNo);
       } else {
         console.error("Submission failed, not moving to next step.", res?.response);
       }

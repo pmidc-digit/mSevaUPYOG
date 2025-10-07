@@ -1,5 +1,6 @@
 import React, { use, useEffect, useState } from "react";
-import { CardLabel, Dropdown, UploadFile, Toast, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { Loader } from "../components/Loader";
 
 const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
@@ -193,7 +194,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   return (
     <div style={{ marginBottom: "24px" }}>
-      {getLoading && <Loader />}
       {doc?.hasDropdown ? (
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">
@@ -233,6 +233,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           />
         </div>
       </LabelFieldPair>
+      {getLoading && <Loader page={true} />}
     </div>
   );
 }

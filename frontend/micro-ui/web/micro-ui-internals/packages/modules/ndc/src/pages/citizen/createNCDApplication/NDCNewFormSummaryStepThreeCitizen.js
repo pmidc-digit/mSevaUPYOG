@@ -14,8 +14,11 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
   const formData = useSelector((state) => state.ndc.NDCForm.formData || {});
   // Function to handle the "Next" button click
 
+  console.log("formData 4th step", formData);
+
   const goNext = async (action) => {
     const actionStatus = action?.action;
+    console.log("actionStatus", actionStatus);
     try {
       const res = await onSubmit(formData, actionStatus); // wait for the API response
       // Check if the API call was successful
@@ -31,16 +34,7 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
   function mapToNDCPayload(inputData, actionStatus) {
     const applicant = Digit.UserService.getUser()?.info || {};
-    console.log("formData mobile number", formData);
-    // const owners = [
-    //   {
-    //     name: `${formData?.NDCDetails?.PropertyDetails?.firstName} ${formData?.NDCDetails?.PropertyDetails?.lastName}`.trim(),
-    //     mobileNumber: formData?.NDCDetails?.PropertyDetails?.mobileNumber,
-    //     gender: formData?.NDCDetails?.PropertyDetails?.gender,
-    //     emailId: formData?.NDCDetails?.PropertyDetails?.email,
-    //     type: "CITIZEN",
-    //   },
-    // ];
+    console.log("inputData", inputData);
 
     const owners = [
       {
@@ -55,6 +49,8 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
 
     // Pick the source of truth for the application
     const baseApplication = formData?.responseData?.[0] || formData?.apiData?.Applications?.[0] || {};
+
+    console.log("baseApplication", baseApplication);
 
     // Clone and modify workflow action
     const updatedApplication = {
@@ -81,13 +77,16 @@ const NDCNewFormSummaryStepThreeCitizen = ({ config, onGoNext, onBackClick, t })
       Applications: [updatedApplication],
     };
 
+    console.log("updatedApplication", updatedApplication);
+
     return payload;
   }
 
   const onSubmit = async (data, actionStatus) => {
     const finalPayload = mapToNDCPayload(data, actionStatus);
-
-    const response = await Digit.NDCService.NDCUpdate({ tenantId, finalPayload });
+    console.log("finalPayload", finalPayload);
+    // return;
+    const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
     dispatch(resetNDCForm());
     if (response?.ResponseInfo?.status === "successful") {
       return { isSuccess: true, response };

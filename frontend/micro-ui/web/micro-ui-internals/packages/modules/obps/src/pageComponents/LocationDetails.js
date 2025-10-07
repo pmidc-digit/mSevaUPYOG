@@ -5,6 +5,7 @@ import GIS from "./GIS";
 import Timeline from "../components/Timeline";
 import { stringReplaceAll } from "../utils";
 import EXIF from "exif-js";
+import BharatMap from "./BharatMap";
 
 
 const LocationDetails = ({ t, config, onSelect, userType, formData, currentStepData, addNewOwner, isShowToast, onGoBack }) => {
@@ -263,7 +264,10 @@ useEffect(() => {
     address.locality = selectedLocality;
     // address.street = street;
     // address.landmark = landmark;
-    address.geoLocation = geoLocation;
+    address.geoLocation = {
+      latitude: Number(geoLocationFromImg?.latitude)?.toFixed(6) || null,
+      longitude: Number(geoLocationFromImg?.longitude)?.toFixed(6) || null
+    };
     // address.placeName = placeName;
     const userInfo = Digit.UserService.getUser()
     const accountId = userInfo?.info?.uuid
@@ -692,7 +696,7 @@ return (
             </div>
           )}
 
-          {uploadedFile && viewSiteImageURL && !isFileLoading &&(
+          {uploadedFile && viewSiteImageURL && !isFileLoading && !isUploading &&(
             <div style={{ marginTop: "16px" }}>
               {/* <CardLabel>{t("BPA_LOC_SITE_PHOTOGRAPH_PREVIEW")}</CardLabel> */}
               <a 
@@ -720,6 +724,21 @@ return (
               <div>Longitude: {Number(geoLocationFromImg.longitude).toFixed(6)}</div>
             </div>
           )}
+          {!isUploading && geoLocationFromImg.latitude && geoLocationFromImg.longitude &&(
+            <div style={{ marginTop: "16px" }}>
+              <a 
+                href={`https://bharatmaps.gov.in/BharatMaps/Home/Map?lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                style={{ color: "#007bff", textDecoration: "underline", cursor: "pointer", font:"14px" }}
+              >
+                {t("CS_COMMON_VIEW_SITE_LOCATION")}
+              </a>
+            </div>
+          )}
+          {/* {!isUploading && geoLocationFromImg.latitude && geoLocationFromImg.longitude && (
+            <BharatMap mapUrl={`lat=${Number(geoLocationFromImg.latitude).toFixed(6)}&long=${Number(geoLocationFromImg.longitude).toFixed(6)}`}/>
+          )} */}
         </div>
       </FormStep>
     )}

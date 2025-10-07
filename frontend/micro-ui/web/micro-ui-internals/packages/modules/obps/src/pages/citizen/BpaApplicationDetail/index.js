@@ -46,6 +46,7 @@ import ScruntinyDetails from "../../../../../templates/ApplicationDetails/compon
 import { Link } from "react-router-dom"
 import CitizenConsent from "./CitizenConsent"
 import FeeEstimation from "../../../pageComponents/FeeEstimation"
+import CitizenAndArchitectPhoto from "../../../pageComponents/CitizenAndArchitectPhoto"
 
 
 const BpaApplicationDetail = () => {
@@ -153,6 +154,8 @@ const BpaApplicationDetail = () => {
     enabled: !!safeTenantId,
   })
 
+  const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
+
   // const ecbcDocumentsData = useMemo(() => {
   //         return (getDocsFromFileUrls(fileUrls) || []).map((doc, index) => ({
   //             id: index,
@@ -229,7 +232,7 @@ const BpaApplicationDetail = () => {
     },
   })
 
-  console.log("datata", data, isUserCitizen, workflowDetails)
+  console.log("datata", adjustedAmounts)
 
   const [agree, setAgree] = useState(false)
   const setdeclarationhandler = () => {
@@ -341,11 +344,32 @@ const BpaApplicationDetail = () => {
     {
       Header: t("BPA_DOCUMENT_NAME"),
       accessor: "title",
-      Cell: ({ value }) => value || t("CS_NA"),
+      Cell: ({ value }) => t(value) || t("CS_NA"),
     },
     {
       Header: t("BPA_DOCUMENT_FILE"),
       accessor: "fileUrl",
+      Cell: ({ value }) =>
+        value ? (
+          <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
+            label={t("View")}
+            onClick={() => routeTo(value)}
+          />
+        ) : (
+          t("CS_NA")
+        ),
+    },
+  ];
+
+  const documentsEDCRColumns = [
+    {
+      Header: t("BPA_DOCUMENT_NAME"),
+      accessor: "text",
+      Cell: ({ value }) => t(value) || t("CS_NA"),
+    },
+    {
+      Header: t("BPA_DOCUMENT_FILE"),
+      accessor: "value",
       Cell: ({ value }) =>
         value ? (
           <LinkButton style={{ float: "right", display: "inline", background: "#fff" }}
@@ -439,6 +463,7 @@ useEffect(() => {
 
     setOtherChargesDisc(otherDetails.otherFeesDiscription || "");
     setUploadedFileLess(otherDetails.uploadedFileLess || []);
+    setAdjustedAmounts(data.applicationData.additionalDetails.adjustedAmounts || []);
   }
 }, [data]);
 
@@ -743,6 +768,7 @@ useEffect(() => {
   }
 
   const saveAsDraft = async (data,action ) => {
+    console.log("SEND_TO_CITIZEN_Action",data)
     if(!data?.additionalDetails?.selfCertificationCharges){
       setShowToast({
         key: "error",
@@ -981,6 +1007,7 @@ useEffect(() => {
         ...app?.additionalDetails,
         otherFeesDiscription: otherChargesDisc || "",
         lessAdjustmentFeeFiles: uploadedFileLess || [],
+        adjustedAmounts: adjustedAmounts || [],
         selfCertificationCharges: {
           BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
           BPA_LABOUR_CESS: labourCess?.length > 0 ? labourCess : "0",
@@ -1314,6 +1341,7 @@ useEffect(() => {
             console.log("detailforme", detail)
             return (
               <div key={index}>
+                {detail?.title === "BPA_BASIC_DETAILS_TITLE" && <CitizenAndArchitectPhoto data={data?.applicationData} />}
                 {!detail?.isNotAllowed ? (
                   <Card
                     key={index}
@@ -1431,29 +1459,44 @@ useEffect(() => {
 
                         {/* to get Scrutiny values */}
                         {detail?.isScrutinyDetails && detail?.additionalDetails?.scruntinyDetails?.length > 0
-                          ? detail?.additionalDetails?.scruntinyDetails.map((scrutiny) => (
-                            <Fragment key={scrutiny?.title}>
-                              <Row className="border-none" label={t(scrutiny?.title)} />
-                              <LinkButton
-                                onClick={() => downloadDiagram(scrutiny?.value)}
-                                label={<PDFSvg />}
-                              ></LinkButton>
-                              <p
-                                style={{
-                                  marginTop: "8px",
-                                  marginBottom: "20px",
-                                  fontWeight: "bold",
-                                  fontSize: "16px",
-                                  lineHeight: "19px",
-                                  color: "#505A5F",
-                                  fontWeight: "400",
-                                }}
-                              >
-                                {t(scrutiny?.text)}
-                              </p>
-                            </Fragment>
-                          ))
+                          ? 
+                          // detail?.additionalDetails?.scruntinyDetails.map((scrutiny) => {
+                          //   console.log("scrutinyForReportPlans", scrutiny)
+                          //   return (
+                          //   <Fragment key={scrutiny?.title}>
+                          //     {/* <Row className="border-none" label={t(scrutiny?.title)} />
+                          //     <LinkButton
+                          //       onClick={() => downloadDiagram(scrutiny?.value)}
+                          //       label={<PDFSvg />}
+                          //     ></LinkButton>
+                          //     <p
+                          //       style={{
+                          //         marginTop: "8px",
+                          //         marginBottom: "20px",
+                          //         fontWeight: "bold",
+                          //         fontSize: "16px",
+                          //         lineHeight: "19px",
+                          //         color: "#505A5F",
+                          //         fontWeight: "400",
+                          //       }}
+                          //     >
+                          //       {t(scrutiny?.text)}
+                          //     </p> */}
+                          //   </Fragment>
+                          // )})
+                          <Table
+                              className="customTable table-border-style"
+                              t={t}
+                              data={detail?.additionalDetails?.scruntinyDetails}
+                              columns={documentsEDCRColumns}
+                              getCellProps={() => ({ style: {} })}
+                              disableSort={false}
+                              autoSort={true}
+                              manualPagination={false}
+                              isPaginationRequired={false}
+                            />
                           : null}
+                          
 
                         {/* to get Owner values */}
                         {detail?.isOwnerDetails && detail?.additionalDetails?.owners?.length > 0
@@ -1490,43 +1533,6 @@ useEffect(() => {
                           ))
                           : null}
 
-                        {/* to get Document values */}
-                        {/* {detail?.isDocumentDetails && (detail?.additionalDetails?.obpsDocuments?.[0]?.values?.length>0 ? (
-                        <div style={{ marginTop: "-8px" }}>
-                          {
-                            <DocumentsPreview
-                              documents={getOrderDocuments(detail?.additionalDetails?.obpsDocuments?.[0]?.values)}
-                              svgStyles={{}}
-                              isSendBackFlow={false}
-                              isHrLine={true}
-                              titleStyles={{
-                                fontSize: "20px",
-                                lineHeight: "24px",
-                                fontWeight: 700,
-                                marginBottom: "10px",
-                              }}
-                            />
-                          }
-                        </div>
-                      ):
-                      (
-                        <div style={{ marginTop: "-8px" }}>
-                          {
-                            <DocumentsPreview
-                              documents={getOrderDocuments(data?.applicationData?.documents)}
-                              svgStyles={{}}
-                              isSendBackFlow={false}
-                              isHrLine={true}
-                              titleStyles={{
-                                fontSize: "20px",
-                                lineHeight: "24px",
-                                fontWeight: 700,
-                                marginBottom: "10px",
-                              }}
-                            />
-                          }
-                        </div>
-                      ))} */}
                         {detail?.title === "BPA_DOCUMENT_DETAILS_LABEL" && (<>
                           <StatusTable>
                             <CardHeader>{t("BPA_DOCUMENT_DETAILS_LABEL")}</CardHeader>
@@ -1906,15 +1912,10 @@ useEffect(() => {
             gaushalaFees={gaushalaFees}                 
             malbafees={malbafees}                    
             waterCharges={waterCharges}                 
-            setDevelopmentVal={setDevelopmentVal}
-            setOtherChargesVal={setOtherChargesVal}
-            setLessAdjusmentVal={setLessAdjusmentVal}
-            setOtherChargesDis={setOtherChargesDis}
-            selectfile={selectfile}
-            uploadedFile={uploadedFile}
-            setUploadedFile={setUploadedFile}
             errorFile={errorFile}
             setError={setError}
+            adjustedAmounts={adjustedAmounts}
+            setAdjustedAmounts={setAdjustedAmounts}
           />
         </Card>}
 

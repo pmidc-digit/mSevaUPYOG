@@ -26,6 +26,7 @@ import { pdfDownloadLink } from "../../utils";
 
 import get from "lodash/get";
 import { size } from "lodash";
+import { doc } from "prettier";
 
 const CHBApplicationDetails = () => {
   const { t } = useTranslation();
@@ -310,17 +311,20 @@ const CHBApplicationDetails = () => {
 
           <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
+            {console.log("doc===", docs)}
             <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
-              {docs?.map((doc, index) => (
-                <React.Fragment>
-                  <div>
-                    <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                    <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
-                      {t("CHB_MESSAGE_" + doc?.documentType?.split(".").slice(0, 2).join("_"))}
-                    </CardSectionHeader>
-                  </div>
-                </React.Fragment>
-              ))}
+              {docs?.length > 0 ? (
+                docs?.map((doc, index) => (
+                  <React.Fragment key={index}>
+                    <div>
+                      <CHBDocument value={docs} Code={doc?.documentType} index={index} />
+                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    </div>
+                  </React.Fragment>
+                ))
+              ) : (
+                <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
+              )}
             </Card>
           </StatusTable>
         </Card>

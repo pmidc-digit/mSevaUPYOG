@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 // - avoids embedding TimeStamp directly inside a static comparison string
 // - safer upload with params+TimeStamp merged
 
-const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimestamp, currentStepData }) => {
+const Architectconcent = ({ showTermsPopup, setShowTermsPopup, otpVerifiedTimestamp, currentStepData, formData }) => {
   const { state } = useLocation();
   const { t } = useTranslation();
 
@@ -153,7 +153,7 @@ const selfdeclarationform = `
     <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir or Madam,</strong></p>
 
     <p style="margin-top:-30px;margin-bottom:-32px;">
-      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype }</b> is appointed by the owner <b>${ownername}</b> (Mobile: <b>${mobile}</b>) for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${params?.additionalDetails?.proposedSiteAddress}</b>.
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype }</b> is appointed by the owner <b>${ownername}</b> (Mobile: <b>${mobile}</b>) for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
@@ -205,7 +205,7 @@ const selfdeclarationform = `
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Address:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${params?.additionalDetails?.professionalAddress || "NA"}</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"}</td>
             </tr>
             <tr>
               <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>

@@ -234,24 +234,32 @@ const NOCApplicantDetails = (_props) => {
           </div>
         </LabelFieldPair>
 
-        {/* <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+         <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
-              name="applicantMobileNumber"
+              name="applicantPropertyId"
               rules={{
                 required: t("REQUIRED_FIELD"),
-                pattern: {
-                  value: /^[6-9]\d{9}$/,
-                  message: t("INVALID_MOBILE_NUMBER"),
-                },
               }}
-              render={(props) => <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} />}
+              render={(props) => (
+                <TextInput
+                  value={props.value}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t}
+                  // disabled={isEdit}
+                />
+              )}
             />
           </div>
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError> */}
+        <CardLabelError style={errorStyle}>{errors?.applicantPropertyId?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>

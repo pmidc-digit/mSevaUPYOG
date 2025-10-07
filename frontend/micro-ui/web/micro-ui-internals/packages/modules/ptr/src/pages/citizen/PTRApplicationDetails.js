@@ -49,8 +49,6 @@ const PTRApplicationDetails = () => {
   const pet_details = (PetRegistrationApplications && PetRegistrationApplications.length > 0 && PetRegistrationApplications[0]) || {};
   const application = pet_details;
 
-  console.log("pet_details", pet_details);
-
   // sessionStorage.setItem("ptr-pet", JSON.stringify(application));
 
   const [loading, setLoading] = useState(false);
@@ -88,8 +86,6 @@ const PTRApplicationDetails = () => {
     },
     { enabled: acknowledgementIds ? true : false }
   );
-
-  console.log(data, "LOG");
 
   if (!pet_details.workflow) {
     const workflow = {
@@ -130,8 +126,6 @@ const PTRApplicationDetails = () => {
         const petImageUrl = petImage?.filestoreId
           ? `${window.location.origin}/filestore/v1/files/id?tenantId=pb&fileStoreId=${petImage.filestoreId}`
           : `${window.location.origin}/adorable-golden-retriever.png`;
-
-        console.log("Final petImageUrl:", petImageUrl);
 
         const content = `
           <html>
@@ -404,8 +398,6 @@ const PTRApplicationDetails = () => {
 
   const downloadAcknowledgement = async () => {
     try {
-      console.log("Starting acknowledgement download...");
-
       if (!data?.PetRegistrationApplications?.[0]) {
         throw new Error("Pet registration data is missing");
       }
@@ -615,7 +607,6 @@ const PTRApplicationDetails = () => {
   }
 
   if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
-    console.log("Receipt option available");
     dowloadOptions.push({
       label: t("PTR_FEE_RECIEPT"),
       onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
@@ -665,8 +656,20 @@ const PTRApplicationDetails = () => {
             <Row className="border-none" label={t("PTR_SEARCH_BREED_TYPE")} text={pet_details?.petDetails?.breedType || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_DOCTOR_NAME")} text={pet_details?.petDetails?.doctorName || t("CS_NA")} />
             <Row className="border-none" label={t("PTR_CLINIC_NAME")} text={pet_details?.petDetails?.clinicName || t("CS_NA")} />
-            {console.log("pet_details?.petDetails?.lastVaccineDate", pet_details?.petDetails?.lastVaccineDate)}
-            <Row className="border-none" label={t("PTR_VACCINATED_DATE")} text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")} />
+            <Row
+              className="border-none"
+              label={t("PTR_VACCINATED_DATE")}
+              // text={pet_details?.petDetails?.lastVaccineDate || t("CS_NA")}
+              text={
+                pet_details?.petDetails?.lastVaccineDate
+                  ? new Date(Number(pet_details?.petDetails?.lastVaccineDate)).toLocaleDateString("en-IN", {
+                      day: "2-digit",
+                      month: "2-digit",
+                      year: "numeric",
+                    })
+                  : t("CS_NA")
+              }
+            />
             <Row className="border-none" label={t("PTR_VACCINATION_NUMBER")} text={pet_details?.petDetails?.vaccinationNumber || t("CS_NA")} />
           </StatusTable>
 

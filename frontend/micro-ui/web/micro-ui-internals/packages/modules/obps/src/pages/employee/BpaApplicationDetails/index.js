@@ -110,6 +110,7 @@ const BpaApplicationDetail = () => {
   const [gaushalaFees, setGaushalaFees] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_GAUSHALA_CHARGES_CESS || "");
   const [malbafees, setMalbafees] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES || "");
   const [waterCharges, setWaterCharges] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES || "");
+  const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
   console.log("DATA DATA", data);
 
 
@@ -151,6 +152,7 @@ const BpaApplicationDetail = () => {
       setGaushalaFees(charges.BPA_GAUSHALA_CHARGES_CESS || "");
       setMalbafees(charges.BPA_MALBA_CHARGES || "");
       setWaterCharges(charges.BPA_WATER_CHARGES || "");
+      setAdjustedAmounts(data.applicationData.additionalDetails.adjustedAmounts || []);
     }
   }, [isLoading, data]);
 
@@ -853,6 +855,7 @@ const BpaApplicationDetail = () => {
             additionalDetails: {
               ...data?.BPA?.additionalDetails,
               otherFeesDiscription: otherChargesDisc || "",
+              adjustedAmounts: adjustedAmounts || [],
               selfCertificationCharges: {
                 ...data?.BPA?.additionalDetails?.selfCertificationCharges,
                 BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
@@ -1342,10 +1345,8 @@ const BpaApplicationDetail = () => {
             gaushalaFees={gaushalaFees}
             malbafees={malbafees}
             waterCharges={waterCharges}
-            setDevelopmentVal={setDevelopmentVal}
-            setOtherChargesVal={setOtherChargesVal}
-            setLessAdjusmentVal={setLessAdjusmentVal}
-            setOtherChargesDis={setOtherChargesDis}
+            adjustedAmounts={adjustedAmounts}
+            setAdjustedAmounts={setAdjustedAmounts}
           />}
         </Card>
 

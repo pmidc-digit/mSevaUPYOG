@@ -26,7 +26,7 @@ const CreateEDCR = ({ parentRoute }) => {
     const loggedInuserInfo = Digit.UserService.getUser();
     const formTenantId = data?.tenantId || data?.ulb;
     console.log(formTenantId, "I(((((((((");
-    const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
+    const userInfo = JSON.parse(localStorage.getItem("user-info"));
     let edcrRequest = {
       transactionNumber: "",
       edcrNumber: "",

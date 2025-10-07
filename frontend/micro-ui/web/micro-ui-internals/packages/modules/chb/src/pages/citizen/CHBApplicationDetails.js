@@ -239,7 +239,7 @@ const CHBApplicationDetails = () => {
     chb_details?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(chb_details?.communityHallCode)}`,
       hallCode: t(slot.hallCode) + " - " + slot.capacity,
-      bookingDate: slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
+      bookingDate: slot.bookingDate,
       bookingStatus: t(`WF_NEWTL_${slot?.status}`),
     })) || [];
   return (

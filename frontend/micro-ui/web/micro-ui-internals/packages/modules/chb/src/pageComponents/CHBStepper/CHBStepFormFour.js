@@ -12,6 +12,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const history = useHistory();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const isCitizen = window.location.href.includes("citizen");
   const tenantId = window.location.href.includes("citizen")
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
@@ -41,7 +42,11 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
       console.log("res", res);
       const id = res?.response?.hallsBookingApplication?.[0]?.bookingNo;
       if (res?.isSuccess) {
-        history.push("/digit-ui/citizen/chb/response/" + id);
+        if (isCitizen) {
+          history.push("/digit-ui/citizen/chb/response/" + id);
+        } else {
+          history.push("/digit-ui/employee/chb/response/" + id);
+        }
       } else {
         console.error("Submission failed, not moving to next step.", res?.response);
       }

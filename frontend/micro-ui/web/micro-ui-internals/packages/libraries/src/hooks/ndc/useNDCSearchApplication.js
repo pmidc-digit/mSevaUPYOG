@@ -19,7 +19,7 @@ export const useNDCSearchApplication = (params, tenantId, config = {}, t) => {
       const count = data?.data?.totalCount || 0;
 
       const mappedData = applications.map((owner) => ({
-        BPA_APPLICATION_NUMBER_LABEL: owner?.uuid,
+        BPA_APPLICATION_NUMBER_LABEL: owner?.applicationNo,
         TL_LOCALIZATION_OWNER_NAME: owner?.owners[0]?.name,
         TL_HOME_SEARCH_RESULTS_APP_STATUS_LABEL: owner?.applicationStatus,
 

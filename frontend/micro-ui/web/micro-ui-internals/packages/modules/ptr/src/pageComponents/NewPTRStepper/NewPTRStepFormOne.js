@@ -31,10 +31,14 @@ const NewPTRStepFormOne = ({ config, onGoNext, onBackClick }) => {
     setError("");
   };
 
+  console.log("me rendering instead");
+
   return (
     <React.Fragment>
-      <PTRCitizenDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      <div className="employeeCard">
+        <PTRCitizenDetails onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+        {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      </div>
     </React.Fragment>
   );
 };

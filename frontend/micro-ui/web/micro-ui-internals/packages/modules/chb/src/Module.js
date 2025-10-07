@@ -1,4 +1,4 @@
-import { Header, CitizenHomeCard, CHBIcon } from "@mseva/digit-ui-react-components";
+import { Header, CitizenHomeCard } from "@mseva/digit-ui-react-components";
 import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouteMatch } from "react-router-dom";
@@ -37,6 +37,8 @@ import CHBCitizenSecond from "./pageComponents/CHBCitizenSecond";
 import CHBSelectProofIdentity from "./pageComponents/CHBSelectProofIdentity";
 import CHBSummary from "./pageComponents/CHBSummary";
 import getRootReducer from "./redux/reducer";
+import { CHBIcon } from "./components/CHBIcon";
+import CHBResponseCitizen from "./pages/citizen/CHBResponseCitizen";
 
 export const CHBReducers = getRootReducer;
 
@@ -70,6 +72,7 @@ const componentsToRegister = {
   CHBCitizenSecond,
   CHBSelectProofIdentity,
   CHBSummary,
+  CHBResponseCitizen,
 };
 
 const addComponentsToRegistry = () => {

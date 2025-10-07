@@ -27,6 +27,7 @@ export const convertEpochToDate = (dateEpoch) => {
     return "NA";
   }
 };
+
 const WrapPaymentComponent = (props) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -57,7 +58,7 @@ const WrapPaymentComponent = (props) => {
     ulbType = selectedTenantData?.city?.ulbGrade;
   }
 
-  const { label } = Digit.Hooks.useApplicationsForBusinessServiceSearch({ businessService: business_service }, { enabled: false });
+  // const { label } = Digit.Hooks.useApplicationsForBusinessServiceSearch({ businessService: business_service }, { enabled: false });
 
   // const { data: demand } = Digit.Hooks.useDemandSearch(
   //   { consumerCode, businessService: business_service },
@@ -90,14 +91,13 @@ const WrapPaymentComponent = (props) => {
   );
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
-    select: (data) =>
-      data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
+    select: (data) => data["common-masters"]?.uiCommonPay?.filter(({ code }) => business_service?.includes(code))[0]?.receiptKey,
     retry: false,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   });
 
-  console.log("generatePdfKeyInResponse", generatePdfKey, business_service)
+  console.log("generatePdfKeyInResponse", generatePdfKey, business_service);
 
   const payments = data?.payments;
 
@@ -263,27 +263,26 @@ const WrapPaymentComponent = (props) => {
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...paymentData }] }, generatePdfKeyForWs);
         } else if (paymentData.paymentDetails[0].businessService.includes("BPA")) {
           const designation = ulbType === "Municipal Corporation" ? "Municipal Commissioner" : "Executive Officer";
-          let updatedpayments
-          if(paymentData.paymentDetails[0].businessService.includes("BPAREG")){
+          let updatedpayments;
+          if (paymentData.paymentDetails[0].businessService.includes("BPAREG")) {
             updatedpayments = {
-            ...paymentData,
-            paymentDetails: [
-              {
-                ...paymentData?.paymentDetails?.[0],
-                additionalDetails: {
-                  ...paymentData?.paymentDetails?.[0]?.additionalDetails,
-                  stakeholderType: "Applicant"
-                }
-              }
-            ],
-            additionalDetails: {
-              ...paymentData.additionalDetails,
-              designation: designation,
-              ulbType: ulbType,
-            },
-          };
-          }
-          else{
+              ...paymentData,
+              paymentDetails: [
+                {
+                  ...paymentData?.paymentDetails?.[0],
+                  additionalDetails: {
+                    ...paymentData?.paymentDetails?.[0]?.additionalDetails,
+                    stakeholderType: "Applicant",
+                  },
+                },
+              ],
+              additionalDetails: {
+                ...paymentData.additionalDetails,
+                designation: designation,
+                ulbType: ulbType,
+              },
+            };
+          } else {
             updatedpayments = {
               ...paymentData,
               additionalDetails: {
@@ -291,7 +290,7 @@ const WrapPaymentComponent = (props) => {
                 designation: designation,
                 ulbType: ulbType,
               },
-            }; 
+            };
           }
 
           response = await Digit.PaymentService.generatePdf(state, { Payments: [{ ...updatedpayments }] }, generatePdfKey);
@@ -755,7 +754,7 @@ const WrapPaymentComponent = (props) => {
       />
       <CardText></CardText>
       <StatusTable>
-        <Row rowContainerStyle={rowContainerStyle} last label={t(label)} text={applicationNo} />
+        <Row rowContainerStyle={rowContainerStyle} last label={t("APPLICATION_NUMBER")} text={applicationNo} />
         {/** TODO : move this key and value into the hook based on business Service */}
         {(business_service === "PT" || workflw) && (
           <Row
@@ -795,7 +794,15 @@ const WrapPaymentComponent = (props) => {
             rowContainerStyle={rowContainerStyle}
             last
             label={t("CS_PAYMENT_TRANSANCTION_DATE")}
-            text={transactionDate && new Date(transactionDate).toLocaleDateString("in")}
+            // text={transactionDate && new Date(transactionDate).toLocaleDateString("in")}
+            text={
+              transactionDate &&
+              new Date(transactionDate).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })
+            }
           />
         )}
       </StatusTable>
@@ -928,7 +935,7 @@ const WrapPaymentComponent = (props) => {
             {t("BPA_OC_CERTIFICATE")}
           </div>
         ) : null}
-        {bpaData?.[0]?.businessService === "BPA_LOW" ? (
+        {/* {bpaData?.[0]?.businessService === "BPA_LOW" ? (
           <div
             className="primary-label-btn d-grid"
             style={{ marginLeft: "unset" }}
@@ -946,7 +953,7 @@ const WrapPaymentComponent = (props) => {
             <DownloadPrefixIcon />
             {t("BPA_PERMIT_ORDER")}
           </div>
-        ) : null}
+        ) : null} */}
       </div>
       {business_service?.includes("PT") && (
         <div style={{ marginTop: "10px" }}>
@@ -959,7 +966,7 @@ const WrapPaymentComponent = (props) => {
           </Link>
         </div>
       )}
-      {business_service?.includes("PT") ? (
+      {/* {business_service?.includes("PT") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -967,61 +974,42 @@ const WrapPaymentComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("WS") ? (
-        <div
+      ) : null} */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: "15px",
+        }}
+      >
+        <SubmitBar onSubmit={printReciept} label={t("CS_DOWNLOAD_RECEIPT")} />
+        {/* <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
           onClick={printReciept}
         >
           {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
-      ) : null}
-      {business_service?.includes("SW") ? (
-        <div
-          className="link"
-          style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
-          onClick={printReciept}
-        >
-          {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
-      ) : null}
-      {business_service?.includes("FSM") ? (
-        <div
-          className="link"
-          style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
-          onClick={printReciept}
-        >
-          {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
-      ) : null}
-      {business_service?.includes("BPA") ? (
-        <div
-          className="link"
-          style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
-          onClick={printReciept}
-        >
-          {t("CS_DOWNLOAD_RECEIPT")}
-        </div>
-      ) : null}
-      {!(business_service == "TL") ||
-        (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
-      {!(business_service == "TL") ||
-        (!business_service?.includes("PT") && (
-          <div className="link" style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}>
-            <Link to={`/digit-ui/citizen`}>{t("CORE_COMMON_GO_TO_HOME")}</Link>
-          </div>
-        ))}
-      {business_service == "TL" && (
+        </div> */}
+
+        {!(business_service == "TL") ||
+          (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
+        {!(business_service == "TL") ||
+          (!business_service?.includes("PT") && (
+            <div className="link" style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}>
+              <Link to={`/digit-ui/citizen`}>{t("CORE_COMMON_GO_TO_HOME")}</Link>
+            </div>
+          ))}
+        {business_service == "TL" && (
+          <Link to={`/digit-ui/citizen`}>
+            <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+          </Link>
+        )}
+        {/* {business_service == "pet-services" && ( */}
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
-      )}
-      {business_service == "pet-services" && (
-        <Link to={`/digit-ui/citizen`}>
-          <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
-        </Link>
-      )}
+      </div>
+      {/* )} */}
     </Card>
   );
 };
@@ -1050,7 +1038,7 @@ export const SuccessfulZeroPayment = (props) => {
 
 const WrapPaymentZeroComponent = (props) => {
   const { t } = useTranslation();
-  const {state ={} } = useLocation();
+  const { state = {} } = useLocation();
   const transactionData = state?.transactionData;
   console.log("StateData: ", transactionData);
   const queryClient = useQueryClient();
@@ -1072,13 +1060,12 @@ const WrapPaymentZeroComponent = (props) => {
     { enabled: window.location.href.includes("bpa") || window.location.href.includes("BPA") }
   );
 
-//   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearchNew(
-//     {
-//         tenantId: tenantId,
-//         billIds: transactionData?.billId
-//     },
-// ); 
-
+  //   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearchNew(
+  //     {
+  //         tenantId: tenantId,
+  //         billIds: transactionData?.billId
+  //     },
+  // );
 
   const cities = Digit.Hooks.useTenants();
   let ulbType = "";
@@ -1094,21 +1081,21 @@ const WrapPaymentZeroComponent = (props) => {
 
   const newTenantId = business_service.includes("WS.ONE_TIME_FEE" || "SW.ONE_TIME_FEE") ? Digit.ULBService.getStateId() : tenantId;
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
-      {
-        tenantId,
-        businessService: business_service,
-        receiptNumbers: data?.payments?.Payments?.[0]?.paymentDetails[0].receiptNumber,
+    {
+      tenantId,
+      businessService: business_service,
+      receiptNumbers: data?.payments?.Payments?.[0]?.paymentDetails[0].receiptNumber,
+    },
+    {
+      retry: false,
+      staleTime: Infinity,
+      refetchOnWindowFocus: false,
+      select: (dat) => {
+        return dat.Payments[0];
       },
-      {
-        retry: false,
-        staleTime: Infinity,
-        refetchOnWindowFocus: false,
-        select: (dat) => {
-          return dat.Payments[0];
-        },
-        enabled: allowFetchBill,
-      }
-    );
+      enabled: allowFetchBill,
+    }
+  );
 
   const { data: generatePdfKey } = Digit.Hooks.useCommonMDMS(newTenantId, "common-masters", "ReceiptKey", {
     select: (data) =>
@@ -1118,8 +1105,8 @@ const WrapPaymentZeroComponent = (props) => {
     refetchOnWindowFocus: false,
   });
 
-  console.log("PaymentsData",reciept_data)
-  const payments = reciept_data;  // changed here
+  console.log("PaymentsData", reciept_data);
+  const payments = reciept_data; // changed here
 
   useEffect(() => {
     return () => {
@@ -1128,11 +1115,9 @@ const WrapPaymentZeroComponent = (props) => {
     };
   }, []);
 
-
   if (isLoading || recieptDataLoading) {
     return <Loader />;
   }
-
 
   const isMobile = window.Digit.Utils.browser.isMobile();
 
@@ -1278,7 +1263,7 @@ const WrapPaymentZeroComponent = (props) => {
         }
       }
     }
-    console.log("PaymentsData",response )
+    console.log("PaymentsData", response);
     const fileStore = await Digit.PaymentService.printReciept(state, { fileStoreIds: response.filestoreIds[0] });
     if (fileStore && fileStore[response.filestoreIds[0]]) {
       window.open(fileStore[response.filestoreIds[0]], "_blank");
@@ -1933,7 +1918,7 @@ const WrapPaymentZeroComponent = (props) => {
           </Link>
         </div>
       )} */}
-      {business_service?.includes("PT") ? (
+      {/* {business_service?.includes("PT") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1941,8 +1926,8 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("WS") ? (
+      ) : null} */}
+      {/* {business_service?.includes("WS") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1950,8 +1935,8 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("SW") ? (
+      ) : null} */}
+      {/* {business_service?.includes("SW") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1959,8 +1944,8 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("FSM") ? (
+      ) : null} */}
+      {/* {business_service?.includes("FSM") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1968,8 +1953,8 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
-      {business_service?.includes("BPA") ? (
+      ) : null} */}
+      {/* {business_service?.includes("BPA") ? (
         <div
           className="link"
           style={isMobile ? { marginTop: "8px", width: "100%", textAlign: "center" } : { marginTop: "8px" }}
@@ -1977,7 +1962,7 @@ const WrapPaymentZeroComponent = (props) => {
         >
           {t("CS_DOWNLOAD_RECEIPT")}
         </div>
-      ) : null}
+      ) : null} */}
       {!(business_service == "TL") ||
         (!business_service?.includes("PT") && <SubmitBar onSubmit={printReciept} label={t("COMMON_DOWNLOAD_RECEIPT")} />)}
       {!(business_service == "TL") ||
@@ -1991,11 +1976,15 @@ const WrapPaymentZeroComponent = (props) => {
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
       )}
+      {console.log("business_service", business_service)}
       {business_service == "pet-services" && (
         <Link to={`/digit-ui/citizen`}>
           <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
         </Link>
       )}
+      <Link to={`/digit-ui/citizen`}>
+        <SubmitBar label={t("CORE_COMMON_GO_TO_HOME")} />
+      </Link>
     </Card>
   );
 };

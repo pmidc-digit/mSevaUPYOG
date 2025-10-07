@@ -62,12 +62,32 @@ import StakeholderAcknowledgement from "./pages/citizen/StakeholderRegistration/
 import Architectconcent from "./pages/citizen/NewBuildingPermit/Architectconcent";
 import CitizenConsent from "./pages/citizen/BpaApplicationDetail/CitizenConsent";
 
+import getRootReducer from "./redux/reducers";
 
+import LayoutStepperForm from "./pages/citizen/LayoutStepper/LayoutStepperForm";
+import LayoutStepFormOne from "./pages/citizen/LayoutStepper/LayoutStepFormOne";
+import LayoutStepFormTwo from "./pages/citizen/LayoutStepper/LayoutStepFormTwo";
+import LayoutStepFormThree from "./pages/citizen/LayoutStepper/LayoutStepFormThree";
+import LayoutStepFormFour from "./pages/citizen/LayoutStepper/LayoutStepFormFour";
+import LayoutApplicantDetails from "./pageComponents/LayoutApplicantDetails";
+import LayoutProfessionalDetails from "./pageComponents/LayoutProfessionalDetails";
+import LayoutLocalityInfo from "./pageComponents/LayoutLocalityInfo";
+import LayoutSiteDetails from "./pageComponents/LayoutSiteDetails";
+import LayoutCLUDetails from "./pageComponents/LayoutCLUDetails";
+import LayoutSpecificationDetails from "./pageComponents/LayoutSpecificationDetails";
+import LayoutDocumentsRequired from "./pageComponents/LayoutDocumentsRequired";
+import LayoutSummary from "./pageComponents/LayoutSummary";
+import { NewSelfCertificationStepForm } from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepForm";
+import NewSelfCertificationStepFormOne from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormOne"
+import NewSelfCertificationStepFormTwo from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormTwo"
+import NewSelfCertificationStepFormThree from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormThree"
+import NewSelfCertificationStepFormFour from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormFour"
+import NewSelfCertificationStepFormFive from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormFive"
+import NewSelfCertificationStepFormSix from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormSix"
+import NewSelfCertificationStepFormSeven from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormSeven"
+import NewSelfCertificationStepFormEight from "./pages/citizen/SelfCertificationStepper/NewSelfCertificationStepperFormEight"
+import SelfCertificationResponse from "./pages/citizen/SelfCertificationStepper/SelfCertificationResponse"
 
-
-
-
- 
 
 const OBPSModule = ({ stateCode, userType, tenants }) => {
   const moduleCode = ["bpa", "bpareg", "common"]; //"bpa";
@@ -112,6 +132,10 @@ const OBPSLinks = ({ matchPath, userType }) => {
     />
   );
 } 
+
+const dummy = () => {
+  return <div></div>
+}
 
 const componentsToRegister = {
   OBPSModule,
@@ -168,9 +192,31 @@ const componentsToRegister = {
   ObpsEmpApplicationDetail : EmpApplicationDetail,
   ObpsEmployeeBpaApplicationDetail : EmployeeBpaApplicationDetail,
   Architectconcent,
-  CitizenConsent
-  
-   
+  CitizenConsent,
+  LayoutStepperForm,
+  LayoutStepFormOne,
+  LayoutStepFormTwo,
+  LayoutStepFormThree,
+  LayoutStepFormFour,
+  LayoutApplicantDetails,
+  LayoutProfessionalDetails,
+  LayoutSiteDetails,
+  LayoutSpecificationDetails,
+  LayoutDocumentsRequired,
+  LayoutSummary,
+  LayoutLocalityInfo,
+  LayoutCLUDetails,
+  NewSelfCertificationStepForm,
+  NewSelfCertificationStepFormOne,
+  NewSelfCertificationStepFormTwo,
+  NewSelfCertificationStepFormThree,
+  NewSelfCertificationStepFormFour,
+  NewSelfCertificationStepFormFive,
+  NewSelfCertificationStepFormSix,
+  NewSelfCertificationStepFormSeven,
+  NewSelfCertificationStepFormEight,
+  SelfCertificationResponse,
+  dummy
 }
 
 export const initOBPSComponents = () => {
@@ -178,3 +224,5 @@ export const initOBPSComponents = () => {
     Digit.ComponentRegistryService.setComponent(key, value);
   });
 };
+
+export const OBPSReducers = getRootReducer;

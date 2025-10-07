@@ -33,8 +33,10 @@ const NewPTRStepFormTwo = ({ config, onGoNext, onBackClick }) => {
 
   return (
     <React.Fragment>
-      <PTRCitizenPet onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      <div className="employeeCard">
+        <PTRCitizenPet onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+        {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      </div>
     </React.Fragment>
   );
 };

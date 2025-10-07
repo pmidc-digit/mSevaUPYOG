@@ -28,18 +28,18 @@ const inboxSearchFields = {
   ],
   PTR: [
     {
-      label: "PTR_APPLICATION_NUMBER",
+      label: "REPORT_FSM_RESULT_APPLICATION_NO",
       name: "applicationNumber",
       roles: [],
     },
     {
-      label: "PTR_PET_TYPE",
+      label: "PTR_SEARCH_PET_TYPE",
       name: "petType",
       // minLength: "10",
       roles: [],
     },
     {
-      label: "PTR_MOBILE_NUMBER",
+      label: "NOC_HOME_SEARCH_RESULTS_OWN_MOB_LABEL",
       name: "mobileNumber",
       type: "mobileNumber",
       maxLength: 10,
@@ -118,7 +118,29 @@ const inboxSearchFields = {
       // minLength: "10",
       roles: [],
     },
-  ]
+  ],
+  ADV: [
+    {
+      label: "ADV_BOOKING_NUMBER",
+      name: "bookingNo",
+      // minLength: "10",
+      roles: [],
+    },
+    {
+      label: "ES_SEARCH_BOOKING_MOBILE_NO",
+      name: "mobileNumber",
+      type: "mobileNumber",
+      maxLength: 10,
+      minLength: 0,
+      roles: [],
+      pattern: "^$|[6-9][0-9]{9}",
+      errorMessages: {
+        pattern: "",
+        minLength: "",
+        maxLength: "",
+      },
+    },
+  ],
 };
 
 const searchFieldsForSearch = {

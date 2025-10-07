@@ -24,7 +24,11 @@ const CreateEDCR = ({ parentRoute }) => {
   function handleSelect(key, data, skipStep, index) {
     setIsSubmitBtnDisable(true);
     const loggedInuserInfo = Digit.UserService.getUser();
-    const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
+    const formTenantId = data?.tenantId || data?.ulb;
+    console.log(formTenantId, "I(((((((((");
+    // const userInfo = { id: loggedInuserInfo?.info?.uuid, tenantId: loggedInuserInfo?.info?.tenantId };
+    const userInfo = JSON.parse(localStorage.getItem("user-info"));
+
     let edcrRequest = {
       transactionNumber: "",
       edcrNumber: "",
@@ -46,9 +50,20 @@ const CreateEDCR = ({ parentRoute }) => {
 
     console.log(userInfo, loggedInuserInfo, "USER INFO");
     const applicantName = data?.applicantName;
-    const coreArea = data?.coreArea?.code;
+    // const coreArea = data?.coreArea?.code;
+    const coreArea = data?.areaType?.code === "SCHEME_AREA" ? "NO" : data?.coreArea?.code;
+    console.log("A=====", coreArea, data?.areaType?.code, data?.areaType?.code === "SCHEME_AREA");
     const file = data?.file;
-    const tenantId = userInfo?.tenantId;
+    // const tenantId = userInfo?.tenantId;
+    const tenantId = formTenantId;
+    const ulb = data?.ulb;
+    const areaType = data?.areaType?.code;
+    const schName = data?.schName;
+    const siteReserved = data?.siteReserved?.code === "YES" ? true : false;
+    const approvedCS = data?.approvedCS?.code === "YES" ? true : false;
+    const cluApprove = data?.cluApprove?.code === "YES" ? true : false;
+    const purchasableFar = data?.purchasableFar?.code === "YES" ? true : false;
+    const schemeArea = data?.schemeArea?.code;
     const transactionNumber = uuidv4();
     const appliactionType = "BUILDING_PLAN_SCRUTINY";
     const applicationSubType = "NEW_CONSTRUCTION";
@@ -62,6 +77,18 @@ const CreateEDCR = ({ parentRoute }) => {
     edcrRequest = { ...edcrRequest, coreArea };
     edcrRequest = { ...edcrRequest, appliactionType };
     edcrRequest = { ...edcrRequest, applicationSubType };
+    // sub type to clu aprove
+    edcrRequest = { ...edcrRequest, applicationSubType };
+    edcrRequest = { ...edcrRequest, ulb };
+    edcrRequest = { ...edcrRequest, areaType };
+    edcrRequest = { ...edcrRequest, schName };
+    edcrRequest = { ...edcrRequest, siteReserved };
+    edcrRequest = { ...edcrRequest, approvedCS };
+    edcrRequest = { ...edcrRequest, schemeArea };
+    edcrRequest = { ...edcrRequest, cluApprove };
+    edcrRequest = {...edcrRequest, purchasableFar};
+
+    console.log("tenantIdInEDCR-Request", edcrRequest);
 
     let bodyFormData = new FormData();
     bodyFormData.append("edcrRequest", JSON.stringify(edcrRequest));

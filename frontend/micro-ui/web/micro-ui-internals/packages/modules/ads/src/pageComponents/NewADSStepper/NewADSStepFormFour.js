@@ -1,72 +1,65 @@
-import React from "react";
+import React, { Fragment ,useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
+import { Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_ADSNewApplication_FORM } from "../../redux/action/ADSNewApplicationActions";
-import { useState } from "react";
-import _ from "lodash";
+import ADSPenalty from "../ADSPenalty";
+import { useTranslation } from "react-i18next";
 
-const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
+const NewADSStepFormFour = ({ config, onGoNext, onBackClick }) => {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
 
-  const currentStepData = useSelector(function (state) {
-    return state.ads.ADSNewApplicationFormReducer.formData || {};
-  });
+  const { currentStepData, isLoading } = useSelector((state) => ({
+    currentStepData: state?.ads?.ADSNewApplicationFormReducer?.formData,
+    isLoading:
+      state.ads.ADSNewApplicationFormReducer?.isLoading ||
+      !state.ads.ADSNewApplicationFormReducer?.formData,
+  }));
 
-  function validateStepData(data) {
-    const missingFields = [];
-    const notFormattedFields = [];
-
-    return { missingFields, notFormattedFields };
-  }
-
-  function goNext(data) {
-    const { missingFields, notFormattedFields } = validateStepData(currentStepData);
-
-    // if (missingFields.length > 0) {
-    //   setError(`Please fill the following field: ${missingFields[0]}`);
-    //   setShowToast(true);
-    //   return;
-    // }
-
-    // if (notFormattedFields.length > 0) {
-    //   setError(`Please format the following field: ${notFormattedFields[0]}`);
-    //   setShowToast(true);
-    //   return;
-    // }
-
+  const goNext = (penaltyData) => {
+    // Save into Redux under `penalty` key
+    const updatedData = {
+      ...currentStepData,
+      penalty: penaltyData,
+    };
+    dispatch(UPDATE_ADSNewApplication_FORM(config?.key, updatedData));
     onGoNext();
-  }
+  };
 
-  function onGoBack(data) {
-    onBackClick(config.key, data);
-  }
-
-  const onFormValueChange = (setValue = true, data) => {
-    console.log("onFormValueChange data in AdministrativeDetails: ", data, "\n Bool: ", !_.isEqual(data, currentStepData));
-    if (!_.isEqual(data, currentStepData)) {
-      dispatch(UPDATE_ADSNewApplication_FORM(config.key, data));
-    }
+  const goBack = (penaltyData) => {
+    const updatedData = {
+      ...currentStepData,
+      penalty: penaltyData,
+    };
+    onBackClick(config.key, updatedData);
   };
 
   const closeToast = () => {
     setShowToast(false);
     setError("");
   };
+
+  if (isLoading) return null;
+
   return (
-    <React.Fragment>
-      <FormComposer
-        defaultValues={currentStepData}
-        config={config.currStepConfig}
-        onSubmit={goNext}
-        onFormValueChange={onFormValueChange}
-        label={t(`${config.texts.submitBarLabel}`)}
-        currentStep={config.currStepNumber}
-        onBackClick={onGoBack}
+    <>
+      <ADSPenalty
+        onGoBack={goBack}
+        goNext={goNext}
+        currentStepData={currentStepData?.penalty}
+        t={t}
       />
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
-    </React.Fragment>
+      {showToast && (
+        <Toast
+          isDleteBtn={true}
+          error={true}
+          label={error}
+          onClose={closeToast}
+        />
+      )}
+    </>
   );
 };
 

@@ -18,16 +18,15 @@ import {
   ButtonSelector,
 } from "@mseva/digit-ui-react-components";
 
-
 const ViewAttendence = () => {
-    const userInfo = Digit.SessionStorage.get("User")?.info;
+  const userInfo = Digit.SessionStorage.get("User")?.info;
   const { t } = useTranslation();
-  const user =  userInfo?.uuid
+  const user = userInfo?.uuid;
   const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code;
   const [addresses, setAddresses] = useState({});
- const getTodayTimestamp = () => {
+  const getTodayTimestamp = () => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); 
+    today.setHours(0, 0, 0, 0);
     return today.getTime();
   };
   const { data, isLoading, error } = Digit.Hooks.swach.useViewAttendence({
@@ -37,39 +36,37 @@ const ViewAttendence = () => {
   });
 
   const fetchAddress = async (lat, long) => {
-  try {
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`
-    );
-    const result = await response.json();
-    return result.display_name || "Address not available";
-  } catch (error) {
-    console.error("Error fetching address:", error);
-    return "Address not available";
-  }
-};
-useEffect(() => {
-  const fetchAllAddresses = async () => {
-    if (data?.Attendance) {
-      const addressPromises = data.Attendance.map(async (attendance) => {
-        if (attendance.latitude && attendance.longitude) {
-          const address = await fetchAddress(attendance.latitude, attendance.longitude);
-          return { id: attendance.id, address };
-        }
-        return { id: attendance.id, address: "Address not available" };
-      });
-
-      const resolvedAddresses = await Promise.all(addressPromises);
-      const addressMap = resolvedAddresses.reduce((acc, curr) => {
-        acc[curr.id] = curr.address;
-        return acc;
-      }, {});
-      setAddresses(addressMap);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${long}`);
+      const result = await response.json();
+      return result.display_name || "Address not available";
+    } catch (error) {
+      console.error("Error fetching address:", error);
+      return "Address not available";
     }
   };
+  useEffect(() => {
+    const fetchAllAddresses = async () => {
+      if (data?.Attendance) {
+        const addressPromises = data.Attendance.map(async (attendance) => {
+          if (attendance.latitude && attendance.longitude) {
+            const address = await fetchAddress(attendance.latitude, attendance.longitude);
+            return { id: attendance.id, address };
+          }
+          return { id: attendance.id, address: "Address not available" };
+        });
 
-  fetchAllAddresses();
-}, [data]);
+        const resolvedAddresses = await Promise.all(addressPromises);
+        const addressMap = resolvedAddresses.reduce((acc, curr) => {
+          acc[curr.id] = curr.address;
+          return acc;
+        }, {});
+        setAddresses(addressMap);
+      }
+    };
+
+    fetchAllAddresses();
+  }, [data]);
 
   if (isLoading) return <Loader />;
   if (error) return <div>Error: {error.message}</div>;
@@ -91,7 +88,7 @@ useEffect(() => {
             </div>
 
             {attendance.imagerUrl && (
-              <div className="attendanceimage" >
+              <div className="attendanceimage">
                 <img
                   src={`${window.location.origin}/filestore/v1/files/id?tenantId=${tenantId}&fileStoreId=${attendance.imagerUrl}`}
                   alt="Attendance"

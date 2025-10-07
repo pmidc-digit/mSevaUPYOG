@@ -26,6 +26,7 @@ import { pdfDownloadLink } from "../../utils";
 
 import get from "lodash/get";
 import { size } from "lodash";
+import { doc } from "prettier";
 
 const CHBApplicationDetails = () => {
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ const CHBApplicationDetails = () => {
   const { data: storeData } = Digit.Hooks.useStore.getInitData();
   const { tenants } = storeData || {};
 
-  const { isLoading, isError, error, data,refetch } = Digit.Hooks.chb.useChbSearch({
+  const { isLoading, isError, error, data, refetch } = Digit.Hooks.chb.useChbSearch({
     tenantId,
     filters: { bookingNo: acknowledgementIds },
   });
@@ -128,19 +129,19 @@ const CHBApplicationDetails = () => {
 
   async function getRecieptSearch({ tenantId, payments, ...params }) {
     let application = data?.hallsBookingApplication?.[0];
-    let fileStoreId = application?.paymentReceiptFilestoreId
+    let fileStoreId = application?.paymentReceiptFilestoreId;
     if (!fileStoreId) {
-    let response = { filestoreIds: [payments?.fileStoreId] };
-    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "chbservice-receipt");
-    const updatedApplication = {
-      ...application,
-      paymentReceiptFilestoreId: response?.filestoreIds[0]
-    };
-    await mutation.mutateAsync({
-      hallsBookingApplication: updatedApplication
-    });
-    fileStoreId = response?.filestoreIds[0];
-    refetch();
+      let response = { filestoreIds: [payments?.fileStoreId] };
+      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "chbservice-receipt");
+      const updatedApplication = {
+        ...application,
+        paymentReceiptFilestoreId: response?.filestoreIds[0],
+      };
+      await mutation.mutateAsync({
+        hallsBookingApplication: updatedApplication,
+      });
+      fileStoreId = response?.filestoreIds[0];
+      refetch();
     }
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
@@ -149,17 +150,13 @@ const CHBApplicationDetails = () => {
     let application = data?.hallsBookingApplication?.[0];
     let fileStoreId = application?.permissionLetterFilestoreId;
     if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(
-        tenantId,
-        { hallsBookingApplication: [application] }, 
-        "chbpermissionletter"
-      );
+      const response = await Digit.PaymentService.generatePdf(tenantId, { hallsBookingApplication: [application] }, "chbpermissionletter");
       const updatedApplication = {
         ...application,
-        permissionLetterFilestoreId: response?.filestoreIds[0]
+        permissionLetterFilestoreId: response?.filestoreIds[0],
       };
       await mutation.mutateAsync({
-        hallsBookingApplication: updatedApplication
+        hallsBookingApplication: updatedApplication,
       });
       fileStoreId = response?.filestoreIds[0];
       refetch();
@@ -201,7 +198,7 @@ const CHBApplicationDetails = () => {
   //     label: t("CHB_CERTIFICATE"),
   //     onClick: () => printCertificate(),
   //   });
-    
+
   //   const getBookingDateRange = (bookingSlotDetails) => {
   //     if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
   //       return t("CS_NA");
@@ -231,20 +228,19 @@ const CHBApplicationDetails = () => {
   //     // Return formatted time range
   //     return startTime ? `${startTime} - ${defaultEndTime}` : t("CS_NA");
   //   };
-    const columns = [
-      { Header: `${t("CHB_HALL_NAME")}` + "/" + `${t("CHB_PARK")}`, accessor: "communityHallCode" },
-      { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
-      { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
-      { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" }
-    ];
-    const slotlistRows = chb_details?.bookingSlotDetails?.map((slot) => (
-      {
-        communityHallCode: `${t(chb_details?.communityHallCode)}`,
-        hallCode:slot.hallCode + " - " + slot.capacity,
-        bookingDate:slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
-        bookingStatus:`${t(slot.status)}`
-      }
-    )) || [];
+  const columns = [
+    { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
+    { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
+    { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
+    { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
+  ];
+  const slotlistRows =
+    chb_details?.bookingSlotDetails?.map((slot) => ({
+      communityHallCode: `${t(chb_details?.communityHallCode)}`,
+      hallCode: slot.hallCode + " - " + slot.capacity,
+      bookingDate: slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
+      bookingStatus: t(`WF_NEWTL_${slot?.status}`),
+    })) || [];
   return (
     <React.Fragment>
       <div>
@@ -260,92 +256,78 @@ const CHBApplicationDetails = () => {
           )}
         </div>
         <Card>
-          <StatusTable>
-            <Row className="border-none" label={t("CHB_BOOKING_NO")} text={chb_details?.bookingNo} />
-          </StatusTable>
+          {/* <StatusTable>
+            
+          </StatusTable> */}
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CHB_APPLICANT_NAME")} text={chb_details?.applicantDetail?.applicantName || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_MOBILE_NUMBER")} text={chb_details?.applicantDetail?.applicantMobileNo || t("CS_NA")} />
-            <Row className="border-none" label={t("CHB_ALT_MOBILE_NUMBER")} text={chb_details?.applicantDetail?.applicantAlternateMobileNo || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_EMAIL_ID")} text={chb_details?.applicantDetail?.applicantEmailId || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_BOOKING_NO")} text={chb_details?.bookingNo} />
           </StatusTable>
 
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
           <StatusTable>
-            <Row className="border-none" label={t("CHB_SPECIAL_CATEGORY")} text={chb_details?.specialCategory?.category || t("CS_NA")} />
-            <Row className="border-none" label={t("CHB_PURPOSE")} text={chb_details?.purpose?.purpose || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_SPECIAL_CATEGORY")} text={t(chb_details?.specialCategory?.category) || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_PURPOSE")} text={t(chb_details?.purpose?.purpose) || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_PURPOSE_DESCRIPTION")} text={chb_details?.purposeDescription || t("CS_NA")} />
           </StatusTable>
 
-          {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("SLOT_DETAILS")}</CardSubHeader>
-            <StatusTable>
-            <Row className="border-none" label={t("CHB_COMMUNITY_HALL_NAME")} text={chb_details?.communityHallCode || t("CS_NA")} />
-            <Row className="border-none" label={t("CHB_BOOKING_DATE")} text={getBookingDateRange(chb_details?.bookingSlotDetails) || t("CS_NA")} />
-            <Row className="border-none" label={t("CHB_BOOKING_TIME")} text={getBookingTimeRange(chb_details?.bookingSlotDetails) || t("CS_NA")} />
-            </StatusTable> */}
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_ADDRESS_DETAILS")}</CardSubHeader>
-            <StatusTable>
-              <Row className="border-none" label={t("CHB_PINCODE")} text={chb_details?.address?.pincode || t("CS_NA")} />
-              <Row className="border-none" label={t("CHB_CITY")} text={chb_details?.address?.city || t("CS_NA")}/>
-              <Row className="border-none" label={t("CHB_LOCALITY")} text={chb_details?.address?.locality || t("CS_NA")} />
-              <Row className="border-none" label={t("CHB_STREET_NAME")} text={chb_details?.address?.streetName || t("CS_NA")} />
-              <Row className="border-none" label={t("CHB_HOUSE_NO")} text={chb_details?.address?.houseNo || t("CS_NA")} />
-              <Row className="border-none" label={t("CHB_LANDMARK")} text={chb_details?.address?.landmark || t("CS_NA")} />
-            </StatusTable>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_BANK_DETAILS")}</CardSubHeader>
-          <StatusTable>
+          {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_ADDRESS_DETAILS")}</CardSubHeader> */}
+          {/* <StatusTable>
+            <Row className="border-none" label={t("CHB_PINCODE")} text={chb_details?.address?.pincode || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_CITY")} text={chb_details?.address?.city || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_LOCALITY")} text={chb_details?.address?.locality || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_STREET_NAME")} text={chb_details?.address?.streetName || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_HOUSE_NO")} text={chb_details?.address?.houseNo || t("CS_NA")} />
+            <Row className="border-none" label={t("CHB_LANDMARK")} text={chb_details?.address?.landmark || t("CS_NA")} />
+          </StatusTable> */}
+          {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_BANK_DETAILS")}</CardSubHeader> */}
+          {/* <StatusTable>
             <Row className="border-none" label={t("CHB_ACCOUNT_NUMBER")} text={chb_details?.applicantDetail?.accountNumber || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_IFSC_CODE")} text={chb_details?.applicantDetail?.ifscCode || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_BANK_NAME")} text={chb_details?.applicantDetail?.bankName || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_BANK_BRANCH_NAME")} text={chb_details?.applicantDetail?.bankBranchName || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_ACCOUNT_HOLDER_NAME")} text={chb_details?.applicantDetail?.accountHolderName || t("CS_NA")} />
-          </StatusTable>
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("SLOT_DETAILS")}</CardSubHeader>
+          </StatusTable> */}
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("SLOT_DETAILS")}</CardSubHeader>
           <ApplicationTable
-                t={t}
-                data={slotlistRows}
-                columns={columns}
-                getCellProps={(cellInfo) => ({
-                  style: {
-                    minWidth: "150px",
-                    padding: "10px",
-                    fontSize: "16px",
-                    paddingLeft: "20px",
-                  },
-                })}
-                isPaginationRequired={false}
-                totalRecords={slotlistRows.length}
-              />
-          <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_DOCUMENTS_DETAILS")}</CardSubHeader>
+            t={t}
+            data={slotlistRows}
+            columns={columns}
+            getCellProps={(cellInfo) => ({
+              style: {
+                minWidth: "150px",
+                padding: "10px",
+                fontSize: "16px",
+                paddingLeft: "20px",
+              },
+            })}
+            isPaginationRequired={false}
+            totalRecords={slotlistRows.length}
+          />
+
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
           <StatusTable>
-            <Card style={{display: "flex", flexDirection: "row" }}>
-              {docs.map((doc, index) => (
-                <div key={`doc-${index}`} style={{ marginRight: "25px"}}>
-                  <div>
-                    <CardSectionHeader>{t("CHB_" + (doc?.documentType?.split('.').slice(0,2).join('_')))}</CardSectionHeader>
-                    <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                  </div>
-                </div>
-              ))}
+            {console.log("doc===", docs)}
+            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+              {docs?.length > 0 ? (
+                docs?.map((doc, index) => (
+                  <React.Fragment key={index}>
+                    <div>
+                      <CHBDocument value={docs} Code={doc?.documentType} index={index} />
+                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    </div>
+                  </React.Fragment>
+                ))
+              ) : (
+                <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
+              )}
             </Card>
-         </StatusTable>
-
-          {/* <CHBWFApplicationTimeline application={application} id={application?.bookingNo} userType={"citizen"} />
-          {showToast && (
-            <Toast
-              error={showToast.key}
-              label={t(showToast.label)}
-              style={{ bottom: "0px" }}
-              onClose={() => {
-                setShowToast(null);
-              }}
-            />
-          )} */}
+          </StatusTable>
         </Card>
-
-        {/* {popup && <PTCitizenFeedbackPopUp setpopup={setpopup} setShowToast={setShowToast} data={data} />} */}
       </div>
     </React.Fragment>
   );

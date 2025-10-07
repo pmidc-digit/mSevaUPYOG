@@ -1,65 +1,125 @@
-import React, { use, useEffect, useState } from "react";
-import { CardLabel, Dropdown, UploadFile, Toast, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useState } from "react";
+import { CardLabel, UploadFile, Toast, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import _ from "lodash";
 
-const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
-  const tenantId = Digit.ULBService.getStateId();
-  const [documents, setDocuments] = useState(formData?.documents?.documents);
-  const [error, setError] = useState(null);
-  const [enableSubmit, setEnableSubmit] = useState(true);
-  const [checkRequiredFields, setCheckRequiredFields] = useState(false);
-
-  // const tenantId = Digit.ULBService.getCurrentTenantId();
+const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => {
   const stateId = Digit.ULBService.getStateId();
+  const [formErrors, setFormErrors] = useState({});
+  const [toastError, setToastError] = useState(null);
 
-  // const { isLoading, data } = Digit.Hooks.ptr.usePetMDMS(stateId, "PetService", "Documents");
-  const { isLoading, data } = Digit.Hooks.pt.usePropertyMDMS(stateId, "NDC", ["Documents"]);
-  console.log("formDataINPTRDOCUMENT", documents, formData);
-
-  const handleSubmit = () => {
-    let document = formData.documents;
-    let documentStep;
-    documentStep = { ...document, documents: documents };
-    onSelect(config.key, documentStep);
+  const FILE_POLICY = {
+    maxBytes: 5 * 1024 * 1024, // 5 MB
+    allowedExtensions: [".pdf", ".jpeg", ".jpg", ".png"],
   };
-  const onSkip = () => onSelect();
-  function onAdd() {}
+
+  const validateFile = (file, docCode) => {
+    if (!file) return null;
+
+    const maxBytes = FILE_POLICY.maxBytes;
+    let allowedExtensions = [...FILE_POLICY.allowedExtensions];
+
+    // Restrict to images only for Owner's Photo and PET_PETPHOTO
+    if (docCode === "OWNER.OWNERPHOTO" || docCode === "PET.PETPHOTO") {
+      allowedExtensions = [".jpeg", ".jpg", ".png"];
+    }
+
+    const nameLower = file?.name?.toLowerCase?.() || "";
+    const okType = allowedExtensions.some((ext) => nameLower.endsWith(ext));
+    if (!okType) return "CS_FILE_INVALID_TYPE";
+    if (file.size > maxBytes) return "CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED";
+    return null;
+  };
+
+  const makeDocumentsValidator = (mdms) => {
+    const requiredDocs = (mdms || []).filter((d) => d?.required);
+
+    return (documents = []) => {
+      const errors = {};
+      const missingDocs = [];
+      const docsArray = Array.isArray(documents) ? documents : [];
+      if (!requiredDocs.length) return errors;
+
+      for (const doc of requiredDocs) {
+        const satisfied = docsArray.some((d) => d.documentType?.includes(doc.code) && (d.filestoreId || d.fileStoreId));
+        if (!satisfied) {
+          missingDocs.push(t(doc?.code.replaceAll(".", "_")));
+        }
+      }
+
+      if (missingDocs.length > 0) {
+        errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
+        errors.missingDocs = missingDocs;
+      }
+      return errors;
+    };
+  };
+
+  const { isLoading, data: mdmsDocsData } = Digit.Hooks.ads.useADSDocumentsMDMS(stateId);
+
+  const [documents, setDocuments] = useState(formData?.documents?.documents || []);
+  // Centralized required-doc validation
+  useEffect(() => {
+    if (mdmsDocsData) {
+      const validateDocs = makeDocumentsValidator(mdmsDocsData);
+      const errors = validateDocs(documents);
+      setFormErrors(errors);
+    }
+  }, [documents, mdmsDocsData]);
 
   useEffect(() => {
-    let count = 0;
-    data?.PetService?.Documents?.map((doc) => {
-      doc.hasDropdown = true;
+    const incomingDocs = formData?.documents?.documents || [];
+    if (!_.isEqual(incomingDocs, documents)) {
+      setDocuments(incomingDocs);
+    }
+  }, [formData]);
 
-      let isRequired = false;
-      documents?.map((data) => {
-        if (doc.required && data?.documentType.includes(doc.code)) isRequired = true;
-      });
-      if (!isRequired && doc.required) count = count + 1;
-    });
-    if ((count == "0" || count == 0) && documents?.length > 0) setEnableSubmit(false);
-    else setEnableSubmit(true);
-  }, [documents, checkRequiredFields]);
+  const lastSentRef = React.useRef();
+
+  useEffect(() => {
+    if (!_.isEqual(lastSentRef.current, documents)) {
+      lastSentRef.current = documents;
+      onSelect(config.key, { documents });
+    }
+  }, [documents, config.key]);
+
+  const handleSubmit = () => {
+    if (Object.keys(formErrors).length > 0) {
+      setToastError(t(formErrors.missingRequired || "PTR_VALIDATION_ERROR"));
+      onSelect(config.key, { missingDocs: formErrors.missingDocs || [] });
+      return;
+    }
+    let documentStep = { ...mdmsDocsData, documents };
+    onSelect(config.key, documentStep);
+  };
+
+  
+
+  const onSkip = () => onSelect();
 
   return (
     <div>
-      {/* <Timeline currentStep={4} /> */}
       {!isLoading ? (
-        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={enableSubmit} onAdd={onAdd}>
-          {data?.NDC?.Documents?.map((document, index) => {
-            return (
-              <PTRSelectDocument
-                key={index}
-                document={document}
-                t={t}
-                error={error}
-                setError={setError}
-                setDocuments={setDocuments}
-                documents={documents}
-                setCheckRequiredFields={setCheckRequiredFields}
-                handleSubmit={handleSubmit}
-              />
-            );
-          })}
-          {error && <Toast label={error} onClose={() => setError(null)} error />}
+        <FormStep t={t} config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={Object.keys(formErrors).length > 0}>
+          {Array.isArray(mdmsDocsData) &&
+            mdmsDocsData.map((mdmsDoc, index) => {
+              const existing = documents.find((d) => d.documentType === mdmsDoc.code);
+              return (
+                <ADSSelectDocument
+                  key={index}
+                  document={{ ...mdmsDoc, ...existing }}
+                  t={t}
+                  setDocuments={setDocuments}
+                  documents={documents}
+                  validateFile={validateFile}
+                  makeDocumentsValidator={makeDocumentsValidator}
+                  mdms={mdmsDocsData}
+                  setFormErrors={setFormErrors}
+                  formErrors={formErrors} // ✅ pass down
+                />
+              );
+            })}
+
+          {toastError && <Toast isDleteBtn={true} label={toastError} onClose={() => setToastError(null)} error />}
         </FormStep>
       ) : (
         <Loader />
@@ -68,139 +128,86 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData, setEr
   );
 };
 
-function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents, action, formData, handleSubmit, id }) {
-  const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  // console.log("filetetetetet",filteredDocument, documents, doc);
-
-  const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [selectedDocument, setSelectedDocument] = useState(
-    filteredDocument
-      ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }
-      : doc?.dropdownData?.length === 1
-      ? doc?.dropdownData[0]
-      : {}
-  );
-
+function ADSSelectDocument({
+  t,
+  document: doc,
+  setDocuments,
+  documents,
+  validateFile,
+  makeDocumentsValidator,
+  mdms,
+  setFormErrors,
+  formErrors,
+  submitted,
+}) {
   const [file, setFile] = useState(null);
-  const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || null);
-
-  const handlePTRSelectDocument = (value) => setSelectedDocument(value);
+  const [uploadedFile, setUploadedFile] = useState(doc?.fileStoreId || null);
+  const [fieldError, setFieldError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   function selectfile(e) {
-    setFile(e.target.files[0]);
+    const selected = e.target.files && e.target.files[0];
+    if (!selected) return;
+
+    const errKey = validateFile(selected, doc?.code);
+    if (errKey) {
+      setFieldError(t(errKey));
+      updateParentDocs(null);
+      return;
+    }
+    setFieldError(null);
+    setFile(selected);
   }
-  const { dropdownData } = doc;
-
-  var dropDownData = dropdownData;
-
-  const [isHidden, setHidden] = useState(false);
-  const [getLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (selectedDocument?.code) {
-      console.log("selectedDocument", documents);
-      setDocuments((prev) => {
-        const filteredDocumentsByDocumentType = prev?.filter((item) => item?.documentType !== selectedDocument?.code);
-
-        if (uploadedFile?.length === 0 || uploadedFile === null) {
-          return filteredDocumentsByDocumentType;
-        }
-
-        const filteredDocumentsByFileStoreId = filteredDocumentsByDocumentType?.filter((item) => item?.fileStoreId !== uploadedFile) || [];
-        return [
-          ...filteredDocumentsByFileStoreId,
-          {
-            documentType: selectedDocument?.code,
-            filestoreId: uploadedFile,
-            documentUid: uploadedFile,
-          },
-        ];
-      });
-    }
-  }, [uploadedFile, selectedDocument]);
-
-  useEffect(() => {
-    if (documents?.length > 0) {
-      console.log("documents", documents);
-      handleSubmit();
-    }
-  }, [documents]);
-
-  useEffect(() => {
-    if (action === "update") {
-      const originalDoc = formData?.originalData?.documents?.filter((e) => e.documentType.includes(doc?.code))[0];
-      const docType = dropDownData
-        .filter((e) => e.code === originalDoc?.documentType)
-        .map((e) => ({ ...e, i18nKey: e?.code?.replaceAll(".", "_") }))[0];
-      if (!docType) setHidden(true);
-      else {
-        setSelectedDocument(docType);
-        setUploadedFile(originalDoc?.fileStoreId);
-      }
-    } else if (action === "create") {
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!doc?.hasDropdown) {
-      setSelectedDocument({ code: doc?.code, i18nKey: doc?.code?.replaceAll(".", "_") });
-      // setHidden(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    (async () => {
-      setError(null);
-      if (file) {
+    if (file) {
+      (async () => {
         setLoading(true);
-        if (file.size >= 5242880) {
-          setError(t("CS_MAXIMUM_UPLOAD_SIZE_EXCEEDED"));
-          // if (!formState.errors[config.key]) setFormError(config.key, { type: doc?.code });
-        } else {
-          try {
-            setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
-            setLoading(false);
-            if (response?.data?.files?.length > 0) {
-              setUploadedFile(response?.data?.files[0]?.fileStoreId);
-            } else {
-              setError(t("CS_FILE_UPLOAD_ERROR"));
-            }
-          } catch (err) {
-            setLoading(false);
-            setError(t("CS_FILE_UPLOAD_ERROR"));
+        try {
+          const response = await Digit.UploadServices.Filestorage("PTR", file, Digit.ULBService.getStateId());
+          setLoading(false);
+          if (response?.data?.files?.length > 0) {
+            const fileId = response?.data?.files[0]?.fileStoreId;
+            setUploadedFile(fileId);
+            updateParentDocs(fileId);
+          } else {
+            setFieldError(t("CS_FILE_UPLOAD_ERROR"));
+            updateParentDocs(null);
           }
+        } catch {
+          setLoading(false);
+          setFieldError(t("CS_FILE_UPLOAD_ERROR"));
+          updateParentDocs(null);
         }
-      }
-    })();
+      })();
+    }
   }, [file]);
 
-  useEffect(() => {
-    if (isHidden) setUploadedFile(null);
-  }, [isHidden]);
+  const updateParentDocs = (fileId) => {
+    const updatedDocs = [
+      ...documents.filter((d) => d.documentType !== doc?.code),
+      ...(fileId ? [{ documentType: doc?.code, fileStoreId: fileId, documentUid: fileId }] : []),
+    ];
 
+    if (!_.isEqual(updatedDocs, documents)) {
+      setDocuments(updatedDocs);
+      const errors = makeDocumentsValidator(mdms)(updatedDocs);
+      setFormErrors(errors);
+    }
+  };
+
+
+
+  const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
+  console.log("doc", doc);
   return (
     <div style={{ marginBottom: "24px" }}>
-      {getLoading && <Loader />}
-      {doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_"))}</CardLabel>
-          <Dropdown
-            className="form-field"
-            selected={selectedDocument}
-            style={{ width: "100%" }}
-            option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
-            select={handlePTRSelectDocument}
-            optionKey="i18nKey"
-            t={t}
-          />
-        </LabelFieldPair>
-      ) : null}
-      {!doc?.hasDropdown ? (
-        <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + "  *"}</CardLabel>
-        </LabelFieldPair>
-      ) : null}
+      {loading && <Loader />}
+
+      <LabelFieldPair>
+        <CardLabel className="card-label-smaller">{t(doc?.code.replaceAll(".", "_")) + (doc?.required ? "  *" : "")}</CardLabel>
+      </LabelFieldPair>
+
       <LabelFieldPair>
         <CardLabel className="card-label-smaller"></CardLabel>
         <div className="field">
@@ -208,15 +215,24 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             onUpload={selectfile}
             onDelete={() => {
               setUploadedFile(null);
+              setFieldError(null);
+              updateParentDocs(null);
             }}
-            id={id}
             message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
             textStyles={{ width: "100%" }}
             inputStyles={{ width: "280px" }}
-            accept=".pdf, .jpeg, .jpg, .png" //  to accept document of all kind
+            accept={doc?.code === "OWNER.OWNERPHOTO" || doc?.code === "PET.PETPHOTO" ? ".jpeg, .jpg, .png" : ".pdf, .jpeg, .jpg, .png"}
             buttonType="button"
-            error={!uploadedFile}
+            error={Boolean(fieldError)}
           />
+
+          {/* Inline file validation error */}
+          {fieldError && <div style={errorStyle}>{fieldError}</div>}
+
+          {/* {!uploadedFile &&
+            doc?.required &&
+            submitted && // 👈 only show after submit
+            formErrors?.missingDocs?.includes(t(doc?.code.replaceAll(".", "_"))) && <div style={errorStyle}>{t("CS_REQUIRED_FIELD")}</div>} */}
         </div>
       </LabelFieldPair>
     </div>

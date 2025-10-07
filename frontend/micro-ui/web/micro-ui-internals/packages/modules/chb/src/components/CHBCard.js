@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { EmployeeModuleCard,CHBIcon } from "@mseva/digit-ui-react-components";
+import { EmployeeModuleCard } from "@mseva/digit-ui-react-components";
+import { CHBIcon } from "../components/CHBIcon";
 
 const CHBCard = () => {
   const { t } = useTranslation();

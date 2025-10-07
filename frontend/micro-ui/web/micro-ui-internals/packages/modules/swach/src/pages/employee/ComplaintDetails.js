@@ -156,10 +156,10 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
             selectedAction === "ASSIGN" || selectedAction === "REASSIGN"
               ? t("CS_ACTION_ASSIGN")
               : selectedAction === "REJECT"
-                ? t("CS_ACTION_REJECT")
-                : selectedAction === "REOPEN"
-                  ? t("CS_COMMON_REOPEN")
-                  : t("CS_COMMON_RESOLVE")
+              ? t("CS_ACTION_REJECT")
+              : selectedAction === "REOPEN"
+              ? t("CS_COMMON_REOPEN")
+              : t("CS_COMMON_RESOLVE")
           }
         />
       }
@@ -170,10 +170,10 @@ const ComplaintDetailsModal = ({ workflowDetails, complaintDetails, close, popup
         selectedAction === "ASSIGN" || selectedAction === "REASSIGN"
           ? t("CS_COMMON_ASSIGN")
           : selectedAction === "REJECT"
-            ? t("CS_COMMON_REJECT")
-            : selectedAction === "REOPEN"
-              ? t("CS_COMMON_REOPEN")
-              : t("CS_COMMON_RESOLVE")
+          ? t("CS_COMMON_REJECT")
+          : selectedAction === "REOPEN"
+          ? t("CS_COMMON_REOPEN")
+          : t("CS_COMMON_RESOLVE")
       }
       actionSaveOnSubmit={() => {
         //debugger;
@@ -260,7 +260,7 @@ export const ComplaintDetails = (props) => {
   const { data: localities } = Digit.Hooks.useBoundaryLocalities(tenantId, "admin", {}, t);
   const workflowDetails = Digit.Hooks.useWorkflowDetails({ tenantId: ulb, id, moduleCode: "SWACH", role: "EMPLOYEE" });
   const [imagesToShowBelowComplaintDetails, setImagesToShowBelowComplaintDetails] = useState([]);
-  
+
   if (workflowDetails && workflowDetails?.data) {
     workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
     workflowDetails.data.actionState = { ...workflowDetails.data };
@@ -311,13 +311,13 @@ export const ComplaintDetails = (props) => {
     })();
   }, [complaintDetails]);
 
-    useEffect(() => {
+  useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => {
         // Redirect to inbox after toast appears
         history.push("/digit-ui/employee/swach/inbox");
       }, 3000); // 3 seconds delay
-      
+
       // Clean up the timeout on component unmount
       return () => clearTimeout(timer);
     }
@@ -409,7 +409,7 @@ export const ComplaintDetails = (props) => {
     setPopup(false);
     const response = await Digit.Complaint.assignSwach(complaintDetails, selectedAction, selectedEmployee, comments, uploadedFile, tenantId);
     setAssignResponse(response);
-     // Set toast message based on action type
+    // Set toast message based on action type
     const actionMessage = t(response ? `CS_ACTION_${selectedAction}_TEXT` : "CS_ACTION_ASSIGN_FAILED");
     setToastMessage(actionMessage);
     setToast(true);
@@ -455,8 +455,8 @@ export const ComplaintDetails = (props) => {
       mobileNumber: checkpoint?.assigner?.mobileNumber,
       ...(checkpoint.status === "COMPLAINT_FILED" && complaintDetails?.audit
         ? {
-          source: complaintDetails.audit.source,
-        }
+            source: complaintDetails.audit.source,
+          }
         : {}),
     };
     const isFirstPendingForAssignment = arr.length - (index + 1) === 1 ? true : false;
@@ -551,7 +551,7 @@ export const ComplaintDetails = (props) => {
                         ? complaintDetails?.details[k].map((val) => (typeof val === "object" ? t(val?.code) : t(val)))
                         : t(complaintDetails?.details[k]) || "N/A"
                     }
-                  // last={arr.length - 1 === i}
+                    // last={arr.length - 1 === i}
                   />
                 ))}
 
@@ -638,7 +638,9 @@ export const ComplaintDetails = (props) => {
           t={t}
         />
       ) : null}
-      {toast && <Toast label={toastMessage ||t(assignResponse ? `CS_ACTION_${selectedAction}_TEXT` : "CS_ACTION_ASSIGN_FAILED")} onClose={closeToast} />}
+      {toast && (
+        <Toast label={toastMessage || t(assignResponse ? `CS_ACTION_${selectedAction}_TEXT` : "CS_ACTION_ASSIGN_FAILED")} onClose={closeToast} />
+      )}
       {!workflowDetails?.isLoading && workflowDetails?.data?.nextActions?.length > 0 && (
         <ActionBar>
           {displayMenu && workflowDetails?.data?.nextActions ? (

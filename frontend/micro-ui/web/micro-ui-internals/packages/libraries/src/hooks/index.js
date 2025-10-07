@@ -18,6 +18,8 @@ import {
   useBulkPdfDetails,
 } from "./payment";
 import { useMCollectRecieptSearch } from "./mcollect/mCollect";
+import { useChallanGenerationRecieptSearch } from "./challanGeneration/challanGeneration";
+import { useRentAndLeaseRecieptSearch } from "./rentAndLease/rentAndLease";
 
 import { useUserSearch } from "./userSearch";
 import { useApplicationsForBusinessServiceSearch } from "./useApplicationForBillSearch";
@@ -144,16 +146,38 @@ import useMCollectCategoryTypes from "./mcollect/useMcollectCategoryTypes";
 import useMCollectTaxHeads from "./mcollect/useMcollectTaxHeads";
 import useMcollectFormConfig from "./mcollect/useMcollectFormConfig";
 
+import useChallanGenerationMDMS from "./challanGeneration/useChallanGenerationMDMS";
+import useChallanGenerationSearch from "./challanGeneration/useChallanGenerationSearch";
+import useChallanGenerationSearchBill from "./challanGeneration/useChallanGenerationSearchBill";
+import useChallanGenerationTenants from "./challanGeneration/useTenants";
+import useChallanGenerationCount from "./challanGeneration/useChallanGenerationCount";
+import useChallanGenerationCategory from "./challanGeneration/useChallanGenerationCategory";
+import useChallanGenerationCategoryTypes from "./challanGeneration/useChallanGenerationCategoryTypes";
+import useChallanGenerationTaxHeads from "./challanGeneration/useChallanGenerationTaxHeads";
+import useChallanGenerationFormConfig from "./challanGeneration/useChallanGenerationFormConfig";
+
+import useRentAndLeaseMDMS from "./rentAndLease/useRentAndLeaseMDMS";
+import useRentAndLeaseSearch from "./rentAndLease/useRentAndLeaseSearch";
+import useRentAndLeaseSearchBill from "./rentAndLease/useRentAndLeaseSearchBill";
+import useRentAndLeaseTenants from "./rentAndLease/useTenants";
+import useRentAndLeaseCount from "./rentAndLease/useRentAndLeaseCount";
+import useRentAndLeaseCategory from "./rentAndLease/useRentAndLeaseCategory";
+import useRentAndLeaseCategoryTypes from "./rentAndLease/useRentAndLeaseCategoryTypes";
+import useRentAndLeaseTaxHeads from "./rentAndLease/useRentAndLeaseTaxHeads";
+import useRentAndLeaseFormConfig from "./rentAndLease/useRentAndLeaseFormConfig";
+
 import useTenantsTL from "./tl/useTenants";
 import useTradeLicenseMDMS from "./tl/useTradeLicenseMDMS";
 import useTLDocumentSearch from "./tl/useTLDocumentSearch";
 import useTradeLicenseAPI from "./tl/useTradeLicenseAPI";
 import useTradeLicenseSearch from "./tl/useTradeLicenseSearch";
 import { useTLSearchApplication, useTLApplicationDetails } from "./tl/useTLsearchApplication";
+import { useNDCSearchApplication, useNDCSearchApplicationEmployee } from "./ndc/useNDCSearchApplication";
 import useTLPaymentHistory from "./tl/userPaymentHistory";
 import useTLApplicationDetail from "./tl/useApplicationDetail";
 import useTLApplicationActions from "./tl/useApplicationActions";
 import useTLFetchBill from "./tl/useFetchBill";
+import useNDCDocumentSearch from "./ndc/useNDCDocumentSearch";
 
 import useTLGenderMDMS from "./tl/useTLGenderMDMS";
 import useTLInbox from "./tl/useInbox";
@@ -201,6 +225,7 @@ import useServiceTypeFromApplicationType from "./obps/useServiceTypeFromApplicat
 import useBusinessServiceBasedOnServiceType from "./obps/useBusinessServiceBasedOnServiceType";
 import useBusinessServiceData from "./obps/useBusinessServiceData";
 import useBPATaxDocuments from "./obps/useBPATaxDocuments";
+import { useBPACalculation } from "./obps/useBPACalculation";
 
 import useEventInbox from "./events/useEventInbox";
 import useEventDetails from "./events/useEventDetails";
@@ -222,7 +247,13 @@ import useSurveyQuestionInbox from "./surveys/useSurveyQuestionInbox";
 
 import useNOCDetails from "./noc/useNOCDetails";
 import useNOCInbox from "./noc/useInbox";
-import useNOCSearchApplication from "./noc/useSearchApplications";
+import { useNOCSearchApplication, useNOCCitizenSearchApplication } from "./noc/useSearchApplications";
+import useBuildingCategory from "./noc/useBuildingCategory";
+import useBuildingType from "./noc/useBuildingType";
+import useRoadType from "./noc/useRoadType";
+import useNOCTenants from "./noc/useTenants";
+import useNOCDocumentSearch from "./noc/useNOCDocumentsSearch";
+import useNocType from "./noc/useNocType";
 
 import WSSearchMdmsTypes from "./ws/WSSearchMdmsTypes";
 import usewsTenants from "./ws/useTenants";
@@ -277,6 +308,8 @@ import useWSConfigMDMS from "./ws/useWSConfigMDMS";
 import useFeedBackSearch from "./useFeedBackSearch";
 
 import usePetMDMS from "./ptr/usePetMDMS";
+import useDocumentsMDMS from "./ptr/useDocumentsMDMS";
+
 import useBreedTypeMDMS from "./ptr/useBreedTypeMDMS";
 import usePTRCreateAPI from "./ptr/usePTRCreateAPI";
 import usePTRPetMDMS from "./ptr/usePTRPetMDMS";
@@ -305,7 +338,18 @@ import useTenantsADS from "./ads/useTenants";
 import useADSDocumentsMDMS from "./ads/useADSDocumentsMDMS";
 import useADSDocumentSearch from "./ads/useADSDocumentSearch";
 import useADSDemandEstimation from "./ads/useADSDemandEstimation";
+import useADSAdTypeMDMS from "./ads/useADSAdTypeMDMS";
+import useADSTaxAmountMDMS from "./ads/useADSTaxAmountMDMS";
+import useADSLocationMDMS from "./ads/useADSLocationMDMS";
+import useADSFaceAreaMDMS from "./ads/useADSFaceAreaMDMS";
+import useADSCalculationTypeMDMS from "./ads/useADSCalculationTypeMDMS";
+import useADSAdvServicesMDMS from "./ads/useADSAdvServicesMDMS";
+import { useADSSearchApplication, useADSSearchApplicationEmployee } from "./ads/useADSSearchApplication";
+import useADSAllMDMS from "./ads/useADSAllMDMS";
 
+// ndc
+import useNDCInbox from "./ndc/useInbox";
+import useCHBInbox from "./chb/useInbox";
 import useSpecialCategory from "./chb/useSpecialCategory";
 import useResidentType from "./chb/useResidentType";
 import usePurpose from "./chb/usePurpose";
@@ -396,6 +440,7 @@ const ptr = {
   usePetMDMS,
   usePTRPetMDMS,
   useBreedTypeMDMS,
+  useDocumentsMDMS,
   usePTRCreateAPI,
   usePTRApplicationAction,
   usePTRGenderMDMS,
@@ -558,6 +603,7 @@ const obps = {
   useULBList,
   useUlbType,
   useEDCRForm,
+  useBPACalculation,
 };
 
 const events = {
@@ -595,6 +641,15 @@ const ads = {
   useADSSearch,
   useADSDemandEstimation,
   useADSApplicationDetail,
+  useADSAllMDMS,
+  useADSAdvServicesMDMS,
+  useADSCalculationTypeMDMS,
+  useADSFaceAreaMDMS,
+  useADSLocationMDMS,
+  useADSTaxAmountMDMS,
+  useADSAdTypeMDMS,
+  useADSSearchApplication,
+  useADSSearchApplicationEmployee,
 };
 
 const chb = {
@@ -613,6 +668,7 @@ const chb = {
   useChbHallCode,
   useChbSlotSearch,
   useDemandEstimation,
+  useInbox: useCHBInbox,
 };
 
 const asset = {
@@ -650,6 +706,45 @@ const noc = {
   useNOCApplicationActions,
   useInbox: useNOCInbox,
   useNOCSearchApplication,
+  useNOCCitizenSearchApplication,
+  useBuildingCategory,
+  useBuildingType,
+  useRoadType,
+  useTenants: useNOCTenants,
+  useNOCDocumentSearch,
+  useNocType,
+};
+
+const ndc = {
+  useInbox: useNDCInbox,
+  useSearchApplication: useNDCSearchApplication,
+  useSearchEmployeeApplication: useNDCSearchApplicationEmployee,
+  useNDCDocumentSearch,
+};
+
+const challangeneration = {
+  useChallanGenerationRecieptSearch,
+  useChallanGenerationMDMS,
+  useChallanGenerationSearch,
+  useChallanGenerationSearchBill,
+  useChallanGenerationTenants,
+  useChallanGenerationCount,
+  useChallanGenerationCategory,
+  useChallanGenerationCategoryTypes,
+  useChallanGenerationTaxHeads,
+  useChallanGenerationFormConfig,
+};
+const rentandlease = {
+  useRentAndLeaseRecieptSearch,
+  useRentAndLeaseMDMS,
+  useRentAndLeaseSearch,
+  useRentAndLeaseSearchBill,
+  useRentAndLeaseTenants,
+  useRentAndLeaseCount,
+  useRentAndLeaseCategory,
+  useRentAndLeaseCategoryTypes,
+  useRentAndLeaseTaxHeads,
+  useRentAndLeaseFormConfig,
 };
 
 const ws = {
@@ -771,10 +866,13 @@ const Hooks = {
   createTokenAPI,
   sv,
   ads,
+  ndc,
   chb,
   asset,
   pgrAi,
   useEDCRForm,
+  challangeneration,
+  rentandlease,
 };
 
 export default Hooks;

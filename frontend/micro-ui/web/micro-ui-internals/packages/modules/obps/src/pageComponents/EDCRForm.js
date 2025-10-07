@@ -1,5 +1,5 @@
-import { CardLabel, Dropdown, FormStep, Loader, TextInput, Toast, UploadFile } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import { CardLabel, Dropdown, FormStep, LinkButton, Loader, TextInput, Toast, UploadFile } from "@mseva/digit-ui-react-components";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useHistory } from "react-router-dom";
 import { getPattern, stringReplaceAll, sortDropdownNames } from "../utils";
 
@@ -8,6 +8,7 @@ import useEDCRForm from "../../../../libraries/src/hooks/obps/useEDCRForm";
 const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, addNewOwner, isShowToast, isSubmitBtnDisable, setIsShowToast }) => {
   const { pathname: url } = useLocation();
   const history = useHistory();
+  const containerRef = useRef(null);
   //actual state up side
 
   // want to have same update name in my form
@@ -22,6 +23,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     cluApprove,
     cluApproveOptions,
     coreArea,
+    purchasableFar,
     coreAreaOptions,
     dxfFile,
     error,
@@ -57,16 +59,19 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     setUploadMessage,
     setUploadedFile,
     setcoreArea,
+    setPurchasableFar,
     setSelectLayout,
     siteReserved,
     siteReservedOptions,
+    purchasableFarOptions,
+    showSkip,
 
     tenantIdData,
     ulb,
     uploadMessage,
     uploadedFile,
   } = useEDCRForm({ formData });
-  let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId() || "pb.amritsar"; // fallback hardcoded tenant (update this to your ULB)
+  let tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId() || "pb.amritsar"; 
 
   const stateId = Digit.ULBService.getStateId();
   console.log(stateId, tenantId, t, "TEN STATE");
@@ -89,6 +94,9 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
   ];
 
   const { isLoading, data: citymodules } = Digit.Hooks.obps.useMDMS(stateId, "tenant", ["citymodule"]);
+
+
+  // const tenantId = localStorage.getItem("CITIZEN.CITY");
 
   useEffect(() => {
     if (citymodules?.tenant?.citymodule?.length > 0) {
@@ -119,6 +127,28 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     }
   }, [uploadMessage, isShowToast, isSubmitBtnDisable]);
 
+
+useEffect(() => {
+  const container = containerRef.current;
+  if (!container) return;
+
+  const hideSkip = () => {
+    const skipBtn = container.querySelector('button.skip, button[data-testid="skip-button"]');
+    if (skipBtn) {
+      skipBtn.style.display = "none";
+    }
+  };
+
+  hideSkip();
+
+  const mo = new MutationObserver(hideSkip);
+  mo.observe(container, { childList: true, subtree: true });
+
+  return () => mo.disconnect();
+}, []);
+
+
+
   function onAdd() {
     setUploadMessage("NEED TO DELETE");
   }
@@ -129,6 +159,22 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
     data.applicantName = name;
     data.file = file;
     data.coreArea = coreArea;
+    data.ulb = ulb;
+    data.areaType = areaType;
+    data.schemeArea = schemeArea;
+    data.schName = schName;
+    data.siteReserved = siteReserved;
+    data.approvedCS = approvedCS;
+    data.cluApprove = cluApprove;
+    data.purchasableFar = purchasableFar;
+    data.layoutFile = layoutFile;
+
+    if (areaType?.code === "SCHEME_AREA") {
+      data.coreArea = "NO";
+    } else if (areaType?.code === "NON_SCHEME_AREA") {
+      data.coreArea = coreArea;
+    }
+
     onSelect(config.key, data);
   };
 
@@ -137,73 +183,23 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
   }
 
   return (
-    // <FormStep
-    //     t={t}
-    //     config={config}
-    //     onSelect={handleSubmit}
-    //     onSkip={onSkip}
-    //     isDisabled={!tenantIdData || !name || !coreArea || !file || isSubmitBtnDisable}
-    //     onAdd={onAdd}
-    //     isMultipleAllow={true}
-    // >
-    //     <CardLabel>{`${t("EDCR_SCRUTINY_CITY")} *`}</CardLabel>
-    //     <Dropdown
-    //         t={t}
-    //         isMandatory={false}
-    //         option={citymoduleList}
-    //         selected={tenantIdData}
-    //         optionKey="i18nKey"
-    //         select={setTypeOfTenantID}
-    //         uploadMessage={uploadMessage}
-    //     />
-    //     <CardLabel>{`${t("EDCR_SCRUTINY_NAME_LABEL")} *`}</CardLabel>
-    //     <TextInput
-    //         isMandatory={false}
-    //         optionKey="i18nKey"
-    //         t={t}
-    //         name="applicantName"
-    //         onChange={setApplicantName}
-    //         uploadMessage={uploadMessage}
-    //         value={name}
-    //         {...(validation = {
-    //             isRequired: true,
-    //             //pattern: "^[a-zA-Z]+(( )+[a-zA-z]+)*$",
-    //             pattern: "^[a-zA-Z ]+$",
-    //             type: "text",
-    //             title: t("TL_NAME_ERROR_MESSAGE"),
-    //         })}
-    //     />
-    //     <CardLabel>{`${t("BPA_CORE_AREA")}`}</CardLabel>
-    //     <Dropdown
-    //         t={t}
-    //         isMandatory={false}
-    //         option={common}
-    //         selected={coreArea}
-    //         optionKey="i18nKey"
-    //         select={setCoreArea}
-    //         uploadMessage={uploadMessage}
-    //     />
-    //     <CardLabel>{`${t("BPA_PLAN_DIAGRAM_LABEL")} *`}</CardLabel>
-    //     <UploadFile
-    //         id={"edcr-doc"}
-    //         extraStyleName={"propertyCreate"}
-    //         // accept=".dxf"
-    //         onUpload={selectfile}
-    //         onDelete={() => {
-    //             setUploadedFile(null);
-    //             setFile("");
-    //         }}
-    //         message={uploadedFile ? `1 ${t(`PT_ACTION_FILEUPLOADED`)}` : t(`ES_NO_FILE_SELECTED_LABEL`)}
-    //         error={error}
-    //         uploadMessage={uploadMessage}
-    //     />
-    //     <div style={{ disabled: "true", height: "30px", width: "100%", fontSize: "14px" }}>{t("EDCR_UPLOAD_FILE_LIMITS_LABEL")}</div>
-    //     {isShowToast && <Toast error={isShowToast.key} label={t(isShowToast.label)} onClose={() => setIsShowToast(null)} isDleteBtn={true} />}
-    //     {/* {isSubmitBtnDisable ? <Loader /> : null} */}
-    // </FormStep>
+
 
     <React.Fragment>
-      <FormStep config={config} onSelect={handleSubmit} onSkip={onSkip} isDisabled={!isFormValid()} t={t}>
+
+
+
+      <div  
+      onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+      }
+    }}
+    ref={containerRef}
+    >
+
+      
+      <FormStep  config={{ ...config, texts: { ...config.texts, skipText: null } }} onSelect={handleSubmit} isDisabled={!isFormValid()} t={t}>
         <CardLabel>{t("EDCR_APPLICANT_NAME")}</CardLabel>
         <TextInput t={t} isMandatory={true} type="text" name="applicantName" value={name} onChange={(e) => setName(e.target.value)} />
 
@@ -216,7 +212,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
           selected={selectedCity}
           select={(city) => {
             setSelectedCity(city);
-            setUlb(city?.code); // Also set ulb here
+            setUlb(city?.code);
           }}
           placeholder={t("COMMON_TABLE_SEARCH")}
         />
@@ -274,14 +270,20 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
             <CardLabel>{t("EDCR_SCRUTINY_CLU_APPROVED")}</CardLabel>
             <Dropdown t={t} isMandatory={true} option={cluApproveOptions} selected={cluApprove} optionKey="value" select={setCluApproved} />
 
-            {cluApprove?.code !== "NO" && (
+          
               <React.Fragment>
                 <CardLabel>{t("EDCR_IS_CORE_AREA")}</CardLabel>
                 <Dropdown t={t} isMandatory={true} option={coreAreaOptions} selected={coreArea} optionKey="value" select={setcoreArea} />
               </React.Fragment>
-            )}
+          
           </React.Fragment>
         )}
+
+
+         <React.Fragment>
+                <CardLabel>{t("EDCR_IS_PURCHASABLEFAR")}</CardLabel>
+                <Dropdown t={t} isMandatory={true} option={purchasableFarOptions} selected={purchasableFar} optionKey="value" select={setPurchasableFar} />
+              </React.Fragment>
 
         {approvedCS?.code !== "YES" && (
           <React.Fragment>
@@ -290,6 +292,7 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
               id={"edcr-doc"}
               extraStyleName={"propertyCreate"}
               onUpload={handleDXFUpload}
+              accept=".dxf"
               onDelete={() => {
                 setUploadedFile(null);
                 setFile("");
@@ -298,9 +301,12 @@ const EDCRForm = ({ t, config, onSelect, userType, formData, ownerIndex = 0, add
               error={error}
               uploadMessage={uploadMessage}
             />
+            <p style={{ padding: "10px", fontSize: "14px" }}>{t("EDCR_ONLY_DXF_FILE")}</p>
           </React.Fragment>
         )}
+        
       </FormStep>
+      </div>
     </React.Fragment>
   );
 };

@@ -13,6 +13,7 @@ import PTRCitizenAddress from "./pageComponents/PTRCitizenAddress";
 import PTRSelectPincode from "./pageComponents/PTRSelectPincode";
 import PTRSelectAddress from "./pageComponents/PTRSelectAddress";
 import PTRSelectProofIdentity from "./pageComponents/PTRSelectProofIdentity";
+import PTRWFDocument from "./pageComponents/PTRWFDocument";
 import PTRServiceDoc from "./pageComponents/PTRServiceDoc";
 import PTRWFApplicationTimeline from "./pageComponents/PTRWFApplicationTimeline";
 import CitizenApp from "./pages/citizen";
@@ -38,8 +39,15 @@ import NewPTRStepFormOne from "./pageComponents/NewPTRStepper/NewPTRStepFormOne"
 import NewPTRStepFormTwo from "./pageComponents/NewPTRStepper/NewPTRStepFormTwo";
 import NewPTRStepFormThree from "./pageComponents/NewPTRStepper/NewPTRStepFormThree";
 import NewPTRStepFormFour from "./pageComponents/NewPTRStepper/NewPTRStepFormFour";
+import PTRResponseCitizen from "./pageComponents/Response";
 import PTRSummary from "./pageComponents/PTRSummary";
-
+import RenewPTRStepForm from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepForm";
+import { PTRList } from "./pages/citizen/Renewal";
+import RenewPTRStepFormOne from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
+import RenewPTRStepFormTwo from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
+import RenewPTRStepFormThree from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
+import RenewPTRStepFormFour from "./pages/citizen/Renewal/ReNewApplicationStepForm/RenewPTRStepFormOne";
+import CustomDatePicker from "./pageComponents/CustomDatePicker";
 export const PTRReducers = getRootReducer;
 
 const componentsToRegister = {
@@ -57,6 +65,7 @@ const componentsToRegister = {
   CitizenFeedback,
   PTRPetdetails,
   PTROwnerDetails,
+  CustomDatePicker,
   PTRCreatePet: PTRCreate,
   PTRDocumentUpload,
   PTRSelectStreet,
@@ -74,6 +83,14 @@ const componentsToRegister = {
   NewPTRStepFormThree,
   NewPTRStepFormFour,
   PTRSummary,
+  PTRResponseCitizen,
+  PTRList,
+  PTRWFDocument,
+  RenewPTRStepForm,
+  RenewPTRStepFormOne,
+  RenewPTRStepFormTwo,
+  RenewPTRStepFormThree,
+  RenewPTRStepFormFour,
 };
 
 const addComponentsToRegistry = () => {
@@ -126,6 +143,14 @@ export const PTRLinks = ({ matchPath, userType }) => {
     {
       link: `${matchPath}/ptr/petservice/my-application`,
       i18nKey: t("PTR_MY_APPLICATIONS_HEADER"),
+    },
+    //   {
+    //   link: `${matchPath}/tradelicence/renewal-list`,
+    //   i18nKey: t("TL_RENEWAL_HEADER"),
+    // },
+    {
+      link: `${matchPath}/ptr/petservice/renew-ptr/:applicationNumber/:id`,
+      i18nKey: t("PTR_RENEWAL_HEADER"),
     },
 
     {

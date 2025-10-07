@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Toast } from "@mseva/digit-ui-react-components";
 import { UPDATE_CHBApplication_FORM } from "../../redux/action/CHBApplicationActions";
 import { useState } from "react";
-import CHBCitizenSecond from "../CHBCitizenSecond";
+import CHBCitizenDetailsTwo from "../CHBCitizenDetailsNew";
 import { useTranslation } from "react-i18next";
 import _ from "lodash";
 
@@ -36,7 +36,7 @@ const NewADSStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   return (
     <React.Fragment>
-      <CHBCitizenSecond onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
+      <CHBCitizenDetailsTwo onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
 
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>

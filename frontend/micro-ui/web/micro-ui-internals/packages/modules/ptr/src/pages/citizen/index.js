@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 const hideBackButtonConfig = [
   { screenPath: "petservice/new-application/acknowledgement" },
   { screenPath: "petservice/edit-application/acknowledgement" },
-
 ];
 
 const App = () => {
@@ -21,15 +20,21 @@ const App = () => {
   const PTRApplicationDetails = Digit?.ComponentRegistryService?.getComponent("PTRApplicationDetails");
   const PTRMyApplications = Digit?.ComponentRegistryService?.getComponent("PTRMyApplications");
   const PTRCreate = Digit?.ComponentRegistryService?.getComponent("NewPTRStepperForm");
- 
+  const PTRResponse = Digit?.ComponentRegistryService?.getComponent("PTRResponseCitizen");
+  const RenewPTR = Digit?.ComponentRegistryService?.getComponent("RenewPTRStepForm");
+  const PTRList = Digit?.ComponentRegistryService?.getComponent("PTRList");
+
   return (
-    <span className={"pet-citizen"}style={{width:"100%"}}>
+    <span className={"pet-citizen"} style={{ width: "100%" }}>
       <Switch>
         <AppContainer>
           {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}
-          <PrivateRoute path={`${path}/petservice/new-application`} component={PTRCreate} />
+          <PrivateRoute path={`${path}/petservice/new-application/:id?`} component={PTRCreate} />
           <PrivateRoute path={`${path}/petservice/application/:acknowledgementIds/:tenantId`} component={PTRApplicationDetails}></PrivateRoute>
           <PrivateRoute path={`${path}/petservice/my-applications`} component={PTRMyApplications}></PrivateRoute>
+          <PrivateRoute path={`${path}/petservice/response/:applicationNumber`} component={PTRResponse} />
+          <PrivateRoute path={`${path}/petservice/renewal-list`} component={PTRList} />
+          <PrivateRoute path={`${path}/petservice/renew-ptr/:applicationNumber/:tenantId`} component={RenewPTR} />
           {/* <PrivateRoute path={`${path}/petservice/my-payments`} component={PTMyPayments}></PrivateRoute> */}
           <PrivateRoute path={`${path}/petservice/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
         </AppContainer>

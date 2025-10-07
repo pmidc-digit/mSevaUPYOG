@@ -53,7 +53,7 @@ const ApplicationTimeline = ({ id, tenantId }) => {
         return (
           <div style={{ marginTop: "24px" }} className="action-bar-wrap">
             <Link
-              to={{ pathname: `/digit-ui/citizen/payment/collect/${data?.processInstances?.[0]?.moduleName}/${data?.processInstances?.[0]?.businessId}`,
+              to={{ pathname: `/digit-ui/citizen/payment/collect/${data?.processInstances?.[0]?.moduleName}/${data?.processInstances?.[0]?.businessId}/${data?.processInstances?.[0]?.tenantId}?tenantId=${data?.processInstances?.[0]?.tenantId}`,
               state: { tenantId: data?.processInstances?.[0]?.tenantId },}}
             >
               <SubmitBar label={t("TL_COMMON_BUTTON_CITIZEN_MAKE_PAYMENT")} />

@@ -1,6 +1,4 @@
-import {
-  Loader, NavBar
-} from "@mseva/digit-ui-react-components";
+import { Loader, NavBar } from "@mseva/digit-ui-react-components";
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
@@ -31,40 +29,50 @@ const defaultImage =
   "XZOvia7VujatUwVTrIt+Q/Csc7Tuhe+BOakT10b4TuoiiJjvgU9emTO42PwEfBa+cuodKkuf42DXr1D3JpXz73Hnn0j10evHKe+nufgfUm+7B84sX9FfdEzXux2DBpWuKokkCqN/5pa/8pmvn" +
   "L+RGKCddCGmatiPyPB/+ekO/M/q/7uvbt22kTt3zEnXPzCV13T3Gel4/6NduDu66xRvlPNkM1RjjxUdv+4WhGx6TftD19Q/dfzpwcHO+rE3fAAAAAElFTkSuQmCC";
 const Profile = ({ info, stateName, t }) => {
-  const [profilePic, setProfilePic] = React.useState(null);
-  React.useEffect(async () => {
-    const tenant = Digit.ULBService.getCurrentTenantId();
-    const uuid = info?.uuid;
-    if (uuid) {
-      const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
+  const [profilePic, setProfilePic] = React.useState(info?.photo || null);
+  const [email, setEmail] = React.useState(info?.emailId || null);
 
-      if (usersResponse && usersResponse.user && usersResponse.user.length) {
-        const userDetails = usersResponse.user[0];
-        const thumbs = userDetails?.photo?.split(",");
-        setProfilePic(thumbs?.at(0));
+  React.useEffect(() => {
+    const fetchProfileDetails = async () => {
+      const tenant = Digit.ULBService.getCurrentTenantId();
+      const uuid = info?.uuid;
+      if (uuid) {
+        const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
+
+        if (usersResponse?.user?.length) {
+          const userDetails = usersResponse.user[0];
+          setProfilePic(userDetails?.photo || null);
+          setEmail(userDetails?.emailId || null);
+        }
       }
-    }
-  }, [profilePic !== null]);
+    };
+
+    fetchProfileDetails();
+  }, [info?.uuid]);
+
   return (
     <div className="profile-section">
       <div className="imageloader imageloader-loaded">
         <img
           className="img-responsive img-circle img-Profile"
-          src={profilePic ? profilePic : defaultImage}
-          style={{ objectFit: "cover", objectPosition: "center" }}
+          src={profilePic || defaultImage}
+          alt="Profile"
+          style={{ objectFit: "contain", objectPosition: "center" }}
+          onError={(e) => (e.currentTarget.src = defaultImage)}
         />
       </div>
       <div id="profile-name" className="label-container name-Profile">
-        <div className="label-text"> {info?.name} </div>
+        <div className="label-text">{info?.name}</div>
       </div>
       <div id="profile-location" className="label-container loc-Profile">
-        <div className="label-text"> {info?.mobileNumber} </div>
+        <div className="label-text">{info?.mobileNumber}</div>
       </div>
-      {info?.emailId && (
+      {email && (
         <div id="profile-emailid" className="label-container loc-Profile">
-          <div className="label-text"> {info.emailId} </div>
+          <div className="label-text">{email}</div>
         </div>
       )}
+      <div id="profile-links">Edit</div>
       <div className="profile-divider"></div>
       {window.location.href.includes("/employee") &&
         !window.location.href.includes("/employee/user/login") &&
@@ -72,15 +80,21 @@ const Profile = ({ info, stateName, t }) => {
     </div>
   );
 };
-const PoweredBy = () => (
-  <div className="digit-footer" style={{ marginBottom: 0 }}>
-  </div>
-);
+const PoweredBy = () => <div className="digit-footer" style={{ marginBottom: 0 }}></div>;
 
 /* 
 Feature :: Citizen Webview sidebar
 */
-export const CitizenSideBar = ({ isOpen, isMobile = false, toggleSidebar, onLogout, isEmployee = false, linkData, islinkDataLoading, isSideBarScroll }) => {
+export const CitizenSideBar = ({
+  isOpen,
+  isMobile = false,
+  toggleSidebar,
+  onLogout,
+  isEmployee = false,
+  linkData,
+  islinkDataLoading,
+  isSideBarScroll,
+}) => {
   const { data: storeData, isFetched } = Digit.Hooks.useStore.getInitData();
   const { stateInfo } = storeData || {};
   const user = Digit.UserService.getUser();
@@ -160,11 +174,11 @@ export const CitizenSideBar = ({ isOpen, isMobile = false, toggleSidebar, onLogo
   let configEmployeeSideBar = {};
 
   if (!isEmployee) {
-    if(linkData && linkData.FSM){
+    if (linkData && linkData.FSM) {
       let FSM = [];
-      linkData.FSM.map((ele)=>{
-        ele.id && ele.link && FSM.push(ele)
-      })
+      linkData.FSM.map((ele) => {
+        ele.id && ele.link && FSM.push(ele);
+      });
       linkData.FSM = FSM;
     }
     Object.keys(linkData)
@@ -223,22 +237,24 @@ export const CitizenSideBar = ({ isOpen, isMobile = false, toggleSidebar, onLogo
         menuItems.splice(1, 0, {
           type: "dynamic",
           moduleName: t(`ACTION_TEST_${getParentDisplayName}`),
-          links: configEmployeeSideBar[keys[i]]?.map((ob) => {return {...ob, displayName: t(`ACTION_TEST_${ob?.displayName?.toUpperCase()?.replace(/[ -]/g, "_")}`)}}),
+          links: configEmployeeSideBar[keys[i]]?.map((ob) => {
+            return { ...ob, displayName: t(`ACTION_TEST_${ob?.displayName?.toUpperCase()?.replace(/[ -]/g, "_")}`) };
+          }),
           icon: configEmployeeSideBar[keys[i]][1]?.leftIcon,
         });
       }
     }
-     const indx = menuItems.findIndex(a => a.element === "HOME");
-     const home = menuItems.splice(indx,1);
-     const comp = menuItems.findIndex(a => a.element === "LANGUAGE");
-     const part = menuItems.splice(comp,menuItems?.length-comp);
-     menuItems.sort((a,b) => {
+    const indx = menuItems.findIndex((a) => a.element === "HOME");
+    const home = menuItems.splice(indx, 1);
+    const comp = menuItems.findIndex((a) => a.element === "LANGUAGE");
+    const part = menuItems.splice(comp, menuItems?.length - comp);
+    menuItems.sort((a, b) => {
       let c1 = a?.type === "dynamic" ? a?.moduleName : a?.text;
       let c2 = b?.type === "dynamic" ? b?.moduleName : b?.text;
-      return c1.localeCompare(c2)
-     } );
-     home?.[0] && menuItems.splice(0,0,home[0]);
-     menuItems =  part?.length > 0 ? menuItems.concat(part) : menuItems;
+      return c1.localeCompare(c2);
+    });
+    home?.[0] && menuItems.splice(0, 0, home[0]);
+    menuItems = part?.length > 0 ? menuItems.concat(part) : menuItems;
   }
 
   /*  URL with openlink wont have sidebar and actions    */

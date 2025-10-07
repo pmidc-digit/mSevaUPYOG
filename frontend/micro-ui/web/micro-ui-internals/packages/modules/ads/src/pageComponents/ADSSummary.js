@@ -1,109 +1,154 @@
 import React from "react";
-import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
-import { useLocation, useHistory } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { Card, CardLabel } from "@mseva/digit-ui-react-components";
+import { useDispatch, useSelector } from "react-redux";
 import { SET_ADSNewApplication_STEP } from "../redux/action/ADSNewApplicationActions";
+import ADSDocument from "./ADSDocument";
+import ADSCartDetails from "./ADSCartDetails";
 
-function ADSSummary({ formData, t }) {
-  const { pathname: url } = useLocation();
-  const history = useHistory();
+function ADSSummary({ t }) {
   const dispatch = useDispatch();
+  const TT = (key) => (t ? t(key) : key);
+
+  const rawFormData = useSelector((state) => state?.ads?.ADSNewApplicationFormReducer?.formData);
+  const formData = React.useMemo(() => rawFormData || {}, [rawFormData]);
+  const applicant = formData?.CreatedResponse?.applicantDetail || {};
+  const address = formData?.ownerDetails?.address || formData?.CreatedResponse?.address || {};
+  // const cartArray = Array.isArray(formData.ads?.selectedCards) ? formData.ads?.selectedCards : [];
+
+  const docs = Array.isArray(formData?.documents?.documents?.documents)
+    ? formData.documents.documents.documents
+    : Array.isArray(formData.documents?.documents)
+    ? formData.documents.documents
+    : Array.isArray(formData.documents)
+    ? formData.documents
+    : [];
+
+  const sectionStyle = {
+    backgroundColor: "#ffffff",
+    padding: "1rem 0",
+    borderRadius: "8px",
+    marginBottom: "1.5rem",
+    boxShadow: "0 2px 6px rgba(18,38,63,0.04)",
+  };
+
+  const headerRow = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "0.75rem",
+    padding: "0 1.5rem",
+  };
+   const headerRow1 = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: "0.75rem",
+  };
+
+  const headingStyle = {
+    fontSize: "1.25rem",
+    color: "#0d43a7",
+    fontWeight: "600",
+    margin: 0,
+  };
+
+  const editLabelStyle = {
+    cursor: "pointer",
+    color: "#2e86de",
+    fontWeight: 600,
+    fontSize: "0.9rem",
+  };
+
+  const labelFieldPairStyle = {
+    display: "flex",
+    justifyContent: "space-between",
+    borderBottom: "1px dashed #e9eef2",
+    padding: "0.6rem 1.5rem",
+    alignItems: "center",
+  };
+
+  const documentsContainerStyle = {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "1rem",
+    marginTop: "0.5rem",
+  };
+
+  const documentCardStyle = {
+    flex: "1 1 220px",
+    minWidth: "180px",
+    maxWidth: "260px",
+    backgroundColor: "#fbfcfe",
+    padding: "0.6rem",
+    border: "1px solid #eef3f7",
+    borderRadius: "6px",
+  };
+
+  const boldLabelStyle = { fontWeight: "500", color: "#333" };
+
+  const cartDetails = formData?.ads
+
+  const renderRow = (label, value) => (
+    <div style={labelFieldPairStyle}>
+      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+        <CardLabel style={boldLabelStyle}>{label}</CardLabel>
+      </div>
+      <div style={{ textAlign: "right", minWidth: "120px" }}>{value || "NA"}</div>
+    </div>
+  );
 
   return (
     <div className="application-summary">
-      <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{t("Application Summary")}</h2>
-
-      {/* Step 1: Owner Details */}
-      <Card className="summary-section" style={{ padding: "2px" }}>
-        <div className="section-header">
-          <h3>{t("Owner Details")}</h3>
-          <label onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>{t("EDIT")}</label>
-        </div>
-        <div className="section-content">
-          <LabelFieldPair>
-            <CardLabel>{t("First Name")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.firstName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Last Name")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.lastName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Father's Name")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.fatherName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Mobile Number")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.mobileNumber || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Email ID")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.emailId || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Address")}</CardLabel>
-            <div>{formData?.ownerss?.ownerss?.address || "NA"}</div>
-          </LabelFieldPair>
+      <Card className="summary-section">
+        <div style={sectionStyle}>
+          <div style={headerRow}>
+            <h3 style={headingStyle}>{TT("ADS_APPLICANT_DETAILS")}</h3>
+            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>
+              {TT("TL_SUMMARY_EDIT")}
+            </span>
+          </div>
+          {renderRow(TT("ES_NEW_APPLICATION_APPLICANT_NAME"), applicant?.applicantName)}
+          {renderRow(TT("MOBILE"), applicant?.applicantMobileNo)}
+          {renderRow(TT("ADS_EMAIL_ID"), applicant?.applicantEmailId)}
+          {renderRow(TT("CORE_COMMON_PINCODE"), address?.pincode)}
+          {renderRow(TT("ES_CREATECOMPLAINT_ADDRESS"), address?.addressLine1)}
         </div>
       </Card>
 
-      {/* Step 2: Pet Details */}
       <Card className="summary-section">
-        <div className="section-header">
-          <h3>{t("Pet Details")}</h3>
-          <label onClick={() => dispatch(SET_ADSNewApplication_STEP(2))}>{t("EDIT")}</label>
-        </div>
-        <div className="section-content">
-          <LabelFieldPair>
-            <CardLabel>{t("Pet Name")}</CardLabel>
-            <div>{formData?.pets?.pets?.petName || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Pet Type")}</CardLabel>
-            <div>{formData?.pets?.pets?.petType?.i18nKey || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Breed Type")}</CardLabel>
-            <div>{formData?.pets?.pets?.breedType?.i18nKey || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Pet Gender")}</CardLabel>
-            <div>{formData?.pets?.pets?.petGender?.i18nKey || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Color")}</CardLabel>
-            <div>{formData?.pets?.pets?.color || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Vaccination Number")}</CardLabel>
-            <div>{formData?.pets?.pets?.vaccinationNumber || "NA"}</div>
-          </LabelFieldPair>
-          <LabelFieldPair>
-            <CardLabel>{t("Last Vaccine Date")}</CardLabel>
-            <div>{formData?.pets?.pets?.lastVaccineDate || "NA"}</div>
-          </LabelFieldPair>
+        <div style={sectionStyle}>
+          <div style={headerRow1}>
+            <h3 style={headingStyle}>{TT("ADS_DETAILS")}</h3>
+            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(1))}>
+              {TT("TL_SUMMARY_EDIT")}
+            </span>
+          </div>
+
+
+            <ADSCartDetails cartDetails={cartDetails} t={t}/>
         </div>
       </Card>
 
-      {/* Step 3: Document Details */}
       <Card className="summary-section">
-        <div className="section-header">
-          <h3>{t("Documents")}</h3>
-          <label onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>{t("EDIT")}</label>
-        </div>
-        <div className="section-content">
-          {formData?.documents?.documents?.documents?.map((doc, index) => (
-            <div key={index}>
-              <LabelFieldPair>
-                <CardLabel>{t("Document Type")}</CardLabel>
-                <div>{t(doc?.documentType) || "NA"}</div>
-              </LabelFieldPair>
-              <LabelFieldPair>
-                <CardLabel>{t("Document UID")}</CardLabel>
-                <div>{doc?.documentUid || "NA"}</div>
-              </LabelFieldPair>
+        <div style={sectionStyle}>
+          <div style={headerRow}>
+            <h3 style={headingStyle}>{TT("ADS_DOCUMENTS_DETAILS")}</h3>
+            <span style={editLabelStyle} onClick={() => dispatch(SET_ADSNewApplication_STEP(3))}>
+              {TT("TL_SUMMARY_EDIT")}
+            </span>
+          </div>
+          {docs.length > 0 ? (
+            <div style={documentsContainerStyle}>
+              {docs.map((doc, idx) => (
+                <div key={idx} style={documentCardStyle}>
+                  {TT(doc?.documentType)}
+                  <ADSDocument value={docs} Code={doc?.documentType} index={idx} />
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            <div style={{ padding: "0 1.5rem" }}>{t("TL_NO_DOCUMENTS_MSG")}</div>
+          )}
         </div>
       </Card>
     </div>

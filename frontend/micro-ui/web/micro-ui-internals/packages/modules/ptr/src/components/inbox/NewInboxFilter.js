@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Dropdown, RadioButtons, ActionBar, RemoveableTag, CloseSvg, CheckBox, Localities, SubmitBar } from "@mseva/digit-ui-react-components";
 import { useQueryClient } from "react-query";
 import { useTranslation } from "react-i18next";
@@ -10,15 +10,32 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
   const { t } = useTranslation();
   const client = useQueryClient();
 
-  const [_searchParams, setSearchParams] = useState(() => ({ ...searchParams, services: [] }));
+  const [_searchParams, setSearchParams] = useState(() => ({ services: searchParams?.services || ["ptr"] }));
+  console.log("_searchParams", _searchParams);
 
-  const ApplicationTypeMenu = [
-    {
-      label: "PTR_NEW_REGISTRATION",
-      value: "ptr",
-    },
-    
-  ];
+  const assignedToOptions = useMemo(
+    () => [
+      { code: "ASSIGNED_TO_ME", name: "Assigned To Me" },
+      { code: "ASSIGNED_TO_ALL", name: t("ASSIGNED_TO_ALL") },
+    ],
+    [t]
+  );
+
+  const defaultAssignedOption = assignedToOptions[1]; // default to "All"
+  const defaultAssignee = [{ code: "" }];
+  const { uuid } = Digit.UserService.getUser().info;
+  const [selectAssigned, setSelectedAssigned] = useState(defaultAssignedOption);
+  const [wfFilters, setWfFilters] = useState({
+    assignee: defaultAssignee,
+  });
+
+  // const ApplicationTypeMenu = [
+  //   {
+  //     label: "PTR_NEW_REGISTRATION",
+  //     value: "ptr",
+  //   },
+
+  // ];
 
   const localParamChange = (filterParam) => {
     let keys_to_delete = filterParam.delete;
@@ -28,9 +45,20 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
     setSearchParams({ ..._new });
   };
 
+  // const applyLocalFilters = () => {
+  //   if (_searchParams.services.length === 0) onFilterChange({ ..._searchParams, services: ApplicationTypeMenu.map((e) => e.value) });
+  //   else onFilterChange(_searchParams);
+  // };
+
+  // const applyLocalFilters = () => {
+  //   onFilterChange(_searchParams);
+  // };
+
   const applyLocalFilters = () => {
-    if (_searchParams.services.length === 0) onFilterChange({ ..._searchParams, services: ApplicationTypeMenu.map((e) => e.value) });
-    else onFilterChange(_searchParams);
+    onFilterChange({
+      ..._searchParams,
+      wfFilters,
+    });
   };
 
   const clearAll = () => {
@@ -40,17 +68,26 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-  const onServiceSelect = (e, label) => {
-    if (e.target.checked) localParamChange({ services: Array.isArray(_searchParams.services) ? [..._searchParams.services, label] : [label] });
-    else
-      localParamChange({
-        services: _searchParams.services.filter((o) => o !== label),
-        applicationStatus: _searchParams.applicationStatus?.filter((e) => e.stateBusinessService !== label),
-      });
-  };
+  // const onServiceSelect = (e, label) => {
+  //   if (e.target.checked) localParamChange({ services: Array.isArray(_searchParams.services) ? [..._searchParams.services, label] : [label] });
+  //   else
+  //     localParamChange({
+  //       services: _searchParams.services.filter((o) => o !== label),
+  //       applicationStatus: _searchParams.applicationStatus?.filter((e) => e.stateBusinessService !== label),
+  //     });
+  // };
 
   const selectLocality = (d) => {
     localParamChange({ locality: [...(_searchParams?.locality || []), d] });
+  };
+
+  const onRadioChange = (value) => {
+    setSelectedAssigned(value);
+    setWfFilters({ uuid: value }); // ✅ this is what the backend expects
+    onFilterChange({
+      ..._searchParams,
+      uuid: value, // ✅ send as 'uuid' with code
+    });
   };
 
   return (
@@ -90,8 +127,10 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
             )}
           </div>
           <div>
-            
-            <div>
+            <RadioButtons onSelect={onRadioChange} selectedOption={selectAssigned} t={t} optionsKey="name" options={assignedToOptions} />
+          </div>
+          <div>
+            {/* <div>
               <div className="filter-label" style={{ fontWeight: "normal" }}>
                 {t("ES_INBOX_LOCALITY")}:
               </div>
@@ -109,8 +148,8 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                   );
                 })}
               </div>
-            </div>
-            <div>
+            </div> */}
+            {/* <div>
               <div className="filter-label" style={{ fontWeight: "normal" }}>
                 {t("ES_PTR_APP_TYPE")}
               </div>
@@ -126,11 +165,12 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                   />
                 );
               })}
-            </div>
+            </div> */}
             <div>
-              <Status
+              {/* <Status
                 searchParams={_searchParams}
-                businessServices={_searchParams.services}
+                businessServices={["ptr"]}
+                // businessServices={_searchParams.services}
                 statusMap={statusMap || client.getQueryData(`INBOX_STATUS_MAP_${moduleCode}`)}
                 moduleCode={moduleCode}
                 onAssignmentChange={(e, status) => {
@@ -138,6 +178,26 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                   else {
                     let applicationStatus = _searchParams?.applicationStatus.filter((e) => e.state !== status.state);
                     localParamChange({ applicationStatus });
+                  }
+                }}
+              /> */}
+
+              <Status
+                searchParams={_searchParams}
+                businessServices={["ptr"]} // Always load PTR statuses
+                statusMap={statusMap || client.getQueryData(`INBOX_STATUS_MAP_${moduleCode}`)}
+                moduleCode={moduleCode}
+                onAssignmentChange={(e, status) => {
+                  console.log("status", status);
+                  console.log("e", e);
+                  if (e.target.checked) {
+                    localParamChange({
+                      applicationStatus: [...(_searchParams?.applicationStatus || []), status],
+                    });
+                  } else {
+                    localParamChange({
+                      applicationStatus: _searchParams?.applicationStatus.filter((s) => s.state !== status.state),
+                    });
                   }
                 }}
               />

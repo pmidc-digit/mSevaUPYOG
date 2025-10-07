@@ -9,6 +9,8 @@ import {
   CitizenInfoLabel,
   OpenLinkContainer,
   BackButton,
+  ActionBar,
+  SubmitBar,
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 
@@ -22,6 +24,7 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
   const [checkRequiredFields, setCheckRequiredFields] = useState(false);
   const isCitizenUrl = Digit.Utils.browser.isMobile() ? true : false;
   let isopenlink = window.location.href.includes("/openlink/");
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   if (isopenlink)
     window.onunload = function () {
@@ -84,7 +87,14 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
     <div>
       <div className={isopenlink ? "OpenlinkContainer" : ""}>
         {isopenlink && <BackButton style={{ border: "none" }}>{t("CS_COMMON_BACK")}</BackButton>}
-        <Timeline currentStep={3} flow="STAKEHOLDER" />
+        {isMobile && <Timeline currentStep={3} flow="STAKEHOLDER" />}
+         {!formData?.initiationFlow && (
+          <CitizenInfoLabel
+            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
+            text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.result?.Licenses?.[0]?.applicationNumber} ${t("BPA_DOCS_INFORMATION")}`}
+            className={"info-banner-wrap-citizen-override"}
+          />
+        )}
         {!isLoading ? (
           <FormStep
             t={t}
@@ -115,14 +125,11 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
         ) : (
           <Loader />
         )}
-        {!formData?.initiationFlow && (
-          <CitizenInfoLabel
-            info={t("CS_FILE_APPLICATION_INFO_LABEL")}
-            text={`${t("BPA_APPLICATION_NUMBER_LABEL")} ${formData?.result?.Licenses?.[0]?.applicationNumber} ${t("BPA_DOCS_INFORMATION")}`}
-            className={"info-banner-wrap-citizen-override"}
-          />
-        )}
+       
       </div>
+      <ActionBar>
+        <SubmitBar label={t("CS_COMMON_NEXT")} onSubmit={handleSubmit} disabled={enableSubmit} />
+      </ActionBar>
     </div>
     // </div>
   );
@@ -130,7 +137,8 @@ const StakeholderDocuments = ({ t, config, onSelect, userType, formData, setErro
 
 function SelectDocument({ t, document: doc, setDocuments, error, setError, documents, setCheckRequiredFields, isCitizenUrl }) {
   const filteredDocument = documents?.filter((item) => item?.documentType?.includes(doc?.code))[0];
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCurrentTenantId();
+  const stateId = Digit.ULBService.getStateId();
   const [selectedDocument, setSelectedDocument] = useState(
     filteredDocument
       ? { ...filteredDocument, active: true, code: filteredDocument?.documentType, i18nKey: filteredDocument?.documentType }
@@ -181,7 +189,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
         } else {
           try {
             setUploadedFile(null);
-            const response = await Digit.UploadServices.Filestorage("PT", file, tenantId?.split(".")[0]);
+            const response = await Digit.UploadServices.Filestorage("PT", file, stateId);
             if (response?.data?.files?.length > 0) {
               setUploadedFile(response?.data?.files[0]?.fileStoreId);
             } else {
@@ -213,7 +221,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
             setCheckRequiredFields(true);
           }}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-          iserror={error}
+          // iserror={error}
         />
       ) : (
         <UploadFile
@@ -225,7 +233,7 @@ function SelectDocument({ t, document: doc, setDocuments, error, setError, docum
             setCheckRequiredFields(true);
           }}
           message={uploadedFile ? `1 ${t(`CS_ACTION_FILEUPLOADED`)}` : t(`CS_ACTION_NO_FILEUPLOADED`)}
-          iserror={error}
+          // iserror={error}
         />
       )}
     </div>

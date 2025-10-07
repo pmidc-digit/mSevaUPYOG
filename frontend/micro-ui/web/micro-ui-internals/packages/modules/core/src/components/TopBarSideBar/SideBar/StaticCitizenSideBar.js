@@ -18,7 +18,7 @@ import {
   BirthIcon,
   DeathIcon,
   FirenocIcon,
-  LoginIcon
+  LoginIcon,
 } from "@mseva/digit-ui-react-components";
 import { Link, useLocation } from "react-router-dom";
 import SideBarMenu from "../../../config/sidebar-menu";
@@ -52,28 +52,81 @@ const defaultImage =
 /* 
 Feature :: Citizen Webview sidebar
 */
-const Profile = ({ info, stateName, t }) => (
-  <div className="profile-section">
-    <div className="imageloader imageloader-loaded">
-      <img className="img-responsive img-circle img-Profile" src={info?.photo ? info?. photo : defaultImage} />
-    </div>
-    <div id="profile-name" className="label-container name-Profile">
-      <div className="label-text"> {info?.name} </div>
-    </div>
-    <div id="profile-location" className="label-container loc-Profile">
-      <div className="label-text"> {info?.mobileNumber} </div>
-    </div>
-    {info?.emailId && (
-      <div id="profile-emailid" className="label-container loc-Profile">
-        <div className="label-text"> {info.emailId} </div>
+// const Profile = ({ info, stateName, t }) => (
+//   <div className="profile-section">
+//     <div className="imageloader imageloader-loaded">
+//       <img className="img-responsive img-circle img-Profile" src={info?.photo ? info?. photo : defaultImage} />
+//     </div>
+//     <div id="profile-name" className="label-container name-Profile">
+//       <div className="label-text"> {info?.name} </div>
+//     </div>
+//     <div id="profile-location" className="label-container loc-Profile">
+//       <div className="label-text"> {info?.mobileNumber} </div>
+//     </div>
+//     {info?.emailId && (
+//       <div id="profile-emailid" className="label-container loc-Profile">
+//         <div className="label-text"> {info.emailId} </div>
+//       </div>
+//     )}
+//     <div className="profile-divider"></div>
+//     {window.location.href.includes("/employee") &&
+//       !window.location.href.includes("/employee/user/login") &&
+//       !window.location.href.includes("employee/user/language-selection") && <ChangeCity t={t} mobileView={true} />}
+//   </div>
+// );
+
+const Profile = ({ info, stateName, t }) => {
+  const [profilePic, setProfilePic] = React.useState(info?.photo || null);
+  const [email, setEmail] = React.useState(info?.emailId || null);
+
+  React.useEffect(() => {
+    const fetchProfileDetails = async () => {
+      const tenant = Digit.ULBService.getCurrentTenantId();
+      const uuid = info?.uuid;
+      if (uuid) {
+        const usersResponse = await Digit.UserService.userSearch(tenant, { uuid: [uuid] }, {});
+
+        if (usersResponse?.user?.length) {
+          const userDetails = usersResponse.user[0];
+          setProfilePic(userDetails?.photo || null);
+          setEmail(userDetails?.emailId || null);
+        }
+      }
+    };
+
+    fetchProfileDetails();
+  }, [info?.uuid]);
+
+  return (
+    <div className="profile-section">
+      <div className="imageloader imageloader-loaded">
+        <img
+          className="img-responsive img-circle img-Profile"
+          src={profilePic || defaultImage}
+          alt="Profile"
+          style={{ objectFit: "contain", objectPosition: "center" }}
+          onError={(e) => (e.currentTarget.src = defaultImage)}
+        />
       </div>
-    )}
-    <div className="profile-divider"></div>
-    {window.location.href.includes("/employee") &&
-      !window.location.href.includes("/employee/user/login") &&
-      !window.location.href.includes("employee/user/language-selection") && <ChangeCity t={t} mobileView={true} />}
-  </div>
-);
+      <div id="profile-name" className="label-container name-Profile">
+        <div className="label-text">{info?.name}</div>
+      </div>
+      <div id="profile-location" className="label-container loc-Profile">
+        <div className="label-text">{info?.mobileNumber}</div>
+      </div>
+      {email && (
+        <div id="profile-emailid" className="label-container loc-Profile">
+          <div className="label-text">{email}</div>
+        </div>
+      )}
+      <div className="profile-divider"></div>
+      {window.location.href.includes("/employee") &&
+        !window.location.href.includes("/employee/user/login") &&
+        !window.location.href.includes("employee/user/language-selection") && <ChangeCity t={t} mobileView={true} />}
+    </div>
+  );
+};
+
 const IconsObject = {
   CommonPTIcon: <PTIcon className="icon" />,
   OBPSIcon: <OBPSIcon className="icon" />,
@@ -139,7 +192,7 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
   const tenantId = Digit.ULBService.getCitizenCurrentTenant();
   const filteredTenantContact = storeData?.tenants.filter((e) => e.code === tenantId)[0]?.contactNumber || storeData?.tenants[0]?.contactNumber;
 
-  let menuItems = [...SideBarMenu(t, showProfilePage, redirectToLoginPage, redirectToScrutinyPage,isEmployee, storeData, tenantId)];
+  let menuItems = [...SideBarMenu(t, showProfilePage, redirectToLoginPage, redirectToScrutinyPage, isEmployee, storeData, tenantId)];
 
   menuItems = menuItems.filter((item) => item.element !== "LANGUAGE");
 
@@ -247,7 +300,7 @@ const StaticCitizenSideBar = ({ linkData, islinkDataLoading }) => {
           }}
         >
           {profileItem}
-          <div className="drawer-desktop" style={{"backgroundColor":"white"}}>
+          <div className="drawer-desktop" style={{ backgroundColor: "white" }}>
             {menuItems?.map((item, index) => (
               <div className={`sidebar-list ${pathname === item?.link || pathname === item?.sidebarURL ? "active" : ""}`} key={index}>
                 <MenuItem item={item} />

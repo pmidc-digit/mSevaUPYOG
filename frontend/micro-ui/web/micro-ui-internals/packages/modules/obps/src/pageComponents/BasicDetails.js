@@ -12,6 +12,7 @@ import {
   CardCaption,
   SubmitBar,
   Loader,
+  ActionBar,
 } from "@mseva/digit-ui-react-components";
 import Timeline from "../components/Timeline";
 import { useTranslation } from "react-i18next";
@@ -31,6 +32,11 @@ const BasicDetails = ({ formData, onSelect, config }) => {
     basicData?.planDetail?.plot?.area,
     basicData?.planDetail?.blocks
   );
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    sessionStorage.removeItem("ArchitectConsentdocFilestoreid");
+  },[])
 
   const handleKeyPress = async (event) => {
     if (event.key === "Enter") {
@@ -52,14 +58,17 @@ const BasicDetails = ({ formData, onSelect, config }) => {
   };
 
   const handleSearch = async (event) => {
+    setIsLoading(true)
     const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, stateCode);
     if (details?.type == "ERROR") {
       setShowToast({ message: details?.message });
       setBasicData(null);
+      setIsLoading(false);
     }
     if (details?.edcrNumber) {
       setBasicData(details);
       setShowToast(null);
+      setIsLoading(false);
     }
   };
 
@@ -84,17 +93,21 @@ const BasicDetails = ({ formData, onSelect, config }) => {
   disableVlaue = JSON.parse(disableVlaue);
 
   const getDetails = async () => {
+    setIsLoading(true)
     const details = await scrutinyDetailsData(scrutinyNumber?.edcrNumber, stateCode);
     if (details?.type == "ERROR") {
       setShowToast({ message: details?.message });
       setBasicData(null);
+      setIsLoading(false);
     }
     if (details?.edcrNumber) {
       setBasicData(details);
       setShowToast(null);
+      setIsLoading(false);
     }
   };
 
+  useEffect(()=>{
   if (disableVlaue) {
     let edcrApi = sessionStorage.getItem("isEDCRAPIType");
     edcrApi = edcrApi ? JSON.parse(edcrApi) : false;
@@ -103,11 +116,14 @@ const BasicDetails = ({ formData, onSelect, config }) => {
       getDetails();
     }
   }
+  },[])
+
+  if(isLoading || isMdmsLoading) return (<Loader />);
 
   return (
     <div>
       {showToast && <Toast error={true} label={t(`${showToast?.message}`)} onClose={closeToast} isDleteBtn={true} />}
-      <Timeline />
+      {isMobile && <Timeline />}
       <div className={isMobile ? "obps-search" : ""} style={!isMobile ? { margin: "8px" } : {}}>
         <Label>{t(`OBPS_SEARCH_EDCR_NUMBER`)}</Label>
         <TextInput
@@ -123,7 +139,7 @@ const BasicDetails = ({ formData, onSelect, config }) => {
       </div>
       {basicData && (
         <Card>
-          <CardCaption>{t(`BPA_SCRUTINY_DETAILS`)}</CardCaption>
+          {/* <CardCaption>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardCaption> */}
           <CardHeader>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardHeader>
           <StatusTable>
             <Row
@@ -141,7 +157,9 @@ const BasicDetails = ({ formData, onSelect, config }) => {
               text={basicData?.planDetail?.planInformation?.applicantName}
             />
           </StatusTable>
-          {riskType ? <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length} /> : <Loader />}
+          <ActionBar>
+          {riskType ? <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length || isLoading || isMdmsLoading} /> : <Loader />}
+          </ActionBar>
         </Card>
       )}
     </div>

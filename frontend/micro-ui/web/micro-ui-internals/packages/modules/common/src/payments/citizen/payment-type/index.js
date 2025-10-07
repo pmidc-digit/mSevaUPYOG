@@ -61,7 +61,7 @@ export const SelectPaymentType = (props) => {
   const moduleName = "testing"; //need to change this back to testing -> tenantId?.split(".")?.[1];
   // const { data: menu2, isLoading } = Digit.Hooks.useCommonMDMS("pb", "testing", "PaymentGateway");
   // const { data: menuList } = Digit.Hooks.useCustomMDMS(tenantId, moduleName, [{ name: "PaymentGateway" }]);
-  const { data: menuList } = Digit.Hooks.useCustomMDMS("pb.testing", "testing", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
+  const { data: menuList, isLoading } = Digit.Hooks.useCustomMDMS("pb.testing", "testing", [{ name: "PaymentGateway" }]); // will change back to pb.testing -> tenantId
   const [isPaymentLoading, setPaymentLoading] = useState(false);
   const { data: paymentdetails, isLoading: paymentLoading } = Digit.Hooks.useFetchPayment(
     { tenantId: tenantId, consumerCode: wrkflow === "WNS" ? connectionNo : consumerCode, businessService },
@@ -80,6 +80,7 @@ export const SelectPaymentType = (props) => {
   const { name, mobileNumber } = state;
 
   const billDetails = paymentdetails?.Bill ? paymentdetails?.Bill[0] : {};
+  console.log(billDetails, "BILL");
 
   const userOptions = ["OWNER", "OTHER"];
 
@@ -356,7 +357,7 @@ export const SelectPaymentType = (props) => {
     window.location.href = `/digit-ui/citizen/login?from=${encodeURIComponent(pathname + search)}`;
   }
 
-  if (paymentLoading || isPaymentLoading) {
+  if (paymentLoading || isPaymentLoading || isLoading) {
     window.scrollTo({
       top: 0,
       behavior: "smooth", // for smooth scrolling
@@ -441,7 +442,7 @@ export const SelectPaymentType = (props) => {
             </div>
           </LabelFieldPair>
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAYER_NAME")} * `}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("PAYMENT_CS_PAYER_NUMBER")} * `}</CardLabel>
             <div className="field">
               <Controller
                 control={control}
@@ -474,6 +475,7 @@ export const SelectPaymentType = (props) => {
           onClose={() => {
             setShowToast(null);
           }}
+          isDleteBtn={true}
         />
       )}
       {showOwnerToast && (

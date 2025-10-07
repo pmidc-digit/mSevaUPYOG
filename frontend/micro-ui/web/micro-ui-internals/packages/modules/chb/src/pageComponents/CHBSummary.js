@@ -210,9 +210,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
             <React.Fragment>
               <div>
                 <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
-                  {t("CHB_MESSAGE_" + doc?.documentType?.split(".").slice(0, 2).join("_"))}
-                </CardSectionHeader>
+                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
               </div>
             </React.Fragment>
           ))}

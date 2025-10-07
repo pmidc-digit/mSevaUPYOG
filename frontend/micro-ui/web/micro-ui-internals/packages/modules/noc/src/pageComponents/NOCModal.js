@@ -97,6 +97,10 @@ const NOCModal = ({
     }
   }, [approverData]);
 
+  console.log("approverData", approverData);
+
+  console.log("approvers", approvers);
+
   function selectFile(e) {
     setFile(e.target.files[0]);
   }
@@ -129,6 +133,7 @@ const NOCModal = ({
      // console.log("uuid here", uuid);
       setSelectedApprover({uuid});
     }
+   
   },[action]);
 
   console.log("selectedApprover", selectedApprover);
@@ -136,7 +141,7 @@ const NOCModal = ({
   function submit(data) {
     console.log("data here in Modal", data);
     
-    const mandatoryActions = [ "APPROVE","VERIFY","REJECT","SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER"];
+    const mandatoryActions = [ "APPROVE","VERIFY","REJECT","SENDBACKTOCITIZEN", "SENDBACKTOVERIFIER","FORWARD"];
 
     let checkCommentsMandatory = mandatoryActions.includes(action?.action);
 
@@ -146,10 +151,17 @@ const NOCModal = ({
 
     const commentsText = data?.comments?.toString().trim();
 
-    if (checkCommentsMandatory && !commentsText) {
-      setShowToast({ key: "true", warning:true, message: "Comments are required to update the application status" });
+    if (!selectedApprover?.uuid) {
+      setShowToast({ key: "true", warning:true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
      return;
     }
+
+    if (checkCommentsMandatory && !commentsText) {
+      setShowToast({ key: "true", warning:true, message: t("COMMON_COMMENTS_REQUIRED_LABEL") });
+     return;
+    }
+
+
 
     let workflow = { action: action?.action, comments: data?.comments, businessService, moduleName: moduleCode };
     applicationData = {

@@ -10,6 +10,7 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
   const { data: docData, isLoading } = Digit.Hooks.useCustomMDMS("pb", "CHB", [{ name: "Documents" }]);
+  const checkFormData = useSelector((state) => state.chb.CHBApplicationFormReducer.formData || {});
 
   const currentStepData = useSelector(function (state) {
     return state.chb.CHBApplicationFormReducer.formData && state.chb.CHBApplicationFormReducer.formData[config?.key]
@@ -17,18 +18,22 @@ const NewADSStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
       : {};
   });
 
+  console.log("currentStepData===", currentStepData);
+  console.log("checkFormData===", checkFormData);
+
   function goNext(finalData) {
     console.log("Current Data", finalData);
     console.log("data?????....=====", docData?.CHB?.Documents);
 
     const missingFields = validation(finalData);
-    onGoNext();
+
     if (missingFields.length > 0) {
       setError(`${t("CHB_MESSAGE_" + missingFields[0].replace(".", "_").toUpperCase())}`);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
       return;
     }
+    onGoNext();
   }
 
   function validation(formData) {

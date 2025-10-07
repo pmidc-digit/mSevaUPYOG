@@ -224,7 +224,7 @@ import useServiceTypeFromApplicationType from "./obps/useServiceTypeFromApplicat
 import useBusinessServiceBasedOnServiceType from "./obps/useBusinessServiceBasedOnServiceType";
 import useBusinessServiceData from "./obps/useBusinessServiceData";
 import useBPATaxDocuments from "./obps/useBPATaxDocuments";
-import { useBPACalculation } from "./obps/useBPACalculation"
+import { useBPACalculation } from "./obps/useBPACalculation";
 
 import useEventInbox from "./events/useEventInbox";
 import useEventDetails from "./events/useEventDetails";
@@ -246,7 +246,7 @@ import useSurveyQuestionInbox from "./surveys/useSurveyQuestionInbox";
 
 import useNOCDetails from "./noc/useNOCDetails";
 import useNOCInbox from "./noc/useInbox";
-import {useNOCSearchApplication, useNOCCitizenSearchApplication} from "./noc/useSearchApplications";
+import { useNOCSearchApplication, useNOCCitizenSearchApplication } from "./noc/useSearchApplications";
 import useBuildingCategory from "./noc/useBuildingCategory";
 import useBuildingType from "./noc/useBuildingType";
 import useRoadType from "./noc/useRoadType";
@@ -348,6 +348,7 @@ import useADSAllMDMS from "./ads/useADSAllMDMS";
 
 // ndc
 import useNDCInbox from "./ndc/useInbox";
+import useCHBInbox from "./chb/useInbox";
 import useSpecialCategory from "./chb/useSpecialCategory";
 import useResidentType from "./chb/useResidentType";
 import usePurpose from "./chb/usePurpose";
@@ -600,7 +601,7 @@ const obps = {
   useULBList,
   useUlbType,
   useEDCRForm,
-  useBPACalculation
+  useBPACalculation,
 };
 
 const events = {
@@ -641,7 +642,7 @@ const ads = {
   useADSAllMDMS,
   useADSAdvServicesMDMS,
   useADSCalculationTypeMDMS,
-useADSFaceAreaMDMS,
+  useADSFaceAreaMDMS,
   useADSLocationMDMS,
   useADSTaxAmountMDMS,
   useADSAdTypeMDMS,
@@ -665,6 +666,7 @@ const chb = {
   useChbHallCode,
   useChbSlotSearch,
   useDemandEstimation,
+  useInbox: useCHBInbox,
 };
 
 const asset = {
@@ -706,9 +708,9 @@ const noc = {
   useBuildingCategory,
   useBuildingType,
   useRoadType,
-  useTenants:useNOCTenants,
+  useTenants: useNOCTenants,
   useNOCDocumentSearch,
-  useNocType
+  useNocType,
 };
 
 const ndc = {

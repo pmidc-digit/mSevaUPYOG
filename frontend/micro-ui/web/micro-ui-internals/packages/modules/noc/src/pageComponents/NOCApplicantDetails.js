@@ -47,7 +47,6 @@ const NOCApplicantDetails = (_props) => {
    const [mobileNo,setMobileNo]=useState("");
    const [showToast, setShowToast]=useState(null);
    const[userInfo, setUserInfo]=useState(null);
-   let Webview = !Digit.Utils.browser.isMobile();
 
    const closeToast = () => {
     setShowToast(null);
@@ -70,6 +69,7 @@ const NOCApplicantDetails = (_props) => {
     }
     
    }
+    
 
    useEffect(()=>{
     if(userInfo){
@@ -82,7 +82,8 @@ const NOCApplicantDetails = (_props) => {
           setValue("applicantEmailId", value, { shouldValidate: true, shouldDirty: true });
       }
       else if(key ==="gender"){
-          setValue("applicantGender", value, { shouldValidate: true, shouldDirty: true });
+          const genderObj=menu.find((obj)=> obj.code === value);
+          setValue("applicantGender", genderObj, { shouldValidate: true, shouldDirty: true });
       }
       else if(key ==="dob"){
           setValue("applicantDateOfBirth", value, { shouldValidate: true, shouldDirty: true });
@@ -99,7 +100,8 @@ const NOCApplicantDetails = (_props) => {
 
    const isEdit= window.location.pathname.includes("edit")
 
-  //  console.log("userInfo", userInfo);
+   //console.log("selectedGender", selectedGender);
+  
 
   return (
     <React.Fragment>
@@ -232,24 +234,32 @@ const NOCApplicantDetails = (_props) => {
           </div>
         </LabelFieldPair>
 
-        {/* <LabelFieldPair>
-          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_MOBILE_NO_LABEL")}`}*</CardLabel>
+         <LabelFieldPair>
+          <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_PROPERTY_ID_LABEL")}`}*</CardLabel>
           <div className="field">
             <Controller
               control={control}
-              name="applicantMobileNumber"
+              name="applicantPropertyId"
               rules={{
                 required: t("REQUIRED_FIELD"),
-                pattern: {
-                  value: /^[6-9]\d{9}$/,
-                  message: t("INVALID_MOBILE_NUMBER"),
-                },
               }}
-              render={(props) => <MobileNumber value={props.value} onChange={props.onChange} onBlur={props.onBlur} t={t} />}
+              render={(props) => (
+                <TextInput
+                  value={props.value}
+                  onChange={(e) => {
+                    props.onChange(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    props.onBlur(e);
+                  }}
+                  t={t}
+                  // disabled={isEdit}
+                />
+              )}
             />
           </div>
         </LabelFieldPair>
-        <CardLabelError style={errorStyle}>{errors?.applicantMobileNumber?.message || ""}</CardLabelError> */}
+        <CardLabelError style={errorStyle}>{errors?.applicantPropertyId?.message || ""}</CardLabelError>
 
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">{`${t("NOC_APPLICANT_ADDRESS_LABEL")}`}*</CardLabel>
@@ -337,7 +347,7 @@ const NOCApplicantDetails = (_props) => {
                   t={t}
                   options={menu}
                   optionsKey="code"
-                  value={props.value || userInfo?.gender}
+                  value={props.value}
                   selectedOption={props.value}
                   onSelect={(e) => {
                     props.onChange(e);

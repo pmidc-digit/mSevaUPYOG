@@ -31,6 +31,10 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     return formData?.LicneseType?.ArchitectNo || formData?.formData?.LicneseType?.ArchitectNo || null;
   });
 
+  const [validTo, setValidTo ] = useState(() => {
+    return formData?.LicneseType?.validTo || formData?.formData?.LicneseType?.validTo || null;
+  })
+
   const isMobile = window.Digit.Utils.browser.isMobile();
 
   const { data: qualificationTypes, isLoading: isQualificationLoading, error: qualificationError } = Digit.Hooks.obps.useQualificationTypes(stateId);
@@ -219,6 +223,20 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     }
   }
 
+    function selectValidTo(input) {
+      const today = new Date().toISOString().split("T")[0];
+
+      if (input && input < today) {
+        setErrorMessage(t("BPA_VALID_TO_DATE_ERROR"));
+        setValidTo("");
+      } else {
+        setErrorMessage(""); 
+        setValidTo(input);
+      }
+    }
+
+
+
   function goNext() {
     if (errorMessage !== "") return;
 
@@ -244,8 +262,8 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
     localStorage.removeItem("licenseForm_selfCertification");
 
     if (!(formData?.result && formData?.result?.Licenses[0]?.id))
-      { console.log("onSelect going", { LicenseType, ArchitectNo, selfCertification, qualificationType });
-        onSelect(config.key, { LicenseType, ArchitectNo, selfCertification, qualificationType: qualificationType });}
+      { console.log("onSelect going", { LicenseType, ArchitectNo, selfCertification, qualificationType,  validTo });
+        onSelect(config.key, { LicenseType, ArchitectNo, selfCertification,validTo, qualificationType: qualificationType });}
     else {
       const data = formData?.formData;
       console.log("onSelect going 2", data);
@@ -253,13 +271,14 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
       data.LicneseType.ArchitectNo = ArchitectNo;
       data.LicneseType.selfCertification = selfCertification ? selfCertification : false;
       data.LicneseType.qualificationType = qualificationType;
+      data.LicneseType.validTo = validTo;
       formData.formData = data;
       onSelect("", formData);
     }
   }
-  function selectSelfCertification(e) {
-    setSelfCertification(e.target.checked);
-  }
+  // function selectSelfCertification(e) {
+  //   setSelfCertification(e.target.checked);
+  // }
 
   console.log("formData in LicenseType", formData);
   if(isQualificationLoading ) return <Loader /> ;
@@ -343,6 +362,35 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
               </div>
             )}
 
+
+            {LicenseType && LicenseType?.i18nKey.includes("ARCHITECT") && (
+              <div>
+                <CardLabel>{`${t("BPA_CERTIFICATE_EXPIRY_DATE")}*`}</CardLabel>
+                <div className="field">
+                  <TextInput
+                    t={t}
+                    type="date"
+                    isMandatory={false}
+                    optionKey="i18nKey"
+                    name="validTo"
+                    value={validTo}
+                    min={new Date().toISOString().split("T")[0]}
+                   onChange={(e) => {
+                    const selectedDate = e.target.value;
+                    selectValidTo(selectedDate); 
+                  }}
+
+                    onKeyPress={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+
             {LicenseType && LicenseType?.i18nKey.includes("TOWNPLANNER") && (
               <div>
                 <CardLabel>{t("BPA_ASSOCIATE_OR_FELLOW_NUMBER")}*</CardLabel>
@@ -376,7 +424,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
               </div>
             )}
 
-            {LicenseType &&
+            {/* {LicenseType &&
               (LicenseType?.i18nKey.includes("ARCHITECT") ||
                 LicenseType?.i18nKey.includes("ENGINEER") ||
                 LicenseType?.i18nKey.includes("SUPERVISOR") ||
@@ -398,7 +446,7 @@ const LicenseType = ({ t, config, onSelect, userType, formData }) => {
                     style={{ marginBottom: "40px" }}
                   />
                 </div>
-              )}
+              )} */}
           </FormStep>
           <div
             style={{

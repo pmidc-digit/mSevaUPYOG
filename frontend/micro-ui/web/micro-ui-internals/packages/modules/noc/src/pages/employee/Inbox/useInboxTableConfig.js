@@ -47,11 +47,11 @@ const useInboxTableConfig = ({ parentRoute, onPageSizeChange, formState, totalCo
         accessor: (row) => t(row?.status),
         disableSortBy: true,
       },
-      {
-        Header: t("ES_INBOX_LOCALITY"),
-        accessor: (row) => t(row?.locality),
-        disableSortBy: true,
-      },
+      // {
+      //   Header: t("ES_INBOX_LOCALITY"),
+      //   accessor: (row) => t(row?.locality),
+      //   disableSortBy: true,
+      // },
       // {
       //   Header: t("WF_INBOX_HEADER_CURRENT_OWNER"),
       //   accessor: (row) => row?.owner,

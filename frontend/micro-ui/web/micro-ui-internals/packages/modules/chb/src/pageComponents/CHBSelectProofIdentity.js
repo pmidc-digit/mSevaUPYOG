@@ -1,5 +1,6 @@
 import React, { use, useEffect, useState } from "react";
-import { CardLabel, Dropdown, UploadFile, Toast, Loader, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { CardLabel, Dropdown, UploadFile, Toast, FormStep, LabelFieldPair } from "@mseva/digit-ui-react-components";
+import { Loader } from "../components/Loader";
 
 const CHBSelectProofIdentity = ({ t, config, onSelect, userType, formData, setError: setFormError, clearErrors: clearFormErrors, formState }) => {
   const tenantId = Digit.ULBService.getStateId();
@@ -74,13 +75,24 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
   // console.log("filetetetetet",filteredDocument, documents, doc);
 
   const tenantId = Digit.ULBService.getCurrentTenantId();
-  const [selectedDocument, setSelectedDocument] = useState(
-    filteredDocument
-      ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }
-      : doc?.dropdownData?.length === 1
-      ? doc?.dropdownData[0]
-      : {}
-  );
+  // const [selectedDocument, setSelectedDocument] = useState(
+  //   filteredDocument
+  //     ? { ...filteredDocument, active: doc?.active === true, code: filteredDocument?.documentType }
+  //     : doc?.dropdownData?.length === 1
+  //     ? doc?.dropdownData[0]
+  //     : {}
+  // );
+  const [selectedDocument, setSelectedDocument] = useState(() => {
+    if (filteredDocument) {
+      const match = doc?.dropdownData?.find((e) => e.code === filteredDocument.documentType);
+      return match ? { ...match, i18nKey: match.code?.replaceAll(".", "_") } : {};
+    }
+    if (doc?.dropdownData?.length === 1) {
+      const onlyOption = doc.dropdownData[0];
+      return { ...onlyOption, i18nKey: onlyOption.code?.replaceAll(".", "_") };
+    }
+    return {};
+  });
 
   const [file, setFile] = useState(null);
   const [uploadedFile, setUploadedFile] = useState(() => filteredDocument?.filestoreId || null);
@@ -182,7 +194,6 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
 
   return (
     <div style={{ marginBottom: "24px" }}>
-      {getLoading && <Loader />}
       {doc?.hasDropdown ? (
         <LabelFieldPair>
           <CardLabel className="card-label-smaller">
@@ -192,7 +203,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
             className="form-field"
             selected={selectedDocument}
             style={{ width: "100%" }}
-            option={dropDownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
+            option={doc?.dropdownData.map((e) => ({ ...e, i18nKey: e.code?.replaceAll(".", "_") }))}
             select={handlePTRSelectDocument}
             optionKey="i18nKey"
             t={t}
@@ -222,6 +233,7 @@ function PTRSelectDocument({ t, document: doc, setDocuments, setError, documents
           />
         </div>
       </LabelFieldPair>
+      {getLoading && <Loader page={true} />}
     </div>
   );
 }

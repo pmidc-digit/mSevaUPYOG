@@ -59,12 +59,22 @@ public class EdcrRequest {
     private Boolean approvedCS;      
     private Boolean cluApprove;
     
+    private Boolean purchasableFar;
+    
     //private File layoutFile;  
     
-    
-    
 
-    public RequestInfo getRequestInfo() {
+    public Boolean getPurchasableFar() {
+		return purchasableFar;
+	}
+
+
+	public void setPurchasableFar(Boolean purchasableFar) {
+		this.purchasableFar = purchasableFar;
+	}
+
+
+	public RequestInfo getRequestInfo() {
         return requestInfo;
     }
 

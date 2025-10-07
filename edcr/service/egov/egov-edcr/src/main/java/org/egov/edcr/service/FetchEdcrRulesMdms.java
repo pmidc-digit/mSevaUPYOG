@@ -15,6 +15,12 @@ import org.egov.infra.microservice.models.RequestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.jayway.jsonpath.JsonPath;
+import com.jayway.jsonpath.Configuration;
+import com.jayway.jsonpath.Option;
+import java.util.stream.Collectors;
+
+
 
 
 @Service
@@ -26,73 +32,69 @@ public class FetchEdcrRulesMdms {
 	  private static Logger LOG = LogManager.getLogger(EdcrApplicationService.class);
 
 	  
-	 public Map<String, List<Map<String, Object>>> getEdcrRules() {
-	        LOG.info("Entered getEdcrRules method");
-
-	        Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), "pg");
-
-	        Map<String, Object> dataMap = (Map<String, Object>) mdmsData;
-	        Map<String, Object> mdmsRes = (Map<String, Object>) dataMap.get("MdmsRes");
-	        if (mdmsRes != null) {
-	            Map<String, Object> bpa = (Map<String, Object>) mdmsRes.get("BPA");
-	            if (bpa != null) {
-	                List<?> edcrRules = (List<?>) bpa.get("EdcrRulesFeatures");
-	                if (edcrRules != null && !edcrRules.isEmpty()) {
-
-	                    Map<String, List<Map<String, Object>>> edcrRulesMap = new HashMap<>();
-	                    for (Object rule : edcrRules) {
-	                        if (rule instanceof Map) {
-	                            @SuppressWarnings("unchecked")
-	                            Map<String, Object> ruleMap = (Map<String, Object>) rule;
-
-	                            for (Map.Entry<String, Object> entry : ruleMap.entrySet()) {
-	                                String ruleType = entry.getKey();
-	                                Object ruleDetails = entry.getValue();
-
-	                                if (ruleDetails instanceof List) {
-	                                    List<?> ruleDetailsList = (List<?>) ruleDetails;
-
-	                                    for (Object detail : ruleDetailsList) {
-	                                        if (detail instanceof Map) {
-	                                            @SuppressWarnings("unchecked")
-	                                            Map<String, Object> detailMap = (Map<String, Object>) detail;
-
-	                                            edcrRulesMap
-	                                                .computeIfAbsent(ruleType, k -> new ArrayList<>())
-	                                                .add(detailMap);
-	                                        }
-	                                    }
-	                                } else if (ruleDetails instanceof Map) {
-	                                    @SuppressWarnings("unchecked")
-	                                    Map<String, Object> detailMap = (Map<String, Object>) ruleDetails;
-
-	                                    edcrRulesMap
-	                                        .computeIfAbsent(ruleType, k -> new ArrayList<>())
-	                                        .add(detailMap);
-	                                }
-	                            }
-	                        }
-	                    }
-
-	                    LOG.info("edcrRulesFeatures: {}", edcrRulesMap);
-	                    return edcrRulesMap;
-
-	                } else {
-	                    LOG.info("EdcrRules is empty.");
-	                    Map<String, List<Map<String, Object>>> emptyMap = new HashMap<>();
-	                    emptyMap.put("message", Collections.singletonList(Collections.singletonMap("message", "No EdcrRules data found")));
-	                    return emptyMap;
-	                }
-	            }
-	        }
-
-	       
-	        return new HashMap<>();
-	    }
-
-	    
-	    
-	    
+//	 public Map<String, List<Map<String, Object>>> getEdcrRules() {
+//	        LOG.info("Entered getEdcrRules method");
+//
+//	        Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), "pg");
+//
+//	        Map<String, Object> dataMap = (Map<String, Object>) mdmsData;
+//	        Map<String, Object> mdmsRes = (Map<String, Object>) dataMap.get("MdmsRes");
+//	        if (mdmsRes != null) {
+//	            Map<String, Object> bpa = (Map<String, Object>) mdmsRes.get("BPA");
+//	            if (bpa != null) {
+//	                List<?> edcrRules = (List<?>) bpa.get("EdcrRulesFeatures");
+//	                if (edcrRules != null && !edcrRules.isEmpty()) {
+//
+//	                    Map<String, List<Map<String, Object>>> edcrRulesMap = new HashMap<>();
+//	                    for (Object rule : edcrRules) {
+//	                        if (rule instanceof Map) {
+//	                            @SuppressWarnings("unchecked")
+//	                            Map<String, Object> ruleMap = (Map<String, Object>) rule;
+//
+//	                            for (Map.Entry<String, Object> entry : ruleMap.entrySet()) {
+//	                                String ruleType = entry.getKey();
+//	                                Object ruleDetails = entry.getValue();
+//
+//	                                if (ruleDetails instanceof List) {
+//	                                    List<?> ruleDetailsList = (List<?>) ruleDetails;
+//
+//	                                    for (Object detail : ruleDetailsList) {
+//	                                        if (detail instanceof Map) {
+//	                                            @SuppressWarnings("unchecked")
+//	                                            Map<String, Object> detailMap = (Map<String, Object>) detail;
+//
+//	                                            edcrRulesMap
+//	                                                .computeIfAbsent(ruleType, k -> new ArrayList<>())
+//	                                                .add(detailMap);
+//	                                        }
+//	                                    }
+//	                                } else if (ruleDetails instanceof Map) {
+//	                                    @SuppressWarnings("unchecked")
+//	                                    Map<String, Object> detailMap = (Map<String, Object>) ruleDetails;
+//
+//	                                    edcrRulesMap
+//	                                        .computeIfAbsent(ruleType, k -> new ArrayList<>())
+//	                                        .add(detailMap);
+//	                                }
+//	                            }
+//	                        }
+//	                    }
+//
+//	                    LOG.info("edcrRulesFeatures: {}", edcrRulesMap);
+//	                    return edcrRulesMap;
+//
+//	                } else {
+//	                    LOG.info("EdcrRules is empty.");
+//	                    Map<String, List<Map<String, Object>>> emptyMap = new HashMap<>();
+//	                    emptyMap.put("message", Collections.singletonList(Collections.singletonMap("message", "No EdcrRules data found")));
+//	                    return emptyMap;
+//	                }
+//	            }
+//	        }
+//
+//	       
+//	        return new HashMap<>();
+//	    }
 
 	    public List<Map<String, Object>> getPermissibleValue(
 	            Map<String, List<Map<String, Object>>> edcrRuleList,
@@ -221,5 +223,74 @@ public class FetchEdcrRulesMdms {
 	        }
 	        return null;
 	    }
+	    
+	    
+//	    public Map<String, List<Map<String, Object>>> getFARRules() {
+//	        LOG.info("Entered getFARRules method");
+//
+//	        Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), "pg");
+//
+//	        Map<String, Object> dataMap = (Map<String, Object>) mdmsData;
+//	        Map<String, Object> mdmsRes = (Map<String, Object>) dataMap.get("MdmsRes");
+//	        if (mdmsRes != null) {
+//	            Map<String, Object> bpa = (Map<String, Object>) mdmsRes.get("BPA");
+//	            if (bpa != null) {
+//	                List<?> edcrRules = (List<?>) bpa.get("EdcrRulesFeatures");
+//	                if (edcrRules != null && !edcrRules.isEmpty()) {
+//
+//	                    Map<String, List<Map<String, Object>>> edcrRulesMap = new HashMap<>();
+//	                    for (Object rule : edcrRules) {
+//	                        if (rule instanceof Map) {
+//	                            @SuppressWarnings("unchecked")
+//	                            Map<String, Object> ruleMap = (Map<String, Object>) rule;
+//
+//	                            for (Map.Entry<String, Object> entry : ruleMap.entrySet()) {
+//	                                String ruleType = entry.getKey();
+//	                                Object ruleDetails = entry.getValue();
+//
+//	                                if (ruleDetails instanceof List) {
+//	                                    List<?> ruleDetailsList = (List<?>) ruleDetails;
+//
+//	                                    for (Object detail : ruleDetailsList) {
+//	                                        if (detail instanceof Map) {
+//	                                            @SuppressWarnings("unchecked")
+//	                                            Map<String, Object> detailMap = (Map<String, Object>) detail;
+//
+//	                                            edcrRulesMap
+//	                                                .computeIfAbsent(ruleType, k -> new ArrayList<>())
+//	                                                .add(detailMap);
+//	                                        }
+//	                                    }
+//	                                } else if (ruleDetails instanceof Map) {
+//	                                    @SuppressWarnings("unchecked")
+//	                                    Map<String, Object> detailMap = (Map<String, Object>) ruleDetails;
+//
+//	                                    edcrRulesMap
+//	                                        .computeIfAbsent(ruleType, k -> new ArrayList<>())
+//	                                        .add(detailMap);
+//	                                }
+//	                            }
+//	                        }
+//	                    }
+//
+//	                    LOG.info("edcrRulesFeatures: {}", edcrRulesMap);
+//	                    return edcrRulesMap;
+//
+//	                } else {
+//	                    LOG.info("EdcrRules is empty.");
+//	                    Map<String, List<Map<String, Object>>> emptyMap = new HashMap<>();
+//	                    emptyMap.put("message", Collections.singletonList(Collections.singletonMap("message", "No EdcrRules data found")));
+//	                    return emptyMap;
+//	                }
+//	            }
+//	        }
+//
+//	       
+//	        return new HashMap<>();
+//	    }
 
+	    
+	    
+
+	    
 }

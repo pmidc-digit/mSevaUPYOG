@@ -571,9 +571,9 @@ public class EdcrRestService {
             userId = userInfo.getId();
         // When the user is ANONYMOUS, then search application by edcrno or transaction
         // number
-        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getPrimaryrole() != null
-                && !userInfo.getPrimaryrole().isEmpty()) {
-            List<String> roles = userInfo.getPrimaryrole().stream().map(Role::getCode).collect(Collectors.toList());
+        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getRoles() != null
+                && !userInfo.getRoles().isEmpty()) {
+            List<String> roles = userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
             LOG.info("****Roles***" + roles);
             if (roles.contains("ANONYMOUS"))
                 userId = "";
@@ -669,9 +669,9 @@ public class EdcrRestService {
         
         // When the user is ANONYMOUS, then search application by edcrno or transaction
         // number
-        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getPrimaryrole() != null
-                && !userInfo.getPrimaryrole().isEmpty()) {
-            List<String> roles = userInfo.getPrimaryrole().stream().map(Role::getCode).collect(Collectors.toList());
+        if (userInfo != null && StringUtils.isNoneBlank(userId) && userInfo.getRoles() != null
+                && !userInfo.getRoles().isEmpty()) {
+            List<String> roles = userInfo.getRoles().stream().map(Role::getCode).collect(Collectors.toList());
             LOG.info("****Roles***" + roles);
             if (roles.contains("ANONYMOUS"))
                 userId = "";

@@ -71,6 +71,7 @@ public abstract class FeatureProcess {
 	public static final String VENTILATION_REQUIRED = "Ventilation Required";
 	public static final String PERMITTED = "Permitted";
 	public static final String PERMISSIBLE = "Permissible";
+	public static final String PURCHASABLE = "Purchasable";	
 	public static final String DESCRIPTION = "Description";
 	public static final String NUMBER = "	Toilet Number";
 	public static final String RULE_NO = "Section";

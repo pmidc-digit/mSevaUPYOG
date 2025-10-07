@@ -199,10 +199,10 @@ public class Far_Citya extends FeatureProcess {
 		}
 		
 		// ArrayList<Map<String, Object>> edcrRulesFeatures = edcrRestService.getEdcrRules();
-		 Map<String, List<Map<String, Object>>> edcrRulesFeatures = fetchEdcrRulesMdms.getEdcrRules();
+		 //Map<String, List<Map<String, Object>>> edcrRulesFeatures = fetchEdcrRulesMdms.getEdcrRules();
 	   
 	        // Set this list to the pl object
-	       pl.setEdcrRulesFeatures(edcrRulesFeatures);
+	       //pl.setEdcrRulesFeatures(edcrRulesFeatures);
 	       
 	       
 	   

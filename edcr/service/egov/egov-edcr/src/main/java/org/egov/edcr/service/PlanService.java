@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import org.egov.edcr.entity.ApplicationType;
 import org.egov.edcr.entity.EdcrApplication;
 import org.egov.edcr.entity.EdcrApplicationDetail;
 import org.egov.edcr.entity.OcComparisonDetail;
+import org.egov.edcr.entity.blackbox.PlanDetail;
 import org.egov.edcr.feature.Coverage;
 import org.egov.edcr.feature.FeatureProcess;
 import org.egov.edcr.feature.FrontYardService;
@@ -52,6 +54,7 @@ import org.egov.edcr.utility.DcrConstants;
 import org.egov.infra.custom.CustomImplProvider;
 import org.egov.infra.filestore.entity.FileStoreMapper;
 import org.egov.infra.filestore.service.FileStoreService;
+import org.egov.infra.microservice.models.Role;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -274,13 +277,45 @@ public class PlanService {
                 features);
         plan.setCoreArea(dcrApplication.getCoreArea());
         LOG.info("coreArea" + plan.getCoreArea());
+        plan.setEdcrRequest(edcrRequest);
+        // Competency Check Role Wise
+        BigDecimal plotArea = (plan.getPlot() != null) ? plan.getPlot().getArea() : null;
+
+        if (plotArea != null && plotArea.compareTo(BigDecimal.ZERO) > 0) {
+            // Valid case → pass actual plot area
+            extractService.validateRolesWisePlotArea(
+                    dcrApplication.getSavedDxfFile(),
+                    asOnDate,
+                    plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
+                    plotArea,
+                    plan
+            );
+        } else {
+            // Invalid case → pass ZERO explicitly
+            extractService.validateRolesWisePlotArea(
+                    dcrApplication.getSavedDxfFile(),
+                    asOnDate,
+                    plan.getEdcrRequest().getRequestInfo().getUserInfo().getRoles(),
+                    BigDecimal.ZERO,
+                    plan
+            );
+        }
+
+        
+
+            //return (Plan) planDetail;
         // remove requestInfo before plan processing
         edcrRequest.setRequestInfo(null);
         //Setting edcr Data to Plan        
-        plan.setEdcrRequest(edcrRequest);
+        //plan.setEdcrRequest(edcrRequest);
         plan.setMdmsMasterData(dcrApplication.getMdmsMasterData());
 //        plan = applyRules(plan, amd, cityDetails);
-        plan = applyRules(plan, amd, cityDetails,features);
+        if(plan.getErrors().containsKey("Not authorized to scrutinize")) {
+        	
+        }else {
+        	plan = applyRules(plan, amd, cityDetails,features);
+        }
+        
       
         String comparisonDcrNumber = dcrApplication.getEdcrApplicationDetails().get(0).getComparisonDcrNumber();
         if (ApplicationType.PERMIT.getApplicationTypeVal()

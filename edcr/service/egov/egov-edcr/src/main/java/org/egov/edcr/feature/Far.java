@@ -97,10 +97,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import org.egov.common.edcr.model.EdcrRequest;
+import org.egov.common.entity.dcr.helper.ErrorDetail;
 import org.egov.common.entity.dcr.helper.OccupancyHelperDetail;
 import org.egov.common.entity.edcr.Block;
 import org.egov.common.entity.edcr.Building;
@@ -112,16 +114,34 @@ import org.egov.common.entity.edcr.OccupancyTypeHelper;
 import org.egov.common.entity.edcr.Plan;
 import org.egov.common.entity.edcr.Result;
 import org.egov.common.entity.edcr.ScrutinyDetail;
+import org.egov.commons.edcr.mdms.filter.MdmsFilter;
+import org.egov.commons.mdms.BpaMdmsUtil;
+import org.egov.commons.mdms.config.MdmsConfiguration;
+import org.egov.commons.mdms.validator.MDMSValidator;
 import org.egov.edcr.constants.DxfFileConstants;
 import org.egov.edcr.service.ProcessPrintHelper;
 import org.egov.edcr.utility.DcrConstants;
+import org.egov.infra.microservice.models.RequestInfo;
 import org.egov.infra.utils.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.egov.commons.edcr.mdms.dataParser.*;
 
 @Service
 public class Far extends FeatureProcess {
 
 	private static final Logger LOG = LogManager.getLogger(Far.class);
+	
+	@Autowired
+    private MdmsConfiguration mdmsConfiguration;
+	
+	@Autowired
+    private BpaMdmsUtil bpaMdmsUtil;
+	
+	@Autowired
+    private MDMSValidator mDMSValidator;
 
 	private static final String VALIDATION_NEGATIVE_FLOOR_AREA = "msg.error.negative.floorarea.occupancy.floor";
 	private static final String VALIDATION_NEGATIVE_EXISTING_FLOOR_AREA = "msg.error.negative.existing.floorarea.occupancy.floor";
@@ -666,8 +686,13 @@ public class Far extends FeatureProcess {
 			providedFar = pl.getVirtualBuilding().getTotalBuitUpArea()
 							.divide(plotArea, DECIMALDIGITS_MEASUREMENTS,ROUNDMODE_MEASUREMENTS);		
 		
+		
+		
 		pl.setFarDetails(new FarDetails());
 		pl.getFarDetails().setProvidedFar(providedFar.doubleValue());
+		
+		
+		
 		String typeOfArea = pl.getPlanInformation().getTypeOfArea();
 		BigDecimal roadWidth = pl.getPlanInformation().getRoadWidth();
 
@@ -680,6 +705,7 @@ public class Far extends FeatureProcess {
 							&& (A_R.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())
 									|| A_AF.equalsIgnoreCase(mostRestrictiveOccupancyType.getSubtype().getCode())))) {
 				// extra parameter added plotArea by Bimal Kumar on 12 March 2024
+
 				processFarResidential(pl, mostRestrictiveOccupancyType, providedFar, typeOfArea, roadWidth, errorMsgs,
 						plotArea);
 			}
@@ -700,7 +726,11 @@ public class Far extends FeatureProcess {
 						errorMsgs,plotArea);
 			}
 		}
+		
+		//getFarDetailsFromMDMS(pl,mostRestrictiveOccupancyType.getType().getCode());
+		
 		ProcessPrintHelper.print(pl);
+		//getFarDetailsFromMDMS(pl, );
 		return pl;
 	}
 
@@ -962,48 +992,48 @@ public class Far extends FeatureProcess {
 		
 		// Start Rule updated by Bimal on 14 March 2024
 		
-			if (plotArea.compareTo(BigDecimal.ZERO) < 0) {				
-				if (!shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_PLOT_AREA)) {
-					errors.put("Plot Area Error:", "Plot area cannot be less than 0.");
-					pl.addErrors(errors);
-                }
-				
-			} else if (plotArea.compareTo(PLOT_AREA_UP_TO_100_SQM) <= 0) {
-				isAccepted = far.compareTo(FAR_UP_TO_2_00) <= 0;
-				LOG.info("FAR_UP_TO_2_00: " + isAccepted);
-				pl.getFarDetails().setPermissableFar(FAR_UP_TO_2_00.doubleValue());
-				expectedResult = "<= 2.00";
-			} else if (plotArea.compareTo(PLOT_AREA_100_150_SQM) <= 0) {
-				isAccepted = far.compareTo(FAR_UP_TO_1_90) <= 0;
-				LOG.info("FAR_UP_TO_1_90: " + isAccepted);
-				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_90.doubleValue());
-				expectedResult = "<= 1.90";
-			} else if (plotArea.compareTo(PLOT_AREA_150_200_SQM) <= 0) {
-				isAccepted = far.compareTo(FAR_UP_TO_1_75) <= 0;
-				LOG.info("FAR_UP_TO_1_75: " + isAccepted);
-				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_75.doubleValue());
-				expectedResult = "<= 1.75";
-			} else if (plotArea.compareTo(PLOT_AREA_200_300_SQM) <= 0) {
-				isAccepted = far.compareTo(FAR_UP_TO_1_65) <= 0;
-				LOG.info("FAR_UP_TO_1_65: " + isAccepted);
-				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_65.doubleValue());
-				expectedResult = "<= 1.65";
-			} else if (plotArea.compareTo(PLOT_AREA_300_500_SQM) <= 0) {
-				isAccepted = far.compareTo(FAR_UP_TO_1_50) <= 0;
-				LOG.info("FAR_UP_TO_1_50: " + isAccepted);
-				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_50.doubleValue());
-				expectedResult = "<= 1.50";
-			} else if (plotArea.compareTo(PLOT_AREA_500_1000_SQM) <= 0) {
-				isAccepted = far.compareTo(FAR_UP_TO_1_50) <= 0;
-				LOG.info("FAR_UP_TO_1_50 2nd: " + isAccepted);
-				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_50.doubleValue());
-				expectedResult = "<= 1.50";
-			} else {
-				isAccepted = far.compareTo(FAR_UP_TO_1_25) <= 0;
-				LOG.info("FAR_UP_TO_1_25: " + isAccepted);
-				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_25.doubleValue());
-				expectedResult = "<= 1.25";
-			}
+//			if (plotArea.compareTo(BigDecimal.ZERO) < 0) {				
+//				if (!shouldSkipValidation(pl.getEdcrRequest(),DcrConstants.EDCR_SKIP_PLOT_AREA)) {
+//					errors.put("Plot Area Error:", "Plot area cannot be less than 0.");
+//					pl.addErrors(errors);
+//                }
+//				
+//			} else if (plotArea.compareTo(PLOT_AREA_UP_TO_100_SQM) <= 0) {
+//				isAccepted = far.compareTo(FAR_UP_TO_2_00) <= 0;
+//				LOG.info("FAR_UP_TO_2_00: " + isAccepted);
+//				pl.getFarDetails().setPermissableFar(FAR_UP_TO_2_00.doubleValue());
+//				expectedResult = "<= 2.00";
+//			} else if (plotArea.compareTo(PLOT_AREA_100_150_SQM) <= 0) {
+//				isAccepted = far.compareTo(FAR_UP_TO_1_90) <= 0;
+//				LOG.info("FAR_UP_TO_1_90: " + isAccepted);
+//				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_90.doubleValue());
+//				expectedResult = "<= 1.90";
+//			} else if (plotArea.compareTo(PLOT_AREA_150_200_SQM) <= 0) {
+//				isAccepted = far.compareTo(FAR_UP_TO_1_75) <= 0;
+//				LOG.info("FAR_UP_TO_1_75: " + isAccepted);
+//				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_75.doubleValue());
+//				expectedResult = "<= 1.75";
+//			} else if (plotArea.compareTo(PLOT_AREA_200_300_SQM) <= 0) {
+//				isAccepted = far.compareTo(FAR_UP_TO_1_65) <= 0;
+//				LOG.info("FAR_UP_TO_1_65: " + isAccepted);
+//				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_65.doubleValue());
+//				expectedResult = "<= 1.65";
+//			} else if (plotArea.compareTo(PLOT_AREA_300_500_SQM) <= 0) {
+//				isAccepted = far.compareTo(FAR_UP_TO_1_50) <= 0;
+//				LOG.info("FAR_UP_TO_1_50: " + isAccepted);
+//				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_50.doubleValue());
+//				expectedResult = "<= 1.50";
+//			} else if (plotArea.compareTo(PLOT_AREA_500_1000_SQM) <= 0) {
+//				isAccepted = far.compareTo(FAR_UP_TO_1_50) <= 0;
+//				LOG.info("FAR_UP_TO_1_50 2nd: " + isAccepted);
+//				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_50.doubleValue());
+//				expectedResult = "<= 1.50";
+//			} else {
+//				isAccepted = far.compareTo(FAR_UP_TO_1_25) <= 0;
+//				LOG.info("FAR_UP_TO_1_25: " + isAccepted);
+//				pl.getFarDetails().setPermissableFar(FAR_UP_TO_1_25.doubleValue());
+//				expectedResult = "<= 1.25";
+//			}
 		
 
 //		if (typeOfArea.equalsIgnoreCase(NEW)) {
@@ -1130,9 +1160,11 @@ public class Far extends FeatureProcess {
 		 * }
 		 */
 
+		getFarDetailsFromMDMS(pl, occupancyType.getType().getCode(), typeOfArea, occupancyType);
+			
 		String occupancyName = occupancyType.getType().getName();
 		if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
-			buildResult(pl, occupancyName, far, typeOfArea, roadWidth, expectedResult, isAccepted);
+			//buildResult(pl, occupancyType, far, typeOfArea, roadWidth, expectedResult, isAccepted);
 		}
 	}
 
@@ -1465,6 +1497,45 @@ public class Far extends FeatureProcess {
 		}
 	}
 
+	private void buildResult1(Plan pl, String occupancyName, Double totalProvidedFar, Double purchasableFar, String typeOfArea,
+			Double expectedResult, boolean isAccepted) {
+		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
+		scrutinyDetail.addColumnHeading(1, RULE_NO);
+		scrutinyDetail.addColumnHeading(2, OCCUPANCY);
+		scrutinyDetail.addColumnHeading(3, AREA_TYPE);
+		//scrutinyDetail.addColumnHeading(4, ROAD_WIDTH);
+		scrutinyDetail.addColumnHeading(5, PERMISSIBLE);
+		scrutinyDetail.addColumnHeading(6, PURCHASABLE);
+		scrutinyDetail.addColumnHeading(7, PROVIDED);
+		scrutinyDetail.addColumnHeading(8, STATUS);
+		scrutinyDetail.setKey("Common_FAR");
+
+		String totalProvidedFar1 = totalProvidedFar.toString();
+
+		Map<String, String> details = new HashMap<>();
+		details.put(RULE_NO, RULE);
+		details.put(OCCUPANCY, occupancyName);
+		details.put(AREA_TYPE, typeOfArea);
+	//	details.put(ROAD_WIDTH, roadWidth.toString());
+		details.put(PERMISSIBLE, String.valueOf(expectedResult));
+		details.put(PURCHASABLE, String.valueOf(purchasableFar));		
+		details.put(PROVIDED, totalProvidedFar1);
+		details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
+
+		scrutinyDetail.getDetail().add(details);
+		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//		Map<String, String> details1 = new HashMap<>();
+//		details1.put(RULE_NO, RULE);
+//		details1.put(OCCUPANCY, "Purchaseable FAR");
+//		details1.put(AREA_TYPE, typeOfArea);
+//	//	details.put(ROAD_WIDTH, roadWidth.toString());
+//		details1.put(PERMISSIBLE, expectedResult);
+//		details1.put(PROVIDED, actualResult);
+//		details1.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
+//		scrutinyDetail.getDetail().add(details1);
+//		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+	}
+	
 	private void buildResult(Plan pl, String occupancyName, BigDecimal far, String typeOfArea, BigDecimal roadWidth,
 			String expectedResult, boolean isAccepted) {
 		ScrutinyDetail scrutinyDetail = new ScrutinyDetail();
@@ -1488,8 +1559,18 @@ public class Far extends FeatureProcess {
 		details.put(PROVIDED, actualResult);
 		details.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
 
-		scrutinyDetail.getDetail().add(details);
-		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//		scrutinyDetail.getDetail().add(details);
+//		//pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
+//		Map<String, String> details1 = new HashMap<>();
+//		details1.put(RULE_NO, RULE);
+//		details1.put(OCCUPANCY, "Purchaseable FAR");
+//		details1.put(AREA_TYPE, typeOfArea);
+//	//	details.put(ROAD_WIDTH, roadWidth.toString());
+//		details1.put(PERMISSIBLE, expectedResult);
+//		details1.put(PROVIDED, actualResult);
+//		details1.put(STATUS, isAccepted ? Result.Accepted.getResultVal() : Result.Not_Accepted.getResultVal());
+//		scrutinyDetail.getDetail().add(details1);
+//		pl.getReportOutput().getScrutinyDetails().add(scrutinyDetail);
 	}
 
 	private ScrutinyDetail getFarScrutinyDetail(String key) {
@@ -1655,6 +1736,265 @@ public class Far extends FeatureProcess {
 
 	    return false;
 	}
+	
+	private void processPurchasableFar(Plan pl, OccupancyTypeHelper occupancyType, BigDecimal far, String typeOfArea, 
+			HashMap<String, String> errors) {
 
+		String expectedResult = StringUtils.EMPTY;
+		boolean isAccepted = false;
+
+		
+		String occupancyName = occupancyType.getType().getName();
+
+		if (errors.isEmpty() && StringUtils.isNotBlank(expectedResult)) {
+			//buildResult(pl, occupancyName, far, typeOfArea,  expectedResult, isAccepted);
+		}
+	}
+	
+	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
+	    //Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
+	    //if (Boolean.TRUE.equals(mdmsEnabled)) {
+	        try {
+	            BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
+	            Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occType, plotArea);
+
+	            if (mdmsData != null) {
+	                //String filterPath = "$.MdmsRes.EDCR.MasterPlan";
+	                Map<String, List<Map<String, Object>>> masterPlanData = BpaMdmsUtil.mdmsResponseMapper(mdmsData, MdmsFilter.MASTER_PLAN_FILTER);
+
+	                if (masterPlanData != null && !masterPlanData.isEmpty()) {
+
+	                    String key = masterPlanData.keySet().iterator().next();
+	                    List<Map<String, Object>> masterPlanList = masterPlanData.get(key);
+
+	                    if (masterPlanList != null && !masterPlanList.isEmpty()) {
+	                        Map<String, Object> planEntry = masterPlanList.get(0);
+
+	                        Double regularPermissableFar = mdmsDataParser.toDouble(planEntry.get("NormalFAR"));
+	                        Double purchasablePermissableFar = mdmsDataParser.toDouble(planEntry.get("PurchasableFAR"));
+	                        Double providedFar = pl.getFarDetails() != null ? pl.getFarDetails().getProvidedFar() : 0.0;	                     
+	                        Double purchasableFar = 0.0;	                                                
+	                        
+	                        if (Boolean.TRUE.equals(pl.getEdcrRequest().getPurchasableFar())) {
+
+	                            // Step 1: Calculate purchasable FAR (if provided > regular)
+	                            if (providedFar != null && regularPermissableFar != null && providedFar > regularPermissableFar) {
+	                                purchasableFar = providedFar - regularPermissableFar;
+	                            }
+
+	                            // Step 2: Determine total permissible FAR conditionally
+	                            Double totalPermissableFar;
+	                            if (providedFar != null && regularPermissableFar != null && providedFar > regularPermissableFar) {
+	                                // Provided FAR exceeds regular, allow adding purchasable permissible FAR
+	                                totalPermissableFar = (regularPermissableFar != null ? regularPermissableFar : 0.0)
+	                                        + (purchasablePermissableFar != null ? purchasablePermissableFar : 0.0);
+	                            } else {
+	                                // Provided FAR is within regular permissible, no need to add extra FAR
+	                                totalPermissableFar = regularPermissableFar != null ? regularPermissableFar : 0.0;
+	                            }
+
+	                            // Step 3: Round all values to 2 decimals
+	                            regularPermissableFar = BigDecimal.valueOf(regularPermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
+	                            purchasablePermissableFar = BigDecimal.valueOf(purchasablePermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
+	                            providedFar = BigDecimal.valueOf(providedFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
+	                            purchasableFar = BigDecimal.valueOf(purchasableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
+	                            totalPermissableFar = BigDecimal.valueOf(totalPermissableFar).setScale(2, RoundingMode.HALF_UP).doubleValue();
+
+	                            // Step 4: Check acceptance
+	                            boolean isAccepted = (providedFar <= totalPermissableFar);
+
+	                            // Step 5: Update FAR details in plan
+	                            pl.getFarDetails().setPermissableFar(regularPermissableFar);
+	                            pl.getFarDetails().setPurchasableFar(purchasablePermissableFar);
+	                            pl.getFarDetails().setProvidedPurchasableFar(purchasableFar);
+	                            pl.getFarDetails().setProvidedFar(providedFar);
+
+	                            // Step 6: Logging
+	                            LOG.info("Matched FAR -> OccupancyType: " + occType + ", PlotArea: " + plotArea);
+	                            LOG.info("Regular Permissible FAR: " + regularPermissableFar
+	                                    + ", Purchasable FAR Allowed: " + purchasablePermissableFar
+	                                    + ", Provided FAR: " + providedFar
+	                                    + ", Total Permissible FAR: " + totalPermissableFar
+	                                    + ", Accepted: " + isAccepted);
+
+	                            // Step 7: Build result
+	                            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasablePermissableFar,
+	                                    typeOfArea, regularPermissableFar, isAccepted);
+
+	                        } else {
+	                            // If purchasable FAR is not enabled
+	                            boolean isAccepted = (providedFar <= regularPermissableFar);
+	                            pl.getFarDetails().setPermissableFar(regularPermissableFar);
+	                            pl.getFarDetails().setProvidedFar(providedFar);
+	                            pl.getFarDetails().setPurchasableFar(0.0);
+	                            pl.getFarDetails().setProvidedPurchasableFar(0.0);
+	                            
+
+	                            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasableFar,
+	                                    typeOfArea, regularPermissableFar, isAccepted);
+	                        }
+
+	                        
+	                        
+	                    } else {
+	                        LOG.info("No matching MasterPlan record found for OccupancyType=" 
+	                                + occType + ", area=" + plotArea);
+	                    }
+	                } else {
+	                    LOG.info("No MasterPlan data found in MDMS response");
+	                }
+	            }
+	        } catch (Exception e) {
+	            LOG.error("Error while fetching FAR details from MDMS", e);
+	        }
+	    //}
+	}
+
+	
+//	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
+//    Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
+//    if (Boolean.TRUE.equals(mdmsEnabled)) {
+//        try {        	
+//        	BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
+//            Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occType, plotArea);
+//
+//            if (mdmsData != null) {
+//                
+//                //plotArea=BigDecimal.valueOf(200);
+//                //String occType = pl.getEdcrRequest().getOccupancyType(); // Assuming this is available in Plan
+//
+//                // JSONPath to directly filter MasterPlan entries
+////                String filterPath = "$.MdmsRes.EDCR.MasterPlan[?(@.OccupancyType=='A && @.minPlotArea<=" + plotArea 
+////                        + " && @.maxPlotArea>=" + plotArea + ")]";
+//                String filterPath = "$.MdmsRes.EDCR.MasterPlan";
+//
+//                Map<String, List<Map<String, Object>>> masterPlanData = BpaMdmsUtil.mdmsResponseMapper(mdmsData, filterPath);
+//
+//                if (masterPlanData != null && !masterPlanData.isEmpty()) {
+//                    // Extract filtered list
+//                    String key = masterPlanData.keySet().iterator().next();
+//                    List<Map<String, Object>> masterPlanList = masterPlanData.get(key);
+//
+//                    if (masterPlanList != null && !masterPlanList.isEmpty()) {
+//                        Map<String, Object> planEntry = masterPlanList.get(0);
+//
+//                        Double regularPermissableFar = mdmsDataParser.toDouble(planEntry.get("NormalFAR"));
+//                        Double PurchasablePermissableFar = mdmsDataParser.toDouble(planEntry.get("PurchasableFAR"));
+//                        
+//                        Double providedFar=pl.getFarDetails().getProvidedFar();
+//        				Double purchasableFar = 0.0;
+//        		        if (providedFar != null && regularPermissableFar != null && providedFar > regularPermissableFar) {
+//        		            purchasableFar = providedFar - regularPermissableFar;
+//        		        }
+//
+//                        if (pl.getFarDetails() == null) {
+//                            pl.setFarDetails(new FarDetails());
+//                        }
+//
+//                        pl.getFarDetails().setPermissableFar(regularPermissableFar != null ? regularPermissableFar : 0.0);
+//                        pl.getFarDetails().setPurchasableFar(purchasableFar != null ? purchasableFar : 0.0);
+//                        pl.getFarDetails().setProvidedPurchasableFar(1.72); // example
+//
+//                        LOG.info("Matched FAR -> OccupancyType: " + "A" + ", PlotArea: " + plotArea);
+//                        LOG.info("NormalFAR: " + regularPermissableFar + ", PurchasableFAR: " + purchasableFar);
+//                        //buildResult1(Plan pl, String occupancyName, BigDecimal far, String typeOfArea,
+//            			//Double expectedResult, boolean isAccepted) {
+//                        Double totalFar = providedFar + ; 
+//                        buildResult1(pl, occupancyType.getType().getName(), Double.valueOf(regularPermissableFar), purchasableFar, 
+//                        		typeOfArea, regularPermissableFar, true);
+//                    } else {
+//                    	LOG.info("⚠️ No matching MasterPlan record found for OccupancyType=" 
+//                                + "A" + ", area=" + plotArea);
+//                    }
+//                } else {
+//                	LOG.info("⚠️ No MasterPlan data found in MDMS response");
+//                }
+//            }
+//        } catch (Exception e) {
+//            LOG.error("Error while fetching FAR details from MDMS", e);
+//        }
+//    }
+//}
+
+
+
+
+//	private void getFarDetailsFromMDMS(Plan pl){
+//
+//		Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
+//		if(mdmsEnabled) {
+//			Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest().getTenantId());  
+//			if(mdmsData!=null) {
+//				Map<String, List<Map<String, Object>>> farData = BpaMdmsUtil.mdmsResponseMapper(mdmsData, MdmsFilter.FAR_PATH);
+//				Double permissibleFar=pl.getFarDetails().getPermissableFar(); 
+//				Double providedFar=pl.getFarDetails().getProvidedFar();
+//				double purchasableFar = 0.0;
+//		        if (providedFar != null && permissibleFar != null && providedFar > permissibleFar) {
+//		            purchasableFar = providedFar - permissibleFar;
+//		        }
+//		        
+//				
+//		        List<Map<String, Object>> farList = farData.get("FAR");
+//				if (farList != null) {
+//				    for (Map<String, Object> farEntry : farList) {
+//				        Object normalFar = farEntry.get("NormalFAR");
+//				        Object purchFar = (Double) farEntry.get("PurchesebleFAR");
+//				        pl.getFarDetails().setPurchasableFar(mdmsDataParser.toDouble(purchFar));
+//				        pl.getFarDetails().setProvidedPurchasableFar(1.72); // direct double
+//				        System.out.println("NormalFAR: " + normalFar + ", PurchesebleFAR: " + purchFar);
+////				     // Safe parsing
+////				        Double normalFar = mdmsDataParser.getDouble(farEntry, "NormalFAR");
+////				        Double purchFar  = mdmsDataParser.getDouble(farEntry, "PurchesebleFAR");
+////
+////				        // Assign safely
+////				        //pl.getFarDetails().setNormalFar(normalFar);
+////				        pl.getFarDetails().setPurchasableFar(purchFar);
+////				        pl.getFarDetails().setProvidedPurchasableFar(1.72);
+//				    }
+//				}				
+//		        //Map<String, List<Map<String, Object>>> categories = BpaMdmsUtil.mdmsResponseMapper(mdmsData, MdmsFilter.CATEGORY_PATH);
+//
+//		        //Map<String, List<Map<String, Object>>> normalFAR = BpaMdmsUtil.mdmsResponseMapper(mdmsData, MdmsFilter.NORMAL_FAR_PATH);
+//			
+////		        if (farList != null && !farList.isEmpty()) {
+////		            // Make sure FarDetails object exists
+////		            if (pl.getFarDetails() == null) {
+////		                pl.setFarDetails(new FarDetails());
+////		            }
+////
+////		            for (Map<String, Object> farEntry : farList) {
+////		                // Safe extraction
+////		                Double normalFar = mdmsDataParser.getDouble(farEntry, "NormalFAR");
+////		                Double purchFar  = mdmsDataParser.getDouble(farEntry, "PurchesebleFAR");
+////
+////		                // Set values safely
+////		                pl.getFarDetails().setPermissableFar(normalFar != null ? normalFar : 0.0);
+////		                pl.getFarDetails().setPurchasableFar(purchFar != null ? purchFar : 0.0);
+////		                pl.getFarDetails().setProvidedPurchasableFar(1.72);
+////
+////		                System.out.println("NormalFAR: " + normalFar + ", PurchesebleFAR: " + purchFar);
+////		            }
+////		        } else {
+////		            System.out.println("No FAR data found in mdms");
+////		        }
+//		        
+//			}
+//	        
+//	        
+//		}
+//     }
+	
+	private void getFarValues(){
+//		List<Map<String, Object>> farList = farData.get("FAR");
+//		if (farList != null) {
+//		    for (Map<String, Object> farEntry : farList) {
+//		        Object normalFar = farEntry.get("NormalFAR");
+//		        Object purchFar = farEntry.get("PurchesebleFAR");
+//
+//		        System.out.println("NormalFAR: " + normalFar + ", PurchesebleFAR: " + purchFar);
+//		    }
+//		}
+
+	}
 	
 }

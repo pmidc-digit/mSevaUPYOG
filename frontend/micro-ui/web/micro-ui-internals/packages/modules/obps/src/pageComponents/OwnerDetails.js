@@ -840,7 +840,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
     <div>
       {!Webview && <Timeline currentStep={3} />}
       <FormStep
-        config={{...config, texts:{header: "BPA_ADDITIONAL_BUILDING_DETAILS"}}}
+        config={{...config, texts:{header: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL"}}}
         onSelect={goNext}
         onSkip={onSkip}
         t={t}

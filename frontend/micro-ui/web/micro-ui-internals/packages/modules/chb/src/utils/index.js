@@ -8,8 +8,6 @@ export const convertDotValues = (value = "") => {
   );
 };
 
-
-
 export const getFixedFilename = (filename = "", size = 5) => {
   if (filename.length <= size) {
     return filename;
@@ -29,23 +27,23 @@ export const sethallDetails = (data) => {
     const [day, month, year] = date.split("-");
     return `${year}-${month}-${day}`; // For the <input type="date" /> format
   };
-  let hallDetails = slotlist?.bookingSlotDetails.map((slot) => {
-    return { 
-      communityHallCode:slot.code,
-      communityHallName:slot.name,
-      hallCode: slot.hallCode1,
-      bookingDate:DateConvert(slot.bookingDate),
-      bookingFromTime:slot.fromTime,
-      bookingToTime:slot.toTime,
-      status:"BOOKING_CREATED",
-      capacity:slot.capacity
-    };
-
-  }) || [];
+  let hallDetails =
+    slotlist?.bookingSlotDetails.map((slot) => {
+      return {
+        communityHallCode: slot.code,
+        communityHallName: slot.name,
+        hallCode: slot.hallCode1,
+        bookingDate: DateConvert(slot.bookingDate),
+        bookingFromTime: slot.fromTime,
+        bookingToTime: slot.toTime,
+        status: "BOOKING_CREATED",
+        capacity: slot.capacity,
+      };
+    }) || [];
 
   data.slotlist = hallDetails;
   return data;
-}
+};
 
 export const setBankDetails = (data) => {
   let { bankdetails } = data;
@@ -60,7 +58,40 @@ export const setBankDetails = (data) => {
 
   data.bankdetails = propbankdetails;
   return data;
+};
 
+export const businessServiceList = (isCode = false) => {
+  let isSearchScreen = window.location.href.includes("/search");
+  const availableBusinessServices = [
+    {
+      code: isSearchScreen ? "FIRE_NOC" : "FIRE_NOC_SRV",
+      active: true,
+      roles: ["FIRE_NOC_APPROVER"],
+      i18nKey: "WF_FIRE_NOC_FIRE_NOC_SRV",
+    },
+    {
+      code: isSearchScreen ? "AIRPORT_AUTHORITY" : "AIRPORT_NOC_SRV",
+      active: true,
+      roles: ["AIRPORT_AUTHORITY_APPROVER"],
+      i18nKey: "WF_FIRE_NOC_AIRPORT_NOC_SRV",
+    },
+  ];
+
+  const newAvailableBusinessServices = [];
+  const loggedInUserRoles = Digit.UserService.getUser().info.roles;
+  availableBusinessServices.map(({ roles }, index) => {
+    roles.map((role) => {
+      loggedInUserRoles.map((el) => {
+        if (el.code === role) {
+          isCode
+            ? newAvailableBusinessServices.push(availableBusinessServices?.[index]?.code)
+            : newAvailableBusinessServices.push(availableBusinessServices?.[index]);
+        }
+      });
+    });
+  });
+
+  return newAvailableBusinessServices;
 };
 
 export const setaddressDetails = (data) => {
@@ -69,8 +100,8 @@ export const setaddressDetails = (data) => {
   let addressdetails = {
     pincode: address?.pincode,
     city: address?.city?.city?.name,
-    cityCode:address?.city?.city?.code,
-    locality:address?.locality?.name,
+    cityCode: address?.city?.city?.code,
+    locality: address?.locality?.name,
     localityCode: address?.locality?.code,
     streetName: address?.streetName,
     houseNo: address?.houseNo,
@@ -79,123 +110,104 @@ export const setaddressDetails = (data) => {
 
   data.address = addressdetails;
   return data;
-
 };
 
 export const setOwnerDetails = (data) => {
-    let { ownerss } = data;
-  
-    let propOwners = {
-      applicantName:ownerss?.applicantName,
-      applicantMobileNo:ownerss?.mobileNumber,
-      applicantAlternateMobileNo:ownerss?.alternateNumber,
-      applicantEmailId:ownerss?.emailId,
-    };
-  
-    data.ownerss = propOwners;
-    return data;
-  };
-  
-  export const setSlotDetails = (data) => {
-    let { slots } = data;
-  
-    let bookingSlotDetails = {
-      ...slots,
-      type:slots?.residentType?.value,
-      category:slots?.specialCategory?.value,
-      purposes:slots?.purpose?.value,
-      purposeDescription:slots?.purposeDescription,
-      
-    };
-  
-    data.slots = bookingSlotDetails;
-    return data;
+  let { ownerss } = data;
+
+  let propOwners = {
+    applicantName: ownerss?.applicantName,
+    applicantMobileNo: ownerss?.mobileNumber,
+    applicantAlternateMobileNo: ownerss?.alternateNumber,
+    applicantEmailId: ownerss?.emailId,
   };
 
-  export const setDocumentDetails = (data) => {
-    let { documents } = data;
-  
-    let doc = {
-      ...documents,
-       
-      
-    };
-  
-    data.documents = doc;
-    return data;
+  data.ownerss = propOwners;
+  return data;
+};
+
+export const setSlotDetails = (data) => {
+  let { slots } = data;
+
+  let bookingSlotDetails = {
+    ...slots,
+    type: slots?.residentType?.value,
+    category: slots?.specialCategory?.value,
+    purposes: slots?.purpose?.value,
+    purposeDescription: slots?.purposeDescription,
   };
 
+  data.slots = bookingSlotDetails;
+  return data;
+};
 
+export const setDocumentDetails = (data) => {
+  let { documents } = data;
+
+  let doc = {
+    ...documents,
+  };
+
+  data.documents = doc;
+  return data;
+};
 
 export const CHBDataConvert = (data) => {
- 
   data = setDocumentDetails(data);
   data = setOwnerDetails(data);
   data = setBankDetails(data);
   data = setSlotDetails(data);
-  data= sethallDetails(data);
-  data=setaddressDetails(data);
-const formdata={
-  hallsBookingApplication: {
-    tenantId: data.tenantId,
-    applicantDetail:{
-      ...data.bankdetails,
-      ...data.ownerss
-    },
-    address:data.address,
-    purposeDescription:data.slots?.purposeDescription,
-    ...data.documents,
-    bookingStatus:"BOOKING_CREATED",
-    communityHallCode:data.slotlist[0]?.communityHallCode,
-    communityHallName:data.slotlist[0]?.communityHallName,
-    specialCategory:{
-      category:data.slots?.specialCategory?.value
-    },
-    purpose:{
-      purpose:data.slots?.purpose?.value
-    },
-    bookingSlotDetails:data?.slotlist,
+  data = sethallDetails(data);
+  data = setaddressDetails(data);
+  const formdata = {
+    hallsBookingApplication: {
+      tenantId: data.tenantId,
+      applicantDetail: {
+        ...data.bankdetails,
+        ...data.ownerss,
+      },
+      address: data.address,
+      purposeDescription: data.slots?.purposeDescription,
+      ...data.documents,
+      bookingStatus: "BOOKING_CREATED",
+      communityHallCode: data.slotlist[0]?.communityHallCode,
+      communityHallName: data.slotlist[0]?.communityHallName,
+      specialCategory: {
+        category: data.slots?.specialCategory?.value,
+      },
+      purpose: {
+        purpose: data.slots?.purpose?.value,
+      },
+      bookingSlotDetails: data?.slotlist,
 
-    workflow:null
+      workflow: null,
 
-  // workflow : {
-  //     businessService: "chb-services",
-  //     action : "APPLY",
-  //     moduleName: "chb-services"
-  //   }
-  }
-}
+      // workflow : {
+      //     businessService: "chb-services",
+      //     action : "APPLY",
+      //     moduleName: "chb-services"
+      //   }
+    },
+  };
 
   return formdata;
 };
 
 export const CompareTwoObjects = (ob1, ob2) => {
   let comp = 0;
-Object.keys(ob1).map((key) =>{
-  if(typeof ob1[key] == "object")
-  {
-    if(key == "institution")
-    {
-      if((ob1[key].name || ob2[key].name) && ob1[key]?.name !== ob2[key]?.name)
-      comp=1
-      else if(ob1[key]?.type?.code !== ob2[key]?.type?.code)
-      comp=1
-      
+  Object.keys(ob1).map((key) => {
+    if (typeof ob1[key] == "object") {
+      if (key == "institution") {
+        if ((ob1[key].name || ob2[key].name) && ob1[key]?.name !== ob2[key]?.name) comp = 1;
+        else if (ob1[key]?.type?.code !== ob2[key]?.type?.code) comp = 1;
+      } else if (ob1[key]?.code !== ob2[key]?.code) comp = 1;
+    } else {
+      if ((ob1[key] || ob2[key]) && ob1[key] !== ob2[key]) comp = 1;
     }
-    else if(ob1[key]?.code !== ob2[key]?.code)
-    comp=1
-  }
-  else
-  {
-    if((ob1[key] || ob2[key]) && ob1[key] !== ob2[key])
-    comp=1
-  }
-});
-if(comp==1)
-return false
-else
-return true;
-}
+  });
+  if (comp == 1) return false;
+  else return true;
+};
 
 /*   method to check value  if not returns NA*/
 export const checkForNA = (value = "") => {
@@ -225,7 +237,7 @@ export const pdfDocumentName = (documentLink = "", index = 0) => {
 };
 
 /* methid to get date from epoch */
-export const convertEpochToDate = (dateEpoch,businessService) => {
+export const convertEpochToDate = (dateEpoch, businessService) => {
   // Returning null in else case because new Date(null) returns initial date from calender
   if (dateEpoch) {
     const dateFromApi = new Date(dateEpoch);
@@ -234,10 +246,8 @@ export const convertEpochToDate = (dateEpoch,businessService) => {
     let year = dateFromApi.getFullYear();
     month = (month > 9 ? "" : "0") + month;
     day = (day > 9 ? "" : "0") + day;
-    if(businessService == "chb-services")
-    return `${day}-${month}-${year}`;
-    else
-    return `${day}/${month}/${year}`;
+    if (businessService == "chb-services") return `${day}-${month}-${year}`;
+    else return `${day}/${month}/${year}`;
   } else {
     return null;
   }
@@ -265,9 +275,7 @@ export const checkArrayLength = (obj = [], length = 0) => {
 
 export const getWorkflow = (data = {}) => {
   return {
-
     businessService: `chb-services`,
     moduleName: "chb-services",
   };
 };
-

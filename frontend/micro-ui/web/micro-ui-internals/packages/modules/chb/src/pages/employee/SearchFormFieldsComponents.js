@@ -16,7 +16,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
             <div className="complaint-input-container" style={{ textAlign: "start" }}>
               <SearchField>
                 <label>{t("NOC_HOME_SEARCH_RESULTS_APP_NO_LABEL")}</label>
-                <TextInput name="applicationNo" inputRef={registerRef({})} />
+                <TextInput name="applicationNumber" inputRef={registerRef({})} />
               </SearchField>
               <SearchField>
                 <label>{t("CORE_COMMON_PHONE_NUMBER")}</label>
@@ -40,7 +40,7 @@ const SearchFormFieldsComponents = ({ registerRef, searchFormState, searchFieldC
     <>
       <SearchField>
         <label>{t("NOC_APPLICATION_NUMBER_LABEL")}</label>
-        <TextInput name="applicationNo" inputRef={registerRef({})} />
+        <TextInput name="applicationNumber" inputRef={registerRef({})} />
       </SearchField>
       <SearchField>
         <label>{t("NOC_BPA_APPLICATION_NUMBER_LABEL")}</label>

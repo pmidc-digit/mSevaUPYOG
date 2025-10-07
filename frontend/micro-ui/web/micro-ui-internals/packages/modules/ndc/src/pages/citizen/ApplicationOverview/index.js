@@ -98,7 +98,7 @@ const CitizenApplicationOverview = () => {
 
   const { isLoading: nocDocsLoading, data: nocDocs } = Digit.Hooks.pt.usePropertyMDMS(state, "NDC", ["Documents"]);
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
+  const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ applicationNo: id }, tenantId);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -141,7 +141,7 @@ const CitizenApplicationOverview = () => {
         email: ndcObject?.owners?.[0]?.emailId,
         address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
-        applicationNo: ndcObject?.uuid,
+        applicationNo: ndcObject?.applicationNo,
       };
       const Documents = removeDuplicatesByUUID(ndcObject?.Documents || []);
       const NdcDetails = removeDuplicatesByUUID(ndcObject?.NdcDetails || [])?.map((item) => ({
@@ -223,7 +223,7 @@ const CitizenApplicationOverview = () => {
             <SubmitBar
               label={t("COMMON_EDIT")}
               onSubmit={() => {
-                const id = applicationDetails?.Applications?.[0]?.uuid;
+                const id = applicationDetails?.Applications?.[0]?.applicationNo;
                 history.push(`/digit-ui/citizen/ndc/new-application/${id}`);
               }}
             />

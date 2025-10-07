@@ -1,8 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Card, CardSubHeader, CardLabel, LabelFieldPair, StatusTable, ActionBar, SubmitBar, Menu } from "@mseva/digit-ui-react-components";
+import {
+  Card,
+  CardSubHeader,
+  CardLabel,
+  LabelFieldPair,
+  StatusTable,
+  ActionBar,
+  SubmitBar,
+  Menu,
+  CardSectionHeader,
+  Row,
+} from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { SET_CHBApplication_STEP } from "../redux/action/CHBApplicationActions";
+import ApplicationTable from "../components/inbox/ApplicationTable";
 import { useTranslation } from "react-i18next";
 import CHBDocument from "../components/CHBDocument";
 
@@ -15,7 +27,12 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   const mutateScreen = url.includes("/property-mutate/");
   let user = Digit.UserService.getUser();
 
-  console.log("formData", formData);
+  const columns = [
+    { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
+    { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
+    { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
+    { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
+  ];
 
   let docs = formData?.documents?.documents?.documents;
 
@@ -35,24 +52,6 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   };
 
   Digit.Hooks.useClickOutside(menuRef, closeMenu, displayMenu);
-
-  // const fetchCalculations = async () => {
-  //   const payload = {
-  //     CalculationCriteria: [
-  //       {
-  //         applicationNumber: appId,
-  //         tenantId: tenantId,
-  //       },
-  //     ],
-  //   };
-  //   const response = await Digit.NDCService.NDCCalculator({ tenantId, filters: { getCalculationOnly: true }, details: payload });
-  //   console.log("response", response?.Calculation?.[0]?.totalAmount);
-  //   setData(response?.Calculation?.[0]);
-  // };
-
-  // useEffect(() => {
-  //   fetchCalculations();
-  // }, []);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -74,10 +73,6 @@ function CHBSummary({ formData, goNext, onGoBack }) {
     // setShowModal(true);
     // setSelectedAction(action);
   }
-
-  console.log("workflowDetails", workflowDetails?.data?.nextActions);
-
-  console.log("actions", actions);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -134,9 +129,17 @@ function CHBSummary({ formData, goNext, onGoBack }) {
   const renderLabel = (label, value) => (
     <div style={labelFieldPairStyle}>
       <CardLabel style={boldLabelStyle}>{label}</CardLabel>
-      <div>{value || "NA"}</div>
+      <div>{t(value) || "NA"}</div>
     </div>
   );
+
+  const slotlistRows =
+    formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
+      communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
+      hallCode: slot.hallCode + " - " + slot.capacity,
+      bookingDate: slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
+      bookingStatus: `${t(slot.status)}`,
+    })) || [];
 
   return (
     <div style={pageStyle}>
@@ -144,15 +147,32 @@ function CHBSummary({ formData, goNext, onGoBack }) {
 
       {/* Property Details Section */}
       <div style={sectionStyle}>
-        {renderLabel(t("Full Name"), formData?.venueDetails?.[0]?.applicantDetail?.applicantName)}
-        {renderLabel(t("Mobile Number"), formData?.venueDetails?.[0]?.applicantDetail?.applicantMobileNo)}
-        {renderLabel(t("Email ID"), formData?.venueDetails?.[0]?.applicantDetail?.applicantEmailId)}
-        {renderLabel(t("Address"), formData?.venueDetails?.[0]?.address?.addressLine1)}
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
+
+        {renderLabel(t("BPA_BASIC_DETAILS_APPLICATION_NAME_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantName)}
+        {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantMobileNo)}
+        {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), formData?.venueDetails?.[0]?.applicantDetail?.applicantEmailId)}
+        {renderLabel(t("PT_COMMON_COL_ADDRESS"), formData?.venueDetails?.[0]?.address?.addressLine1)}
+      </div>
+
+      {/* <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
+      <StatusTable>
+        <Row className="border-none" label={t("CHB_SPECIAL_CATEGORY")} text={formData?.venueDetails?.[0]?.specialCategory?.category || t("CS_NA")} />
+        <Row className="border-none" label={t("CHB_PURPOSE")} text={formData?.venueDetails?.[0]?.purpose?.purpose || t("CS_NA")} />
+        <Row className="border-none" label={t("CHB_PURPOSE_DESCRIPTION")} text={formData?.venueDetails?.[0]?.purposeDescription || t("CS_NA")} />
+      </StatusTable> */}
+
+      <div style={sectionStyle}>
+        <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_EVENT_DETAILS")}</CardSubHeader>
+
+        {renderLabel(t("CHB_SPECIAL_CATEGORY"), formData?.venueDetails?.[0]?.specialCategory?.category)}
+        {renderLabel(t("CHB_PURPOSE"), formData?.venueDetails?.[0]?.purpose?.purpose)}
+        {renderLabel(t("CHB_PURPOSE_DESCRIPTION"), formData?.venueDetails?.[0]?.purposeDescription)}
       </div>
 
       {/* Documents Section */}
       {/* Documents Section */}
-      <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
+      {/* <h2 style={headingStyle}>{t("Documents Uploaded")}</h2>
       <div style={sectionStyle}>
         {docs?.length > 0 ? (
           <div style={documentsContainerStyle}>
@@ -165,7 +185,39 @@ function CHBSummary({ formData, goNext, onGoBack }) {
         ) : (
           <div>{t("TL_NO_DOCUMENTS_MSG")}</div>
         )}
-      </div>
+      </div> */}
+
+      <ApplicationTable
+        t={t}
+        data={slotlistRows}
+        columns={columns}
+        getCellProps={(cellInfo) => ({
+          style: {
+            minWidth: "150px",
+            padding: "10px",
+            fontSize: "16px",
+            paddingLeft: "20px",
+          },
+        })}
+        isPaginationRequired={false}
+        totalRecords={slotlistRows.length}
+      />
+
+      <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+      <StatusTable>
+        <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+          {docs?.map((doc, index) => (
+            <React.Fragment>
+              <div>
+                <CHBDocument value={docs} Code={doc?.documentType} index={index} />
+                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
+                  {t("CHB_MESSAGE_" + doc?.documentType?.split(".").slice(0, 2).join("_"))}
+                </CardSectionHeader>
+              </div>
+            </React.Fragment>
+          ))}
+        </Card>
+      </StatusTable>
 
       {/* Action Section */}
       <ActionBar>

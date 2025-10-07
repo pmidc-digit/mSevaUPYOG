@@ -3,7 +3,7 @@ import useInbox from "../useInbox";
 const useNDCInbox = ({ tenantId, filters, config = {} }) => {
   const { filterForm, searchForm, tableForm, getFilter } = filters;
   let { assignee } = filterForm;
-  const { uuid } = searchForm;
+  const { applicationNo } = searchForm;
   const { mobileNumber } = searchForm;
   const { limit, offset } = tableForm;
   const user = Digit.UserService.getUser();
@@ -24,12 +24,12 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
       status.length > 0
         ? {
             status: status,
-            ...(uuid ? { uuid } : {}),
+            ...(applicationNo ? { applicationNo } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
           }
         : {
             // status: status,
-            ...(uuid ? { uuid } : {}),
+            ...(applicationNo ? { applicationNo } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
           },
     limit,
@@ -66,8 +66,9 @@ const useNDCInbox = ({ tenantId, filters, config = {} }) => {
     config: {
       select: (data) => {
         const tableData = data?.items?.map((application) => {
+          console.log("application", application);
           return {
-            applicationId: application.businessObject?.uuid,
+            applicationId: application.businessObject?.applicationNo,
             date: parseInt(application.businessObject?.auditDetails?.createdTime),
             businessService: application?.ProcessInstance?.businessService,
             locality: `${application.businessObject?.tenantId?.toUpperCase()?.split(".")?.join("_")}`,

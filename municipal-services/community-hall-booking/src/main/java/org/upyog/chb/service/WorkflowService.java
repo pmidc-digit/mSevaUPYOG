@@ -15,12 +15,7 @@ import org.upyog.chb.constants.WorkflowStatus;
 import org.upyog.chb.repository.ServiceRequestRepository;
 import org.upyog.chb.web.models.CommunityHallBookingDetail;
 import org.upyog.chb.web.models.CommunityHallBookingRequest;
-import org.upyog.chb.web.models.workflow.BusinessService;
-import org.upyog.chb.web.models.workflow.BusinessServiceResponse;
-import org.upyog.chb.web.models.workflow.ProcessInstance;
-import org.upyog.chb.web.models.workflow.ProcessInstanceRequest;
-import org.upyog.chb.web.models.workflow.ProcessInstanceResponse;
-import org.upyog.chb.web.models.workflow.State;
+import org.upyog.chb.web.models.workflow.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -88,23 +83,23 @@ public class WorkflowService {
 	private ProcessInstanceRequest getProcessInstanceForHallBooking(CommunityHallBookingDetail bookingDetail, RequestInfo requestInfo) {
 //		Workflow workflow = application.getWorkflow();	
 //		Asset asset = request.getProperty();
-		ProcessInstance workflow = null != bookingDetail.getWorkflow() ? bookingDetail.getWorkflow() : new ProcessInstance();
+		Workflow workflow = bookingDetail.getWorkflow();
 
 		ProcessInstance processInstance = new ProcessInstance();
 		processInstance.setBusinessId(bookingDetail.getBookingNo());
 		processInstance.setAction(workflow.getAction());
-		processInstance.setModuleName(workflow.getModuleName());
+		processInstance.setModuleName(configs.getModuleName());
 		processInstance.setTenantId(bookingDetail.getTenantId()); // Use actual tenant ID instead of hardcoded "pg"
-		processInstance.setBusinessService(workflow.getBusinessService());
+		processInstance.setBusinessService(configs.getBusinessServiceName());
 		processInstance.setDocuments(workflow.getDocuments());
-		processInstance.setComment(workflow.getComment());
+		processInstance.setComment(workflow.getComments());
 
 		if (!CollectionUtils.isEmpty(workflow.getAssignes())) {
 			List<User> users = new ArrayList<>();
 
 			workflow.getAssignes().forEach(uuid -> {
 				User user = new User();
-				user.setUuid(uuid.getUuid());
+				user.setUuid(uuid);
 				users.add(user);
 			});
 

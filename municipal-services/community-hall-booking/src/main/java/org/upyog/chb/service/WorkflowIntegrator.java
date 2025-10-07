@@ -75,16 +75,16 @@ public class WorkflowIntegrator {
 		JSONObject obj = new JSONObject();
 		obj.put(BUSINESSIDKEY, bookingDetail.getBookingNo());
 		obj.put(TENANTIDKEY, wfTenantId);
-		obj.put(BUSINESSSERVICEKEY, bookingDetail.getWorkflow().getBusinessService());
+		obj.put(BUSINESSSERVICEKEY, config.getBusinessServiceName());
 		obj.put(MODULENAMEKEY, MODULENAMEVALUE);
 		obj.put(ACTIONKEY, bookingDetail.getWorkflow().getAction());
-		obj.put(COMMENTKEY, bookingDetail.getWorkflow().getComment());
+		obj.put(COMMENTKEY, bookingDetail.getWorkflow().getComments());
 
 		if (!CollectionUtils.isEmpty(bookingDetail.getWorkflow().getAssignes())) {
 			List<Map<String, String>> uuidmaps = new LinkedList<>();
 			bookingDetail.getWorkflow().getAssignes().forEach(assignee -> {
 				Map<String, String> uuidMap = new HashMap<>();
-				uuidMap.put(UUIDKEY, assignee.getUuid());
+				uuidMap.put(UUIDKEY, assignee);
 				uuidmaps.add(uuidMap);
 			});
 			obj.put(ASSIGNEEKEY, uuidmaps);

@@ -100,12 +100,12 @@ public class EnrichmentService {
 
 		// Set business service and module name in workflow if workflow object is
 		// provided
-		if (bookingDetail.getWorkflow() != null) {
-			bookingDetail.getWorkflow().setBusinessService(config.getBusinessServiceName());
-			bookingDetail.getWorkflow().setModuleName(config.getModuleName());
-			bookingDetail.getWorkflow().setTenantId(bookingDetail.getTenantId());
-			bookingDetail.getWorkflow().setBusinessId(customIds.get(0));
-		}
+//		if (bookingDetail.getWorkflow() != null) {
+//			bookingDetail.getWorkflow().setBusinessServiced(config.getBusinessServiceName());
+//			bookingDetail.getWorkflow().setModuleName(config.getModuleName());
+//			bookingDetail.getWorkflow().setTenantId(bookingDetail.getTenantId());
+//			bookingDetail.getWorkflow().setBusinessId(customIds.get(0));
+//		}
 
 	}
 
@@ -148,12 +148,12 @@ public class EnrichmentService {
 		bookingDetail.setAuditDetails(auditDetails);
 
 		// Enrich workflow metadata
-		if (bookingDetail.getWorkflow() != null) {
-			bookingDetail.getWorkflow().setBusinessService(config.getBusinessServiceName());
-			bookingDetail.getWorkflow().setModuleName(config.getModuleName());
-			bookingDetail.getWorkflow().setTenantId(bookingDetail.getTenantId());
-			bookingDetail.getWorkflow().setBusinessId(bookingDetail.getBookingNo());
-		}
+//		if (bookingDetail.getWorkflow() != null) {
+//			bookingDetail.getWorkflow().setBusinessService(config.getBusinessServiceName());
+//			bookingDetail.getWorkflow().setModuleName(config.getModuleName());
+//			bookingDetail.getWorkflow().setTenantId(bookingDetail.getTenantId());
+//			bookingDetail.getWorkflow().setBusinessId(bookingDetail.getBookingNo());
+//		}
 
 		// Ensure owners present; derive from applicant if none which will ensure integrity
 		if (bookingDetail.getOwners() == null || bookingDetail.getOwners().isEmpty()) {

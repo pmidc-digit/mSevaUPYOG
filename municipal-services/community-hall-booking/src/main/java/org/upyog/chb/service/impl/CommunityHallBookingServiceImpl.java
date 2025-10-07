@@ -30,6 +30,7 @@ import org.upyog.chb.web.models.OwnerInfo;
 import digit.models.coremodels.PaymentDetail;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.upyog.chb.web.models.workflow.Workflow;
 
 @Service
 @Slf4j
@@ -325,7 +326,7 @@ public class CommunityHallBookingServiceImpl implements CommunityHallBookingServ
 		// Preserve workflow & documents from request
 		List<DocumentDetail> uploadedDocumentDetailsFromRequest =
 				communityHallsBookingRequest.getHallsBookingApplication().getUploadedDocumentDetails();
-		ProcessInstance workflowFromRequest =
+		Workflow workflowFromRequest =
 				communityHallsBookingRequest.getHallsBookingApplication().getWorkflow();
 
 		convertBookingRequest(communityHallsBookingRequest, dbBookingDetail);

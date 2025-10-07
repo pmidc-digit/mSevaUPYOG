@@ -18,6 +18,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.upyog.chb.web.models.workflow.Workflow;
 
 /**
  * Details for new booking of community halls
@@ -88,7 +89,7 @@ public class CommunityHallBookingDetail {
 
 	private AuditDetails auditDetails;
 
-	private ProcessInstance workflow;
+	private Workflow workflow;
 
 	private long timerValue;
 

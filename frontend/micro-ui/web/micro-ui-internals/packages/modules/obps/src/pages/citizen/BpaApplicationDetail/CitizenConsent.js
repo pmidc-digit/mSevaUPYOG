@@ -50,6 +50,17 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const ulbselection = params?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "Commissioner" : "Executive Officer";
   const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
+  const DateOnly = TimeStamp 
+  ? (() => {
+      const date = new Date(TimeStamp);
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = date.getFullYear();
+      return `${day}-${month}-${year}`;
+    })()
+  : "";
+
+  console.log("TimeStamp", otpVerifiedTimestamp, params?.additionalDetails?.TimeStamp, TimeStamp);
 
   const updatedAdditionalDetails = {
     ...data?.applicationData?.additionalDetails,
@@ -123,15 +134,15 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     <div style="margin-top:-52px;">
       <p style="margin-bottom:-32px;"><strong>To:</strong></p>
       <p style="margin-bottom:-32px;"><strong>${ulbselection || "<ULB Type>"}</strong></p>
-      <p style="margin-bottom:-32px;"><b>${data?.applicationData?.tenantId || "<ULB Name>"}</b></p>
+      <p style="margin-bottom:-32px;"><b>${data?.applicationData?.additionalDetails?.UlbName || "<ULB Name>"}</b></p>
     </div>
 
     <p style="margin-top:-50px;"><strong>Dear Sir or Madam,</strong></p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
       I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>,
-      undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ULB <b>${data?.applicationData?.tenantId}</b>, Area <b>${area}</b> (Sq.mts.),
-      Ward Number <b>${ward}</b>, City <b>${data?.applicationData?.landInfo?.address?.city || "<City>"}</b>.
+      undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ULB <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.),
+      Ward Number <b>${ward}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
@@ -161,7 +172,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
       <tr>
         <td style="width:48%; vertical-align:top; padding:6px; border:1px dotted #000;">
           <div style="font-weight:700; margin-bottom:4px;">Date:</div>
-          <div style="min-height:60px;">${TimeStamp ? (TimeStamp.split && TimeStamp.split(" ")[0]) : "<Date of Sign>"}</div>
+          <div style="min-height:60px;">${DateOnly || "<Date of Sign>"}</div>
         </td>
 
         <td style="width:52%; vertical-align:top; border:1px dotted #000;">

@@ -58,16 +58,12 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const onSubmit = (data) => {
     trigger();
 
-    //Validation for Jamabandi Area, JamabandiArea = Net Plot Area After Widening + Area Left After Widening
-    const areaLeft = parseFloat(data?.areaLeftForRoadWidening) || 0;
-    const netArea =  parseFloat(data?.netPlotAreaAfterWidening) || 0;
-    const specArea = parseFloat(data?.specificationPlotArea) || 0;
+    //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
+    const isEqual= (data?.netTotalArea === data?.specificationPlotArea) || false;
 
-    const totalSum = areaLeft + netArea;
-
-    if(Math.abs(specArea - totalSum) > Number.EPSILON){
-      setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
-      return;
+    if(!isEqual){
+        setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
+        return;
     }
     
     //Save data in redux
@@ -81,7 +77,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
     callCreateAPI({ ...currentStepData, siteDetails:{...data} });
     }
 
-   //onGoNext();
+   onGoNext();
 
   };
 
@@ -148,17 +144,14 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           console.log("success :create api executed successfully !!!");
           dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
           onGoNext();
-          return { isSuccess: true, response };
         } else {
 
           console.error("error  : create api not executed properly !!!");
           setShowToast({ key: "true", error:true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL"});
-          return { isSuccess: false, response };
         }
        }catch(error){
           console.log("errors here in goNext - catch block", error);
           setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL"});
-          return { isSuccess: false, response };
       }
 
         // onGoNext();

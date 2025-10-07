@@ -25,7 +25,7 @@ const NewNOCStepFormThree = ({ config, onGoNext, onBackClick, t }) => {
   console.log("coordinates from redux", coordinates);
 
   function goNext(finaldata) {
-    //console.log(`Data in step ${config.currStepNumber} is: \n`, finaldata);
+
     const missingFields = validation(finaldata);
     if (missingFields.length > 0) {
       setError(`${t("NOC_PLEASE_ATTACH_LABEL")} ${t(missingFields[0].replace(".", "_").toUpperCase())}`);

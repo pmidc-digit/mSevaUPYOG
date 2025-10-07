@@ -50,6 +50,8 @@ const GetDisconnectionDetails = () => {
     setShowToast(null);
     // setError(null);
   };
+  
+  // (Redirect handled centrally in ApplicationDetails template on mutation success)
   const closeMenu = () => {
     setShowOptions(false);
   };
@@ -137,10 +139,20 @@ const GetDisconnectionDetails = () => {
   });
 
   const handleDownloadPdf = async () => {
-    const tenantInfo = applicationDetails?.applicationData?.tenantId;
-    let result = applicationDetails?.applicationData;
-    const PDFdata = getPDFData({ ...result }, { ...applicationDetails?.propertyDetails }, tenantInfo, t);
-    PDFdata.then((ress) => Digit.Utils.pdf.generatev1(ress));
+    try {
+      const tenantInfo = applicationDetails?.applicationData?.tenantId;
+      let result = applicationDetails?.applicationData;
+      const PDFdata = await getPDFData({ ...result }, { ...applicationDetails?.propertyDetails }, tenantInfo, t);
+      await Digit.Utils.pdf.generatev1(PDFdata);
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      // Show user-friendly error message
+      setShowToast({ 
+        error: true, 
+        label: t("CS_COMMON_ERROR"), 
+        description: t("CS_SOMETHING_WENT_WRONG") || "Unable to generate PDF. Please try again." 
+      });
+    }
   };
 
   async function getDisconnectionNoticeSearch() {

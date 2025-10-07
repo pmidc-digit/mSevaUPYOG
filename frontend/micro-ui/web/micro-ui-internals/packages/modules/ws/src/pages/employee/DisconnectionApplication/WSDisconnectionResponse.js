@@ -20,7 +20,8 @@ const WSDisconnectionResponse = (props) => {
   };
   
   const onSubmit = () => {
-    history.push(`/digit-ui/employee`);
+    // history.push(`/digit-ui/employee`);
+    window.location.href = "https://mseva.lgpunjab.gov.in/employee/inbox" 
   }
 
   return (

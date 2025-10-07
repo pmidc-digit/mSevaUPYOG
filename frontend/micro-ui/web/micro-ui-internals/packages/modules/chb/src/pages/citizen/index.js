@@ -19,7 +19,7 @@ const App = () => {
   const CHBResponseCitizen = Digit.ComponentRegistryService.getComponent("CHBResponseCitizen");
 
   return (
-    <span className={"chb-citizen"} style={{ width: "100%" }}>
+    <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
       <Switch>
         <AppContainer>
           {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}

@@ -137,7 +137,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
     formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
       hallCode: slot.hallCode + " - " + slot.capacity,
-      bookingDate: slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
+      bookingDate: slot.bookingDate,
       bookingStatus: `${t(slot.status)}`,
     })) || [];
 

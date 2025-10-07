@@ -240,7 +240,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
           active: true,
           reason: data?.NDCReason?.code,
           auditDetails: data?.cpt?.details?.auditDetails,
-          uuid: id,
+          applicationNo: id,
+          uuid: checkFormData?.responseData?.[0]?.uuid,
           workflow: {
             action: "DRAFT",
           },

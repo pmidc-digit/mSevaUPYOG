@@ -137,7 +137,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
     formData?.venueDetails?.[0]?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(formData?.venueDetails?.[0]?.communityHallCode)}`,
       hallCode: slot.hallCode + " - " + slot.capacity,
-      bookingDate: slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
+      bookingDate: slot.bookingDate,
       bookingStatus: `${t(slot.status)}`,
     })) || [];
 
@@ -210,9 +210,7 @@ function CHBSummary({ formData, goNext, onGoBack }) {
             <React.Fragment>
               <div>
                 <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
-                  {t("CHB_MESSAGE_" + doc?.documentType?.split(".").slice(0, 2).join("_"))}
-                </CardSectionHeader>
+                <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
               </div>
             </React.Fragment>
           ))}

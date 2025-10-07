@@ -112,30 +112,33 @@ import {
   };
   
   
-  const getConnectionDetailsPDF = async (application, property, tenantInfo, t) => {
-    const filesArray = application?.tradeLicenseDetail?.applicationDocuments?.map((value) => value?.fileStoreId);
-    let res;
-    if (filesArray) {
-      res = await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId());
-    }
-    const header = await getHeaderDetails(application, t, tenantInfo)
-    return {
-      t: t,
-      tenantId: tenantInfo,
-      title: `PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_LOGO_SUB_HEADER`,
-      name: `${t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_LOGO_SUB_HEADER")}`,
-      email: "",
-      phoneNumber: "",
-      headerDetails: [
-        header
-      ],
-      details: [
-        getConnectionDetails(application, t),
-        getPropertyDetails(property, t),
-        getConnectionHolderDetails(application, t),
-        // getDocumentDetails(application,t)
-      ],
-    };
-  };
+const getConnectionDetailsPDF = async (application, property, tenantInfo, t) => {
+  const filesArray = application?.tradeLicenseDetail?.applicationDocuments?.map((value) => value?.fileStoreId);
+  let res;
+  if (filesArray) {
+    res = await Digit.UploadServices.Filefetch(filesArray, Digit.ULBService.getStateId());
+  }
+  const header = await getHeaderDetails(application, t, tenantInfo)
   
-  export default getConnectionDetailsPDF;
+  // Issue 16 Fix: Ensure applicationNumber is available for PDF generation
+  const applicationNumber = application?.applicationNo || application?.connectionNo || "";
+  
+  return {
+    t: t,
+    tenantId: tenantInfo,
+    applicationNumber: applicationNumber, // Add this for QR code generation
+    title: `PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_LOGO_SUB_HEADER`,
+    name: `${t("PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_LOGO_SUB_HEADER")}`,
+    email: "",
+    phoneNumber: "",
+    headerDetails: [
+      header
+    ],
+    details: [
+      getConnectionDetails(application, t),
+      getPropertyDetails(property, t),
+      getConnectionHolderDetails(application, t),
+      // getDocumentDetails(application,t)
+    ],
+  };
+};  export default getConnectionDetailsPDF;

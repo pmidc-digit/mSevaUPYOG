@@ -23,6 +23,7 @@ const Urls = {
   Swach_search: `/swach-services/v2/request/_search`,
   Swach_update: `/swach-services/v2/request/_update`,
   Swach_attendence: `/swach-services/v2/request/image/_create`,
+   Swach_ViewAttendence: `/swach-services/v2/attendance/_search`,
   OTP_Send: "/user-otp/v1/_send",
   Authenticate: "/user/oauth/token",
   RegisterUser: "/user/citizen/_create",

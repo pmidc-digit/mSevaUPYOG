@@ -12,9 +12,9 @@ const ReasonPage = (props) => {
   const { id } = useParams();
   const [selected, setSelected] = useState(null);
   const [valid, setValid] = useState(true);
-  
-const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
-const complaintDetails = Digit.Hooks.swach.useComplaintDetails({ tenantId, id }).complaintDetails;
+
+  const tenantId = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || Digit.ULBService.getCurrentTenantId();
+  const complaintDetails = Digit.Hooks.swach.useComplaintDetails({ tenantId, id }).complaintDetails;
 
   const onRadioChange = (value) => {
     let reopenDetails = Digit.SessionStorage.get(`reopen.${id}`);
@@ -31,17 +31,16 @@ const complaintDetails = Digit.Hooks.swach.useComplaintDetails({ tenantId, id })
       const newURL = `${basePath}/reopen/upload-photo/${complaintId}`;
       // history.push(newURL);
       history.push({
-      pathname: newURL,
-      state: { complaintDetails }
-    });
+        pathname: newURL,
+        state: { complaintDetails },
+      });
     }
   }
 
   return (
     <Card>
       <CardHeader>{t(`${LOCALIZATION_KEY.CS_REOPEN}_COMPLAINT`)}</CardHeader>
-      <CardText>
-      </CardText>
+      <CardText></CardText>
       {valid ? null : <CardLabelError>{t(`${LOCALIZATION_KEY.CS_ADDCOMPLAINT}_ERROR_REOPEN_REASON`)}</CardLabelError>}
       <RadioButtons
         onSelect={onRadioChange}

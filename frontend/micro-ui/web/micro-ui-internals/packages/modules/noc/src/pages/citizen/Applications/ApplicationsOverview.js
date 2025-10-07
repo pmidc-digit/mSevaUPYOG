@@ -146,12 +146,22 @@ const CitizenApplicationOverview = () => {
 
   };
 
-  const getFloorLabel = (index) => {
+const getFloorLabel = (index) => {
   if (index === 0) return t("NOC_GROUND_FLOOR_AREA_LABEL");
-  const suffixes = ["st", "nd", "rd"];
-  const suffix = suffixes[(index - 1) % 10 - 1] || "th";
-  return `${index}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`; // e.g., "1st Floor"
-  };
+
+  const floorNumber = index;
+  const lastDigit = floorNumber % 10;
+  const lastTwoDigits = floorNumber % 100;
+
+  let suffix = "th";
+  if (lastTwoDigits < 11 || lastTwoDigits > 13) {
+    if (lastDigit === 1) suffix = "st";
+    else if (lastDigit === 2) suffix = "nd";
+    else if (lastDigit === 3) suffix = "rd";
+  }
+
+  return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+};
 
   //here workflow details
   const [showToast, setShowToast] = useState(null);
@@ -364,9 +374,9 @@ const CitizenApplicationOverview = () => {
                <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"}/>
               }
 
-              {detail?.buildingStatus == "Built Up" && detail?.floorArea?.map((floor, index)=>{
+              {detail?.buildingStatus == "Built Up" && detail?.floorArea?.map((floor, index)=>(
                <Row label={getFloorLabel(index)} text={floor.value || "N/A"}/>
-              })}
+              ))}
 
               {detail?.buildingStatus == "Built Up" && 
                <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail.totalFloorArea || "N/A"}/>

@@ -389,9 +389,9 @@ const CHBApplicationDetails = () => {
   const slotlistRows =
     chb_details?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(chb_details?.communityHallCode)}`,
-      hallCode: slot.hallCode + " - " + slot.capacity,
-      bookingDate: slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
-      bookingStatus: t(`WF_CHB_${slot?.status}`),
+      hallCode: t(slot.hallCode) + " - " + slot.capacity,
+      bookingDate: slot.bookingDate,
+      bookingStatus: t(`WF_NEWTL_${slot?.status}`),
     })) || [];
 
   const submitAction = async (modalData) => {

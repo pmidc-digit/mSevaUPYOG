@@ -51,6 +51,8 @@ const EmployeeApp = ({ path, url, userType }) => {
   // const EditApplication = Digit?.ComponentRegistryService?.getComponent("PTEditApplication");
   const Response = Digit?.ComponentRegistryService?.getComponent("CHBResponse");
   const CHBCreate = Digit?.ComponentRegistryService?.getComponent("CHBStepperForm");
+  const CHBResponseCitizen = Digit.ComponentRegistryService.getComponent("CHBResponseCitizen");
+
   const isRes = window.location.href.includes("chb/response");
   const isNewRegistration =
     window.location.href.includes("searchhall") ||
@@ -89,8 +91,9 @@ const EmployeeApp = ({ path, url, userType }) => {
             />
             <PrivateRoute path={`${path}/bookHall`} component={CHBCreate} />
             <PrivateRoute path={`${path}/applicationsearch/application-details/:id`} component={() => <ApplicationDetails parentRoute={path} />} />
-            <PrivateRoute path={`${path}/response`} component={(props) => <Response {...props} parentRoute={path} />} />
+            {/* <PrivateRoute path={`${path}/response`} component={(props) => <Response {...props} parentRoute={path} />} /> */}
             <PrivateRoute path={`${path}/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
+            <PrivateRoute path={`${path}/response/:id`} component={CHBResponseCitizen} />
             <PrivateRoute
               path={`${path}/searchold`}
               component={() => (

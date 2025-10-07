@@ -13,7 +13,7 @@ const useConnectionDetail = (t, tenantId, connectionNumber, serviceType, config 
     error,
     data,
     isSuccess,
-    revalidate: () => client.invalidateQueries(["APPLICATION_WS_SEARCH", "WNS_SEARCH", connectionNumber, serviceType]),
+    revalidate: () => {if (client && client.invalidateQueries) {client.invalidateQueries(["APPLICATION_WS_SEARCH", "WNS_SEARCH", connectionNumber, serviceType]);}} ,
   };
 };
 

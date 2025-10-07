@@ -72,7 +72,6 @@ const checkFeeEstimateVisible = async (wsDatas) => {
 export const WSSearch = {
   application: async (tenantId, filters = {}, serviceType) => {
    const response = await WSService.search({ tenantId, filters: { ...filters }, businessService: serviceType === "WATER" ? "WS" : "SW" });
-   console.log("application")
    // Create a URLSearchParams object
 //const params = new URLSearchParams(filters);
 //console.log("params",params)
@@ -486,7 +485,6 @@ export const WSSearch = {
     };
 
 
-    console.log("wsDataDetails: ",wsDataDetails);
     const AdditionalDetailsByWS = {
       title: "",
       isWaterConnectionDetails: true,
@@ -694,7 +692,6 @@ export const WSSearch = {
   modifyApplicationDetails: async (t, tenantId, applicationNumber, serviceType = "WATER", userInfo, config = {}) => {
 
     const filters = { applicationNumber };
-    console.log("application no",applicationNumber)
     let propertyids = "",
       consumercodes = "",
       businessIds = "";
@@ -716,7 +713,6 @@ export const WSSearch = {
     //console.log("response in modify",response)
     const wsData = cloneDeep(serviceType == "WATER" ? response?.WaterConnection : response?.SewerageConnections);
  
-    console.log("wsData",wsData)
     //const oldFilters = { connectionNumber: wsData?.[0]?.connectionNo, isConnectionSearch: true };
 
    // const oldResponse = await WSService.wsModifyApplDetails(tenantId, oldFilters, serviceType);
@@ -724,7 +720,6 @@ export const WSSearch = {
 
     const wsOldDetails = cloneDeep(serviceType == "WATER" ? oldResponse?.WaterConnection?.[1] : oldResponse?.SewerageConnections?.[1]);
 
-    console.log("wsOldDetails",wsOldDetails)
     wsData?.forEach((item) => {
       propertyids = propertyids + item?.propertyId + ",";
       consumercodes = consumercodes + item?.applicationNo + ",";
@@ -754,7 +749,6 @@ export const WSSearch = {
     let oldPropertyDetails = cloneDeep(oldProperties?.Properties?.[0]);
     const wsOldData = cloneDeep(wsOldDetails);
 
-    console.log("wsDataDetails",wsDataDetails)
     const applicationHeaderDetails = {
       title: " ",
       asSectionHeader: true,
@@ -1605,9 +1599,7 @@ export const WSSearch = {
       businessIds = [];
 
     const response = await WSSearch.application(tenantId, filters, serviceType);
-   console.log("response in search",response)
     const wsData = cloneDeep(serviceType == "WATER" ? response?.WaterConnection : response?.SewerageConnections);
-   console.log("wsData in search",wsData)
     wsData?.forEach((item) => {
       propertyids = propertyids + item?.propertyId + ",";
       consumercodes = consumercodes + item?.connectionNo + ",";
@@ -1648,8 +1640,6 @@ export const WSSearch = {
     const collectionNumber = wsDataDetails?.connectionNo;
     const colletionOFData = await WSSearch.colletionData({tenantId, serviceTypeOfData, collectionNumber}, {});
     const fetchBills = await WSSearch.fetchBillData({ tenantId, serviceTypeOfData, collectionNumber});
-console.log("wsDataDetails",propertyDataDetails?.owners)
-console.log("propertyDataDetails",propertyDataDetails?.owners.length)
 
     const applicationHeaderDetails = {
       title: "WS_COMMON_SERV_DETAIL",
@@ -1920,7 +1910,46 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
           : [{ title: "WS_CONN_HOLDER_SAME_AS_OWNER_DETAILS", value: t("SCORE_YES") }],
     };
  
-    const isApplicationApproved =  workFlowDataDetails?.ProcessInstances?.[0]?.state.isTerminateState  
+    /**
+     * Issue 8 Fix: Correct disconnection button validation logic
+     * 
+     * PROBLEM:
+     * Previous logic: `isApplicationApproved = workFlowDataDetails?.ProcessInstances?.[0]?.state.isTerminateState`
+     * - This checked if ANY workflow instance was terminated
+     * - For established connections, the original application workflow is always terminated
+     * - This caused false positive "application in progress" errors when trying to disconnect
+     * 
+     * ROOT CAUSE:
+     * - The validation logic was backwards - it checked for terminated workflows instead of active ones
+     * - For legitimate disconnection requests, the original connection workflow would be terminated
+     * - But this was incorrectly interpreted as "no permission for disconnection"
+     * 
+     * SOLUTION:
+     * - Check for ACTIVE workflows that would actually block disconnection actions
+     * - Only block disconnection if there are pending Disconnection/Modification/Reconnection workflows
+     * - Allow disconnection for established connections with no active blocking workflows
+     * 
+     * TECHNICAL IMPLEMENTATION:
+     * - hasActiveBlockingWorkflows: Checks for non-terminated workflows of blocking types
+     * - isApplicationApproved: True when NO active blocking workflows exist
+     * - This allows disconnection for normal established connections
+     * - Still properly blocks disconnection when there are actual conflicting workflows
+     */
+    
+    // Issue 8 Fix: Check if there are any ACTIVE workflows that would block disconnection
+    // Instead of checking if workflows are terminated (which they always are for established connections),
+    // we should check if there are any ACTIVE/PENDING workflows for disconnection, modification, etc.
+    // A connection can have disconnection actions if there are no active workflows blocking it
+    const hasActiveBlockingWorkflows = workFlowDataDetails?.ProcessInstances?.some(instance => 
+      !instance?.state?.isTerminateState && 
+      (instance?.businessService?.includes("Disconnection") || 
+       instance?.businessService?.includes("Modification") ||
+       instance?.businessService?.includes("Reconnection"))
+    ) || false;
+    
+    // isApplicationApproved should be true when there are NO active blocking workflows
+    const isApplicationApproved = !hasActiveBlockingWorkflows;
+    
     const isLabelShow = {
       title: "",
       asSectionHeader: true,
@@ -2012,7 +2041,7 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
           { title: "PDF_STATIC_LABEL_CONSUMER_NUMBER_LABEL", value: wsDataDetails?.connectionNo || t("NA") },
           { title: "WS_SERVICE_NAME_LABEL", value: t(`WS_APPLICATION_TYPE_${wsDataDetails?.applicationType? wsDataDetails?.applicationType : wsDataDetails?.serviceType}`) },
           { title: "PDF_STATIC_LABEL_WS_CONSOLIDATED_ACKNOWELDGMENT_DISCONNECTION_TYPE", value: t(`${applicationType}`) },
-          { title: "WNS_COMMON_TABLE_COL_AMT_DUE_LABEL", value: fetchBillData.Bill[0]?.totalAmount ? "₹ " + fetchBillData.Bill[0]?.totalAmount : "₹ 0" },
+          { title: "WNS_COMMON_TABLE_COL_AMT_DUE_LABEL", value: fetchBillData?.Bill?.[0]?.totalAmount ? "₹ " + fetchBillData.Bill[0].totalAmount : "₹ 0" },
           { title: "WS_DISCONNECTION_PROPOSED_DATE", value: wsDataDetails?.dateEffectiveFrom ? convertEpochToDate(wsDataDetails?.dateEffectiveFrom) : t("NA") },
           { title: "WS_DISCONNECTION_EXECUTED_DATE", value: wsDataDetails?.disconnectionExecutionDate ? convertEpochToDate(wsDataDetails?.disconnectionExecutionDate) : t("NA") },
           { title: "WS_DISCONNECTION_REASON", value: wsDataDetails?.disconnectionReason || t("NA") },
@@ -2201,7 +2230,6 @@ console.log("propertyDataDetails",propertyDataDetails?.owners.length)
     wsDataDetails.serviceType = serviceDataType;
     //for unmasking of plumber mobilenumber in FI/DV edit disconnection
     sessionStorage.removeItem("IsDetailsExists");
-   console.log("details",details)
     return {
       applicationData: wsDataDetails,
       applicationDetails: details,

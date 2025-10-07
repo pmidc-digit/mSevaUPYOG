@@ -13,7 +13,6 @@ import ApplicationDetailsActionBar from "./components/ApplicationDetailsActionBa
 import ApplicationDetailsWarningPopup from "./components/ApplicationDetailsWarningPopup";
 
 const ApplicationDetails = (props) => {
-  console.log("props",props)
   let isEditApplication=window.location.href.includes("editApplication") && window.location.href.includes("bpa") ;
     const tenantId = Digit.ULBService.getCurrentTenantId();
   const state = Digit.ULBService.getStateId();
@@ -58,7 +57,7 @@ const ApplicationDetails = (props) => {
   } = props;
   
   useEffect(() => {
-    if (showToast) {
+    if (showToast && workflowDetails && workflowDetails.revalidate) {
       workflowDetails.revalidate();
     }
   }, [showToast]);
@@ -89,7 +88,6 @@ const ApplicationDetails = (props) => {
       } else if (!action?.redirectionUrl && action?.action!="EDIT PAY 2") {
         setShowModal(true);
       } else if(action?.redirectionUrl?.state?.applicationData?.workflowCode === "DIRECTRENEWAL"){
-        console.log("Got Inside Direct");
         setShowModal(true);
       }else {
         history.push({
@@ -207,6 +205,18 @@ const ApplicationDetails = (props) => {
             setShowToast({ key: "success", action: selectedAction });
             clearDataDetails && setTimeout(clearDataDetails, 3000);
             setTimeout(closeToast, 5000);
+            try {
+              const svc = (businessService || "").toUpperCase();
+              const act = (selectedAction?.action || "").toUpperCase();
+              if (svc.includes("DISCONNECT") && (act.includes("APPROVE") || act.includes("EXECUTE") || act.includes("APPROVE_CONNECTION"))) {
+                // Delay redirect slightly longer than toast auto close so user sees message
+                setTimeout(() => {
+                  if (window?.location) {
+                    window.location.href = "https://mseva.lgpunjab.gov.in/employee/inbox";
+                  }
+                }, 3000);
+              }
+            } catch(e) { /* swallow */ }
             queryClient.clear();
             queryClient.refetchQueries("APPLICATION_SEARCH");
             //push false status when reject

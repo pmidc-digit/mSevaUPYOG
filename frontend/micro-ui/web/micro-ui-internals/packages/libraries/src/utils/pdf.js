@@ -116,9 +116,12 @@ const localGovLogo  =
       ? -100
       : -60;
 
-  const baseUrl= window.location.origin;
-  let qrCodeDataUrl=""
-  const module=applicationNumber.split("-")[1]
+  const baseUrl = window.location.origin;
+  let qrCodeDataUrl = "";
+  // Issue 16 Fix: Safe split operation for applicationNumber
+  const module = applicationNumber && typeof applicationNumber === 'string' && applicationNumber.includes("-") 
+    ? applicationNumber.split("-")[1] 
+    : null;
   
   if(module==="PGR"){
     
@@ -136,6 +139,10 @@ const localGovLogo  =
   }
   else if(module==="BP"){
     qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${applicationNumber}&edcrNo=${details[0]?.values[0]?.value}&applnType=${details[0]?.values[2]?.value}&serviceType=${details[0]?.values[3]?.value}&name=${details[0]?.values[6]?.value}&ownerName=${details[3]?.values[0]?.value}&ownerMblNumber=${details[3]?.values[2]?.value}&address=${details[4]?.values[0]?.value},${details[4]?.values[1]?.value},${details[4]?.values[2]?.value},${details[4]?.values[3]?.value},${details[4]?.values[4]?.value}`);
+  }
+  // Issue 16 Fix: Add specific handling for WS/SW modules
+  else if(module==="WS" || module==="SW"){
+    qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${applicationNumber}&connectionType=${details[0]?.values[0]?.value}&ownerName=${details[2]?.values[0]?.value}&mobileNumber=${details[2]?.values[1]?.value}&propertyId=${details[1]?.values[0]?.value}&address=${details[1]?.values[2]?.value}`);
   }
   else{
     qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${applicationNumber}`);
@@ -416,11 +423,16 @@ const jsPdfGeneratorv1 = async ({ breakPageLimit = null, tenantId, logo, name, e
                         : -60;
 const baseUrl= window.location.origin;
 let qrCodeDataUrl=""
-if(headerDetails?.[0]?.values?.[0]?.value.includes("WS")){
-  qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${headerDetails?.[0]?.values?.[0]?.value}&ownerName=${details[0]?.values[1]?.value}&address=${details[0]?.values[2]?.value}&noOfTaps=${details[2]?.values[1]?.value}&connectionSize=${details[2]?.values[2]?.value}`);
-}
-else if(headerDetails?.[0]?.values?.[0]?.value.includes("SW")){
-   qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${headerDetails?.[0]?.values?.[0]?.value}&ownerName=${details[0]?.values[1]?.value}&address=${details[0]?.values[2]?.value}&noOfclosets=${details[2]?.values[1]?.value}&noOfToiletSeats=${details[2]?.values[2]?.value}`);
+try {
+  if(headerDetails?.[0]?.values?.[0]?.value.includes("WS")){
+    qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${headerDetails?.[0]?.values?.[0]?.value}&ownerName=${details[0]?.values[1]?.value}&address=${details[0]?.values[2]?.value}&noOfTaps=${details[2]?.values[1]?.value}&connectionSize=${details[2]?.values[2]?.value}`);
+  }
+  else if(headerDetails?.[0]?.values?.[0]?.value.includes("SW")){
+     qrCodeDataUrl= await generateQRCodeDataUrl(`${baseUrl}/digit-ui/citizen/acknowledgement/details?tenantId=${tenantId}&acknowledgementNumber=${headerDetails?.[0]?.values?.[0]?.value}&ownerName=${details[0]?.values[1]?.value}&address=${details[0]?.values[2]?.value}&noOfclosets=${details[2]?.values[1]?.value}&noOfToiletSeats=${details[2]?.values[2]?.value}`);
+  }
+} catch (qrError) {
+  console.warn("QR Code generation failed, proceeding without QR code:", qrError);
+  qrCodeDataUrl = "";
 }
 
 
@@ -458,12 +470,12 @@ else if(headerDetails?.[0]?.values?.[0]?.value.includes("SW")){
         color: "#6f777c",
         margin: [10, 32],
       },
-      {
-        image:qrCodeDataUrl,
-        width:150,
-        alignment:'center',
-        margin:[0, 20, 0, 0]
-      },
+      ...(qrCodeDataUrl ? [{
+        image: qrCodeDataUrl,
+        width: 150,
+        alignment: 'center',
+        margin: [0, 20, 0, 0]
+      }] : []),
       {
         text:"TERMS_AND_CONDITIONS_OF_LICENSE",
         fontSize:16, 
@@ -946,13 +958,13 @@ detailsHeaders.push({
         }
       ]
     },
-    {
+    ...(qrCodeDataUrl ? [{
      width:'auto', 
-    image:qrCodeDataUrl,
+    image: qrCodeDataUrl,
     width:70,
     alignment:'right',
     margin:[0,10,10,0]
-    }
+    }] : [])
   ]
   
  
@@ -1374,13 +1386,13 @@ function createContent(details,applicationNumber, qrCodeDataUrl,logo, tenantId,p
               }
             ]
           },
-          {
+          ...(qrCodeDataUrl ? [{
            width:'auto', 
           image:qrCodeDataUrl,
           width:70,
           alignment:'right',
           margin:[0,10,10,0]
-          }
+          }] : [])
         ]
         
        
@@ -1552,7 +1564,6 @@ function createContentForDetailsWithLengthOfTwo(values, data, column1, column2, 
 }
 
 function createContentForDetailsWithLengthOfOneAndThree(values, data, column1, column2, num = 0) {
-  console.log("createContentForDetailsWithLengthOfOneAndThree",values, data, column1, column2)
   values.forEach((value, index) => {
     if (index === 0) {
       column1.push({

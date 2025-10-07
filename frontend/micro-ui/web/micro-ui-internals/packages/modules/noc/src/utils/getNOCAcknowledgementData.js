@@ -174,14 +174,14 @@ const getSiteDetails = (appData, t) => {
     },
   ];
 
-  if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.code === "BUILTUP") {
+  if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus == "Built Up") {
     values.push({
       title: t("NOC_BASEMENT_AREA_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.basementArea || "N/A",
     });
   }
 
-  if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.code === "BUILTUP") {
+  if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus == "Built UP") {
     appData?.nocDetails?.additionalDetails?.siteDetails?.floorArea?.map((floor, index) =>
       values.push({
         title: getFloorLabel(index, t),
@@ -190,7 +190,7 @@ const getSiteDetails = (appData, t) => {
     );
   }
 
-  if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus?.code === "BUILTUP") {
+  if (appData?.nocDetails?.additionalDetails?.siteDetails?.buildingStatus == "Built Up") {
     values.push({
       title: t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL"),
       value: appData?.nocDetails?.additionalDetails?.siteDetails?.totalFloorArea || "N/A",

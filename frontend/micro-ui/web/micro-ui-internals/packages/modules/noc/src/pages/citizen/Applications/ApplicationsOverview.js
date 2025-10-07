@@ -360,15 +360,15 @@ const CitizenApplicationOverview = () => {
 
               <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"} />
 
-              {detail?.buildingStatus?.code == "BUILTUP" && 
+              {detail?.buildingStatus == "Built Up" && 
                <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"}/>
               }
 
-              {detail?.buildingStatus?.code == "BUILTUP" && detail?.floorArea?.map((floor, index)=>{
+              {detail?.buildingStatus == "Built Up" && detail?.floorArea?.map((floor, index)=>{
                <Row label={getFloorLabel(index)} text={floor.value || "N/A"}/>
               })}
 
-              {detail?.buildingStatus?.code == "BUILTUP" && 
+              {detail?.buildingStatus == "Built Up" && 
                <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail.totalFloorArea || "N/A"}/>
               }
 

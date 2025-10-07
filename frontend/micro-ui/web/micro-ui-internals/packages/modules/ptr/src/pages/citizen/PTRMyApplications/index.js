@@ -45,19 +45,22 @@ export const PTRMyApplications = () => {
     referenceIds: combinedApplicationNumber,
   };
 
-  const { isLoading: serviceloading, data: servicedata } = Digit.Hooks.useFeedBackSearch(
-    { filters: { serviceSearchArgs } },
-    { filters: { serviceSearchArgs }, enabled: combinedApplicationNumber?.length > 0 ? true : false, cacheTime: 0 }
-  );
+  // const { isLoading: serviceloading, data: servicedata } = Digit.Hooks.useFeedBackSearch(
+  //   { filters: { serviceSearchArgs } },
+  //   { filters: { serviceSearchArgs }, enabled: combinedApplicationNumber?.length > 0 ? true : false, cacheTime: 0 }
+  // );
+
+  // console.log("servicedata", servicedata);
 
   function getLabelValue(curservice) {
-    let foundValue = servicedata?.Service?.find((ob) => ob?.referenceId?.includes(curservice?.applicationNumber));
+    // let foundValue = servicedata?.Service?.find((ob) => ob?.referenceId?.includes(curservice?.applicationNumber));
 
-    if (foundValue) return t("CS_CF_VIEW");
-    else return t("CS_VIEW_DETAILS");
+    // if (foundValue) return t("CS_CF_VIEW");
+    // else
+    return t("CS_VIEW_DETAILS");
   }
 
-  if (isLoading || serviceloading) {
+  if (isLoading) {
     return <Loader />;
   }
   const styles = {

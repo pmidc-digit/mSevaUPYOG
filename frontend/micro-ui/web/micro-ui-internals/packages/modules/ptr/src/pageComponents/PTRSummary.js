@@ -13,6 +13,8 @@ function PTRSummary({ t }) {
     ? window.localStorage.getItem("CITIZEN.CITY")
     : window.localStorage.getItem("Employee.tenant-id");
 
+  console.log("formData", formData);
+
   const pageStyle = {
     padding: "2rem",
     backgroundColor: "#f9f9f9",
@@ -91,47 +93,47 @@ function PTRSummary({ t }) {
       <Card className="summary-section" style={{ padding: "2px" }}>
         <div style={sectionStyle}>
           <div style={headerRow}>
-            <h3 style={headingStyle}>{t("Owner Details")}</h3>
-            <span style={editLabelStyle} onClick={() => dispatch(SET_PTRNewApplication_STEP(1))}>
+            <h3 style={headingStyle}>{t("ES_TITILE_OWNER_DETAILS")}</h3>
+            {/* <span style={editLabelStyle} onClick={() => dispatch(SET_PTRNewApplication_STEP(1))}>
               {t("EDIT")}
-            </span>
+            </span> */}
           </div>
 
-          {renderRow(t("First Name"), owner?.firstName)}
-          {renderRow(t("Last Name"), owner?.lastName)}
-          {renderRow(t("Father's Name"), owner?.fatherOrHusbandName)}
-          {renderRow(t("Mobile Number"), owner?.mobileNumber)}
-          {renderRow(t("Email ID"), owner?.emailId)}
-          {renderRow(t("Address"), owner?.address)}
+          {renderRow(t("NOC_COMMON_TABLE_COL_OWN_NAME_LABEL"), owner?.name)}
+          {/* {renderRow(t("Last Name"), owner?.lastName)} */}
+          {renderRow(t("PT_ACK_LOCALIZATION_FATHERS_NAME"), owner?.fatherOrHusbandName)}
+          {renderRow(t("CORE_COMMON_MOBILE_NUMBER"), owner?.mobileNumber)}
+          {renderRow(t("CORE_COMMON_EMAIL_ID"), owner?.emailId)}
+          {renderRow(t("ADDRESS"), owner?.address)}
         </div>
       </Card>
 
       <Card className="summary-section">
         <div style={sectionStyle}>
           <div style={headerRow}>
-            <h3 style={headingStyle}>{t("Pet Details")}</h3>
-            <span style={editLabelStyle} onClick={() => dispatch(SET_PTRNewApplication_STEP(2))}>
+            <h3 style={headingStyle}>{t("ES_TITILE_PET_DETAILS")}</h3>
+            {/* <span style={editLabelStyle} onClick={() => dispatch(SET_PTRNewApplication_STEP(2))}>
               {t("EDIT")}
-            </span>
+            </span> */}
           </div>
 
-          {renderRow(t("Pet Name"), pet?.petName)}
-          {renderRow(t("Pet Type"), pet?.petType?.name || pet?.petType?.code)}
-          {renderRow(t("Breed Type"), pet?.breedType?.name || pet?.breedType?.code)}
-          {renderRow(t("Pet Gender"), pet?.petGender?.name || pet?.petGender?.code)}
-          {renderRow(t("Color"), pet?.petColor)}
-          {renderRow(t("Vaccination Number"), pet?.vaccinationNumber)}
-          {renderRow(t("Last Vaccine Date"), pet?.lastVaccineDate)}
+          {renderRow(t("PTR_PET_NAME"), pet?.petName)}
+          {renderRow(t("PTR_PET_TYPE"), pet?.petType?.name || pet?.petType?.code)}
+          {renderRow(t("PTR_BREED_TYPE"), pet?.breedType?.name || pet?.breedType?.code)}
+          {renderRow(t("PTR_PET_GENDER"), pet?.petGender?.name || pet?.petGender?.code)}
+          {renderRow(t("PTR_COLOR"), pet?.petColor)}
+          {renderRow(t("PTR_VACCINATION_NUMBER"), pet?.vaccinationNumber)}
+          {renderRow(t("PTR_VACCINATION_DATE"), pet?.lastVaccineDate)}
         </div>
       </Card>
 
       <Card className="summary-section">
         <div style={sectionStyle}>
           <div style={headerRow}>
-            <h3 style={headingStyle}>{t("Documents")}</h3>
-            <span style={editLabelStyle} onClick={() => dispatch(SET_PTRNewApplication_STEP(3))}>
+            <h3 style={headingStyle}>{t("ES_TITLE_DOCS")}</h3>
+            {/* <span style={editLabelStyle} onClick={() => dispatch(SET_PTRNewApplication_STEP(3))}>
               {t("EDIT")}
-            </span>
+            </span> */}
           </div>
 
           <div>
@@ -151,7 +153,7 @@ function PTRSummary({ t }) {
                 ))}
               </div>
             ) : (
-              <div>{t("No documents uploaded")}</div>
+              <div>{t("CS_NO_DOCUMENTS_UPLOADED")}</div>
             )}
           </div>
         </div>

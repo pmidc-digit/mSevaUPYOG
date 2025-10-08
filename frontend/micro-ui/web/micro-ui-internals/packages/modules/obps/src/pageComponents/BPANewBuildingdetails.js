@@ -969,7 +969,7 @@ if (anyYes && !ecbcCertificateFile) {
 
   return (
   <div >
-    {!Webview && <Timeline currentStep={2} />}
+    {/* {!Webview && <Timeline currentStep={2} />} */}
     <FormStep config={{...config, texts:{header: "BPA_ADDITIONAL_BUILDING_DETAILS"}}} onSelect={goNext} onSkip={onSkip} t={t} isDisabled={false}>
       <div style={sectionStyle}>
         <h2 style={headingStyle}>{t("BPA_ULB_DETAILS")}</h2>

@@ -22,6 +22,7 @@ import ADSModal from "../../pageComponents/ADSModal";
 import get from "lodash/get";
 import { size } from "lodash";
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
+import getAcknowledgement from "../../getAcknowledgment";
 /*
  * ADSApplicationDetails includes hooks for data fetching, translation, and state management.
  * The component displays various application details, such as applicant information,
@@ -74,7 +75,6 @@ const ADSApplicationDetails = () => {
   });
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
-
   const BookingApplication = get(adsData, "bookingApplication", []);
   const adsId = get(adsData, "bookingApplication[0].bookingNo", []);
 
@@ -83,7 +83,6 @@ const ADSApplicationDetails = () => {
 
   sessionStorage.setItem("ads", JSON.stringify(application));
 
-
   const businessServicMINE = "advandhoarding";
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId,
@@ -91,7 +90,15 @@ const ADSApplicationDetails = () => {
     moduleCode: businessServicMINE,
   });
 
-
+  const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
+    {
+      tenantId: tenantId,
+      businessService: "adv-services",
+      consumerCodes: acknowledgementIds,
+      isEmployee: false,
+    },
+    { enabled: acknowledgementIds ? true : false }
+  );
   const wfActions =
     workflowDetails?.data?.nextActions?.map((a) => ({
       ...a,
@@ -137,24 +144,12 @@ const ADSApplicationDetails = () => {
   }
   // in progress
   async function getRecieptSearch({ tenantId, payments, ...params }) {
-    let application = adsData?.bookingApplication?.[0];
-    let fileStoreId = application?.paymentReceiptFilestoreId;
-    if (!fileStoreId) {
-      let response = { filestoreIds: [payments?.fileStoreId] };
-      response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "advservice-receipt");
-      const updatedApplication = {
-        ...application,
-        paymentReceiptFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        bookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
-      refetch();
-    }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
+    let response = { filestoreIds: [payments?.fileStoreId] };
+    response = await Digit.PaymentService.generatePdf(tenantId, { Payments: [{ ...payments }] }, "petservice-receipt");
+    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: response.filestoreIds[0] });
+    window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
+
   async function getPermissionLetter({ tenantId, payments, ...params }) {
     let application = adsData?.bookingApplication?.[0];
     let fileStoreId = application?.permissionLetterFilestoreId;
@@ -173,6 +168,29 @@ const ADSApplicationDetails = () => {
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
   }
+
+  const downloadAcknowledgement = async (application) => {
+    console.log("application my details", application);
+    try {
+      if (!application) {
+        throw new Error("Booking Application data is missing");
+      }
+
+      getAcknowledgement(application, t);
+      setShowToast({
+        key: "success",
+        message: "ADV_ACKNOWLEDGEMENT_DOWNLOADED_SUCCESSFULLY",
+      });
+      setActionError("Acknowledgment downloaded successfully");
+    } catch (error) {
+      console.error("Acknowledgement download error:", error);
+      setShowToast({
+        key: "error",
+        message: `ADV_ACKNOWLEDGEMENT_DOWNLOAD_ERROR: ${error.message}`,
+      });
+      setActionError("Something went wrong");
+    }
+  };
 
   function onActionSelect(wfAction) {
     if (!wfAction) return;
@@ -215,7 +233,6 @@ const ADSApplicationDetails = () => {
     // Support both shapes: old { Licenses: [...] } or raw object (from wfActions)
     const filtData = dataPayload?.Licenses?.[0] || dataPayload;
     const normalizedAssignee = normalizeAssignees(filtData?.assignee || filtData?.assignees || filtData?.assigneeUuid);
-
 
     if (!filtData || !filtData.action) {
       setShowToast({ key: "error", message: "No workflow action provided" });
@@ -310,6 +327,11 @@ const ADSApplicationDetails = () => {
 
   let dowloadOptions = [];
 
+  dowloadOptions.push({
+    label: t("PTR_PET_DOWNLOAD_ACK_FORM"),
+    onClick: () => downloadAcknowledgement(application),
+  });
+
   const columns = [
     { Header: `${t("ADS_TYPE")}`, accessor: "addType" },
     { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
@@ -325,6 +347,13 @@ const ADSApplicationDetails = () => {
       bookingDate: `${t(slot.bookingDate)}`,
       bookingStatus: `${t(slot.status)}`,
     })) || [];
+
+  if (reciept_data && reciept_data?.Payments.length > 0 && !recieptDataLoading) {
+    dowloadOptions.push({
+      label: t("PTR_FEE_RECIEPT"),
+      onClick: () => getRecieptSearch({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
+    });
+  }
   return (
     <React.Fragment>
       <div>

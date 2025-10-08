@@ -256,7 +256,7 @@ const CHBApplicationDetails = () => {
     if (action?.action == "APPLY") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/NDC/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      history.push(`/digit-ui/employee/payment/collect/chb-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/ndc/create/${appNo}`);
     } else {
@@ -547,9 +547,7 @@ const CHBApplicationDetails = () => {
                   <React.Fragment key={index}>
                     <div>
                       <CHBDocument value={docs} Code={doc?.documentType} index={index} />
-                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>
-                        {t(doc?.documentType?.split(".").slice(0, 2).join("_"))}
-                      </CardSectionHeader>
+                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
                     </div>
                   </React.Fragment>
                 ))

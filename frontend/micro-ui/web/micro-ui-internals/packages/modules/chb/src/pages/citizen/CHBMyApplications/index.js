@@ -6,8 +6,9 @@ import ChbApplication from "./chb-application";
 
 export const CHBMyApplications = () => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const user = Digit.UserService.getUser().info;
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState(null);
@@ -108,7 +109,7 @@ export const CHBMyApplications = () => {
         {filteredApplications.length > 0 &&
           filteredApplications.map((application, index) => (
             <div key={index}>
-              <ChbApplication application={application} tenantId={user?.permanentCity} buttonLabel={t("CHB_SUMMARY")} />
+              <ChbApplication application={application} tenantId={tenantId} buttonLabel={t("CHB_SUMMARY")} />
             </div>
           ))}
         {filteredApplications.length === 0 && !isLoading && (

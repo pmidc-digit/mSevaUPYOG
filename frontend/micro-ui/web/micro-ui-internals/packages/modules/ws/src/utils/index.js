@@ -1726,22 +1726,6 @@ export const downloadPdf = (blob, fileName) => {
   }
 };
 // ISSUE 16 FIX: Enhanced PDF Download Functionality  
-// 
-// Purpose: Downloads and opens PDF bills for WS/SW connections
-// Problem Solved: Download button was not working due to missing PDF generation logic
-// 
-// Implementation Details:
-// - Integrates with WSService.generateBillPdf API
-// - Handles both 200 and 201 status codes for successful responses  
-// - Creates PDF blob and triggers browser download
-// - Provides proper error handling and logging for debugging
-// - Uses connection number for filename generation
-// 
-// Error Handling:
-// - Validates response status codes
-// - Checks for empty PDF data
-// - Logs errors for debugging purposes
-// - Re-throws errors for upstream handling
 export const downloadAndOpenPdf = async (connectionNo, filters) => {
   try {
     const tenantId = Digit.ULBService.getCurrentTenantId();

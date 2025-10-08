@@ -22,6 +22,7 @@ import ADSModal from "../../pageComponents/ADSModal";
 import get from "lodash/get";
 import { size } from "lodash";
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
+import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
 /*
  * ADSApplicationDetails includes hooks for data fetching, translation, and state management.
  * The component displays various application details, such as applicant information,
@@ -74,7 +75,6 @@ const ADSApplicationDetails = () => {
   });
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
-
   const BookingApplication = get(adsData, "bookingApplication", []);
   const adsId = get(adsData, "bookingApplication[0].bookingNo", []);
 
@@ -83,14 +83,12 @@ const ADSApplicationDetails = () => {
 
   sessionStorage.setItem("ads", JSON.stringify(application));
 
-
   const businessServicMINE = "advandhoarding";
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId,
     id: acknowledgementIds,
     moduleCode: businessServicMINE,
   });
-
 
   const wfActions =
     workflowDetails?.data?.nextActions?.map((a) => ({
@@ -216,7 +214,6 @@ const ADSApplicationDetails = () => {
     const filtData = dataPayload?.Licenses?.[0] || dataPayload;
     const normalizedAssignee = normalizeAssignees(filtData?.assignee || filtData?.assignees || filtData?.assigneeUuid);
 
-
     if (!filtData || !filtData.action) {
       setShowToast({ key: "error", message: "No workflow action provided" });
       setActionError("No workflow action provided");
@@ -325,6 +322,7 @@ const ADSApplicationDetails = () => {
       bookingDate: `${t(slot.bookingDate)}`,
       bookingStatus: `${t(slot.status)}`,
     })) || [];
+
   return (
     <React.Fragment>
       <div>

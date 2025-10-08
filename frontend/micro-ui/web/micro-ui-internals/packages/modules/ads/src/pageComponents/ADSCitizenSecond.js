@@ -129,9 +129,10 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     try {
       const response = await Digit.ADSServices.slot_search(payload, tenantId);
       if (response) {
-        // set 30‑minute expiry timestamp in Redux using existing action
-        const expiry = Date.now() + 30 * 60 * 1000;
-        dispatch(UPDATE_ADSNewApplication_FORM("reservationExpiry", expiry));
+        // ✅ Store creation time
+        const createTime = Date.now();
+        dispatch(UPDATE_ADSNewApplication_FORM("reservationExpiry", createTime));
+
         goNext(cartSlots);
       } else {
         setShowToast({ label: t("COMMON_SOMETHING_WENT_WRONG_LABEL"), error: true });
@@ -171,72 +172,6 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     setDateRange({ startDate, endDate, startTime, endTime });
     setShowModal(true);
   };
-
-  // const handleAddToCart = (slots, ad) => {
-  //   setCartSlots((prev) => {
-  //     const existing = prev.find((item) => item.ad.id === ad.id);
-  //     let updated;
-
-  //     if (existing) {
-  //       let updatedSlots = existing.slots;
-
-  //       slots.forEach((slot) => {
-  //         if (slot._remove) {
-  //           updatedSlots = updatedSlots.filter((s) => s.bookingDate !== slot.bookingDate);
-  //           setShowToast({ label: `Removed slot ${slot.bookingDate} from ${ad.name}`, error: true });
-  //         } else if (!updatedSlots.some((s) => s.bookingDate === slot.bookingDate)) {
-  //           // 👇 enrich slot with bookingStartDate and bookingEndDate
-  //           const enrichedSlot = {
-  //             ...slot,
-  //             bookingStartDate: slot?.bookingDate,
-  //             bookingEndDate: dateRange?.endDate,
-  //             bookingFromTime: dateRange?.startTime,
-  //             bookingToTime: dateRange?.endTime,
-  //           };
-  //           updatedSlots = [...updatedSlots, enrichedSlot];
-  //           setShowToast({ label: `Added slot ${slot.bookingDate} to ${ad.name}`, error: false });
-  //         }
-  //       });
-
-  //       updated = prev.map((item) => (item.ad.id === ad.id ? { ...item, slots: updatedSlots } : item));
-  //     } else {
-  //       const addSlots = slots
-  //         .filter((s) => !s._remove)
-  //         .map((s) => ({
-  //           ...s,
-  //           bookingStartDate: s?.bookingDate,
-  //           bookingEndDate: dateRange?.endDate,
-  //           bookingFromTime: dateRange?.startTime,
-  //           bookingToTime: dateRange?.endTime,
-  //         }));
-
-  //       if (addSlots.length > 0) {
-  //         setShowToast({ label: `Added ${addSlots.length} slot(s) to ${ad.name}`, error: false });
-  //         updated = [...prev, { ad, slots: addSlots }];
-  //       } else {
-  //         updated = prev;
-  //       }
-  //     }
-  //     return updated;
-  //   });
-  // };
-
-  // const handleRemoveFromCart = (ad, slotToRemove) => {
-  //   setCartSlots((prev) =>
-  //     prev
-  //       .map((item) =>
-  //         item.ad.id === ad.id
-  //           ? {
-  //               ...item,
-  //               slots: item.slots.filter((s) => s.bookingDate !== slotToRemove.bookingDate),
-  //             }
-  //           : item
-  //       )
-  //       .filter((item) => item.slots.length > 0)
-  //   );
-
-  //   setShowToast({ label: `Removed slot ${slotToRemove.bookingDate} from ${ad.name}`, error: true });
-  // };
 
   const handleRemoveFromCart = (ad) => {
     setCartSlots((prev) => prev.filter((item) => item.ad.id !== ad.id));
@@ -304,9 +239,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const errorStyle = { marginTop: "-18px", color: "red" };
   const mandatoryStyle = { color: "red" };
 
-  const guidance = getScheduleMessage(scheduleType,t);
-  console.log('guidance', guidance)
-  console.log('me')
+  const guidance = getScheduleMessage(scheduleType, t);
 
   return (
     <React.Fragment>
@@ -383,8 +316,8 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
               borderRadius: "6px",
               fontSize: "14px",
               marginBottom: "8px",
-              width:"100%",
-              maxWidth:"545px"
+              width: "100%",
+              maxWidth: "545px",
             }}
           >
             ⚠️ {guidance}

@@ -120,6 +120,7 @@ public class ExtractService {
 		if (planDetail.getErrors().size() > 0)
 			return (Plan) planDetail;
 		Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
+		LOG.info("mdms enable : " + mdmsEnabled);
 		if (mdmsEnabled != null && mdmsEnabled) {
 			City stateCity = cityService.fetchStateCityDetails();
 			String tenantID = ApplicationThreadLocals.getTenantID();
@@ -361,11 +362,13 @@ public class ExtractService {
 		if (plotArea == null || plotArea.compareTo(BigDecimal.ZERO) <= 0) {
 			plotArea = extractPlotDetails(doc);
 		}
+		LOG.info("Roles info Size : " + roles.size());
 
 		//Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
 		// Iterate through roles and validate via MDMS configuration
 		for (Role role : roles) {
 			String roleCode = role.getCode();
+			LOG.info("fetching role wise data for  : " + roleCode);
 			// Skip if MDMS not enabled
 //			if (!Boolean.TRUE.equals(mdmsEnabled)) {
 //				continue;

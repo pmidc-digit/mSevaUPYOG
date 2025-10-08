@@ -88,6 +88,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
       const { isMdmsLoading, data: mdmsData } = Digit.Hooks.obps.useMDMS(safeTenantId, "BPA", ["RiskTypeComputation"], {
             enabled: !!safeTenantId,
         })
+    const [adjustedAmounts, setAdjustedAmounts] = useState(() => currentStepData?.createdResponse?.additionalDetails?.adjustedAmounts || []);
 
     const closeMenu = () => {
         setDisplayMenu(false);
@@ -552,6 +553,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         isArchitectDeclared,
                         otherFeesDiscription: otherChargesDisc || "",
                         lessAdjustmentFeeFiles: uploadedFileLess || [],
+                        adjustedAmounts: adjustedAmounts || [],
                         selfCertificationCharges: {
                             BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
                             BPA_LABOUR_CESS: labourCess?.length > 0 ? labourCess : "0",
@@ -1233,15 +1235,10 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         gaushalaFees={gaushalaFees}                 
                         malbafees={malbafees}                    
                         waterCharges={waterCharges}                 
-                        setDevelopmentVal={setDevelopmentVal}
-                        setOtherChargesVal={setOtherChargesVal}
-                        setLessAdjusmentVal={setLessAdjusmentVal}
-                        setOtherChargesDis={setOtherChargesDis}
-                        selectfile={selectfile}
-                        uploadedFile={uploadedFile}
-                        setUploadedFile={setUploadedFile}
                         errorFile={errorFile}
                         setError={setError}
+                        adjustedAmounts={adjustedAmounts}
+                        setAdjustedAmounts={setAdjustedAmounts}
                     />}
                 </Card>
 
@@ -1255,7 +1252,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                             {showMobileInput && (
                                 <React.Fragment>
                                     <br></br>
-                                    <CardLabel>{t("BPA_MOBILE_NUMBER")}</CardLabel>
+                                    <CardLabel>{t("BPA_ARCHITECT_MOBILE_NUMBER")}</CardLabel>
                                     <TextInput
                                         t={t}
                                         type="tel"
@@ -1289,7 +1286,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         {/* <CHANGE> Added checked prop to make checkbox active state visible */}
                         <CheckBox label={checkLabels()} onChange={setdeclarationhandler} styles={{ height: "auto" }} checked={agree} />
                         {showTermsPopup && (
-                            <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} currentStepData={currentStepData} />
+                            <Architectconcent showTermsPopup={showTermsPopup} setShowTermsPopup={setShowTermsPopup} otpVerifiedTimestamp={otpVerifiedTimestamp} currentStepData={currentStepData} formData={formData}/>
                         )}
                     </div>
                     <hr style={{ border: "0.5px solid #eaeaea", margin: "0 0 16px 0" }} />

@@ -13,7 +13,7 @@ import {
   ActionBar,
   CardLabelError
 } from "@mseva/digit-ui-react-components";
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Timeline from "../components/Timeline";
 import { useForm, Controller } from "react-hook-form";
@@ -45,11 +45,15 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [apiLoading, setApiLoading] = useState(false);
   const tenantId = localStorage.getItem("CITIZEN.CITY")
+  const userInfo = Digit.UserService.getUser();
+  const queryObject = { 0: { tenantId: state }, 1: {id: userInfo?.info?.id} };
+  const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(null, queryObject);
+  const [approvedLicense, setApprovedLicense] = useState(null);
 
   // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
   const data = currentStepData?.BasicDetails?.edcrDetails;
 
-console.log("sessionStorageData",formData, data, currentStepData);
+console.log("sessionStorageData",approvedLicense);
 
   // ---------------- UI Styles ----------------
   const pageStyle = {
@@ -98,6 +102,15 @@ console.log("sessionStorageData",formData, data, currentStepData);
       setEditConfig(newConfig);
     }
   }, [checkingFlow, isEditApplication]);
+
+  useEffect(() => {
+      if(LicenseData){for (let i = 0; i < LicenseData?.Licenses?.length; i++) {
+        if (LicenseData?.Licenses?.[i]?.status === "APPROVED") {
+          setApprovedLicense(LicenseData?.Licenses?.[i]);
+          break;
+        }
+      }}
+  }, [LicenseData]);
 
   useEffect(() => {
     const userInfoString = window.localStorage.getItem("user-info");
@@ -278,7 +291,8 @@ console.log("sessionStorageData",formData, data, currentStepData);
       stakeholderName,
       stakeholderRegistrationNumber,
       stakeholderAddress,
-      isSelfCertificationRequired
+      isSelfCertificationRequired,
+      architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null
     } :{
       registrationDetails,
       boundaryWallLength,
@@ -308,7 +322,8 @@ console.log("sessionStorageData",formData, data, currentStepData);
       stakeholderName,
       stakeholderRegistrationNumber,
       stakeholderAddress,
-      isSelfCertificationRequired
+      isSelfCertificationRequired,
+      architectPhoto: approvedLicense?.tradeLicenseDetail?.applicationDocuments?.find((item) => item?.documentType === "APPL.BPAREG_PASS_PORT_SIZE_PHOTO")?.fileStoreId || null
     };
     const edcrNumber = data?.edcrNumber;
     const riskType = currentStepData?.BasicDetails?.riskType;
@@ -346,7 +361,7 @@ console.log("sessionStorageData",formData, data, currentStepData);
         } }, tenantId)
         if(result?.ResponseInfo?.status === "successful"){
           setApiLoading(false);
-          onSelect("");
+          onSelect("LicenseData",approvedLicense);
         }else{
           alert(t("BPA_CREATE_APPLICATION_FAILED"));
           setApiLoading(false);
@@ -387,7 +402,7 @@ console.log("sessionStorageData",formData, data, currentStepData);
           }
         }));
       setApiLoading(false);
-      onSelect("");
+      onSelect("LicenseData",approvedLicense);
       }else{
         alert(t("BPA_CREATE_APPLICATION_FAILED"));
         setApiLoading(false);
@@ -403,7 +418,7 @@ console.log("sessionStorageData",formData, data, currentStepData);
 
   const onSkip = () => onSelect();
 
-  if (apiLoading) {
+  if (apiLoading || LicenseDataLoading) {
     return <Loader />;
   }
 
@@ -412,7 +427,7 @@ console.log("sessionStorageData",formData, data, currentStepData);
 
   return (
     <div>
-      {isMobile && <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
+      {/* {isMobile && <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />} */}
       <div style={{paddingBottom: isMobile ? "0px" : "8px"}}>
         <FormStep style={pageStyle} config={{ ...config, texts: {
           // headerCaption: "BPA_PLOT_DETAILS_TITLE",
@@ -458,7 +473,7 @@ console.log("sessionStorageData",formData, data, currentStepData);
                       }}
                       onSubmit={onGoBack}
             />
-            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading} />}
+            {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={apiLoading || LicenseDataLoading} />}
           </ActionBar>
         </FormStep>
       </div>

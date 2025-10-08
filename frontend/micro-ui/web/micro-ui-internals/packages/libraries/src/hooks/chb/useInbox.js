@@ -24,11 +24,13 @@ const useCHBInbox = ({ tenantId, filters, config = {} }) => {
       status.length > 0
         ? {
             status: status,
+            sortOrder: "DESC",
             ...(applicationNumber ? { applicationNumber } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
           }
         : {
             // status: status,
+            sortOrder: "DESC",
             ...(applicationNumber ? { applicationNumber } : {}),
             ...(mobileNumber ? { mobileNumber } : {}),
           },

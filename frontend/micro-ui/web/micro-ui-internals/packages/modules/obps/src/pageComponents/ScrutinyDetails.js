@@ -444,7 +444,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   }
   return (
     <React.Fragment style={pageStyle}>
-      {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
+      {/* {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 2 : 1} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />} */}
       <div style={{ paddingBottom: isMobile ? "0px" : "8px" }}>
         <FormStep t={t} config={{ ...config, texts: {
           // headerCaption: "BPA_STEPPER_SCRUTINY_DETAILS_HEADER",

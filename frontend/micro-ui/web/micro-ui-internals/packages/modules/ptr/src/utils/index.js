@@ -185,9 +185,9 @@ export const stringReplaceAll = (str = "", searcher = "", replaceWith = "") => {
   return str;
 };
 
-export const DownloadReceipt = async (consumerCode, tenantId, businessService, pdfKey = "consolidatedreceipt") => {
+export const DownloadReceipt = async (consumerCode, tenantId, businessService, pdfKey = "petservice-receipt") => {
   tenantId = tenantId ? tenantId : Digit.ULBService.getCurrentTenantId();
-  await Digit.Utils.downloadReceipt(consumerCode, businessService, "consolidatedreceipt", tenantId);
+  await Digit.Utils.downloadReceipt(consumerCode, businessService, "petservice-receipt", tenantId);
 };
 
 export const checkIsAnArray = (obj = []) => {

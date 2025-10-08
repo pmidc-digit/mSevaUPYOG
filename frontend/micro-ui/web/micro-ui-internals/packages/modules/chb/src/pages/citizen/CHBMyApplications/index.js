@@ -6,8 +6,9 @@ import ChbApplication from "./chb-application";
 
 export const CHBMyApplications = () => {
   const { t } = useTranslation();
-  const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
+  // const tenantId = Digit.ULBService.getCitizenCurrentTenant(true) || Digit.ULBService.getCurrentTenantId();
   const user = Digit.UserService.getUser().info;
+  const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState(null);
@@ -41,7 +42,7 @@ export const CHBMyApplications = () => {
       bookingNo: trimmedSearchTerm || undefined,
       status: status?.code || undefined,
     };
-    
+
     // Update the filters state to trigger refetch
     setFilters(searchFilters);
   };
@@ -53,7 +54,7 @@ export const CHBMyApplications = () => {
   const statusOptions = [
     { i18nKey: "Booked", code: "BOOKED", value: t("CHB_BOOKED") },
     { i18nKey: "Booking in Progres", code: "BOOKING_CREATED", value: t("CHB_BOOKING_IN_PROGRES") },
-    { i18nKey: "Cancelled", code: "CANCELLED", value: t("CANCELLED") }
+    { i18nKey: "Cancelled", code: "CANCELLED", value: t("CANCELLED") },
   ];
 
   const filteredApplications = data?.hallsBookingApplication || [];
@@ -61,7 +62,7 @@ export const CHBMyApplications = () => {
   return (
     <React.Fragment>
       <Header>{`${t("CHB_MY_APPLICATION_HEADER")} (${filteredApplications.length})`}</Header>
-      <Card>
+      {/* <Card>
         <div style={{ marginLeft: "16px" }}>
           <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "16px" }}>
             <div style={{ flex: 1 }}>
@@ -103,31 +104,23 @@ export const CHBMyApplications = () => {
               <SubmitBar style={{borderRadius:"30px",width:"20%" }} label={t("CHB_NEW_BOOKING")+" +"} />
             </Link>
         </div>
-      </Card>
+      </Card> */}
       <div>
         {filteredApplications.length > 0 &&
           filteredApplications.map((application, index) => (
             <div key={index}>
-              <ChbApplication
-                application={application}
-                tenantId={user?.permanentCity}
-                buttonLabel={t("CHB_SUMMARY")}
-              />
+              <ChbApplication application={application} tenantId={tenantId} buttonLabel={t("CHB_SUMMARY")} />
             </div>
           ))}
         {filteredApplications.length === 0 && !isLoading && (
-          <p style={{ marginLeft: "16px", marginTop: "16px" }}>
-            {t("CHB_NO_APPLICATION_FOUND_MSG")}
-          </p>
+          <p style={{ marginLeft: "16px", marginTop: "16px" }}>{t("CHB_NO_APPLICATION_FOUND_MSG")}</p>
         )}
 
-        {filteredApplications.length !== 0 && data?.count>t1 && (
+        {filteredApplications.length !== 0 && data?.count > t1 && (
           <div>
             <p style={{ marginLeft: "16px", marginTop: "16px" }}>
               <span className="link">
-                <Link to={`/digit-ui/citizen/chb/myBookings/${t1}`}>
-                  {t("CHB_LOAD_MORE_MSG")}
-                </Link>
+                <Link to={`/digit-ui/citizen/chb/myBookings/${t1}`}>{t("CHB_LOAD_MORE_MSG")}</Link>
               </span>
             </p>
           </div>

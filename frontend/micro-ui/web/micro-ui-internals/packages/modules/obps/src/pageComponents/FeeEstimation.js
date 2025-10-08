@@ -48,7 +48,7 @@ const tdStyle = {
 
 const FeeEstimation = ({
     currentStepData,
-    development = "0" ,
+    development = "0",
     otherCharges = "0",
     lessAdjusment = "0",
     labourCess,
@@ -119,11 +119,17 @@ const FeeEstimation = ({
                 tenantId: currentStepData?.createdResponse?.tenantId,
                 feeType: "SanctionFee",
                 isOnlyEstimates: "true",
-                BPA: { 
+                BPA: {
                     ...BPA,
                     additionalDetails: {
                         ...currentStepData?.createdResponse?.additionalDetails,
-                        adjustedAmounts: [...(sanctionFeeData.length > 0 ? sanctionFeeData : currentStepData?.createdResponse?.additionalDetails?.adjustedAmounts )],
+                        adjustedAmounts: [
+                            ...(Array.isArray(sanctionFeeData) && sanctionFeeData.length > 0
+                                ? sanctionFeeData
+                                : Array.isArray(currentStepData?.createdResponse?.additionalDetails?.adjustedAmounts)
+                                    ? currentStepData.createdResponse.additionalDetails.adjustedAmounts
+                                    : [])
+                        ],
                         selfCertificationCharges: {
                             BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
                             BPA_LABOUR_CESS: labourCess?.length > 0 ? labourCess : "0",
@@ -133,7 +139,7 @@ const FeeEstimation = ({
                             BPA_DEVELOPMENT_CHARGES: development?.length > 0 ? development : "0",
                             BPA_OTHER_CHARGES: otherCharges?.length > 0 ? otherCharges : "0"
                         }
-                    }   
+                    }
                 }
             }]
         },
@@ -183,7 +189,7 @@ const FeeEstimation = ({
         const grandTotal = totalAmount - totalDeduction;
         return [
             ...adjustedAmounts,
-            { id: "san-total", taxHeadCode:"BPA_TOTAL" ,title: t("BPA_TOTAL"), amount: totalAmount, category: "", adjustedAmount: totalDeduction , grandTotal: grandTotal },
+            { id: "san-total", taxHeadCode: "BPA_TOTAL", title: t("BPA_TOTAL"), amount: totalAmount, category: "", adjustedAmount: totalDeduction, grandTotal: grandTotal },
         ];
     }, [adjustedAmounts, t]);
 
@@ -335,7 +341,7 @@ const FeeEstimation = ({
                             i === index ? { ...item, onDocumentLoading: false, documentError: null } : item
                         ));
                     return fileUrl;
-                }else{
+                } else {
                     setSanctionFeeData((prev) =>
                         prev.map((item, i) =>
                             i === index ? { ...item, filestoreId: null, documentError: t("PT_FILE_LOAD_ERROR") } : item
@@ -387,32 +393,102 @@ const FeeEstimation = ({
                     {t("BPA_SANCTION_FEE")}
                 </CardSubHeader>
                 <style>
-                    {`
-          .sanction-fee-table {
-            width: 100%;
-            border-collapse: collapse;
-          }
+  {`
+    .sanction-fee-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
 
-          .sanction-fee-table th,
-          .sanction-fee-table td {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            color: rgba(13, 67, 167, 1); /* Blue text */
-          }
+    .sanction-fee-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
-          .sanction-fee-table th {
-            background-color: #ffffff; /* light header background */
-          }
+    .sanction-fee-table th,
+    .sanction-fee-table td {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      color: rgba(13, 67, 167, 1);
+      text-align: left;
+      white-space: nowrap;
+    }
 
-          .sanction-fee-table tr:nth-child(odd) {
-            background-color: rgb(244, 244, 244); 
-          }
+    .sanction-fee-table th {
+      background-color: #ffffff;
+      font-weight: 600;
+    }
 
-          .sanction-fee-table tr:nth-child(even) {
-            background-color: #ffffff; /* white background */
-          }
-        `}
-                </style>
+    .sanction-fee-table tr:nth-child(odd) {
+      background-color: rgb(244, 244, 244);
+    }
+
+    .sanction-fee-table tr:nth-child(even) {
+      background-color: #ffffff;
+    }
+
+    /* ✅ Mobile View (No overflow) */
+    @media (max-width: 768px) {
+      .sanction-fee-wrapper {
+        overflow-x: hidden;
+        padding: 0 8px;
+      }
+
+      .sanction-fee-table,
+      .sanction-fee-table thead,
+      .sanction-fee-table tbody,
+      .sanction-fee-table th,
+      .sanction-fee-table td,
+      .sanction-fee-table tr {
+        display: block;
+        width: 100%;
+      }
+
+      .sanction-fee-table thead {
+        display: none;
+      }
+
+      .sanction-fee-table tr {
+        margin-bottom: 12px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fff;
+        padding: 8px 12px;
+        box-sizing: border-box;
+        width: 100%;
+      }
+
+      .sanction-fee-table td {
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+        white-space: normal;
+        width: 100%;
+        padding: 6px 0;
+        box-sizing: border-box;
+      }
+
+      .sanction-fee-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #3f4351;
+        flex-basis: 50%;
+        text-align: left;
+        padding-right: 8px;
+      }
+
+      .sanction-fee-table td > * {
+        flex-basis: 50%;
+        word-break: break-word;
+        text-align: right;
+      }
+    }
+  `}
+</style>
+
+
                 <table
                     className="sanction-fee-table"
                     style={{
@@ -426,7 +502,7 @@ const FeeEstimation = ({
                             <th style={thStyle}>{t("BPA_TAXHEAD_CODE")}</th>
                             <th style={thStyle}>{t("BPA_AMOUNT")}</th>
                             <th style={thStyle}>{t("BPA_ADJUSTED_AMOUNT")}</th>
-                            {( disable || isEmployee) ? null :<th style={thStyle}>{t("BPA_FILE_UPLOAD")}</th>}
+                            {(disable || isEmployee) ? null : <th style={thStyle}>{t("BPA_FILE_UPLOAD")}</th>}
                             <th style={thStyle}>{t("BPA_VIEW_DOCUMENT")}</th> {/* New Column */}
                         </tr>
                     </thead>
@@ -439,31 +515,31 @@ const FeeEstimation = ({
                                         ? `₹ ${row.amount.toLocaleString()}`
                                         : t("CS_NA")}
                                 </td>
-                                
+
                                 <td style={tdStyle}>
-                                    {row?.taxHeadCode === "BPA_TOTAL" ? 
-                                    (row.adjustedAmount !== null && row.adjustedAmount !== undefined
-                                        ? `₹ ${row.adjustedAmount.toLocaleString()}`
-                                        : t("CS_NA"))
-                                    :<TextInput
-                                        t={t}
-                                        type="number"
-                                        isMandatory={false}
-                                        value={sanctionFeeData[row.index]?.adjustedAmount || ""}
-                                        onChange={(e) =>
-                                            handleAdjustedAmountChange(row.index, e.target.value, row.amount)
-                                        }
-                                        disable={disable}
-                                        style={{
-                                            width: "100%",
-                                            padding: "4px",
-                                            border: "1px solid #ccc",
-                                            borderRadius: "4px",
-                                        }}
-                                    />}
+                                    {row?.taxHeadCode === "BPA_TOTAL" ?
+                                        (row.adjustedAmount !== null && row.adjustedAmount !== undefined
+                                            ? `₹ ${row.adjustedAmount.toLocaleString()}`
+                                            : t("CS_NA"))
+                                        : <TextInput
+                                            t={t}
+                                            type="number"
+                                            isMandatory={false}
+                                            value={sanctionFeeData[row.index]?.adjustedAmount || ""}
+                                            onChange={(e) =>
+                                                handleAdjustedAmountChange(row.index, e.target.value, row.amount)
+                                            }
+                                            disable={disable}
+                                            style={{
+                                                width: "100%",
+                                                padding: "4px",
+                                                border: "1px solid #ccc",
+                                                borderRadius: "4px",
+                                            }}
+                                        />}
                                 </td>
-                                {( disable || isEmployee)? null :<td style={tdStyle}>
-                                    {(row?.taxHeadCode === "BPA_TOTAL") ? null :<UploadFile
+                                {(disable || isEmployee) ? null : <td style={tdStyle}>
+                                    {(row?.taxHeadCode === "BPA_TOTAL") ? null : <UploadFile
                                         key={row.index}
                                         id={`file-${row.id}`}
                                         onUpload={(file) => handleFileUpload(row.index, file || null)}
@@ -477,21 +553,21 @@ const FeeEstimation = ({
                                     />}
                                 </td>}
                                 <td style={tdStyle}>
-                                    {row?.taxHeadCode === "BPA_TOTAL" ? 
-                                    (row?.grandTotal !== null && row?.grandTotal !== undefined
-                                        ? `₹ ${row.grandTotal.toLocaleString()}`
-                                        : t("CS_NA"))
-                                    :<div>{sanctionFeeData[row.index]?.onDocumentLoading ?
-                                        <Loader /> : sanctionFeeData[row.index]?.documentError ? <div style={{ fontSize: "12px", color: "red" }} >{sanctionFeeData[row.index]?.documentError}</div> : <div>{sanctionFeeData[row.index]?.filestoreId ? (                                            
-                                            <LinkButton onClick={() => {
-                                                routeTo(sanctionFeeData[row.index]?.filestoreId, row.index)
-                                            }} style={{ textDecoration: "underline", padding: 0 }
-                                            } 
-                                            label={t("BPA_VIEW_DOCUMENT")}
-                                            />
-                                        ) : (
-                                            t("CS_NA")
-                                        )}</div>}</div>}
+                                    {row?.taxHeadCode === "BPA_TOTAL" ?
+                                        (row?.grandTotal !== null && row?.grandTotal !== undefined
+                                            ? `₹ ${row.grandTotal.toLocaleString()}`
+                                            : t("CS_NA"))
+                                        : <div>{sanctionFeeData[row.index]?.onDocumentLoading ?
+                                            <Loader /> : sanctionFeeData[row.index]?.documentError ? <div style={{ fontSize: "12px", color: "red" }} >{sanctionFeeData[row.index]?.documentError}</div> : <div>{sanctionFeeData[row.index]?.filestoreId ? (
+                                                <LinkButton onClick={() => {
+                                                    routeTo(sanctionFeeData[row.index]?.filestoreId, row.index)
+                                                }} style={{ textDecoration: "underline", padding: 0 }
+                                                }
+                                                    label={t("BPA_VIEW_DOCUMENT")}
+                                                />
+                                            ) : (
+                                                t("CS_NA")
+                                            )}</div>}</div>}
                                 </td>
                             </tr>
                         ))}
@@ -499,7 +575,7 @@ const FeeEstimation = ({
                 </table>
 
             </div>
-            {disable ? null : <div>
+            {disable ? null : <div style={{ paddingTop: "16px", textAlign: isMobile ? "center" : "right" }}>
                 <SubmitBar onSubmit={() => { setRecalculate(true) }} label={t("Recalculate")} disabled={!isEditable} />
             </div>}
 

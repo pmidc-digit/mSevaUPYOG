@@ -129,6 +129,7 @@ export const NewSelfCertificationStepForm = () => {
   const formData = formState.formData;
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
+  const isMobile = window.Digit.Utils.browser.isMobile();
 
   //   const id = window.location.pathname.split("/").pop();
 
@@ -158,7 +159,7 @@ export const NewSelfCertificationStepForm = () => {
   }, [history, dispatch]);
 
   return (
-    <div className="pageCard">
+    <div className={isMobile?"":"pageCard"}>
       <CardHeader styles={{ fontSize: "28px", fontWeight: "400", color: "#1C1D1F" }} divider={true}>
         {t("bpa_header_application")}
       </CardHeader>

@@ -46,8 +46,8 @@ const PlotDetails = ({ formData, onSelect, config, currentStepData, onGoBack}) =
   const [apiLoading, setApiLoading] = useState(false);
   const tenantId = localStorage.getItem("CITIZEN.CITY")
   const userInfo = Digit.UserService.getUser();
-  const queryObject = { 0: { tenantId: state }, 1: { id: userInfo?.info?.id } };
-  const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(tenantId, queryObject);
+  const queryObject = { 0: { tenantId: state }, 1: {id: userInfo?.info?.id} };
+  const { data: LicenseData, isLoading: LicenseDataLoading } = Digit.Hooks.obps.useBPAREGSearch(null, queryObject);
   const [approvedLicense, setApprovedLicense] = useState(null);
 
   // const { data, isLoading } = Digit.Hooks.obps.useScrutinyDetails(state, formData?.data?.scrutinyNumber);
@@ -427,7 +427,7 @@ console.log("sessionStorageData",approvedLicense);
 
   return (
     <div>
-      {isMobile && <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
+      {/* {isMobile && <Timeline flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />} */}
       <div style={{paddingBottom: isMobile ? "0px" : "8px"}}>
         <FormStep style={pageStyle} config={{ ...config, texts: {
           // headerCaption: "BPA_PLOT_DETAILS_TITLE",

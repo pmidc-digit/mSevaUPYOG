@@ -33,6 +33,9 @@ const CheckPage = ({ onSubmit, value }) => {
     value && Object.keys(value).length > 0 ? value : storedData || {};
   const { result, formData, documents } = safeValue;
 
+  console.log(formData, "FORM DATA IN CHECK PAGE");
+console.log(safeValue, "SAFE VAKLUE IN CHECK PAGE");
+
   console.log(safeValue, "SAFE VAKLUE");
 
   let consumerCode = result?.Licenses[0].applicationNumber;
@@ -159,16 +162,17 @@ const CheckPage = ({ onSubmit, value }) => {
 
       {/* Permanent Address */}
       <div style={sectionStyle}>
-        <h2 style={headingStyle}>{t("BPA_PERMANANT_ADDRESS_LABEL")}</h2>
-        {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), formData?.LicneseDetails?.PermanentAddress)}
-        {}
-        {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT")
-          ? renderLabel(t("BPA_SELECTED_ULB"), t("BPA_ULB_SELECTED_MESSAGE"))
-          : renderLabel(
-              t("BPA_SELECTED_ULB"),
-              formData?.LicneseDetails?.Ulb?.map((obj) => obj.ulbname).join(", ")
-            )}
-      </div>
+      <h2 style={headingStyle}>{t("BPA_PERMANANT_ADDRESS_LABEL")}</h2>
+      {renderLabel(t("BPA_APPLICANT_ADDRESS_LABEL"), formData?.LicneseDetails?.PermanentAddress)}
+
+      {formData?.LicneseType?.LicenseType?.i18nKey?.includes("ARCHITECT")
+        ? renderLabel(t("BPA_SELECTED_ULB"), t("BPA_ULB_SELECTED_MESSAGE"))
+        : renderLabel(
+            t("BPA_SELECTED_ULB"),
+            formData?.LicneseDetails?.Ulb ? formData?.LicneseDetails?.Ulb : t("BPA_ULB_NOT_AVAILABLE")
+          )}
+    </div>
+
 
       {/* Communication Address */}
       <div style={sectionStyle}>

@@ -74,15 +74,28 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   const tenantName = Digit.SessionStorage.get("OBPS_TENANTS").map((tenant) => tenant.name);
 
   
+  console.log(formData?.LicneseType?.LicenseType?.role, "role BPA")
   // console.log("tenantName=+",tenantName);
+
+
+  // useEffect(() => {
+  //   const role = formData?.LicneseType?.LicenseType?.role;
+  //   if (role == "BPA_ARCHITECT") {
+  //     const allUlbs = tenantName.map((ulb) => ({ ulbname: ulb }));
+  //     setSelectedUlbTypes(allUlbs);
+  //     console.log("Initial ULBs for BPA_ARCHITECT:", allUlbs);
+  //   }
+  // }, [formData?.LicneseType?.LicenseType?.role]);
+
   useEffect(() => {
-    const role = formData?.LicneseType?.LicenseType?.role;
-    if (role == "BPA_ARCHITECT") {
-      const allUlbs = tenantName.map((ulb) => ({ ulbname: ulb }));
-      setSelectedUlbTypes(allUlbs);
-      console.log("Initial ULBs for BPA_ARCHITECT:", allUlbs);
-    }
-  }, [formData?.LicneseType?.LicenseType?.role]);
+  const role = formData?.LicneseType?.LicenseType?.role;
+  const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
+  if (isArchitect) {
+    setSelectedUlbTypes([]); // keep it empty for BPA_ARCHITECT
+    console.log("BPA_ARCHITECT detected — ULBs cleared and disabled");
+  }
+}, [formData?.LicneseType?.LicenseType?.role]);
+
 
   useEffect(()=>{
     if(typeof selectedState === "string"){
@@ -203,6 +216,12 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   if (!(formData?.result && formData?.result?.Licenses?.[0]?.id)) {
     setErrorMessage(""); // reset errors
 
+
+  const role = formData?.LicneseType?.LicenseType?.role;
+  const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
+
+  const tenantToSend = isArchitect ? "pb.punjab" : window?.localStorage?.getItem("CITIZEN.CITY");
+
     const payload = {
       Licenses: [
         
@@ -238,7 +257,9 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               counsilForArchNo: formData?.LicneseType?.ArchitectNo,
               isSelfCertificationRequired: formData?.LicneseType?.selfCertification || null,
             
-              Ulb: selectedUlbTypes,
+              // Ulb: selectedUlbTypes,
+              // Ulb: isArchitect ? [] : selectedUlbTypes,
+              Ulb: tenantToSend
             },
             address: {
               city: "",
@@ -268,7 +289,9 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
               correspondenceAddress: isAddressSame ? PermanentAddress : correspondenceAddress,
               isAddressSame,
               Pincode: pinCode,
-              Ulb: selectedUlbTypes,
+              // Ulb: selectedUlbTypes,
+              // Ulb: isArchitect ? [] : selectedUlbTypes,
+              Ulb: tenantToSend,
               SelectedState: selectedState,
               SelectedDistrict: selectedDistrict,
             },
@@ -302,6 +325,10 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
   useEffect(() => {
     // console.log("selectedUlbTypes", selectedUlbTypes);
   }, [selectedUlbTypes]);
+
+  const role = formData?.LicneseType?.LicenseType?.role;
+  const isArchitect = Array.isArray(role) && role.includes("BPA_ARCHITECT");
+
 
   return (
     <React.Fragment>
@@ -347,31 +374,31 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
 
           <CardLabel>{t("BPA_STATE_TYPE")}*</CardLabel>
-          <div className={"form-pt-dropdown-only"}>
-            {/* {data && ( */}
-                  <Dropdown
-                    t={t}
-                    optionKey="code"
-                    // isMandatory={config.isMandatory}
-                    option={stateOptions}
-                    selected={selectedState}
-                    select={SelectState}
-                    // disable={true}
-                  />
-            {/* )} */}
+          <div >
+           
+            <Dropdown
+            t={t}
+            optionKey="code"
+            // isMandatory={config.isMandatory}
+            option={stateOptions}
+            selected={selectedState}
+            select={SelectState}
+            // disable={true}
+          />
+         
           </div>
 
           {isLoading? <Loader /> :<div> <CardLabel>{t("BPA_DISTRICT_TYPE")}*</CardLabel>
-                  <Dropdown
-                    t={t}
-                    optionKey="code"
-                    // isMandatory={config.isMandatory}
-                    // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
-                    option={uniqueDistricts}
-                    selected={selectedDistrict}
-                    select={SelectDistrict}
-                    // disable={true}
-                  />
+            <Dropdown
+            t={t}
+            optionKey="code"
+            // isMandatory={config.isMandatory}
+            // option={districtList?.BPA?.Districts?.sort((a, b) => a.name.localeCompare(b.name)) || []}
+            option={uniqueDistricts}
+            selected={selectedDistrict}
+            select={SelectDistrict}
+            // disable={true}
+          />
           </div>}
 
           <div>
@@ -409,22 +436,50 @@ const PermanentAddress = ({ t, config, onSelect, value, userType, formData }) =>
 
 
 
-          <CardLabel>{t("BPA_SELECT_ULB")}*</CardLabel>
-          <MultiSelectDropdown
-            options={tenantName.map((ulb) => ({ ulbname: ulb }))}
-            optionsKey="ulbname"
-            onSelect={(selectedOptions) => handleUlbSelection(selectedOptions)}
-            defaultLabel={t("Select ULBs")}
-            defaultUnit={t("ULBs")}
-            selected={selectedUlbTypes}
-          />
+          {/* <CardLabel>{t("BPA_SELECT_ULB")}*</CardLabel>
+
+          {Array.isArray(formData?.LicneseType?.LicenseType?.role) &&
+            formData?.LicneseType?.LicenseType?.role.includes("BPA_ARCHITECT") ? (
+              <div 
+                style={{
+                  pointerEvents: "none", 
+                  opacity: 0.6,
+                  cursor: "not-allowed",
+                  maxWidth:"540px"
+                }}
+              >
+                <MultiSelectDropdown
+                  options={tenantName.map((ulb) => ({ ulbname: ulb }))}
+                  optionsKey="ulbname"
+                  onSelect={(selectedOptions) => handleUlbSelection(selectedOptions)}
+                  defaultLabel={t("Select ULBs")}
+                  defaultUnit={t("ULBs")}
+                  selected={selectedUlbTypes}
+                  style={{ maxWidth: "540px" }}
+                />
+              </div>
+            ) : (
+              <div style={{ maxWidth: "540px" }}>
+              <MultiSelectDropdown
+                options={tenantName.map((ulb) => ({ ulbname: ulb }))}
+                optionsKey="ulbname"
+                onSelect={(selectedOptions) => handleUlbSelection(selectedOptions)}
+                defaultLabel={t("Select ULBs")}
+                defaultUnit={t("ULBs")}
+                selected={selectedUlbTypes}
+                style={{ maxWidth: "540px" }}
+              />
+              </div>
+            )} */}
+
         </FormStep>
       </div>
       <ActionBar>
+        
         <SubmitBar 
           label={t("CS_COMMON_NEXT")}
           onSubmit={goNext}
-          disabled={!PermanentAddress || selectedUlbTypes.length === 0 || pinCode === "" || !selectedState?.code || !selectedDistrict?.code}
+          disabled={!PermanentAddress ||  pinCode === "" || !selectedState?.code || !selectedDistrict?.code}
         />
       </ActionBar>
     </React.Fragment>

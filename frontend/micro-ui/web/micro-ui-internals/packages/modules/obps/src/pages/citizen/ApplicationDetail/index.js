@@ -34,7 +34,7 @@ const DownloadCertificateButton = ({ applicationNumber }) => {
     }
   };
 
-  return !applicationDetails ? <Loader /> : <SubmitBar label={t("CS_COMMON_DOWNLOAD_Certificate")} onSubmit={handleDownloadPdf} />;
+  return !applicationDetails ? <Loader /> : <SubmitBar label={t("CS_COMMON_DOWNLOAD_Certificate ")} onSubmit={handleDownloadPdf} />;
 };
 
 const ApplicationDetails = () => {
@@ -263,6 +263,7 @@ const ApplicationDetails = () => {
           <ApplicationTimeline id={id} tenantId={License?.tenantId} />
         </div>
       </div>
+      
     </Fragment>
   );
 };

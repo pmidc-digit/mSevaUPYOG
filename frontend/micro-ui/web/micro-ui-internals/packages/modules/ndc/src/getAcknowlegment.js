@@ -60,6 +60,8 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
 
 
 
+  console.log(tenantInfo, "TENANT INFO IN ACKNOWLEDGEMENT");
+
 
   // Build single certificate body by concatenating translated fragments and dynamic values
   const certificateBody = `${t("NDC_MSG_INTRO")}
@@ -85,12 +87,16 @@ ${t("NDC_MSG_NOTE")} ${t("NDC_MSG_VERIFICATION_LINK_LABEL")}`;
   return {
     t,
     tenantId: tenantInfo?.code,
-    name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(
-      t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`)
-    )}`,
+    name: t("NDC_CERTIFICATE"),
+    // name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(
+    //   t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`)
+    // )}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
-    heading: t("NDC_CERTIFICATE"),
+    // heading: t("NDC_CERTIFICATE"),
+    heading: `${t(tenantInfo?.i18nKey)} ${ulbCamel(
+      t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`)
+    )}`,
     applicationNumber,
     details: [
       {

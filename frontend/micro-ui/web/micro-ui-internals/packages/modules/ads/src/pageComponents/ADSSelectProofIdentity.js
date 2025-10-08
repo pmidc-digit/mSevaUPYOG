@@ -42,13 +42,13 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
       for (const doc of requiredDocs) {
         const satisfied = docsArray?.some((d) => d.documentType?.includes(doc?.code) && (d?.filestoreId || d.fileStoreId));
         if (!satisfied) {
-          missingDocs?.push(t(doc?.code.replaceAll(".", "_")));
+          missingDocs.push(t(doc?.code.replaceAll(".", "_")));
         }
       }
 
-      if (missingDocs.length > 0) {
-        errors?.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
-        errors?.missingDocs = missingDocs;
+      if (missingDocs?.length > 0) {
+        errors.missingRequired = "PTR_MISSING_REQUIRED_DOCUMENTS";
+        errors.missingDocs = missingDocs;
       }
       return errors;
     };
@@ -76,8 +76,8 @@ const ADSSelectProofIdentity = ({ t, config, onSelect, userType, formData }) => 
   const lastSentRef = React.useRef();
 
   useEffect(() => {
-    if (!_.isEqual(lastSentRef?.current, documents)) {
-      lastSentRef?.current = documents;
+    if (!_.isEqual(lastSentRef.current, documents)) {
+      lastSentRef.current = documents;
       onSelect(config.key, { documents });
     }
   }, [documents, config.key]);

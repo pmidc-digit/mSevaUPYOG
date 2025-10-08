@@ -23,6 +23,7 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
   }, [showToast]);
   //so the earlier made ads application page path is this : /digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}
   const appDate = new Date(application?.applicationDate).toLocaleDateString();
+
   return (
     <Card>
       <KeyNote keyValue={t("ADS_BOOKING_NO")} note={application?.bookingNo} />
@@ -35,7 +36,9 @@ const AdsApplication = ({ application, tenantId, buttonLabel }) => {
         <Link to={`/digit-ui/citizen/ads/application/${application?.bookingNo}/${application?.tenantId}`}>
           <SubmitBar label={buttonLabel} />
         </Link>
-        {( application.bookingStatus === "BOOKING_CREATED" || application.bookingStatus === "/mybookingsPAYMENT_FAILED" || application.bookingStatus === "PENDING_FOR_PAYMENT") && (
+        {(application.bookingStatus === "BOOKING_CREATED" ||
+          application.bookingStatus === "/mybookingsPAYMENT_FAILED" ||
+          application.bookingStatus === "PENDING_FOR_PAYMENT") && (
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} />
         )}
       </div>

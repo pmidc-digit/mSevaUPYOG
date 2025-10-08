@@ -50,8 +50,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   // Prefill from Redux state
   if (typeof window !== "undefined") window.__ADS_FORM_DRAFT = window.__ADS_FORM_DRAFT || {};
 
-
-  console.log('currentStepData', currentStepData)
+  console.log("currentStepData", currentStepData);
   useEffect(() => {
     if (currentStepData?.CreatedResponse) {
       const created = currentStepData?.CreatedResponse;
@@ -85,7 +84,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       console.warn("[ADS] failed to rehydrate from in-memory", e);
     }
   }, []); // run once on mount
-
 
   // Auto close toast after 2 seconds
 
@@ -169,7 +167,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         );
         setShowToast({
           key: true,
-          label:t("CORE_SOMETHING_WENT_WRONG"),
+          label: t("CORE_SOMETHING_WENT_WRONG"),
         });
       }
     } catch (err) {
@@ -192,7 +190,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      
       <div>
         <CardLabel>
           {t("NDC_FIRST_NAME")}
@@ -243,7 +240,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           name="emailId"
           rules={{
             required: t("PTR_EMAIL_REQUIRED"),
-            pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" },
+            pattern: { value: /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/, message: "Enter a valid email" },
           }}
           render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
         />

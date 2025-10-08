@@ -74,6 +74,7 @@ const ReservationTimer = ({ t }) => {
     (state) => state?.ads?.ADSNewApplicationFormReducer?.formData?.reservationExpiry
   );
 
+  console.log('expiry', expiry)
   // Start as null so we don’t render “expired” immediately
   const [remaining, setRemaining] = useState(null);
 

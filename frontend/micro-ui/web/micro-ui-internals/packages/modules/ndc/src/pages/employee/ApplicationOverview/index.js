@@ -89,6 +89,7 @@ const ApplicationOverview = () => {
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
+  const [getLable, setLable] = useState(false);
   const { control, handleSubmit, setValue } = useForm();
   const [showErrorToast, setShowErrorToastt] = useState(null);
   const [errorOne, setErrorOne] = useState(null);
@@ -274,7 +275,6 @@ const ApplicationOverview = () => {
 
   function onActionSelect(action) {
     console.log("action====???", action?.state?.actions);
-
     const ndcDetails = applicationDetails?.Applications?.[0]?.NdcDetails || [];
     const hasDuePending = ndcDetails?.some((item) => item.isDuePending === true);
 
@@ -290,11 +290,16 @@ const ApplicationOverview = () => {
     console.log("action test", action?.action);
 
     const checkactionApp = action?.action == "APPROVE";
+    ("");
 
-    if (filterRoles && checkactionApp) {
+    console.log("filterRoles && checkactionApp", filterRoles && checkactionApp, checkactionApp, filterRoles);
+
+    if (hasDuePending && checkactionApp) {
       console.log("alwasy coming appprve");
-      setError("You Can Not Approve This Application, Because It Has Pending Dues. Please Send It To Required Department");
+      setLable("You Can Not Approve This Application, Because It Has Pending Dues. Please Send It To Required Department");
+      setError(true);
       setShowToast(true);
+
       return;
     }
 
@@ -383,8 +388,10 @@ const ApplicationOverview = () => {
       const response = await Digit.NDCService.NDCUpdate({ tenantId, details: finalPayload });
 
       // ✅ Show success first
-      setShowToast({ key: "success", message: "Successfully updated the status" });
-      setError("Successfully updated the status");
+      // setShowToast({ key: "success", message: "Successfully updated the status" });
+      setLable("Successfully updated the status");
+      setError(false);
+      setShowToast(true);
 
       workflowDetails.revalidate();
 
@@ -661,7 +668,7 @@ const ApplicationOverview = () => {
           closeToastOne={closeToastOne}
         />
       ) : null}
-      {showToast && <Toast error={true} label={error} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />}
       {getLoader && <Loader page={true} />}
     </div>
   );

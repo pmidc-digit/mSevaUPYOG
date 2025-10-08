@@ -938,6 +938,8 @@ const BpaApplicationDetail = () => {
     isSingleButton = false;
   }
 
+  console.log("applicationDetailsData", actions, workflowDetails)
+
   if (isLoading || bpaDocsLoading || isEnableLoader) return (<Loader />)
 
   const timelineStatusPrefix = workflowDetails?.data?.applicationBusinessService;
@@ -949,7 +951,7 @@ const BpaApplicationDetail = () => {
         <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
           <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
           <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap" }}>
-            <div style={{}}>
+            {/* <div style={{}}>
               {dowloadOptions && dowloadOptions.length > 0 && <MultiLink
                 className="multilinkWrapper"
                 onHeadClick={() => setShowOptions(!showOptions)}
@@ -958,7 +960,7 @@ const BpaApplicationDetail = () => {
                 downloadBtnClassName={"employee-download-btn-className"}
                 optionsClassName={"employee-options-btn-className"}
               />}
-            </div>
+            </div> */}
             <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
           </div>
         </div>
@@ -1370,7 +1372,7 @@ const BpaApplicationDetail = () => {
         ) : null}
 
 
-        {!workflowDetails?.isLoading && isMenuBotton && !isSingleButton && (
+        {!workflowDetails?.isLoading && (
           <ActionBar >
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
               <Menu

@@ -232,7 +232,7 @@ const BpaApplicationDetail = () => {
     },
   })
 
-  console.log("datata", adjustedAmounts)
+  console.log("datata=====", workflowDetails)
 
   const [agree, setAgree] = useState(false)
   const setdeclarationhandler = () => {
@@ -1769,7 +1769,7 @@ useEffect(() => {
                             {displayMenu && workflowDetails?.data?.nextActions ? (
                               <Menu
                                 //style={{ bottom: "37px", minWidth: "240px", maxWidth: "310px", width: "100%", right: "0px" }}
-                                localeKeyPrefix={"WF_BPA"}
+                                localeKeyPrefix={"WF_BPA_ACTION"}
                                 options={workflowDetails?.data?.nextActions.map((action) => action.action)}
                                 t={t}
                                 onSelect={onActionSelect}

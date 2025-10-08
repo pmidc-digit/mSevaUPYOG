@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardLabel, LabelFieldPair } from "@mseva/digit-ui-react-components";
 import { useLocation, useHistory } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationActions";
 import NOCDocument from "./NOCDocument";
 
@@ -11,6 +11,12 @@ function NOCSummary({ currentStepData:formData, t }) {
   const dispatch = useDispatch();
 
   console.log("formData in Summary Page", formData);
+
+  const coordinates = useSelector(function (state) {
+      return state?.noc?.NOCNewApplicationFormReducer?.coordinates || {};
+  });
+
+  console.log("coordinates in summary page", coordinates);
 
   const sectionStyle = {
     backgroundColor: "#ffffff",
@@ -77,6 +83,7 @@ function NOCSummary({ currentStepData:formData, t }) {
             {renderLabel(t("NOC_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
             {renderLabel(t("NOC_APPLICANT_EMAIL_LABEL"), formData?.applicationDetails?.applicantEmailId)}
             {renderLabel(t("NOC_APPLICANT_FATHER_HUSBAND_NAME_LABEL"), formData?.applicationDetails?.applicantFatherHusbandName)}
+            {renderLabel(t("NOC_APPLICANT_PROPERTY_ID_LABEL"), formData?.applicationDetails?.applicantPropertyId)}
             {renderLabel(t("NOC_APPLICANT_MOBILE_NO_LABEL"), formData?.applicationDetails?.applicantMobileNumber)}
             {renderLabel(t("NOC_APPLICANT_DOB_LABEL"), formData?.applicationDetails?.applicantDateOfBirth)}
             {renderLabel(t("NOC_APPLICANT_GENDER_LABEL"), formData?.applicationDetails?.applicantGender?.code)}
@@ -109,6 +116,7 @@ function NOCSummary({ currentStepData:formData, t }) {
         {renderLabel(t("NOC_ROAD_TYPE_LABEL"), formData?.siteDetails?.roadType?.name)}
         {renderLabel(t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL"), formData?.siteDetails?.areaLeftForRoadWidening)}
         {renderLabel(t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL"), formData?.siteDetails?.netPlotAreaAfterWidening)}
+        {renderLabel(t("NOC_NET_TOTAL_AREA_LABEL"), formData?.siteDetails?.netTotalArea)}
         {renderLabel(t("NOC_ROAD_WIDTH_AT_SITE_LABEL"), formData?.siteDetails?.roadWidthAtSite)}
         {renderLabel(t("NOC_BUILDING_STATUS_LABEL"), formData?.siteDetails?.buildingStatus?.name)}
         {renderLabel(t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL"), formData?.siteDetails?.isBasementAreaAvailable?.code)}
@@ -119,7 +127,7 @@ function NOCSummary({ currentStepData:formData, t }) {
            renderLabel(getFloorLabel(index), floor?.value)
         )}
 
-        {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && renderLabel(t("NOC_TOTAL_FLOOR_AREA_LABEL"), formData?.siteDetails?.totalFloorArea)}
+        {formData?.siteDetails?.buildingStatus?.code === "BUILTUP" && renderLabel(t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL"), formData?.siteDetails?.totalFloorArea)}
 
         {renderLabel(t("NOC_DISTRICT_LABEL"), formData?.siteDetails?.district?.name)}
         {renderLabel(t("NOC_ZONE_LABEL"), formData?.siteDetails?.zone?.name)}
@@ -139,6 +147,15 @@ function NOCSummary({ currentStepData:formData, t }) {
         {renderLabel(t("NOC_NOC_TYPE_LABEL"), formData?.siteDetails?.specificationNocType?.name)}
         {renderLabel(t("NOC_RESTRICTED_AREA_LABEL"), formData?.siteDetails?.specificationRestrictedArea?.code)}
         {renderLabel(t("NOC_IS_SITE_UNDER_MASTER_PLAN_LABEL"), formData?.siteDetails?.specificationIsSiteUnderMasterPlan?.code)}
+      </div>
+
+      <h2 style={headingStyle}>{t("NOC_SITE_COORDINATES_LABEL")}</h2>
+      <div style={sectionStyle}>
+        {renderLabel(t("COMMON_LATITUDE1_LABEL"), coordinates?.Latitude1)}
+        {renderLabel(t("COMMON_LONGITUDE1_LABEL"),coordinates?.Longitude1)}
+        
+        {renderLabel(t("COMMON_LATITUDE2_LABEL"), coordinates?.Latitude2)}
+        {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
       <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>

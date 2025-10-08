@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader, Header } from "@mseva/digit-ui-react-components";
-import {Params_Count}from "../../constants/Employee"
+import { Params_Count } from "../../constants/Employee";
 import DesktopInbox from "../../components/DesktopInbox";
 import MobileInbox from "../../components/MobileInbox";
 
@@ -29,8 +29,8 @@ const Inbox = ({ initialStates = {} }) => {
       const applicationStatus = searchParams?.filters?.swachfilters?.applicationStatus?.map((e) => e.code).join(",");
       // const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.map((e) => e.code).join(",");
       const assigneeCode = searchParams?.filters?.wfFilters?.assignee?.[0]?.code;
-       let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
-        // console.log("useCount response in inbox else block", response);
+      let response = await Digit.SwachService.count(tenantId, applicationStatus?.length > 0 ? { applicationStatus } : {});
+      // console.log("useCount response in inbox else block", response);
       if (response?.count) {
         setTotalRecords(response.count);
       }
@@ -59,15 +59,15 @@ const Inbox = ({ initialStates = {} }) => {
   }, [searchParams, pageOffset, pageSize,tenantIdCheck, sessionEmpTenant]);
 
   const fetchNextPage = () => {
-  setPageOffset((prevState) => prevState + pageSize);
-};
+    setPageOffset((prevState) => prevState + pageSize);
+  };
 
-const fetchPrevPage = () => {
-  setPageOffset((prevState) => Math.max(0, prevState - pageSize));
-};
+  const fetchPrevPage = () => {
+    setPageOffset((prevState) => Math.max(0, prevState - pageSize));
+  };
 
   const handlePageSizeChange = (e) => {
-      setPageOffset(0);
+    setPageOffset(0);
     setPageSize(Number(e.target.value));
   };
 

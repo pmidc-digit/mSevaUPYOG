@@ -110,6 +110,7 @@ const BpaApplicationDetail = () => {
   const [gaushalaFees, setGaushalaFees] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_GAUSHALA_CHARGES_CESS || "");
   const [malbafees, setMalbafees] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_MALBA_CHARGES || "");
   const [waterCharges, setWaterCharges] = useState(() => data?.applicationData?.additionalDetails?.selfCertificationCharges?.BPA_WATER_CHARGES || "");
+  const [adjustedAmounts, setAdjustedAmounts] = useState(() => data?.applicationData?.additionalDetails?.adjustedAmounts || []);
   console.log("DATA DATA", data);
 
 
@@ -151,6 +152,7 @@ const BpaApplicationDetail = () => {
       setGaushalaFees(charges.BPA_GAUSHALA_CHARGES_CESS || "");
       setMalbafees(charges.BPA_MALBA_CHARGES || "");
       setWaterCharges(charges.BPA_WATER_CHARGES || "");
+      setAdjustedAmounts(data.applicationData.additionalDetails.adjustedAmounts || []);
     }
   }, [isLoading, data]);
 
@@ -853,6 +855,7 @@ const BpaApplicationDetail = () => {
             additionalDetails: {
               ...data?.BPA?.additionalDetails,
               otherFeesDiscription: otherChargesDisc || "",
+              adjustedAmounts: adjustedAmounts || [],
               selfCertificationCharges: {
                 ...data?.BPA?.additionalDetails?.selfCertificationCharges,
                 BPA_MALBA_CHARGES: malbafees?.length > 0 ? malbafees : "0",
@@ -935,6 +938,8 @@ const BpaApplicationDetail = () => {
     isSingleButton = false;
   }
 
+  console.log("applicationDetailsData", actions, workflowDetails)
+
   if (isLoading || bpaDocsLoading || isEnableLoader) return (<Loader />)
 
   const timelineStatusPrefix = workflowDetails?.data?.applicationBusinessService;
@@ -946,7 +951,7 @@ const BpaApplicationDetail = () => {
         <div className={"employee-application-details"} style={{ marginBottom: "15px" }}>
           <Header styles={{ marginLeft: "0px", paddingTop: "10px", fontSize: "32px" }}>{t("CS_TITLE_APPLICATION_DETAILS")}</Header>
           <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "nowrap" }}>
-            <div style={{}}>
+            {/* <div style={{}}>
               {dowloadOptions && dowloadOptions.length > 0 && <MultiLink
                 className="multilinkWrapper"
                 onHeadClick={() => setShowOptions(!showOptions)}
@@ -955,7 +960,7 @@ const BpaApplicationDetail = () => {
                 downloadBtnClassName={"employee-download-btn-className"}
                 optionsClassName={"employee-options-btn-className"}
               />}
-            </div>
+            </div> */}
             <LinkButton label={t("VIEW_TIMELINE")} style={{ color: "#A52A2A" }} onClick={handleViewTimeline}></LinkButton>
           </div>
         </div>
@@ -1342,10 +1347,8 @@ const BpaApplicationDetail = () => {
             gaushalaFees={gaushalaFees}
             malbafees={malbafees}
             waterCharges={waterCharges}
-            setDevelopmentVal={setDevelopmentVal}
-            setOtherChargesVal={setOtherChargesVal}
-            setLessAdjusmentVal={setLessAdjusmentVal}
-            setOtherChargesDis={setOtherChargesDis}
+            adjustedAmounts={adjustedAmounts}
+            setAdjustedAmounts={setAdjustedAmounts}
           />}
         </Card>
 
@@ -1369,7 +1372,7 @@ const BpaApplicationDetail = () => {
         ) : null}
 
 
-        {!workflowDetails?.isLoading && isMenuBotton && !isSingleButton && (
+        {!workflowDetails?.isLoading && (
           <ActionBar >
             {displayMenu && (workflowDetails?.data?.actionState?.nextActions || workflowDetails?.data?.nextActions) ? (
               <Menu

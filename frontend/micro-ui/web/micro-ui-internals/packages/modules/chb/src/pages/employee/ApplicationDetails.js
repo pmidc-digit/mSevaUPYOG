@@ -256,7 +256,7 @@ const CHBApplicationDetails = () => {
     if (action?.action == "APPLY") {
       submitAction(payload);
     } else if (action?.action == "PAY") {
-      history.push(`/digit-ui/employee/payment/collect/NDC/${appNo}/${tenantId}?tenantId=${tenantId}`);
+      history.push(`/digit-ui/employee/payment/collect/chb-services/${appNo}/${tenantId}?tenantId=${tenantId}`);
     } else if (action?.action == "EDIT") {
       history.push(`/digit-ui/employee/ndc/create/${appNo}`);
     } else {
@@ -389,9 +389,9 @@ const CHBApplicationDetails = () => {
   const slotlistRows =
     chb_details?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(chb_details?.communityHallCode)}`,
-      hallCode: slot.hallCode + " - " + slot.capacity,
-      bookingDate: slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
-      bookingStatus: t(`WF_CHB_${slot?.status}`),
+      hallCode: t(slot.hallCode) + " - " + slot.capacity,
+      bookingDate: slot.bookingDate,
+      bookingStatus: t(`WF_NEWTL_${slot?.status}`),
     })) || [];
 
   const submitAction = async (modalData) => {
@@ -464,8 +464,10 @@ const CHBApplicationDetails = () => {
       setSelectedAction(null);
       setShowModal(false);
     } catch (err) {
-      setShowToast({ key: "error", message: "Something went wrong" });
-      setError("Something went wrong");
+      setErrorOne("Something went wrong");
+      setShowErrorToastt(true);
+      // setShowToast({ key: "error", message: "Something went wrong" });
+      // setError("Something went wrong");
     }
   };
 
@@ -519,7 +521,7 @@ const CHBApplicationDetails = () => {
             isPaginationRequired={false}
             totalRecords={slotlistRows.length}
           />
-          {docs?.map((doc, index) => (
+          {/* {docs?.map((doc, index) => (
             <React.Fragment>
               <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
               <StatusTable>
@@ -535,8 +537,27 @@ const CHBApplicationDetails = () => {
                 </Card>
               </StatusTable>
             </React.Fragment>
-          ))}
+          ))} */}
+
+          <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("CS_COMMON_DOCUMENTS")}</CardSubHeader>
+          <StatusTable>
+            <Card style={{ display: "flex", flexDirection: "row", gap: "30px" }}>
+              {docs?.length > 0 ? (
+                docs?.map((doc, index) => (
+                  <React.Fragment key={index}>
+                    <div>
+                      <CHBDocument value={docs} Code={doc?.documentType} index={index} />
+                      <CardSectionHeader style={{ marginTop: "10px", fontSize: "15px" }}>{t(doc?.documentType)}</CardSectionHeader>
+                    </div>
+                  </React.Fragment>
+                ))
+              ) : (
+                <h5>{t("CS_NO_DOCUMENTS_UPLOADED")}</h5>
+              )}
+            </Card>
+          </StatusTable>
         </Card>
+
         {workflowDetails?.data?.timeline && (
           <Card style={{ marginTop: "20px" }}>
             <CardSubHeader>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.upyog.adv.config.BookingConfiguration;
 import org.upyog.adv.constants.BookingConstants;
 import org.upyog.adv.repository.ServiceRequestRepository;
+import org.upyog.adv.web.models.AdditionalFeeRate;
 import org.upyog.adv.web.models.Advertisements;
 import org.upyog.adv.web.models.CalculationType;
 import org.upyog.adv.web.models.CartDetail;
@@ -57,7 +58,7 @@ public class MdmsUtil {
 
 	/**
 	 * makes mdms call with the given criteria and reutrn mdms data
-	 * 
+	 *
 	 * @param requestInfo
 	 * @param tenantId
 	 * @return
@@ -89,7 +90,7 @@ public class MdmsUtil {
 
 	/**
 	 * prepares the mdms request object
-	 * 
+	 *
 	 * @param requestInfo
 	 * @param tenantId
 	 * @return
@@ -169,7 +170,11 @@ public class MdmsUtil {
 		}
 		StringBuilder uri = new StringBuilder();
 		uri.append(config.getMdmsHost()).append(config.getMdmsPath());
-		MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestTaxHeadMaster(requestInfo, tenantId, moduleName);
+
+		String filter = "$.[?(@.service=='adv-services')]";
+
+		MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestTaxHeadMaster(requestInfo, tenantId, moduleName,
+				"TaxHeadMaster", filter);
 
 		try {
 			MdmsResponse mdmsResponse = mapper.convertValue(serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq),
@@ -185,17 +190,17 @@ public class MdmsUtil {
 
 		return headMasters;
 	}
-	
-	
+
+
 	/**
 	 * makes mdms call with the given criteria and reutrn mdms data
-	 * 
+	 *
 	 * @param requestInfo
 	 * @param tenantId
 	 * @return
 	 */
 	public List<Advertisements> getAdvertisements(RequestInfo requestInfo, String tenantId, String moduleName,
-			CartDetail cartDetail) throws JsonProcessingException {
+												  CartDetail cartDetail) throws JsonProcessingException {
 // Chnage in this method to get dayata from advertisement ID
 		List<Advertisements> advertisements = new ArrayList<>();
 		StringBuilder uri = new StringBuilder();
@@ -225,17 +230,48 @@ public class MdmsUtil {
 	}
 
 	/**
-	 * makes mdms call with the given criteria and reutrn mdms data
-	 * 
-	 * @param requestInfo
-	 * @param tenantId
-	 * @return
+	 * Fetch tax rates from MDMS
 	 */
-	private MdmsCriteriaReq getMdmsRequestTaxHeadMaster(RequestInfo requestInfo, String tenantId, String moduleName) {
+	public List<CalculationType> getTaxRatesMasterList(RequestInfo requestInfo, String tenantId, String moduleName,
+													   CartDetail cartDetail) {
+		List<CalculationType> taxRates = null;
+		String taxRatesMasterName = "TaxRates";
+
+		StringBuilder uri = new StringBuilder();
+		uri.append(config.getMdmsHost()).append(config.getMdmsPath());
+
+		MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestTaxHeadMaster(requestInfo, tenantId, moduleName,
+				taxRatesMasterName, null);
+		MdmsResponse mdmsResponse = mapper.convertValue(serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq),
+				MdmsResponse.class);
+		if (mdmsResponse.getMdmsRes().get(config.getModuleName()) == null) {
+			throw new CustomException("TAX_NOT_AVAILABLE", "Advertisement Tax Rates not available.");
+		}
+		JSONArray jsonArray = mdmsResponse.getMdmsRes().get(config.getModuleName()).get(taxRatesMasterName);
+
+		try {
+			taxRates = mapper.readValue(jsonArray.toJSONString(),
+					mapper.getTypeFactory().constructCollectionType(List.class, CalculationType.class));
+			log.info("tax rates : " + taxRates);
+		} catch (JsonProcessingException e) {
+			log.info("Exception occured while converting tax rates : " + e);
+		}
+
+		return taxRates;
+
+	}
+
+	/**
+	 * Generic method to construct MDMS request for master data
+	 */
+	private MdmsCriteriaReq getMdmsRequestTaxHeadMaster(RequestInfo requestInfo, String tenantId, String moduleName,
+														String masterName, String filter) {
 
 		MasterDetail masterDetail = new MasterDetail();
-		masterDetail.setName("TaxHeadMaster");
-		masterDetail.setFilter("$.[?(@.service=='adv-services')]");
+		masterDetail.setName(masterName);
+		if (null != filter) {
+			masterDetail.setFilter(filter);
+		}
 		List<MasterDetail> masterDetailList = new ArrayList<>();
 		masterDetailList.add(masterDetail);
 
@@ -258,13 +294,13 @@ public class MdmsUtil {
 
 	/**
 	 * makes mdms call with the given criteria and reutrn mdms data
-	 * 
+	 *
 	 * @param requestInfo
 	 * @param tenantId
 	 * @return
 	 */
 	private MdmsCriteriaReq getMdmsRequestCalculationType(RequestInfo requestInfo, String tenantId, String moduleName) {
-		
+
 		List<MasterDetail> masterDetailList = new ArrayList<>();
 
 		MasterDetail calculationTypeMasterDetail = new MasterDetail();
@@ -324,6 +360,74 @@ public class MdmsUtil {
 		mdmsCriteriaReq.setRequestInfo(requestInfo);
 
 		return mdmsCriteriaReq;
+
+	}
+
+	/**
+	 * Fetch ServiceCharge configuration from MDMS
+	 */
+	public List<AdditionalFeeRate> getServiceCharges(RequestInfo requestInfo, String tenantId, String moduleName) {
+		return getAdditionalFeeRates(requestInfo, tenantId, moduleName, "ServiceCharge");
+	}
+
+	/**
+	 * Fetch PenaltyFee configuration from MDMS
+	 */
+	public List<AdditionalFeeRate> getPenaltyFees(RequestInfo requestInfo, String tenantId, String moduleName) {
+		return getAdditionalFeeRates(requestInfo, tenantId, moduleName, "PenaltyFee");
+	}
+
+	/**
+	 * Fetch InterestAmount configuration from MDMS
+	 */
+	public List<AdditionalFeeRate> getInterestAmounts(RequestInfo requestInfo, String tenantId, String moduleName) {
+		return getAdditionalFeeRates(requestInfo, tenantId, moduleName, "InterestAmount");
+	}
+
+	/**
+	 * Fetch SecurityDeposit configuration from MDMS
+	 */
+	public List<AdditionalFeeRate> getSecurityDeposits(RequestInfo requestInfo, String tenantId, String moduleName) {
+		return getAdditionalFeeRates(requestInfo, tenantId, moduleName, "SecurityDeposit");
+	}
+
+	/**
+	 * Generic method to fetch additional fee rates from MDMS
+	 */
+	private List<AdditionalFeeRate> getAdditionalFeeRates(RequestInfo requestInfo, String tenantId,
+														  String moduleName, String masterName) {
+		List<AdditionalFeeRate> additionalFeeRates = null;
+
+		StringBuilder uri = new StringBuilder();
+		uri.append(config.getMdmsHost()).append(config.getMdmsPath());
+
+		MdmsCriteriaReq mdmsCriteriaReq = getMdmsRequestTaxHeadMaster(requestInfo, tenantId, moduleName, masterName, null);
+
+		try {
+			MdmsResponse mdmsResponse = mapper.convertValue(serviceRequestRepository.fetchResult(uri, mdmsCriteriaReq),
+					MdmsResponse.class);
+
+			if (mdmsResponse.getMdmsRes().get(moduleName) == null) {
+				log.warn("{} configuration not available in MDMS for tenant: {}", masterName, tenantId);
+				return new ArrayList<>();
+			}
+
+			JSONArray jsonArray = mdmsResponse.getMdmsRes().get(moduleName).get(masterName);
+
+			additionalFeeRates = mapper.readValue(jsonArray.toJSONString(),
+					mapper.getTypeFactory().constructCollectionType(List.class, AdditionalFeeRate.class));
+
+			log.info("Retrieved {} configurations: {}", masterName, additionalFeeRates);
+
+		} catch (JsonProcessingException e) {
+			log.error("Exception occurred while converting {} list: {}", masterName, e.getMessage());
+			return new ArrayList<>();
+		} catch (Exception e) {
+			log.error("Exception occurred while fetching {} from MDMS: {}", masterName, e.getMessage());
+			return new ArrayList<>();
+		}
+
+		return additionalFeeRates != null ? additionalFeeRates : new ArrayList<>();
 	}
 
 	//

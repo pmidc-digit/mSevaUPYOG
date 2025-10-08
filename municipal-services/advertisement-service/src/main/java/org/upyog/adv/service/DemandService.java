@@ -105,6 +105,11 @@ public class DemandService {
 
 		LocalDate maxdate = getMaxBookingDate(bookingDetail);
 
+		// Calculate total amount for minimumAmountPayable
+		BigDecimal minimumPayable = demandDetails.stream()
+				.map(DemandDetail::getTaxAmount)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
 		Demand demand = Demand.builder()
 				.consumerCode(consumerCode)
 				.demandDetails(demandDetails)
@@ -114,6 +119,7 @@ public class DemandService {
 				.taxPeriodTo(BookingUtil.minusOneDay(maxdate))
 				.consumerType(config.getModuleName())
 				.businessService(config.getBusinessServiceName())
+				.minimumAmountPayable(minimumPayable)
 				.additionalDetails(null)
 				.build();
 

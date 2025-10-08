@@ -118,6 +118,7 @@
 @import "./pages/common/stepForm.scss";
 @import "./pages/common/form.scss";
 @import "./pages/swach/index.scss";
+@import "./pages/ws/index.scss";
 @import "./pages/common/requiredField.scss";
 @import "./pages/citizen/citizenNewLogin.scss";
 @import "./pages/common/searchIcon.scss";
@@ -841,6 +842,10 @@ input[type="number"] {
 
 .modal-action .employeeCard {
   margin-left: 0px !important;
+}
+
+.moduleLinkHomePage h1 {
+  padding-left: 20px;
 }
 
 @media screen and (max-width: 768px) {

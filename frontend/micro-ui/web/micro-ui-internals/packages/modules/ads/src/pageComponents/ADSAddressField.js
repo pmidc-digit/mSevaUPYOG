@@ -45,9 +45,9 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
           onChange={() => {}}
           onBlur={onBlur}
           disabled={true}
-          placeholder={t ? t("See location on map") : "See location on map"}
+          placeholder={t("ADS_LOCATION")}
         />
-        <div>
+        {/* <div>
           <button
             type="button"
             onClick={() => setIsOpen(true)}
@@ -66,7 +66,7 @@ const ADSAddressField = ({ value, onChange, onBlur, t }) => {
               {(t && (t("VIEW_LOCATION_ON_MAP") || "View location on map")) || "View location on map"}
             </span>
           </button>
-        </div>
+        </div> */}
       </div>
 
       {isOpen && (

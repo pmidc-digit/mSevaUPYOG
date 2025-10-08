@@ -12,6 +12,35 @@ const useMyApplicationSearch = ({tenantId, filters = {}, BusinessService="WS", t
     refetchOnMount: "always"
   });
 
+  // Extract property IDs from application data for property search
+  const propertyIds = data?.WaterConnection?.map(connection => connection.propertyId)
+    .filter(id => id) || 
+    data?.SewerageConnections?.map(connection => connection.propertyId)
+    .filter(id => id) || [];
+
+  // Second phase: Fetch property data if applications exist and contain propertyIds
+  const { data: propertiesData, isLoading: isPropertiesLoading } = useQuery(
+    ["WS_APPLICATION_PROPERTY_SEARCH", tenantId, propertyIds],
+    async () => {
+      if (propertyIds.length === 0) return [];
+      
+      const propertyPromises = propertyIds.map(propertyId =>
+        PTService.search({
+          tenantId,
+          filters: { propertyIds: [propertyId] },
+        })
+      );
+      
+      const propertyResponses = await Promise.all(propertyPromises);
+      return propertyResponses.flatMap(response => response.Properties || []);
+    },
+    {
+      enabled: !!data && propertyIds.length > 0,
+      staleTime: Infinity,
+      retry: false,
+    }
+  );
+
   const user = Digit.UserService.getUser();
   const tenant = Digit.SessionStorage.get("CITIZEN.COMMON.HOME.CITY")?.code || user?.info?.permanentCity || Digit.ULBService.getCurrentTenantId();
 
@@ -55,12 +84,36 @@ const useMyApplicationSearch = ({tenantId, filters = {}, BusinessService="WS", t
       };
     }
   } );
+
+  // Combine application and property data
+  let finalData = data;
+  if (data && propertiesData && propertiesData.length > 0 && t) {
+    finalData = cloneDeep(data);
+    if (finalData.WaterConnection) {
+      finalData.WaterConnection = combineApplicationResponse(
+        finalData.WaterConnection,
+        propertiesData,
+        t
+      );
+    }
+    if (finalData.SewerageConnections) {
+      finalData.SewerageConnections = combineApplicationResponse(
+        finalData.SewerageConnections,
+        propertiesData,
+        t
+      );
+    }
+  }
+
   return { 
-    isLoading : !getWorkflow ? isLoading : isLoading || isWSLoading || isWorkflowLoading , 
+    isLoading : !getWorkflow ? (isLoading || isPropertiesLoading) : isLoading || isWSLoading || isWorkflowLoading || isPropertiesLoading, 
     error, 
-    data : !getWorkflow ? data : {...data, ...workflowData}, 
+    data : !getWorkflow ? finalData : {...finalData, ...workflowData}, 
     isSuccess,
-    revalidate: () => client.invalidateQueries(["WS_SEARCH", tenantId, filters, BusinessService, config])
+    revalidate: () => {
+      client.invalidateQueries(["WS_SEARCH", tenantId, filters, BusinessService, config]);
+      client.invalidateQueries(["WS_APPLICATION_PROPERTY_SEARCH", tenantId, propertyIds]);
+    }
   };
     
 

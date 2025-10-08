@@ -21,7 +21,7 @@ export const PTRMyApplications = () => {
 
   let filter1 = !isNaN(parseInt(filter))
     ? { limit: "50", sortOrder: "ASC", sortBy: "createdTime", offset: off, tenantId }
-    : { limit: "4", sortOrder: "ASC", sortBy: "createdTime", offset: "0", mobileNumber: user?.mobileNumber, tenantId };
+    : { limit: "20", sortOrder: "ASC", sortBy: "createdTime", offset: "0", mobileNumber: user?.mobileNumber, tenantId };
 
   const { isLoading, isError, error, data } = Digit.Hooks.ptr.usePTRSearch({ tenantId, filters: filter1 }, {});
 
@@ -45,19 +45,22 @@ export const PTRMyApplications = () => {
     referenceIds: combinedApplicationNumber,
   };
 
-  const { isLoading: serviceloading, data: servicedata } = Digit.Hooks.useFeedBackSearch(
-    { filters: { serviceSearchArgs } },
-    { filters: { serviceSearchArgs }, enabled: combinedApplicationNumber?.length > 0 ? true : false, cacheTime: 0 }
-  );
+  // const { isLoading: serviceloading, data: servicedata } = Digit.Hooks.useFeedBackSearch(
+  //   { filters: { serviceSearchArgs } },
+  //   { filters: { serviceSearchArgs }, enabled: combinedApplicationNumber?.length > 0 ? true : false, cacheTime: 0 }
+  // );
+
+  // console.log("servicedata", servicedata);
 
   function getLabelValue(curservice) {
-    let foundValue = servicedata?.Service?.find((ob) => ob?.referenceId?.includes(curservice?.applicationNumber));
+    // let foundValue = servicedata?.Service?.find((ob) => ob?.referenceId?.includes(curservice?.applicationNumber));
 
-    if (foundValue) return t("CS_CF_VIEW");
-    else return t("CS_VIEW_DETAILS");
+    // if (foundValue) return t("CS_CF_VIEW");
+    // else
+    return t("CS_VIEW_DETAILS");
   }
 
-  if (isLoading || serviceloading) {
+  if (isLoading) {
     return <Loader />;
   }
   const styles = {

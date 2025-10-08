@@ -6,7 +6,11 @@ import { useHistory } from "react-router-dom";
 // import Stepper from "../../../../../../../react-components/src/customComponents/Stepper";
 import Stepper from "../../../../../react-components/src/customComponents/Stepper";
 import { citizenConfig } from "../../config/Create/citizenStepperConfig";
-import { SET_PTRNewApplication_STEP, RESET_PTR_NEW_APPLICATION_FORM } from "../../redux/action/PTRNewApplicationActions";
+import {
+  SET_PTRNewApplication_STEP,
+  RESET_PTR_NEW_APPLICATION_FORM,
+  UPDATE_PTRNewApplication_FORM,
+} from "../../redux/action/PTRNewApplicationActions";
 // import { onSubmit } from "../utils/onSubmitCreateEmployee";
 import { CardHeader, Toast } from "@mseva/digit-ui-react-components";
 
@@ -66,6 +70,12 @@ const createEmployeeConfig = [
   },
 ];
 
+// const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
+//   return {
+//     ...item,
+//     currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber).map((config) => ({ ...config, isEdit })),
+//   };
+// });
 const updatedCreateEmployeeconfig = createEmployeeConfig.map((item) => {
   return { ...item, currStepConfig: citizenConfig.filter((newConfigItem) => newConfigItem.stepNumber === item.stepNumber) };
 });
@@ -80,13 +90,25 @@ const NewPTRStepperForm = () => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
+  const id = window.location.pathname.split("/").pop();
+  // const isEdit = !!id;
+
+  const { isLoading, data: applicationData } = Digit.Hooks.ptr.usePTRSearch({
+    tenantId,
+    filters: { applicationNumber: id },
+    enabled: !!id,
+  });
+
+  useEffect(() => {
+    console.log("applicationData for hereee:>> ", applicationData);
+    if (applicationData?.PetRegistrationApplications?.length) {
+      dispatch(UPDATE_PTRNewApplication_FORM("responseData", applicationData.PetRegistrationApplications));
+    }
+  }, [applicationData]);
+
   const setStep = (updatedStepNumber) => {
     dispatch(SET_PTRNewApplication_STEP(updatedStepNumber));
   };
-
-  useEffect(() => {
-    dispatch(RESET_PTR_NEW_APPLICATION_FORM());
-  }, []);
 
   const handleSubmit = () => {
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
@@ -98,6 +120,17 @@ const NewPTRStepperForm = () => {
     // });
     // onSubmit(data, tenantId, setShowToast, history);
   };
+
+  useEffect(() => {
+    const unlisten = history.listen(() => {
+      // route changed
+      dispatch(RESET_PTR_NEW_APPLICATION_FORM());
+      // dispatch(updateNDCForm("reset", {}));
+      // dispatch(setNDCStep(1));
+    });
+
+    return () => unlisten();
+  }, [history, dispatch]);
 
   return (
     <div className="pageCard">

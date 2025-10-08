@@ -59,62 +59,90 @@ function ApplicationDetailsContent({
   oldValue,
   isInfoLabel = false,
   propertyId,
-  moduleCode
+  moduleCode,
 }) {
   const { t } = useTranslation();
   const history = useHistory();
   const tenantId = Digit.ULBService.getCurrentTenantId();
   const [showToast, setShowToast] = useState(null);
-  const [payments,setPayments]=useState([])
+  const [payments, setPayments] = useState([]);
   let isEditApplication = window.location.href.includes("editApplication") && window.location.href.includes("bpa");
   const ownersSequences = applicationDetails?.applicationData?.owners;
-  console.log("appl", applicationDetails);
+
+  // ISSUE 9 FIX: Fetch payment history for WS applications
+  // Payment history was not displaying because the payment data fetch was missing
+  // Added payment API integration to show payment history in application details
+  useEffect(() => {
+    const fetchPaymentHistory = async () => {
+      // WS PAYMENT INTEGRATION: Only fetch payments for WS module applications
+      if (window.location.href.includes("employee/ws") && applicationData?.connectionNo) {
+        try {
+          // BUSINESS SERVICE MAPPING: Map serviceType to correct business service code
+          const businessService = applicationData?.serviceType === "SEWERAGE" ? "SW" : "WS";
+
+          // PAYMENT API CALL: Use the correct payment search API structure matching the working curl
+          // This API call retrieves all payment records for the given connection
+          const requestParams = {
+            tenantId: applicationData?.tenantId || tenantId,
+            consumerCodes: applicationData?.connectionNo,
+            businessService: businessService,
+            consumerCode: applicationData?.connectionNo,
+          };
+
+          const paymentData = await Digit.WSService.paymentsearch(requestParams);
+
+          // PAYMENT DATA PROCESSING: Handle different response structures from the payment API
+          if (Array.isArray(paymentData) && paymentData.length > 0) {
+            setPayments(paymentData);
+          } else if (paymentData?.Payments && paymentData.Payments.length > 0) {
+            setPayments(paymentData.Payments);
+          }
+        } catch (error) {
+          console.error("Payment fetch error:", error);
+        }
+      }
+    };
+
+    fetchPaymentHistory();
+  }, [applicationData?.connectionNo, applicationData?.tenantId, applicationData?.serviceType, tenantId]);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
   }
 
   const [fetchBillData, updatefetchBillData] = useState({});
-  const [assessmentDetails,setAssessmentDetails] = useState()
-  const [filtered,setFiltered]=useState([])
+  const [assessmentDetails, setAssessmentDetails] = useState();
+  const [filtered, setFiltered] = useState([]);
   const setBillData = async (tenantId, propertyIds, updatefetchBillData, updateCanFetchBillData) => {
     const assessmentData = await Digit.PTService.assessmentSearch({ tenantId, filters: { propertyIds } });
     let billData = {};
     if (assessmentData?.Assessments?.length > 0) {
-      
-const activeRecords = assessmentData.Assessments.filter(a => a.status === 'ACTIVE');
+      const activeRecords = assessmentData.Assessments.filter((a) => a.status === "ACTIVE");
 
-// Helper to normalize timestamp to date only (midnight)
-  function normalizeDate(timestamp) {
-   const date = new Date(timestamp);
-   date.setHours(0, 0, 0, 0);
-   return date.getTime();
-  }
+      // Helper to normalize timestamp to date only (midnight)
+      function normalizeDate(timestamp) {
+        const date = new Date(timestamp);
+        date.setHours(0, 0, 0, 0);
+        return date.getTime();
+      }
 
+      const latestMap = new Map();
 
+      activeRecords.forEach((record) => {
+        const normalizedDate = normalizeDate(record.assessmentDate);
+        const key = `${normalizedDate}_${record.financialYear}`;
+        const existing = latestMap.get(key);
 
-const latestMap = new Map();
+        if (!existing || record.createdDate > existing.createdDate) {
+          latestMap.set(key, record);
+        }
+      });
 
-activeRecords.forEach(record => {
+      // Step 3: Convert grouped object to array
+      const filteredAssessment = Array.from(latestMap.values());
+      setFiltered(filteredAssessment);
 
-const normalizedDate = normalizeDate(record.assessmentDate);
- const key = `${normalizedDate}_${record.financialYear}`;
-  const existing = latestMap.get(key);
-
- if (!existing || record.createdDate > existing.createdDate) {
- latestMap.set(key, record);
- }
-});
-
-
-console.log("grouped",latestMap)
-
-// Step 3: Convert grouped object to array
-const filteredAssessment=Array.from(latestMap.values());
-setFiltered(filteredAssessment)
-console.log(filteredAssessment);
-
-      setAssessmentDetails(assessmentData?.Assessments)
+      setAssessmentDetails(assessmentData?.Assessments);
       billData = await Digit.PaymentService.fetchBill(tenantId, {
         businessService: "PT",
         consumerCode: propertyIds,
@@ -161,6 +189,9 @@ console.log(filteredAssessment);
     return `${day}/${month}/${year}`;
   };
   const getTimelineCaptions = (checkpoint, index = 0, timeline) => {
+    // Issue 18 Fix: Add null checks for timeline data to prevent undefined errors
+    if (!checkpoint) return null;
+
     if (checkpoint.state === "OPEN" || (checkpoint.status === "INITIATED" && !window.location.href.includes("/obps/"))) {
       const caption = {
         date: convertEpochToDateDMY(applicationData?.auditDetails?.createdTime),
@@ -186,31 +217,34 @@ console.log(filteredAssessment);
           },
         },
       };
-      const previousCheckpoint = timeline?.[index - 1];
+      // Issue 18 Fix: Safe access to timeline array with proper bounds checking
+      const previousCheckpoint = timeline && Array.isArray(timeline) && index > 0 && index - 1 < timeline.length ? timeline[index - 1] : null;
+
       const caption = {
         date: checkpoint?.auditDetails?.lastModified,
-        name: checkpoint?.assignes?.[0]?.name,
-        // mobileNumber: applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid && applicationData?.processInstance?.assignes?.[0]?.mobileNumber
-        //     ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
-        //     : checkpoint?.assignes?.[0]?.mobileNumber,
-        comment: t(checkpoint?.comment),
-        wfComment: previousCheckpoint ? previousCheckpoint?.wfComment : [],
-        thumbnailsToShow: checkpoint?.thumbnailsToShow,
+        name: checkpoint?.assignes?.[0]?.name || "N/A",
+        mobileNumber:
+          applicationData?.processInstance?.assignes?.[0]?.uuid === checkpoint?.assignes?.[0]?.uuid &&
+          applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            ? applicationData?.processInstance?.assignes?.[0]?.mobileNumber
+            : checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
+        comment: checkpoint?.comment ? t(checkpoint.comment) : "N/A",
+        wfComment: previousCheckpoint ? previousCheckpoint.wfComment || [] : [],
+        thumbnailsToShow: checkpoint?.thumbnailsToShow || [],
       };
 
       return <TLCaption data={caption} OpenImage={OpenImage} privacy={privacy} />;
     } else {
       const caption = {
         date: convertEpochToDateDMY(applicationData?.auditDetails?.lastModifiedTime),
-        name: checkpoint?.assignes?.[0]?.name,
-        wfComment: checkpoint?.wfComment,
-        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber,
+        name: checkpoint?.assignes?.[0]?.name || "N/A",
+        wfComment: checkpoint?.wfComment || [],
+        mobileNumber: checkpoint?.assignes?.[0]?.mobileNumber || "N/A",
       };
 
       return <TLCaption data={caption} />;
     }
   };
-  
 
   const getTranslatedValues = (dataValue, isNotTranslated) => {
     if (dataValue) {
@@ -245,12 +279,11 @@ console.log(filteredAssessment);
       return {};
     }
   };
-  const tableStyles={
-    table:{
-     border:'2px solid black',
-     width:'100%',
-     fontFamily:'sans-serif'
-
+  const tableStyles = {
+    table: {
+      border: "2px solid black",
+      width: "100%",
+      fontFamily: "sans-serif",
     },
     td: {
       padding: "10px",
@@ -303,7 +336,6 @@ console.log(filteredAssessment);
   const toggleTimeline = () => {
     setShowAllTimeline((prev) => !prev);
   };
-  console.log("demand Data arr", demandData);
   const totalDemandInterest = demandData?.reduce((sum, item) => sum + item.demandInterest, 0);
   const totalDemandPenality = demandData?.reduce((sum, item) => sum + item.demandPenality, 0);
   const totalCollectionTax = demandData?.reduce((sum, item) => sum + item.collectionTax, 0);
@@ -316,6 +348,8 @@ console.log(filteredAssessment);
   const closeToast = () => {
     setShowToast(null);
   };
+
+  // (Redirect handled centrally in ApplicationDetails template on mutation success)
 
   // const PROPERTY_UPDATE_URL = "https://mseva-uat.lgpunjab.gov.in/property-services/property/_update?tenantId=pb.testing&propertyIds=PT-1012-2017548";
   const updatePropertyStatus = async (propertyData, status, propertyIds) => {
@@ -341,7 +375,6 @@ console.log(filteredAssessment);
     };
     // try {
     const response = await Digit.PTService.updatePT({ Property: { ...payload } }, tenantId, propertyIds);
-    console.log("response from inactive/active", response);
     //   const result = await response.json();
     //   if (response.ok) {
     //     alert(`Property marked as ${status} successfully!`);
@@ -360,27 +393,27 @@ console.log(filteredAssessment);
   const propertyIds = applicationDetails?.applicationData?.propertyId || "";
   const checkPropertyStatus = applicationDetails?.additionalDetails?.propertytobestatus;
   const PropertyInActive = () => {
-    if(window.location.href.includes("employee")){
+    if (window.location.href.includes("employee")) {
       if (checkPropertyStatus == "ACTIVE") {
         updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
       } else {
         alert("Property is already inactive.");
       }
-    }else{
+    } else {
       alert("You are not authorized to change the property status.");
     }
   };
 
   const PropertyActive = () => {
-    if(window.location.href.includes("employee")){
+    if (window.location.href.includes("employee")) {
       if (checkPropertyStatus == "INACTIVE") {
         updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
       } else {
         alert("Property is already active.");
       }
-    }else{
+    } else {
       alert("You are not authorized to change the property status.");
-    }  
+    }
   };
   // const PropertyInActive = () => updatePropertyStatus(applicationData_pt, "INACTIVE", propertyIds);
   // const PropertyActive = () => updatePropertyStatus(applicationData_pt, "ACTIVE", propertyIds);
@@ -388,26 +421,24 @@ console.log(filteredAssessment);
   const EditProperty = () => {
     const pID = applicationDetails?.applicationData?.propertyId;
     if (pID) {
-      if(window.location.href.includes("employee")){
-        if(applicationDetails?.applicationData?.status === "INACTIVE"){
+      if (window.location.href.includes("employee")) {
+        if (applicationDetails?.applicationData?.status === "INACTIVE") {
           alert("Property is inactive, cannot edit.");
           return;
-        }else if(applicationDetails?.applicationData?.status === "INWORKFLOW"){
+        } else if (applicationDetails?.applicationData?.status === "INWORKFLOW") {
           alert("Property is in workflow, cannot edit.");
           return;
-        }
-        else if(applicationDetails?.applicationData?.status === "ACTIVE"){
+        } else if (applicationDetails?.applicationData?.status === "ACTIVE") {
           history.push({ pathname: `/digit-ui/employee/pt/edit-application/${pID}` });
-        } 
-      }else{
-        if(applicationDetails?.applicationData?.status === "INACTIVE"){
+        }
+      } else {
+        if (applicationDetails?.applicationData?.status === "INACTIVE") {
           alert("Property is inactive, cannot edit.");
           return;
-        }else if(applicationDetails?.applicationData?.status === "INWORKFLOW"){
+        } else if (applicationDetails?.applicationData?.status === "INWORKFLOW") {
           alert("Property is in workflow, cannot edit.");
           return;
-        }
-        else if(applicationDetails?.applicationData?.status === "ACTIVE"){
+        } else if (applicationDetails?.applicationData?.status === "ACTIVE") {
           history.push({ pathname: `/digit-ui/citizen/pt/property/edit-application/${pID}` });
         }
       }
@@ -419,33 +450,27 @@ console.log(filteredAssessment);
     alert("access property");
   };
 
-   console.log("applicationDetails?.applicationDetails",applicationDetails, businessService)
-   console.log("infolabel",isInfoLabel)
-   console.log("assessment details",assessmentDetails)
-
-   useEffect(()=>{
-   try{
-   let filters={
-    consumerCodes:propertyId,
-   // tenantId: tenantId
-   }
-   const auth=true
-   if(moduleCode==="BPREG"){
-    Digit.OBPSService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-      setPayments(response?.Payments)
-      console.log(response)  
-    })
-   }else{
-    Digit.PTService.paymentsearch({tenantId:tenantId,filters:filters,auth:auth}).then((response) => {
-      setPayments(response?.Payments)
-      console.log(response)  
-    })
-   }
-   }
-   catch(error){
-   console.log(error)
-   }
-   },[])
+  useEffect(() => {
+    try {
+      let filters = {
+        consumerCodes: propertyId,
+        // tenantId: tenantId
+      };
+      const auth = true;
+      if (moduleCode === "BPREG") {
+        Digit.OBPSService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+          setPayments(response?.Payments);
+          console.log(response);
+        });
+      } else {
+        Digit.PTService.paymentsearch({ tenantId: tenantId, filters: filters, auth: auth }).then((response) => {
+          setPayments(response?.Payments);
+        });
+      }
+    } catch (error) {
+      // Error handling for payment search
+    }
+  }, []);
   return (
     <Card style={{ position: "relative" }} className={"employeeCard-override"}>
       {/* For UM-4418 changes */}
@@ -676,14 +701,17 @@ console.log(filteredAssessment);
               </Link>
             </div>
           )}
-          {detail?.additionalDetails?.estimationDetails && <WSFeeEstimation wsAdditionalDetails={detail} workflowDetails={workflowDetails}/>}
-          {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails}/>}
-          
+          {detail?.additionalDetails?.estimationDetails && <WSFeeEstimation wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
+          {detail?.additionalDetails?.estimationDetails && <ViewBreakup wsAdditionalDetails={detail} workflowDetails={workflowDetails} />}
         </React.Fragment>
       ))}
-        {assessmentDetails?.length>0 && <AssessmentHistory assessmentData={filtered}/> }
-        {/* <PaymentHistory payments={payments}/> */}
-        {/* <ApplicationHistory applicationData={applicationDetails?.applicationData}/> */}
+      {assessmentDetails?.length > 0 && <AssessmentHistory assessmentData={filtered} />}
+      {/* ISSUE 9 FIX: Payment History Component Integration
+            This component displays the payment history fetched by the useEffect above
+            Shows payment details including amount, date, receipt number, and payment mode
+            Only displays when payments data is available from the API call */}
+      <PaymentHistory payments={payments} />
+      <ApplicationHistory applicationData={applicationDetails?.applicationData} />
 
       {showTimeLine && workflowDetails?.data?.timeline?.length > 0 && (
         <React.Fragment>
@@ -744,15 +772,17 @@ console.log(filteredAssessment);
           )}
         </React.Fragment>
       )}
-      
 
-
-      {window.location.href.includes("/pt/")?<ActionBar className="clear-search-container" style={{ display: "block" }}>
-        <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />
-        <SubmitBar label={"Make Property Inactive"} style={{ marginLeft: "20px" }} onSubmit={PropertyInActive} />
-        <SubmitBar label={"Edit Property"} style={{ marginLeft: "20px" }} onSubmit={EditProperty} />
-        <SubmitBar label={"Access Property"} style={{ marginLeft: "20px" }} onSubmit={AccessProperty} />
-      </ActionBar>:<div></div>}
+      {window.location.href.includes("/pt/") ? (
+        <ActionBar className="clear-search-container" style={{ display: "block" }}>
+          <SubmitBar label={"Make Property Active"} style={{ flex: 1 }} onSubmit={PropertyActive} />
+          <SubmitBar label={"Make Property Inactive"} style={{ marginLeft: "20px" }} onSubmit={PropertyInActive} />
+          <SubmitBar label={"Edit Property"} style={{ marginLeft: "20px" }} onSubmit={EditProperty} />
+          <SubmitBar label={"Access Property"} style={{ marginLeft: "20px" }} onSubmit={AccessProperty} />
+        </ActionBar>
+      ) : (
+        <div></div>
+      )}
       {showToast && <Toast error={showToast.isError} label={t(showToast.label)} onClose={closeToast} isDleteBtn={"false"} />}
     </Card>
   );

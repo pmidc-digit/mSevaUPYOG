@@ -14,10 +14,33 @@ import {
 } from "@mseva/digit-ui-react-components";
 
 const NOCSiteDetails = (_props) => {
-  const tenantId = Digit.ULBService.getCurrentTenantId();
+  let tenantId;
+  if(window.location.pathname.includes("employee")){
+   tenantId = window.localStorage.getItem("Employee.tenant-id");
+  }else{
+   tenantId = window.localStorage.getItem("CITIZEN.CITY");
+  }
+  //console.log("tenantId here", tenantId);
+
   const stateId = Digit.ULBService.getStateId();
 
   const { t, goNext, currentStepData, Controller, control, setValue, errors, errorStyle, useFieldArray, watch } = _props;
+
+  //logic for TotalArea(A+B)
+  const [netArea, setNetArea] = useState("0.00");
+  const NetPlotArea = watch("netPlotAreaAfterWidening");
+  const AreaLeftForRoadWidening = watch("areaLeftForRoadWidening");
+
+  useEffect(()=>{
+    const a= parseFloat(NetPlotArea);
+    const b=parseFloat(AreaLeftForRoadWidening);
+
+    const sum = ((isNaN(a) ? 0 : a) + (isNaN(b) ? 0 : b)).toFixed(2);
+
+    setNetArea(sum);
+    setValue("netTotalArea", sum);
+
+  },[NetPlotArea, AreaLeftForRoadWidening]);
 
   /**Start - Floor Area Calculation Logic */
   const [totalArea, setTotalArea] = useState("0.00");
@@ -105,10 +128,21 @@ const basementAreaValues= watch("basementArea");
   } 
   }, [fetchedLocalities]);
 
-  useEffect(() => {
-  setLocalities([]);
-  setValue("zone", null);
- }, [selectedCity]);
+//   useEffect(() => {
+//   setLocalities([]);
+//   setValue("zone", null);
+//  }, [selectedCity]);
+
+ //logic for default selection of district
+ useEffect(() => {
+  if (tenantId && allCities?.length > 0) {
+    const defaultCity = allCities.find((city) => city.code === tenantId);
+    if (defaultCity) {
+      setSelectedCity(defaultCity);
+      setValue("district", defaultCity); // sets default in react-hook-form
+    }
+  }
+}, [tenantId, allCities]);
 
 
   useEffect(() => {
@@ -348,10 +382,10 @@ const basementAreaValues= watch("basementArea");
                 name="areaLeftForRoadWidening"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -374,11 +408,22 @@ const basementAreaValues= watch("basementArea");
           <CardLabelError style={errorStyle}>{errors?.areaLeftForRoadWidening?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
-            <CardLabel className="card-label-smaller">{`${t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}</CardLabel>
+            <CardLabel className="card-label-smaller">{`${t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")}`}*</CardLabel>
             <div className="field">
               <Controller
                 control={control}
                 name="netPlotAreaAfterWidening"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
                 render={(props) => (
                   <TextInput
                     value={props.value}
@@ -393,6 +438,42 @@ const basementAreaValues= watch("basementArea");
               />
             </div>
           </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.netPlotAreaAfterWidening?.message || ""}</CardLabelError>
+
+          <LabelFieldPair>
+            <CardLabel className="card-label-smaller">{`${t("NOC_NET_TOTAL_AREA_LABEL")}`}*</CardLabel>
+            <div className="field">
+              <Controller
+                control={control}
+                name="netTotalArea"
+                rules={{
+                  required: t("REQUIRED_FIELD"),
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
+                  maxLength: {
+                    value: 100,
+                    message: t("MAX_100_CHARACTERS_ALLOWED"),
+                  },
+                }}
+                defaultValue={netArea}
+                render={(props) => (
+                  <TextInput
+                    value={props.value}
+                    onChange={(e) => {
+                      props.onChange(e.target.value);
+                    }}
+                    onBlur={(e) => {
+                      props.onBlur(e);
+                    }}
+                    disabled="true"
+                  />
+                )}
+              />
+            </div>
+          </LabelFieldPair>
+          <CardLabelError style={errorStyle}>{errors?.netTotalArea?.message || ""}</CardLabelError>
 
           <LabelFieldPair>
             <CardLabel className="card-label-smaller">{`${t("NOC_ROAD_WIDTH_AT_SITE_LABEL")}`}*</CardLabel>
@@ -402,10 +483,10 @@ const basementAreaValues= watch("basementArea");
                 name="roadWidthAtSite"
                 rules={{
                   required: t("REQUIRED_FIELD"),
-                  // minLength: {
-                  //   value: 4,
-                  //   message: t("MIN_4_CHARACTERS_REQUIRED"),
-                  // },
+                  pattern: {
+                    value: /^[0-9]*\.?[0-9]+$/,
+                    message: t("ONLY_NUMERIC_VALUES_ALLOWED_MSG"),
+                  },
                   maxLength: {
                     value: 100,
                     message: t("MAX_100_CHARACTERS_ALLOWED"),
@@ -521,7 +602,7 @@ const basementAreaValues= watch("basementArea");
           
           {buildingStatus?.code === "BUILTUP" && areaFields.map((field, index) => (
             <div style={{ display: "flex", gap: "10px", flexDirection:"column" }}>
-            <CardLabel className="card-label-smaller">{ index === 0 ? "Ground":`${index}`} Floor Area*</CardLabel>
+            <CardLabel className="card-label-smaller">{ index === 0 ? "Ground":`${index}`} Floor Area(sq mt)*</CardLabel>
             <div key={field.id} className="field" style={{ display: "flex", gap: "10px" }}>
              <Controller
               control={control}
@@ -576,7 +657,7 @@ const basementAreaValues= watch("basementArea");
           {buildingStatus?.code === "BUILTUP" &&
            (
              <LabelFieldPair>
-              <CardLabel className="card-label-smaller">{`${t("NOC_TOTAL_FLOOR_AREA_LABEL")}`}</CardLabel>
+              <CardLabel className="card-label-smaller">{`${t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")}`}</CardLabel>
               <div className="field">
                 <Controller
                   control={control}
@@ -651,7 +732,10 @@ const basementAreaValues= watch("basementArea");
                   }} 
                   selected={props.value} 
                   option={cities.sort((a, b) => a.name.localeCompare(b.name))} 
-                  optionKey="name" />
+                  optionKey="name" 
+                  disable="true"
+                  />
+                  
                 )}
               />
           </LabelFieldPair>

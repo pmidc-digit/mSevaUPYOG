@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import { updateNDCForm } from "../../../redux/actions/NDCFormActions";
 import { useState } from "react";
+import { Loader } from "../../../components/Loader";
 
 export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
@@ -14,6 +15,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
     state.ndc.NDCForm.formData && state.ndc.NDCForm.formData[config.key] ? state.ndc.NDCForm.formData[config.key] : {}
   );
 
+  const [getLoader, setLoader] = useState(false);
   const checkFormData = useSelector((state) => state.ndc.NDCForm.formData || {});
 
   const checkFormDatass = useSelector((state) => state.ndc.NDCForm || {});
@@ -38,7 +40,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
 
     console.log("isRealId", isRealId);
 
-    if (checkFormData?.apiData?.Applications?.[0]?.uuid || checkFormData?.responseData?.[0]?.uuid || isRealId) {
+    if (checkFormData?.apiData?.Applications?.[0]?.applicationNo || checkFormData?.responseData?.[0]?.applicationNo || isRealId) {
       // onGoNext();
       updateApplication(data);
       console.log("here bab");
@@ -48,6 +50,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
   }
 
   const createApplication = async (data) => {
+    setLoader(true);
     const applicant = Digit.UserService.getUser()?.info || {};
     const auditDetails = data?.cpt?.details?.auditDetails;
     const applicantId = applicant?.uuid;
@@ -134,14 +137,18 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
       ],
     };
 
-    const response = await Digit.NDCService.NDCcreate({ tenantId, details: payload });
-
-    if (response?.ResponseInfo?.status === "successful") {
-      dispatch(updateNDCForm("apiData", response));
-      onGoNext();
-      return { isSuccess: true, response };
-    } else {
-      return { isSuccess: false, response };
+    try {
+      const response = await Digit.NDCService.NDCcreate({ tenantId, details: payload });
+      setLoader(false);
+      if (response?.ResponseInfo?.status === "successful") {
+        dispatch(updateNDCForm("apiData", response));
+        onGoNext();
+        return { isSuccess: true, response };
+      } else {
+        return { isSuccess: false, response };
+      }
+    } catch (error) {
+      setLoader(false);
     }
   };
 
@@ -233,7 +240,8 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
           active: true,
           reason: data?.NDCReason?.code,
           auditDetails: data?.cpt?.details?.auditDetails,
-          uuid: id,
+          applicationNo: id,
+          uuid: checkFormData?.responseData?.[0]?.uuid,
           workflow: {
             action: "DRAFT",
           },
@@ -367,6 +375,7 @@ export const NewNDCStepFormOne = ({ config, onGoNext, onBackClick, t }) => {
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
       />
+      {getLoader && <Loader page={true} />}
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );

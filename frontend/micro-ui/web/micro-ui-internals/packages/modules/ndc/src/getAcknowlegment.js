@@ -50,7 +50,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
 
   const applicationNumber = appData?.uuid || "NA";
   // const propertyId = ndc?.consumerCode || "NA";
-  const propertyId = appData?.NdcDetails?.[3]?.consumerCode;
+  const propertyId = appData?.NdcDetails?.[0]?.consumerCode;
   const propertyType = add?.propertyType ? t(add.propertyType) : "NA";
   const applicantName = owner?.name || "NA";
   // const address = owner?.permanentAddress || owner?.correspondenceAddress || "NA";
@@ -60,7 +60,7 @@ const getAcknowledgementData = async (application, tenantInfo, t) => {
 
 
 
-  console.log(tenantInfo, "TENANT INFO IN ACKNOWLEDGEMENT");
+  console.log(tenantInfo,appData, "TENANT INFO IN ACKNOWLEDGEMENT");
 
 
   // Build single certificate body by concatenating translated fragments and dynamic values

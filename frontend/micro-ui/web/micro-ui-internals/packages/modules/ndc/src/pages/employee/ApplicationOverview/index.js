@@ -117,7 +117,7 @@ const ApplicationOverview = () => {
     });
   };
 
-  const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ uuid: id }, tenantId);
+  const { isLoading, data: applicationDetails } = Digit.Hooks.ndc.useSearchEmployeeApplication({ applicationNo: id }, tenantId);
 
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId: tenantId,
@@ -125,6 +125,8 @@ const ApplicationOverview = () => {
     moduleCode: "ndc-services",
     role: "EMPLOYEE",
   });
+
+  console.log("workflowDetails", workflowDetails);
 
   if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
     workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
@@ -181,6 +183,8 @@ const ApplicationOverview = () => {
       return userRoles?.some((role) => e.roles?.includes(role)) || !e.roles;
     });
 
+  console.log("actions", actions);
+
   const [displayMenu, setDisplayMenu] = useState(false);
   const [selectedAction, setSelectedAction] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -220,7 +224,7 @@ const ApplicationOverview = () => {
         email: ndcObject?.owners?.[0]?.emailId,
         address: ndcObject?.NdcDetails?.[0]?.additionalDetails?.propertyAddress,
         // createdDate: ndcObject?.owners?.[0]?.createdtime ? format(new Date(ndcObject?.owners?.[0]?.createdtime), "dd/MM/yyyy") : "",
-        applicationNo: ndcObject?.uuid,
+        applicationNo: ndcObject?.applicationNo,
       };
       const Documents = removeDuplicatesByUUID(ndcObject?.Documents || []);
       const NdcDetails = removeDuplicatesByUUID(ndcObject?.NdcDetails || [])?.map((item) => ({
@@ -252,6 +256,8 @@ const ApplicationOverview = () => {
   }, [applicationDetails]);
 
   function onActionSelect(action) {
+    console.log("action====???", action);
+
     const payload = {
       Licenses: [action],
     };
@@ -349,8 +355,10 @@ const ApplicationOverview = () => {
       setSelectedAction(null);
       setShowModal(false);
     } catch (err) {
-      setShowToast({ key: "error", message: "Something went wrong" });
-      setError("Something went wrong");
+      setErrorOne("Something went wrong");
+      setShowErrorToastt(true);
+      // setShowToast({ key: "error", message: "Something went wrong" });
+      // setError("Something went wrong");
     }
   };
 
@@ -377,32 +385,6 @@ const ApplicationOverview = () => {
       privacy: Digit.Utils.getPrivacyObject(),
     }
   );
-
-  // const { isLoading: waterConnectionLoading, data: waterConnectionData, error: waterConnectionError } = Digit.Hooks.ws.useSearchWS({
-  //   tenantId,
-  //   filters: {
-  //     searchType: "CONNECTION",
-  //     propertyId: getPropertyId,
-  //   },
-  //   config: {
-  //     enabled: !!getPropertyId, // ✅ Only run if propertyId is defined
-  //   },
-  //   bussinessService: "WS",
-  //   t,
-  // });
-
-  // const { isLoading: sewerageConnectionLoading, data: sewerageConnectionData, error: sewerageConnectionError } = Digit.Hooks.ws.useSearchWS({
-  //   tenantId,
-  //   filters: {
-  //     searchType: "CONNECTION",
-  //     propertyId: getPropertyId,
-  //   },
-  //   config: {
-  //     enabled: !!getPropertyId, // ✅ Only run if propertyId is defined
-  //   },
-  //   bussinessService: "SW",
-  //   t,
-  // });
 
   if (isLoading || isDetailsLoading || checkLoading) {
     return <Loader />;
@@ -501,33 +483,6 @@ const ApplicationOverview = () => {
                         />
                       }
                     />
-                    {/* <LabelFieldPair>
-                      <CardLabel style={{ width: "100%", maxWidth: "360px" }} className="card-label-smaller ndc_card_labels">
-                        <b>Due Amount</b>
-                      </CardLabel>
-                      <Controller
-                        key={index}
-                        control={control}
-                        name={`amount[${index}]`}
-                        defaultValue={detail?.dueAmount || ""}
-                        render={(props) => (
-                          <TextInput
-                            type="number"
-                            value={props.value}
-                            onChange={(e) => {
-                              props.onChange(e.target.value);
-                              const newValue = e.target.value;
-                              setAmounts((prev) => ({
-                                ...prev,
-                                [detail.consumerCode]: newValue,
-                              }));
-                            }}
-                            style={{ maxWidth: "200px" }}
-                            onBlur={props.onBlur}
-                          />
-                        )}
-                      />
-                    </LabelFieldPair> */}
                   </div>
                 )}
 
@@ -576,11 +531,6 @@ const ApplicationOverview = () => {
                       )}
                     />
                   </FilterFormField>
-                  {/* <SubmitBar
-                    label={isMarked ? "Undo Mark Pending" : "Mark Dues Pending"}
-                    onSubmit={() => handleMarkPending(detail?.consumerCode)}
-                    // disabled={markedPending[detail.consumerCode]}
-                  /> */}
                 </div>
               )}
             </div>
@@ -640,7 +590,7 @@ const ApplicationOverview = () => {
           <SubmitBar
             label={t("COMMON_EDIT")}
             onSubmit={() => {
-              const id = applicationDetails?.Applications?.[0]?.uuid;
+              const id = applicationDetails?.Applications?.[0]?.applicationNo;
               history.push(`/digit-ui/employee/ndc/create/${id}`);
             }}
           />

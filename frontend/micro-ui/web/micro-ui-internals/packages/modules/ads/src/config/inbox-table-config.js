@@ -16,7 +16,6 @@ export const TableConfig = (t) => ({
       {
         Header: t("ADS_BOOKING_NO"),
         Cell: ({ row }) => {
-          console.log("row is :>> ", row);
           return (
             <div>
               <span className="link">

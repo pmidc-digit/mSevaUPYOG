@@ -2,18 +2,15 @@ import { Banner, Card, CardText, ActionBar, SubmitBar } from "@mseva/digit-ui-re
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useHistory } from "react-router-dom";
-import { stringReplaceAll } from "../utils";
+// import { stringReplaceAll } from "../utils";
 
 const ADSResponseCitizen = (props) => {
   const isCitizen = window.location.href.includes("citizen");
 
-  console.log("props", props);
   const { state } = props.location;
   const { t } = useTranslation();
   const history = useHistory();
   const applicationData = state?.applicationData;
-  console.log("state", state);
-  console.log("applicationData", applicationData);
 
   const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
 

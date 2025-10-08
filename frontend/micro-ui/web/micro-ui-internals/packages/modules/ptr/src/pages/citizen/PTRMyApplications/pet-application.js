@@ -4,11 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 const PetApplication = ({ application, tenantId, buttonLabel }) => {
-  console.log("application 3534543:>> ", application);
+  console.log("buttonLabel", buttonLabel);
   const { t } = useTranslation();
-  // http://localhost:3000/digit-ui/citizen/payment/collect/PTR/PB-PTR-2025-08-26-000389/null
-  console.log("application?.applicationNumber", application?.applicationNumber);
-  console.log("application?.status", application?.status);
   return (
     <Card>
       <KeyNote keyValue={t("PDF_STATIC_LABEL_APPLICATION_NUMBER_LABEL")} note={application?.applicationNumber} />

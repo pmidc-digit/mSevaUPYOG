@@ -16,9 +16,10 @@ const App = () => {
   const CHBCreate = Digit?.ComponentRegistryService?.getComponent("CHBStepperForm");
   const CHBApplicationDetails = Digit?.ComponentRegistryService?.getComponent("CHBApplicationDetails");
   const CHBMyApplications = Digit?.ComponentRegistryService?.getComponent("CHBMyApplications");
+  const CHBResponseCitizen = Digit.ComponentRegistryService.getComponent("CHBResponseCitizen");
 
   return (
-    <span className={"chb-citizen"} style={{ width: "100%" }}>
+    <span className={"chb-citizen"} style={{ width: "100%", paddingRight: "25px", paddingLeft: "25px" }}>
       <Switch>
         <AppContainer>
           {!shouldHideBackButton(hideBackButtonConfig) ? <BackButton>Back</BackButton> : ""}
@@ -26,6 +27,7 @@ const App = () => {
           <PrivateRoute path={`${path}/myBookings`} component={CHBMyApplications}></PrivateRoute>
           <PrivateRoute path={`${path}/application/:acknowledgementIds/:tenantId`} component={CHBApplicationDetails}></PrivateRoute>
           {/* <PrivateRoute path={`${path}/petservice/my-payments`} component={PTMyPayments}></PrivateRoute> */}
+          <PrivateRoute path={`${path}/response/:id`} component={CHBResponseCitizen} />
           <PrivateRoute path={`${path}/bookHall/search`} component={(props) => <Search {...props} t={t} parentRoute={path} />} />
         </AppContainer>
       </Switch>

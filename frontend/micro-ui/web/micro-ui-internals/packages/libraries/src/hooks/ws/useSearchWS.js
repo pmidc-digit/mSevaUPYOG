@@ -15,16 +15,20 @@ const getAddress = (address, t, shortAddress) => {
   }`;
 };
 
+// OWNER NAME EXTRACTION: Get formatted owner names from property data
 const getOwnerNames = (propertyData) => {
   const getActiveOwners = propertyData?.owners?.filter((owner) => owner?.active);
   const getOwnersList = getActiveOwners.sort((a,b)=>a.additionalDetails?.ownerSequence- b.additionalDetails?.ownerSequence)?.map((activeOwner) => activeOwner?.name)?.join(",");
   return getOwnersList ? getOwnersList : t("NA");
 };
 
+// DATA COMBINATION: Merge WS/SW connection data with Property and Bill data
 const combineResponse = (WaterConnections, SewerageConnections, businessService, Properties, billData, t, count = undefined, shortAddress) => {
   const data = businessService ? (businessService === "WS" ? WaterConnections : SewerageConnections) : WaterConnections?.concat(SewerageConnections);
+  
+  // BILL DATA INTEGRATION: Add billing information to connections
   if (billData) {
-    data.forEach((app) => {
+    data?.forEach((app) => {
       const bill = billData?.filter((bill) => bill?.consumerCode === app?.connectionNo)[0];
       if (bill) {
         app.due = bill.totalAmount;
@@ -33,14 +37,55 @@ const combineResponse = (WaterConnections, SewerageConnections, businessService,
     });
   }
 
-  data?.map((row) => {
-    Properties?.map((property) => {
-      if (row?.propertyId === property?.propertyId) {
-        row["owner"] = property?.owners?.map((ob) => ob?.name).join(",");
-        row["address"] = getAddress(property?.address, t, shortAddress);
-        row["ownerNames"] = getOwnerNames(property);
+  // PROPERTY DATA INTEGRATION: Merge connection data with property information
+  data?.forEach((row, index) => {
+    // PROPERTY MATCHING: Find the corresponding property for each connection
+    const matchingProperty = Properties?.find((property) => property?.propertyId === row?.propertyId);
+    
+    if (matchingProperty) {
+      // COMPLETE OWNER DATA: Extract comprehensive owner information from property service
+      const ownerName = matchingProperty?.owners?.map((ob) => ob?.name).join(",");
+      row["owner"] = ownerName;
+      row["address"] = getAddress(matchingProperty?.address, t, shortAddress);
+      row["ownerNames"] = getOwnerNames(matchingProperty);
+      
+      // PROPERTY ATTACHMENT: Attach the full property data including owners array
+      // This provides complete property context for UI components
+      row["property"] = matchingProperty;
+      row["owners"] = matchingProperty?.owners; // Direct access to owners array
+      
+      // MOBILE NUMBER EXTRACTION: Extract mobile number from property owners
+      const activeOwners = matchingProperty?.owners?.filter((owner) => owner?.active);
+      if (activeOwners && activeOwners.length > 0) {
+        row["mobileNumber"] = activeOwners[0]?.mobileNumber || "NA";
       }
-    });
+    } else {
+      // FALLBACK HANDLING: Try to get owner info from multiple sources when property data is missing
+      // This ensures the UI doesn't break for connections without property links
+      let ownerName = "";
+      let mobileNumber = "NA";
+      
+      // Check connection holders first
+      if (row?.connectionHolders && row.connectionHolders.length > 0) {
+        ownerName = row.connectionHolders.map((holder) => holder?.name).join(",");
+        mobileNumber = row.connectionHolders[0]?.mobileNumber || "NA";
+      } 
+      // Check ownername key (for consumer number search results)
+      else if (row?.ownername) {
+        ownerName = row.ownername;
+      }
+      // Check additionalDetails.ownername
+      else if (row?.additionalDetails?.ownername) {
+        ownerName = row.additionalDetails.ownername;
+      }
+      
+      // Set the owner information
+      if (ownerName) {
+        row["owner"] = ownerName;
+        row["ownerNames"] = ownerName;
+        row["mobileNumber"] = mobileNumber;
+      }
+    }
   });
 
   return { data, count, billData };
@@ -87,16 +132,21 @@ const useSearchWS = ({ tenantId, filters, config = {}, bussinessService, t, shor
   }
 
   responseWS?.data?.WaterConnection?.forEach((item) => {
-    propertyids = propertyids + item?.propertyId + ",";
+    if (item?.propertyId) {
+      propertyids = propertyids + item.propertyId + ",";
+    }
     item?.connectionNo && consumercodes.push(item?.connectionNo);
   });
 
   responseSW?.data?.SewerageConnections?.forEach((item) => {
-    propertyids = propertyids + item?.propertyId + ",";
+    if (item?.propertyId) {
+      propertyids = propertyids + item.propertyId + ",";
+    }
     item?.connectionNo && consumercodes.push(item?.connectionNo);
   });
 
   let propertyfilter = { propertyIds: propertyids.substring(0, propertyids.length - 1) };
+  
   billData = useQuery(
     ["BILL_SEARCH", tenantId, consumercodes.join(","), bussinessService],
     async () =>
@@ -112,7 +162,7 @@ const useSearchWS = ({ tenantId, filters, config = {}, bussinessService, t, shor
     async () => await PTService.search({ tenantId: tenantId, filters: propertyfilter, auth: true }),
     {
       ...config,
-      enabled: !!(propertyids !== ""),
+      enabled: Boolean(propertyfilter.propertyIds && propertyfilter.propertyIds.length > 0),
     }
   );
 

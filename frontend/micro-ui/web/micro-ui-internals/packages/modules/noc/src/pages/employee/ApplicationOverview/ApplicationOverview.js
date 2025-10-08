@@ -175,6 +175,8 @@ const NOCEmployeeApplicationOverview = () => {
 
       const siteDetails = nocObject?.nocDetails?.additionalDetails?.siteDetails;
 
+       const coordinates = nocObject?.nocDetails?.additionalDetails?.coordinates;
+
       const Documents= nocObject?.documents || [];
       
       //console.log("applicantDetails",applicantDetails);
@@ -183,6 +185,7 @@ const NOCEmployeeApplicationOverview = () => {
       const finalDisplayData = {
        applicantDetails: applicantDetails ? [applicantDetails] : [],
        siteDetails: siteDetails ? [siteDetails] : [],
+       coordinates: coordinates ? [coordinates]: [],
        Documents: Documents.length > 0 ? Documents: []
       };
 
@@ -204,7 +207,7 @@ const NOCEmployeeApplicationOverview = () => {
       history.push(`/digit-ui/employee/noc/edit-application/${appNo}`);
     }
     else if (action?.action == "DRAFT") {
-      setShowToast({ key: "true", warning:true, message: "Please edit your application before saving or resubmitting"});
+      setShowToast({ key: "true", warning:true, message: "COMMON_EDIT_APPLICATION_BEFORE_SAVE_OR_SUBMIT_LABEL"});
     }
     else if (action?.action == "APPLY" || action?.action == "RESUBMIT" || action?.action == "CANCEL") {
       submitAction(payload);
@@ -250,7 +253,7 @@ const NOCEmployeeApplicationOverview = () => {
       
       if(response?.ResponseInfo?.status === "successful"){
         if(filtData?.action === "CANCEL"){
-          setShowToast({ key: "true", success:true, message: "Application has been cancelled successfully" });
+          setShowToast({ key: "true", success:true, message: "COMMON_APPLICATION_CANCELLED_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
         }
@@ -264,17 +267,17 @@ const NOCEmployeeApplicationOverview = () => {
         }
         else{
            //Else case for "VERIFY" or "APPROVE" or "SENDBACKTOCITIZEN" or "SENDBACKTOVERIFIER"
-          setShowToast({ key: "true", success:true, message: "Successfully updated the status of application" });
+          setShowToast({ key: "true", success:true, message: "COMMON_SUCCESSFULLY_UPDATED_APPLICATION_STATUS_LABEL" });
           workflowDetails.revalidate();
           setSelectedAction(null);
         }
       }
       else{
-        setShowToast({ key: "true", warning:true, message: "Something went wrong, please try after sometime" });
+        setShowToast({ key: "true", warning:true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL" });
         setSelectedAction(null); 
       }
     } catch (err) {
-      setShowToast({ key: "true", error:true, message: "Some error occurred, please try later" });
+      setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL" });
     }
   };
 
@@ -314,6 +317,7 @@ const NOCEmployeeApplicationOverview = () => {
               <Row label={t("NOC_APPLICANT_DOB_LABEL")} text={detail?.applicantDateOfBirth || "N/A"} />
               <Row label={t("NOC_APPLICANT_GENDER_LABEL")} text={detail?.applicantGender?.code || detail?.applicantGender || "N/A"} />
               <Row label={t("NOC_APPLICANT_ADDRESS_LABEL")} text={detail?.applicantAddress || "N/A"} />
+              <Row label={t("NOC_APPLICANT_PROPERTY_ID_LABEL")} text={detail?.applicantPropertyId || "N/A"} />
             </StatusTable>
           </div>
         ))}
@@ -351,22 +355,23 @@ const NOCEmployeeApplicationOverview = () => {
               <Row label={t("NOC_ROAD_TYPE_LABEL")} text={detail?.roadType?.name || detail?.roadType || "N/A"} />
               <Row label={t("NOC_AREA_LEFT_FOR_ROAD_WIDENING_LABEL")} text={detail?.areaLeftForRoadWidening || "N/A"} />
               <Row label={t("NOC_NET_PLOT_AREA_AFTER_WIDENING_LABEL")} text={detail?.netPlotAreaAfterWidening || "N/A"} />
+              <Row label={t("NOC_NET_TOTAL_AREA_LABEL")} text={detail?.netTotalArea || "N/A"} />
               <Row label={t("NOC_ROAD_WIDTH_AT_SITE_LABEL")} text={detail?.roadWidthAtSite || "N/A"} />
               <Row label={t("NOC_BUILDING_STATUS_LABEL")} text={detail?.buildingStatus?.name || detail?.buildingStatus || "N/A"} />
 
 
               <Row label={t("NOC_IS_BASEMENT_AREA_PRESENT_LABEL")} text={detail?.isBasementAreaAvailable?.code || detail?.isBasementAreaAvailable || "N/A"} />
 
-              {detail?.buildingStatus?.code == "BUILTUP" && 
-               <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail.basementArea || "N/A"}/>
+              {detail?.buildingStatus == "Built Up" && 
+               <Row label={t("NOC_BASEMENT_AREA_LABEL")} text={detail?.basementArea || "N/A"}/>
               }
 
-              {detail?.buildingStatus?.code == "BUILTUP" && detail?.floorArea?.map((floor, index)=>{
+              {detail?.buildingStatus == "Built Up" && detail?.floorArea?.map((floor, index)=>(
                <Row label={getFloorLabel(index)} text={floor.value || "N/A"}/>
-              })}
+              ))}
 
-              {detail?.buildingStatus?.code == "BUILTUP" && 
-               <Row label={t("NOC_TOTAL_FLOOR_AREA_LABEL")} text={detail.totalFloorArea || "N/A"}/>
+              {detail?.buildingStatus == "Built Up" && 
+               <Row label={t("NOC_TOTAL_FLOOR_BUILT_UP_AREA_LABEL")} text={detail?.totalFloorArea || "N/A"}/>
               }
 
               <Row label={t("NOC_DISTRICT_LABEL")} text={detail?.district?.name || detail?.district || "N/A"} />
@@ -399,6 +404,20 @@ const NOCEmployeeApplicationOverview = () => {
           </div>
         ))}
       </Card>
+
+    <Card>
+       <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
+          {displayData?.coordinates?.map((detail, index) => (
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+                <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
+                <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
+                </StatusTable>
+              </div>
+            ))}
+    </Card>
 
       <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
@@ -470,7 +489,7 @@ const NOCEmployeeApplicationOverview = () => {
         />
       ) : null}
 
-      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={showToast?.message} isDleteBtn={true} onClose={closeToast} />}
+      {showToast && <Toast error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} isDleteBtn={true} onClose={closeToast} />}
 
 
     </div>

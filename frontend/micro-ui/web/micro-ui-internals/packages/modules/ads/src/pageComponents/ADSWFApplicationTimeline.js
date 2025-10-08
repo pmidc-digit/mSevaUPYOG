@@ -1,5 +1,5 @@
 import { CardSectionHeader, CheckPoint, ConnectingCheckPoints, Loader } from "@mseva/digit-ui-react-components";
-import React, { Fragment } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
 import ADSWFCaption from "./ADSWFCaption";
 

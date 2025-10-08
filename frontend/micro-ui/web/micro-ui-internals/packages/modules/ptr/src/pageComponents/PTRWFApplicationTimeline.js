@@ -26,14 +26,13 @@ const PTRWFApplicationTimeline = (props) => {
   const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState(null);
   const [latestComment, setLatestComment] = useState(null);
+
   const { isLoading, data } = Digit.Hooks.useWorkflowDetails({
     tenantId: props.application?.tenantId,
     id: props.application?.applicationNumber,
     moduleCode: "ptr",
     config: { staleTime: 0, refetchOnMount: "always" },
   });
-
-  console.log("props.application", props.application);
 
   function OpenImage(imageSource, index, thumbnailsToShow) {
     window.open(thumbnailsToShow?.fullImage?.[0], "_blank");
@@ -186,7 +185,7 @@ const PTRWFApplicationTimeline = (props) => {
     setLatestComment(filtData?.comment);
     updatedApplicant.workflow = {
       action: filtData.action,
-      assignes: filtData?.assignee,
+      assignes: filtData.action === "SENDBACKTOCITIZEN" ? [props.application?.auditDetails?.createdBy] : filtData?.assignee,
       comments: filtData?.comment,
       documents: filtData?.wfDocuments ? filtData?.wfDocuments : null,
     };
@@ -238,6 +237,7 @@ const PTRWFApplicationTimeline = (props) => {
               {t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}
             </CardSectionHeader>
           )}
+
           {data?.timeline && data?.timeline?.length === 1 ? (
             <CheckPoint
               isCompleted={true}
@@ -249,12 +249,7 @@ const PTRWFApplicationTimeline = (props) => {
               {data?.timeline &&
                 data?.timeline.map((checkpoint, index, arr) => {
                   let timelineStatusPostfix = "";
-                  if (window.location.href.includes("/obps/")) {
-                    if (data?.timeline[index - 1]?.state?.includes("BACK_FROM") || data?.timeline[index - 1]?.state?.includes("SEND_TO_CITIZEN"))
-                      timelineStatusPostfix = `_NOT_DONE`;
-                    else if (checkpoint?.performedAction === "SEND_TO_ARCHITECT") timelineStatusPostfix = `_BY_ARCHITECT_DONE`;
-                    else timelineStatusPostfix = index == 0 ? "" : `_DONE`;
-                  }
+
                   return (
                     <React.Fragment key={index}>
                       <CheckPoint

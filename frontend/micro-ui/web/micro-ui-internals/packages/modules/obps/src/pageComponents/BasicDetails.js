@@ -17,8 +17,9 @@ import {
 import Timeline from "../components/Timeline";
 import { useTranslation } from "react-i18next";
 import { scrutinyDetailsData } from "../utils";
+import { set } from "lodash";
 
-const BasicDetails = ({ formData, onSelect, config }) => {
+const BasicDetails = ({ formData, onSelect, config, currentStepData }) => {
   const [showToast, setShowToast] = useState(null);
   const [basicData, setBasicData] = useState(formData?.data?.edcrDetails || null);
   const [scrutinyNumber, setScrutinyNumber] = useState(formData?.data?.scrutinyNumber);
@@ -33,6 +34,9 @@ const BasicDetails = ({ formData, onSelect, config }) => {
     basicData?.planDetail?.blocks
   );
   const [isLoading, setIsLoading] = useState(false);
+  console.log("riskType", riskType, mdmsData?.BPA?.RiskTypeComputation,
+    basicData?.planDetail?.plot?.area,
+    basicData?.planDetail?.blocks);
 
   useEffect(() => {
     sessionStorage.removeItem("ArchitectConsentdocFilestoreid");
@@ -52,6 +56,13 @@ const BasicDetails = ({ formData, onSelect, config }) => {
       }
     }
   };
+
+  useEffect(() => {
+    if(!scrutinyNumber && currentStepData?.createdResponse?.edcrNumber){
+      setScrutinyNumber({edcrNumber: currentStepData?.createdResponse?.edcrNumber});
+    }
+  },[currentStepData])
+  console.log("basicData", currentStepData, formData, scrutinyNumber, basicData);
 
   const closeToast = () => {
     setShowToast(null);
@@ -137,7 +148,7 @@ const BasicDetails = ({ formData, onSelect, config }) => {
           style={{ marginBottom: "10px" }}
         />
       </div>
-      {basicData && (
+      {scrutinyNumber && basicData && (!riskType ?  <Loader /> :  <div>{basicData && (
         <Card>
           {/* <CardCaption>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardCaption> */}
           <CardHeader>{t(`BPA_BASIC_DETAILS_TITLE`)}</CardHeader>
@@ -157,11 +168,11 @@ const BasicDetails = ({ formData, onSelect, config }) => {
               text={basicData?.planDetail?.planInformation?.applicantName}
             />
           </StatusTable>
-          <ActionBar>
-          {riskType ? <SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length || isLoading || isMdmsLoading} /> : <Loader />}
-          </ActionBar>
         </Card>
-      )}
+      )}</div>)}
+      <ActionBar>
+          {<SubmitBar label={t(`CS_COMMON_NEXT`)} onSubmit={handleSubmit} disabled={!scrutinyNumber?.edcrNumber?.length || isLoading || isMdmsLoading || !riskType} />}
+      </ActionBar>
     </div>
   );
 };

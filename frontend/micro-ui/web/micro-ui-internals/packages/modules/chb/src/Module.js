@@ -38,6 +38,7 @@ import CHBSelectProofIdentity from "./pageComponents/CHBSelectProofIdentity";
 import CHBSummary from "./pageComponents/CHBSummary";
 import getRootReducer from "./redux/reducer";
 import { CHBIcon } from "./components/CHBIcon";
+import CHBResponseCitizen from "./pages/citizen/CHBResponseCitizen";
 
 export const CHBReducers = getRootReducer;
 
@@ -71,6 +72,7 @@ const componentsToRegister = {
   CHBCitizenSecond,
   CHBSelectProofIdentity,
   CHBSummary,
+  CHBResponseCitizen,
 };
 
 const addComponentsToRegistry = () => {

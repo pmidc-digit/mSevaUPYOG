@@ -13,7 +13,7 @@ import { useLocation } from "react-router-dom";
 const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const [showToast, setShowToast] = useState(false);
+  const [showToast, setShowToast] = useState(null);
   const [error, setError] = useState("");
   const userInfo = Digit.UserService.getUser()?.info || {};
 
@@ -57,17 +57,28 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
 
   const onSubmit = (data) => {
     trigger();
+
+    //Validation for Jamabandi Area Must Be Equal To Net Plot Total Area in sq mt (A+B)
+    const isEqual= (data?.netTotalArea === data?.specificationPlotArea) || false;
+
+    if(!isEqual){
+        setShowToast({ key: "true", error:true, message: "NOC_PLOT_AREA_SUM_VALIDATION_MESG_LABEL"});
+        return;
+    }
     
+    //Save data in redux
     dispatch(UPDATE_NOCNewApplication_FORM(config.key, data));
     
-    //Use updated data 
+    //If create api is already called then move to next step
     if (currentStepData?.apiData?.Noc?.[0]?.applicationNo) {
       onGoNext();
     } else {
+    //Call Create API and move to next Page
     callCreateAPI({ ...currentStepData, siteDetails:{...data} });
     }
 
-   // callCreateAPI({ ...currentStepData, siteDetails:{...data} });
+   onGoNext();
+
   };
 
 
@@ -133,19 +144,14 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
           console.log("success :create api executed successfully !!!");
           dispatch(UPDATE_NOCNewApplication_FORM("apiData", response));
           onGoNext();
-          return { isSuccess: true, response };
         } else {
 
           console.error("error  : create api not executed properly !!!");
-          setError("Some error occurred, please try after sometime");
-          setShowToast(true);
-          return { isSuccess: false, response };
+          setShowToast({ key: "true", error:true, message: "COMMON_SOMETHING_WENT_WRONG_LABEL"});
         }
        }catch(error){
-          console.error("error occurred, create api failed !!!");
-          setError("Some error occurred, please try after sometime");
-          setShowToast(true);
-          return { isSuccess: false, response };
+          console.log("errors here in goNext - catch block", error);
+          setShowToast({ key: "true", error:true, message: "COMMON_SOME_ERROR_OCCURRED_LABEL"});
       }
 
         // onGoNext();
@@ -165,8 +171,8 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   }
 
   const closeToast = () => {
-    setShowToast("");
-    setError("");
+    setShowToast(null);
+    // setError("");
   };
 
   return (
@@ -182,7 +188,7 @@ const NewNOCStepFormTwo = ({ config, onBackClick, onGoNext }) => {
         </ActionBar>
       </form>
 
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+      {showToast && <Toast isDleteBtn={true} error={showToast?.error} warning={showToast?.warning} label={t(showToast?.message)} onClose={closeToast} />}
     </React.Fragment>
   );
 };

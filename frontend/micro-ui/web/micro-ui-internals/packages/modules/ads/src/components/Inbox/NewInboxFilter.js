@@ -12,7 +12,6 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
   const { uuid } = Digit.UserService.getUser().info;
 
   const [_searchParams, setSearchParams] = useState(() => ({ services: searchParams?.services || ["ADV"] }));
-  console.log("_searchParams", _searchParams);
 
   // Assigned-to options
   const assignedToOptions = useMemo(
@@ -61,7 +60,6 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
     });
   };
 
-  console.log("statusMap", statusMap);
 
   // const localParamChange = (filterParam) => {
   //   let keys_to_delete = filterParam.delete;
@@ -117,7 +115,6 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
   //     });
   // };
 
-  console.log("hhh");
 
   return (
     <React.Fragment>
@@ -193,8 +190,6 @@ const Filter = ({ searchParams, onFilterChange, defaultSearchParams, statusMap, 
                 //   }
                 // }}
                 onAssignmentChange={(e, status) => {
-                  console.log("status is 222", status);
-                  console.log("e", e);
 
                   if (e.target.checked) {
                     localParamChange({

@@ -1,18 +1,27 @@
 import React from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FormComposer, Toast } from "@mseva/digit-ui-react-components";
-import { UPDATE_CHBApplication_FORM } from "../../redux/action/CHBApplicationActions";
+import { Toast } from "@mseva/digit-ui-react-components";
+import { useHistory } from "react-router-dom";
+import { UPDATE_CHBApplication_FORM, RESET_CHB_APPLICATION_FORM } from "../../redux/action/CHBApplicationActions";
 import { useState } from "react";
+import CHBSummary from "../../pageComponents/CHBSummary";
 import _ from "lodash";
 
 const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const [showToast, setShowToast] = useState(false);
   const [error, setError] = useState("");
+  const isCitizen = window.location.href.includes("citizen");
+  const tenantId = window.location.href.includes("citizen")
+    ? window.localStorage.getItem("CITIZEN.CITY")
+    : window.localStorage.getItem("Employee.tenant-id");
 
   const currentStepData = useSelector(function (state) {
     return state.chb.CHBApplicationFormReducer.formData || {};
   });
+
+  console.log("currentStepData===", currentStepData);
 
   function validateStepData(data) {
     const missingFields = [];
@@ -21,23 +30,76 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
     return { missingFields, notFormattedFields };
   }
 
-  function goNext(data) {
-    const { missingFields, notFormattedFields } = validateStepData(currentStepData);
+  const goNext = async (data) => {
+    console.log("data", data);
+    console.log("currentStepData", currentStepData);
+    const actionStatus = data?.action;
 
-    // if (missingFields.length > 0) {
-    //   setError(`Please fill the following field: ${missingFields[0]}`);
-    //   setShowToast(true);
-    //   return;
-    // }
+    // return;
+    try {
+      const res = await onSubmit(currentStepData, actionStatus); // wait for the API response
+      // Check if the API call was successful
+      console.log("res", res);
+      const id = res?.response?.hallsBookingApplication?.[0]?.bookingNo;
+      if (res?.isSuccess) {
+        if (isCitizen) {
+          history.push("/digit-ui/citizen/chb/response/" + id);
+        } else {
+          history.push("/digit-ui/employee/chb/response/" + id);
+        }
+      } else {
+        console.error("Submission failed, not moving to next step.", res?.response);
+      }
+    } catch (error) {
+      alert(`Error: ${error?.message}`);
+    }
+    // onGoNext();
+  };
 
-    // if (notFormattedFields.length > 0) {
-    //   setError(`Please format the following field: ${notFormattedFields[0]}`);
-    //   setShowToast(true);
-    //   return;
-    // }
+  function mapToNDCPayload(inputData, actionStatus) {
+    // Pick the source of truth for the application
+    const baseApplication = inputData?.venueDetails?.[0] || {};
 
-    onGoNext();
+    // Clone and modify workflow action
+    const updatedApplication = {
+      ...baseApplication,
+      workflow: {
+        ...baseApplication?.workflow,
+        action: actionStatus,
+      },
+      documents: [], // We'll populate below
+    };
+
+    (inputData?.documents?.documents?.documents || [])?.forEach((doc) => {
+      updatedApplication.documents.push({
+        documentdetailid: doc?.documentUid,
+        documentType: doc?.documentType,
+        fileStoreId: doc?.filestoreId,
+      });
+    });
+
+    // Final payload matches update API structure
+    const payload = {
+      hallsBookingApplication: updatedApplication,
+    };
+
+    return payload;
   }
+
+  const onSubmit = async (data, actionStatus) => {
+    const finalPayload = mapToNDCPayload(data, actionStatus);
+
+    console.log("finalPayload", finalPayload);
+    // return;
+    const response = await Digit.CHBServices.update({ tenantId, ...finalPayload });
+    console.log("response", response);
+    dispatch(RESET_CHB_APPLICATION_FORM());
+    if (response?.responseInfo?.status == "SUCCESSFUL") {
+      return { isSuccess: true, response };
+    } else {
+      return { isSuccess: false, response };
+    }
+  };
 
   function onGoBack(data) {
     onBackClick(config.key, data);
@@ -56,7 +118,8 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
   };
   return (
     <React.Fragment>
-      <FormComposer
+      <CHBSummary formData={currentStepData} goNext={goNext} onGoBack={onGoBack} />
+      {/* <FormComposer
         defaultValues={currentStepData}
         config={config.currStepConfig}
         onSubmit={goNext}
@@ -64,7 +127,7 @@ const NewADSStepFormFour = ({ config, onGoNext, onBackClick, t }) => {
         label={t(`${config.texts.submitBarLabel}`)}
         currentStep={config.currStepNumber}
         onBackClick={onGoBack}
-      />
+      /> */}
       {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );

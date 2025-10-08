@@ -14,7 +14,7 @@ RUN yarn add @mseva/digit-ui-module-core@1.0.40
 RUN yarn add @mseva/digit-ui-module-common@1.0.89
 RUN yarn add @mseva/digit-ui-module-ws@1.0.7
 RUN yarn add @mseva/digit-ui-module-commonpt@1.0.5
-RUN yarn add @mseva/digit-ui-module-ptr@1.1.8
+RUN yarn add @mseva/digit-ui-module-ptr@1.1.9
 RUN yarn add @mseva/digit-ui-module-swach@1.0.43
 RUN yarn add @mseva/digit-ui-module-pt@1.0.35
 RUN yarn add @mseva/digit-ui-module-tl@1.0.15

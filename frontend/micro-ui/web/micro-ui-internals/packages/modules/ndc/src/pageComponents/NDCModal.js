@@ -42,6 +42,7 @@ const NDCModal = ({
   showErrorToast,
   errorOne,
   closeToastOne,
+  getEmployees,
 }) => {
   const [config, setConfig] = useState({});
   const [defaultValues, setDefaultValues] = useState({});
@@ -57,10 +58,18 @@ const NDCModal = ({
 
   const allRoles = [...new Set(checkRole?.flatMap((a) => a.roles))];
 
+  const allRolesNew = [...new Set(getEmployees?.flatMap((a) => a.roles))];
+
+  console.log("getEmployees", getEmployees);
+
+  console.log("allRoles", allRoles);
+
+  console.log("allRolesNew", allRolesNew);
+
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-      roles: allRoles?.map((role) => ({ code: role })),
+      roles: allRolesNew?.map((role) => ({ code: role })),
       // roles: allRolesString,
       isActive: true,
     },

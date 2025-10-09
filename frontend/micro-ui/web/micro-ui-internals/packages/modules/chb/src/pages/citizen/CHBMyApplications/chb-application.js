@@ -9,6 +9,8 @@ const ChbApplication = ({ application, tenantId, buttonLabel }) => {
   const history = useHistory();
   const [showToast, setShowToast] = useState(null);
 
+  console.log("application", application);
+
   const { data: slotSearchData, refetch } = Digit.Hooks.chb.useChbSlotSearch({
     tenantId: application?.tenantId,
     filters: {
@@ -61,35 +63,7 @@ const ChbApplication = ({ application, tenantId, buttonLabel }) => {
     }
   };
   const handleMakePayment = async () => {
-    try {
-      const result = await refetch();
-      let SlotSearchData = {
-        tenantId: application?.tenantId,
-        bookingId: application?.bookingId,
-        communityHallCode: application?.communityHallCode,
-        bookingStartDate: application?.bookingSlotDetails?.[0]?.bookingDate,
-        bookingEndDate: application?.bookingSlotDetails?.[application.bookingSlotDetails.length - 1]?.bookingDate,
-        hallCode: application?.bookingSlotDetails?.[0]?.hallCode,
-        isTimerRequired: true,
-      };
-      const isSlotBooked = result?.data?.hallSlotAvailabiltityDetails?.some((slot) => slot.slotStaus === "BOOKED");
-
-      if (isSlotBooked) {
-        setShowToast({ error: true, label: t("CHB_COMMUNITY_HALL_ALREADY_BOOKED") });
-      } else {
-        history.push({
-          pathname: `/digit-ui/citizen/payment/my-bills/${"chb-services"}/${application?.bookingNo}`,
-          state: {
-            tenantId: application?.tenantId,
-            bookingNo: application?.bookingNo,
-            timerValue: result?.data.timerValue,
-            SlotSearchData: SlotSearchData,
-          },
-        });
-      }
-    } catch (error) {
-      setShowToast({ error: true, label: t("CS_SOMETHING_WENT_WRONG") });
-    }
+    history.push(`/digit-ui/citizen/payment/collect/chb-services/${application?.bookingNo}/${tenantId}?tenantId=${tenantId}`);
   };
   useEffect(() => {
     if (showToast) {
@@ -118,13 +92,12 @@ const ChbApplication = ({ application, tenantId, buttonLabel }) => {
       <KeyNote keyValue={t("CHB_BOOKING_DATE")} note={getBookingDateRange(application?.bookingSlotDetails)} />
       <KeyNote keyValue={t("PT_COMMON_TABLE_COL_STATUS_LABEL")} note={t(`${application?.bookingStatus}`)} />
       <div>
-        <Link to={`/digit-ui/citizen/chb/application/${application?.bookingNo}/${application?.tenantId}`}>
-          <SubmitBar label={buttonLabel} />
-        </Link>
-        {(application.bookingStatus === "BOOKING_CREATED" ||
-          application.bookingStatus === "PAYMENT_FAILED" ||
-          application.bookingStatus === "PENDING_FOR_PAYMENT") && (
+        {application.bookingStatus === "PENDING_PAYMENT" ? (
           <SubmitBar label={t("CS_APPLICATION_DETAILS_MAKE_PAYMENT")} onSubmit={handleMakePayment} style={{ margin: "20px" }} />
+        ) : (
+          <Link to={`/digit-ui/citizen/chb/application/${application?.bookingNo}/${application?.tenantId}`}>
+            <SubmitBar label={buttonLabel} />
+          </Link>
         )}
       </div>
       {showToast && (

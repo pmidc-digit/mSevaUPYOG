@@ -76,4 +76,13 @@ export const SwachService = {
      userService: false,
      params: { tenantId, ...filters },
    }),
+    SwachViewAttendence: ({ tenantId, filters }) =>
+    Request({
+     url: Urls.Swach_ViewAttendence,
+     useCache: false,
+     method: "POST",
+     auth: false ,
+     userService: false,
+     params: { tenantId, ...filters },
+   }),
 };

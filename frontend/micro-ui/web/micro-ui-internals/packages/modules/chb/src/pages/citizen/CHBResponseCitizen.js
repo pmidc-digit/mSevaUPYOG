@@ -8,17 +8,20 @@ const CHBResponseCitizen = (props) => {
   const { t } = useTranslation();
   const history = useHistory();
   const nocData = state?.data?.Noc?.[0];
+  const isCitizen = window.location.href.includes("citizen");
   const tenantId = window.localStorage.getItem("CITIZEN.CITY");
 
   const pathname = history?.location?.pathname || "";
   const ndcCode = pathname.split("/").pop(); // ✅ Extracts the last segment
 
   const onSubmit = () => {
-    history.push(`/digit-ui/citizen`);
+    if (isCitizen) history.push(`/digit-ui/citizen`);
+    else history.push(`/digit-ui/employee`);
   };
 
   const onGoToCHB = () => {
-    history.push(`/digit-ui/citizen/chb-home`);
+    if (isCitizen) history.push(`/digit-ui/citizen/chb-home`);
+    else history.push(`/digit-ui/employee/chb/inbox`);
   };
 
   // const handlePayment = () => {

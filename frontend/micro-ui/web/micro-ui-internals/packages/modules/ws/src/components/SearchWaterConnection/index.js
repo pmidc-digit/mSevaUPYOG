@@ -89,7 +89,6 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
   }
   //need to get from workflow
   const GetCell = (value) => <span className="cell-text">{value}</span>;
-  console.log("data",data)
   const columns = useMemo(
     () => [
       {
@@ -131,9 +130,36 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
         Header: t("WS_COMMON_TABLE_COL_OWN_NAME_LABEL"),
         disableSortBy: true,
         Cell: ({ row }) => {
-          console.log("row data",row)
-          // return GetCell(row?.original?.connectionHolders?.map((owner) => owner?.name).join(",") ? row?.original?.connectionHolders?.map((owner) => owner?.name).join(",") : `${row.original?.["ownerNames"] || "NA"}`);
-          return GetCell(row?.original?.additionalDetails?.ownerName?row?.original?.additionalDetails?.ownerName:"-")
+          // Check multiple sources for owner name
+          let ownerName = "";
+          
+          // First, check if we have property owners data
+          if (row?.original?.owners && row.original.owners.length > 0) {
+            ownerName = row.original.owners
+              .filter(owner => owner.active)
+              .map(owner => owner.name)
+              .join(", ");
+          }
+          // Second, check connectionHolders
+          else if (row?.original?.connectionHolders && row.original.connectionHolders.length > 0) {
+            ownerName = row.original.connectionHolders
+              .map(holder => holder.name)
+              .join(", ");
+          }
+          // Third, check additionalDetails.ownerName
+          else if (row?.original?.additionalDetails?.ownerName) {
+            ownerName = row.original.additionalDetails.ownerName;
+          }
+          // Fourth, check direct owner field
+          else if (row?.original?.owner) {
+            ownerName = row.original.owner;
+          }
+          // Fifth, check ownerNames field
+          else if (row?.original?.ownerNames) {
+            ownerName = row.original.ownerNames;
+          }
+          
+          return GetCell(ownerName || "-");
         },
       },
       {
@@ -321,9 +347,9 @@ const SearchWaterConnection = ({ tenantId, onSubmit, data, count, resultOk, busi
       <Header styles={{ fontSize: "32px" }}>
         {window.location.href.includes("water") ? t("WS_WATER_SEARCH_CONNECTION_SUB_HEADER") : t("WS_SEWERAGE_SEARCH_CONNECTION_SUB_HEADER")}
       </Header>
-      {window.location.href.includes("search-demand")?"":<SearchForm className="ws-custom-wrapper" onSubmit={onSubmit} handleSubmit={handleSubmit}>
+      {window.location.href.includes("search-demand")?"":<div className="alignmentSettle"><SearchForm className="ws-custom-wrapper" onSubmit={onSubmit} handleSubmit={handleSubmit}>
         <SearchFields cityValue={cityValue} locality={locality} setCityValue={setCityValue} setLocality={setLocality} {...{ register, control, reset, tenantId, t }} />
-      </SearchForm>}
+      </SearchForm></div>}
       { isLoading ? <Loader /> : null } 
       {data?.display && !resultOk ? (
         <Card style={{ marginTop: 20 }}>

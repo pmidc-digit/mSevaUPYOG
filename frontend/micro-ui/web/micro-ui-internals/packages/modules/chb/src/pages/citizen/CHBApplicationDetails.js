@@ -234,11 +234,12 @@ const CHBApplicationDetails = () => {
     { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
   ];
+
   const slotlistRows =
     chb_details?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(chb_details?.communityHallCode)}`,
-      hallCode: slot.hallCode + " - " + slot.capacity,
-      bookingDate: slot.bookingDate + " (" + slot.bookingFromTime + " - " + slot.bookingToTime + ")",
+      hallCode: t(slot.hallCode) + " - " + slot.capacity,
+      bookingDate: slot.bookingDate,
       bookingStatus: t(`WF_NEWTL_${slot?.status}`),
     })) || [];
   return (

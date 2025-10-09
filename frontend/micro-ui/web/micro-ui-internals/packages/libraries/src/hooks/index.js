@@ -70,6 +70,7 @@ import useSwachTenants from "./swach/useTenants";
 import useSwachComplaintSubType from "./swach/useComplaintSubType";
 import useSwachComplaintStatusCount from "./swach/useComplaintStatusWithCount";
 import useCount from "./swach/useCount";
+import useViewAttendence from "./swach/useViewAttendence";
 
 import useTenantsFSM from "./fsm/useTenants";
 import useDesludging from "./fsm/useDesludging";
@@ -344,6 +345,7 @@ import useADSFaceAreaMDMS from "./ads/useADSFaceAreaMDMS";
 import useADSCalculationTypeMDMS from "./ads/useADSCalculationTypeMDMS";
 import useADSAdvServicesMDMS from "./ads/useADSAdvServicesMDMS";
 import { useADSSearchApplication, useADSSearchApplicationEmployee } from "./ads/useADSSearchApplication";
+import useADSScheduleTypeMDMS from "./ads/useADSScheduleTypeMDMS";
 import useADSAllMDMS from "./ads/useADSAllMDMS";
 
 // ndc
@@ -431,6 +433,7 @@ const swach = {
   useComplaintStatusCount: useSwachComplaintStatusCount,
   useTradeLicenseBillingslab,
   useCount,
+  useViewAttendence,
   // useMDMS: usePGRMDMS,
 };
 
@@ -648,6 +651,7 @@ const ads = {
   useADSAdTypeMDMS,
   useADSSearchApplication,
   useADSSearchApplicationEmployee,
+  useADSScheduleTypeMDMS,
 };
 
 const chb = {

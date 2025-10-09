@@ -1,5 +1,6 @@
 import React from "react";
 import { Controller } from "react-hook-form";
+import { getMinDateForType } from "../utils";
 
 const AdCard = ({
   ad,
@@ -10,12 +11,14 @@ const AdCard = ({
   onViewAvailability = () => {},
   cartSlots = [], // 👈 pass this from parent
   openCart,
+  scheduleType
 }) => {
-  const todayISO = new Date().toISOString().split("T")[0];
+  // const todayISO = new Date().toISOString().split("T")[0];
   const startDateVal = watch(`ads.${idx}.startDate`) || "";
-
+  const minDate = getMinDateForType(scheduleType);
   // check if this ad is already in cart
-  const isAdded = cartSlots.some((item) => item.ad.id === ad.id && item.slots.length > 0);
+  const isAdded = cartSlots?.some((item) => item?.ad?.id === ad?.id && item?.slots?.length > 0);
+  
 
   return (
     <div
@@ -42,8 +45,8 @@ const AdCard = ({
       >
         {ad.imageSrc || ad.photoURL ? (
           <img
-            src={ad.imageSrc || ad.photoURL}
-            alt={ad.name || `Ad ${ad.id}`}
+            src={ad?.imageSrc || ad?.photoURL}
+            alt={ad?.name || `Ad ${ad?.id}`}
             loading="lazy"
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
@@ -67,15 +70,15 @@ const AdCard = ({
       <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13, color: "#444" }}>
         <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 600 }}>
           <span>{ad.name}</span>
-          <span style={{ color: "#222" }}>₹{ad.amount}</span>
+          <span style={{ color: "#222" }}>₹{ad?.amount}</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span>{ad.locationCode}</span>
+          <span>{ad?.locationCode}</span>
           <span>Pole {ad.poleNo}</span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <span>{ad.adType}</span>
-          <span style={{ color: "red", fontWeight: 500 }}>{ad.light}</span>
+          <span>{ad?.adType}</span>
+          <span style={{ color: "green", fontWeight: 600 }}>{ad?.light}</span>
         </div>
       </div>
 
@@ -88,7 +91,8 @@ const AdCard = ({
           render={(props) => (
             <input
               type="date"
-              min={todayISO}
+              // min={todayISO}
+              min={minDate}
               value={props.value || ""}
               onChange={(e) => props.onChange(e.target.value)}
               style={{
@@ -130,7 +134,8 @@ const AdCard = ({
           render={(props) => (
             <input
               type="date"
-              min={startDateVal || todayISO}
+              // min={startDateVal || todayISO}
+               min={startDateVal || minDate}
               value={props.value || ""}
               onChange={(e) => props.onChange(e.target.value)}
               style={{
@@ -164,7 +169,6 @@ const AdCard = ({
       </div>
 
       {/* Actions */}
-      {/* Action */}
       <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
         <button
           type="button"

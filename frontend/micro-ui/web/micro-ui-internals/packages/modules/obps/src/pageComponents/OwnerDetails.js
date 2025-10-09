@@ -486,6 +486,8 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
   const getOwnerDetails = async (indexValue, eData) => {
     const ownersCopy = cloneDeep(fields)
     const ownerNo = ownersCopy?.[indexValue]?.mobileNumber || ""
+    const ownerId = ownersCopy?.[indexValue]?.ownerId || null
+    console.log("ownerNo", ownerNo, indexValue, ownersCopy, eData)
     setShowToast(null)
 
     if (!ownerNo.match(getPattern("MobileNo"))) {
@@ -540,7 +542,14 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
           values[indexValue] = userData
           values[indexValue].isPrimaryOwner = fields[indexValue]?.isPrimaryOwner || false
         }
-        const updatedValues = values?.map((item) => {
+        const updatedValues = values?.map((item, index) => {
+          if((index === indexValue) && ownerId){
+            return {
+              ...item,
+              ownerId,
+              dob: Digit.Utils.date.getDate(item?.dob)
+            }
+          }
           return {
             ...item,
             dob: Digit.Utils.date.getDate(item?.dob)
@@ -838,7 +847,7 @@ const OwnerDetails = ({ t, config, onSelect, userType, formData, currentStepData
 
   return (
     <div>
-      {!Webview && <Timeline currentStep={3} />}
+      {/* {!Webview && <Timeline currentStep={3} />} */}
       <FormStep
         config={{...config, texts:{header: "BPA_OWNER_AND_DOCUMENT_DETAILS_LABEL"}}}
         onSelect={goNext}

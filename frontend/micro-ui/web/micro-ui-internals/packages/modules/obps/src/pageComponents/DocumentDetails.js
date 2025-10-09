@@ -191,7 +191,7 @@ const DocumentDetails = ({ t, config, onSelect, userType, formData, setError: se
       ) : (
         ""
       )}
-      {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 3 : 3} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />}
+      {/* {isMobile && <Timeline currentStep={checkingFlow === "OCBPA" ? 3 : 3} flow={checkingFlow === "OCBPA" ? "OCBPA" : ""} />} */}
       {!isLoading ? (
         <FormStep
           t={t}

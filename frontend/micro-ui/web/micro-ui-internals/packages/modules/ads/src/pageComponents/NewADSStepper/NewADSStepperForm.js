@@ -139,7 +139,6 @@ const createCitizenConfig = [
   },
 ];
 
-
 const NewADSStepperForm = ({ userType }) => {
   const config = userType === "employee" ? createEmployeeConfig : createCitizenConfig;
   const updatedConfig = config.map((item) => {
@@ -159,7 +158,6 @@ const NewADSStepperForm = ({ userType }) => {
   const step = formState.step;
   const tenantId = Digit.ULBService.getCurrentTenantId();
 
-
   const setStep = (updatedStepNumber) => {
     dispatch(SET_ADSNewApplication_STEP(updatedStepNumber));
   };
@@ -167,7 +165,6 @@ const NewADSStepperForm = ({ userType }) => {
   useEffect(() => {
     dispatch(RESET_ADS_NEW_APPLICATION_FORM());
   }, []);
-
 
   const handleSubmit = (dataGet) => {
     //const data = { ...formData.employeeDetails, ...formData.administrativeDetails };
@@ -180,11 +177,18 @@ const NewADSStepperForm = ({ userType }) => {
     // onSubmit(data, tenantId, setShowToast, history);
   };
 
+  const createTime = formData?.reservationExpiry;
+
   return (
     <div className="pageCard">
       <CardHeader styles={{ fontSize: "28px", fontWeight: "500", color: "#1C1D1F" }} divider={true}>
         {t("ADS_REGISTRATION_APPLICATION")}
-        <ReservationTimer t={t} />
+        {createTime && (
+          <ReservationTimer
+            t={t}
+            createTime={createTime} // supply when reservation created
+          />
+        )}
       </CardHeader>
       <Stepper stepsList={updatedConfig} onSubmit={handleSubmit} step={step} setStep={setStep} />
       {showToast && (

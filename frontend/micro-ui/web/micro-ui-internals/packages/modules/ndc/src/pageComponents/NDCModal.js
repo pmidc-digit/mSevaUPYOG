@@ -1,5 +1,6 @@
-import { Loader, Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components";
+import { Modal, FormComposer, Toast } from "@mseva/digit-ui-react-components";
 import React, { useState, useEffect } from "react";
+import { Loader } from "../components/Loader";
 
 import { ModalConfig } from "../config/ModalConfig";
 
@@ -178,7 +179,9 @@ const NDCModal = ({
     }
   }, [action, approvers, financialYears, selectedFinancialYear, uploadedFile]);
 
-  return action && config.form ? (
+  if (!action || !config.form) return null;
+
+  return (
     <Modal
       headerBarMain={<Heading label={t(config.label.heading)} />}
       headerBarEnd={<CloseBtn onClick={closeModal} />}
@@ -189,9 +192,6 @@ const NDCModal = ({
       // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       formId="modal-action"
     >
-      {/* {financialYearsLoading ? (
-        <Loader />
-      ) : ( */}
       <FormComposer
         config={config.form}
         noBoxShadow
@@ -200,14 +200,11 @@ const NDCModal = ({
         onSubmit={submit}
         defaultValues={defaultValues}
         formId="modal-action"
-        // isDisabled={!action.showFinancialYearsModal ? PTALoading || (!action?.isTerminateState && !selectedApprover?.uuid) : !selectedFinancialYear}
       />
-      {/* )} */}
       {showToast && <Toast error={showToast.key === "error" ? true : false} label={errors} onClose={closeToast} />}
       {showErrorToast && <Toast error={true} label={errorOne} isDleteBtn={true} onClose={closeToastOne} />}
+      {PTALoading && <Loader page={true} />}
     </Modal>
-  ) : (
-    <Loader />
   );
 };
 

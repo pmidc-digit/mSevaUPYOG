@@ -76,6 +76,7 @@ import org.egov.edcr.service.EdcrValidator;
 import org.egov.edcr.service.FetchEdcrRulesMdms;
 import org.egov.edcr.service.OcComparisonService;
 import org.egov.edcr.service.PlanService;
+import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.microservice.contract.RequestInfoWrapper;
 import org.egov.infra.microservice.contract.ResponseInfo;
 import org.egov.infra.microservice.models.RequestInfo;
@@ -247,30 +248,29 @@ public class RestEdcrApplicationController {
             String applicationType = edcr.getAppliactionType();
             String serviceType = edcr.getApplicationSubType();
             Map<String, List<Object>> masterData = new HashMap<>();
-            //Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
-            //Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), edcr.getTenantId());
-//            if (mdmsEnabled != null && mdmsEnabled) {
-//                Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), edcr.getTenantId());
-//                HashMap<String, String> data = new HashMap<>();
-//                data.put("applicationType", applicationType);
-//                data.put("serviceType", serviceType);
-//                masterData = mDMSValidator.getAttributeValues(mdmsData, "BPA");
-//                List<ErrorDetail> mdmsErrors = mDMSValidator.validateMdmsData(masterData, data);
-//                if (!mdmsErrors.isEmpty())
-//                    return new ResponseEntity<>(mdmsErrors, HttpStatus.BAD_REQUEST);
-//
-//                if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
-//                    edcr.setAppliactionType(ApplicationType.OCCUPANCY_CERTIFICATE.toString());
-//                    errorResponses = edcrRestService.validateScrutinizeOcRequest(edcr, planFile);
-//                } else if ("BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
-//                    ErrorDetail validateEdcrRequest = edcrRestService.validateEdcrRequest(edcr, planFile);
-//                    if (validateEdcrRequest != null)
-//                        errorResponses = Arrays.asList(validateEdcrRequest);
-//
-//                    edcr.setAppliactionType(ApplicationType.PERMIT.toString());
-//                }
-//
-//            } else {
+            Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
+            if (mdmsEnabled != null && mdmsEnabled) {
+                Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), ApplicationThreadLocals.getStateName());
+                HashMap<String, String> data = new HashMap<>();
+                data.put("applicationType", applicationType);
+                data.put("serviceType", serviceType);
+                masterData = mDMSValidator.getAttributeValues(mdmsData, "BPA");
+                List<ErrorDetail> mdmsErrors = mDMSValidator.validateMdmsData(masterData, data);
+                if (!mdmsErrors.isEmpty())
+                    return new ResponseEntity<>(mdmsErrors, HttpStatus.BAD_REQUEST);
+
+                if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
+                    edcr.setAppliactionType(ApplicationType.OCCUPANCY_CERTIFICATE.toString());
+                    errorResponses = edcrRestService.validateScrutinizeOcRequest(edcr, planFile);
+                } else if ("BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
+                    ErrorDetail validateEdcrRequest = edcrRestService.validateEdcrRequest(edcr, planFile);
+                    if (validateEdcrRequest != null)
+                        errorResponses = Arrays.asList(validateEdcrRequest);
+
+                    edcr.setAppliactionType(ApplicationType.PERMIT.toString());
+                }
+
+            } else {
                 if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
                     edcr.setAppliactionType(ApplicationType.OCCUPANCY_CERTIFICATE.toString());
                     errorResponses = (edcrRestService.validateScrutinizeOcRequest(edcr, planFile));
@@ -281,7 +281,7 @@ public class RestEdcrApplicationController {
                     edcr.setAppliactionType(ApplicationType.PERMIT.toString());
                     //edcr.setAppliactionType(ApplicationType.BUILDING_PLAN_SCRUTINY.toString());
                 }
-            //}
+            }
 
             if (!errorResponses.isEmpty())
                 return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);
@@ -336,28 +336,28 @@ public class RestEdcrApplicationController {
             String serviceType = edcr.getApplicationSubType();
             Map<String, List<Object>> masterData = new HashMap<>();
             Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
-//            if (mdmsEnabled != null && mdmsEnabled) {
-//                Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), edcr.getTenantId());
-//                HashMap<String, String> data = new HashMap<>();
-//                data.put("applicationType", applicationType);
-//                data.put("serviceType", serviceType);
-//                masterData = mDMSValidator.getAttributeValues(mdmsData, "BPA");
-//                List<ErrorDetail> mdmsErrors = mDMSValidator.validateMdmsData(masterData, data);
-//                if (!mdmsErrors.isEmpty())
-//                    return new ResponseEntity<>(mdmsErrors, HttpStatus.BAD_REQUEST);
-//
-//                if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
-//                    edcr.setAppliactionType(ApplicationType.OCCUPANCY_CERTIFICATE.toString());
-//                    errorResponses = edcrRestService.validateScrutinizeOcRequest(edcr, planFile);
-//                } else if ("BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
-//                    ErrorDetail validateEdcrRequest = edcrRestService.validateEdcrRequest(edcr, planFile);
-//                    if (validateEdcrRequest != null)
-//                        errorResponses = Arrays.asList(validateEdcrRequest);
-//
-//                    edcr.setAppliactionType(ApplicationType.PERMIT.toString());
-//                }
-//
-//            } else {
+            if (mdmsEnabled != null && mdmsEnabled) {
+                Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), edcr.getTenantId());
+                HashMap<String, String> data = new HashMap<>();
+                data.put("applicationType", applicationType);
+                data.put("serviceType", serviceType);
+                masterData = mDMSValidator.getAttributeValues(mdmsData, "BPA");
+                List<ErrorDetail> mdmsErrors = mDMSValidator.validateMdmsData(masterData, data);
+                if (!mdmsErrors.isEmpty())
+                    return new ResponseEntity<>(mdmsErrors, HttpStatus.BAD_REQUEST);
+
+                if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
+                    edcr.setAppliactionType(ApplicationType.OCCUPANCY_CERTIFICATE.toString());
+                    errorResponses = edcrRestService.validateScrutinizeOcRequest(edcr, planFile);
+                } else if ("BUILDING_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
+                    ErrorDetail validateEdcrRequest = edcrRestService.validateEdcrRequest(edcr, planFile);
+                    if (validateEdcrRequest != null)
+                        errorResponses = Arrays.asList(validateEdcrRequest);
+
+                    edcr.setAppliactionType(ApplicationType.PERMIT.toString());
+                }
+
+            } else {
                 if ("BUILDING_OC_PLAN_SCRUTINY".equalsIgnoreCase(applicationType)) {
                     edcr.setAppliactionType(ApplicationType.OCCUPANCY_CERTIFICATE.toString());
                     errorResponses = (edcrRestService.validateScrutinizeOcRequest(edcr, planFile));
@@ -368,7 +368,7 @@ public class RestEdcrApplicationController {
 
                     edcr.setAppliactionType(ApplicationType.PERMIT.toString());
                 }
-            //}
+            }
 
             if (!errorResponses.isEmpty())
                 return new ResponseEntity<>(errorResponses, HttpStatus.BAD_REQUEST);

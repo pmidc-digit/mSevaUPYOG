@@ -51,6 +51,7 @@ import org.egov.edcr.feature.PlanInfoFeature;
 import org.egov.edcr.feature.PlotArea;
 import org.egov.edcr.feature.RoadWidth;
 import org.egov.edcr.utility.DcrConstants;
+import org.egov.infra.config.core.ApplicationThreadLocals;
 import org.egov.infra.custom.CustomImplProvider;
 import org.egov.infra.filestore.entity.FileStoreMapper;
 import org.egov.infra.filestore.service.FileStoreService;
@@ -102,7 +103,7 @@ public class PlanService {
         Amendment amd = repo.getAmendments();
 
         Plan plan = extractService.extract(dcrApplication.getSavedDxfFile(), amd, asOnDate,
-                featureService.getFeatures());
+                featureService.getFeatures(),ApplicationThreadLocals.getTenantID());
         plan.setCoreArea(dcrApplication.getCoreArea());
         LOG.info("coreArea : " + plan.getCoreArea());
 
@@ -274,7 +275,7 @@ public class PlanService {
 		
 		LOG.info("*** Features for Processing Plan file end *** ");
         Plan plan = extractService.extract(dcrApplication.getSavedDxfFile(), amd, asOnDate,
-                features);
+                features, edcrRequest.getTenantId());
         plan.setCoreArea(dcrApplication.getCoreArea());
         LOG.info("coreArea" + plan.getCoreArea());
         plan.setEdcrRequest(edcrRequest);
@@ -657,7 +658,7 @@ public class PlanService {
         AmendmentService repo = (AmendmentService) specificRuleService.find(AmendmentService.class.getSimpleName());
         Amendment amd = repo.getAmendments();
 
-        Plan plan = extractService.extract(planFile, amd, asOnDate, featureService.getFeatures());
+        Plan plan = extractService.extract(planFile, amd, asOnDate, featureService.getFeatures(), edcrRequest.getTenantId());
         if (StringUtils.isNotBlank(edcrRequest.getApplicantName()))
             plan.getPlanInformation().setApplicantName(edcrRequest.getApplicantName());
         else

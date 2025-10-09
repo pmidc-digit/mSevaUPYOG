@@ -123,19 +123,19 @@ public class BpaMdmsUtil {
 		return mdmsCriteriaReq;
 	}
 
-//    public Object mDMSCall(RequestInfo requestInfo, String tenantId) {
-//        //MdmsCriteriaReq mdmsCriteriaReq = getBpaMDMSRequest(requestInfo,
-//          //      tenantId);
-//        MdmsCriteriaReq mdmsCriteriaReq = getBpaFARMDMSRequest(requestInfo, tenantId);
-//        Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
-////        Map<String, List<Map<String, Object>>> farData = mdmsResponseMapper(result, MdmsFilter.FAR_PATH);
-////
-////        Map<String, List<Map<String, Object>>> categories = mdmsResponseMapper(result, MdmsFilter.CATEGORY_PATH);
-////
-////        Map<String, List<Map<String, Object>>> normalFAR = mdmsResponseMapper(result, MdmsFilter.NORMAL_FAR_PATH);
+    public Object mDMSCall(RequestInfo requestInfo, String tenantId) {
+        MdmsCriteriaReq mdmsCriteriaReq = getBpaMDMSRequest(requestInfo,tenantId);
+        //MdmsCriteriaReq mdmsCriteriaReq = getBpaFARMDMSRequest(requestInfo, tenantId);
+        Object result = serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+        //return serviceRequestRepository.fetchResult(getMdmsSearchUrl(), mdmsCriteriaReq);
+//        Map<String, List<Map<String, Object>>> farData = mdmsResponseMapper(result, MdmsFilter.FAR_PATH);
 //
-//        return result;
-//    }
+//        Map<String, List<Map<String, Object>>> categories = mdmsResponseMapper(result, MdmsFilter.CATEGORY_PATH);
+//
+//        Map<String, List<Map<String, Object>>> normalFAR = mdmsResponseMapper(result, MdmsFilter.NORMAL_FAR_PATH);
+
+        return result;
+    }
 
 	public Object mDMSCall(RequestInfo requestInfo, EdcrRequest edcrRequest, String occType, BigDecimal plotArea) {
 		MdmsCriteriaReq mdmsCriteriaReq = getBpaFARMDMSRequest(requestInfo, edcrRequest, occType, plotArea);

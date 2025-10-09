@@ -83,7 +83,7 @@ public class ExtractService {
 //	private static final BigDecimal LIMIT_SUPERVISOR = new BigDecimal("250");
 //	private static final BigDecimal LIMIT_DESIGNER = new BigDecimal("250");
 
-	public Plan extract(File dxfFile, Amendment amd, Date scrutinyDate, List<PlanFeature> features) {
+	public Plan extract(File dxfFile, Amendment amd, Date scrutinyDate, List<PlanFeature> features, String tenantID) {
 
 		PlanInformation pi = new PlanInformation();
 		DXFDocument doc = getDxfDocument(dxfFile);
@@ -123,9 +123,11 @@ public class ExtractService {
 		LOG.info("mdms enable : " + mdmsEnabled);
 		if (mdmsEnabled != null && mdmsEnabled) {
 			City stateCity = cityService.fetchStateCityDetails();
-			String tenantID = ApplicationThreadLocals.getTenantID();
-			Object mdmsData = edcrMdmsUtil.mDMSCall(new RequestInfo(),
-					new StringBuilder().append(stateCity.getCode()).append(".").append(tenantID).toString());
+			//String tenantID = ApplicationThreadLocals.getTenantID();
+			//String tenantID = plan.getEdcrRequest().getTenantId();
+//			Object mdmsData = edcrMdmsUtil.mDMSCall(new RequestInfo(),
+//					new StringBuilder().append(stateCity.getCode()).append(".").append(tenantID).toString());
+			Object mdmsData = edcrMdmsUtil.mDMSCall(new RequestInfo(),ApplicationThreadLocals.getStateName());
 
 			if (mdmsData == null) {
 				tenantID = stateCity.getCode();

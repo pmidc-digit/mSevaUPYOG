@@ -104,9 +104,11 @@ public class DxfToPdfConverterExtract extends FeatureExtract {
         boolean mdmsDxfToPdfEnabled = false;
         if (mdmsEnabled != null && mdmsEnabled) {
             City stateCity = cityService.fetchStateCityDetails();
-            String tenantID = ApplicationThreadLocals.getTenantID();
-            Object mdmsData = edcrMdmsUtil.mDMSCall(new RequestInfo(),
-                    new StringBuilder().append(stateCity.getCode()).append(".").append(tenantID).toString());
+            //String tenantID = ApplicationThreadLocals.getTenantID();
+            String tenantID = ApplicationThreadLocals.getStateName();
+//            Object mdmsData = edcrMdmsUtil.mDMSCall(new RequestInfo(),
+//                    new StringBuilder().append(stateCity.getCode()).append(".").append(tenantID).toString());
+            Object mdmsData = edcrMdmsUtil.mDMSCall(new RequestInfo(), tenantID);
 
             if (mdmsData == null) {
                 tenantID = stateCity.getCode();

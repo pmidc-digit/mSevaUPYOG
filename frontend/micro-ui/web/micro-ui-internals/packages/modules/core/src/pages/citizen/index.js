@@ -192,6 +192,14 @@ const Home = ({
             <CitizenHome />
           </Route>
 
+          {/* Custom OBPS Landing Page Route */}
+          <PrivateRoute path={`${path}/obps-home`}>
+            {(() => {
+              const CustomLandingPage = Digit?.ComponentRegistryService?.getComponent("CustomLandingPage");
+              return CustomLandingPage ? <CustomLandingPage /> : null;
+            })()}
+          </PrivateRoute>
+
           <PrivateRoute path={`${path}/feedback`} component={CitizenFeedback}></PrivateRoute>
           <PrivateRoute path={`${path}/feedback-acknowledgement`} component={AcknowledgementCF}></PrivateRoute>
 

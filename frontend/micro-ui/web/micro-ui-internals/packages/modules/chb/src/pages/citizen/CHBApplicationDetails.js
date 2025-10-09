@@ -12,11 +12,13 @@ import {
   Toast,
   SubmitBar,
   CardHeader,
+  CheckPoint,
+  ConnectingCheckPoints,
 } from "@mseva/digit-ui-react-components";
 import React, { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-
+import NDCDocumentTimline from "../../components/NDCDocument";
 import { useHistory, useParams, Link } from "react-router-dom";
 import getChbAcknowledgementData from "../../getChbAcknowledgementData";
 import CHBWFApplicationTimeline from "../../pageComponents/CHBWFApplicationTimeline";
@@ -27,6 +29,55 @@ import { pdfDownloadLink } from "../../utils";
 import get from "lodash/get";
 import { size } from "lodash";
 import { doc } from "prettier";
+
+const getTimelineCaptions = (checkpoint, index, arr, t) => {
+  console.log("checkpoint", checkpoint);
+  const { wfComment: comment, thumbnailsToShow, wfDocuments } = checkpoint;
+  const caption = {
+    date: checkpoint?.auditDetails?.lastModified,
+    name: checkpoint?.assigner?.name,
+    // mobileNumber: checkpoint?.assigner?.mobileNumber,
+    source: checkpoint?.assigner?.source,
+  };
+
+  return (
+    <div>
+      {comment?.length > 0 && (
+        <div className="TLComments">
+          <h3>{t("WF_COMMON_COMMENTS")}</h3>
+          <p style={{ overflowX: "scroll" }}>{comment}</p>
+        </div>
+      )}
+
+      {thumbnailsToShow?.thumbs?.length > 0 && (
+        <DisplayPhotos
+          srcs={thumbnailsToShow.thumbs}
+          onClick={(src, idx) => {
+            let fullImage = thumbnailsToShow.fullImage?.[idx] || src;
+            Digit.Utils.zoomImage(fullImage);
+          }}
+        />
+      )}
+
+      {wfDocuments?.length > 0 && (
+        <div>
+          {wfDocuments?.map((doc, index) => (
+            <div key={index}>
+              <NDCDocumentTimline value={wfDocuments} Code={doc?.documentType} index={index} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ marginTop: "8px" }}>
+        {caption.date && <p>{caption.date}</p>}
+        {caption.name && <p>{caption.name}</p>}
+        {/* {caption.mobileNumber && <p>{caption.mobileNumber}</p>} */}
+        {caption.source && <p>{t("ES_COMMON_FILED_VIA_" + caption.source.toUpperCase())}</p>}
+      </div>
+    </div>
+  );
+};
 
 const CHBApplicationDetails = () => {
   const { t } = useTranslation();
@@ -59,6 +110,21 @@ const CHBApplicationDetails = () => {
 
   const [loading, setLoading] = useState(false);
 
+  const workflowDetails = Digit.Hooks.useWorkflowDetails({
+    tenantId: tenantId,
+    id: acknowledgementIds,
+    moduleCode: "chb-services",
+    role: "EMPLOYEE",
+  });
+
+  if (workflowDetails?.data?.actionState?.nextActions && !workflowDetails.isLoading)
+    workflowDetails.data.actionState.nextActions = [...workflowDetails?.data?.nextActions];
+
+  if (workflowDetails && workflowDetails.data && !workflowDetails.isLoading) {
+    workflowDetails.data.initialActionState = workflowDetails?.data?.initialActionState || { ...workflowDetails?.data?.actionState } || {};
+    workflowDetails.data.actionState = { ...workflowDetails.data };
+  }
+
   const fetchBillData = async () => {
     setLoading(true);
     const result = await Digit.PaymentService.fetchBill(tenantId, { businessService: "chb-services", consumerCode: acknowledgementIds });
@@ -66,6 +132,7 @@ const CHBApplicationDetails = () => {
     setBillData(result);
     setLoading(false);
   };
+
   useEffect(() => {
     fetchBillData();
   }, [tenantId, acknowledgementIds]);
@@ -80,6 +147,8 @@ const CHBApplicationDetails = () => {
     }
   );
 
+  console.log("auditResponse", auditResponse);
+
   const { data: reciept_data, isLoading: recieptDataLoading } = Digit.Hooks.useRecieptSearch(
     {
       tenantId: tenantId,
@@ -89,22 +158,6 @@ const CHBApplicationDetails = () => {
     },
     { enabled: acknowledgementIds ? true : false }
   );
-  //WorkFlow
-  // if (!chb_details.workflow) {
-  //   let workflow = {
-  //     id: null,
-  //     tenantId: tenantId,
-  //     businessService: "chb-services",
-  //     businessId: application?.bookingNo,
-  //     action: "",
-  //     moduleName: "chb-services",
-  //     state: null,
-  //     comment: null,
-  //     documents: null,
-  //     assignes: null,
-  //   };
-  //   chb_details.workflow = workflow;
-  // }
 
   let docs = [];
   docs = application?.documents;
@@ -146,6 +199,7 @@ const CHBApplicationDetails = () => {
     const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
     window.open(fileStore[fileStoreId], "_blank");
   }
+
   async function getPermissionLetter({ tenantId, payments, ...params }) {
     let application = data?.hallsBookingApplication?.[0];
     let fileStoreId = application?.permissionLetterFilestoreId;
@@ -175,11 +229,11 @@ const CHBApplicationDetails = () => {
   let dowloadOptions = [];
 
   // // Payment Receipt Button on Acknowledgement Page
-  // if (reciept_data?.Payments[0]?.paymentStatus !== "DEPOSITED")
-  // dowloadOptions.push({
-  //   label: t("CHB_DOWNLOAD_ACK_FORM"),
-  //   onClick: () => getChbAcknowledgement(),
-  // });
+  if (reciept_data?.Payments[0]?.paymentStatus !== "DEPOSITED")
+    dowloadOptions.push({
+      label: t("CHB_DOWNLOAD_ACK_FORM"),
+      onClick: () => getChbAcknowledgement(),
+    });
 
   //commented out, need later for download receipt and certificate
   if (reciept_data && reciept_data?.Payments.length > 0 && recieptDataLoading == false)
@@ -193,51 +247,56 @@ const CHBApplicationDetails = () => {
       onClick: () => getPermissionLetter({ tenantId: reciept_data?.Payments[0]?.tenantId, payments: reciept_data?.Payments[0] }),
     });
 
-  // if (reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED")
-  //   dowloadOptions.push({
-  //     label: t("CHB_CERTIFICATE"),
-  //     onClick: () => printCertificate(),
-  //   });
+  if (reciept_data?.Payments[0]?.paymentStatus === "DEPOSITED")
+    dowloadOptions.push({
+      label: t("CHB_CERTIFICATE"),
+      onClick: () => printCertificate(),
+    });
 
-  //   const getBookingDateRange = (bookingSlotDetails) => {
-  //     if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
-  //       return t("CS_NA");
-  //     }
-  //     const startDate = bookingSlotDetails[0]?.bookingDate;
-  //     const endDate = bookingSlotDetails[bookingSlotDetails.length - 1]?.bookingDate;
-  //     if (startDate === endDate) {
-  //       return startDate; // Return only the start date
-  //     } else {
-  //       // Format date range as needed, for example: "startDate - endDate"
-  //       return startDate && endDate ? `${endDate} - ${startDate} ` : t("CS_NA");
-  //     }
-  //   };
-  //  const getBookingTimeRange = (bookingSlotDetails) => {
-  //     if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
-  //       return "10:00 - 11:59"; // Default time range if details are not present
-  //     }
-  //     const startTime = bookingSlotDetails[0]?.bookingFromTime;
-  //     // const endTime = bookingSlotDetails[bookingSlotDetails.length - 1]?.bookingToTime;
-  //     const length = bookingSlotDetails.length;
-  //     let defaultEndTime = "11:59"; // Default end time for length 1
-  //     if (length === 2) {
-  //       defaultEndTime = "23:59"; // End time for length 2
-  //     } else if (length === 3) {
-  //       defaultEndTime = "71:59"; // End time for length 3
-  //     }
-  //     // Return formatted time range
-  //     return startTime ? `${startTime} - ${defaultEndTime}` : t("CS_NA");
-  //   };
+  const getBookingDateRange = (bookingSlotDetails) => {
+    if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
+      return t("CS_NA");
+    }
+    const startDate = bookingSlotDetails[0]?.bookingDate;
+    const endDate = bookingSlotDetails[bookingSlotDetails.length - 1]?.bookingDate;
+    if (startDate === endDate) {
+      return startDate; // Return only the start date
+    } else {
+      // Format date range as needed, for example: "startDate - endDate"
+      return startDate && endDate ? `${endDate} - ${startDate} ` : t("CS_NA");
+    }
+  };
+  const getBookingTimeRange = (bookingSlotDetails) => {
+    if (!bookingSlotDetails || bookingSlotDetails.length === 0) {
+      return "10:00 - 11:59"; // Default time range if details are not present
+    }
+    const startTime = bookingSlotDetails[0]?.bookingFromTime;
+    // const endTime = bookingSlotDetails[bookingSlotDetails.length - 1]?.bookingToTime;
+    const length = bookingSlotDetails.length;
+    let defaultEndTime = "11:59"; // Default end time for length 1
+    if (length === 2) {
+      defaultEndTime = "23:59"; // End time for length 2
+    } else if (length === 3) {
+      defaultEndTime = "71:59"; // End time for length 3
+    }
+    // Return formatted time range
+    return startTime ? `${startTime} - ${defaultEndTime}` : t("CS_NA");
+  };
+
   const columns = [
     { Header: `${t("CHB_HALL_NUMBER")}`, accessor: "communityHallCode" },
+    { Header: `${t("CHB_COMMUNITY_HALL_NAME")}`, accessor: "hallName" },
     { Header: `${t("CHB_HALL_CODE")}`, accessor: "hallCode" },
     { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
   ];
 
+  console.log("chb_details?.bookingSlotDetails", chb_details);
+
   const slotlistRows =
     chb_details?.bookingSlotDetails?.map((slot) => ({
       communityHallCode: `${t(chb_details?.communityHallCode)}`,
+      hallName: chb_details?.communityHallName,
       hallCode: t(slot.hallCode) + " - " + slot.capacity,
       bookingDate: slot.bookingDate,
       bookingStatus: t(`WF_NEWTL_${slot?.status}`),
@@ -257,10 +316,6 @@ const CHBApplicationDetails = () => {
           )}
         </div>
         <Card>
-          {/* <StatusTable>
-            
-          </StatusTable> */}
-
           <CardSubHeader style={{ fontSize: "24px" }}>{t("CHB_APPLICANT_DETAILS")}</CardSubHeader>
           <StatusTable>
             <Row className="border-none" label={t("CHB_APPLICANT_NAME")} text={chb_details?.applicantDetail?.applicantName || t("CS_NA")} />
@@ -293,6 +348,7 @@ const CHBApplicationDetails = () => {
             <Row className="border-none" label={t("CHB_BANK_BRANCH_NAME")} text={chb_details?.applicantDetail?.bankBranchName || t("CS_NA")} />
             <Row className="border-none" label={t("CHB_ACCOUNT_HOLDER_NAME")} text={chb_details?.applicantDetail?.accountHolderName || t("CS_NA")} />
           </StatusTable> */}
+
           <CardSubHeader style={{ fontSize: "24px", marginTop: "30px" }}>{t("SLOT_DETAILS")}</CardSubHeader>
           <ApplicationTable
             t={t}
@@ -329,6 +385,25 @@ const CHBApplicationDetails = () => {
             </Card>
           </StatusTable>
         </Card>
+        {workflowDetails?.data?.timeline && (
+          <Card style={{ marginTop: "20px" }}>
+            <CardSubHeader style={{ fontSize: "24px" }}>{t("CS_APPLICATION_DETAILS_APPLICATION_TIMELINE")}</CardSubHeader>
+            {workflowDetails?.data?.timeline.length === 1 ? (
+              <CheckPoint isCompleted={true} label={t(workflowDetails?.data?.timeline[0]?.status)} />
+            ) : (
+              <ConnectingCheckPoints>
+                {workflowDetails?.data?.timeline.map((checkpoint, index, arr) => (
+                  <CheckPoint
+                    keyValue={index}
+                    isCompleted={index === 0}
+                    label={t(checkpoint.status)}
+                    customChild={getTimelineCaptions(checkpoint, index, arr, t)}
+                  />
+                ))}
+              </ConnectingCheckPoints>
+            )}
+          </Card>
+        )}
       </div>
     </React.Fragment>
   );

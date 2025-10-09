@@ -17,8 +17,10 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
   // Columns no longer include "Remove"
   const makeColumns = (ad) => [
     { Header: t("ADS_DATE"), accessor: "bookingDate" },
-    { Header: t("ADS_LOCATION"), accessor: "location" },
-    { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    // { Header: t("ADS_LOCATION"), accessor: "location" },
+    // { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    { Header: t("ADS_LOCATION"), accessor: "location", Cell: ({ value }) => t(value || "N/A") },
+        { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
     { Header: t("ADS_TYPE"), accessor: "addType" },
     {
       Header: t("ADS_NIGHT_LIGHT"),

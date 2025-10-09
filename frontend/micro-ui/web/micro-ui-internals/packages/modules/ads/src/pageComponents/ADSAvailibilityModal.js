@@ -45,7 +45,8 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   const allAvailableSlots = slots?.filter((s) => s?.slotStaus === "AVAILABLE");
 
   // True if every available slot is already in the cart
-  const allInCart = allAvailableSlots?.length > 0 && allAvailableSlots?.every((slot) => existingForAd?.some((s) => s?.bookingDate === slot?.bookingDate));
+  const allInCart =
+    allAvailableSlots?.length > 0 && allAvailableSlots?.every((slot) => existingForAd?.some((s) => s?.bookingDate === slot?.bookingDate));
 
   // Handle select all toggle
   const handleSelectAll = (checked) => {
@@ -114,8 +115,11 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       },
     },
     { Header: t("ADS_DATE"), accessor: "bookingDate" },
-    { Header: t("ADS_LOCATION"), accessor: "location" },
-    { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    // { Header: t("ADS_LOCATION"), accessor: "location" },
+    // { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    { Header: t("ADS_LOCATION"), accessor: "location", Cell: ({ value }) => t(value || "N/A") },
+    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
+
     { Header: t("ADS_TYPE"), accessor: "addType" },
     {
       Header: t("ADS_NIGHT_LIGHT"),

@@ -33,9 +33,7 @@ const ADSApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { acknowledgementIds, tenantId } = useParams();
-  const [acknowldgementData, setAcknowldgementData] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
-  const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
 
   // removed businessServiceData & businessLoading (we now use workflowDetails)
@@ -309,7 +307,8 @@ const ADSApplicationDetails = () => {
 
   const columns = [
     { Header: `${t("ADS_TYPE")}`, accessor: "addType" },
-    { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
+    // { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
+    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
     { Header: `${t("ADS_NIGHT_LIGHT")}`, accessor: "nightLight" },
     { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },

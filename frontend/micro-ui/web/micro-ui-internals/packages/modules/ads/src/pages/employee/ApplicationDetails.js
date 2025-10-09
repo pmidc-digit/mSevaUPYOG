@@ -470,7 +470,6 @@ const ApplicationDetails = () => {
     return <Loader />;
   }
 
-
   return (
     <div className={"employee-main-application-details"}>
       {/* Header with MultiLink download dropdown (merged old feature) */}
@@ -542,8 +541,10 @@ const ApplicationDetails = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("ADS_AD_TYPE")} text={t(detail.adType) || detail.adType} />
-              <Row label={t("ADS_LOCATION")} text={detail.location || "N/A"} />
-              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} />
+              {/* <Row label={t("ADS_LOCATION")} text={detail.location || "N/A"} />
+              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} /> */}
+              <Row label={t("ADS_LOCATION")} text={detail.location ? t(detail.location) : "N/A"} />
+              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea ? t(detail.faceArea.replaceAll("_", " ")) : "N/A"} />
               <Row label={t("CHB_BOOKING_DATE")} text={detail.bookingDate || "N/A"} />
               {/* <Row label={t("ADS_BOOKING_TIME")} text={detail.bookingTime || "N/A"} /> */}
               <Row label={t("ADS_NIGHT_LIGHT")} text={detail.nightLight ? "Yes" : "No"} />
@@ -584,7 +585,7 @@ const ApplicationDetails = () => {
       </Card>
 
       {/* BEFORE: !businessLoading && Array.isArray(wfActions) && wfActions.length > 0 */}
-      {!workflowDetails?.isLoading && Array.isArray(wfActions) && wfActions?.length > 0 &&(
+      {!workflowDetails?.isLoading && Array.isArray(wfActions) && wfActions?.length > 0 && (
         <ActionBar>
           {displayMenu && (
             <Menu
@@ -598,7 +599,12 @@ const ApplicationDetails = () => {
               }}
             />
           )}
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={expired || displayData?.applicantData?.bookingStatus ==="BOOKING_CREATED"} />
+          <SubmitBar
+            ref={menuRef}
+            label={t("WF_TAKE_ACTION")}
+            onSubmit={() => setDisplayMenu(!displayMenu)}
+            disabled={expired || displayData?.applicantData?.bookingStatus === "BOOKING_CREATED"}
+          />
         </ActionBar>
       )}
 

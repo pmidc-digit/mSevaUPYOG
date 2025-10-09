@@ -327,24 +327,26 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           </div>
         )}
         {/* Cards grid with see more */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
-          {adsForLocation.slice(0, visibleCount).map((ad, idx) => (
-            <AdCard
-              key={ad.id || idx}
-              ad={ad}
-              idx={idx}
-              control={control}
-              watch={watch}
-              cartSlots={cartSlots}
-              onViewAvailability={handleViewAvailability}
-              openCart={() => setShowCart(true)}
-              t={t}
-              scheduleType={scheduleType}
-            />
-          ))}
-        </div>
+        {adsForLocation?.length > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+            {adsForLocation?.slice(0, visibleCount)?.map((ad, idx) => (
+              <AdCard
+                key={ad.id || idx}
+                ad={ad}
+                idx={idx}
+                control={control}
+                watch={watch}
+                cartSlots={cartSlots}
+                onViewAvailability={handleViewAvailability}
+                openCart={() => setShowCart(true)}
+                t={t}
+                scheduleType={scheduleType}
+              />
+            ))}
+          </div>
+        )}
 
-        {adsForLocation.length > 6 && (
+        {adsForLocation?.length > 6 && (
           <div style={{ textAlign: "center", marginTop: "1rem" }}>
             {visibleCount < adsForLocation.length ? (
               <button

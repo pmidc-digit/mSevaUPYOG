@@ -16,7 +16,7 @@ function ADSSummary({ t }) {
   // const cartArray = Array.isArray(formData.ads?.selectedCards) ? formData.ads?.selectedCards : [];
 
   const docs = Array.isArray(formData?.documents?.documents?.documents)
-    ? formData.documents.documents.documents
+    ? formData?.documents?.documents?.documents
     : Array.isArray(formData.documents?.documents)
     ? formData.documents.documents
     : Array.isArray(formData.documents)

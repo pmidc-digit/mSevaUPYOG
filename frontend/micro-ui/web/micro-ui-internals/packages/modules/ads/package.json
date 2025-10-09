@@ -19,7 +19,7 @@
     "react-router-dom": "5.3.0"
   },
   "dependencies": {
-    "@mseva/digit-ui-libraries": "1.0.82",
+    "@mseva/digit-ui-libraries": "1.0.83",
     "@mseva/digit-ui-react-components": "1.0.6",
     "lodash.merge": "^4.6.2",
     "microbundle-crl": "^0.13.11",

@@ -11,6 +11,7 @@ const TYPE_REGISTER = { type: "register" };
 const TYPE_LOGIN = { type: "login" };
 const DEFAULT_USER = "digit-user";
 const DEFAULT_REDIRECT_URL = "/digit-ui/citizen";
+const DEFAULT_BPA_REDIRECT_URL = "/digit-ui/citizen/obps-home";
 
 /* set citizen details to enable backward compatiable */
 const setCitizenDetail = (userObject, token, tenantId) => {
@@ -70,7 +71,9 @@ const Login = ({ stateCode, isUserRegistered = true }) => {
     Digit.SessionStorage.set("citizen.userRequestObject", user);
     Digit.UserService.setUser(user);
     setCitizenDetail(user?.info, user?.access_token, stateCode);
-    const redirectPath = location.state?.from || DEFAULT_REDIRECT_URL;
+    const userRoles = user.info.roles.map((roleData) => roleData.code);
+    const isUserBPA = userRoles?.some((role) => role?.includes("BPA"));
+    const redirectPath = isUserBPA ?  DEFAULT_BPA_REDIRECT_URL : location.state?.from || DEFAULT_REDIRECT_URL;
     if (!Digit.ULBService.getCitizenCurrentTenant(true)) {
       history.replace("/digit-ui/citizen/select-location", {
         redirectBackTo: redirectPath,

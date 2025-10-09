@@ -23,6 +23,7 @@ import get from "lodash/get";
 import { size } from "lodash";
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
 import getAcknowledgement from "../../getAcknowledgment";
+import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
 /*
  * ADSApplicationDetails includes hooks for data fetching, translation, and state management.
  * The component displays various application details, such as applicant information,

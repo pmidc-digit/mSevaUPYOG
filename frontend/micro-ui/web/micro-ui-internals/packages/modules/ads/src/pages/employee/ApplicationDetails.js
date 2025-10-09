@@ -23,6 +23,7 @@ import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
 import { pdfDownloadLink } from "../../utils";
 import getAcknowledgement from "../../getAcknowledgment";
+import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
 
 const ApplicationDetails = () => {
   const { id } = useParams();
@@ -248,6 +249,7 @@ const ApplicationDetails = () => {
         bookingStatus: adsObject?.bookingStatus,
         paymentDate: adsObject?.paymentDate ? new Date(adsObject.paymentDate).toLocaleDateString() : "",
         receiptNo: adsObject?.receiptNo,
+        auditDetails: adsObject?.auditDetails,
       };
 
       const Documents = removeDuplicatesByUUID(adsObject?.documents || []);
@@ -471,6 +473,8 @@ const ApplicationDetails = () => {
     // });
   }
 
+  const [expired, setExpired] = useState(false);
+
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
@@ -501,6 +505,15 @@ const ApplicationDetails = () => {
 
       {/* Existing cards and document rendering (preserved from your new file) */}
       <Card>
+        {displayData?.applicantData?.auditDetails?.createdTime && displayData?.applicantData?.bookingStatus === "PENDING_FOR_PAYMENT" && (
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <ReservationTimer
+              t={t}
+              createTime={displayData?.applicantData?.auditDetails?.createdTime} // supply when reservation created
+              onExpire={(val) => setExpired(val)}
+            />
+          </div>
+        )}
         <CardSubHeader>{t("ADS_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
           {displayData?.applicantData &&
@@ -581,7 +594,7 @@ const ApplicationDetails = () => {
               }}
             />
           )}
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={expired} />
         </ActionBar>
       )}
 

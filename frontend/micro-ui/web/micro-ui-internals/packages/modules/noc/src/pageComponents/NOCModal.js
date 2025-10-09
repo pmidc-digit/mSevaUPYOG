@@ -57,7 +57,8 @@ const NOCModal = ({
   const { data: approverData, isLoading: PTALoading } = Digit.Hooks.useEmployeeSearch(
     tenantId,
     {
-      roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
+       //roles: action?.assigneeRoles?.map?.((e) => ({ code: e })),
+      roles: workflowDetails?.data?.initialActionState?.nextActions?.filter(ele=>ele?.action==action?.action)?.[0]?.assigneeRoles?.map(role=>({code:role})),
       isActive: true,
     },
     { enabled: !action?.isTerminateState }
@@ -151,9 +152,9 @@ const NOCModal = ({
 
     const commentsText = data?.comments?.toString().trim();
 
-    if (!selectedApprover?.uuid) {
+    if (action?.action !== "APPROVE" && !selectedApprover?.uuid) {
       setShowToast({ key: "true", warning:true, message: t("COMMON_ASSIGNEE_NAME_REQUIRED_LABEL") });
-     return;
+      return;
     }
 
     if (checkCommentsMandatory && !commentsText) {

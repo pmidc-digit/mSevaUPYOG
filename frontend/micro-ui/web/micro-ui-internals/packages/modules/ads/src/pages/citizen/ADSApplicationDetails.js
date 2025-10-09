@@ -385,8 +385,8 @@ const ADSApplicationDetails = () => {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
                 {docs.map((doc, index) => (
                   <div key={index}>
-                    {t(doc?.documentType)}
                     <ADSDocument value={docs} Code={doc?.documentType} index={index} />
+                    {t(doc?.documentType)}
                   </div>
                 ))}
               </div>

@@ -270,6 +270,9 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           <div>
             <style>
               {`
+               .form-field{
+               width:100% !important
+               }
                .select-wrap{
         width:100% !important;
         }

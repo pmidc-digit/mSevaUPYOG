@@ -108,7 +108,7 @@ function ADSSummary({ t }) {
             </span>
           </div>
           {renderRow(TT("ES_NEW_APPLICATION_APPLICANT_NAME"), applicant?.applicantName)}
-          {renderRow(TT("MOBILE"), applicant?.applicantMobileNo)}
+          {renderRow(TT("ADS_MOBILE_NUMBER"), applicant?.applicantMobileNo)}
           {renderRow(TT("ADS_EMAIL_ID"), applicant?.applicantEmailId)}
           {renderRow(TT("CORE_COMMON_PINCODE"), address?.pincode)}
           {renderRow(TT("ES_CREATECOMPLAINT_ADDRESS"), address?.addressLine1)}
@@ -141,8 +141,8 @@ function ADSSummary({ t }) {
             <div style={documentsContainerStyle}>
               {docs.map((doc, idx) => (
                 <div key={idx} style={documentCardStyle}>
-                  {TT(doc?.documentType)}
                   <ADSDocument value={docs} Code={doc?.documentType} index={idx} />
+                  {TT(doc?.documentType)}
                 </div>
               ))}
             </div>

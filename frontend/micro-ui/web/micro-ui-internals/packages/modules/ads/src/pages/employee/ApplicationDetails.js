@@ -470,6 +470,7 @@ const ApplicationDetails = () => {
     return <Loader />;
   }
 
+
   return (
     <div className={"employee-main-application-details"}>
       {/* Header with MultiLink download dropdown (merged old feature) */}
@@ -517,6 +518,8 @@ const ApplicationDetails = () => {
                 if (typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0) return false;
                 return true;
               })
+              // 🚫 filter out unwanted keys
+              .filter(([key]) => !["auditDetails", "paymentDate"].includes(key))
               .map(([key, value]) => (
                 <Row
                   key={key}
@@ -557,8 +560,8 @@ const ApplicationDetails = () => {
             <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
               {application?.documents.map((doc, idx) => (
                 <div key={idx}>
-                  {t(doc?.documentType)}
                   <ADSDocument value={application?.documents} Code={doc?.documentType} index={idx} />
+                  {t(doc?.documentType)}
                 </div>
               ))}
             </div>
@@ -581,7 +584,7 @@ const ApplicationDetails = () => {
       </Card>
 
       {/* BEFORE: !businessLoading && Array.isArray(wfActions) && wfActions.length > 0 */}
-      {!workflowDetails?.isLoading && Array.isArray(wfActions) && wfActions?.length > 0 && (
+      {!workflowDetails?.isLoading && Array.isArray(wfActions) && wfActions?.length > 0 &&(
         <ActionBar>
           {displayMenu && (
             <Menu
@@ -595,7 +598,7 @@ const ApplicationDetails = () => {
               }}
             />
           )}
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={expired} />
+          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} disabled={expired || displayData?.applicantData?.bookingStatus ==="BOOKING_CREATED"} />
         </ActionBar>
       )}
 

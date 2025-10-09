@@ -1,9 +1,12 @@
-const getAcknowledgement = (application, t) => {
+import QRCode from "qrcode";
+const getAcknowledgement = async (application, t) => {
   const currentDate = new Date().toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "long",
     year: "numeric",
   });
+
+  const qrDataURL = await QRCode.toDataURL(window.location.href);
   const content = `
     <html>
       <head>
@@ -25,10 +28,23 @@ const getAcknowledgement = (application, t) => {
             background: white;
           }
           .header {
+          display: flex;
+            justify-content: space-between;
+            align-items: center;
             text-align: center;
             margin-bottom: 30px;
             border-bottom: 2px solid #333;
             padding-bottom: 20px;
+            position: relative;
+          }
+          .header-left,
+          .header-right {
+            flex: 0 0 auto;
+          }
+
+          .header-center {
+            text-align: center;
+            flex: 1;
           }
           .title {
             font-size: 20px;
@@ -76,9 +92,21 @@ const getAcknowledgement = (application, t) => {
       <body>
         <div class="acknowledgement-container">
           <div class="header">
-            <div class="title">Advertisement and Hoarding Booking Acknowledgement</div>
-            <div class="subtitle">Municipal Corporation</div>
+            <div class="header-left">
+              <img src="https://s3.ap-south-1.amazonaws.com/pb-egov-assets/pb.amritsar/logo.png" 
+                  style="width: 120px; height: 120px;" />
+            </div>
+            <div class="header-center">
+              <div class="title">Advertisement and Hoarding Booking Acknowledgement</div>
+              <div class="subtitle">Municipal Corporation</div>
+            </div>
+            <div class="header-right">
+              <img src="${qrDataURL}" style="width: 120px; height: 120px;" />
+            </div>
           </div>
+
+
+          
           
           <div class="acknowledgement-text">
             This is to acknowledge that we have received your application for Advertisement and Hoarding Booking. 

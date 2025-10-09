@@ -150,24 +150,24 @@ const ADSApplicationDetails = () => {
     window.open(fileStore[response?.filestoreIds[0]], "_blank");
   }
 
-  async function getPermissionLetter({ tenantId, payments, ...params }) {
-    let application = adsData?.bookingApplication?.[0];
-    let fileStoreId = application?.permissionLetterFilestoreId;
-    if (!fileStoreId) {
-      const response = await Digit.PaymentService.generatePdf(tenantId, { bookingApplication: [application] }, "advpermissionletter");
-      const updatedApplication = {
-        ...application,
-        permissionLetterFilestoreId: response?.filestoreIds[0],
-      };
-      await mutation.mutateAsync({
-        bookingApplication: updatedApplication,
-      });
-      fileStoreId = response?.filestoreIds[0];
-      refetch();
-    }
-    const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
-    window.open(fileStore[fileStoreId], "_blank");
-  }
+  // async function getPermissionLetter({ tenantId, payments, ...params }) {
+  //   let application = adsData?.bookingApplication?.[0];
+  //   let fileStoreId = application?.permissionLetterFilestoreId;
+  //   if (!fileStoreId) {
+  //     const response = await Digit.PaymentService.generatePdf(tenantId, { bookingApplication: [application] }, "advpermissionletter");
+  //     const updatedApplication = {
+  //       ...application,
+  //       permissionLetterFilestoreId: response?.filestoreIds[0],
+  //     };
+  //     await mutation.mutateAsync({
+  //       bookingApplication: updatedApplication,
+  //     });
+  //     fileStoreId = response?.filestoreIds[0];
+  //     refetch();
+  //   }
+  //   const fileStore = await Digit.PaymentService.printReciept(tenantId, { fileStoreIds: fileStoreId });
+  //   window.open(fileStore[fileStoreId], "_blank");
+  // }
 
   const downloadAcknowledgement = async (application) => {
     console.log("application my details", application);

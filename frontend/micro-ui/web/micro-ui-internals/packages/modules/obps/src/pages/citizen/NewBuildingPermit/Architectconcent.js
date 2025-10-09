@@ -150,18 +150,18 @@ const selfdeclarationform = `
       <p style="margin-bottom:-32px;">${currentStepData?.LocationDetails?.selectedCity?.city?.districtName}</p>
     </div>
 
-    <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir or Madam,</strong></p>
+    <p style="margin-top:-52px;margin-bottom:-32px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-30px;margin-bottom:-32px;">
-      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> (<b>${architecttype }</b> is appointed by the owner <b>${ownername}</b> (Mobile: <b>${mobile}</b>) for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"}</b>.
+      I, the undersigned Shri/Smt/Kum <b>${architecname}</b> <b>${architecttype }</b> having Registration No. ${architectid}  is appointed by the owner <b>${ownername}</b> Mobile: <b>${mobile}</b> for the development on land bearing Kh. No <b>${khasranumber}</b> of <b>${currentStepData?.LocationDetails?.selectedCity?.city?.ulbType}</b> <b>${ulbname}</b> Area <b>${area}</b> (Sq.mts), address <b>${currentStepData?.PlotDetails?.tradeLicenseDetail?.owners?.[0]?.permanentAddress || "NA"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
-      This site falls in Ward Number <b>${ward}</b>, zone number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed Residential/Commercial/Industrial construction is permissible in this area.
+      This site falls in Ward Number <b>${ward}</b>, zone number <b>${zone}</b> in the Master plan of <b>${district}</b> and the proposed ${currentStepData?.createdResponse?.additionalDetails?.usage || '<Type of Construction>'} construction is permissible in this area.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">
-      I am currently registered as (<b>${architecttype || "<Professional's User Type>"}</b>) with the Competent Authority and empanelled under Self-Certification Scheme.
+      I am currently registered as <b>${architecttype || "<Professional's User Type>"}</b> with the Competent Authority and empanelled under Self-Certification Scheme.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px;">

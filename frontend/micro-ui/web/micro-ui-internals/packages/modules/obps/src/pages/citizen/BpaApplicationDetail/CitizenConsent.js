@@ -43,13 +43,15 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
   const district = params?.additionalDetails?.District;
   const ward = data?.applicationData?.additionalDetails?.wardnumber;
   const area = data?.applicationData?.additionalDetails?.area;
-  const applicationnumber = params?.applicationNo;
+  const applicationnumber = data?.applicationData?.applicationNo;
   const architectid = data?.applicationData?.additionalDetails?.architectid;
   const architecttype = data?.applicationData?.additionalDetails?.typeOfArchitect;
   // const TimeStamp = otpVerifiedTimestamp;
-  const ulbselection = params?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "Commissioner" : "Executive Officer";
-  const TimeStamp = otpVerifiedTimestamp || params?.additionalDetails?.TimeStamp || "";
+  const ulbselection = data?.applicationData?.additionalDetails?.Ulblisttype === "Municipal Corporation" ? "The Municipal Commissioner" : "Executive Officer";
+  const TimeStamp = otpVerifiedTimestamp || data?.applicationData?.additionalDetails?.TimeStamp || "";
+  const stakeholderName = data?.applicationData?.additionalDetails?.stakeholderName || "NA";
   const isCitizenDeclared = sessionStorage.getItem("CitizenConsentdocFilestoreid");
+  const address = data?.applicationData?.landInfo?.owners?.[0]?.permanentAddress || "NA";
   const DateOnly = TimeStamp 
   ? (() => {
       const date = new Date(TimeStamp);
@@ -132,21 +134,21 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     </div>
 
     <div style="margin-top:-52px;">
-      <p style="margin-bottom:-32px;"><strong>To:</strong></p>
+      <p style="margin-bottom:-32px;"><strong>To,</strong></p>
       <p style="margin-bottom:-32px;"><strong>${ulbselection || "<ULB Type>"}</strong></p>
       <p style="margin-bottom:-32px;"><b>${data?.applicationData?.additionalDetails?.UlbName || "<ULB Name>"}</b></p>
     </div>
 
-    <p style="margin-top:-50px;"><strong>Dear Sir or Madam,</strong></p>
+    <p style="margin-top:-50px;"><strong>Dear Sir/Madam,</strong></p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
       I/We, Shri/Smt/Kum <b>${data?.applicationData?.landInfo?.owners.map(item => item?.name).join(", ") || "<Owner Name>"}</b>,
-      undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ULB <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.),
+      undersigned owner(s) of land bearing Kh. No. <b>${khasranumber}</b> of ${data?.applicationData?.additionalDetails?.Ulblisttype} - <b>${data?.applicationData?.additionalDetails?.UlbName}</b>, Area <b>${area}</b> (Sq.mts.),
       Ward Number <b>${ward}</b>, City <b>${data?.applicationData?.additionalDetails?.District || "<City>"}</b>.
     </p>
 
     <p style="margin-top:-52px;margin-bottom:-32px; text-align:justify;">
-      I/We hereby declare that the Architect <b>${ownername}</b> (<b>${architecttype}</b>) having Architect ID <b>${architectid}</b>
+      I/We hereby declare that the Professional's Name <b>${stakeholderName}</b> <b>${architecttype}</b> having Registration No <b>${architectid}</b>
       is appointed by me/us and is authorized to make representation/application with regard to aforesaid construction to any of the authorities.
     </p>
 
@@ -162,7 +164,7 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     </ol>
 
     <p style="margin-top:-30px; text-align:justify;">
-      That above stated facts are true and the requisite documents have been uploaded with this eNaksha plan.
+      That above stated facts are true and the requisite documents have been uploaded with this building plan and nothing has been concealed thereof.
     </p>
 
     <p style="margin:10px 0; font-style:italic;">This Document is Verified By OTP at <b>${TimeStamp || "<date time>"}</b></p>
@@ -182,12 +184,20 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
               <td style="padding:6px; border-bottom:1px dotted #000;">${ownername}</td>
             </tr>
             <tr>
-              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${ownermobileNumber}</td>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Application Number:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${applicationnumber}</td>
             </tr>
             <tr>
-              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">e-Mail:</td>
-              <td style="padding:6px; border-bottom:1px dotted #000;">${ownerEmail}</td>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Address:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${address}</td>
+            </tr>
+            <tr>
+            <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">e-Mail:</td>
+            <td style="padding:6px; border-bottom:1px dotted #000;">${ownerEmail}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px; border-bottom:1px dotted #000; font-weight:700;">Mobile:</td>
+              <td style="padding:6px; border-bottom:1px dotted #000;">${ownermobileNumber}</td>
             </tr>
             <tr>
               <td style="padding:6px; font-weight:700;">Signature:</td>
@@ -199,6 +209,8 @@ const CitizenConsent = ({ showTermsPopupOwner, setShowTermsPopupOwner, otpVerifi
     </table>
   </div>
 `;
+
+
 
 
 

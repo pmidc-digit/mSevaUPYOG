@@ -236,6 +236,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
     function getBlockSubOccupancy(index) {
         let subOccupancyString = "";
         let returnValueArray = [];
+        console.log("currentStepData",currentStepData);
         currentStepData?.ScrutinyDetails?.subOccupancy &&
             currentStepData?.ScrutinyDetails?.subOccupancy[`Block_${index + 1}`] &&
             currentStepData?.ScrutinyDetails?.subOccupancy[`Block_${index + 1}`].map((ob) => {
@@ -1162,7 +1163,7 @@ const SummaryDetails = ({ onSelect, formData, currentStepData, onGoBack }) => {
                         <Row
                             className="border-none"
                             label={t(`BPA_CORE_AREA_LABEL`)}
-                            text={currentStepData?.createdResponse?.additionalDetails?.coreArea || t("CS_NA")}
+                            text={currentStepData?.BasicDetails?.edcrDetails?.planDetail?.coreArea || t("CS_NA")}
                         />
                         <Row
                             className="border-none"

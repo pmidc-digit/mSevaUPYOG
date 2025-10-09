@@ -346,6 +346,7 @@ import useADSFaceAreaMDMS from "./ads/useADSFaceAreaMDMS";
 import useADSCalculationTypeMDMS from "./ads/useADSCalculationTypeMDMS";
 import useADSAdvServicesMDMS from "./ads/useADSAdvServicesMDMS";
 import { useADSSearchApplication, useADSSearchApplicationEmployee } from "./ads/useADSSearchApplication";
+import useADSScheduleTypeMDMS from "./ads/useADSScheduleTypeMDMS";
 import useADSAllMDMS from "./ads/useADSAllMDMS";
 
 // ndc
@@ -652,6 +653,7 @@ const ads = {
   useADSAdTypeMDMS,
   useADSSearchApplication,
   useADSSearchApplicationEmployee,
+  useADSScheduleTypeMDMS,
 };
 
 const chb = {

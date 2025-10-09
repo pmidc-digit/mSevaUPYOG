@@ -60,7 +60,7 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
     watch,
     formState: { errors },
     trigger,
-  } = useForm();
+  } = useForm({ defaultValues: { petAge: "", lastVaccineDate: "" } });
 
   const selectedPetType = watch("petType");
 
@@ -248,6 +248,22 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
 
   const errorStyle = { width: "70%", marginLeft: "30%", fontSize: "12px", marginTop: "-18px" };
 
+  // helper: parse the custom age string into { years, months, totalYears }
+  const parsePetAge = (raw) => {
+    if (!raw) return null;
+    const v = raw.startsWith(".") ? `0${raw}` : raw; // ".11" -> "0.11"
+    const [yStr, mStr] = v.split(".");
+    const years = parseInt(yStr || "0", 10);
+    const months = mStr ? parseInt(mStr, 10) : 0;
+    return { years, months, totalYears: years + months / 12 };
+  };
+
+  // regex:
+  // - integers 1..14 optionally with .1-.11
+  // - OR 15 (no decimal)
+  // - OR 0.x or .x with x in 1..11
+  const AGE_REGEX = /^(?:(?:[1-9]|1[0-4])(?:\.(?:[1-9]|1[01]))?|15|0?\.(?:[1-9]|1[01]))$/;
+
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <CardSectionHeader className="card-section-header">{t("PTR_PET_DETAILS")}</CardSectionHeader>
@@ -367,7 +383,6 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
       {errors.lastVaccineDate && <CardLabelError style={errorStyle}>{getErrorMessage("lastVaccineDate")}</CardLabelError>}
 
       {/* PET AGE */}
-      {/* PET AGE */}
       <LabelFieldPair>
         <CardLabel className="card-label-smaller">{t("PTR_PET_AGE")} *</CardLabel>
         <div className="field">
@@ -376,26 +391,52 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
             name="petAge"
             rules={{
               required: t("PTR_PET_AGE_REQUIRED"),
-              pattern: { value: decimalNumber, message: t("PTR_PET_AGE_INVALID") },
-              validate: (val) => {
-                const age = Number(val);
-                if (isNaN(age)) return t("PTR_PET_AGE_INVALID");
-                // allow any positive decimal (e.g. 0.1). change 0.01 to 0.1 if you want a floor of 0.1
-                if (age <= 0) return "Pet age must be greater than 0";
-                if (age > 23) return "Pet age cannot be greater than 23";
-                const vaccDate = watch("lastVaccineDate");
-                if (!vaccDate) return true;
-                const yearsFromVacc = yearsSince(vaccDate); // integer years
-                // Round pet age to nearest whole number for vaccine-date comparison (per tester request)
-                let roundedAge;
+              pattern: { value: AGE_REGEX, message: t("PTR_PET_AGE_INVALID") },
+              // validate: (val) => {
+              //   const age = Number(val);
+              //   if (isNaN(age)) return t("PTR_PET_AGE_INVALID");
+              //   // allow any positive decimal (e.g. 0.1). change 0.01 to 0.1 if you want a floor of 0.1
+              //   if (age <= 0) return "Pet age must be greater than 0";
+              //   if (age > 23) return "Pet age cannot be greater than 23";
+              //   const vaccDate = watch("lastVaccineDate");
+              //   if (!vaccDate) return true;
+              //   const yearsFromVacc = yearsSince(vaccDate); // integer years
+              //   // Round pet age to nearest whole number for vaccine-date comparison (per tester request)
+              //   let roundedAge;
 
-                if (age > 0 && age < 1) {
-                  roundedAge = 1; // special case for anything between 0 and 1
-                } else {
-                  roundedAge = Math.floor(age); // always round down for 1 and above
+              //   if (age > 0 && age < 1) {
+              //     roundedAge = 1; // special case for anything between 0 and 1
+              //   } else {
+              //     roundedAge = Math.floor(age); // always round down for 1 and above
+              //   }
+
+              //   return roundedAge >= yearsFromVacc || `Pet age must be at least ${yearsFromVacc} year(s)`;
+              // },
+              validate: (val) => {
+                if (!val) return t("PTR_PET_AGE_REQUIRED");
+                const normalized = val.startsWith(".") ? `0${val}` : val;
+                if (!AGE_REGEX.test(normalized)) return t("PTR_PET_AGE_INVALID_FORMAT");
+
+                const { years, months } = parsePetAge(normalized);
+
+                // months must be 0..11, but regex already guarantees months ∈ {1..11} when present
+                if (months < 0 || months > 11) return t("PTR_PET_AGE_INVALID_MONTHS");
+
+                // forbid total > 15 years (so 15.x is invalid)
+                if (years > 15 || (years === 15 && months > 0)) return t("PTR_PET_AGE_MAX");
+
+                // you had a vaccine check earlier — example below:
+                const vaccDate = watch("lastVaccineDate"); // make sure you included `watch` from useForm
+                if (vaccDate) {
+                  // compute integer years since vaccine (or whichever rule you want)
+                  const yearsSinceVaccine = yearsSince(vaccDate); // your existing helper
+                  // decide your rule: at least `yearsSinceVaccine`
+                  // Here we convert custom age to floor(totalYears) for comparison (same rule you had before)
+                  const roundedAge = years > 0 && years < 1 ? 1 : Math.floor(years + months / 12);
+                  if (roundedAge < yearsSinceVaccine) return t("PTR_PET_AGE_LESS_THAN_VACC");
                 }
 
-                return roundedAge >= yearsFromVacc || `Pet age must be at least ${yearsFromVacc} year(s)`;
+                return true;
               },
             }}
             render={(props) => (
@@ -408,18 +449,23 @@ const PTRCitizenPet = ({ onGoBack, goNext, currentStepData, t, validateStep, isE
                   v = v.replace(/(\..*)\./g, "$1");
                   props.onChange(v);
                 }}
-                maxLength={5} // allow for values like "23.99"
-                onBlur={() => trigger("petAge")}
+                maxlength={5} // allow for values like "23.99"
                 t={t}
               />
             )}
           />
+          {errors.petAge && (
+            <CardLabelError style={{ width: "70%", fontSize: "12px", marginTop: "-18px" }}>{getErrorMessage("petAge")}</CardLabelError>
+          )}
+
+          <span style={{ fontSize: "12px", color: "#666" }}>{"Example: 0.5 (5 months), 1.2 (1 year 2 months)"}</span>
+
+          {/* Example helper text */}
         </div>
       </LabelFieldPair>
-      {errors.petAge && <CardLabelError style={errorStyle}>{getErrorMessage("petAge")}</CardLabelError>}
 
       {/* VACCINATION NUMBER */}
-      <LabelFieldPair>
+      <LabelFieldPair style={{ marginTop: "15px" }}>
         <CardLabel className="card-label-smaller">{t("PTR_VACCINATION_NUMBER")} *</CardLabel>
         <div className="field">
           <Controller

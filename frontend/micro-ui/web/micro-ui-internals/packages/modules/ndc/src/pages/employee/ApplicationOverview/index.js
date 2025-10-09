@@ -85,6 +85,7 @@ const ApplicationOverview = () => {
   const { id } = useParams();
   const { t } = useTranslation();
   const history = useHistory();
+  const toastRef = useRef(null);
   const tenantId = window.localStorage.getItem("Employee.tenant-id");
   const state = tenantId?.split(".")[0];
   const [showToast, setShowToast] = useState(null);
@@ -433,11 +434,23 @@ const ApplicationOverview = () => {
     }
   );
 
-  if (isLoading || isDetailsLoading || checkLoading) {
-    return <Loader page={true} />;
-  }
-
   console.log("applicationDetails", applicationDetails?.Applications?.[0]?.NdcDetails);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (toastRef.current && !toastRef.current.contains(event.target)) {
+        setShowToast(null); // Close toast
+      }
+    };
+
+    if (showToast) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showToast]);
 
   return (
     <div className={"employee-main-application-details"}>
@@ -668,8 +681,13 @@ const ApplicationOverview = () => {
           closeToastOne={closeToastOne}
         />
       ) : null}
-      {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />}
-      {getLoader && <Loader page={true} />}
+      {showToast && (
+        <div ref={toastRef}>
+          <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />
+        </div>
+      )}
+      {/* {showToast && <Toast error={error} label={getLable} isDleteBtn={true} onClose={closeToast} />} */}
+      {(isLoading || isDetailsLoading || checkLoading || getLoader) && <Loader page={true} />}
     </div>
   );
 };

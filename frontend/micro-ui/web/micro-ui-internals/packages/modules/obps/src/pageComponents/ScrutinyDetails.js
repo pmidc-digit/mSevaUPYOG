@@ -42,7 +42,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
   const isMobile = window.Digit.Utils.browser.isMobile();
   const [apiLoading, setApiLoading] = useState(false);
 
-  console.log(subOccupancy, "OCCUPANCY");
+  console.log(subOccupancy, data, "OCCUPANCY");
 
   useEffect(() => {
     if (!isMdmsLoading && currentStepData?.BasicDetails?.occupancyType) {
@@ -163,23 +163,28 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
     const { t } = useTranslation();
 
     async function downloadFile(e) {
-      e.preventDefault();
-      e.stopPropagation();
+      // e.preventDefault();
+      // e.stopPropagation();
 
-      if (jumpTo) {
-        const link = document.createElement("a");
-        link.href = jumpTo;
-        link.download = label || "document";
-        link.style.display = "none";
+      // if (jumpTo) {
+      //   const link = document.createElement("a");
+      //   link.href = jumpTo;
+      //   link.download = label || "document";
+      //   link.style.display = "none";
 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
+      //   document.body.appendChild(link);
+      //   link.click();
+      //   document.body.removeChild(link);
+      // }
+      window.open(jumpTo, "_blank");
     }
 
     return <LinkButton label={t(label)} onClick={downloadFile} />;
   };
+
+  function routeTo(jumpTo) {
+    window.open(jumpTo, "_blank");
+  }
 
   const tableHeader = [
     {
@@ -365,7 +370,7 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
         } }, tenantId)
         if(result?.ResponseInfo?.status === "successful"){
           setApiLoading(false);
-          onSelect({subOccupancy: subOccupancyObject});
+          onSelect("ScrutinyDetails",{subOccupancy: subOccupancyObject});
         }else{
           alert(t("BPA_CREATE_APPLICATION_FAILED"));
           setApiLoading(false);
@@ -463,11 +468,11 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
               className="border-none"
               label={t("BPA_UPLOADED_PLAN_DIAGRAM")}
               text={
-                <ActionButton
+                <SubmitBar
                   label={t("Uploaded Plan.pdf")}
-                  jumpTo={data?.updatedDxfFile}
-                  onClick={() => {
-                    console.log("");
+                  // jumpTo={data?.updatedDxfFile}
+                  onSubmit={() => {
+                    routeTo(data?.updatedDxfFile);
                   }}
                 />
               }
@@ -476,11 +481,11 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
               className="border-none"
               label={t("BPA_SCRUNTINY_REPORT_OUTPUT")}
               text={
-                <ActionButton
+                <SubmitBar
                   label={t("BPA_SCRUTINY_REPORT_PDF")}
-                  jumpTo={data?.planReport}
-                  onClick={() => {
-                    console.log("");
+                  // jumpTo={data?.planReport}
+                  onSubmit={() => {
+                    routeTo(data?.planReport);
                   }}
                 />
               }
@@ -531,24 +536,22 @@ const ScrutinyDetails = ({ onSelect, userType, formData, config, currentStepData
               // text={t("N/A")}
             ></Row>
             {/* <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text={data?.planDetail?.blocks?.[0]?.building?.totalFloors}></Row> */}
-            <Row className="border-none" label={t("BPA_FAR_ACHIEVED")} text="1"></Row>
+            <Row 
+              className="border-none" 
+              label={t("BPA_FAR_ACHIEVED")} 
+              text={
+                data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
+              }>
+            </Row>
             <Row
               className="border-none"
               label={t("BPA_ECS_REQUIRED")}
-              // text={
-              //  data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
-                
-              // }
-              text={t("1")}
+              text={ data?.planDetail?.reportOutput?.scrutinyDetails?.find((item) => item?.key === "Common_Parking" )?.detail?.find((item) => item?.Description === "Parking")?.Required || "NA" }
             ></Row>
             <Row
               className="border-none"
-              label={t("BPA_FAR_PROVIDED")}
-              text={
-                data?.planDetail?.farDetails?.providedFar ? data?.planDetail?.farDetails?.providedFar : "N/A"
-                 
-              }
-              // text={t("N/A")}
+              label={t("BPA_ECS_PROVIDED")}
+              text={ data?.planDetail?.reportOutput?.scrutinyDetails?.find((item) => item?.key === "Common_Parking" )?.detail?.find((item) => item?.Description === "Parking")?.Provided || "NA" }
             ></Row>
           </StatusTable>
 

@@ -13,8 +13,11 @@ const ADSCartDetails = ({ cartDetails, t }) => {
 
   const makeColumns = () => [
  { Header: t("ADS_DATE"), accessor: "bookingDate" },
-    { Header: t("ADS_LOCATION"), accessor: "location" },
-    { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    // { Header: t("ADS_LOCATION"), accessor: "location" },
+    // { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    { Header: t("ADS_LOCATION"), accessor: "location", Cell: ({ value }) => t(value || "N/A") },
+    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
+
     { Header: t("ADS_TYPE"), accessor: "addType" },
     {
       Header: t("ADS_NIGHT_LIGHT"),
@@ -29,7 +32,7 @@ const ADSCartDetails = ({ cartDetails, t }) => {
           {t("ADS_NO_ADVERTISMENT_DETAILS")}
         </p>
       ) : (
-        cartDetails.map((item, idx) => {
+        cartDetails?.map((item, idx) => {
           const isOpen = expanded?.includes(item.ad.id);
           return (
             <div

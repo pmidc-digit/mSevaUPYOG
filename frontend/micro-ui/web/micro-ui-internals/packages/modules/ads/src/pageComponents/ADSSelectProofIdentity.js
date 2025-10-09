@@ -196,10 +196,8 @@ function ADSSelectDocument({
     }
   };
 
-
-
   const errorStyle = { color: "#d4351c", fontSize: "12px", marginTop: "4px", marginBottom: "10px" };
-  console.log("doc", doc);
+
   return (
     <div style={{ marginBottom: "24px" }}>
       {loading && <Loader />}
@@ -209,8 +207,7 @@ function ADSSelectDocument({
       </LabelFieldPair>
 
       <LabelFieldPair>
-        <CardLabel className="card-label-smaller"></CardLabel>
-        <div className="field">
+        <div className="field" style={{width:"100%"}}>
           <UploadFile
             onUpload={selectfile}
             onDelete={() => {

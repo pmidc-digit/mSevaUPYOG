@@ -69,53 +69,6 @@ function NewADSStepFormFive(props) {
     moduleCode: businessServicMINE,
   });
 
-  console.log("workflowDetails", workflowDetails);
-
-  // useEffect(() => {
-  //   // defensive: grab stable slice of the hook's data
-  //   const wd = workflowDetails?.data;
-  //   // if no data, clear wfActions only if something is present (avoid unnecessary setState)
-  //   if (!wd) {
-  //     setWfActions((prev) => (prev && prev.length ? [] : prev));
-  //     return;
-  //   }
-
-  //   const proc = wd.processInstances && wd.processInstances.length ? wd.processInstances[0] : null;
-  //   const nextActions = (proc && proc.nextActions) || wd.nextActions || [];
-
-  //   // map raw actions -> our normalized actions
-  //   const mapped = (nextActions || []).map((a) => ({
-  //     action: a.action,
-  //     roles: a.roles || [],
-  //     assignee: a.assignee || a.assignees || a.assigner || null,
-  //     nextStateUuid: a.nextState || a.nextStateUuid || null,
-  //     nextState: a.nextState || a.nextStateUuid || null,
-  //     buttonLabel: (a.action || "").replace(/_/g, " ").toUpperCase(),
-  //     comment: a.comment || a.action || "",
-  //     _rawAction: a,
-  //   }));
-
-  //   // role filter (current user)
-  //   const logged = Digit.UserService.getUser();
-  //   let userRolesNow = logged?.info?.roles?.map((r) => r.code) || [];
-  //   if (window.location.href.includes("/obps") || window.location.href.includes("/noc")) {
-  //     const userInfos = sessionStorage.getItem("Digit.citizen.userRequestObject");
-  //     const userInfo = userInfos ? JSON.parse(userInfos) : {};
-  //     userRolesNow = userInfo?.value?.info?.roles?.map((r) => r.code) || userRolesNow;
-  //   }
-
-  //   const filteredByRole = mapped.filter((a) => {
-  //     if (!a.roles || a.roles.length === 0) return true;
-  //     return userRolesNow.some((ur) => a.roles.includes(ur));
-  //   });
-
-  //   // only update state if content actually changed (prevents infinite re-render loop)
-  //   setWfActions((prev) => {
-  //     if (_.isEqual(prev, filteredByRole)) return prev; // no-op, preserves same ref -> no rerender
-  //     return filteredByRole;
-  //   });
-  // }, [workflowDetails?.data?.applicationBusinessService, workflowDetails?.data?.processInstances?.length]);
-
   useEffect(() => {
     // defensive: grab stable slice of the hook's data
     const wd = workflowDetails?.data;
@@ -167,11 +120,6 @@ function NewADSStepFormFive(props) {
   var ignoredInitialChangeRef = useRef(true);
   var lastDispatchedRef = useRef(null);
   var debounceTimerRef = useRef(null);
-  // const getValue = (v) =>
-  //   v && typeof v === "object" && "code" in v ? v.code : v;
-  // function validateStepData() {
-  //   return { missingFields: [], notFormattedFields: [] };
-  // }
 
   const goNext = useCallback(
     async function onSubmit(data = undefined) {
@@ -311,40 +259,12 @@ function NewADSStepFormFive(props) {
   let user = Digit.UserService.getUser();
   const userRoles = user?.info?.roles?.map((e) => e.code);
 
-  // const applicationUuid =
-  // currentStepData?.CreatedResponse
-  //   ?.AdvertisementApplications?.[0]?.uuid;
-
-  // const workflowDetails = Digit.Hooks.useWorkflowDetails({
-  //   tenantId,
-  //   id: currentStepData.CreatedResponse.applicantDetail.applicantDetailId,
-  //   // id: "c0aa1f99-6d31-46c5-90e2-9be9bb662b12",
-  //   moduleCode: "ADS",
-  // });
-
-  // const businessService = "ads";
-  // const businessService = "ptr";
-
-  // const businessService= 'ADV';
-  //   const workflowDetails = Digit.Hooks.useWorkflowDetails({
-  // tenantId,
-  //    id: currentStepData?.CreatedResponse?.bookingNo,
-  //    moduleCode: businessService,
-  //  });
-
-  // Call this directly to get raw business service data
-
   const filteredActions = React.useMemo(() => wfActions || [], [wfActions]);
 
-  // const existingWorkflow = {
-  //   businessService: businessServiceData?.BusinessServices?.[0]?.businessService || "ADV",
-  //   states: businessServiceData?.BusinessServices?.[0]?.states || []
-  // };
   function onActionSelect(wfAction) {
     if (!wfAction) return;
 
     // Quick route for payment
-
     // Decide whether to prefer toState (target) or fromState (origin)
     // Use toState for obvious forward transitions, otherwise prefer fromState for verifier actions
     const preferToStateFor = new Set(["SUBMIT", "INITIATE", "PAY"]);

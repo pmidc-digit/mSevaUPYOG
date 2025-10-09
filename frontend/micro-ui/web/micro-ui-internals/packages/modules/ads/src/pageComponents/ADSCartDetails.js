@@ -3,18 +3,21 @@ import { Table } from "@mseva/digit-ui-react-components";
 
 const ADSCartDetails = ({ cartDetails, t }) => {
   const [expanded, setExpanded] = useState(
-    () => cartDetails.map((item) => item.ad.id)
+    () => cartDetails?.map((item) => item?.ad?.id)
   );
   const toggleExpand = (adId) => {
     setExpanded((prev) =>
-      prev.includes(adId) ? prev.filter((id) => id !== adId) : [...prev, adId]
+      prev?.includes(adId) ? prev?.filter((id) => id !== adId) : [...prev, adId]
     );
   };
 
   const makeColumns = () => [
  { Header: t("ADS_DATE"), accessor: "bookingDate" },
-    { Header: t("ADS_LOCATION"), accessor: "location" },
-    { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    // { Header: t("ADS_LOCATION"), accessor: "location" },
+    // { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    { Header: t("ADS_LOCATION"), accessor: "location", Cell: ({ value }) => t(value || "N/A") },
+    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
+
     { Header: t("ADS_TYPE"), accessor: "addType" },
     {
       Header: t("ADS_NIGHT_LIGHT"),
@@ -24,13 +27,13 @@ const ADSCartDetails = ({ cartDetails, t }) => {
 
   return (
     <div style={{ marginTop: "1rem" }}>
-      {cartDetails.length === 0 ? (
+      {cartDetails?.length === 0 ? (
         <p style={{ padding: "12px", color: "#666" }}>
           {t("ADS_NO_ADVERTISMENT_DETAILS")}
         </p>
       ) : (
-        cartDetails.map((item, idx) => {
-          const isOpen = expanded.includes(item.ad.id);
+        cartDetails?.map((item, idx) => {
+          const isOpen = expanded?.includes(item.ad.id);
           return (
             <div
               key={idx}
@@ -43,7 +46,7 @@ const ADSCartDetails = ({ cartDetails, t }) => {
             >
               {/* Ad Header (clickable) */}
               <div
-                onClick={() => toggleExpand(item.ad.id)}
+                onClick={() => toggleExpand(item?.ad?.id)}
                 style={{
                   background: "#f9f9f9",
                   padding: "10px 14px",
@@ -57,7 +60,7 @@ const ADSCartDetails = ({ cartDetails, t }) => {
                 }}
               >
                 <span>
-                  {item.ad.name} — ₹{item.ad.amount * item?.slots?.length}
+                  {item?.ad?.name} — ₹{item?.ad?.amount * item?.slots?.length}
                 </span>
                 <span style={{ fontSize: "18px" }}>{isOpen ? "▾" : "▸"}</span>
               </div>

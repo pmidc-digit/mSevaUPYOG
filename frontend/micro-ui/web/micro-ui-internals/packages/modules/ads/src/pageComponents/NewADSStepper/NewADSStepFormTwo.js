@@ -34,7 +34,7 @@ const NewADSStepFormTwo = ({ config, onBackClick, onGoNext }) => {
   return (
     <React.Fragment>
         <ADSCitizenSecond onGoBack={onGoBack} goNext={goNext} currentStepData={currentStepData} t={t} />
-      {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
+        {showToast && <Toast isDleteBtn={true} error={true} label={error} onClose={closeToast} />}
     </React.Fragment>
   );
 };

@@ -22,6 +22,7 @@ import ADSModal from "../../pageComponents/ADSModal";
 import get from "lodash/get";
 import { size } from "lodash";
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
+import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
 /*
  * ADSApplicationDetails includes hooks for data fetching, translation, and state management.
  * The component displays various application details, such as applicant information,
@@ -32,9 +33,7 @@ const ADSApplicationDetails = () => {
   const { t } = useTranslation();
   const history = useHistory();
   const { acknowledgementIds, tenantId } = useParams();
-  const [acknowldgementData, setAcknowldgementData] = useState([]);
   const [showOptions, setShowOptions] = useState(false);
-  const [popup, setpopup] = useState(false);
   const [showToast, setShowToast] = useState(null);
 
   // removed businessServiceData & businessLoading (we now use workflowDetails)
@@ -74,7 +73,6 @@ const ADSApplicationDetails = () => {
   });
   const mutation = Digit.Hooks.ads.useADSCreateAPI(tenantId, false);
 
-
   const BookingApplication = get(adsData, "bookingApplication", []);
   const adsId = get(adsData, "bookingApplication[0].bookingNo", []);
 
@@ -83,14 +81,12 @@ const ADSApplicationDetails = () => {
 
   sessionStorage.setItem("ads", JSON.stringify(application));
 
-
   const businessServicMINE = "advandhoarding";
   const workflowDetails = Digit.Hooks.useWorkflowDetails({
     tenantId,
     id: acknowledgementIds,
     moduleCode: businessServicMINE,
   });
-
 
   const wfActions =
     workflowDetails?.data?.nextActions?.map((a) => ({
@@ -216,7 +212,6 @@ const ADSApplicationDetails = () => {
     const filtData = dataPayload?.Licenses?.[0] || dataPayload;
     const normalizedAssignee = normalizeAssignees(filtData?.assignee || filtData?.assignees || filtData?.assigneeUuid);
 
-
     if (!filtData || !filtData.action) {
       setShowToast({ key: "error", message: "No workflow action provided" });
       setActionError("No workflow action provided");
@@ -312,7 +307,8 @@ const ADSApplicationDetails = () => {
 
   const columns = [
     { Header: `${t("ADS_TYPE")}`, accessor: "addType" },
-    { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
+    // { Header: `${t("ADS_FACE_AREA")}`, accessor: "faceArea" },
+    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
     { Header: `${t("ADS_NIGHT_LIGHT")}`, accessor: "nightLight" },
     { Header: `${t("CHB_BOOKING_DATE")}`, accessor: "bookingDate" },
     { Header: `${t("PT_COMMON_TABLE_COL_STATUS_LABEL")}`, accessor: "bookingStatus" },
@@ -325,6 +321,7 @@ const ADSApplicationDetails = () => {
       bookingDate: `${t(slot.bookingDate)}`,
       bookingStatus: `${t(slot.status)}`,
     })) || [];
+
   return (
     <React.Fragment>
       <div>
@@ -387,8 +384,8 @@ const ADSApplicationDetails = () => {
               <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
                 {docs.map((doc, index) => (
                   <div key={index}>
-                    {t(doc?.documentType)}
                     <ADSDocument value={docs} Code={doc?.documentType} index={index} />
+                    {t(doc?.documentType)}
                   </div>
                 ))}
               </div>

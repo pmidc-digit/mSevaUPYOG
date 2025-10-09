@@ -297,9 +297,9 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
     <React.Fragment>
       <div>
         <Header>{t("ADS_SEARCH_BOOKINGS")}</Header>
-        <Card className={"card-search-heading"}>
+        {/* <Card className={"card-search-heading"}>
           <span style={{ color: "#505A5F" }}>{t("Provide at least one parameter to search for an application")}</span>
-        </Card>
+        </Card> */}
         <SearchForm onSubmit={onSubmit} handleSubmit={handleSubmit}>
           <SearchField>
             <label>{t("ADS_BOOKING_NO")}</label>
@@ -371,7 +371,7 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
             <CardLabelError>{formState?.errors?.["mobileNumber"]?.message}</CardLabelError>
           </SearchField>
           <SearchField>
-            <label>{t("FROM_DATE")}</label>
+            <label>{t("EVENTS_FROM_DATE_LABEL")}</label>
             <Controller
               render={(props) => (
                 <DatePicker date={props.value} disabled={false} onChange={props.onChange} max={new Date().toISOString().split("T")[0]} />
@@ -381,7 +381,7 @@ const ADSSearchApplication = ({ tenantId, isLoading, t, onSubmit, data, count, s
             />
           </SearchField>
           <SearchField>
-            <label>{t("TO_DATE")}</label>
+            <label>{t("EVENTS_TO_DATE_LABEL")}</label>
             <Controller
               render={(props) => <DatePicker date={props.value} disabled={false} onChange={props.onChange} />}
               name="toDate"

@@ -7,9 +7,9 @@ import CartModal from "./ADSCartModal";
 import AdCard from "./ADSAdCard";
 import { UPDATE_ADSNewApplication_FORM } from "../redux/action/ADSNewApplicationActions";
 import { useDispatch } from "react-redux";
+import { getScheduleMessage, validateSchedule } from "../utils";
 
 const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
-  const stateId = Digit.ULBService.getStateId();
   const isCitizen = typeof window !== "undefined" && window.location?.href?.includes("citizen");
   const tenantId = isCitizen ? window.localStorage.getItem("CITIZEN.CITY") : window.localStorage.getItem("Employee.tenant-id");
   const [adsForLocation, setAdsForLocation] = useState([]);
@@ -19,8 +19,9 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   const [showCart, setShowCart] = useState(false);
   const [selectedAd, setSelectedAd] = useState(null);
   const [dateRange, setDateRange] = useState({ startDate: "", endDate: "" });
-  const { data: mdmsAds = [] } = Digit.Hooks.ads.useADSAllMDMS(stateId);
-  const { data: location = [] } = Digit.Hooks.ads.useADSLocationMDMS(stateId);
+  const { data: mdmsAds = [] } = Digit.Hooks.ads.useADSAllMDMS(tenantId);
+  const { data: location = [] } = Digit.Hooks.ads.useADSLocationMDMS(tenantId);
+  const { data: scheduleType = [] } = Digit.Hooks.ads.useADSScheduleTypeMDMS(tenantId);
   const [cartSlots, setCartSlots] = useState([]);
   const dispatch = useDispatch();
 
@@ -78,28 +79,6 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     }
   };
 
-  const validateSchedule = ({ startDate, startTime, endDate, endTime }) => {
-    if (!startDate || !startTime || !endDate || !endTime) {
-      return "Start and end date/time are required.";
-    }
-
-    const now = new Date();
-    const s = new Date(`${startDate}T${startTime}`);
-    const e = new Date(`${endDate}T${endTime}`);
-
-    if (s < now) {
-      return "Start date/time cannot be in the past.";
-    }
-
-    if (e <= s) {
-      return "End date/time must be later than start date/time.";
-    }
-
-    return null;
-  };
-
-  const showMore = () => setVisibleCount((v) => v + 6);
-
   const areCartSlotsEqual = (a = [], b = []) => {
     if (a.length !== b.length) return false;
 
@@ -123,14 +102,14 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   };
 
   const onSubmit = async (data) => {
-    if (cartSlots.length === 0) {
+    if (cartSlots?.length === 0) {
       setShowToast({ label: t("ADS_ONE_AD_ATLEAST"), error: true });
       return;
     }
 
     // Only check if Redux has ads
     if (currentStepData?.ads?.length > 0) {
-      const unchanged = areCartSlotsEqual(cartSlots, currentStepData.ads);
+      const unchanged = areCartSlotsEqual(cartSlots, currentStepData?.ads);
       if (unchanged) {
         goNext(cartSlots);
         return;
@@ -150,9 +129,10 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     try {
       const response = await Digit.ADSServices.slot_search(payload, tenantId);
       if (response) {
-        // set 30‑minute expiry timestamp in Redux using existing action
-        const expiry = Date.now() + 30 * 60 * 1000;
-        dispatch(UPDATE_ADSNewApplication_FORM("reservationExpiry", expiry));
+        // ✅ Store creation time
+        const createTime = Date.now();
+        dispatch(UPDATE_ADSNewApplication_FORM("reservationExpiry", createTime));
+
         goNext(cartSlots);
       } else {
         setShowToast({ label: t("COMMON_SOMETHING_WENT_WRONG_LABEL"), error: true });
@@ -181,7 +161,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
   }, [showToast]);
 
   const handleViewAvailability = (ad, { startDate, endDate, startTime, endTime }) => {
-    const err = validateSchedule({ startDate, endDate, startTime, endTime });
+    const err = validateSchedule({ startDate, endDate, startTime, endTime, scheduleType });
     if (err) {
       setShowToast({ label: err, error: true });
       return;
@@ -193,70 +173,41 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
     setShowModal(true);
   };
 
+  const handleRemoveFromCart = (ad) => {
+    setCartSlots((prev) => prev.filter((item) => item.ad.id !== ad.id));
+    setShowToast({ label: `Removed all slots for ${ad.name}`, error: true });
+  };
+
   const handleAddToCart = (slots, ad) => {
     setCartSlots((prev) => {
+      const enrichedSlots = slots.map((s) => ({
+        ...s,
+        bookingStartDate: s?.bookingDate,
+        bookingEndDate: dateRange?.endDate,
+        bookingFromTime: dateRange?.startTime,
+        bookingToTime: dateRange?.endTime,
+      }));
+
       const existing = prev.find((item) => item.ad.id === ad.id);
+
       let updated;
-
       if (existing) {
-        let updatedSlots = existing.slots;
-
-        slots.forEach((slot) => {
-          if (slot._remove) {
-            updatedSlots = updatedSlots.filter((s) => s.bookingDate !== slot.bookingDate);
-            setShowToast({ label: `Removed slot ${slot.bookingDate} from ${ad.name}`, error: true });
-          } else if (!updatedSlots.some((s) => s.bookingDate === slot.bookingDate)) {
-            // 👇 enrich slot with bookingStartDate and bookingEndDate
-            const enrichedSlot = {
-              ...slot,
-              bookingStartDate: slot?.bookingDate,
-              bookingEndDate: dateRange?.endDate,
-              bookingFromTime: dateRange?.startTime,
-              bookingToTime: dateRange?.endTime,
-            };
-            updatedSlots = [...updatedSlots, enrichedSlot];
-            setShowToast({ label: `Added slot ${slot.bookingDate} to ${ad.name}`, error: false });
-          }
+        // Replace slots for this ad
+        updated = prev.map((item) => (item.ad.id === ad.id ? { ...item, slots: enrichedSlots } : item));
+        setShowToast({
+          label: `Updated ${enrichedSlots.length} slot(s) for ${ad.name}`,
+          error: false,
         });
-
-        updated = prev.map((item) => (item.ad.id === ad.id ? { ...item, slots: updatedSlots } : item));
       } else {
-        const addSlots = slots
-          .filter((s) => !s._remove)
-          .map((s) => ({
-            ...s,
-            bookingStartDate: s?.bookingDate,
-            bookingEndDate: dateRange?.endDate,
-            bookingFromTime: dateRange?.startTime,
-            bookingToTime: dateRange?.endTime,
-          }));
-
-        if (addSlots.length > 0) {
-          setShowToast({ label: `Added ${addSlots.length} slot(s) to ${ad.name}`, error: false });
-          updated = [...prev, { ad, slots: addSlots }];
-        } else {
-          updated = prev;
-        }
+        // Add new ad entry
+        updated = [...prev, { ad, slots: enrichedSlots }];
+        setShowToast({
+          label: `Added ${enrichedSlots.length} slot(s) to ${ad.name}`,
+          error: false,
+        });
       }
       return updated;
     });
-  };
-
-  const handleRemoveFromCart = (ad, slotToRemove) => {
-    setCartSlots((prev) =>
-      prev
-        .map((item) =>
-          item.ad.id === ad.id
-            ? {
-                ...item,
-                slots: item.slots.filter((s) => s.bookingDate !== slotToRemove.bookingDate),
-              }
-            : item
-        )
-        .filter((item) => item.slots.length > 0)
-    );
-
-    setShowToast({ label: `Removed slot ${slotToRemove.bookingDate} from ${ad.name}`, error: true });
   };
 
   useEffect(() => {
@@ -264,7 +215,7 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
       setCartSlots(currentStepData.ads);
 
       const locationCode = currentStepData.ads[0]?.ad?.locationCode;
-      const matchedOption = locationOptions.find((opt) => opt.code === locationCode);
+      const matchedOption = locationOptions?.find((opt) => opt.code === locationCode);
 
       if (matchedOption) {
         setValue("siteId", matchedOption); // 👈 set full object, not just name
@@ -287,6 +238,8 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
 
   const errorStyle = { marginTop: "-18px", color: "red" };
   const mandatoryStyle = { color: "red" };
+
+  const guidance = getScheduleMessage(scheduleType, t);
 
   return (
     <React.Fragment>
@@ -317,6 +270,9 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
           <div>
             <style>
               {`
+               .form-field{
+               width:100% !important
+               }
                .select-wrap{
         width:100% !important;
         }
@@ -353,36 +309,62 @@ const ADSCitizenSecond = ({ onGoBack, goNext, currentStepData, t }) => {
         </LabelFieldPair>
         {errors.siteId && <CardLabelError style={errorStyle}>{errors.siteId.message}</CardLabelError>}
 
+        {guidance && adsForLocation?.length > 0 && (
+          <div
+            style={{
+              background: "#fff3cd",
+              border: "1px solid #ffeeba",
+              color: "#856404",
+              padding: "6px 10px",
+              borderRadius: "6px",
+              fontSize: "14px",
+              marginBottom: "8px",
+              width: "100%",
+              maxWidth: "545px",
+            }}
+          >
+            ⚠️ {guidance}
+          </div>
+        )}
         {/* Cards grid with see more */}
         {adsForLocation?.length > 0 && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 12, margin: "12px" }}>
-            {adsForLocation.slice(0, visibleCount).map((ad, idx) => {
-              return (
-                <AdCard
-                  key={ad.id ?? idx}
-                  ad={ad}
-                  idx={idx}
-                  control={control}
-                  watch={watch}
-                  cartSlots={cartSlots}
-                  onViewAvailability={handleViewAvailability}
-                  openCart={() => setShowCart(true)}
-                  t={t}
-                />
-              );
-            })}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+            {adsForLocation?.slice(0, visibleCount)?.map((ad, idx) => (
+              <AdCard
+                key={ad.id || idx}
+                ad={ad}
+                idx={idx}
+                control={control}
+                watch={watch}
+                cartSlots={cartSlots}
+                onViewAvailability={handleViewAvailability}
+                openCart={() => setShowCart(true)}
+                t={t}
+                scheduleType={scheduleType}
+              />
+            ))}
           </div>
         )}
 
-        {visibleCount < adsForLocation.length && (
-          <div style={{ marginTop: 12, textAlign: "center" }}>
-            <button
-              type="button"
-              onClick={showMore}
-              style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
-            >
-              {t("ADS_SHOW_MORE")}
-            </button>
+        {adsForLocation?.length > 6 && (
+          <div style={{ textAlign: "center", marginTop: "1rem" }}>
+            {visibleCount < adsForLocation.length ? (
+              <button
+                type="button"
+                style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
+                onClick={() => setVisibleCount((v) => v + 6)}
+              >
+                {t("ADS_SHOW_MORE")}
+              </button>
+            ) : (
+              <button
+                type="button"
+                style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid #ccc", background: "#fff", cursor: "pointer" }}
+                onClick={() => setVisibleCount(6)}
+              >
+                {t("SHOW_LESS")}
+              </button>
+            )}
           </div>
         )}
 

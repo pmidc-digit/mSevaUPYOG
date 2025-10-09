@@ -22,6 +22,7 @@ import _ from "lodash";
 import ApplicationDetailsTemplate from "../../../../templates/ApplicationDetails"; // adjust path if needed
 import ADSWFApplicationTimeline from "../../pageComponents/ADSWFApplicationTimeline";
 import { pdfDownloadLink } from "../../utils";
+import ReservationTimer from "../../pageComponents/ADSReservationsTimer";
 
 const ApplicationDetails = () => {
   const { id } = useParams();
@@ -247,6 +248,7 @@ const ApplicationDetails = () => {
         bookingStatus: adsObject?.bookingStatus,
         paymentDate: adsObject?.paymentDate ? new Date(adsObject.paymentDate).toLocaleDateString() : "",
         receiptNo: adsObject?.receiptNo,
+        auditDetails: adsObject?.auditDetails,
       };
 
       const Documents = removeDuplicatesByUUID(adsObject?.documents || []);
@@ -462,6 +464,8 @@ const ApplicationDetails = () => {
     });
   }
 
+  const [expired, setExpired] = useState(false);
+
   if (isLoading || isDetailsLoading) {
     return <Loader />;
   }
@@ -492,6 +496,15 @@ const ApplicationDetails = () => {
 
       {/* Existing cards and document rendering (preserved from your new file) */}
       <Card>
+        {displayData?.applicantData?.auditDetails?.createdTime && displayData?.applicantData?.bookingStatus === "PENDING_FOR_PAYMENT" && (
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <ReservationTimer
+              t={t}
+              createTime={displayData?.applicantData?.auditDetails?.createdTime} // supply when reservation created
+              onExpire={(val) => setExpired(val)}
+            />
+          </div>
+        )}
         <CardSubHeader>{t("ADS_APPLICATION_DETAILS_OVERVIEW")}</CardSubHeader>
         <StatusTable>
           {displayData?.applicantData &&
@@ -504,6 +517,8 @@ const ApplicationDetails = () => {
                 if (typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0) return false;
                 return true;
               })
+              // 🚫 filter out unwanted keys
+              .filter(([key]) => !["auditDetails", "paymentDate"].includes(key))
               .map(([key, value]) => (
                 <Row
                   key={key}
@@ -526,8 +541,10 @@ const ApplicationDetails = () => {
           <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
             <StatusTable>
               <Row label={t("ADS_AD_TYPE")} text={t(detail.adType) || detail.adType} />
-              <Row label={t("ADS_LOCATION")} text={detail.location || "N/A"} />
-              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} />
+              {/* <Row label={t("ADS_LOCATION")} text={detail.location || "N/A"} />
+              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea || "N/A"} /> */}
+              <Row label={t("ADS_LOCATION")} text={detail.location ? t(detail.location) : "N/A"} />
+              <Row label={t("ADS_FACE_AREA")} text={detail.faceArea ? t(detail.faceArea.replaceAll("_", " ")) : "N/A"} />
               <Row label={t("CHB_BOOKING_DATE")} text={detail.bookingDate || "N/A"} />
               {/* <Row label={t("ADS_BOOKING_TIME")} text={detail.bookingTime || "N/A"} /> */}
               <Row label={t("ADS_NIGHT_LIGHT")} text={detail.nightLight ? "Yes" : "No"} />
@@ -544,8 +561,8 @@ const ApplicationDetails = () => {
             <div style={{ display: "flex", flexWrap: "wrap", gap: "30px" }}>
               {application?.documents.map((doc, idx) => (
                 <div key={idx}>
-                  {t(doc?.documentType)}
                   <ADSDocument value={application?.documents} Code={doc?.documentType} index={idx} />
+                  {t(doc?.documentType)}
                 </div>
               ))}
             </div>
@@ -582,7 +599,12 @@ const ApplicationDetails = () => {
               }}
             />
           )}
-          <SubmitBar ref={menuRef} label={t("WF_TAKE_ACTION")} onSubmit={() => setDisplayMenu(!displayMenu)} />
+          <SubmitBar
+            ref={menuRef}
+            label={t("WF_TAKE_ACTION")}
+            onSubmit={() => setDisplayMenu(!displayMenu)}
+            disabled={expired || displayData?.applicantData?.bookingStatus === "BOOKING_CREATED"}
+          />
         </ActionBar>
       )}
 

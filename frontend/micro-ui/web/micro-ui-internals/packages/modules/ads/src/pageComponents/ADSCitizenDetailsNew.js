@@ -50,11 +50,9 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
   // Prefill from Redux state
   if (typeof window !== "undefined") window.__ADS_FORM_DRAFT = window.__ADS_FORM_DRAFT || {};
 
-
-  console.log('currentStepData', currentStepData)
   useEffect(() => {
     if (currentStepData?.CreatedResponse) {
-      const created = currentStepData.CreatedResponse;
+      const created = currentStepData?.CreatedResponse;
 
       // If address info is stored in CreatedResponse
       if (created?.address) {
@@ -86,7 +84,6 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     }
   }, []); // run once on mount
 
-
   // Auto close toast after 2 seconds
 
   const onSubmit = async (data) => {
@@ -112,8 +109,8 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
       bookingStatus: "BOOKING_CREATED",
       businessService: "ADV",
       address: {
-        pincode: data.pincode || "",
-        addressLine1: data.address || "",
+        pincode: data?.pincode || "",
+        addressLine1: data?.address || "",
       },
       applicantDetail: {
         applicantName: `${data.firstName || ""} ${data.lastName || ""}`.trim(),
@@ -169,7 +166,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
         );
         setShowToast({
           key: true,
-          label:t("CORE_SOMETHING_WENT_WRONG"),
+          label: t("CORE_SOMETHING_WENT_WRONG"),
         });
       }
     } catch (err) {
@@ -187,35 +184,11 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
     }
   }, [showToast]);
 
-  // const watchedAll = useWatch({ control }); // watches entire form
-  // useEffect(() => {
-  //   const id = setTimeout(() => {
-  //     try {
-  //       // Light guard: avoid writing enormous drafts
-  //       const str = JSON.stringify(watchedAll);
-  //       if (str.length < 300 * 1024) {
-  //         // ~300KB threshold, tweak if needed
-  //         window.__ADS_FORM_DRAFT[formStorageKey] = watchedAll;
-  //       } else {
-  //         console.warn("[ADS] draft too large, skipping in-memory persist");
-  //       }
-
-  //       // OPTIONAL: if you want to survive hard reloads, uncomment:
-  //       // sessionStorage.setItem(formStorageKey, str);
-  //     } catch (e) {
-  //       console.warn("[ADS] failed to persist form to in-memory", e);
-  //     }
-  //   }, 250);
-
-  //   return () => clearTimeout(id);
-  // }, [watchedAll, formStorageKey]);
-
   const errorStyle = { marginTop: "-18px", color: "red" };
   const mandatoryStyle = { color: "red" };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      
       <div>
         <CardLabel>
           {t("NDC_FIRST_NAME")}
@@ -266,7 +239,7 @@ const ADSCitizenDetailsNew = ({ t, goNext, currentStepData, configKey, onGoBack,
           name="emailId"
           rules={{
             required: t("PTR_EMAIL_REQUIRED"),
-            pattern: { value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/, message: "Enter a valid email" },
+            pattern: { value: /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/, message: "Enter a valid email" },
           }}
           render={({ value, onChange, onBlur }) => <TextInput value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} t={t} />}
         />

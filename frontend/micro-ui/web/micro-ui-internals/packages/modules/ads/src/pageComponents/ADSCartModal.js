@@ -1,30 +1,36 @@
+
 import React, { useState } from "react";
 import { Table } from "@mseva/digit-ui-react-components";
 
 const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
   // Track which ads are expanded
   const [expanded, setExpanded] = useState(
-    () => cartSlots.map((item) => item.ad.id) // default: all open
+    () => cartSlots?.map((item) => item?.ad?.id) // default: all open
   );
 
   const toggleExpand = (adId) => {
-    setExpanded((prev) => (prev.includes(adId) ? prev.filter((id) => id !== adId) : [...prev, adId]));
+    setExpanded((prev) =>
+      prev?.includes(adId) ? prev?.filter((id) => id !== adId) : [...prev, adId]
+    );
   };
 
+  // Columns no longer include "Remove"
   const makeColumns = (ad) => [
     { Header: t("ADS_DATE"), accessor: "bookingDate" },
-    { Header: t("ADS_LOCATION"), accessor: "location" },
-    { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    // { Header: t("ADS_LOCATION"), accessor: "location" },
+    // { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    { Header: t("ADS_LOCATION"), accessor: "location", Cell: ({ value }) => t(value || "N/A") },
+        { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
     { Header: t("ADS_TYPE"), accessor: "addType" },
     {
       Header: t("ADS_NIGHT_LIGHT"),
-      accessor: (row) => (row.nightLight ? t("ADS_YES") : t("ADS_NO")),
+      accessor: (row) => (row?.nightLight ? t("ADS_YES") : t("ADS_NO")),
     },
     {
       Header: t("ADS_STATUS"),
       accessor: "slotStaus",
       Cell: ({ row }) => {
-        const status = row.original.slotStaus;
+        const status = row?.original?.slotStaus;
         const isAvailable = status === "AVAILABLE";
         return (
           <span
@@ -42,29 +48,6 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
           >
             {status}
           </span>
-        );
-      },
-    },
-    {
-      Header: t("ADS_REMOVE"),
-      accessor: "remove",
-      Cell: ({ row }) => {
-        const slot = row.original;
-        return (
-          <button
-            onClick={() => onRemoveSlot(ad, slot)}
-            style={{
-              padding: "4px 10px",
-              borderRadius: "6px",
-              border: "none",
-              background: "#dc3545",
-              color: "#fff",
-              cursor: "pointer",
-              fontSize: "12px",
-            }}
-          >
-            {t("ADS_DELETE")}
-          </button>
         );
       },
     },
@@ -109,7 +92,9 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
             paddingBottom: "8px",
           }}
         >
-          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#333" }}>{t("ADS_YOUR_CART")}</h2>
+          <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#333" }}>
+            {t("ADS_YOUR_CART")}
+          </h2>
           <button
             onClick={onClose}
             style={{
@@ -126,11 +111,11 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
 
         {/* Cart grouped by Ad */}
         <div style={{ flex: 1, overflowY: "auto" }}>
-          {cartSlots.length === 0 ? (
+          {cartSlots?.length === 0 ? (
             <p style={{ padding: "12px", color: "#666" }}>{t("ADS_NO_ITEMS_IN_CART")}</p>
           ) : (
-            cartSlots.map((item, idx) => {
-              const isOpen = expanded.includes(item.ad.id);
+            cartSlots?.map((item, idx) => {
+              const isOpen = expanded?.includes(item.ad.id);
               return (
                 <div
                   key={idx}
@@ -141,25 +126,43 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                     overflow: "hidden",
                   }}
                 >
-                  {/* Ad Header (clickable) */}
+                  {/* Ad Header (clickable + remove button) */}
                   <div
-                    onClick={() => toggleExpand(item.ad.id)}
                     style={{
                       background: "#f9f9f9",
                       padding: "10px 14px",
                       fontWeight: 600,
                       fontSize: "14px",
                       borderBottom: "1px solid #ddd",
-                      cursor: "pointer",
                       display: "flex",
                       justifyContent: "space-between",
                       alignItems: "center",
                     }}
                   >
-                    <span>
-                      {item.ad.name} — ₹{item.ad.amount * item?.slots?.length}
-                    </span>
-                    <span style={{ fontSize: "18px" }}>{isOpen ? "▾" : "▸"}</span>
+                    <div
+                      onClick={() => toggleExpand(item?.ad?.id)}
+                      style={{ cursor: "pointer", flex: 1 }}
+                    >
+                      {item?.ad?.name} — ₹{item?.ad?.amount * item?.slots?.length}
+                      <span style={{ fontSize: "18px", marginLeft: "8px" }}>
+                        {isOpen ? "▾" : "▸"}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => onRemoveSlot(item?.ad)}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: "6px",
+                        border: "none",
+                        background: "#dc3545",
+                        color: "#fff",
+                        cursor: "pointer",
+                        fontSize: "12px",
+                        marginLeft: "10px",
+                      }}
+                    >
+                      {t("ADS_REMOVE")}
+                    </button>
                   </div>
 
                   {/* Slots Table (collapsible) */}
@@ -168,7 +171,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                       <Table
                         t={t}
                         data={item.slots}
-                        columns={makeColumns(item.ad)}
+                        columns={makeColumns(item?.ad)}
                         disableSort={true}
                         isPaginationRequired={false}
                         getCellProps={(cell) => ({
@@ -177,7 +180,7 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
                             fontSize: "14px",
                             borderBottom: "1px solid #f0f0f0",
                             textAlign: "left",
-                            whiteSpace: "nowrap", // prevent wrapping
+                            whiteSpace: "nowrap",
                           },
                         })}
                       />
@@ -194,3 +197,4 @@ const CartModal = ({ cartSlots, onClose, onRemoveSlot, t }) => {
 };
 
 export default CartModal;
+

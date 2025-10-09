@@ -3,6 +3,7 @@ import { Table } from "@mseva/digit-ui-react-components";
 
 const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, cartSlots }) => {
   const [selectedSlots, setSelectedSlots] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   // Build payload for API
   const slotPayload = useMemo(
@@ -11,12 +12,12 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         {
           advertisementId: ad?.id,
           bookingId: "",
-          addType: ad.adType,
+          addType: ad?.adType,
           bookingStartDate: dateRange?.startDate,
           bookingEndDate: dateRange?.endDate,
           faceArea: `${ad?.adType}_${ad?.width}_X_${ad?.height}`,
           tenantId,
-          location: ad.locationCode,
+          location: ad?.locationCode,
           nightLight: ad?.light === "With Light" ? "true" : "false",
           isTimerRequired: false,
         },
@@ -34,25 +35,33 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   const slots = slotResults?.advertisementSlotAvailabiltityDetails || [];
 
   // Already in cart for this ad
-  const existingForAd = cartSlots.find((item) => item.ad.id === ad.id)?.slots || [];
+  const existingForAd = cartSlots?.find((item) => item?.ad?.id === ad?.id)?.slots || [];
 
-  // Handle checkbox toggle
-  const handleCheckboxChange = (slot, checked) => {
+  // Header note: all booked
+  const allBooked = slots?.length > 0 && slots?.every((s) => s?.slotStaus !== "AVAILABLE");
+  // Find slots already in cart for this ad
+
+  // All available slots for this ad/date range
+  const allAvailableSlots = slots?.filter((s) => s?.slotStaus === "AVAILABLE");
+
+  // True if every available slot is already in the cart
+  const allInCart =
+    allAvailableSlots?.length > 0 && allAvailableSlots?.every((slot) => existingForAd?.some((s) => s?.bookingDate === slot?.bookingDate));
+
+  // Handle select all toggle
+  const handleSelectAll = (checked) => {
+    setSelectAll(checked);
     if (checked) {
-      // add to local selection
-      setSelectedSlots((prev) => [
-        ...prev.filter((s) => s.bookingDate !== slot.bookingDate), // remove any _remove
-        slot,
-      ]);
+      const allAvailable = slots?.filter((s) => s?.slotStaus === "AVAILABLE");
+      setSelectedSlots(allAvailable);
     } else {
-      // mark as removal
-      setSelectedSlots((prev) => [...prev.filter((s) => s.bookingDate !== slot.bookingDate), { ...slot, _remove: true }]);
+      setSelectedSlots([]);
     }
   };
 
   // Commit changes to parent
   const handleAddToCart = () => {
-    if (selectedSlots.length > 0) {
+    if (selectedSlots?.length > 0) {
       onSelectSlot(selectedSlots, {
         ...ad,
         faceArea: `${ad?.adType}_${ad?.width}_X_${ad?.height}`,
@@ -64,6 +73,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         bookingEndDate: dateRange?.endDate,
       });
       setSelectedSlots([]);
+      setSelectAll(false);
       onClose();
     }
   };
@@ -71,23 +81,31 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
   // Table columns
   const columns = [
     {
-      Header: t("ADS_SELECT"),
+      Header: () => (
+        <input
+          type="checkbox"
+          checked={allInCart || selectAll}
+          // checked={selectAll}
+          onChange={(e) => handleSelectAll(e.target.checked)}
+          style={{
+            cursor: "pointer",
+            width: "18px",
+            height: "18px",
+            accentColor: "#0b74de",
+          }}
+        />
+      ),
       accessor: "select",
       Cell: ({ row }) => {
-        const slot = row.original;
-        const isInCart = existingForAd.some((s) => s.bookingDate === slot.bookingDate);
-        const isChecked =
-          (isInCart && !selectedSlots.some((s) => s.bookingDate === slot.bookingDate && s._remove)) ||
-          selectedSlots.some((s) => s.bookingDate === slot.bookingDate && !s._remove);
-
+        const slot = row?.original;
+        const isChecked = allInCart || (selectAll && slot?.slotStaus === "AVAILABLE");
         return (
           <input
             type="checkbox"
             checked={isChecked}
-            disabled={slot.slotStaus !== "AVAILABLE"}
-            onChange={(e) => handleCheckboxChange(slot, e.target.checked)}
+            disabled={true} // always disabled
             style={{
-              cursor: slot.slotStaus === "AVAILABLE" ? "pointer" : "not-allowed",
+              cursor: "not-allowed",
               width: "18px",
               height: "18px",
               accentColor: "#0b74de",
@@ -97,8 +115,11 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       },
     },
     { Header: t("ADS_DATE"), accessor: "bookingDate" },
-    { Header: t("ADS_LOCATION"), accessor: "location" },
-    { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    // { Header: t("ADS_LOCATION"), accessor: "location" },
+    // { Header: t("ADS_FACE_AREA"), accessor: "faceArea" },
+    { Header: t("ADS_LOCATION"), accessor: "location", Cell: ({ value }) => t(value || "N/A") },
+    { Header: t("ADS_FACE_AREA"), accessor: "faceArea", Cell: ({ value }) => t(value?.replaceAll("_", " ") || "N/A") },
+
     { Header: t("ADS_TYPE"), accessor: "addType" },
     {
       Header: t("ADS_NIGHT_LIGHT"),
@@ -108,7 +129,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
       Header: t("ADS_STATUS"),
       accessor: "slotStaus",
       Cell: ({ row }) => {
-        const status = row.original.slotStaus;
+        const status = row?.original?.slotStaus;
         const isAvailable = status === "AVAILABLE";
         return (
           <span
@@ -131,14 +152,11 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
     },
   ];
 
-  // Header note: all booked
-  const allBooked = slots.length > 0 && slots.every((s) => s.slotStaus !== "AVAILABLE");
-
   return (
     <div
       style={{
         position: "fixed",
-        top: "70px", // below navbar
+        top: "70px",
         left: 0,
         width: "100vw",
         height: "calc(100vh - 70px)",
@@ -202,7 +220,7 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
         >
           {isLoading ? (
             <div style={{ fontSize: "24px", color: "#555", textAlign: "center" }}>{t("ADS_LOADING_SLOTS")}</div>
-          ) : slots.length === 0 ? (
+          ) : slots?.length === 0 ? (
             <div style={{ fontSize: "24px", color: "#555", textAlign: "center" }}>{t("ADS_NO_SLOTS_AVAILABLE")}</div>
           ) : (
             <Table
@@ -247,15 +265,15 @@ const AvailabilityModal = ({ ad, tenantId, onClose, onSelectSlot, dateRange, t, 
           </button>
           <button
             onClick={handleAddToCart}
-            disabled={selectedSlots.length === 0}
+            disabled={selectedSlots?.length === 0}
             style={{
               padding: "10px 18px",
               borderRadius: "6px",
               border: "none",
-              background: selectedSlots.length > 0 ? "#2947a3" : "#ccc",
+              background: selectedSlots?.length > 0 ? "#2947a3" : "#ccc",
               color: "#fff",
               fontWeight: 600,
-              cursor: selectedSlots.length > 0 ? "pointer" : "not-allowed",
+              cursor: selectedSlots?.length > 0 ? "pointer" : "not-allowed",
               transition: "background 0.2s",
             }}
           >

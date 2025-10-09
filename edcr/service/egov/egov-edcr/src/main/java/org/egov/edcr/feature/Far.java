@@ -1752,8 +1752,8 @@ public class Far extends FeatureProcess {
 	}
 	
 	private void getFarDetailsFromMDMS(Plan pl, String occType, String typeOfArea, OccupancyTypeHelper occupancyType) {
-	    //Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
-	    //if (Boolean.TRUE.equals(mdmsEnabled)) {
+	    Boolean mdmsEnabled = mdmsConfiguration.getMdmsEnabled();
+	    if (Boolean.TRUE.equals(mdmsEnabled)) {
 	        try {
 	            BigDecimal plotArea = pl.getPlot().getArea() != null ? pl.getPlot().getArea() : BigDecimal.ZERO;
 	            Object mdmsData = bpaMdmsUtil.mDMSCall(new RequestInfo(), pl.getEdcrRequest(), occType, plotArea);
@@ -1822,6 +1822,7 @@ public class Far extends FeatureProcess {
 	                                    typeOfArea, regularPermissableFar, isAccepted);
 
 	                        } else {
+	                        	LOG.info("Purchasable FAR is false, processing as normal Rules");
 	                            // If purchasable FAR is not enabled
 	                            boolean isAccepted = (providedFar <= regularPermissableFar);
 	                            pl.getFarDetails().setPermissableFar(regularPermissableFar);
@@ -1832,9 +1833,7 @@ public class Far extends FeatureProcess {
 
 	                            buildResult1(pl, occupancyType.getType().getName(), providedFar, purchasableFar,
 	                                    typeOfArea, regularPermissableFar, isAccepted);
-	                        }
-
-	                        
+	                        }	                        
 	                        
 	                    } else {
 	                        LOG.info("No matching MasterPlan record found for OccupancyType=" 
@@ -1847,7 +1846,9 @@ public class Far extends FeatureProcess {
 	        } catch (Exception e) {
 	            LOG.error("Error while fetching FAR details from MDMS", e);
 	        }
-	    //}
+	    }else {
+	    	LOG.info("MDSM enable property is : False , Skipping FAR calculation by MDMS.");
+	    }
 	}
 
 	

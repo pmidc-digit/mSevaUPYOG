@@ -236,6 +236,7 @@ public class RestEdcrApplicationController {
                 enrichUser.setUuid(userInfoReq.getUuid());
                 enrichUser.setMobile(userInfoReq.getMobile());
                 enrichUser.setTenantId(userInfoReq.getTenantId());
+                enrichUser.setRoles(userInfoReq.getRoles());
                 edcr.getRequestInfo().setUserInfo(enrichUser);
             }
             ErrorDetail edcRes = edcrValidator.validate(edcr);

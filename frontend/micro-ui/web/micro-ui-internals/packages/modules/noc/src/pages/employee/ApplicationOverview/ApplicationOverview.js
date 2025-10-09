@@ -24,6 +24,7 @@ import { useTranslation } from "react-i18next";
 import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
 import NOCModal from "../../../pageComponents/NOCModal";
+import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -429,7 +430,7 @@ const getFloorLabel = (index) => {
             ))}
     </Card>
 
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <div style={{ display: "flex", gap: "16px" }}>
           {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
@@ -438,6 +439,29 @@ const getFloorLabel = (index) => {
             <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
           )}
         </div>
+      </Card> */}
+
+      <Card>
+        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+         <StatusTable>
+          {displayData?.Documents?.length >0 && 
+           <NOCDocumentTableView documents={displayData.Documents}/>
+          }
+         </StatusTable>
+      </Card>
+
+      <Card>
+       <CardSubHeader>{t("NOC_SITE_COORDINATES_LABEL")}</CardSubHeader>
+          {displayData?.coordinates?.map((detail, index) => (
+            <div key={index} style={{ marginBottom: "30px", background: "#FAFAFA", padding: "16px", borderRadius: "4px" }}>
+              <StatusTable>
+                <Row label={t("COMMON_LATITUDE1_LABEL")} text={detail?.Latitude1 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE1_LABEL")} text={detail?.Longitude1 || "N/A"} />
+                <Row label={t("COMMON_LATITUDE2_LABEL")} text={detail?.Latitude2 || "N/A"} />
+                <Row label={t("COMMON_LONGITUDE2_LABEL")} text={detail?.Longitude2 || "N/A"} />
+                </StatusTable>
+              </div>
+            ))}
       </Card>
 
       {workflowDetails?.data?.timeline && (

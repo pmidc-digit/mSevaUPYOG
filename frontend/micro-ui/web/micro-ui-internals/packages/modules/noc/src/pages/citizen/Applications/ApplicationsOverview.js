@@ -24,6 +24,7 @@ import { useParams, useHistory } from "react-router-dom";
 import NOCDocument from "../../../pageComponents/NOCDocument";
 import { getNOCAcknowledgementData } from "../../../utils/getNOCAcknowledgementData";
 import NOCModal from "../../../pageComponents/NOCModal";
+import NOCDocumentTableView from "../../../pageComponents/NOCDocumentTableView";
 
 const getTimelineCaptions = (checkpoint, index, arr, t) => {
   console.log("checkpoint here", checkpoint);
@@ -141,8 +142,9 @@ const CitizenApplicationOverview = () => {
 
     const acknowledgementData = await getNOCAcknowledgementData(Property, tenantInfo, t);
 
-    console.log("acknowledgementData", acknowledgementData);
-    Digit.Utils.pdf.generate(acknowledgementData);
+    //console.log("acknowledgementData", acknowledgementData);
+    //Digit.Utils.pdf.generate(acknowledgementData);
+    Digit.Utils.pdf.generateBPAREG(acknowledgementData);
 
   };
 
@@ -428,7 +430,7 @@ const getFloorLabel = (index) => {
         ))}
       </Card>
 
-      <Card>
+      {/* <Card>
         <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
         <div style={{ display: "flex", gap: "16px" }}>
           {Array.isArray(displayData?.Documents) && displayData?.Documents?.length > 0 ? (
@@ -437,6 +439,15 @@ const getFloorLabel = (index) => {
             <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
           )}
         </div>
+      </Card> */}
+      
+      <Card>
+        <CardSubHeader>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</CardSubHeader>
+         <StatusTable>
+          {displayData?.Documents?.length >0 && 
+           <NOCDocumentTableView documents={displayData.Documents}/>
+          }
+         </StatusTable>
       </Card>
 
       {workflowDetails?.data?.timeline && (

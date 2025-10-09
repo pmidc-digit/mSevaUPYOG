@@ -1,5 +1,6 @@
 import React from "react";
 import {pdfDownloadLink, pdfDocumentName} from "./index"
+import {Loader} from "@mseva/digit-ui-react-components";
 
 const capitalize = (text) => text.substr(0, 1).toUpperCase() + text.substr(1);
 const ulbCamel = (ulb) => ulb.toLowerCase().split(" ").map(capitalize).join(" ");
@@ -19,6 +20,24 @@ const getFloorLabel = (index, t) => {
   }
 
   return `${floorNumber}${suffix} ${t("NOC_FLOOR_AREA_LABEL")}`;
+};
+
+const getRegistrationDetails = (appData, t) => {
+  let values = [
+    {
+      title: t("CS_APPLICATION_NUMBER"),
+      value: appData?.applicationNo || "N/A",
+    },
+    {
+      title: t("REGISTRATION_FILED_DATE"),
+      value: Digit.DateUtils.ConvertTimestampToDate(appData?.auditDetails?.createdTime, "dd/MM/yyyy") || "NA"
+    },
+  ];
+
+  return {
+    title: t("CS_APPLICATION_DETAILS"),
+    values: values,
+  };
 };
 
 const getProfessionalDetails = (appData, t) => {
@@ -285,7 +304,7 @@ const getDocuments = async (appData, t) => {
         ? appData.documents.map((document, index) => {
             let documentLink = pdfDownloadLink(res?.data, document?.uuid);
             //   let documentName= pdfDocumentName(documentLink, index)
-            console.log("doc link", documentLink);
+           // console.log("doc link", documentLink);
 
             return {
               title: t(document?.documentType || t("CS_NA")),
@@ -299,31 +318,43 @@ const getDocuments = async (appData, t) => {
   };
 };
 
+
 export const getNOCAcknowledgementData = async (applicationDetails, tenantInfo, t) => {
-
+  const stateCode = Digit.ULBService.getStateId();
   const appData=applicationDetails || {};
-  console.log("appData here in DownloadACK", appData);
+  //console.log("appData here in DownloadACK", appData);
 
-  let detailsArr=[];
+  let detailsArr=[], imageURL="";
+  const ownerObj=appData?.documents?.find((doc)=> doc?.documentType === "OWNER.OWNERPHOTO") || null;
+  const ownerFileStoreId= ownerObj?.documentAttachment || "";
 
+   const result = await Digit.UploadServices.Filefetch([ownerFileStoreId], stateCode);
+
+   const fileData = result?.data?.fileStoreIds?.[0];
+   imageURL = fileData?.url || "";
+  
   if(appData?.nocDetails?.additionalDetails?.applicationDetails?.professionalName)detailsArr.push(getProfessionalDetails(appData, t),)
 
   return {
     t: t,
     tenantId: tenantInfo?.code,
-    name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
+    name: t("NOC_ACKNOWLEDGEMENT_TITLE"),
+    // name: `${t(tenantInfo?.i18nKey)} ${ulbCamel(t(`ULBGRADE_${tenantInfo?.city?.ulbGrade.toUpperCase().replace(" ", "_").replace(".", "_")}`))}`,
     email: tenantInfo?.emailId,
     phoneNumber: tenantInfo?.contactNumber,
-    heading: t("NOC_REGISTRATION_CERTIFICATE"),
+    heading: t("LOCAL_GOVERNMENT_PUNJAB"),
+    // heading: t("NOC_REGISTRATION_CERTIFICATE"),
     applicationNumber: appData?.applicationNo || "NA",
     details: [
+        getRegistrationDetails(appData,t),
         ...detailsArr,
         getApplicantDetails(appData, t),
         getSiteDetails(appData, t), 
         getSpecificationDetails(appData, t),
         getCoordinateDetails(appData,t),
         getDocuments(appData,t)
-    ]
+    ],
+    imageURL
 
     
   };

@@ -4,6 +4,8 @@ import { useLocation, useHistory } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { SET_NOCNewApplication_STEP } from "../redux/action/NOCNewApplicationActions";
 import NOCDocument from "./NOCDocument";
+import NOCImageView from "./NOCImageView";
+import NOCDocumentTableView from "./NOCDocumentTableView";
 
 function NOCSummary({ currentStepData:formData, t }) {
   const { pathname: url } = useLocation();
@@ -86,8 +88,11 @@ const getFloorLabel = (index) => {
   return (
     <div style={pageStyle}>
 
+          <h2 style={headingStyle}>{t("OWNER_OWNERPHOTO")}</h2>
+          <div style={sectionStyle}>
+           <NOCImageView documents={formData?.documents?.documents?.documents}/>
+          </div>
       
-        
           <h2 style={headingStyle}>{t("NOC_APPLICANT_DETAILS")}</h2>
           <div style={sectionStyle}>
             {renderLabel(t("NOC_FIRM_OWNER_NAME_LABEL"), formData?.applicationDetails?.applicantOwnerOrFirmName)}
@@ -168,7 +173,7 @@ const getFloorLabel = (index) => {
         {renderLabel(t("COMMON_LONGITUDE2_LABEL"), coordinates?.Longitude2)}
       </div>
 
-      <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
+      {/* <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
       <div style={sectionStyle}>
         {Array.isArray(formData?.documents?.documents?.documents) && formData.documents.documents.documents.length > 0 ? (
           <div className="documentsContainerStyle">
@@ -177,6 +182,11 @@ const getFloorLabel = (index) => {
         ) : (
           <div>{t("NOC_NO_DOCUMENTS_MSG")}</div>
         )}
+      </div> */}
+
+      <h2 style={headingStyle}>{t("NOC_TITILE_DOCUMENT_UPLOADED")}</h2>
+      <div style={sectionStyle}>
+        {formData?.documents?.documents?.documents?.length > 0 && <NOCDocumentTableView documents={formData?.documents?.documents?.documents}/>}
       </div>
     </div>
   );
